@@ -61,7 +61,7 @@ const html = `<!DOCTYPE html>
     * { -webkit-tap-highlight-color: transparent; }
     body {
       font-family: system-ui, -apple-system, sans-serif;
-      max-width: 900px;
+      max-width: 1400px;
       margin: 2rem auto;
       padding: 0 1rem;
     }
@@ -103,8 +103,8 @@ const html = `<!DOCTYPE html>
     }
     .fretboard-container {
       position: relative;
-      width: 100%;
-      max-width: 600px;
+      width: 98%;
+      max-width: 1200px;
     }
     .fretboard {
       width: 100%;
