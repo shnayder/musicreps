@@ -235,15 +235,20 @@ const html = `<!DOCTYPE html>
     @media (max-width: 599px) {
       body {
         margin: 0.5rem auto;
-        padding: 0 0.5rem;
+        padding: 0 2px;
       }
 
       .fretboard-row {
         flex-direction: column;
         gap: 0.5rem;
+        width: 100%;
       }
 
-      .fretboard-container { order: 1; }
+      .fretboard-container {
+        order: 1;
+        width: 100%;
+        max-width: none;
+      }
       .fret-numbers { order: 2; }
 
       .string-toggles {
