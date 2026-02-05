@@ -238,6 +238,10 @@ const html = `<!DOCTYPE html>
         padding: 0 2px;
       }
 
+      .fretboard-wrapper {
+        align-items: stretch;
+      }
+
       .fretboard-row {
         flex-direction: column;
         gap: 0.5rem;
@@ -255,6 +259,7 @@ const html = `<!DOCTYPE html>
         order: 3;
         flex-direction: row;
         padding: 0.5rem 0;
+        justify-content: center;
       }
 
       /* Prevent iOS zoom on input focus */
