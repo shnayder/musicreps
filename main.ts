@@ -148,6 +148,13 @@ const html = `<!DOCTYPE html>
       text-align: center;
       margin: 1rem 0;
     }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
     button {
       padding: 0.5rem 1.5rem;
       font-size: 1rem;
@@ -182,14 +189,14 @@ const html = `<!DOCTYPE html>
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-start;
-      gap: 0.4rem;
+      gap: 0.25rem;
       margin: 0.5rem auto;
-      max-width: 500px;
+      max-width: 220px;
     }
     .note-btn {
-      min-width: 40px;
-      height: 44px;
-      font-size: 1.1rem;
+      min-width: 50px;
+      height: 48px;
+      font-size: 1.15rem;
       font-weight: 500;
       border: 2px solid #666;
       border-radius: 8px;
@@ -262,9 +269,7 @@ const html = `<!DOCTYPE html>
     .setting-group {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 0.3rem;
-      margin-bottom: 0.5rem;
       font-size: 0.9rem;
       color: #666;
       cursor: pointer;
@@ -294,8 +299,11 @@ const html = `<!DOCTYPE html>
       }
       .fret-numbers { order: 2; }
 
-      .string-toggles {
+      .settings-row {
         order: 3;
+      }
+
+      .string-toggles {
         flex-direction: row;
         padding: 0.5rem 0;
         justify-content: center;
@@ -307,18 +315,24 @@ const html = `<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <div class="version">v0.4</div>
+  <div class="version">v0.5</div>
   <h1>Fretboard Trainer</h1>
 
   <div class="fretboard-wrapper">
     <div class="fretboard-row">
-      <div class="string-toggles" id="string-toggles">
-        <button class="string-toggle" data-string="0">e</button>
-        <button class="string-toggle" data-string="1">B</button>
-        <button class="string-toggle" data-string="2">G</button>
-        <button class="string-toggle" data-string="3">D</button>
-        <button class="string-toggle" data-string="4">A</button>
-        <button class="string-toggle active" data-string="5">E</button>
+      <div class="settings-row">
+        <div class="string-toggles" id="string-toggles">
+          <button class="string-toggle" data-string="0">e</button>
+          <button class="string-toggle" data-string="1">B</button>
+          <button class="string-toggle" data-string="2">G</button>
+          <button class="string-toggle" data-string="3">D</button>
+          <button class="string-toggle" data-string="4">A</button>
+          <button class="string-toggle active" data-string="5">E</button>
+        </div>
+        <label class="setting-group">
+          <input type="checkbox" id="naturals-only" checked>
+          Natural only
+        </label>
       </div>
       <div class="fretboard-container">
         <svg class="fretboard" id="fretboard" viewBox="0 0 600 240">
@@ -340,10 +354,6 @@ const html = `<!DOCTYPE html>
   </div>
 
   <div class="quiz-controls">
-    <label class="setting-group">
-      <input type="checkbox" id="naturals-only" checked>
-      Natural notes only
-    </label>
     <div>
       <button id="start-btn" onclick="startQuiz()">Start Quiz</button>
       <button id="heatmap-btn" onclick="toggleHeatmap()">Show Heatmap</button>
