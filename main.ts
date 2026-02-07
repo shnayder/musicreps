@@ -1,23 +1,30 @@
 // Fret positions - spacing decreases as you go up the neck (like real guitar)
-const fretPositions = [0, 65, 126, 183, 237, 288, 336, 381, 423, 463, 500, 535, 568, 600];
+const fretPositions = [
+  0, 65, 126, 183, 237, 288, 336, 381, 423, 463, 500, 535, 568, 600,
+];
 
 // Generate fret lines
-const fretLines = fretPositions.slice(1).map(x =>
-  `<line x1="${x}" y1="0" x2="${x}" y2="240" stroke="#333" stroke-width="1"/>`
-).join('\n      ');
+const fretLines = fretPositions
+  .slice(1)
+  .map(
+    (x) =>
+      `<line x1="${x}" y1="0" x2="${x}" y2="240" stroke="#333" stroke-width="1"/>`,
+  )
+  .join("\n      ");
 
 // Generate string lines - thicker for lower strings
-const stringLines = Array.from({length: 6}, (_, i) => {
+const stringLines = Array.from({ length: 6 }, (_, i) => {
   const thickness = 1 + i * 0.5; // 1, 1.5, 2, 2.5, 3, 3.5
   return `<line x1="0" y1="${20 + i * 40}" x2="600" y2="${20 + i * 40}" stroke="#333" stroke-width="${thickness}"/>`;
-}).join('\n      ');
+}).join("\n      ");
 
 // Generate note circles and text - centered between frets
-const noteElements = Array.from({length: 6}, (_, string) =>
-  Array.from({length: 13}, (_, fret) => {
-    const x = fret === 0
-      ? fretPositions[0] + (fretPositions[1] - fretPositions[0]) / 2
-      : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
+const noteElements = Array.from({ length: 6 }, (_, string) =>
+  Array.from({ length: 13 }, (_, fret) => {
+    const x =
+      fret === 0
+        ? fretPositions[0] + (fretPositions[1] - fretPositions[0]) / 2
+        : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
     const y = 20 + string * 40;
     return `<circle
       class="note-circle"
@@ -40,16 +47,18 @@ const noteElements = Array.from({length: 6}, (_, string) =>
       font-size="11"
       fill="#333"
     ></text>`;
-  }).join('\n      ')
-).join('\n      ');
+  }).join("\n      "),
+).join("\n      ");
 
 // Generate fret numbers - only show 3, 5, 7, 9, 12
 const markerFrets = [3, 5, 7, 9, 12];
-const fretNumberElements = markerFrets.map(fret => {
-  const x = (fretPositions[fret] + fretPositions[fret + 1]) / 2;
-  const pct = (x / 600) * 100;
-  return `<div class="fret-number" style="left: ${pct}%">${fret}</div>`;
-}).join('\n    ');
+const fretNumberElements = markerFrets
+  .map((fret) => {
+    const x = (fretPositions[fret] + fretPositions[fret + 1]) / 2;
+    const pct = (x / 600) * 100;
+    return `<div class="fret-number" style="left: ${pct}%">${fret}</div>`;
+  })
+  .join("\n    ");
 
 const html = `<!DOCTYPE html>
 <html lang="en">
@@ -624,9 +633,9 @@ const html = `<!DOCTYPE html>
 
     function getHeatmapColor(ms) {
       if (ms === null) return '#ddd';
-      if (ms < 3000) return 'hsl(120, 60%, 65%)';
-      if (ms < 4000) return 'hsl(80, 60%, 65%)';
-      if (ms < 5000) return 'hsl(50, 60%, 65%)';
+      if (ms < 1500) return 'hsl(120, 60%, 65%)';
+      if (ms < 3000) return 'hsl(80, 60%, 65%)';
+      if (ms < 4500) return 'hsl(50, 60%, 65%)';
       if (ms < 6000) return 'hsl(30, 60%, 65%)';
       return 'hsl(0, 60%, 65%)';
     }
@@ -975,7 +984,7 @@ if (import.meta.main) {
   } else {
     Deno.serve({ port: 8001 }, (req) => {
       const url = new URL(req.url);
-      if (url.pathname === '/sw.js') {
+      if (url.pathname === "/sw.js") {
         return new Response(sw, {
           headers: { "content-type": "application/javascript" },
         });
