@@ -351,18 +351,32 @@ const html = `<!DOCTYPE html>
       const statsKey = (itemId) => \`adaptive_\${namespace}_\${itemId}\`;
       const lastSelectedKey = () => \`adaptive_\${namespace}_lastSelected\`;
 
-      function getStats(itemId) {
-        const data = localStorage.getItem(statsKey(itemId));
-        if (!data) return null;
-        try {
-          return JSON.parse(data);
-        } catch {
-          return null;
+      // In-memory cache for stats (populated once at startup)
+      const statsCache = {};
+
+      function loadAllStats() {
+        for (let s = 0; s <= 5; s++) {
+          for (let f = 0; f < 13; f++) {
+            const itemId = \`\${s}-\${f}\`;
+            const key = statsKey(itemId);
+            const data = localStorage.getItem(key);
+            if (data) {
+              try {
+                statsCache[key] = JSON.parse(data);
+              } catch {}
+            }
+          }
         }
       }
 
+      function getStats(itemId) {
+        return statsCache[statsKey(itemId)] || null;
+      }
+
       function saveStats(itemId, stats) {
-        localStorage.setItem(statsKey(itemId), JSON.stringify(stats));
+        const key = statsKey(itemId);
+        statsCache[key] = stats;
+        localStorage.setItem(key, JSON.stringify(stats));
       }
 
       function getLastSelected() {
@@ -443,10 +457,11 @@ const html = `<!DOCTYPE html>
         return last;
       }
 
-      return { recordResponse, selectNext, getStats, getWeight };
+      return { recordResponse, selectNext, getStats, getWeight, loadAllStats };
     }
 
     const adaptiveSelector = createAdaptiveSelector('fretboard');
+    adaptiveSelector.loadAllStats();
     // ============ End Adaptive Selector ============
 
     // String tuning (high E to low E, top to bottom visually)
