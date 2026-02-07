@@ -68,6 +68,13 @@ const html = `<!DOCTYPE html>
     h1 {
       text-align: center;
     }
+    .version {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-size: 0.75rem;
+      color: #aaa;
+    }
     .fretboard-wrapper {
       display: flex;
       flex-direction: column;
@@ -220,6 +227,29 @@ const html = `<!DOCTYPE html>
       font-size: 0.9rem;
       color: #666;
     }
+    .heatmap-legend {
+      display: none;
+      justify-content: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+    .heatmap-legend.active {
+      display: flex;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .legend-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 1px solid #999;
+    }
     .setting-group {
       display: flex;
       align-items: center;
@@ -268,6 +298,7 @@ const html = `<!DOCTYPE html>
   </style>
 </head>
 <body>
+  <div class="version">v0.2</div>
   <h1>Fretboard Trainer</h1>
 
   <div class="fretboard-wrapper">
@@ -306,12 +337,21 @@ const html = `<!DOCTYPE html>
     </label>
     <div>
       <button id="start-btn" onclick="startQuiz()">Start Quiz</button>
+      <button id="heatmap-btn" onclick="toggleHeatmap()">Show Heatmap</button>
       <button id="stop-btn" onclick="stopQuiz()" style="display: none;">Stop Quiz</button>
       <span id="stats" class="stats"></span>
     </div>
   </div>
 
   <div class="quiz-area" id="quiz-area">
+    <div class="heatmap-legend" id="heatmap-legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; 3s</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>3–4s</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>4–5s</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>5–6s</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&gt; 6s</div>
+    </div>
     <div class="countdown-container">
       <div class="countdown-bar" id="countdown-bar"></div>
     </div>
@@ -582,6 +622,62 @@ const html = `<!DOCTYPE html>
       return 'hsl(0, 70%, 40%)';
     }
 
+    function getHeatmapColor(ms) {
+      if (ms === null) return '#ddd';
+      if (ms < 3000) return 'hsl(120, 60%, 65%)';
+      if (ms < 4000) return 'hsl(80, 60%, 65%)';
+      if (ms < 5000) return 'hsl(50, 60%, 65%)';
+      if (ms < 6000) return 'hsl(30, 60%, 65%)';
+      return 'hsl(0, 60%, 65%)';
+    }
+
+    let heatmapActive = false;
+
+    function showHeatmap() {
+      heatmapActive = true;
+      document.getElementById('heatmap-btn').textContent = 'Hide Heatmap';
+      document.getElementById('quiz-area').classList.add('active');
+      document.getElementById('heatmap-legend').classList.add('active');
+      // Hide quiz-specific elements
+      document.querySelector('.countdown-container').style.display = 'none';
+      document.getElementById('note-buttons').style.display = 'none';
+      document.getElementById('feedback').style.display = 'none';
+      document.getElementById('time-display').style.display = 'none';
+      document.getElementById('hint').style.display = 'none';
+
+      for (let s = 0; s <= 5; s++) {
+        for (let f = 0; f < 13; f++) {
+          const stats = adaptiveSelector.getStats(\`\${s}-\${f}\`);
+          const ewma = stats ? stats.ewma : null;
+          const color = getHeatmapColor(ewma);
+          highlightCircle(s, f, color);
+          showNoteText(s, f);
+        }
+      }
+    }
+
+    function hideHeatmap() {
+      heatmapActive = false;
+      document.getElementById('heatmap-btn').textContent = 'Show Heatmap';
+      clearAll();
+      document.getElementById('quiz-area').classList.remove('active');
+      document.getElementById('heatmap-legend').classList.remove('active');
+      // Restore quiz-specific elements
+      document.querySelector('.countdown-container').style.display = '';
+      document.getElementById('note-buttons').style.display = '';
+      document.getElementById('feedback').style.display = '';
+      document.getElementById('time-display').style.display = '';
+      document.getElementById('hint').style.display = '';
+    }
+
+    function toggleHeatmap() {
+      if (heatmapActive) {
+        hideHeatmap();
+      } else {
+        showHeatmap();
+      }
+    }
+
     function getEwmaValues() {
       // Collect EWMA values from all positions that have been practiced
       const ewmas = [];
@@ -631,9 +727,11 @@ const html = `<!DOCTYPE html>
     }
 
     function startQuiz() {
+      if (heatmapActive) hideHeatmap();
       updateStats();
       quizActive = true;
       document.getElementById('start-btn').style.display = 'none';
+      document.getElementById('heatmap-btn').style.display = 'none';
       document.getElementById('stop-btn').style.display = 'inline';
       document.getElementById('quiz-area').classList.add('active');
       nextQuestion();
@@ -647,6 +745,7 @@ const html = `<!DOCTYPE html>
       }
       clearAll();
       document.getElementById('start-btn').style.display = 'inline';
+      document.getElementById('heatmap-btn').style.display = 'inline';
       document.getElementById('stop-btn').style.display = 'none';
       document.getElementById('quiz-area').classList.remove('active');
       updateStats();

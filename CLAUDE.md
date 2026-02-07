@@ -33,3 +33,7 @@ deno run --allow-write --allow-read main.ts --build
 - Letter + `b` - flat (e.g., D then b)
 - `Space` / `Enter` - next question (after answering)
 - `Escape` - stop quiz
+
+## Versioning
+
+There is a small version number displayed at the top-right of the app (`<div class="version">`). Increment it (e.g. v0.2 → v0.3) with every change so the user can confirm they have the latest build.
