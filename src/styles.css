@@ -1,0 +1,245 @@
+* { -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  max-width: 1400px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+h1 {
+  text-align: center;
+}
+.version {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.75rem;
+  color: #aaa;
+}
+.fretboard-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.fretboard-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+.string-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.string-toggle {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #999;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+.string-toggle.active {
+  background: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+.fretboard-container {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  max-width: 1200px;
+}
+.fretboard {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #fff;
+  touch-action: manipulation;
+}
+.fret-numbers {
+  position: relative;
+  height: 1.5rem;
+  width: 100%;
+}
+.fret-number {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.9rem;
+  color: #666;
+}
+.quiz-controls {
+  text-align: center;
+  margin: 1rem 0;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+button {
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin: 0 0.5rem;
+}
+.quiz-area {
+  display: none;
+  text-align: center;
+  margin: 1rem 0;
+}
+.quiz-area.active {
+  display: block;
+}
+.countdown-container {
+  width: 200px;
+  height: 8px;
+  background: #eee;
+  margin: 1rem auto;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.countdown-bar {
+  height: 100%;
+  background: #4CAF50;
+  transition: width 0.1s linear;
+}
+.countdown-bar.expired {
+  background: #f44336;
+}
+.note-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.25rem;
+  margin: 0.5rem auto 0.5rem 0;
+  max-width: 220px;
+}
+.note-btn {
+  min-width: 50px;
+  height: 48px;
+  font-size: 1.15rem;
+  font-weight: 500;
+  border: 2px solid #666;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+.note-btn.accidental {
+  background: #e8e8e8;
+}
+.note-btn:active {
+  background: #d0d0d0;
+}
+.note-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.note-btn.hidden {
+  display: none;
+}
+.feedback {
+  font-size: 1.5rem;
+  margin: 1rem 0;
+  min-height: 2rem;
+}
+.correct {
+  color: green;
+}
+.incorrect {
+  color: red;
+}
+.time-display {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+.hint {
+  color: #666;
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+.stats {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+.heatmap-legend {
+  display: none;
+  justify-content: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+.heatmap-legend.active {
+  display: flex;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+.legend-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid #999;
+}
+.setting-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: #666;
+  cursor: pointer;
+}
+
+/* Mobile layout */
+@media (max-width: 599px) {
+  body {
+    margin: 0.5rem auto;
+    padding: 0 2px;
+  }
+
+  .fretboard-wrapper {
+    align-items: stretch;
+  }
+
+  .fretboard-row {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .fretboard-container {
+    order: 1;
+    width: 100%;
+    max-width: none;
+  }
+  .fret-numbers { order: 2; }
+
+  .settings-row {
+    order: 3;
+  }
+
+  .string-toggles {
+    flex-direction: row;
+    padding: 0.5rem 0;
+    justify-content: center;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  input, button { font-size: 16px; }
+}

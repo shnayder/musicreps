@@ -1,406 +1,25 @@
-// Fret positions - spacing decreases as you go up the neck (like real guitar)
-const fretPositions = [
-  0, 65, 126, 183, 237, 288, 336, 381, 423, 463, 500, 535, 568, 600,
-];
+import {
+  fretPositions,
+  fretLines,
+  stringLines,
+  noteElements,
+  fretNumberElements,
+} from "./src/fretboard.ts";
 
-// Generate fret lines
-const fretLines = fretPositions
-  .slice(1)
-  .map(
-    (x) =>
-      `<line x1="${x}" y1="0" x2="${x}" y2="240" stroke="#333" stroke-width="1"/>`,
-  )
-  .join("\n      ");
+// ---------------------------------------------------------------------------
+// Browser-side JavaScript (embedded in the HTML as a <script> block)
+// ---------------------------------------------------------------------------
+// NOTE: The adaptive selector logic here mirrors src/adaptive.ts.
+// src/adaptive.ts is the tested reference — keep both in sync.
 
-// Generate string lines - thicker for lower strings
-const stringLines = Array.from({ length: 6 }, (_, i) => {
-  const thickness = 1 + i * 0.5; // 1, 1.5, 2, 2.5, 3, 3.5
-  return `<line x1="0" y1="${20 + i * 40}" x2="600" y2="${20 + i * 40}" stroke="#333" stroke-width="${thickness}"/>`;
-}).join("\n      ");
-
-// Generate note circles and text - centered between frets
-const noteElements = Array.from({ length: 6 }, (_, string) =>
-  Array.from({ length: 13 }, (_, fret) => {
-    const x =
-      fret === 0
-        ? fretPositions[0] + (fretPositions[1] - fretPositions[0]) / 2
-        : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
-    const y = 20 + string * 40;
-    return `<circle
-      class="note-circle"
-      data-string="${string}"
-      data-fret="${fret}"
-      cx="${x}"
-      cy="${y}"
-      r="14"
-      fill="white"
-      stroke="#333"
-      stroke-width="1"
-    /><text
-      class="note-text"
-      data-string="${string}"
-      data-fret="${fret}"
-      x="${x}"
-      y="${y}"
-      text-anchor="middle"
-      dominant-baseline="central"
-      font-size="11"
-      fill="#333"
-    ></text>`;
-  }).join("\n      "),
-).join("\n      ");
-
-// Generate fret numbers - only show 3, 5, 7, 9, 12
-const markerFrets = [3, 5, 7, 9, 12];
-const fretNumberElements = markerFrets
-  .map((fret) => {
-    const x = (fretPositions[fret] + fretPositions[fret + 1]) / 2;
-    const pct = (x / 600) * 100;
-    return `<div class="fret-number" style="left: ${pct}%">${fret}</div>`;
-  })
-  .join("\n    ");
-
-const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fretboard Trainer</title>
-  <style>
-    * { -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      max-width: 1400px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-    h1 {
-      text-align: center;
-    }
-    .version {
-      position: absolute;
-      top: 0.5rem;
-      right: 0.5rem;
-      font-size: 0.75rem;
-      color: #aaa;
-    }
-    .fretboard-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-    }
-    .fretboard-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      width: 100%;
-      justify-content: center;
-    }
-    .string-toggles {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .string-toggle {
-      width: 28px;
-      height: 28px;
-      border: 1px solid #999;
-      border-radius: 4px;
-      background: #f5f5f5;
-      color: #999;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
-      padding: 0;
-      margin: 0;
-    }
-    .string-toggle.active {
-      background: #4CAF50;
-      color: white;
-      border-color: #4CAF50;
-    }
-    .fretboard-container {
-      position: relative;
-      flex: 1;
-      min-width: 0;
-      max-width: 1200px;
-    }
-    .fretboard {
-      width: 100%;
-      height: auto;
-      display: block;
-      background: #fff;
-      touch-action: manipulation;
-    }
-    .fret-numbers {
-      position: relative;
-      height: 1.5rem;
-      width: 100%;
-    }
-    .fret-number {
-      position: absolute;
-      transform: translateX(-50%);
-      font-size: 0.9rem;
-      color: #666;
-    }
-    .quiz-controls {
-      text-align: center;
-      margin: 1rem 0;
-    }
-    .settings-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      justify-content: center;
-      margin-bottom: 0.5rem;
-    }
-    button {
-      padding: 0.5rem 1.5rem;
-      font-size: 1rem;
-      cursor: pointer;
-      margin: 0 0.5rem;
-    }
-    .quiz-area {
-      display: none;
-      text-align: center;
-      margin: 1rem 0;
-    }
-    .quiz-area.active {
-      display: block;
-    }
-    .countdown-container {
-      width: 200px;
-      height: 8px;
-      background: #eee;
-      margin: 1rem auto;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .countdown-bar {
-      height: 100%;
-      background: #4CAF50;
-      transition: width 0.1s linear;
-    }
-    .countdown-bar.expired {
-      background: #f44336;
-    }
-    .note-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      gap: 0.25rem;
-      margin: 0.5rem auto 0.5rem 0;
-      max-width: 220px;
-    }
-    .note-btn {
-      min-width: 50px;
-      height: 48px;
-      font-size: 1.15rem;
-      font-weight: 500;
-      border: 2px solid #666;
-      border-radius: 8px;
-      background: #fff;
-      cursor: pointer;
-      padding: 0 0.5rem;
-    }
-    .note-btn.accidental {
-      background: #e8e8e8;
-    }
-    .note-btn:active {
-      background: #d0d0d0;
-    }
-    .note-btn:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-    .note-btn.hidden {
-      display: none;
-    }
-    .feedback {
-      font-size: 1.5rem;
-      margin: 1rem 0;
-      min-height: 2rem;
-    }
-    .correct {
-      color: green;
-    }
-    .incorrect {
-      color: red;
-    }
-    .time-display {
-      color: #666;
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-    }
-    .hint {
-      color: #666;
-      font-size: 1rem;
-      margin-top: 1rem;
-    }
-    .stats {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #666;
-    }
-    .heatmap-legend {
-      display: none;
-      justify-content: center;
-      gap: 0.8rem;
-      flex-wrap: wrap;
-      margin: 1rem 0;
-    }
-    .heatmap-legend.active {
-      display: flex;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.85rem;
-      color: #666;
-    }
-    .legend-swatch {
-      width: 16px;
-      height: 16px;
-      border-radius: 3px;
-      border: 1px solid #999;
-    }
-    .setting-group {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.9rem;
-      color: #666;
-      cursor: pointer;
-    }
-
-    /* Mobile layout */
-    @media (max-width: 599px) {
-      body {
-        margin: 0.5rem auto;
-        padding: 0 2px;
-      }
-
-      .fretboard-wrapper {
-        align-items: stretch;
-      }
-
-      .fretboard-row {
-        flex-direction: column;
-        gap: 0.5rem;
-        width: 100%;
-      }
-
-      .fretboard-container {
-        order: 1;
-        width: 100%;
-        max-width: none;
-      }
-      .fret-numbers { order: 2; }
-
-      .settings-row {
-        order: 3;
-      }
-
-      .string-toggles {
-        flex-direction: row;
-        padding: 0.5rem 0;
-        justify-content: center;
-      }
-
-      /* Prevent iOS zoom on input focus */
-      input, button { font-size: 16px; }
-    }
-  </style>
-</head>
-<body>
-  <div class="version">v0.6</div>
-  <h1>Fretboard Trainer</h1>
-
-  <div class="fretboard-wrapper">
-    <div class="fretboard-row">
-      <div class="settings-row">
-        <div class="string-toggles" id="string-toggles">
-          <button class="string-toggle" data-string="0">e</button>
-          <button class="string-toggle" data-string="1">B</button>
-          <button class="string-toggle" data-string="2">G</button>
-          <button class="string-toggle" data-string="3">D</button>
-          <button class="string-toggle" data-string="4">A</button>
-          <button class="string-toggle active" data-string="5">E</button>
-        </div>
-        <label class="setting-group">
-          <input type="checkbox" id="naturals-only" checked>
-          Natural only
-        </label>
-      </div>
-      <div class="fretboard-container">
-        <svg class="fretboard" id="fretboard" viewBox="0 0 600 240">
-          <!-- Nut (thick line at fret 0) -->
-          <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
-          <!-- Frets (vertical lines) -->
-          ${fretLines}
-          <!-- Strings (horizontal lines) -->
-          ${stringLines}
-          <!-- Note circles -->
-          ${noteElements}
-        </svg>
-        <div class="fret-numbers">
-          ${fretNumberElements}
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="quiz-controls">
-    <div>
-      <button id="start-btn" onclick="startQuiz()">Start Quiz</button>
-      <button id="heatmap-btn" onclick="toggleHeatmap()">Show Heatmap</button>
-      <button id="stop-btn" onclick="stopQuiz()" style="display: none;">Stop Quiz</button>
-      <span id="stats" class="stats"></span>
-    </div>
-  </div>
-
-  <div class="quiz-area" id="quiz-area">
-    <div class="heatmap-legend" id="heatmap-legend">
-      <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; 1.5s</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>1.5–3s</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>3–4.5s</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>4.5–6s</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&gt; 6s</div>
-    </div>
-    <div class="countdown-container">
-      <div class="countdown-bar" id="countdown-bar"></div>
-    </div>
-    <div class="note-buttons" id="note-buttons">
-      <button class="note-btn" data-note="C">C</button>
-      <button class="note-btn accidental" data-note="C#">C#</button>
-      <button class="note-btn" data-note="D">D</button>
-      <button class="note-btn accidental" data-note="D#">D#</button>
-      <button class="note-btn" data-note="E">E</button>
-      <button class="note-btn" data-note="F">F</button>
-      <button class="note-btn accidental" data-note="F#">F#</button>
-      <button class="note-btn" data-note="G">G</button>
-      <button class="note-btn accidental" data-note="G#">G#</button>
-      <button class="note-btn" data-note="A">A</button>
-      <button class="note-btn accidental" data-note="A#">A#</button>
-      <button class="note-btn" data-note="B">B</button>
-    </div>
-    <div class="feedback" id="feedback"></div>
-    <div class="time-display" id="time-display"></div>
-    <div class="hint" id="hint"></div>
-  </div>
-
-  <script>
+const appJS = `
     const TARGET_TIME = 3000;
 
-    // ============ Adaptive Selector (inlined from src/adaptive/adaptive.ts) ============
+    // ============ Adaptive Selector ============
+    // Tested reference implementation: src/adaptive.ts
     const ADAPTIVE_CONFIG = {
       minTime: 1000,
       unseenBoost: 3,
-      minSamples: 3,
       ewmaAlpha: 0.3,
       maxStoredTimes: 10,
     };
@@ -474,9 +93,10 @@ const html = `<!DOCTYPE html>
         if (!stats) {
           return cfg.unseenBoost;
         }
-        const baseWeight = Math.max(stats.ewma, cfg.minTime) / cfg.minTime;
-        const sampleMultiplier = stats.sampleCount < cfg.minSamples ? cfg.unseenBoost : 1;
-        return baseWeight * sampleMultiplier;
+        // Weight by response time — slower items are heavier.
+        // No extra multiplier for low-sample items: unseen items should
+        // always outweigh recently-seen ones (see src/adaptive_test.ts).
+        return Math.max(stats.ewma, cfg.minTime) / cfg.minTime;
       }
 
       function selectNext(validItems) {
@@ -963,9 +583,129 @@ const html = `<!DOCTYPE html>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
     }
+`;
+
+// ---------------------------------------------------------------------------
+// Read CSS from file (Deno) or inline fallback
+// ---------------------------------------------------------------------------
+
+async function readCSS(): Promise<string> {
+  try {
+    return await Deno.readTextFile(
+      new URL("./src/styles.css", import.meta.url),
+    );
+  } catch {
+    // Fallback: return empty (shouldn't happen during normal dev/build)
+    console.error("Warning: could not read src/styles.css");
+    return "";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// HTML assembly
+// ---------------------------------------------------------------------------
+
+async function buildHTML(): Promise<string> {
+  const css = await readCSS();
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fretboard Trainer</title>
+  <style>
+    ${css}
+  </style>
+</head>
+<body>
+  <div class="version">v0.7</div>
+  <h1>Fretboard Trainer</h1>
+
+  <div class="fretboard-wrapper">
+    <div class="fretboard-row">
+      <div class="settings-row">
+        <div class="string-toggles" id="string-toggles">
+          <button class="string-toggle" data-string="0">e</button>
+          <button class="string-toggle" data-string="1">B</button>
+          <button class="string-toggle" data-string="2">G</button>
+          <button class="string-toggle" data-string="3">D</button>
+          <button class="string-toggle" data-string="4">A</button>
+          <button class="string-toggle active" data-string="5">E</button>
+        </div>
+        <label class="setting-group">
+          <input type="checkbox" id="naturals-only" checked>
+          Natural only
+        </label>
+      </div>
+      <div class="fretboard-container">
+        <svg class="fretboard" id="fretboard" viewBox="0 0 600 240">
+          <!-- Nut (thick line at fret 0) -->
+          <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
+          <!-- Frets (vertical lines) -->
+          ${fretLines()}
+          <!-- Strings (horizontal lines) -->
+          ${stringLines()}
+          <!-- Note circles -->
+          ${noteElements()}
+        </svg>
+        <div class="fret-numbers">
+          ${fretNumberElements()}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="quiz-controls">
+    <div>
+      <button id="start-btn" onclick="startQuiz()">Start Quiz</button>
+      <button id="heatmap-btn" onclick="toggleHeatmap()">Show Heatmap</button>
+      <button id="stop-btn" onclick="stopQuiz()" style="display: none;">Stop Quiz</button>
+      <span id="stats" class="stats"></span>
+    </div>
+  </div>
+
+  <div class="quiz-area" id="quiz-area">
+    <div class="heatmap-legend" id="heatmap-legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; 1.5s</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>1.5–3s</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>3–4.5s</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>4.5–6s</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&gt; 6s</div>
+    </div>
+    <div class="countdown-container">
+      <div class="countdown-bar" id="countdown-bar"></div>
+    </div>
+    <div class="note-buttons" id="note-buttons">
+      <button class="note-btn" data-note="C">C</button>
+      <button class="note-btn accidental" data-note="C#">C#</button>
+      <button class="note-btn" data-note="D">D</button>
+      <button class="note-btn accidental" data-note="D#">D#</button>
+      <button class="note-btn" data-note="E">E</button>
+      <button class="note-btn" data-note="F">F</button>
+      <button class="note-btn accidental" data-note="F#">F#</button>
+      <button class="note-btn" data-note="G">G</button>
+      <button class="note-btn accidental" data-note="G#">G#</button>
+      <button class="note-btn" data-note="A">A</button>
+      <button class="note-btn accidental" data-note="A#">A#</button>
+      <button class="note-btn" data-note="B">B</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="time-display" id="time-display"></div>
+    <div class="hint" id="hint"></div>
+  </div>
+
+  <script>${appJS}
   </script>
 </body>
 </html>`;
+}
+
+// ---------------------------------------------------------------------------
+// Service worker
+// ---------------------------------------------------------------------------
 
 const sw = `// Network-first service worker: always fetch latest, fall back to cache offline
 const CACHE = 'fretboard-v1';
@@ -983,15 +723,25 @@ self.addEventListener('fetch', (event) => {
 });
 `;
 
-export { html, sw };
+// ---------------------------------------------------------------------------
+// Exports (for potential future use / testing)
+// ---------------------------------------------------------------------------
+
+export { buildHTML, sw };
+
+// ---------------------------------------------------------------------------
+// CLI entry point
+// ---------------------------------------------------------------------------
 
 if (import.meta.main) {
   if (Deno.args.includes("--build")) {
+    const html = await buildHTML();
     await Deno.mkdir("docs", { recursive: true });
     await Deno.writeTextFile("docs/index.html", html);
     await Deno.writeTextFile("docs/sw.js", sw);
     console.log("Built to docs/index.html + docs/sw.js");
   } else {
+    const html = await buildHTML();
     Deno.serve({ port: 8001 }, (req) => {
       const url = new URL(req.url);
       if (url.pathname === "/sw.js") {
