@@ -22,6 +22,7 @@ const appJS = `
       unseenBoost: 3,
       ewmaAlpha: 0.3,
       maxStoredTimes: 10,
+      maxResponseTime: 9000,
     };
 
     function createAdaptiveSelector(namespace) {
@@ -66,12 +67,13 @@ const appJS = `
       }
 
       function recordResponse(itemId, timeMs) {
+        const clamped = Math.min(timeMs, cfg.maxResponseTime);
         const existing = getStats(itemId);
         const now = Date.now();
 
         if (existing) {
-          const newEwma = cfg.ewmaAlpha * timeMs + (1 - cfg.ewmaAlpha) * existing.ewma;
-          const newTimes = [...existing.recentTimes, timeMs].slice(-cfg.maxStoredTimes);
+          const newEwma = cfg.ewmaAlpha * clamped + (1 - cfg.ewmaAlpha) * existing.ewma;
+          const newTimes = [...existing.recentTimes, clamped].slice(-cfg.maxStoredTimes);
           saveStats(itemId, {
             recentTimes: newTimes,
             ewma: newEwma,
@@ -80,8 +82,8 @@ const appJS = `
           });
         } else {
           saveStats(itemId, {
-            recentTimes: [timeMs],
-            ewma: timeMs,
+            recentTimes: [clamped],
+            ewma: clamped,
             sampleCount: 1,
             lastSeen: now,
           });
@@ -619,7 +621,7 @@ async function buildHTML(): Promise<string> {
   </style>
 </head>
 <body>
-  <div class="version">v0.7</div>
+  <div class="version">v0.8</div>
   <h1>Fretboard Trainer</h1>
 
   <div class="fretboard-wrapper">

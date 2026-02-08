@@ -219,6 +219,33 @@ describe("createAdaptiveSelector", () => {
     assert.equal(stats!.recentTimes.length, 3);
   });
 
+  it("clamps outlier response times to maxResponseTime", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+
+    // First normal response
+    selector.recordResponse("0-0", 2000);
+    // Distracted: 5 minutes later
+    selector.recordResponse("0-0", 300_000);
+
+    const stats = selector.getStats("0-0");
+    assert.ok(stats);
+    // Should have clamped to 9000, not used 300000
+    // ewma = 0.3 * 9000 + 0.7 * 2000 = 4100
+    assert.equal(stats!.ewma, 4100);
+    assert.deepEqual(stats!.recentTimes, [2000, 9000]);
+  });
+
+  it("clamps outlier on first response too", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("0-0", 60_000);
+
+    const stats = selector.getStats("0-0");
+    assert.equal(stats!.ewma, 9000);
+    assert.deepEqual(stats!.recentTimes, [9000]);
+  });
+
   // --- THE KEY BUG-FIX TEST ---
   it("prefers unseen items over recently-seen items at startup", () => {
     const storage = createMemoryStorage();

@@ -13,6 +13,9 @@ export interface AdaptiveConfig {
   ewmaAlpha: number;
   /** Max recent response times to store per item. */
   maxStoredTimes: number;
+  /** Ceiling for recorded response times (ms). Clamps outliers from
+   *  distracted/idle responses so they don't poison the EWMA. */
+  maxResponseTime: number;
 }
 
 export const DEFAULT_CONFIG: AdaptiveConfig = {
@@ -20,6 +23,7 @@ export const DEFAULT_CONFIG: AdaptiveConfig = {
   unseenBoost: 3,
   ewmaAlpha: 0.3,
   maxStoredTimes: 10,
+  maxResponseTime: 9000,
 };
 
 export interface ItemStats {
@@ -101,12 +105,13 @@ export function createAdaptiveSelector(
   randomFn: () => number = Math.random,
 ) {
   function recordResponse(itemId: string, timeMs: number): void {
+    const clamped = Math.min(timeMs, cfg.maxResponseTime);
     const existing = storage.getStats(itemId);
     const now = Date.now();
 
     if (existing) {
-      const newEwma = computeEwma(existing.ewma, timeMs, cfg.ewmaAlpha);
-      const newTimes = [...existing.recentTimes, timeMs].slice(
+      const newEwma = computeEwma(existing.ewma, clamped, cfg.ewmaAlpha);
+      const newTimes = [...existing.recentTimes, clamped].slice(
         -cfg.maxStoredTimes,
       );
       storage.saveStats(itemId, {
@@ -117,8 +122,8 @@ export function createAdaptiveSelector(
       });
     } else {
       storage.saveStats(itemId, {
-        recentTimes: [timeMs],
-        ewma: timeMs,
+        recentTimes: [clamped],
+        ewma: clamped,
         sampleCount: 1,
         lastSeen: now,
       });
