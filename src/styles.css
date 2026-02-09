@@ -51,6 +51,12 @@ h1 {
   color: white;
   border-color: #4CAF50;
 }
+.string-toggle.recommended {
+  box-shadow: 0 0 0 2px #FF9800;
+}
+.string-toggle.active.recommended {
+  border-color: #FF9800;
+}
 .fretboard-container {
   position: relative;
   flex: 1;

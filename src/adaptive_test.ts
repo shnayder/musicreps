@@ -2,6 +2,9 @@ import { describe, it } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   computeEwma,
+  computeRecall,
+  updateStability,
+  computeStabilityAfterWrong,
   computeWeight,
   selectWeighted,
   createAdaptiveSelector,
@@ -103,6 +106,99 @@ describe("computeWeight", () => {
       computeWeight(verySlow, cfg) > unseenWeight,
       "5000ms item should outweigh unseen (user struggles with it)",
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeRecall
+// ---------------------------------------------------------------------------
+
+describe("computeRecall", () => {
+  it("returns 1 when no time has elapsed", () => {
+    assert.equal(computeRecall(4, 0), 1);
+  });
+
+  it("returns 0.5 at exactly one half-life", () => {
+    assert.equal(computeRecall(4, 4), 0.5);
+  });
+
+  it("returns 0.25 at two half-lives", () => {
+    assert.equal(computeRecall(4, 8), 0.25);
+  });
+
+  it("returns null for unseen items", () => {
+    assert.equal(computeRecall(null, 10), null);
+    assert.equal(computeRecall(undefined, 10), null);
+    assert.equal(computeRecall(4, null), null);
+  });
+
+  it("returns 0 for zero stability", () => {
+    assert.equal(computeRecall(0, 5), 0);
+  });
+
+  it("decays over time", () => {
+    const r1 = computeRecall(4, 1)!;
+    const r2 = computeRecall(4, 10)!;
+    assert.ok(r1 > r2, `recall at 1h (${r1}) should be > recall at 10h (${r2})`);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// updateStability
+// ---------------------------------------------------------------------------
+
+describe("updateStability", () => {
+  const cfg = DEFAULT_CONFIG;
+
+  it("returns initialStability for first correct answer", () => {
+    assert.equal(updateStability(null, 2000, null, cfg), cfg.initialStability);
+  });
+
+  it("grows stability on subsequent correct answers", () => {
+    const newS = updateStability(4, 2000, 4, cfg);
+    assert.ok(newS > 4, `new stability (${newS}) should be > old (4)`);
+  });
+
+  it("grows more for fast answers than slow ones", () => {
+    const fast = updateStability(4, 1000, 4, cfg); // min time = fastest
+    const slow = updateStability(4, 8000, 4, cfg); // near max
+    assert.ok(fast > slow, `fast (${fast}) should grow more than slow (${slow})`);
+  });
+
+  it("self-corrects: fast answer after long gap boosts stability", () => {
+    // Fast answer (1000ms) after 720 hours (30 days) away
+    const newS = updateStability(4, 1000, 720, cfg);
+    // Should be at least 720 * 1.5 = 1080
+    assert.ok(newS >= 1080, `self-corrected stability (${newS}) should be >= 1080`);
+  });
+
+  it("does NOT self-correct for slow answers after long gap", () => {
+    // Slow answer (7000ms) after 720 hours — they struggled, no correction
+    const newS = updateStability(4, 7000, 720, cfg);
+    // Should just be normal growth, not the large self-correction
+    assert.ok(newS < 720, `slow answer stability (${newS}) should not self-correct`);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeStabilityAfterWrong
+// ---------------------------------------------------------------------------
+
+describe("computeStabilityAfterWrong", () => {
+  const cfg = DEFAULT_CONFIG;
+
+  it("returns initialStability for null (unseen) items", () => {
+    assert.equal(computeStabilityAfterWrong(null, cfg), cfg.initialStability);
+  });
+
+  it("reduces stability but floors at initialStability", () => {
+    // 10 * 0.3 = 3, but floor is initialStability (4)
+    assert.equal(computeStabilityAfterWrong(10, cfg), 4);
+  });
+
+  it("reduces high stability items proportionally", () => {
+    // 100 * 0.3 = 30, which is > initialStability (4)
+    assert.equal(computeStabilityAfterWrong(100, cfg), 30);
   });
 });
 
@@ -298,5 +394,108 @@ describe("createAdaptiveSelector", () => {
       seen.size >= 5,
       `Expected to explore >= 5 of 8 items in 16 rounds, but only saw ${seen.size}: ${[...seen]}`,
     );
+  });
+
+  it("recordResponse sets stability and lastCorrectAt on correct answer", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("0-0", 2000);
+
+    const stats = selector.getStats("0-0");
+    assert.ok(stats);
+    assert.equal(stats.stability, DEFAULT_CONFIG.initialStability);
+    assert.ok(stats.lastCorrectAt > 0);
+  });
+
+  it("recordResponse grows stability on subsequent correct answers", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("0-0", 2000);
+    const s1 = selector.getStats("0-0")!.stability;
+    selector.recordResponse("0-0", 2000);
+    const s2 = selector.getStats("0-0")!.stability;
+    assert.ok(s2 > s1, `stability should grow: ${s2} > ${s1}`);
+  });
+
+  it("recordResponse with correct=false reduces stability", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // Build up some stability
+    selector.recordResponse("0-0", 2000);
+    selector.recordResponse("0-0", 2000);
+    selector.recordResponse("0-0", 2000);
+    const beforeWrong = selector.getStats("0-0")!.stability;
+
+    selector.recordResponse("0-0", 3000, false);
+    const afterWrong = selector.getStats("0-0")!.stability;
+    assert.ok(
+      afterWrong < beforeWrong,
+      `stability should decrease on wrong: ${afterWrong} < ${beforeWrong}`,
+    );
+  });
+
+  it("recordResponse with correct=false does not change EWMA or sampleCount", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("0-0", 2000);
+    const before = selector.getStats("0-0")!;
+
+    selector.recordResponse("0-0", 3000, false);
+    const after = selector.getStats("0-0")!;
+    assert.equal(after.ewma, before.ewma);
+    assert.equal(after.sampleCount, before.sampleCount);
+  });
+
+  it("recordResponse with correct=false on unseen item creates stats", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("0-0", 3000, false);
+
+    const stats = selector.getStats("0-0");
+    assert.ok(stats);
+    assert.equal(stats.sampleCount, 0);
+    assert.equal(stats.lastCorrectAt, null);
+    assert.equal(stats.stability, DEFAULT_CONFIG.initialStability);
+  });
+
+  it("getRecall returns null for unseen items", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    assert.equal(selector.getRecall("0-0"), null);
+  });
+
+  it("getRecall returns high value immediately after correct answer", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("0-0", 2000);
+
+    const recall = selector.getRecall("0-0");
+    assert.ok(recall !== null);
+    // Just answered — recall should be very close to 1
+    assert.ok(recall! > 0.99, `recall immediately after answer should be ~1, got ${recall}`);
+  });
+
+  it("getStringRecommendations ranks strings by due count", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+
+    // String 0: all items answered recently (low due count)
+    selector.recordResponse("0-0", 1500);
+    selector.recordResponse("0-1", 1500);
+
+    // String 1: no items answered (all unseen = all due)
+    // (no recordResponse calls)
+
+    const recs = selector.getStringRecommendations(
+      [0, 1],
+      (s) => [`${s}-0`, `${s}-1`],
+    );
+
+    assert.equal(recs.length, 2);
+    // String 1 should be first (more due items)
+    assert.equal(recs[0].string, 1);
+    assert.equal(recs[0].dueCount, 2); // both unseen
+    assert.equal(recs[1].string, 0);
+    assert.equal(recs[1].dueCount, 0); // both just answered
   });
 });

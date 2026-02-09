@@ -62,10 +62,13 @@ function saveEnabledStrings() {
   localStorage.setItem(STRINGS_KEY, JSON.stringify([...enabledStrings]));
 }
 
+let recommendedStrings = new Set();
+
 function updateStringToggles() {
   document.querySelectorAll('.string-toggle').forEach(btn => {
     const s = parseInt(btn.dataset.string);
     btn.classList.toggle('active', enabledStrings.has(s));
+    btn.classList.toggle('recommended', recommendedStrings.has(s));
   });
 }
 
@@ -135,7 +138,7 @@ function getTimeColor(ms) {
   return 'hsl(0, 70%, 40%)';
 }
 
-function getHeatmapColor(ms) {
+function getSpeedHeatmapColor(ms) {
   if (ms === null) return '#ddd';
   if (ms < 1500) return 'hsl(120, 60%, 65%)';
   if (ms < 3000) return 'hsl(80, 60%, 65%)';
@@ -144,13 +147,22 @@ function getHeatmapColor(ms) {
   return 'hsl(0, 60%, 65%)';
 }
 
-let heatmapActive = false;
+function getRetentionColor(recall) {
+  if (recall === null) return '#ddd';
+  if (recall > 0.8) return 'hsl(120, 60%, 65%)';
+  if (recall > 0.6) return 'hsl(80, 60%, 65%)';
+  if (recall > 0.4) return 'hsl(50, 60%, 65%)';
+  if (recall > 0.2) return 'hsl(30, 60%, 65%)';
+  return 'hsl(0, 60%, 65%)';
+}
 
-function showHeatmap() {
-  heatmapActive = true;
-  document.getElementById('heatmap-btn').textContent = 'Hide Heatmap';
+// Heatmap modes: 'retention', 'speed', or null (hidden)
+let heatmapMode = null;
+
+function showHeatmapView(mode) {
+  heatmapMode = mode;
+  const btn = document.getElementById('heatmap-btn');
   document.getElementById('quiz-area').classList.add('active');
-  document.getElementById('heatmap-legend').classList.add('active');
   // Hide quiz-specific elements
   document.querySelector('.countdown-container').style.display = 'none';
   document.getElementById('note-buttons').style.display = 'none';
@@ -158,23 +170,39 @@ function showHeatmap() {
   document.getElementById('time-display').style.display = 'none';
   document.getElementById('hint').style.display = 'none';
 
-  for (let s = 0; s <= 5; s++) {
-    for (let f = 0; f < 13; f++) {
-      const stats = adaptiveSelector.getStats(`${s}-${f}`);
-      const ewma = stats ? stats.ewma : null;
-      const color = getHeatmapColor(ewma);
-      highlightCircle(s, f, color);
-      showNoteText(s, f);
+  // Show appropriate legend
+  document.getElementById('retention-legend').classList.toggle('active', mode === 'retention');
+  document.getElementById('speed-legend').classList.toggle('active', mode === 'speed');
+
+  if (mode === 'retention') {
+    btn.textContent = 'Show Speed';
+    for (let s = 0; s <= 5; s++) {
+      for (let f = 0; f < 13; f++) {
+        const recall = adaptiveSelector.getRecall(`${s}-${f}`);
+        highlightCircle(s, f, getRetentionColor(recall));
+        showNoteText(s, f);
+      }
+    }
+  } else {
+    btn.textContent = 'Hide Heatmap';
+    for (let s = 0; s <= 5; s++) {
+      for (let f = 0; f < 13; f++) {
+        const stats = adaptiveSelector.getStats(`${s}-${f}`);
+        const ewma = stats ? stats.ewma : null;
+        highlightCircle(s, f, getSpeedHeatmapColor(ewma));
+        showNoteText(s, f);
+      }
     }
   }
 }
 
 function hideHeatmap() {
-  heatmapActive = false;
-  document.getElementById('heatmap-btn').textContent = 'Show Heatmap';
+  heatmapMode = null;
+  document.getElementById('heatmap-btn').textContent = 'Show Retention';
   clearAll();
   document.getElementById('quiz-area').classList.remove('active');
-  document.getElementById('heatmap-legend').classList.remove('active');
+  document.getElementById('retention-legend').classList.remove('active');
+  document.getElementById('speed-legend').classList.remove('active');
   // Restore quiz-specific elements
   document.querySelector('.countdown-container').style.display = '';
   document.getElementById('note-buttons').style.display = '';
@@ -184,10 +212,12 @@ function hideHeatmap() {
 }
 
 function toggleHeatmap() {
-  if (heatmapActive) {
-    hideHeatmap();
+  if (heatmapMode === null) {
+    showHeatmapView('retention');
+  } else if (heatmapMode === 'retention') {
+    showHeatmapView('speed');
   } else {
-    showHeatmap();
+    hideHeatmap();
   }
 }
 
@@ -239,7 +269,7 @@ function startCountdown() {
 }
 
 function startQuiz() {
-  if (heatmapActive) hideHeatmap();
+  if (heatmapMode) hideHeatmap();
   updateStats();
   quizActive = true;
   document.getElementById('start-btn').style.display = 'none';
@@ -261,6 +291,7 @@ function stopQuiz() {
   document.getElementById('stop-btn').style.display = 'none';
   document.getElementById('quiz-area').classList.remove('active');
   updateStats();
+  showHeatmapView('retention');
 }
 
 function getValidItemIds() {
@@ -334,6 +365,7 @@ function checkAnswer(userNote) {
     feedback.textContent = 'Incorrect — ' + currentNote;
     feedback.className = 'feedback incorrect';
     highlightCircle(currentString, currentFret, '#f44336');
+    adaptiveSelector.recordResponse(`${currentString}-${currentFret}`, responseTime, false);
   }
   showNoteText(currentString, currentFret);
   timeDisplay.textContent = responseTime + ' ms';
@@ -447,10 +479,63 @@ document.getElementById('naturals-only').addEventListener('change', (e) => {
   updateAccidentalButtons();
 });
 
+function getItemIdsForString(s) {
+  const items = [];
+  for (let f = 0; f < 13; f++) {
+    const note = getNoteAtPosition(s, f);
+    if (!naturalsOnly || naturalNotes.includes(note)) {
+      items.push(`${s}-${f}`);
+    }
+  }
+  return items;
+}
+
+function applyRecommendations() {
+  const allStrings = [0, 1, 2, 3, 4, 5];
+  const recs = adaptiveSelector.getStringRecommendations(allStrings, getItemIdsForString);
+
+  // Check if there's any data at all
+  const hasAnyData = recs.some(r => r.dueCount < r.totalCount);
+  if (!hasAnyData) {
+    // No data yet (first launch or total reset) — keep persisted selection
+    recommendedStrings = new Set();
+    updateStringToggles();
+    return;
+  }
+
+  // Check if all strings are equally due (e.g., long absence)
+  const maxDue = recs[0].dueCount;
+  const minDue = recs[recs.length - 1].dueCount;
+  if (maxDue === minDue) {
+    // All equal — no useful recommendation, keep persisted selection
+    recommendedStrings = new Set();
+    updateStringToggles();
+    return;
+  }
+
+  // Recommend strings with above-median due counts
+  const medianDue = recs[Math.floor(recs.length / 2)].dueCount;
+  recommendedStrings = new Set();
+  const newEnabled = new Set();
+  for (const r of recs) {
+    if (r.dueCount > medianDue) {
+      recommendedStrings.add(r.string);
+      newEnabled.add(r.string);
+    }
+  }
+  if (newEnabled.size > 0) {
+    enabledStrings = newEnabled;
+    saveEnabledStrings();
+  }
+  updateStringToggles();
+}
+
 // Initialize on load
 loadEnabledStrings();
+applyRecommendations();
 updateAccidentalButtons();
 updateStats();
+showHeatmapView('retention');
 
 // Register service worker for cache busting on iOS home screen
 if ('serviceWorker' in navigator) {

@@ -10,6 +10,12 @@ export const DEFAULT_CONFIG = {
   ewmaAlpha: 0.3,
   maxStoredTimes: 10,
   maxResponseTime: 9000,
+  // Forgetting model
+  initialStability: 4,       // hours — half-life after first correct answer
+  stabilityGrowthBase: 2.0,  // multiplier on each correct answer
+  stabilityDecayOnWrong: 0.3,// multiplier on wrong answer
+  recallThreshold: 0.5,      // P(recall) below this = "due"
+  speedBonusMax: 1.5,        // fast answers grow stability up to this extra factor
 };
 
 // ---------------------------------------------------------------------------
@@ -21,17 +27,72 @@ export function computeEwma(oldEwma, newTime, alpha) {
 }
 
 /**
+ * Predicted recall using half-life model: P = 2^(-t/S).
+ * At t = stability, P = 0.5. Returns null for unseen items.
+ */
+export function computeRecall(stabilityHours, elapsedHours) {
+  if (stabilityHours == null || elapsedHours == null) return null;
+  if (stabilityHours <= 0) return 0;
+  if (elapsedHours <= 0) return 1;
+  return Math.pow(2, -elapsedHours / stabilityHours);
+}
+
+/**
+ * Compute new stability after a correct answer.
+ * - First correct: initialStability.
+ * - Subsequent: grow by stabilityGrowthBase * speedFactor.
+ * - Self-correction: if fast answer after long gap, back-calculate
+ *   that true stability must be at least elapsedHours * 1.5.
+ */
+export function updateStability(oldStability, responseTimeMs, elapsedHours, cfg) {
+  if (oldStability == null) {
+    return cfg.initialStability;
+  }
+  // Speed factor: fast answers grow stability more (0.5 to speedBonusMax)
+  const range = cfg.maxResponseTime - cfg.minTime;
+  const clamped = Math.max(cfg.minTime, Math.min(responseTimeMs, cfg.maxResponseTime));
+  const t = range > 0 ? (cfg.maxResponseTime - clamped) / range : 0.5;
+  const speedFactor = 0.5 + t * (cfg.speedBonusMax - 0.5);
+
+  let newStability = oldStability * cfg.stabilityGrowthBase * speedFactor;
+
+  // Self-correction: fast answer after long gap means true half-life is long
+  if (elapsedHours > 0 && responseTimeMs < cfg.maxResponseTime * 0.5) {
+    newStability = Math.max(newStability, elapsedHours * 1.5);
+  }
+
+  return newStability;
+}
+
+/**
+ * Compute new stability after a wrong answer.
+ * Reduces stability but floors at initialStability.
+ */
+export function computeStabilityAfterWrong(oldStability, cfg) {
+  if (oldStability == null) return cfg.initialStability;
+  return Math.max(cfg.initialStability, oldStability * cfg.stabilityDecayOnWrong);
+}
+
+/**
  * Compute selection weight for an item.
  * - Unseen items get unseenBoost (high weight for exploration).
- * - Seen items get ewma / minTime (slower = heavier).
- * No extra multiplier for low-sample items — that caused a startup rut
- * where seen items outweighed truly unseen ones.
+ * - Seen items get ewma / minTime (slower = heavier),
+ *   scaled by recall factor (low recall = more weight).
  */
 export function computeWeight(stats, cfg) {
   if (!stats) {
     return cfg.unseenBoost;
   }
-  return Math.max(stats.ewma, cfg.minTime) / cfg.minTime;
+  const speedWeight = Math.max(stats.ewma, cfg.minTime) / cfg.minTime;
+  // If we have stability data, factor in recall
+  if (stats.stability != null && stats.lastCorrectAt != null) {
+    const elapsedHours = (Date.now() - stats.lastCorrectAt) / 3600000;
+    const recall = computeRecall(stats.stability, elapsedHours);
+    // recallWeight: 1.0 (perfect recall) to 2.0 (fully forgotten)
+    const recallWeight = recall != null ? 1 + (1 - recall) : 1;
+    return speedWeight * recallWeight;
+  }
+  return speedWeight;
 }
 
 /**
@@ -60,29 +121,63 @@ export function createAdaptiveSelector(
   cfg = DEFAULT_CONFIG,
   randomFn = Math.random,
 ) {
-  function recordResponse(itemId, timeMs) {
+  function recordResponse(itemId, timeMs, correct = true) {
     const clamped = Math.min(timeMs, cfg.maxResponseTime);
     const existing = storage.getStats(itemId);
     const now = Date.now();
 
-    if (existing) {
-      const newEwma = computeEwma(existing.ewma, clamped, cfg.ewmaAlpha);
-      const newTimes = [...existing.recentTimes, clamped].slice(
-        -cfg.maxStoredTimes,
-      );
-      storage.saveStats(itemId, {
-        recentTimes: newTimes,
-        ewma: newEwma,
-        sampleCount: existing.sampleCount + 1,
-        lastSeen: now,
-      });
+    if (correct) {
+      const elapsedHours = existing && existing.lastCorrectAt
+        ? (now - existing.lastCorrectAt) / 3600000
+        : null;
+      if (existing) {
+        const newEwma = computeEwma(existing.ewma, clamped, cfg.ewmaAlpha);
+        const newTimes = [...existing.recentTimes, clamped].slice(
+          -cfg.maxStoredTimes,
+        );
+        const newStability = updateStability(
+          existing.stability ?? null, clamped, elapsedHours, cfg,
+        );
+        storage.saveStats(itemId, {
+          recentTimes: newTimes,
+          ewma: newEwma,
+          sampleCount: existing.sampleCount + 1,
+          lastSeen: now,
+          stability: newStability,
+          lastCorrectAt: now,
+        });
+      } else {
+        storage.saveStats(itemId, {
+          recentTimes: [clamped],
+          ewma: clamped,
+          sampleCount: 1,
+          lastSeen: now,
+          stability: cfg.initialStability,
+          lastCorrectAt: now,
+        });
+      }
     } else {
-      storage.saveStats(itemId, {
-        recentTimes: [clamped],
-        ewma: clamped,
-        sampleCount: 1,
-        lastSeen: now,
-      });
+      // Wrong answer: reduce stability, update lastSeen, don't touch EWMA
+      if (existing) {
+        const newStability = computeStabilityAfterWrong(
+          existing.stability ?? null, cfg,
+        );
+        storage.saveStats(itemId, {
+          ...existing,
+          lastSeen: now,
+          stability: newStability,
+        });
+      } else {
+        // First interaction is wrong: create minimal stats
+        storage.saveStats(itemId, {
+          recentTimes: [],
+          ewma: cfg.maxResponseTime,
+          sampleCount: 0,
+          lastSeen: now,
+          stability: cfg.initialStability,
+          lastCorrectAt: null,
+        });
+      }
     }
   }
 
@@ -113,7 +208,37 @@ export function createAdaptiveSelector(
     return selected;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight };
+  function getRecall(itemId) {
+    const stats = storage.getStats(itemId);
+    if (!stats || stats.stability == null || stats.lastCorrectAt == null) {
+      return null;
+    }
+    const elapsedHours = (Date.now() - stats.lastCorrectAt) / 3600000;
+    return computeRecall(stats.stability, elapsedHours);
+  }
+
+  /**
+   * Recommend strings to review. Returns array of { string, dueCount, totalCount }
+   * sorted by dueCount descending. getItemIds(stringIndex) should return
+   * the item IDs for that string.
+   */
+  function getStringRecommendations(stringIndices, getItemIds) {
+    const results = stringIndices.map((s) => {
+      const items = getItemIds(s);
+      let dueCount = 0;
+      for (const id of items) {
+        const recall = getRecall(id);
+        if (recall === null || recall < cfg.recallThreshold) {
+          dueCount++;
+        }
+      }
+      return { string: s, dueCount, totalCount: items.length };
+    });
+    results.sort((a, b) => b.dueCount - a.dueCount);
+    return results;
+  }
+
+  return { recordResponse, selectNext, getStats, getWeight, getRecall, getStringRecommendations };
 }
 
 // ---------------------------------------------------------------------------
