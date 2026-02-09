@@ -31,7 +31,7 @@ const html = `<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <div class="version">v0.9</div>
+  <div class="version">v1.0</div>
   <h1>Fretboard Trainer</h1>
 
   <div class="fretboard-wrapper">
@@ -72,14 +72,22 @@ const html = `<!DOCTYPE html>
   <div class="quiz-controls">
     <div>
       <button id="start-btn" onclick="startQuiz()">Start Quiz</button>
-      <button id="heatmap-btn" onclick="toggleHeatmap()">Show Heatmap</button>
+      <button id="heatmap-btn" onclick="toggleHeatmap()">Show Retention</button>
       <button id="stop-btn" onclick="stopQuiz()" style="display: none;">Stop Quiz</button>
       <span id="stats" class="stats"></span>
     </div>
   </div>
 
   <div class="quiz-area" id="quiz-area">
-    <div class="heatmap-legend" id="heatmap-legend">
+    <div class="heatmap-legend" id="retention-legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&gt; 80%</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>60\u201380%</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>40\u201360%</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>20\u201340%</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&lt; 20%</div>
+    </div>
+    <div class="heatmap-legend" id="speed-legend">
       <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
       <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; 1.5s</div>
       <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>1.5\u20133s</div>

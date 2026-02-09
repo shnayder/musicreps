@@ -58,6 +58,12 @@ h1 {
   color: white;
   border-color: #4CAF50;
 }
+.string-toggle.recommended {
+  box-shadow: 0 0 0 2px #FF9800;
+}
+.string-toggle.active.recommended {
+  border-color: #FF9800;
+}
 .fretboard-container {
   position: relative;
   flex: 1;
@@ -254,7 +260,7 @@ button {
   </style>
 </head>
 <body>
-  <div class="version">v0.9</div>
+  <div class="version">v1.0</div>
   <h1>Fretboard Trainer</h1>
 
   <div class="fretboard-wrapper">
@@ -1953,14 +1959,22 @@ button {
   <div class="quiz-controls">
     <div>
       <button id="start-btn" onclick="startQuiz()">Start Quiz</button>
-      <button id="heatmap-btn" onclick="toggleHeatmap()">Show Heatmap</button>
+      <button id="heatmap-btn" onclick="toggleHeatmap()">Show Retention</button>
       <button id="stop-btn" onclick="stopQuiz()" style="display: none;">Stop Quiz</button>
       <span id="stats" class="stats"></span>
     </div>
   </div>
 
   <div class="quiz-area" id="quiz-area">
-    <div class="heatmap-legend" id="heatmap-legend">
+    <div class="heatmap-legend" id="retention-legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&gt; 80%</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>60–80%</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>40–60%</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>20–40%</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&lt; 20%</div>
+    </div>
+    <div class="heatmap-legend" id="speed-legend">
       <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
       <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; 1.5s</div>
       <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>1.5–3s</div>
@@ -2003,6 +2017,12 @@ const DEFAULT_CONFIG = {
   ewmaAlpha: 0.3,
   maxStoredTimes: 10,
   maxResponseTime: 9000,
+  // Forgetting model
+  initialStability: 4,       // hours — half-life after first correct answer
+  stabilityGrowthBase: 2.0,  // multiplier on each correct answer
+  stabilityDecayOnWrong: 0.3,// multiplier on wrong answer
+  recallThreshold: 0.5,      // P(recall) below this = "due"
+  speedBonusMax: 1.5,        // fast answers grow stability up to this extra factor
 };
 
 // ---------------------------------------------------------------------------
@@ -2014,17 +2034,72 @@ function computeEwma(oldEwma, newTime, alpha) {
 }
 
 /**
+ * Predicted recall using half-life model: P = 2^(-t/S).
+ * At t = stability, P = 0.5. Returns null for unseen items.
+ */
+function computeRecall(stabilityHours, elapsedHours) {
+  if (stabilityHours == null || elapsedHours == null) return null;
+  if (stabilityHours <= 0) return 0;
+  if (elapsedHours <= 0) return 1;
+  return Math.pow(2, -elapsedHours / stabilityHours);
+}
+
+/**
+ * Compute new stability after a correct answer.
+ * - First correct: initialStability.
+ * - Subsequent: grow by stabilityGrowthBase * speedFactor.
+ * - Self-correction: if fast answer after long gap, back-calculate
+ *   that true stability must be at least elapsedHours * 1.5.
+ */
+function updateStability(oldStability, responseTimeMs, elapsedHours, cfg) {
+  if (oldStability == null) {
+    return cfg.initialStability;
+  }
+  // Speed factor: fast answers grow stability more (0.5 to speedBonusMax)
+  const range = cfg.maxResponseTime - cfg.minTime;
+  const clamped = Math.max(cfg.minTime, Math.min(responseTimeMs, cfg.maxResponseTime));
+  const t = range > 0 ? (cfg.maxResponseTime - clamped) / range : 0.5;
+  const speedFactor = 0.5 + t * (cfg.speedBonusMax - 0.5);
+
+  let newStability = oldStability * cfg.stabilityGrowthBase * speedFactor;
+
+  // Self-correction: fast answer after long gap means true half-life is long
+  if (elapsedHours > 0 && responseTimeMs < cfg.maxResponseTime * 0.5) {
+    newStability = Math.max(newStability, elapsedHours * 1.5);
+  }
+
+  return newStability;
+}
+
+/**
+ * Compute new stability after a wrong answer.
+ * Reduces stability but floors at initialStability.
+ */
+function computeStabilityAfterWrong(oldStability, cfg) {
+  if (oldStability == null) return cfg.initialStability;
+  return Math.max(cfg.initialStability, oldStability * cfg.stabilityDecayOnWrong);
+}
+
+/**
  * Compute selection weight for an item.
  * - Unseen items get unseenBoost (high weight for exploration).
- * - Seen items get ewma / minTime (slower = heavier).
- * No extra multiplier for low-sample items — that caused a startup rut
- * where seen items outweighed truly unseen ones.
+ * - Seen items get ewma / minTime (slower = heavier),
+ *   scaled by recall factor (low recall = more weight).
  */
 function computeWeight(stats, cfg) {
   if (!stats) {
     return cfg.unseenBoost;
   }
-  return Math.max(stats.ewma, cfg.minTime) / cfg.minTime;
+  const speedWeight = Math.max(stats.ewma, cfg.minTime) / cfg.minTime;
+  // If we have stability data, factor in recall
+  if (stats.stability != null && stats.lastCorrectAt != null) {
+    const elapsedHours = (Date.now() - stats.lastCorrectAt) / 3600000;
+    const recall = computeRecall(stats.stability, elapsedHours);
+    // recallWeight: 1.0 (perfect recall) to 2.0 (fully forgotten)
+    const recallWeight = recall != null ? 1 + (1 - recall) : 1;
+    return speedWeight * recallWeight;
+  }
+  return speedWeight;
 }
 
 /**
@@ -2053,29 +2128,63 @@ function createAdaptiveSelector(
   cfg = DEFAULT_CONFIG,
   randomFn = Math.random,
 ) {
-  function recordResponse(itemId, timeMs) {
+  function recordResponse(itemId, timeMs, correct = true) {
     const clamped = Math.min(timeMs, cfg.maxResponseTime);
     const existing = storage.getStats(itemId);
     const now = Date.now();
 
-    if (existing) {
-      const newEwma = computeEwma(existing.ewma, clamped, cfg.ewmaAlpha);
-      const newTimes = [...existing.recentTimes, clamped].slice(
-        -cfg.maxStoredTimes,
-      );
-      storage.saveStats(itemId, {
-        recentTimes: newTimes,
-        ewma: newEwma,
-        sampleCount: existing.sampleCount + 1,
-        lastSeen: now,
-      });
+    if (correct) {
+      const elapsedHours = existing && existing.lastCorrectAt
+        ? (now - existing.lastCorrectAt) / 3600000
+        : null;
+      if (existing) {
+        const newEwma = computeEwma(existing.ewma, clamped, cfg.ewmaAlpha);
+        const newTimes = [...existing.recentTimes, clamped].slice(
+          -cfg.maxStoredTimes,
+        );
+        const newStability = updateStability(
+          existing.stability ?? null, clamped, elapsedHours, cfg,
+        );
+        storage.saveStats(itemId, {
+          recentTimes: newTimes,
+          ewma: newEwma,
+          sampleCount: existing.sampleCount + 1,
+          lastSeen: now,
+          stability: newStability,
+          lastCorrectAt: now,
+        });
+      } else {
+        storage.saveStats(itemId, {
+          recentTimes: [clamped],
+          ewma: clamped,
+          sampleCount: 1,
+          lastSeen: now,
+          stability: cfg.initialStability,
+          lastCorrectAt: now,
+        });
+      }
     } else {
-      storage.saveStats(itemId, {
-        recentTimes: [clamped],
-        ewma: clamped,
-        sampleCount: 1,
-        lastSeen: now,
-      });
+      // Wrong answer: reduce stability, update lastSeen, don't touch EWMA
+      if (existing) {
+        const newStability = computeStabilityAfterWrong(
+          existing.stability ?? null, cfg,
+        );
+        storage.saveStats(itemId, {
+          ...existing,
+          lastSeen: now,
+          stability: newStability,
+        });
+      } else {
+        // First interaction is wrong: create minimal stats
+        storage.saveStats(itemId, {
+          recentTimes: [],
+          ewma: cfg.maxResponseTime,
+          sampleCount: 0,
+          lastSeen: now,
+          stability: cfg.initialStability,
+          lastCorrectAt: null,
+        });
+      }
     }
   }
 
@@ -2106,7 +2215,37 @@ function createAdaptiveSelector(
     return selected;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight };
+  function getRecall(itemId) {
+    const stats = storage.getStats(itemId);
+    if (!stats || stats.stability == null || stats.lastCorrectAt == null) {
+      return null;
+    }
+    const elapsedHours = (Date.now() - stats.lastCorrectAt) / 3600000;
+    return computeRecall(stats.stability, elapsedHours);
+  }
+
+  /**
+   * Recommend strings to review. Returns array of { string, dueCount, totalCount }
+   * sorted by dueCount descending. getItemIds(stringIndex) should return
+   * the item IDs for that string.
+   */
+  function getStringRecommendations(stringIndices, getItemIds) {
+    const results = stringIndices.map((s) => {
+      const items = getItemIds(s);
+      let dueCount = 0;
+      for (const id of items) {
+        const recall = getRecall(id);
+        if (recall === null || recall < cfg.recallThreshold) {
+          dueCount++;
+        }
+      }
+      return { string: s, dueCount, totalCount: items.length };
+    });
+    results.sort((a, b) => b.dueCount - a.dueCount);
+    return results;
+  }
+
+  return { recordResponse, selectNext, getStats, getWeight, getRecall, getStringRecommendations };
 }
 
 // ---------------------------------------------------------------------------
@@ -2239,10 +2378,13 @@ function saveEnabledStrings() {
   localStorage.setItem(STRINGS_KEY, JSON.stringify([...enabledStrings]));
 }
 
+let recommendedStrings = new Set();
+
 function updateStringToggles() {
   document.querySelectorAll('.string-toggle').forEach(btn => {
     const s = parseInt(btn.dataset.string);
     btn.classList.toggle('active', enabledStrings.has(s));
+    btn.classList.toggle('recommended', recommendedStrings.has(s));
   });
 }
 
@@ -2312,7 +2454,7 @@ function getTimeColor(ms) {
   return 'hsl(0, 70%, 40%)';
 }
 
-function getHeatmapColor(ms) {
+function getSpeedHeatmapColor(ms) {
   if (ms === null) return '#ddd';
   if (ms < 1500) return 'hsl(120, 60%, 65%)';
   if (ms < 3000) return 'hsl(80, 60%, 65%)';
@@ -2321,13 +2463,22 @@ function getHeatmapColor(ms) {
   return 'hsl(0, 60%, 65%)';
 }
 
-let heatmapActive = false;
+function getRetentionColor(recall) {
+  if (recall === null) return '#ddd';
+  if (recall > 0.8) return 'hsl(120, 60%, 65%)';
+  if (recall > 0.6) return 'hsl(80, 60%, 65%)';
+  if (recall > 0.4) return 'hsl(50, 60%, 65%)';
+  if (recall > 0.2) return 'hsl(30, 60%, 65%)';
+  return 'hsl(0, 60%, 65%)';
+}
 
-function showHeatmap() {
-  heatmapActive = true;
-  document.getElementById('heatmap-btn').textContent = 'Hide Heatmap';
+// Heatmap modes: 'retention', 'speed', or null (hidden)
+let heatmapMode = null;
+
+function showHeatmapView(mode) {
+  heatmapMode = mode;
+  const btn = document.getElementById('heatmap-btn');
   document.getElementById('quiz-area').classList.add('active');
-  document.getElementById('heatmap-legend').classList.add('active');
   // Hide quiz-specific elements
   document.querySelector('.countdown-container').style.display = 'none';
   document.getElementById('note-buttons').style.display = 'none';
@@ -2335,23 +2486,39 @@ function showHeatmap() {
   document.getElementById('time-display').style.display = 'none';
   document.getElementById('hint').style.display = 'none';
 
-  for (let s = 0; s <= 5; s++) {
-    for (let f = 0; f < 13; f++) {
-      const stats = adaptiveSelector.getStats(`${s}-${f}`);
-      const ewma = stats ? stats.ewma : null;
-      const color = getHeatmapColor(ewma);
-      highlightCircle(s, f, color);
-      showNoteText(s, f);
+  // Show appropriate legend
+  document.getElementById('retention-legend').classList.toggle('active', mode === 'retention');
+  document.getElementById('speed-legend').classList.toggle('active', mode === 'speed');
+
+  if (mode === 'retention') {
+    btn.textContent = 'Show Speed';
+    for (let s = 0; s <= 5; s++) {
+      for (let f = 0; f < 13; f++) {
+        const recall = adaptiveSelector.getRecall(`${s}-${f}`);
+        highlightCircle(s, f, getRetentionColor(recall));
+        showNoteText(s, f);
+      }
+    }
+  } else {
+    btn.textContent = 'Hide Heatmap';
+    for (let s = 0; s <= 5; s++) {
+      for (let f = 0; f < 13; f++) {
+        const stats = adaptiveSelector.getStats(`${s}-${f}`);
+        const ewma = stats ? stats.ewma : null;
+        highlightCircle(s, f, getSpeedHeatmapColor(ewma));
+        showNoteText(s, f);
+      }
     }
   }
 }
 
 function hideHeatmap() {
-  heatmapActive = false;
-  document.getElementById('heatmap-btn').textContent = 'Show Heatmap';
+  heatmapMode = null;
+  document.getElementById('heatmap-btn').textContent = 'Show Retention';
   clearAll();
   document.getElementById('quiz-area').classList.remove('active');
-  document.getElementById('heatmap-legend').classList.remove('active');
+  document.getElementById('retention-legend').classList.remove('active');
+  document.getElementById('speed-legend').classList.remove('active');
   // Restore quiz-specific elements
   document.querySelector('.countdown-container').style.display = '';
   document.getElementById('note-buttons').style.display = '';
@@ -2361,10 +2528,12 @@ function hideHeatmap() {
 }
 
 function toggleHeatmap() {
-  if (heatmapActive) {
-    hideHeatmap();
+  if (heatmapMode === null) {
+    showHeatmapView('retention');
+  } else if (heatmapMode === 'retention') {
+    showHeatmapView('speed');
   } else {
-    showHeatmap();
+    hideHeatmap();
   }
 }
 
@@ -2416,7 +2585,7 @@ function startCountdown() {
 }
 
 function startQuiz() {
-  if (heatmapActive) hideHeatmap();
+  if (heatmapMode) hideHeatmap();
   updateStats();
   quizActive = true;
   document.getElementById('start-btn').style.display = 'none';
@@ -2438,6 +2607,7 @@ function stopQuiz() {
   document.getElementById('stop-btn').style.display = 'none';
   document.getElementById('quiz-area').classList.remove('active');
   updateStats();
+  showHeatmapView('retention');
 }
 
 function getValidItemIds() {
@@ -2511,6 +2681,7 @@ function checkAnswer(userNote) {
     feedback.textContent = 'Incorrect — ' + currentNote;
     feedback.className = 'feedback incorrect';
     highlightCircle(currentString, currentFret, '#f44336');
+    adaptiveSelector.recordResponse(`${currentString}-${currentFret}`, responseTime, false);
   }
   showNoteText(currentString, currentFret);
   timeDisplay.textContent = responseTime + ' ms';
@@ -2624,10 +2795,63 @@ document.getElementById('naturals-only').addEventListener('change', (e) => {
   updateAccidentalButtons();
 });
 
+function getItemIdsForString(s) {
+  const items = [];
+  for (let f = 0; f < 13; f++) {
+    const note = getNoteAtPosition(s, f);
+    if (!naturalsOnly || naturalNotes.includes(note)) {
+      items.push(`${s}-${f}`);
+    }
+  }
+  return items;
+}
+
+function applyRecommendations() {
+  const allStrings = [0, 1, 2, 3, 4, 5];
+  const recs = adaptiveSelector.getStringRecommendations(allStrings, getItemIdsForString);
+
+  // Check if there's any data at all
+  const hasAnyData = recs.some(r => r.dueCount < r.totalCount);
+  if (!hasAnyData) {
+    // No data yet (first launch or total reset) — keep persisted selection
+    recommendedStrings = new Set();
+    updateStringToggles();
+    return;
+  }
+
+  // Check if all strings are equally due (e.g., long absence)
+  const maxDue = recs[0].dueCount;
+  const minDue = recs[recs.length - 1].dueCount;
+  if (maxDue === minDue) {
+    // All equal — no useful recommendation, keep persisted selection
+    recommendedStrings = new Set();
+    updateStringToggles();
+    return;
+  }
+
+  // Recommend strings with above-median due counts
+  const medianDue = recs[Math.floor(recs.length / 2)].dueCount;
+  recommendedStrings = new Set();
+  const newEnabled = new Set();
+  for (const r of recs) {
+    if (r.dueCount > medianDue) {
+      recommendedStrings.add(r.string);
+      newEnabled.add(r.string);
+    }
+  }
+  if (newEnabled.size > 0) {
+    enabledStrings = newEnabled;
+    saveEnabledStrings();
+  }
+  updateStringToggles();
+}
+
 // Initialize on load
 loadEnabledStrings();
+applyRecommendations();
 updateAccidentalButtons();
 updateStats();
+showHeatmapView('retention');
 
 // Register service worker for cache busting on iOS home screen
 if ('serviceWorker' in navigator) {
