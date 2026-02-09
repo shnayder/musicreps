@@ -6,254 +6,255 @@
   <title>Fretboard Trainer</title>
   <style>
     * { -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      max-width: 1400px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-    h1 {
-      text-align: center;
-    }
-    .version {
-      position: absolute;
-      top: 0.5rem;
-      right: 0.5rem;
-      font-size: 0.75rem;
-      color: #aaa;
-    }
-    .fretboard-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-    }
-    .fretboard-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      width: 100%;
-      justify-content: center;
-    }
-    .string-toggles {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .string-toggle {
-      width: 28px;
-      height: 28px;
-      border: 1px solid #999;
-      border-radius: 4px;
-      background: #f5f5f5;
-      color: #999;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
-      padding: 0;
-      margin: 0;
-    }
-    .string-toggle.active {
-      background: #4CAF50;
-      color: white;
-      border-color: #4CAF50;
-    }
-    .fretboard-container {
-      position: relative;
-      flex: 1;
-      min-width: 0;
-      max-width: 1200px;
-    }
-    .fretboard {
-      width: 100%;
-      height: auto;
-      display: block;
-      background: #fff;
-      touch-action: manipulation;
-    }
-    .fret-numbers {
-      position: relative;
-      height: 1.5rem;
-      width: 100%;
-    }
-    .fret-number {
-      position: absolute;
-      transform: translateX(-50%);
-      font-size: 0.9rem;
-      color: #666;
-    }
-    .quiz-controls {
-      text-align: center;
-      margin: 1rem 0;
-    }
-    .settings-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      justify-content: center;
-      margin-bottom: 0.5rem;
-    }
-    button {
-      padding: 0.5rem 1.5rem;
-      font-size: 1rem;
-      cursor: pointer;
-      margin: 0 0.5rem;
-    }
-    .quiz-area {
-      display: none;
-      text-align: center;
-      margin: 1rem 0;
-    }
-    .quiz-area.active {
-      display: block;
-    }
-    .countdown-container {
-      width: 200px;
-      height: 8px;
-      background: #eee;
-      margin: 1rem auto;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .countdown-bar {
-      height: 100%;
-      background: #4CAF50;
-      transition: width 0.1s linear;
-    }
-    .countdown-bar.expired {
-      background: #f44336;
-    }
-    .note-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      gap: 0.25rem;
-      margin: 0.5rem auto 0.5rem 0;
-      max-width: 220px;
-    }
-    .note-btn {
-      min-width: 50px;
-      height: 48px;
-      font-size: 1.15rem;
-      font-weight: 500;
-      border: 2px solid #666;
-      border-radius: 8px;
-      background: #fff;
-      cursor: pointer;
-      padding: 0 0.5rem;
-    }
-    .note-btn.accidental {
-      background: #e8e8e8;
-    }
-    .note-btn:active {
-      background: #d0d0d0;
-    }
-    .note-btn:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-    .note-btn.hidden {
-      display: none;
-    }
-    .feedback {
-      font-size: 1.5rem;
-      margin: 1rem 0;
-      min-height: 2rem;
-    }
-    .correct {
-      color: green;
-    }
-    .incorrect {
-      color: red;
-    }
-    .time-display {
-      color: #666;
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-    }
-    .hint {
-      color: #666;
-      font-size: 1rem;
-      margin-top: 1rem;
-    }
-    .stats {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #666;
-    }
-    .heatmap-legend {
-      display: none;
-      justify-content: center;
-      gap: 0.8rem;
-      flex-wrap: wrap;
-      margin: 1rem 0;
-    }
-    .heatmap-legend.active {
-      display: flex;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.85rem;
-      color: #666;
-    }
-    .legend-swatch {
-      width: 16px;
-      height: 16px;
-      border-radius: 3px;
-      border: 1px solid #999;
-    }
-    .setting-group {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.9rem;
-      color: #666;
-      cursor: pointer;
-    }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  max-width: 1400px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+h1 {
+  text-align: center;
+}
+.version {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.75rem;
+  color: #aaa;
+}
+.fretboard-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.fretboard-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+.string-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.string-toggle {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #999;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+.string-toggle.active {
+  background: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+.fretboard-container {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  max-width: 1200px;
+}
+.fretboard {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #fff;
+  touch-action: manipulation;
+}
+.fret-numbers {
+  position: relative;
+  height: 1.5rem;
+  width: 100%;
+}
+.fret-number {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.9rem;
+  color: #666;
+}
+.quiz-controls {
+  text-align: center;
+  margin: 1rem 0;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+button {
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin: 0 0.5rem;
+}
+.quiz-area {
+  display: none;
+  text-align: center;
+  margin: 1rem 0;
+}
+.quiz-area.active {
+  display: block;
+}
+.countdown-container {
+  width: 200px;
+  height: 8px;
+  background: #eee;
+  margin: 1rem auto;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.countdown-bar {
+  height: 100%;
+  background: #4CAF50;
+  transition: width 0.1s linear;
+}
+.countdown-bar.expired {
+  background: #f44336;
+}
+.note-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.25rem;
+  margin: 0.5rem auto 0.5rem 0;
+  max-width: 220px;
+}
+.note-btn {
+  min-width: 50px;
+  height: 48px;
+  font-size: 1.15rem;
+  font-weight: 500;
+  border: 2px solid #666;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+.note-btn.accidental {
+  background: #e8e8e8;
+}
+.note-btn:active {
+  background: #d0d0d0;
+}
+.note-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.note-btn.hidden {
+  display: none;
+}
+.feedback {
+  font-size: 1.5rem;
+  margin: 1rem 0;
+  min-height: 2rem;
+}
+.correct {
+  color: green;
+}
+.incorrect {
+  color: red;
+}
+.time-display {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+.hint {
+  color: #666;
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+.stats {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+.heatmap-legend {
+  display: none;
+  justify-content: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+.heatmap-legend.active {
+  display: flex;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+.legend-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid #999;
+}
+.setting-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: #666;
+  cursor: pointer;
+}
 
-    /* Mobile layout */
-    @media (max-width: 599px) {
-      body {
-        margin: 0.5rem auto;
-        padding: 0 2px;
-      }
+/* Mobile layout */
+@media (max-width: 599px) {
+  body {
+    margin: 0.5rem auto;
+    padding: 0 2px;
+  }
 
-      .fretboard-wrapper {
-        align-items: stretch;
-      }
+  .fretboard-wrapper {
+    align-items: stretch;
+  }
 
-      .fretboard-row {
-        flex-direction: column;
-        gap: 0.5rem;
-        width: 100%;
-      }
+  .fretboard-row {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
 
-      .fretboard-container {
-        order: 1;
-        width: 100%;
-        max-width: none;
-      }
-      .fret-numbers { order: 2; }
+  .fretboard-container {
+    order: 1;
+    width: 100%;
+    max-width: none;
+  }
+  .fret-numbers { order: 2; }
 
-      .settings-row {
-        order: 3;
-      }
+  .settings-row {
+    order: 3;
+  }
 
-      .string-toggles {
-        flex-direction: row;
-        padding: 0.5rem 0;
-        justify-content: center;
-      }
+  .string-toggles {
+    flex-direction: row;
+    padding: 0.5rem 0;
+    justify-content: center;
+  }
 
-      /* Prevent iOS zoom on input focus */
-      input, button { font-size: 16px; }
-    }
+  /* Prevent iOS zoom on input focus */
+  input, button { font-size: 16px; }
+}
+
   </style>
 </head>
 <body>
-  <div class="version">v0.6</div>
+  <div class="version">v0.9</div>
   <h1>Fretboard Trainer</h1>
 
   <div class="fretboard-wrapper">
@@ -1990,575 +1991,649 @@
   </div>
 
   <script>
-    const TARGET_TIME = 3000;
+// Adaptive question selector: prioritizes items the user is slower on,
+// with exploration boost for unseen items.
+//
+// This is the single source of truth. Tests import it as an ES module.
+// main.ts reads it at build time and strips "export" for browser inlining.
 
-    // ============ Adaptive Selector (inlined from src/adaptive/adaptive.ts) ============
-    const ADAPTIVE_CONFIG = {
-      minTime: 1000,
-      unseenBoost: 3,
-      minSamples: 3,
-      ewmaAlpha: 0.3,
-      maxStoredTimes: 10,
-    };
+const DEFAULT_CONFIG = {
+  minTime: 1000,
+  unseenBoost: 3,
+  ewmaAlpha: 0.3,
+  maxStoredTimes: 10,
+  maxResponseTime: 9000,
+};
 
-    function createAdaptiveSelector(namespace) {
-      const cfg = ADAPTIVE_CONFIG;
-      const statsKey = (itemId) => `adaptive_${namespace}_${itemId}`;
-      const lastSelectedKey = () => `adaptive_${namespace}_lastSelected`;
+// ---------------------------------------------------------------------------
+// Pure functions
+// ---------------------------------------------------------------------------
 
-      // In-memory cache for stats (populated once at startup)
-      const statsCache = {};
+function computeEwma(oldEwma, newTime, alpha) {
+  return alpha * newTime + (1 - alpha) * oldEwma;
+}
 
-      function loadAllStats() {
-        for (let s = 0; s <= 5; s++) {
-          for (let f = 0; f < 13; f++) {
-            const itemId = `${s}-${f}`;
-            const key = statsKey(itemId);
-            const data = localStorage.getItem(key);
-            if (data) {
-              try {
-                statsCache[key] = JSON.parse(data);
-              } catch {}
-            }
-          }
-        }
-      }
+/**
+ * Compute selection weight for an item.
+ * - Unseen items get unseenBoost (high weight for exploration).
+ * - Seen items get ewma / minTime (slower = heavier).
+ * No extra multiplier for low-sample items — that caused a startup rut
+ * where seen items outweighed truly unseen ones.
+ */
+function computeWeight(stats, cfg) {
+  if (!stats) {
+    return cfg.unseenBoost;
+  }
+  return Math.max(stats.ewma, cfg.minTime) / cfg.minTime;
+}
 
-      function getStats(itemId) {
-        return statsCache[statsKey(itemId)] || null;
-      }
+/**
+ * Weighted random selection. rand should be in [0, 1).
+ * Injected for deterministic testing.
+ */
+function selectWeighted(items, weights, rand) {
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+  if (totalWeight === 0) {
+    return items[Math.floor(rand * items.length)];
+  }
+  let remaining = rand * totalWeight;
+  for (let i = 0; i < items.length; i++) {
+    remaining -= weights[i];
+    if (remaining <= 0) return items[i];
+  }
+  return items[items.length - 1];
+}
 
-      function saveStats(itemId, stats) {
-        const key = statsKey(itemId);
-        statsCache[key] = stats;
-        localStorage.setItem(key, JSON.stringify(stats));
-      }
+// ---------------------------------------------------------------------------
+// Selector factory (storage-injected — works with localStorage or Map)
+// ---------------------------------------------------------------------------
 
-      function getLastSelected() {
-        return localStorage.getItem(lastSelectedKey());
-      }
+function createAdaptiveSelector(
+  storage,
+  cfg = DEFAULT_CONFIG,
+  randomFn = Math.random,
+) {
+  function recordResponse(itemId, timeMs) {
+    const clamped = Math.min(timeMs, cfg.maxResponseTime);
+    const existing = storage.getStats(itemId);
+    const now = Date.now();
 
-      function setLastSelected(itemId) {
-        localStorage.setItem(lastSelectedKey(), itemId);
-      }
+    if (existing) {
+      const newEwma = computeEwma(existing.ewma, clamped, cfg.ewmaAlpha);
+      const newTimes = [...existing.recentTimes, clamped].slice(
+        -cfg.maxStoredTimes,
+      );
+      storage.saveStats(itemId, {
+        recentTimes: newTimes,
+        ewma: newEwma,
+        sampleCount: existing.sampleCount + 1,
+        lastSeen: now,
+      });
+    } else {
+      storage.saveStats(itemId, {
+        recentTimes: [clamped],
+        ewma: clamped,
+        sampleCount: 1,
+        lastSeen: now,
+      });
+    }
+  }
 
-      function recordResponse(itemId, timeMs) {
-        const existing = getStats(itemId);
-        const now = Date.now();
+  function getWeight(itemId) {
+    return computeWeight(storage.getStats(itemId), cfg);
+  }
 
-        if (existing) {
-          const newEwma = cfg.ewmaAlpha * timeMs + (1 - cfg.ewmaAlpha) * existing.ewma;
-          const newTimes = [...existing.recentTimes, timeMs].slice(-cfg.maxStoredTimes);
-          saveStats(itemId, {
-            recentTimes: newTimes,
-            ewma: newEwma,
-            sampleCount: existing.sampleCount + 1,
-            lastSeen: now,
-          });
-        } else {
-          saveStats(itemId, {
-            recentTimes: [timeMs],
-            ewma: timeMs,
-            sampleCount: 1,
-            lastSeen: now,
-          });
-        }
-      }
+  function getStats(itemId) {
+    return storage.getStats(itemId);
+  }
 
-      function getWeight(itemId) {
-        const stats = getStats(itemId);
-        if (!stats) {
-          return cfg.unseenBoost;
-        }
-        const baseWeight = Math.max(stats.ewma, cfg.minTime) / cfg.minTime;
-        const sampleMultiplier = stats.sampleCount < cfg.minSamples ? cfg.unseenBoost : 1;
-        return baseWeight * sampleMultiplier;
-      }
-
-      function selectNext(validItems) {
-        if (validItems.length === 0) {
-          throw new Error("validItems cannot be empty");
-        }
-        if (validItems.length === 1) {
-          setLastSelected(validItems[0]);
-          return validItems[0];
-        }
-
-        const lastSelected = getLastSelected();
-        const weights = validItems.map((id) => {
-          const weight = getWeight(id);
-          return id === lastSelected ? 0 : weight;
-        });
-
-        const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-        if (totalWeight === 0) {
-          const idx = Math.floor(Math.random() * validItems.length);
-          const selected = validItems[idx];
-          setLastSelected(selected);
-          return selected;
-        }
-
-        let random = Math.random() * totalWeight;
-        for (let i = 0; i < validItems.length; i++) {
-          random -= weights[i];
-          if (random <= 0) {
-            setLastSelected(validItems[i]);
-            return validItems[i];
-          }
-        }
-
-        const last = validItems[validItems.length - 1];
-        setLastSelected(last);
-        return last;
-      }
-
-      return { recordResponse, selectNext, getStats, getWeight, loadAllStats };
+  function selectNext(validItems) {
+    if (validItems.length === 0) {
+      throw new Error("validItems cannot be empty");
+    }
+    if (validItems.length === 1) {
+      storage.setLastSelected(validItems[0]);
+      return validItems[0];
     }
 
-    const adaptiveSelector = createAdaptiveSelector('fretboard');
-    adaptiveSelector.loadAllStats();
-    // ============ End Adaptive Selector ============
+    const lastSelected = storage.getLastSelected();
+    const weights = validItems.map((id) =>
+      id === lastSelected ? 0 : getWeight(id),
+    );
 
-    // String tuning (high E to low E, top to bottom visually)
-    const strings = ['E', 'B', 'G', 'D', 'A', 'E'];
-    const stringOffsets = [4, 11, 7, 2, 9, 4]; // semitones from C
+    const selected = selectWeighted(validItems, weights, randomFn());
+    storage.setLastSelected(selected);
+    return selected;
+  }
 
-    // Note names
-    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    const naturalNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  return { recordResponse, selectNext, getStats, getWeight };
+}
 
-    // Accepted answers for each note
-    const noteAccepts = {
-      'C': ['c'],
-      'C#': ['c#', 'db'],
-      'D': ['d'],
-      'D#': ['d#', 'eb'],
-      'E': ['e'],
-      'F': ['f'],
-      'F#': ['f#', 'gb'],
-      'G': ['g'],
-      'G#': ['g#', 'ab'],
-      'A': ['a'],
-      'A#': ['a#', 'bb'],
-      'B': ['b']
-    };
+// ---------------------------------------------------------------------------
+// In-memory storage (for tests)
+// ---------------------------------------------------------------------------
 
-    // Settings
-    const STRINGS_KEY = 'fretboard_enabledStrings';
-    let enabledStrings = new Set([5]); // Default: low E only
-    let naturalsOnly = true;
+function createMemoryStorage() {
+  const stats = new Map();
+  let lastSelected = null;
 
-    // Load enabled strings from localStorage
-    function loadEnabledStrings() {
-      const saved = localStorage.getItem(STRINGS_KEY);
-      if (saved) {
+  return {
+    getStats(itemId) {
+      return stats.get(itemId) ?? null;
+    },
+    saveStats(itemId, s) {
+      stats.set(itemId, s);
+    },
+    getLastSelected() {
+      return lastSelected;
+    },
+    setLastSelected(itemId) {
+      lastSelected = itemId;
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// localStorage-backed storage (for browser)
+// ---------------------------------------------------------------------------
+
+function createLocalStorageAdapter(namespace) {
+  const cache = {};
+  const mkKey = (itemId) => `adaptive_${namespace}_${itemId}`;
+  const lastKey = `adaptive_${namespace}_lastSelected`;
+
+  return {
+    getStats(itemId) {
+      const k = mkKey(itemId);
+      if (!(k in cache)) {
+        const data = localStorage.getItem(k);
         try {
-          const arr = JSON.parse(saved);
-          enabledStrings = new Set(arr);
-        } catch {}
-      }
-      updateStringToggles();
-    }
-
-    function saveEnabledStrings() {
-      localStorage.setItem(STRINGS_KEY, JSON.stringify([...enabledStrings]));
-    }
-
-    function updateStringToggles() {
-      document.querySelectorAll('.string-toggle').forEach(btn => {
-        const s = parseInt(btn.dataset.string);
-        btn.classList.toggle('active', enabledStrings.has(s));
-      });
-    }
-
-    function toggleString(s) {
-      if (enabledStrings.has(s)) {
-        if (enabledStrings.size > 1) {
-          enabledStrings.delete(s);
-        }
-      } else {
-        enabledStrings.add(s);
-      }
-      saveEnabledStrings();
-      updateStringToggles();
-    }
-
-    let quizActive = false;
-    let currentString = null;
-    let currentFret = null;
-    let currentNote = null;
-    let answered = false;
-    let questionStartTime = null;
-    let countdownInterval = null;
-    let expired = false;
-
-    function getNoteAtPosition(string, fret) {
-      const offset = stringOffsets[string];
-      const noteIndex = (offset + fret) % 12;
-      return noteNames[noteIndex];
-    }
-
-    function highlightCircle(string, fret, color = '#FFD700') {
-      const circle = document.querySelector(`circle[data-string="${string}"][data-fret="${fret}"]`);
-      if (circle) {
-        circle.setAttribute('fill', color);
-      }
-    }
-
-    function showNoteText(string, fret) {
-      const text = document.querySelector(`text[data-string="${string}"][data-fret="${fret}"]`);
-      if (text) {
-        text.textContent = getNoteAtPosition(string, fret);
-      }
-    }
-
-    function clearAll() {
-      document.querySelectorAll('.note-circle').forEach(circle => {
-        circle.setAttribute('fill', 'white');
-      });
-      document.querySelectorAll('.note-text').forEach(text => {
-        text.textContent = '';
-      });
-    }
-
-    function median(arr) {
-      if (arr.length === 0) return null;
-      const sorted = [...arr].sort((a, b) => a - b);
-      const mid = Math.floor(sorted.length / 2);
-      return sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
-    }
-
-    function getTimeColor(ms) {
-      if (ms === null) return '';
-      if (ms < 3000) return 'hsl(120, 70%, 35%)';
-      if (ms < 4000) return 'hsl(80, 70%, 35%)';
-      if (ms < 5000) return 'hsl(50, 70%, 40%)';
-      if (ms < 6000) return 'hsl(30, 70%, 40%)';
-      return 'hsl(0, 70%, 40%)';
-    }
-
-    function getHeatmapColor(ms) {
-      if (ms === null) return '#ddd';
-      if (ms < 1500) return 'hsl(120, 60%, 65%)';
-      if (ms < 3000) return 'hsl(80, 60%, 65%)';
-      if (ms < 4500) return 'hsl(50, 60%, 65%)';
-      if (ms < 6000) return 'hsl(30, 60%, 65%)';
-      return 'hsl(0, 60%, 65%)';
-    }
-
-    let heatmapActive = false;
-
-    function showHeatmap() {
-      heatmapActive = true;
-      document.getElementById('heatmap-btn').textContent = 'Hide Heatmap';
-      document.getElementById('quiz-area').classList.add('active');
-      document.getElementById('heatmap-legend').classList.add('active');
-      // Hide quiz-specific elements
-      document.querySelector('.countdown-container').style.display = 'none';
-      document.getElementById('note-buttons').style.display = 'none';
-      document.getElementById('feedback').style.display = 'none';
-      document.getElementById('time-display').style.display = 'none';
-      document.getElementById('hint').style.display = 'none';
-
-      for (let s = 0; s <= 5; s++) {
-        for (let f = 0; f < 13; f++) {
-          const stats = adaptiveSelector.getStats(`${s}-${f}`);
-          const ewma = stats ? stats.ewma : null;
-          const color = getHeatmapColor(ewma);
-          highlightCircle(s, f, color);
-          showNoteText(s, f);
+          cache[k] = data ? JSON.parse(data) : null;
+        } catch {
+          cache[k] = null;
         }
       }
-    }
+      return cache[k];
+    },
+    saveStats(itemId, stats) {
+      const k = mkKey(itemId);
+      cache[k] = stats;
+      localStorage.setItem(k, JSON.stringify(stats));
+    },
+    getLastSelected() {
+      return localStorage.getItem(lastKey);
+    },
+    setLastSelected(itemId) {
+      localStorage.setItem(lastKey, itemId);
+    },
+    /** Pre-populate cache to avoid localStorage reads during gameplay. */
+    preload(itemIds) {
+      for (const itemId of itemIds) {
+        this.getStats(itemId);
+      }
+    },
+  };
+}
 
-    function hideHeatmap() {
-      heatmapActive = false;
-      document.getElementById('heatmap-btn').textContent = 'Show Heatmap';
-      clearAll();
-      document.getElementById('quiz-area').classList.remove('active');
-      document.getElementById('heatmap-legend').classList.remove('active');
-      // Restore quiz-specific elements
-      document.querySelector('.countdown-container').style.display = '';
-      document.getElementById('note-buttons').style.display = '';
-      document.getElementById('feedback').style.display = '';
-      document.getElementById('time-display').style.display = '';
-      document.getElementById('hint').style.display = '';
-    }
+// Fretboard Trainer — browser application logic.
+// Depends on globals from adaptive.js: createAdaptiveSelector,
+// createLocalStorageAdapter, DEFAULT_CONFIG.
 
-    function toggleHeatmap() {
-      if (heatmapActive) {
-        hideHeatmap();
-      } else {
-        showHeatmap();
+const TARGET_TIME = 3000;
+
+// --- Initialize adaptive selector ---
+const adaptiveStorage = createLocalStorageAdapter('fretboard');
+const adaptiveSelector = createAdaptiveSelector(adaptiveStorage);
+
+// Pre-cache all positions to avoid localStorage reads during quiz
+const allItemIds = [];
+for (let s = 0; s < 6; s++) {
+  for (let f = 0; f < 13; f++) {
+    allItemIds.push(`${s}-${f}`);
+  }
+}
+adaptiveStorage.preload(allItemIds);
+
+// String tuning (high E to low E, top to bottom visually)
+const strings = ['E', 'B', 'G', 'D', 'A', 'E'];
+const stringOffsets = [4, 11, 7, 2, 9, 4]; // semitones from C
+
+// Note names
+const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const naturalNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+
+// Accepted answers for each note
+const noteAccepts = {
+  'C': ['c'],
+  'C#': ['c#', 'db'],
+  'D': ['d'],
+  'D#': ['d#', 'eb'],
+  'E': ['e'],
+  'F': ['f'],
+  'F#': ['f#', 'gb'],
+  'G': ['g'],
+  'G#': ['g#', 'ab'],
+  'A': ['a'],
+  'A#': ['a#', 'bb'],
+  'B': ['b']
+};
+
+// Settings
+const STRINGS_KEY = 'fretboard_enabledStrings';
+let enabledStrings = new Set([5]); // Default: low E only
+let naturalsOnly = true;
+
+// Load enabled strings from localStorage
+function loadEnabledStrings() {
+  const saved = localStorage.getItem(STRINGS_KEY);
+  if (saved) {
+    try {
+      const arr = JSON.parse(saved);
+      enabledStrings = new Set(arr);
+    } catch {}
+  }
+  updateStringToggles();
+}
+
+function saveEnabledStrings() {
+  localStorage.setItem(STRINGS_KEY, JSON.stringify([...enabledStrings]));
+}
+
+function updateStringToggles() {
+  document.querySelectorAll('.string-toggle').forEach(btn => {
+    const s = parseInt(btn.dataset.string);
+    btn.classList.toggle('active', enabledStrings.has(s));
+  });
+}
+
+function toggleString(s) {
+  if (enabledStrings.has(s)) {
+    if (enabledStrings.size > 1) {
+      enabledStrings.delete(s);
+    }
+  } else {
+    enabledStrings.add(s);
+  }
+  saveEnabledStrings();
+  updateStringToggles();
+}
+
+let quizActive = false;
+let currentString = null;
+let currentFret = null;
+let currentNote = null;
+let answered = false;
+let questionStartTime = null;
+let countdownInterval = null;
+let expired = false;
+
+function getNoteAtPosition(string, fret) {
+  const offset = stringOffsets[string];
+  const noteIndex = (offset + fret) % 12;
+  return noteNames[noteIndex];
+}
+
+function highlightCircle(string, fret, color = '#FFD700') {
+  const circle = document.querySelector(`circle[data-string="${string}"][data-fret="${fret}"]`);
+  if (circle) {
+    circle.setAttribute('fill', color);
+  }
+}
+
+function showNoteText(string, fret) {
+  const text = document.querySelector(`text[data-string="${string}"][data-fret="${fret}"]`);
+  if (text) {
+    text.textContent = getNoteAtPosition(string, fret);
+  }
+}
+
+function clearAll() {
+  document.querySelectorAll('.note-circle').forEach(circle => {
+    circle.setAttribute('fill', 'white');
+  });
+  document.querySelectorAll('.note-text').forEach(text => {
+    text.textContent = '';
+  });
+}
+
+function median(arr) {
+  if (arr.length === 0) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+}
+
+function getTimeColor(ms) {
+  if (ms === null) return '';
+  if (ms < 3000) return 'hsl(120, 70%, 35%)';
+  if (ms < 4000) return 'hsl(80, 70%, 35%)';
+  if (ms < 5000) return 'hsl(50, 70%, 40%)';
+  if (ms < 6000) return 'hsl(30, 70%, 40%)';
+  return 'hsl(0, 70%, 40%)';
+}
+
+function getHeatmapColor(ms) {
+  if (ms === null) return '#ddd';
+  if (ms < 1500) return 'hsl(120, 60%, 65%)';
+  if (ms < 3000) return 'hsl(80, 60%, 65%)';
+  if (ms < 4500) return 'hsl(50, 60%, 65%)';
+  if (ms < 6000) return 'hsl(30, 60%, 65%)';
+  return 'hsl(0, 60%, 65%)';
+}
+
+let heatmapActive = false;
+
+function showHeatmap() {
+  heatmapActive = true;
+  document.getElementById('heatmap-btn').textContent = 'Hide Heatmap';
+  document.getElementById('quiz-area').classList.add('active');
+  document.getElementById('heatmap-legend').classList.add('active');
+  // Hide quiz-specific elements
+  document.querySelector('.countdown-container').style.display = 'none';
+  document.getElementById('note-buttons').style.display = 'none';
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('time-display').style.display = 'none';
+  document.getElementById('hint').style.display = 'none';
+
+  for (let s = 0; s <= 5; s++) {
+    for (let f = 0; f < 13; f++) {
+      const stats = adaptiveSelector.getStats(`${s}-${f}`);
+      const ewma = stats ? stats.ewma : null;
+      const color = getHeatmapColor(ewma);
+      highlightCircle(s, f, color);
+      showNoteText(s, f);
+    }
+  }
+}
+
+function hideHeatmap() {
+  heatmapActive = false;
+  document.getElementById('heatmap-btn').textContent = 'Show Heatmap';
+  clearAll();
+  document.getElementById('quiz-area').classList.remove('active');
+  document.getElementById('heatmap-legend').classList.remove('active');
+  // Restore quiz-specific elements
+  document.querySelector('.countdown-container').style.display = '';
+  document.getElementById('note-buttons').style.display = '';
+  document.getElementById('feedback').style.display = '';
+  document.getElementById('time-display').style.display = '';
+  document.getElementById('hint').style.display = '';
+}
+
+function toggleHeatmap() {
+  if (heatmapActive) {
+    hideHeatmap();
+  } else {
+    showHeatmap();
+  }
+}
+
+function getEwmaValues() {
+  const ewmas = [];
+  for (let s = 0; s <= 5; s++) {
+    for (let f = 0; f < 13; f++) {
+      const stats = adaptiveSelector.getStats(`${s}-${f}`);
+      if (stats && stats.ewma) {
+        ewmas.push(stats.ewma);
       }
     }
+  }
+  return ewmas;
+}
 
-    function getEwmaValues() {
-      // Collect EWMA values from all positions that have been practiced
-      const ewmas = [];
-      for (let s = 0; s <= 5; s++) {
-        for (let f = 0; f < 13; f++) {
-          const stats = adaptiveSelector.getStats(`${s}-${f}`);
-          if (stats && stats.ewma) {
-            ewmas.push(stats.ewma);
-          }
-        }
-      }
-      return ewmas;
+function updateStats() {
+  const ewmas = getEwmaValues();
+  const med = median(ewmas);
+  const statsEl = document.getElementById('stats');
+  if (med !== null) {
+    statsEl.innerHTML = `median: <span style="color:${getTimeColor(Math.round(med))}">${Math.round(med)}ms</span>`;
+  } else {
+    statsEl.textContent = '';
+  }
+}
+
+function startCountdown() {
+  const bar = document.getElementById('countdown-bar');
+  bar.style.width = '100%';
+  bar.classList.remove('expired');
+  expired = false;
+
+  if (countdownInterval) clearInterval(countdownInterval);
+
+  const startTime = Date.now();
+  countdownInterval = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, TARGET_TIME - elapsed);
+    const percent = (remaining / TARGET_TIME) * 100;
+    bar.style.width = percent + '%';
+
+    if (remaining === 0 && !expired) {
+      expired = true;
+      bar.classList.add('expired');
+      clearInterval(countdownInterval);
     }
+  }, 50);
+}
 
-    function updateStats() {
-      const ewmas = getEwmaValues();
-      const med = median(ewmas);
-      const statsEl = document.getElementById('stats');
-      if (med !== null) {
-        statsEl.innerHTML = `median: <span style="color:${getTimeColor(Math.round(med))}">${Math.round(med)}ms</span>`;
-      } else {
-        statsEl.textContent = '';
-      }
-    }
+function startQuiz() {
+  if (heatmapActive) hideHeatmap();
+  updateStats();
+  quizActive = true;
+  document.getElementById('start-btn').style.display = 'none';
+  document.getElementById('heatmap-btn').style.display = 'none';
+  document.getElementById('stop-btn').style.display = 'inline';
+  document.getElementById('quiz-area').classList.add('active');
+  nextQuestion();
+}
 
-    function startCountdown() {
-      const bar = document.getElementById('countdown-bar');
-      bar.style.width = '100%';
-      bar.classList.remove('expired');
-      expired = false;
+function stopQuiz() {
+  quizActive = false;
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+  clearAll();
+  document.getElementById('start-btn').style.display = 'inline';
+  document.getElementById('heatmap-btn').style.display = 'inline';
+  document.getElementById('stop-btn').style.display = 'none';
+  document.getElementById('quiz-area').classList.remove('active');
+  updateStats();
+}
 
-      if (countdownInterval) clearInterval(countdownInterval);
-
-      const startTime = Date.now();
-      countdownInterval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, TARGET_TIME - elapsed);
-        const percent = (remaining / TARGET_TIME) * 100;
-        bar.style.width = percent + '%';
-
-        if (remaining === 0 && !expired) {
-          expired = true;
-          bar.classList.add('expired');
-          clearInterval(countdownInterval);
-        }
-      }, 50);
-    }
-
-    function startQuiz() {
-      if (heatmapActive) hideHeatmap();
-      updateStats();
-      quizActive = true;
-      document.getElementById('start-btn').style.display = 'none';
-      document.getElementById('heatmap-btn').style.display = 'none';
-      document.getElementById('stop-btn').style.display = 'inline';
-      document.getElementById('quiz-area').classList.add('active');
-      nextQuestion();
-    }
-
-    function stopQuiz() {
-      quizActive = false;
-      if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-      }
-      clearAll();
-      document.getElementById('start-btn').style.display = 'inline';
-      document.getElementById('heatmap-btn').style.display = 'inline';
-      document.getElementById('stop-btn').style.display = 'none';
-      document.getElementById('quiz-area').classList.remove('active');
-      updateStats();
-    }
-
-    function getValidItemIds() {
-      const itemIds = [];
-      for (const s of enabledStrings) {
-        for (let f = 0; f < 13; f++) {
-          const note = getNoteAtPosition(s, f);
-          if (!naturalsOnly || naturalNotes.includes(note)) {
-            itemIds.push(`${s}-${f}`);
-          }
-        }
-      }
-      return itemIds;
-    }
-
-    function setNoteButtonsEnabled(enabled) {
-      document.querySelectorAll('.note-btn').forEach(btn => {
-        btn.disabled = !enabled;
-      });
-    }
-
-    function nextQuestion() {
-      clearAll();
-
-      const validItemIds = getValidItemIds();
-      const selectedId = adaptiveSelector.selectNext(validItemIds);
-      const [s, f] = selectedId.split('-').map(Number);
-      currentString = s;
-      currentFret = f;
-      currentNote = getNoteAtPosition(currentString, currentFret);
-
-      highlightCircle(currentString, currentFret, '#FFD700');
-
-      document.getElementById('feedback').textContent = '';
-      document.getElementById('feedback').className = 'feedback';
-      document.getElementById('time-display').textContent = '';
-      document.getElementById('hint').textContent = '';
-      setNoteButtonsEnabled(true);
-      answered = false;
-      questionStartTime = Date.now();
-      startCountdown();
-    }
-
-    function checkAnswer(userNote) {
-      if (answered) return;
-
-      const feedback = document.getElementById('feedback');
-      const hint = document.getElementById('hint');
-      const timeDisplay = document.getElementById('time-display');
-
-      const responseTime = Date.now() - questionStartTime;
-
-      if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-      }
-
-      answered = true;
-      setNoteButtonsEnabled(false);
-
-      const accepts = noteAccepts[currentNote];
-      const correct = accepts.includes(userNote.toLowerCase());
-
-      if (correct) {
-        feedback.textContent = 'Correct!';
-        feedback.className = 'feedback correct';
-        highlightCircle(currentString, currentFret, '#4CAF50');
-        adaptiveSelector.recordResponse(`${currentString}-${currentFret}`, responseTime);
-        updateStats();
-      } else {
-        feedback.textContent = 'Incorrect — ' + currentNote;
-        feedback.className = 'feedback incorrect';
-        highlightCircle(currentString, currentFret, '#f44336');
-      }
-      showNoteText(currentString, currentFret);
-      timeDisplay.textContent = responseTime + ' ms';
-      hint.textContent = 'Tap anywhere or press Space for next';
-    }
-
-    // Keyboard input for notes
-    let pendingNote = null;
-    let pendingTimeout = null;
-
-    function submitPendingNote() {
-      if (pendingNote) {
-        checkAnswer(pendingNote);
-        pendingNote = null;
-      }
-      if (pendingTimeout) {
-        clearTimeout(pendingTimeout);
-        pendingTimeout = null;
+function getValidItemIds() {
+  const itemIds = [];
+  for (const s of enabledStrings) {
+    for (let f = 0; f < 13; f++) {
+      const note = getNoteAtPosition(s, f);
+      if (!naturalsOnly || naturalNotes.includes(note)) {
+        itemIds.push(`${s}-${f}`);
       }
     }
+  }
+  return itemIds;
+}
 
-    document.addEventListener('keydown', (e) => {
-      if (!quizActive) return;
+function setNoteButtonsEnabled(enabled) {
+  document.querySelectorAll('.note-btn').forEach(btn => {
+    btn.disabled = !enabled;
+  });
+}
 
-      if (e.key === 'Escape') {
-        stopQuiz();
-        return;
-      }
+function nextQuestion() {
+  clearAll();
 
-      if ((e.key === ' ' || e.key === 'Enter') && answered) {
-        e.preventDefault();
-        nextQuestion();
-        return;
-      }
+  const validItemIds = getValidItemIds();
+  const selectedId = adaptiveSelector.selectNext(validItemIds);
+  const [s, f] = selectedId.split('-').map(Number);
+  currentString = s;
+  currentFret = f;
+  currentNote = getNoteAtPosition(currentString, currentFret);
 
-      if (answered) return;
+  highlightCircle(currentString, currentFret, '#FFD700');
 
-      const key = e.key.toUpperCase();
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('time-display').textContent = '';
+  document.getElementById('hint').textContent = '';
+  setNoteButtonsEnabled(true);
+  answered = false;
+  questionStartTime = Date.now();
+  startCountdown();
+}
 
-      // Handle # for sharps or b for flats
-      if (pendingNote && !naturalsOnly) {
-        if (e.key === '#' || (e.shiftKey && e.key === '3')) {
-          e.preventDefault();
-          clearTimeout(pendingTimeout);
-          checkAnswer(pendingNote + '#');
-          pendingNote = null;
-          pendingTimeout = null;
-          return;
-        }
-        if (e.key === 'b' || e.key === 'B') {
-          e.preventDefault();
-          clearTimeout(pendingTimeout);
-          checkAnswer(pendingNote + 'b');
-          pendingNote = null;
-          pendingTimeout = null;
-          return;
-        }
-      }
+function checkAnswer(userNote) {
+  if (answered) return;
 
-      // Handle note letters
-      if ('CDEFGAB'.includes(key)) {
-        e.preventDefault();
-        // Cancel any pending note
-        if (pendingTimeout) {
-          clearTimeout(pendingTimeout);
-        }
+  const feedback = document.getElementById('feedback');
+  const hint = document.getElementById('hint');
+  const timeDisplay = document.getElementById('time-display');
 
-        if (naturalsOnly) {
-          // Submit immediately in naturals-only mode
-          checkAnswer(key);
-        } else {
-          // Wait briefly for potential # or b
-          pendingNote = key;
-          pendingTimeout = setTimeout(submitPendingNote, 400);
-        }
-      }
-    });
+  const responseTime = Date.now() - questionStartTime;
 
-    // Tap anywhere to advance when answered
-    document.addEventListener('click', (e) => {
-      if (!quizActive || !answered) return;
-      // Don't advance if clicking a note button or control
-      if (e.target.closest('.note-btn, .quiz-controls, .string-toggle')) return;
-      nextQuestion();
-    });
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
 
-    // String toggle handlers
-    document.querySelectorAll('.string-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
-        toggleString(parseInt(btn.dataset.string));
-      });
-    });
+  answered = true;
+  setNoteButtonsEnabled(false);
 
-    // Note button handlers
-    document.querySelectorAll('.note-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (!quizActive || answered) return;
-        checkAnswer(btn.dataset.note);
-      });
-    });
+  const accepts = noteAccepts[currentNote];
+  const correct = accepts.includes(userNote.toLowerCase());
 
-    function updateAccidentalButtons() {
-      document.querySelectorAll('.note-btn.accidental').forEach(btn => {
-        btn.classList.toggle('hidden', naturalsOnly);
-      });
-    }
-
-    // Settings event handlers
-    document.getElementById('naturals-only').addEventListener('change', (e) => {
-      naturalsOnly = e.target.checked;
-      updateAccidentalButtons();
-    });
-
-    // Initialize on load
-    loadEnabledStrings();
-    updateAccidentalButtons();
+  if (correct) {
+    feedback.textContent = 'Correct!';
+    feedback.className = 'feedback correct';
+    highlightCircle(currentString, currentFret, '#4CAF50');
+    adaptiveSelector.recordResponse(`${currentString}-${currentFret}`, responseTime);
     updateStats();
+  } else {
+    feedback.textContent = 'Incorrect — ' + currentNote;
+    feedback.className = 'feedback incorrect';
+    highlightCircle(currentString, currentFret, '#f44336');
+  }
+  showNoteText(currentString, currentFret);
+  timeDisplay.textContent = responseTime + ' ms';
+  hint.textContent = 'Tap anywhere or press Space for next';
+}
 
-    // Register service worker for cache busting on iOS home screen
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
+// Keyboard input for notes
+let pendingNote = null;
+let pendingTimeout = null;
+
+function submitPendingNote() {
+  if (pendingNote) {
+    checkAnswer(pendingNote);
+    pendingNote = null;
+  }
+  if (pendingTimeout) {
+    clearTimeout(pendingTimeout);
+    pendingTimeout = null;
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (!quizActive) return;
+
+  if (e.key === 'Escape') {
+    stopQuiz();
+    return;
+  }
+
+  if ((e.key === ' ' || e.key === 'Enter') && answered) {
+    e.preventDefault();
+    nextQuestion();
+    return;
+  }
+
+  if (answered) return;
+
+  const key = e.key.toUpperCase();
+
+  // Handle # for sharps or b for flats
+  if (pendingNote && !naturalsOnly) {
+    if (e.key === '#' || (e.shiftKey && e.key === '3')) {
+      e.preventDefault();
+      clearTimeout(pendingTimeout);
+      checkAnswer(pendingNote + '#');
+      pendingNote = null;
+      pendingTimeout = null;
+      return;
     }
+    if (e.key === 'b' || e.key === 'B') {
+      e.preventDefault();
+      clearTimeout(pendingTimeout);
+      checkAnswer(pendingNote + 'b');
+      pendingNote = null;
+      pendingTimeout = null;
+      return;
+    }
+  }
+
+  // Handle note letters
+  if ('CDEFGAB'.includes(key)) {
+    e.preventDefault();
+    // Cancel any pending note
+    if (pendingTimeout) {
+      clearTimeout(pendingTimeout);
+    }
+
+    if (naturalsOnly) {
+      // Submit immediately in naturals-only mode
+      checkAnswer(key);
+    } else {
+      // Wait briefly for potential # or b
+      pendingNote = key;
+      pendingTimeout = setTimeout(submitPendingNote, 400);
+    }
+  }
+});
+
+// Tap anywhere to advance when answered
+document.addEventListener('click', (e) => {
+  if (!quizActive || !answered) return;
+  // Don't advance if clicking a note button or control
+  if (e.target.closest('.note-btn, .quiz-controls, .string-toggle')) return;
+  nextQuestion();
+});
+
+// String toggle handlers
+document.querySelectorAll('.string-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    toggleString(parseInt(btn.dataset.string));
+  });
+});
+
+// Note button handlers
+document.querySelectorAll('.note-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (!quizActive || answered) return;
+    checkAnswer(btn.dataset.note);
+  });
+});
+
+function updateAccidentalButtons() {
+  document.querySelectorAll('.note-btn.accidental').forEach(btn => {
+    btn.classList.toggle('hidden', naturalsOnly);
+  });
+}
+
+// Settings event handlers
+document.getElementById('naturals-only').addEventListener('change', (e) => {
+  naturalsOnly = e.target.checked;
+  updateAccidentalButtons();
+});
+
+// Initialize on load
+loadEnabledStrings();
+updateAccidentalButtons();
+updateStats();
+
+// Register service worker for cache busting on iOS home screen
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+
   </script>
 </body>
 </html>
