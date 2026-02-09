@@ -147,12 +147,12 @@ function getSpeedHeatmapColor(ms) {
   return 'hsl(0, 60%, 65%)';
 }
 
-function getRetentionColor(recall) {
-  if (recall === null) return '#ddd';
-  if (recall > 0.8) return 'hsl(120, 60%, 65%)';
-  if (recall > 0.6) return 'hsl(80, 60%, 65%)';
-  if (recall > 0.4) return 'hsl(50, 60%, 65%)';
-  if (recall > 0.2) return 'hsl(30, 60%, 65%)';
+function getAutomaticityColor(auto) {
+  if (auto === null) return '#ddd';
+  if (auto > 0.8) return 'hsl(120, 60%, 65%)';
+  if (auto > 0.6) return 'hsl(80, 60%, 65%)';
+  if (auto > 0.4) return 'hsl(50, 60%, 65%)';
+  if (auto > 0.2) return 'hsl(30, 60%, 65%)';
   return 'hsl(0, 60%, 65%)';
 }
 
@@ -178,8 +178,8 @@ function showHeatmapView(mode) {
     btn.textContent = 'Show Speed';
     for (let s = 0; s <= 5; s++) {
       for (let f = 0; f < 13; f++) {
-        const recall = adaptiveSelector.getRecall(`${s}-${f}`);
-        highlightCircle(s, f, getRetentionColor(recall));
+        const auto = adaptiveSelector.getAutomaticity(`${s}-${f}`);
+        highlightCircle(s, f, getAutomaticityColor(auto));
         showNoteText(s, f);
       }
     }

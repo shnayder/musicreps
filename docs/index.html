@@ -260,7 +260,7 @@ button {
   </style>
 </head>
 <body>
-  <div class="version">v1.0</div>
+  <div class="version">v1.1</div>
   <h1>Fretboard Trainer</h1>
 
   <div class="fretboard-wrapper">
@@ -1968,11 +1968,9 @@ button {
   <div class="quiz-area" id="quiz-area">
     <div class="heatmap-legend" id="retention-legend">
       <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&gt; 80%</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>60–80%</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>40–60%</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>20–40%</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&lt; 20%</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>Automatic</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>Getting there</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>Needs work</div>
     </div>
     <div class="heatmap-legend" id="speed-legend">
       <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
@@ -2025,6 +2023,7 @@ const DEFAULT_CONFIG = {
   recallThreshold: 0.5,      // P(recall) below this = "due"
   speedBonusMax: 1.5,        // fast answers grow stability up to this extra factor
   selfCorrectionThreshold: 1500, // ms — response time below this triggers self-correction
+  automaticityTarget: 3000,      // ms — response time at which speedScore ≈ 0.5
 };
 
 // ---------------------------------------------------------------------------
@@ -2044,6 +2043,29 @@ function computeRecall(stabilityHours, elapsedHours) {
   if (stabilityHours <= 0) return 0;
   if (elapsedHours <= 0) return 1;
   return Math.pow(2, -elapsedHours / stabilityHours);
+}
+
+/**
+ * Speed score: maps EWMA onto [0, 1].
+ * - minTime (1000ms) → 1.0 (fully automatic)
+ * - automaticityTarget (3000ms) → 0.5
+ * - Very slow → approaches 0
+ * Uses exponential decay so the curve is smooth.
+ */
+function computeSpeedScore(ewmaMs, cfg) {
+  if (ewmaMs == null) return null;
+  const k = Math.LN2 / (cfg.automaticityTarget - cfg.minTime);
+  return Math.exp(-k * Math.max(0, ewmaMs - cfg.minTime));
+}
+
+/**
+ * Automaticity = recall * speedScore.
+ * "Do I know this without thinking?" — combines "have I forgotten it?"
+ * with "was I ever fast at it?" Returns null for unseen items.
+ */
+function computeAutomaticity(recall, speedScore) {
+  if (recall == null || speedScore == null) return null;
+  return recall * speedScore;
 }
 
 /**
@@ -2226,6 +2248,14 @@ function createAdaptiveSelector(
     return computeRecall(stats.stability, elapsedHours);
   }
 
+  function getAutomaticity(itemId) {
+    const stats = storage.getStats(itemId);
+    if (!stats) return null;
+    const recall = getRecall(itemId);
+    const speed = computeSpeedScore(stats.ewma, cfg);
+    return computeAutomaticity(recall, speed);
+  }
+
   /**
    * Recommend strings to review. Returns array of { string, dueCount, totalCount }
    * sorted by dueCount descending. getItemIds(stringIndex) should return
@@ -2247,7 +2277,7 @@ function createAdaptiveSelector(
     return results;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight, getRecall, getStringRecommendations };
+  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations };
 }
 
 // ---------------------------------------------------------------------------
@@ -2465,12 +2495,12 @@ function getSpeedHeatmapColor(ms) {
   return 'hsl(0, 60%, 65%)';
 }
 
-function getRetentionColor(recall) {
-  if (recall === null) return '#ddd';
-  if (recall > 0.8) return 'hsl(120, 60%, 65%)';
-  if (recall > 0.6) return 'hsl(80, 60%, 65%)';
-  if (recall > 0.4) return 'hsl(50, 60%, 65%)';
-  if (recall > 0.2) return 'hsl(30, 60%, 65%)';
+function getAutomaticityColor(auto) {
+  if (auto === null) return '#ddd';
+  if (auto > 0.8) return 'hsl(120, 60%, 65%)';
+  if (auto > 0.6) return 'hsl(80, 60%, 65%)';
+  if (auto > 0.4) return 'hsl(50, 60%, 65%)';
+  if (auto > 0.2) return 'hsl(30, 60%, 65%)';
   return 'hsl(0, 60%, 65%)';
 }
 
@@ -2496,8 +2526,8 @@ function showHeatmapView(mode) {
     btn.textContent = 'Show Speed';
     for (let s = 0; s <= 5; s++) {
       for (let f = 0; f < 13; f++) {
-        const recall = adaptiveSelector.getRecall(`${s}-${f}`);
-        highlightCircle(s, f, getRetentionColor(recall));
+        const auto = adaptiveSelector.getAutomaticity(`${s}-${f}`);
+        highlightCircle(s, f, getAutomaticityColor(auto));
         showNoteText(s, f);
       }
     }

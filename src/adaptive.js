@@ -18,6 +18,7 @@ export const DEFAULT_CONFIG = {
   recallThreshold: 0.5,      // P(recall) below this = "due"
   speedBonusMax: 1.5,        // fast answers grow stability up to this extra factor
   selfCorrectionThreshold: 1500, // ms — response time below this triggers self-correction
+  automaticityTarget: 3000,      // ms — response time at which speedScore ≈ 0.5
 };
 
 // ---------------------------------------------------------------------------
@@ -37,6 +38,29 @@ export function computeRecall(stabilityHours, elapsedHours) {
   if (stabilityHours <= 0) return 0;
   if (elapsedHours <= 0) return 1;
   return Math.pow(2, -elapsedHours / stabilityHours);
+}
+
+/**
+ * Speed score: maps EWMA onto [0, 1].
+ * - minTime (1000ms) → 1.0 (fully automatic)
+ * - automaticityTarget (3000ms) → 0.5
+ * - Very slow → approaches 0
+ * Uses exponential decay so the curve is smooth.
+ */
+export function computeSpeedScore(ewmaMs, cfg) {
+  if (ewmaMs == null) return null;
+  const k = Math.LN2 / (cfg.automaticityTarget - cfg.minTime);
+  return Math.exp(-k * Math.max(0, ewmaMs - cfg.minTime));
+}
+
+/**
+ * Automaticity = recall * speedScore.
+ * "Do I know this without thinking?" — combines "have I forgotten it?"
+ * with "was I ever fast at it?" Returns null for unseen items.
+ */
+export function computeAutomaticity(recall, speedScore) {
+  if (recall == null || speedScore == null) return null;
+  return recall * speedScore;
 }
 
 /**
@@ -219,6 +243,14 @@ export function createAdaptiveSelector(
     return computeRecall(stats.stability, elapsedHours);
   }
 
+  function getAutomaticity(itemId) {
+    const stats = storage.getStats(itemId);
+    if (!stats) return null;
+    const recall = getRecall(itemId);
+    const speed = computeSpeedScore(stats.ewma, cfg);
+    return computeAutomaticity(recall, speed);
+  }
+
   /**
    * Recommend strings to review. Returns array of { string, dueCount, totalCount }
    * sorted by dueCount descending. getItemIds(stringIndex) should return
@@ -240,7 +272,7 @@ export function createAdaptiveSelector(
     return results;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight, getRecall, getStringRecommendations };
+  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations };
 }
 
 // ---------------------------------------------------------------------------

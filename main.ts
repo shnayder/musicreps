@@ -46,7 +46,7 @@ async function buildHTML(): Promise<string> {
   </style>
 </head>
 <body>
-  <div class="version">v1.0</div>
+  <div class="version">v1.1</div>
   <h1>Fretboard Trainer</h1>
 
   <div class="fretboard-wrapper">
@@ -96,11 +96,9 @@ async function buildHTML(): Promise<string> {
   <div class="quiz-area" id="quiz-area">
     <div class="heatmap-legend" id="retention-legend">
       <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&gt; 80%</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>60\u201380%</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>40\u201360%</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>20\u201340%</div>
-      <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&lt; 20%</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>Automatic</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>Getting there</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>Needs work</div>
     </div>
     <div class="heatmap-legend" id="speed-legend">
       <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>

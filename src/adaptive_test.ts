@@ -3,6 +3,8 @@ import { strict as assert } from "node:assert";
 import {
   computeEwma,
   computeRecall,
+  computeSpeedScore,
+  computeAutomaticity,
   updateStability,
   computeStabilityAfterWrong,
   computeWeight,
@@ -140,6 +142,71 @@ describe("computeRecall", () => {
     const r1 = computeRecall(4, 1)!;
     const r2 = computeRecall(4, 10)!;
     assert.ok(r1 > r2, `recall at 1h (${r1}) should be > recall at 10h (${r2})`);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeSpeedScore
+// ---------------------------------------------------------------------------
+
+describe("computeSpeedScore", () => {
+  const cfg = DEFAULT_CONFIG;
+
+  it("returns 1.0 at minTime", () => {
+    const score = computeSpeedScore(cfg.minTime, cfg);
+    assert.ok(Math.abs(score - 1.0) < 0.01, `at minTime should be ~1.0, got ${score}`);
+  });
+
+  it("returns ~0.5 at automaticityTarget", () => {
+    const score = computeSpeedScore(cfg.automaticityTarget, cfg);
+    assert.ok(Math.abs(score - 0.5) < 0.01, `at target should be ~0.5, got ${score}`);
+  });
+
+  it("returns low value for very slow responses", () => {
+    const score = computeSpeedScore(8000, cfg);
+    assert.ok(score < 0.1, `at 8000ms should be < 0.1, got ${score}`);
+  });
+
+  it("returns null for null input", () => {
+    assert.equal(computeSpeedScore(null, cfg), null);
+  });
+
+  it("decreases monotonically as EWMA increases", () => {
+    const s1 = computeSpeedScore(1000, cfg)!;
+    const s2 = computeSpeedScore(2000, cfg)!;
+    const s3 = computeSpeedScore(4000, cfg)!;
+    assert.ok(s1 > s2 && s2 > s3, `should decrease: ${s1} > ${s2} > ${s3}`);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeAutomaticity
+// ---------------------------------------------------------------------------
+
+describe("computeAutomaticity", () => {
+  it("returns null when either input is null", () => {
+    assert.equal(computeAutomaticity(null, 0.8), null);
+    assert.equal(computeAutomaticity(0.8, null), null);
+  });
+
+  it("returns high value for fast + high recall", () => {
+    const auto = computeAutomaticity(1.0, 1.0);
+    assert.equal(auto, 1.0);
+  });
+
+  it("returns low value for slow even with perfect recall", () => {
+    const auto = computeAutomaticity(1.0, 0.1);
+    assert.ok(auto! < 0.15, `slow + recalled should be low: ${auto}`);
+  });
+
+  it("returns low value for fast but forgotten", () => {
+    const auto = computeAutomaticity(0.1, 1.0);
+    assert.ok(auto! < 0.15, `fast + forgotten should be low: ${auto}`);
+  });
+
+  it("returns moderate value for moderate speed + moderate recall", () => {
+    const auto = computeAutomaticity(0.5, 0.5);
+    assert.equal(auto, 0.25);
   });
 });
 

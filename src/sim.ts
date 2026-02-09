@@ -5,6 +5,8 @@
 
 import {
   computeRecall,
+  computeSpeedScore,
+  computeAutomaticity,
   updateStability,
   computeStabilityAfterWrong,
   computeWeight,
@@ -63,8 +65,9 @@ function printTable(headers: string[], rows: string[][], colWidths?: number[]) {
 
 console.log("=== Config ===");
 const cfgKeys = [
-  "minTime", "maxResponseTime", "initialStability", "stabilityGrowthBase",
-  "stabilityDecayOnWrong", "recallThreshold", "speedBonusMax",
+  "minTime", "maxResponseTime", "initialStability", "maxStability",
+  "stabilityGrowthBase", "stabilityDecayOnWrong", "recallThreshold",
+  "speedBonusMax", "selfCorrectionThreshold", "automaticityTarget",
 ];
 for (const k of cfgKeys) {
   const def = (DEFAULT_CONFIG as any)[k];
@@ -270,3 +273,35 @@ for (const traj of trajectories) {
   console.log("    " + vals.join("  "));
   console.log("");
 }
+
+// ---------------------------------------------------------------------------
+// Table 5: Automaticity (heatmap values)
+// ---------------------------------------------------------------------------
+
+console.log("=== Table 5: Automaticity (recall * speedScore) ===");
+console.log("What the default heatmap shows. Green > 0.8, red < 0.2\n");
+
+const ewmaValues = [1000, 1500, 2000, 3000, 4500, 6000];
+const recallValues = [1.0, 0.8, 0.5, 0.3, 0.1];
+
+// Print speed scores
+console.log("  Speed scores by EWMA:");
+for (const e of ewmaValues) {
+  const ss = computeSpeedScore(e, cfg)!;
+  console.log(`    ${e}ms → ${ss.toFixed(2)}`);
+}
+console.log("");
+
+// Automaticity grid
+const t5LabelW = 10;
+const t5Headers = [pad("recall\\ewma", t5LabelW), ...ewmaValues.map(e => e + "ms")];
+const t5Rows = recallValues.map(r => [
+  pad(r.toFixed(1), t5LabelW),
+  ...ewmaValues.map(e => {
+    const ss = computeSpeedScore(e, cfg)!;
+    const auto = computeAutomaticity(r, ss)!;
+    return auto.toFixed(2);
+  }),
+]);
+printTable(t5Headers, t5Rows);
+console.log("");
