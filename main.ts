@@ -29,13 +29,19 @@ async function readModule(rel: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function buildHTML(): Promise<string> {
-  const [css, adaptiveJS, musicDataJS, quizEngineJS, quizFretboardJS, navigationJS, appJS] =
+  const [css, adaptiveJS, musicDataJS, quizEngineJS, quizFretboardJS,
+    quizNoteSemitonesJS, quizIntervalSemitonesJS, quizSemitoneMathJS, quizIntervalMathJS,
+    navigationJS, appJS] =
     await Promise.all([
       readFile("./src/styles.css"),
       readModule("./src/adaptive.js"),
       readModule("./src/music-data.js"),
       readModule("./src/quiz-engine.js"),
       readFile("./src/quiz-fretboard.js"),
+      readFile("./src/quiz-note-semitones.js"),
+      readFile("./src/quiz-interval-semitones.js"),
+      readFile("./src/quiz-semitone-math.js"),
+      readFile("./src/quiz-interval-math.js"),
       readFile("./src/navigation.js"),
       readFile("./src/app.js"),
     ]);
@@ -55,12 +61,16 @@ async function buildHTML(): Promise<string> {
   <div class="nav-overlay"></div>
   <div class="nav-drawer" id="nav-drawer">
     <button data-mode="fretboard">Fretboard</button>
+    <button data-mode="noteSemitones">Note \u2194 Semitones</button>
+    <button data-mode="intervalSemitones">Interval \u2194 Semitones</button>
+    <button data-mode="semitoneMath">Semitone Math</button>
+    <button data-mode="intervalMath">Interval Math</button>
   </div>
 
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.3</div>
+    <div class="version">v1.4</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -146,11 +156,171 @@ async function buildHTML(): Promise<string> {
     </div>
   </div>
 
+  <!-- Note Semitones mode -->
+  <div class="mode-screen" id="mode-noteSemitones">
+    <div class="quiz-controls">
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <span class="stats"></span>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="answer-buttons answer-buttons-numbers">
+        <button class="answer-btn answer-btn-num" data-num="0">0</button>
+        <button class="answer-btn answer-btn-num" data-num="1">1</button>
+        <button class="answer-btn answer-btn-num" data-num="2">2</button>
+        <button class="answer-btn answer-btn-num" data-num="3">3</button>
+        <button class="answer-btn answer-btn-num" data-num="4">4</button>
+        <button class="answer-btn answer-btn-num" data-num="5">5</button>
+        <button class="answer-btn answer-btn-num" data-num="6">6</button>
+        <button class="answer-btn answer-btn-num" data-num="7">7</button>
+        <button class="answer-btn answer-btn-num" data-num="8">8</button>
+        <button class="answer-btn answer-btn-num" data-num="9">9</button>
+        <button class="answer-btn answer-btn-num" data-num="10">10</button>
+        <button class="answer-btn answer-btn-num" data-num="11">11</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
+  <!-- Interval Semitones mode -->
+  <div class="mode-screen" id="mode-intervalSemitones">
+    <div class="quiz-controls">
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <span class="stats"></span>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-intervals">
+        <button class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M2">M2</button>
+        <button class="answer-btn answer-btn-interval" data-interval="m3">m3</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M3">M3</button>
+        <button class="answer-btn answer-btn-interval" data-interval="P4">P4</button>
+        <button class="answer-btn answer-btn-interval" data-interval="TT">TT</button>
+        <button class="answer-btn answer-btn-interval" data-interval="P5">P5</button>
+        <button class="answer-btn answer-btn-interval" data-interval="m6">m6</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M6">M6</button>
+        <button class="answer-btn answer-btn-interval" data-interval="m7">m7</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M7">M7</button>
+        <button class="answer-btn answer-btn-interval" data-interval="P8">P8</button>
+      </div>
+      <div class="answer-buttons answer-buttons-numbers">
+        <button class="answer-btn answer-btn-num" data-num="1">1</button>
+        <button class="answer-btn answer-btn-num" data-num="2">2</button>
+        <button class="answer-btn answer-btn-num" data-num="3">3</button>
+        <button class="answer-btn answer-btn-num" data-num="4">4</button>
+        <button class="answer-btn answer-btn-num" data-num="5">5</button>
+        <button class="answer-btn answer-btn-num" data-num="6">6</button>
+        <button class="answer-btn answer-btn-num" data-num="7">7</button>
+        <button class="answer-btn answer-btn-num" data-num="8">8</button>
+        <button class="answer-btn answer-btn-num" data-num="9">9</button>
+        <button class="answer-btn answer-btn-num" data-num="10">10</button>
+        <button class="answer-btn answer-btn-num" data-num="11">11</button>
+        <button class="answer-btn answer-btn-num" data-num="12">12</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
+  <!-- Semitone Math mode -->
+  <div class="mode-screen" id="mode-semitoneMath">
+    <div class="quiz-controls">
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <span class="stats"></span>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
+  <!-- Interval Math mode -->
+  <div class="mode-screen" id="mode-intervalMath">
+    <div class="quiz-controls">
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <span class="stats"></span>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
   <script>
 ${adaptiveJS}
 ${musicDataJS}
 ${quizEngineJS}
 ${quizFretboardJS}
+${quizNoteSemitonesJS}
+${quizIntervalSemitonesJS}
+${quizSemitoneMathJS}
+${quizIntervalMathJS}
 ${navigationJS}
 ${appJS}
   </script>
