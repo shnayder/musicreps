@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-Interactive fretboard trainer for learning guitar note positions.
+Interactive music training app — fretboard note identification, interval math,
+and more. Multiple quiz modes accessed via hamburger menu.
 
 ## Structure
 
@@ -9,8 +10,14 @@ main.ts                # Deno entry point: reads src/ files, assembles HTML, ser
 build.ts               # Node-compatible build script (npx tsx build.ts)
 src/
   adaptive.js          # Adaptive question selector (ES module, single source of truth)
-  adaptive_test.ts     # Tests for adaptive selector (npx tsx --test)
-  app.js               # Browser quiz/UI logic (references adaptive globals)
+  adaptive_test.ts     # Tests for adaptive selector
+  music-data.js        # Shared music theory data: notes, intervals, helpers
+  music-data_test.ts   # Tests for music data
+  quiz-engine.js       # Shared quiz lifecycle (timing, countdown, feedback)
+  quiz-engine_test.ts  # Tests for quiz engine
+  quiz-fretboard.js    # Fretboard quiz mode
+  navigation.js        # Hamburger menu and mode switching
+  app.js               # Thin init: registers modes, starts navigation
   fretboard.ts         # SVG fretboard generation (build-time)
   styles.css           # CSS (read at build time, inlined into HTML)
 docs/index.html        # Built static file for GitHub Pages
@@ -30,17 +37,34 @@ deno run --allow-write --allow-read main.ts --build
 npx tsx build.ts
 
 # Run tests
-npx tsx --test src/adaptive_test.ts
+npx tsx --test src/*_test.ts
 ```
 
 **Important:** Both `main.ts` and `build.ts` contain the HTML template. When
 changing the template, update both files to keep them in sync.
 
+## Architecture
+
+The app uses a **mode-based architecture**:
+
+- **QuizEngine** (`quiz-engine.js`) — shared lifecycle: adaptive selector, timing,
+  countdown, feedback, keyboard/tap handling. Each mode gets its own engine instance.
+- **QuizMode** — each mode provides: `getEnabledItems()`, `presentQuestion()`,
+  `checkAnswer()`, `handleKey()`, plus `onStart`/`onStop` hooks.
+- **Navigation** (`navigation.js`) — hamburger menu, mode switching, persists
+  last-used mode in localStorage.
+- **MusicData** (`music-data.js`) — shared notes/intervals arrays and helpers.
+
+All source files are concatenated into a single `<script>` at build time.
+Files using `export` keywords (adaptive.js, music-data.js, quiz-engine.js)
+have exports stripped; other files use plain function declarations.
+
 ## How It Works
 
 - SVG fretboard with clickable note positions
-- Quiz mode: identifies a note, user answers via buttons or keyboard
+- Quiz modes: fretboard notes, note/interval semitones, semitone math, interval math
 - Adaptive learning: tracks response times in localStorage, prioritizes slower notes
+- Hamburger menu to switch between modes
 - String selection persisted in localStorage
 
 ## Adaptive Selector
@@ -98,6 +122,15 @@ items with no recall data (`unseenCount`) from those with established recall
 - Letter + `b` - flat (e.g., D then b)
 - `Space` / `Enter` - next question (after answering)
 - `Escape` - stop quiz
+
+## Testing
+
+Write tests as you go, not just at the end. Any new module with logic should
+have a corresponding `_test.ts` file. Run all tests before committing:
+
+```bash
+npx tsx --test src/*_test.ts
+```
 
 ## Versioning
 
