@@ -102,3 +102,30 @@ items with no recall data (`unseenCount`) from those with established recall
 ## Versioning
 
 There is a small version number displayed at the top-right of the app (`<div class="version">`). Increment it (e.g. v0.2 → v0.3) with every change so the user can confirm they have the latest build.
+
+## GitHub API Access (Claude Code Web Environment)
+
+`gh` CLI is not authenticated in the web environment. Instead, use `curl`
+through the egress proxy:
+
+```bash
+PROXY_URL="$GLOBAL_AGENT_HTTP_PROXY"
+
+# List open PRs
+curl -sS --proxy "$PROXY_URL" \
+  -H "Accept: application/vnd.github.v3+json" \
+  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls?state=open"
+
+# Get PR review comments
+curl -sS --proxy "$PROXY_URL" \
+  -H "Accept: application/vnd.github.v3+json" \
+  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls/{PR_NUMBER}/comments"
+
+# Get issue/PR conversation comments
+curl -sS --proxy "$PROXY_URL" \
+  -H "Accept: application/vnd.github.v3+json" \
+  "https://api.github.com/repos/shnayder/fretboard-trainer/issues/{PR_NUMBER}/comments"
+```
+
+The proxy authenticates automatically via the JWT in `GLOBAL_AGENT_HTTP_PROXY`.
+No `GH_TOKEN` is needed. Git push/pull work normally via the `origin` remote.
