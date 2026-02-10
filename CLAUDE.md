@@ -16,6 +16,10 @@ src/
   quiz-engine.js       # Shared quiz lifecycle (timing, countdown, feedback)
   quiz-engine_test.ts  # Tests for quiz engine
   quiz-fretboard.js    # Fretboard quiz mode
+  quiz-note-semitones.js      # Note <-> semitone number quiz mode
+  quiz-interval-semitones.js  # Interval <-> semitone number quiz mode
+  quiz-semitone-math.js       # Note +/- semitones = note quiz mode
+  quiz-interval-math.js       # Note +/- interval = note quiz mode
   navigation.js        # Hamburger menu and mode switching
   app.js               # Thin init: registers modes, starts navigation
   fretboard.ts         # SVG fretboard generation (build-time)
@@ -115,11 +119,25 @@ Config: `expansionThreshold` (default 0.7) in `DEFAULT_CONFIG`.
 items with no recall data (`unseenCount`) from those with established recall
 (`dueCount` + `masteredCount`), so the UI can make smarter decisions.
 
+## Quiz Modes
+
+| Mode | Items | Answer type | Item ID format |
+|------|-------|-------------|----------------|
+| Fretboard | 78 (6 strings x 13 frets) | Note name | `0-5` (string-fret) |
+| Note ↔ Semitones | 24 (12 notes x 2 dirs) | Note or number 0-11 | `C:fwd`, `C:rev` |
+| Interval ↔ Semitones | 24 (12 intervals x 2 dirs) | Interval or number 1-12 | `m2:fwd`, `m2:rev` |
+| Semitone Math | 264 (12 notes x 11 x 2 dirs) | Note name | `C+3`, `C-3` |
+| Interval Math | 264 (12 notes x 11 x 2 dirs) | Note name | `C+m3`, `C-P4` |
+
+Bidirectional modes mix both directions, tracking each as a separate item.
+Math modes exclude octave/P8 (adding 12 semitones gives same note).
+
 ## Keyboard Shortcuts (during quiz)
 
 - `C D E F G A B` - answer with natural note
 - Letter + `#` - sharp (e.g., C then #)
 - Letter + `b` - flat (e.g., D then b)
+- `0-9` - answer with number (semitone modes; two-digit via timeout)
 - `Space` / `Enter` - next question (after answering)
 - `Escape` - stop quiz
 
