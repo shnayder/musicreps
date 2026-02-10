@@ -31,7 +31,7 @@ const html = `<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <div class="version">v1.1</div>
+  <div class="version">v1.2</div>
   <h1>Fretboard Trainer</h1>
 
   <div class="fretboard-wrapper">

@@ -67,9 +67,29 @@ Per-item half-life forgetting curve: `P(recall) = 2^(-t/stability)`.
 - **Self-correction**: fast answer after long gap → stability boosted to at least
   `elapsedHours * 1.5` (handles off-app learning, e.g., actual guitar playing)
 - Within-session weighting: recall factor `1 + (1 - recall)` multiplies speed weight
-- String recommendations: on load, strings with most "due" items are auto-selected
-  and visually highlighted (orange indicator on toggle buttons)
 - Two heatmap modes: **retention** (default, predicted recall) and **speed** (EWMA)
+
+## String Recommendations ("Consolidate Before Expanding")
+
+On load, the app recommends which strings to practice. The algorithm gates
+expansion to new strings behind consolidation of what's already been started:
+
+1. **Partition** strings into "started" (≥ 1 item seen) and "unstarted" (all unseen).
+2. **Consolidation ratio** = mastered items / total seen items across all started
+   strings. An item is "mastered" when `recall >= recallThreshold` (0.5).
+3. **Rank** started strings by work remaining (`dueCount + unseenCount`); recommend
+   those above the median.
+4. **Expansion gate**: only suggest one unstarted string when `consolidationRatio
+   >= expansionThreshold` (0.7). This prevents recommending new strings while the
+   user is still weak on material they've already begun learning.
+5. **First launch**: no data → keep persisted selection (default: low E).
+
+Config: `expansionThreshold` (default 0.7) in `DEFAULT_CONFIG`.
+
+`getStringRecommendations` returns per-string:
+`{ string, dueCount, unseenCount, masteredCount, totalCount }` — separating
+items with no recall data (`unseenCount`) from those with established recall
+(`dueCount` + `masteredCount`), so the UI can make smarter decisions.
 
 ## Keyboard Shortcuts (during quiz)
 
@@ -82,3 +102,30 @@ Per-item half-life forgetting curve: `P(recall) = 2^(-t/stability)`.
 ## Versioning
 
 There is a small version number displayed at the top-right of the app (`<div class="version">`). Increment it (e.g. v0.2 → v0.3) with every change so the user can confirm they have the latest build.
+
+## GitHub API Access (Claude Code Web Environment)
+
+`gh` CLI is not authenticated in the web environment. Instead, use `curl`
+through the egress proxy:
+
+```bash
+PROXY_URL="$GLOBAL_AGENT_HTTP_PROXY"
+
+# List open PRs
+curl -sS --proxy "$PROXY_URL" \
+  -H "Accept: application/vnd.github.v3+json" \
+  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls?state=open"
+
+# Get PR review comments
+curl -sS --proxy "$PROXY_URL" \
+  -H "Accept: application/vnd.github.v3+json" \
+  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls/{PR_NUMBER}/comments"
+
+# Get issue/PR conversation comments
+curl -sS --proxy "$PROXY_URL" \
+  -H "Accept: application/vnd.github.v3+json" \
+  "https://api.github.com/repos/shnayder/fretboard-trainer/issues/{PR_NUMBER}/comments"
+```
+
+The proxy authenticates automatically via the JWT in `GLOBAL_AGENT_HTTP_PROXY`.
+No `GH_TOKEN` is needed. Git push/pull work normally via the `origin` remote.
