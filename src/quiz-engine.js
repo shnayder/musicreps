@@ -76,25 +76,12 @@ export function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true
 }
 
 /**
- * Compute and display median EWMA for a set of item IDs.
- * Used by all modes to show aggregate speed stats.
+ * Update aggregate stats display for a set of item IDs.
+ * Currently a no-op (median display was removed).
  */
 export function updateModeStats(selector, itemIds, statsEl) {
   if (!statsEl) return;
-  const ewmas = [];
-  for (const id of itemIds) {
-    const stats = selector.getStats(id);
-    if (stats && stats.ewma) ewmas.push(stats.ewma);
-  }
-  if (ewmas.length === 0) {
-    statsEl.textContent = '';
-    return;
-  }
-  const sorted = [...ewmas].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  const med = sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
-  const color = med < 3000 ? 'hsl(120,70%,35%)' : med < 4000 ? 'hsl(80,70%,35%)' : med < 5000 ? 'hsl(50,70%,40%)' : med < 6000 ? 'hsl(30,70%,40%)' : 'hsl(0,70%,40%)';
-  statsEl.innerHTML = `median: <span style="color:${color}">${Math.round(med)}ms</span>`;
+  statsEl.textContent = '';
 }
 
 /**

@@ -487,7 +487,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.8</div>
+    <div class="version">v1.9</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -4596,25 +4596,12 @@ function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true) {
 }
 
 /**
- * Compute and display median EWMA for a set of item IDs.
- * Used by all modes to show aggregate speed stats.
+ * Update aggregate stats display for a set of item IDs.
+ * Currently a no-op (median display was removed).
  */
 function updateModeStats(selector, itemIds, statsEl) {
   if (!statsEl) return;
-  const ewmas = [];
-  for (const id of itemIds) {
-    const stats = selector.getStats(id);
-    if (stats && stats.ewma) ewmas.push(stats.ewma);
-  }
-  if (ewmas.length === 0) {
-    statsEl.textContent = '';
-    return;
-  }
-  const sorted = [...ewmas].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  const med = sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
-  const color = med < 3000 ? 'hsl(120,70%,35%)' : med < 4000 ? 'hsl(80,70%,35%)' : med < 5000 ? 'hsl(50,70%,40%)' : med < 6000 ? 'hsl(30,70%,40%)' : 'hsl(0,70%,40%)';
-  statsEl.innerHTML = `median: <span style="color:${color}">${Math.round(med)}ms</span>`;
+  statsEl.textContent = '';
 }
 
 /**
@@ -5084,39 +5071,9 @@ function createFretboardMode() {
 
   // --- Stats ---
 
-  function median(arr) {
-    if (arr.length === 0) return null;
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
-  }
-
-  function getTimeColor(ms) {
-    if (ms === null) return '';
-    if (ms < 3000) return 'hsl(120, 70%, 35%)';
-    if (ms < 4000) return 'hsl(80, 70%, 35%)';
-    if (ms < 5000) return 'hsl(50, 70%, 40%)';
-    if (ms < 6000) return 'hsl(30, 70%, 40%)';
-    return 'hsl(0, 70%, 40%)';
-  }
-
   function updateStats(selector) {
-    const ewmas = [];
-    for (let s = 0; s <= 5; s++) {
-      for (let f = 0; f < 13; f++) {
-        const stats = selector.getStats(`${s}-${f}`);
-        if (stats && stats.ewma) ewmas.push(stats.ewma);
-      }
-    }
-    const med = median(ewmas);
     const statsEl = container.querySelector('.stats');
-    if (statsEl) {
-      if (med !== null) {
-        statsEl.innerHTML = `median: <span style="color:${getTimeColor(Math.round(med))}">${Math.round(med)}ms</span>`;
-      } else {
-        statsEl.textContent = '';
-      }
-    }
+    if (statsEl) statsEl.textContent = '';
   }
 
   // --- Recommendations ---
@@ -5460,22 +5417,27 @@ function createSpeedTapMode() {
     const heatmapBtn = container.querySelector('.heatmap-btn');
     if (!statsContainer) return;
 
-    const notes = naturalsOnly
-      ? NOTES.filter(n => NATURAL_NOTES.includes(n.name))
-      : NOTES;
+    // Always show all 12 notes regardless of naturalsOnly setting
+    const notes = NOTES;
 
     let html = buildStatsLegend('retention');
-    html += '<table class="stats-table"><thead><tr>';
-    for (const note of notes) {
-      html += '<th>' + note.displayName + '</th>';
+
+    // Split into two rows of 6 to fit on mobile
+    const half = Math.ceil(notes.length / 2);
+    for (let i = 0; i < notes.length; i += half) {
+      const chunk = notes.slice(i, i + half);
+      html += '<table class="stats-table"><thead><tr>';
+      for (const note of chunk) {
+        html += '<th>' + note.displayName + '</th>';
+      }
+      html += '</tr></thead><tbody><tr>';
+      for (const note of chunk) {
+        const auto = selector.getAutomaticity(note.name);
+        const color = getAutomaticityColor(auto);
+        html += '<td class="stats-cell" style="background:' + color + '"></td>';
+      }
+      html += '</tr></tbody></table>';
     }
-    html += '</tr></thead><tbody><tr>';
-    for (const note of notes) {
-      const auto = selector.getAutomaticity(note.name);
-      const color = getAutomaticityColor(auto);
-      html += '<td class="stats-cell" style="background:' + color + '"></td>';
-    }
-    html += '</tr></tbody></table>';
 
     statsContainer.innerHTML = html;
     statsContainer.style.display = '';
