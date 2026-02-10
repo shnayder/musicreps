@@ -15,6 +15,15 @@
     deactivate: fretboard.deactivate,
   });
 
+  // Speed Tap mode
+  const speedTap = createSpeedTapMode();
+  nav.registerMode('speedTap', {
+    name: 'Speed Tap',
+    init: speedTap.init,
+    activate: speedTap.activate,
+    deactivate: speedTap.deactivate,
+  });
+
   // Note <-> Semitones mode
   const noteSemitones = createNoteSemitonesMode();
   nav.registerMode('noteSemitones', {

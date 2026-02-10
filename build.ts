@@ -23,6 +23,7 @@ const musicDataJS = readModule("src/music-data.js");
 const quizEngineJS = readModule("src/quiz-engine.js");
 const statsDisplayJS = readModule("src/stats-display.js");
 const quizFretboardJS = read("src/quiz-fretboard.js");
+const quizSpeedTapJS = read("src/quiz-speed-tap.js");
 const quizNoteSemitonesJS = read("src/quiz-note-semitones.js");
 const quizIntervalSemitonesJS = read("src/quiz-interval-semitones.js");
 const quizSemitoneMathJS = read("src/quiz-semitone-math.js");
@@ -45,6 +46,7 @@ const html = `<!DOCTYPE html>
   <div class="nav-overlay"></div>
   <div class="nav-drawer" id="nav-drawer">
     <button data-mode="fretboard">Fretboard</button>
+    <button data-mode="speedTap">Speed Tap</button>
     <button data-mode="noteSemitones">Note \u2194 Semitones</button>
     <button data-mode="intervalSemitones">Interval \u2194 Semitones</button>
     <button data-mode="semitoneMath">Semitone Math</button>
@@ -54,7 +56,7 @@ const html = `<!DOCTYPE html>
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.7</div>
+    <div class="version">v1.8</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -121,6 +123,49 @@ const html = `<!DOCTYPE html>
       </div>
       <div class="feedback"></div>
       <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
+  <!-- Speed Tap mode -->
+  <div class="mode-screen" id="mode-speedTap">
+    <div class="fretboard-wrapper">
+      <div class="fretboard-row">
+        <div class="settings-row">
+          <label class="setting-group">
+            <input type="checkbox" id="speed-tap-naturals-only" checked>
+            Natural only
+          </label>
+        </div>
+        <div class="fretboard-container">
+          <svg class="fretboard" viewBox="0 0 600 240">
+            <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
+            ${fretLines()}
+            ${stringLines()}
+            ${noteElements()}
+          </svg>
+          <div class="fret-numbers">
+            ${fretNumberElements()}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-controls">
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <span class="stats"></span>
+      </div>
+    </div>
+
+    <div class="quiz-area">
+      <div class="speed-tap-prompt"></div>
+      <div class="speed-tap-status">
+        <span class="speed-tap-progress"></span>
+        <span class="speed-tap-timer"></span>
+      </div>
+      <div class="feedback"></div>
       <div class="hint"></div>
     </div>
   </div>
@@ -303,6 +348,7 @@ ${musicDataJS}
 ${quizEngineJS}
 ${statsDisplayJS}
 ${quizFretboardJS}
+${quizSpeedTapJS}
 ${quizNoteSemitonesJS}
 ${quizIntervalSemitonesJS}
 ${quizSemitoneMathJS}

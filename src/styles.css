@@ -408,6 +408,27 @@ button {
   border-color: #4CAF50;
 }
 
+/* --- Speed Tap mode --- */
+.speed-tap-prompt {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
+.speed-tap-status {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 1.3rem;
+  margin: 0.5rem 0;
+}
+.speed-tap-progress {
+  font-weight: 500;
+}
+.speed-tap-timer {
+  color: #666;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Mobile layout */
 @media (max-width: 599px) {
   body {
