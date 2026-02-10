@@ -67,9 +67,28 @@ Per-item half-life forgetting curve: `P(recall) = 2^(-t/stability)`.
 - **Self-correction**: fast answer after long gap → stability boosted to at least
   `elapsedHours * 1.5` (handles off-app learning, e.g., actual guitar playing)
 - Within-session weighting: recall factor `1 + (1 - recall)` multiplies speed weight
-- String recommendations: on load, strings with most "due" items are auto-selected
-  and visually highlighted (orange indicator on toggle buttons)
 - Two heatmap modes: **retention** (default, predicted recall) and **speed** (EWMA)
+
+## String Recommendations ("Consolidate Before Expanding")
+
+On load, the app recommends which strings to practice. The algorithm gates
+expansion to new strings behind consolidation of what's already been started:
+
+1. **Partition** strings into "started" (≥ 1 item seen) and "unstarted" (all unseen).
+2. **Consolidation ratio** = mastered items / total seen items across all started
+   strings. An item is "mastered" when `recall >= recallThreshold` (0.5).
+3. **Rank** started strings by work remaining (`dueCount + unseenCount`); recommend
+   those above the median.
+4. **Expansion gate**: only suggest one unstarted string when `consolidationRatio
+   >= expansionThreshold` (0.7). This prevents recommending new strings while the
+   user is still weak on material they've already begun learning.
+5. **First launch**: no data → keep persisted selection (default: low E).
+
+Config: `expansionThreshold` (default 0.7) in `DEFAULT_CONFIG`.
+
+`getStringRecommendations` returns per-string:
+`{ string, dueCount, unseenCount, masteredCount, totalCount }` — separating
+"never seen" from "seen but forgotten" so the UI can make smarter decisions.
 
 ## Keyboard Shortcuts (during quiz)
 

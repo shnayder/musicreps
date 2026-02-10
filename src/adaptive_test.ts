@@ -561,7 +561,7 @@ describe("createAdaptiveSelector", () => {
     assert.ok(recall! > 0.99, `recall immediately after answer should be ~1, got ${recall}`);
   });
 
-  it("getStringRecommendations ranks strings by due count", () => {
+  it("getStringRecommendations ranks strings by needsWork (due + unseen)", () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
@@ -569,7 +569,7 @@ describe("createAdaptiveSelector", () => {
     selector.recordResponse("0-0", 1500);
     selector.recordResponse("0-1", 1500);
 
-    // String 1: no items answered (all unseen = all due)
+    // String 1: no items answered (all unseen)
     // (no recordResponse calls)
 
     const recs = selector.getStringRecommendations(
@@ -578,10 +578,56 @@ describe("createAdaptiveSelector", () => {
     );
 
     assert.equal(recs.length, 2);
-    // String 1 should be first (more due items)
+    // String 1 should be first (more unseen items = more work)
     assert.equal(recs[0].string, 1);
-    assert.equal(recs[0].dueCount, 2); // both unseen
+    assert.equal(recs[0].unseenCount, 2);
+    assert.equal(recs[0].dueCount, 0);
+    assert.equal(recs[0].masteredCount, 0);
     assert.equal(recs[1].string, 0);
-    assert.equal(recs[1].dueCount, 0); // both just answered
+    assert.equal(recs[1].unseenCount, 0);
+    assert.equal(recs[1].dueCount, 0);
+    assert.equal(recs[1].masteredCount, 2); // both just answered = retained
+  });
+
+  it("getStringRecommendations separates unseen from due items", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+
+    // String 0: item 0-0 answered recently, item 0-1 unseen
+    selector.recordResponse("0-0", 1500);
+
+    const recs = selector.getStringRecommendations(
+      [0],
+      (s) => [`${s}-0`, `${s}-1`],
+    );
+
+    assert.equal(recs[0].unseenCount, 1);  // 0-1 unseen
+    assert.equal(recs[0].masteredCount, 1); // 0-0 just answered
+    assert.equal(recs[0].dueCount, 0);      // none forgotten yet
+  });
+
+  it("getStringRecommendations counts due items separately from unseen", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+
+    // Record response for 0-0, then simulate time passing so recall drops
+    // We'll manipulate storage directly for this
+    storage.saveStats("0-0", {
+      recentTimes: [2000],
+      ewma: 2000,
+      sampleCount: 1,
+      lastSeen: Date.now() - 100 * 3600000,
+      stability: 4, // 4h half-life, 100h elapsed → recall ≈ 0
+      lastCorrectAt: Date.now() - 100 * 3600000,
+    });
+
+    const recs = selector.getStringRecommendations(
+      [0],
+      (s) => [`${s}-0`, `${s}-1`],
+    );
+
+    assert.equal(recs[0].dueCount, 1);      // 0-0 seen but forgotten
+    assert.equal(recs[0].unseenCount, 1);    // 0-1 never seen
+    assert.equal(recs[0].masteredCount, 0);
   });
 });

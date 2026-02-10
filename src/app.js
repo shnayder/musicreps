@@ -494,35 +494,45 @@ function applyRecommendations() {
   const allStrings = [0, 1, 2, 3, 4, 5];
   const recs = adaptiveSelector.getStringRecommendations(allStrings, getItemIdsForString);
 
-  // Check if there's any data at all
-  const hasAnyData = recs.some(r => r.dueCount < r.totalCount);
-  if (!hasAnyData) {
-    // No data yet (first launch or total reset) — keep persisted selection
+  // Partition into started (at least 1 item seen) and unstarted (all unseen)
+  const started = recs.filter(r => r.unseenCount < r.totalCount);
+  const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
+
+  // No data yet (first launch or total reset) — keep persisted selection
+  if (started.length === 0) {
     recommendedStrings = new Set();
     updateStringToggles();
     return;
   }
 
-  // Check if all strings are equally due (e.g., long absence)
-  const maxDue = recs[0].dueCount;
-  const minDue = recs[recs.length - 1].dueCount;
-  if (maxDue === minDue) {
-    // All equal — no useful recommendation, keep persisted selection
-    recommendedStrings = new Set();
-    updateStringToggles();
-    return;
-  }
+  // Compute consolidation ratio: of all items ever seen, how many are retained?
+  const totalSeen = started.reduce((sum, r) => sum + (r.masteredCount + r.dueCount), 0);
+  const totalMastered = started.reduce((sum, r) => sum + r.masteredCount, 0);
+  const consolidatedRatio = totalSeen > 0 ? totalMastered / totalSeen : 0;
 
-  // Recommend strings with above-median due counts
-  const medianDue = recs[Math.floor(recs.length / 2)].dueCount;
+  // Rank started strings by total work remaining (due + unseen on that string)
+  const startedByWork = [...started].sort(
+    (a, b) => (b.dueCount + b.unseenCount) - (a.dueCount + a.unseenCount)
+  );
+
+  // Build recommendation set from started strings with above-median work
+  const workCounts = startedByWork.map(r => r.dueCount + r.unseenCount);
+  const medianWork = workCounts[Math.floor(workCounts.length / 2)];
   recommendedStrings = new Set();
   const newEnabled = new Set();
-  for (const r of recs) {
-    if (r.dueCount > medianDue) {
+  for (const r of startedByWork) {
+    if (r.dueCount + r.unseenCount > medianWork) {
       recommendedStrings.add(r.string);
       newEnabled.add(r.string);
     }
   }
+
+  // Only suggest one new string if consolidation is high enough
+  if (consolidatedRatio >= DEFAULT_CONFIG.expansionThreshold && unstarted.length > 0) {
+    recommendedStrings.add(unstarted[0].string);
+    newEnabled.add(unstarted[0].string);
+  }
+
   if (newEnabled.size > 0) {
     enabledStrings = newEnabled;
     saveEnabledStrings();

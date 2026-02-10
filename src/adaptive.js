@@ -16,6 +16,7 @@ export const DEFAULT_CONFIG = {
   stabilityGrowthBase: 2.0,  // multiplier on each correct answer
   stabilityDecayOnWrong: 0.3,// multiplier on wrong answer
   recallThreshold: 0.5,      // P(recall) below this = "due"
+  expansionThreshold: 0.7,   // fraction of seen items that must be retained before suggesting new strings
   speedBonusMax: 1.5,        // fast answers grow stability up to this extra factor
   selfCorrectionThreshold: 1500, // ms — response time below this triggers self-correction
   automaticityTarget: 3000,      // ms — response time at which speedScore ≈ 0.5
@@ -252,23 +253,34 @@ export function createAdaptiveSelector(
   }
 
   /**
-   * Recommend strings to review. Returns array of { string, dueCount, totalCount }
-   * sorted by dueCount descending. getItemIds(stringIndex) should return
-   * the item IDs for that string.
+   * Recommend strings to review. Returns array of
+   * { string, dueCount, unseenCount, masteredCount, totalCount }
+   * sorted by needsWork (dueCount + unseenCount) descending.
+   * getItemIds(stringIndex) should return the item IDs for that string.
+   *
+   * - unseenCount: items with no stats at all (never practiced)
+   * - dueCount: items seen but recall < threshold (need review)
+   * - masteredCount: items with recall >= threshold (currently retained)
    */
   function getStringRecommendations(stringIndices, getItemIds) {
     const results = stringIndices.map((s) => {
       const items = getItemIds(s);
       let dueCount = 0;
+      let unseenCount = 0;
+      let masteredCount = 0;
       for (const id of items) {
         const recall = getRecall(id);
-        if (recall === null || recall < cfg.recallThreshold) {
+        if (recall === null) {
+          unseenCount++;
+        } else if (recall < cfg.recallThreshold) {
           dueCount++;
+        } else {
+          masteredCount++;
         }
       }
-      return { string: s, dueCount, totalCount: items.length };
+      return { string: s, dueCount, unseenCount, masteredCount, totalCount: items.length };
     });
-    results.sort((a, b) => b.dueCount - a.dueCount);
+    results.sort((a, b) => (b.dueCount + b.unseenCount) - (a.dueCount + a.unseenCount));
     return results;
   }
 
