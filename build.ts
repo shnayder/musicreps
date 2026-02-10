@@ -54,69 +54,54 @@ const html = `<!DOCTYPE html>
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.6</div>
+    <div class="version">v1.7</div>
   </div>
 
   <!-- Fretboard mode -->
   <div class="mode-screen" id="mode-fretboard">
     <div class="fretboard-wrapper">
-      <div class="fretboard-row">
-        <div class="settings-row">
-          <div class="string-toggles" id="string-toggles">
-            <button class="string-toggle" data-string="0">e</button>
-            <button class="string-toggle" data-string="1">B</button>
-            <button class="string-toggle" data-string="2">G</button>
-            <button class="string-toggle" data-string="3">D</button>
-            <button class="string-toggle" data-string="4">A</button>
-            <button class="string-toggle active" data-string="5">E</button>
-          </div>
-          <label class="setting-group">
-            <input type="checkbox" id="naturals-only" checked>
-            Natural only
-          </label>
-        </div>
-        <div class="fretboard-container">
-          <svg class="fretboard" id="fretboard" viewBox="0 0 600 240">
-            <!-- Nut (thick line at fret 0) -->
-            <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
-            <!-- Frets (vertical lines) -->
-            ${fretLines()}
-            <!-- Strings (horizontal lines) -->
-            ${stringLines()}
-            <!-- Note circles -->
-            ${noteElements()}
-          </svg>
-          <div class="fret-numbers">
-            ${fretNumberElements()}
-          </div>
+      <div class="fretboard-container">
+        <svg class="fretboard" id="fretboard" viewBox="0 0 600 240">
+          <!-- Nut (thick line at fret 0) -->
+          <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
+          <!-- Frets (vertical lines) -->
+          ${fretLines()}
+          <!-- Strings (horizontal lines) -->
+          ${stringLines()}
+          <!-- Note circles -->
+          ${noteElements()}
+        </svg>
+        <div class="fret-numbers">
+          ${fretNumberElements()}
         </div>
       </div>
     </div>
-
+    <div class="stats-container"></div>
     <div class="quiz-controls">
       <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="heatmap-btn">Show Retention</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="heatmap-btn">Show Recall</button>
         <span class="stats"></span>
       </div>
+      <div class="settings-row">
+        <div class="string-toggles" id="string-toggles">
+          <button class="string-toggle" data-string="0">e</button>
+          <button class="string-toggle" data-string="1">B</button>
+          <button class="string-toggle" data-string="2">G</button>
+          <button class="string-toggle" data-string="3">D</button>
+          <button class="string-toggle" data-string="4">A</button>
+          <button class="string-toggle active" data-string="5">E</button>
+        </div>
+        <label class="setting-group">
+          <input type="checkbox" id="naturals-only" checked>
+          Natural only
+        </label>
+      </div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
     </div>
-
     <div class="quiz-area">
-      <div class="heatmap-legend" id="retention-legend">
-        <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>Automatic</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>Getting there</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>Needs work</div>
-      </div>
-      <div class="heatmap-legend" id="speed-legend">
-        <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; 1.5s</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>1.5\u20133s</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>3\u20134.5s</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>4.5\u20136s</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&gt; 6s</div>
-      </div>
       <div class="countdown-container">
         <div class="countdown-bar"></div>
       </div>
@@ -142,15 +127,17 @@ const html = `<!DOCTYPE html>
 
   <!-- Note Semitones mode -->
   <div class="mode-screen" id="mode-noteSemitones">
+    <div class="stats-container"></div>
     <div class="quiz-controls">
       <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="heatmap-btn">Show Stats</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="heatmap-btn">Show Recall</button>
         <span class="stats"></span>
       </div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
     </div>
-    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -190,15 +177,17 @@ const html = `<!DOCTYPE html>
 
   <!-- Interval Semitones mode -->
   <div class="mode-screen" id="mode-intervalSemitones">
+    <div class="stats-container"></div>
     <div class="quiz-controls">
       <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="heatmap-btn">Show Stats</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="heatmap-btn">Show Recall</button>
         <span class="stats"></span>
       </div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
     </div>
-    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -238,15 +227,17 @@ const html = `<!DOCTYPE html>
 
   <!-- Semitone Math mode -->
   <div class="mode-screen" id="mode-semitoneMath">
+    <div class="stats-container"></div>
     <div class="quiz-controls">
       <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="heatmap-btn">Show Stats</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="heatmap-btn">Show Recall</button>
         <span class="stats"></span>
       </div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
     </div>
-    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -272,15 +263,17 @@ const html = `<!DOCTYPE html>
 
   <!-- Interval Math mode -->
   <div class="mode-screen" id="mode-intervalMath">
+    <div class="stats-container"></div>
     <div class="quiz-controls">
       <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="heatmap-btn">Show Stats</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="heatmap-btn">Show Recall</button>
         <span class="stats"></span>
       </div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
     </div>
-    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
