@@ -56,7 +56,7 @@ const html = `<!DOCTYPE html>
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.9</div>
+    <div class="version">v2.0</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -143,11 +143,11 @@ const html = `<!DOCTYPE html>
       </div>
     </div>
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div class="settings-row">
         <label class="setting-group">
           <input type="checkbox" id="speed-tap-naturals-only" checked>
