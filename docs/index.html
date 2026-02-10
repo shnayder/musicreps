@@ -103,17 +103,11 @@ body {
   align-items: center;
   width: 100%;
 }
-.fretboard-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  justify-content: center;
-}
 .string-toggles {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 2px;
+  justify-content: center;
 }
 .string-toggle {
   width: 28px;
@@ -430,31 +424,9 @@ button {
     padding: 0.25rem 0;
   }
 
-  .fretboard-wrapper {
-    align-items: stretch;
-  }
-
-  .fretboard-row {
-    flex-direction: column;
-    gap: 0.5rem;
-    width: 100%;
-  }
-
   .fretboard-container {
-    order: 1;
     width: 100%;
     max-width: none;
-  }
-  .fret-numbers { order: 2; }
-
-  .settings-row {
-    order: 3;
-  }
-
-  .string-toggles {
-    flex-direction: row;
-    padding: 0.5rem 0;
-    justify-content: center;
   }
 
   .answer-buttons {
@@ -486,33 +458,18 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.6</div>
+    <div class="version">v1.7</div>
   </div>
 
   <!-- Fretboard mode -->
   <div class="mode-screen" id="mode-fretboard">
     <div class="fretboard-wrapper">
-      <div class="fretboard-row">
-        <div class="settings-row">
-          <div class="string-toggles" id="string-toggles">
-            <button class="string-toggle" data-string="0">e</button>
-            <button class="string-toggle" data-string="1">B</button>
-            <button class="string-toggle" data-string="2">G</button>
-            <button class="string-toggle" data-string="3">D</button>
-            <button class="string-toggle" data-string="4">A</button>
-            <button class="string-toggle active" data-string="5">E</button>
-          </div>
-          <label class="setting-group">
-            <input type="checkbox" id="naturals-only" checked>
-            Natural only
-          </label>
-        </div>
-        <div class="fretboard-container">
-          <svg class="fretboard" id="fretboard" viewBox="0 0 600 240">
-            <!-- Nut (thick line at fret 0) -->
-            <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="4"/>
-            <!-- Frets (vertical lines) -->
-            <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="1"/>
+      <div class="fretboard-container">
+        <svg class="fretboard" id="fretboard" viewBox="0 0 600 240">
+          <!-- Nut (thick line at fret 0) -->
+          <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="4"/>
+          <!-- Frets (vertical lines) -->
+          <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="126" y1="0" x2="126" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="183" y1="0" x2="183" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="237" y1="0" x2="237" y2="240" stroke="#333" stroke-width="1"/>
@@ -525,15 +482,15 @@ button {
       <line x1="535" y1="0" x2="535" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="568" y1="0" x2="568" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="600" y1="0" x2="600" y2="240" stroke="#333" stroke-width="1"/>
-            <!-- Strings (horizontal lines) -->
-            <line x1="0" y1="20" x2="600" y2="20" stroke="#333" stroke-width="1"/>
+          <!-- Strings (horizontal lines) -->
+          <line x1="0" y1="20" x2="600" y2="20" stroke="#333" stroke-width="1"/>
       <line x1="0" y1="60" x2="600" y2="60" stroke="#333" stroke-width="1.5"/>
       <line x1="0" y1="100" x2="600" y2="100" stroke="#333" stroke-width="2"/>
       <line x1="0" y1="140" x2="600" y2="140" stroke="#333" stroke-width="2.5"/>
       <line x1="0" y1="180" x2="600" y2="180" stroke="#333" stroke-width="3"/>
       <line x1="0" y1="220" x2="600" y2="220" stroke="#333" stroke-width="3.5"/>
-            <!-- Note circles -->
-            <circle
+          <!-- Note circles -->
+          <circle
       class="note-circle"
       data-string="0"
       data-fret="0"
@@ -2171,42 +2128,42 @@ button {
       font-size="11"
       fill="#333"
     ></text>
-          </svg>
-          <div class="fret-numbers">
-            <div class="fret-number" style="left: 35%">3</div>
+        </svg>
+        <div class="fret-numbers">
+          <div class="fret-number" style="left: 35%">3</div>
     <div class="fret-number" style="left: 52%">5</div>
     <div class="fret-number" style="left: 67%">7</div>
     <div class="fret-number" style="left: 80.25%">9</div>
     <div class="fret-number" style="left: 97.33333333333334%">12</div>
-          </div>
         </div>
       </div>
     </div>
-
+    <div class="stats-container"></div>
     <div class="quiz-controls">
       <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="heatmap-btn">Show Retention</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="heatmap-btn">Show Recall</button>
         <span class="stats"></span>
       </div>
+      <div class="settings-row">
+        <div class="string-toggles" id="string-toggles">
+          <button class="string-toggle" data-string="0">e</button>
+          <button class="string-toggle" data-string="1">B</button>
+          <button class="string-toggle" data-string="2">G</button>
+          <button class="string-toggle" data-string="3">D</button>
+          <button class="string-toggle" data-string="4">A</button>
+          <button class="string-toggle active" data-string="5">E</button>
+        </div>
+        <label class="setting-group">
+          <input type="checkbox" id="naturals-only" checked>
+          Natural only
+        </label>
+      </div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
     </div>
-
     <div class="quiz-area">
-      <div class="heatmap-legend" id="retention-legend">
-        <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>Automatic</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>Getting there</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>Needs work</div>
-      </div>
-      <div class="heatmap-legend" id="speed-legend">
-        <div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; 1.5s</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>1.5–3s</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>3–4.5s</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>4.5–6s</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&gt; 6s</div>
-      </div>
       <div class="countdown-container">
         <div class="countdown-bar"></div>
       </div>
@@ -2232,15 +2189,17 @@ button {
 
   <!-- Note Semitones mode -->
   <div class="mode-screen" id="mode-noteSemitones">
+    <div class="stats-container"></div>
     <div class="quiz-controls">
       <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="heatmap-btn">Show Stats</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="heatmap-btn">Show Recall</button>
         <span class="stats"></span>
       </div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
     </div>
-    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -2280,15 +2239,17 @@ button {
 
   <!-- Interval Semitones mode -->
   <div class="mode-screen" id="mode-intervalSemitones">
+    <div class="stats-container"></div>
     <div class="quiz-controls">
       <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="heatmap-btn">Show Stats</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="heatmap-btn">Show Recall</button>
         <span class="stats"></span>
       </div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
     </div>
-    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -2328,15 +2289,17 @@ button {
 
   <!-- Semitone Math mode -->
   <div class="mode-screen" id="mode-semitoneMath">
+    <div class="stats-container"></div>
     <div class="quiz-controls">
       <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="heatmap-btn">Show Stats</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="heatmap-btn">Show Recall</button>
         <span class="stats"></span>
       </div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
     </div>
-    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -2362,15 +2325,17 @@ button {
 
   <!-- Interval Math mode -->
   <div class="mode-screen" id="mode-intervalMath">
+    <div class="stats-container"></div>
     <div class="quiz-controls">
       <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="heatmap-btn">Show Stats</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="heatmap-btn">Show Recall</button>
         <span class="stats"></span>
       </div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
     </div>
-    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -3255,7 +3220,8 @@ function buildStatsLegend(statsMode) {
 // Plugs into the shared quiz engine via the mode interface.
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
-// noteMatchesInput, createQuizEngine, DEFAULT_CONFIG
+// noteMatchesInput, createQuizEngine, DEFAULT_CONFIG,
+// getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend
 
 function createFretboardMode() {
   const container = document.getElementById('mode-fretboard');
@@ -3334,19 +3300,11 @@ function createFretboardMode() {
   function showHeatmapView(mode, selector) {
     heatmapMode = mode;
     const btn = container.querySelector('.heatmap-btn');
-    const quizArea = container.querySelector('.quiz-area');
-    quizArea.classList.add('active');
+    const statsContainer = container.querySelector('.stats-container');
 
-    // Hide quiz-specific elements
-    container.querySelector('.countdown-container').style.display = 'none';
-    container.querySelector('.note-buttons').style.display = 'none';
-    container.querySelector('.feedback').style.display = 'none';
-    container.querySelector('.time-display').style.display = 'none';
-    container.querySelector('.hint').style.display = 'none';
-
-    // Show appropriate legend
-    container.querySelector('#retention-legend').classList.toggle('active', mode === 'retention');
-    container.querySelector('#speed-legend').classList.toggle('active', mode === 'speed');
+    // Populate legend via shared helper
+    statsContainer.innerHTML = buildStatsLegend(mode);
+    statsContainer.style.display = '';
 
     if (mode === 'retention') {
       btn.textContent = 'Show Speed';
@@ -3358,7 +3316,7 @@ function createFretboardMode() {
         }
       }
     } else {
-      btn.textContent = 'Hide Heatmap';
+      btn.textContent = 'Hide Stats';
       for (let s = 0; s <= 5; s++) {
         for (let f = 0; f < 13; f++) {
           const stats = selector.getStats(`${s}-${f}`);
@@ -3372,17 +3330,11 @@ function createFretboardMode() {
 
   function hideHeatmap() {
     heatmapMode = null;
-    const btn = container.querySelector('.heatmap-btn');
-    btn.textContent = 'Show Retention';
+    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
     clearAll();
-    container.querySelector('.quiz-area').classList.remove('active');
-    container.querySelector('#retention-legend').classList.remove('active');
-    container.querySelector('#speed-legend').classList.remove('active');
-    container.querySelector('.countdown-container').style.display = '';
-    container.querySelector('.note-buttons').style.display = '';
-    container.querySelector('.feedback').style.display = '';
-    container.querySelector('.time-display').style.display = '';
-    container.querySelector('.hint').style.display = '';
+    const statsContainer = container.querySelector('.stats-container');
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
   }
 
   function toggleHeatmap(selector) {
@@ -3737,7 +3689,7 @@ function createNoteSemitonesMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
   }
 
   function toggleStats() {
@@ -3948,7 +3900,7 @@ function createIntervalSemitonesMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
   }
 
   function toggleStats() {
@@ -4175,7 +4127,7 @@ function createSemitoneMathMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
   }
 
   function toggleStats() {
@@ -4348,7 +4300,7 @@ function createIntervalMathMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
   }
 
   function toggleStats() {

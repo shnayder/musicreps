@@ -2,7 +2,8 @@
 // Plugs into the shared quiz engine via the mode interface.
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
-// noteMatchesInput, createQuizEngine, DEFAULT_CONFIG
+// noteMatchesInput, createQuizEngine, DEFAULT_CONFIG,
+// getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend
 
 function createFretboardMode() {
   const container = document.getElementById('mode-fretboard');
@@ -81,19 +82,11 @@ function createFretboardMode() {
   function showHeatmapView(mode, selector) {
     heatmapMode = mode;
     const btn = container.querySelector('.heatmap-btn');
-    const quizArea = container.querySelector('.quiz-area');
-    quizArea.classList.add('active');
+    const statsContainer = container.querySelector('.stats-container');
 
-    // Hide quiz-specific elements
-    container.querySelector('.countdown-container').style.display = 'none';
-    container.querySelector('.note-buttons').style.display = 'none';
-    container.querySelector('.feedback').style.display = 'none';
-    container.querySelector('.time-display').style.display = 'none';
-    container.querySelector('.hint').style.display = 'none';
-
-    // Show appropriate legend
-    container.querySelector('#retention-legend').classList.toggle('active', mode === 'retention');
-    container.querySelector('#speed-legend').classList.toggle('active', mode === 'speed');
+    // Populate legend via shared helper
+    statsContainer.innerHTML = buildStatsLegend(mode);
+    statsContainer.style.display = '';
 
     if (mode === 'retention') {
       btn.textContent = 'Show Speed';
@@ -105,7 +98,7 @@ function createFretboardMode() {
         }
       }
     } else {
-      btn.textContent = 'Hide Heatmap';
+      btn.textContent = 'Hide Stats';
       for (let s = 0; s <= 5; s++) {
         for (let f = 0; f < 13; f++) {
           const stats = selector.getStats(`${s}-${f}`);
@@ -119,17 +112,11 @@ function createFretboardMode() {
 
   function hideHeatmap() {
     heatmapMode = null;
-    const btn = container.querySelector('.heatmap-btn');
-    btn.textContent = 'Show Retention';
+    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
     clearAll();
-    container.querySelector('.quiz-area').classList.remove('active');
-    container.querySelector('#retention-legend').classList.remove('active');
-    container.querySelector('#speed-legend').classList.remove('active');
-    container.querySelector('.countdown-container').style.display = '';
-    container.querySelector('.note-buttons').style.display = '';
-    container.querySelector('.feedback').style.display = '';
-    container.querySelector('.time-display').style.display = '';
-    container.querySelector('.hint').style.display = '';
+    const statsContainer = container.querySelector('.stats-container');
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
   }
 
   function toggleHeatmap(selector) {

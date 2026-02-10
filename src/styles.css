@@ -96,17 +96,11 @@ body {
   align-items: center;
   width: 100%;
 }
-.fretboard-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  justify-content: center;
-}
 .string-toggles {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 2px;
+  justify-content: center;
 }
 .string-toggle {
   width: 28px;
@@ -423,31 +417,9 @@ button {
     padding: 0.25rem 0;
   }
 
-  .fretboard-wrapper {
-    align-items: stretch;
-  }
-
-  .fretboard-row {
-    flex-direction: column;
-    gap: 0.5rem;
-    width: 100%;
-  }
-
   .fretboard-container {
-    order: 1;
     width: 100%;
     max-width: none;
-  }
-  .fret-numbers { order: 2; }
-
-  .settings-row {
-    order: 3;
-  }
-
-  .string-toggles {
-    flex-direction: row;
-    padding: 0.5rem 0;
-    justify-content: center;
   }
 
   .answer-buttons {

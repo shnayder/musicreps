@@ -55,7 +55,7 @@ function createIntervalSemitonesMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
   }
 
   function toggleStats() {
