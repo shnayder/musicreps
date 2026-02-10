@@ -69,24 +69,21 @@ describe("createNoteKeyHandler", () => {
 });
 
 describe("updateModeStats", () => {
-  it("displays median EWMA in stats element", () => {
+  it("clears stats element", () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
     selector.recordResponse("a", 2000, true);
-    selector.recordResponse("b", 4000, true);
-    selector.recordResponse("c", 3000, true);
 
-    const el = { textContent: "", innerHTML: "" } as any;
+    const el = { textContent: "old", innerHTML: "old" } as any;
     updateModeStats(selector, ["a", "b", "c"], el);
-    assert.ok(el.innerHTML.includes("3000ms"));
+    assert.equal(el.textContent, "");
   });
 
-  it("shows nothing when no stats", () => {
+  it("handles missing element gracefully", () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
-    const el = { textContent: "", innerHTML: "" } as any;
-    updateModeStats(selector, ["x", "y"], el);
-    assert.equal(el.textContent, "");
+    // Should not throw
+    updateModeStats(selector, ["x", "y"], null as any);
   });
 });
 

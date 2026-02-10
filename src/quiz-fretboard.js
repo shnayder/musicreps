@@ -131,39 +131,9 @@ function createFretboardMode() {
 
   // --- Stats ---
 
-  function median(arr) {
-    if (arr.length === 0) return null;
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
-  }
-
-  function getTimeColor(ms) {
-    if (ms === null) return '';
-    if (ms < 3000) return 'hsl(120, 70%, 35%)';
-    if (ms < 4000) return 'hsl(80, 70%, 35%)';
-    if (ms < 5000) return 'hsl(50, 70%, 40%)';
-    if (ms < 6000) return 'hsl(30, 70%, 40%)';
-    return 'hsl(0, 70%, 40%)';
-  }
-
   function updateStats(selector) {
-    const ewmas = [];
-    for (let s = 0; s <= 5; s++) {
-      for (let f = 0; f < 13; f++) {
-        const stats = selector.getStats(`${s}-${f}`);
-        if (stats && stats.ewma) ewmas.push(stats.ewma);
-      }
-    }
-    const med = median(ewmas);
     const statsEl = container.querySelector('.stats');
-    if (statsEl) {
-      if (med !== null) {
-        statsEl.innerHTML = `median: <span style="color:${getTimeColor(Math.round(med))}">${Math.round(med)}ms</span>`;
-      } else {
-        statsEl.textContent = '';
-      }
-    }
+    if (statsEl) statsEl.textContent = '';
   }
 
   // --- Recommendations ---

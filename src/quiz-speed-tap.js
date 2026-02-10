@@ -92,22 +92,27 @@ function createSpeedTapMode() {
     const heatmapBtn = container.querySelector('.heatmap-btn');
     if (!statsContainer) return;
 
-    const notes = naturalsOnly
-      ? NOTES.filter(n => NATURAL_NOTES.includes(n.name))
-      : NOTES;
+    // Always show all 12 notes regardless of naturalsOnly setting
+    const notes = NOTES;
 
     let html = buildStatsLegend('retention');
-    html += '<table class="stats-table"><thead><tr>';
-    for (const note of notes) {
-      html += '<th>' + note.displayName + '</th>';
+
+    // Split into two rows of 6 to fit on mobile
+    const half = Math.ceil(notes.length / 2);
+    for (let i = 0; i < notes.length; i += half) {
+      const chunk = notes.slice(i, i + half);
+      html += '<table class="stats-table"><thead><tr>';
+      for (const note of chunk) {
+        html += '<th>' + note.displayName + '</th>';
+      }
+      html += '</tr></thead><tbody><tr>';
+      for (const note of chunk) {
+        const auto = selector.getAutomaticity(note.name);
+        const color = getAutomaticityColor(auto);
+        html += '<td class="stats-cell" style="background:' + color + '"></td>';
+      }
+      html += '</tr></tbody></table>';
     }
-    html += '</tr></thead><tbody><tr>';
-    for (const note of notes) {
-      const auto = selector.getAutomaticity(note.name);
-      const color = getAutomaticityColor(auto);
-      html += '<td class="stats-cell" style="background:' + color + '"></td>';
-    }
-    html += '</tr></tbody></table>';
 
     statsContainer.innerHTML = html;
     statsContainer.style.display = '';
