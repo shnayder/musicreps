@@ -97,22 +97,17 @@ function createSpeedTapMode() {
 
     let html = buildStatsLegend('retention');
 
-    // Split into two rows of 6 to fit on mobile
-    const half = Math.ceil(notes.length / 2);
-    for (let i = 0; i < notes.length; i += half) {
-      const chunk = notes.slice(i, i + half);
-      html += '<table class="stats-table"><thead><tr>';
-      for (const note of chunk) {
-        html += '<th>' + note.displayName + '</th>';
-      }
-      html += '</tr></thead><tbody><tr>';
-      for (const note of chunk) {
-        const auto = selector.getAutomaticity(note.name);
-        const color = getAutomaticityColor(auto);
-        html += '<td class="stats-cell" style="background:' + color + '"></td>';
-      }
-      html += '</tr></tbody></table>';
+    html += '<table class="stats-table speed-tap-stats"><thead><tr>';
+    for (const note of notes) {
+      html += '<th>' + note.displayName + '</th>';
     }
+    html += '</tr></thead><tbody><tr>';
+    for (const note of notes) {
+      const auto = selector.getAutomaticity(note.name);
+      const color = getAutomaticityColor(auto);
+      html += '<td class="stats-cell" style="background:' + color + '"></td>';
+    }
+    html += '</tr></tbody></table>';
 
     statsContainer.innerHTML = html;
     statsContainer.style.display = '';
@@ -151,6 +146,8 @@ function createSpeedTapMode() {
     heatmapBtn: container.querySelector('.heatmap-btn'),
     stats: container.querySelector('.stats'),
     quizArea: container.querySelector('.quiz-area'),
+    fretboardWrapper: container.querySelector('.fretboard-wrapper'),
+    statsControls: container.querySelector('.stats-controls'),
   };
 
   // --- Timer ---
@@ -305,8 +302,9 @@ function createSpeedTapMode() {
   function start() {
     active = true;
     if (statsVisible) hideNoteStats();
+    if (els.fretboardWrapper) els.fretboardWrapper.style.display = '';
+    if (els.statsControls) els.statsControls.style.display = 'none';
     if (els.startBtn) els.startBtn.style.display = 'none';
-    if (els.heatmapBtn) els.heatmapBtn.style.display = 'none';
     if (els.stopBtn) els.stopBtn.style.display = 'inline';
     if (els.quizArea) els.quizArea.classList.add('active');
     nextRound();
@@ -332,8 +330,9 @@ function createSpeedTapMode() {
     }
     if (els.hint) els.hint.textContent = '';
 
+    if (els.fretboardWrapper) els.fretboardWrapper.style.display = 'none';
+    if (els.statsControls) els.statsControls.style.display = '';
     if (els.startBtn) els.startBtn.style.display = 'inline';
-    if (els.heatmapBtn) els.heatmapBtn.style.display = 'inline';
     if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.quizArea) els.quizArea.classList.remove('active');
 
@@ -367,6 +366,7 @@ function createSpeedTapMode() {
     if (els.stopBtn) els.stopBtn.addEventListener('click', () => stop());
     if (els.heatmapBtn) els.heatmapBtn.addEventListener('click', () => toggleNoteStats());
 
+    if (els.fretboardWrapper) els.fretboardWrapper.style.display = 'none';
     updateStats();
     showNoteStats();
   }

@@ -304,9 +304,9 @@ button {
 .heatmap-legend {
   display: none;
   justify-content: center;
-  gap: 0.8rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
-  margin: 1rem 0;
+  margin: 0.75rem 0;
 }
 .heatmap-legend.active {
   display: flex;
@@ -314,13 +314,13 @@ button {
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.85rem;
+  gap: 0.2rem;
+  font-size: 0.75rem;
   color: #666;
 }
 .legend-swatch {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   border-radius: 3px;
   border: 1px solid #999;
 }
@@ -432,6 +432,24 @@ button {
 .speed-tap-timer {
   color: #666;
   font-variant-numeric: tabular-nums;
+}
+.speed-tap-stats {
+  font-size: 0.75rem;
+}
+.speed-tap-stats th, .speed-tap-stats td {
+  padding: 0.2rem 0.3rem;
+}
+.speed-tap-stats .stats-cell {
+  width: 24px;
+  height: 20px;
+}
+
+/* --- Stats section (Speed Tap) --- */
+.stats-controls {
+  text-align: center;
+  margin: 0.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #ddd;
 }
 
 /* Mobile layout */
