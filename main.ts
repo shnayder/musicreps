@@ -29,7 +29,7 @@ async function readModule(rel: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function buildHTML(): Promise<string> {
-  const [css, adaptiveJS, musicDataJS, quizEngineJS, quizFretboardJS,
+  const [css, adaptiveJS, musicDataJS, quizEngineJS, statsDisplayJS, quizFretboardJS,
     quizNoteSemitonesJS, quizIntervalSemitonesJS, quizSemitoneMathJS, quizIntervalMathJS,
     navigationJS, appJS] =
     await Promise.all([
@@ -37,6 +37,7 @@ async function buildHTML(): Promise<string> {
       readModule("./src/adaptive.js"),
       readModule("./src/music-data.js"),
       readModule("./src/quiz-engine.js"),
+      readModule("./src/stats-display.js"),
       readFile("./src/quiz-fretboard.js"),
       readFile("./src/quiz-note-semitones.js"),
       readFile("./src/quiz-interval-semitones.js"),
@@ -70,7 +71,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.5</div>
+    <div class="version">v1.6</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -161,10 +162,12 @@ async function buildHTML(): Promise<string> {
     <div class="quiz-controls">
       <div>
         <button class="start-btn">Start Quiz</button>
+        <button class="heatmap-btn">Show Stats</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <span class="stats"></span>
       </div>
     </div>
+    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -207,10 +210,12 @@ async function buildHTML(): Promise<string> {
     <div class="quiz-controls">
       <div>
         <button class="start-btn">Start Quiz</button>
+        <button class="heatmap-btn">Show Stats</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <span class="stats"></span>
       </div>
     </div>
+    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -253,10 +258,12 @@ async function buildHTML(): Promise<string> {
     <div class="quiz-controls">
       <div>
         <button class="start-btn">Start Quiz</button>
+        <button class="heatmap-btn">Show Stats</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <span class="stats"></span>
       </div>
     </div>
+    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -285,10 +292,12 @@ async function buildHTML(): Promise<string> {
     <div class="quiz-controls">
       <div>
         <button class="start-btn">Start Quiz</button>
+        <button class="heatmap-btn">Show Stats</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <span class="stats"></span>
       </div>
     </div>
+    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -316,6 +325,7 @@ async function buildHTML(): Promise<string> {
 ${adaptiveJS}
 ${musicDataJS}
 ${quizEngineJS}
+${statsDisplayJS}
 ${quizFretboardJS}
 ${quizNoteSemitonesJS}
 ${quizIntervalSemitonesJS}

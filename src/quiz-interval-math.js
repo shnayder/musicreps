@@ -5,7 +5,8 @@
 // Grouped by interval for future group toggles.
 //
 // Depends on globals: NOTES, INTERVALS, noteAdd, noteSub,
-// noteMatchesInput, createQuizEngine, createNoteKeyHandler, updateModeStats
+// noteMatchesInput, createQuizEngine, createNoteKeyHandler, updateModeStats,
+// renderStatsGrid, buildStatsLegend
 
 function createIntervalMathMode() {
   const container = document.getElementById('mode-intervalMath');
@@ -35,6 +36,62 @@ function createIntervalMathMode() {
   }
 
   let currentItem = null;
+  let statsMode = null; // null | 'retention' | 'speed'
+  let statsDir = '+';   // '+' | '-'
+
+  function showStats(mode) {
+    statsMode = mode;
+    const statsContainer = container.querySelector('.stats-container');
+    const btn = container.querySelector('.heatmap-btn');
+    const colLabels = MATH_INTERVALS.map(i => i.abbrev);
+
+    statsContainer.innerHTML = '';
+
+    // Direction toggle
+    const dirToggle = document.createElement('div');
+    dirToggle.className = 'stats-dir-toggle';
+    const plusBtn = document.createElement('button');
+    plusBtn.textContent = '+';
+    plusBtn.className = 'dir-btn' + (statsDir === '+' ? ' active' : '');
+    plusBtn.addEventListener('click', () => { statsDir = '+'; showStats(statsMode); });
+    const minusBtn = document.createElement('button');
+    minusBtn.textContent = '\u2212';
+    minusBtn.className = 'dir-btn' + (statsDir === '-' ? ' active' : '');
+    minusBtn.addEventListener('click', () => { statsDir = '-'; showStats(statsMode); });
+    dirToggle.appendChild(plusBtn);
+    dirToggle.appendChild(minusBtn);
+    statsContainer.appendChild(dirToggle);
+
+    // Legend
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = buildStatsLegend(mode);
+    statsContainer.appendChild(legendDiv);
+
+    // Grid
+    const gridDiv = document.createElement('div');
+    gridDiv.className = 'stats-grid-wrapper';
+    statsContainer.appendChild(gridDiv);
+    renderStatsGrid(engine.selector, colLabels, function(noteName, colIdx) {
+      return noteName + statsDir + MATH_INTERVALS[colIdx].abbrev;
+    }, mode, gridDiv);
+
+    statsContainer.style.display = '';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+  }
+
+  function hideStats() {
+    statsMode = null;
+    const statsContainer = container.querySelector('.stats-container');
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
+    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+  }
+
+  function toggleStats() {
+    if (statsMode === null) showStats('retention');
+    else if (statsMode === 'retention') showStats('speed');
+    else hideStats();
+  }
 
   const mode = {
     id: 'intervalMath',
@@ -58,12 +115,14 @@ function createIntervalMathMode() {
 
     onStart() {
       noteKeyHandler.reset();
+      hideStats();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
       noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      showStats('retention');
     },
 
     handleKey(e, { submitAnswer }) {
@@ -88,11 +147,13 @@ function createIntervalMathMode() {
       });
     });
 
-    // Start/stop
+    // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+    container.querySelector('.heatmap-btn').addEventListener('click', toggleStats);
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    showStats('retention');
   }
 
   return {

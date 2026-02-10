@@ -339,6 +339,84 @@ button {
   cursor: pointer;
 }
 
+/* --- Stats tables (lookup modes) --- */
+.stats-container {
+  text-align: center;
+  margin: 0.5rem 0;
+}
+.stats-table {
+  border-collapse: collapse;
+  margin: 0.5rem auto;
+  font-size: 0.9rem;
+}
+.stats-table th, .stats-table td {
+  border: 1px solid #ccc;
+  padding: 0.3rem 0.6rem;
+  text-align: center;
+}
+.stats-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+.stats-cell {
+  width: 36px;
+  height: 24px;
+  border-radius: 2px;
+}
+
+/* --- Stats grids (math modes) --- */
+.stats-grid-wrapper {
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+.stats-grid {
+  border-collapse: collapse;
+  margin: 0 auto;
+  font-size: 0.8rem;
+}
+.stats-grid th, .stats-grid td {
+  border: 1px solid #ccc;
+  padding: 0.15rem 0.25rem;
+  text-align: center;
+}
+.stats-grid th {
+  background: #f5f5f5;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.stats-grid .stats-cell {
+  width: 26px;
+  height: 22px;
+}
+.stats-grid-row-label {
+  font-weight: 600;
+  background: #f5f5f5;
+  padding: 0.15rem 0.4rem;
+}
+
+/* --- Direction toggle (math mode stats) --- */
+.stats-dir-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+}
+.dir-btn {
+  padding: 0.3rem 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: 2px solid #999;
+  border-radius: 6px;
+  background: #f5f5f5;
+  cursor: pointer;
+  margin: 0;
+}
+.dir-btn.active {
+  background: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+
 /* Mobile layout */
 @media (max-width: 599px) {
   body {
@@ -406,7 +484,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.5</div>
+    <div class="version">v1.6</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -2155,10 +2233,12 @@ button {
     <div class="quiz-controls">
       <div>
         <button class="start-btn">Start Quiz</button>
+        <button class="heatmap-btn">Show Stats</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <span class="stats"></span>
       </div>
     </div>
+    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -2201,10 +2281,12 @@ button {
     <div class="quiz-controls">
       <div>
         <button class="start-btn">Start Quiz</button>
+        <button class="heatmap-btn">Show Stats</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <span class="stats"></span>
       </div>
     </div>
+    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -2247,10 +2329,12 @@ button {
     <div class="quiz-controls">
       <div>
         <button class="start-btn">Start Quiz</button>
+        <button class="heatmap-btn">Show Stats</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <span class="stats"></span>
       </div>
     </div>
+    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -2279,10 +2363,12 @@ button {
     <div class="quiz-controls">
       <div>
         <button class="start-btn">Start Quiz</button>
+        <button class="heatmap-btn">Show Stats</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <span class="stats"></span>
       </div>
     </div>
+    <div class="stats-container"></div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -3045,6 +3131,123 @@ function createQuizEngine(mode, container) {
   };
 }
 
+// Stats display helpers: shared color functions, table rendering for lookup
+// modes, and heatmap grid rendering for math modes.
+//
+// ES module — main.ts strips "export" keywords for browser inlining.
+// Depends on globals (browser): NOTES, INTERVALS
+
+function getAutomaticityColor(auto) {
+  if (auto === null) return '#ddd';
+  if (auto > 0.8) return 'hsl(120, 60%, 65%)';
+  if (auto > 0.6) return 'hsl(80, 60%, 65%)';
+  if (auto > 0.4) return 'hsl(50, 60%, 65%)';
+  if (auto > 0.2) return 'hsl(30, 60%, 65%)';
+  return 'hsl(0, 60%, 65%)';
+}
+
+function getSpeedHeatmapColor(ms) {
+  if (ms === null) return '#ddd';
+  if (ms < 1500) return 'hsl(120, 60%, 65%)';
+  if (ms < 3000) return 'hsl(80, 60%, 65%)';
+  if (ms < 4500) return 'hsl(50, 60%, 65%)';
+  if (ms < 6000) return 'hsl(30, 60%, 65%)';
+  return 'hsl(0, 60%, 65%)';
+}
+
+function getStatsCellColor(selector, itemId, statsMode) {
+  if (statsMode === 'retention') {
+    return getAutomaticityColor(selector.getAutomaticity(itemId));
+  }
+  const stats = selector.getStats(itemId);
+  return getSpeedHeatmapColor(stats ? stats.ewma : null);
+}
+
+/**
+ * Render a reference table for bidirectional lookup modes.
+ *
+ * @param {object}   selector  - adaptive selector instance
+ * @param {Array}    rows      - [{ label, sublabel, _colHeader, fwdItemId, revItemId }]
+ * @param {string}   fwdHeader - column header for forward direction (e.g. "N\u2192#")
+ * @param {string}   revHeader - column header for reverse direction (e.g. "#\u2192N")
+ * @param {string}   statsMode - 'retention' | 'speed'
+ * @param {Element}  containerEl
+ */
+function renderStatsTable(selector, rows, fwdHeader, revHeader, statsMode, containerEl) {
+  let html = '<table class="stats-table"><thead><tr>';
+  html += '<th>' + rows[0]._colHeader + '</th><th>#</th>';
+  html += '<th>' + fwdHeader + '</th><th>' + revHeader + '</th>';
+  html += '</tr></thead><tbody>';
+
+  for (const row of rows) {
+    const fwdColor = getStatsCellColor(selector, row.fwdItemId, statsMode);
+    const revColor = getStatsCellColor(selector, row.revItemId, statsMode);
+    html += '<tr>';
+    html += '<td>' + row.label + '</td>';
+    html += '<td>' + row.sublabel + '</td>';
+    html += '<td class="stats-cell" style="background:' + fwdColor + '"></td>';
+    html += '<td class="stats-cell" style="background:' + revColor + '"></td>';
+    html += '</tr>';
+  }
+
+  html += '</tbody></table>';
+  containerEl.innerHTML = html;
+}
+
+/**
+ * Render a heatmap grid for math modes (12 notes x 11 offsets/intervals).
+ *
+ * @param {object}   selector    - adaptive selector instance
+ * @param {Array}    colLabels   - column header labels (e.g. ["1","2",...] or ["m2","M2",...])
+ * @param {Function} getItemId   - (noteName, colIndex) => itemId string
+ * @param {string}   statsMode   - 'retention' | 'speed'
+ * @param {Element}  containerEl
+ * @param {Array}    [notes]     - optional notes array (defaults to global NOTES)
+ */
+function renderStatsGrid(selector, colLabels, getItemId, statsMode, containerEl, notes) {
+  const noteList = notes || NOTES;
+  let html = '<table class="stats-grid"><thead><tr><th></th>';
+  for (const col of colLabels) {
+    html += '<th>' + col + '</th>';
+  }
+  html += '</tr></thead><tbody>';
+
+  for (const note of noteList) {
+    html += '<tr><td class="stats-grid-row-label">' + note.name + '</td>';
+    for (let i = 0; i < colLabels.length; i++) {
+      const itemId = getItemId(note.name, i);
+      const color = getStatsCellColor(selector, itemId, statsMode);
+      html += '<td class="stats-cell" style="background:' + color + '"></td>';
+    }
+    html += '</tr>';
+  }
+
+  html += '</tbody></table>';
+  containerEl.innerHTML = html;
+}
+
+/**
+ * Build a shared legend HTML string.
+ */
+function buildStatsLegend(statsMode) {
+  if (statsMode === 'retention') {
+    return '<div class="heatmap-legend active">'
+      + '<div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>'
+      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>Automatic</div>'
+      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>Getting there</div>'
+      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>Needs work</div>'
+      + '</div>';
+  }
+  return '<div class="heatmap-legend active">'
+    + '<div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>'
+    + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; 1.5s</div>'
+    + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>1.5\u20133s</div>'
+    + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>3\u20134.5s</div>'
+    + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>4.5\u20136s</div>'
+    + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&gt; 6s</div>'
+    + '</div>';
+}
+
 // Fretboard quiz mode: identify the note at a highlighted fretboard position.
 // Plugs into the shared quiz engine via the mode interface.
 //
@@ -3123,24 +3326,7 @@ function createFretboardMode() {
   }
 
   // --- Heatmap ---
-
-  function getSpeedHeatmapColor(ms) {
-    if (ms === null) return '#ddd';
-    if (ms < 1500) return 'hsl(120, 60%, 65%)';
-    if (ms < 3000) return 'hsl(80, 60%, 65%)';
-    if (ms < 4500) return 'hsl(50, 60%, 65%)';
-    if (ms < 6000) return 'hsl(30, 60%, 65%)';
-    return 'hsl(0, 60%, 65%)';
-  }
-
-  function getAutomaticityColor(auto) {
-    if (auto === null) return '#ddd';
-    if (auto > 0.8) return 'hsl(120, 60%, 65%)';
-    if (auto > 0.6) return 'hsl(80, 60%, 65%)';
-    if (auto > 0.4) return 'hsl(50, 60%, 65%)';
-    if (auto > 0.2) return 'hsl(30, 60%, 65%)';
-    return 'hsl(0, 60%, 65%)';
-  }
+  // Color functions: getAutomaticityColor, getSpeedHeatmapColor from stats-display.js
 
   function showHeatmapView(mode, selector) {
     heatmapMode = mode;
@@ -3495,7 +3681,7 @@ function createFretboardMode() {
 // 24 items total (12 notes x 2 directions).
 //
 // Depends on globals: NOTES, createQuizEngine, createNoteKeyHandler,
-// updateModeStats
+// updateModeStats, renderStatsTable, buildStatsLegend
 
 function createNoteSemitonesMode() {
   const container = document.getElementById('mode-noteSemitones');
@@ -3514,6 +3700,48 @@ function createNoteSemitonesMode() {
   }
 
   let currentItem = null;
+  let statsMode = null; // null | 'retention' | 'speed'
+
+  // Build row definitions for the stats table
+  function getTableRows() {
+    return NOTES.map(note => ({
+      label: note.displayName,
+      sublabel: String(note.num),
+      _colHeader: 'Note',
+      fwdItemId: note.name + ':fwd',
+      revItemId: note.name + ':rev',
+    }));
+  }
+
+  function showStats(mode) {
+    statsMode = mode;
+    const statsContainer = container.querySelector('.stats-container');
+    const btn = container.querySelector('.heatmap-btn');
+    const legendHtml = buildStatsLegend(mode);
+    statsContainer.innerHTML = '';
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = legendHtml;
+    statsContainer.appendChild(legendDiv);
+    const tableDiv = document.createElement('div');
+    statsContainer.appendChild(tableDiv);
+    renderStatsTable(engine.selector, getTableRows(), 'N\u2192#', '#\u2192N', mode, tableDiv);
+    statsContainer.style.display = '';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+  }
+
+  function hideStats() {
+    statsMode = null;
+    const statsContainer = container.querySelector('.stats-container');
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
+    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+  }
+
+  function toggleStats() {
+    if (statsMode === null) showStats('retention');
+    else if (statsMode === 'retention') showStats('speed');
+    else hideStats();
+  }
 
   const mode = {
     id: 'noteSemitones',
@@ -3558,6 +3786,7 @@ function createNoteSemitonesMode() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
+      hideStats();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
@@ -3567,6 +3796,7 @@ function createNoteSemitonesMode() {
       pendingDigit = null;
       pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      showStats('retention');
     },
 
     handleKey(e, { submitAnswer }) {
@@ -3634,11 +3864,13 @@ function createNoteSemitonesMode() {
       });
     });
 
-    // Start/stop
+    // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+    container.querySelector('.heatmap-btn').addEventListener('click', toggleStats);
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    showStats('retention');
   }
 
   return {
@@ -3661,7 +3893,7 @@ function createNoteSemitonesMode() {
 // 24 items total (12 intervals x 2 directions).
 //
 // Depends on globals: INTERVALS, intervalMatchesInput, createQuizEngine,
-// updateModeStats
+// updateModeStats, renderStatsTable, buildStatsLegend
 
 function createIntervalSemitonesMode() {
   const container = document.getElementById('mode-intervalSemitones');
@@ -3680,6 +3912,47 @@ function createIntervalSemitonesMode() {
   }
 
   let currentItem = null;
+  let statsMode = null; // null | 'retention' | 'speed'
+
+  function getTableRows() {
+    return INTERVALS.map(interval => ({
+      label: interval.abbrev,
+      sublabel: String(interval.num),
+      _colHeader: 'Interval',
+      fwdItemId: interval.abbrev + ':fwd',
+      revItemId: interval.abbrev + ':rev',
+    }));
+  }
+
+  function showStats(mode) {
+    statsMode = mode;
+    const statsContainer = container.querySelector('.stats-container');
+    const btn = container.querySelector('.heatmap-btn');
+    const legendHtml = buildStatsLegend(mode);
+    statsContainer.innerHTML = '';
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = legendHtml;
+    statsContainer.appendChild(legendDiv);
+    const tableDiv = document.createElement('div');
+    statsContainer.appendChild(tableDiv);
+    renderStatsTable(engine.selector, getTableRows(), 'I\u2192#', '#\u2192I', mode, tableDiv);
+    statsContainer.style.display = '';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+  }
+
+  function hideStats() {
+    statsMode = null;
+    const statsContainer = container.querySelector('.stats-container');
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
+    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+  }
+
+  function toggleStats() {
+    if (statsMode === null) showStats('retention');
+    else if (statsMode === 'retention') showStats('speed');
+    else hideStats();
+  }
 
   const mode = {
     id: 'intervalSemitones',
@@ -3723,6 +3996,7 @@ function createIntervalSemitonesMode() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
+      hideStats();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
@@ -3731,6 +4005,7 @@ function createIntervalSemitonesMode() {
       pendingDigit = null;
       pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      showStats('retention');
     },
 
     handleKey(e, { submitAnswer }) {
@@ -3790,11 +4065,13 @@ function createIntervalSemitonesMode() {
       });
     });
 
-    // Start/stop
+    // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+    container.querySelector('.heatmap-btn').addEventListener('click', toggleStats);
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    showStats('retention');
   }
 
   return {
@@ -3817,7 +4094,8 @@ function createIntervalSemitonesMode() {
 // Grouped by semitone count for future group toggles.
 //
 // Depends on globals: NOTES, noteAdd, noteSub, noteMatchesInput,
-// createQuizEngine, createNoteKeyHandler, updateModeStats
+// createQuizEngine, createNoteKeyHandler, updateModeStats,
+// renderStatsGrid, buildStatsLegend
 
 function createSemitoneMathMode() {
   const container = document.getElementById('mode-semitoneMath');
@@ -3843,6 +4121,63 @@ function createSemitoneMathMode() {
   }
 
   let currentItem = null;
+  let statsMode = null; // null | 'retention' | 'speed'
+  let statsDir = '+';   // '+' | '-'
+
+  function showStats(mode) {
+    statsMode = mode;
+    const statsContainer = container.querySelector('.stats-container');
+    const btn = container.querySelector('.heatmap-btn');
+    const colLabels = [];
+    for (let s = 1; s <= 11; s++) colLabels.push(String(s));
+
+    statsContainer.innerHTML = '';
+
+    // Direction toggle
+    const dirToggle = document.createElement('div');
+    dirToggle.className = 'stats-dir-toggle';
+    const plusBtn = document.createElement('button');
+    plusBtn.textContent = '+';
+    plusBtn.className = 'dir-btn' + (statsDir === '+' ? ' active' : '');
+    plusBtn.addEventListener('click', () => { statsDir = '+'; showStats(statsMode); });
+    const minusBtn = document.createElement('button');
+    minusBtn.textContent = '\u2212';
+    minusBtn.className = 'dir-btn' + (statsDir === '-' ? ' active' : '');
+    minusBtn.addEventListener('click', () => { statsDir = '-'; showStats(statsMode); });
+    dirToggle.appendChild(plusBtn);
+    dirToggle.appendChild(minusBtn);
+    statsContainer.appendChild(dirToggle);
+
+    // Legend
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = buildStatsLegend(mode);
+    statsContainer.appendChild(legendDiv);
+
+    // Grid
+    const gridDiv = document.createElement('div');
+    gridDiv.className = 'stats-grid-wrapper';
+    statsContainer.appendChild(gridDiv);
+    renderStatsGrid(engine.selector, colLabels, function(noteName, colIdx) {
+      return noteName + statsDir + (colIdx + 1);
+    }, mode, gridDiv);
+
+    statsContainer.style.display = '';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+  }
+
+  function hideStats() {
+    statsMode = null;
+    const statsContainer = container.querySelector('.stats-container');
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
+    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+  }
+
+  function toggleStats() {
+    if (statsMode === null) showStats('retention');
+    else if (statsMode === 'retention') showStats('speed');
+    else hideStats();
+  }
 
   const mode = {
     id: 'semitoneMath',
@@ -3866,12 +4201,14 @@ function createSemitoneMathMode() {
 
     onStart() {
       noteKeyHandler.reset();
+      hideStats();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
       noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      showStats('retention');
     },
 
     handleKey(e, { submitAnswer }) {
@@ -3896,11 +4233,13 @@ function createSemitoneMathMode() {
       });
     });
 
-    // Start/stop
+    // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+    container.querySelector('.heatmap-btn').addEventListener('click', toggleStats);
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    showStats('retention');
   }
 
   return {
@@ -3923,7 +4262,8 @@ function createSemitoneMathMode() {
 // Grouped by interval for future group toggles.
 //
 // Depends on globals: NOTES, INTERVALS, noteAdd, noteSub,
-// noteMatchesInput, createQuizEngine, createNoteKeyHandler, updateModeStats
+// noteMatchesInput, createQuizEngine, createNoteKeyHandler, updateModeStats,
+// renderStatsGrid, buildStatsLegend
 
 function createIntervalMathMode() {
   const container = document.getElementById('mode-intervalMath');
@@ -3953,6 +4293,62 @@ function createIntervalMathMode() {
   }
 
   let currentItem = null;
+  let statsMode = null; // null | 'retention' | 'speed'
+  let statsDir = '+';   // '+' | '-'
+
+  function showStats(mode) {
+    statsMode = mode;
+    const statsContainer = container.querySelector('.stats-container');
+    const btn = container.querySelector('.heatmap-btn');
+    const colLabels = MATH_INTERVALS.map(i => i.abbrev);
+
+    statsContainer.innerHTML = '';
+
+    // Direction toggle
+    const dirToggle = document.createElement('div');
+    dirToggle.className = 'stats-dir-toggle';
+    const plusBtn = document.createElement('button');
+    plusBtn.textContent = '+';
+    plusBtn.className = 'dir-btn' + (statsDir === '+' ? ' active' : '');
+    plusBtn.addEventListener('click', () => { statsDir = '+'; showStats(statsMode); });
+    const minusBtn = document.createElement('button');
+    minusBtn.textContent = '\u2212';
+    minusBtn.className = 'dir-btn' + (statsDir === '-' ? ' active' : '');
+    minusBtn.addEventListener('click', () => { statsDir = '-'; showStats(statsMode); });
+    dirToggle.appendChild(plusBtn);
+    dirToggle.appendChild(minusBtn);
+    statsContainer.appendChild(dirToggle);
+
+    // Legend
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = buildStatsLegend(mode);
+    statsContainer.appendChild(legendDiv);
+
+    // Grid
+    const gridDiv = document.createElement('div');
+    gridDiv.className = 'stats-grid-wrapper';
+    statsContainer.appendChild(gridDiv);
+    renderStatsGrid(engine.selector, colLabels, function(noteName, colIdx) {
+      return noteName + statsDir + MATH_INTERVALS[colIdx].abbrev;
+    }, mode, gridDiv);
+
+    statsContainer.style.display = '';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+  }
+
+  function hideStats() {
+    statsMode = null;
+    const statsContainer = container.querySelector('.stats-container');
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
+    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+  }
+
+  function toggleStats() {
+    if (statsMode === null) showStats('retention');
+    else if (statsMode === 'retention') showStats('speed');
+    else hideStats();
+  }
 
   const mode = {
     id: 'intervalMath',
@@ -3976,12 +4372,14 @@ function createIntervalMathMode() {
 
     onStart() {
       noteKeyHandler.reset();
+      hideStats();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
       noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      showStats('retention');
     },
 
     handleKey(e, { submitAnswer }) {
@@ -4006,11 +4404,13 @@ function createIntervalMathMode() {
       });
     });
 
-    // Start/stop
+    // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+    container.querySelector('.heatmap-btn').addEventListener('click', toggleStats);
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    showStats('retention');
   }
 
   return {

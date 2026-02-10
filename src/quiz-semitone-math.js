@@ -4,7 +4,8 @@
 // Grouped by semitone count for future group toggles.
 //
 // Depends on globals: NOTES, noteAdd, noteSub, noteMatchesInput,
-// createQuizEngine, createNoteKeyHandler, updateModeStats
+// createQuizEngine, createNoteKeyHandler, updateModeStats,
+// renderStatsGrid, buildStatsLegend
 
 function createSemitoneMathMode() {
   const container = document.getElementById('mode-semitoneMath');
@@ -30,6 +31,63 @@ function createSemitoneMathMode() {
   }
 
   let currentItem = null;
+  let statsMode = null; // null | 'retention' | 'speed'
+  let statsDir = '+';   // '+' | '-'
+
+  function showStats(mode) {
+    statsMode = mode;
+    const statsContainer = container.querySelector('.stats-container');
+    const btn = container.querySelector('.heatmap-btn');
+    const colLabels = [];
+    for (let s = 1; s <= 11; s++) colLabels.push(String(s));
+
+    statsContainer.innerHTML = '';
+
+    // Direction toggle
+    const dirToggle = document.createElement('div');
+    dirToggle.className = 'stats-dir-toggle';
+    const plusBtn = document.createElement('button');
+    plusBtn.textContent = '+';
+    plusBtn.className = 'dir-btn' + (statsDir === '+' ? ' active' : '');
+    plusBtn.addEventListener('click', () => { statsDir = '+'; showStats(statsMode); });
+    const minusBtn = document.createElement('button');
+    minusBtn.textContent = '\u2212';
+    minusBtn.className = 'dir-btn' + (statsDir === '-' ? ' active' : '');
+    minusBtn.addEventListener('click', () => { statsDir = '-'; showStats(statsMode); });
+    dirToggle.appendChild(plusBtn);
+    dirToggle.appendChild(minusBtn);
+    statsContainer.appendChild(dirToggle);
+
+    // Legend
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = buildStatsLegend(mode);
+    statsContainer.appendChild(legendDiv);
+
+    // Grid
+    const gridDiv = document.createElement('div');
+    gridDiv.className = 'stats-grid-wrapper';
+    statsContainer.appendChild(gridDiv);
+    renderStatsGrid(engine.selector, colLabels, function(noteName, colIdx) {
+      return noteName + statsDir + (colIdx + 1);
+    }, mode, gridDiv);
+
+    statsContainer.style.display = '';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+  }
+
+  function hideStats() {
+    statsMode = null;
+    const statsContainer = container.querySelector('.stats-container');
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
+    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+  }
+
+  function toggleStats() {
+    if (statsMode === null) showStats('retention');
+    else if (statsMode === 'retention') showStats('speed');
+    else hideStats();
+  }
 
   const mode = {
     id: 'semitoneMath',
@@ -53,12 +111,14 @@ function createSemitoneMathMode() {
 
     onStart() {
       noteKeyHandler.reset();
+      hideStats();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
       noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      showStats('retention');
     },
 
     handleKey(e, { submitAnswer }) {
@@ -83,11 +143,13 @@ function createSemitoneMathMode() {
       });
     });
 
-    // Start/stop
+    // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+    container.querySelector('.heatmap-btn').addEventListener('click', toggleStats);
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    showStats('retention');
   }
 
   return {

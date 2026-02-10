@@ -3,7 +3,7 @@
 // 24 items total (12 intervals x 2 directions).
 //
 // Depends on globals: INTERVALS, intervalMatchesInput, createQuizEngine,
-// updateModeStats
+// updateModeStats, renderStatsTable, buildStatsLegend
 
 function createIntervalSemitonesMode() {
   const container = document.getElementById('mode-intervalSemitones');
@@ -22,6 +22,47 @@ function createIntervalSemitonesMode() {
   }
 
   let currentItem = null;
+  let statsMode = null; // null | 'retention' | 'speed'
+
+  function getTableRows() {
+    return INTERVALS.map(interval => ({
+      label: interval.abbrev,
+      sublabel: String(interval.num),
+      _colHeader: 'Interval',
+      fwdItemId: interval.abbrev + ':fwd',
+      revItemId: interval.abbrev + ':rev',
+    }));
+  }
+
+  function showStats(mode) {
+    statsMode = mode;
+    const statsContainer = container.querySelector('.stats-container');
+    const btn = container.querySelector('.heatmap-btn');
+    const legendHtml = buildStatsLegend(mode);
+    statsContainer.innerHTML = '';
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = legendHtml;
+    statsContainer.appendChild(legendDiv);
+    const tableDiv = document.createElement('div');
+    statsContainer.appendChild(tableDiv);
+    renderStatsTable(engine.selector, getTableRows(), 'I\u2192#', '#\u2192I', mode, tableDiv);
+    statsContainer.style.display = '';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+  }
+
+  function hideStats() {
+    statsMode = null;
+    const statsContainer = container.querySelector('.stats-container');
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
+    container.querySelector('.heatmap-btn').textContent = 'Show Stats';
+  }
+
+  function toggleStats() {
+    if (statsMode === null) showStats('retention');
+    else if (statsMode === 'retention') showStats('speed');
+    else hideStats();
+  }
 
   const mode = {
     id: 'intervalSemitones',
@@ -65,6 +106,7 @@ function createIntervalSemitonesMode() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
+      hideStats();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
@@ -73,6 +115,7 @@ function createIntervalSemitonesMode() {
       pendingDigit = null;
       pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      showStats('retention');
     },
 
     handleKey(e, { submitAnswer }) {
@@ -132,11 +175,13 @@ function createIntervalSemitonesMode() {
       });
     });
 
-    // Start/stop
+    // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+    container.querySelector('.heatmap-btn').addEventListener('click', toggleStats);
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    showStats('retention');
   }
 
   return {

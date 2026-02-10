@@ -76,24 +76,7 @@ function createFretboardMode() {
   }
 
   // --- Heatmap ---
-
-  function getSpeedHeatmapColor(ms) {
-    if (ms === null) return '#ddd';
-    if (ms < 1500) return 'hsl(120, 60%, 65%)';
-    if (ms < 3000) return 'hsl(80, 60%, 65%)';
-    if (ms < 4500) return 'hsl(50, 60%, 65%)';
-    if (ms < 6000) return 'hsl(30, 60%, 65%)';
-    return 'hsl(0, 60%, 65%)';
-  }
-
-  function getAutomaticityColor(auto) {
-    if (auto === null) return '#ddd';
-    if (auto > 0.8) return 'hsl(120, 60%, 65%)';
-    if (auto > 0.6) return 'hsl(80, 60%, 65%)';
-    if (auto > 0.4) return 'hsl(50, 60%, 65%)';
-    if (auto > 0.2) return 'hsl(30, 60%, 65%)';
-    return 'hsl(0, 60%, 65%)';
-  }
+  // Color functions: getAutomaticityColor, getSpeedHeatmapColor from stats-display.js
 
   function showHeatmapView(mode, selector) {
     heatmapMode = mode;
