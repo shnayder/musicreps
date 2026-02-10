@@ -57,10 +57,12 @@ function createIntervalMathMode() {
     },
 
     onStart() {
+      noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
+      noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 

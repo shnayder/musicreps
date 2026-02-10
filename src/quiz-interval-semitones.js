@@ -53,7 +53,7 @@ function createIntervalSemitonesMode() {
 
     checkAnswer(itemId, input) {
       if (currentItem.dir === 'fwd') {
-        const correct = parseInt(input) === currentItem.interval.num;
+        const correct = parseInt(input, 10) === currentItem.interval.num;
         return { correct, correctAnswer: String(currentItem.interval.num) };
       } else {
         const correct = intervalMatchesInput(currentItem.interval, input);
@@ -62,10 +62,16 @@ function createIntervalSemitonesMode() {
     },
 
     onStart() {
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 

@@ -53,7 +53,7 @@ function createNoteSemitonesMode() {
 
     checkAnswer(itemId, input) {
       if (currentItem.dir === 'fwd') {
-        const correct = parseInt(input) === currentItem.note.num;
+        const correct = parseInt(input, 10) === currentItem.note.num;
         return { correct, correctAnswer: String(currentItem.note.num) };
       } else {
         const correct = noteMatchesInput(currentItem.note, input);
@@ -62,10 +62,18 @@ function createNoteSemitonesMode() {
     },
 
     onStart() {
+      noteKeyHandler.reset();
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
+      noteKeyHandler.reset();
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 

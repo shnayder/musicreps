@@ -10,6 +10,11 @@ export const TARGET_TIME = 3000;
  * Create a keyboard handler for note input (C D E F G A B + #/b for accidentals).
  * Used by any mode where the answer is a note name.
  *
+ * The handler keeps an internal timeout to allow a short window after a note key
+ * is pressed for an accidental key (`#` / `b`) to be entered. Callers should
+ * invoke `reset()` when the quiz stops and before restarting to clear any pending
+ * note and prevent stale input from being submitted after the quiz has ended.
+ *
  * @param {function} submitAnswer - Called with the note string (e.g. 'C', 'C#', 'Db')
  * @param {function} [allowAccidentals] - Returns true if accidentals are enabled
  * @returns {{ handleKey(e): boolean, reset(): void }}

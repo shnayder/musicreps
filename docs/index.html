@@ -406,7 +406,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.4</div>
+    <div class="version">v1.5</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -2746,6 +2746,11 @@ const TARGET_TIME = 3000;
  * Create a keyboard handler for note input (C D E F G A B + #/b for accidentals).
  * Used by any mode where the answer is a note name.
  *
+ * The handler keeps an internal timeout to allow a short window after a note key
+ * is pressed for an accidental key (`#` / `b`) to be entered. Callers should
+ * invoke `reset()` when the quiz stops and before restarting to clear any pending
+ * note and prevent stale input from being submitted after the quiz has ended.
+ *
  * @param {function} submitAnswer - Called with the note string (e.g. 'C', 'C#', 'Db')
  * @param {function} [allowAccidentals] - Returns true if accidentals are enabled
  * @returns {{ handleKey(e): boolean, reset(): void }}
@@ -3540,7 +3545,7 @@ function createNoteSemitonesMode() {
 
     checkAnswer(itemId, input) {
       if (currentItem.dir === 'fwd') {
-        const correct = parseInt(input) === currentItem.note.num;
+        const correct = parseInt(input, 10) === currentItem.note.num;
         return { correct, correctAnswer: String(currentItem.note.num) };
       } else {
         const correct = noteMatchesInput(currentItem.note, input);
@@ -3549,10 +3554,18 @@ function createNoteSemitonesMode() {
     },
 
     onStart() {
+      noteKeyHandler.reset();
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
+      noteKeyHandler.reset();
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
@@ -3698,7 +3711,7 @@ function createIntervalSemitonesMode() {
 
     checkAnswer(itemId, input) {
       if (currentItem.dir === 'fwd') {
-        const correct = parseInt(input) === currentItem.interval.num;
+        const correct = parseInt(input, 10) === currentItem.interval.num;
         return { correct, correctAnswer: String(currentItem.interval.num) };
       } else {
         const correct = intervalMatchesInput(currentItem.interval, input);
@@ -3707,10 +3720,16 @@ function createIntervalSemitonesMode() {
     },
 
     onStart() {
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
@@ -3846,10 +3865,12 @@ function createSemitoneMathMode() {
     },
 
     onStart() {
+      noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
+      noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
@@ -3954,10 +3975,12 @@ function createIntervalMathMode() {
     },
 
     onStart() {
+      noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
+      noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
