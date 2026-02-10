@@ -444,7 +444,7 @@ button {
   height: 20px;
 }
 
-/* --- Stats section (Speed Tap) --- */
+/* --- Stats controls (divider between stats and quiz sections) --- */
 .stats-controls {
   text-align: center;
   margin: 0.5rem 0;

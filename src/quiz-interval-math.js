@@ -64,11 +64,6 @@ function createIntervalMathMode() {
     dirToggle.appendChild(minusBtn);
     statsContainer.appendChild(dirToggle);
 
-    // Legend
-    const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode);
-    statsContainer.appendChild(legendDiv);
-
     // Grid
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
@@ -77,8 +72,13 @@ function createIntervalMathMode() {
       return noteName + statsDir + MATH_INTERVALS[colIdx].abbrev;
     }, mode, gridDiv);
 
+    // Legend
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = buildStatsLegend(mode);
+    statsContainer.appendChild(legendDiv);
+
     statsContainer.style.display = '';
-    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
   }
 
   function hideStats() {
@@ -86,13 +86,11 @@ function createIntervalMathMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
   }
 
   function toggleStats() {
-    if (statsMode === null) showStats('retention');
-    else if (statsMode === 'retention') showStats('speed');
-    else hideStats();
+    if (statsMode === 'retention') showStats('speed');
+    else showStats('retention');
   }
 
   const mode = {

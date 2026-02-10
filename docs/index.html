@@ -451,7 +451,7 @@ button {
   height: 20px;
 }
 
-/* --- Stats section (Speed Tap) --- */
+/* --- Stats controls (divider between stats and quiz sections) --- */
 .stats-controls {
   text-align: center;
   margin: 0.5rem 0;
@@ -505,7 +505,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.0</div>
+    <div class="version">v2.2</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -2186,11 +2186,11 @@ button {
       </div>
     </div>
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div class="settings-row">
         <div class="string-toggles" id="string-toggles">
           <button class="string-toggle" data-string="0">e</button>
@@ -3939,11 +3939,11 @@ button {
   <!-- Note Semitones mode -->
   <div class="mode-screen" id="mode-noteSemitones">
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -3989,11 +3989,11 @@ button {
   <!-- Interval Semitones mode -->
   <div class="mode-screen" id="mode-intervalSemitones">
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -4039,11 +4039,11 @@ button {
   <!-- Semitone Math mode -->
   <div class="mode-screen" id="mode-semitoneMath">
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -4075,11 +4075,11 @@ button {
   <!-- Interval Math mode -->
   <div class="mode-screen" id="mode-intervalMath">
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -4638,7 +4638,8 @@ function updateModeStats(selector, itemIds, statsEl) {
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
  *     .countdown-bar, .feedback, .time-display, .hint,
- *     .start-btn, .stop-btn, .heatmap-btn, .stats
+ *     .start-btn, .stop-btn, .heatmap-btn, .stats,
+ *     .stats-controls
  *
  * @returns {{ start, stop, submitAnswer, isActive, selector, storage }}
  */
@@ -4663,6 +4664,7 @@ function createQuizEngine(mode, container) {
     stopBtn: container.querySelector('.stop-btn'),
     heatmapBtn: container.querySelector('.heatmap-btn'),
     stats: container.querySelector('.stats'),
+    statsControls: container.querySelector('.stats-controls'),
     quizArea: container.querySelector('.quiz-area'),
   };
 
@@ -4766,6 +4768,7 @@ function createQuizEngine(mode, container) {
     if (mode.onStart) mode.onStart();
     if (els.startBtn) els.startBtn.style.display = 'none';
     if (els.heatmapBtn) els.heatmapBtn.style.display = 'none';
+    if (els.statsControls) els.statsControls.style.display = 'none';
     if (els.stopBtn) els.stopBtn.style.display = 'inline';
     if (els.quizArea) els.quizArea.classList.add('active');
     nextQuestion();
@@ -4779,6 +4782,7 @@ function createQuizEngine(mode, container) {
     }
     if (els.startBtn) els.startBtn.style.display = 'inline';
     if (els.heatmapBtn) els.heatmapBtn.style.display = 'inline';
+    if (els.statsControls) els.statsControls.style.display = '';
     if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.quizArea) els.quizArea.classList.remove('active');
     if (mode.onStop) mode.onStop();
@@ -5056,7 +5060,7 @@ function createFretboardMode() {
         }
       }
     } else {
-      btn.textContent = 'Hide Stats';
+      btn.textContent = 'Show Recall';
       for (let s = 0; s <= 5; s++) {
         for (let f = 0; f < 13; f++) {
           const stats = selector.getStats(`${s}-${f}`);
@@ -5078,12 +5082,10 @@ function createFretboardMode() {
   }
 
   function toggleHeatmap(selector) {
-    if (heatmapMode === null) {
-      showHeatmapView('retention', selector);
-    } else if (heatmapMode === 'retention') {
+    if (heatmapMode === 'retention') {
       showHeatmapView('speed', selector);
     } else {
-      hideHeatmap();
+      showHeatmapView('retention', selector);
     }
   }
 
@@ -5346,7 +5348,7 @@ function createFretboardMode() {
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
 // createAdaptiveSelector, createLocalStorageAdapter, updateModeStats,
-// getAutomaticityColor, buildStatsLegend
+// getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend
 
 function createSpeedTapMode() {
   const container = document.getElementById('mode-speedTap');
@@ -5361,7 +5363,7 @@ function createSpeedTapMode() {
   let roundStartTime = null;
   let timerInterval = null;
   let wrongFlashTimeouts = new Set();
-  let statsVisible = false;
+  let statsMode = null; // null | 'retention' | 'speed'
 
   const noteNames = NOTES.map(n => n.name);
 
@@ -5429,8 +5431,9 @@ function createSpeedTapMode() {
 
   // --- Note stats view ---
 
-  function showNoteStats() {
-    statsVisible = true;
+  function showNoteStats(mode) {
+    mode = mode || 'retention';
+    statsMode = mode;
     const statsContainer = container.querySelector('.stats-container');
     const heatmapBtn = container.querySelector('.heatmap-btn');
     if (!statsContainer) return;
@@ -5438,41 +5441,44 @@ function createSpeedTapMode() {
     // Always show all 12 notes regardless of naturalsOnly setting
     const notes = NOTES;
 
-    let html = buildStatsLegend('retention');
-
-    html += '<table class="stats-table speed-tap-stats"><thead><tr>';
+    let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
     for (const note of notes) {
       html += '<th>' + note.displayName + '</th>';
     }
     html += '</tr></thead><tbody><tr>';
     for (const note of notes) {
-      const auto = selector.getAutomaticity(note.name);
-      const color = getAutomaticityColor(auto);
-      html += '<td class="stats-cell" style="background:' + color + '"></td>';
+      if (mode === 'retention') {
+        const auto = selector.getAutomaticity(note.name);
+        html += '<td class="stats-cell" style="background:' + getAutomaticityColor(auto) + '"></td>';
+      } else {
+        const stats = selector.getStats(note.name);
+        const ewma = stats ? stats.ewma : null;
+        html += '<td class="stats-cell" style="background:' + getSpeedHeatmapColor(ewma) + '"></td>';
+      }
     }
     html += '</tr></tbody></table>';
 
+    html += buildStatsLegend(mode);
+
     statsContainer.innerHTML = html;
     statsContainer.style.display = '';
-    if (heatmapBtn) heatmapBtn.textContent = 'Hide Stats';
+    if (heatmapBtn) heatmapBtn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
   }
 
   function hideNoteStats() {
-    statsVisible = false;
+    statsMode = null;
     const statsContainer = container.querySelector('.stats-container');
-    const heatmapBtn = container.querySelector('.heatmap-btn');
     if (statsContainer) {
       statsContainer.style.display = 'none';
       statsContainer.innerHTML = '';
     }
-    if (heatmapBtn) heatmapBtn.textContent = 'Show Recall';
   }
 
   function toggleNoteStats() {
-    if (statsVisible) {
-      hideNoteStats();
+    if (statsMode === 'retention') {
+      showNoteStats('speed');
     } else {
-      showNoteStats();
+      showNoteStats('retention');
     }
   }
 
@@ -5644,7 +5650,7 @@ function createSpeedTapMode() {
 
   function start() {
     active = true;
-    if (statsVisible) hideNoteStats();
+    if (statsMode) hideNoteStats();
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = '';
     if (els.statsControls) els.statsControls.style.display = 'none';
     if (els.startBtn) els.startBtn.style.display = 'none';
@@ -5765,16 +5771,15 @@ function createNoteSemitonesMode() {
     statsMode = mode;
     const statsContainer = container.querySelector('.stats-container');
     const btn = container.querySelector('.heatmap-btn');
-    const legendHtml = buildStatsLegend(mode);
     statsContainer.innerHTML = '';
-    const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = legendHtml;
-    statsContainer.appendChild(legendDiv);
     const tableDiv = document.createElement('div');
     statsContainer.appendChild(tableDiv);
     renderStatsTable(engine.selector, getTableRows(), 'N\u2192#', '#\u2192N', mode, tableDiv);
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = buildStatsLegend(mode);
+    statsContainer.appendChild(legendDiv);
     statsContainer.style.display = '';
-    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
   }
 
   function hideStats() {
@@ -5782,13 +5787,11 @@ function createNoteSemitonesMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
   }
 
   function toggleStats() {
-    if (statsMode === null) showStats('retention');
-    else if (statsMode === 'retention') showStats('speed');
-    else hideStats();
+    if (statsMode === 'retention') showStats('speed');
+    else showStats('retention');
   }
 
   const mode = {
@@ -5976,16 +5979,15 @@ function createIntervalSemitonesMode() {
     statsMode = mode;
     const statsContainer = container.querySelector('.stats-container');
     const btn = container.querySelector('.heatmap-btn');
-    const legendHtml = buildStatsLegend(mode);
     statsContainer.innerHTML = '';
-    const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = legendHtml;
-    statsContainer.appendChild(legendDiv);
     const tableDiv = document.createElement('div');
     statsContainer.appendChild(tableDiv);
     renderStatsTable(engine.selector, getTableRows(), 'I\u2192#', '#\u2192I', mode, tableDiv);
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = buildStatsLegend(mode);
+    statsContainer.appendChild(legendDiv);
     statsContainer.style.display = '';
-    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
   }
 
   function hideStats() {
@@ -5993,13 +5995,11 @@ function createIntervalSemitonesMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
   }
 
   function toggleStats() {
-    if (statsMode === null) showStats('retention');
-    else if (statsMode === 'retention') showStats('speed');
-    else hideStats();
+    if (statsMode === 'retention') showStats('speed');
+    else showStats('retention');
   }
 
   const mode = {
@@ -6198,11 +6198,6 @@ function createSemitoneMathMode() {
     dirToggle.appendChild(minusBtn);
     statsContainer.appendChild(dirToggle);
 
-    // Legend
-    const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode);
-    statsContainer.appendChild(legendDiv);
-
     // Grid
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
@@ -6211,8 +6206,13 @@ function createSemitoneMathMode() {
       return noteName + statsDir + (colIdx + 1);
     }, mode, gridDiv);
 
+    // Legend
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = buildStatsLegend(mode);
+    statsContainer.appendChild(legendDiv);
+
     statsContainer.style.display = '';
-    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
   }
 
   function hideStats() {
@@ -6220,13 +6220,11 @@ function createSemitoneMathMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
   }
 
   function toggleStats() {
-    if (statsMode === null) showStats('retention');
-    else if (statsMode === 'retention') showStats('speed');
-    else hideStats();
+    if (statsMode === 'retention') showStats('speed');
+    else showStats('retention');
   }
 
   const mode = {
@@ -6371,11 +6369,6 @@ function createIntervalMathMode() {
     dirToggle.appendChild(minusBtn);
     statsContainer.appendChild(dirToggle);
 
-    // Legend
-    const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode);
-    statsContainer.appendChild(legendDiv);
-
     // Grid
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
@@ -6384,8 +6377,13 @@ function createIntervalMathMode() {
       return noteName + statsDir + MATH_INTERVALS[colIdx].abbrev;
     }, mode, gridDiv);
 
+    // Legend
+    const legendDiv = document.createElement('div');
+    legendDiv.innerHTML = buildStatsLegend(mode);
+    statsContainer.appendChild(legendDiv);
+
     statsContainer.style.display = '';
-    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Hide Stats';
+    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
   }
 
   function hideStats() {
@@ -6393,13 +6391,11 @@ function createIntervalMathMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
   }
 
   function toggleStats() {
-    if (statsMode === null) showStats('retention');
-    else if (statsMode === 'retention') showStats('speed');
-    else hideStats();
+    if (statsMode === 'retention') showStats('speed');
+    else showStats('retention');
   }
 
   const mode = {

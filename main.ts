@@ -74,7 +74,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.0</div>
+    <div class="version">v2.2</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -97,11 +97,11 @@ async function buildHTML(): Promise<string> {
       </div>
     </div>
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div class="settings-row">
         <div class="string-toggles" id="string-toggles">
           <button class="string-toggle" data-string="0">e</button>
@@ -192,11 +192,11 @@ async function buildHTML(): Promise<string> {
   <!-- Note Semitones mode -->
   <div class="mode-screen" id="mode-noteSemitones">
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -242,11 +242,11 @@ async function buildHTML(): Promise<string> {
   <!-- Interval Semitones mode -->
   <div class="mode-screen" id="mode-intervalSemitones">
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -292,11 +292,11 @@ async function buildHTML(): Promise<string> {
   <!-- Semitone Math mode -->
   <div class="mode-screen" id="mode-semitoneMath">
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -328,11 +328,11 @@ async function buildHTML(): Promise<string> {
   <!-- Interval Math mode -->
   <div class="mode-screen" id="mode-intervalMath">
     <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
     <div class="quiz-controls">
-      <div>
-        <button class="heatmap-btn">Show Recall</button>
-        <span class="stats"></span>
-      </div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>

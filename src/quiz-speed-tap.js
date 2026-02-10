@@ -3,7 +3,7 @@
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
 // createAdaptiveSelector, createLocalStorageAdapter, updateModeStats,
-// getAutomaticityColor, buildStatsLegend
+// getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend
 
 function createSpeedTapMode() {
   const container = document.getElementById('mode-speedTap');
@@ -18,7 +18,7 @@ function createSpeedTapMode() {
   let roundStartTime = null;
   let timerInterval = null;
   let wrongFlashTimeouts = new Set();
-  let statsVisible = false;
+  let statsMode = null; // null | 'retention' | 'speed'
 
   const noteNames = NOTES.map(n => n.name);
 
@@ -86,8 +86,9 @@ function createSpeedTapMode() {
 
   // --- Note stats view ---
 
-  function showNoteStats() {
-    statsVisible = true;
+  function showNoteStats(mode) {
+    mode = mode || 'retention';
+    statsMode = mode;
     const statsContainer = container.querySelector('.stats-container');
     const heatmapBtn = container.querySelector('.heatmap-btn');
     if (!statsContainer) return;
@@ -95,41 +96,44 @@ function createSpeedTapMode() {
     // Always show all 12 notes regardless of naturalsOnly setting
     const notes = NOTES;
 
-    let html = buildStatsLegend('retention');
-
-    html += '<table class="stats-table speed-tap-stats"><thead><tr>';
+    let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
     for (const note of notes) {
       html += '<th>' + note.displayName + '</th>';
     }
     html += '</tr></thead><tbody><tr>';
     for (const note of notes) {
-      const auto = selector.getAutomaticity(note.name);
-      const color = getAutomaticityColor(auto);
-      html += '<td class="stats-cell" style="background:' + color + '"></td>';
+      if (mode === 'retention') {
+        const auto = selector.getAutomaticity(note.name);
+        html += '<td class="stats-cell" style="background:' + getAutomaticityColor(auto) + '"></td>';
+      } else {
+        const stats = selector.getStats(note.name);
+        const ewma = stats ? stats.ewma : null;
+        html += '<td class="stats-cell" style="background:' + getSpeedHeatmapColor(ewma) + '"></td>';
+      }
     }
     html += '</tr></tbody></table>';
 
+    html += buildStatsLegend(mode);
+
     statsContainer.innerHTML = html;
     statsContainer.style.display = '';
-    if (heatmapBtn) heatmapBtn.textContent = 'Hide Stats';
+    if (heatmapBtn) heatmapBtn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
   }
 
   function hideNoteStats() {
-    statsVisible = false;
+    statsMode = null;
     const statsContainer = container.querySelector('.stats-container');
-    const heatmapBtn = container.querySelector('.heatmap-btn');
     if (statsContainer) {
       statsContainer.style.display = 'none';
       statsContainer.innerHTML = '';
     }
-    if (heatmapBtn) heatmapBtn.textContent = 'Show Recall';
   }
 
   function toggleNoteStats() {
-    if (statsVisible) {
-      hideNoteStats();
+    if (statsMode === 'retention') {
+      showNoteStats('speed');
     } else {
-      showNoteStats();
+      showNoteStats('retention');
     }
   }
 
@@ -301,7 +305,7 @@ function createSpeedTapMode() {
 
   function start() {
     active = true;
-    if (statsVisible) hideNoteStats();
+    if (statsMode) hideNoteStats();
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = '';
     if (els.statsControls) els.statsControls.style.display = 'none';
     if (els.startBtn) els.startBtn.style.display = 'none';

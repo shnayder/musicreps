@@ -98,7 +98,7 @@ function createFretboardMode() {
         }
       }
     } else {
-      btn.textContent = 'Hide Stats';
+      btn.textContent = 'Show Recall';
       for (let s = 0; s <= 5; s++) {
         for (let f = 0; f < 13; f++) {
           const stats = selector.getStats(`${s}-${f}`);
@@ -120,12 +120,10 @@ function createFretboardMode() {
   }
 
   function toggleHeatmap(selector) {
-    if (heatmapMode === null) {
-      showHeatmapView('retention', selector);
-    } else if (heatmapMode === 'retention') {
+    if (heatmapMode === 'retention') {
       showHeatmapView('speed', selector);
     } else {
-      hideHeatmap();
+      showHeatmapView('retention', selector);
     }
   }
 
