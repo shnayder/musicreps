@@ -234,6 +234,43 @@ button {
   display: none;
 }
 
+/* --- Quiz prompt (text modes) --- */
+.quiz-prompt {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 1rem 0;
+  min-height: 2.5rem;
+}
+
+/* --- Answer buttons grid (shared by new modes) --- */
+.answer-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  max-width: 360px;
+  margin: 0.5rem auto;
+}
+.answer-btn {
+  height: 48px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border: 2px solid #666;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+.answer-btn:active {
+  background: #d0d0d0;
+}
+.answer-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.answer-buttons-intervals {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 /* --- Feedback --- */
 .feedback {
   font-size: 1.5rem;
@@ -331,6 +368,15 @@ button {
     flex-direction: row;
     padding: 0.5rem 0;
     justify-content: center;
+  }
+
+  .answer-buttons {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 280px;
+  }
+
+  .quiz-prompt {
+    font-size: 1.6rem;
   }
 
   /* Prevent iOS zoom on input focus */

@@ -241,6 +241,43 @@ button {
   display: none;
 }
 
+/* --- Quiz prompt (text modes) --- */
+.quiz-prompt {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 1rem 0;
+  min-height: 2.5rem;
+}
+
+/* --- Answer buttons grid (shared by new modes) --- */
+.answer-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  max-width: 360px;
+  margin: 0.5rem auto;
+}
+.answer-btn {
+  height: 48px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border: 2px solid #666;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+.answer-btn:active {
+  background: #d0d0d0;
+}
+.answer-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.answer-buttons-intervals {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 /* --- Feedback --- */
 .feedback {
   font-size: 1.5rem;
@@ -340,6 +377,15 @@ button {
     justify-content: center;
   }
 
+  .answer-buttons {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 280px;
+  }
+
+  .quiz-prompt {
+    font-size: 1.6rem;
+  }
+
   /* Prevent iOS zoom on input focus */
   input, button { font-size: 16px; }
 }
@@ -351,12 +397,16 @@ button {
   <div class="nav-overlay"></div>
   <div class="nav-drawer" id="nav-drawer">
     <button data-mode="fretboard">Fretboard</button>
+    <button data-mode="noteSemitones">Note ↔ Semitones</button>
+    <button data-mode="intervalSemitones">Interval ↔ Semitones</button>
+    <button data-mode="semitoneMath">Semitone Math</button>
+    <button data-mode="intervalMath">Interval Math</button>
   </div>
 
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.3</div>
+    <div class="version">v1.5</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -2100,6 +2150,162 @@ button {
     </div>
   </div>
 
+  <!-- Note Semitones mode -->
+  <div class="mode-screen" id="mode-noteSemitones">
+    <div class="quiz-controls">
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <span class="stats"></span>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="answer-buttons answer-buttons-numbers">
+        <button class="answer-btn answer-btn-num" data-num="0">0</button>
+        <button class="answer-btn answer-btn-num" data-num="1">1</button>
+        <button class="answer-btn answer-btn-num" data-num="2">2</button>
+        <button class="answer-btn answer-btn-num" data-num="3">3</button>
+        <button class="answer-btn answer-btn-num" data-num="4">4</button>
+        <button class="answer-btn answer-btn-num" data-num="5">5</button>
+        <button class="answer-btn answer-btn-num" data-num="6">6</button>
+        <button class="answer-btn answer-btn-num" data-num="7">7</button>
+        <button class="answer-btn answer-btn-num" data-num="8">8</button>
+        <button class="answer-btn answer-btn-num" data-num="9">9</button>
+        <button class="answer-btn answer-btn-num" data-num="10">10</button>
+        <button class="answer-btn answer-btn-num" data-num="11">11</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
+  <!-- Interval Semitones mode -->
+  <div class="mode-screen" id="mode-intervalSemitones">
+    <div class="quiz-controls">
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <span class="stats"></span>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-intervals">
+        <button class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M2">M2</button>
+        <button class="answer-btn answer-btn-interval" data-interval="m3">m3</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M3">M3</button>
+        <button class="answer-btn answer-btn-interval" data-interval="P4">P4</button>
+        <button class="answer-btn answer-btn-interval" data-interval="TT">TT</button>
+        <button class="answer-btn answer-btn-interval" data-interval="P5">P5</button>
+        <button class="answer-btn answer-btn-interval" data-interval="m6">m6</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M6">M6</button>
+        <button class="answer-btn answer-btn-interval" data-interval="m7">m7</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M7">M7</button>
+        <button class="answer-btn answer-btn-interval" data-interval="P8">P8</button>
+      </div>
+      <div class="answer-buttons answer-buttons-numbers">
+        <button class="answer-btn answer-btn-num" data-num="1">1</button>
+        <button class="answer-btn answer-btn-num" data-num="2">2</button>
+        <button class="answer-btn answer-btn-num" data-num="3">3</button>
+        <button class="answer-btn answer-btn-num" data-num="4">4</button>
+        <button class="answer-btn answer-btn-num" data-num="5">5</button>
+        <button class="answer-btn answer-btn-num" data-num="6">6</button>
+        <button class="answer-btn answer-btn-num" data-num="7">7</button>
+        <button class="answer-btn answer-btn-num" data-num="8">8</button>
+        <button class="answer-btn answer-btn-num" data-num="9">9</button>
+        <button class="answer-btn answer-btn-num" data-num="10">10</button>
+        <button class="answer-btn answer-btn-num" data-num="11">11</button>
+        <button class="answer-btn answer-btn-num" data-num="12">12</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
+  <!-- Semitone Math mode -->
+  <div class="mode-screen" id="mode-semitoneMath">
+    <div class="quiz-controls">
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <span class="stats"></span>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
+  <!-- Interval Math mode -->
+  <div class="mode-screen" id="mode-intervalMath">
+    <div class="quiz-controls">
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <span class="stats"></span>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
   <script>
 // Adaptive question selector: prioritizes items the user is slower on,
 // with exploration boost for unseen items.
@@ -2535,6 +2741,97 @@ const STRING_OFFSETS = [4, 11, 7, 2, 9, 4]; // semitones from C
 // shared lifecycle. ES module — exports stripped for browser inlining.
 
 const TARGET_TIME = 3000;
+
+/**
+ * Create a keyboard handler for note input (C D E F G A B + #/b for accidentals).
+ * Used by any mode where the answer is a note name.
+ *
+ * The handler keeps an internal timeout to allow a short window after a note key
+ * is pressed for an accidental key (`#` / `b`) to be entered. Callers should
+ * invoke `reset()` when the quiz stops and before restarting to clear any pending
+ * note and prevent stale input from being submitted after the quiz has ended.
+ *
+ * @param {function} submitAnswer - Called with the note string (e.g. 'C', 'C#', 'Db')
+ * @param {function} [allowAccidentals] - Returns true if accidentals are enabled
+ * @returns {{ handleKey(e): boolean, reset(): void }}
+ */
+function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  let pendingNote = null;
+  let pendingTimeout = null;
+
+  function reset() {
+    if (pendingTimeout) clearTimeout(pendingTimeout);
+    pendingNote = null;
+    pendingTimeout = null;
+  }
+
+  function handleKey(e) {
+    const key = e.key.toUpperCase();
+
+    // Handle # for sharps or b for flats after a pending note
+    if (pendingNote && allowAccidentals()) {
+      if (e.key === '#' || (e.shiftKey && e.key === '3')) {
+        e.preventDefault();
+        clearTimeout(pendingTimeout);
+        submitAnswer(pendingNote + '#');
+        pendingNote = null;
+        pendingTimeout = null;
+        return true;
+      }
+      if (e.key === 'b' || e.key === 'B') {
+        e.preventDefault();
+        clearTimeout(pendingTimeout);
+        submitAnswer(pendingNote + 'b');
+        pendingNote = null;
+        pendingTimeout = null;
+        return true;
+      }
+    }
+
+    if ('CDEFGAB'.includes(key)) {
+      e.preventDefault();
+      if (pendingTimeout) clearTimeout(pendingTimeout);
+
+      if (!allowAccidentals()) {
+        submitAnswer(key);
+      } else {
+        pendingNote = key;
+        pendingTimeout = setTimeout(() => {
+          submitAnswer(pendingNote);
+          pendingNote = null;
+          pendingTimeout = null;
+        }, 400);
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  return { handleKey, reset };
+}
+
+/**
+ * Compute and display median EWMA for a set of item IDs.
+ * Used by all modes to show aggregate speed stats.
+ */
+function updateModeStats(selector, itemIds, statsEl) {
+  if (!statsEl) return;
+  const ewmas = [];
+  for (const id of itemIds) {
+    const stats = selector.getStats(id);
+    if (stats && stats.ewma) ewmas.push(stats.ewma);
+  }
+  if (ewmas.length === 0) {
+    statsEl.textContent = '';
+    return;
+  }
+  const sorted = [...ewmas].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  const med = sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+  const color = med < 3000 ? 'hsl(120,70%,35%)' : med < 4000 ? 'hsl(80,70%,35%)' : med < 5000 ? 'hsl(50,70%,40%)' : med < 6000 ? 'hsl(30,70%,40%)' : 'hsl(0,70%,40%)';
+  statsEl.innerHTML = `median: <span style="color:${color}">${Math.round(med)}ms</span>`;
+}
 
 /**
  * Create a quiz engine for a given mode.
@@ -3193,6 +3490,542 @@ function createFretboardMode() {
   };
 }
 
+// Note Semitones quiz mode: bidirectional note <-> semitone number.
+// Forward: "C# = ?" -> 1, Reverse: "3 = ?" -> D#/Eb
+// 24 items total (12 notes x 2 directions).
+//
+// Depends on globals: NOTES, createQuizEngine, createNoteKeyHandler,
+// updateModeStats
+
+function createNoteSemitonesMode() {
+  const container = document.getElementById('mode-noteSemitones');
+
+  // Build item list: 12 notes x 2 directions
+  const ALL_ITEMS = [];
+  for (const note of NOTES) {
+    ALL_ITEMS.push(note.name + ':fwd'); // note -> number
+    ALL_ITEMS.push(note.name + ':rev'); // number -> note
+  }
+
+  function parseItem(itemId) {
+    const [noteName, dir] = itemId.split(':');
+    const note = NOTES.find(n => n.name === noteName);
+    return { note, dir };
+  }
+
+  let currentItem = null;
+
+  const mode = {
+    id: 'noteSemitones',
+    name: 'Note \u2194 Semitones',
+    storageNamespace: 'noteSemitones',
+
+    getEnabledItems() {
+      return ALL_ITEMS;
+    },
+
+    presentQuestion(itemId) {
+      currentItem = parseItem(itemId);
+      const prompt = container.querySelector('.quiz-prompt');
+      const noteButtons = container.querySelector('.answer-buttons-notes');
+      const numButtons = container.querySelector('.answer-buttons-numbers');
+
+      if (currentItem.dir === 'fwd') {
+        // Show note, answer is number 0-11
+        prompt.textContent = currentItem.note.displayName + ' = ?';
+        noteButtons.style.display = 'none';
+        numButtons.style.display = '';
+      } else {
+        // Show number, answer is note
+        prompt.textContent = currentItem.note.num + ' = ?';
+        noteButtons.style.display = '';
+        numButtons.style.display = 'none';
+      }
+    },
+
+    checkAnswer(itemId, input) {
+      if (currentItem.dir === 'fwd') {
+        const correct = parseInt(input, 10) === currentItem.note.num;
+        return { correct, correctAnswer: String(currentItem.note.num) };
+      } else {
+        const correct = noteMatchesInput(currentItem.note, input);
+        return { correct, correctAnswer: currentItem.note.displayName };
+      }
+    },
+
+    onStart() {
+      noteKeyHandler.reset();
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
+      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    },
+
+    onStop() {
+      noteKeyHandler.reset();
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
+      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    },
+
+    handleKey(e, { submitAnswer }) {
+      if (currentItem.dir === 'rev') {
+        return noteKeyHandler.handleKey(e);
+      }
+      // Forward: number keys 0-9 for semitone answer
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        // Handle two-digit: 10, 11
+        if (pendingDigit !== null) {
+          const num = pendingDigit * 10 + parseInt(e.key);
+          clearTimeout(pendingDigitTimeout);
+          pendingDigit = null;
+          pendingDigitTimeout = null;
+          if (num <= 11) {
+            submitAnswer(String(num));
+          }
+          return true;
+        }
+        const d = parseInt(e.key);
+        if (d >= 2) {
+          // Can only be single digit (2-9)
+          submitAnswer(String(d));
+        } else {
+          // 0 or 1 — could be start of 10 or 11
+          pendingDigit = d;
+          pendingDigitTimeout = setTimeout(() => {
+            submitAnswer(String(pendingDigit));
+            pendingDigit = null;
+            pendingDigitTimeout = null;
+          }, 400);
+        }
+        return true;
+      }
+      return false;
+    },
+  };
+
+  let pendingDigit = null;
+  let pendingDigitTimeout = null;
+
+  const engine = createQuizEngine(mode, container);
+  engine.storage.preload(ALL_ITEMS);
+
+  const noteKeyHandler = createNoteKeyHandler(
+    (input) => engine.submitAnswer(input),
+    () => true
+  );
+
+  function init() {
+    // Note answer buttons
+    container.querySelectorAll('.answer-btn-note').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!engine.isActive || engine.isAnswered) return;
+        engine.submitAnswer(btn.dataset.note);
+      });
+    });
+
+    // Number answer buttons
+    container.querySelectorAll('.answer-btn-num').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!engine.isActive || engine.isAnswered) return;
+        engine.submitAnswer(btn.dataset.num);
+      });
+    });
+
+    // Start/stop
+    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+
+    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+  }
+
+  return {
+    mode,
+    engine,
+    init,
+    activate() { engine.attach(); },
+    deactivate() {
+      if (engine.isActive) engine.stop();
+      engine.detach();
+      noteKeyHandler.reset();
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+    },
+  };
+}
+
+// Interval Semitones quiz mode: bidirectional interval <-> semitone number.
+// Forward: "minor 3rd = ?" -> 3, Reverse: "7 = ?" -> Perfect 5th
+// 24 items total (12 intervals x 2 directions).
+//
+// Depends on globals: INTERVALS, intervalMatchesInput, createQuizEngine,
+// updateModeStats
+
+function createIntervalSemitonesMode() {
+  const container = document.getElementById('mode-intervalSemitones');
+
+  // Build item list: 12 intervals x 2 directions
+  const ALL_ITEMS = [];
+  for (const interval of INTERVALS) {
+    ALL_ITEMS.push(interval.abbrev + ':fwd'); // interval -> number
+    ALL_ITEMS.push(interval.abbrev + ':rev'); // number -> interval
+  }
+
+  function parseItem(itemId) {
+    const [abbrev, dir] = itemId.split(':');
+    const interval = INTERVALS.find(i => i.abbrev === abbrev);
+    return { interval, dir };
+  }
+
+  let currentItem = null;
+
+  const mode = {
+    id: 'intervalSemitones',
+    name: 'Interval \u2194 Semitones',
+    storageNamespace: 'intervalSemitones',
+
+    getEnabledItems() {
+      return ALL_ITEMS;
+    },
+
+    presentQuestion(itemId) {
+      currentItem = parseItem(itemId);
+      const prompt = container.querySelector('.quiz-prompt');
+      const intervalButtons = container.querySelector('.answer-buttons-intervals');
+      const numButtons = container.querySelector('.answer-buttons-numbers');
+
+      if (currentItem.dir === 'fwd') {
+        // Show interval name, answer is number 1-12
+        prompt.textContent = currentItem.interval.name + ' = ?';
+        intervalButtons.style.display = 'none';
+        numButtons.style.display = '';
+      } else {
+        // Show number, answer is interval
+        prompt.textContent = currentItem.interval.num + ' = ?';
+        intervalButtons.style.display = '';
+        numButtons.style.display = 'none';
+      }
+    },
+
+    checkAnswer(itemId, input) {
+      if (currentItem.dir === 'fwd') {
+        const correct = parseInt(input, 10) === currentItem.interval.num;
+        return { correct, correctAnswer: String(currentItem.interval.num) };
+      } else {
+        const correct = intervalMatchesInput(currentItem.interval, input);
+        return { correct, correctAnswer: currentItem.interval.abbrev };
+      }
+    },
+
+    onStart() {
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
+      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    },
+
+    onStop() {
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+      pendingDigitTimeout = null;
+      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    },
+
+    handleKey(e, { submitAnswer }) {
+      // Keyboard: number keys for forward, no keyboard for interval buttons
+      if (currentItem.dir === 'fwd') {
+        if (e.key >= '0' && e.key <= '9') {
+          e.preventDefault();
+          if (pendingDigit !== null) {
+            const num = pendingDigit * 10 + parseInt(e.key);
+            clearTimeout(pendingDigitTimeout);
+            pendingDigit = null;
+            pendingDigitTimeout = null;
+            if (num >= 1 && num <= 12) {
+              submitAnswer(String(num));
+            }
+            return true;
+          }
+          const d = parseInt(e.key);
+          if (d >= 2 && d <= 9) {
+            submitAnswer(String(d));
+          } else {
+            // 0 or 1 — could be 10, 11, 12
+            pendingDigit = d;
+            pendingDigitTimeout = setTimeout(() => {
+              if (pendingDigit >= 1) submitAnswer(String(pendingDigit));
+              pendingDigit = null;
+              pendingDigitTimeout = null;
+            }, 400);
+          }
+          return true;
+        }
+      }
+      return false;
+    },
+  };
+
+  let pendingDigit = null;
+  let pendingDigitTimeout = null;
+
+  const engine = createQuizEngine(mode, container);
+  engine.storage.preload(ALL_ITEMS);
+
+  function init() {
+    // Interval answer buttons
+    container.querySelectorAll('.answer-btn-interval').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!engine.isActive || engine.isAnswered) return;
+        engine.submitAnswer(btn.dataset.interval);
+      });
+    });
+
+    // Number answer buttons
+    container.querySelectorAll('.answer-btn-num').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!engine.isActive || engine.isAnswered) return;
+        engine.submitAnswer(btn.dataset.num);
+      });
+    });
+
+    // Start/stop
+    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+
+    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+  }
+
+  return {
+    mode,
+    engine,
+    init,
+    activate() { engine.attach(); },
+    deactivate() {
+      if (engine.isActive) engine.stop();
+      engine.detach();
+      if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+      pendingDigit = null;
+    },
+  };
+}
+
+// Semitone Math quiz mode: note +/- semitone count = note.
+// "C + 3 = ?" -> D#/Eb,  "G - 5 = ?" -> D
+// 264 items: 12 notes x 11 intervals (1-11) x 2 directions (+/-).
+// Grouped by semitone count for future group toggles.
+//
+// Depends on globals: NOTES, noteAdd, noteSub, noteMatchesInput,
+// createQuizEngine, createNoteKeyHandler, updateModeStats
+
+function createSemitoneMathMode() {
+  const container = document.getElementById('mode-semitoneMath');
+
+  // Build item list: 12 notes x 11 semitone counts x 2 directions
+  // Item ID format: "C+3" or "C-3"
+  const ALL_ITEMS = [];
+  for (const note of NOTES) {
+    for (let s = 1; s <= 11; s++) {
+      ALL_ITEMS.push(note.name + '+' + s);
+      ALL_ITEMS.push(note.name + '-' + s);
+    }
+  }
+
+  function parseItem(itemId) {
+    const match = itemId.match(/^([A-G]#?)([+-])(\d+)$/);
+    const noteName = match[1];
+    const op = match[2];
+    const semitones = parseInt(match[3]);
+    const note = NOTES.find(n => n.name === noteName);
+    const answer = op === '+' ? noteAdd(note.num, semitones) : noteSub(note.num, semitones);
+    return { note, op, semitones, answer };
+  }
+
+  let currentItem = null;
+
+  const mode = {
+    id: 'semitoneMath',
+    name: 'Semitone Math',
+    storageNamespace: 'semitoneMath',
+
+    getEnabledItems() {
+      return ALL_ITEMS;
+    },
+
+    presentQuestion(itemId) {
+      currentItem = parseItem(itemId);
+      const prompt = container.querySelector('.quiz-prompt');
+      prompt.textContent = currentItem.note.displayName + ' ' + currentItem.op + ' ' + currentItem.semitones + ' = ?';
+    },
+
+    checkAnswer(itemId, input) {
+      const correct = noteMatchesInput(currentItem.answer, input);
+      return { correct, correctAnswer: currentItem.answer.displayName };
+    },
+
+    onStart() {
+      noteKeyHandler.reset();
+      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    },
+
+    onStop() {
+      noteKeyHandler.reset();
+      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    },
+
+    handleKey(e, { submitAnswer }) {
+      return noteKeyHandler.handleKey(e);
+    },
+  };
+
+  const engine = createQuizEngine(mode, container);
+  engine.storage.preload(ALL_ITEMS);
+
+  const noteKeyHandler = createNoteKeyHandler(
+    (input) => engine.submitAnswer(input),
+    () => true
+  );
+
+  function init() {
+    // Note answer buttons
+    container.querySelectorAll('.answer-btn-note').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!engine.isActive || engine.isAnswered) return;
+        engine.submitAnswer(btn.dataset.note);
+      });
+    });
+
+    // Start/stop
+    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+
+    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+  }
+
+  return {
+    mode,
+    engine,
+    init,
+    activate() { engine.attach(); },
+    deactivate() {
+      if (engine.isActive) engine.stop();
+      engine.detach();
+      noteKeyHandler.reset();
+    },
+  };
+}
+
+// Interval Math quiz mode: note +/- interval = note.
+// "C + m3 = ?" -> D#/Eb,  "G - P4 = ?" -> D
+// 264 items: 12 notes x 11 intervals (m2-M7) x 2 directions (+/-).
+// Excludes octave/P8 (adding 12 semitones gives same note).
+// Grouped by interval for future group toggles.
+//
+// Depends on globals: NOTES, INTERVALS, noteAdd, noteSub,
+// noteMatchesInput, createQuizEngine, createNoteKeyHandler, updateModeStats
+
+function createIntervalMathMode() {
+  const container = document.getElementById('mode-intervalMath');
+
+  // Intervals 1-11 only (no octave)
+  const MATH_INTERVALS = INTERVALS.filter(i => i.num >= 1 && i.num <= 11);
+
+  // Build item list: 12 notes x 11 intervals x 2 directions
+  // Item ID format: "C+m3" or "C-P4"
+  const ALL_ITEMS = [];
+  for (const note of NOTES) {
+    for (const interval of MATH_INTERVALS) {
+      ALL_ITEMS.push(note.name + '+' + interval.abbrev);
+      ALL_ITEMS.push(note.name + '-' + interval.abbrev);
+    }
+  }
+
+  function parseItem(itemId) {
+    const match = itemId.match(/^([A-G]#?)([+-])(.+)$/);
+    const noteName = match[1];
+    const op = match[2];
+    const abbrev = match[3];
+    const note = NOTES.find(n => n.name === noteName);
+    const interval = MATH_INTERVALS.find(i => i.abbrev === abbrev);
+    const answer = op === '+' ? noteAdd(note.num, interval.num) : noteSub(note.num, interval.num);
+    return { note, op, interval, answer };
+  }
+
+  let currentItem = null;
+
+  const mode = {
+    id: 'intervalMath',
+    name: 'Interval Math',
+    storageNamespace: 'intervalMath',
+
+    getEnabledItems() {
+      return ALL_ITEMS;
+    },
+
+    presentQuestion(itemId) {
+      currentItem = parseItem(itemId);
+      const prompt = container.querySelector('.quiz-prompt');
+      prompt.textContent = currentItem.note.displayName + ' ' + currentItem.op + ' ' + currentItem.interval.abbrev + ' = ?';
+    },
+
+    checkAnswer(itemId, input) {
+      const correct = noteMatchesInput(currentItem.answer, input);
+      return { correct, correctAnswer: currentItem.answer.displayName };
+    },
+
+    onStart() {
+      noteKeyHandler.reset();
+      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    },
+
+    onStop() {
+      noteKeyHandler.reset();
+      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+    },
+
+    handleKey(e, { submitAnswer }) {
+      return noteKeyHandler.handleKey(e);
+    },
+  };
+
+  const engine = createQuizEngine(mode, container);
+  engine.storage.preload(ALL_ITEMS);
+
+  const noteKeyHandler = createNoteKeyHandler(
+    (input) => engine.submitAnswer(input),
+    () => true
+  );
+
+  function init() {
+    // Note answer buttons
+    container.querySelectorAll('.answer-btn-note').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!engine.isActive || engine.isAnswered) return;
+        engine.submitAnswer(btn.dataset.note);
+      });
+    });
+
+    // Start/stop
+    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
+
+    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+  }
+
+  return {
+    mode,
+    engine,
+    init,
+    activate() { engine.attach(); },
+    deactivate() {
+      if (engine.isActive) engine.stop();
+      engine.detach();
+      noteKeyHandler.reset();
+    },
+  };
+}
+
 // Navigation: hamburger menu and mode switching.
 // Persists last-used mode in localStorage.
 //
@@ -3319,11 +4152,41 @@ function createNavigation() {
     deactivate: fretboard.deactivate,
   });
 
-  // Future modes will be registered here:
-  // nav.registerMode('noteSemitones', { ... });
-  // nav.registerMode('intervalSemitones', { ... });
-  // nav.registerMode('semitoneMath', { ... });
-  // nav.registerMode('intervalMath', { ... });
+  // Note <-> Semitones mode
+  const noteSemitones = createNoteSemitonesMode();
+  nav.registerMode('noteSemitones', {
+    name: 'Note \u2194 Semitones',
+    init: noteSemitones.init,
+    activate: noteSemitones.activate,
+    deactivate: noteSemitones.deactivate,
+  });
+
+  // Interval <-> Semitones mode
+  const intervalSemitones = createIntervalSemitonesMode();
+  nav.registerMode('intervalSemitones', {
+    name: 'Interval \u2194 Semitones',
+    init: intervalSemitones.init,
+    activate: intervalSemitones.activate,
+    deactivate: intervalSemitones.deactivate,
+  });
+
+  // Semitone Math mode
+  const semitoneMath = createSemitoneMathMode();
+  nav.registerMode('semitoneMath', {
+    name: 'Semitone Math',
+    init: semitoneMath.init,
+    activate: semitoneMath.activate,
+    deactivate: semitoneMath.deactivate,
+  });
+
+  // Interval Math mode
+  const intervalMath = createIntervalMathMode();
+  nav.registerMode('intervalMath', {
+    name: 'Interval Math',
+    init: intervalMath.init,
+    activate: intervalMath.activate,
+    deactivate: intervalMath.deactivate,
+  });
 
   nav.init();
 

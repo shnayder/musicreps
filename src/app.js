@@ -15,11 +15,41 @@
     deactivate: fretboard.deactivate,
   });
 
-  // Future modes will be registered here:
-  // nav.registerMode('noteSemitones', { ... });
-  // nav.registerMode('intervalSemitones', { ... });
-  // nav.registerMode('semitoneMath', { ... });
-  // nav.registerMode('intervalMath', { ... });
+  // Note <-> Semitones mode
+  const noteSemitones = createNoteSemitonesMode();
+  nav.registerMode('noteSemitones', {
+    name: 'Note \u2194 Semitones',
+    init: noteSemitones.init,
+    activate: noteSemitones.activate,
+    deactivate: noteSemitones.deactivate,
+  });
+
+  // Interval <-> Semitones mode
+  const intervalSemitones = createIntervalSemitonesMode();
+  nav.registerMode('intervalSemitones', {
+    name: 'Interval \u2194 Semitones',
+    init: intervalSemitones.init,
+    activate: intervalSemitones.activate,
+    deactivate: intervalSemitones.deactivate,
+  });
+
+  // Semitone Math mode
+  const semitoneMath = createSemitoneMathMode();
+  nav.registerMode('semitoneMath', {
+    name: 'Semitone Math',
+    init: semitoneMath.init,
+    activate: semitoneMath.activate,
+    deactivate: semitoneMath.deactivate,
+  });
+
+  // Interval Math mode
+  const intervalMath = createIntervalMathMode();
+  nav.registerMode('intervalMath', {
+    name: 'Interval Math',
+    init: intervalMath.init,
+    activate: intervalMath.activate,
+    deactivate: intervalMath.deactivate,
+  });
 
   nav.init();
 
