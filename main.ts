@@ -148,32 +148,33 @@ async function buildHTML(): Promise<string> {
   <!-- Speed Tap mode -->
   <div class="mode-screen" id="mode-speedTap">
     <div class="fretboard-wrapper">
-      <div class="fretboard-row">
-        <div class="settings-row">
-          <label class="setting-group">
-            <input type="checkbox" id="speed-tap-naturals-only" checked>
-            Natural only
-          </label>
-        </div>
-        <div class="fretboard-container">
-          <svg class="fretboard" viewBox="0 0 600 240">
-            <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
-            ${fretLines()}
-            ${stringLines()}
-            ${noteElements()}
-          </svg>
-          <div class="fret-numbers">
-            ${fretNumberElements()}
-          </div>
+      <div class="fretboard-container">
+        <svg class="fretboard" viewBox="0 0 600 240">
+          <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
+          ${fretLines()}
+          ${stringLines()}
+          ${noteElements()}
+        </svg>
+        <div class="fret-numbers">
+          ${fretNumberElements()}
         </div>
       </div>
     </div>
-
+    <div class="stats-container"></div>
     <div class="quiz-controls">
+      <div>
+        <button class="heatmap-btn">Show Recall</button>
+        <span class="stats"></span>
+      </div>
+      <div class="settings-row">
+        <label class="setting-group">
+          <input type="checkbox" id="speed-tap-naturals-only" checked>
+          Natural only
+        </label>
+      </div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <span class="stats"></span>
       </div>
     </div>
 

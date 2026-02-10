@@ -2214,17 +2214,10 @@ button {
   <!-- Speed Tap mode -->
   <div class="mode-screen" id="mode-speedTap">
     <div class="fretboard-wrapper">
-      <div class="fretboard-row">
-        <div class="settings-row">
-          <label class="setting-group">
-            <input type="checkbox" id="speed-tap-naturals-only" checked>
-            Natural only
-          </label>
-        </div>
-        <div class="fretboard-container">
-          <svg class="fretboard" viewBox="0 0 600 240">
-            <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="4"/>
-            <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="1"/>
+      <div class="fretboard-container">
+        <svg class="fretboard" viewBox="0 0 600 240">
+          <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="4"/>
+          <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="126" y1="0" x2="126" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="183" y1="0" x2="183" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="237" y1="0" x2="237" y2="240" stroke="#333" stroke-width="1"/>
@@ -2237,13 +2230,13 @@ button {
       <line x1="535" y1="0" x2="535" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="568" y1="0" x2="568" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="600" y1="0" x2="600" y2="240" stroke="#333" stroke-width="1"/>
-            <line x1="0" y1="20" x2="600" y2="20" stroke="#333" stroke-width="1"/>
+          <line x1="0" y1="20" x2="600" y2="20" stroke="#333" stroke-width="1"/>
       <line x1="0" y1="60" x2="600" y2="60" stroke="#333" stroke-width="1.5"/>
       <line x1="0" y1="100" x2="600" y2="100" stroke="#333" stroke-width="2"/>
       <line x1="0" y1="140" x2="600" y2="140" stroke="#333" stroke-width="2.5"/>
       <line x1="0" y1="180" x2="600" y2="180" stroke="#333" stroke-width="3"/>
       <line x1="0" y1="220" x2="600" y2="220" stroke="#333" stroke-width="3.5"/>
-            <circle
+          <circle
       class="note-circle"
       data-string="0"
       data-fret="0"
@@ -3881,23 +3874,31 @@ button {
       font-size="11"
       fill="#333"
     ></text>
-          </svg>
-          <div class="fret-numbers">
-            <div class="fret-number" style="left: 35%">3</div>
+        </svg>
+        <div class="fret-numbers">
+          <div class="fret-number" style="left: 35%">3</div>
     <div class="fret-number" style="left: 52%">5</div>
     <div class="fret-number" style="left: 67%">7</div>
     <div class="fret-number" style="left: 80.25%">9</div>
     <div class="fret-number" style="left: 97.33333333333334%">12</div>
-          </div>
         </div>
       </div>
     </div>
-
+    <div class="stats-container"></div>
     <div class="quiz-controls">
+      <div>
+        <button class="heatmap-btn">Show Recall</button>
+        <span class="stats"></span>
+      </div>
+      <div class="settings-row">
+        <label class="setting-group">
+          <input type="checkbox" id="speed-tap-naturals-only" checked>
+          Natural only
+        </label>
+      </div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <span class="stats"></span>
       </div>
     </div>
 
@@ -5364,7 +5365,8 @@ function createFretboardMode() {
 // Uses its own quiz loop (not createQuizEngine) since rounds need multi-tap input.
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
-// createAdaptiveSelector, createLocalStorageAdapter, updateModeStats
+// createAdaptiveSelector, createLocalStorageAdapter, updateModeStats,
+// getAutomaticityColor, buildStatsLegend
 
 function createSpeedTapMode() {
   const container = document.getElementById('mode-speedTap');
@@ -5379,6 +5381,7 @@ function createSpeedTapMode() {
   let roundStartTime = null;
   let timerInterval = null;
   let wrongFlashTimeouts = new Set();
+  let statsVisible = false;
 
   const noteNames = NOTES.map(n => n.name);
 
@@ -5444,6 +5447,55 @@ function createSpeedTapMode() {
     container.querySelectorAll('.note-text').forEach(t => t.textContent = '');
   }
 
+  // --- Note stats view ---
+
+  function showNoteStats() {
+    statsVisible = true;
+    const statsContainer = container.querySelector('.stats-container');
+    const heatmapBtn = container.querySelector('.heatmap-btn');
+    if (!statsContainer) return;
+
+    const notes = naturalsOnly
+      ? NOTES.filter(n => NATURAL_NOTES.includes(n.name))
+      : NOTES;
+
+    let html = buildStatsLegend('retention');
+    html += '<table class="stats-table"><thead><tr>';
+    for (const note of notes) {
+      html += '<th>' + note.displayName + '</th>';
+    }
+    html += '</tr></thead><tbody><tr>';
+    for (const note of notes) {
+      const auto = selector.getAutomaticity(note.name);
+      const color = getAutomaticityColor(auto);
+      html += '<td class="stats-cell" style="background:' + color + '"></td>';
+    }
+    html += '</tr></tbody></table>';
+
+    statsContainer.innerHTML = html;
+    statsContainer.style.display = '';
+    if (heatmapBtn) heatmapBtn.textContent = 'Hide Stats';
+  }
+
+  function hideNoteStats() {
+    statsVisible = false;
+    const statsContainer = container.querySelector('.stats-container');
+    const heatmapBtn = container.querySelector('.heatmap-btn');
+    if (statsContainer) {
+      statsContainer.style.display = 'none';
+      statsContainer.innerHTML = '';
+    }
+    if (heatmapBtn) heatmapBtn.textContent = 'Show Recall';
+  }
+
+  function toggleNoteStats() {
+    if (statsVisible) {
+      hideNoteStats();
+    } else {
+      showNoteStats();
+    }
+  }
+
   // --- DOM references ---
 
   const els = {
@@ -5454,6 +5506,7 @@ function createSpeedTapMode() {
     hint: container.querySelector('.hint'),
     startBtn: container.querySelector('.start-btn'),
     stopBtn: container.querySelector('.stop-btn'),
+    heatmapBtn: container.querySelector('.heatmap-btn'),
     stats: container.querySelector('.stats'),
     quizArea: container.querySelector('.quiz-area'),
   };
@@ -5609,7 +5662,9 @@ function createSpeedTapMode() {
 
   function start() {
     active = true;
+    if (statsVisible) hideNoteStats();
     if (els.startBtn) els.startBtn.style.display = 'none';
+    if (els.heatmapBtn) els.heatmapBtn.style.display = 'none';
     if (els.stopBtn) els.stopBtn.style.display = 'inline';
     if (els.quizArea) els.quizArea.classList.add('active');
     nextRound();
@@ -5636,10 +5691,12 @@ function createSpeedTapMode() {
     if (els.hint) els.hint.textContent = '';
 
     if (els.startBtn) els.startBtn.style.display = 'inline';
+    if (els.heatmapBtn) els.heatmapBtn.style.display = 'inline';
     if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.quizArea) els.quizArea.classList.remove('active');
 
     updateStats();
+    showNoteStats();
   }
 
   // --- Lifecycle ---
@@ -5666,8 +5723,10 @@ function createSpeedTapMode() {
 
     if (els.startBtn) els.startBtn.addEventListener('click', () => start());
     if (els.stopBtn) els.stopBtn.addEventListener('click', () => stop());
+    if (els.heatmapBtn) els.heatmapBtn.addEventListener('click', () => toggleNoteStats());
 
     updateStats();
+    showNoteStats();
   }
 
   return {

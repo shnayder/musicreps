@@ -2,7 +2,8 @@
 // Uses its own quiz loop (not createQuizEngine) since rounds need multi-tap input.
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
-// createAdaptiveSelector, createLocalStorageAdapter, updateModeStats
+// createAdaptiveSelector, createLocalStorageAdapter, updateModeStats,
+// getAutomaticityColor, buildStatsLegend
 
 function createSpeedTapMode() {
   const container = document.getElementById('mode-speedTap');
@@ -17,6 +18,7 @@ function createSpeedTapMode() {
   let roundStartTime = null;
   let timerInterval = null;
   let wrongFlashTimeouts = new Set();
+  let statsVisible = false;
 
   const noteNames = NOTES.map(n => n.name);
 
@@ -82,6 +84,55 @@ function createSpeedTapMode() {
     container.querySelectorAll('.note-text').forEach(t => t.textContent = '');
   }
 
+  // --- Note stats view ---
+
+  function showNoteStats() {
+    statsVisible = true;
+    const statsContainer = container.querySelector('.stats-container');
+    const heatmapBtn = container.querySelector('.heatmap-btn');
+    if (!statsContainer) return;
+
+    const notes = naturalsOnly
+      ? NOTES.filter(n => NATURAL_NOTES.includes(n.name))
+      : NOTES;
+
+    let html = buildStatsLegend('retention');
+    html += '<table class="stats-table"><thead><tr>';
+    for (const note of notes) {
+      html += '<th>' + note.displayName + '</th>';
+    }
+    html += '</tr></thead><tbody><tr>';
+    for (const note of notes) {
+      const auto = selector.getAutomaticity(note.name);
+      const color = getAutomaticityColor(auto);
+      html += '<td class="stats-cell" style="background:' + color + '"></td>';
+    }
+    html += '</tr></tbody></table>';
+
+    statsContainer.innerHTML = html;
+    statsContainer.style.display = '';
+    if (heatmapBtn) heatmapBtn.textContent = 'Hide Stats';
+  }
+
+  function hideNoteStats() {
+    statsVisible = false;
+    const statsContainer = container.querySelector('.stats-container');
+    const heatmapBtn = container.querySelector('.heatmap-btn');
+    if (statsContainer) {
+      statsContainer.style.display = 'none';
+      statsContainer.innerHTML = '';
+    }
+    if (heatmapBtn) heatmapBtn.textContent = 'Show Recall';
+  }
+
+  function toggleNoteStats() {
+    if (statsVisible) {
+      hideNoteStats();
+    } else {
+      showNoteStats();
+    }
+  }
+
   // --- DOM references ---
 
   const els = {
@@ -92,6 +143,7 @@ function createSpeedTapMode() {
     hint: container.querySelector('.hint'),
     startBtn: container.querySelector('.start-btn'),
     stopBtn: container.querySelector('.stop-btn'),
+    heatmapBtn: container.querySelector('.heatmap-btn'),
     stats: container.querySelector('.stats'),
     quizArea: container.querySelector('.quiz-area'),
   };
@@ -247,7 +299,9 @@ function createSpeedTapMode() {
 
   function start() {
     active = true;
+    if (statsVisible) hideNoteStats();
     if (els.startBtn) els.startBtn.style.display = 'none';
+    if (els.heatmapBtn) els.heatmapBtn.style.display = 'none';
     if (els.stopBtn) els.stopBtn.style.display = 'inline';
     if (els.quizArea) els.quizArea.classList.add('active');
     nextRound();
@@ -274,10 +328,12 @@ function createSpeedTapMode() {
     if (els.hint) els.hint.textContent = '';
 
     if (els.startBtn) els.startBtn.style.display = 'inline';
+    if (els.heatmapBtn) els.heatmapBtn.style.display = 'inline';
     if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.quizArea) els.quizArea.classList.remove('active');
 
     updateStats();
+    showNoteStats();
   }
 
   // --- Lifecycle ---
@@ -304,8 +360,10 @@ function createSpeedTapMode() {
 
     if (els.startBtn) els.startBtn.addEventListener('click', () => start());
     if (els.stopBtn) els.stopBtn.addEventListener('click', () => stop());
+    if (els.heatmapBtn) els.heatmapBtn.addEventListener('click', () => toggleNoteStats());
 
     updateStats();
+    showNoteStats();
   }
 
   return {
