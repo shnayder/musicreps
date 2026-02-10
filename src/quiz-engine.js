@@ -176,6 +176,10 @@ export function createQuizEngine(mode, container) {
   function setAnswerButtonsEnabled(enabled) {
     container.querySelectorAll('.answer-btn, .note-btn').forEach(btn => {
       btn.disabled = !enabled;
+      // pointer-events: none lets taps fall through to the parent so
+      // the tap-to-advance handler still fires on mobile (disabled
+      // buttons swallow click events and prevent bubbling).
+      btn.style.pointerEvents = enabled ? '' : 'none';
     });
   }
 

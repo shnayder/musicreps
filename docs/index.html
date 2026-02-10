@@ -226,6 +226,7 @@ button {
   background: #fff;
   cursor: pointer;
   padding: 0 0.5rem;
+  touch-action: manipulation;
 }
 .note-btn.accidental {
   background: #e8e8e8;
@@ -266,6 +267,7 @@ button {
   background: #fff;
   cursor: pointer;
   padding: 0 0.25rem;
+  touch-action: manipulation;
 }
 .answer-btn:active {
   background: #d0d0d0;
@@ -406,7 +408,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v1.5</div>
+    <div class="version">v1.6</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -2912,6 +2914,10 @@ function createQuizEngine(mode, container) {
   function setAnswerButtonsEnabled(enabled) {
     container.querySelectorAll('.answer-btn, .note-btn').forEach(btn => {
       btn.disabled = !enabled;
+      // pointer-events: none lets taps fall through to the parent so
+      // the tap-to-advance handler still fires on mobile (disabled
+      // buttons swallow click events and prevent bubbling).
+      btn.style.pointerEvents = enabled ? '' : 'none';
     });
   }
 
