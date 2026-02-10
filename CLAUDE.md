@@ -24,8 +24,11 @@ src/
   app.js               # Thin init: registers modes, starts navigation
   fretboard.ts         # SVG fretboard generation (build-time)
   styles.css           # CSS (read at build time, inlined into HTML)
+  stats-display.js     # Shared stats color functions, table/grid rendering
+  stats-display_test.ts  # Tests for stats display helpers
 docs/index.html        # Built static file for GitHub Pages
 docs/sw.js             # Built service worker (network-first cache strategy)
+plans/                 # Implementation plans (checked in before starting work)
 ```
 
 ## Development
@@ -60,8 +63,9 @@ The app uses a **mode-based architecture**:
 - **MusicData** (`music-data.js`) — shared notes/intervals arrays and helpers.
 
 All source files are concatenated into a single `<script>` at build time.
-Files using `export` keywords (adaptive.js, music-data.js, quiz-engine.js)
-have exports stripped; other files use plain function declarations.
+Files using `export` keywords (adaptive.js, music-data.js, quiz-engine.js,
+stats-display.js) have exports stripped; other files use plain function
+declarations.
 
 ## How It Works
 
@@ -153,6 +157,14 @@ npx tsx --test src/*_test.ts
 ## Versioning
 
 There is a small version number displayed at the top-right of the app (`<div class="version">`). Increment it (e.g. v0.2 → v0.3) with every change so the user can confirm they have the latest build.
+
+## Implementation Plans
+
+Before starting work on a feature, write a plan and check it into `plans/`
+with a descriptive filename (e.g. `plans/2026-02-10-add-quiz-stats.md`).
+Commit the plan as part of the feature branch before beginning implementation.
+After the feature is complete, update the plan to reflect what was actually
+done (any deviations, additions, or things dropped).
 
 ## GitHub API Access (Claude Code Web Environment)
 

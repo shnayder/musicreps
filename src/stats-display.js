@@ -41,6 +41,7 @@ export function getStatsCellColor(selector, itemId, statsMode) {
  * @param {Element}  containerEl
  */
 export function renderStatsTable(selector, rows, fwdHeader, revHeader, statsMode, containerEl) {
+  if (!rows || rows.length === 0) { containerEl.innerHTML = ''; return; }
   let html = '<table class="stats-table"><thead><tr>';
   html += '<th>' + rows[0]._colHeader + '</th><th>#</th>';
   html += '<th>' + fwdHeader + '</th><th>' + revHeader + '</th>';
@@ -80,7 +81,7 @@ export function renderStatsGrid(selector, colLabels, getItemId, statsMode, conta
   html += '</tr></thead><tbody>';
 
   for (const note of noteList) {
-    html += '<tr><td class="stats-grid-row-label">' + note.name + '</td>';
+    html += '<tr><td class="stats-grid-row-label">' + (note.displayName || note.name) + '</td>';
     for (let i = 0; i < colLabels.length; i++) {
       const itemId = getItemId(note.name, i);
       const color = getStatsCellColor(selector, itemId, statsMode);

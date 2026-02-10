@@ -49,10 +49,12 @@ function createSemitoneMathMode() {
     const plusBtn = document.createElement('button');
     plusBtn.textContent = '+';
     plusBtn.className = 'dir-btn' + (statsDir === '+' ? ' active' : '');
+    plusBtn.setAttribute('aria-label', 'Show ascending stats');
     plusBtn.addEventListener('click', () => { statsDir = '+'; showStats(statsMode); });
     const minusBtn = document.createElement('button');
     minusBtn.textContent = '\u2212';
     minusBtn.className = 'dir-btn' + (statsDir === '-' ? ' active' : '');
+    minusBtn.setAttribute('aria-label', 'Show descending stats');
     minusBtn.addEventListener('click', () => { statsDir = '-'; showStats(statsMode); });
     dirToggle.appendChild(plusBtn);
     dirToggle.appendChild(minusBtn);

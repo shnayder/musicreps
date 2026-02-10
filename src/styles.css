@@ -355,6 +355,8 @@ button {
   width: 36px;
   height: 24px;
   border-radius: 2px;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* --- Stats grids (math modes) --- */
