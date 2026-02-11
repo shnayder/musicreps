@@ -1,17 +1,30 @@
 // Semitone Math quiz mode: note +/- semitone count = note.
 // "C + 3 = ?" -> D#/Eb,  "G - 5 = ?" -> D
 // 264 items: 12 notes x 11 intervals (1-11) x 2 directions (+/-).
-// Grouped by semitone count for future group toggles.
+// Grouped by semitone count into 6 distance groups for progressive unlocking.
 //
 // Depends on globals: NOTES, noteAdd, noteSub, noteMatchesInput,
 // createQuizEngine, createNoteKeyHandler, updateModeStats,
-// renderStatsGrid, buildStatsLegend
+// renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG
 
 function createSemitoneMathMode() {
   const container = document.getElementById('mode-semitoneMath');
+  const GROUPS_KEY = 'semitoneMath_enabledGroups';
 
-  // Build item list: 12 notes x 11 semitone counts x 2 directions
-  // Item ID format: "C+3" or "C-3"
+  // Distance groups: pairs of semitone distances
+  const DISTANCE_GROUPS = [
+    { distances: [1, 2],   label: '1,2' },
+    { distances: [3, 4],   label: '3,4' },
+    { distances: [5, 6],   label: '5,6' },
+    { distances: [7, 8],   label: '7,8' },
+    { distances: [9, 10],  label: '9,10' },
+    { distances: [11],     label: '11' },
+  ];
+
+  let enabledGroups = new Set([0]); // Default: first group only
+  let recommendedGroups = new Set();
+
+  // Build full item list (for preloading & stats display)
   const ALL_ITEMS = [];
   for (const note of NOTES) {
     for (let s = 1; s <= 11; s++) {
@@ -29,6 +42,102 @@ function createSemitoneMathMode() {
     const answer = op === '+' ? noteAdd(note.num, semitones) : noteSub(note.num, semitones);
     return { note, op, semitones, answer };
   }
+
+  // --- Distance group helpers ---
+
+  function getItemIdsForGroup(groupIndex) {
+    const distances = DISTANCE_GROUPS[groupIndex].distances;
+    const items = [];
+    for (const note of NOTES) {
+      for (const d of distances) {
+        items.push(note.name + '+' + d);
+        items.push(note.name + '-' + d);
+      }
+    }
+    return items;
+  }
+
+  function loadEnabledGroups() {
+    const saved = localStorage.getItem(GROUPS_KEY);
+    if (saved) {
+      try { enabledGroups = new Set(JSON.parse(saved)); } catch {}
+    }
+    updateGroupToggles();
+  }
+
+  function saveEnabledGroups() {
+    localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
+  }
+
+  function updateGroupToggles() {
+    container.querySelectorAll('.distance-toggle').forEach(btn => {
+      const g = parseInt(btn.dataset.group);
+      btn.classList.toggle('active', enabledGroups.has(g));
+      btn.classList.toggle('recommended', recommendedGroups.has(g));
+    });
+  }
+
+  function toggleGroup(g) {
+    if (enabledGroups.has(g)) {
+      if (enabledGroups.size > 1) enabledGroups.delete(g);
+    } else {
+      enabledGroups.add(g);
+    }
+    saveEnabledGroups();
+    updateGroupToggles();
+  }
+
+  function applyRecommendations(selector) {
+    const allGroups = DISTANCE_GROUPS.map((_, i) => i);
+    const recs = selector.getStringRecommendations(allGroups, getItemIdsForGroup);
+
+    const started = recs.filter(r => r.unseenCount < r.totalCount);
+    const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
+
+    if (started.length === 0) {
+      recommendedGroups = new Set();
+      updateGroupToggles();
+      return;
+    }
+
+    const totalSeen = started.reduce((sum, r) => sum + (r.masteredCount + r.dueCount), 0);
+    const totalMastered = started.reduce((sum, r) => sum + r.masteredCount, 0);
+    const consolidatedRatio = totalSeen > 0 ? totalMastered / totalSeen : 0;
+
+    const startedByWork = [...started].sort(
+      (a, b) => (b.dueCount + b.unseenCount) - (a.dueCount + a.unseenCount)
+    );
+
+    const workCounts = startedByWork.map(r => r.dueCount + r.unseenCount);
+    const medianWork = workCounts[Math.floor(workCounts.length / 2)];
+    recommendedGroups = new Set();
+    const newEnabled = new Set();
+    for (const r of startedByWork) {
+      if (r.dueCount + r.unseenCount > medianWork) {
+        recommendedGroups.add(r.string);
+        newEnabled.add(r.string);
+      }
+    }
+    if (newEnabled.size === 0) {
+      recommendedGroups.add(startedByWork[0].string);
+      newEnabled.add(startedByWork[0].string);
+    }
+
+    if (consolidatedRatio >= DEFAULT_CONFIG.expansionThreshold && unstarted.length > 0) {
+      // Recommend next sequential unstarted group
+      const nextUnstarted = [...unstarted].sort((a, b) => a.string - b.string)[0];
+      recommendedGroups.add(nextUnstarted.string);
+      newEnabled.add(nextUnstarted.string);
+    }
+
+    if (newEnabled.size > 0) {
+      enabledGroups = newEnabled;
+      saveEnabledGroups();
+    }
+    updateGroupToggles();
+  }
+
+  // --- Stats ---
 
   let currentItem = null;
   let statsMode = null; // null | 'retention' | 'speed'
@@ -89,13 +198,19 @@ function createSemitoneMathMode() {
     else showStats('retention');
   }
 
+  // --- Quiz mode interface ---
+
   const mode = {
     id: 'semitoneMath',
     name: 'Semitone Math',
     storageNamespace: 'semitoneMath',
 
     getEnabledItems() {
-      return ALL_ITEMS;
+      const items = [];
+      for (const g of enabledGroups) {
+        items.push(...getItemIdsForGroup(g));
+      }
+      return items;
     },
 
     presentQuestion(itemId) {
@@ -135,6 +250,19 @@ function createSemitoneMathMode() {
   );
 
   function init() {
+    // Generate distance group toggle buttons
+    const togglesDiv = container.querySelector('.distance-toggles');
+    DISTANCE_GROUPS.forEach((group, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'distance-toggle';
+      btn.dataset.group = String(i);
+      btn.textContent = group.label;
+      btn.addEventListener('click', () => toggleGroup(i));
+      togglesDiv.appendChild(btn);
+    });
+
+    loadEnabledGroups();
+
     // Note answer buttons
     container.querySelectorAll('.answer-btn-note').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -148,6 +276,7 @@ function createSemitoneMathMode() {
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
     container.querySelector('.heatmap-btn').addEventListener('click', toggleStats);
 
+    applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     showStats('retention');
   }

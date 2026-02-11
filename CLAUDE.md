@@ -123,6 +123,25 @@ Config: `expansionThreshold` (default 0.7) in `DEFAULT_CONFIG`.
 items with no recall data (`unseenCount`) from those with established recall
 (`dueCount` + `masteredCount`), so the UI can make smarter decisions.
 
+## Distance Group Progression (Math Modes)
+
+The 264 items in each math mode are grouped into 6 distance groups (by
+semitone count), unlocked progressively. Same consolidate-before-expanding
+logic as fretboard strings. Default: group 0 only on first launch.
+
+| Group | Distances | Semitone label | Interval label | Items |
+|-------|-----------|---------------|----------------|-------|
+| 0     | 1, 2      | 1,2           | m2,M2          | 48    |
+| 1     | 3, 4      | 3,4           | m3,M3          | 48    |
+| 2     | 5, 6      | 5,6           | P4,TT          | 48    |
+| 3     | 7, 8      | 7,8           | P5,m6          | 48    |
+| 4     | 9, 10     | 9,10          | M6,m7          | 48    |
+| 5     | 11        | 11            | M7             | 24    |
+
+Toggle buttons generated dynamically in JS (labels differ per mode).
+Persisted in localStorage: `semitoneMath_enabledGroups`, `intervalMath_enabledGroups`.
+Expansion always recommends the next sequential group (smallest distance first).
+
 ## Quiz Modes
 
 | Mode | Items | Answer type | Item ID format |

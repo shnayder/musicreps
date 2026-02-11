@@ -131,6 +131,35 @@ body {
 .string-toggle.active.recommended {
   border-color: #FF9800;
 }
+.distance-toggles {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  justify-content: center;
+}
+.distance-toggle {
+  height: 28px;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #999;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0 0.4rem;
+  margin: 0;
+}
+.distance-toggle.active {
+  background: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+.distance-toggle.recommended {
+  box-shadow: 0 0 0 2px #FF9800;
+}
+.distance-toggle.active.recommended {
+  border-color: #FF9800;
+}
 .fretboard-container {
   position: relative;
   flex: 1;
