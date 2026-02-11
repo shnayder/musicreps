@@ -606,6 +606,117 @@ describe("createAdaptiveSelector", () => {
     assert.equal(selector.checkAllMastered([]), false);
   });
 
+  it("checkNeedsReview returns true when all items were fast but recall decayed", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+
+    // Both items were fast (ewma 1500ms → speedScore ~0.87) but recall decayed
+    const longAgo = Date.now() - 48 * 3600000;
+    storage.saveStats("a", {
+      recentTimes: [1500],
+      ewma: 1500,
+      sampleCount: 5,
+      lastSeen: longAgo,
+      stability: 4, // 4h half-life, 48h elapsed → recall ≈ 0
+      lastCorrectAt: longAgo,
+    });
+    storage.saveStats("b", {
+      recentTimes: [2000],
+      ewma: 2000,
+      sampleCount: 5,
+      lastSeen: longAgo,
+      stability: 4,
+      lastCorrectAt: longAgo,
+    });
+
+    assert.equal(selector.checkNeedsReview(["a", "b"]), true);
+  });
+
+  it("checkNeedsReview returns false when all items are freshly answered", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("a", 1500);
+    selector.recordResponse("b", 1500);
+
+    // Just answered — recall is ~1, well above threshold
+    assert.equal(selector.checkNeedsReview(["a", "b"]), false);
+  });
+
+  it("checkNeedsReview returns false when any item is unseen", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+
+    // "a" was fast and decayed, but "b" is unseen → not all mastered
+    storage.saveStats("a", {
+      recentTimes: [1500],
+      ewma: 1500,
+      sampleCount: 5,
+      lastSeen: Date.now() - 48 * 3600000,
+      stability: 4,
+      lastCorrectAt: Date.now() - 48 * 3600000,
+    });
+
+    assert.equal(selector.checkNeedsReview(["a", "b"]), false);
+  });
+
+  it("checkNeedsReview returns false when any item was slow (not mastered)", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+
+    const longAgo = Date.now() - 48 * 3600000;
+    // "a" was fast
+    storage.saveStats("a", {
+      recentTimes: [1500],
+      ewma: 1500,
+      sampleCount: 5,
+      lastSeen: longAgo,
+      stability: 4,
+      lastCorrectAt: longAgo,
+    });
+    // "b" was slow (ewma 5000ms → speedScore ~0.13, well below 0.5)
+    storage.saveStats("b", {
+      recentTimes: [5000],
+      ewma: 5000,
+      sampleCount: 2,
+      lastSeen: longAgo,
+      stability: 4,
+      lastCorrectAt: longAgo,
+    });
+
+    assert.equal(selector.checkNeedsReview(["a", "b"]), false);
+  });
+
+  it("checkNeedsReview returns false for empty items array", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    assert.equal(selector.checkNeedsReview([]), false);
+  });
+
+  it("checkNeedsReview returns false when items were only answered wrong", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // Wrong answer: lastCorrectAt stays null
+    selector.recordResponse("a", 3000, false);
+    assert.equal(selector.checkNeedsReview(["a"]), false);
+  });
+
+  it("checkNeedsReview returns false when item has only one correct answer", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+
+    // Single fast correct answer long ago — sampleCount is 1
+    storage.saveStats("a", {
+      recentTimes: [1200],
+      ewma: 1200,
+      sampleCount: 1,
+      lastSeen: Date.now() - 48 * 3600000,
+      stability: 4,
+      lastCorrectAt: Date.now() - 48 * 3600000,
+    });
+
+    assert.equal(selector.checkNeedsReview(["a"]), false);
+  });
+
   it("getStringRecommendations ranks strings by needsWork (due + unseen)", () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);

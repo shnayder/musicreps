@@ -510,7 +510,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.4</div>
+    <div class="version">v2.5</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -4418,7 +4418,28 @@ function createAdaptiveSelector(
     return items.length > 0;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered };
+  /**
+   * Check if previously-mastered material needs review.
+   * Returns true only when ALL items had high prior skill (speedScore >= 0.5,
+   * i.e. answering at or below the automaticity target, with at least 2
+   * correct answers as evidence) but at least one item's recall has since
+   * decayed below threshold.
+   */
+  function checkNeedsReview(items) {
+    if (items.length === 0) return false;
+    let hasDueItem = false;
+    for (const id of items) {
+      const stats = storage.getStats(id);
+      if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) return false;
+      const speed = computeSpeedScore(stats.ewma, cfg);
+      if (speed == null || speed < 0.5) return false;
+      const recall = getRecall(id);
+      if (recall !== null && recall < cfg.recallThreshold) hasDueItem = true;
+    }
+    return hasDueItem;
+  }
+
+  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered, checkNeedsReview };
 }
 
 // ---------------------------------------------------------------------------
@@ -4662,9 +4683,10 @@ function updateModeStats(selector, itemIds, statsEl) {
  *   Expected children (found by class):
  *     .countdown-bar, .feedback, .time-display, .hint,
  *     .start-btn, .stop-btn, .heatmap-btn, .stats,
- *     .stats-controls
+ *     .stats-controls, .mastery-message
  *
- * @returns {{ start, stop, submitAnswer, isActive, selector, storage }}
+ * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
+ *             updateIdleMessage, isActive, isAnswered, selector, storage, els }}
  */
 function createQuizEngine(mode, container) {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
@@ -4787,7 +4809,12 @@ function createQuizEngine(mode, container) {
     // Check if all enabled items are mastered
     if (els.masteryMessage) {
       const allMastered = selector.checkAllMastered(mode.getEnabledItems());
-      els.masteryMessage.style.display = allMastered ? 'block' : 'none';
+      if (allMastered) {
+        els.masteryMessage.textContent = 'Looks like you\u2019ve got this!';
+        els.masteryMessage.style.display = 'block';
+      } else {
+        els.masteryMessage.style.display = 'none';
+      }
     }
   }
 
@@ -4805,6 +4832,20 @@ function createQuizEngine(mode, container) {
     nextQuestion();
   }
 
+  function updateIdleMessage() {
+    if (!els.masteryMessage || active) return;
+    const items = mode.getEnabledItems();
+    if (selector.checkAllMastered(items)) {
+      els.masteryMessage.textContent = 'Looks like you\u2019ve got this!';
+      els.masteryMessage.style.display = 'block';
+    } else if (selector.checkNeedsReview(items)) {
+      els.masteryMessage.textContent = 'Time to review?';
+      els.masteryMessage.style.display = 'block';
+    } else {
+      els.masteryMessage.style.display = 'none';
+    }
+  }
+
   function stop() {
     active = false;
     if (countdownInterval) {
@@ -4817,6 +4858,7 @@ function createQuizEngine(mode, container) {
     if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.quizArea) els.quizArea.classList.remove('active');
     if (mode.onStop) mode.onStop();
+    updateIdleMessage();
   }
 
   // Keyboard handler — delegates mode-specific keys, handles shared keys
@@ -4865,6 +4907,7 @@ function createQuizEngine(mode, container) {
     nextQuestion,
     attach,
     detach,
+    updateIdleMessage,
     get isActive() { return active; },
     get isAnswered() { return answered; },
     selector,
@@ -5368,6 +5411,7 @@ function createFretboardMode() {
     init,
     activate() {
       engine.attach();
+      engine.updateIdleMessage();
     },
     deactivate() {
       if (engine.isActive) engine.stop();
@@ -5982,7 +6026,7 @@ function createNoteSemitonesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); },
+    activate() { engine.attach(); engine.updateIdleMessage(); },
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();
@@ -6180,7 +6224,7 @@ function createIntervalSemitonesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); },
+    activate() { engine.attach(); engine.updateIdleMessage(); },
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();
@@ -6348,7 +6392,7 @@ function createSemitoneMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); },
+    activate() { engine.attach(); engine.updateIdleMessage(); },
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();
@@ -6519,7 +6563,7 @@ function createIntervalMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); },
+    activate() { engine.attach(); engine.updateIdleMessage(); },
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();

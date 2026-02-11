@@ -373,6 +373,7 @@ function createFretboardMode() {
     init,
     activate() {
       engine.attach();
+      engine.updateIdleMessage();
     },
     deactivate() {
       if (engine.isActive) engine.stop();

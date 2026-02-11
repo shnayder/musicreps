@@ -156,7 +156,7 @@ function createSemitoneMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); },
+    activate() { engine.attach(); engine.updateIdleMessage(); },
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();

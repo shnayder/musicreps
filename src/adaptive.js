@@ -296,7 +296,28 @@ export function createAdaptiveSelector(
     return items.length > 0;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered };
+  /**
+   * Check if previously-mastered material needs review.
+   * Returns true only when ALL items had high prior skill (speedScore >= 0.5,
+   * i.e. answering at or below the automaticity target, with at least 2
+   * correct answers as evidence) but at least one item's recall has since
+   * decayed below threshold.
+   */
+  function checkNeedsReview(items) {
+    if (items.length === 0) return false;
+    let hasDueItem = false;
+    for (const id of items) {
+      const stats = storage.getStats(id);
+      if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) return false;
+      const speed = computeSpeedScore(stats.ewma, cfg);
+      if (speed == null || speed < 0.5) return false;
+      const recall = getRecall(id);
+      if (recall !== null && recall < cfg.recallThreshold) hasDueItem = true;
+    }
+    return hasDueItem;
+  }
+
+  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered, checkNeedsReview };
 }
 
 // ---------------------------------------------------------------------------

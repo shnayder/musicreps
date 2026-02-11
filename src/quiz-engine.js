@@ -101,9 +101,10 @@ export function updateModeStats(selector, itemIds, statsEl) {
  *   Expected children (found by class):
  *     .countdown-bar, .feedback, .time-display, .hint,
  *     .start-btn, .stop-btn, .heatmap-btn, .stats,
- *     .stats-controls
+ *     .stats-controls, .mastery-message
  *
- * @returns {{ start, stop, submitAnswer, isActive, selector, storage }}
+ * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
+ *             updateIdleMessage, isActive, isAnswered, selector, storage, els }}
  */
 export function createQuizEngine(mode, container) {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
@@ -226,7 +227,12 @@ export function createQuizEngine(mode, container) {
     // Check if all enabled items are mastered
     if (els.masteryMessage) {
       const allMastered = selector.checkAllMastered(mode.getEnabledItems());
-      els.masteryMessage.style.display = allMastered ? 'block' : 'none';
+      if (allMastered) {
+        els.masteryMessage.textContent = 'Looks like you\u2019ve got this!';
+        els.masteryMessage.style.display = 'block';
+      } else {
+        els.masteryMessage.style.display = 'none';
+      }
     }
   }
 
@@ -244,6 +250,20 @@ export function createQuizEngine(mode, container) {
     nextQuestion();
   }
 
+  function updateIdleMessage() {
+    if (!els.masteryMessage || active) return;
+    const items = mode.getEnabledItems();
+    if (selector.checkAllMastered(items)) {
+      els.masteryMessage.textContent = 'Looks like you\u2019ve got this!';
+      els.masteryMessage.style.display = 'block';
+    } else if (selector.checkNeedsReview(items)) {
+      els.masteryMessage.textContent = 'Time to review?';
+      els.masteryMessage.style.display = 'block';
+    } else {
+      els.masteryMessage.style.display = 'none';
+    }
+  }
+
   function stop() {
     active = false;
     if (countdownInterval) {
@@ -256,6 +276,7 @@ export function createQuizEngine(mode, container) {
     if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.quizArea) els.quizArea.classList.remove('active');
     if (mode.onStop) mode.onStop();
+    updateIdleMessage();
   }
 
   // Keyboard handler — delegates mode-specific keys, handles shared keys
@@ -304,6 +325,7 @@ export function createQuizEngine(mode, container) {
     nextQuestion,
     attach,
     detach,
+    updateIdleMessage,
     get isActive() { return active; },
     get isAnswered() { return answered; },
     selector,
