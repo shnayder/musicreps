@@ -23,9 +23,16 @@ function createSpeedTapMode() {
   const noteNames = NOTES.map(n => n.name);
 
   // --- Adaptive system ---
+  // Speed tap rounds involve finding 6-8 positions, so response times are
+  // much higher than single-tap modes. Adjust config accordingly.
+  const SPEED_TAP_CONFIG = Object.assign({}, DEFAULT_CONFIG, {
+    minTime: 4000,             // can't tap 6-8 positions in < 4s
+    automaticityTarget: 12000, // 12s → speedScore 0.5 (decent pace)
+    maxResponseTime: 30000,    // allow tracking up to 30s rounds
+  });
 
   const storage = createLocalStorageAdapter(NAMESPACE);
-  const selector = createAdaptiveSelector(storage);
+  const selector = createAdaptiveSelector(storage, SPEED_TAP_CONFIG);
 
   function preloadStats() {
     for (const note of NOTES) {
@@ -106,14 +113,28 @@ function createSpeedTapMode() {
         const auto = selector.getAutomaticity(note.name);
         html += '<td class="stats-cell" style="background:' + getAutomaticityColor(auto) + '"></td>';
       } else {
+        // Normalize to per-position time so the color scale makes sense
+        // for multi-tap rounds (6-8 positions per note).
         const stats = selector.getStats(note.name);
-        const ewma = stats ? stats.ewma : null;
-        html += '<td class="stats-cell" style="background:' + getSpeedHeatmapColor(ewma) + '"></td>';
+        const posCount = getPositionsForNote(note.name).length;
+        const perPosMs = stats ? stats.ewma / posCount : null;
+        html += '<td class="stats-cell" style="background:' + getSpeedHeatmapColor(perPosMs) + '"></td>';
       }
     }
     html += '</tr></tbody></table>';
 
-    html += buildStatsLegend(mode);
+    if (mode === 'speed') {
+      html += '<div class="heatmap-legend active">'
+        + '<div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>'
+        + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; 1.5s/pos</div>'
+        + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>1.5\u20133s/pos</div>'
+        + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>3\u20134.5s/pos</div>'
+        + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>4.5\u20136s/pos</div>'
+        + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&gt; 6s/pos</div>'
+        + '</div>';
+    } else {
+      html += buildStatsLegend(mode);
+    }
 
     statsContainer.innerHTML = html;
     statsContainer.style.display = '';
