@@ -175,9 +175,14 @@ button {
   margin: 0 0.5rem;
 }
 .mastery-message {
+  background: #e8f5e9;
   color: #2e7d32;
+  font-weight: bold;
   font-size: 0.95rem;
+  padding: 0.5rem 1rem;
   margin-bottom: 0.5rem;
+  border-radius: 6px;
+  text-align: center;
 }
 .quiz-area {
   display: none;
