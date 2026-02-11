@@ -66,4 +66,4 @@ visibility set dynamically by JS.
 
 6. **adaptive_test.ts** — Tests for both `checkAllMastered` and `checkNeedsReview`.
 
-7. **Version** — v2.3 → v2.5.
+7. **Version** — v2.4 → v2.5.

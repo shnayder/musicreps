@@ -700,6 +700,23 @@ describe("createAdaptiveSelector", () => {
     assert.equal(selector.checkNeedsReview(["a"]), false);
   });
 
+  it("checkNeedsReview returns false when item has only one correct answer", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+
+    // Single fast correct answer long ago — sampleCount is 1
+    storage.saveStats("a", {
+      recentTimes: [1200],
+      ewma: 1200,
+      sampleCount: 1,
+      lastSeen: Date.now() - 48 * 3600000,
+      stability: 4,
+      lastCorrectAt: Date.now() - 48 * 3600000,
+    });
+
+    assert.equal(selector.checkNeedsReview(["a"]), false);
+  });
+
   it("getStringRecommendations ranks strings by needsWork (due + unseen)", () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);

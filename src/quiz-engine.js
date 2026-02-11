@@ -101,9 +101,10 @@ export function updateModeStats(selector, itemIds, statsEl) {
  *   Expected children (found by class):
  *     .countdown-bar, .feedback, .time-display, .hint,
  *     .start-btn, .stop-btn, .heatmap-btn, .stats,
- *     .stats-controls
+ *     .stats-controls, .mastery-message
  *
- * @returns {{ start, stop, submitAnswer, isActive, selector, storage }}
+ * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
+ *             updateIdleMessage, isActive, isAnswered, selector, storage, els }}
  */
 export function createQuizEngine(mode, container) {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
