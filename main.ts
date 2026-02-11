@@ -29,25 +29,35 @@ async function readModule(rel: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function buildHTML(): Promise<string> {
-  const [css, adaptiveJS, musicDataJS, quizEngineJS, statsDisplayJS, quizFretboardJS,
+  const [
+    css,
+    adaptiveJS,
+    musicDataJS,
+    quizEngineJS,
+    statsDisplayJS,
+    quizFretboardJS,
     quizSpeedTapJS,
-    quizNoteSemitonesJS, quizIntervalSemitonesJS, quizSemitoneMathJS, quizIntervalMathJS,
-    navigationJS, appJS] =
-    await Promise.all([
-      readFile("./src/styles.css"),
-      readModule("./src/adaptive.js"),
-      readModule("./src/music-data.js"),
-      readModule("./src/quiz-engine.js"),
-      readModule("./src/stats-display.js"),
-      readFile("./src/quiz-fretboard.js"),
-      readFile("./src/quiz-speed-tap.js"),
-      readFile("./src/quiz-note-semitones.js"),
-      readFile("./src/quiz-interval-semitones.js"),
-      readFile("./src/quiz-semitone-math.js"),
-      readFile("./src/quiz-interval-math.js"),
-      readFile("./src/navigation.js"),
-      readFile("./src/app.js"),
-    ]);
+    quizNoteSemitonesJS,
+    quizIntervalSemitonesJS,
+    quizSemitoneMathJS,
+    quizIntervalMathJS,
+    navigationJS,
+    appJS,
+  ] = await Promise.all([
+    readFile("./src/styles.css"),
+    readModule("./src/adaptive.js"),
+    readModule("./src/music-data.js"),
+    readModule("./src/quiz-engine.js"),
+    readModule("./src/stats-display.js"),
+    readFile("./src/quiz-fretboard.js"),
+    readFile("./src/quiz-speed-tap.js"),
+    readFile("./src/quiz-note-semitones.js"),
+    readFile("./src/quiz-interval-semitones.js"),
+    readFile("./src/quiz-semitone-math.js"),
+    readFile("./src/quiz-interval-math.js"),
+    readFile("./src/navigation.js"),
+    readFile("./src/app.js"),
+  ]);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -55,7 +65,9 @@ async function buildHTML(): Promise<string> {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fretboard Trainer</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%B8%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+
   <style>
     ${css}
   </style>
