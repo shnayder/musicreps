@@ -16,26 +16,45 @@ selfCorrectionThreshold=1500ms, heatmap bands at 1500/3000/4500/6000ms). This me
 - A fast keyboard user sees green on everything too easily — the system doesn't
   push them toward true automaticity at their capability level.
 
-## Approach: Personal Baseline
+## Approach: Motor Baseline Calibration
 
-Compute a **per-mode personal baseline** from the user's own performance data.
-This single value naturally captures user speed, input device characteristics,
-and mode complexity. All absolute thresholds become ratios of this baseline.
+**Why not derive from quiz data?** The app's goal is automatizing things the user
+can already figure out with thinking. Early quiz responses are slow due to
+*cognitive* overhead, not motor limitations. The 25th percentile of EWMAs would
+track "how fast am I when I still have to think a bit" — not the actual target.
 
-### What is the baseline?
+**The right baseline is motor time only.** A short calibration test where we
+highlight an answer button and the user taps it as fast as they can. This directly
+measures reaction time + physical execution + device latency, with zero cognitive
+load. That motor time is the floor — the response time you'd see if knowledge
+were truly automatic.
 
-The **25th percentile of EWMA values** for items with ≥ 3 correct answers
-(i.e., "how fast am I on my better-known items?"). Requires at least 8
-qualifying items before we trust it; falls back to current fixed defaults
-during cold start.
+### Calibration Test Design
 
-This captures:
-- **User speed**: fast typists get a low baseline, slow tappers get a high one
-- **Input device**: touch adds ~500ms overhead, naturally reflected in all EWMAs
-- **Mode complexity**: fretboard recall is faster than interval math computation
-- **UX complexity**: modes with more scanning/movement produce higher EWMAs
+- **Trigger:** first time the user clicks "Start" on a mode with no stored baseline
+- **Framing:** "Quick warm-up" (not "calibration test")
+- **Trials:** ~10. Highlight a random answer button (CSS glow), user taps it or
+  presses the corresponding key. Either input method accepted.
+- **Timing:** measure from highlight appearing to input received
+- **Result:** median of trials (robust to warm-up effects and outliers)
+- **Storage:** `motorBaseline_{namespace}` in localStorage, per-mode
+- **Re-run:** available from a "Recalibrate" button (shown in idle state)
 
-### Threshold scaling
+### Per-mode button sets
+
+| Mode | Calibration buttons | CSS selector |
+|------|-------------------|-------------|
+| Fretboard | Note buttons (C, C#, ..., B) | `.note-btn` |
+| Semitone Math | Note buttons | `.answer-btn-note` |
+| Interval Math | Note buttons | `.answer-btn-note` |
+| Note ↔ Semitones | Note buttons + number buttons | `.answer-btn-note`, `.answer-btn-num` |
+| Interval ↔ Semitones | Interval buttons + number buttons | `.answer-btn-interval`, `.answer-btn-num` |
+| Speed Tap | Skip for now (already has custom config) | — |
+
+For bidirectional modes (note/interval semitones), calibrate using one button
+set (notes or intervals); motor overhead is similar across 12-button grids.
+
+### Threshold Scaling
 
 Current fixed values implicitly assume baseline = 1000ms. With personal baseline B:
 
@@ -51,115 +70,120 @@ Current fixed values implicitly assume baseline = 1000ms. With personal baseline
 | Heatmap yellow         | < 4500ms    | < B × 4.5      | 4.5×  |
 | Heatmap orange         | < 6000ms    | < B × 6.0      | 6.0×  |
 
+Example: mobile user with baseline 1500ms → automaticity target = 4.5s,
+heatmap green < 2.25s, self-correction < 2.25s. Keyboard user with baseline
+700ms → target = 2.1s, green < 1.05s.
+
 ### Lifecycle
 
-1. Baseline computed at **quiz start** from current stored data, frozen for
-   the session (no mid-quiz threshold shifts).
-2. Baseline also computed on-demand for **idle heatmap rendering** (so the
-   heatmap always reflects current thresholds).
-3. During **cold start** (< 8 qualifying items), all defaults apply — identical
-   to current behavior.
-4. As the user improves, their EWMAs decrease → baseline decreases → thresholds
-   tighten. The system gets harder as they get better.
-
-### Why this works without circularity
-
-EWMA tracks raw response times (clamped at maxResponseTime). The thresholds
-only determine how to *interpret* those times (speed score, heatmap color,
-self-correction gate). So deriving thresholds from EWMA data is not circular.
-
-Weight-based selection is also fine: `speedWeight = max(ewma, minTime) / minTime`.
-When minTime scales up, all weights scale down proportionally, preserving relative
-ordering. The unseenBoost (fixed 3.0) matches a seen item at 3× baseline in both
-cases.
+1. **First start:** no stored baseline → run calibration warm-up → store result →
+   apply to config → start quiz.
+2. **Subsequent starts:** load stored baseline → apply to config → start quiz.
+3. **Idle heatmap:** load stored baseline → pass to heatmap color functions.
+4. **No auto-recalibration.** User can re-run from a "Recalibrate" button.
 
 ## Changes
 
-### 1. `adaptive.js`
+### 1. `adaptive.js` — Config scaling
 
-**New config fields** in `DEFAULT_CONFIG`:
+**New exported function:**
 ```javascript
-baselineMinSamples: 3,    // min correct answers per item to include
-baselineMinItems: 8,      // min qualifying items to trust baseline
-baselinePercentile: 0.25, // which percentile (25th = "your fast items")
-```
-
-**New exported functions:**
-```javascript
-// Compute personal baseline from stored data
-computePersonalBaseline(allItemIds, storage, cfg)
-  → returns baseline in ms, or null if insufficient data
-
-// Derive a scaled config from a baseline
-deriveScaledConfig(baseline, cfg)
-  → returns new config with minTime, automaticityTarget, etc. scaled
+deriveScaledConfig(motorBaseline, cfg)
+  → returns new config with minTime, automaticityTarget, selfCorrectionThreshold,
+    maxResponseTime scaled proportionally from motorBaseline
 ```
 
 **Selector changes:**
-- Store `cfg` as a `let` variable (currently const via closure)
-- Add `updateConfig(newCfg)` method to merge in new config values
-- Add `computeBaseline(itemIds)` convenience method
-- Add `getConfig()` method so callers can read current thresholds
+- `cfg` becomes a `let` (mutable via closure)
+- Add `updateConfig(newCfg)` — merges new values into cfg
+- Add `getConfig()` — returns current cfg (for countdown, heatmap)
 
-### 2. `stats-display.js`
+### 2. `stats-display.js` — Parameterized heatmap
 
-- `getSpeedHeatmapColor(ms, baseline)`: accept optional baseline parameter.
-  When provided, scale thresholds by `baseline / 1000`. When absent, use
-  current fixed thresholds (backward compatible).
-- `buildStatsLegend(statsMode, baseline)`: when baseline provided, show scaled
-  threshold values in the legend text.
+- `getSpeedHeatmapColor(ms, baseline)`: optional baseline. When provided, scale
+  thresholds as `baseline * ratio` instead of fixed 1500/3000/4500/6000.
+  When absent, current fixed thresholds (backward compatible).
+- `buildStatsLegend(statsMode, baseline)`: show scaled values in legend text.
 - `getStatsCellColor(selector, itemId, statsMode, baseline)`: pass baseline through.
 
-### 3. `quiz-engine.js`
+### 3. `quiz-engine.js` — Calibration + baseline application
 
-- At `start()`:
-  1. Get all item IDs from `mode.getEnabledItems()` (plus any mode method to
-     get ALL item IDs for broader baseline)
-  2. Call `selector.computeBaseline(itemIds)`
-  3. If non-null, call `selector.updateConfig(deriveScaledConfig(baseline, DEFAULT_CONFIG))`
-  4. Store baseline for use in countdown and heatmap
-- `TARGET_TIME`: change from constant to derived from `selector.getConfig().automaticityTarget`
-- Pass baseline when rendering heatmap colors
+**Calibration logic** (callback-based, no async):
+```
+startCalibration(buttons, onComplete):
+  - Show "Quick warm-up!" message in feedback area
+  - For each of 10 trials:
+    - Pick random button (not same as previous)
+    - Add .calibration-target CSS class (green glow)
+    - Start timer
+    - Listen for click on that button OR corresponding keypress
+    - Record elapsed time, remove highlight
+    - Brief pause (300ms), next trial
+  - Compute median of times
+  - Call onComplete(median)
+```
 
-### 4. `quiz-speed-tap.js`
+**Modified `start()` flow:**
+```
+start():
+  - Check localStorage for motorBaseline_{namespace}
+  - If missing: run calibration → store → apply → start quiz
+  - If present: load → apply → start quiz
 
-Same pattern: compute baseline from speed tap data, update config at round start.
-Lower `baselineMinItems` since there are only 12 possible items (notes). Use 5
-instead of 8.
+apply(baseline):
+  - selector.updateConfig(deriveScaledConfig(baseline, DEFAULT_CONFIG))
+  - Store baseline on engine instance for countdown/heatmap use
+```
 
-### 5. Tests
+**Countdown bar:** `TARGET_TIME` changes from a constant (3000) to a value
+derived from `selector.getConfig().automaticityTarget`.
+
+**Mode interface addition:** each mode provides `getCalibrationButtons()` returning
+an array of DOM elements (the answer buttons for that mode). Falls back to
+`container.querySelectorAll('.note-btn, .answer-btn')` if not provided.
+
+### 4. `styles.css` — Calibration highlight
+
+```css
+.calibration-target {
+  background: #4CAF50 !important;
+  border-color: #388E3C !important;
+  color: white !important;
+  box-shadow: 0 0 12px rgba(76, 175, 80, 0.6);
+}
+```
+
+### 5. `quiz-speed-tap.js` — Skip for now
+
+Speed tap already has custom config (minTime=4000, target=12000). It uses
+fretboard circle tapping, not buttons. Calibration for speed tap would need
+a different design (highlight circles). Defer to a future change.
+
+### 6. Tests
 
 **`adaptive_test.ts`:**
-- `computePersonalBaseline`: cold start (returns null), various distributions,
-  edge cases (all same EWMA, single qualifying item)
-- `deriveScaledConfig`: verify ratios are correct
-- Round-trip: create items, record responses, verify baseline computation
-  and that scaled config produces expected speed scores
+- `deriveScaledConfig`: verify all ratios (minTime, automaticityTarget,
+  selfCorrectionThreshold, maxResponseTime) scale correctly
+- Verify speedScore produces same relative results with scaled config
+- Verify weight calculation preserves relative ordering with scaled config
 
 **`stats-display_test.ts`:**
 - `getSpeedHeatmapColor` with and without baseline
-- Verify color thresholds scale correctly
+- Verify color thresholds scale correctly (e.g., baseline=1500 → green < 2250ms)
 
-### 6. Version bump
+**`quiz-engine_test.ts`:**
+- Calibration median computation (odd/even trial counts, outlier robustness)
+- Baseline storage and retrieval
+- Config scaling applied correctly at start
+
+### 7. Version bump
 
 Increment version in `main.ts` and `build.ts` (v2.12 → v2.13).
 
 ## What this does NOT do
 
-- No user-facing controls to set target speed (aspirational, but adds UI
-  complexity without clear benefit — the system learns what you can achieve)
-- No per-item baselines (would be overfitting — an item you're slow at IS one
-  that needs practice)
-- No cross-mode baseline sharing (modes are different enough that per-mode is
-  correct)
-- No gradual baseline transition (abrupt-at-session-boundary is fine since the
-  change is typically small between sessions)
-
-## Edge cases
-
-- **Device switch** (desktop → mobile): EWMAs adjust over ~5-7 answers per item
-  (EWMA alpha=0.3). Baseline will shift within 1-2 sessions. Acceptable lag.
-- **Very fast user** (baseline ~600ms): countdown bar = 1.8s. Fine — they answer
-  in ~600ms, bar gives 3× their pace. Visual nudge if they take longer.
-- **New group enabled**: unseen items have no EWMA, so they don't affect baseline.
-  Baseline reflects only practiced items.
+- No auto-recalibration from quiz data (manual re-run only)
+- No per-item baselines (motor overhead is per-mode, not per-item)
+- No cross-mode baseline sharing (button layouts differ enough)
+- No speed tap calibration (deferred — already has custom config)
+- No user-configurable target multipliers (keep ratios fixed for simplicity)
