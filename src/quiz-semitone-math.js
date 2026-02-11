@@ -117,7 +117,6 @@ function createSemitoneMathMode() {
 
   let currentItem = null;
   let statsMode = null; // null | 'retention' | 'speed'
-  let statsDir = '+';   // '+' | '-'
 
   function showStats(mode) {
     statsMode = mode;
@@ -128,29 +127,13 @@ function createSemitoneMathMode() {
 
     statsContainer.innerHTML = '';
 
-    // Direction toggle
-    const dirToggle = document.createElement('div');
-    dirToggle.className = 'stats-dir-toggle';
-    const plusBtn = document.createElement('button');
-    plusBtn.textContent = '+';
-    plusBtn.className = 'dir-btn' + (statsDir === '+' ? ' active' : '');
-    plusBtn.setAttribute('aria-label', 'Show ascending stats');
-    plusBtn.addEventListener('click', () => { statsDir = '+'; showStats(statsMode); });
-    const minusBtn = document.createElement('button');
-    minusBtn.textContent = '\u2212';
-    minusBtn.className = 'dir-btn' + (statsDir === '-' ? ' active' : '');
-    minusBtn.setAttribute('aria-label', 'Show descending stats');
-    minusBtn.addEventListener('click', () => { statsDir = '-'; showStats(statsMode); });
-    dirToggle.appendChild(plusBtn);
-    dirToggle.appendChild(minusBtn);
-    statsContainer.appendChild(dirToggle);
-
-    // Grid
+    // Grid (merged: averages + and − directions)
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
     statsContainer.appendChild(gridDiv);
     renderStatsGrid(engine.selector, colLabels, function(noteName, colIdx) {
-      return noteName + statsDir + (colIdx + 1);
+      const n = colIdx + 1;
+      return [noteName + '+' + n, noteName + '-' + n];
     }, mode, gridDiv);
 
     // Legend

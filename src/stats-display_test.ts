@@ -4,6 +4,7 @@ import {
   getAutomaticityColor,
   getSpeedHeatmapColor,
   getStatsCellColor,
+  getStatsCellColorMerged,
   buildStatsLegend,
 } from "./stats-display.js";
 
@@ -106,6 +107,86 @@ describe("getStatsCellColor", () => {
       getStats: () => null,
     };
     assert.equal(getStatsCellColor(selector, "test", "retention"), "#ddd");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getStatsCellColorMerged
+// ---------------------------------------------------------------------------
+
+describe("getStatsCellColorMerged", () => {
+  it("falls back to getStatsCellColor when passed a string", () => {
+    const selector = {
+      getAutomaticity: () => 0.9,
+      getStats: () => null,
+    };
+    assert.equal(
+      getStatsCellColorMerged(selector, "C+3" as any, "retention"),
+      getStatsCellColor(selector, "C+3", "retention"),
+    );
+  });
+
+  it("returns grey when no items have data (retention)", () => {
+    const selector = {
+      getAutomaticity: () => null,
+      getStats: () => null,
+    };
+    assert.equal(getStatsCellColorMerged(selector, ["A+3", "A-3"], "retention"), "#ddd");
+  });
+
+  it("returns grey when no items have data (speed)", () => {
+    const selector = {
+      getAutomaticity: () => null,
+      getStats: () => null,
+    };
+    assert.equal(getStatsCellColorMerged(selector, ["A+3", "A-3"], "speed"), "#ddd");
+  });
+
+  it("averages automaticity across both directions (retention)", () => {
+    const data: Record<string, number | null> = { "C+3": 0.9, "C-3": 0.7 };
+    const selector = {
+      getAutomaticity: (id: string) => data[id] ?? null,
+      getStats: () => null,
+    };
+    // average = 0.8, which is exactly the >0.8 boundary → falls to 0.6-0.8 bucket
+    // Actually 0.8 is NOT > 0.8, so it's the 0.6-0.8 bucket
+    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "retention"), "hsl(80, 60%, 65%)");
+  });
+
+  it("uses only available direction when one is unseen (retention)", () => {
+    const data: Record<string, number | null> = { "C+3": 0.9, "C-3": null };
+    const selector = {
+      getAutomaticity: (id: string) => data[id] ?? null,
+      getStats: () => null,
+    };
+    // Only C+3 has data (0.9), so result = 0.9 → >0.8 bucket = green
+    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "retention"), "hsl(120, 60%, 65%)");
+  });
+
+  it("averages ewma across both directions (speed)", () => {
+    const data: Record<string, { ewma: number } | null> = {
+      "C+3": { ewma: 1000 },
+      "C-3": { ewma: 2000 },
+    };
+    const selector = {
+      getAutomaticity: () => null,
+      getStats: (id: string) => data[id] ?? null,
+    };
+    // average = 1500, which is NOT < 1500, so it's the 1500-3000 bucket
+    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "speed"), "hsl(80, 60%, 65%)");
+  });
+
+  it("uses only available direction when one is unseen (speed)", () => {
+    const data: Record<string, { ewma: number } | null> = {
+      "C+3": { ewma: 1000 },
+      "C-3": null,
+    };
+    const selector = {
+      getAutomaticity: () => null,
+      getStats: (id: string) => data[id] ?? null,
+    };
+    // Only C+3 has data (1000ms) → <1500 bucket = green
+    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "speed"), "hsl(120, 60%, 65%)");
   });
 });
 

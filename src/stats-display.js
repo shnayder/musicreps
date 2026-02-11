@@ -31,6 +31,29 @@ export function getStatsCellColor(selector, itemId, statsMode) {
 }
 
 /**
+ * Average stats across multiple item IDs (e.g. both + and − directions).
+ * Only items that have data contribute to the average.
+ * Returns grey when no items have data.
+ */
+export function getStatsCellColorMerged(selector, itemIds, statsMode) {
+  if (typeof itemIds === 'string') return getStatsCellColor(selector, itemIds, statsMode);
+  if (statsMode === 'retention') {
+    let sum = 0, count = 0;
+    for (const id of itemIds) {
+      const a = selector.getAutomaticity(id);
+      if (a !== null) { sum += a; count++; }
+    }
+    return getAutomaticityColor(count > 0 ? sum / count : null);
+  }
+  let sum = 0, count = 0;
+  for (const id of itemIds) {
+    const stats = selector.getStats(id);
+    if (stats && stats.ewma != null) { sum += stats.ewma; count++; }
+  }
+  return getSpeedHeatmapColor(count > 0 ? sum / count : null);
+}
+
+/**
  * Render a reference table for bidirectional lookup modes.
  *
  * @param {object}   selector  - adaptive selector instance
@@ -67,7 +90,7 @@ export function renderStatsTable(selector, rows, fwdHeader, revHeader, statsMode
  *
  * @param {object}   selector    - adaptive selector instance
  * @param {Array}    colLabels   - column header labels (e.g. ["1","2",...] or ["m2","M2",...])
- * @param {Function} getItemId   - (noteName, colIndex) => itemId string
+ * @param {Function} getItemId   - (noteName, colIndex) => itemId string or array of strings
  * @param {string}   statsMode   - 'retention' | 'speed'
  * @param {Element}  containerEl
  * @param {Array}    [notes]     - optional notes array (defaults to global NOTES)
@@ -84,7 +107,9 @@ export function renderStatsGrid(selector, colLabels, getItemId, statsMode, conta
     html += '<tr><td class="stats-grid-row-label">' + (note.displayName || note.name) + '</td>';
     for (let i = 0; i < colLabels.length; i++) {
       const itemId = getItemId(note.name, i);
-      const color = getStatsCellColor(selector, itemId, statsMode);
+      const color = Array.isArray(itemId)
+        ? getStatsCellColorMerged(selector, itemId, statsMode)
+        : getStatsCellColor(selector, itemId, statsMode);
       html += '<td class="stats-cell" style="background:' + color + '"></td>';
     }
     html += '</tr>';
