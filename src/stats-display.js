@@ -101,9 +101,11 @@ export function buildStatsLegend(statsMode) {
   if (statsMode === 'retention') {
     return '<div class="heatmap-legend active">'
       + '<div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>'
-      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>Automatic</div>'
-      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>Getting there</div>'
-      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>Needs work</div>'
+      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>Automatic (&gt;80%)</div>'
+      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>Solid (&gt;60%)</div>'
+      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>Getting there (&gt;40%)</div>'
+      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>Fading (&gt;20%)</div>'
+      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>Needs work (&lt;20%)</div>'
       + '</div>';
   }
   return '<div class="heatmap-legend active">'
