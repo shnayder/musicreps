@@ -89,6 +89,113 @@ export function updateModeStats(selector, itemIds, statsEl) {
 }
 
 /**
+ * Determine the keyboard key that would activate a given button.
+ * Returns null if no single-key shortcut exists (e.g. sharps, two-digit numbers).
+ */
+function getKeyForButton(btn) {
+  const note = btn.dataset.note;
+  if (note && note.length === 1 && 'CDEFGAB'.includes(note.toUpperCase())) return note.toUpperCase();
+  const num = btn.dataset.num;
+  if (num !== undefined && num.length === 1) return num;
+  return null;
+}
+
+/**
+ * Run a motor-baseline calibration sequence.
+ * Highlights random buttons one at a time; user taps or types to respond.
+ *
+ * @param {object}   opts
+ * @param {Element[]} opts.buttons    - answer buttons to use for calibration
+ * @param {object}   opts.els        - engine DOM elements (feedback, hint, timeDisplay)
+ * @param {Element}  opts.container  - mode container element
+ * @param {function} opts.onComplete - called with median time in ms
+ */
+function runCalibration(opts) {
+  const { buttons, els, container, onComplete } = opts;
+  const TRIAL_COUNT = 10;
+  const PAUSE_MS = 400;
+
+  const times = [];
+  let trialIndex = 0;
+  let targetBtn = null;
+  let trialStartTime = null;
+  let prevBtnIndex = -1;
+
+  // Show instructions
+  if (els.feedback) {
+    els.feedback.textContent = 'Quick warm-up!';
+    els.feedback.className = 'feedback';
+  }
+  if (els.hint) els.hint.textContent = 'Tap the highlighted button as fast as you can';
+  if (els.timeDisplay) els.timeDisplay.textContent = '';
+
+  function startTrial() {
+    if (trialIndex >= TRIAL_COUNT) {
+      cleanup();
+      const median = computeMedian(times);
+      onComplete(median);
+      return;
+    }
+
+    // Pick random button (not same as previous)
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * buttons.length);
+    } while (idx === prevBtnIndex && buttons.length > 1);
+    prevBtnIndex = idx;
+
+    targetBtn = buttons[idx];
+    targetBtn.classList.add('calibration-target');
+    trialStartTime = Date.now();
+
+    if (els.timeDisplay) els.timeDisplay.textContent = (trialIndex + 1) + ' / ' + TRIAL_COUNT;
+  }
+
+  function recordTrial() {
+    const elapsed = Date.now() - trialStartTime;
+    times.push(elapsed);
+    targetBtn.classList.remove('calibration-target');
+    targetBtn = null;
+    trialIndex++;
+    setTimeout(startTrial, PAUSE_MS);
+  }
+
+  function handleCalibrationClick(e) {
+    if (!targetBtn) return;
+    const clicked = e.target.closest('.note-btn, .answer-btn');
+    if (clicked === targetBtn) {
+      recordTrial();
+    }
+  }
+
+  function handleCalibrationKey(e) {
+    if (!targetBtn) return;
+    const expectedKey = getKeyForButton(targetBtn);
+    if (expectedKey && e.key.toUpperCase() === expectedKey) {
+      e.preventDefault();
+      recordTrial();
+    }
+  }
+
+  function cleanup() {
+    container.removeEventListener('click', handleCalibrationClick);
+    document.removeEventListener('keydown', handleCalibrationKey);
+    if (targetBtn) {
+      targetBtn.classList.remove('calibration-target');
+      targetBtn = null;
+    }
+  }
+
+  container.addEventListener('click', handleCalibrationClick);
+  document.addEventListener('keydown', handleCalibrationKey);
+
+  startTrial();
+
+  // Return cleanup function in case the quiz is stopped during calibration
+  return cleanup;
+}
+
+/**
  * Create a quiz engine for a given mode.
  *
  * @param {object} mode - Quiz mode configuration:
@@ -100,6 +207,7 @@ export function updateModeStats(selector, itemIds, statsEl) {
  *   mode.onStart()    - Called when quiz starts (optional)
  *   mode.onStop()     - Called when quiz stops (optional)
  *   mode.handleKey(e, state) - Mode-specific key handling, return true if handled (optional)
+ *   mode.getCalibrationButtons() - Returns array of DOM elements for calibration (optional)
  *
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
@@ -108,11 +216,26 @@ export function updateModeStats(selector, itemIds, statsEl) {
  *     .stats-controls, .mastery-message
  *
  * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
- *             updateIdleMessage, isActive, isAnswered, selector, storage, els }}
+ *             updateIdleMessage, isActive, isAnswered, selector, storage, els, baseline }}
  */
 export function createQuizEngine(mode, container) {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
   const selector = createAdaptiveSelector(storage);
+
+  const baselineKey = 'motorBaseline_' + mode.storageNamespace;
+  let motorBaseline = null;
+  let calibrating = false;
+  let calibrationCleanup = null;
+
+  // Load stored baseline and apply to config at init time
+  const storedBaseline = localStorage.getItem(baselineKey);
+  if (storedBaseline) {
+    const parsed = parseInt(storedBaseline, 10);
+    if (parsed > 0) {
+      motorBaseline = parsed;
+      selector.updateConfig(deriveScaledConfig(motorBaseline, DEFAULT_CONFIG));
+    }
+  }
 
   let state = initialEngineState();
   let countdownInterval = null;
@@ -130,6 +253,7 @@ export function createQuizEngine(mode, container) {
     statsControls: container.querySelector('.stats-controls'),
     quizArea: container.querySelector('.quiz-area'),
     masteryMessage: container.querySelector('.mastery-message'),
+    recalibrateBtn: container.querySelector('.recalibrate-btn'),
   };
 
   // --- Render: declaratively map state to DOM ---
@@ -150,10 +274,17 @@ export function createQuizEngine(mode, container) {
       els.masteryMessage.textContent   = state.masteryText;
       els.masteryMessage.style.display = state.showMastery ? 'block' : 'none';
     }
+    if (els.recalibrateBtn) {
+      els.recalibrateBtn.style.display = (state.phase === 'idle' && motorBaseline) ? 'inline' : 'none';
+    }
     setAnswerButtonsEnabled(state.answersEnabled);
   }
 
   // --- Countdown (purely DOM/timer — not part of state) ---
+
+  function getTargetTime() {
+    return selector.getConfig().automaticityTarget;
+  }
 
   function startCountdown() {
     const bar = els.countdownBar;
@@ -163,12 +294,13 @@ export function createQuizEngine(mode, container) {
 
     if (countdownInterval) clearInterval(countdownInterval);
 
+    const targetTime = getTargetTime();
     let expired = false;
     const startTime = Date.now();
     countdownInterval = setInterval(() => {
       const elapsed = Date.now() - startTime;
-      const remaining = Math.max(0, TARGET_TIME - elapsed);
-      bar.style.width = (remaining / TARGET_TIME) * 100 + '%';
+      const remaining = Math.max(0, targetTime - elapsed);
+      bar.style.width = (remaining / targetTime) * 100 + '%';
 
       if (remaining === 0 && !expired) {
         expired = true;
@@ -188,6 +320,49 @@ export function createQuizEngine(mode, container) {
     });
   }
 
+  // --- Baseline application ---
+
+  function applyBaseline(baseline) {
+    motorBaseline = baseline;
+    localStorage.setItem(baselineKey, String(baseline));
+    selector.updateConfig(deriveScaledConfig(baseline, DEFAULT_CONFIG));
+  }
+
+  // --- Calibration ---
+
+  function getCalibrationButtons() {
+    if (mode.getCalibrationButtons) return mode.getCalibrationButtons();
+    // Fallback: all visible note/answer buttons
+    return Array.from(container.querySelectorAll('.note-btn:not(.hidden), .answer-btn'));
+  }
+
+  function startCalibration(onComplete) {
+    calibrating = true;
+    const buttons = getCalibrationButtons();
+    if (buttons.length < 2) {
+      calibrating = false;
+      onComplete();
+      return;
+    }
+
+    // Enable buttons for tapping during calibration
+    setAnswerButtonsEnabled(true);
+
+    calibrationCleanup = runCalibration({
+      buttons,
+      els,
+      container,
+      onComplete: function(median) {
+        calibrating = false;
+        calibrationCleanup = null;
+        if (median && median > 0) {
+          applyBaseline(median);
+        }
+        onComplete();
+      },
+    });
+  }
+
   // --- Engine lifecycle ---
 
   function nextQuestion() {
@@ -202,6 +377,7 @@ export function createQuizEngine(mode, container) {
   }
 
   function submitAnswer(input) {
+    if (calibrating) return;
     if (state.phase !== 'active' || state.answered) return;
 
     const responseTime = Date.now() - state.questionStartTime;
@@ -234,7 +410,24 @@ export function createQuizEngine(mode, container) {
     // before the engine renders the quiz UI state.
     if (mode.onStart) mode.onStart();
     render();
-    nextQuestion();
+
+    if (!motorBaseline) {
+      // Run calibration before first quiz question
+      startCalibration(function() {
+        nextQuestion();
+      });
+    } else {
+      nextQuestion();
+    }
+  }
+
+  function recalibrate() {
+    state = engineStart(state);
+    if (mode.onStart) mode.onStart();
+    render();
+    startCalibration(function() {
+      nextQuestion();
+    });
   }
 
   function updateIdleMessage() {
@@ -249,6 +442,13 @@ export function createQuizEngine(mode, container) {
   }
 
   function stop() {
+    if (calibrating) {
+      calibrating = false;
+      if (calibrationCleanup) {
+        calibrationCleanup();
+        calibrationCleanup = null;
+      }
+    }
     if (countdownInterval) {
       clearInterval(countdownInterval);
       countdownInterval = null;
@@ -261,6 +461,7 @@ export function createQuizEngine(mode, container) {
 
   // Keyboard handler — uses pure routing, delegates mode-specific keys
   function handleKeydown(e) {
+    if (calibrating) return; // calibration has its own key handler
     const routed = engineRouteKey(state, e.key);
     switch (routed.action) {
       case 'stop':
@@ -280,6 +481,7 @@ export function createQuizEngine(mode, container) {
 
   // Tap-to-advance handler
   function handleClick(e) {
+    if (calibrating) return; // calibration handles its own clicks
     if (state.phase !== 'active' || !state.answered) return;
     if (e.target.closest('.answer-btn, .note-btn, .quiz-controls, .string-toggle')) return;
     nextQuestion();
@@ -296,9 +498,15 @@ export function createQuizEngine(mode, container) {
     container.removeEventListener('click', handleClick);
   }
 
+  // Wire up recalibrate button
+  if (els.recalibrateBtn) {
+    els.recalibrateBtn.addEventListener('click', recalibrate);
+  }
+
   return {
     start,
     stop,
+    recalibrate,
     submitAnswer,
     nextQuestion,
     attach,
@@ -306,6 +514,7 @@ export function createQuizEngine(mode, container) {
     updateIdleMessage,
     get isActive() { return state.phase === 'active'; },
     get isAnswered() { return state.answered; },
+    get baseline() { return motorBaseline; },
     selector,
     storage,
     els,

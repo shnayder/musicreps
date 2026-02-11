@@ -134,11 +134,11 @@ function createSemitoneMathMode() {
     renderStatsGrid(engine.selector, colLabels, function(noteName, colIdx) {
       const n = colIdx + 1;
       return [noteName + '+' + n, noteName + '-' + n];
-    }, mode, gridDiv);
+    }, mode, gridDiv, undefined, engine.baseline);
 
     // Legend
     const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode);
+    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
     statsContainer.appendChild(legendDiv);
 
     statsContainer.style.display = '';
@@ -198,6 +198,10 @@ function createSemitoneMathMode() {
 
     handleKey(e, { submitAnswer }) {
       return noteKeyHandler.handleKey(e);
+    },
+
+    getCalibrationButtons() {
+      return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
   };
 

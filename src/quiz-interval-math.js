@@ -139,11 +139,11 @@ function createIntervalMathMode() {
     renderStatsGrid(engine.selector, colLabels, function(noteName, colIdx) {
       const abbrev = MATH_INTERVALS[colIdx].abbrev;
       return [noteName + '+' + abbrev, noteName + '-' + abbrev];
-    }, mode, gridDiv);
+    }, mode, gridDiv, undefined, engine.baseline);
 
     // Legend
     const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode);
+    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
     statsContainer.appendChild(legendDiv);
 
     statsContainer.style.display = '';
@@ -203,6 +203,10 @@ function createIntervalMathMode() {
 
     handleKey(e, { submitAnswer }) {
       return noteKeyHandler.handleKey(e);
+    },
+
+    getCalibrationButtons() {
+      return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
   };
 

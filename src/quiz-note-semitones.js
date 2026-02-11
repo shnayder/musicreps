@@ -42,9 +42,9 @@ function createNoteSemitonesMode() {
     statsContainer.innerHTML = '';
     const tableDiv = document.createElement('div');
     statsContainer.appendChild(tableDiv);
-    renderStatsTable(engine.selector, getTableRows(), 'N\u2192#', '#\u2192N', mode, tableDiv);
+    renderStatsTable(engine.selector, getTableRows(), 'N\u2192#', '#\u2192N', mode, tableDiv, engine.baseline);
     const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode);
+    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
     statsContainer.appendChild(legendDiv);
     statsContainer.style.display = '';
     btn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
@@ -152,6 +152,10 @@ function createNoteSemitonesMode() {
         return true;
       }
       return false;
+    },
+
+    getCalibrationButtons() {
+      return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
   };
 

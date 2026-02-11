@@ -151,6 +151,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -208,6 +209,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
 
@@ -234,6 +236,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -285,6 +288,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -339,6 +343,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -379,6 +384,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -419,6 +425,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -476,6 +483,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -525,6 +533,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -574,6 +583,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">

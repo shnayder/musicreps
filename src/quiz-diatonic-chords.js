@@ -133,10 +133,10 @@ function createDiatonicChordsMode() {
     renderStatsGrid(engine.selector, colLabels, (keyRoot, colIdx) => {
       const d = colIdx + 1;
       return [keyRoot + ':' + d + ':fwd', keyRoot + ':' + d + ':rev'];
-    }, mode, gridDiv, keyNotes);
+    }, mode, gridDiv, keyNotes, engine.baseline);
 
     const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode);
+    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
     statsContainer.appendChild(legendDiv);
     statsContainer.style.display = '';
     btn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
@@ -222,6 +222,10 @@ function createDiatonicChordsMode() {
         return true;
       }
       return false;
+    },
+
+    getCalibrationButtons() {
+      return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
   };
 

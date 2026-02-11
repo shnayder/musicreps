@@ -311,6 +311,19 @@ button {
   grid-template-columns: repeat(3, 1fr);
 }
 
+/* --- Calibration highlight --- */
+.calibration-target {
+  background: #4CAF50 !important;
+  border-color: #388E3C !important;
+  color: white !important;
+  box-shadow: 0 0 12px rgba(76, 175, 80, 0.6);
+}
+.calibration-progress {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
 /* --- Feedback --- */
 .feedback {
   font-size: 1.5rem;

@@ -116,6 +116,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -173,6 +174,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
 
@@ -199,6 +201,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -250,6 +253,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -304,6 +308,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -344,6 +349,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -384,6 +390,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -441,6 +448,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -490,6 +498,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -539,6 +548,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
       </div>
     </div>
     <div class="quiz-area">

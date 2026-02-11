@@ -85,6 +85,33 @@ declarations.
 - Hamburger menu to switch between modes
 - String selection persisted in localStorage
 
+## Motor Baseline Calibration
+
+On first quiz start per mode, a 10-trial "Quick warm-up!" calibration measures
+the user's pure motor response time (reaction + tap/type + device latency).
+A random button is highlighted green; user taps it as fast as they can. The
+median time becomes the **motor baseline** for that mode.
+
+All timing thresholds scale proportionally from the baseline:
+
+| Threshold              | Ratio to baseline |
+|------------------------|-------------------|
+| minTime                | 1.0×              |
+| automaticityTarget     | 3.0×              |
+| selfCorrectionThreshold| 1.5×              |
+| maxResponseTime        | 9.0×              |
+| Heatmap green          | < 1.5×            |
+| Heatmap yellow-green   | < 3.0×            |
+| Heatmap yellow         | < 4.5×            |
+| Heatmap orange         | < 6.0×            |
+
+Storage: `motorBaseline_{namespace}` in localStorage. Re-run via "Recalibrate"
+button (shown in idle state after initial calibration). Speed tap mode is
+excluded (has its own custom config).
+
+Key functions: `deriveScaledConfig()`, `computeMedian()` in adaptive.js;
+`runCalibration()` in quiz-engine.js; `engine.baseline` property on engine.
+
 ## Adaptive Selector
 
 The adaptive question selector lives in `src/adaptive.js` — a single JS file
@@ -94,9 +121,10 @@ at build time (stripping `export` keywords for browser inlining). Key design:
 - **Unseen items** get `unseenBoost` weight (exploration)
 - **Seen items** get `ewma / minTime` weight (slower = more practice)
 - No extra multiplier for low-sample items — this was a bug that caused startup ruts
-- Response times clamped to `maxResponseTime` (9s) to reject outliers
+- Response times clamped to `maxResponseTime` (scaled by baseline) to reject outliers
 - Last-selected item gets weight 0 (no immediate repeats)
 - Storage is injected (localStorage adapter in browser, Map in tests)
+- `updateConfig(newCfg)` / `getConfig()` allow runtime config changes (used by calibration)
 
 ## Forgetting Model (Spaced Repetition)
 

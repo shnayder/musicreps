@@ -12,6 +12,8 @@ import {
   createAdaptiveSelector,
   createMemoryStorage,
   DEFAULT_CONFIG,
+  deriveScaledConfig,
+  computeMedian,
 } from "./adaptive.js";
 
 // ---------------------------------------------------------------------------
@@ -785,5 +787,102 @@ describe("createAdaptiveSelector", () => {
     assert.equal(recs[0].dueCount, 1);      // 0-0 seen but forgotten
     assert.equal(recs[0].unseenCount, 1);    // 0-1 never seen
     assert.equal(recs[0].masteredCount, 0);
+  });
+
+  it("updateConfig changes config used by selector", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    const original = selector.getConfig();
+    assert.equal(original.minTime, 1000);
+
+    selector.updateConfig({ minTime: 1500 });
+    assert.equal(selector.getConfig().minTime, 1500);
+    // Other fields preserved
+    assert.equal(selector.getConfig().automaticityTarget, original.automaticityTarget);
+  });
+
+  it("getConfig returns current config", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    const cfg = selector.getConfig();
+    assert.equal(cfg.minTime, DEFAULT_CONFIG.minTime);
+    assert.equal(cfg.automaticityTarget, DEFAULT_CONFIG.automaticityTarget);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// deriveScaledConfig
+// ---------------------------------------------------------------------------
+
+describe("deriveScaledConfig", () => {
+  it("scales all timing thresholds proportionally", () => {
+    const scaled = deriveScaledConfig(1500);
+    assert.equal(scaled.minTime, 1500);
+    assert.equal(scaled.automaticityTarget, 4500);
+    assert.equal(scaled.selfCorrectionThreshold, 2250);
+    assert.equal(scaled.maxResponseTime, 13500);
+  });
+
+  it("with baseline=1000 returns same as defaults", () => {
+    const scaled = deriveScaledConfig(1000);
+    assert.equal(scaled.minTime, DEFAULT_CONFIG.minTime);
+    assert.equal(scaled.automaticityTarget, DEFAULT_CONFIG.automaticityTarget);
+    assert.equal(scaled.selfCorrectionThreshold, DEFAULT_CONFIG.selfCorrectionThreshold);
+    assert.equal(scaled.maxResponseTime, DEFAULT_CONFIG.maxResponseTime);
+  });
+
+  it("with baseline=700 (fast keyboard user) scales down", () => {
+    const scaled = deriveScaledConfig(700);
+    assert.equal(scaled.minTime, 700);
+    assert.equal(scaled.automaticityTarget, 2100);
+    assert.equal(scaled.selfCorrectionThreshold, 1050);
+    assert.equal(scaled.maxResponseTime, 6300);
+  });
+
+  it("preserves non-timing fields from base config", () => {
+    const scaled = deriveScaledConfig(1500);
+    assert.equal(scaled.unseenBoost, DEFAULT_CONFIG.unseenBoost);
+    assert.equal(scaled.ewmaAlpha, DEFAULT_CONFIG.ewmaAlpha);
+    assert.equal(scaled.initialStability, DEFAULT_CONFIG.initialStability);
+  });
+
+  it("uses provided base config", () => {
+    const custom = { ...DEFAULT_CONFIG, minTime: 2000, automaticityTarget: 6000 };
+    const scaled = deriveScaledConfig(1500, custom);
+    // scale = 1500 / 1000 = 1.5
+    assert.equal(scaled.minTime, 3000);
+    assert.equal(scaled.automaticityTarget, 9000);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeMedian
+// ---------------------------------------------------------------------------
+
+describe("computeMedian", () => {
+  it("returns null for empty array", () => {
+    assert.equal(computeMedian([]), null);
+  });
+
+  it("returns the single element for array of length 1", () => {
+    assert.equal(computeMedian([500]), 500);
+  });
+
+  it("returns middle value for odd-length array", () => {
+    assert.equal(computeMedian([100, 500, 300]), 300);
+  });
+
+  it("returns average of two middle values for even-length array", () => {
+    assert.equal(computeMedian([100, 200, 300, 400]), 250);
+  });
+
+  it("handles unsorted input", () => {
+    assert.equal(computeMedian([900, 100, 500, 300, 700]), 500);
+  });
+
+  it("does not mutate input array", () => {
+    const arr = [3, 1, 2];
+    computeMedian(arr);
+    assert.deepEqual(arr, [3, 1, 2]);
   });
 });

@@ -81,7 +81,7 @@ function createFretboardMode() {
     const statsContainer = container.querySelector('.stats-container');
 
     // Populate legend via shared helper
-    statsContainer.innerHTML = buildStatsLegend(mode);
+    statsContainer.innerHTML = buildStatsLegend(mode, engine.baseline);
     statsContainer.style.display = '';
 
     if (mode === 'retention') {
@@ -99,7 +99,7 @@ function createFretboardMode() {
         for (let f = 0; f < 13; f++) {
           const stats = selector.getStats(`${s}-${f}`);
           const ewma = stats ? stats.ewma : null;
-          highlightCircle(s, f, getSpeedHeatmapColor(ewma));
+          highlightCircle(s, f, getSpeedHeatmapColor(ewma, engine.baseline));
           showNoteText(s, f);
         }
       }
@@ -225,6 +225,11 @@ function createFretboardMode() {
 
     handleKey(e, { submitAnswer }) {
       return noteKeyHandler.handleKey(e);
+    },
+
+    getCalibrationButtons() {
+      // Use only visible note buttons (respects naturals-only setting)
+      return Array.from(container.querySelectorAll('.note-btn:not(.hidden)'));
     },
   };
 

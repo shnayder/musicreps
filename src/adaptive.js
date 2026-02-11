@@ -139,6 +139,33 @@ export function selectWeighted(items, weights, rand) {
   return items[items.length - 1];
 }
 
+/**
+ * Derive a scaled config from a motor baseline measurement.
+ * The default config assumes baseline = 1000ms. This scales all
+ * absolute timing thresholds proportionally to the measured baseline.
+ */
+export function deriveScaledConfig(motorBaseline, baseCfg = DEFAULT_CONFIG) {
+  const scale = motorBaseline / 1000;
+  return {
+    ...baseCfg,
+    minTime: Math.round(baseCfg.minTime * scale),
+    automaticityTarget: Math.round(baseCfg.automaticityTarget * scale),
+    selfCorrectionThreshold: Math.round(baseCfg.selfCorrectionThreshold * scale),
+    maxResponseTime: Math.round(baseCfg.maxResponseTime * scale),
+  };
+}
+
+/**
+ * Compute median of a sorted-in-place numeric array.
+ */
+export function computeMedian(values) {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 1) return sorted[mid];
+  return (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
 // ---------------------------------------------------------------------------
 // Selector factory (storage-injected — works with localStorage or Map)
 // ---------------------------------------------------------------------------
@@ -317,7 +344,15 @@ export function createAdaptiveSelector(
     return hasDueItem;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered, checkNeedsReview };
+  function updateConfig(newCfg) {
+    cfg = { ...cfg, ...newCfg };
+  }
+
+  function getConfig() {
+    return cfg;
+  }
+
+  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered, checkNeedsReview, updateConfig, getConfig };
 }
 
 // ---------------------------------------------------------------------------

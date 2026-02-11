@@ -51,24 +51,44 @@ describe("getSpeedHeatmapColor", () => {
     assert.equal(getSpeedHeatmapColor(null), "#ddd");
   });
 
-  it("returns green for fast (<1500ms)", () => {
+  it("returns green for fast (<1500ms) with default baseline", () => {
     assert.equal(getSpeedHeatmapColor(1000), "hsl(120, 60%, 65%)");
   });
 
-  it("returns yellow-green for 1500-3000ms", () => {
+  it("returns yellow-green for 1500-3000ms with default baseline", () => {
     assert.equal(getSpeedHeatmapColor(2000), "hsl(80, 60%, 65%)");
   });
 
-  it("returns yellow for 3000-4500ms", () => {
+  it("returns yellow for 3000-4500ms with default baseline", () => {
     assert.equal(getSpeedHeatmapColor(4000), "hsl(50, 60%, 65%)");
   });
 
-  it("returns orange for 4500-6000ms", () => {
+  it("returns orange for 4500-6000ms with default baseline", () => {
     assert.equal(getSpeedHeatmapColor(5000), "hsl(30, 60%, 65%)");
   });
 
-  it("returns red for slow (>=6000ms)", () => {
+  it("returns red for slow (>=6000ms) with default baseline", () => {
     assert.equal(getSpeedHeatmapColor(7000), "hsl(0, 60%, 65%)");
+  });
+
+  it("scales thresholds with baseline=1500 (mobile user)", () => {
+    // green: < 1500*1.5 = 2250ms
+    assert.equal(getSpeedHeatmapColor(2000, 1500), "hsl(120, 60%, 65%)");
+    // yellow-green: 2250-4500ms
+    assert.equal(getSpeedHeatmapColor(3000, 1500), "hsl(80, 60%, 65%)");
+    // yellow: 4500-6750ms
+    assert.equal(getSpeedHeatmapColor(5000, 1500), "hsl(50, 60%, 65%)");
+    // orange: 6750-9000ms
+    assert.equal(getSpeedHeatmapColor(8000, 1500), "hsl(30, 60%, 65%)");
+    // red: >= 9000ms
+    assert.equal(getSpeedHeatmapColor(10000, 1500), "hsl(0, 60%, 65%)");
+  });
+
+  it("scales thresholds with baseline=700 (fast keyboard user)", () => {
+    // green: < 700*1.5 = 1050ms
+    assert.equal(getSpeedHeatmapColor(900, 700), "hsl(120, 60%, 65%)");
+    // 1200ms is above green threshold with baseline 700
+    assert.equal(getSpeedHeatmapColor(1200, 700), "hsl(80, 60%, 65%)");
   });
 });
 
@@ -91,6 +111,15 @@ describe("getStatsCellColor", () => {
       getStats: () => ({ ewma: 2000 }),
     };
     assert.equal(getStatsCellColor(selector, "test", "speed"), "hsl(80, 60%, 65%)");
+  });
+
+  it("passes baseline through to getSpeedHeatmapColor", () => {
+    const selector = {
+      getAutomaticity: () => null,
+      getStats: () => ({ ewma: 2000 }),
+    };
+    // With baseline=1500, 2000ms is < 2250 (1500*1.5) → green
+    assert.equal(getStatsCellColor(selector, "test", "speed", 1500), "hsl(120, 60%, 65%)");
   });
 
   it("returns grey for speed mode with no stats", () => {
@@ -203,11 +232,25 @@ describe("buildStatsLegend", () => {
     assert.ok(!html.includes("1.5s")); // no speed labels
   });
 
-  it("returns speed legend with time range labels", () => {
+  it("retention legend ignores baseline", () => {
+    const html = buildStatsLegend("retention", 2000);
+    assert.ok(html.includes("Automatic"));
+    assert.ok(!html.includes("3s")); // no speed thresholds
+  });
+
+  it("returns speed legend with default thresholds (baseline=1000)", () => {
     const html = buildStatsLegend("speed");
-    assert.ok(html.includes("1.5"));
+    assert.ok(html.includes("1.5s"));
     assert.ok(html.includes("6s"));
     assert.ok(html.includes("No data"));
     assert.ok(!html.includes("Automatic")); // no retention labels
+  });
+
+  it("returns speed legend with scaled thresholds (baseline=1500)", () => {
+    const html = buildStatsLegend("speed", 1500);
+    // 1500*1.5=2250 → "2.3s", 1500*3=4500 → "4.5s", 1500*6=9000 → "9s"
+    assert.ok(html.includes("2.3s"), "should show 2.3s threshold");
+    assert.ok(html.includes("4.5s"), "should show 4.5s threshold");
+    assert.ok(html.includes("9s"), "should show 9s threshold");
   });
 });
