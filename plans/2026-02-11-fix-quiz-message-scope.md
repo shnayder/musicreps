@@ -30,4 +30,6 @@ start/stop cycle.
 
 ## What was actually done
 
-(To be updated after implementation.)
+Implemented exactly as planned — no deviations. Added `engine.updateIdleMessage()`
+calls to both `toggleString()` (line 77) and the naturals-only change handler
+(line 352) in `quiz-fretboard.js`. Version bumped to v2.8.
