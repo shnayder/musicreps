@@ -3,6 +3,10 @@
 //
 // Each quiz mode provides a config object; the engine handles the
 // shared lifecycle. ES module — exports stripped for browser inlining.
+//
+// Depends on globals (from quiz-engine-state.js): initialEngineState,
+// engineStart, engineNextQuestion, engineSubmitAnswer, engineStop,
+// engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer, engineRouteKey
 
 export const TARGET_TIME = 3000;
 
@@ -110,12 +114,8 @@ export function createQuizEngine(mode, container) {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
   const selector = createAdaptiveSelector(storage);
 
-  let active = false;
-  let currentItemId = null;
-  let answered = false;
-  let questionStartTime = null;
+  let state = initialEngineState();
   let countdownInterval = null;
-  let expired = false;
 
   // DOM references (scoped to container)
   const els = {
@@ -132,15 +132,38 @@ export function createQuizEngine(mode, container) {
     masteryMessage: container.querySelector('.mastery-message'),
   };
 
+  // --- Render: declaratively map state to DOM ---
+
+  function render() {
+    if (els.startBtn)      els.startBtn.style.display     = state.showStartBtn ? 'inline' : 'none';
+    if (els.stopBtn)       els.stopBtn.style.display      = state.showStopBtn ? 'inline' : 'none';
+    if (els.heatmapBtn)    els.heatmapBtn.style.display   = state.showHeatmapBtn ? 'inline' : 'none';
+    if (els.statsControls) els.statsControls.style.display = state.showStatsControls ? '' : 'none';
+    if (els.quizArea)      els.quizArea.classList.toggle('active', state.quizActive);
+    if (els.feedback) {
+      els.feedback.textContent = state.feedbackText;
+      els.feedback.className   = state.feedbackClass;
+    }
+    if (els.timeDisplay) els.timeDisplay.textContent = state.timeDisplayText;
+    if (els.hint)        els.hint.textContent        = state.hintText;
+    if (els.masteryMessage) {
+      els.masteryMessage.textContent   = state.masteryText;
+      els.masteryMessage.style.display = state.showMastery ? 'block' : 'none';
+    }
+    setAnswerButtonsEnabled(state.answersEnabled);
+  }
+
+  // --- Countdown (purely DOM/timer — not part of state) ---
+
   function startCountdown() {
     const bar = els.countdownBar;
     if (!bar) return;
     bar.style.width = '100%';
     bar.classList.remove('expired');
-    expired = false;
 
     if (countdownInterval) clearInterval(countdownInterval);
 
+    let expired = false;
     const startTime = Date.now();
     countdownInterval = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -155,15 +178,6 @@ export function createQuizEngine(mode, container) {
     }, 50);
   }
 
-  function clearFeedback() {
-    if (els.feedback) {
-      els.feedback.textContent = '';
-      els.feedback.className = 'feedback';
-    }
-    if (els.timeDisplay) els.timeDisplay.textContent = '';
-    if (els.hint) els.hint.textContent = '';
-  }
-
   function setAnswerButtonsEnabled(enabled) {
     container.querySelectorAll('.answer-btn, .note-btn').forEach(btn => {
       btn.disabled = !enabled;
@@ -174,135 +188,98 @@ export function createQuizEngine(mode, container) {
     });
   }
 
+  // --- Engine lifecycle ---
+
   function nextQuestion() {
     const items = mode.getEnabledItems();
     if (items.length === 0) return;
 
-    currentItemId = selector.selectNext(items);
-    answered = false;
-    clearFeedback();
-    setAnswerButtonsEnabled(true);
-    mode.presentQuestion(currentItemId);
-    questionStartTime = Date.now();
+    const nextItemId = selector.selectNext(items);
+    state = engineNextQuestion(state, nextItemId, Date.now());
+    render();
+    mode.presentQuestion(state.currentItemId);
     startCountdown();
   }
 
   function submitAnswer(input) {
-    if (!active || answered) return;
+    if (state.phase !== 'active' || state.answered) return;
 
-    const responseTime = Date.now() - questionStartTime;
+    const responseTime = Date.now() - state.questionStartTime;
 
     if (countdownInterval) {
       clearInterval(countdownInterval);
       countdownInterval = null;
     }
 
-    answered = true;
-    setAnswerButtonsEnabled(false);
+    const result = mode.checkAnswer(state.currentItemId, input);
+    selector.recordResponse(state.currentItemId, responseTime, result.correct);
 
-    const result = mode.checkAnswer(currentItemId, input);
+    state = engineSubmitAnswer(state, result.correct, result.correctAnswer, responseTime);
 
-    if (result.correct) {
-      if (els.feedback) {
-        els.feedback.textContent = 'Correct!';
-        els.feedback.className = 'feedback correct';
-      }
-      selector.recordResponse(currentItemId, responseTime, true);
-    } else {
-      if (els.feedback) {
-        els.feedback.textContent = 'Incorrect \u2014 ' + result.correctAnswer;
-        els.feedback.className = 'feedback incorrect';
-      }
-      selector.recordResponse(currentItemId, responseTime, false);
-    }
+    // Check if all enabled items are mastered
+    const allMastered = selector.checkAllMastered(mode.getEnabledItems());
+    state = engineUpdateMasteryAfterAnswer(state, allMastered);
 
-    if (els.timeDisplay) els.timeDisplay.textContent = responseTime + ' ms';
-    if (els.hint) els.hint.textContent = 'Tap anywhere or press Space for next';
+    render();
 
     // Let the mode react to the answer (e.g., highlight correct position)
     if (mode.onAnswer) {
-      mode.onAnswer(currentItemId, result, responseTime);
-    }
-
-    // Check if all enabled items are mastered
-    if (els.masteryMessage) {
-      const allMastered = selector.checkAllMastered(mode.getEnabledItems());
-      if (allMastered) {
-        els.masteryMessage.textContent = 'Looks like you\u2019ve got this!';
-        els.masteryMessage.style.display = 'block';
-      } else {
-        els.masteryMessage.style.display = 'none';
-      }
+      mode.onAnswer(state.currentItemId, result, responseTime);
     }
   }
 
   function start() {
-    active = true;
+    state = engineStart(state);
     // Call onStart first so modes can tear down their idle UI (e.g. heatmap)
-    // before the engine sets up the quiz UI state.
+    // before the engine renders the quiz UI state.
     if (mode.onStart) mode.onStart();
-    if (els.masteryMessage) els.masteryMessage.style.display = 'none';
-    if (els.startBtn) els.startBtn.style.display = 'none';
-    if (els.heatmapBtn) els.heatmapBtn.style.display = 'none';
-    if (els.statsControls) els.statsControls.style.display = 'none';
-    if (els.stopBtn) els.stopBtn.style.display = 'inline';
-    if (els.quizArea) els.quizArea.classList.add('active');
+    render();
     nextQuestion();
   }
 
   function updateIdleMessage() {
-    if (!els.masteryMessage || active) return;
     const items = mode.getEnabledItems();
-    if (selector.checkAllMastered(items)) {
-      els.masteryMessage.textContent = 'Looks like you\u2019ve got this!';
-      els.masteryMessage.style.display = 'block';
-    } else if (selector.checkNeedsReview(items)) {
-      els.masteryMessage.textContent = 'Time to review?';
-      els.masteryMessage.style.display = 'block';
-    } else {
-      els.masteryMessage.style.display = 'none';
-    }
+    state = engineUpdateIdleMessage(
+      state,
+      selector.checkAllMastered(items),
+      selector.checkNeedsReview(items),
+    );
+    render();
   }
 
   function stop() {
-    active = false;
     if (countdownInterval) {
       clearInterval(countdownInterval);
       countdownInterval = null;
     }
-    if (els.startBtn) els.startBtn.style.display = 'inline';
-    if (els.heatmapBtn) els.heatmapBtn.style.display = 'inline';
-    if (els.statsControls) els.statsControls.style.display = '';
-    if (els.stopBtn) els.stopBtn.style.display = 'none';
-    if (els.quizArea) els.quizArea.classList.remove('active');
+    state = engineStop(state);
+    render();
     if (mode.onStop) mode.onStop();
     updateIdleMessage();
   }
 
-  // Keyboard handler — delegates mode-specific keys, handles shared keys
+  // Keyboard handler — uses pure routing, delegates mode-specific keys
   function handleKeydown(e) {
-    if (!active) return;
-
-    if (e.key === 'Escape') {
-      stop();
-      return;
-    }
-
-    if ((e.key === ' ' || e.key === 'Enter') && answered) {
-      e.preventDefault();
-      nextQuestion();
-      return;
-    }
-
-    // Delegate to mode for answer-specific keys
-    if (!answered && mode.handleKey) {
-      mode.handleKey(e, { submitAnswer });
+    const routed = engineRouteKey(state, e.key);
+    switch (routed.action) {
+      case 'stop':
+        stop();
+        break;
+      case 'next':
+        e.preventDefault();
+        nextQuestion();
+        break;
+      case 'delegate':
+        if (mode.handleKey) mode.handleKey(e, { submitAnswer });
+        break;
+      case 'ignore':
+        break;
     }
   }
 
   // Tap-to-advance handler
   function handleClick(e) {
-    if (!active || !answered) return;
+    if (state.phase !== 'active' || !state.answered) return;
     if (e.target.closest('.answer-btn, .note-btn, .quiz-controls, .string-toggle')) return;
     nextQuestion();
   }
@@ -326,8 +303,8 @@ export function createQuizEngine(mode, container) {
     attach,
     detach,
     updateIdleMessage,
-    get isActive() { return active; },
-    get isAnswered() { return answered; },
+    get isActive() { return state.phase === 'active'; },
+    get isAnswered() { return state.answered; },
     selector,
     storage,
     els,

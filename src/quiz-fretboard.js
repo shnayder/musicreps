@@ -2,9 +2,9 @@
 // Plugs into the shared quiz engine via the mode interface.
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
-// noteMatchesInput, createQuizEngine, DEFAULT_CONFIG,
+// noteMatchesInput, createQuizEngine, createNoteKeyHandler, DEFAULT_CONFIG,
 // getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend,
-// computeRecommendations
+// computeRecommendations, createFretboardHelpers, toggleFretboardString
 
 function createFretboardMode() {
   const container = document.getElementById('mode-fretboard');
@@ -14,15 +14,14 @@ function createFretboardMode() {
   let recommendedStrings = new Set();
   let heatmapMode = null;
 
-  // --- Note helpers (match original app.js behavior) ---
+  // --- Pure helpers (from quiz-fretboard-state.js) ---
 
-  const noteNames = NOTES.map(n => n.name);
-
-  function getNoteAtPosition(string, fret) {
-    const offset = STRING_OFFSETS[string];
-    const noteIndex = (offset + fret) % 12;
-    return noteNames[noteIndex];
-  }
+  const fb = createFretboardHelpers({
+    notes: NOTES,
+    naturalNotes: NATURAL_NOTES,
+    stringOffsets: STRING_OFFSETS,
+    noteMatchesInput,
+  });
 
   // --- SVG helpers ---
 
@@ -37,7 +36,7 @@ function createFretboardMode() {
     const text = container.querySelector(
       `text[data-string="${string}"][data-fret="${fret}"]`
     );
-    if (text) text.textContent = getNoteAtPosition(string, fret);
+    if (text) text.textContent = fb.getNoteAtPosition(string, fret);
   }
 
   function clearAll() {
@@ -68,11 +67,7 @@ function createFretboardMode() {
   }
 
   function toggleString(s) {
-    if (enabledStrings.has(s)) {
-      if (enabledStrings.size > 1) enabledStrings.delete(s);
-    } else {
-      enabledStrings.add(s);
-    }
+    enabledStrings = toggleFretboardString(enabledStrings, s);
     saveEnabledStrings();
     refreshUI();
   }
@@ -137,27 +132,24 @@ function createFretboardMode() {
 
   // --- Recommendations ---
 
-  function getItemIdsForString(s) {
-    const items = [];
-    for (let f = 0; f < 13; f++) {
-      const note = getNoteAtPosition(s, f);
-      if (!naturalsOnly || NATURAL_NOTES.includes(note)) {
-        items.push(`${s}-${f}`);
-      }
-    }
-    return items;
-  }
-
   function updateRecommendations(selector) {
     const allStrings = [0, 1, 2, 3, 4, 5];
-    const result = computeRecommendations(selector, allStrings, getItemIdsForString, DEFAULT_CONFIG, {});
+    const result = computeRecommendations(
+      selector, allStrings,
+      (s) => fb.getItemIdsForString(s, naturalsOnly),
+      DEFAULT_CONFIG, {}
+    );
     recommendedStrings = result.recommended;
     updateStringToggles();
   }
 
   function applyRecommendations(selector) {
     const allStrings = [0, 1, 2, 3, 4, 5];
-    const result = computeRecommendations(selector, allStrings, getItemIdsForString, DEFAULT_CONFIG, {});
+    const result = computeRecommendations(
+      selector, allStrings,
+      (s) => fb.getItemIdsForString(s, naturalsOnly),
+      DEFAULT_CONFIG, {}
+    );
     recommendedStrings = result.recommended;
     if (result.enabled) {
       enabledStrings = result.enabled;
@@ -192,31 +184,20 @@ function createFretboardMode() {
     storageNamespace: 'fretboard',
 
     getEnabledItems() {
-      const items = [];
-      for (const s of enabledStrings) {
-        for (let f = 0; f < 13; f++) {
-          const note = getNoteAtPosition(s, f);
-          if (!naturalsOnly || NATURAL_NOTES.includes(note)) {
-            items.push(`${s}-${f}`);
-          }
-        }
-      }
-      return items;
+      return fb.getFretboardEnabledItems(enabledStrings, naturalsOnly);
     },
 
     presentQuestion(itemId) {
       clearAll();
-      const [s, f] = itemId.split('-').map(Number);
-      currentString = s;
-      currentFret = f;
-      currentNote = getNoteAtPosition(s, f);
-      highlightCircle(s, f, '#FFD700');
+      const q = fb.parseFretboardItem(itemId);
+      currentString = q.currentString;
+      currentFret = q.currentFret;
+      currentNote = q.currentNote;
+      highlightCircle(q.currentString, q.currentFret, '#FFD700');
     },
 
     checkAnswer(itemId, input) {
-      const note = NOTES.find(n => n.name === currentNote);
-      const correct = note && noteMatchesInput(note, input);
-      return { correct, correctAnswer: currentNote };
+      return fb.checkFretboardAnswer(currentNote, input);
     },
 
     onAnswer(itemId, result, responseTime) {
@@ -229,11 +210,13 @@ function createFretboardMode() {
     },
 
     onStart() {
+      noteKeyHandler.reset();
       if (heatmapMode) hideHeatmap();
       updateStats(engine.selector);
     },
 
     onStop() {
+      noteKeyHandler.reset();
       clearAll();
       updateStats(engine.selector);
       showHeatmapView('retention', engine.selector);
@@ -241,55 +224,18 @@ function createFretboardMode() {
     },
 
     handleKey(e, { submitAnswer }) {
-      const key = e.key.toUpperCase();
-
-      // Handle # for sharps or b for flats
-      if (pendingNote && !naturalsOnly) {
-        if (e.key === '#' || (e.shiftKey && e.key === '3')) {
-          e.preventDefault();
-          clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + '#');
-          pendingNote = null;
-          pendingTimeout = null;
-          return true;
-        }
-        if (e.key === 'b' || e.key === 'B') {
-          e.preventDefault();
-          clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + 'b');
-          pendingNote = null;
-          pendingTimeout = null;
-          return true;
-        }
-      }
-
-      if ('CDEFGAB'.includes(key)) {
-        e.preventDefault();
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-
-        if (naturalsOnly) {
-          submitAnswer(key);
-        } else {
-          pendingNote = key;
-          pendingTimeout = setTimeout(() => {
-            submitAnswer(pendingNote);
-            pendingNote = null;
-            pendingTimeout = null;
-          }, 400);
-        }
-        return true;
-      }
-
-      return false;
+      return noteKeyHandler.handleKey(e);
     },
   };
 
-  // Keyboard state for accidental handling
-  let pendingNote = null;
-  let pendingTimeout = null;
-
   // Create engine
   const engine = createQuizEngine(mode, container);
+
+  // Keyboard handler via shared helper (replaces inline state machine)
+  const noteKeyHandler = createNoteKeyHandler(
+    (input) => engine.submitAnswer(input),
+    () => !naturalsOnly
+  );
 
   // Pre-cache all positions
   const allItemIds = [];
@@ -356,6 +302,7 @@ function createFretboardMode() {
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();
+      noteKeyHandler.reset();
     },
   };
 }

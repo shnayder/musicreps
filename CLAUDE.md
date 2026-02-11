@@ -13,8 +13,12 @@ src/
   adaptive_test.ts     # Tests for adaptive selector
   music-data.js        # Shared music theory data: notes, intervals, helpers
   music-data_test.ts   # Tests for music data
+  quiz-engine-state.js # Pure state transitions for quiz engine (no DOM)
+  quiz-engine-state_test.ts  # Tests for engine state transitions
   quiz-engine.js       # Shared quiz lifecycle (timing, countdown, feedback)
   quiz-engine_test.ts  # Tests for quiz engine
+  quiz-fretboard-state.js    # Pure fretboard helpers (no DOM)
+  quiz-fretboard-state_test.ts  # Tests for fretboard state helpers
   quiz-fretboard.js    # Fretboard quiz mode
   quiz-note-semitones.js      # Note <-> semitone number quiz mode
   quiz-interval-semitones.js  # Interval <-> semitone number quiz mode

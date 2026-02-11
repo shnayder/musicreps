@@ -20,9 +20,11 @@ const readModule = (rel: string) => read(rel).replace(/^export /gm, "");
 const css = read("src/styles.css");
 const adaptiveJS = readModule("src/adaptive.js");
 const musicDataJS = readModule("src/music-data.js");
+const quizEngineStateJS = readModule("src/quiz-engine-state.js");
 const quizEngineJS = readModule("src/quiz-engine.js");
 const statsDisplayJS = readModule("src/stats-display.js");
 const recommendationsJS = readModule("src/recommendations.js");
+const quizFretboardStateJS = readModule("src/quiz-fretboard-state.js");
 const quizFretboardJS = read("src/quiz-fretboard.js");
 const quizSpeedTapJS = read("src/quiz-speed-tap.js");
 const quizNoteSemitonesJS = read("src/quiz-note-semitones.js");
@@ -60,7 +62,7 @@ const html = `<!DOCTYPE html>
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.10</div>
+    <div class="version">v2.12</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -362,9 +364,11 @@ const html = `<!DOCTYPE html>
   <script>
 ${adaptiveJS}
 ${musicDataJS}
+${quizEngineStateJS}
 ${quizEngineJS}
 ${statsDisplayJS}
 ${recommendationsJS}
+${quizFretboardStateJS}
 ${quizFretboardJS}
 ${quizSpeedTapJS}
 ${quizNoteSemitonesJS}

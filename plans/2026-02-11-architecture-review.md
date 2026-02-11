@@ -162,7 +162,7 @@ Add `recommendations.js` to both `main.ts` and `build.ts`:
 - Run `npx tsx --test src/*_test.ts`
 - Build with `npx tsx build.ts`
 
-### Phase 2: Extract QuizEngine state transitions (future)
+### Phase 2: Extract QuizEngine state transitions (DONE)
 
 **Problem:** `quiz-engine.js` has state spread across closure variables
 (`active`, `currentItemId`, `answered`, `questionStartTime`, `expired`) and
@@ -247,7 +247,7 @@ text/class, mastery messages — all without DOM or timers.
 
 **Build integration:** `readModule()`, concatenate before `quiz-engine.js`.
 
-### Phase 3: Extract mode-specific pure logic (future, per mode)
+### Phase 3: Extract mode-specific pure logic (DONE — fretboard only)
 
 Each quiz mode has pure logic tangled with DOM. Split into state module +
 thin render.
@@ -359,3 +359,113 @@ names or missing elements — both immediately visible in the browser.
    - Complete quiz, stop → orange recommendation borders update
    - Switch modes and back → recommendations reflect current data
    - First launch, practice, stop → borders appear (not empty from init)
+
+---
+
+## Phase 2 Implementation Notes (v2.11)
+
+### What was done
+
+Created `src/quiz-engine-state.js` with 8 pure state transition functions:
+- `initialEngineState()` — idle state with UI visibility flags
+- `engineStart(state)` — activate quiz, flip button visibility
+- `engineNextQuestion(state, nextItemId, nowMs)` — set item/timestamp, clear feedback
+- `engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs)` — compute feedback
+- `engineStop(state)` — return to idle (delegates to `initialEngineState()`)
+- `engineUpdateIdleMessage(state, allMastered, needsReview)` — mastery/review message
+- `engineUpdateMasteryAfterAnswer(state, allMastered)` — in-quiz mastery check
+- `engineRouteKey(state, key)` — pure keyboard routing → `{action: 'stop'|'next'|'delegate'|'ignore'}`
+
+The state shape includes UI visibility booleans (`showStartBtn`, `showStopBtn`,
+`showHeatmapBtn`, `showStatsControls`, `quizActive`, `answersEnabled`) that the
+original plan didn't have. These let tests verify that state transitions produce
+the correct UI configuration.
+
+Refactored `quiz-engine.js`:
+- Replaced closure variables (`active`, `currentItemId`, `answered`,
+  `questionStartTime`) with a single `state` object
+- Added `render()` function that declaratively maps state→DOM
+- Removed `clearFeedback()` — render always sets feedback from state
+- `expired` moved to local scope inside `startCountdown()` (purely visual)
+- `isActive`/`isAnswered` getters now read from `state.phase`/`state.answered`
+
+### Deviations from plan
+- Plan sketched `engineHandleKey` returning `{action: 'escape'}` — implemented
+  as `{action: 'stop'}` for clarity (matches the function it triggers)
+- `engineStop` returns `initialEngineState()` instead of spreading individual
+  fields — simpler and guarantees reset to clean state
+- Added `engineUpdateMasteryAfterAnswer` as separate from `engineUpdateIdleMessage`
+  (plan had this)
+
+### Tests: 35 test cases in `src/quiz-engine-state_test.ts`
+
+### Files modified
+| File | Changes |
+|------|---------|
+| `src/quiz-engine-state.js` | **New** — 8 pure state transition functions |
+| `src/quiz-engine-state_test.ts` | **New** — 35 test cases |
+| `src/quiz-engine.js` | Replaced closure vars with state object + render() |
+| `main.ts` | Added `quizEngineStateJS` to reads + template |
+| `build.ts` | Added `quizEngineStateJS` to reads + template |
+
+---
+
+## Phase 3 Implementation Notes (v2.12)
+
+### What was done
+
+Created `src/quiz-fretboard-state.js` with:
+- `toggleFretboardString(enabledStrings, string)` — immutable Set toggle
+- `createFretboardHelpers(musicData)` — factory that binds music data and returns:
+  - `getNoteAtPosition(string, fret)`
+  - `parseFretboardItem(itemId)`
+  - `checkFretboardAnswer(currentNote, input)`
+  - `getFretboardEnabledItems(enabledStrings, naturalsOnly)`
+  - `getItemIdsForString(string, naturalsOnly)`
+
+The factory pattern solves the import/global problem: `readModule()` only strips
+`export`, not `import`, so the module can't use ES `import` statements (they'd
+appear as syntax errors in the concatenated browser code). Instead, the browser
+passes globals (`NOTES`, `STRING_OFFSETS`, etc.) via the factory; tests pass
+the imported values.
+
+Refactored `quiz-fretboard.js`:
+- Creates `fb = createFretboardHelpers({...})` at module scope
+- `getEnabledItems()` → `fb.getFretboardEnabledItems(enabledStrings, naturalsOnly)`
+- `presentQuestion()` → uses `fb.parseFretboardItem(itemId)` for pure parse
+- `checkAnswer()` → `fb.checkFretboardAnswer(currentNote, input)`
+- `getItemIdsForString()` → `fb.getItemIdsForString(s, naturalsOnly)`
+- `toggleString()` → `toggleFretboardString(enabledStrings, s)` (immutable)
+- **Eliminated duplicated handleKey state machine** (40 lines) — replaced with
+  `createNoteKeyHandler` from quiz-engine.js (same helper used by all other modes)
+- Added `noteKeyHandler.reset()` to `onStart()`, `onStop()`, and `deactivate()`
+
+### Scope decision
+Only fretboard mode was extracted (most complex, most benefit). Math modes
+(`quiz-semitone-math.js`, `quiz-interval-math.js`) were skipped — their
+`presentQuestion` is 2 lines and `handleKey` already delegates to
+`createNoteKeyHandler`. Lookup modes (`quiz-note-semitones.js`,
+`quiz-interval-semitones.js`) were also skipped for the same reason.
+
+### Deviations from plan
+- Plan sketched `fretboardPresent(state, itemId)` returning a full state object
+  with `highlight` and `shownNotes` fields. Instead used a lighter approach:
+  `parseFretboardItem` returns `{currentString, currentFret, currentNote}` and
+  the mode file assigns to closure vars + calls DOM helpers. This avoids a
+  full render function for fretboard-specific DOM (SVG circle highlighting),
+  which would be complex to implement declaratively.
+- Plan didn't mention the factory pattern for music data injection — this was
+  needed to solve the import/global problem.
+- `checkFretboardAnswer` takes `currentNote` as a parameter rather than being
+  part of a stateful object, keeping it simpler.
+
+### Tests: 30 test cases in `src/quiz-fretboard-state_test.ts`
+
+### Files modified
+| File | Changes |
+|------|---------|
+| `src/quiz-fretboard-state.js` | **New** — `toggleFretboardString` + `createFretboardHelpers` factory |
+| `src/quiz-fretboard-state_test.ts` | **New** — 30 test cases |
+| `src/quiz-fretboard.js` | Use state module, replace inline handleKey with createNoteKeyHandler |
+| `main.ts` | Added `quizFretboardStateJS` to reads + template |
+| `build.ts` | Added `quizFretboardStateJS` to reads + template |

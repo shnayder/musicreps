@@ -547,7 +547,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.10</div>
+    <div class="version">v2.12</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -4623,11 +4623,152 @@ function intervalMatchesInput(interval, input) {
 const STRING_NAMES = ['e', 'B', 'G', 'D', 'A', 'E'];
 const STRING_OFFSETS = [4, 11, 7, 2, 9, 4]; // semitones from C
 
+// Pure state transitions for the quiz engine.
+// No DOM, no timers, no side effects — just data in, data out.
+// ES module — exports stripped for browser inlining.
+
+/**
+ * Create the initial (idle) engine state.
+ * @returns {EngineState}
+ */
+function initialEngineState() {
+  return {
+    phase: 'idle',          // 'idle' | 'active'
+    currentItemId: null,
+    answered: false,
+    questionStartTime: null,
+
+    // Feedback
+    feedbackText: '',
+    feedbackClass: 'feedback',
+    timeDisplayText: '',
+    hintText: '',
+
+    // Mastery message
+    masteryText: '',
+    showMastery: false,
+
+    // UI visibility
+    showStartBtn: true,
+    showStopBtn: false,
+    showHeatmapBtn: true,
+    showStatsControls: true,
+    quizActive: false,
+    answersEnabled: false,
+  };
+}
+
+/**
+ * Transition: start the quiz.
+ * Caller should invoke mode.onStart() separately, then call engineNextQuestion.
+ */
+function engineStart(state) {
+  return {
+    ...state,
+    phase: 'active',
+    showStartBtn: false,
+    showStopBtn: true,
+    showHeatmapBtn: false,
+    showStatsControls: false,
+    quizActive: true,
+    showMastery: false,
+  };
+}
+
+/**
+ * Transition: present the next question.
+ * @param {EngineState} state
+ * @param {string} nextItemId - selected by the adaptive selector
+ * @param {number} nowMs - current timestamp (Date.now())
+ */
+function engineNextQuestion(state, nextItemId, nowMs) {
+  return {
+    ...state,
+    currentItemId: nextItemId,
+    answered: false,
+    questionStartTime: nowMs,
+    feedbackText: '',
+    feedbackClass: 'feedback',
+    timeDisplayText: '',
+    hintText: '',
+    answersEnabled: true,
+  };
+}
+
+/**
+ * Transition: submit an answer.
+ * @param {EngineState} state
+ * @param {boolean} isCorrect
+ * @param {string} correctAnswer - display string for incorrect feedback
+ * @param {number} responseTimeMs
+ */
+function engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs) {
+  return {
+    ...state,
+    answered: true,
+    answersEnabled: false,
+    feedbackText: isCorrect ? 'Correct!' : 'Incorrect \u2014 ' + correctAnswer,
+    feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
+    timeDisplayText: responseTimeMs + ' ms',
+    hintText: 'Tap anywhere or press Space for next',
+  };
+}
+
+/**
+ * Transition: stop the quiz (return to idle).
+ */
+function engineStop(state) {
+  return initialEngineState();
+}
+
+/**
+ * Transition: update the idle mastery/review message.
+ * No-op if the engine is active.
+ */
+function engineUpdateIdleMessage(state, allMastered, needsReview) {
+  if (state.phase !== 'idle') return state;
+  if (allMastered) {
+    return { ...state, masteryText: 'Looks like you\u2019ve got this!', showMastery: true };
+  }
+  if (needsReview) {
+    return { ...state, masteryText: 'Time to review?', showMastery: true };
+  }
+  return { ...state, masteryText: '', showMastery: false };
+}
+
+/**
+ * Transition: update mastery message after an answer (during quiz).
+ */
+function engineUpdateMasteryAfterAnswer(state, allMastered) {
+  if (allMastered) {
+    return { ...state, masteryText: 'Looks like you\u2019ve got this!', showMastery: true };
+  }
+  return { ...state, showMastery: false };
+}
+
+/**
+ * Route a keydown event to an action descriptor. Pure — no DOM.
+ * @param {EngineState} state
+ * @param {string} key - e.key value
+ * @returns {{ action: 'stop' | 'next' | 'delegate' | 'ignore' }}
+ */
+function engineRouteKey(state, key) {
+  if (state.phase !== 'active') return { action: 'ignore' };
+  if (key === 'Escape') return { action: 'stop' };
+  if ((key === ' ' || key === 'Enter') && state.answered) return { action: 'next' };
+  if (!state.answered) return { action: 'delegate' };
+  return { action: 'ignore' };
+}
+
 // Shared quiz engine: manages adaptive selection, timing, countdown,
 // feedback, and keyboard/tap handling for all quiz modes.
 //
 // Each quiz mode provides a config object; the engine handles the
 // shared lifecycle. ES module — exports stripped for browser inlining.
+//
+// Depends on globals (from quiz-engine-state.js): initialEngineState,
+// engineStart, engineNextQuestion, engineSubmitAnswer, engineStop,
+// engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer, engineRouteKey
 
 const TARGET_TIME = 3000;
 
@@ -4735,12 +4876,8 @@ function createQuizEngine(mode, container) {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
   const selector = createAdaptiveSelector(storage);
 
-  let active = false;
-  let currentItemId = null;
-  let answered = false;
-  let questionStartTime = null;
+  let state = initialEngineState();
   let countdownInterval = null;
-  let expired = false;
 
   // DOM references (scoped to container)
   const els = {
@@ -4757,15 +4894,38 @@ function createQuizEngine(mode, container) {
     masteryMessage: container.querySelector('.mastery-message'),
   };
 
+  // --- Render: declaratively map state to DOM ---
+
+  function render() {
+    if (els.startBtn)      els.startBtn.style.display     = state.showStartBtn ? 'inline' : 'none';
+    if (els.stopBtn)       els.stopBtn.style.display      = state.showStopBtn ? 'inline' : 'none';
+    if (els.heatmapBtn)    els.heatmapBtn.style.display   = state.showHeatmapBtn ? 'inline' : 'none';
+    if (els.statsControls) els.statsControls.style.display = state.showStatsControls ? '' : 'none';
+    if (els.quizArea)      els.quizArea.classList.toggle('active', state.quizActive);
+    if (els.feedback) {
+      els.feedback.textContent = state.feedbackText;
+      els.feedback.className   = state.feedbackClass;
+    }
+    if (els.timeDisplay) els.timeDisplay.textContent = state.timeDisplayText;
+    if (els.hint)        els.hint.textContent        = state.hintText;
+    if (els.masteryMessage) {
+      els.masteryMessage.textContent   = state.masteryText;
+      els.masteryMessage.style.display = state.showMastery ? 'block' : 'none';
+    }
+    setAnswerButtonsEnabled(state.answersEnabled);
+  }
+
+  // --- Countdown (purely DOM/timer — not part of state) ---
+
   function startCountdown() {
     const bar = els.countdownBar;
     if (!bar) return;
     bar.style.width = '100%';
     bar.classList.remove('expired');
-    expired = false;
 
     if (countdownInterval) clearInterval(countdownInterval);
 
+    let expired = false;
     const startTime = Date.now();
     countdownInterval = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -4780,15 +4940,6 @@ function createQuizEngine(mode, container) {
     }, 50);
   }
 
-  function clearFeedback() {
-    if (els.feedback) {
-      els.feedback.textContent = '';
-      els.feedback.className = 'feedback';
-    }
-    if (els.timeDisplay) els.timeDisplay.textContent = '';
-    if (els.hint) els.hint.textContent = '';
-  }
-
   function setAnswerButtonsEnabled(enabled) {
     container.querySelectorAll('.answer-btn, .note-btn').forEach(btn => {
       btn.disabled = !enabled;
@@ -4799,135 +4950,98 @@ function createQuizEngine(mode, container) {
     });
   }
 
+  // --- Engine lifecycle ---
+
   function nextQuestion() {
     const items = mode.getEnabledItems();
     if (items.length === 0) return;
 
-    currentItemId = selector.selectNext(items);
-    answered = false;
-    clearFeedback();
-    setAnswerButtonsEnabled(true);
-    mode.presentQuestion(currentItemId);
-    questionStartTime = Date.now();
+    const nextItemId = selector.selectNext(items);
+    state = engineNextQuestion(state, nextItemId, Date.now());
+    render();
+    mode.presentQuestion(state.currentItemId);
     startCountdown();
   }
 
   function submitAnswer(input) {
-    if (!active || answered) return;
+    if (state.phase !== 'active' || state.answered) return;
 
-    const responseTime = Date.now() - questionStartTime;
+    const responseTime = Date.now() - state.questionStartTime;
 
     if (countdownInterval) {
       clearInterval(countdownInterval);
       countdownInterval = null;
     }
 
-    answered = true;
-    setAnswerButtonsEnabled(false);
+    const result = mode.checkAnswer(state.currentItemId, input);
+    selector.recordResponse(state.currentItemId, responseTime, result.correct);
 
-    const result = mode.checkAnswer(currentItemId, input);
+    state = engineSubmitAnswer(state, result.correct, result.correctAnswer, responseTime);
 
-    if (result.correct) {
-      if (els.feedback) {
-        els.feedback.textContent = 'Correct!';
-        els.feedback.className = 'feedback correct';
-      }
-      selector.recordResponse(currentItemId, responseTime, true);
-    } else {
-      if (els.feedback) {
-        els.feedback.textContent = 'Incorrect \u2014 ' + result.correctAnswer;
-        els.feedback.className = 'feedback incorrect';
-      }
-      selector.recordResponse(currentItemId, responseTime, false);
-    }
+    // Check if all enabled items are mastered
+    const allMastered = selector.checkAllMastered(mode.getEnabledItems());
+    state = engineUpdateMasteryAfterAnswer(state, allMastered);
 
-    if (els.timeDisplay) els.timeDisplay.textContent = responseTime + ' ms';
-    if (els.hint) els.hint.textContent = 'Tap anywhere or press Space for next';
+    render();
 
     // Let the mode react to the answer (e.g., highlight correct position)
     if (mode.onAnswer) {
-      mode.onAnswer(currentItemId, result, responseTime);
-    }
-
-    // Check if all enabled items are mastered
-    if (els.masteryMessage) {
-      const allMastered = selector.checkAllMastered(mode.getEnabledItems());
-      if (allMastered) {
-        els.masteryMessage.textContent = 'Looks like you\u2019ve got this!';
-        els.masteryMessage.style.display = 'block';
-      } else {
-        els.masteryMessage.style.display = 'none';
-      }
+      mode.onAnswer(state.currentItemId, result, responseTime);
     }
   }
 
   function start() {
-    active = true;
+    state = engineStart(state);
     // Call onStart first so modes can tear down their idle UI (e.g. heatmap)
-    // before the engine sets up the quiz UI state.
+    // before the engine renders the quiz UI state.
     if (mode.onStart) mode.onStart();
-    if (els.masteryMessage) els.masteryMessage.style.display = 'none';
-    if (els.startBtn) els.startBtn.style.display = 'none';
-    if (els.heatmapBtn) els.heatmapBtn.style.display = 'none';
-    if (els.statsControls) els.statsControls.style.display = 'none';
-    if (els.stopBtn) els.stopBtn.style.display = 'inline';
-    if (els.quizArea) els.quizArea.classList.add('active');
+    render();
     nextQuestion();
   }
 
   function updateIdleMessage() {
-    if (!els.masteryMessage || active) return;
     const items = mode.getEnabledItems();
-    if (selector.checkAllMastered(items)) {
-      els.masteryMessage.textContent = 'Looks like you\u2019ve got this!';
-      els.masteryMessage.style.display = 'block';
-    } else if (selector.checkNeedsReview(items)) {
-      els.masteryMessage.textContent = 'Time to review?';
-      els.masteryMessage.style.display = 'block';
-    } else {
-      els.masteryMessage.style.display = 'none';
-    }
+    state = engineUpdateIdleMessage(
+      state,
+      selector.checkAllMastered(items),
+      selector.checkNeedsReview(items),
+    );
+    render();
   }
 
   function stop() {
-    active = false;
     if (countdownInterval) {
       clearInterval(countdownInterval);
       countdownInterval = null;
     }
-    if (els.startBtn) els.startBtn.style.display = 'inline';
-    if (els.heatmapBtn) els.heatmapBtn.style.display = 'inline';
-    if (els.statsControls) els.statsControls.style.display = '';
-    if (els.stopBtn) els.stopBtn.style.display = 'none';
-    if (els.quizArea) els.quizArea.classList.remove('active');
+    state = engineStop(state);
+    render();
     if (mode.onStop) mode.onStop();
     updateIdleMessage();
   }
 
-  // Keyboard handler — delegates mode-specific keys, handles shared keys
+  // Keyboard handler — uses pure routing, delegates mode-specific keys
   function handleKeydown(e) {
-    if (!active) return;
-
-    if (e.key === 'Escape') {
-      stop();
-      return;
-    }
-
-    if ((e.key === ' ' || e.key === 'Enter') && answered) {
-      e.preventDefault();
-      nextQuestion();
-      return;
-    }
-
-    // Delegate to mode for answer-specific keys
-    if (!answered && mode.handleKey) {
-      mode.handleKey(e, { submitAnswer });
+    const routed = engineRouteKey(state, e.key);
+    switch (routed.action) {
+      case 'stop':
+        stop();
+        break;
+      case 'next':
+        e.preventDefault();
+        nextQuestion();
+        break;
+      case 'delegate':
+        if (mode.handleKey) mode.handleKey(e, { submitAnswer });
+        break;
+      case 'ignore':
+        break;
     }
   }
 
   // Tap-to-advance handler
   function handleClick(e) {
-    if (!active || !answered) return;
+    if (state.phase !== 'active' || !state.answered) return;
     if (e.target.closest('.answer-btn, .note-btn, .quiz-controls, .string-toggle')) return;
     nextQuestion();
   }
@@ -4951,8 +5065,8 @@ function createQuizEngine(mode, container) {
     attach,
     detach,
     updateIdleMessage,
-    get isActive() { return active; },
-    get isAnswered() { return answered; },
+    get isActive() { return state.phase === 'active'; },
+    get isAnswered() { return state.answered; },
     selector,
     storage,
     els,
@@ -5144,13 +5258,131 @@ function computeRecommendations(selector, allIndices, getItemIds, config, option
   return { recommended, enabled };
 }
 
+// Pure state and helpers for the fretboard quiz mode.
+// No DOM, no side effects — testable logic extracted from quiz-fretboard.js.
+// ES module — exports stripped for browser inlining.
+//
+// In browser, depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
+// noteMatchesInput (from music-data.js, concatenated before this file).
+// Tests import these from music-data.js directly.
+
+/**
+ * Toggle a string in the enabled set. Returns a new Set.
+ * Ensures at least one string is always enabled.
+ * @param {Set<number>} enabledStrings
+ * @param {number} string - 0-5
+ * @returns {Set<number>}
+ */
+function toggleFretboardString(enabledStrings, string) {
+  const next = new Set(enabledStrings);
+  if (next.has(string)) {
+    if (next.size > 1) next.delete(string);
+  } else {
+    next.add(string);
+  }
+  return next;
+}
+
+/**
+ * Create fretboard helpers bound to music data.
+ * The factory pattern avoids import/global issues — in browser the globals
+ * are passed in; in tests the imported values are passed.
+ *
+ * @param {{ notes: Array, naturalNotes: string[], stringOffsets: number[],
+ *           noteMatchesInput: function }} musicData
+ */
+function createFretboardHelpers(musicData) {
+  const noteNames = musicData.notes.map(n => n.name);
+
+  /**
+   * Compute the note name at a given fretboard position.
+   * @param {number} string - 0-5
+   * @param {number} fret - 0-12
+   * @returns {string} note name (e.g. 'C#')
+   */
+  function getNoteAtPosition(string, fret) {
+    const offset = musicData.stringOffsets[string];
+    return noteNames[(offset + fret) % 12];
+  }
+
+  /**
+   * Parse a fretboard item ID into question state.
+   * @param {string} itemId - e.g. '3-5'
+   * @returns {{ currentString: number, currentFret: number, currentNote: string }}
+   */
+  function parseFretboardItem(itemId) {
+    const [s, f] = itemId.split('-').map(Number);
+    return {
+      currentString: s,
+      currentFret: f,
+      currentNote: getNoteAtPosition(s, f),
+    };
+  }
+
+  /**
+   * Check if an input matches the current fretboard question.
+   * @param {string} currentNote - the correct note name
+   * @param {string} input - user's answer
+   * @returns {{ correct: boolean, correctAnswer: string }}
+   */
+  function checkFretboardAnswer(currentNote, input) {
+    const note = musicData.notes.find(n => n.name === currentNote);
+    const correct = note && musicData.noteMatchesInput(note, input);
+    return { correct, correctAnswer: currentNote };
+  }
+
+  /**
+   * Compute the list of enabled item IDs.
+   * @param {Set<number>} enabledStrings
+   * @param {boolean} naturalsOnly
+   * @returns {string[]}
+   */
+  function getFretboardEnabledItems(enabledStrings, naturalsOnly) {
+    const items = [];
+    for (const s of enabledStrings) {
+      for (let f = 0; f < 13; f++) {
+        const note = getNoteAtPosition(s, f);
+        if (!naturalsOnly || musicData.naturalNotes.includes(note)) {
+          items.push(s + '-' + f);
+        }
+      }
+    }
+    return items;
+  }
+
+  /**
+   * Compute item IDs for a specific string (used for recommendations).
+   * @param {number} string - 0-5
+   * @param {boolean} naturalsOnly
+   * @returns {string[]}
+   */
+  function getItemIdsForString(string, naturalsOnly) {
+    const items = [];
+    for (let f = 0; f < 13; f++) {
+      const note = getNoteAtPosition(string, f);
+      if (!naturalsOnly || musicData.naturalNotes.includes(note)) {
+        items.push(string + '-' + f);
+      }
+    }
+    return items;
+  }
+
+  return {
+    getNoteAtPosition,
+    parseFretboardItem,
+    checkFretboardAnswer,
+    getFretboardEnabledItems,
+    getItemIdsForString,
+  };
+}
+
 // Fretboard quiz mode: identify the note at a highlighted fretboard position.
 // Plugs into the shared quiz engine via the mode interface.
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
-// noteMatchesInput, createQuizEngine, DEFAULT_CONFIG,
+// noteMatchesInput, createQuizEngine, createNoteKeyHandler, DEFAULT_CONFIG,
 // getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend,
-// computeRecommendations
+// computeRecommendations, createFretboardHelpers, toggleFretboardString
 
 function createFretboardMode() {
   const container = document.getElementById('mode-fretboard');
@@ -5160,15 +5392,14 @@ function createFretboardMode() {
   let recommendedStrings = new Set();
   let heatmapMode = null;
 
-  // --- Note helpers (match original app.js behavior) ---
+  // --- Pure helpers (from quiz-fretboard-state.js) ---
 
-  const noteNames = NOTES.map(n => n.name);
-
-  function getNoteAtPosition(string, fret) {
-    const offset = STRING_OFFSETS[string];
-    const noteIndex = (offset + fret) % 12;
-    return noteNames[noteIndex];
-  }
+  const fb = createFretboardHelpers({
+    notes: NOTES,
+    naturalNotes: NATURAL_NOTES,
+    stringOffsets: STRING_OFFSETS,
+    noteMatchesInput,
+  });
 
   // --- SVG helpers ---
 
@@ -5183,7 +5414,7 @@ function createFretboardMode() {
     const text = container.querySelector(
       `text[data-string="${string}"][data-fret="${fret}"]`
     );
-    if (text) text.textContent = getNoteAtPosition(string, fret);
+    if (text) text.textContent = fb.getNoteAtPosition(string, fret);
   }
 
   function clearAll() {
@@ -5214,11 +5445,7 @@ function createFretboardMode() {
   }
 
   function toggleString(s) {
-    if (enabledStrings.has(s)) {
-      if (enabledStrings.size > 1) enabledStrings.delete(s);
-    } else {
-      enabledStrings.add(s);
-    }
+    enabledStrings = toggleFretboardString(enabledStrings, s);
     saveEnabledStrings();
     refreshUI();
   }
@@ -5283,27 +5510,24 @@ function createFretboardMode() {
 
   // --- Recommendations ---
 
-  function getItemIdsForString(s) {
-    const items = [];
-    for (let f = 0; f < 13; f++) {
-      const note = getNoteAtPosition(s, f);
-      if (!naturalsOnly || NATURAL_NOTES.includes(note)) {
-        items.push(`${s}-${f}`);
-      }
-    }
-    return items;
-  }
-
   function updateRecommendations(selector) {
     const allStrings = [0, 1, 2, 3, 4, 5];
-    const result = computeRecommendations(selector, allStrings, getItemIdsForString, DEFAULT_CONFIG, {});
+    const result = computeRecommendations(
+      selector, allStrings,
+      (s) => fb.getItemIdsForString(s, naturalsOnly),
+      DEFAULT_CONFIG, {}
+    );
     recommendedStrings = result.recommended;
     updateStringToggles();
   }
 
   function applyRecommendations(selector) {
     const allStrings = [0, 1, 2, 3, 4, 5];
-    const result = computeRecommendations(selector, allStrings, getItemIdsForString, DEFAULT_CONFIG, {});
+    const result = computeRecommendations(
+      selector, allStrings,
+      (s) => fb.getItemIdsForString(s, naturalsOnly),
+      DEFAULT_CONFIG, {}
+    );
     recommendedStrings = result.recommended;
     if (result.enabled) {
       enabledStrings = result.enabled;
@@ -5338,31 +5562,20 @@ function createFretboardMode() {
     storageNamespace: 'fretboard',
 
     getEnabledItems() {
-      const items = [];
-      for (const s of enabledStrings) {
-        for (let f = 0; f < 13; f++) {
-          const note = getNoteAtPosition(s, f);
-          if (!naturalsOnly || NATURAL_NOTES.includes(note)) {
-            items.push(`${s}-${f}`);
-          }
-        }
-      }
-      return items;
+      return fb.getFretboardEnabledItems(enabledStrings, naturalsOnly);
     },
 
     presentQuestion(itemId) {
       clearAll();
-      const [s, f] = itemId.split('-').map(Number);
-      currentString = s;
-      currentFret = f;
-      currentNote = getNoteAtPosition(s, f);
-      highlightCircle(s, f, '#FFD700');
+      const q = fb.parseFretboardItem(itemId);
+      currentString = q.currentString;
+      currentFret = q.currentFret;
+      currentNote = q.currentNote;
+      highlightCircle(q.currentString, q.currentFret, '#FFD700');
     },
 
     checkAnswer(itemId, input) {
-      const note = NOTES.find(n => n.name === currentNote);
-      const correct = note && noteMatchesInput(note, input);
-      return { correct, correctAnswer: currentNote };
+      return fb.checkFretboardAnswer(currentNote, input);
     },
 
     onAnswer(itemId, result, responseTime) {
@@ -5375,11 +5588,13 @@ function createFretboardMode() {
     },
 
     onStart() {
+      noteKeyHandler.reset();
       if (heatmapMode) hideHeatmap();
       updateStats(engine.selector);
     },
 
     onStop() {
+      noteKeyHandler.reset();
       clearAll();
       updateStats(engine.selector);
       showHeatmapView('retention', engine.selector);
@@ -5387,55 +5602,18 @@ function createFretboardMode() {
     },
 
     handleKey(e, { submitAnswer }) {
-      const key = e.key.toUpperCase();
-
-      // Handle # for sharps or b for flats
-      if (pendingNote && !naturalsOnly) {
-        if (e.key === '#' || (e.shiftKey && e.key === '3')) {
-          e.preventDefault();
-          clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + '#');
-          pendingNote = null;
-          pendingTimeout = null;
-          return true;
-        }
-        if (e.key === 'b' || e.key === 'B') {
-          e.preventDefault();
-          clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + 'b');
-          pendingNote = null;
-          pendingTimeout = null;
-          return true;
-        }
-      }
-
-      if ('CDEFGAB'.includes(key)) {
-        e.preventDefault();
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-
-        if (naturalsOnly) {
-          submitAnswer(key);
-        } else {
-          pendingNote = key;
-          pendingTimeout = setTimeout(() => {
-            submitAnswer(pendingNote);
-            pendingNote = null;
-            pendingTimeout = null;
-          }, 400);
-        }
-        return true;
-      }
-
-      return false;
+      return noteKeyHandler.handleKey(e);
     },
   };
 
-  // Keyboard state for accidental handling
-  let pendingNote = null;
-  let pendingTimeout = null;
-
   // Create engine
   const engine = createQuizEngine(mode, container);
+
+  // Keyboard handler via shared helper (replaces inline state machine)
+  const noteKeyHandler = createNoteKeyHandler(
+    (input) => engine.submitAnswer(input),
+    () => !naturalsOnly
+  );
 
   // Pre-cache all positions
   const allItemIds = [];
@@ -5502,6 +5680,7 @@ function createFretboardMode() {
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();
+      noteKeyHandler.reset();
     },
   };
 }
