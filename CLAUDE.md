@@ -24,6 +24,8 @@ src/
   app.js               # Thin init: registers modes, starts navigation
   fretboard.ts         # SVG fretboard generation (build-time)
   styles.css           # CSS (read at build time, inlined into HTML)
+  recommendations.js   # Shared recommendation algorithm (consolidate-before-expanding)
+  recommendations_test.ts  # Tests for recommendations
   stats-display.js     # Shared stats color functions, table/grid rendering
   stats-display_test.ts  # Tests for stats display helpers
 docs/index.html        # Built static file for GitHub Pages
