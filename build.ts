@@ -22,6 +22,7 @@ const adaptiveJS = readModule("src/adaptive.js");
 const musicDataJS = readModule("src/music-data.js");
 const quizEngineJS = readModule("src/quiz-engine.js");
 const statsDisplayJS = readModule("src/stats-display.js");
+const recommendationsJS = readModule("src/recommendations.js");
 const quizFretboardJS = read("src/quiz-fretboard.js");
 const quizSpeedTapJS = read("src/quiz-speed-tap.js");
 const quizNoteSemitonesJS = read("src/quiz-note-semitones.js");
@@ -59,7 +60,7 @@ const html = `<!DOCTYPE html>
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.9</div>
+    <div class="version">v2.10</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -363,6 +364,7 @@ ${adaptiveJS}
 ${musicDataJS}
 ${quizEngineJS}
 ${statsDisplayJS}
+${recommendationsJS}
 ${quizFretboardJS}
 ${quizSpeedTapJS}
 ${quizNoteSemitonesJS}

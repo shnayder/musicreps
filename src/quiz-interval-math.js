@@ -6,7 +6,8 @@
 //
 // Depends on globals: NOTES, INTERVALS, noteAdd, noteSub,
 // noteMatchesInput, createQuizEngine, createNoteKeyHandler, updateModeStats,
-// renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG
+// renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
+// computeRecommendations
 
 function createIntervalMathMode() {
   const container = document.getElementById('mode-intervalMath');
@@ -83,6 +84,31 @@ function createIntervalMathMode() {
     });
   }
 
+  const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+
+  function updateRecommendations(selector) {
+    const allGroups = DISTANCE_GROUPS.map((_, i) => i);
+    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    recommendedGroups = result.recommended;
+    updateGroupToggles();
+  }
+
+  function applyRecommendations(selector) {
+    const allGroups = DISTANCE_GROUPS.map((_, i) => i);
+    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    recommendedGroups = result.recommended;
+    if (result.enabled) {
+      enabledGroups = result.enabled;
+      saveEnabledGroups();
+    }
+    updateGroupToggles();
+  }
+
+  function refreshUI() {
+    updateRecommendations(engine.selector);
+    engine.updateIdleMessage();
+  }
+
   function toggleGroup(g) {
     if (enabledGroups.has(g)) {
       if (enabledGroups.size > 1) enabledGroups.delete(g);
@@ -91,67 +117,7 @@ function createIntervalMathMode() {
     }
     saveEnabledGroups();
     updateGroupToggles();
-    engine.updateIdleMessage();
-  }
-
-  function computeRecommendations(selector) {
-    const allGroups = DISTANCE_GROUPS.map((_, i) => i);
-    const recs = selector.getStringRecommendations(allGroups, getItemIdsForGroup);
-
-    const started = recs.filter(r => r.unseenCount < r.totalCount);
-    const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
-
-    if (started.length === 0) {
-      return { recommended: new Set(), enabled: new Set() };
-    }
-
-    const totalSeen = started.reduce((sum, r) => sum + (r.masteredCount + r.dueCount), 0);
-    const totalMastered = started.reduce((sum, r) => sum + r.masteredCount, 0);
-    const consolidatedRatio = totalSeen > 0 ? totalMastered / totalSeen : 0;
-
-    const startedByWork = [...started].sort(
-      (a, b) => (b.dueCount + b.unseenCount) - (a.dueCount + a.unseenCount)
-    );
-
-    const workCounts = startedByWork.map(r => r.dueCount + r.unseenCount);
-    const medianWork = workCounts[Math.floor(workCounts.length / 2)];
-    const recommended = new Set();
-    const enabled = new Set();
-    for (const r of startedByWork) {
-      if (r.dueCount + r.unseenCount > medianWork) {
-        recommended.add(r.string);
-        enabled.add(r.string);
-      }
-    }
-    if (enabled.size === 0) {
-      recommended.add(startedByWork[0].string);
-      enabled.add(startedByWork[0].string);
-    }
-
-    if (consolidatedRatio >= DEFAULT_CONFIG.expansionThreshold && unstarted.length > 0) {
-      // Recommend next sequential unstarted group
-      const nextUnstarted = [...unstarted].sort((a, b) => a.string - b.string)[0];
-      recommended.add(nextUnstarted.string);
-      enabled.add(nextUnstarted.string);
-    }
-
-    return { recommended, enabled };
-  }
-
-  function updateRecommendations(selector) {
-    const { recommended } = computeRecommendations(selector);
-    recommendedGroups = recommended;
-    updateGroupToggles();
-  }
-
-  function applyRecommendations(selector) {
-    const { recommended, enabled } = computeRecommendations(selector);
-    recommendedGroups = recommended;
-    if (enabled.size > 0) {
-      enabledGroups = enabled;
-      saveEnabledGroups();
-    }
-    updateGroupToggles();
+    refreshUI();
   }
 
   // --- Stats ---
@@ -248,9 +214,9 @@ function createIntervalMathMode() {
 
     onStop() {
       noteKeyHandler.reset();
-      updateRecommendations(engine.selector);
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
       showStats('retention');
+      refreshUI();
     },
 
     handleKey(e, { submitAnswer }) {
@@ -302,7 +268,7 @@ function createIntervalMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); updateRecommendations(engine.selector); engine.updateIdleMessage(); },
+    activate() { engine.attach(); refreshUI(); },
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();

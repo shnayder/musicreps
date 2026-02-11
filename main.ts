@@ -35,6 +35,7 @@ async function buildHTML(): Promise<string> {
     musicDataJS,
     quizEngineJS,
     statsDisplayJS,
+    recommendationsJS,
     quizFretboardJS,
     quizSpeedTapJS,
     quizNoteSemitonesJS,
@@ -49,6 +50,7 @@ async function buildHTML(): Promise<string> {
     readModule("./src/music-data.js"),
     readModule("./src/quiz-engine.js"),
     readModule("./src/stats-display.js"),
+    readModule("./src/recommendations.js"),
     readFile("./src/quiz-fretboard.js"),
     readFile("./src/quiz-speed-tap.js"),
     readFile("./src/quiz-note-semitones.js"),
@@ -87,7 +89,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.9</div>
+    <div class="version">v2.10</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -391,6 +393,7 @@ ${adaptiveJS}
 ${musicDataJS}
 ${quizEngineJS}
 ${statsDisplayJS}
+${recommendationsJS}
 ${quizFretboardJS}
 ${quizSpeedTapJS}
 ${quizNoteSemitonesJS}

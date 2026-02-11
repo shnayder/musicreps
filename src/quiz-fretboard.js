@@ -3,7 +3,8 @@
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
 // noteMatchesInput, createQuizEngine, DEFAULT_CONFIG,
-// getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend
+// getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend,
+// computeRecommendations
 
 function createFretboardMode() {
   const container = document.getElementById('mode-fretboard');
@@ -74,7 +75,7 @@ function createFretboardMode() {
     }
     saveEnabledStrings();
     updateStringToggles();
-    engine.updateIdleMessage();
+    refreshUI();
   }
 
   // --- Heatmap ---
@@ -148,62 +149,27 @@ function createFretboardMode() {
     return items;
   }
 
-  function computeRecommendations(selector) {
-    const allStrings = [0, 1, 2, 3, 4, 5];
-    const recs = selector.getStringRecommendations(allStrings, getItemIdsForString);
-
-    const started = recs.filter(r => r.unseenCount < r.totalCount);
-    const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
-
-    if (started.length === 0) {
-      return { recommended: new Set(), enabled: new Set() };
-    }
-
-    const totalSeen = started.reduce((sum, r) => sum + (r.masteredCount + r.dueCount), 0);
-    const totalMastered = started.reduce((sum, r) => sum + r.masteredCount, 0);
-    const consolidatedRatio = totalSeen > 0 ? totalMastered / totalSeen : 0;
-
-    const startedByWork = [...started].sort(
-      (a, b) => (b.dueCount + b.unseenCount) - (a.dueCount + a.unseenCount)
-    );
-
-    const workCounts = startedByWork.map(r => r.dueCount + r.unseenCount);
-    const medianWork = workCounts[Math.floor(workCounts.length / 2)];
-    const recommended = new Set();
-    const enabled = new Set();
-    for (const r of startedByWork) {
-      if (r.dueCount + r.unseenCount > medianWork) {
-        recommended.add(r.string);
-        enabled.add(r.string);
-      }
-    }
-    if (enabled.size === 0) {
-      recommended.add(startedByWork[0].string);
-      enabled.add(startedByWork[0].string);
-    }
-
-    if (consolidatedRatio >= DEFAULT_CONFIG.expansionThreshold && unstarted.length > 0) {
-      recommended.add(unstarted[0].string);
-      enabled.add(unstarted[0].string);
-    }
-
-    return { recommended, enabled };
-  }
-
   function updateRecommendations(selector) {
-    const { recommended } = computeRecommendations(selector);
-    recommendedStrings = recommended;
+    const allStrings = [0, 1, 2, 3, 4, 5];
+    const result = computeRecommendations(selector, allStrings, getItemIdsForString, DEFAULT_CONFIG, {});
+    recommendedStrings = result.recommended;
     updateStringToggles();
   }
 
   function applyRecommendations(selector) {
-    const { recommended, enabled } = computeRecommendations(selector);
-    recommendedStrings = recommended;
-    if (enabled.size > 0) {
-      enabledStrings = enabled;
+    const allStrings = [0, 1, 2, 3, 4, 5];
+    const result = computeRecommendations(selector, allStrings, getItemIdsForString, DEFAULT_CONFIG, {});
+    recommendedStrings = result.recommended;
+    if (result.enabled) {
+      enabledStrings = result.enabled;
       saveEnabledStrings();
     }
     updateStringToggles();
+  }
+
+  function refreshUI() {
+    updateRecommendations(engine.selector);
+    engine.updateIdleMessage();
   }
 
   // --- Accidental buttons ---
@@ -270,9 +236,9 @@ function createFretboardMode() {
 
     onStop() {
       clearAll();
-      updateRecommendations(engine.selector);
       updateStats(engine.selector);
       showHeatmapView('retention', engine.selector);
+      refreshUI();
     },
 
     handleKey(e, { submitAnswer }) {
@@ -361,7 +327,7 @@ function createFretboardMode() {
       naturalsCheckbox.addEventListener('change', (e) => {
         naturalsOnly = e.target.checked;
         updateAccidentalButtons();
-        engine.updateIdleMessage();
+        refreshUI();
       });
     }
 
@@ -386,8 +352,7 @@ function createFretboardMode() {
     init,
     activate() {
       engine.attach();
-      updateRecommendations(engine.selector);
-      engine.updateIdleMessage();
+      refreshUI();
     },
     deactivate() {
       if (engine.isActive) engine.stop();
