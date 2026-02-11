@@ -181,6 +181,11 @@ button {
   cursor: pointer;
   margin: 0 0.5rem;
 }
+.mastery-message {
+  color: #2e7d32;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
 .quiz-area {
   display: none;
   text-align: center;
@@ -505,7 +510,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.3</div>
+    <div class="version">v2.4</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -2205,6 +2210,7 @@ button {
           Natural only
         </label>
       </div>
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -3919,6 +3925,7 @@ button {
           Natural only
         </label>
       </div>
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -3944,6 +3951,7 @@ button {
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -3994,6 +4002,7 @@ button {
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -4044,6 +4053,7 @@ button {
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -4080,6 +4090,7 @@ button {
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -4395,7 +4406,19 @@ function createAdaptiveSelector(
     return results;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations };
+  /**
+   * Check if all items have recall >= recallThreshold.
+   * Returns false if any item is unseen or below threshold.
+   */
+  function checkAllMastered(items) {
+    for (const id of items) {
+      const recall = getRecall(id);
+      if (recall === null || recall < cfg.recallThreshold) return false;
+    }
+    return items.length > 0;
+  }
+
+  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered };
 }
 
 // ---------------------------------------------------------------------------
@@ -4666,6 +4689,7 @@ function createQuizEngine(mode, container) {
     stats: container.querySelector('.stats'),
     statsControls: container.querySelector('.stats-controls'),
     quizArea: container.querySelector('.quiz-area'),
+    masteryMessage: container.querySelector('.mastery-message'),
   };
 
   function startCountdown() {
@@ -4759,6 +4783,12 @@ function createQuizEngine(mode, container) {
     if (mode.onAnswer) {
       mode.onAnswer(currentItemId, result, responseTime);
     }
+
+    // Check if all enabled items are mastered
+    if (els.masteryMessage) {
+      const allMastered = selector.checkAllMastered(mode.getEnabledItems());
+      els.masteryMessage.style.display = allMastered ? 'block' : 'none';
+    }
   }
 
   function start() {
@@ -4766,6 +4796,7 @@ function createQuizEngine(mode, container) {
     // Call onStart first so modes can tear down their idle UI (e.g. heatmap)
     // before the engine sets up the quiz UI state.
     if (mode.onStart) mode.onStart();
+    if (els.masteryMessage) els.masteryMessage.style.display = 'none';
     if (els.startBtn) els.startBtn.style.display = 'none';
     if (els.heatmapBtn) els.heatmapBtn.style.display = 'none';
     if (els.statsControls) els.statsControls.style.display = 'none';

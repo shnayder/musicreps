@@ -74,7 +74,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.3</div>
+    <div class="version">v2.4</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -116,6 +116,7 @@ async function buildHTML(): Promise<string> {
           Natural only
         </label>
       </div>
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -172,6 +173,7 @@ async function buildHTML(): Promise<string> {
           Natural only
         </label>
       </div>
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -197,6 +199,7 @@ async function buildHTML(): Promise<string> {
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -247,6 +250,7 @@ async function buildHTML(): Promise<string> {
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -297,6 +301,7 @@ async function buildHTML(): Promise<string> {
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
@@ -333,6 +338,7 @@ async function buildHTML(): Promise<string> {
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>

@@ -128,6 +128,7 @@ export function createQuizEngine(mode, container) {
     stats: container.querySelector('.stats'),
     statsControls: container.querySelector('.stats-controls'),
     quizArea: container.querySelector('.quiz-area'),
+    masteryMessage: container.querySelector('.mastery-message'),
   };
 
   function startCountdown() {
@@ -221,6 +222,12 @@ export function createQuizEngine(mode, container) {
     if (mode.onAnswer) {
       mode.onAnswer(currentItemId, result, responseTime);
     }
+
+    // Check if all enabled items are mastered
+    if (els.masteryMessage) {
+      const allMastered = selector.checkAllMastered(mode.getEnabledItems());
+      els.masteryMessage.style.display = allMastered ? 'block' : 'none';
+    }
   }
 
   function start() {
@@ -228,6 +235,7 @@ export function createQuizEngine(mode, container) {
     // Call onStart first so modes can tear down their idle UI (e.g. heatmap)
     // before the engine sets up the quiz UI state.
     if (mode.onStart) mode.onStart();
+    if (els.masteryMessage) els.masteryMessage.style.display = 'none';
     if (els.startBtn) els.startBtn.style.display = 'none';
     if (els.heatmapBtn) els.heatmapBtn.style.display = 'none';
     if (els.statsControls) els.statsControls.style.display = 'none';

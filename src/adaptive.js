@@ -284,7 +284,19 @@ export function createAdaptiveSelector(
     return results;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations };
+  /**
+   * Check if all items have recall >= recallThreshold.
+   * Returns false if any item is unseen or below threshold.
+   */
+  function checkAllMastered(items) {
+    for (const id of items) {
+      const recall = getRecall(id);
+      if (recall === null || recall < cfg.recallThreshold) return false;
+    }
+    return items.length > 0;
+  }
+
+  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered };
 }
 
 // ---------------------------------------------------------------------------

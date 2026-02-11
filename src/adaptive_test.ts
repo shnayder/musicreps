@@ -561,6 +561,51 @@ describe("createAdaptiveSelector", () => {
     assert.ok(recall! > 0.99, `recall immediately after answer should be ~1, got ${recall}`);
   });
 
+  it("checkAllMastered returns true when all items have recall above threshold", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("a", 1500);
+    selector.recordResponse("b", 1500);
+    selector.recordResponse("c", 1500);
+
+    // Just answered — recall should be ~1 for all
+    assert.equal(selector.checkAllMastered(["a", "b", "c"]), true);
+  });
+
+  it("checkAllMastered returns false when some items are unseen", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("a", 1500);
+    // "b" never seen
+    assert.equal(selector.checkAllMastered(["a", "b"]), false);
+  });
+
+  it("checkAllMastered returns false when some items have low recall", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+
+    // Item "a" answered recently
+    selector.recordResponse("a", 1500);
+
+    // Item "b" answered long ago — recall dropped below threshold
+    storage.saveStats("b", {
+      recentTimes: [2000],
+      ewma: 2000,
+      sampleCount: 1,
+      lastSeen: Date.now() - 100 * 3600000,
+      stability: 4, // 4h half-life, 100h elapsed → recall ≈ 0
+      lastCorrectAt: Date.now() - 100 * 3600000,
+    });
+
+    assert.equal(selector.checkAllMastered(["a", "b"]), false);
+  });
+
+  it("checkAllMastered returns false for empty items array", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    assert.equal(selector.checkAllMastered([]), false);
+  });
+
   it("getStringRecommendations ranks strings by needsWork (due + unseen)", () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
