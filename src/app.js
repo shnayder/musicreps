@@ -60,6 +60,42 @@
     deactivate: intervalMath.deactivate,
   });
 
+  // Key Signatures mode
+  const keySignatures = createKeySignaturesMode();
+  nav.registerMode('keySignatures', {
+    name: 'Key Signatures',
+    init: keySignatures.init,
+    activate: keySignatures.activate,
+    deactivate: keySignatures.deactivate,
+  });
+
+  // Scale Degrees mode
+  const scaleDegrees = createScaleDegreesMode();
+  nav.registerMode('scaleDegrees', {
+    name: 'Scale Degrees',
+    init: scaleDegrees.init,
+    activate: scaleDegrees.activate,
+    deactivate: scaleDegrees.deactivate,
+  });
+
+  // Diatonic Chords mode
+  const diatonicChords = createDiatonicChordsMode();
+  nav.registerMode('diatonicChords', {
+    name: 'Diatonic Chords',
+    init: diatonicChords.init,
+    activate: diatonicChords.activate,
+    deactivate: diatonicChords.deactivate,
+  });
+
+  // Chord Spelling mode
+  const chordSpelling = createChordSpellingMode();
+  nav.registerMode('chordSpelling', {
+    name: 'Chord Spelling',
+    init: chordSpelling.init,
+    activate: chordSpelling.activate,
+    deactivate: chordSpelling.deactivate,
+  });
+
   nav.init();
 
   // Register service worker for cache busting on iOS home screen

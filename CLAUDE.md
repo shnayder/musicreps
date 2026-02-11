@@ -24,6 +24,10 @@ src/
   quiz-interval-semitones.js  # Interval <-> semitone number quiz mode
   quiz-semitone-math.js       # Note +/- semitones = note quiz mode
   quiz-interval-math.js       # Note +/- interval = note quiz mode
+  quiz-key-signatures.js      # Key name <-> accidental count quiz mode
+  quiz-scale-degrees.js       # Key + degree <-> note quiz mode
+  quiz-diatonic-chords.js     # Key + roman numeral <-> chord root quiz mode
+  quiz-chord-spelling.js      # Spell chord tones in root-up order quiz mode
   navigation.js        # Hamburger menu and mode switching
   app.js               # Thin init: registers modes, starts navigation
   fretboard.ts         # SVG fretboard generation (build-time)
@@ -157,6 +161,10 @@ Expansion always recommends the next sequential group (smallest distance first).
 | Interval ↔ Semitones | 24 (12 intervals x 2 dirs) | Interval or number 1-12 | `m2:fwd`, `m2:rev` |
 | Semitone Math | 264 (12 notes x 11 x 2 dirs) | Note name | `C+3`, `C-3` |
 | Interval Math | 264 (12 notes x 11 x 2 dirs) | Note name | `C+m3`, `C-P4` |
+| Key Signatures | 24 (12 keys x 2 dirs) | Sig label or note | `D:fwd`, `D:rev` |
+| Scale Degrees | 168 (12 keys x 7 degrees x 2 dirs) | Note or degree | `D:5:fwd`, `D:A:rev` |
+| Diatonic Chords | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral | `Bb:IV:fwd`, `C:D:rev` |
+| Chord Spelling | ~132 (12 roots x chord types) | Sequential notes | `C:major`, `F#:dim` |
 
 Bidirectional modes mix both directions, tracking each as a separate item.
 Math modes exclude octave/P8 (adding 12 semitones gives same note).
@@ -182,6 +190,11 @@ npx tsx --test src/*_test.ts
 ## Versioning
 
 There is a small version number displayed at the top-right of the app (`<div class="version">`). Increment it (e.g. v0.2 → v0.3) with every change so the user can confirm they have the latest build.
+
+## Branching
+
+Always start implementation from the latest `main` branch unless told otherwise.
+Fetch and merge/rebase from `origin/main` before beginning any new feature work.
 
 ## Implementation Plans
 

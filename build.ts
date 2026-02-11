@@ -31,6 +31,10 @@ const quizNoteSemitonesJS = read("src/quiz-note-semitones.js");
 const quizIntervalSemitonesJS = read("src/quiz-interval-semitones.js");
 const quizSemitoneMathJS = read("src/quiz-semitone-math.js");
 const quizIntervalMathJS = read("src/quiz-interval-math.js");
+const quizKeySignaturesJS = read("src/quiz-key-signatures.js");
+const quizScaleDegreesJS = read("src/quiz-scale-degrees.js");
+const quizDiatonicChordsJS = read("src/quiz-diatonic-chords.js");
+const quizChordSpellingJS = read("src/quiz-chord-spelling.js");
 const navigationJS = read("src/navigation.js");
 const appJS = read("src/app.js");
 
@@ -57,12 +61,16 @@ const html = `<!DOCTYPE html>
     <button data-mode="intervalSemitones">Interval \u2194 Semitones</button>
     <button data-mode="semitoneMath">Semitone Math</button>
     <button data-mode="intervalMath">Interval Math</button>
+    <button data-mode="keySignatures">Key Signatures</button>
+    <button data-mode="scaleDegrees">Scale Degrees</button>
+    <button data-mode="diatonicChords">Diatonic Chords</button>
+    <button data-mode="chordSpelling">Chord Spelling</button>
   </div>
 
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.13</div>
+    <div class="version">v3.0</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -361,6 +369,202 @@ const html = `<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- Key Signatures mode -->
+  <div class="mode-screen" id="mode-keySignatures">
+    <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
+    <div class="quiz-controls">
+      <div class="settings-row">
+        <div class="distance-toggles"></div>
+      </div>
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-keysig">
+        <button class="answer-btn answer-btn-keysig" data-sig="0">0</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="1#">1#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="2#">2#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="3#">3#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="4#">4#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="5#">5#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="6#">6#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="7#">7#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="1b">1b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="2b">2b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="3b">3b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="4b">4b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="5b">5b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="6b">6b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="7b">7b</button>
+      </div>
+      <div class="answer-buttons answer-buttons-notes" style="display: none;">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
+  <!-- Scale Degrees mode -->
+  <div class="mode-screen" id="mode-scaleDegrees">
+    <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
+    <div class="quiz-controls">
+      <div class="settings-row">
+        <div class="distance-toggles"></div>
+      </div>
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="answer-buttons answer-buttons-degrees" style="display: none;">
+        <button class="answer-btn answer-btn-degree" data-degree="1">1st</button>
+        <button class="answer-btn answer-btn-degree" data-degree="2">2nd</button>
+        <button class="answer-btn answer-btn-degree" data-degree="3">3rd</button>
+        <button class="answer-btn answer-btn-degree" data-degree="4">4th</button>
+        <button class="answer-btn answer-btn-degree" data-degree="5">5th</button>
+        <button class="answer-btn answer-btn-degree" data-degree="6">6th</button>
+        <button class="answer-btn answer-btn-degree" data-degree="7">7th</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
+  <!-- Diatonic Chords mode -->
+  <div class="mode-screen" id="mode-diatonicChords">
+    <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
+    <div class="quiz-controls">
+      <div class="settings-row">
+        <div class="distance-toggles"></div>
+      </div>
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="answer-buttons answer-buttons-numerals" style="display: none;">
+        <button class="answer-btn answer-btn-numeral" data-numeral="I">I</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="ii">ii</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="iii">iii</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="IV">IV</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="V">V</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="vi">vi</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="vii\u00B0">vii\u00B0</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
+  <!-- Chord Spelling mode -->
+  <div class="mode-screen" id="mode-chordSpelling">
+    <div class="stats-container"></div>
+    <div class="stats-controls">
+      <button class="heatmap-btn">Show Recall</button>
+      <span class="stats"></span>
+    </div>
+    <div class="quiz-controls">
+      <div class="settings-row">
+        <div class="distance-toggles"></div>
+      </div>
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="stop-btn" style="display: none;">Stop Quiz</button>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="quiz-prompt"></div>
+      <div class="chord-slots"></div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+    </div>
+  </div>
+
   <script>
 ${adaptiveJS}
 ${musicDataJS}
@@ -375,6 +579,10 @@ ${quizNoteSemitonesJS}
 ${quizIntervalSemitonesJS}
 ${quizSemitoneMathJS}
 ${quizIntervalMathJS}
+${quizKeySignaturesJS}
+${quizScaleDegreesJS}
+${quizDiatonicChordsJS}
+${quizChordSpellingJS}
 ${navigationJS}
 ${appJS}
   </script>
