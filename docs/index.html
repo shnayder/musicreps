@@ -6,6 +6,7 @@
   <title>Fretboard Trainer</title>
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+
   <style>
     * { -webkit-tap-highlight-color: transparent; }
 body {
@@ -546,7 +547,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v2.7</div>
+    <div class="version">v2.9</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -5154,6 +5155,7 @@ function createFretboardMode() {
     }
     saveEnabledStrings();
     updateStringToggles();
+    engine.updateIdleMessage();
   }
 
   // --- Heatmap ---
@@ -5227,7 +5229,7 @@ function createFretboardMode() {
     return items;
   }
 
-  function applyRecommendations(selector) {
+  function computeRecommendations(selector) {
     const allStrings = [0, 1, 2, 3, 4, 5];
     const recs = selector.getStringRecommendations(allStrings, getItemIdsForString);
 
@@ -5235,9 +5237,7 @@ function createFretboardMode() {
     const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
 
     if (started.length === 0) {
-      recommendedStrings = new Set();
-      updateStringToggles();
-      return;
+      return { recommended: new Set(), enabled: new Set() };
     }
 
     const totalSeen = started.reduce((sum, r) => sum + (r.masteredCount + r.dueCount), 0);
@@ -5250,26 +5250,38 @@ function createFretboardMode() {
 
     const workCounts = startedByWork.map(r => r.dueCount + r.unseenCount);
     const medianWork = workCounts[Math.floor(workCounts.length / 2)];
-    recommendedStrings = new Set();
-    const newEnabled = new Set();
+    const recommended = new Set();
+    const enabled = new Set();
     for (const r of startedByWork) {
       if (r.dueCount + r.unseenCount > medianWork) {
-        recommendedStrings.add(r.string);
-        newEnabled.add(r.string);
+        recommended.add(r.string);
+        enabled.add(r.string);
       }
     }
-    if (newEnabled.size === 0) {
-      recommendedStrings.add(startedByWork[0].string);
-      newEnabled.add(startedByWork[0].string);
+    if (enabled.size === 0) {
+      recommended.add(startedByWork[0].string);
+      enabled.add(startedByWork[0].string);
     }
 
     if (consolidatedRatio >= DEFAULT_CONFIG.expansionThreshold && unstarted.length > 0) {
-      recommendedStrings.add(unstarted[0].string);
-      newEnabled.add(unstarted[0].string);
+      recommended.add(unstarted[0].string);
+      enabled.add(unstarted[0].string);
     }
 
-    if (newEnabled.size > 0) {
-      enabledStrings = newEnabled;
+    return { recommended, enabled };
+  }
+
+  function updateRecommendations(selector) {
+    const { recommended } = computeRecommendations(selector);
+    recommendedStrings = recommended;
+    updateStringToggles();
+  }
+
+  function applyRecommendations(selector) {
+    const { recommended, enabled } = computeRecommendations(selector);
+    recommendedStrings = recommended;
+    if (enabled.size > 0) {
+      enabledStrings = enabled;
       saveEnabledStrings();
     }
     updateStringToggles();
@@ -5339,6 +5351,7 @@ function createFretboardMode() {
 
     onStop() {
       clearAll();
+      updateRecommendations(engine.selector);
       updateStats(engine.selector);
       showHeatmapView('retention', engine.selector);
     },
@@ -5429,6 +5442,7 @@ function createFretboardMode() {
       naturalsCheckbox.addEventListener('change', (e) => {
         naturalsOnly = e.target.checked;
         updateAccidentalButtons();
+        engine.updateIdleMessage();
       });
     }
 
@@ -5453,6 +5467,7 @@ function createFretboardMode() {
     init,
     activate() {
       engine.attach();
+      updateRecommendations(engine.selector);
       engine.updateIdleMessage();
     },
     deactivate() {
@@ -6366,7 +6381,7 @@ function createSemitoneMathMode() {
     engine.updateIdleMessage();
   }
 
-  function applyRecommendations(selector) {
+  function computeRecommendations(selector) {
     const allGroups = DISTANCE_GROUPS.map((_, i) => i);
     const recs = selector.getStringRecommendations(allGroups, getItemIdsForGroup);
 
@@ -6374,9 +6389,7 @@ function createSemitoneMathMode() {
     const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
 
     if (started.length === 0) {
-      recommendedGroups = new Set();
-      updateGroupToggles();
-      return;
+      return { recommended: new Set(), enabled: new Set() };
     }
 
     const totalSeen = started.reduce((sum, r) => sum + (r.masteredCount + r.dueCount), 0);
@@ -6389,28 +6402,40 @@ function createSemitoneMathMode() {
 
     const workCounts = startedByWork.map(r => r.dueCount + r.unseenCount);
     const medianWork = workCounts[Math.floor(workCounts.length / 2)];
-    recommendedGroups = new Set();
-    const newEnabled = new Set();
+    const recommended = new Set();
+    const enabled = new Set();
     for (const r of startedByWork) {
       if (r.dueCount + r.unseenCount > medianWork) {
-        recommendedGroups.add(r.string);
-        newEnabled.add(r.string);
+        recommended.add(r.string);
+        enabled.add(r.string);
       }
     }
-    if (newEnabled.size === 0) {
-      recommendedGroups.add(startedByWork[0].string);
-      newEnabled.add(startedByWork[0].string);
+    if (enabled.size === 0) {
+      recommended.add(startedByWork[0].string);
+      enabled.add(startedByWork[0].string);
     }
 
     if (consolidatedRatio >= DEFAULT_CONFIG.expansionThreshold && unstarted.length > 0) {
       // Recommend next sequential unstarted group
       const nextUnstarted = [...unstarted].sort((a, b) => a.string - b.string)[0];
-      recommendedGroups.add(nextUnstarted.string);
-      newEnabled.add(nextUnstarted.string);
+      recommended.add(nextUnstarted.string);
+      enabled.add(nextUnstarted.string);
     }
 
-    if (newEnabled.size > 0) {
-      enabledGroups = newEnabled;
+    return { recommended, enabled };
+  }
+
+  function updateRecommendations(selector) {
+    const { recommended } = computeRecommendations(selector);
+    recommendedGroups = recommended;
+    updateGroupToggles();
+  }
+
+  function applyRecommendations(selector) {
+    const { recommended, enabled } = computeRecommendations(selector);
+    recommendedGroups = recommended;
+    if (enabled.size > 0) {
+      enabledGroups = enabled;
       saveEnabledGroups();
     }
     updateGroupToggles();
@@ -6511,6 +6536,7 @@ function createSemitoneMathMode() {
 
     onStop() {
       noteKeyHandler.reset();
+      updateRecommendations(engine.selector);
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
       showStats('retention');
     },
@@ -6564,7 +6590,7 @@ function createSemitoneMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); engine.updateIdleMessage(); },
+    activate() { engine.attach(); updateRecommendations(engine.selector); engine.updateIdleMessage(); },
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();
@@ -6669,7 +6695,7 @@ function createIntervalMathMode() {
     engine.updateIdleMessage();
   }
 
-  function applyRecommendations(selector) {
+  function computeRecommendations(selector) {
     const allGroups = DISTANCE_GROUPS.map((_, i) => i);
     const recs = selector.getStringRecommendations(allGroups, getItemIdsForGroup);
 
@@ -6677,9 +6703,7 @@ function createIntervalMathMode() {
     const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
 
     if (started.length === 0) {
-      recommendedGroups = new Set();
-      updateGroupToggles();
-      return;
+      return { recommended: new Set(), enabled: new Set() };
     }
 
     const totalSeen = started.reduce((sum, r) => sum + (r.masteredCount + r.dueCount), 0);
@@ -6692,28 +6716,40 @@ function createIntervalMathMode() {
 
     const workCounts = startedByWork.map(r => r.dueCount + r.unseenCount);
     const medianWork = workCounts[Math.floor(workCounts.length / 2)];
-    recommendedGroups = new Set();
-    const newEnabled = new Set();
+    const recommended = new Set();
+    const enabled = new Set();
     for (const r of startedByWork) {
       if (r.dueCount + r.unseenCount > medianWork) {
-        recommendedGroups.add(r.string);
-        newEnabled.add(r.string);
+        recommended.add(r.string);
+        enabled.add(r.string);
       }
     }
-    if (newEnabled.size === 0) {
-      recommendedGroups.add(startedByWork[0].string);
-      newEnabled.add(startedByWork[0].string);
+    if (enabled.size === 0) {
+      recommended.add(startedByWork[0].string);
+      enabled.add(startedByWork[0].string);
     }
 
     if (consolidatedRatio >= DEFAULT_CONFIG.expansionThreshold && unstarted.length > 0) {
       // Recommend next sequential unstarted group
       const nextUnstarted = [...unstarted].sort((a, b) => a.string - b.string)[0];
-      recommendedGroups.add(nextUnstarted.string);
-      newEnabled.add(nextUnstarted.string);
+      recommended.add(nextUnstarted.string);
+      enabled.add(nextUnstarted.string);
     }
 
-    if (newEnabled.size > 0) {
-      enabledGroups = newEnabled;
+    return { recommended, enabled };
+  }
+
+  function updateRecommendations(selector) {
+    const { recommended } = computeRecommendations(selector);
+    recommendedGroups = recommended;
+    updateGroupToggles();
+  }
+
+  function applyRecommendations(selector) {
+    const { recommended, enabled } = computeRecommendations(selector);
+    recommendedGroups = recommended;
+    if (enabled.size > 0) {
+      enabledGroups = enabled;
       saveEnabledGroups();
     }
     updateGroupToggles();
@@ -6813,6 +6849,7 @@ function createIntervalMathMode() {
 
     onStop() {
       noteKeyHandler.reset();
+      updateRecommendations(engine.selector);
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
       showStats('retention');
     },
@@ -6866,7 +6903,7 @@ function createIntervalMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); engine.updateIdleMessage(); },
+    activate() { engine.attach(); updateRecommendations(engine.selector); engine.updateIdleMessage(); },
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();

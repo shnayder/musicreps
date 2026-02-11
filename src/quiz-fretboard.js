@@ -74,6 +74,7 @@ function createFretboardMode() {
     }
     saveEnabledStrings();
     updateStringToggles();
+    engine.updateIdleMessage();
   }
 
   // --- Heatmap ---
@@ -147,7 +148,7 @@ function createFretboardMode() {
     return items;
   }
 
-  function applyRecommendations(selector) {
+  function computeRecommendations(selector) {
     const allStrings = [0, 1, 2, 3, 4, 5];
     const recs = selector.getStringRecommendations(allStrings, getItemIdsForString);
 
@@ -155,9 +156,7 @@ function createFretboardMode() {
     const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
 
     if (started.length === 0) {
-      recommendedStrings = new Set();
-      updateStringToggles();
-      return;
+      return { recommended: new Set(), enabled: new Set() };
     }
 
     const totalSeen = started.reduce((sum, r) => sum + (r.masteredCount + r.dueCount), 0);
@@ -170,26 +169,38 @@ function createFretboardMode() {
 
     const workCounts = startedByWork.map(r => r.dueCount + r.unseenCount);
     const medianWork = workCounts[Math.floor(workCounts.length / 2)];
-    recommendedStrings = new Set();
-    const newEnabled = new Set();
+    const recommended = new Set();
+    const enabled = new Set();
     for (const r of startedByWork) {
       if (r.dueCount + r.unseenCount > medianWork) {
-        recommendedStrings.add(r.string);
-        newEnabled.add(r.string);
+        recommended.add(r.string);
+        enabled.add(r.string);
       }
     }
-    if (newEnabled.size === 0) {
-      recommendedStrings.add(startedByWork[0].string);
-      newEnabled.add(startedByWork[0].string);
+    if (enabled.size === 0) {
+      recommended.add(startedByWork[0].string);
+      enabled.add(startedByWork[0].string);
     }
 
     if (consolidatedRatio >= DEFAULT_CONFIG.expansionThreshold && unstarted.length > 0) {
-      recommendedStrings.add(unstarted[0].string);
-      newEnabled.add(unstarted[0].string);
+      recommended.add(unstarted[0].string);
+      enabled.add(unstarted[0].string);
     }
 
-    if (newEnabled.size > 0) {
-      enabledStrings = newEnabled;
+    return { recommended, enabled };
+  }
+
+  function updateRecommendations(selector) {
+    const { recommended } = computeRecommendations(selector);
+    recommendedStrings = recommended;
+    updateStringToggles();
+  }
+
+  function applyRecommendations(selector) {
+    const { recommended, enabled } = computeRecommendations(selector);
+    recommendedStrings = recommended;
+    if (enabled.size > 0) {
+      enabledStrings = enabled;
       saveEnabledStrings();
     }
     updateStringToggles();
@@ -259,6 +270,7 @@ function createFretboardMode() {
 
     onStop() {
       clearAll();
+      updateRecommendations(engine.selector);
       updateStats(engine.selector);
       showHeatmapView('retention', engine.selector);
     },
@@ -349,6 +361,7 @@ function createFretboardMode() {
       naturalsCheckbox.addEventListener('change', (e) => {
         naturalsOnly = e.target.checked;
         updateAccidentalButtons();
+        engine.updateIdleMessage();
       });
     }
 
@@ -373,6 +386,7 @@ function createFretboardMode() {
     init,
     activate() {
       engine.attach();
+      updateRecommendations(engine.selector);
       engine.updateIdleMessage();
     },
     deactivate() {

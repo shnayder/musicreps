@@ -88,7 +88,7 @@ function createSemitoneMathMode() {
     engine.updateIdleMessage();
   }
 
-  function applyRecommendations(selector) {
+  function computeRecommendations(selector) {
     const allGroups = DISTANCE_GROUPS.map((_, i) => i);
     const recs = selector.getStringRecommendations(allGroups, getItemIdsForGroup);
 
@@ -96,9 +96,7 @@ function createSemitoneMathMode() {
     const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
 
     if (started.length === 0) {
-      recommendedGroups = new Set();
-      updateGroupToggles();
-      return;
+      return { recommended: new Set(), enabled: new Set() };
     }
 
     const totalSeen = started.reduce((sum, r) => sum + (r.masteredCount + r.dueCount), 0);
@@ -111,28 +109,40 @@ function createSemitoneMathMode() {
 
     const workCounts = startedByWork.map(r => r.dueCount + r.unseenCount);
     const medianWork = workCounts[Math.floor(workCounts.length / 2)];
-    recommendedGroups = new Set();
-    const newEnabled = new Set();
+    const recommended = new Set();
+    const enabled = new Set();
     for (const r of startedByWork) {
       if (r.dueCount + r.unseenCount > medianWork) {
-        recommendedGroups.add(r.string);
-        newEnabled.add(r.string);
+        recommended.add(r.string);
+        enabled.add(r.string);
       }
     }
-    if (newEnabled.size === 0) {
-      recommendedGroups.add(startedByWork[0].string);
-      newEnabled.add(startedByWork[0].string);
+    if (enabled.size === 0) {
+      recommended.add(startedByWork[0].string);
+      enabled.add(startedByWork[0].string);
     }
 
     if (consolidatedRatio >= DEFAULT_CONFIG.expansionThreshold && unstarted.length > 0) {
       // Recommend next sequential unstarted group
       const nextUnstarted = [...unstarted].sort((a, b) => a.string - b.string)[0];
-      recommendedGroups.add(nextUnstarted.string);
-      newEnabled.add(nextUnstarted.string);
+      recommended.add(nextUnstarted.string);
+      enabled.add(nextUnstarted.string);
     }
 
-    if (newEnabled.size > 0) {
-      enabledGroups = newEnabled;
+    return { recommended, enabled };
+  }
+
+  function updateRecommendations(selector) {
+    const { recommended } = computeRecommendations(selector);
+    recommendedGroups = recommended;
+    updateGroupToggles();
+  }
+
+  function applyRecommendations(selector) {
+    const { recommended, enabled } = computeRecommendations(selector);
+    recommendedGroups = recommended;
+    if (enabled.size > 0) {
+      enabledGroups = enabled;
       saveEnabledGroups();
     }
     updateGroupToggles();
@@ -233,6 +243,7 @@ function createSemitoneMathMode() {
 
     onStop() {
       noteKeyHandler.reset();
+      updateRecommendations(engine.selector);
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
       showStats('retention');
     },
@@ -286,7 +297,7 @@ function createSemitoneMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); engine.updateIdleMessage(); },
+    activate() { engine.attach(); updateRecommendations(engine.selector); engine.updateIdleMessage(); },
     deactivate() {
       if (engine.isActive) engine.stop();
       engine.detach();
