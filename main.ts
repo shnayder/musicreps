@@ -105,7 +105,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v3.4</div>
+    <div class="version">v3.5</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -151,7 +151,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -209,7 +209,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
 
@@ -251,7 +251,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -303,7 +303,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -358,7 +358,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -399,7 +399,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -440,7 +440,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -498,7 +498,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -548,7 +548,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -598,7 +598,7 @@ async function buildHTML(): Promise<string> {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">

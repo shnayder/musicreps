@@ -26,12 +26,13 @@
 
 ## Design
 
-### Issue 7: Rename "Calibration" → "Quick warm-up"
+### Issue 7: Rename "Calibration" → "Quick Speed Check"
 
 Replace all user-facing text:
-- "Quick Calibration" → "Quick warm-up"
-- "Calibration Complete" → "Warm-up Complete"
-- "Recalibrate" → "Redo warm-up"
+- "Quick Calibration" → "Quick Speed Check"
+- "Calibration Complete" → "Speed Check Complete"
+- "Quick warm-up!" → "Speed check!"
+- "Recalibrate" → "Redo speed check"
 
 Internal code names (variable names, function names) stay as-is — renaming
 `runCalibration` etc. would be churn with no benefit.

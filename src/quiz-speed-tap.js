@@ -229,7 +229,7 @@ function createSpeedTapMode() {
       const closeBtn = document.createElement('button');
       closeBtn.className = 'calibration-close-btn';
       closeBtn.textContent = '\u00D7';
-      closeBtn.setAttribute('aria-label', 'Close warm-up');
+      closeBtn.setAttribute('aria-label', 'Close speed check');
       closeBtn.addEventListener('click', stopCalibration);
       if (els.quizArea) {
         els.quizArea.style.position = 'relative';
@@ -258,7 +258,7 @@ function createSpeedTapMode() {
     if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.recalibrateBtn) els.recalibrateBtn.style.display = 'none';
     if (els.feedback) {
-      els.feedback.textContent = 'Quick Warm-up';
+      els.feedback.textContent = 'Quick Speed Check';
       els.feedback.className = 'feedback';
     }
     if (els.hint) els.hint.textContent = "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.";
@@ -291,7 +291,7 @@ function createSpeedTapMode() {
 
     calibPhase = 'calibrating';
     if (els.feedback) {
-      els.feedback.textContent = 'Quick warm-up!';
+      els.feedback.textContent = 'Speed check!';
       els.feedback.className = 'feedback';
     }
     if (els.hint) els.hint.textContent = 'Tap the highlighted button as fast as you can';
@@ -319,7 +319,7 @@ function createSpeedTapMode() {
   function showCalibrationResults(baseline) {
     calibPhase = 'results';
     if (els.feedback) {
-      els.feedback.textContent = 'Warm-up Complete';
+      els.feedback.textContent = 'Speed Check Complete';
       els.feedback.className = 'feedback';
     }
     if (els.hint) els.hint.textContent = '';

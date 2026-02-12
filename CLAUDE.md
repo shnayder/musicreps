@@ -85,18 +85,19 @@ declarations.
 - Hamburger menu to switch between modes
 - String selection persisted in localStorage
 
-## Motor Baseline ("Quick Warm-up")
+## Motor Baseline ("Quick Speed Check")
 
-On first quiz start, a 10-trial "Quick warm-up" measures the user's pure motor
-response time (reaction + tap + device latency). A random button is highlighted
-green; user taps it as fast as they can. The median time becomes the **motor
-baseline**. User-facing text says "Quick Warm-up" (not "calibration").
+On first quiz start, a 10-trial "Quick Speed Check" measures the user's pure
+motor response time (reaction + tap + device latency). A random button is
+highlighted green; user taps it as fast as they can. The median time becomes
+the **motor baseline**. User-facing text says "Quick Speed Check" (not
+"calibration").
 
 All modes share a single baseline via a **calibration provider** system.
 Modes declare a `calibrationProvider` (default `'button'`); the baseline is
-stored as `motorBaseline_{provider}`. Completing the warm-up in any mode makes
-it available to all other modes sharing that provider — no need to repeat it.
-Legacy per-mode keys (`motorBaseline_{namespace}`) are auto-migrated.
+stored as `motorBaseline_{provider}`. Completing the speed check in any mode
+makes it available to all other modes sharing that provider — no need to
+repeat it. Legacy per-mode keys (`motorBaseline_{namespace}`) are auto-migrated.
 
 Speed tap mode also participates in the shared `button` provider, using note
 buttons for calibration and scaling its multi-tap `SPEED_TAP_BASE_CONFIG`
@@ -115,15 +116,16 @@ All timing thresholds scale proportionally from the baseline:
 | Heatmap yellow         | < 4.5×            |
 | Heatmap orange         | < 6.0×            |
 
-Storage: `motorBaseline_{provider}` in localStorage. Re-run via "Redo warm-up"
-button (shown in idle state after initial warm-up).
+Storage: `motorBaseline_{provider}` in localStorage. Re-run via "Redo speed
+check" button (shown in idle state after initial speed check).
 
-During warm-up, the `.calibrating` class is added to the mode container. CSS
-hides all mode chrome (fretboard, string/distance toggles, stats) and shows
-only the quiz-area with calibration buttons. A close button (×) lets users
-dismiss the warm-up without completing it. Bidirectional modes (Note ↔
-Semitones, Interval ↔ Semitones) hide their number button grid during warm-up,
-showing only the note/interval buttons used for calibration.
+During the speed check, the `.calibrating` class is added to the mode
+container. CSS hides all mode chrome (fretboard, string/distance toggles,
+stats) and shows only the quiz-area with calibration buttons. A close button
+(×) lets users dismiss the speed check without completing it. Bidirectional
+modes (Note ↔ Semitones, Interval ↔ Semitones) hide their number button grid
+during the speed check, showing only the note/interval buttons used for
+calibration.
 
 Key functions: `deriveScaledConfig()`, `computeMedian()` in adaptive.js;
 `runCalibration()` in quiz-engine.js; `engine.baseline` property on engine.

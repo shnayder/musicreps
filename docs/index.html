@@ -708,7 +708,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v3.4</div>
+    <div class="version">v3.5</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -2412,7 +2412,7 @@ button {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -4128,7 +4128,7 @@ button {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
 
@@ -4170,7 +4170,7 @@ button {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -4222,7 +4222,7 @@ button {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -4277,7 +4277,7 @@ button {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -4318,7 +4318,7 @@ button {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -4359,7 +4359,7 @@ button {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -4417,7 +4417,7 @@ button {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -4467,7 +4467,7 @@ button {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -4517,7 +4517,7 @@ button {
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo warm-up</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -5337,7 +5337,7 @@ function engineCalibrationIntro(state) {
     showMastery: false,
     quizActive: true,
     answersEnabled: false,
-    feedbackText: 'Quick Warm-up',
+    feedbackText: 'Quick Speed Check',
     feedbackClass: 'feedback',
     hintText: "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
     timeDisplayText: '',
@@ -5354,7 +5354,7 @@ function engineCalibrating(state) {
     ...state,
     phase: 'calibrating',
     answersEnabled: true,
-    feedbackText: 'Quick warm-up!',
+    feedbackText: 'Speed check!',
     hintText: 'Tap the highlighted button as fast as you can',
   };
 }
@@ -5368,7 +5368,7 @@ function engineCalibrationResults(state, baseline) {
     ...state,
     phase: 'calibration-results',
     answersEnabled: false,
-    feedbackText: 'Warm-up Complete',
+    feedbackText: 'Speed Check Complete',
     feedbackClass: 'feedback',
     hintText: '',
     timeDisplayText: '',
@@ -5822,7 +5822,7 @@ function createQuizEngine(mode, container) {
       const closeBtn = document.createElement('button');
       closeBtn.className = 'calibration-close-btn';
       closeBtn.textContent = '\u00D7';
-      closeBtn.setAttribute('aria-label', 'Close warm-up');
+      closeBtn.setAttribute('aria-label', 'Close speed check');
       closeBtn.addEventListener('click', stop);
       if (els.quizArea) {
         els.quizArea.style.position = 'relative';
@@ -7029,7 +7029,7 @@ function createSpeedTapMode() {
       const closeBtn = document.createElement('button');
       closeBtn.className = 'calibration-close-btn';
       closeBtn.textContent = '\u00D7';
-      closeBtn.setAttribute('aria-label', 'Close warm-up');
+      closeBtn.setAttribute('aria-label', 'Close speed check');
       closeBtn.addEventListener('click', stopCalibration);
       if (els.quizArea) {
         els.quizArea.style.position = 'relative';
@@ -7058,7 +7058,7 @@ function createSpeedTapMode() {
     if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.recalibrateBtn) els.recalibrateBtn.style.display = 'none';
     if (els.feedback) {
-      els.feedback.textContent = 'Quick Warm-up';
+      els.feedback.textContent = 'Quick Speed Check';
       els.feedback.className = 'feedback';
     }
     if (els.hint) els.hint.textContent = "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.";
@@ -7091,7 +7091,7 @@ function createSpeedTapMode() {
 
     calibPhase = 'calibrating';
     if (els.feedback) {
-      els.feedback.textContent = 'Quick warm-up!';
+      els.feedback.textContent = 'Speed check!';
       els.feedback.className = 'feedback';
     }
     if (els.hint) els.hint.textContent = 'Tap the highlighted button as fast as you can';
@@ -7119,7 +7119,7 @@ function createSpeedTapMode() {
   function showCalibrationResults(baseline) {
     calibPhase = 'results';
     if (els.feedback) {
-      els.feedback.textContent = 'Warm-up Complete';
+      els.feedback.textContent = 'Speed Check Complete';
       els.feedback.className = 'feedback';
     }
     if (els.hint) els.hint.textContent = '';

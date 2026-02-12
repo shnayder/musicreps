@@ -396,7 +396,7 @@ export function createQuizEngine(mode, container) {
       const closeBtn = document.createElement('button');
       closeBtn.className = 'calibration-close-btn';
       closeBtn.textContent = '\u00D7';
-      closeBtn.setAttribute('aria-label', 'Close warm-up');
+      closeBtn.setAttribute('aria-label', 'Close speed check');
       closeBtn.addEventListener('click', stop);
       if (els.quizArea) {
         els.quizArea.style.position = 'relative';
