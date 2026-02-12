@@ -311,6 +311,44 @@ button {
   grid-template-columns: repeat(3, 1fr);
 }
 
+/* --- Calibration overlay: hide all mode chrome, show only quiz-area --- */
+.mode-screen.calibrating > *:not(.quiz-area) {
+  display: none !important;
+}
+.mode-screen.calibrating .answer-buttons:not(.calibration-active),
+.mode-screen.calibrating .note-buttons:not(.calibration-active) {
+  display: none !important;
+}
+.mode-screen.calibrating .answer-buttons.calibration-active,
+.mode-screen.calibrating .note-buttons.calibration-active {
+  display: grid !important;
+}
+.mode-screen.calibrating .speed-tap-prompt,
+.mode-screen.calibrating .speed-tap-status {
+  display: none !important;
+}
+.mode-screen.calibrating .countdown-container,
+.mode-screen.calibrating .quiz-prompt,
+.mode-screen.calibrating .chord-slots {
+  display: none !important;
+}
+.calibration-close-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+  margin: 0;
+}
+.calibration-close-btn:hover {
+  color: #333;
+}
+
 /* --- Calibration highlight --- */
 .calibration-target {
   background: #4CAF50 !important;

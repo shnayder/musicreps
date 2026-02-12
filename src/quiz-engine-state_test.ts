@@ -232,8 +232,8 @@ describe("engineCalibrationIntro", () => {
 
   it("sets calibration heading and explanation", () => {
     const s = engineCalibrationIntro(initialEngineState());
-    assert.equal(s.feedbackText, "Quick Calibration");
-    assert.ok(s.hintText.includes("tap/type speed"));
+    assert.equal(s.feedbackText, "Quick Warm-up");
+    assert.ok(s.hintText.includes("tap speed"));
   });
 });
 
@@ -271,7 +271,7 @@ describe("engineCalibrationResults", () => {
   it("disables answers and sets heading", () => {
     const s = engineCalibrationResults(engineCalibrating(engineCalibrationIntro(initialEngineState())), 600);
     assert.equal(s.answersEnabled, false);
-    assert.equal(s.feedbackText, "Calibration Complete");
+    assert.equal(s.feedbackText, "Warm-up Complete");
     assert.equal(s.hintText, "");
   });
 });
