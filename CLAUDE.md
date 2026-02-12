@@ -3,202 +3,68 @@
 Interactive music training app — fretboard note identification, interval math,
 and more. Multiple quiz modes accessed via hamburger menu.
 
+## Quick Start
+
+```bash
+deno run --allow-net --allow-read main.ts          # Dev server
+deno run --allow-write --allow-read main.ts --build # Build (Deno)
+npx tsx build.ts                                    # Build (Node)
+npx tsx --test src/*_test.ts                        # Run tests
+```
+
+**Both `main.ts` and `build.ts` contain the HTML template — update both.**
+
 ## Structure
 
 ```
-main.ts                # Deno entry point: reads src/ files, assembles HTML, serves/builds
-build.ts               # Node-compatible build script (npx tsx build.ts)
+main.ts / build.ts       # Dual build scripts (Deno + Node), must stay in sync
 src/
-  adaptive.js          # Adaptive question selector (ES module, single source of truth)
-  adaptive_test.ts     # Tests for adaptive selector
-  music-data.js        # Shared music theory data: notes, intervals, helpers
-  music-data_test.ts   # Tests for music data
-  quiz-engine-state.js # Pure state transitions for quiz engine (no DOM)
-  quiz-engine-state_test.ts  # Tests for engine state transitions
-  quiz-engine.js       # Shared quiz lifecycle (timing, countdown, feedback)
-  quiz-engine_test.ts  # Tests for quiz engine
-  quiz-fretboard-state.js    # Pure fretboard helpers (no DOM)
-  quiz-fretboard-state_test.ts  # Tests for fretboard state helpers
-  quiz-fretboard.js    # Fretboard quiz mode
-  quiz-note-semitones.js      # Note <-> semitone number quiz mode
-  quiz-interval-semitones.js  # Interval <-> semitone number quiz mode
-  quiz-semitone-math.js       # Note +/- semitones = note quiz mode
-  quiz-interval-math.js       # Note +/- interval = note quiz mode
-  quiz-key-signatures.js      # Key name <-> accidental count quiz mode
-  quiz-scale-degrees.js       # Key + degree <-> note quiz mode
-  quiz-diatonic-chords.js     # Key + roman numeral <-> chord root quiz mode
-  quiz-chord-spelling.js      # Spell chord tones in root-up order quiz mode
-  navigation.js        # Hamburger menu and mode switching
-  app.js               # Thin init: registers modes, starts navigation
-  fretboard.ts         # SVG fretboard generation (build-time)
-  styles.css           # CSS (read at build time, inlined into HTML)
-  recommendations.js   # Shared recommendation algorithm (consolidate-before-expanding)
-  recommendations_test.ts  # Tests for recommendations
-  stats-display.js     # Shared stats color functions, table/grid rendering
-  stats-display_test.ts  # Tests for stats display helpers
-scripts/
-  take-screenshots.ts  # Playwright script: captures all mode screenshots
-docs/index.html        # Built static file for GitHub Pages
-docs/sw.js             # Built service worker (network-first cache strategy)
-plans/                 # Implementation plans (checked in before starting work)
+  adaptive.js            # Adaptive question selector (ES module)
+  music-data.js          # Shared music theory data (ES module)
+  quiz-engine-state.js   # Pure engine state transitions (ES module)
+  quiz-engine.js         # Shared quiz lifecycle (ES module)
+  stats-display.js       # Stats color functions, rendering (ES module)
+  recommendations.js     # Consolidate-before-expanding algorithm (ES module)
+  quiz-fretboard-state.js  # Pure fretboard helpers (ES module)
+  quiz-fretboard.js      # Fretboard mode
+  quiz-speed-tap.js      # Speed Tap mode
+  quiz-note-semitones.js .. quiz-chord-spelling.js  # 8 more quiz modes
+  navigation.js          # Hamburger menu, mode switching
+  app.js                 # Init: registers all modes (loaded last)
+  styles.css             # Inlined CSS
+  *_test.ts              # Tests (node:test)
+scripts/take-screenshots.ts  # Playwright screenshots
+guides/                  # Detailed developer guides (see below)
+plans/                   # Implementation plans (checked in before work)
+docs/                    # Built output for GitHub Pages
 ```
-
-## Development
-
-```bash
-# Run dev server (serves both index.html and sw.js)
-deno run --allow-net --allow-read main.ts
-
-# Build for GitHub Pages (Deno)
-deno run --allow-write --allow-read main.ts --build
-
-# Build for GitHub Pages (Node — use when Deno is unavailable)
-npx tsx build.ts
-
-# Run tests
-npx tsx --test src/*_test.ts
-```
-
-**Important:** Both `main.ts` and `build.ts` contain the HTML template. When
-changing the template, update both files to keep them in sync.
 
 ## Architecture
 
-The app uses a **mode-based architecture**:
+Single-page vanilla JS app. All source files concatenated into one `<script>`
+at build time — no framework, no bundler. Key patterns:
 
-- **QuizEngine** (`quiz-engine.js`) — shared lifecycle: adaptive selector, timing,
-  countdown, feedback, keyboard/tap handling. Each mode gets its own engine instance.
-- **QuizMode** — each mode provides: `getEnabledItems()`, `presentQuestion()`,
-  `checkAnswer()`, `handleKey()`, plus `onStart`/`onStop` hooks.
-- **Navigation** (`navigation.js`) — hamburger menu, mode switching, persists
-  last-used mode in localStorage.
-- **MusicData** (`music-data.js`) — shared notes/intervals arrays and helpers.
+- **State + Render** — pure state transitions in `*-state.js` files, thin
+  declarative `render()` in main files. Eliminates ordering and stale-UI bugs.
+- **Mode Plugin Interface** — each mode is a `createXxxMode()` factory
+  providing `getEnabledItems`, `presentQuestion`, `checkAnswer`, `handleKey`,
+  `onStart`/`onStop`, plus `init`/`activate`/`deactivate` lifecycle hooks.
+- **QuizEngine** — shared lifecycle (adaptive selection, timing, countdown,
+  feedback, keyboard/tap). Each mode gets its own engine instance.
+- **Factory Pattern** — `createFretboardHelpers(musicData)` injects globals
+  for testability without ES imports in concatenated code.
+- **Adaptive Selector** — weighted random selection (unseen boost + EWMA).
+  Injected storage for testability. Per-item forgetting model with half-life
+  spaced repetition.
+- **Motor Baseline** — per-provider calibration measuring physical response
+  time. All timing thresholds scale proportionally (1x–9x baseline).
+- **Consolidate Before Expanding** — shared `computeRecommendations()` gates
+  progression to new item groups behind mastery of existing ones.
+- **Build System** — `readModule()` strips `export` for browser; `read()` for
+  plain scripts. Concatenation order = dependency order.
 
-All source files are concatenated into a single `<script>` at build time.
-Files using `export` keywords (adaptive.js, music-data.js, quiz-engine.js,
-stats-display.js) have exports stripped; other files use plain function
-declarations.
-
-## How It Works
-
-- SVG fretboard with clickable note positions
-- Quiz modes: fretboard notes, note/interval semitones, semitone math, interval math
-- Adaptive learning: tracks response times in localStorage, prioritizes slower notes
-- Hamburger menu to switch between modes
-- String selection persisted in localStorage
-
-## Motor Baseline ("Quick Speed Check")
-
-On first quiz start, a 10-trial "Quick Speed Check" measures the user's pure
-motor response time (reaction + tap + device latency). A random button is
-highlighted green; user taps it as fast as they can. The median time becomes
-the **motor baseline**. User-facing text says "Quick Speed Check" (not
-"calibration").
-
-All modes share a single baseline via a **calibration provider** system.
-Modes declare a `calibrationProvider` (default `'button'`); the baseline is
-stored as `motorBaseline_{provider}`. Completing the speed check in any mode
-makes it available to all other modes sharing that provider — no need to
-repeat it. Legacy per-mode keys (`motorBaseline_{namespace}`) are auto-migrated.
-
-Speed tap mode also participates in the shared `button` provider, using note
-buttons for calibration and scaling its multi-tap `SPEED_TAP_BASE_CONFIG`
-from the same baseline.
-
-All timing thresholds scale proportionally from the baseline:
-
-| Threshold              | Ratio to baseline |
-|------------------------|-------------------|
-| minTime                | 1.0×              |
-| automaticityTarget     | 3.0×              |
-| selfCorrectionThreshold| 1.5×              |
-| maxResponseTime        | 9.0×              |
-| Heatmap green          | < 1.5×            |
-| Heatmap yellow-green   | < 3.0×            |
-| Heatmap yellow         | < 4.5×            |
-| Heatmap orange         | < 6.0×            |
-
-Storage: `motorBaseline_{provider}` in localStorage. Re-run via "Redo speed
-check" button (shown in idle state after initial speed check).
-
-During the speed check, the `.calibrating` class is added to the mode
-container. CSS hides all mode chrome (fretboard, string/distance toggles,
-stats) and shows only the quiz-area with calibration buttons. A close button
-(×) lets users dismiss the speed check without completing it. Bidirectional
-modes (Note ↔ Semitones, Interval ↔ Semitones) hide their number button grid
-during the speed check, showing only the note/interval buttons used for
-calibration.
-
-Key functions: `deriveScaledConfig()`, `computeMedian()` in adaptive.js;
-`runCalibration()` in quiz-engine.js; `engine.baseline` property on engine.
-
-## Adaptive Selector
-
-The adaptive question selector lives in `src/adaptive.js` — a single JS file
-that is both the ES module imported by tests and the source that `main.ts` reads
-at build time (stripping `export` keywords for browser inlining). Key design:
-
-- **Unseen items** get `unseenBoost` weight (exploration)
-- **Seen items** get `ewma / minTime` weight (slower = more practice)
-- No extra multiplier for low-sample items — this was a bug that caused startup ruts
-- Response times clamped to `maxResponseTime` (scaled by baseline) to reject outliers
-- Last-selected item gets weight 0 (no immediate repeats)
-- Storage is injected (localStorage adapter in browser, Map in tests)
-- `updateConfig(newCfg)` / `getConfig()` allow runtime config changes (used by calibration)
-
-## Forgetting Model (Spaced Repetition)
-
-Per-item half-life forgetting curve: `P(recall) = 2^(-t/stability)`.
-
-- Each item tracks `stability` (half-life in hours) and `lastCorrectAt`
-- First correct answer: `stability = initialStability` (4 hours)
-- Subsequent correct: stability grows by `stabilityGrowthBase * speedFactor`
-- Wrong answer: stability reduced by `stabilityDecayOnWrong` (floored at initial)
-- **Self-correction**: fast answer after long gap → stability boosted to at least
-  `elapsedHours * 1.5` (handles off-app learning, e.g., actual guitar playing)
-- Within-session weighting: recall factor `1 + (1 - recall)` multiplies speed weight
-- Two heatmap modes: **retention** (default, predicted recall) and **speed** (EWMA)
-
-## String Recommendations ("Consolidate Before Expanding")
-
-On load, the app recommends which strings to practice. The algorithm gates
-expansion to new strings behind consolidation of what's already been started:
-
-1. **Partition** strings into "started" (≥ 1 item seen) and "unstarted" (all unseen).
-2. **Consolidation ratio** = mastered items / total seen items across all started
-   strings. An item is "mastered" when `recall >= recallThreshold` (0.5).
-3. **Rank** started strings by work remaining (`dueCount + unseenCount`); recommend
-   those above the median.
-4. **Expansion gate**: only suggest one unstarted string when `consolidationRatio
-   >= expansionThreshold` (0.7). This prevents recommending new strings while the
-   user is still weak on material they've already begun learning.
-5. **First launch**: no data → keep persisted selection (default: low E).
-
-Config: `expansionThreshold` (default 0.7) in `DEFAULT_CONFIG`.
-
-`getStringRecommendations` returns per-string:
-`{ string, dueCount, unseenCount, masteredCount, totalCount }` — separating
-items with no recall data (`unseenCount`) from those with established recall
-(`dueCount` + `masteredCount`), so the UI can make smarter decisions.
-
-## Distance Group Progression (Math Modes)
-
-The 264 items in each math mode are grouped into 6 distance groups (by
-semitone count), unlocked progressively. Same consolidate-before-expanding
-logic as fretboard strings. Default: group 0 only on first launch.
-
-| Group | Distances | Semitone label | Interval label | Items |
-|-------|-----------|---------------|----------------|-------|
-| 0     | 1, 2      | 1,2           | m2,M2          | 48    |
-| 1     | 3, 4      | 3,4           | m3,M3          | 48    |
-| 2     | 5, 6      | 5,6           | P4,TT          | 48    |
-| 3     | 7, 8      | 7,8           | P5,m6          | 48    |
-| 4     | 9, 10     | 9,10          | M6,m7          | 48    |
-| 5     | 11        | 11            | M7             | 24    |
-
-Toggle buttons generated dynamically in JS (labels differ per mode).
-Persisted in localStorage: `semitoneMath_enabledGroups`, `intervalMath_enabledGroups`.
-Expansion always recommends the next sequential group (smallest distance first).
+See [guides/architecture.md](guides/architecture.md) for module dependency
+graph, algorithm details, and step-by-step "adding a new quiz mode" checklist.
 
 ## Quiz Modes
 
@@ -214,87 +80,25 @@ Expansion always recommends the next sequential group (smallest distance first).
 | Diatonic Chords | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral | `Bb:IV:fwd`, `C:D:rev` |
 | Chord Spelling | ~132 (12 roots x chord types) | Sequential notes | `C:major`, `F#:dim` |
 
-Bidirectional modes mix both directions, tracking each as a separate item.
-Math modes exclude octave/P8 (adding 12 semitones gives same note).
+Bidirectional modes track each direction as a separate item.
 
-## Keyboard Shortcuts (during quiz)
+## Keyboard Shortcuts
 
-- `C D E F G A B` - answer with natural note
-- Letter + `#` - sharp (e.g., C then #)
-- Letter + `b` - flat (e.g., D then b)
-- `0-9` - answer with number (semitone modes; two-digit via timeout)
-- `Space` / `Enter` - next question (after answering)
-- `Escape` - stop quiz
+- `C D E F G A B` — natural note
+- Letter + `#` / `b` — sharp/flat
+- `0-9` — number (semitone modes)
+- `Space` / `Enter` — next question
+- `Escape` — stop quiz
 
-## Testing
+## Guides
 
-Write tests as you go, not just at the end. Any new module with logic should
-have a corresponding `_test.ts` file. Run all tests before committing:
+| Guide | Contents |
+|-------|----------|
+| [architecture.md](guides/architecture.md) | Module graph, build system, patterns, algorithms, adding new modes |
+| [coding-style.md](guides/coding-style.md) | Naming, file structure, DOM rules, testing patterns |
+| [development.md](guides/development.md) | Commands, testing, versioning, branching, deployment, GitHub API |
+| [feature-process.md](guides/feature-process.md) | When/how to write plans, design spec + implementation plan templates |
+| [vision.md](guides/vision.md) | Product vision, design principles, roadmap |
 
-```bash
-npx tsx --test src/*_test.ts
-```
-
-## Versioning
-
-There is a small version number displayed at the top-right of the app (`<div class="version">`). Increment it (e.g. v0.2 → v0.3) with every change so the user can confirm they have the latest build.
-
-## Screenshots
-
-Capture screenshots of all 10 modes (idle + quiz) plus the hamburger menu:
-
-```bash
-# First time:
-npm install && npx playwright install chromium
-
-# Take screenshots (starts dev server automatically):
-npx tsx scripts/take-screenshots.ts
-```
-
-Output: `screenshots/` directory (gitignored), 21 PNGs.
-
-## Branching
-
-Always start implementation from the latest `main` branch unless told otherwise.
-Fetch and merge/rebase from `origin/main` before beginning any new feature work.
-
-## Implementation Plans
-
-Before starting work on a feature, write a plan and check it into `plans/`
-with a descriptive filename (e.g. `plans/2026-02-10-add-quiz-stats.md`).
-Commit the plan as part of the feature branch before beginning implementation.
-After the feature is complete, update the plan to reflect what was actually
-done (any deviations, additions, or things dropped).
-
-During technical design, review architectural fit: new behavior should integrate
-with existing patterns (e.g., state machine phases, declarative `render()`)
-rather than introducing parallel mechanisms (shadow booleans, imperative DOM
-overrides). If the cleanest implementation means extending a shared abstraction,
-do that rather than working around it.
-
-## GitHub API Access (Claude Code Web Environment)
-
-`gh` CLI is not authenticated in the web environment. Instead, use `curl`
-through the egress proxy:
-
-```bash
-PROXY_URL="$GLOBAL_AGENT_HTTP_PROXY"
-
-# List open PRs
-curl -sS --proxy "$PROXY_URL" \
-  -H "Accept: application/vnd.github.v3+json" \
-  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls?state=open"
-
-# Get PR review comments
-curl -sS --proxy "$PROXY_URL" \
-  -H "Accept: application/vnd.github.v3+json" \
-  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls/{PR_NUMBER}/comments"
-
-# Get issue/PR conversation comments
-curl -sS --proxy "$PROXY_URL" \
-  -H "Accept: application/vnd.github.v3+json" \
-  "https://api.github.com/repos/shnayder/fretboard-trainer/issues/{PR_NUMBER}/comments"
-```
-
-The proxy authenticates automatically via the JWT in `GLOBAL_AGENT_HTTP_PROXY`.
-No `GH_TOKEN` is needed. Git push/pull work normally via the `origin` remote.
+The review checklist (`.claude/commands/review-checklist.md`) verifies these
+conventions — use `/review` to run it.
