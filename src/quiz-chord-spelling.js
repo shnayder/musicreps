@@ -165,21 +165,15 @@ function createChordSpellingMode() {
     const btn = container.querySelector('.heatmap-btn');
     statsContainer.innerHTML = '';
 
-    const enabledTypes = [];
-    for (const g of enabledGroups) {
-      for (const type of SPELLING_GROUPS[g].types) {
-        enabledTypes.push(type);
-      }
-    }
-
-    const colLabels = enabledTypes.map(t => t.symbol || 'maj');
+    // Show ALL chord types, not just enabled ones, for a complete progress view
+    const colLabels = CHORD_TYPES.map(t => t.symbol || 'maj');
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
     statsContainer.appendChild(gridDiv);
 
     const rootNotes = CHORD_ROOTS.map(r => ({ name: r, displayName: r }));
     renderStatsGrid(engine.selector, colLabels, (rootName, colIdx) => {
-      return rootName + ':' + enabledTypes[colIdx].name;
+      return rootName + ':' + CHORD_TYPES[colIdx].name;
     }, mode, gridDiv, rootNotes);
 
     const legendDiv = document.createElement('div');
@@ -276,7 +270,16 @@ function createChordSpellingMode() {
     container.querySelectorAll('.answer-btn-note').forEach(btn => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
-        submitTone(btn.dataset.note);
+        let input = btn.dataset.note;
+        // Resolve enharmonic: buttons can't distinguish A#/Bb, so if the
+        // button's pitch matches the expected tone, use the expected spelling.
+        if (currentItem && enteredTones.length < currentItem.tones.length) {
+          const expected = currentItem.tones[enteredTones.length];
+          if (spelledNoteSemitone(expected) === spelledNoteSemitone(input)) {
+            input = expected;
+          }
+        }
+        submitTone(input);
       });
     });
 
