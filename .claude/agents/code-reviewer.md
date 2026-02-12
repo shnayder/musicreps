@@ -2,7 +2,7 @@
 name: code-reviewer
 description: Reviews diffs for bugs, architectural violations, missing tests, and project-specific issues in fretboard-trainer.
 allowed-tools: Read, Grep, Glob, Bash
-model: claude-sonnet-4-5-20250929
+model: claude-opus-4-6
 ---
 
 # Code Reviewer — fretboard-trainer
