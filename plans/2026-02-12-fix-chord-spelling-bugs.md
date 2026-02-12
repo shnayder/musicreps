@@ -26,6 +26,6 @@ enabled ones. This gives a complete view of progress across all chord types.
 
 ## Changes
 
-1. `src/quiz-chord-spelling.js` — button click handler + showStats
-2. `src/music-data_test.ts` — add test for spelledNoteMatchesSemitone (used by the fix)
-3. `main.ts` / `build.ts` — increment version to v3.1
+1. `src/quiz-chord-spelling.js` — button click handler (enharmonic resolution via
+   `spelledNoteMatchesSemitone`) + `showStats` (show all chord types)
+2. `main.ts` / `build.ts` — increment version to v3.1

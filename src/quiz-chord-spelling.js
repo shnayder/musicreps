@@ -275,7 +275,7 @@ function createChordSpellingMode() {
         // button's pitch matches the expected tone, use the expected spelling.
         if (currentItem && enteredTones.length < currentItem.tones.length) {
           const expected = currentItem.tones[enteredTones.length];
-          if (spelledNoteSemitone(expected) === spelledNoteSemitone(input)) {
+          if (spelledNoteMatchesSemitone(expected, input)) {
             input = expected;
           }
         }
