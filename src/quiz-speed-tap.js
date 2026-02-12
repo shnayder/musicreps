@@ -3,11 +3,14 @@
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
 // createAdaptiveSelector, createLocalStorageAdapter, updateModeStats,
-// getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend
+// getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend,
+// runCalibration, getCalibrationThresholds, deriveScaledConfig,
+// computeMedian, DEFAULT_CONFIG
 
 function createSpeedTapMode() {
   const container = document.getElementById('mode-speedTap');
   const NAMESPACE = 'speedTap';
+  const BASELINE_KEY = 'motorBaseline_button';
 
   let naturalsOnly = true;
   let active = false;
@@ -23,14 +26,37 @@ function createSpeedTapMode() {
   // --- Adaptive system ---
   // Speed tap rounds involve finding 6-8 positions, so response times are
   // much higher than single-tap modes. Adjust config accordingly.
-  const SPEED_TAP_CONFIG = Object.assign({}, DEFAULT_CONFIG, {
+  const SPEED_TAP_BASE_CONFIG = Object.assign({}, DEFAULT_CONFIG, {
     minTime: 4000,             // can't tap 6-8 positions in < 4s
     automaticityTarget: 12000, // 12s → speedScore 0.5 (decent pace)
     maxResponseTime: 30000,    // allow tracking up to 30s rounds
   });
 
   const storage = createLocalStorageAdapter(NAMESPACE);
-  const selector = createAdaptiveSelector(storage, SPEED_TAP_CONFIG);
+  const selector = createAdaptiveSelector(storage, SPEED_TAP_BASE_CONFIG);
+
+  // --- Motor baseline ---
+
+  let motorBaseline = null;
+  let calibrationCleanup = null;
+  let calibrationContentEl = null;
+  let calibPhase = 'none'; // 'none' | 'intro' | 'calibrating' | 'results'
+
+  // Load stored baseline at init
+  const storedBaseline = localStorage.getItem(BASELINE_KEY);
+  if (storedBaseline) {
+    const parsed = parseInt(storedBaseline, 10);
+    if (parsed > 0) {
+      motorBaseline = parsed;
+      selector.updateConfig(deriveScaledConfig(motorBaseline, SPEED_TAP_BASE_CONFIG));
+    }
+  }
+
+  function applyBaseline(baseline) {
+    motorBaseline = baseline;
+    localStorage.setItem(BASELINE_KEY, String(baseline));
+    selector.updateConfig(deriveScaledConfig(baseline, SPEED_TAP_BASE_CONFIG));
+  }
 
   function preloadStats() {
     for (const note of NOTES) {
@@ -138,8 +164,10 @@ function createSpeedTapMode() {
     timer: container.querySelector('.speed-tap-timer'),
     feedback: container.querySelector('.feedback'),
     hint: container.querySelector('.hint'),
+    timeDisplay: container.querySelector('.time-display'),
     startBtn: container.querySelector('.start-btn'),
     stopBtn: container.querySelector('.stop-btn'),
+    recalibrateBtn: container.querySelector('.recalibrate-btn'),
     statsToggle: container.querySelector('.stats-toggle'),
     stats: container.querySelector('.stats'),
     quizArea: container.querySelector('.quiz-area'),
@@ -178,6 +206,224 @@ function createSpeedTapMode() {
 
   function updateStats() {
     updateModeStats(selector, getEnabledItems(), els.stats);
+  }
+
+  // --- Calibration ---
+
+  function formatMs(ms) {
+    return (ms / 1000).toFixed(1) + 's';
+  }
+
+  function clearCalibrationContent() {
+    if (calibrationContentEl) {
+      calibrationContentEl.remove();
+      calibrationContentEl = null;
+    }
+    // Remove close button
+    const closeBtn = container.querySelector('.calibration-close-btn');
+    if (closeBtn) closeBtn.remove();
+  }
+
+  function renderCalibrationClose() {
+    if (!container.querySelector('.calibration-close-btn')) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'calibration-close-btn';
+      closeBtn.textContent = '\u00D7';
+      closeBtn.setAttribute('aria-label', 'Close speed check');
+      closeBtn.addEventListener('click', stopCalibration);
+      if (els.quizArea) {
+        els.quizArea.style.position = 'relative';
+        els.quizArea.appendChild(closeBtn);
+      }
+    }
+  }
+
+  function getCalibrationButtons() {
+    return Array.from(container.querySelectorAll('.answer-btn-note'));
+  }
+
+  function startCalibration() {
+    calibPhase = 'intro';
+    container.classList.add('calibrating');
+
+    // Mark calibration button container
+    const buttons = getCalibrationButtons();
+    if (buttons.length > 0) {
+      const parent = buttons[0].closest('.answer-buttons');
+      if (parent) parent.classList.add('calibration-active');
+    }
+
+    if (els.quizArea) els.quizArea.classList.add('active');
+    if (els.startBtn) els.startBtn.style.display = 'none';
+    if (els.stopBtn) els.stopBtn.style.display = 'none';
+    if (els.recalibrateBtn) els.recalibrateBtn.style.display = 'none';
+    if (els.feedback) {
+      els.feedback.textContent = 'Quick Speed Check';
+      els.feedback.className = 'feedback';
+    }
+    if (els.hint) els.hint.textContent = "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.";
+    if (els.timeDisplay) els.timeDisplay.textContent = '';
+
+    // Enable calibration buttons
+    container.querySelectorAll('.answer-btn').forEach(btn => {
+      btn.disabled = false;
+      btn.style.pointerEvents = '';
+    });
+
+    clearCalibrationContent();
+    const btn = document.createElement('button');
+    btn.textContent = 'Start';
+    btn.className = 'calibration-action-btn';
+    btn.addEventListener('click', beginCalibrationTrials);
+    calibrationContentEl = btn;
+    if (els.hint && els.hint.parentNode) {
+      els.hint.parentNode.insertBefore(btn, els.hint.nextSibling);
+    }
+    renderCalibrationClose();
+  }
+
+  function beginCalibrationTrials() {
+    const buttons = getCalibrationButtons();
+    if (buttons.length < 2) {
+      stopCalibration();
+      return;
+    }
+
+    calibPhase = 'calibrating';
+    if (els.feedback) {
+      els.feedback.textContent = 'Speed check!';
+      els.feedback.className = 'feedback';
+    }
+    if (els.hint) els.hint.textContent = 'Tap the highlighted button as fast as you can';
+
+    clearCalibrationContent();
+    renderCalibrationClose();
+
+    calibrationCleanup = runCalibration({
+      buttons,
+      els: { feedback: els.feedback, hint: els.hint, timeDisplay: els.timeDisplay },
+      container,
+      onComplete: (median) => {
+        calibrationCleanup = null;
+        if (!Number.isFinite(median) || median <= 0) {
+          stopCalibration();
+          return;
+        }
+        const baseline = Math.round(median);
+        applyBaseline(baseline);
+        showCalibrationResults(baseline);
+      },
+    });
+  }
+
+  function showCalibrationResults(baseline) {
+    calibPhase = 'results';
+    if (els.feedback) {
+      els.feedback.textContent = 'Speed Check Complete';
+      els.feedback.className = 'feedback';
+    }
+    if (els.hint) els.hint.textContent = '';
+    if (els.timeDisplay) els.timeDisplay.textContent = '';
+
+    // Disable buttons during results
+    container.querySelectorAll('.answer-btn').forEach(btn => {
+      btn.disabled = true;
+      btn.style.pointerEvents = 'none';
+    });
+
+    clearCalibrationContent();
+
+    const div = document.createElement('div');
+    div.className = 'calibration-results';
+
+    const baselineP = document.createElement('p');
+    baselineP.className = 'calibration-baseline';
+    baselineP.textContent = 'Your baseline response time: ' + formatMs(baseline);
+    div.appendChild(baselineP);
+
+    const thresholds = getCalibrationThresholds(baseline);
+    const table = document.createElement('table');
+    table.className = 'calibration-thresholds';
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['Speed', 'Response time', 'Meaning'].forEach((text) => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    thresholds.forEach((t) => {
+      const tr = document.createElement('tr');
+      const tdLabel = document.createElement('td');
+      tdLabel.textContent = t.label;
+      tr.appendChild(tdLabel);
+      const tdTime = document.createElement('td');
+      tdTime.textContent = t.maxMs !== null ? '< ' + formatMs(t.maxMs) : '> ' + formatMs(thresholds[thresholds.length - 2].maxMs);
+      tr.appendChild(tdTime);
+      const tdMeaning = document.createElement('td');
+      tdMeaning.textContent = t.meaning;
+      tr.appendChild(tdMeaning);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    div.appendChild(table);
+
+    const doneBtn = document.createElement('button');
+    doneBtn.textContent = 'Done';
+    doneBtn.className = 'calibration-action-btn';
+    doneBtn.addEventListener('click', stopCalibration);
+    div.appendChild(doneBtn);
+
+    calibrationContentEl = div;
+    if (els.hint && els.hint.parentNode) {
+      els.hint.parentNode.insertBefore(div, els.hint.nextSibling);
+    }
+    renderCalibrationClose();
+  }
+
+  function stopCalibration() {
+    if (calibrationCleanup) {
+      calibrationCleanup();
+      calibrationCleanup = null;
+    }
+    calibPhase = 'none';
+    clearCalibrationContent();
+    container.classList.remove('calibrating');
+    const activeEl = container.querySelector('.calibration-active');
+    if (activeEl) activeEl.classList.remove('calibration-active');
+
+    // Reset to idle state
+    if (els.quizArea) els.quizArea.classList.remove('active');
+    if (els.feedback) {
+      els.feedback.textContent = '';
+      els.feedback.className = 'feedback';
+    }
+    if (els.hint) els.hint.textContent = '';
+    if (els.timeDisplay) els.timeDisplay.textContent = '';
+    if (els.fretboardWrapper) els.fretboardWrapper.style.display = 'none';
+    if (els.statsControls) els.statsControls.style.display = '';
+    if (els.startBtn) els.startBtn.style.display = 'inline';
+    if (els.stopBtn) els.stopBtn.style.display = 'none';
+    if (els.recalibrateBtn) {
+      els.recalibrateBtn.style.display = motorBaseline ? 'inline' : 'none';
+    }
+
+    // Disable answer buttons
+    container.querySelectorAll('.answer-btn').forEach(btn => {
+      btn.disabled = true;
+      btn.style.pointerEvents = 'none';
+    });
+
+    updateStats();
+    statsControls.show('retention');
+  }
+
+  function showCalibrationIfNeeded() {
+    if (!motorBaseline && !active && calibPhase === 'none') {
+      startCalibration();
+    }
   }
 
   // --- Round logic ---
@@ -265,6 +511,9 @@ function createSpeedTapMode() {
   function handleFretboardClick(e) {
     if (e.target.closest('.quiz-controls, .setting-group')) return;
 
+    // During calibration, ignore fretboard clicks
+    if (calibPhase !== 'none') return;
+
     if (active && roundActive) {
       const target = e.target.closest('circle[data-string][data-fret]') ||
                      e.target.closest('text[data-string][data-fret]');
@@ -281,6 +530,14 @@ function createSpeedTapMode() {
   }
 
   function handleKeydown(e) {
+    // Handle Escape during calibration
+    if (calibPhase !== 'none') {
+      if (e.key === 'Escape') {
+        stopCalibration();
+      }
+      return;
+    }
+
     if (!active) return;
 
     if (e.key === 'Escape') {
@@ -303,6 +560,7 @@ function createSpeedTapMode() {
     if (els.statsControls) els.statsControls.style.display = 'none';
     if (els.startBtn) els.startBtn.style.display = 'none';
     if (els.stopBtn) els.stopBtn.style.display = 'inline';
+    if (els.recalibrateBtn) els.recalibrateBtn.style.display = 'none';
     if (els.quizArea) els.quizArea.classList.add('active');
     nextRound();
   }
@@ -331,6 +589,9 @@ function createSpeedTapMode() {
     if (els.statsControls) els.statsControls.style.display = '';
     if (els.startBtn) els.startBtn.style.display = 'inline';
     if (els.stopBtn) els.stopBtn.style.display = 'none';
+    if (els.recalibrateBtn) {
+      els.recalibrateBtn.style.display = motorBaseline ? 'inline' : 'none';
+    }
     if (els.quizArea) els.quizArea.classList.remove('active');
 
     updateStats();
@@ -361,16 +622,26 @@ function createSpeedTapMode() {
 
     if (els.startBtn) els.startBtn.addEventListener('click', () => start());
     if (els.stopBtn) els.stopBtn.addEventListener('click', () => stop());
+    if (els.recalibrateBtn) {
+      els.recalibrateBtn.addEventListener('click', () => startCalibration());
+    }
 
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = 'none';
+    if (els.recalibrateBtn) {
+      els.recalibrateBtn.style.display = motorBaseline ? 'inline' : 'none';
+    }
     updateStats();
     statsControls.show('retention');
   }
 
   return {
     init,
-    activate() { attach(); },
+    activate() {
+      attach();
+      showCalibrationIfNeeded();
+    },
     deactivate() {
+      if (calibPhase !== 'none') stopCalibration();
       if (active) stop();
       detach();
     },

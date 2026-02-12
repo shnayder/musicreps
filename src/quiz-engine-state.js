@@ -107,9 +107,9 @@ export function engineCalibrationIntro(state) {
     showMastery: false,
     quizActive: true,
     answersEnabled: false,
-    feedbackText: 'Quick Calibration',
+    feedbackText: 'Quick Speed Check',
     feedbackClass: 'feedback',
-    hintText: "We\u2019ll measure your tap/type speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
+    hintText: "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
     timeDisplayText: '',
     calibrationBaseline: null,
   };
@@ -124,7 +124,7 @@ export function engineCalibrating(state) {
     ...state,
     phase: 'calibrating',
     answersEnabled: true,
-    feedbackText: 'Quick warm-up!',
+    feedbackText: 'Speed check!',
     hintText: 'Tap the highlighted button as fast as you can',
   };
 }
@@ -138,7 +138,7 @@ export function engineCalibrationResults(state, baseline) {
     ...state,
     phase: 'calibration-results',
     answersEnabled: false,
-    feedbackText: 'Calibration Complete',
+    feedbackText: 'Speed Check Complete',
     feedbackClass: 'feedback',
     hintText: '',
     timeDisplayText: '',

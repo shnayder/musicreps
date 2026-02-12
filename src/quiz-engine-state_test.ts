@@ -232,8 +232,8 @@ describe("engineCalibrationIntro", () => {
 
   it("sets calibration heading and explanation", () => {
     const s = engineCalibrationIntro(initialEngineState());
-    assert.equal(s.feedbackText, "Quick Calibration");
-    assert.ok(s.hintText.includes("tap/type speed"));
+    assert.equal(s.feedbackText, "Quick Speed Check");
+    assert.ok(s.hintText.includes("tap speed"));
   });
 });
 
@@ -250,7 +250,7 @@ describe("engineCalibrating", () => {
 
   it("sets trial instruction text", () => {
     const s = engineCalibrating(engineCalibrationIntro(initialEngineState()));
-    assert.equal(s.feedbackText, "Quick warm-up!");
+    assert.equal(s.feedbackText, "Speed check!");
     assert.ok(s.hintText.includes("highlighted button"));
   });
 });
@@ -271,7 +271,7 @@ describe("engineCalibrationResults", () => {
   it("disables answers and sets heading", () => {
     const s = engineCalibrationResults(engineCalibrating(engineCalibrationIntro(initialEngineState())), 600);
     assert.equal(s.answersEnabled, false);
-    assert.equal(s.feedbackText, "Calibration Complete");
+    assert.equal(s.feedbackText, "Speed Check Complete");
     assert.equal(s.hintText, "");
   });
 });

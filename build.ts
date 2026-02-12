@@ -70,7 +70,7 @@ const html = `<!DOCTYPE html>
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v3.3</div>
+    <div class="version">v3.5</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -116,7 +116,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -174,7 +174,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
 
@@ -184,7 +184,22 @@ const html = `<!DOCTYPE html>
         <span class="speed-tap-progress"></span>
         <span class="speed-tap-timer"></span>
       </div>
+      <div class="answer-buttons answer-buttons-notes" style="display: none;">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
       <div class="feedback"></div>
+      <div class="time-display"></div>
       <div class="hint"></div>
     </div>
   </div>
@@ -201,7 +216,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -253,7 +268,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -308,7 +323,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -349,7 +364,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -390,7 +405,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -448,7 +463,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -498,7 +513,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">
@@ -548,7 +563,7 @@ const html = `<!DOCTYPE html>
       <div>
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Recalibrate</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-area">

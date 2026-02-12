@@ -239,13 +239,23 @@ export function createQuizEngine(mode, container) {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
   const selector = createAdaptiveSelector(storage);
 
-  const baselineKey = 'motorBaseline_' + mode.storageNamespace;
+  const provider = mode.calibrationProvider || 'button';
+  const baselineKey = 'motorBaseline_' + provider;
+  const legacyBaselineKey = 'motorBaseline_' + mode.storageNamespace;
   let motorBaseline = null;
   let calibrationCleanup = null;   // cancel function for running trials
   let calibrationContentEl = null; // dynamically-created DOM for intro/results
 
-  // Load stored baseline and apply to config at init time
-  const storedBaseline = localStorage.getItem(baselineKey);
+  // Load stored baseline and apply to config at init time.
+  // Check shared provider key first; fall back to legacy per-mode key for migration.
+  let storedBaseline = localStorage.getItem(baselineKey);
+  if (!storedBaseline && legacyBaselineKey !== baselineKey) {
+    storedBaseline = localStorage.getItem(legacyBaselineKey);
+    if (storedBaseline) {
+      // Migrate legacy baseline to shared provider key
+      localStorage.setItem(baselineKey, storedBaseline);
+    }
+  }
   if (storedBaseline) {
     const parsed = parseInt(storedBaseline, 10);
     if (parsed > 0) {
@@ -355,10 +365,47 @@ export function createQuizEngine(mode, container) {
   }
 
   function render() {
+    const inCalibration = state.phase === 'calibration-intro' ||
+                          state.phase === 'calibrating' ||
+                          state.phase === 'calibration-results';
+
     // Clear calibration content when leaving calibration phases
     const inCalibUI = state.phase === 'calibration-intro' || state.phase === 'calibration-results';
     if (!inCalibUI) {
       clearCalibrationContent();
+    }
+
+    // Toggle calibrating class on container for CSS-driven visibility
+    container.classList.toggle('calibrating', inCalibration);
+
+    // Mark the calibration button container so CSS can hide others
+    if (inCalibration && !container.querySelector('.calibration-active')) {
+      const buttons = getCalibrationButtons();
+      if (buttons.length > 0) {
+        const parent = buttons[0].closest('.answer-buttons, .note-buttons');
+        if (parent) parent.classList.add('calibration-active');
+      }
+    }
+    if (!inCalibration) {
+      const activeEl = container.querySelector('.calibration-active');
+      if (activeEl) activeEl.classList.remove('calibration-active');
+    }
+
+    // Show/hide close button
+    if (inCalibration && !container.querySelector('.calibration-close-btn')) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'calibration-close-btn';
+      closeBtn.textContent = '\u00D7';
+      closeBtn.setAttribute('aria-label', 'Close speed check');
+      closeBtn.addEventListener('click', stop);
+      if (els.quizArea) {
+        els.quizArea.style.position = 'relative';
+        els.quizArea.appendChild(closeBtn);
+      }
+    }
+    if (!inCalibration) {
+      const closeBtn = container.querySelector('.calibration-close-btn');
+      if (closeBtn) closeBtn.remove();
     }
 
     if (els.startBtn)      els.startBtn.style.display     = state.showStartBtn ? 'inline' : 'none';
