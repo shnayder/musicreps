@@ -134,3 +134,24 @@ Bump from v3.1 → v3.2.
   a baseline, produce the right labels and time values)
 - Manual testing of the full flow: open mode → intro → trials → results → idle → start quiz
 - Manual testing of recalibrate flow: idle → recalibrate → intro → trials → results → idle
+
+## Implementation Notes (post-implementation)
+
+Implemented as planned. Additional details:
+
+- **`getCalibrationThresholds(baseline)`** — new exported helper in quiz-engine.js
+  with 5 tests in quiz-engine_test.ts (band count, scaling at 1000ms, scaling
+  at 500ms, rounding, meaning descriptions).
+- **`showCalibrationIfNeeded()`** — new engine method called from each mode's
+  `activate()` hook. All 8 standard quiz modes updated (speed-tap excluded as
+  it has its own custom config).
+- **`startCalibration()`** — self-contained flow: calls `mode.onStart()` to make
+  answer buttons visible, shows intro, runs trials, shows results, then calls
+  `mode.onStop()` and `render()` + `updateIdleMessage()` to return to idle.
+- **`stop()`** — updated to clean up dynamically-added calibration DOM elements
+  (`.calibration-action-btn`, `.calibration-results`) on early cancellation.
+- **CSS** — `.calibration-action-btn` (green button for Start/Done),
+  `.calibration-results`, `.calibration-baseline`, `.calibration-thresholds`
+  table styling.
+- **`start()`** — simplified: no longer checks for baseline or chains calibration.
+  Just starts the quiz directly.
