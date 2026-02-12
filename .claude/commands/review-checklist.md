@@ -6,6 +6,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 ---
 
 ## Build system consistency
+<!-- Full explanation: guides/architecture.md § Build System -->
 
 - [ ] New source files registered in **both** `main.ts` and `build.ts`
 - [ ] Files with `export` keywords read via `readModule()` (strips exports);
@@ -17,6 +18,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 - [ ] If HTML template changed: updated in **both** build files
 
 ## Architecture patterns
+<!-- Full explanation: guides/architecture.md § Key Patterns -->
 
 - [ ] Pure functions separated from DOM — logic in `*-state.js`, DOM interaction
       in the main module (e.g., `quiz-engine-state.js` vs `quiz-engine.js`)
@@ -33,6 +35,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       abstractions or unused configurability
 
 ## Adaptive learning system
+<!-- Full explanation: guides/architecture.md § Algorithms -->
 
 - [ ] Timing config changes preserve ratio-to-baseline scaling via
       `deriveScaledConfig(baseline)` in `adaptive.js`
@@ -48,6 +51,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       low-sample multiplier (that was a bug — see commit history)
 
 ## Recommendation algorithm
+<!-- Full explanation: guides/architecture.md § Consolidate Before Expanding -->
 
 - [ ] Consolidate-before-expanding pattern preserved: expansion to new
       strings/groups gated behind `consolidationRatio >= expansionThreshold`
@@ -58,6 +62,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       shape: `{ dueCount, unseenCount, masteredCount, totalCount }`
 
 ## Test coverage
+<!-- Full explanation: guides/development.md § Testing, guides/coding-style.md § Testing Patterns -->
 
 - [ ] Every new module with pure logic has a corresponding `_test.ts` file
 - [ ] Tests use Node test runner (`node:test`) and `node:assert/strict`
@@ -80,6 +85,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 - [ ] Keyboard state reset in `onStart()`, `onStop()`, `onDeactivate()`
 
 ## Code quality
+<!-- Full explanation: guides/coding-style.md -->
 
 - [ ] No DOM manipulation in pure modules (`adaptive.js`, `music-data.js`,
       `recommendations.js`, `*-state.js`, `stats-display.js`)
@@ -93,8 +99,9 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       comments — just delete it)
 
 ## Documentation
+<!-- Full explanation: guides/feature-process.md -->
 
-- [ ] Implementation plan exists in `plans/` for non-trivial changes
+- [ ] Implementation plan exists in `plans/exec-plans/` for non-trivial changes
 - [ ] Plan updated after completion if implementation deviated
 - [ ] CLAUDE.md updated if architecture, modes, or conventions changed
 - [ ] New quiz mode: item ID format, item count, and answer type documented in

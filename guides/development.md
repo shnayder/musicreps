@@ -1,0 +1,123 @@
+# Development
+
+Day-to-day workflow reference for building, testing, and deploying.
+
+## Prerequisites
+
+- **Deno** (preferred) or **Node.js** with `npx`
+- No `npm install` needed for build/test — the app has zero runtime dependencies
+- Playwright required for screenshots only: `npm install && npx playwright install chromium`. Only works locally, when `CLAUDE_CODE_REMOTE` is not set to `true`.
+
+## Commands
+
+```bash
+# Dev server (serves index.html + sw.js on localhost:8000)
+deno run --allow-net --allow-read main.ts
+
+# Build for GitHub Pages (Deno)
+deno run --allow-write --allow-read main.ts --build
+
+# Build for GitHub Pages (Node — when Deno is unavailable)
+npx tsx build.ts
+
+# Run all tests
+npx tsx --test src/*_test.ts
+
+# Take screenshots of all modes (starts dev server automatically)
+npx tsx scripts/take-screenshots.ts
+```
+
+## Template Sync
+
+Both `main.ts` and `build.ts` contain the HTML template. When changing the
+template (HTML structure, nav buttons, mode screens, or version number), update
+**both** files. This is the single most common source of bugs — the review
+checklist checks it first.
+
+What lives in both files:
+- HTML structure (nav drawer, mode screens, SVG fretboard)
+- `<script>` block with file reads and concatenation order
+- Version number in `<div class="version">`
+
+## Testing
+
+### What to test
+- Pure functions: state transitions, data helpers, algorithms
+- Edge cases: empty sets, boundary values, single-element collections
+- Enharmonic equivalence where relevant to music theory
+- New modules with logic should always have a `_test.ts` file
+
+### What NOT to test
+- `render()` functions — they are declarative and tested visually
+- DOM event wiring — tested by manual interaction
+- CSS styling
+
+### Infrastructure
+- Framework: `node:test` (`describe`, `it`, `assert`)
+- Runner: `npx tsx --test`
+- Dependency injection: `Map` for storage, imported music data, seeded RNG
+- No global state pollution — each test creates its own selector/helpers
+
+Write tests as you go, not just at the end.
+
+## Versioning
+
+A version number is displayed top-right (`<div class="version">`). Increment it
+(e.g., v3.5 → v3.6) with every change so the user can confirm they have the
+latest build. The version appears in both `main.ts` and `build.ts`. Increment 
+the major version number after major changes.
+
+## Branching
+
+Always start from the latest `main` branch unless told otherwise. Fetch and
+merge/rebase from `origin/main` after the feature design is finalized, before
+beginning implementation.
+
+
+## Deployment
+
+Build output goes to `docs/` (GitHub Pages source directory):
+- `docs/index.html` — the single-page app
+- `docs/sw.js` — service worker (network-first cache strategy)
+
+After building, commit both files. The service worker ensures users get the
+latest version on next load.
+
+## Code Review
+
+Use the `/review` slash command to run the code-reviewer subagent, which
+applies the checklist in `.claude/commands/review-checklist.md`. The reviewer
+checks for common issues: build file sync, architecture pattern violations,
+missing tests, and more.
+
+Review scopes:
+- `/review` — review working tree diff (default)
+- `/review 42` — review PR #42
+- `/review main..HEAD` — review a commit range
+
+## GitHub API Access (Web Environment)
+
+`gh` CLI is not authenticated in the Claude Code web environment. Use `curl`
+through the egress proxy:
+
+```bash
+PROXY_URL="$GLOBAL_AGENT_HTTP_PROXY"
+
+# List open PRs
+curl -sS --proxy "$PROXY_URL" \
+  -H "Accept: application/vnd.github.v3+json" \
+  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls?state=open"
+
+# Get PR review comments
+curl -sS --proxy "$PROXY_URL" \
+  -H "Accept: application/vnd.github.v3+json" \
+  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls/{PR_NUMBER}/comments"
+
+# Get issue/PR conversation comments
+curl -sS --proxy "$PROXY_URL" \
+  -H "Accept: application/vnd.github.v3+json" \
+  "https://api.github.com/repos/shnayder/fretboard-trainer/issues/{PR_NUMBER}/comments"
+```
+
+The proxy authenticates automatically via the JWT in `GLOBAL_AGENT_HTTP_PROXY`.
+No `GH_TOKEN` needed. Git push/pull work normally via the `origin` remote.

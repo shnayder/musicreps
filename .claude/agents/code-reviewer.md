@@ -73,8 +73,9 @@ Work through these steps in order:
    just the diff hunks. You need surrounding context to judge whether the change
    fits the existing code.
 
-3. **Check for a plan.** Look in `plans/` for a file related to this change
-   (match by date, branch name, or feature description). If found, verify the
+3. **Check for a plan.** Look in `plans/exec-plans/active/` and
+   `plans/exec-plans/completed/` for a file related to this change (match by
+   date, branch name, or feature description). If found, verify the
    implementation matches. Note deviations.
 
 4. **Run tests.** Execute `npx tsx --test src/*_test.ts` and capture the output.

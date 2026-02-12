@@ -1,0 +1,101 @@
+# Vision & Roadmap
+
+## Product Vision
+
+<!-- [NEEDS INPUT] Fill in your vision for the product — what it should
+     become, who it's for, what success looks like. The framing below is
+     inferred from the codebase but may not match your actual intent. -->
+
+Fretboard Trainer builds **automaticity** — instant, effortless recall of
+music theory fundamentals. The goal is to take knowledge the user already
+understands conceptually and drill it until it's reflexive.
+
+## Design Principles
+
+These are inferred from the existing codebase and design decisions:
+
+- **Drill, not instruction.** The app assumes the user knows the theory. It
+  trains speed and accuracy, not understanding. There are no lessons or
+  explanations — just questions and immediate feedback.
+
+- **Adaptive difficulty.** Practice what you're worst at. The adaptive
+  selector prioritizes items with slow response times and low recall. Items
+  you've mastered fade to the background.
+
+- **Progressive disclosure.** Consolidate before expanding. New material
+  (strings, distance groups, chord types) is gated behind mastery of what's
+  already been started. This prevents overwhelming the learner with too many
+  items at once.
+
+- **Minimal friction.** Single-page app, instant start, works offline via
+  service worker. No login, no cloud sync, no setup. Open the page and start
+  drilling.
+
+- **Personalized timing.** Motor baseline calibration means thresholds adapt
+  to each user's device and physical response speed. A phone user and a
+  desktop keyboard user get equivalently challenging targets.
+
+## Current State
+
+v3.5 with 10 quiz modes:
+
+| Category | Modes |
+|----------|-------|
+| Fretboard geography | Fretboard, Speed Tap |
+| Note/interval fundamentals | Note ↔ Semitones, Interval ↔ Semitones |
+| Arithmetic | Semitone Math, Interval Math |
+| Key-based theory | Key Signatures, Scale Degrees, Diatonic Chords |
+| Chord construction | Chord Spelling |
+
+All modes use the shared adaptive selector, forgetting model, and motor
+baseline calibration.
+
+## Roadmap
+
+### Near-term
+
+<!-- [NEEDS INPUT] Prioritize these or replace with your actual plans. -->
+
+- Minor keys for Key Signatures, Scale Degrees, Diatonic Chords, Chord Spelling
+- Chord spelling reverse direction (notes → chord name)
+
+### Medium-term
+
+<!-- [NEEDS INPUT] -->
+
+- JSDoc type annotations + `tsc --noEmit` type checking (from architecture
+  review Phase 5)
+- Audio integration (hear intervals/chords, not just name them)
+- Progress visualization beyond heatmaps
+
+### Future considerations
+
+<!-- [NEEDS INPUT] -->
+
+- Multi-instrument support
+- Custom practice sets / session goals
+- Progress export/import
+- Playwright-based visual dev tool (from architecture review Phase 4)
+
+## Design Philosophy for New Features
+
+Guidelines inferred from how existing modes were designed:
+
+- **Each mode independently useful.** No cross-mode gating — all modes
+  freely accessible from the hamburger menu. Recommended learning order is
+  documented but not enforced.
+
+- **Bidirectional drilling when applicable.** Forward (key → note) and
+  reverse (note → key) are tracked as separate items. Mixing directions
+  builds deeper fluency.
+
+- **Group items by pedagogical difficulty.** Not alphabetical or numerical
+  order. Easy/common items first (I-IV-V before iii-vii°, root+5th before
+  2nd+6th).
+
+- **Reuse shared infrastructure.** Adaptive selector, `computeRecommendations()`,
+  `createStatsControls()`, `createNoteKeyHandler()`. A new mode should feel
+  like a natural extension, not a separate app.
+
+- **Stats visualization for every mode.** Users should always be able to see
+  what they've mastered and what needs work. Heatmaps with Recall/Speed toggle.
