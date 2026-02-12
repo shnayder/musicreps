@@ -93,11 +93,16 @@ function createSpeedTapMode() {
 
   // --- Note stats view ---
 
+  function updateStatsToggle(mode) {
+    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === mode);
+    });
+  }
+
   function showNoteStats(mode) {
     mode = mode || 'retention';
     statsMode = mode;
     const statsContainer = container.querySelector('.stats-container');
-    const heatmapBtn = container.querySelector('.heatmap-btn');
     if (!statsContainer) return;
 
     // Always show all 12 notes regardless of naturalsOnly setting
@@ -138,7 +143,7 @@ function createSpeedTapMode() {
 
     statsContainer.innerHTML = html;
     statsContainer.style.display = '';
-    if (heatmapBtn) heatmapBtn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
+    updateStatsToggle(mode);
   }
 
   function hideNoteStats() {
@@ -150,13 +155,6 @@ function createSpeedTapMode() {
     }
   }
 
-  function toggleNoteStats() {
-    if (statsMode === 'retention') {
-      showNoteStats('speed');
-    } else {
-      showNoteStats('retention');
-    }
-  }
 
   // --- DOM references ---
 
@@ -168,7 +166,7 @@ function createSpeedTapMode() {
     hint: container.querySelector('.hint'),
     startBtn: container.querySelector('.start-btn'),
     stopBtn: container.querySelector('.stop-btn'),
-    heatmapBtn: container.querySelector('.heatmap-btn'),
+    statsToggle: container.querySelector('.stats-toggle'),
     stats: container.querySelector('.stats'),
     quizArea: container.querySelector('.quiz-area'),
     fretboardWrapper: container.querySelector('.fretboard-wrapper'),
@@ -389,7 +387,9 @@ function createSpeedTapMode() {
 
     if (els.startBtn) els.startBtn.addEventListener('click', () => start());
     if (els.stopBtn) els.stopBtn.addEventListener('click', () => stop());
-    if (els.heatmapBtn) els.heatmapBtn.addEventListener('click', () => toggleNoteStats());
+    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => showNoteStats(btn.dataset.mode));
+    });
 
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = 'none';
     updateStats();

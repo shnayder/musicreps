@@ -35,10 +35,15 @@ function createNoteSemitonesMode() {
     }));
   }
 
+  function updateStatsToggle(mode) {
+    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === mode);
+    });
+  }
+
   function showStats(mode) {
     statsMode = mode;
     const statsContainer = container.querySelector('.stats-container');
-    const btn = container.querySelector('.heatmap-btn');
     statsContainer.innerHTML = '';
     const tableDiv = document.createElement('div');
     statsContainer.appendChild(tableDiv);
@@ -47,7 +52,7 @@ function createNoteSemitonesMode() {
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
     statsContainer.appendChild(legendDiv);
     statsContainer.style.display = '';
-    btn.textContent = mode === 'retention' ? 'Show Speed' : 'Show Recall';
+    updateStatsToggle(mode);
   }
 
   function hideStats() {
@@ -55,11 +60,6 @@ function createNoteSemitonesMode() {
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-  }
-
-  function toggleStats() {
-    if (statsMode === 'retention') showStats('speed');
-    else showStats('retention');
   }
 
   const mode = {
@@ -190,7 +190,9 @@ function createNoteSemitonesMode() {
     // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
-    container.querySelector('.heatmap-btn').addEventListener('click', toggleStats);
+    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => showStats(btn.dataset.mode));
+    });
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     showStats('retention');

@@ -229,7 +229,7 @@ function runCalibration(opts) {
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
  *     .countdown-bar, .feedback, .time-display, .hint,
- *     .start-btn, .stop-btn, .heatmap-btn, .stats,
+ *     .start-btn, .stop-btn, .stats-toggle, .stats,
  *     .stats-controls, .mastery-message
  *
  * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
@@ -265,7 +265,7 @@ export function createQuizEngine(mode, container) {
     hint: container.querySelector('.hint'),
     startBtn: container.querySelector('.start-btn'),
     stopBtn: container.querySelector('.stop-btn'),
-    heatmapBtn: container.querySelector('.heatmap-btn'),
+    statsToggle: container.querySelector('.stats-toggle'),
     stats: container.querySelector('.stats'),
     statsControls: container.querySelector('.stats-controls'),
     quizArea: container.querySelector('.quiz-area'),
@@ -363,7 +363,7 @@ export function createQuizEngine(mode, container) {
 
     if (els.startBtn)      els.startBtn.style.display     = state.showStartBtn ? 'inline' : 'none';
     if (els.stopBtn)       els.stopBtn.style.display      = state.showStopBtn ? 'inline' : 'none';
-    if (els.heatmapBtn)    els.heatmapBtn.style.display   = state.showHeatmapBtn ? 'inline' : 'none';
+    if (els.statsToggle)   els.statsToggle.style.display   = state.showHeatmapBtn ? '' : 'none';
     if (els.statsControls) els.statsControls.style.display = state.showStatsControls ? '' : 'none';
     if (els.quizArea)      els.quizArea.classList.toggle('active', state.quizActive);
     if (els.feedback) {

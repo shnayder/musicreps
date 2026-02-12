@@ -94,7 +94,7 @@ const html = `<!DOCTYPE html>
     </div>
     <div class="stats-container"></div>
     <div class="stats-controls">
-      <button class="heatmap-btn">Show Recall</button>
+      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
@@ -160,7 +160,7 @@ const html = `<!DOCTYPE html>
     </div>
     <div class="stats-container"></div>
     <div class="stats-controls">
-      <button class="heatmap-btn">Show Recall</button>
+      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
@@ -193,7 +193,7 @@ const html = `<!DOCTYPE html>
   <div class="mode-screen" id="mode-noteSemitones">
     <div class="stats-container"></div>
     <div class="stats-controls">
-      <button class="heatmap-btn">Show Recall</button>
+      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
@@ -245,7 +245,7 @@ const html = `<!DOCTYPE html>
   <div class="mode-screen" id="mode-intervalSemitones">
     <div class="stats-container"></div>
     <div class="stats-controls">
-      <button class="heatmap-btn">Show Recall</button>
+      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
@@ -297,7 +297,7 @@ const html = `<!DOCTYPE html>
   <div class="mode-screen" id="mode-semitoneMath">
     <div class="stats-container"></div>
     <div class="stats-controls">
-      <button class="heatmap-btn">Show Recall</button>
+      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
@@ -338,7 +338,7 @@ const html = `<!DOCTYPE html>
   <div class="mode-screen" id="mode-intervalMath">
     <div class="stats-container"></div>
     <div class="stats-controls">
-      <button class="heatmap-btn">Show Recall</button>
+      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
@@ -379,7 +379,7 @@ const html = `<!DOCTYPE html>
   <div class="mode-screen" id="mode-keySignatures">
     <div class="stats-container"></div>
     <div class="stats-controls">
-      <button class="heatmap-btn">Show Recall</button>
+      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
@@ -437,7 +437,7 @@ const html = `<!DOCTYPE html>
   <div class="mode-screen" id="mode-scaleDegrees">
     <div class="stats-container"></div>
     <div class="stats-controls">
-      <button class="heatmap-btn">Show Recall</button>
+      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
@@ -487,7 +487,7 @@ const html = `<!DOCTYPE html>
   <div class="mode-screen" id="mode-diatonicChords">
     <div class="stats-container"></div>
     <div class="stats-controls">
-      <button class="heatmap-btn">Show Recall</button>
+      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">
@@ -537,7 +537,7 @@ const html = `<!DOCTYPE html>
   <div class="mode-screen" id="mode-chordSpelling">
     <div class="stats-container"></div>
     <div class="stats-controls">
-      <button class="heatmap-btn">Show Recall</button>
+      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
       <span class="stats"></span>
     </div>
     <div class="quiz-controls">

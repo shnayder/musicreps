@@ -75,17 +75,22 @@ function createFretboardMode() {
   // --- Heatmap ---
   // Color functions: getAutomaticityColor, getSpeedHeatmapColor from stats-display.js
 
+  function updateStatsToggle(mode) {
+    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === mode);
+    });
+  }
+
   function showHeatmapView(mode, selector) {
     heatmapMode = mode;
-    const btn = container.querySelector('.heatmap-btn');
     const statsContainer = container.querySelector('.stats-container');
 
     // Populate legend via shared helper
     statsContainer.innerHTML = buildStatsLegend(mode, engine.baseline);
     statsContainer.style.display = '';
+    updateStatsToggle(mode);
 
     if (mode === 'retention') {
-      btn.textContent = 'Show Speed';
       for (let s = 0; s <= 5; s++) {
         for (let f = 0; f < 13; f++) {
           const auto = selector.getAutomaticity(`${s}-${f}`);
@@ -94,7 +99,6 @@ function createFretboardMode() {
         }
       }
     } else {
-      btn.textContent = 'Show Recall';
       for (let s = 0; s <= 5; s++) {
         for (let f = 0; f < 13; f++) {
           const stats = selector.getStats(`${s}-${f}`);
@@ -108,19 +112,11 @@ function createFretboardMode() {
 
   function hideHeatmap() {
     heatmapMode = null;
-    container.querySelector('.heatmap-btn').textContent = 'Show Recall';
+    updateStatsToggle('retention');
     clearAll();
     const statsContainer = container.querySelector('.stats-container');
     statsContainer.style.display = 'none';
     statsContainer.innerHTML = '';
-  }
-
-  function toggleHeatmap(selector) {
-    if (heatmapMode === 'retention') {
-      showHeatmapView('speed', selector);
-    } else {
-      showHeatmapView('retention', selector);
-    }
   }
 
   // --- Stats ---
@@ -284,11 +280,11 @@ function createFretboardMode() {
     // Start/stop/heatmap buttons
     const startBtn = container.querySelector('.start-btn');
     const stopBtn = container.querySelector('.stop-btn');
-    const heatmapBtn = container.querySelector('.heatmap-btn');
-
     if (startBtn) startBtn.addEventListener('click', () => engine.start());
     if (stopBtn) stopBtn.addEventListener('click', () => engine.stop());
-    if (heatmapBtn) heatmapBtn.addEventListener('click', () => toggleHeatmap(engine.selector));
+    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => showHeatmapView(btn.dataset.mode, engine.selector));
+    });
 
     applyRecommendations(engine.selector);
     updateAccidentalButtons();
