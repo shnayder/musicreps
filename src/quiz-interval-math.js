@@ -122,45 +122,20 @@ function createIntervalMathMode() {
   // --- Stats ---
 
   let currentItem = null;
-  let statsMode = null; // null | 'retention' | 'speed'
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showStats(mode) {
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
+  const statsControls = createStatsControls(container, (mode, el) => {
     const colLabels = MATH_INTERVALS.map(i => i.abbrev);
-
-    statsContainer.innerHTML = '';
-
-    // Grid (merged: averages + and − directions)
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
-    statsContainer.appendChild(gridDiv);
-    renderStatsGrid(engine.selector, colLabels, function(noteName, colIdx) {
+    el.appendChild(gridDiv);
+    renderStatsGrid(engine.selector, colLabels, (noteName, colIdx) => {
       const abbrev = MATH_INTERVALS[colIdx].abbrev;
       return [noteName + '+' + abbrev, noteName + '-' + abbrev];
     }, mode, gridDiv, undefined, engine.baseline);
-
-    // Legend
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.appendChild(legendDiv);
-
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
-  }
+    el.appendChild(legendDiv);
+  });
 
   // --- Quiz mode interface ---
 
@@ -190,14 +165,14 @@ function createIntervalMathMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      hideStats();
+      statsControls.hide();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
       noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      showStats('retention');
+      statsControls.show('retention');
       refreshUI();
     },
 
@@ -243,13 +218,10 @@ function createIntervalMathMode() {
     // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showStats(btn.dataset.mode));
-    });
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    showStats('retention');
+    statsControls.show('retention');
   }
 
   return {

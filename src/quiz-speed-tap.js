@@ -18,8 +18,6 @@ function createSpeedTapMode() {
   let roundStartTime = null;
   let timerInterval = null;
   let wrongFlashTimeouts = new Set();
-  let statsMode = null; // null | 'retention' | 'speed'
-
   const noteNames = NOTES.map(n => n.name);
 
   // --- Adaptive system ---
@@ -93,27 +91,14 @@ function createSpeedTapMode() {
 
   // --- Note stats view ---
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showNoteStats(mode) {
-    mode = mode || 'retention';
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
-    if (!statsContainer) return;
-
+  const statsControls = createStatsControls(container, (mode, el) => {
     // Always show all 12 notes regardless of naturalsOnly setting
-    const notes = NOTES;
-
     let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
-    for (const note of notes) {
+    for (const note of NOTES) {
       html += '<th>' + note.displayName + '</th>';
     }
     html += '</tr></thead><tbody><tr>';
-    for (const note of notes) {
+    for (const note of NOTES) {
       if (mode === 'retention') {
         const auto = selector.getAutomaticity(note.name);
         html += '<td class="stats-cell" style="background:' + getAutomaticityColor(auto) + '"></td>';
@@ -141,19 +126,8 @@ function createSpeedTapMode() {
       html += buildStatsLegend(mode);
     }
 
-    statsContainer.innerHTML = html;
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideNoteStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    if (statsContainer) {
-      statsContainer.style.display = 'none';
-      statsContainer.innerHTML = '';
-    }
-  }
+    el.innerHTML = html;
+  });
 
 
   // --- DOM references ---
@@ -324,7 +298,7 @@ function createSpeedTapMode() {
 
   function start() {
     active = true;
-    if (statsMode) hideNoteStats();
+    if (statsControls.mode) statsControls.hide();
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = '';
     if (els.statsControls) els.statsControls.style.display = 'none';
     if (els.startBtn) els.startBtn.style.display = 'none';
@@ -360,7 +334,7 @@ function createSpeedTapMode() {
     if (els.quizArea) els.quizArea.classList.remove('active');
 
     updateStats();
-    showNoteStats();
+    statsControls.show('retention');
   }
 
   // --- Lifecycle ---
@@ -387,13 +361,10 @@ function createSpeedTapMode() {
 
     if (els.startBtn) els.startBtn.addEventListener('click', () => start());
     if (els.stopBtn) els.stopBtn.addEventListener('click', () => stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showNoteStats(btn.dataset.mode));
-    });
 
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = 'none';
     updateStats();
-    showNoteStats();
+    statsControls.show('retention');
   }
 
   return {

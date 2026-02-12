@@ -77,6 +77,22 @@ knows its target mode. But we keep it for the fretboard mode's slightly differen
 - `src/quiz-diatonic-chords.js` — update toggle wiring + showStats
 - `src/quiz-chord-spelling.js` — update toggle wiring + showStats
 
+## Follow-up: Shared Helper Refactoring
+
+After the initial implementation, the toggle/hide/show boilerplate was
+duplicated across all 10 quiz modes (~15 lines each). Extracted into
+`createStatsControls(container, renderFn)` in `stats-display.js`.
+
+The helper manages:
+- `statsMode` state internally
+- Toggle button active-class switching
+- Click handler wiring on `.stats-toggle-btn` elements
+- `show(mode)`: clears container, calls renderFn, shows container, updates toggle
+- `hide()`: clears and hides container
+- `mode` getter for external checks (fretboard/speed-tap use it)
+
+Each mode now provides only its render callback. ~120 lines removed total.
+
 ## Version
 
 Bump v3.1 -> v3.2.

@@ -122,6 +122,46 @@ export function renderStatsGrid(selector, colLabels, getItemId, statsMode, conta
   containerEl.innerHTML = html;
 }
 
+/**
+ * Create shared stats toggle controls for a mode.
+ * Manages Recall/Speed toggle state, button wiring, show/hide of stats container.
+ *
+ * @param {Element}  container - mode's root container element
+ * @param {Function} renderFn  - (mode, statsContainerEl) => void; populates stats content
+ * @returns {{ show(mode), hide(), mode }}
+ */
+export function createStatsControls(container, renderFn) {
+  let statsMode = null;
+  const statsContainer = container.querySelector('.stats-container');
+
+  function show(mode) {
+    statsMode = mode;
+    statsContainer.innerHTML = '';
+    renderFn(mode, statsContainer);
+    statsContainer.style.display = '';
+    container.querySelectorAll('.stats-toggle-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.mode === mode);
+    });
+  }
+
+  function hide() {
+    statsMode = null;
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
+  }
+
+  // Wire toggle buttons
+  container.querySelectorAll('.stats-toggle-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { show(btn.dataset.mode); });
+  });
+
+  return {
+    show: show,
+    hide: hide,
+    get mode() { return statsMode; },
+  };
+}
+
 function formatThreshold(ms) {
   const s = ms / 1000;
   return s % 1 === 0 ? s + 's' : s.toFixed(1) + 's';

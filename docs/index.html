@@ -6152,6 +6152,46 @@ function renderStatsGrid(selector, colLabels, getItemId, statsMode, containerEl,
   containerEl.innerHTML = html;
 }
 
+/**
+ * Create shared stats toggle controls for a mode.
+ * Manages Recall/Speed toggle state, button wiring, show/hide of stats container.
+ *
+ * @param {Element}  container - mode's root container element
+ * @param {Function} renderFn  - (mode, statsContainerEl) => void; populates stats content
+ * @returns {{ show(mode), hide(), mode }}
+ */
+function createStatsControls(container, renderFn) {
+  let statsMode = null;
+  const statsContainer = container.querySelector('.stats-container');
+
+  function show(mode) {
+    statsMode = mode;
+    statsContainer.innerHTML = '';
+    renderFn(mode, statsContainer);
+    statsContainer.style.display = '';
+    container.querySelectorAll('.stats-toggle-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.mode === mode);
+    });
+  }
+
+  function hide() {
+    statsMode = null;
+    statsContainer.style.display = 'none';
+    statsContainer.innerHTML = '';
+  }
+
+  // Wire toggle buttons
+  container.querySelectorAll('.stats-toggle-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { show(btn.dataset.mode); });
+  });
+
+  return {
+    show: show,
+    hide: hide,
+    get mode() { return statsMode; },
+  };
+}
+
 function formatThreshold(ms) {
   const s = ms / 1000;
   return s % 1 === 0 ? s + 's' : s.toFixed(1) + 's';
@@ -6383,8 +6423,6 @@ function createFretboardMode() {
   let enabledStrings = new Set([5]); // Default: low E only
   let naturalsOnly = true;
   let recommendedStrings = new Set();
-  let heatmapMode = null;
-
   // --- Pure helpers (from quiz-fretboard-state.js) ---
 
   const fb = createFretboardHelpers({
@@ -6446,25 +6484,12 @@ function createFretboardMode() {
   // --- Heatmap ---
   // Color functions: getAutomaticityColor, getSpeedHeatmapColor from stats-display.js
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showHeatmapView(mode, selector) {
-    heatmapMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
-
-    // Populate legend via shared helper
-    statsContainer.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-
+  const statsControls = createStatsControls(container, (mode, el) => {
+    el.innerHTML = buildStatsLegend(mode, engine.baseline);
     if (mode === 'retention') {
       for (let s = 0; s <= 5; s++) {
         for (let f = 0; f < 13; f++) {
-          const auto = selector.getAutomaticity(`${s}-${f}`);
+          const auto = engine.selector.getAutomaticity(`${s}-${f}`);
           highlightCircle(s, f, getAutomaticityColor(auto));
           showNoteText(s, f);
         }
@@ -6472,22 +6497,18 @@ function createFretboardMode() {
     } else {
       for (let s = 0; s <= 5; s++) {
         for (let f = 0; f < 13; f++) {
-          const stats = selector.getStats(`${s}-${f}`);
+          const stats = engine.selector.getStats(`${s}-${f}`);
           const ewma = stats ? stats.ewma : null;
           highlightCircle(s, f, getSpeedHeatmapColor(ewma, engine.baseline));
           showNoteText(s, f);
         }
       }
     }
-  }
+  });
 
   function hideHeatmap() {
-    heatmapMode = null;
-    updateStatsToggle('retention');
+    statsControls.hide();
     clearAll();
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
   }
 
   // --- Stats ---
@@ -6578,7 +6599,7 @@ function createFretboardMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      if (heatmapMode) hideHeatmap();
+      if (statsControls.mode) hideHeatmap();
       updateStats(engine.selector);
     },
 
@@ -6586,7 +6607,7 @@ function createFretboardMode() {
       noteKeyHandler.reset();
       clearAll();
       updateStats(engine.selector);
-      showHeatmapView('retention', engine.selector);
+      statsControls.show('retention');
       refreshUI();
     },
 
@@ -6648,19 +6669,16 @@ function createFretboardMode() {
       });
     }
 
-    // Start/stop/heatmap buttons
+    // Start/stop buttons
     const startBtn = container.querySelector('.start-btn');
     const stopBtn = container.querySelector('.stop-btn');
     if (startBtn) startBtn.addEventListener('click', () => engine.start());
     if (stopBtn) stopBtn.addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showHeatmapView(btn.dataset.mode, engine.selector));
-    });
 
     applyRecommendations(engine.selector);
     updateAccidentalButtons();
     updateStats(engine.selector);
-    showHeatmapView('retention', engine.selector);
+    statsControls.show('retention');
   }
 
   return {
@@ -6700,8 +6718,6 @@ function createSpeedTapMode() {
   let roundStartTime = null;
   let timerInterval = null;
   let wrongFlashTimeouts = new Set();
-  let statsMode = null; // null | 'retention' | 'speed'
-
   const noteNames = NOTES.map(n => n.name);
 
   // --- Adaptive system ---
@@ -6775,27 +6791,14 @@ function createSpeedTapMode() {
 
   // --- Note stats view ---
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showNoteStats(mode) {
-    mode = mode || 'retention';
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
-    if (!statsContainer) return;
-
+  const statsControls = createStatsControls(container, (mode, el) => {
     // Always show all 12 notes regardless of naturalsOnly setting
-    const notes = NOTES;
-
     let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
-    for (const note of notes) {
+    for (const note of NOTES) {
       html += '<th>' + note.displayName + '</th>';
     }
     html += '</tr></thead><tbody><tr>';
-    for (const note of notes) {
+    for (const note of NOTES) {
       if (mode === 'retention') {
         const auto = selector.getAutomaticity(note.name);
         html += '<td class="stats-cell" style="background:' + getAutomaticityColor(auto) + '"></td>';
@@ -6823,19 +6826,8 @@ function createSpeedTapMode() {
       html += buildStatsLegend(mode);
     }
 
-    statsContainer.innerHTML = html;
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideNoteStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    if (statsContainer) {
-      statsContainer.style.display = 'none';
-      statsContainer.innerHTML = '';
-    }
-  }
+    el.innerHTML = html;
+  });
 
 
   // --- DOM references ---
@@ -7006,7 +6998,7 @@ function createSpeedTapMode() {
 
   function start() {
     active = true;
-    if (statsMode) hideNoteStats();
+    if (statsControls.mode) statsControls.hide();
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = '';
     if (els.statsControls) els.statsControls.style.display = 'none';
     if (els.startBtn) els.startBtn.style.display = 'none';
@@ -7042,7 +7034,7 @@ function createSpeedTapMode() {
     if (els.quizArea) els.quizArea.classList.remove('active');
 
     updateStats();
-    showNoteStats();
+    statsControls.show('retention');
   }
 
   // --- Lifecycle ---
@@ -7069,13 +7061,10 @@ function createSpeedTapMode() {
 
     if (els.startBtn) els.startBtn.addEventListener('click', () => start());
     if (els.stopBtn) els.stopBtn.addEventListener('click', () => stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showNoteStats(btn.dataset.mode));
-    });
 
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = 'none';
     updateStats();
-    showNoteStats();
+    statsControls.show('retention');
   }
 
   return {
@@ -7112,7 +7101,6 @@ function createNoteSemitonesMode() {
   }
 
   let currentItem = null;
-  let statsMode = null; // null | 'retention' | 'speed'
 
   // Build row definitions for the stats table
   function getTableRows() {
@@ -7125,32 +7113,14 @@ function createNoteSemitonesMode() {
     }));
   }
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showStats(mode) {
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.innerHTML = '';
+  const statsControls = createStatsControls(container, function(mode, el) {
     const tableDiv = document.createElement('div');
-    statsContainer.appendChild(tableDiv);
+    el.appendChild(tableDiv);
     renderStatsTable(engine.selector, getTableRows(), 'N\u2192#', '#\u2192N', mode, tableDiv, engine.baseline);
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.appendChild(legendDiv);
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
-  }
+    el.appendChild(legendDiv);
+  });
 
   const mode = {
     id: 'noteSemitones',
@@ -7195,7 +7165,7 @@ function createNoteSemitonesMode() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
-      hideStats();
+      statsControls.hide();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
@@ -7205,7 +7175,7 @@ function createNoteSemitonesMode() {
       pendingDigit = null;
       pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      showStats('retention');
+      statsControls.show('retention');
     },
 
     handleKey(e, { submitAnswer }) {
@@ -7277,15 +7247,12 @@ function createNoteSemitonesMode() {
       });
     });
 
-    // Start/stop/stats
+    // Start/stop
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showStats(btn.dataset.mode));
-    });
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    showStats('retention');
+    statsControls.show('retention');
   }
 
   return {
@@ -7327,7 +7294,6 @@ function createIntervalSemitonesMode() {
   }
 
   let currentItem = null;
-  let statsMode = null; // null | 'retention' | 'speed'
 
   function getTableRows() {
     return INTERVALS.map(interval => ({
@@ -7339,32 +7305,14 @@ function createIntervalSemitonesMode() {
     }));
   }
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showStats(mode) {
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.innerHTML = '';
+  const statsControls = createStatsControls(container, function(mode, el) {
     const tableDiv = document.createElement('div');
-    statsContainer.appendChild(tableDiv);
+    el.appendChild(tableDiv);
     renderStatsTable(engine.selector, getTableRows(), 'I\u2192#', '#\u2192I', mode, tableDiv, engine.baseline);
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.appendChild(legendDiv);
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
-  }
+    el.appendChild(legendDiv);
+  });
 
   const mode = {
     id: 'intervalSemitones',
@@ -7408,7 +7356,7 @@ function createIntervalSemitonesMode() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
-      hideStats();
+      statsControls.hide();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
@@ -7417,7 +7365,7 @@ function createIntervalSemitonesMode() {
       pendingDigit = null;
       pendingDigitTimeout = null;
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      showStats('retention');
+      statsControls.show('retention');
     },
 
     handleKey(e, { submitAnswer }) {
@@ -7481,15 +7429,12 @@ function createIntervalSemitonesMode() {
       });
     });
 
-    // Start/stop/stats
+    // Start/stop
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showStats(btn.dataset.mode));
-    });
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    showStats('retention');
+    statsControls.show('retention');
   }
 
   return {
@@ -7624,46 +7569,21 @@ function createSemitoneMathMode() {
   // --- Stats ---
 
   let currentItem = null;
-  let statsMode = null; // null | 'retention' | 'speed'
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showStats(mode) {
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
+  const statsControls = createStatsControls(container, (mode, el) => {
     const colLabels = [];
     for (let s = 1; s <= 11; s++) colLabels.push(String(s));
-
-    statsContainer.innerHTML = '';
-
-    // Grid (merged: averages + and − directions)
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
-    statsContainer.appendChild(gridDiv);
-    renderStatsGrid(engine.selector, colLabels, function(noteName, colIdx) {
+    el.appendChild(gridDiv);
+    renderStatsGrid(engine.selector, colLabels, (noteName, colIdx) => {
       const n = colIdx + 1;
       return [noteName + '+' + n, noteName + '-' + n];
     }, mode, gridDiv, undefined, engine.baseline);
-
-    // Legend
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.appendChild(legendDiv);
-
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
-  }
+    el.appendChild(legendDiv);
+  });
 
 
   // --- Quiz mode interface ---
@@ -7694,14 +7614,14 @@ function createSemitoneMathMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      hideStats();
+      statsControls.hide();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
       noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      showStats('retention');
+      statsControls.show('retention');
       refreshUI();
     },
 
@@ -7747,13 +7667,10 @@ function createSemitoneMathMode() {
     // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showStats(btn.dataset.mode));
-    });
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    showStats('retention');
+    statsControls.show('retention');
   }
 
   return {
@@ -7893,45 +7810,20 @@ function createIntervalMathMode() {
   // --- Stats ---
 
   let currentItem = null;
-  let statsMode = null; // null | 'retention' | 'speed'
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showStats(mode) {
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
+  const statsControls = createStatsControls(container, (mode, el) => {
     const colLabels = MATH_INTERVALS.map(i => i.abbrev);
-
-    statsContainer.innerHTML = '';
-
-    // Grid (merged: averages + and − directions)
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
-    statsContainer.appendChild(gridDiv);
-    renderStatsGrid(engine.selector, colLabels, function(noteName, colIdx) {
+    el.appendChild(gridDiv);
+    renderStatsGrid(engine.selector, colLabels, (noteName, colIdx) => {
       const abbrev = MATH_INTERVALS[colIdx].abbrev;
       return [noteName + '+' + abbrev, noteName + '-' + abbrev];
     }, mode, gridDiv, undefined, engine.baseline);
-
-    // Legend
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.appendChild(legendDiv);
-
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
-  }
+    el.appendChild(legendDiv);
+  });
 
   // --- Quiz mode interface ---
 
@@ -7961,14 +7853,14 @@ function createIntervalMathMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      hideStats();
+      statsControls.hide();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
       noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      showStats('retention');
+      statsControls.show('retention');
       refreshUI();
     },
 
@@ -8014,13 +7906,10 @@ function createIntervalMathMode() {
     // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showStats(btn.dataset.mode));
-    });
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    showStats('retention');
+    statsControls.show('retention');
   }
 
   return {
@@ -8145,7 +8034,6 @@ function createKeySignaturesMode() {
   // --- Stats ---
 
   let currentItem = null;
-  let statsMode = null;
 
   function getTableRows() {
     return MAJOR_KEYS.map(key => ({
@@ -8157,32 +8045,14 @@ function createKeySignaturesMode() {
     }));
   }
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showStats(mode) {
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.innerHTML = '';
+  const statsControls = createStatsControls(container, (mode, el) => {
     const tableDiv = document.createElement('div');
-    statsContainer.appendChild(tableDiv);
+    el.appendChild(tableDiv);
     renderStatsTable(engine.selector, getTableRows(), 'Key\u2192Sig', 'Sig\u2192Key', mode, tableDiv, engine.baseline);
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.appendChild(legendDiv);
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
-  }
+    el.appendChild(legendDiv);
+  });
 
   // --- Quiz mode interface ---
 
@@ -8232,14 +8102,14 @@ function createKeySignaturesMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      hideStats();
+      statsControls.hide();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
       noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      showStats('retention');
+      statsControls.show('retention');
       refreshUI();
     },
 
@@ -8315,13 +8185,10 @@ function createKeySignaturesMode() {
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showStats(btn.dataset.mode));
-    });
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    showStats('retention');
+    statsControls.show('retention');
   }
 
   return {
@@ -8457,44 +8324,21 @@ function createScaleDegreesMode() {
   // --- Stats ---
 
   let currentItem = null;
-  let statsMode = null;
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showStats(mode) {
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.innerHTML = '';
-
-    // Grid (merged: averages fwd and rev directions)
+  const statsControls = createStatsControls(container, (mode, el) => {
     const colLabels = DEGREE_LABELS;
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
-    statsContainer.appendChild(gridDiv);
-
+    el.appendChild(gridDiv);
     const keyNotes = MAJOR_KEYS.map(k => ({ name: k.root, displayName: k.root }));
     renderStatsGrid(engine.selector, colLabels, (keyRoot, colIdx) => {
       const d = colIdx + 1;
       return [keyRoot + ':' + d + ':fwd', keyRoot + ':' + d + ':rev'];
     }, mode, gridDiv, keyNotes, engine.baseline);
-
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.appendChild(legendDiv);
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
-  }
+    el.appendChild(legendDiv);
+  });
 
   // --- Quiz mode interface ---
 
@@ -8540,14 +8384,14 @@ function createScaleDegreesMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      hideStats();
+      statsControls.hide();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
       noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      showStats('retention');
+      statsControls.show('retention');
       refreshUI();
     },
 
@@ -8606,13 +8450,10 @@ function createScaleDegreesMode() {
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showStats(btn.dataset.mode));
-    });
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    showStats('retention');
+    statsControls.show('retention');
   }
 
   return {
@@ -8745,44 +8586,21 @@ function createDiatonicChordsMode() {
   // --- Stats ---
 
   let currentItem = null;
-  let statsMode = null;
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showStats(mode) {
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.innerHTML = '';
-
-    // Grid (merged: averages fwd and rev directions)
+  const statsControls = createStatsControls(container, (mode, el) => {
     const colLabels = ROMAN_NUMERALS;
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
-    statsContainer.appendChild(gridDiv);
-
+    el.appendChild(gridDiv);
     const keyNotes = MAJOR_KEYS.map(k => ({ name: k.root, displayName: k.root }));
     renderStatsGrid(engine.selector, colLabels, (keyRoot, colIdx) => {
       const d = colIdx + 1;
       return [keyRoot + ':' + d + ':fwd', keyRoot + ':' + d + ':rev'];
     }, mode, gridDiv, keyNotes, engine.baseline);
-
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.appendChild(legendDiv);
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
-  }
+    el.appendChild(legendDiv);
+  });
 
   // --- Quiz mode interface ---
 
@@ -8830,14 +8648,14 @@ function createDiatonicChordsMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      hideStats();
+      statsControls.hide();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
     onStop() {
       noteKeyHandler.reset();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      showStats('retention');
+      statsControls.show('retention');
       refreshUI();
     },
 
@@ -8896,13 +8714,10 @@ function createDiatonicChordsMode() {
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showStats(btn.dataset.mode));
-    });
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    showStats('retention');
+    statsControls.show('retention');
   }
 
   return {
@@ -9036,7 +8851,6 @@ function createChordSpellingMode() {
 
   let currentItem = null;
   let enteredTones = [];
-  let statsMode = null;
 
   function renderSlots() {
     const slotsDiv = container.querySelector('.chord-slots');
@@ -9079,41 +8893,19 @@ function createChordSpellingMode() {
 
   // --- Stats ---
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showStats(mode) {
-    statsMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.innerHTML = '';
-
-    // Show ALL chord types, not just enabled ones, for a complete progress view
+  const statsControls = createStatsControls(container, (mode, el) => {
     const colLabels = CHORD_TYPES.map(t => t.symbol || 'maj');
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
-    statsContainer.appendChild(gridDiv);
-
+    el.appendChild(gridDiv);
     const rootNotes = CHORD_ROOTS.map(r => ({ name: r, displayName: r }));
     renderStatsGrid(engine.selector, colLabels, (rootName, colIdx) => {
       return rootName + ':' + CHORD_TYPES[colIdx].name;
     }, mode, gridDiv, rootNotes, engine.baseline);
-
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.appendChild(legendDiv);
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-  }
-
-  function hideStats() {
-    statsMode = null;
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
-  }
+    el.appendChild(legendDiv);
+  });
 
   // --- Quiz mode interface ---
 
@@ -9147,7 +8939,7 @@ function createChordSpellingMode() {
     onStart() {
       noteKeyHandler.reset();
       enteredTones = [];
-      hideStats();
+      statsControls.hide();
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     },
 
@@ -9157,7 +8949,7 @@ function createChordSpellingMode() {
       const slotsDiv = container.querySelector('.chord-slots');
       slotsDiv.innerHTML = '';
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      showStats('retention');
+      statsControls.show('retention');
       refreshUI();
     },
 
@@ -9209,13 +9001,10 @@ function createChordSpellingMode() {
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
     container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showStats(btn.dataset.mode));
-    });
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    showStats('retention');
+    statsControls.show('retention');
   }
 
   return {

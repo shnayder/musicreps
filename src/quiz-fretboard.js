@@ -12,8 +12,6 @@ function createFretboardMode() {
   let enabledStrings = new Set([5]); // Default: low E only
   let naturalsOnly = true;
   let recommendedStrings = new Set();
-  let heatmapMode = null;
-
   // --- Pure helpers (from quiz-fretboard-state.js) ---
 
   const fb = createFretboardHelpers({
@@ -75,25 +73,12 @@ function createFretboardMode() {
   // --- Heatmap ---
   // Color functions: getAutomaticityColor, getSpeedHeatmapColor from stats-display.js
 
-  function updateStatsToggle(mode) {
-    container.querySelectorAll('.stats-toggle-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
-  }
-
-  function showHeatmapView(mode, selector) {
-    heatmapMode = mode;
-    const statsContainer = container.querySelector('.stats-container');
-
-    // Populate legend via shared helper
-    statsContainer.innerHTML = buildStatsLegend(mode, engine.baseline);
-    statsContainer.style.display = '';
-    updateStatsToggle(mode);
-
+  const statsControls = createStatsControls(container, (mode, el) => {
+    el.innerHTML = buildStatsLegend(mode, engine.baseline);
     if (mode === 'retention') {
       for (let s = 0; s <= 5; s++) {
         for (let f = 0; f < 13; f++) {
-          const auto = selector.getAutomaticity(`${s}-${f}`);
+          const auto = engine.selector.getAutomaticity(`${s}-${f}`);
           highlightCircle(s, f, getAutomaticityColor(auto));
           showNoteText(s, f);
         }
@@ -101,22 +86,18 @@ function createFretboardMode() {
     } else {
       for (let s = 0; s <= 5; s++) {
         for (let f = 0; f < 13; f++) {
-          const stats = selector.getStats(`${s}-${f}`);
+          const stats = engine.selector.getStats(`${s}-${f}`);
           const ewma = stats ? stats.ewma : null;
           highlightCircle(s, f, getSpeedHeatmapColor(ewma, engine.baseline));
           showNoteText(s, f);
         }
       }
     }
-  }
+  });
 
   function hideHeatmap() {
-    heatmapMode = null;
-    updateStatsToggle('retention');
+    statsControls.hide();
     clearAll();
-    const statsContainer = container.querySelector('.stats-container');
-    statsContainer.style.display = 'none';
-    statsContainer.innerHTML = '';
   }
 
   // --- Stats ---
@@ -207,7 +188,7 @@ function createFretboardMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      if (heatmapMode) hideHeatmap();
+      if (statsControls.mode) hideHeatmap();
       updateStats(engine.selector);
     },
 
@@ -215,7 +196,7 @@ function createFretboardMode() {
       noteKeyHandler.reset();
       clearAll();
       updateStats(engine.selector);
-      showHeatmapView('retention', engine.selector);
+      statsControls.show('retention');
       refreshUI();
     },
 
@@ -277,19 +258,16 @@ function createFretboardMode() {
       });
     }
 
-    // Start/stop/heatmap buttons
+    // Start/stop buttons
     const startBtn = container.querySelector('.start-btn');
     const stopBtn = container.querySelector('.stop-btn');
     if (startBtn) startBtn.addEventListener('click', () => engine.start());
     if (stopBtn) stopBtn.addEventListener('click', () => engine.stop());
-    container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => showHeatmapView(btn.dataset.mode, engine.selector));
-    });
 
     applyRecommendations(engine.selector);
     updateAccidentalButtons();
     updateStats(engine.selector);
-    showHeatmapView('retention', engine.selector);
+    statsControls.show('retention');
   }
 
   return {
