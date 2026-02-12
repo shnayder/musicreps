@@ -202,7 +202,7 @@ function createNoteSemitonesMode() {
     init,
     activate() { engine.attach(); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);

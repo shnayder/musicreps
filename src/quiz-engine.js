@@ -332,7 +332,7 @@ export function createQuizEngine(mode, container) {
       tr.appendChild(tdLabel);
 
       const tdTime = document.createElement('td');
-      tdTime.textContent = t.maxMs ? '< ' + formatMs(t.maxMs) : '> ' + formatMs(thresholds[thresholds.length - 2].maxMs);
+      tdTime.textContent = t.maxMs !== null ? '< ' + formatMs(t.maxMs) : '> ' + formatMs(thresholds[thresholds.length - 2].maxMs);
       tr.appendChild(tdTime);
 
       const tdMeaning = document.createElement('td');
@@ -484,8 +484,13 @@ export function createQuizEngine(mode, container) {
       container,
       onComplete: (median) => {
         calibrationCleanup = null;
+        if (!Number.isFinite(median) || median <= 0) {
+          // Invalid measurement — abort to idle
+          stop();
+          return;
+        }
         const baseline = Math.round(median);
-        if (baseline > 0) applyBaseline(baseline);
+        applyBaseline(baseline);
         state = engineCalibrationResults(state, baseline);
         render();
       },
@@ -640,7 +645,8 @@ export function createQuizEngine(mode, container) {
     attach,
     detach,
     updateIdleMessage,
-    get isActive() { return state.phase !== 'idle'; },
+    get isActive() { return state.phase === 'active'; },
+    get isRunning() { return state.phase !== 'idle'; },
     get isAnswered() { return state.answered; },
     get baseline() { return motorBaseline; },
     selector,

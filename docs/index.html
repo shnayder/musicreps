@@ -640,7 +640,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v3.2</div>
+    <div class="version">v3.3</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -5675,7 +5675,7 @@ function createQuizEngine(mode, container) {
       tr.appendChild(tdLabel);
 
       const tdTime = document.createElement('td');
-      tdTime.textContent = t.maxMs ? '< ' + formatMs(t.maxMs) : '> ' + formatMs(thresholds[thresholds.length - 2].maxMs);
+      tdTime.textContent = t.maxMs !== null ? '< ' + formatMs(t.maxMs) : '> ' + formatMs(thresholds[thresholds.length - 2].maxMs);
       tr.appendChild(tdTime);
 
       const tdMeaning = document.createElement('td');
@@ -5827,8 +5827,13 @@ function createQuizEngine(mode, container) {
       container,
       onComplete: (median) => {
         calibrationCleanup = null;
+        if (!Number.isFinite(median) || median <= 0) {
+          // Invalid measurement — abort to idle
+          stop();
+          return;
+        }
         const baseline = Math.round(median);
-        if (baseline > 0) applyBaseline(baseline);
+        applyBaseline(baseline);
         state = engineCalibrationResults(state, baseline);
         render();
       },
@@ -5983,7 +5988,8 @@ function createQuizEngine(mode, container) {
     attach,
     detach,
     updateIdleMessage,
-    get isActive() { return state.phase !== 'idle'; },
+    get isActive() { return state.phase === 'active'; },
+    get isRunning() { return state.phase !== 'idle'; },
     get isAnswered() { return state.answered; },
     get baseline() { return motorBaseline; },
     selector,
@@ -6641,7 +6647,7 @@ function createFretboardMode() {
       engine.showCalibrationIfNeeded();
     },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
     },
@@ -7260,7 +7266,7 @@ function createNoteSemitonesMode() {
     init,
     activate() { engine.attach(); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
@@ -7462,7 +7468,7 @@ function createIntervalSemitonesMode() {
     init,
     activate() { engine.attach(); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
@@ -7723,7 +7729,7 @@ function createSemitoneMathMode() {
     init,
     activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
     },
@@ -7988,7 +7994,7 @@ function createIntervalMathMode() {
     init,
     activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
     },
@@ -8287,7 +8293,7 @@ function createKeySignaturesMode() {
     init,
     activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
       if (pendingSigTimeout) clearTimeout(pendingSigTimeout);
@@ -8576,7 +8582,7 @@ function createScaleDegreesMode() {
     init,
     activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
     },
@@ -8864,7 +8870,7 @@ function createDiatonicChordsMode() {
     init,
     activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
     },
@@ -9175,7 +9181,7 @@ function createChordSpellingMode() {
     init,
     activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
     },

@@ -191,7 +191,7 @@ function createIntervalSemitonesMode() {
     init,
     activate() { engine.attach(); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;

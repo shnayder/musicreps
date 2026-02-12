@@ -279,7 +279,7 @@ function createDiatonicChordsMode() {
     init,
     activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
-      if (engine.isActive) engine.stop();
+      if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
     },
