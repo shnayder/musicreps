@@ -102,8 +102,11 @@ starting points.
 For an item's first appearance with the timer:
 - If the adaptive selector has an EWMA for the item: start at `ewma * 2.0`
   (generous — ~2x their average speed gives lots of room)
-- If no EWMA (unseen item): start at `automaticityTarget` (the general
-  "developing" threshold, already baseline-scaled)
+- If no EWMA (unseen item): start at `maxResponseTime` (9s default,
+  baseline-scaled). Unseen items require working out the answer from scratch,
+  not recall — `automaticityTarget` (3s) would be far too aggressive since
+  that's calibrated for the midpoint of *learned* items. Starting at the
+  generous ceiling lets the staircase tighten naturally as the user learns.
 
 This avoids punishing users on unfamiliar items while still providing
 meaningful time pressure on items they've practiced.
@@ -253,3 +256,9 @@ Session-scoped (in-memory, not in EngineState):
   whether the answer was correct. This separates the speed metric (am I fast
   enough?) from the accuracy metric (do I know it?). The existing progress
   bar already tracks accuracy/mastery.
+
+- **Unseen items start at maxResponseTime, not automaticityTarget** —
+  `automaticityTarget` (3s) is calibrated as the midpoint for *learned* items
+  (speedScore = 0.5). Unseen items require calculation, not recall, and could
+  easily take 5-9s. Starting at `maxResponseTime` (9s) avoids immediate
+  timeout cascades on new material and lets the staircase tighten naturally.
