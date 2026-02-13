@@ -8,6 +8,7 @@ import {
   engineStop,
   engineUpdateIdleMessage,
   engineUpdateMasteryAfterAnswer,
+  engineUpdateProgress,
   engineRouteKey,
   engineCalibrationIntro,
   engineCalibrating,
@@ -58,10 +59,10 @@ describe("engineStart", () => {
     assert.equal(s.phase, "active");
   });
 
-  it("shows stop button, hides start/heatmap/stats", () => {
+  it("hides start/stop/heatmap/stats buttons (X close replaces stop)", () => {
     const s = engineStart(initialEngineState());
     assert.equal(s.showStartBtn, false);
-    assert.equal(s.showStopBtn, true);
+    assert.equal(s.showStopBtn, false);
     assert.equal(s.showHeatmapBtn, false);
     assert.equal(s.showStatsControls, false);
   });
@@ -69,6 +70,12 @@ describe("engineStart", () => {
   it("activates quiz area", () => {
     const s = engineStart(initialEngineState());
     assert.equal(s.quizActive, true);
+  });
+
+  it("initializes session tracking", () => {
+    const s = engineStart(initialEngineState());
+    assert.equal(s.questionCount, 0);
+    assert.equal(typeof s.quizStartTime, "number");
   });
 
   it("hides mastery message", () => {
@@ -89,6 +96,15 @@ describe("engineNextQuestion", () => {
     const answered = { ...engineStart(initialEngineState()), answered: true };
     const s = engineNextQuestion(answered, "item-2", 99999);
     assert.equal(s.answered, false);
+  });
+
+  it("increments question count", () => {
+    const started = engineStart(initialEngineState());
+    assert.equal(started.questionCount, 0);
+    const q1 = engineNextQuestion(started, "A", 1000);
+    assert.equal(q1.questionCount, 1);
+    const q2 = engineNextQuestion(q1, "B", 2000);
+    assert.equal(q2.questionCount, 2);
   });
 
   it("clears all feedback fields", () => {
@@ -191,6 +207,22 @@ describe("engineUpdateIdleMessage", () => {
   it("mastered takes priority over needs review", () => {
     const s = engineUpdateIdleMessage(initialEngineState(), true, true);
     assert.equal(s.masteryText, "Looks like you\u2019ve got this!");
+  });
+});
+
+describe("engineUpdateProgress", () => {
+  const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
+
+  it("sets mastered and total counts", () => {
+    const s = engineUpdateProgress(active, 5, 10);
+    assert.equal(s.masteredCount, 5);
+    assert.equal(s.totalEnabledCount, 10);
+  });
+
+  it("preserves other state", () => {
+    const s = engineUpdateProgress(active, 3, 7);
+    assert.equal(s.phase, "active");
+    assert.equal(s.currentItemId, "item-1");
   });
 });
 

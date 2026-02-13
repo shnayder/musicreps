@@ -13,6 +13,14 @@ export function initialEngineState() {
     answered: false,
     questionStartTime: null,
 
+    // Session tracking
+    questionCount: 0,
+    quizStartTime: null,
+
+    // Progress tracking
+    masteredCount: 0,
+    totalEnabledCount: 0,
+
     // Feedback
     feedbackText: '',
     feedbackClass: 'feedback',
@@ -44,8 +52,10 @@ export function engineStart(state) {
   return {
     ...state,
     phase: 'active',
+    questionCount: 0,
+    quizStartTime: Date.now(),
     showStartBtn: false,
-    showStopBtn: true,
+    showStopBtn: false,
     showHeatmapBtn: false,
     showStatsControls: false,
     quizActive: true,
@@ -65,6 +75,7 @@ export function engineNextQuestion(state, nextItemId, nowMs) {
     currentItemId: nextItemId,
     answered: false,
     questionStartTime: nowMs,
+    questionCount: state.questionCount + 1,
     feedbackText: '',
     feedbackClass: 'feedback',
     timeDisplayText: '',
@@ -177,6 +188,13 @@ export function engineUpdateMasteryAfterAnswer(state, allMastered) {
     return { ...state, masteryText: 'Looks like you\u2019ve got this!', showMastery: true };
   }
   return { ...state, showMastery: false };
+}
+
+/**
+ * Transition: update progress counts (mastered vs total enabled items).
+ */
+export function engineUpdateProgress(state, masteredCount, totalEnabledCount) {
+  return { ...state, masteredCount, totalEnabledCount };
 }
 
 /**

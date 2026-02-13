@@ -110,23 +110,6 @@ async function buildHTML(): Promise<string> {
 
   <!-- Fretboard mode -->
   <div class="mode-screen" id="mode-fretboard">
-    <div class="fretboard-wrapper">
-      <div class="fretboard-container">
-        <svg class="fretboard" id="fretboard" viewBox="0 0 600 240">
-          <!-- Nut (thick line at fret 0) -->
-          <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
-          <!-- Frets (vertical lines) -->
-          ${fretLines()}
-          <!-- Strings (horizontal lines) -->
-          ${stringLines()}
-          <!-- Note circles -->
-          ${noteElements()}
-        </svg>
-        <div class="fret-numbers">
-          ${fretNumberElements()}
-        </div>
-      </div>
-    </div>
     <div class="stats-container"></div>
     <div class="stats-controls">
       <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
@@ -152,6 +135,35 @@ async function buildHTML(): Promise<string> {
         <button class="start-btn">Start Quiz</button>
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
+      </div>
+    </div>
+    <div class="quiz-header" style="display: none;">
+      <span class="quiz-header-title">Practicing</span>
+      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+    </div>
+    <div class="session-stats" style="display: none;">
+      <span><span class="question-count">0</span> questions</span>
+      <span class="elapsed-time">0s</span>
+    </div>
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-fill" style="width: 0%"></div>
+      <div class="progress-text">0 / 0</div>
+    </div>
+    <div class="fretboard-wrapper">
+      <div class="fretboard-container">
+        <svg class="fretboard" id="fretboard" viewBox="0 0 600 240">
+          <!-- Nut (thick line at fret 0) -->
+          <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
+          <!-- Frets (vertical lines) -->
+          ${fretLines()}
+          <!-- Strings (horizontal lines) -->
+          ${stringLines()}
+          <!-- Note circles -->
+          ${noteElements()}
+        </svg>
+        <div class="fret-numbers">
+          ${fretNumberElements()}
+        </div>
       </div>
     </div>
     <div class="quiz-area">
@@ -180,19 +192,6 @@ async function buildHTML(): Promise<string> {
 
   <!-- Speed Tap mode -->
   <div class="mode-screen" id="mode-speedTap">
-    <div class="fretboard-wrapper">
-      <div class="fretboard-container">
-        <svg class="fretboard" viewBox="0 0 600 240">
-          <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
-          ${fretLines()}
-          ${stringLines()}
-          ${noteElements()}
-        </svg>
-        <div class="fret-numbers">
-          ${fretNumberElements()}
-        </div>
-      </div>
-    </div>
     <div class="stats-container"></div>
     <div class="stats-controls">
       <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
@@ -213,11 +212,37 @@ async function buildHTML(): Promise<string> {
       </div>
     </div>
 
+    <div class="quiz-header" style="display: none;">
+      <span class="quiz-header-title">Practicing</span>
+      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+    </div>
+    <div class="session-stats" style="display: none;">
+      <span><span class="question-count">0</span> rounds</span>
+      <span class="elapsed-time">0s</span>
+    </div>
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-fill" style="width: 0%"></div>
+      <div class="progress-text">0 / 0</div>
+    </div>
+
     <div class="quiz-area">
       <div class="speed-tap-prompt"></div>
       <div class="speed-tap-status">
         <span class="speed-tap-progress"></span>
         <span class="speed-tap-timer"></span>
+      </div>
+      <div class="fretboard-wrapper">
+        <div class="fretboard-container">
+          <svg class="fretboard" viewBox="0 0 600 240">
+            <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="240" stroke="#333" stroke-width="4"/>
+            ${fretLines()}
+            ${stringLines()}
+            ${noteElements()}
+          </svg>
+          <div class="fret-numbers">
+            ${fretNumberElements()}
+          </div>
+        </div>
       </div>
       <div class="answer-buttons answer-buttons-notes" style="display: none;">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -253,6 +278,18 @@ async function buildHTML(): Promise<string> {
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
+    </div>
+    <div class="quiz-header" style="display: none;">
+      <span class="quiz-header-title">Practicing</span>
+      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+    </div>
+    <div class="session-stats" style="display: none;">
+      <span><span class="question-count">0</span> questions</span>
+      <span class="elapsed-time">0s</span>
+    </div>
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-fill" style="width: 0%"></div>
+      <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
@@ -305,6 +342,18 @@ async function buildHTML(): Promise<string> {
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
+    </div>
+    <div class="quiz-header" style="display: none;">
+      <span class="quiz-header-title">Practicing</span>
+      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+    </div>
+    <div class="session-stats" style="display: none;">
+      <span><span class="question-count">0</span> questions</span>
+      <span class="elapsed-time">0s</span>
+    </div>
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-fill" style="width: 0%"></div>
+      <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
@@ -361,6 +410,18 @@ async function buildHTML(): Promise<string> {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
+    <div class="quiz-header" style="display: none;">
+      <span class="quiz-header-title">Practicing</span>
+      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+    </div>
+    <div class="session-stats" style="display: none;">
+      <span><span class="question-count">0</span> questions</span>
+      <span class="elapsed-time">0s</span>
+    </div>
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-fill" style="width: 0%"></div>
+      <div class="progress-text">0 / 0</div>
+    </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -402,6 +463,18 @@ async function buildHTML(): Promise<string> {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
+    <div class="quiz-header" style="display: none;">
+      <span class="quiz-header-title">Practicing</span>
+      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+    </div>
+    <div class="session-stats" style="display: none;">
+      <span><span class="question-count">0</span> questions</span>
+      <span class="elapsed-time">0s</span>
+    </div>
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-fill" style="width: 0%"></div>
+      <div class="progress-text">0 / 0</div>
+    </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -442,6 +515,18 @@ async function buildHTML(): Promise<string> {
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
+    </div>
+    <div class="quiz-header" style="display: none;">
+      <span class="quiz-header-title">Practicing</span>
+      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+    </div>
+    <div class="session-stats" style="display: none;">
+      <span><span class="question-count">0</span> questions</span>
+      <span class="elapsed-time">0s</span>
+    </div>
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-fill" style="width: 0%"></div>
+      <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
@@ -501,6 +586,18 @@ async function buildHTML(): Promise<string> {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
+    <div class="quiz-header" style="display: none;">
+      <span class="quiz-header-title">Practicing</span>
+      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+    </div>
+    <div class="session-stats" style="display: none;">
+      <span><span class="question-count">0</span> questions</span>
+      <span class="elapsed-time">0s</span>
+    </div>
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-fill" style="width: 0%"></div>
+      <div class="progress-text">0 / 0</div>
+    </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -551,6 +648,18 @@ async function buildHTML(): Promise<string> {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
+    <div class="quiz-header" style="display: none;">
+      <span class="quiz-header-title">Practicing</span>
+      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+    </div>
+    <div class="session-stats" style="display: none;">
+      <span><span class="question-count">0</span> questions</span>
+      <span class="elapsed-time">0s</span>
+    </div>
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-fill" style="width: 0%"></div>
+      <div class="progress-text">0 / 0</div>
+    </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>
       <div class="quiz-prompt"></div>
@@ -600,6 +709,18 @@ async function buildHTML(): Promise<string> {
         <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
+    </div>
+    <div class="quiz-header" style="display: none;">
+      <span class="quiz-header-title">Practicing</span>
+      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+    </div>
+    <div class="session-stats" style="display: none;">
+      <span><span class="question-count">0</span> questions</span>
+      <span class="elapsed-time">0s</span>
+    </div>
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-fill" style="width: 0%"></div>
+      <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-bar"></div></div>

@@ -213,6 +213,80 @@ button {
   border-radius: 6px;
   text-align: center;
 }
+/* --- Quiz header (shown during quiz) --- */
+.quiz-header {
+  display: none;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0.5rem;
+}
+.quiz-header-title {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+}
+.quiz-header-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+  margin: 0;
+}
+.quiz-header-close:hover {
+  color: #333;
+}
+
+/* --- Session stats (question count + elapsed time) --- */
+.session-stats {
+  display: none;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+  color: #999;
+  margin-bottom: 0.5rem;
+}
+.session-stats span {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Progress bar --- */
+.progress-bar {
+  display: none;
+  max-width: 300px;
+  height: 20px;
+  background: #eee;
+  border-radius: 10px;
+  margin: 0 auto 0.75rem;
+  overflow: hidden;
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  background: #4CAF50;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+  min-width: 0;
+}
+.progress-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #333;
+  pointer-events: none;
+}
+
 .quiz-area {
   display: none;
   text-align: center;

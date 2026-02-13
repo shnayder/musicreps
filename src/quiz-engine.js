@@ -6,8 +6,9 @@
 //
 // Depends on globals (from quiz-engine-state.js): initialEngineState,
 // engineStart, engineNextQuestion, engineSubmitAnswer, engineStop,
-// engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer, engineRouteKey,
-// engineCalibrationIntro, engineCalibrating, engineCalibrationResults
+// engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer, engineUpdateProgress,
+// engineRouteKey, engineCalibrationIntro, engineCalibrating,
+// engineCalibrationResults
 
 /**
  * Create a keyboard handler for note input (C D E F G A B + #/b for accidentals).
@@ -266,6 +267,7 @@ export function createQuizEngine(mode, container) {
 
   let state = initialEngineState();
   let countdownInterval = null;
+  let elapsedTimeInterval = null;
 
   // DOM references (scoped to container)
   const els = {
@@ -281,6 +283,16 @@ export function createQuizEngine(mode, container) {
     quizArea: container.querySelector('.quiz-area'),
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
+    quizControls: container.querySelector('.quiz-controls'),
+    quizHeader: container.querySelector('.quiz-header'),
+    quizHeaderTitle: container.querySelector('.quiz-header-title'),
+    quizHeaderClose: container.querySelector('.quiz-header-close'),
+    sessionStats: container.querySelector('.session-stats'),
+    questionCountEl: container.querySelector('.question-count'),
+    elapsedTimeEl: container.querySelector('.elapsed-time'),
+    progressBar: container.querySelector('.progress-bar'),
+    progressFill: container.querySelector('.progress-fill'),
+    progressText: container.querySelector('.progress-text'),
   };
 
   // --- Render: declaratively map state to DOM ---
@@ -430,6 +442,32 @@ export function createQuizEngine(mode, container) {
       els.countdownBar.classList.remove('expired');
       if (state.phase !== 'active') els.countdownBar.style.width = '0%';
     }
+
+    // Quiz header visibility
+    if (els.quizHeader) {
+      els.quizHeader.style.display = state.quizActive ? 'flex' : 'none';
+    }
+
+    // Session stats (question count + elapsed time)
+    if (els.sessionStats) {
+      els.sessionStats.style.display = state.quizActive ? 'flex' : 'none';
+    }
+    if (els.questionCountEl && state.phase === 'active') {
+      els.questionCountEl.textContent = state.questionCount;
+    }
+
+    // Progress bar
+    if (els.progressBar) {
+      els.progressBar.style.display = state.quizActive && state.phase === 'active' ? '' : 'none';
+    }
+    if (els.progressFill && state.totalEnabledCount > 0) {
+      const pct = Math.round((state.masteredCount / state.totalEnabledCount) * 100);
+      els.progressFill.style.width = pct + '%';
+    }
+    if (els.progressText && state.totalEnabledCount > 0) {
+      els.progressText.textContent = state.masteredCount + ' / ' + state.totalEnabledCount;
+    }
+
     setAnswerButtonsEnabled(state.answersEnabled);
 
     // Create calibration content when entering those phases
@@ -437,6 +475,33 @@ export function createQuizEngine(mode, container) {
       renderCalibrationIntro();
     } else if (state.phase === 'calibration-results' && !calibrationContentEl) {
       renderCalibrationResults();
+    }
+  }
+
+  // --- Elapsed time display ---
+
+  function formatElapsedTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    if (minutes === 0) return seconds + 's';
+    return minutes + 'm ' + (seconds < 10 ? '0' : '') + seconds + 's';
+  }
+
+  function updateElapsedTime() {
+    if (!state.quizStartTime || !els.elapsedTimeEl) return;
+    els.elapsedTimeEl.textContent = formatElapsedTime(Date.now() - state.quizStartTime);
+  }
+
+  function startElapsedTimer() {
+    updateElapsedTime();
+    elapsedTimeInterval = setInterval(updateElapsedTime, 1000);
+  }
+
+  function stopElapsedTimer() {
+    if (elapsedTimeInterval) {
+      clearInterval(elapsedTimeInterval);
+      elapsedTimeInterval = null;
     }
   }
 
@@ -551,6 +616,20 @@ export function createQuizEngine(mode, container) {
     stop();
   }
 
+  // --- Progress tracking ---
+
+  function computeProgress() {
+    const items = mode.getEnabledItems();
+    let mastered = 0;
+    for (const id of items) {
+      const recall = selector.getRecall(id);
+      if (recall !== null && recall >= selector.getConfig().recallThreshold) {
+        mastered++;
+      }
+    }
+    return { masteredCount: mastered, totalEnabledCount: items.length };
+  }
+
   // --- Engine lifecycle ---
 
   function nextQuestion() {
@@ -583,6 +662,10 @@ export function createQuizEngine(mode, container) {
     const allMastered = selector.checkAllMastered(mode.getEnabledItems());
     state = engineUpdateMasteryAfterAnswer(state, allMastered);
 
+    // Update progress
+    const progress = computeProgress();
+    state = engineUpdateProgress(state, progress.masteredCount, progress.totalEnabledCount);
+
     render();
 
     // Let the mode react to the answer (e.g., highlight correct position)
@@ -596,7 +679,13 @@ export function createQuizEngine(mode, container) {
     // Call onStart first so modes can tear down their idle UI (e.g. heatmap)
     // before the engine renders the quiz UI state.
     if (mode.onStart) mode.onStart();
+
+    // Compute initial progress
+    const progress = computeProgress();
+    state = engineUpdateProgress(state, progress.masteredCount, progress.totalEnabledCount);
+
     render();
+    startElapsedTimer();
     nextQuestion();
   }
 
@@ -624,6 +713,7 @@ export function createQuizEngine(mode, container) {
       clearInterval(countdownInterval);
       countdownInterval = null;
     }
+    stopElapsedTimer();
     state = engineStop(state);
     render();   // render() clears calibrationContentEl when phase is idle
     if (mode.onStop) mode.onStop();
@@ -670,6 +760,11 @@ export function createQuizEngine(mode, container) {
   // Wire up recalibrate button
   if (els.recalibrateBtn) {
     els.recalibrateBtn.addEventListener('click', recalibrate);
+  }
+
+  // Wire up quiz header close button
+  if (els.quizHeaderClose) {
+    els.quizHeaderClose.addEventListener('click', stop);
   }
 
   /**

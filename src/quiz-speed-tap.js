@@ -173,7 +173,79 @@ function createSpeedTapMode() {
     quizArea: container.querySelector('.quiz-area'),
     fretboardWrapper: container.querySelector('.fretboard-wrapper'),
     statsControls: container.querySelector('.stats-controls'),
+    quizHeader: container.querySelector('.quiz-header'),
+    quizHeaderClose: container.querySelector('.quiz-header-close'),
+    sessionStats: container.querySelector('.session-stats'),
+    questionCountEl: container.querySelector('.question-count'),
+    elapsedTimeEl: container.querySelector('.elapsed-time'),
+    progressBar: container.querySelector('.progress-bar'),
+    progressFill: container.querySelector('.progress-fill'),
+    progressText: container.querySelector('.progress-text'),
   };
+
+  // --- Session tracking ---
+
+  let sessionStartTime = null;
+  let roundCount = 0;
+  let sessionElapsedInterval = null;
+
+  function formatElapsedTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    if (minutes === 0) return seconds + 's';
+    return minutes + 'm ' + (seconds < 10 ? '0' : '') + seconds + 's';
+  }
+
+  function updateSessionElapsed() {
+    if (!sessionStartTime || !els.elapsedTimeEl) return;
+    els.elapsedTimeEl.textContent = formatElapsedTime(Date.now() - sessionStartTime);
+  }
+
+  function startSessionTimer() {
+    sessionStartTime = Date.now();
+    roundCount = 0;
+    updateSessionElapsed();
+    sessionElapsedInterval = setInterval(updateSessionElapsed, 1000);
+  }
+
+  function stopSessionTimer() {
+    if (sessionElapsedInterval) {
+      clearInterval(sessionElapsedInterval);
+      sessionElapsedInterval = null;
+    }
+    sessionStartTime = null;
+  }
+
+  function updateRoundCount() {
+    if (els.questionCountEl) {
+      els.questionCountEl.textContent = roundCount;
+    }
+  }
+
+  function computeProgress() {
+    const items = getEnabledItems();
+    let mastered = 0;
+    const cfg = selector.getConfig();
+    for (const id of items) {
+      const recall = selector.getRecall(id);
+      if (recall !== null && recall >= cfg.recallThreshold) {
+        mastered++;
+      }
+    }
+    return { masteredCount: mastered, totalEnabledCount: items.length };
+  }
+
+  function renderProgress() {
+    const progress = computeProgress();
+    if (els.progressFill && progress.totalEnabledCount > 0) {
+      const pct = Math.round((progress.masteredCount / progress.totalEnabledCount) * 100);
+      els.progressFill.style.width = pct + '%';
+    }
+    if (els.progressText && progress.totalEnabledCount > 0) {
+      els.progressText.textContent = progress.masteredCount + ' / ' + progress.totalEnabledCount;
+    }
+  }
 
   // --- Timer ---
 
@@ -409,6 +481,9 @@ function createSpeedTapMode() {
     if (els.recalibrateBtn) {
       els.recalibrateBtn.style.display = motorBaseline ? 'inline' : 'none';
     }
+    if (els.quizHeader) els.quizHeader.style.display = 'none';
+    if (els.sessionStats) els.sessionStats.style.display = 'none';
+    if (els.progressBar) els.progressBar.style.display = 'none';
 
     // Disable answer buttons
     container.querySelectorAll('.answer-btn').forEach(btn => {
@@ -461,6 +536,10 @@ function createSpeedTapMode() {
 
     const elapsed = Date.now() - roundStartTime;
     selector.recordResponse(currentNote, elapsed, true);
+
+    roundCount++;
+    updateRoundCount();
+    renderProgress();
 
     if (els.feedback) {
       els.feedback.textContent = (elapsed / 1000).toFixed(1) + 's';
@@ -559,9 +638,14 @@ function createSpeedTapMode() {
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = '';
     if (els.statsControls) els.statsControls.style.display = 'none';
     if (els.startBtn) els.startBtn.style.display = 'none';
-    if (els.stopBtn) els.stopBtn.style.display = 'inline';
+    if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.recalibrateBtn) els.recalibrateBtn.style.display = 'none';
     if (els.quizArea) els.quizArea.classList.add('active');
+    if (els.quizHeader) els.quizHeader.style.display = 'flex';
+    if (els.sessionStats) els.sessionStats.style.display = 'flex';
+    if (els.progressBar) els.progressBar.style.display = '';
+    startSessionTimer();
+    renderProgress();
     nextRound();
   }
 
@@ -569,6 +653,7 @@ function createSpeedTapMode() {
     active = false;
     roundActive = false;
     stopTimer();
+    stopSessionTimer();
     wrongFlashTimeouts.forEach(t => clearTimeout(t));
     wrongFlashTimeouts.clear();
     clearAll();
@@ -593,6 +678,9 @@ function createSpeedTapMode() {
       els.recalibrateBtn.style.display = motorBaseline ? 'inline' : 'none';
     }
     if (els.quizArea) els.quizArea.classList.remove('active');
+    if (els.quizHeader) els.quizHeader.style.display = 'none';
+    if (els.sessionStats) els.sessionStats.style.display = 'none';
+    if (els.progressBar) els.progressBar.style.display = 'none';
 
     updateStats();
     statsControls.show('retention');
@@ -622,6 +710,7 @@ function createSpeedTapMode() {
 
     if (els.startBtn) els.startBtn.addEventListener('click', () => start());
     if (els.stopBtn) els.stopBtn.addEventListener('click', () => stop());
+    if (els.quizHeaderClose) els.quizHeaderClose.addEventListener('click', () => stop());
     if (els.recalibrateBtn) {
       els.recalibrateBtn.addEventListener('click', () => startCalibration());
     }
