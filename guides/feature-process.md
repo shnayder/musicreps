@@ -226,6 +226,24 @@ Include:
 - **Test counts**: how many tests were added
 - **Files modified**: final table (if it differs from the plan)
 
+## Updating guides
+
+When a change introduces a convention, pattern, or rule that future
+development must follow, update the relevant guide(s) so the knowledge
+isn't lost. Examples:
+
+- New accidental naming rule → update `accidental-conventions.md` mode table
+- New shared utility or pattern → update `architecture.md`
+- New build step or workflow → update `development.md`
+- New quiz mode → update the "Adding a New Quiz Mode" checklist
+
+The test is: **if someone adding a new mode or feature would need to know
+this to get it right, it belongs in a guide.** Don't rely on code comments
+alone for cross-cutting concerns — they're too easy to miss.
+
+Also update `CLAUDE.md` if the change affects the top-level overview
+(new guide, new mode, changed commands).
+
 ## Updating tech-debt-tracker
 
 - If the implementation created any new technical debt, add it to

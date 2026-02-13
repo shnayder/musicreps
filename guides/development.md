@@ -101,6 +101,10 @@ and commits the output to `docs/preview/<branch-name>/` on main.
 
 ## Code Review
 
+Run `/review` **before pushing final changes** on every branch. This is not
+optional — it catches template sync issues, architecture violations, missing
+tests, and convention drift that are easy to miss during implementation.
+
 Use the `/review` slash command to run the code-reviewer subagent, which
 applies the checklist in `.claude/commands/review-checklist.md`. The reviewer
 checks for common issues: build file sync, architecture pattern violations,

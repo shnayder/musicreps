@@ -324,6 +324,27 @@ Uses the consolidate-before-expanding algorithm. Default: group 0 only.
 Expansion always recommends the next sequential group (smallest distance
 first), controlled by `sortUnstarted` option in `computeRecommendations()`.
 
+### Accidental Naming (Sharp vs Flat)
+
+When a note has two enharmonic spellings (C#/Db, D#/Eb, etc.), the
+choice is governed by standard music-theory conventions. Five rules are
+documented in priority order in
+[accidental-conventions.md](accidental-conventions.md). In practice:
+
+- **Chord/scale modes** (chord spelling, scale degrees, diatonic chords,
+  key signatures): letter-name arithmetic in `getScaleDegreeNote()` and
+  `getChordTones()` automatically produces the correct spelling based on
+  harmonic context and key signature.
+- **Math modes** (semitone math, interval math): directional convention —
+  `useFlats = (op === '-')`. Ascending questions use sharps, descending
+  use flats, for both the question note and answer buttons.
+- **Context-free modes** (fretboard, note↔semitones): no direction or
+  key applies, so canonical forms are used (sharp form on fretboard,
+  dual display elsewhere).
+
+When adding a new mode that displays accidental notes, determine which
+rule applies and document the choice in `accidental-conventions.md`.
+
 ## Adding a New Quiz Mode
 
 Step-by-step checklist:
@@ -343,6 +364,9 @@ Step-by-step checklist:
    `build.ts`; position after dependencies in the `<script>` block
 9. **Register** mode in `app.js`
 10. **Tests**: create `src/quiz-{mode}_test.ts` if pure logic was extracted
-11. **CLAUDE.md**: update quiz modes table with item count, answer type,
+11. **Accidentals**: determine which naming convention applies (see
+    [accidental-conventions.md](accidental-conventions.md)) and update
+    that guide's mode table
+12. **CLAUDE.md**: update quiz modes table with item count, answer type,
     and ID format
-12. **Version**: bump in both `main.ts` and `build.ts`
+13. **Version**: bump in both `main.ts` and `build.ts`

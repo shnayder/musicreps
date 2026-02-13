@@ -150,7 +150,7 @@ function createSemitoneMathMode() {
 
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
-      currentItem.useFlats = Math.random() < 0.5;
+      currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending
       const prompt = container.querySelector('.quiz-prompt');
       const noteName = pickAccidentalName(currentItem.note.displayName, currentItem.useFlats);
       prompt.textContent = noteName + ' ' + currentItem.op + ' ' + currentItem.semitones + ' = ?';

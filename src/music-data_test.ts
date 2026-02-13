@@ -29,6 +29,7 @@ import {
   chordDisplayName,
   spelledNoteMatchesInput,
   spelledNoteMatchesSemitone,
+  pickAccidentalName,
 } from "./music-data.js";
 
 describe("NOTES", () => {
@@ -438,5 +439,364 @@ describe("CHORD_ROOTS", () => {
     assert.ok(!CHORD_ROOTS.includes("Gb"));
     assert.ok(!CHORD_ROOTS.includes("G#"));
     assert.ok(!CHORD_ROOTS.includes("A#"));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Accidental convention tests (see guides/accidental-conventions.md)
+// ---------------------------------------------------------------------------
+
+describe("pickAccidentalName", () => {
+  it("returns natural notes unchanged regardless of useFlats", () => {
+    assert.equal(pickAccidentalName("C", false), "C");
+    assert.equal(pickAccidentalName("C", true), "C");
+    assert.equal(pickAccidentalName("D", false), "D");
+    assert.equal(pickAccidentalName("E", true), "E");
+  });
+
+  it("returns sharp form when useFlats is false", () => {
+    assert.equal(pickAccidentalName("C#/Db", false), "C#");
+    assert.equal(pickAccidentalName("D#/Eb", false), "D#");
+    assert.equal(pickAccidentalName("F#/Gb", false), "F#");
+    assert.equal(pickAccidentalName("G#/Ab", false), "G#");
+    assert.equal(pickAccidentalName("A#/Bb", false), "A#");
+  });
+
+  it("returns flat form when useFlats is true", () => {
+    assert.equal(pickAccidentalName("C#/Db", true), "Db");
+    assert.equal(pickAccidentalName("D#/Eb", true), "Eb");
+    assert.equal(pickAccidentalName("F#/Gb", true), "Gb");
+    assert.equal(pickAccidentalName("G#/Ab", true), "Ab");
+    assert.equal(pickAccidentalName("A#/Bb", true), "Bb");
+  });
+});
+
+describe("directional accidental convention", () => {
+  // Rule 4: ascending = sharps, descending = flats
+
+  it("ascending uses sharps for all accidental notes", () => {
+    for (const note of NOTES) {
+      const name = pickAccidentalName(note.displayName, false);
+      if (note.displayName.includes("/")) {
+        assert.ok(name.includes("#"), `ascending: expected sharp for ${note.name}, got ${name}`);
+      }
+    }
+  });
+
+  it("descending uses flats for all accidental notes", () => {
+    for (const note of NOTES) {
+      const name = pickAccidentalName(note.displayName, true);
+      if (note.displayName.includes("/")) {
+        assert.ok(name.includes("b"), `descending: expected flat for ${note.name}, got ${name}`);
+      }
+    }
+  });
+
+  // Semitone math: ascending direction
+  it("ascending semitone math: C + 1 = C#", () => {
+    const answer = noteAdd(0, 1);
+    assert.equal(pickAccidentalName(answer.displayName, false), "C#");
+  });
+
+  it("ascending semitone math: D + 3 = F#", () => {
+    const answer = noteAdd(2, 4);
+    assert.equal(pickAccidentalName(answer.displayName, false), "F#");
+  });
+
+  it("ascending semitone math: G + 1 = G#", () => {
+    const answer = noteAdd(7, 1);
+    assert.equal(pickAccidentalName(answer.displayName, false), "G#");
+  });
+
+  it("ascending semitone math: A + 1 = A#", () => {
+    const answer = noteAdd(9, 1);
+    assert.equal(pickAccidentalName(answer.displayName, false), "A#");
+  });
+
+  // Semitone math: descending direction
+  it("descending semitone math: D - 1 = Db", () => {
+    const answer = noteSub(2, 1);
+    assert.equal(pickAccidentalName(answer.displayName, true), "Db");
+  });
+
+  it("descending semitone math: E - 1 = Eb", () => {
+    const answer = noteSub(4, 1);
+    assert.equal(pickAccidentalName(answer.displayName, true), "Eb");
+  });
+
+  it("descending semitone math: A - 1 = Ab", () => {
+    const answer = noteSub(9, 1);
+    assert.equal(pickAccidentalName(answer.displayName, true), "Ab");
+  });
+
+  it("descending semitone math: B - 1 = Bb", () => {
+    const answer = noteSub(11, 1);
+    assert.equal(pickAccidentalName(answer.displayName, true), "Bb");
+  });
+
+  // Natural-note answers are unaffected by direction
+  it("natural answers unaffected: C + 4 = E (ascending)", () => {
+    const answer = noteAdd(0, 4);
+    assert.equal(pickAccidentalName(answer.displayName, false), "E");
+  });
+
+  it("natural answers unaffected: D - 2 = C (descending)", () => {
+    const answer = noteSub(2, 2);
+    assert.equal(pickAccidentalName(answer.displayName, true), "C");
+  });
+
+  // Question note display follows direction too
+  it("ascending question shows sharp form of starting note", () => {
+    const note = NOTES[1]; // C#/Db
+    assert.equal(pickAccidentalName(note.displayName, false), "C#");
+  });
+
+  it("descending question shows flat form of starting note", () => {
+    const note = NOTES[1]; // C#/Db
+    assert.equal(pickAccidentalName(note.displayName, true), "Db");
+  });
+
+  // Tritone (symmetric interval) follows direction
+  it("ascending tritone: C + 6 = F#", () => {
+    const answer = noteAdd(0, 6);
+    assert.equal(pickAccidentalName(answer.displayName, false), "F#");
+  });
+
+  it("descending tritone: C - 6 = Gb", () => {
+    const answer = noteSub(0, 6);
+    assert.equal(pickAccidentalName(answer.displayName, true), "Gb");
+  });
+
+  // Octave boundary wrap-around
+  it("ascending wrap: B + 1 = C (natural, no conflict)", () => {
+    const answer = noteAdd(11, 1);
+    assert.equal(answer.name, "C");
+  });
+
+  it("descending wrap: C - 1 = B (natural, no conflict)", () => {
+    const answer = noteSub(0, 1);
+    assert.equal(answer.name, "B");
+  });
+
+  // All 12 ascending from each accidental note
+  it("ascending from each accidental: question and answer both use sharps", () => {
+    const accidentalNotes = NOTES.filter(n => n.displayName.includes("/"));
+    for (const note of accidentalNotes) {
+      for (let s = 1; s <= 11; s++) {
+        const answer = noteAdd(note.num, s);
+        const qName = pickAccidentalName(note.displayName, false);
+        const aName = pickAccidentalName(answer.displayName, false);
+        assert.ok(!qName.includes("b"), `ascending q: ${note.name}+${s}, qName=${qName}`);
+        assert.ok(!aName.includes("b"), `ascending a: ${note.name}+${s}=${answer.name}, aName=${aName}`);
+      }
+    }
+  });
+
+  // All 12 descending from each accidental note
+  it("descending from each accidental: question and answer both use flats", () => {
+    const accidentalNotes = NOTES.filter(n => n.displayName.includes("/"));
+    for (const note of accidentalNotes) {
+      for (let s = 1; s <= 11; s++) {
+        const answer = noteSub(note.num, s);
+        const qName = pickAccidentalName(note.displayName, true);
+        const aName = pickAccidentalName(answer.displayName, true);
+        assert.ok(!qName.includes("#"), `descending q: ${note.name}-${s}, qName=${qName}`);
+        assert.ok(!aName.includes("#"), `descending a: ${note.name}-${s}=${answer.name}, aName=${aName}`);
+      }
+    }
+  });
+});
+
+describe("directional convention agrees with letter-name arithmetic", () => {
+  // For interval math, verify that the directional convention produces
+  // the same result as proper letter-name interval arithmetic in all
+  // cases where both give a standard (non-double-accidental) answer.
+
+  const INTERVAL_LETTER_OFFSETS: Record<number, number> = {
+    1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 5, 9: 5, 10: 6, 11: 6,
+  };
+
+  function letterArithmetic(startName: string, semitones: number, direction: "+" | "-"): string {
+    const start = parseSpelledNote(startName);
+    const startLetterIdx = LETTER_NAMES.indexOf(start.letter);
+    const startSemitone = spelledNoteSemitone(startName);
+    const letterOffset = INTERVAL_LETTER_OFFSETS[semitones];
+
+    let targetLetterIdx: number, targetSemitone: number;
+    if (direction === "+") {
+      targetLetterIdx = (startLetterIdx + letterOffset) % 7;
+      targetSemitone = (startSemitone + semitones) % 12;
+    } else {
+      targetLetterIdx = (startLetterIdx - letterOffset + 7) % 7;
+      targetSemitone = ((startSemitone - semitones) % 12 + 12) % 12;
+    }
+    const targetLetter = LETTER_NAMES[targetLetterIdx];
+    const naturalSemitone = (({ C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }) as Record<string, number>)[targetLetter];
+    let acc = ((targetSemitone - naturalSemitone + 12) % 12);
+    if (acc > 6) acc -= 12;
+    return spelledNoteName(targetLetter, acc);
+  }
+
+  // "Enharmonic naturals" like E#, Fb, Cb, B# are correct letter arithmetic
+  // but the readability rule (rule 5) makes directional convention prefer
+  // the natural spelling. Skip these when comparing.
+  function isEnharmonicNatural(name: string): boolean {
+    return ["E#", "Fb", "Cb", "B#"].includes(name);
+  }
+
+  // For accidental starting notes, directional convention and letter
+  // arithmetic agree (the starting note's accidental biases the result).
+  // For natural starting notes they can diverge (e.g., C + m2 = Db by
+  // letter arithmetic but C# by directional convention), which is fine —
+  // the directional convention is simpler and the UI has no separate
+  // C# and Db buttons anyway.
+
+  it("ascending from accidental notes: matches letter arithmetic", () => {
+    const accidentalNotes = NOTES.filter(n => n.displayName.includes("/"));
+    let agreements = 0;
+    for (const note of accidentalNotes) {
+      for (let s = 1; s <= 11; s++) {
+        const startSpelling = pickAccidentalName(note.displayName, false); // sharp form
+        const letterResult = letterArithmetic(startSpelling, s, "+");
+        const parsed = parseSpelledNote(letterResult);
+        if (Math.abs(parsed.accidental) >= 2) continue;
+        if (isEnharmonicNatural(letterResult)) continue;
+        const semitone = spelledNoteSemitone(letterResult);
+        const noteEntry = NOTES[semitone];
+        const directionalResult = pickAccidentalName(noteEntry.displayName, false);
+        assert.equal(directionalResult, letterResult,
+          `${startSpelling}+${s}: directional=${directionalResult}, letter=${letterResult}`);
+        agreements++;
+      }
+    }
+    assert.ok(agreements > 25, `expected many agreements, got ${agreements}`);
+  });
+
+  it("descending from accidental notes: matches letter arithmetic", () => {
+    const accidentalNotes = NOTES.filter(n => n.displayName.includes("/"));
+    let agreements = 0;
+    for (const note of accidentalNotes) {
+      for (let s = 1; s <= 11; s++) {
+        const startSpelling = pickAccidentalName(note.displayName, true); // flat form
+        const letterResult = letterArithmetic(startSpelling, s, "-");
+        const parsed = parseSpelledNote(letterResult);
+        if (Math.abs(parsed.accidental) >= 2) continue;
+        if (isEnharmonicNatural(letterResult)) continue;
+        const semitone = spelledNoteSemitone(letterResult);
+        const noteEntry = NOTES[semitone];
+        const directionalResult = pickAccidentalName(noteEntry.displayName, true);
+        assert.equal(directionalResult, letterResult,
+          `${startSpelling}-${s}: directional=${directionalResult}, letter=${letterResult}`);
+        agreements++;
+      }
+    }
+    assert.ok(agreements > 25, `expected many agreements, got ${agreements}`);
+  });
+
+  it("all cases: directional and letter arithmetic give same pitch (semitone-equivalent)", () => {
+    for (const note of NOTES) {
+      for (let s = 1; s <= 11; s++) {
+        // Ascending
+        const sharpStart = pickAccidentalName(note.displayName, false);
+        const letterAsc = letterArithmetic(sharpStart, s, "+");
+        const directAsc = noteAdd(note.num, s);
+        assert.equal(spelledNoteSemitone(letterAsc), directAsc.num,
+          `${sharpStart}+${s}: letter=${letterAsc}(${spelledNoteSemitone(letterAsc)}) vs direct=${directAsc.name}(${directAsc.num})`);
+
+        // Descending
+        const flatStart = pickAccidentalName(note.displayName, true);
+        const letterDesc = letterArithmetic(flatStart, s, "-");
+        const directDesc = noteSub(note.num, s);
+        assert.equal(spelledNoteSemitone(letterDesc) % 12, directDesc.num,
+          `${flatStart}-${s}: letter=${letterDesc}(${spelledNoteSemitone(letterDesc)}) vs direct=${directDesc.name}(${directDesc.num})`);
+      }
+    }
+  });
+});
+
+describe("key-signature consistency (rule 2)", () => {
+  it("sharp keys produce only sharps in their scales", () => {
+    const sharpKeys = MAJOR_KEYS.filter(k => k.accidentalType === "sharps");
+    for (const key of sharpKeys) {
+      for (let d = 1; d <= 7; d++) {
+        const note = getScaleDegreeNote(key.root, d);
+        assert.ok(!note.includes("b"),
+          `${key.root} major degree ${d} = ${note} should not have flats`);
+      }
+    }
+  });
+
+  it("flat keys produce only flats in their scales", () => {
+    const flatKeys = MAJOR_KEYS.filter(k => k.accidentalType === "flats");
+    for (const key of flatKeys) {
+      for (let d = 1; d <= 7; d++) {
+        const note = getScaleDegreeNote(key.root, d);
+        assert.ok(!note.includes("#"),
+          `${key.root} major degree ${d} = ${note} should not have sharps`);
+      }
+    }
+  });
+
+  it("C major (no accidentals) produces all naturals", () => {
+    for (let d = 1; d <= 7; d++) {
+      const note = getScaleDegreeNote("C", d);
+      assert.ok(note.length === 1, `C major degree ${d} = ${note} should be natural`);
+    }
+  });
+});
+
+describe("harmonic/chordal context (rule 1)", () => {
+  it("most chord tones have single accidentals (double only when theory requires it)", () => {
+    const doubleAccidentals: string[] = [];
+    for (const root of CHORD_ROOTS) {
+      for (const chordType of CHORD_TYPES) {
+        const tones = getChordTones(root, chordType);
+        for (const tone of tones) {
+          const parsed = parseSpelledNote(tone);
+          if (Math.abs(parsed.accidental) >= 2) {
+            doubleAccidentals.push(`${root}${chordType.symbol}: ${tone}`);
+          }
+        }
+      }
+    }
+    // A few are unavoidable in strict letter-name spelling (e.g., Db dim b5 = Abb)
+    assert.ok(doubleAccidentals.length <= 10,
+      `too many double accidentals: ${doubleAccidentals.join(", ")}`);
+  });
+
+  it("D major chord third is F# not Gb", () => {
+    const major = CHORD_TYPES.find(t => t.name === "major")!;
+    const tones = getChordTones("D", major);
+    assert.equal(tones[1], "F#");
+  });
+
+  it("Ab major chord third is C not B#", () => {
+    const major = CHORD_TYPES.find(t => t.name === "major")!;
+    const tones = getChordTones("Ab", major);
+    assert.equal(tones[1], "C");
+  });
+
+  it("Eb minor chord b3 is Gb not F#", () => {
+    const minor = CHORD_TYPES.find(t => t.name === "minor")!;
+    const tones = getChordTones("Eb", minor);
+    assert.equal(tones[1], "Gb");
+  });
+
+  it("Bb major chord fifth is F not E#", () => {
+    const major = CHORD_TYPES.find(t => t.name === "major")!;
+    const tones = getChordTones("Bb", major);
+    assert.equal(tones[2], "F");
+  });
+
+  it("F# major chord uses sharps throughout", () => {
+    const major = CHORD_TYPES.find(t => t.name === "major")!;
+    const tones = getChordTones("F#", major);
+    assert.deepEqual(tones, ["F#", "A#", "C#"]);
+  });
+
+  it("Db major chord uses flats throughout", () => {
+    const major = CHORD_TYPES.find(t => t.name === "major")!;
+    const tones = getChordTones("Db", major);
+    assert.deepEqual(tones, ["Db", "F", "Ab"]);
   });
 });

@@ -794,7 +794,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v3.6</div>
+    <div class="version">v3.7</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -8398,7 +8398,7 @@ function createSemitoneMathMode() {
 
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
-      currentItem.useFlats = Math.random() < 0.5;
+      currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending
       const prompt = container.querySelector('.quiz-prompt');
       const noteName = pickAccidentalName(currentItem.note.displayName, currentItem.useFlats);
       prompt.textContent = noteName + ' ' + currentItem.op + ' ' + currentItem.semitones + ' = ?';
@@ -8647,7 +8647,7 @@ function createIntervalMathMode() {
 
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
-      currentItem.useFlats = Math.random() < 0.5;
+      currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending
       const prompt = container.querySelector('.quiz-prompt');
       const noteName = pickAccidentalName(currentItem.note.displayName, currentItem.useFlats);
       prompt.textContent = noteName + ' ' + currentItem.op + ' ' + currentItem.interval.abbrev + ' = ?';
