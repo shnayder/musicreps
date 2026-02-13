@@ -283,9 +283,7 @@ export function createQuizEngine(mode, container) {
     quizArea: container.querySelector('.quiz-area'),
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
-    quizControls: container.querySelector('.quiz-controls'),
     quizHeader: container.querySelector('.quiz-header'),
-    quizHeaderTitle: container.querySelector('.quiz-header-title'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
     sessionStats: container.querySelector('.session-stats'),
     questionCountEl: container.querySelector('.question-count'),
@@ -443,14 +441,14 @@ export function createQuizEngine(mode, container) {
       if (state.phase !== 'active') els.countdownBar.style.width = '0%';
     }
 
-    // Quiz header visibility
+    // Quiz header visibility — only during active quiz, not calibration
     if (els.quizHeader) {
-      els.quizHeader.style.display = state.quizActive ? 'flex' : 'none';
+      els.quizHeader.style.display = state.phase === 'active' ? 'flex' : 'none';
     }
 
     // Session stats (question count + elapsed time)
     if (els.sessionStats) {
-      els.sessionStats.style.display = state.quizActive ? 'flex' : 'none';
+      els.sessionStats.style.display = state.phase === 'active' ? 'flex' : 'none';
     }
     if (els.questionCountEl && state.phase === 'active') {
       els.questionCountEl.textContent = state.questionCount;
@@ -460,11 +458,13 @@ export function createQuizEngine(mode, container) {
     if (els.progressBar) {
       els.progressBar.style.display = state.quizActive && state.phase === 'active' ? '' : 'none';
     }
-    if (els.progressFill && state.totalEnabledCount > 0) {
-      const pct = Math.round((state.masteredCount / state.totalEnabledCount) * 100);
+    if (els.progressFill) {
+      const pct = state.totalEnabledCount > 0
+        ? Math.round((state.masteredCount / state.totalEnabledCount) * 100)
+        : 0;
       els.progressFill.style.width = pct + '%';
     }
-    if (els.progressText && state.totalEnabledCount > 0) {
+    if (els.progressText) {
       els.progressText.textContent = state.masteredCount + ' / ' + state.totalEnabledCount;
     }
 

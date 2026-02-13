@@ -41,7 +41,7 @@ _What information is most useful mid-quiz? Options to consider:_
   - Mastery summary or other notion of progress (see Progress Display below)
 
 ### What to hide or change
-- the question/prompt and the answer are shouldn't have anything between them:
+- the question/prompt and the answer shouldn't have anything between them:
   - e.g. for the fretboard quiz, we currently have
     Fretboard
     String selector & natural only checkbox

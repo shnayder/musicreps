@@ -203,8 +203,12 @@ function createSpeedTapMode() {
   }
 
   function startSessionTimer() {
+    if (sessionElapsedInterval) {
+      clearInterval(sessionElapsedInterval);
+    }
     sessionStartTime = Date.now();
     roundCount = 0;
+    updateRoundCount();
     updateSessionElapsed();
     sessionElapsedInterval = setInterval(updateSessionElapsed, 1000);
   }
@@ -238,11 +242,13 @@ function createSpeedTapMode() {
 
   function renderProgress() {
     const progress = computeProgress();
-    if (els.progressFill && progress.totalEnabledCount > 0) {
-      const pct = Math.round((progress.masteredCount / progress.totalEnabledCount) * 100);
+    if (els.progressFill) {
+      const pct = progress.totalEnabledCount > 0
+        ? Math.round((progress.masteredCount / progress.totalEnabledCount) * 100)
+        : 0;
       els.progressFill.style.width = pct + '%';
     }
-    if (els.progressText && progress.totalEnabledCount > 0) {
+    if (els.progressText) {
       els.progressText.textContent = progress.masteredCount + ' / ' + progress.totalEnabledCount;
     }
   }
