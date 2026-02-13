@@ -267,6 +267,7 @@ button {
 /* --- Progress bar --- */
 .progress-bar {
   display: none;
+  width: 100%;
   max-width: 300px;
   height: 20px;
   background: #eee;
