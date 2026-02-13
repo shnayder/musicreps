@@ -8,7 +8,47 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 
   <style>
-    * { -webkit-tap-highlight-color: transparent; }
+    :root {
+  /* Semantic colors */
+  --color-success: #4CAF50;
+  --color-success-dark: #388E3C;
+  --color-success-bg: #e8f5e9;
+  --color-success-text: #2e7d32;
+  --color-error: #f44336;
+  --color-error-bg: #ffebee;
+  --color-error-text: #c62828;
+  --color-focus: #2196F3;
+  --color-focus-bg: #e3f2fd;
+  --color-recommended: #FF9800;
+  --color-highlight: #FFD700;
+
+  /* Text */
+  --color-text: #333;
+  --color-text-muted: #666;
+  --color-text-light: #999;
+
+  /* Surfaces & backgrounds */
+  --color-bg: #fff;
+  --color-surface: #f5f5f5;
+  --color-surface-hover: #f0f0f0;
+  --color-surface-alt: #eee;
+  --color-surface-pressed: #d0d0d0;
+
+  /* Borders */
+  --color-border: #999;
+  --color-border-light: #ccc;
+  --color-border-lighter: #ddd;
+
+  /* Heatmap scale (green → red, shared across retention & speed) */
+  --heatmap-none: #ddd;
+  --heatmap-5: hsl(120, 60%, 65%);
+  --heatmap-4: hsl(80, 60%, 65%);
+  --heatmap-3: hsl(50, 60%, 65%);
+  --heatmap-2: hsl(30, 60%, 65%);
+  --heatmap-1: hsl(0, 60%, 65%);
+}
+
+* { -webkit-tap-highlight-color: transparent; }
 body {
   font-family: system-ui, -apple-system, sans-serif;
   max-width: 1400px;
@@ -35,7 +75,7 @@ body {
   padding: 0.25rem 0.5rem;
   margin: 0;
   line-height: 1;
-  color: #333;
+  color: var(--color-text);
 }
 .top-bar h1 {
   margin: 0;
@@ -45,7 +85,7 @@ body {
 }
 .version {
   font-size: 0.75rem;
-  color: #aaa;
+  color: var(--color-text-light);
   padding-right: 0.25rem;
 }
 .nav-overlay {
@@ -67,7 +107,7 @@ body {
   left: -280px;
   width: 260px;
   height: 100%;
-  background: #fff;
+  background: var(--color-bg);
   box-shadow: 2px 0 8px rgba(0,0,0,0.15);
   z-index: 100;
   transition: left 0.2s ease;
@@ -86,15 +126,15 @@ body {
   background: none;
   font-size: 1rem;
   cursor: pointer;
-  color: #333;
+  color: var(--color-text);
   margin: 0;
 }
 .nav-drawer button:hover {
-  background: #f0f0f0;
+  background: var(--color-surface-hover);
 }
 .nav-drawer button.active {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
   font-weight: 600;
 }
 
@@ -130,10 +170,10 @@ body {
 .string-toggle {
   width: 28px;
   height: 28px;
-  border: 1px solid #999;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: #f5f5f5;
-  color: #999;
+  background: var(--color-surface);
+  color: var(--color-border);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -141,15 +181,15 @@ body {
   margin: 0;
 }
 .string-toggle.active {
-  background: #4CAF50;
+  background: var(--color-success);
   color: white;
-  border-color: #4CAF50;
+  border-color: var(--color-success);
 }
 .string-toggle.recommended {
-  box-shadow: 0 0 0 2px #FF9800;
+  box-shadow: 0 0 0 2px var(--color-recommended);
 }
 .string-toggle.active.recommended {
-  border-color: #FF9800;
+  border-color: var(--color-recommended);
 }
 .distance-toggles {
   display: flex;
@@ -159,10 +199,10 @@ body {
 }
 .distance-toggle {
   height: 28px;
-  border: 1px solid #999;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: #f5f5f5;
-  color: #999;
+  background: var(--color-surface);
+  color: var(--color-border);
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
@@ -170,15 +210,15 @@ body {
   margin: 0;
 }
 .distance-toggle.active {
-  background: #4CAF50;
+  background: var(--color-success);
   color: white;
-  border-color: #4CAF50;
+  border-color: var(--color-success);
 }
 .distance-toggle.recommended {
-  box-shadow: 0 0 0 2px #FF9800;
+  box-shadow: 0 0 0 2px var(--color-recommended);
 }
 .distance-toggle.active.recommended {
-  border-color: #FF9800;
+  border-color: var(--color-recommended);
 }
 .fretboard-container {
   position: relative;
@@ -190,7 +230,7 @@ body {
   width: 100%;
   height: auto;
   display: block;
-  background: #fff;
+  background: var(--color-bg);
   touch-action: manipulation;
 }
 .fret-numbers {
@@ -202,7 +242,7 @@ body {
   position: absolute;
   transform: translateX(-50%);
   font-size: 0.9rem;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 /* --- Quiz controls (shared) --- */
@@ -224,8 +264,8 @@ button {
   margin: 0 0.5rem;
 }
 .mastery-message {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
   font-weight: bold;
   font-size: 0.95rem;
   padding: 0.5rem 1rem;
@@ -238,27 +278,27 @@ button {
   display: none;
   align-items: center;
   padding: 0.4rem 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-surface-alt);
   margin-bottom: 0.5rem;
 }
 .quiz-header-title {
   flex: 1;
   font-size: 1rem;
   font-weight: 500;
-  color: #666;
+  color: var(--color-text-muted);
 }
 .quiz-header-close {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #999;
+  color: var(--color-text-light);
   cursor: pointer;
   padding: 0 0.25rem;
   line-height: 1;
   margin: 0;
 }
 .quiz-header-close:hover {
-  color: #333;
+  color: var(--color-text);
 }
 
 /* --- Session stats (question count + elapsed time) --- */
@@ -267,7 +307,7 @@ button {
   justify-content: center;
   gap: 1.5rem;
   font-size: 0.85rem;
-  color: #999;
+  color: var(--color-text-light);
   margin-bottom: 0.5rem;
 }
 .session-stats span {
@@ -280,7 +320,7 @@ button {
   width: 100%;
   max-width: 300px;
   height: 20px;
-  background: #eee;
+  background: var(--color-surface-alt);
   border-radius: 10px;
   margin: 0 auto 0.75rem;
   overflow: hidden;
@@ -288,7 +328,7 @@ button {
 }
 .progress-fill {
   height: 100%;
-  background: #4CAF50;
+  background: var(--color-success);
   border-radius: 10px;
   transition: width 0.3s ease;
   min-width: 0;
@@ -304,7 +344,7 @@ button {
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
   pointer-events: none;
 }
 
@@ -319,18 +359,18 @@ button {
 .countdown-container {
   width: 200px;
   height: 8px;
-  background: #eee;
+  background: var(--color-surface-alt);
   margin: 1rem auto;
   border-radius: 4px;
   overflow: hidden;
 }
 .countdown-bar {
   height: 100%;
-  background: #4CAF50;
+  background: var(--color-success);
   transition: width 0.1s linear;
 }
 .countdown-bar.expired {
-  background: #f44336;
+  background: var(--color-error);
 }
 
 /* --- Note buttons --- */
@@ -347,9 +387,9 @@ button {
   height: 48px;
   font-size: 1.15rem;
   font-weight: 500;
-  border: 2px solid #666;
+  border: 2px solid var(--color-text-muted);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg);
   cursor: pointer;
   padding: 0 0.5rem;
   touch-action: manipulation;
@@ -358,7 +398,7 @@ button {
   background: #e8e8e8;
 }
 .note-btn:active {
-  background: #d0d0d0;
+  background: var(--color-surface-pressed);
 }
 .note-btn:disabled {
   opacity: 0.5;
@@ -388,15 +428,15 @@ button {
   height: 48px;
   font-size: 1.1rem;
   font-weight: 500;
-  border: 2px solid #666;
+  border: 2px solid var(--color-text-muted);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg);
   cursor: pointer;
   padding: 0 0.25rem;
   touch-action: manipulation;
 }
 .answer-btn:active {
-  background: #d0d0d0;
+  background: var(--color-surface-pressed);
 }
 .answer-btn:disabled {
   opacity: 0.5;
@@ -436,26 +476,26 @@ button {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #999;
+  color: var(--color-text-light);
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   line-height: 1;
   margin: 0;
 }
 .calibration-close-btn:hover {
-  color: #333;
+  color: var(--color-text);
 }
 
 /* --- Calibration highlight --- */
 .calibration-target {
-  background: #4CAF50 !important;
-  border-color: #388E3C !important;
+  background: var(--color-success) !important;
+  border-color: var(--color-success-dark) !important;
   color: white !important;
   box-shadow: 0 0 12px rgba(76, 175, 80, 0.6);
 }
 .calibration-progress {
   font-size: 0.9rem;
-  color: #666;
+  color: var(--color-text-muted);
   margin-top: 0.5rem;
 }
 .calibration-action-btn {
@@ -464,14 +504,14 @@ button {
   padding: 0.75rem 2.5rem;
   font-size: 1.1rem;
   font-weight: 600;
-  background: #4CAF50;
+  background: var(--color-success);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
 }
 .calibration-action-btn:active {
-  background: #388E3C;
+  background: var(--color-success-dark);
 }
 .calibration-results {
   text-align: center;
@@ -491,12 +531,12 @@ button {
 }
 .calibration-thresholds th,
 .calibration-thresholds td {
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border-light);
   padding: 0.35rem 0.5rem;
   text-align: left;
 }
 .calibration-thresholds th {
-  background: #f5f5f5;
+  background: var(--color-surface);
   font-weight: 600;
 }
 .calibration-thresholds td:first-child {
@@ -515,25 +555,25 @@ button {
   min-height: 2rem;
 }
 .correct {
-  color: green;
+  color: var(--color-success);
 }
 .incorrect {
-  color: red;
+  color: var(--color-error);
 }
 .time-display {
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   margin-top: 0.5rem;
 }
 .hint {
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 1rem;
   margin-top: 1rem;
 }
 .stats {
   margin-top: 1rem;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 /* --- Heatmap legends --- */
@@ -552,20 +592,20 @@ button {
   align-items: center;
   gap: 0.2rem;
   font-size: 0.75rem;
-  color: #666;
+  color: var(--color-text-muted);
 }
 .legend-swatch {
   width: 12px;
   height: 12px;
   border-radius: 3px;
-  border: 1px solid #999;
+  border: 1px solid var(--color-border);
 }
 .setting-group {
   display: flex;
   align-items: center;
   gap: 0.3rem;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--color-text-muted);
   cursor: pointer;
 }
 
@@ -580,12 +620,12 @@ button {
   font-size: 0.9rem;
 }
 .stats-table th, .stats-table td {
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border-light);
   padding: 0.3rem 0.6rem;
   text-align: center;
 }
 .stats-table th {
-  background: #f5f5f5;
+  background: var(--color-surface);
   font-weight: 600;
 }
 .stats-cell {
@@ -607,12 +647,12 @@ button {
   font-size: 0.8rem;
 }
 .stats-grid th, .stats-grid td {
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border-light);
   padding: 0.15rem 0.25rem;
   text-align: center;
 }
 .stats-grid th {
-  background: #f5f5f5;
+  background: var(--color-surface);
   font-weight: 600;
   font-size: 0.75rem;
 }
@@ -622,7 +662,7 @@ button {
 }
 .stats-grid-row-label {
   font-weight: 600;
-  background: #f5f5f5;
+  background: var(--color-surface);
   padding: 0.15rem 0.4rem;
 }
 
@@ -643,7 +683,7 @@ button {
   font-weight: 500;
 }
 .speed-tap-timer {
-  color: #666;
+  color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
 }
 .speed-tap-stats {
@@ -662,13 +702,13 @@ button {
   text-align: center;
   margin: 0.5rem 0;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--color-border-lighter);
 }
 
 /* --- Stats mode toggle (Recall / Speed) --- */
 .stats-toggle {
   display: inline-flex;
-  border: 2px solid #999;
+  border: 2px solid var(--color-border);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -678,21 +718,21 @@ button {
   font-weight: 500;
   border: none;
   border-radius: 0;
-  background: #fff;
-  color: #666;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
   cursor: pointer;
   margin: 0;
   transition: background 0.15s, color 0.15s;
 }
 .stats-toggle-btn + .stats-toggle-btn {
-  border-left: 1px solid #ccc;
+  border-left: 1px solid var(--color-border-light);
 }
 .stats-toggle-btn.active {
-  background: #4CAF50;
-  color: #fff;
+  background: var(--color-success);
+  color: var(--color-bg);
 }
 .stats-toggle-btn:not(.active):hover {
-  background: #f0f0f0;
+  background: var(--color-surface-hover);
 }
 
 /* --- Key signature answer buttons --- */
@@ -724,25 +764,25 @@ button {
   justify-content: center;
   width: 3rem;
   height: 2.5rem;
-  border: 2px solid #999;
+  border: 2px solid var(--color-border);
   border-radius: 6px;
   font-size: 1.2rem;
   font-weight: 600;
-  background: #f9f9f9;
+  background: var(--color-surface);
 }
 .chord-slot.active {
-  border-color: #2196F3;
-  background: #e3f2fd;
+  border-color: var(--color-focus);
+  background: var(--color-focus-bg);
 }
 .chord-slot.correct {
-  border-color: #4CAF50;
-  background: #e8f5e9;
-  color: #2e7d32;
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 .chord-slot.wrong {
-  border-color: #f44336;
-  background: #ffebee;
-  color: #c62828;
+  border-color: var(--color-error);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
 }
 
 /* Mobile layout */
@@ -2559,7 +2599,6 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-
     <div class="quiz-header" style="display: none;">
       <span class="quiz-header-title">Practicing</span>
       <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -2572,7 +2611,6 @@ button {
       <div class="progress-fill" style="width: 0%"></div>
       <div class="progress-text">0 / 0</div>
     </div>
-
     <div class="quiz-area">
       <div class="speed-tap-prompt"></div>
       <div class="speed-tap-status">
@@ -2580,10 +2618,12 @@ button {
         <span class="speed-tap-timer"></span>
       </div>
       <div class="fretboard-wrapper">
-        <div class="fretboard-container">
-          <svg class="fretboard" viewBox="0 0 600 240">
-            <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="4"/>
-            <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="1"/>
+      <div class="fretboard-container">
+        <svg class="fretboard" viewBox="0 0 600 240">
+          <!-- Nut (thick line at fret 0) -->
+          <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="4"/>
+          <!-- Frets (vertical lines) -->
+          <line x1="65" y1="0" x2="65" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="126" y1="0" x2="126" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="183" y1="0" x2="183" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="237" y1="0" x2="237" y2="240" stroke="#333" stroke-width="1"/>
@@ -2596,13 +2636,15 @@ button {
       <line x1="535" y1="0" x2="535" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="568" y1="0" x2="568" y2="240" stroke="#333" stroke-width="1"/>
       <line x1="600" y1="0" x2="600" y2="240" stroke="#333" stroke-width="1"/>
-            <line x1="0" y1="20" x2="600" y2="20" stroke="#333" stroke-width="1"/>
+          <!-- Strings (horizontal lines) -->
+          <line x1="0" y1="20" x2="600" y2="20" stroke="#333" stroke-width="1"/>
       <line x1="0" y1="60" x2="600" y2="60" stroke="#333" stroke-width="1.5"/>
       <line x1="0" y1="100" x2="600" y2="100" stroke="#333" stroke-width="2"/>
       <line x1="0" y1="140" x2="600" y2="140" stroke="#333" stroke-width="2.5"/>
       <line x1="0" y1="180" x2="600" y2="180" stroke="#333" stroke-width="3"/>
       <line x1="0" y1="220" x2="600" y2="220" stroke="#333" stroke-width="3.5"/>
-            <circle
+          <!-- Note circles -->
+          <circle
       class="note-circle"
       data-string="0"
       data-fret="0"
@@ -4240,16 +4282,16 @@ button {
       font-size="11"
       fill="#333"
     ></text>
-          </svg>
-          <div class="fret-numbers">
-            <div class="fret-number" style="left: 35%">3</div>
+        </svg>
+        <div class="fret-numbers">
+          <div class="fret-number" style="left: 35%">3</div>
     <div class="fret-number" style="left: 52%">5</div>
     <div class="fret-number" style="left: 67%">7</div>
     <div class="fret-number" style="left: 80.25%">9</div>
     <div class="fret-number" style="left: 97.33333333333334%">12</div>
-          </div>
         </div>
       </div>
+    </div>
       <div class="answer-buttons answer-buttons-notes" style="display: none;">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
@@ -6462,30 +6504,69 @@ function createQuizEngine(mode, container) {
 // ES module — main.ts strips "export" keywords for browser inlining.
 // Depends on globals (browser): NOTES, INTERVALS
 
+// --- Heatmap color scale (read from CSS custom properties) ---
+
+var _heatmapColors = null;
+
+function cssVar(name) {
+  try {
+    var val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    if (val) return val;
+  } catch (_) { /* Node.js / test environment — fall through to default */ }
+  return '';
+}
+
+function heatmapColors() {
+  if (!_heatmapColors) {
+    _heatmapColors = {
+      none:  cssVar('--heatmap-none')  || '#ddd',
+      level: [
+        cssVar('--heatmap-1') || 'hsl(0, 60%, 65%)',
+        cssVar('--heatmap-2') || 'hsl(30, 60%, 65%)',
+        cssVar('--heatmap-3') || 'hsl(50, 60%, 65%)',
+        cssVar('--heatmap-4') || 'hsl(80, 60%, 65%)',
+        cssVar('--heatmap-5') || 'hsl(120, 60%, 65%)',
+      ],
+    };
+  }
+  return _heatmapColors;
+}
+
+// Labels for the retention legend (index matches heatmapColors().level)
+var RETENTION_LABELS = [
+  'Needs work (&lt;20%)',
+  'Fading (&gt;20%)',
+  'Getting there (&gt;40%)',
+  'Solid (&gt;60%)',
+  'Automatic (&gt;80%)',
+];
+
 function getAutomaticityColor(auto) {
-  if (auto === null) return '#ddd';
-  if (auto > 0.8) return 'hsl(120, 60%, 65%)';
-  if (auto > 0.6) return 'hsl(80, 60%, 65%)';
-  if (auto > 0.4) return 'hsl(50, 60%, 65%)';
-  if (auto > 0.2) return 'hsl(30, 60%, 65%)';
-  return 'hsl(0, 60%, 65%)';
+  var c = heatmapColors();
+  if (auto === null) return c.none;
+  if (auto > 0.8) return c.level[4];
+  if (auto > 0.6) return c.level[3];
+  if (auto > 0.4) return c.level[2];
+  if (auto > 0.2) return c.level[1];
+  return c.level[0];
 }
 
 function getSpeedHeatmapColor(ms, baseline) {
-  if (ms === null) return '#ddd';
-  const b = baseline || 1000;
-  if (ms < b * 1.5) return 'hsl(120, 60%, 65%)';
-  if (ms < b * 3.0) return 'hsl(80, 60%, 65%)';
-  if (ms < b * 4.5) return 'hsl(50, 60%, 65%)';
-  if (ms < b * 6.0) return 'hsl(30, 60%, 65%)';
-  return 'hsl(0, 60%, 65%)';
+  var c = heatmapColors();
+  if (ms === null) return c.none;
+  var b = baseline || 1000;
+  if (ms < b * 1.5) return c.level[4];
+  if (ms < b * 3.0) return c.level[3];
+  if (ms < b * 4.5) return c.level[2];
+  if (ms < b * 6.0) return c.level[1];
+  return c.level[0];
 }
 
 function getStatsCellColor(selector, itemId, statsMode, baseline) {
   if (statsMode === 'retention') {
     return getAutomaticityColor(selector.getAutomaticity(itemId));
   }
-  const stats = selector.getStats(itemId);
+  var stats = selector.getStats(itemId);
   return getSpeedHeatmapColor(stats ? stats.ewma : null, baseline);
 }
 
@@ -6497,19 +6578,19 @@ function getStatsCellColor(selector, itemId, statsMode, baseline) {
 function getStatsCellColorMerged(selector, itemIds, statsMode, baseline) {
   if (typeof itemIds === 'string') return getStatsCellColor(selector, itemIds, statsMode, baseline);
   if (statsMode === 'retention') {
-    let sum = 0, count = 0;
-    for (const id of itemIds) {
-      const a = selector.getAutomaticity(id);
+    var sum = 0, count = 0;
+    for (var i = 0; i < itemIds.length; i++) {
+      var a = selector.getAutomaticity(itemIds[i]);
       if (a !== null) { sum += a; count++; }
     }
     return getAutomaticityColor(count > 0 ? sum / count : null);
   }
-  let sum = 0, count = 0;
-  for (const id of itemIds) {
-    const stats = selector.getStats(id);
-    if (stats && stats.ewma != null) { sum += stats.ewma; count++; }
+  var sum2 = 0, count2 = 0;
+  for (var j = 0; j < itemIds.length; j++) {
+    var stats = selector.getStats(itemIds[j]);
+    if (stats && stats.ewma != null) { sum2 += stats.ewma; count2++; }
   }
-  return getSpeedHeatmapColor(count > 0 ? sum / count : null, baseline);
+  return getSpeedHeatmapColor(count2 > 0 ? sum2 / count2 : null, baseline);
 }
 
 /**
@@ -6525,14 +6606,15 @@ function getStatsCellColorMerged(selector, itemIds, statsMode, baseline) {
  */
 function renderStatsTable(selector, rows, fwdHeader, revHeader, statsMode, containerEl, baseline) {
   if (!rows || rows.length === 0) { containerEl.innerHTML = ''; return; }
-  let html = '<table class="stats-table"><thead><tr>';
+  var html = '<table class="stats-table"><thead><tr>';
   html += '<th>' + rows[0]._colHeader + '</th><th>#</th>';
   html += '<th>' + fwdHeader + '</th><th>' + revHeader + '</th>';
   html += '</tr></thead><tbody>';
 
-  for (const row of rows) {
-    const fwdColor = getStatsCellColor(selector, row.fwdItemId, statsMode, baseline);
-    const revColor = getStatsCellColor(selector, row.revItemId, statsMode, baseline);
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var fwdColor = getStatsCellColor(selector, row.fwdItemId, statsMode, baseline);
+    var revColor = getStatsCellColor(selector, row.revItemId, statsMode, baseline);
     html += '<tr>';
     html += '<td>' + row.label + '</td>';
     html += '<td>' + row.sublabel + '</td>';
@@ -6557,18 +6639,19 @@ function renderStatsTable(selector, rows, fwdHeader, revHeader, statsMode, conta
  * @param {number}   [baseline]  - motor baseline in ms (optional)
  */
 function renderStatsGrid(selector, colLabels, getItemId, statsMode, containerEl, notes, baseline) {
-  const noteList = notes || NOTES;
-  let html = '<table class="stats-grid"><thead><tr><th></th>';
-  for (const col of colLabels) {
-    html += '<th>' + col + '</th>';
+  var noteList = notes || NOTES;
+  var html = '<table class="stats-grid"><thead><tr><th></th>';
+  for (var c = 0; c < colLabels.length; c++) {
+    html += '<th>' + colLabels[c] + '</th>';
   }
   html += '</tr></thead><tbody>';
 
-  for (const note of noteList) {
+  for (var n = 0; n < noteList.length; n++) {
+    var note = noteList[n];
     html += '<tr><td class="stats-grid-row-label">' + (note.displayName || note.name) + '</td>';
-    for (let i = 0; i < colLabels.length; i++) {
-      const itemId = getItemId(note.name, i);
-      const color = Array.isArray(itemId)
+    for (var i = 0; i < colLabels.length; i++) {
+      var itemId = getItemId(note.name, i);
+      var color = Array.isArray(itemId)
         ? getStatsCellColorMerged(selector, itemId, statsMode, baseline)
         : getStatsCellColor(selector, itemId, statsMode, baseline);
       html += '<td class="stats-cell" style="background:' + color + '"></td>';
@@ -6589,8 +6672,8 @@ function renderStatsGrid(selector, colLabels, getItemId, statsMode, containerEl,
  * @returns {{ show(mode), hide(), mode }}
  */
 function createStatsControls(container, renderFn) {
-  let statsMode = null;
-  const statsContainer = container.querySelector('.stats-container');
+  var statsMode = null;
+  var statsContainer = container.querySelector('.stats-container');
 
   function show(mode) {
     statsMode = mode;
@@ -6621,37 +6704,44 @@ function createStatsControls(container, renderFn) {
 }
 
 function formatThreshold(ms) {
-  const s = ms / 1000;
+  var s = ms / 1000;
   return s % 1 === 0 ? s + 's' : s.toFixed(1) + 's';
+}
+
+/**
+ * Build a legend item HTML for a single heatmap level.
+ */
+function legendItem(color, label) {
+  return '<div class="legend-item"><div class="legend-swatch" style="background:' + color + '"></div>' + label + '</div>';
 }
 
 /**
  * Build a shared legend HTML string.
  */
 function buildStatsLegend(statsMode, baseline) {
+  var c = heatmapColors();
+  var html = '<div class="heatmap-legend active">';
+  html += legendItem(c.none, 'No data');
+
   if (statsMode === 'retention') {
-    return '<div class="heatmap-legend active">'
-      + '<div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>'
-      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>Automatic (&gt;80%)</div>'
-      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>Solid (&gt;60%)</div>'
-      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>Getting there (&gt;40%)</div>'
-      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>Fading (&gt;20%)</div>'
-      + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>Needs work (&lt;20%)</div>'
-      + '</div>';
+    for (var i = c.level.length - 1; i >= 0; i--) {
+      html += legendItem(c.level[i], RETENTION_LABELS[i]);
+    }
+  } else {
+    var b = baseline || 1000;
+    var t1 = formatThreshold(b * 1.5);
+    var t2 = formatThreshold(b * 3);
+    var t3 = formatThreshold(b * 4.5);
+    var t4 = formatThreshold(b * 6);
+    html += legendItem(c.level[4], '&lt; ' + t1);
+    html += legendItem(c.level[3], t1 + '\u2013' + t2);
+    html += legendItem(c.level[2], t2 + '\u2013' + t3);
+    html += legendItem(c.level[1], t3 + '\u2013' + t4);
+    html += legendItem(c.level[0], '&ge; ' + t4);
   }
-  const b = baseline || 1000;
-  const t1 = formatThreshold(b * 1.5);
-  const t2 = formatThreshold(b * 3);
-  const t3 = formatThreshold(b * 4.5);
-  const t4 = formatThreshold(b * 6);
-  return '<div class="heatmap-legend active">'
-    + '<div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>'
-    + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; ' + t1 + '</div>'
-    + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>' + t1 + '\u2013' + t2 + '</div>'
-    + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>' + t2 + '\u2013' + t3 + '</div>'
-    + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>' + t3 + '\u2013' + t4 + '</div>'
-    + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&ge; ' + t4 + '</div>'
-    + '</div>';
+
+  html += '</div>';
+  return html;
 }
 
 // Shared recommendation algorithm: consolidate-before-expanding.
@@ -6860,6 +6950,12 @@ function createFretboardMode() {
     noteMatchesInput,
   });
 
+  // --- Colors (from CSS custom properties, cached once) ---
+  const _cs = getComputedStyle(document.documentElement);
+  const COLOR_HIGHLIGHT = _cs.getPropertyValue('--color-highlight').trim();
+  const COLOR_SUCCESS = _cs.getPropertyValue('--color-success').trim();
+  const COLOR_ERROR = _cs.getPropertyValue('--color-error').trim();
+
   // --- SVG helpers ---
 
   function highlightCircle(string, fret, color) {
@@ -7009,7 +7105,7 @@ function createFretboardMode() {
       currentString = q.currentString;
       currentFret = q.currentFret;
       currentNote = q.currentNote;
-      highlightCircle(q.currentString, q.currentFret, '#FFD700');
+      highlightCircle(q.currentString, q.currentFret, COLOR_HIGHLIGHT);
     },
 
     checkAnswer(itemId, input) {
@@ -7018,9 +7114,9 @@ function createFretboardMode() {
 
     onAnswer(itemId, result, responseTime) {
       if (result.correct) {
-        highlightCircle(currentString, currentFret, '#4CAF50');
+        highlightCircle(currentString, currentFret, COLOR_SUCCESS);
       } else {
-        highlightCircle(currentString, currentFret, '#f44336');
+        highlightCircle(currentString, currentFret, COLOR_ERROR);
       }
       showNoteText(currentString, currentFret);
     },
@@ -7217,6 +7313,11 @@ function createSpeedTapMode() {
     return naturalsOnly ? NATURAL_NOTES.slice() : NOTES.map(n => n.name);
   }
 
+  // --- Colors (from CSS custom properties, cached once) ---
+  const _cs = getComputedStyle(document.documentElement);
+  const COLOR_SUCCESS = _cs.getPropertyValue('--color-success').trim();
+  const COLOR_ERROR = _cs.getPropertyValue('--color-error').trim();
+
   // --- SVG helpers ---
 
   function highlightCircle(string, fret, color) {
@@ -7269,18 +7370,7 @@ function createSpeedTapMode() {
     }
     html += '</tr></tbody></table>';
 
-    if (mode === 'speed') {
-      html += '<div class="heatmap-legend active">'
-        + '<div class="legend-item"><div class="legend-swatch" style="background:#ddd"></div>No data</div>'
-        + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(120,60%,65%)"></div>&lt; 1.5s/pos</div>'
-        + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(80,60%,65%)"></div>1.5\u20133s/pos</div>'
-        + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(50,60%,65%)"></div>3\u20134.5s/pos</div>'
-        + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(30,60%,65%)"></div>4.5\u20136s/pos</div>'
-        + '<div class="legend-item"><div class="legend-swatch" style="background:hsl(0,60%,65%)"></div>&gt; 6s/pos</div>'
-        + '</div>';
-    } else {
-      html += buildStatsLegend(mode);
-    }
+    html += buildStatsLegend(mode);
 
     el.innerHTML = html;
   });
@@ -7698,7 +7788,7 @@ function createSpeedTapMode() {
 
     if (tappedNote === currentNote) {
       foundPositions.add(key);
-      highlightCircle(string, fret, '#4CAF50');
+      highlightCircle(string, fret, COLOR_SUCCESS);
       showNoteText(string, fret);
       updateProgress();
 
@@ -7707,7 +7797,7 @@ function createSpeedTapMode() {
       }
     } else {
       // Wrong tap — flash red, show actual note, then reset
-      highlightCircle(string, fret, '#f44336');
+      highlightCircle(string, fret, COLOR_ERROR);
       showNoteText(string, fret);
 
       const timeout = setTimeout(() => {
