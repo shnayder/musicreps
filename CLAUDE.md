@@ -42,6 +42,7 @@ plans/                   # Design docs, product specs, execution plans
   generated/             #   Generated artifacts
   references/            #   Reference material
 docs/                    # Built output for GitHub Pages
+.github/workflows/       # CI: preview deploys for claude/* branches
 ```
 
 ## Architecture

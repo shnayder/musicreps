@@ -1,0 +1,49 @@
+name: Cleanup Preview
+
+on:
+  delete:
+  pull_request:
+    types: [closed]
+
+concurrency:
+  group: preview-deploy
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    # Only run for claude/* branches in this repo (not forks)
+    if: >-
+      (github.event_name == 'delete' && startsWith(github.event.ref, 'claude/')) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'claude/'))
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Remove preview directory
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH="${{ github.event.pull_request.head.ref }}"
+          else
+            BRANCH="${{ github.event.ref }}"
+          fi
+          SAFE_NAME=$(echo "${BRANCH}" | sed 's/[^a-zA-Z0-9-]/-/g')
+
+          if [ -d "docs/preview/${SAFE_NAME}" ]; then
+            rm -rf "docs/preview/${SAFE_NAME}"
+
+            # Remove preview dir itself if empty
+            rmdir docs/preview 2>/dev/null || true
+
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A docs/preview/
+            git commit -m "Cleanup preview: ${BRANCH}"
+            git push origin main
+          else
+            echo "No preview directory found for ${SAFE_NAME}, skipping."
+          fi

@@ -1,0 +1,97 @@
+name: Deploy Preview
+
+on:
+  push:
+    branches:
+      - 'claude/**'
+
+concurrency:
+  group: preview-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npx tsx build.ts
+
+      - name: Stash build output
+        run: |
+          mkdir -p /tmp/preview-build
+          cp docs/* /tmp/preview-build/ 2>/dev/null || true
+
+      - name: Deploy to preview directory on main
+        run: |
+          SAFE_NAME=$(echo "${GITHUB_REF_NAME}" | sed 's/[^a-zA-Z0-9-]/-/g')
+
+          git fetch origin main
+          git checkout main
+
+          mkdir -p "docs/preview/${SAFE_NAME}"
+          cp /tmp/preview-build/* "docs/preview/${SAFE_NAME}/"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "docs/preview/${SAFE_NAME}"
+          git commit -m "Preview: ${GITHUB_REF_NAME}" || exit 0
+          git push origin main
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.ref.replace('refs/heads/', '');
+            const safeName = branch.replace(/[^a-zA-Z0-9-]/g, '-');
+            const previewUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/preview/${safeName}/`;
+
+            // Find open PRs for this branch
+            const pulls = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `${context.repo.owner}:${branch}`,
+              state: 'open',
+            });
+
+            const marker = '<!-- preview-bot -->';
+            const body = `${marker}\n**Preview deployed:** ${previewUrl}`;
+
+            for (const pr of pulls.data) {
+              // Check if we already commented
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+              });
+              const existing = comments.data.find(c => c.body.includes(marker));
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body,
+                });
+              }
+            }

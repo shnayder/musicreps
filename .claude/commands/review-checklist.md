@@ -98,11 +98,13 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 - [ ] No unused code left behind (no `_unusedVar` renames, no `// removed`
       comments — just delete it)
 
-## Documentation
-<!-- Full explanation: guides/feature-process.md -->
+## Documentation & infrastructure
+<!-- Full explanation: guides/feature-process.md, guides/development.md § Deployment -->
 
 - [ ] Implementation plan exists in `plans/exec-plans/` for non-trivial changes
 - [ ] Plan updated after completion if implementation deviated
 - [ ] CLAUDE.md updated if architecture, modes, or conventions changed
 - [ ] New quiz mode: item ID format, item count, and answer type documented in
       CLAUDE.md "Quiz Modes" table
+- [ ] If build output changed (new files in `docs/`): `docs/` file list in
+      `guides/development.md` § Deployment updated
