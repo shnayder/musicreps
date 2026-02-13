@@ -456,7 +456,7 @@ export function createQuizEngine(mode, container) {
 
     // Progress bar
     if (els.progressBar) {
-      els.progressBar.style.display = state.quizActive && state.phase === 'active' ? '' : 'none';
+      els.progressBar.style.display = state.quizActive && state.phase === 'active' ? 'block' : 'none';
     }
     if (els.progressFill) {
       const pct = state.totalEnabledCount > 0
