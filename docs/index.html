@@ -5334,6 +5334,7 @@ const MAJOR_SCALE_STEPS = [0, 2, 4, 5, 7, 9, 11]; // cumulative semitones per de
 
 /** Parse a spelled note name like 'F#', 'Bb', 'Ebb' into { letter, accidental }. */
 function parseSpelledNote(name) {
+  if (!name) return { letter: '', accidental: 0 };
   const letter = name[0].toUpperCase();
   let acc = 0;
   for (let i = 1; i < name.length; i++) {
@@ -6105,7 +6106,9 @@ function createQuizEngine(mode, container) {
     const parsed = parseInt(storedBaseline, 10);
     if (parsed > 0) {
       motorBaseline = parsed;
-      selector.updateConfig(deriveScaledConfig(motorBaseline, DEFAULT_CONFIG));
+      const scaledConfig = deriveScaledConfig(motorBaseline, DEFAULT_CONFIG);
+      selector.updateConfig(scaledConfig);
+      deadlineTracker.updateConfig(scaledConfig);
     }
   }
 

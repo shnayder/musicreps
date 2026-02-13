@@ -264,7 +264,9 @@ export function createQuizEngine(mode, container) {
     const parsed = parseInt(storedBaseline, 10);
     if (parsed > 0) {
       motorBaseline = parsed;
-      selector.updateConfig(deriveScaledConfig(motorBaseline, DEFAULT_CONFIG));
+      const scaledConfig = deriveScaledConfig(motorBaseline, DEFAULT_CONFIG);
+      selector.updateConfig(scaledConfig);
+      deadlineTracker.updateConfig(scaledConfig);
     }
   }
 

@@ -83,6 +83,7 @@ export const MAJOR_SCALE_STEPS = [0, 2, 4, 5, 7, 9, 11]; // cumulative semitones
 
 /** Parse a spelled note name like 'F#', 'Bb', 'Ebb' into { letter, accidental }. */
 export function parseSpelledNote(name) {
+  if (!name) return { letter: '', accidental: 0 };
   const letter = name[0].toUpperCase();
   let acc = 0;
   for (let i = 1; i < name.length; i++) {
