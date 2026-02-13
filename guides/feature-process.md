@@ -18,6 +18,10 @@ item structure, or interaction model needs to be worked out.
 Example: `plans/product-specs/2026-02-11-new-quiz-modes-spec.md` — designed
 question formats, item ID schemes, grouping, and answer input for 4 new modes.
 
+When reviewing specs, focus on requirements, goals, scope, phasing. Do not bring up code-level concerns unless they're have significant impact on scope, performance, etc. It is expected that new code will be necessary -- no need to bring it up at this stage.
+
+Principle: don't future-proof in most cases. There'll be time enough to refactor and add additional abstractions, info, etc when we want to actually use it. e.g. when tracking # of items done in a quiz, don't need to persist it until we actually plan to display the persisted value somewhere. 
+
 ### Implementation plan
 
 Write when the **design is settled** but the technical approach has options,
