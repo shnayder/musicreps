@@ -36,12 +36,31 @@ jobs:
           if [ -d "docs/preview/${SAFE_NAME}" ]; then
             rm -rf "docs/preview/${SAFE_NAME}"
 
-            # Remove preview dir itself if empty
-            rmdir docs/preview 2>/dev/null || true
+            # Regenerate or remove preview index
+            if ls docs/preview/*/index.html 1>/dev/null 2>&1; then
+              cd docs/preview
+              cat > index.html << 'INDEXEOF'
+              <!DOCTYPE html>
+              <html><head><meta charset="utf-8"><title>Preview Builds</title>
+              <style>body{font-family:system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1rem}
+              a{display:block;padding:.5rem 0;font-size:1.1rem}</style></head>
+              <body><h1>Preview Builds</h1><ul>
+          INDEXEOF
+              for dir in */; do
+                [ "$dir" = "*/" ] && continue
+                name="${dir%/}"
+                echo "<li><a href=\"${name}/\">${name}</a></li>" >> index.html
+              done
+              echo "</ul></body></html>" >> index.html
+              cd ../..
+            else
+              # No previews left — remove the whole directory
+              rm -rf docs/preview
+            fi
 
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add -A docs/preview/
+            git add -A docs/preview
             git commit -m "Cleanup preview: ${BRANCH}"
             git push origin main
           else
