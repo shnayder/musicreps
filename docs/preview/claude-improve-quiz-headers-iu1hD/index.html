@@ -476,6 +476,14 @@ button {
   border-radius: 12px;
   padding: var(--space-5);
 }
+.practicing-label {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3);
+}
+.practicing-label:empty {
+  display: none;
+}
 .countdown-container {
   display: flex;
   align-items: center;
@@ -2758,6 +2766,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container">
         <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
@@ -3953,6 +3962,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container">
         <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
@@ -4012,6 +4022,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="speed-tap-status">
@@ -5742,6 +5753,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -5808,6 +5820,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-intervals">
@@ -5877,6 +5890,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -5932,6 +5946,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -5987,6 +6002,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-keysig">
@@ -6059,6 +6075,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -6123,6 +6140,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -6187,6 +6205,7 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="chord-slots"></div>
@@ -7095,7 +7114,7 @@ function engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs) {
     answersEnabled: false,
     feedbackText: isCorrect ? 'Correct!' : 'Incorrect \u2014 ' + correctAnswer,
     feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
-    timeDisplayText: (responseTimeMs / 1000).toFixed(1) + 's',
+    timeDisplayText: '',
     hintText: 'Tap anywhere or press Space for next',
     timedOut: false,
   };
@@ -7615,7 +7634,7 @@ function createQuizEngine(mode, container) {
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
     deadlineDisplay: container.querySelector('.deadline-display'),
-    quizHeaderTitle: container.querySelector('.quiz-header-title'),
+    practicingLabel: container.querySelector('.practicing-label'),
   };
 
   // --- Render: declaratively map state to DOM ---
@@ -8027,10 +8046,10 @@ function createQuizEngine(mode, container) {
     // before the engine renders the quiz UI state.
     if (mode.onStart) mode.onStart();
 
-    // Set quiz header title (e.g. "Practicing E, A strings")
-    if (els.quizHeaderTitle) {
+    // Set practicing label (e.g. "Practicing E, A strings")
+    if (els.practicingLabel) {
       const label = mode.getPracticingLabel ? mode.getPracticingLabel() : '';
-      els.quizHeaderTitle.textContent = label ? 'Practicing ' + label : '';
+      els.practicingLabel.textContent = label ? 'Practicing ' + label : '';
     }
 
     // Compute initial progress
@@ -8066,7 +8085,7 @@ function createQuizEngine(mode, container) {
       countdownInterval = null;
     }
     currentDeadline = null;
-    if (els.quizHeaderTitle) els.quizHeaderTitle.textContent = '';
+    if (els.practicingLabel) els.practicingLabel.textContent = '';
     state = engineStop(state);
     render();   // render() clears calibrationContentEl when phase is idle
     if (mode.onStop) mode.onStop();
