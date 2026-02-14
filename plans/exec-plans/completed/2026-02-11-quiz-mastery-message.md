@@ -9,13 +9,19 @@
 
 ### Mastery message (during quiz)
 
+> **Updated 2026-02-14:** Threshold raised from `recall >= recallThreshold`
+> (0.5) to `automaticity > automaticityThreshold` (0.8). The mastery message
+> and progress bar now require both high recall AND fast speed, matching the
+> "Automatic" band in the stats heatmap. See `checkAllAutomatic` in
+> `adaptive.js`.
+
 **Trigger:** After every answer submission, check if all enabled items have
-predicted recall >= `recallThreshold` (0.5). This reuses the existing
-threshold used by string recommendations for "mastered" items.
+`automaticity > automaticityThreshold` (0.8), where
+`automaticity = recall * speedScore`.
 
 **Condition:** ALL enabled items must:
-1. Have been seen (recall != null)
-2. Have recall >= recallThreshold
+1. Have been seen (automaticity != null)
+2. Have automaticity > automaticityThreshold (both remembered AND fast)
 
 ### Review message (when idle)
 

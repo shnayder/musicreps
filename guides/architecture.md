@@ -206,7 +206,7 @@ and wires up the stats display. Each mode provides only its render callback.
 This avoids duplicating toggle logic across 10 modes.
 
 Related helpers:
-- `getAutomaticityColor(recall)` — retention-based heatmap color
+- `getAutomaticityColor(auto)` — automaticity-based heatmap color
 - `getSpeedHeatmapColor(ms, baseline)` — speed-based heatmap color
 - `getStatsCellColor(selector, itemId, statsMode, baseline)` — unified cell coloring
 - `renderStatsTable()` — for lookup modes (tables)
@@ -289,6 +289,24 @@ Per-item half-life forgetting curve: `P(recall) = 2^(-t/stability)`.
 - Within-session weighting: recall factor `1 + (1 - recall)` multiplies
   speed weight
 - Two heatmap modes: **retention** (predicted recall) and **speed** (EWMA)
+
+### Completion Display (Progress Bar & Mastery Message)
+
+The progress bar and "Looks like you've got this!" message use the
+**automaticity** threshold, not just recall:
+
+- An item counts toward the progress bar when
+  `automaticity > automaticityThreshold` (0.8), where
+  `automaticity = recall * speedScore`. This matches the green "Automatic"
+  band in the stats heatmap (`getAutomaticityColor` in `stats-display.js`).
+- The mastery message appears when **all** enabled items exceed this threshold
+  (`checkAllAutomatic` in `adaptive.js`).
+- This is deliberately stricter than the recommendation system's "mastered"
+  classification (which uses `recall >= recallThreshold`, i.e. 0.5). You can
+  have items that are "mastered" enough for the recommendation algorithm to
+  expand to new groups, but not yet "automatic" enough to show completion.
+
+Config: `automaticityThreshold` (default 0.8) in `DEFAULT_CONFIG`.
 
 ### Consolidate Before Expanding
 
