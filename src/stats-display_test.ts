@@ -137,6 +137,14 @@ describe("getStatsCellColor", () => {
     };
     assert.equal(getStatsCellColor(selector, "test", "retention"), "hsl(30, 5%, 85%)");
   });
+
+  it("returns lowest level for retention mode with zero automaticity (wrong-only item)", () => {
+    const selector = {
+      getAutomaticity: () => 0,
+      getStats: () => ({ ewma: 9000 }),
+    };
+    assert.equal(getStatsCellColor(selector, "test", "retention"), "hsl(215, 45%, 60%)");
+  });
 });
 
 // ---------------------------------------------------------------------------

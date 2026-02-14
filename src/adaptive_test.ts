@@ -5,6 +5,7 @@ import {
   computeRecall,
   computeSpeedScore,
   computeAutomaticity,
+  computeAutomaticityForDisplay,
   updateStability,
   computeStabilityAfterWrong,
   computeWeight,
@@ -209,6 +210,29 @@ describe("computeAutomaticity", () => {
   it("returns moderate value for moderate speed + moderate recall", () => {
     const auto = computeAutomaticity(0.5, 0.5);
     assert.equal(auto, 0.25);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeAutomaticityForDisplay
+// ---------------------------------------------------------------------------
+
+describe("computeAutomaticityForDisplay", () => {
+  it("returns null for unseen items (hasSeen = false)", () => {
+    assert.equal(computeAutomaticityForDisplay(null, null, false), null);
+    assert.equal(computeAutomaticityForDisplay(null, 0.8, false), null);
+  });
+
+  it("returns 0 for seen items with incomplete data (hasSeen = true)", () => {
+    assert.equal(computeAutomaticityForDisplay(null, 0.8, true), 0);
+    assert.equal(computeAutomaticityForDisplay(0.8, null, true), 0);
+    assert.equal(computeAutomaticityForDisplay(null, null, true), 0);
+  });
+
+  it("returns computed value when both inputs are present", () => {
+    assert.equal(computeAutomaticityForDisplay(1.0, 1.0, true), 1.0);
+    assert.equal(computeAutomaticityForDisplay(0.5, 0.5, true), 0.25);
+    assert.equal(computeAutomaticityForDisplay(1.0, 1.0, false), 1.0);
   });
 });
 
@@ -544,6 +568,27 @@ describe("createAdaptiveSelector", () => {
     assert.equal(stats.sampleCount, 0);
     assert.equal(stats.lastCorrectAt, null);
     assert.equal(stats.stability, DEFAULT_CONFIG.initialStability);
+  });
+
+  it("getAutomaticity returns null for unseen items", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    assert.equal(selector.getAutomaticity("0-0"), null);
+  });
+
+  it("getAutomaticity returns 0 for wrong-only items", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("0-0", 3000, false);
+    assert.equal(selector.getAutomaticity("0-0"), 0);
+  });
+
+  it("getAutomaticity returns non-null after correct answer", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("0-0", 2000);
+    const auto = selector.getAutomaticity("0-0");
+    assert.ok(auto !== null && auto > 0, `should be positive, got ${auto}`);
   });
 
   it("getRecall returns null for unseen items", () => {

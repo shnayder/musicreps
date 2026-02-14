@@ -65,6 +65,18 @@ export function computeAutomaticity(recall, speedScore) {
 }
 
 /**
+ * Like computeAutomaticity but returns 0 instead of null when the item
+ * has been seen (hasSeen = true) but recall/speed data is incomplete.
+ * This shows "needs work" (lowest heatmap level) instead of "no data"
+ * for items the user has attempted but never answered correctly.
+ */
+export function computeAutomaticityForDisplay(recall, speedScore, hasSeen) {
+  const value = computeAutomaticity(recall, speedScore);
+  if (value == null && hasSeen) return 0;
+  return value;
+}
+
+/**
  * Compute new stability after a correct answer.
  * - First correct: initialStability.
  * - Subsequent: grow by stabilityGrowthBase * speedFactor.
@@ -276,7 +288,7 @@ export function createAdaptiveSelector(
     if (!stats) return null;
     const recall = getRecall(itemId);
     const speed = computeSpeedScore(stats.ewma, cfg);
-    return computeAutomaticity(recall, speed);
+    return computeAutomaticityForDisplay(recall, speed, true);
   }
 
   /**
