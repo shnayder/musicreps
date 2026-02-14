@@ -573,7 +573,7 @@ export function createQuizEngine(mode, container) {
     state = engineTimedOut(state, result.correctAnswer, deadline);
 
     // Check mastery and progress
-    const allMastered = selector.checkAllMastered(mode.getEnabledItems());
+    const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
     state = engineUpdateMasteryAfterAnswer(state, allMastered);
     const progress = computeProgress();
     state = engineUpdateProgress(state, progress.masteredCount, progress.totalEnabledCount);
@@ -673,9 +673,10 @@ export function createQuizEngine(mode, container) {
   function computeProgress() {
     const items = mode.getEnabledItems();
     let mastered = 0;
+    const threshold = selector.getConfig().automaticityThreshold;
     for (const id of items) {
-      const recall = selector.getRecall(id);
-      if (recall !== null && recall >= selector.getConfig().recallThreshold) {
+      const auto = selector.getAutomaticity(id);
+      if (auto !== null && auto > threshold) {
         mastered++;
       }
     }
@@ -716,7 +717,7 @@ export function createQuizEngine(mode, container) {
     state = engineSubmitAnswer(state, result.correct, result.correctAnswer, responseTime);
 
     // Check if all enabled items are mastered
-    const allMastered = selector.checkAllMastered(mode.getEnabledItems());
+    const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
     state = engineUpdateMasteryAfterAnswer(state, allMastered);
 
     // Update progress
@@ -755,7 +756,7 @@ export function createQuizEngine(mode, container) {
     const items = mode.getEnabledItems();
     state = engineUpdateIdleMessage(
       state,
-      selector.checkAllMastered(items),
+      selector.checkAllAutomatic(items),
       selector.checkNeedsReview(items),
     );
     render();
