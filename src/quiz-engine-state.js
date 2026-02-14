@@ -41,6 +41,7 @@ export function initialEngineState() {
     showStatsControls: true,
     quizActive: false,
     answersEnabled: false,
+    timedOut: false,
   };
 }
 
@@ -81,6 +82,7 @@ export function engineNextQuestion(state, nextItemId, nowMs) {
     timeDisplayText: '',
     hintText: '',
     answersEnabled: true,
+    timedOut: false,
   };
 }
 
@@ -98,8 +100,28 @@ export function engineSubmitAnswer(state, isCorrect, correctAnswer, responseTime
     answersEnabled: false,
     feedbackText: isCorrect ? 'Correct!' : 'Incorrect \u2014 ' + correctAnswer,
     feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
-    timeDisplayText: responseTimeMs + ' ms',
+    timeDisplayText: (responseTimeMs / 1000).toFixed(1) + 's',
     hintText: 'Tap anywhere or press Space for next',
+    timedOut: false,
+  };
+}
+
+/**
+ * Transition: timer expired before user answered.
+ * @param {EngineState} state
+ * @param {string} correctAnswer - display string for the correct answer
+ * @param {number} deadlineMs - the deadline that was active
+ */
+export function engineTimedOut(state, correctAnswer, deadlineMs) {
+  return {
+    ...state,
+    answered: true,
+    answersEnabled: false,
+    feedbackText: 'Time\u2019s up \u2014 ' + correctAnswer,
+    feedbackClass: 'feedback incorrect',
+    timeDisplayText: 'limit: ' + (deadlineMs / 1000).toFixed(1) + 's',
+    hintText: 'Tap anywhere or press Space for next',
+    timedOut: true,
   };
 }
 

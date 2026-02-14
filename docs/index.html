@@ -275,7 +275,6 @@ button {
 }
 /* --- Quiz header (shown during quiz) --- */
 .quiz-header {
-  display: none;
   align-items: center;
   padding: 0.4rem 0;
   border-bottom: 1px solid var(--color-surface-alt);
@@ -303,7 +302,6 @@ button {
 
 /* --- Session stats (question count + elapsed time) --- */
 .session-stats {
-  display: none;
   justify-content: center;
   gap: 1.5rem;
   font-size: 0.85rem;
@@ -316,7 +314,6 @@ button {
 
 /* --- Progress bar --- */
 .progress-bar {
-  display: none;
   width: 100%;
   max-width: 300px;
   height: 20px;
@@ -357,10 +354,16 @@ button {
   display: block;
 }
 .countdown-container {
-  width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 240px;
+  margin: 1rem auto;
+}
+.countdown-track {
+  flex: 1;
   height: 8px;
   background: var(--color-surface-alt);
-  margin: 1rem auto;
   border-radius: 4px;
   overflow: hidden;
 }
@@ -371,6 +374,13 @@ button {
 }
 .countdown-bar.expired {
   background: var(--color-error);
+}
+.deadline-display {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  min-width: 2.5em;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 /* --- Note buttons --- */
@@ -835,7 +845,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v3.7</div>
+    <div class="version">v3.8</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -2556,7 +2566,7 @@ button {
     </div>
     <div class="quiz-area">
       <div class="countdown-container">
-        <div class="countdown-bar"></div>
+        <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
       <div class="note-buttons">
         <button class="note-btn" data-note="C">C</button>
@@ -4340,7 +4350,7 @@ button {
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
-      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4404,7 +4414,7 @@ button {
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
-      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-intervals">
         <button class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
@@ -4471,7 +4481,7 @@ button {
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
-      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4524,7 +4534,7 @@ button {
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
-      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4577,7 +4587,7 @@ button {
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
-      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-keysig">
         <button class="answer-btn answer-btn-keysig" data-sig="0">0</button>
@@ -4647,7 +4657,7 @@ button {
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
-      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4709,7 +4719,7 @@ button {
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
-      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4771,7 +4781,7 @@ button {
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
-      <div class="countdown-container"><div class="countdown-bar"></div></div>
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="chord-slots"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -5158,6 +5168,7 @@ function createAdaptiveSelector(
 
 function createMemoryStorage() {
   const stats = new Map();
+  const deadlines = new Map();
   let lastSelected = null;
 
   return {
@@ -5173,6 +5184,12 @@ function createMemoryStorage() {
     setLastSelected(itemId) {
       lastSelected = itemId;
     },
+    getDeadline(itemId) {
+      return deadlines.get(itemId) ?? null;
+    },
+    saveDeadline(itemId, deadline) {
+      deadlines.set(itemId, deadline);
+    },
   };
 }
 
@@ -5183,6 +5200,7 @@ function createMemoryStorage() {
 function createLocalStorageAdapter(namespace) {
   const cache = {};
   const mkKey = (itemId) => `adaptive_${namespace}_${itemId}`;
+  const dlKey = (itemId) => `deadline_${namespace}_${itemId}`;
   const lastKey = `adaptive_${namespace}_lastSelected`;
 
   return {
@@ -5208,6 +5226,19 @@ function createLocalStorageAdapter(namespace) {
     },
     setLastSelected(itemId) {
       localStorage.setItem(lastKey, itemId);
+    },
+    getDeadline(itemId) {
+      const k = dlKey(itemId);
+      if (!(k in cache)) {
+        const data = localStorage.getItem(k);
+        cache[k] = data ? Number(data) : null;
+      }
+      return cache[k];
+    },
+    saveDeadline(itemId, deadline) {
+      const k = dlKey(itemId);
+      cache[k] = deadline;
+      localStorage.setItem(k, String(deadline));
     },
     /** Pre-populate cache to avoid localStorage reads during gameplay. */
     preload(itemIds) {
@@ -5303,6 +5334,7 @@ const MAJOR_SCALE_STEPS = [0, 2, 4, 5, 7, 9, 11]; // cumulative semitones per de
 
 /** Parse a spelled note name like 'F#', 'Bb', 'Ebb' into { letter, accidental }. */
 function parseSpelledNote(name) {
+  if (!name) return { letter: '', accidental: 0 };
   const letter = name[0].toUpperCase();
   let acc = 0;
   for (let i = 1; i < name.length; i++) {
@@ -5528,6 +5560,7 @@ function initialEngineState() {
     showStatsControls: true,
     quizActive: false,
     answersEnabled: false,
+    timedOut: false,
   };
 }
 
@@ -5568,6 +5601,7 @@ function engineNextQuestion(state, nextItemId, nowMs) {
     timeDisplayText: '',
     hintText: '',
     answersEnabled: true,
+    timedOut: false,
   };
 }
 
@@ -5585,8 +5619,28 @@ function engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs) {
     answersEnabled: false,
     feedbackText: isCorrect ? 'Correct!' : 'Incorrect \u2014 ' + correctAnswer,
     feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
-    timeDisplayText: responseTimeMs + ' ms',
+    timeDisplayText: (responseTimeMs / 1000).toFixed(1) + 's',
     hintText: 'Tap anywhere or press Space for next',
+    timedOut: false,
+  };
+}
+
+/**
+ * Transition: timer expired before user answered.
+ * @param {EngineState} state
+ * @param {string} correctAnswer - display string for the correct answer
+ * @param {number} deadlineMs - the deadline that was active
+ */
+function engineTimedOut(state, correctAnswer, deadlineMs) {
+  return {
+    ...state,
+    answered: true,
+    answersEnabled: false,
+    feedbackText: 'Time\u2019s up \u2014 ' + correctAnswer,
+    feedbackClass: 'feedback incorrect',
+    timeDisplayText: 'limit: ' + (deadlineMs / 1000).toFixed(1) + 's',
+    hintText: 'Tap anywhere or press Space for next',
+    timedOut: true,
   };
 }
 
@@ -5699,6 +5753,93 @@ function engineRouteKey(state, key) {
   return { action: 'ignore' };
 }
 
+// Per-item adaptive deadline staircase for the spaced repetition timer.
+// Pure functions + factory, same pattern as adaptive.js.
+// ES module — exports stripped for browser inlining.
+
+const DEFAULT_DEADLINE_CONFIG = {
+  decreaseFactor: 0.85,       // multiply deadline after correct answer
+  increaseFactor: 1.4,        // multiply deadline after incorrect/timeout
+  minDeadlineMargin: 1.3,     // multiply minTime by this for deadline floor
+  ewmaMultiplier: 2.0,        // cold start: ewma * this for items with history
+};
+
+/**
+ * Compute the initial deadline for an item based on its EWMA.
+ * - If EWMA exists: ewma * ewmaMultiplier (generous: ~2x average speed)
+ * - If no EWMA (unseen): maxDeadline (generous ceiling)
+ * Clamped to [minDeadline, maxDeadline].
+ */
+function computeInitialDeadline(ewma, adaptiveCfg, dlCfg) {
+  const minDeadline = Math.round(adaptiveCfg.minTime * dlCfg.minDeadlineMargin);
+  const maxDeadline = adaptiveCfg.maxResponseTime;
+  if (ewma != null) {
+    return Math.round(Math.max(minDeadline, Math.min(maxDeadline, ewma * dlCfg.ewmaMultiplier)));
+  }
+  return maxDeadline;
+}
+
+/**
+ * Adjust a deadline after an outcome.
+ * - Correct: decrease (push harder)
+ * - Incorrect/timeout: increase (ease off)
+ * Clamped to [minDeadline, maxDeadline].
+ */
+function adjustDeadline(currentDeadline, correct, adaptiveCfg, dlCfg) {
+  const minDeadline = Math.round(adaptiveCfg.minTime * dlCfg.minDeadlineMargin);
+  const maxDeadline = adaptiveCfg.maxResponseTime;
+  const factor = correct ? dlCfg.decreaseFactor : dlCfg.increaseFactor;
+  const adjusted = Math.round(currentDeadline * factor);
+  return Math.max(minDeadline, Math.min(maxDeadline, adjusted));
+}
+
+/**
+ * Create a deadline tracker that manages per-item deadlines with persistence.
+ *
+ * @param {object} storage - Storage adapter with getDeadline/saveDeadline
+ * @param {object} adaptiveCfg - Adaptive selector config (for minTime, maxResponseTime)
+ * @param {object} [dlCfg] - Deadline-specific config
+ */
+function createDeadlineTracker(storage, adaptiveCfg, dlCfg = DEFAULT_DEADLINE_CONFIG) {
+  /**
+   * Get the current deadline for an item.
+   * Loads from storage if persisted, otherwise cold-starts from EWMA.
+   * @param {string} itemId
+   * @param {number|null} ewma - The item's EWMA from the adaptive selector
+   * @returns {number} deadline in ms
+   */
+  function getDeadline(itemId, ewma) {
+    const stored = storage.getDeadline(itemId);
+    if (stored != null && stored > 0) return stored;
+    const initial = computeInitialDeadline(ewma, adaptiveCfg, dlCfg);
+    storage.saveDeadline(itemId, initial);
+    return initial;
+  }
+
+  /**
+   * Record an outcome and adjust the item's deadline.
+   * @param {string} itemId
+   * @param {boolean} correct
+   * @returns {number} the new deadline
+   */
+  function recordOutcome(itemId, correct) {
+    const current = storage.getDeadline(itemId);
+    if (current == null) return; // shouldn't happen — getDeadline was called first
+    const newDeadline = adjustDeadline(current, correct, adaptiveCfg, dlCfg);
+    storage.saveDeadline(itemId, newDeadline);
+    return newDeadline;
+  }
+
+  /**
+   * Update the adaptive config reference (e.g. after motor baseline calibration).
+   */
+  function updateConfig(newAdaptiveCfg) {
+    adaptiveCfg = newAdaptiveCfg;
+  }
+
+  return { getDeadline, recordOutcome, updateConfig };
+}
+
 // Shared quiz engine: manages adaptive selection, timing, countdown,
 // feedback, and keyboard/tap handling for all quiz modes.
 //
@@ -5706,10 +5847,12 @@ function engineRouteKey(state, key) {
 // shared lifecycle. ES module — exports stripped for browser inlining.
 //
 // Depends on globals (from quiz-engine-state.js): initialEngineState,
-// engineStart, engineNextQuestion, engineSubmitAnswer, engineStop,
-// engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer, engineUpdateProgress,
-// engineRouteKey, engineCalibrationIntro, engineCalibrating,
-// engineCalibrationResults
+// engineStart, engineNextQuestion, engineSubmitAnswer, engineTimedOut,
+// engineStop, engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer,
+// engineUpdateProgress, engineRouteKey, engineCalibrationIntro,
+// engineCalibrating, engineCalibrationResults
+//
+// Depends on globals (from deadline.js): createDeadlineTracker
 
 /**
  * Create a keyboard handler for note input (C D E F G A B + #/b for accidentals).
@@ -5940,6 +6083,7 @@ function runCalibration(opts) {
 function createQuizEngine(mode, container) {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
   const selector = createAdaptiveSelector(storage);
+  const deadlineTracker = createDeadlineTracker(storage, selector.getConfig());
 
   const provider = mode.calibrationProvider || 'button';
   const baselineKey = 'motorBaseline_' + provider;
@@ -5962,7 +6106,9 @@ function createQuizEngine(mode, container) {
     const parsed = parseInt(storedBaseline, 10);
     if (parsed > 0) {
       motorBaseline = parsed;
-      selector.updateConfig(deriveScaledConfig(motorBaseline, DEFAULT_CONFIG));
+      const scaledConfig = deriveScaledConfig(motorBaseline, DEFAULT_CONFIG);
+      selector.updateConfig(scaledConfig);
+      deadlineTracker.updateConfig(scaledConfig);
     }
   }
 
@@ -5992,6 +6138,7 @@ function createQuizEngine(mode, container) {
     progressBar: container.querySelector('.progress-bar'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
+    deadlineDisplay: container.querySelector('.deadline-display'),
   };
 
   // --- Render: declaratively map state to DOM ---
@@ -6121,8 +6268,8 @@ function createQuizEngine(mode, container) {
 
     if (els.startBtn)      els.startBtn.style.display     = state.showStartBtn ? 'inline' : 'none';
     if (els.stopBtn)       els.stopBtn.style.display      = state.showStopBtn ? 'inline' : 'none';
-    if (els.statsToggle)   els.statsToggle.style.display   = state.showHeatmapBtn ? '' : 'none';
-    if (els.statsControls) els.statsControls.style.display = state.showStatsControls ? '' : 'none';
+    if (els.statsToggle)   els.statsToggle.style.display   = state.showHeatmapBtn ? 'inline-flex' : 'none';
+    if (els.statsControls) els.statsControls.style.display = state.showStatsControls ? 'block' : 'none';
     if (els.quizArea)      els.quizArea.classList.toggle('active', state.quizActive);
     if (els.feedback) {
       els.feedback.textContent = state.feedbackText;
@@ -6140,6 +6287,9 @@ function createQuizEngine(mode, container) {
     if (els.countdownBar) {
       els.countdownBar.classList.remove('expired');
       if (state.phase !== 'active') els.countdownBar.style.width = '0%';
+    }
+    if (els.deadlineDisplay && state.phase !== 'active') {
+      els.deadlineDisplay.textContent = '';
     }
 
     // Quiz header visibility — only during active quiz, not calibration
@@ -6206,10 +6356,18 @@ function createQuizEngine(mode, container) {
     }
   }
 
-  // --- Countdown (purely DOM/timer — not part of state) ---
+  // --- Countdown with adaptive deadline ---
 
-  function getTargetTime() {
-    return selector.getConfig().automaticityTarget;
+  let currentDeadline = null; // deadline for the current question (ms)
+
+  /**
+   * Get the per-item deadline for the current question.
+   * Uses the deadline tracker (persistent staircase) with EWMA cold start.
+   */
+  function getItemDeadline(itemId) {
+    const stats = selector.getStats(itemId);
+    const ewma = stats ? stats.ewma : null;
+    return deadlineTracker.getDeadline(itemId, ewma);
   }
 
   function startCountdown() {
@@ -6220,7 +6378,7 @@ function createQuizEngine(mode, container) {
 
     if (countdownInterval) clearInterval(countdownInterval);
 
-    const targetTime = getTargetTime();
+    const targetTime = currentDeadline || selector.getConfig().automaticityTarget;
     let expired = false;
     const startTime = Date.now();
     countdownInterval = setInterval(() => {
@@ -6232,8 +6390,41 @@ function createQuizEngine(mode, container) {
         expired = true;
         bar.classList.add('expired');
         clearInterval(countdownInterval);
+        countdownInterval = null;
+        handleTimeout();
       }
     }, 50);
+  }
+
+  /**
+   * Handle timer expiry: auto-submit as incorrect, record to deadline tracker.
+   */
+  function handleTimeout() {
+    if (state.phase !== 'active' || state.answered) return;
+
+    const itemId = state.currentItemId;
+    const deadline = currentDeadline;
+
+    // Get the correct answer to display (pass empty string — always wrong, never crashes)
+    const result = mode.checkAnswer(itemId, '');
+
+    // Record as incorrect in both systems
+    selector.recordResponse(itemId, deadline, false);
+    deadlineTracker.recordOutcome(itemId, false);
+
+    state = engineTimedOut(state, result.correctAnswer, deadline);
+
+    // Check mastery and progress
+    const allMastered = selector.checkAllMastered(mode.getEnabledItems());
+    state = engineUpdateMasteryAfterAnswer(state, allMastered);
+    const progress = computeProgress();
+    state = engineUpdateProgress(state, progress.masteredCount, progress.totalEnabledCount);
+
+    render();
+
+    if (mode.onAnswer) {
+      mode.onAnswer(itemId, { correct: false, correctAnswer: result.correctAnswer }, deadline);
+    }
   }
 
   function setAnswerButtonsEnabled(enabled) {
@@ -6251,7 +6442,9 @@ function createQuizEngine(mode, container) {
   function applyBaseline(baseline) {
     motorBaseline = baseline;
     localStorage.setItem(baselineKey, String(baseline));
-    selector.updateConfig(deriveScaledConfig(baseline, DEFAULT_CONFIG));
+    const scaledConfig = deriveScaledConfig(baseline, DEFAULT_CONFIG);
+    selector.updateConfig(scaledConfig);
+    deadlineTracker.updateConfig(scaledConfig);
   }
 
   // --- Calibration ---
@@ -6338,8 +6531,12 @@ function createQuizEngine(mode, container) {
     if (items.length === 0) return;
 
     const nextItemId = selector.selectNext(items);
+    currentDeadline = getItemDeadline(nextItemId);
     state = engineNextQuestion(state, nextItemId, Date.now());
     render();
+    if (els.deadlineDisplay) {
+      els.deadlineDisplay.textContent = (currentDeadline / 1000).toFixed(1) + 's';
+    }
     mode.presentQuestion(state.currentItemId);
     startCountdown();
   }
@@ -6356,6 +6553,7 @@ function createQuizEngine(mode, container) {
 
     const result = mode.checkAnswer(state.currentItemId, input);
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
+    deadlineTracker.recordOutcome(state.currentItemId, result.correct);
 
     state = engineSubmitAnswer(state, result.correct, result.correctAnswer, responseTime);
 
@@ -6415,6 +6613,7 @@ function createQuizEngine(mode, container) {
       countdownInterval = null;
     }
     stopElapsedTimer();
+    currentDeadline = null;
     state = engineStop(state);
     render();   // render() clears calibrationContentEl when phase is idle
     if (mode.onStop) mode.onStop();
@@ -7701,7 +7900,7 @@ function createSpeedTapMode() {
     if (els.hint) els.hint.textContent = '';
     if (els.timeDisplay) els.timeDisplay.textContent = '';
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = 'none';
-    if (els.statsControls) els.statsControls.style.display = '';
+    if (els.statsControls) els.statsControls.style.display = 'block';
     if (els.startBtn) els.startBtn.style.display = 'inline';
     if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.recalibrateBtn) {
@@ -7869,7 +8068,7 @@ function createSpeedTapMode() {
     if (els.quizArea) els.quizArea.classList.add('active');
     if (els.quizHeader) els.quizHeader.style.display = 'flex';
     if (els.sessionStats) els.sessionStats.style.display = 'flex';
-    if (els.progressBar) els.progressBar.style.display = '';
+    if (els.progressBar) els.progressBar.style.display = 'block';
     startSessionTimer();
     renderProgress();
     nextRound();
@@ -7897,7 +8096,7 @@ function createSpeedTapMode() {
     if (els.hint) els.hint.textContent = '';
 
     if (els.fretboardWrapper) els.fretboardWrapper.style.display = 'none';
-    if (els.statsControls) els.statsControls.style.display = '';
+    if (els.statsControls) els.statsControls.style.display = 'block';
     if (els.startBtn) els.startBtn.style.display = 'inline';
     if (els.stopBtn) els.stopBtn.style.display = 'none';
     if (els.recalibrateBtn) {

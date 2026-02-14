@@ -76,7 +76,7 @@ export function numeralAnswerButtons(style?: string): string {
 
 /** Countdown bar + quiz prompt (shared by all text quiz modes). */
 export function countdownAndPrompt(): string {
-  return `<div class="countdown-container"><div class="countdown-bar"></div></div>
+  return `<div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>`;
 }
 

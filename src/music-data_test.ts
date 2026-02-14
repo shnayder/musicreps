@@ -171,6 +171,17 @@ describe("parseSpelledNote", () => {
     assert.deepEqual(parseSpelledNote("Bb"), { letter: "B", accidental: -1 });
     assert.deepEqual(parseSpelledNote("Ebb"), { letter: "E", accidental: -2 });
   });
+
+  it("handles empty string gracefully", () => {
+    const result = parseSpelledNote("");
+    assert.equal(result.letter, "");
+    assert.equal(result.accidental, 0);
+  });
+
+  it("handles null/undefined gracefully", () => {
+    assert.deepEqual(parseSpelledNote(null), { letter: "", accidental: 0 });
+    assert.deepEqual(parseSpelledNote(undefined), { letter: "", accidental: 0 });
+  });
 });
 
 describe("spelledNoteName", () => {

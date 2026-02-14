@@ -72,6 +72,7 @@ async function buildHTML(): Promise<string> {
     adaptiveJS,
     musicDataJS,
     quizEngineStateJS,
+    deadlineJS,
     quizEngineJS,
     statsDisplayJS,
     recommendationsJS,
@@ -93,6 +94,7 @@ async function buildHTML(): Promise<string> {
     readModule("./src/adaptive.js"),
     readModule("./src/music-data.js"),
     readModule("./src/quiz-engine-state.js"),
+    readModule("./src/deadline.js"),
     readModule("./src/quiz-engine.js"),
     readModule("./src/stats-display.js"),
     readModule("./src/recommendations.js"),
@@ -143,7 +145,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Fretboard</h1>
-    <div class="version">v3.7</div>
+    <div class="version">v3.8</div>
   </div>
 
   <!-- Fretboard mode -->
@@ -162,7 +164,7 @@ ${modeScreen("fretboard", {
         </label>`,
   beforeQuizArea: fretboardSVG("fretboard"),
   quizAreaContent: `<div class="countdown-container">
-        <div class="countdown-bar"></div>
+        <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
       <div class="note-buttons">
         <button class="note-btn" data-note="C">C</button>
@@ -270,6 +272,7 @@ ${modeScreen("chordSpelling", {
 ${adaptiveJS}
 ${musicDataJS}
 ${quizEngineStateJS}
+${deadlineJS}
 ${quizEngineJS}
 ${statsDisplayJS}
 ${recommendationsJS}

@@ -27,6 +27,7 @@ src/
   adaptive.js            # Adaptive question selector (ES module)
   music-data.js          # Shared music theory data (ES module)
   quiz-engine-state.js   # Pure engine state transitions (ES module)
+  deadline.js            # Per-item adaptive deadline staircase (ES module)
   quiz-engine.js         # Shared quiz lifecycle (ES module)
   stats-display.js       # Stats color functions, rendering (ES module)
   recommendations.js     # Consolidate-before-expanding algorithm (ES module)

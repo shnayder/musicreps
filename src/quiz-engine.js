@@ -5,10 +5,12 @@
 // shared lifecycle. ES module — exports stripped for browser inlining.
 //
 // Depends on globals (from quiz-engine-state.js): initialEngineState,
-// engineStart, engineNextQuestion, engineSubmitAnswer, engineStop,
-// engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer, engineUpdateProgress,
-// engineRouteKey, engineCalibrationIntro, engineCalibrating,
-// engineCalibrationResults
+// engineStart, engineNextQuestion, engineSubmitAnswer, engineTimedOut,
+// engineStop, engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer,
+// engineUpdateProgress, engineRouteKey, engineCalibrationIntro,
+// engineCalibrating, engineCalibrationResults
+//
+// Depends on globals (from deadline.js): createDeadlineTracker
 
 /**
  * Create a keyboard handler for note input (C D E F G A B + #/b for accidentals).
@@ -239,6 +241,7 @@ function runCalibration(opts) {
 export function createQuizEngine(mode, container) {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
   const selector = createAdaptiveSelector(storage);
+  const deadlineTracker = createDeadlineTracker(storage, selector.getConfig());
 
   const provider = mode.calibrationProvider || 'button';
   const baselineKey = 'motorBaseline_' + provider;
@@ -261,7 +264,9 @@ export function createQuizEngine(mode, container) {
     const parsed = parseInt(storedBaseline, 10);
     if (parsed > 0) {
       motorBaseline = parsed;
-      selector.updateConfig(deriveScaledConfig(motorBaseline, DEFAULT_CONFIG));
+      const scaledConfig = deriveScaledConfig(motorBaseline, DEFAULT_CONFIG);
+      selector.updateConfig(scaledConfig);
+      deadlineTracker.updateConfig(scaledConfig);
     }
   }
 
@@ -291,6 +296,7 @@ export function createQuizEngine(mode, container) {
     progressBar: container.querySelector('.progress-bar'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
+    deadlineDisplay: container.querySelector('.deadline-display'),
   };
 
   // --- Render: declaratively map state to DOM ---
@@ -440,6 +446,9 @@ export function createQuizEngine(mode, container) {
       els.countdownBar.classList.remove('expired');
       if (state.phase !== 'active') els.countdownBar.style.width = '0%';
     }
+    if (els.deadlineDisplay && state.phase !== 'active') {
+      els.deadlineDisplay.textContent = '';
+    }
 
     // Quiz header visibility — only during active quiz, not calibration
     if (els.quizHeader) {
@@ -505,10 +514,18 @@ export function createQuizEngine(mode, container) {
     }
   }
 
-  // --- Countdown (purely DOM/timer — not part of state) ---
+  // --- Countdown with adaptive deadline ---
 
-  function getTargetTime() {
-    return selector.getConfig().automaticityTarget;
+  let currentDeadline = null; // deadline for the current question (ms)
+
+  /**
+   * Get the per-item deadline for the current question.
+   * Uses the deadline tracker (persistent staircase) with EWMA cold start.
+   */
+  function getItemDeadline(itemId) {
+    const stats = selector.getStats(itemId);
+    const ewma = stats ? stats.ewma : null;
+    return deadlineTracker.getDeadline(itemId, ewma);
   }
 
   function startCountdown() {
@@ -519,7 +536,7 @@ export function createQuizEngine(mode, container) {
 
     if (countdownInterval) clearInterval(countdownInterval);
 
-    const targetTime = getTargetTime();
+    const targetTime = currentDeadline || selector.getConfig().automaticityTarget;
     let expired = false;
     const startTime = Date.now();
     countdownInterval = setInterval(() => {
@@ -531,8 +548,41 @@ export function createQuizEngine(mode, container) {
         expired = true;
         bar.classList.add('expired');
         clearInterval(countdownInterval);
+        countdownInterval = null;
+        handleTimeout();
       }
     }, 50);
+  }
+
+  /**
+   * Handle timer expiry: auto-submit as incorrect, record to deadline tracker.
+   */
+  function handleTimeout() {
+    if (state.phase !== 'active' || state.answered) return;
+
+    const itemId = state.currentItemId;
+    const deadline = currentDeadline;
+
+    // Get the correct answer to display (pass empty string — always wrong, never crashes)
+    const result = mode.checkAnswer(itemId, '');
+
+    // Record as incorrect in both systems
+    selector.recordResponse(itemId, deadline, false);
+    deadlineTracker.recordOutcome(itemId, false);
+
+    state = engineTimedOut(state, result.correctAnswer, deadline);
+
+    // Check mastery and progress
+    const allMastered = selector.checkAllMastered(mode.getEnabledItems());
+    state = engineUpdateMasteryAfterAnswer(state, allMastered);
+    const progress = computeProgress();
+    state = engineUpdateProgress(state, progress.masteredCount, progress.totalEnabledCount);
+
+    render();
+
+    if (mode.onAnswer) {
+      mode.onAnswer(itemId, { correct: false, correctAnswer: result.correctAnswer }, deadline);
+    }
   }
 
   function setAnswerButtonsEnabled(enabled) {
@@ -550,7 +600,9 @@ export function createQuizEngine(mode, container) {
   function applyBaseline(baseline) {
     motorBaseline = baseline;
     localStorage.setItem(baselineKey, String(baseline));
-    selector.updateConfig(deriveScaledConfig(baseline, DEFAULT_CONFIG));
+    const scaledConfig = deriveScaledConfig(baseline, DEFAULT_CONFIG);
+    selector.updateConfig(scaledConfig);
+    deadlineTracker.updateConfig(scaledConfig);
   }
 
   // --- Calibration ---
@@ -637,8 +689,12 @@ export function createQuizEngine(mode, container) {
     if (items.length === 0) return;
 
     const nextItemId = selector.selectNext(items);
+    currentDeadline = getItemDeadline(nextItemId);
     state = engineNextQuestion(state, nextItemId, Date.now());
     render();
+    if (els.deadlineDisplay) {
+      els.deadlineDisplay.textContent = (currentDeadline / 1000).toFixed(1) + 's';
+    }
     mode.presentQuestion(state.currentItemId);
     startCountdown();
   }
@@ -655,6 +711,7 @@ export function createQuizEngine(mode, container) {
 
     const result = mode.checkAnswer(state.currentItemId, input);
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
+    deadlineTracker.recordOutcome(state.currentItemId, result.correct);
 
     state = engineSubmitAnswer(state, result.correct, result.correctAnswer, responseTime);
 
@@ -714,6 +771,7 @@ export function createQuizEngine(mode, container) {
       countdownInterval = null;
     }
     stopElapsedTimer();
+    currentDeadline = null;
     state = engineStop(state);
     render();   // render() clears calibrationContentEl when phase is idle
     if (mode.onStop) mode.onStop();

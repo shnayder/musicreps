@@ -5,6 +5,7 @@ import {
   engineStart,
   engineNextQuestion,
   engineSubmitAnswer,
+  engineTimedOut,
   engineStop,
   engineUpdateIdleMessage,
   engineUpdateMasteryAfterAnswer,
@@ -151,7 +152,7 @@ describe("engineSubmitAnswer", () => {
 
   it("shows response time", () => {
     const s = engineSubmitAnswer(active, true, "C", 1234);
-    assert.equal(s.timeDisplayText, "1234 ms");
+    assert.equal(s.timeDisplayText, "1.2s");
   });
 
   it("shows hint text", () => {
@@ -390,5 +391,77 @@ describe("engineRouteKey", () => {
 
   it("calibration-results + other keys return ignore", () => {
     assert.deepEqual(engineRouteKey(calibResults, " "), { action: "ignore" });
+  });
+});
+
+describe("engineTimedOut", () => {
+  const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
+
+  it("sets answered to true and disables answers", () => {
+    const s = engineTimedOut(active, "C", 3000);
+    assert.equal(s.answered, true);
+    assert.equal(s.answersEnabled, false);
+  });
+
+  it("sets timedOut flag", () => {
+    const s = engineTimedOut(active, "C", 3000);
+    assert.equal(s.timedOut, true);
+  });
+
+  it("shows timeout feedback text", () => {
+    const s = engineTimedOut(active, "C", 3000);
+    assert.equal(s.feedbackText, "Time\u2019s up \u2014 C");
+  });
+
+  it("uses incorrect feedback class", () => {
+    const s = engineTimedOut(active, "C", 3000);
+    assert.equal(s.feedbackClass, "feedback incorrect");
+  });
+
+  it("shows deadline in time display", () => {
+    const s = engineTimedOut(active, "C", 3000);
+    assert.equal(s.timeDisplayText, "limit: 3.0s");
+  });
+
+  it("formats fractional deadline correctly", () => {
+    const s = engineTimedOut(active, "D#", 2450);
+    assert.equal(s.timeDisplayText, "limit: 2.5s");
+    assert.equal(s.feedbackText, "Time\u2019s up \u2014 D#");
+  });
+
+  it("shows hint for advancing", () => {
+    const s = engineTimedOut(active, "C", 3000);
+    assert.equal(s.hintText, "Tap anywhere or press Space for next");
+  });
+});
+
+describe("engineSubmitAnswer time format", () => {
+  const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
+
+  it("formats response time in seconds", () => {
+    const s = engineSubmitAnswer(active, true, "C", 1234);
+    assert.equal(s.timeDisplayText, "1.2s");
+  });
+
+  it("formats fast response time", () => {
+    const s = engineSubmitAnswer(active, true, "C", 800);
+    assert.equal(s.timeDisplayText, "0.8s");
+  });
+
+  it("sets timedOut to false on normal answer", () => {
+    const s = engineSubmitAnswer(active, true, "C", 1000);
+    assert.equal(s.timedOut, false);
+  });
+});
+
+describe("timedOut in initial and next-question state", () => {
+  it("initial state has timedOut false", () => {
+    assert.equal(initialEngineState().timedOut, false);
+  });
+
+  it("next question resets timedOut", () => {
+    const active = engineStart(initialEngineState());
+    const q = engineNextQuestion(active, "item-1", 1000);
+    assert.equal(q.timedOut, false);
   });
 });

@@ -2,10 +2,11 @@
 
 How to plan, design, implement, and document changes.
 
-## Context when 
-- vision.md describes the long-term vision for the app. Relevant when making major design decisions, rarely relevant when following existing patterns.
-- ux-principles.md
-- 
+## Context
+
+- `vision.md` describes the long-term vision, design principles, and roadmap.
+  Relevant when making major design decisions, rarely relevant when following
+  existing patterns.
 
 ## When to Write What
 
@@ -78,6 +79,23 @@ Use the date you start the work. Use kebab-case for the description.
 6. **Move** product specs from `active/` to `completed/` when the feature is
    done, tested, and signed off on.
 7. **Commit** the updated plan alongside the implementation.
+
+## Product Spec Review Checklist
+
+Before considering a spec ready for review, verify:
+
+- [ ] **Stays at product level.** No state shapes, function signatures,
+  storage keys, or DOM structure. Those belong in the implementation plan.
+- [ ] **Consistent with design principles.** Check `vision.md` — especially
+  "fewer options" (can the system adapt instead of adding a toggle?) and
+  "short-session friendly" (does state need to persist?).
+- [ ] **Single user-facing metric where possible.** Avoid exposing internal
+  distinctions (speed vs accuracy, timeout vs wrong) unless they're genuinely
+  useful to the user.
+- [ ] **Scope is clear.** Goals and non-goals are explicit. No feature creep
+  disguised as "cross-cutting notes."
+- [ ] **Decisions are resolved.** Each decision states the chosen option and
+  the rationale. No "TBD" or "we could do X or Y."
 
 ## Architectural Review (Before Implementing)
 

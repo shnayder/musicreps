@@ -361,6 +361,7 @@ export function createAdaptiveSelector(
 
 export function createMemoryStorage() {
   const stats = new Map();
+  const deadlines = new Map();
   let lastSelected = null;
 
   return {
@@ -376,6 +377,12 @@ export function createMemoryStorage() {
     setLastSelected(itemId) {
       lastSelected = itemId;
     },
+    getDeadline(itemId) {
+      return deadlines.get(itemId) ?? null;
+    },
+    saveDeadline(itemId, deadline) {
+      deadlines.set(itemId, deadline);
+    },
   };
 }
 
@@ -386,6 +393,7 @@ export function createMemoryStorage() {
 export function createLocalStorageAdapter(namespace) {
   const cache = {};
   const mkKey = (itemId) => `adaptive_${namespace}_${itemId}`;
+  const dlKey = (itemId) => `deadline_${namespace}_${itemId}`;
   const lastKey = `adaptive_${namespace}_lastSelected`;
 
   return {
@@ -411,6 +419,19 @@ export function createLocalStorageAdapter(namespace) {
     },
     setLastSelected(itemId) {
       localStorage.setItem(lastKey, itemId);
+    },
+    getDeadline(itemId) {
+      const k = dlKey(itemId);
+      if (!(k in cache)) {
+        const data = localStorage.getItem(k);
+        cache[k] = data ? Number(data) : null;
+      }
+      return cache[k];
+    },
+    saveDeadline(itemId, deadline) {
+      const k = dlKey(itemId);
+      cache[k] = deadline;
+      localStorage.setItem(k, String(deadline));
     },
     /** Pre-populate cache to avoid localStorage reads during gameplay. */
     preload(itemIds) {
