@@ -105,10 +105,10 @@ interface ModeScreenOptions {
  * Each mode only specifies what's unique: settings, quiz-area content, etc.
  *
  * DOM grouping:
+ *   [beforeQuizArea] — mode-specific content above stats (e.g. fretboard SVG)
  *   stats-section    — heatmap + recall/speed toggle (idle)
  *   quiz-config      — settings + mastery + start/recalibrate (idle)
  *   quiz-session     — close button + counters + progress (active)
- *   [beforeQuizArea] — mode-specific content between session chrome and quiz
  *   quiz-area        — question + answer buttons + feedback (active)
  */
 export function modeScreen(id: string, opts: ModeScreenOptions): string {
@@ -117,7 +117,7 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
     : "";
   const beforeQuizArea = opts.beforeQuizArea ? "\n    " + opts.beforeQuizArea : "";
 
-  return `  <div class="mode-screen phase-idle" id="mode-${id}">
+  return `  <div class="mode-screen phase-idle" id="mode-${id}">${beforeQuizArea}
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -145,7 +145,7 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 mastered</div>
       </div>
-    </div>${beforeQuizArea}
+    </div>
     <div class="quiz-area">
       ${opts.quizAreaContent}
     </div>

@@ -1037,51 +1037,6 @@ button {
 
   <!-- Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
-    <div class="stats-section">
-      <div class="stats-container"></div>
-      <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-        <span class="stats"></span>
-      </div>
-    </div>
-    <div class="quiz-config">
-      <div class="settings-row">
-        <div class="toggle-group">
-          <span class="toggle-group-label">Strings</span>
-          <div class="string-toggles" id="string-toggles">
-            <button class="string-toggle" data-string="0">e</button>
-            <button class="string-toggle" data-string="1">B</button>
-            <button class="string-toggle" data-string="2">G</button>
-            <button class="string-toggle" data-string="3">D</button>
-            <button class="string-toggle" data-string="4">A</button>
-            <button class="string-toggle active" data-string="5">E</button>
-          </div>
-        </div>
-        <label class="setting-group">
-          <input type="checkbox" id="naturals-only" checked>
-          Natural only
-        </label>
-      </div>
-      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
-      <div>
-        <button class="start-btn">Start Quiz</button>
-        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
-      </div>
-    </div>
-    <div class="quiz-session">
-      <div class="quiz-header">
-        <span class="quiz-header-title"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-      </div>
-      <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
-        <span class="elapsed-time">0s</span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
-      </div>
-    </div>
     <div class="fretboard-wrapper">
       <div class="fretboard-container">
         <svg class="fretboard" id="fretboard" viewBox="0 0 600 240">
@@ -2755,6 +2710,51 @@ button {
     <div class="fret-number" style="left: 80.25%">9</div>
     <div class="fret-number" style="left: 97.33333333333334%">12</div>
         </div>
+      </div>
+    </div>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+    </div>
+    <div class="quiz-config">
+      <div class="settings-row">
+        <div class="toggle-group">
+          <span class="toggle-group-label">Strings</span>
+          <div class="string-toggles" id="string-toggles">
+            <button class="string-toggle" data-string="0">e</button>
+            <button class="string-toggle" data-string="1">B</button>
+            <button class="string-toggle" data-string="2">G</button>
+            <button class="string-toggle" data-string="3">D</button>
+            <button class="string-toggle" data-string="4">A</button>
+            <button class="string-toggle active" data-string="5">E</button>
+          </div>
+        </div>
+        <label class="setting-group">
+          <input type="checkbox" id="naturals-only" checked>
+          Natural only
+        </label>
+      </div>
+      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
+      <div>
+        <button class="start-btn">Start Quiz</button>
+        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
+      </div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
       </div>
     </div>
     <div class="quiz-area">
