@@ -202,6 +202,12 @@ body {
   flex: 1;
 }
 
+/* --- Phase-driven visibility --- */
+.phase-idle .quiz-session { display: none; }
+.phase-active .stats-section,
+.phase-active .quiz-config { display: none; }
+.phase-calibration > *:not(.quiz-area) { display: none; }
+
 /* --- Fretboard --- */
 .fretboard-wrapper {
   display: flex;
@@ -598,28 +604,25 @@ button {
   grid-template-columns: repeat(3, 1fr);
 }
 
-/* --- Calibration overlay: hide all mode chrome, show only quiz-area --- */
-.mode-screen.calibrating > *:not(.quiz-area) {
-  display: none !important;
+/* --- Calibration overlay: inside quiz-area, hide non-calibration content --- */
+.phase-calibration .answer-buttons:not(.calibration-active),
+.phase-calibration .note-buttons:not(.calibration-active) {
+  display: none;
 }
-.mode-screen.calibrating .answer-buttons:not(.calibration-active),
-.mode-screen.calibrating .note-buttons:not(.calibration-active) {
-  display: none !important;
+.phase-calibration .answer-buttons.calibration-active {
+  display: grid;
 }
-.mode-screen.calibrating .answer-buttons.calibration-active {
-  display: grid !important;
+.phase-calibration .note-buttons.calibration-active {
+  display: flex;
 }
-.mode-screen.calibrating .note-buttons.calibration-active {
-  display: flex !important;
+.phase-calibration .speed-tap-status,
+.phase-calibration .fretboard-wrapper {
+  display: none;
 }
-.mode-screen.calibrating .speed-tap-status,
-.mode-screen.calibrating .fretboard-wrapper {
-  display: none !important;
-}
-.mode-screen.calibrating .countdown-container,
-.mode-screen.calibrating .quiz-prompt,
-.mode-screen.calibrating .chord-slots {
-  display: none !important;
+.phase-calibration .countdown-container,
+.phase-calibration .quiz-prompt,
+.phase-calibration .chord-slots {
+  display: none;
 }
 .calibration-close-btn {
   position: absolute;
@@ -1033,7 +1036,7 @@ button {
   </div>
 
   <!-- Fretboard mode -->
-  <div class="mode-screen" id="mode-fretboard">
+  <div class="mode-screen phase-idle" id="mode-fretboard">
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -1065,7 +1068,7 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-session" style="display: none;">
+    <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -2779,7 +2782,7 @@ button {
   </div>
 
   <!-- Speed Tap mode -->
-  <div class="mode-screen" id="mode-speedTap">
+  <div class="mode-screen phase-idle" id="mode-speedTap">
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -2800,7 +2803,7 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-session" style="display: none;">
+    <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -4516,7 +4519,7 @@ button {
   </div>
 
   <!-- Note Semitones mode -->
-  <div class="mode-screen" id="mode-noteSemitones">
+  <div class="mode-screen phase-idle" id="mode-noteSemitones">
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -4531,7 +4534,7 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-session" style="display: none;">
+    <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -4583,7 +4586,7 @@ button {
   </div>
 
   <!-- Interval Semitones mode -->
-  <div class="mode-screen" id="mode-intervalSemitones">
+  <div class="mode-screen phase-idle" id="mode-intervalSemitones">
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -4598,7 +4601,7 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-session" style="display: none;">
+    <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -4650,7 +4653,7 @@ button {
   </div>
 
   <!-- Semitone Math mode -->
-  <div class="mode-screen" id="mode-semitoneMath">
+  <div class="mode-screen phase-idle" id="mode-semitoneMath">
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -4668,7 +4671,7 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-session" style="display: none;">
+    <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -4706,7 +4709,7 @@ button {
   </div>
 
   <!-- Interval Math mode -->
-  <div class="mode-screen" id="mode-intervalMath">
+  <div class="mode-screen phase-idle" id="mode-intervalMath">
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -4724,7 +4727,7 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-session" style="display: none;">
+    <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -4762,7 +4765,7 @@ button {
   </div>
 
   <!-- Key Signatures mode -->
-  <div class="mode-screen" id="mode-keySignatures">
+  <div class="mode-screen phase-idle" id="mode-keySignatures">
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -4780,7 +4783,7 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-session" style="display: none;">
+    <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -4835,7 +4838,7 @@ button {
   </div>
 
   <!-- Scale Degrees mode -->
-  <div class="mode-screen" id="mode-scaleDegrees">
+  <div class="mode-screen phase-idle" id="mode-scaleDegrees">
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -4853,7 +4856,7 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-session" style="display: none;">
+    <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -4900,7 +4903,7 @@ button {
   </div>
 
   <!-- Diatonic Chords mode -->
-  <div class="mode-screen" id="mode-diatonicChords">
+  <div class="mode-screen phase-idle" id="mode-diatonicChords">
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -4918,7 +4921,7 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-session" style="display: none;">
+    <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -4965,7 +4968,7 @@ button {
   </div>
 
   <!-- Chord Spelling mode -->
-  <div class="mode-screen" id="mode-chordSpelling">
+  <div class="mode-screen phase-idle" id="mode-chordSpelling">
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -4983,7 +4986,7 @@ button {
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-session" style="display: none;">
+    <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -5821,10 +5824,6 @@ function initialEngineState() {
     calibrationBaseline: null,
 
     // UI visibility
-    showStartBtn: true,
-    showStopBtn: false,
-    showHeatmapBtn: true,
-    showStatsControls: true,
     quizActive: false,
     answersEnabled: false,
     timedOut: false,
@@ -5841,10 +5840,6 @@ function engineStart(state) {
     phase: 'active',
     questionCount: 0,
     quizStartTime: Date.now(),
-    showStartBtn: false,
-    showStopBtn: false,
-    showHeatmapBtn: false,
-    showStatsControls: false,
     quizActive: true,
     showMastery: false,
   };
@@ -5919,10 +5914,6 @@ function engineCalibrationIntro(state) {
   return {
     ...state,
     phase: 'calibration-intro',
-    showStartBtn: false,
-    showStopBtn: false,
-    showHeatmapBtn: false,
-    showStatsControls: false,
     showMastery: false,
     quizActive: true,
     answersEnabled: false,
@@ -6352,8 +6343,7 @@ function runCalibration(opts) {
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
  *     .countdown-bar, .feedback, .time-display, .hint,
- *     .start-btn, .stats-toggle, .stats,
- *     .stats-section, .quiz-config, .quiz-session, .mastery-message
+ *     .start-btn, .stats-toggle, .stats, .mastery-message
  *
  * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
  *             updateIdleMessage, isActive, isAnswered, selector, storage, els, baseline }}
@@ -6406,12 +6396,9 @@ function createQuizEngine(mode, container) {
     startBtn: container.querySelector('.start-btn'),
     statsToggle: container.querySelector('.stats-toggle'),
     stats: container.querySelector('.stats'),
-    statsSection: container.querySelector('.stats-section'),
     quizArea: container.querySelector('.quiz-area'),
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
-    quizConfig: container.querySelector('.quiz-config'),
-    quizSession: container.querySelector('.quiz-session'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
     questionCountEl: container.querySelector('.question-count'),
     elapsedTimeEl: container.querySelector('.elapsed-time'),
@@ -6512,8 +6499,12 @@ function createQuizEngine(mode, container) {
       clearCalibrationContent();
     }
 
-    // Toggle calibrating class on container for CSS-driven visibility
-    container.classList.toggle('calibrating', inCalibration);
+    // Set phase class on container for CSS-driven visibility
+    const phaseClass = inCalibration ? 'phase-calibration'
+      : state.phase === 'active' ? 'phase-active'
+      : 'phase-idle';
+    container.classList.remove('phase-idle', 'phase-active', 'phase-calibration');
+    container.classList.add(phaseClass);
 
     // Mark the calibration button container so CSS can hide others
     if (inCalibration && !container.querySelector('.calibration-active')) {
@@ -6545,16 +6536,7 @@ function createQuizEngine(mode, container) {
       if (closeBtn) closeBtn.remove();
     }
 
-    // Group visibility: stats-section + quiz-config shown in idle,
-    // quiz-session shown during active quiz
     const isActive = state.phase === 'active';
-    if (els.statsSection) els.statsSection.style.display = state.showStatsControls ? '' : 'none';
-    if (els.quizConfig) {
-      els.quizConfig.style.display = state.showStartBtn || state.phase === 'idle' ? '' : 'none';
-    }
-    if (els.quizSession) els.quizSession.style.display = isActive ? '' : 'none';
-
-    if (els.startBtn) els.startBtn.style.display = state.showStartBtn ? 'inline' : 'none';
     if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
     if (els.feedback) {
       els.feedback.textContent = state.feedbackText;
