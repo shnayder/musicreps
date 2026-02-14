@@ -71,33 +71,60 @@ format), `styles.css` (label styling)
 
 **Risk:** Low. Additive only.
 
-### Phase 2: Migrate Speed Tap to shared engine
+### Phase 2: Response-count scaling + Speed Tap migration
 
-**Goal:** Eliminate ~400 lines of duplicated lifecycle code by migrating Speed
-Tap from its custom lifecycle to `createQuizEngine`, following the Chord
-Spelling pattern for multi-element answers.
+**Goal:** Two related changes: (a) add response-count scaling to the engine so
+multi-response modes get correct timing, and (b) migrate Speed Tap to use the
+shared engine, eliminating ~400 lines of duplicated lifecycle code.
 
-**The Chord Spelling pattern:**
-1. `presentQuestion(itemId)` — set up the question UI
-2. Mode-internal `submitTone(input)` — collect inputs incrementally
-3. When all inputs collected → `engine.submitAnswer('__correct__')`
-4. `checkAnswer()` — validate the synthetic flag
-5. Engine handles everything else: calibration, chrome, session stats, progress
+#### 2a: Response-count scaling (engine extension)
 
-**Speed Tap migration (same pattern):**
+Multi-response modes (Chord Spelling, Speed Tap) have inherently longer
+response times. Without scaling, their items can never reach "automatic" on
+the heatmap. Currently Chord Spelling uses DEFAULT_CONFIG unmodified — a
+triads entry taking 3s against a 1200ms automaticity target gives
+`speedScore = 0.4`, which is broken.
+
+**Mode interface addition:**
+```javascript
+// Optional. Returns expected number of physical responses for this item.
+// Defaults to 1 if not provided.
+getExpectedResponseCount(itemId) { return 4; }  // e.g. 7th chord = 4 notes
+```
+
+Can be dynamic per item: triads return 3, 7th chords return 4, Speed Tap
+returns `getPositionsForNote(noteName).length` (6-8 depending on note).
+
+**Engine change:** when computing speed score, deadlines, and countdown
+duration, multiply timing thresholds by the response count:
+
+```
+effectiveTarget = automaticityTarget × responseCount
+effectiveMax    = maxResponseTime × responseCount
+```
+
+The ratios stay the same — "automatic" always means "responding near the
+physical speed limit for the number of required actions."
+
+**Files:** `adaptive.js` (speed score), `quiz-engine.js` (countdown/deadline
+scaling), `quiz-chord-spelling.js` (add `getExpectedResponseCount`)
+
+#### 2b: Speed Tap engine migration
+
+Follow the Chord Spelling pattern for multi-element answers:
+
 1. `presentQuestion(noteName)` — show "Tap all C", prepare `targetPositions`
 2. Mode-internal `handleCircleTap()` — track found positions, flash green/red
 3. When all positions found → `engine.submitAnswer('complete')`
 4. `checkAnswer()` → `{ correct: true }` (round already validated)
-5. Fretboard show/hide via `onStart()`/`onStop()` hooks
+5. Countdown works normally — deadline scales by response count (6-8 taps)
+6. Fretboard show/hide via `onStart()`/`onStop()` hooks
 
-**Three small engine extensions needed:**
-
-| Extension | Why | Change |
-|-----------|-----|--------|
-| `mode.baseConfig` | Speed Tap needs different timing (minTime: 4000, target: 12000) | Engine passes `mode.baseConfig \|\| DEFAULT_CONFIG` to `createAdaptiveSelector` and `deriveScaledConfig` |
-| `mode.useCountdown` | Speed Tap has open-ended rounds with upward timer, not countdown | Engine skips `startCountdown()` when `mode.useCountdown === false` |
-| Speed Tap upward timer | Needs a visible elapsed-time display during rounds | Use Speed Tap's own `speed-tap-timer` element, managed by mode (not engine) |
+**No per-mode escape hatches needed.** With response-count scaling:
+- Timing: handled by `getExpectedResponseCount()` — same mechanism as Chord
+  Spelling. No `mode.baseConfig`.
+- Countdown: uses the standard engine countdown with a scaled deadline. No
+  `mode.useCountdown = false`.
 
 **What gets eliminated (~400 lines):**
 - Motor baseline load/save/apply (duplicated from engine)
@@ -114,15 +141,17 @@ Spelling pattern for multi-element answers.
 - Round logic (nextRound, completeRound, handleCircleTap)
 - Fretboard click handler
 - Stats display callback
-- Mode interface + init
+- Mode interface + init (including `getExpectedResponseCount`)
 
 **Files:** `quiz-speed-tap.js` (rewrite to use engine), `quiz-engine.js`
-(add baseConfig + useCountdown support), `quiz-engine-state.js` (no changes
-expected — state transitions already generic)
+(response-count scaling in countdown/deadline), `adaptive.js` (response-count
+scaling in speed score), `quiz-chord-spelling.js` (add
+`getExpectedResponseCount`)
 
-**Risk:** Medium. Functional rewrite of one mode, but the target pattern is
-well-established (Chord Spelling). Test: idle, quiz, calibration, round
-completion, wrong taps, Escape to stop, Space to advance.
+**Risk:** Medium. Response-count scaling is a targeted change to two functions.
+Speed Tap rewrite follows an established pattern (Chord Spelling). Test: all
+10 modes × idle/quiz/calibration, verify Chord Spelling heatmap now reaches
+"automatic" for fast play, verify Speed Tap countdown deadline is reasonable.
 
 ### Phase 3: Group and reorder DOM (template restructure)
 
@@ -156,8 +185,24 @@ Key moves:
 - Remove Stop Quiz button from quiz-config (keep × close + Escape only)
 - Stats section comes first (idle priority), quiz-session appears during quiz
 
+**Fretboard: not architecturally special.** The fretboard SVG currently gets
+special treatment: CSS `order: -1` to reposition it, mode-specific class
+toggles (`quiz-active`), and the same SVG element serves as both the stats
+visualization (heatmap in idle) and the question display (highlighted note
+during quiz). This is fragile — you can't change the stats view (e.g., to a
+per-string summary) without affecting the quiz question display.
+
+The `beforeQuizArea` slot in `modeScreen()` already exists for content that
+appears between stats and the quiz area. The fretboard should use it like any
+other mode. What changes in each state is controlled by the phase-class CSS
+(Phase 4), not by special-case ordering. The fretboard heatmap rendering
+happens to paint onto the same SVG that displays questions — that's fine as a
+rendering detail, but the layout shouldn't need `order` tricks or mode-specific
+CSS classes to accommodate it.
+
 **Files:** `html-helpers.ts`, `build.ts` (template), `styles.css` (new
-wrappers), `quiz-engine.js` (DOM queries for new structure)
+wrappers, remove `order` hacks), `quiz-engine.js` (DOM queries for new
+structure), `quiz-fretboard.js` (remove `quiz-active` class toggling)
 
 **Risk:** Medium. Template change touches all modes. Test all 10 modes
 idle + quiz states.

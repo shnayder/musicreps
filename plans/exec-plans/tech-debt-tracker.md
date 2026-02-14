@@ -17,3 +17,6 @@
 1. LOW - `gh` doesn't work in Claude web environment, so we have to curl instead (appears fixable now: https://dev.to/oikon/run-gh-command-in-claude-code-on-the-web-2kp3)
 1. LOW — `deno` isn't set up in the Claude web environment, so we have to support `node` too.
 1. LOW — `formatElapsedTime` is duplicated in `quiz-engine.js` and `quiz-speed-tap.js`. Extract to a shared utility to prevent future divergence.
+1. MEDIUM — Chord Spelling timing is broken: uses DEFAULT_CONFIG unmodified, so multi-note entries (3-4 taps) can never reach "automatic" on the heatmap. With a 400ms baseline, automaticityTarget = 1200ms, but even perfect 3-note entry takes ~1.5s → speedScore ≈ 0.4 → item never shows as green. Fix: response-count scaling (see layout-ia-fixes plan Phase 2a).
+1. MEDIUM — Speed Tap duplicates ~400 of ~740 lines from the shared engine (calibration, session tracking, chrome show/hide, progress, keyboard routing). Should use `createQuizEngine` following the Chord Spelling pattern. Fix: layout-ia-fixes plan Phase 2b.
+1. LOW — Fretboard mode uses CSS `order: -1` hack and `quiz-active` class toggle for SVG positioning. Should use the standard `beforeQuizArea` slot without special-case CSS. Fix: layout-ia-fixes plan Phase 3.

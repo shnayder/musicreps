@@ -275,6 +275,27 @@ All timing thresholds scale proportionally:
 Key functions: `deriveScaledConfig()`, `computeMedian()` in `adaptive.js`;
 `runCalibration()` in `quiz-engine.js`; `engine.baseline` property.
 
+#### Response-count scaling (planned)
+
+Some modes require multiple physical responses per question: Chord Spelling
+needs 3-4 sequential note entries, Speed Tap needs 6-8 fretboard taps. All
+timing thresholds should scale by the expected response count so that speed
+scores and automaticity are comparable across modes. The mode declares the
+expected count via `getExpectedResponseCount(itemId)` (can vary per item —
+triads need 3, 7th chords need 4), and the engine multiplies through:
+
+```
+effective_minTime = baseline × 1.0 × responseCount
+effective_target  = baseline × 3.0 × responseCount
+effective_max     = baseline × 9.0 × responseCount
+```
+
+This keeps the ratios consistent: "automatic" always means "responding near
+the physical speed limit." Without this scaling, multi-response items can
+never reach "automatic" on the heatmap because their response times are
+inherently longer. See `plans/exec-plans/active/2026-02-14-layout-ia-fixes.md`
+Phase 2.
+
 ### Forgetting Model (Spaced Repetition)
 
 Per-item half-life forgetting curve: `P(recall) = 2^(-t/stability)`.
