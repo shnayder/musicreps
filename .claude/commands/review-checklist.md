@@ -98,6 +98,20 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 - [ ] No unused code left behind (no `_unusedVar` renames, no `// removed`
       comments — just delete it)
 
+## Visual design consistency
+<!-- Full explanation: guides/design/visual-design.md -->
+
+- [ ] No new hard-coded colors — all via `var(--color-*)` or `var(--heatmap-*)`
+- [ ] No new font-size values — use type scale tokens (`--text-xs` through
+      `--text-2xl`) or justify exception
+- [ ] No new spacing values — use spacing scale tokens (`--space-1` through
+      `--space-6`) or justify exception
+- [ ] All new interactive elements have `:focus-visible` and `:hover` styles
+- [ ] All new buttons have `:active` pressed state
+- [ ] Touch targets >= 44x44px
+- [ ] Brand color (`--color-brand`) only for CTAs/identity, never for feedback
+- [ ] Heatmap uses `--heatmap-*` scale, not hardcoded HSL
+
 ## Documentation & infrastructure
 <!-- Full explanation: guides/feature-process.md, guides/development.md § Deployment -->
 

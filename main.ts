@@ -130,12 +130,16 @@ async function buildHTML(): Promise<string> {
   <!-- Navigation -->
   <div class="nav-overlay"></div>
   <div class="nav-drawer" id="nav-drawer">
+    <div class="nav-group-label">Fretboard</div>
     <button data-mode="fretboard">Fretboard</button>
     <button data-mode="speedTap">Speed Tap</button>
+    <div class="nav-group-label">Theory Lookup</div>
     <button data-mode="noteSemitones">Note \u2194 Semitones</button>
     <button data-mode="intervalSemitones">Interval \u2194 Semitones</button>
+    <div class="nav-group-label">Calculation</div>
     <button data-mode="semitoneMath">Semitone Math</button>
     <button data-mode="intervalMath">Interval Math</button>
+    <div class="nav-group-label">Keys &amp; Chords</div>
     <button data-mode="keySignatures">Key Signatures</button>
     <button data-mode="scaleDegrees">Scale Degrees</button>
     <button data-mode="diatonicChords">Diatonic Chords</button>
