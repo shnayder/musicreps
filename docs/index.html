@@ -6343,7 +6343,7 @@ function runCalibration(opts) {
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
  *     .countdown-bar, .feedback, .time-display, .hint,
- *     .start-btn, .stats-toggle, .stats, .mastery-message
+ *     .stats, .mastery-message
  *
  * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
  *             updateIdleMessage, isActive, isAnswered, selector, storage, els, baseline }}
@@ -6393,8 +6393,6 @@ function createQuizEngine(mode, container) {
     feedback: container.querySelector('.feedback'),
     timeDisplay: container.querySelector('.time-display'),
     hint: container.querySelector('.hint'),
-    startBtn: container.querySelector('.start-btn'),
-    statsToggle: container.querySelector('.stats-toggle'),
     stats: container.querySelector('.stats'),
     quizArea: container.querySelector('.quiz-area'),
     masteryMessage: container.querySelector('.mastery-message'),

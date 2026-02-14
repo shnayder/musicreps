@@ -44,7 +44,6 @@ describe("initialEngineState", () => {
     assert.equal(s.masteryText, "");
     assert.equal(s.showMastery, false);
   });
-
 });
 
 describe("engineStart", () => {
