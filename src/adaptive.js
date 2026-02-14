@@ -48,11 +48,16 @@ export function computeRecall(stabilityHours, elapsedHours) {
  * - automaticityTarget (3000ms) → 0.5
  * - Very slow → approaches 0
  * Uses exponential decay so the curve is smooth.
+ *
+ * For multi-response items (responseCount > 1), timing thresholds are
+ * scaled proportionally so the ratios stay the same.
  */
-export function computeSpeedScore(ewmaMs, cfg) {
+export function computeSpeedScore(ewmaMs, cfg, responseCount = 1) {
   if (ewmaMs == null) return null;
-  const k = Math.LN2 / (cfg.automaticityTarget - cfg.minTime);
-  return Math.exp(-k * Math.max(0, ewmaMs - cfg.minTime));
+  const effectiveTarget = cfg.automaticityTarget * responseCount;
+  const effectiveMin = cfg.minTime * responseCount;
+  const k = Math.LN2 / (effectiveTarget - effectiveMin);
+  return Math.exp(-k * Math.max(0, ewmaMs - effectiveMin));
 }
 
 /**
@@ -187,9 +192,27 @@ export function createAdaptiveSelector(
   storage,
   cfg = DEFAULT_CONFIG,
   randomFn = Math.random,
+  responseCountFn = null,
 ) {
+  function getResponseCount(itemId) {
+    return responseCountFn ? responseCountFn(itemId) : 1;
+  }
+
+  function scaledConfig(itemId) {
+    const rc = getResponseCount(itemId);
+    if (rc <= 1) return cfg;
+    return {
+      ...cfg,
+      minTime: cfg.minTime * rc,
+      automaticityTarget: cfg.automaticityTarget * rc,
+      maxResponseTime: cfg.maxResponseTime * rc,
+      selfCorrectionThreshold: cfg.selfCorrectionThreshold * rc,
+    };
+  }
+
   function recordResponse(itemId, timeMs, correct = true) {
-    const clamped = Math.min(timeMs, cfg.maxResponseTime);
+    const itemCfg = scaledConfig(itemId);
+    const clamped = Math.min(timeMs, itemCfg.maxResponseTime);
     const existing = storage.getStats(itemId);
     const now = Date.now();
 
@@ -203,7 +226,7 @@ export function createAdaptiveSelector(
           -cfg.maxStoredTimes,
         );
         const newStability = updateStability(
-          existing.stability ?? null, clamped, elapsedHours, cfg,
+          existing.stability ?? null, clamped, elapsedHours, itemCfg,
         );
         storage.saveStats(itemId, {
           recentTimes: newTimes,
@@ -238,7 +261,7 @@ export function createAdaptiveSelector(
         // First interaction is wrong: create minimal stats
         storage.saveStats(itemId, {
           recentTimes: [],
-          ewma: cfg.maxResponseTime,
+          ewma: itemCfg.maxResponseTime,
           sampleCount: 0,
           lastSeen: now,
           stability: cfg.initialStability,
@@ -249,7 +272,7 @@ export function createAdaptiveSelector(
   }
 
   function getWeight(itemId) {
-    return computeWeight(storage.getStats(itemId), cfg);
+    return computeWeight(storage.getStats(itemId), scaledConfig(itemId));
   }
 
   function getStats(itemId) {
@@ -288,7 +311,7 @@ export function createAdaptiveSelector(
     const stats = storage.getStats(itemId);
     if (!stats) return null;
     const recall = getRecall(itemId);
-    const speed = computeSpeedScore(stats.ewma, cfg);
+    const speed = computeSpeedScore(stats.ewma, scaledConfig(itemId));
     return computeAutomaticityForDisplay(recall, speed, true);
   }
 
@@ -362,7 +385,8 @@ export function createAdaptiveSelector(
     for (const id of items) {
       const stats = storage.getStats(id);
       if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) return false;
-      const speed = computeSpeedScore(stats.ewma, cfg);
+      const rc = getResponseCount(id);
+      const speed = computeSpeedScore(stats.ewma, cfg, rc);
       if (speed == null || speed < 0.5) return false;
       const recall = getRecall(id);
       if (recall !== null && recall < cfg.recallThreshold) hasDueItem = true;

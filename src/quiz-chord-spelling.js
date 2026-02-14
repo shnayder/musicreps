@@ -187,6 +187,11 @@ function createChordSpellingMode() {
       return items;
     },
 
+    getExpectedResponseCount(itemId) {
+      const parsed = parseItem(itemId);
+      return parsed.tones.length;
+    },
+
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
       enteredTones = [];
@@ -265,7 +270,6 @@ function createChordSpellingMode() {
     });
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);

@@ -193,14 +193,12 @@ function createFretboardMode() {
     },
 
     onStart() {
-      container.classList.add('quiz-active');
       noteKeyHandler.reset();
       if (statsControls.mode) hideHeatmap();
       updateStats(engine.selector);
     },
 
     onStop() {
-      container.classList.remove('quiz-active');
       noteKeyHandler.reset();
       clearAll();
       updateStats(engine.selector);
@@ -267,10 +265,7 @@ function createFretboardMode() {
     }
 
     // Start/stop buttons
-    const startBtn = container.querySelector('.start-btn');
-    const stopBtn = container.querySelector('.stop-btn');
-    if (startBtn) startBtn.addEventListener('click', () => engine.start());
-    if (stopBtn) stopBtn.addEventListener('click', () => engine.stop());
+    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
     applyRecommendations(engine.selector);
     updateAccidentalButtons();

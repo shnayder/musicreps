@@ -192,17 +192,13 @@ body {
   flex: 1;
 }
 
+/* --- Phase-driven visibility --- */
+.phase-idle .quiz-session { display: none; }
+.phase-active .stats-section,
+.phase-active .quiz-config { display: none; }
+.phase-calibration > *:not(.quiz-area) { display: none; }
+
 /* --- Fretboard --- */
-#mode-fretboard {
-  display: flex;
-  flex-direction: column;
-}
-#mode-fretboard .fretboard-wrapper {
-  order: -1;
-}
-#mode-fretboard.quiz-active .fretboard-wrapper {
-  order: 0;
-}
 .fretboard-wrapper {
   display: flex;
   flex-direction: column;
@@ -312,8 +308,8 @@ body {
   color: var(--color-text-muted);
 }
 
-/* --- Quiz controls (shared) --- */
-.quiz-controls {
+/* --- Quiz config (shared) --- */
+.quiz-config {
   text-align: center;
   margin: var(--space-5) 0;
 }
@@ -363,22 +359,7 @@ button {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* --- Secondary buttons (Stop, Recalibrate) --- */
-.stop-btn {
-  background: var(--color-bg);
-  color: var(--color-text);
-  border: 2px solid var(--color-border);
-  border-radius: 8px;
-  font-weight: 500;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.stop-btn:hover {
-  background: var(--color-surface-hover);
-  border-color: var(--color-text-muted);
-}
-.stop-btn:active {
-  background: var(--color-surface-pressed);
-}
+/* --- Secondary buttons (Recalibrate) --- */
 .recalibrate-btn {
   background: var(--color-bg);
   color: var(--color-text-muted);
@@ -398,6 +379,7 @@ button {
 
 /* --- Quiz header (shown during quiz) --- */
 .quiz-header {
+  display: flex;
   align-items: center;
   padding: 0.4rem 0;
   border-bottom: 1px solid var(--color-surface-alt);
@@ -428,6 +410,7 @@ button {
 
 /* --- Session stats (question count + elapsed time) --- */
 .session-stats {
+  display: flex;
   justify-content: center;
   gap: var(--space-6);
   font-size: var(--text-sm);
@@ -611,28 +594,25 @@ button {
   grid-template-columns: repeat(3, 1fr);
 }
 
-/* --- Calibration overlay: hide all mode chrome, show only quiz-area --- */
-.mode-screen.calibrating > *:not(.quiz-area) {
-  display: none !important;
+/* --- Calibration overlay: inside quiz-area, hide non-calibration content --- */
+.phase-calibration .answer-buttons:not(.calibration-active),
+.phase-calibration .note-buttons:not(.calibration-active) {
+  display: none;
 }
-.mode-screen.calibrating .answer-buttons:not(.calibration-active),
-.mode-screen.calibrating .note-buttons:not(.calibration-active) {
-  display: none !important;
+.phase-calibration .answer-buttons.calibration-active {
+  display: grid;
 }
-.mode-screen.calibrating .answer-buttons.calibration-active {
-  display: grid !important;
+.phase-calibration .note-buttons.calibration-active {
+  display: flex;
 }
-.mode-screen.calibrating .note-buttons.calibration-active {
-  display: flex !important;
+.phase-calibration .speed-tap-status,
+.phase-calibration .fretboard-wrapper {
+  display: none;
 }
-.mode-screen.calibrating .speed-tap-prompt,
-.mode-screen.calibrating .speed-tap-status {
-  display: none !important;
-}
-.mode-screen.calibrating .countdown-container,
-.mode-screen.calibrating .quiz-prompt,
-.mode-screen.calibrating .chord-slots {
-  display: none !important;
+.phase-calibration .countdown-container,
+.phase-calibration .quiz-prompt,
+.phase-calibration .chord-slots {
+  display: none;
 }
 .calibration-close-btn {
   position: absolute;
@@ -780,6 +760,17 @@ button {
   color: var(--color-text-muted);
   cursor: pointer;
 }
+.toggle-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+.toggle-group-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
 
 /* --- Stats tables (lookup modes) --- */
 .stats-container {
@@ -839,11 +830,6 @@ button {
 }
 
 /* --- Speed Tap mode --- */
-.speed-tap-prompt {
-  font-size: var(--text-2xl);
-  font-weight: 600;
-  margin: var(--space-5) 0 var(--space-3);
-}
 .speed-tap-status {
   display: flex;
   justify-content: center;
@@ -853,10 +839,6 @@ button {
 }
 .speed-tap-progress {
   font-weight: 500;
-}
-.speed-tap-timer {
-  color: var(--color-text-muted);
-  font-variant-numeric: tabular-nums;
 }
 .speed-tap-stats {
   font-size: var(--text-xs);

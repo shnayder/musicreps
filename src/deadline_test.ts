@@ -137,6 +137,34 @@ describe("createDeadlineTracker", () => {
     assert.equal(deadline, Math.round(4000 * 0.85));
   });
 
+  it("cold starts with scaled bounds for multi-response items", () => {
+    const storage = createMemoryStorage();
+    const tracker = createDeadlineTracker(storage, DEFAULT_CONFIG);
+    // responseCount=3: scaledMax = 9000*3 = 27000
+    const deadline = tracker.getDeadline("item1", null, 3);
+    assert.equal(deadline, 27000);
+  });
+
+  it("clamps to scaled minimum for multi-response items", () => {
+    const storage = createMemoryStorage();
+    const tracker = createDeadlineTracker(storage, DEFAULT_CONFIG);
+    // responseCount=3: scaledMin = 1000*3*1.3 = 3900
+    const deadline = tracker.getDeadline("item1", 100, 3);
+    assert.equal(deadline, Math.round(1000 * 3 * dlCfg.minDeadlineMargin));
+  });
+
+  it("recordOutcome clamps to scaled bounds", () => {
+    const storage = createMemoryStorage();
+    const tracker = createDeadlineTracker(storage, DEFAULT_CONFIG);
+    const scaledMin = Math.round(1000 * 3 * dlCfg.minDeadlineMargin);
+    // Start near minimum
+    tracker.getDeadline("item1", 1500, 3); // 1500*2.0 = 3000, clamped to scaledMin=3900
+    // Correct answer: 3900 * 0.85 = 3315, but clamped to scaledMin
+    tracker.recordOutcome("item1", true, 3);
+    const after = tracker.getDeadline("item1", null, 3);
+    assert.equal(after, scaledMin);
+  });
+
   it("updateConfig changes the adaptive config reference", () => {
     const storage = createMemoryStorage();
     const tracker = createDeadlineTracker(storage, DEFAULT_CONFIG);

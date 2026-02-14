@@ -29,12 +29,10 @@ describe("initialEngineState", () => {
     assert.equal(s.questionStartTime, null);
   });
 
-  it("shows start and heatmap buttons, hides stop", () => {
+  it("starts in idle phase with quiz inactive", () => {
     const s = initialEngineState();
-    assert.equal(s.showStartBtn, true);
-    assert.equal(s.showHeatmapBtn, true);
-    assert.equal(s.showStopBtn, false);
-    assert.equal(s.showStatsControls, true);
+    assert.equal(s.quizActive, false);
+    assert.equal(s.answersEnabled, false);
   });
 
   it("has no feedback or mastery", () => {
@@ -46,26 +44,12 @@ describe("initialEngineState", () => {
     assert.equal(s.masteryText, "");
     assert.equal(s.showMastery, false);
   });
-
-  it("quiz is inactive and answers disabled", () => {
-    const s = initialEngineState();
-    assert.equal(s.quizActive, false);
-    assert.equal(s.answersEnabled, false);
-  });
 });
 
 describe("engineStart", () => {
   it("sets phase to active", () => {
     const s = engineStart(initialEngineState());
     assert.equal(s.phase, "active");
-  });
-
-  it("hides start/stop/heatmap/stats buttons (X close replaces stop)", () => {
-    const s = engineStart(initialEngineState());
-    assert.equal(s.showStartBtn, false);
-    assert.equal(s.showStopBtn, false);
-    assert.equal(s.showHeatmapBtn, false);
-    assert.equal(s.showStatsControls, false);
   });
 
   it("activates quiz area", () => {
@@ -248,12 +232,8 @@ describe("engineCalibrationIntro", () => {
     assert.equal(s.phase, "calibration-intro");
   });
 
-  it("hides all quiz controls", () => {
+  it("hides mastery message", () => {
     const s = engineCalibrationIntro(initialEngineState());
-    assert.equal(s.showStartBtn, false);
-    assert.equal(s.showStopBtn, false);
-    assert.equal(s.showHeatmapBtn, false);
-    assert.equal(s.showStatsControls, false);
     assert.equal(s.showMastery, false);
   });
 

@@ -60,7 +60,7 @@ function fretboardSVG(id?: string): string {
     </div>`;
 }
 
-const DISTANCE_TOGGLES = '<div class="distance-toggles"></div>';
+const DISTANCE_TOGGLES = '<div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>';
 
 // ---------------------------------------------------------------------------
 // HTML assembly
@@ -154,13 +154,16 @@ async function buildHTML(): Promise<string> {
 
   <!-- Fretboard mode -->
 ${modeScreen("fretboard", {
-  settingsHTML: `<div class="string-toggles" id="string-toggles">
-          <button class="string-toggle" data-string="0">e</button>
-          <button class="string-toggle" data-string="1">B</button>
-          <button class="string-toggle" data-string="2">G</button>
-          <button class="string-toggle" data-string="3">D</button>
-          <button class="string-toggle" data-string="4">A</button>
-          <button class="string-toggle active" data-string="5">E</button>
+  settingsHTML: `<div class="toggle-group">
+          <span class="toggle-group-label">Strings</span>
+          <div class="string-toggles" id="string-toggles">
+            <button class="string-toggle" data-string="0">e</button>
+            <button class="string-toggle" data-string="1">B</button>
+            <button class="string-toggle" data-string="2">G</button>
+            <button class="string-toggle" data-string="3">D</button>
+            <button class="string-toggle" data-string="4">A</button>
+            <button class="string-toggle active" data-string="5">E</button>
+          </div>
         </div>
         <label class="setting-group">
           <input type="checkbox" id="naturals-only" checked>
@@ -193,11 +196,9 @@ ${modeScreen("speedTap", {
           <input type="checkbox" id="speed-tap-naturals-only" checked>
           Natural only
         </label>`,
-  sessionUnit: "rounds",
-  quizAreaContent: `<div class="speed-tap-prompt"></div>
+  quizAreaContent: `${countdownAndPrompt()}
       <div class="speed-tap-status">
         <span class="speed-tap-progress"></span>
-        <span class="speed-tap-timer"></span>
       </div>
       ${fretboardSVG()}
       ${noteAnswerButtons('display: none;')}

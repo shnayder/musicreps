@@ -180,6 +180,26 @@ describe("computeSpeedScore", () => {
     const s3 = computeSpeedScore(4000, cfg)!;
     assert.ok(s1 > s2 && s2 > s3, `should decrease: ${s1} > ${s2} > ${s3}`);
   });
+
+  it("scales proportionally with responseCount", () => {
+    // At responseCount=3, effective target = 3000*3 = 9000, effective min = 1000*3 = 3000
+    // So 9000ms at rc=3 should give same score as 3000ms at rc=1
+    const singleAt3000 = computeSpeedScore(3000, cfg, 1);
+    const tripleAt9000 = computeSpeedScore(9000, cfg, 3);
+    assert.ok(Math.abs(singleAt3000! - tripleAt9000!) < 0.01,
+      `3000ms@rc=1 (${singleAt3000}) should equal 9000ms@rc=3 (${tripleAt9000})`);
+  });
+
+  it("returns ~1.0 at scaled minTime for multi-response", () => {
+    const score = computeSpeedScore(4000, cfg, 4); // 4*1000 = scaled minTime
+    assert.ok(Math.abs(score! - 1.0) < 0.01, `at scaled minTime should be ~1.0, got ${score}`);
+  });
+
+  it("defaults to responseCount=1 when omitted", () => {
+    const withDefault = computeSpeedScore(2000, cfg);
+    const withExplicit = computeSpeedScore(2000, cfg, 1);
+    assert.equal(withDefault, withExplicit);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -947,6 +967,74 @@ describe("deriveScaledConfig", () => {
 
 // ---------------------------------------------------------------------------
 // computeMedian
+// ---------------------------------------------------------------------------
+// Response-count scaling
+// ---------------------------------------------------------------------------
+
+describe("createAdaptiveSelector with responseCountFn", () => {
+  it("scales response time clamping for multi-response items", () => {
+    const storage = createMemoryStorage();
+    // responseCount of 3 for all items
+    const sel = createAdaptiveSelector(storage, DEFAULT_CONFIG, Math.random, () => 3);
+
+    // Record a response of 20000ms (exceeds base maxResponseTime 9000ms
+    // but within scaled max 9000*3 = 27000ms)
+    sel.recordResponse("item1", 20000, true);
+    const stats = sel.getStats("item1");
+    assert.equal(stats.ewma, 20000, "should not clamp to base maxResponseTime");
+  });
+
+  it("getAutomaticity uses scaled config for speed score", () => {
+    const storage = createMemoryStorage();
+    // responseCount=3: effectiveTarget=9000, effectiveMin=3000
+    const sel = createAdaptiveSelector(storage, DEFAULT_CONFIG, Math.random, () => 3);
+
+    // Record fast response (3000ms = scaled minTime → speedScore ≈ 1.0)
+    sel.recordResponse("item1", 3000, true);
+    const auto = sel.getAutomaticity("item1");
+    assert.ok(auto !== null);
+    // With recall ~1.0 (just answered) and speed ~1.0, automaticity should be high
+    assert.ok(auto! > 0.8, `expected high automaticity, got ${auto}`);
+  });
+
+  it("checkNeedsReview works correctly with responseCountFn", () => {
+    const storage = createMemoryStorage();
+    const sel = createAdaptiveSelector(storage, DEFAULT_CONFIG, Math.random, () => 3);
+
+    // Record multiple fast responses to build history
+    // 4000ms with rc=3 → speedScore well above 0.5 (effectiveTarget=9000)
+    sel.recordResponse("item1", 4000, true);
+    sel.recordResponse("item1", 4000, true);
+    // checkNeedsReview needs sampleCount >= 2 and speed >= 0.5
+    // Without response-count scaling, 4000ms against base target 3000ms
+    // would give speed < 0.5, incorrectly returning false
+    const result = sel.checkNeedsReview(["item1"]);
+    // No decay yet so should be false (recall still high), but no crash
+    assert.equal(result, false);
+  });
+
+  it("getWeight uses scaled config for selection", () => {
+    const storage = createMemoryStorage();
+    const sel = createAdaptiveSelector(storage, DEFAULT_CONFIG, Math.random, () => 4);
+
+    // 4000ms with rc=4 is scaled minTime (4*1000=4000), so weight should be low
+    sel.recordResponse("item1", 4000, true);
+    const weight = sel.getWeight("item1");
+    // With scaled minTime=4000, speedWeight = max(4000, 4000) / 4000 = 1.0
+    assert.ok(weight < 2.0, `expected low weight for fast multi-response item, got ${weight}`);
+  });
+
+  it("defaults to responseCount=1 when no fn provided", () => {
+    const storage = createMemoryStorage();
+    const sel = createAdaptiveSelector(storage, DEFAULT_CONFIG, Math.random);
+
+    sel.recordResponse("item1", 10000, true);
+    const stats = sel.getStats("item1");
+    // Should clamp to base maxResponseTime (9000)
+    assert.equal(stats.ewma, 9000);
+  });
+});
+
 // ---------------------------------------------------------------------------
 
 describe("computeMedian", () => {

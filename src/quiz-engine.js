@@ -232,15 +232,17 @@ function runCalibration(opts) {
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
  *     .countdown-bar, .feedback, .time-display, .hint,
- *     .start-btn, .stop-btn, .stats-toggle, .stats,
- *     .stats-controls, .mastery-message
+ *     .stats, .mastery-message
  *
  * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
  *             updateIdleMessage, isActive, isAnswered, selector, storage, els, baseline }}
  */
 export function createQuizEngine(mode, container) {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
-  const selector = createAdaptiveSelector(storage);
+  const responseCountFn = mode.getExpectedResponseCount
+    ? (itemId) => mode.getExpectedResponseCount(itemId)
+    : null;
+  const selector = createAdaptiveSelector(storage, DEFAULT_CONFIG, Math.random, responseCountFn);
   const deadlineTracker = createDeadlineTracker(storage, selector.getConfig());
 
   const provider = mode.calibrationProvider || 'button';
@@ -280,20 +282,13 @@ export function createQuizEngine(mode, container) {
     feedback: container.querySelector('.feedback'),
     timeDisplay: container.querySelector('.time-display'),
     hint: container.querySelector('.hint'),
-    startBtn: container.querySelector('.start-btn'),
-    stopBtn: container.querySelector('.stop-btn'),
-    statsToggle: container.querySelector('.stats-toggle'),
     stats: container.querySelector('.stats'),
-    statsControls: container.querySelector('.stats-controls'),
     quizArea: container.querySelector('.quiz-area'),
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
-    quizHeader: container.querySelector('.quiz-header'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
-    sessionStats: container.querySelector('.session-stats'),
     questionCountEl: container.querySelector('.question-count'),
     elapsedTimeEl: container.querySelector('.elapsed-time'),
-    progressBar: container.querySelector('.progress-bar'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
     deadlineDisplay: container.querySelector('.deadline-display'),
@@ -391,8 +386,12 @@ export function createQuizEngine(mode, container) {
       clearCalibrationContent();
     }
 
-    // Toggle calibrating class on container for CSS-driven visibility
-    container.classList.toggle('calibrating', inCalibration);
+    // Set phase class on container for CSS-driven visibility
+    const phaseClass = inCalibration ? 'phase-calibration'
+      : state.phase === 'active' ? 'phase-active'
+      : 'phase-idle';
+    container.classList.remove('phase-idle', 'phase-active', 'phase-calibration');
+    container.classList.add(phaseClass);
 
     // Mark the calibration button container so CSS can hide others
     if (inCalibration && !container.querySelector('.calibration-active')) {
@@ -424,11 +423,8 @@ export function createQuizEngine(mode, container) {
       if (closeBtn) closeBtn.remove();
     }
 
-    if (els.startBtn)      els.startBtn.style.display     = state.showStartBtn ? 'inline' : 'none';
-    if (els.stopBtn)       els.stopBtn.style.display      = state.showStopBtn ? 'inline' : 'none';
-    if (els.statsToggle)   els.statsToggle.style.display   = state.showHeatmapBtn ? 'inline-flex' : 'none';
-    if (els.statsControls) els.statsControls.style.display = state.showStatsControls ? 'block' : 'none';
-    if (els.quizArea)      els.quizArea.classList.toggle('active', state.quizActive);
+    const isActive = state.phase === 'active';
+    if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
     if (els.feedback) {
       els.feedback.textContent = state.feedbackText;
       els.feedback.className   = state.feedbackClass;
@@ -444,29 +440,18 @@ export function createQuizEngine(mode, container) {
     }
     if (els.countdownBar) {
       els.countdownBar.classList.remove('expired');
-      if (state.phase !== 'active') els.countdownBar.style.width = '0%';
+      if (!isActive) els.countdownBar.style.width = '0%';
     }
-    if (els.deadlineDisplay && state.phase !== 'active') {
+    if (els.deadlineDisplay && !isActive) {
       els.deadlineDisplay.textContent = '';
     }
 
-    // Quiz header visibility — only during active quiz, not calibration
-    if (els.quizHeader) {
-      els.quizHeader.style.display = state.phase === 'active' ? 'flex' : 'none';
-    }
-
     // Session stats (question count + elapsed time)
-    if (els.sessionStats) {
-      els.sessionStats.style.display = state.phase === 'active' ? 'flex' : 'none';
-    }
-    if (els.questionCountEl && state.phase === 'active') {
+    if (els.questionCountEl && isActive) {
       els.questionCountEl.textContent = state.questionCount;
     }
 
     // Progress bar
-    if (els.progressBar) {
-      els.progressBar.style.display = state.quizActive && state.phase === 'active' ? 'block' : 'none';
-    }
     if (els.progressFill) {
       const pct = state.totalEnabledCount > 0
         ? Math.round((state.masteredCount / state.totalEnabledCount) * 100)
@@ -474,7 +459,7 @@ export function createQuizEngine(mode, container) {
       els.progressFill.style.width = pct + '%';
     }
     if (els.progressText) {
-      els.progressText.textContent = state.masteredCount + ' / ' + state.totalEnabledCount;
+      els.progressText.textContent = state.masteredCount + ' / ' + state.totalEnabledCount + ' mastered';
     }
 
     setAnswerButtonsEnabled(state.answersEnabled);
@@ -518,6 +503,10 @@ export function createQuizEngine(mode, container) {
 
   let currentDeadline = null; // deadline for the current question (ms)
 
+  function getResponseCount(itemId) {
+    return mode.getExpectedResponseCount ? mode.getExpectedResponseCount(itemId) : 1;
+  }
+
   /**
    * Get the per-item deadline for the current question.
    * Uses the deadline tracker (persistent staircase) with EWMA cold start.
@@ -525,7 +514,8 @@ export function createQuizEngine(mode, container) {
   function getItemDeadline(itemId) {
     const stats = selector.getStats(itemId);
     const ewma = stats ? stats.ewma : null;
-    return deadlineTracker.getDeadline(itemId, ewma);
+    const rc = getResponseCount(itemId);
+    return deadlineTracker.getDeadline(itemId, ewma, rc);
   }
 
   function startCountdown() {
@@ -567,8 +557,9 @@ export function createQuizEngine(mode, container) {
     const result = mode.checkAnswer(itemId, '');
 
     // Record as incorrect in both systems
+    const rc = getResponseCount(itemId);
     selector.recordResponse(itemId, deadline, false);
-    deadlineTracker.recordOutcome(itemId, false);
+    deadlineTracker.recordOutcome(itemId, false, rc);
 
     state = engineTimedOut(state, result.correctAnswer, deadline);
 
@@ -711,8 +702,9 @@ export function createQuizEngine(mode, container) {
     }
 
     const result = mode.checkAnswer(state.currentItemId, input);
+    const rc = getResponseCount(state.currentItemId);
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
-    deadlineTracker.recordOutcome(state.currentItemId, result.correct);
+    deadlineTracker.recordOutcome(state.currentItemId, result.correct, rc);
 
     state = engineSubmitAnswer(state, result.correct, result.correctAnswer, responseTime);
 
@@ -801,7 +793,7 @@ export function createQuizEngine(mode, container) {
   // Tap-to-advance handler
   function handleClick(e) {
     if (state.phase !== 'active' || !state.answered) return;
-    if (e.target.closest('.answer-btn, .note-btn, .quiz-controls, .string-toggle')) return;
+    if (e.target.closest('.answer-btn, .note-btn, .quiz-config, .string-toggle')) return;
     nextQuestion();
   }
 

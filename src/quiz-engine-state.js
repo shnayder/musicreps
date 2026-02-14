@@ -35,10 +35,6 @@ export function initialEngineState() {
     calibrationBaseline: null,
 
     // UI visibility
-    showStartBtn: true,
-    showStopBtn: false,
-    showHeatmapBtn: true,
-    showStatsControls: true,
     quizActive: false,
     answersEnabled: false,
     timedOut: false,
@@ -55,10 +51,6 @@ export function engineStart(state) {
     phase: 'active',
     questionCount: 0,
     quizStartTime: Date.now(),
-    showStartBtn: false,
-    showStopBtn: false,
-    showHeatmapBtn: false,
-    showStatsControls: false,
     quizActive: true,
     showMastery: false,
   };
@@ -133,10 +125,6 @@ export function engineCalibrationIntro(state) {
   return {
     ...state,
     phase: 'calibration-intro',
-    showStartBtn: false,
-    showStopBtn: false,
-    showHeatmapBtn: false,
-    showStatsControls: false,
     showMastery: false,
     quizActive: true,
     answersEnabled: false,

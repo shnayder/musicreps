@@ -241,7 +241,6 @@ function createScaleDegreesMode() {
     });
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
