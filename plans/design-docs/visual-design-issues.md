@@ -116,7 +116,7 @@
 
 ---
 
-## P4 (Future / Low Priority) — NOT YET ADDRESSED
+## P4 (Future / Low Priority)
 
 ### Dark mode support
 Requires duplicating all color tokens under `@media (prefers-color-scheme: dark)`.
@@ -127,6 +127,6 @@ Depth, inlays, gradient effects. Cosmetic only.
 ### Micro-interactions
 Tap scale, fade-in feedback. Enhancement only.
 
-### `prefers-reduced-motion`
-- **Status:** DONE — added `@media (prefers-reduced-motion: reduce)` that
-  disables all transitions and animations.
+### ~~`prefers-reduced-motion`~~ DONE
+Added `@media (prefers-reduced-motion: reduce)` that disables all
+transitions and animations.
