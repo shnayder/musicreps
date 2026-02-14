@@ -274,7 +274,6 @@ export function createQuizEngine(mode, container) {
 
   let state = initialEngineState();
   let countdownInterval = null;
-  let elapsedTimeInterval = null;
 
   // DOM references (scoped to container)
   const els = {
@@ -288,7 +287,6 @@ export function createQuizEngine(mode, container) {
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
     questionCountEl: container.querySelector('.question-count'),
-    elapsedTimeEl: container.querySelector('.elapsed-time'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
     deadlineDisplay: container.querySelector('.deadline-display'),
@@ -469,33 +467,6 @@ export function createQuizEngine(mode, container) {
       renderCalibrationIntro();
     } else if (state.phase === 'calibration-results' && !calibrationContentEl) {
       renderCalibrationResults();
-    }
-  }
-
-  // --- Elapsed time display ---
-
-  function formatElapsedTime(ms) {
-    const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    if (minutes === 0) return seconds + 's';
-    return minutes + 'm ' + (seconds < 10 ? '0' : '') + seconds + 's';
-  }
-
-  function updateElapsedTime() {
-    if (!state.quizStartTime || !els.elapsedTimeEl) return;
-    els.elapsedTimeEl.textContent = formatElapsedTime(Date.now() - state.quizStartTime);
-  }
-
-  function startElapsedTimer() {
-    updateElapsedTime();
-    elapsedTimeInterval = setInterval(updateElapsedTime, 1000);
-  }
-
-  function stopElapsedTimer() {
-    if (elapsedTimeInterval) {
-      clearInterval(elapsedTimeInterval);
-      elapsedTimeInterval = null;
     }
   }
 
@@ -735,7 +706,6 @@ export function createQuizEngine(mode, container) {
     state = engineUpdateProgress(state, progress.masteredCount, progress.totalEnabledCount);
 
     render();
-    startElapsedTimer();
     nextQuestion();
   }
 
@@ -763,7 +733,6 @@ export function createQuizEngine(mode, container) {
       clearInterval(countdownInterval);
       countdownInterval = null;
     }
-    stopElapsedTimer();
     currentDeadline = null;
     state = engineStop(state);
     render();   // render() clears calibrationContentEl when phase is idle

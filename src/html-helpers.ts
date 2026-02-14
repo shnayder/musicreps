@@ -139,7 +139,6 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
       </div>
       <div class="session-stats">
         <span><span class="question-count">0</span> questions</span>
-        <span class="elapsed-time">0s</span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
