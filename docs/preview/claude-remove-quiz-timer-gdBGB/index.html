@@ -493,6 +493,36 @@ button {
   border-radius: 12px;
   padding: var(--space-5);
 }
+.countdown-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 240px;
+  margin: var(--space-5) auto;
+}
+.countdown-track {
+  flex: 1;
+  height: 8px;
+  background: var(--color-surface-alt);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.countdown-bar {
+  height: 100%;
+  background: var(--color-success);
+  transition: width 0.1s linear;
+}
+.countdown-bar.expired {
+  background: var(--color-error);
+}
+.deadline-display {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  min-width: 2.5em;
+  text-align: right;
+  flex-shrink: 0;
+}
+
 /* --- Note buttons --- */
 .note-buttons {
   display: flex;
@@ -1058,7 +1088,6 @@ button {
     </div>
     <div class="session-stats" style="display: none;">
       <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
     </div>
     <div class="progress-bar" style="display: none;">
       <div class="progress-fill" style="width: 0%"></div>
@@ -2740,6 +2769,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="countdown-container">
+        <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
+      </div>
       <div class="note-buttons">
         <button class="note-btn" data-note="C">C</button>
         <button class="note-btn accidental" data-note="C#">C#</button>
@@ -2787,7 +2819,6 @@ button {
     </div>
     <div class="session-stats" style="display: none;">
       <span><span class="question-count">0</span> rounds</span>
-      <span class="elapsed-time">0s</span>
     </div>
     <div class="progress-bar" style="display: none;">
       <div class="progress-fill" style="width: 0%"></div>
@@ -4515,13 +4546,13 @@ button {
     </div>
     <div class="session-stats" style="display: none;">
       <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
     </div>
     <div class="progress-bar" style="display: none;">
       <div class="progress-fill" style="width: 0%"></div>
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4578,13 +4609,13 @@ button {
     </div>
     <div class="session-stats" style="display: none;">
       <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
     </div>
     <div class="progress-bar" style="display: none;">
       <div class="progress-fill" style="width: 0%"></div>
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-intervals">
         <button class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
@@ -4644,13 +4675,13 @@ button {
     </div>
     <div class="session-stats" style="display: none;">
       <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
     </div>
     <div class="progress-bar" style="display: none;">
       <div class="progress-fill" style="width: 0%"></div>
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4696,13 +4727,13 @@ button {
     </div>
     <div class="session-stats" style="display: none;">
       <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
     </div>
     <div class="progress-bar" style="display: none;">
       <div class="progress-fill" style="width: 0%"></div>
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4748,13 +4779,13 @@ button {
     </div>
     <div class="session-stats" style="display: none;">
       <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
     </div>
     <div class="progress-bar" style="display: none;">
       <div class="progress-fill" style="width: 0%"></div>
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-keysig">
         <button class="answer-btn answer-btn-keysig" data-sig="0">0</button>
@@ -4817,13 +4848,13 @@ button {
     </div>
     <div class="session-stats" style="display: none;">
       <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
     </div>
     <div class="progress-bar" style="display: none;">
       <div class="progress-fill" style="width: 0%"></div>
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4878,13 +4909,13 @@ button {
     </div>
     <div class="session-stats" style="display: none;">
       <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
     </div>
     <div class="progress-bar" style="display: none;">
       <div class="progress-fill" style="width: 0%"></div>
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4939,13 +4970,13 @@ button {
     </div>
     <div class="session-stats" style="display: none;">
       <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
     </div>
     <div class="progress-bar" style="display: none;">
       <div class="progress-fill" style="width: 0%"></div>
       <div class="progress-text">0 / 0</div>
     </div>
     <div class="quiz-area">
+      <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="chord-slots"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -5750,6 +5781,7 @@ function initialEngineState() {
     showStatsControls: true,
     quizActive: false,
     answersEnabled: false,
+    timedOut: false,
   };
 }
 
@@ -5790,6 +5822,7 @@ function engineNextQuestion(state, nextItemId, nowMs) {
     timeDisplayText: '',
     hintText: '',
     answersEnabled: true,
+    timedOut: false,
   };
 }
 
@@ -5809,6 +5842,26 @@ function engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs) {
     feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
     timeDisplayText: (responseTimeMs / 1000).toFixed(1) + 's',
     hintText: 'Tap anywhere or press Space for next',
+    timedOut: false,
+  };
+}
+
+/**
+ * Transition: timer expired before user answered.
+ * @param {EngineState} state
+ * @param {string} correctAnswer - display string for the correct answer
+ * @param {number} deadlineMs - the deadline that was active
+ */
+function engineTimedOut(state, correctAnswer, deadlineMs) {
+  return {
+    ...state,
+    answered: true,
+    answersEnabled: false,
+    feedbackText: 'Time\u2019s up \u2014 ' + correctAnswer,
+    feedbackClass: 'feedback incorrect',
+    timeDisplayText: 'limit: ' + (deadlineMs / 1000).toFixed(1) + 's',
+    hintText: 'Tap anywhere or press Space for next',
+    timedOut: true,
   };
 }
 
@@ -6008,14 +6061,14 @@ function createDeadlineTracker(storage, adaptiveCfg, dlCfg = DEFAULT_DEADLINE_CO
   return { getDeadline, recordOutcome, updateConfig };
 }
 
-// Shared quiz engine: manages adaptive selection, timing, feedback,
-// and keyboard/tap handling for all quiz modes.
+// Shared quiz engine: manages adaptive selection, timing, countdown,
+// feedback, and keyboard/tap handling for all quiz modes.
 //
 // Each quiz mode provides a config object; the engine handles the
 // shared lifecycle. ES module — exports stripped for browser inlining.
 //
 // Depends on globals (from quiz-engine-state.js): initialEngineState,
-// engineStart, engineNextQuestion, engineSubmitAnswer,
+// engineStart, engineNextQuestion, engineSubmitAnswer, engineTimedOut,
 // engineStop, engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer,
 // engineUpdateProgress, engineRouteKey, engineCalibrationIntro,
 // engineCalibrating, engineCalibrationResults
@@ -6241,7 +6294,7 @@ function runCalibration(opts) {
  *
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
- *     .feedback, .time-display, .hint,
+ *     .countdown-bar, .feedback, .time-display, .hint,
  *     .start-btn, .stop-btn, .stats-toggle, .stats,
  *     .stats-controls, .mastery-message
  *
@@ -6281,10 +6334,11 @@ function createQuizEngine(mode, container) {
   }
 
   let state = initialEngineState();
-  let elapsedTimeInterval = null;
+  let countdownInterval = null;
 
   // DOM references (scoped to container)
   const els = {
+    countdownBar: container.querySelector('.countdown-bar'),
     feedback: container.querySelector('.feedback'),
     timeDisplay: container.querySelector('.time-display'),
     hint: container.querySelector('.hint'),
@@ -6300,10 +6354,10 @@ function createQuizEngine(mode, container) {
     quizHeaderClose: container.querySelector('.quiz-header-close'),
     sessionStats: container.querySelector('.session-stats'),
     questionCountEl: container.querySelector('.question-count'),
-    elapsedTimeEl: container.querySelector('.elapsed-time'),
     progressBar: container.querySelector('.progress-bar'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
+    deadlineDisplay: container.querySelector('.deadline-display'),
   };
 
   // --- Render: declaratively map state to DOM ---
@@ -6449,6 +6503,13 @@ function createQuizEngine(mode, container) {
     if (els.recalibrateBtn) {
       els.recalibrateBtn.style.display = (state.phase === 'idle' && motorBaseline) ? 'inline' : 'none';
     }
+    if (els.countdownBar) {
+      els.countdownBar.classList.remove('expired');
+      if (state.phase !== 'active') els.countdownBar.style.width = '0%';
+    }
+    if (els.deadlineDisplay && state.phase !== 'active') {
+      els.deadlineDisplay.textContent = '';
+    }
 
     // Quiz header visibility — only during active quiz, not calibration
     if (els.quizHeader) {
@@ -6487,30 +6548,74 @@ function createQuizEngine(mode, container) {
     }
   }
 
-  // --- Elapsed time display ---
+  // --- Countdown with adaptive deadline ---
 
-  function formatElapsedTime(ms) {
-    const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    if (minutes === 0) return seconds + 's';
-    return minutes + 'm ' + (seconds < 10 ? '0' : '') + seconds + 's';
+  let currentDeadline = null; // deadline for the current question (ms)
+
+  /**
+   * Get the per-item deadline for the current question.
+   * Uses the deadline tracker (persistent staircase) with EWMA cold start.
+   */
+  function getItemDeadline(itemId) {
+    const stats = selector.getStats(itemId);
+    const ewma = stats ? stats.ewma : null;
+    return deadlineTracker.getDeadline(itemId, ewma);
   }
 
-  function updateElapsedTime() {
-    if (!state.quizStartTime || !els.elapsedTimeEl) return;
-    els.elapsedTimeEl.textContent = formatElapsedTime(Date.now() - state.quizStartTime);
+  function startCountdown() {
+    const bar = els.countdownBar;
+    if (!bar) return;
+    bar.style.width = '100%';
+    bar.classList.remove('expired');
+
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    const targetTime = currentDeadline || selector.getConfig().automaticityTarget;
+    let expired = false;
+    const startTime = Date.now();
+    countdownInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, targetTime - elapsed);
+      bar.style.width = (remaining / targetTime) * 100 + '%';
+
+      if (remaining === 0 && !expired) {
+        expired = true;
+        bar.classList.add('expired');
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+        handleTimeout();
+      }
+    }, 50);
   }
 
-  function startElapsedTimer() {
-    updateElapsedTime();
-    elapsedTimeInterval = setInterval(updateElapsedTime, 1000);
-  }
+  /**
+   * Handle timer expiry: auto-submit as incorrect, record to deadline tracker.
+   */
+  function handleTimeout() {
+    if (state.phase !== 'active' || state.answered) return;
 
-  function stopElapsedTimer() {
-    if (elapsedTimeInterval) {
-      clearInterval(elapsedTimeInterval);
-      elapsedTimeInterval = null;
+    const itemId = state.currentItemId;
+    const deadline = currentDeadline;
+
+    // Get the correct answer to display (pass empty string — always wrong, never crashes)
+    const result = mode.checkAnswer(itemId, '');
+
+    // Record as incorrect in both systems
+    selector.recordResponse(itemId, deadline, false);
+    deadlineTracker.recordOutcome(itemId, false);
+
+    state = engineTimedOut(state, result.correctAnswer, deadline);
+
+    // Check mastery and progress
+    const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
+    state = engineUpdateMasteryAfterAnswer(state, allMastered);
+    const progress = computeProgress();
+    state = engineUpdateProgress(state, progress.masteredCount, progress.totalEnabledCount);
+
+    render();
+
+    if (mode.onAnswer) {
+      mode.onAnswer(itemId, { correct: false, correctAnswer: result.correctAnswer }, deadline);
     }
   }
 
@@ -6619,15 +6724,25 @@ function createQuizEngine(mode, container) {
     if (items.length === 0) return;
 
     const nextItemId = selector.selectNext(items);
+    currentDeadline = getItemDeadline(nextItemId);
     state = engineNextQuestion(state, nextItemId, Date.now());
     render();
+    if (els.deadlineDisplay) {
+      els.deadlineDisplay.textContent = (currentDeadline / 1000).toFixed(1) + 's';
+    }
     mode.presentQuestion(state.currentItemId);
+    startCountdown();
   }
 
   function submitAnswer(input) {
     if (state.phase !== 'active' || state.answered) return;
 
     const responseTime = Date.now() - state.questionStartTime;
+
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
 
     const result = mode.checkAnswer(state.currentItemId, input);
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
@@ -6662,7 +6777,6 @@ function createQuizEngine(mode, container) {
     state = engineUpdateProgress(state, progress.masteredCount, progress.totalEnabledCount);
 
     render();
-    startElapsedTimer();
     nextQuestion();
   }
 
@@ -6686,7 +6800,11 @@ function createQuizEngine(mode, container) {
       calibrationCleanup();
       calibrationCleanup = null;
     }
-    stopElapsedTimer();
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
+    currentDeadline = null;
     state = engineStop(state);
     render();   // render() clears calibrationContentEl when phase is idle
     if (mode.onStop) mode.onStop();
@@ -7669,7 +7787,6 @@ function createSpeedTapMode() {
     quizHeaderClose: container.querySelector('.quiz-header-close'),
     sessionStats: container.querySelector('.session-stats'),
     questionCountEl: container.querySelector('.question-count'),
-    elapsedTimeEl: container.querySelector('.elapsed-time'),
     progressBar: container.querySelector('.progress-bar'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
@@ -7677,41 +7794,13 @@ function createSpeedTapMode() {
 
   // --- Session tracking ---
 
-  let sessionStartTime = null;
   let roundCount = 0;
-  let sessionElapsedInterval = null;
-
-  function formatElapsedTime(ms) {
-    const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    if (minutes === 0) return seconds + 's';
-    return minutes + 'm ' + (seconds < 10 ? '0' : '') + seconds + 's';
-  }
-
-  function updateSessionElapsed() {
-    if (!sessionStartTime || !els.elapsedTimeEl) return;
-    els.elapsedTimeEl.textContent = formatElapsedTime(Date.now() - sessionStartTime);
-  }
 
   function startSessionTimer() {
-    if (sessionElapsedInterval) {
-      clearInterval(sessionElapsedInterval);
-    }
-    sessionStartTime = Date.now();
     roundCount = 0;
     updateRoundCount();
-    updateSessionElapsed();
-    sessionElapsedInterval = setInterval(updateSessionElapsed, 1000);
   }
 
-  function stopSessionTimer() {
-    if (sessionElapsedInterval) {
-      clearInterval(sessionElapsedInterval);
-      sessionElapsedInterval = null;
-    }
-    sessionStartTime = null;
-  }
 
   function updateRoundCount() {
     if (els.questionCountEl) {
@@ -8152,7 +8241,6 @@ function createSpeedTapMode() {
     active = false;
     roundActive = false;
     stopTimer();
-    stopSessionTimer();
     wrongFlashTimeouts.forEach(t => clearTimeout(t));
     wrongFlashTimeouts.clear();
     clearAll();
