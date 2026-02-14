@@ -143,7 +143,7 @@ function createSpeedTapMode() {
   }
 
   function handleFretboardClick(e) {
-    if (e.target.closest('.quiz-controls, .setting-group')) return;
+    if (e.target.closest('.quiz-config, .setting-group')) return;
 
     if (engine.isActive && !engine.isAnswered && roundActive) {
       const target = e.target.closest('circle[data-string][data-fret]') ||
@@ -250,7 +250,6 @@ function createSpeedTapMode() {
     }
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     if (fretboardWrapper) fretboardWrapper.style.display = 'none';
     updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);

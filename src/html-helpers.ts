@@ -96,48 +96,55 @@ interface ModeScreenOptions {
   settingsHTML?: string;
   /** HTML for inside the quiz-area div. */
   quizAreaContent: string;
-  /** HTML inserted between progress-bar and quiz-area (e.g. fretboard-wrapper). */
+  /** HTML inserted between quiz-session and quiz-area (e.g. fretboard-wrapper). */
   beforeQuizArea?: string;
-  /** Text for session counter: "questions" (default) or "rounds". */
-  sessionUnit?: string;
 }
 
 /**
  * Generate a complete mode-screen div with the shared scaffold.
  * Each mode only specifies what's unique: settings, quiz-area content, etc.
+ *
+ * DOM grouping:
+ *   stats-section    — heatmap + recall/speed toggle (idle)
+ *   quiz-config      — settings + mastery + start/recalibrate (idle)
+ *   quiz-session     — close button + counters + progress (active)
+ *   [beforeQuizArea] — mode-specific content between session chrome and quiz
+ *   quiz-area        — question + answer buttons + feedback (active)
  */
 export function modeScreen(id: string, opts: ModeScreenOptions): string {
-  const unit = opts.sessionUnit || "questions";
   const settingsRow = opts.settingsHTML
     ? `\n      <div class="settings-row">\n        ${opts.settingsHTML}\n      </div>`
     : "";
   const beforeQuizArea = opts.beforeQuizArea ? "\n    " + opts.beforeQuizArea : "";
 
   return `  <div class="mode-screen" id="mode-${id}">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">${settingsRow}
+    <div class="quiz-config">${settingsRow}
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> ${unit}</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>${beforeQuizArea}
     <div class="quiz-area">
       ${opts.quizAreaContent}

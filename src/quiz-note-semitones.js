@@ -170,7 +170,6 @@ function createNoteSemitonesMode() {
 
     // Start/stop
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     statsControls.show('retention');

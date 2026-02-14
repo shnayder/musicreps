@@ -203,16 +203,6 @@ body {
 }
 
 /* --- Fretboard --- */
-#mode-fretboard {
-  display: flex;
-  flex-direction: column;
-}
-#mode-fretboard .fretboard-wrapper {
-  order: -1;
-}
-#mode-fretboard.quiz-active .fretboard-wrapper {
-  order: 0;
-}
 .fretboard-wrapper {
   display: flex;
   flex-direction: column;
@@ -322,8 +312,8 @@ body {
   color: var(--color-text-muted);
 }
 
-/* --- Quiz controls (shared) --- */
-.quiz-controls {
+/* --- Quiz config (shared) --- */
+.quiz-config {
   text-align: center;
   margin: var(--space-5) 0;
 }
@@ -373,22 +363,7 @@ button {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* --- Secondary buttons (Stop, Recalibrate) --- */
-.stop-btn {
-  background: var(--color-bg);
-  color: var(--color-text);
-  border: 2px solid var(--color-border);
-  border-radius: 8px;
-  font-weight: 500;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.stop-btn:hover {
-  background: var(--color-surface-hover);
-  border-color: var(--color-text-muted);
-}
-.stop-btn:active {
-  background: var(--color-surface-pressed);
-}
+/* --- Secondary buttons (Recalibrate) --- */
 .recalibrate-btn {
   background: var(--color-bg);
   color: var(--color-text-muted);
@@ -408,6 +383,7 @@ button {
 
 /* --- Quiz header (shown during quiz) --- */
 .quiz-header {
+  display: flex;
   align-items: center;
   padding: 0.4rem 0;
   border-bottom: 1px solid var(--color-surface-alt);
@@ -438,6 +414,7 @@ button {
 
 /* --- Session stats (question count + elapsed time) --- */
 .session-stats {
+  display: flex;
   justify-content: center;
   gap: var(--space-6);
   font-size: var(--text-sm);
@@ -1057,12 +1034,14 @@ button {
 
   <!-- Fretboard mode -->
   <div class="mode-screen" id="mode-fretboard">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">
+    <div class="quiz-config">
       <div class="settings-row">
         <div class="toggle-group">
           <span class="toggle-group-label">Strings</span>
@@ -1083,21 +1062,22 @@ button {
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>
     <div class="fretboard-wrapper">
       <div class="fretboard-container">
@@ -2800,12 +2780,14 @@ button {
 
   <!-- Speed Tap mode -->
   <div class="mode-screen" id="mode-speedTap">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">
+    <div class="quiz-config">
       <div class="settings-row">
         <label class="setting-group">
           <input type="checkbox" id="speed-tap-naturals-only" checked>
@@ -2815,21 +2797,22 @@ button {
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
@@ -4534,30 +4517,33 @@ button {
 
   <!-- Note Semitones mode -->
   <div class="mode-screen" id="mode-noteSemitones">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">
+    <div class="quiz-config">
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
@@ -4598,30 +4584,33 @@ button {
 
   <!-- Interval Semitones mode -->
   <div class="mode-screen" id="mode-intervalSemitones">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">
+    <div class="quiz-config">
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
@@ -4662,33 +4651,36 @@ button {
 
   <!-- Semitone Math mode -->
   <div class="mode-screen" id="mode-semitoneMath">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">
+    <div class="quiz-config">
       <div class="settings-row">
         <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
       </div>
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
@@ -4715,33 +4707,36 @@ button {
 
   <!-- Interval Math mode -->
   <div class="mode-screen" id="mode-intervalMath">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">
+    <div class="quiz-config">
       <div class="settings-row">
         <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
       </div>
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
@@ -4768,33 +4763,36 @@ button {
 
   <!-- Key Signatures mode -->
   <div class="mode-screen" id="mode-keySignatures">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">
+    <div class="quiz-config">
       <div class="settings-row">
         <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
       </div>
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
@@ -4838,33 +4836,36 @@ button {
 
   <!-- Scale Degrees mode -->
   <div class="mode-screen" id="mode-scaleDegrees">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">
+    <div class="quiz-config">
       <div class="settings-row">
         <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
       </div>
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
@@ -4900,33 +4901,36 @@ button {
 
   <!-- Diatonic Chords mode -->
   <div class="mode-screen" id="mode-diatonicChords">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">
+    <div class="quiz-config">
       <div class="settings-row">
         <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
       </div>
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
@@ -4962,33 +4966,36 @@ button {
 
   <!-- Chord Spelling mode -->
   <div class="mode-screen" id="mode-chordSpelling">
-    <div class="stats-container"></div>
-    <div class="stats-controls">
-      <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
-      <span class="stats"></span>
+    <div class="stats-section">
+      <div class="stats-container"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
     </div>
-    <div class="quiz-controls">
+    <div class="quiz-config">
       <div class="settings-row">
         <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
       </div>
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
-        <button class="stop-btn" style="display: none;">Stop Quiz</button>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
-    <div class="quiz-header" style="display: none;">
-      <span class="quiz-header-title"></span>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
-    </div>
-    <div class="session-stats" style="display: none;">
-      <span><span class="question-count">0</span> questions</span>
-      <span class="elapsed-time">0s</span>
-    </div>
-    <div class="progress-bar" style="display: none;">
-      <div class="progress-fill" style="width: 0%"></div>
-      <div class="progress-text">0 / 0 mastered</div>
+    <div class="quiz-session" style="display: none;">
+      <div class="quiz-header">
+        <span class="quiz-header-title"></span>
+        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      </div>
+      <div class="session-stats">
+        <span><span class="question-count">0</span> questions</span>
+        <span class="elapsed-time">0s</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 mastered</div>
+      </div>
     </div>
     <div class="quiz-area">
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
@@ -6345,8 +6352,8 @@ function runCalibration(opts) {
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
  *     .countdown-bar, .feedback, .time-display, .hint,
- *     .start-btn, .stop-btn, .stats-toggle, .stats,
- *     .stats-controls, .mastery-message
+ *     .start-btn, .stats-toggle, .stats,
+ *     .stats-section, .quiz-config, .quiz-session, .mastery-message
  *
  * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
  *             updateIdleMessage, isActive, isAnswered, selector, storage, els, baseline }}
@@ -6397,19 +6404,17 @@ function createQuizEngine(mode, container) {
     timeDisplay: container.querySelector('.time-display'),
     hint: container.querySelector('.hint'),
     startBtn: container.querySelector('.start-btn'),
-    stopBtn: container.querySelector('.stop-btn'),
     statsToggle: container.querySelector('.stats-toggle'),
     stats: container.querySelector('.stats'),
-    statsControls: container.querySelector('.stats-controls'),
+    statsSection: container.querySelector('.stats-section'),
     quizArea: container.querySelector('.quiz-area'),
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
-    quizHeader: container.querySelector('.quiz-header'),
+    quizConfig: container.querySelector('.quiz-config'),
+    quizSession: container.querySelector('.quiz-session'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
-    sessionStats: container.querySelector('.session-stats'),
     questionCountEl: container.querySelector('.question-count'),
     elapsedTimeEl: container.querySelector('.elapsed-time'),
-    progressBar: container.querySelector('.progress-bar'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
     deadlineDisplay: container.querySelector('.deadline-display'),
@@ -6540,11 +6545,17 @@ function createQuizEngine(mode, container) {
       if (closeBtn) closeBtn.remove();
     }
 
-    if (els.startBtn)      els.startBtn.style.display     = state.showStartBtn ? 'inline' : 'none';
-    if (els.stopBtn)       els.stopBtn.style.display      = state.showStopBtn ? 'inline' : 'none';
-    if (els.statsToggle)   els.statsToggle.style.display   = state.showHeatmapBtn ? 'inline-flex' : 'none';
-    if (els.statsControls) els.statsControls.style.display = state.showStatsControls ? 'block' : 'none';
-    if (els.quizArea)      els.quizArea.classList.toggle('active', state.quizActive);
+    // Group visibility: stats-section + quiz-config shown in idle,
+    // quiz-session shown during active quiz
+    const isActive = state.phase === 'active';
+    if (els.statsSection) els.statsSection.style.display = state.showStatsControls ? '' : 'none';
+    if (els.quizConfig) {
+      els.quizConfig.style.display = state.showStartBtn || state.phase === 'idle' ? '' : 'none';
+    }
+    if (els.quizSession) els.quizSession.style.display = isActive ? '' : 'none';
+
+    if (els.startBtn) els.startBtn.style.display = state.showStartBtn ? 'inline' : 'none';
+    if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
     if (els.feedback) {
       els.feedback.textContent = state.feedbackText;
       els.feedback.className   = state.feedbackClass;
@@ -6560,29 +6571,18 @@ function createQuizEngine(mode, container) {
     }
     if (els.countdownBar) {
       els.countdownBar.classList.remove('expired');
-      if (state.phase !== 'active') els.countdownBar.style.width = '0%';
+      if (!isActive) els.countdownBar.style.width = '0%';
     }
-    if (els.deadlineDisplay && state.phase !== 'active') {
+    if (els.deadlineDisplay && !isActive) {
       els.deadlineDisplay.textContent = '';
     }
 
-    // Quiz header visibility — only during active quiz, not calibration
-    if (els.quizHeader) {
-      els.quizHeader.style.display = state.phase === 'active' ? 'flex' : 'none';
-    }
-
     // Session stats (question count + elapsed time)
-    if (els.sessionStats) {
-      els.sessionStats.style.display = state.phase === 'active' ? 'flex' : 'none';
-    }
-    if (els.questionCountEl && state.phase === 'active') {
+    if (els.questionCountEl && isActive) {
       els.questionCountEl.textContent = state.questionCount;
     }
 
     // Progress bar
-    if (els.progressBar) {
-      els.progressBar.style.display = state.quizActive && state.phase === 'active' ? 'block' : 'none';
-    }
     if (els.progressFill) {
       const pct = state.totalEnabledCount > 0
         ? Math.round((state.masteredCount / state.totalEnabledCount) * 100)
@@ -6924,7 +6924,7 @@ function createQuizEngine(mode, container) {
   // Tap-to-advance handler
   function handleClick(e) {
     if (state.phase !== 'active' || !state.answered) return;
-    if (e.target.closest('.answer-btn, .note-btn, .quiz-controls, .string-toggle')) return;
+    if (e.target.closest('.answer-btn, .note-btn, .quiz-config, .string-toggle')) return;
     nextQuestion();
   }
 
@@ -7603,14 +7603,12 @@ function createFretboardMode() {
     },
 
     onStart() {
-      container.classList.add('quiz-active');
       noteKeyHandler.reset();
       if (statsControls.mode) hideHeatmap();
       updateStats(engine.selector);
     },
 
     onStop() {
-      container.classList.remove('quiz-active');
       noteKeyHandler.reset();
       clearAll();
       updateStats(engine.selector);
@@ -7677,10 +7675,7 @@ function createFretboardMode() {
     }
 
     // Start/stop buttons
-    const startBtn = container.querySelector('.start-btn');
-    const stopBtn = container.querySelector('.stop-btn');
-    if (startBtn) startBtn.addEventListener('click', () => engine.start());
-    if (stopBtn) stopBtn.addEventListener('click', () => engine.stop());
+    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
     applyRecommendations(engine.selector);
     updateAccidentalButtons();
@@ -7850,7 +7845,7 @@ function createSpeedTapMode() {
   }
 
   function handleFretboardClick(e) {
-    if (e.target.closest('.quiz-controls, .setting-group')) return;
+    if (e.target.closest('.quiz-config, .setting-group')) return;
 
     if (engine.isActive && !engine.isAnswered && roundActive) {
       const target = e.target.closest('circle[data-string][data-fret]') ||
@@ -7957,7 +7952,6 @@ function createSpeedTapMode() {
     }
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     if (fretboardWrapper) fretboardWrapper.style.display = 'none';
     updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);
@@ -8153,7 +8147,6 @@ function createNoteSemitonesMode() {
 
     // Start/stop
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     statsControls.show('retention');
@@ -8335,7 +8328,6 @@ function createIntervalSemitonesMode() {
 
     // Start/stop
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
     statsControls.show('retention');
@@ -8580,7 +8572,6 @@ function createSemitoneMathMode() {
 
     // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
@@ -8829,7 +8820,6 @@ function createIntervalMathMode() {
 
     // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
@@ -9108,7 +9098,6 @@ function createKeySignaturesMode() {
     });
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
@@ -9373,7 +9362,6 @@ function createScaleDegreesMode() {
     });
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
@@ -9637,7 +9625,6 @@ function createDiatonicChordsMode() {
     });
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
@@ -9929,7 +9916,6 @@ function createChordSpellingMode() {
     });
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
-    container.querySelector('.stop-btn').addEventListener('click', () => engine.stop());
 
     applyRecommendations(engine.selector);
     updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);

@@ -232,8 +232,8 @@ function runCalibration(opts) {
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
  *     .countdown-bar, .feedback, .time-display, .hint,
- *     .start-btn, .stop-btn, .stats-toggle, .stats,
- *     .stats-controls, .mastery-message
+ *     .start-btn, .stats-toggle, .stats,
+ *     .stats-section, .quiz-config, .quiz-session, .mastery-message
  *
  * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
  *             updateIdleMessage, isActive, isAnswered, selector, storage, els, baseline }}
@@ -284,19 +284,17 @@ export function createQuizEngine(mode, container) {
     timeDisplay: container.querySelector('.time-display'),
     hint: container.querySelector('.hint'),
     startBtn: container.querySelector('.start-btn'),
-    stopBtn: container.querySelector('.stop-btn'),
     statsToggle: container.querySelector('.stats-toggle'),
     stats: container.querySelector('.stats'),
-    statsControls: container.querySelector('.stats-controls'),
+    statsSection: container.querySelector('.stats-section'),
     quizArea: container.querySelector('.quiz-area'),
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
-    quizHeader: container.querySelector('.quiz-header'),
+    quizConfig: container.querySelector('.quiz-config'),
+    quizSession: container.querySelector('.quiz-session'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
-    sessionStats: container.querySelector('.session-stats'),
     questionCountEl: container.querySelector('.question-count'),
     elapsedTimeEl: container.querySelector('.elapsed-time'),
-    progressBar: container.querySelector('.progress-bar'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
     deadlineDisplay: container.querySelector('.deadline-display'),
@@ -427,11 +425,17 @@ export function createQuizEngine(mode, container) {
       if (closeBtn) closeBtn.remove();
     }
 
-    if (els.startBtn)      els.startBtn.style.display     = state.showStartBtn ? 'inline' : 'none';
-    if (els.stopBtn)       els.stopBtn.style.display      = state.showStopBtn ? 'inline' : 'none';
-    if (els.statsToggle)   els.statsToggle.style.display   = state.showHeatmapBtn ? 'inline-flex' : 'none';
-    if (els.statsControls) els.statsControls.style.display = state.showStatsControls ? 'block' : 'none';
-    if (els.quizArea)      els.quizArea.classList.toggle('active', state.quizActive);
+    // Group visibility: stats-section + quiz-config shown in idle,
+    // quiz-session shown during active quiz
+    const isActive = state.phase === 'active';
+    if (els.statsSection) els.statsSection.style.display = state.showStatsControls ? '' : 'none';
+    if (els.quizConfig) {
+      els.quizConfig.style.display = state.showStartBtn || state.phase === 'idle' ? '' : 'none';
+    }
+    if (els.quizSession) els.quizSession.style.display = isActive ? '' : 'none';
+
+    if (els.startBtn) els.startBtn.style.display = state.showStartBtn ? 'inline' : 'none';
+    if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
     if (els.feedback) {
       els.feedback.textContent = state.feedbackText;
       els.feedback.className   = state.feedbackClass;
@@ -447,29 +451,18 @@ export function createQuizEngine(mode, container) {
     }
     if (els.countdownBar) {
       els.countdownBar.classList.remove('expired');
-      if (state.phase !== 'active') els.countdownBar.style.width = '0%';
+      if (!isActive) els.countdownBar.style.width = '0%';
     }
-    if (els.deadlineDisplay && state.phase !== 'active') {
+    if (els.deadlineDisplay && !isActive) {
       els.deadlineDisplay.textContent = '';
     }
 
-    // Quiz header visibility — only during active quiz, not calibration
-    if (els.quizHeader) {
-      els.quizHeader.style.display = state.phase === 'active' ? 'flex' : 'none';
-    }
-
     // Session stats (question count + elapsed time)
-    if (els.sessionStats) {
-      els.sessionStats.style.display = state.phase === 'active' ? 'flex' : 'none';
-    }
-    if (els.questionCountEl && state.phase === 'active') {
+    if (els.questionCountEl && isActive) {
       els.questionCountEl.textContent = state.questionCount;
     }
 
     // Progress bar
-    if (els.progressBar) {
-      els.progressBar.style.display = state.quizActive && state.phase === 'active' ? 'block' : 'none';
-    }
     if (els.progressFill) {
       const pct = state.totalEnabledCount > 0
         ? Math.round((state.masteredCount / state.totalEnabledCount) * 100)
@@ -811,7 +804,7 @@ export function createQuizEngine(mode, container) {
   // Tap-to-advance handler
   function handleClick(e) {
     if (state.phase !== 'active' || !state.answered) return;
-    if (e.target.closest('.answer-btn, .note-btn, .quiz-controls, .string-toggle')) return;
+    if (e.target.closest('.answer-btn, .note-btn, .quiz-config, .string-toggle')) return;
     nextQuestion();
   }
 
