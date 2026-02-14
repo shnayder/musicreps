@@ -20,6 +20,7 @@ export const DEFAULT_CONFIG = {
   speedBonusMax: 1.5,        // fast answers grow stability up to this extra factor
   selfCorrectionThreshold: 1500, // ms — response time below this triggers self-correction
   automaticityTarget: 3000,      // ms — response time at which speedScore ≈ 0.5
+  automaticityThreshold: 0.8,    // automaticity above this = "automatic" (matches stats heatmap)
 };
 
 // ---------------------------------------------------------------------------
@@ -324,6 +325,19 @@ export function createAdaptiveSelector(
   }
 
   /**
+   * Check if all items have automaticity > automaticityThreshold.
+   * This is the "fully automatic" bar — both remembered AND fast.
+   * Matches the "Automatic (>80%)" band in the stats heatmap.
+   */
+  function checkAllAutomatic(items) {
+    for (const id of items) {
+      const auto = getAutomaticity(id);
+      if (auto === null || auto <= cfg.automaticityThreshold) return false;
+    }
+    return items.length > 0;
+  }
+
+  /**
    * Check if previously-mastered material needs review.
    * Returns true only when ALL items had high prior skill (speedScore >= 0.5,
    * i.e. answering at or below the automaticity target, with at least 2
@@ -352,7 +366,7 @@ export function createAdaptiveSelector(
     return cfg;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered, checkNeedsReview, updateConfig, getConfig };
+  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered, checkAllAutomatic, checkNeedsReview, updateConfig, getConfig };
 }
 
 // ---------------------------------------------------------------------------

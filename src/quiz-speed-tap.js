@@ -224,10 +224,10 @@ function createSpeedTapMode() {
   function computeProgress() {
     const items = getEnabledItems();
     let mastered = 0;
-    const cfg = selector.getConfig();
+    const threshold = selector.getConfig().automaticityThreshold;
     for (const id of items) {
-      const recall = selector.getRecall(id);
-      if (recall !== null && recall >= cfg.recallThreshold) {
+      const auto = selector.getAutomaticity(id);
+      if (auto !== null && auto > threshold) {
         mastered++;
       }
     }

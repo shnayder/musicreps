@@ -608,6 +608,51 @@ describe("createAdaptiveSelector", () => {
     assert.equal(selector.checkAllMastered([]), false);
   });
 
+  it("checkAllAutomatic returns true when all items are fast and recently answered", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // Fast answers (1200ms) → speedScore ≈ 0.93, recall ≈ 1.0 → auto ≈ 0.93 > 0.8
+    selector.recordResponse("a", 1200);
+    selector.recordResponse("b", 1200);
+
+    assert.equal(selector.checkAllAutomatic(["a", "b"]), true);
+  });
+
+  it("checkAllAutomatic returns false when items are slow", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // Slow answers (3000ms) → speedScore = 0.5, recall ≈ 1.0 → auto ≈ 0.5 < 0.8
+    selector.recordResponse("a", 3000);
+    selector.recordResponse("b", 3000);
+
+    assert.equal(selector.checkAllAutomatic(["a", "b"]), false);
+  });
+
+  it("checkAllAutomatic returns false when some items are unseen", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    selector.recordResponse("a", 1200);
+    // "b" never seen
+    assert.equal(selector.checkAllAutomatic(["a", "b"]), false);
+  });
+
+  it("checkAllAutomatic returns false for empty items array", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    assert.equal(selector.checkAllAutomatic([]), false);
+  });
+
+  it("checkAllAutomatic returns false when recall is high but speed is low", () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // Recently answered (recall ≈ 1.0) but slow (4000ms → speedScore ≈ 0.35)
+    // → automaticity ≈ 0.35 < 0.8. This is the key difference vs checkAllMastered.
+    selector.recordResponse("a", 4000);
+
+    assert.equal(selector.checkAllMastered(["a"]), true, "recall-only check passes");
+    assert.equal(selector.checkAllAutomatic(["a"]), false, "automaticity check fails");
+  });
+
   it("checkNeedsReview returns true when all items were fast but recall decayed", () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
