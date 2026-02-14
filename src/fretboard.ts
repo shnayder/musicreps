@@ -6,6 +6,9 @@ export const fretPositions = [
   0, 65, 126, 183, 237, 288, 336, 381, 423, 463, 500, 535, 568, 600,
 ];
 
+/** Maximum fretCount supported by fretPositions (needs positions[fret+1]). */
+const MAX_FRET_COUNT = fretPositions.length - 1; // 13
+
 /** Generate SVG fret lines (vertical). */
 export function fretLines(svgHeight: number = 240): string {
   return fretPositions
@@ -27,6 +30,9 @@ export function stringLines(stringCount: number = 6): string {
 
 /** Generate SVG circles and text elements for every note position. */
 export function noteElements(stringCount: number = 6, fretCount: number = 13): string {
+  if (fretCount > MAX_FRET_COUNT) {
+    throw new Error(`fretCount ${fretCount} exceeds max ${MAX_FRET_COUNT} (fretPositions has ${fretPositions.length} entries)`);
+  }
   return Array.from({ length: stringCount }, (_, string) =>
     Array.from({ length: fretCount }, (_, fret) => {
       const x =
@@ -61,8 +67,12 @@ export function noteElements(stringCount: number = 6, fretCount: number = 13): s
 
 /** Fret-number markers positioned as HTML divs. */
 export function fretNumberElements(markers: number[] = [3, 5, 7, 9, 12]): string {
+  const maxMarker = MAX_FRET_COUNT - 1; // needs positions[fret+1]
   return markers
     .map((fret) => {
+      if (fret > maxMarker) {
+        throw new Error(`fret marker ${fret} exceeds max ${maxMarker} (fretPositions has ${fretPositions.length} entries)`);
+      }
       const x = (fretPositions[fret] + fretPositions[fret + 1]) / 2;
       const pct = (x / 600) * 100;
       return `<div class="fret-number" style="left: ${pct}%">${fret}</div>`;
