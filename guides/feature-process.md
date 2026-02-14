@@ -121,10 +121,10 @@ Before writing code, verify that your design:
 - **Follows layout/IA principles**: content ordered by interaction priority
   per screen state, controls grouped and labeled, no redundant affordances.
   See [layout-and-ia.md](design/layout-and-ia.md).
-- **Extends the system, doesn't escape it**: if a mode needs different
-  behavior (timing, UI, lifecycle), handle the variation through declarative
-  mode properties or generalized mechanisms — not per-mode flags or custom
-  config overrides. See "Extend the system" in [vision.md](vision.md).
+- **Consistency over accommodation**: if a mode behaves differently, ask
+  "should it?" before "how do we support that?" Change the outlier to match
+  the standard rather than adding per-mode flags or overrides. See
+  "Consistency over accommodation" in [vision.md](vision.md).
 
 ## Templates
 

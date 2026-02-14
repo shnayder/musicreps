@@ -119,15 +119,13 @@ Guidelines inferred from how existing modes were designed:
   `createStatsControls()`, `createNoteKeyHandler()`. A new mode should feel
   like a natural extension, not a separate app.
 
-- **Extend the system, don't escape it.** When a new mode needs different
-  behavior, first ask whether the system can handle the variation
-  consistently — through declarative mode properties, scaling factors, or
-  generalized mechanisms. Per-mode flags and overrides (`mode.useX = false`,
-  `mode.customConfig`) are a code smell; they indicate the system's
-  abstractions need to grow, not be bypassed. Example: multi-response modes
-  (Chord Spelling, Speed Tap) should declare how many responses a question
-  requires, and the engine should scale timing accordingly — not accept a
-  custom timing config that duplicates the scaling logic.
+- **Consistency over accommodation.** When a mode behaves differently from
+  the rest, the first question is "should it?" — not "how do we support
+  that?" Often the different behavior is just legacy or an early prototype
+  that predates the shared system. Change the outlier to match the standard
+  rather than adding complexity to support the variation. Per-mode flags and
+  overrides (`mode.useX = false`, `mode.customConfig`) are a code smell;
+  they usually mean the outlier should be fixed, not preserved.
 
 - **Stats visualization for every mode.** Users should always be able to see
   what they've mastered and what needs work. Heatmaps with Recall/Speed toggle.
