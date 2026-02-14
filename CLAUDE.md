@@ -119,3 +119,7 @@ Bidirectional modes track each direction as a separate item.
 
 The review checklist (`.claude/commands/review-checklist.md`) verifies these
 conventions — use `/review` to run it.
+
+## PR Requirements
+
+All PRs that change code (not just docs/plans) must pass `/review` before merging.
