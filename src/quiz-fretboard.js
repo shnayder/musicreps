@@ -33,7 +33,7 @@ function createFretboardMode() {
     const circle = container.querySelector(
       `circle[data-string="${string}"][data-fret="${fret}"]`
     );
-    if (circle) circle.setAttribute('fill', color);
+    if (circle) circle.style.fill = color;
   }
 
   function showNoteText(string, fret) {
@@ -44,7 +44,7 @@ function createFretboardMode() {
   }
 
   function clearAll() {
-    container.querySelectorAll('.note-circle').forEach(c => c.setAttribute('fill', 'white'));
+    container.querySelectorAll('.note-circle').forEach(c => c.style.fill = '');
     container.querySelectorAll('.note-text').forEach(t => t.textContent = '');
   }
 

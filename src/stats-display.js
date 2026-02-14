@@ -19,13 +19,13 @@ function cssVar(name) {
 function heatmapColors() {
   if (!_heatmapColors) {
     _heatmapColors = {
-      none:  cssVar('--heatmap-none')  || '#ddd',
+      none:  cssVar('--heatmap-none')  || 'hsl(30, 5%, 85%)',
       level: [
-        cssVar('--heatmap-1') || 'hsl(0, 60%, 65%)',
-        cssVar('--heatmap-2') || 'hsl(30, 60%, 65%)',
-        cssVar('--heatmap-3') || 'hsl(50, 60%, 65%)',
-        cssVar('--heatmap-4') || 'hsl(80, 60%, 65%)',
-        cssVar('--heatmap-5') || 'hsl(120, 60%, 65%)',
+        cssVar('--heatmap-1') || 'hsl(215, 45%, 60%)',
+        cssVar('--heatmap-2') || 'hsl(200, 40%, 65%)',
+        cssVar('--heatmap-3') || 'hsl(50, 50%, 65%)',
+        cssVar('--heatmap-4') || 'hsl(42, 70%, 58%)',
+        cssVar('--heatmap-5') || 'hsl(38, 85%, 55%)',
       ],
     };
   }

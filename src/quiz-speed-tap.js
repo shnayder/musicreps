@@ -98,7 +98,7 @@ function createSpeedTapMode() {
     const circle = container.querySelector(
       `circle[data-string="${string}"][data-fret="${fret}"]`
     );
-    if (circle) circle.setAttribute('fill', color);
+    if (circle) circle.style.fill = color;
   }
 
   function showNoteText(string, fret) {
@@ -116,7 +116,7 @@ function createSpeedTapMode() {
   }
 
   function clearAll() {
-    container.querySelectorAll('.note-circle').forEach(c => c.setAttribute('fill', 'white'));
+    container.querySelectorAll('.note-circle').forEach(c => c.style.fill = '');
     container.querySelectorAll('.note-text').forEach(t => t.textContent = '');
   }
 
@@ -577,7 +577,8 @@ function createSpeedTapMode() {
       const timeout = setTimeout(() => {
         wrongFlashTimeouts.delete(timeout);
         if (!foundPositions.has(key)) {
-          highlightCircle(string, fret, 'white');
+          highlightCircle(string, fret, '');
+
           clearNoteText(string, fret);
         }
       }, 800);
