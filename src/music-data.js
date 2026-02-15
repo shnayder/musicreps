@@ -320,16 +320,20 @@ try {
 
 /**
  * Translate a letter-name note to solfège if solfège mode is active.
- * "C#" → "Do#", "Db" → "Re♭", "C" → "Do". Returns input unchanged if
- * solfège is off or the name doesn't start with a letter.
+ * "C#" → "Do♯", "Db" → "Re♭", "C" → "Do". Preserves case: lowercase
+ * input produces lowercase solfège (e.g., "e" → "mi" for high-E string).
+ * Returns input unchanged if solfège is off or the name doesn't start
+ * with a letter.
  */
 export function displayNote(name) {
   if (!_useSolfege || !name) return name;
   const letter = name[0].toUpperCase();
   const syl = SOLFEGE_MAP[letter];
   if (!syl) return name;
-  const acc = name.slice(1).replace(/b/g, '\u266D');
-  return syl + acc;
+  const acc = name.slice(1).replace(/#/g, '\u266F').replace(/b/g, '\u266D');
+  // Preserve case: lowercase input letter → lowercase solfège
+  const out = name[0] === name[0].toLowerCase() ? syl.toLowerCase() : syl;
+  return out + acc;
 }
 
 /**

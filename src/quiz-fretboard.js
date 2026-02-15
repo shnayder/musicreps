@@ -173,7 +173,7 @@ function createFrettedInstrumentMode(instrument) {
     getPracticingLabel() {
       if (enabledStrings.size === instrument.stringCount) return 'all strings';
       const names = [...enabledStrings].sort((a, b) => b - a)
-        .map(s => instrument.stringNames[s]);
+        .map(s => displayNote(instrument.stringNames[s]));
       return names.join(', ') + ' string' + (names.length === 1 ? '' : 's');
     },
 

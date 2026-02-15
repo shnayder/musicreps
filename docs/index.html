@@ -2870,12 +2870,12 @@ button {
         <div class="toggle-group">
           <span class="toggle-group-label">Strings</span>
           <div class="string-toggles">
-            <button class="string-toggle" data-string="0">e</button>
-            <button class="string-toggle" data-string="1">B</button>
-            <button class="string-toggle" data-string="2">G</button>
-            <button class="string-toggle" data-string="3">D</button>
-            <button class="string-toggle" data-string="4">A</button>
-            <button class="string-toggle active" data-string="5">E</button>
+            <button class="string-toggle" data-string="0" data-string-note="e">e</button>
+            <button class="string-toggle" data-string="1" data-string-note="B">B</button>
+            <button class="string-toggle" data-string="2" data-string-note="G">G</button>
+            <button class="string-toggle" data-string="3" data-string-note="D">D</button>
+            <button class="string-toggle" data-string="4" data-string-note="A">A</button>
+            <button class="string-toggle active" data-string="5" data-string-note="E">E</button>
           </div>
         </div>
         <label class="setting-group">
@@ -4068,10 +4068,10 @@ button {
         <div class="toggle-group">
           <span class="toggle-group-label">Strings</span>
           <div class="string-toggles">
-            <button class="string-toggle" data-string="0">A</button>
-            <button class="string-toggle" data-string="1">E</button>
-            <button class="string-toggle active" data-string="2">C</button>
-            <button class="string-toggle" data-string="3">G</button>
+            <button class="string-toggle" data-string="0" data-string-note="A">A</button>
+            <button class="string-toggle" data-string="1" data-string-note="E">E</button>
+            <button class="string-toggle active" data-string="2" data-string-note="C">C</button>
+            <button class="string-toggle" data-string="3" data-string-note="G">G</button>
           </div>
         </div>
         <label class="setting-group">
@@ -7183,16 +7183,20 @@ try {
 
 /**
  * Translate a letter-name note to solfège if solfège mode is active.
- * "C#" → "Do#", "Db" → "Re♭", "C" → "Do". Returns input unchanged if
- * solfège is off or the name doesn't start with a letter.
+ * "C#" → "Do♯", "Db" → "Re♭", "C" → "Do". Preserves case: lowercase
+ * input produces lowercase solfège (e.g., "e" → "mi" for high-E string).
+ * Returns input unchanged if solfège is off or the name doesn't start
+ * with a letter.
  */
 function displayNote(name) {
   if (!_useSolfege || !name) return name;
   const letter = name[0].toUpperCase();
   const syl = SOLFEGE_MAP[letter];
   if (!syl) return name;
-  const acc = name.slice(1).replace(/b/g, '\u266D');
-  return syl + acc;
+  const acc = name.slice(1).replace(/#/g, '\u266F').replace(/b/g, '\u266D');
+  // Preserve case: lowercase input letter → lowercase solfège
+  const out = name[0] === name[0].toLowerCase() ? syl.toLowerCase() : syl;
+  return out + acc;
 }
 
 /**
@@ -7740,7 +7744,7 @@ function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true) {
 
 /**
  * Update all note button labels in a container to reflect current notation mode.
- * Handles both .answer-btn-note and .note-btn elements with data-note attributes.
+ * Handles .answer-btn-note, .note-btn, and .string-toggle elements.
  */
 function refreshNoteButtonLabels(container) {
   container.querySelectorAll('.answer-btn-note').forEach(function(btn) {
@@ -7750,6 +7754,10 @@ function refreshNoteButtonLabels(container) {
   container.querySelectorAll('.note-btn').forEach(function(btn) {
     var noteName = btn.dataset.note;
     if (noteName) btn.textContent = displayNote(noteName);
+  });
+  container.querySelectorAll('.string-toggle').forEach(function(btn) {
+    var stringNote = btn.dataset.stringNote;
+    if (stringNote) btn.textContent = displayNote(stringNote);
   });
 }
 
@@ -9125,7 +9133,7 @@ function createFrettedInstrumentMode(instrument) {
     getPracticingLabel() {
       if (enabledStrings.size === instrument.stringCount) return 'all strings';
       const names = [...enabledStrings].sort((a, b) => b - a)
-        .map(s => instrument.stringNames[s]);
+        .map(s => displayNote(instrument.stringNames[s]));
       return names.join(', ') + ' string' + (names.length === 1 ? '' : 's');
     },
 
@@ -11830,7 +11838,12 @@ function createNavigation() {
   var settings = createSettingsModal({
     onNotationChange: function() {
       document.querySelectorAll('.mode-screen').forEach(function(el) {
-        if (el.style.display !== 'none') refreshNoteButtonLabels(el);
+        if (el.style.display !== 'none') {
+          refreshNoteButtonLabels(el);
+          // Re-render stats if currently showing
+          var activeToggle = el.querySelector('.stats-toggle-btn.active');
+          if (activeToggle) activeToggle.click();
+        }
       });
     }
   });

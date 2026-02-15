@@ -212,7 +212,7 @@ export function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => 
 
 /**
  * Update all note button labels in a container to reflect current notation mode.
- * Handles both .answer-btn-note and .note-btn elements with data-note attributes.
+ * Handles .answer-btn-note, .note-btn, and .string-toggle elements.
  */
 export function refreshNoteButtonLabels(container) {
   container.querySelectorAll('.answer-btn-note').forEach(function(btn) {
@@ -222,6 +222,10 @@ export function refreshNoteButtonLabels(container) {
   container.querySelectorAll('.note-btn').forEach(function(btn) {
     var noteName = btn.dataset.note;
     if (noteName) btn.textContent = displayNote(noteName);
+  });
+  container.querySelectorAll('.string-toggle').forEach(function(btn) {
+    var stringNote = btn.dataset.stringNote;
+    if (stringNote) btn.textContent = displayNote(stringNote);
   });
 }
 

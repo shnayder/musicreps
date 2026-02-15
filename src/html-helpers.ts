@@ -138,7 +138,7 @@ export function stringToggles(stringNames: string[], defaultString: number): str
           <span class="toggle-group-label">Strings</span>
           <div class="string-toggles">
 ${stringNames.map((name, i) =>
-  `            <button class="string-toggle${i === defaultString ? ' active' : ''}" data-string="${i}">${name}</button>`
+  `            <button class="string-toggle${i === defaultString ? ' active' : ''}" data-string="${i}" data-string-note="${name}">${name}</button>`
 ).join('\n')}
           </div>
         </div>`;

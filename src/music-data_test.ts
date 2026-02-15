@@ -824,13 +824,13 @@ describe("displayNote", () => {
     }
   });
 
-  it("translates sharps to solfège + #", () => {
+  it("translates sharps to solfège + ♯", () => {
     const original = getUseSolfege();
     try {
       setUseSolfege(true);
-      assert.equal(displayNote("C#"), "Do#");
-      assert.equal(displayNote("F#"), "Fa#");
-      assert.equal(displayNote("G#"), "Sol#");
+      assert.equal(displayNote("C#"), "Do\u266F");
+      assert.equal(displayNote("F#"), "Fa\u266F");
+      assert.equal(displayNote("G#"), "Sol\u266F");
     } finally {
       setUseSolfege(original);
     }
@@ -843,6 +843,19 @@ describe("displayNote", () => {
       assert.equal(displayNote("Bb"), "Si\u266D");
       assert.equal(displayNote("Eb"), "Mi\u266D");
       assert.equal(displayNote("Db"), "Re\u266D");
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it("preserves case: lowercase input → lowercase solfège", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(displayNote("e"), "mi");
+      assert.equal(displayNote("E"), "Mi");
+      assert.equal(displayNote("b"), "si");
+      assert.equal(displayNote("B"), "Si");
     } finally {
       setUseSolfege(original);
     }
@@ -877,9 +890,9 @@ describe("displayNotePair", () => {
     const original = getUseSolfege();
     try {
       setUseSolfege(true);
-      assert.equal(displayNotePair("C#/Db"), "Do#/Re\u266D");
-      assert.equal(displayNotePair("F#/Gb"), "Fa#/Sol\u266D");
-      assert.equal(displayNotePair("A#/Bb"), "La#/Si\u266D");
+      assert.equal(displayNotePair("C#/Db"), "Do\u266F/Re\u266D");
+      assert.equal(displayNotePair("F#/Gb"), "Fa\u266F/Sol\u266D");
+      assert.equal(displayNotePair("A#/Bb"), "La\u266F/Si\u266D");
     } finally {
       setUseSolfege(original);
     }
@@ -890,7 +903,7 @@ describe("displayNotePair", () => {
     try {
       setUseSolfege(true);
       assert.equal(displayNotePair("C"), "Do");
-      assert.equal(displayNotePair("F#"), "Fa#");
+      assert.equal(displayNotePair("F#"), "Fa\u266F");
     } finally {
       setUseSolfege(original);
     }

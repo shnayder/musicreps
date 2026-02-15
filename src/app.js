@@ -111,7 +111,12 @@
   var settings = createSettingsModal({
     onNotationChange: function() {
       document.querySelectorAll('.mode-screen').forEach(function(el) {
-        if (el.style.display !== 'none') refreshNoteButtonLabels(el);
+        if (el.style.display !== 'none') {
+          refreshNoteButtonLabels(el);
+          // Re-render stats if currently showing
+          var activeToggle = el.querySelector('.stats-toggle-btn.active');
+          if (activeToggle) activeToggle.click();
+        }
       });
     }
   });
