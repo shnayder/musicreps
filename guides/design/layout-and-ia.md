@@ -102,11 +102,17 @@ Toggles, progress indicators, and data displays need text labels or headings.
 Users shouldn't have to infer meaning from context.
 
 **Rules:**
-- Any numeric display needs a label: "3 / 13 mastered", not just "3 / 13".
+- Any numeric display needs a label: "3 / 13 fluent", not just "3 / 13".
 - Toggle groups need a heading: "Strings" above `e B G D A E`.
 - Data grids need axis labels when meaning isn't obvious from content alone.
 - Labels can be small (`--text-xs`) and muted — they don't need visual weight,
   just presence.
+- **Labels should be self-interpreting.** A first-time viewer should understand
+  a value without watching it change or reading surrounding context. If a label
+  is ambiguous in isolation, it needs rewording. For example, "5 questions"
+  could mean total, remaining, or answered — "#5" is immediately clear as a
+  sequence position. Prefer formats that are unambiguous even to someone seeing
+  the screen for the first time.
 
 **Test:** Show the screen to someone who's never used the app. Can they tell
 what each element means without explanation? If not, add a label.
@@ -230,6 +236,16 @@ new users and hard to scan without support.
   (e.g., per-group summary) with the full grid as an expandable detail.
 - **Visual rhythm**: use alternating row backgrounds or group separators for
   grids with many rows.
+
+---
+
+## UX Terminology
+
+Terms used in the UI and codebase with specific meanings in this app:
+
+| Term | Meaning | Why this word |
+|------|---------|---------------|
+| **fluent** | An item the user can recall quickly and accurately right now (automaticity above threshold). Used in the progress bar: "5 / 78 fluent". | "Mastered" implies permanent learning, but you'll forget by next session. "Fluent" captures speed + accuracy without claiming permanence — you can be fluent today and rusty tomorrow. Matches the underlying automaticity metric. |
 
 ---
 

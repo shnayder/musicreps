@@ -170,6 +170,13 @@ function createFrettedInstrumentMode(instrument) {
       return fb.getFretboardEnabledItems(enabledStrings, naturalsOnly);
     },
 
+    getPracticingLabel() {
+      if (enabledStrings.size === instrument.stringCount) return 'all strings';
+      const names = [...enabledStrings].sort((a, b) => b - a)
+        .map(s => instrument.stringNames[s]);
+      return names.join(', ') + ' string' + (names.length === 1 ? '' : 's');
+    },
+
     presentQuestion(itemId) {
       clearAll();
       const q = fb.parseFretboardItem(itemId);

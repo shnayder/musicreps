@@ -146,6 +146,13 @@ function createDiatonicChordsMode() {
       return items;
     },
 
+    getPracticingLabel() {
+      if (enabledGroups.size === CHORD_GROUPS.length) return 'all chords';
+      const labels = [...enabledGroups].sort((a, b) => a - b)
+        .map(g => CHORD_GROUPS[g].label);
+      return labels.join(', ');
+    },
+
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
       const prompt = container.querySelector('.quiz-prompt');

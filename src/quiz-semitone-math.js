@@ -148,6 +148,13 @@ function createSemitoneMathMode() {
       return items;
     },
 
+    getPracticingLabel() {
+      if (enabledGroups.size === DISTANCE_GROUPS.length) return 'all distances';
+      const labels = [...enabledGroups].sort((a, b) => a - b)
+        .map(g => '\u00B1' + DISTANCE_GROUPS[g].label);
+      return labels.join(', ');
+    },
+
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
       currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending

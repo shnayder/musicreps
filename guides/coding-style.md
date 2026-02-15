@@ -51,6 +51,25 @@ New file is browser-only glue (DOM, event wiring)? → Plain script.
 | localStorage keys | `namespace_keyName` | `semitoneMath_enabledGroups`, `motorBaseline_button` |
 | Mode IDs | `camelCase` | `fretboard`, `semitoneMath`, `keySignatures` |
 
+## Dead Code
+
+Remove dead code immediately — don't comment it out, don't leave unused
+parameters "for compatibility", don't keep functions "in case we need them
+later". Dead code misleads readers into thinking it matters, and git history
+preserves anything you might need to recover.
+
+**What counts as dead code:**
+- Unused function parameters (remove from signature and all callsites)
+- Unreachable branches or conditions
+- Commented-out code blocks
+- Functions/variables with no remaining callers
+- Imports that nothing uses
+
+**Not dead code:**
+- Optional interface methods that callers check for (`mode.onStart?.()`)
+- Parameters required by a callback contract even if one implementation ignores
+  them (e.g., event handler `(e)` where `e` isn't used)
+
 ## DOM Interaction Rules
 
 1. **Cache DOM queries in `init()`** — store in closure variables or an `els`

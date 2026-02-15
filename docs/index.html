@@ -476,6 +476,14 @@ button {
   border-radius: 12px;
   padding: var(--space-5);
 }
+.practicing-label {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3);
+}
+.practicing-label:empty {
+  display: none;
+}
 .countdown-container {
   display: flex;
   align-items: center;
@@ -1033,7 +1041,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.9</div>
+    <div class="version">v3.10</div>
   </div>
 
   <!-- Guitar Fretboard mode -->
@@ -2750,14 +2758,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container">
         <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
@@ -3945,14 +3954,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container">
         <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
@@ -4004,14 +4014,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="speed-tap-status">
@@ -5734,14 +5745,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -5800,14 +5812,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-intervals">
@@ -5869,14 +5882,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -5924,14 +5938,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -5979,14 +5994,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-keysig">
@@ -6051,14 +6067,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -6115,14 +6132,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -6179,14 +6197,15 @@ button {
         <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
       <div class="session-stats">
-        <span><span class="question-count">0</span> questions</span>
+        <span>#<span class="question-count">0</span></span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 mastered</div>
+        <div class="progress-text">0 / 0 fluent</div>
       </div>
     </div>
     <div class="quiz-area">
+      <div class="practicing-label"></div>
       <div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
       <div class="quiz-prompt"></div>
       <div class="chord-slots"></div>
@@ -7086,16 +7105,15 @@ function engineNextQuestion(state, nextItemId, nowMs) {
  * @param {EngineState} state
  * @param {boolean} isCorrect
  * @param {string} correctAnswer - display string for incorrect feedback
- * @param {number} responseTimeMs
  */
-function engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs) {
+function engineSubmitAnswer(state, isCorrect, correctAnswer) {
   return {
     ...state,
     answered: true,
     answersEnabled: false,
     feedbackText: isCorrect ? 'Correct!' : 'Incorrect \u2014 ' + correctAnswer,
     feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
-    timeDisplayText: (responseTimeMs / 1000).toFixed(1) + 's',
+    timeDisplayText: '',
     hintText: 'Tap anywhere or press Space for next',
     timedOut: false,
   };
@@ -7105,16 +7123,15 @@ function engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs) {
  * Transition: timer expired before user answered.
  * @param {EngineState} state
  * @param {string} correctAnswer - display string for the correct answer
- * @param {number} deadlineMs - the deadline that was active
  */
-function engineTimedOut(state, correctAnswer, deadlineMs) {
+function engineTimedOut(state, correctAnswer) {
   return {
     ...state,
     answered: true,
     answersEnabled: false,
     feedbackText: 'Time\u2019s up \u2014 ' + correctAnswer,
     feedbackClass: 'feedback incorrect',
-    timeDisplayText: 'limit: ' + (deadlineMs / 1000).toFixed(1) + 's',
+    timeDisplayText: '',
     hintText: 'Tap anywhere or press Space for next',
     timedOut: true,
   };
@@ -7615,6 +7632,7 @@ function createQuizEngine(mode, container) {
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
     deadlineDisplay: container.querySelector('.deadline-display'),
+    practicingLabel: container.querySelector('.practicing-label'),
   };
 
   // --- Render: declaratively map state to DOM ---
@@ -7782,7 +7800,7 @@ function createQuizEngine(mode, container) {
       els.progressFill.style.width = pct + '%';
     }
     if (els.progressText) {
-      els.progressText.textContent = state.masteredCount + ' / ' + state.totalEnabledCount + ' mastered';
+      els.progressText.textContent = state.masteredCount + ' / ' + state.totalEnabledCount + ' fluent';
     }
 
     setAnswerButtonsEnabled(state.answersEnabled);
@@ -7857,7 +7875,7 @@ function createQuizEngine(mode, container) {
     selector.recordResponse(itemId, deadline, false);
     deadlineTracker.recordOutcome(itemId, false, rc);
 
-    state = engineTimedOut(state, result.correctAnswer, deadline);
+    state = engineTimedOut(state, result.correctAnswer);
 
     // Check mastery and progress
     const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
@@ -8002,7 +8020,7 @@ function createQuizEngine(mode, container) {
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
     deadlineTracker.recordOutcome(state.currentItemId, result.correct, rc);
 
-    state = engineSubmitAnswer(state, result.correct, result.correctAnswer, responseTime);
+    state = engineSubmitAnswer(state, result.correct, result.correctAnswer);
 
     // Check if all enabled items are mastered
     const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
@@ -8025,6 +8043,12 @@ function createQuizEngine(mode, container) {
     // Call onStart first so modes can tear down their idle UI (e.g. heatmap)
     // before the engine renders the quiz UI state.
     if (mode.onStart) mode.onStart();
+
+    // Set practicing label (e.g. "Practicing E, A strings")
+    if (els.practicingLabel) {
+      const label = mode.getPracticingLabel ? mode.getPracticingLabel() : '';
+      els.practicingLabel.textContent = label ? 'Practicing ' + label : '';
+    }
 
     // Compute initial progress
     const progress = computeProgress();
@@ -8059,6 +8083,7 @@ function createQuizEngine(mode, container) {
       countdownInterval = null;
     }
     currentDeadline = null;
+    if (els.practicingLabel) els.practicingLabel.textContent = '';
     state = engineStop(state);
     render();   // render() clears calibrationContentEl when phase is idle
     if (mode.onStop) mode.onStop();
@@ -8743,6 +8768,13 @@ function createFrettedInstrumentMode(instrument) {
 
     getEnabledItems() {
       return fb.getFretboardEnabledItems(enabledStrings, naturalsOnly);
+    },
+
+    getPracticingLabel() {
+      if (enabledStrings.size === instrument.stringCount) return 'all strings';
+      const names = [...enabledStrings].sort((a, b) => b - a)
+        .map(s => instrument.stringNames[s]);
+      return names.join(', ') + ' string' + (names.length === 1 ? '' : 's');
     },
 
     presentQuestion(itemId) {
@@ -9665,6 +9697,13 @@ function createSemitoneMathMode() {
       return items;
     },
 
+    getPracticingLabel() {
+      if (enabledGroups.size === DISTANCE_GROUPS.length) return 'all distances';
+      const labels = [...enabledGroups].sort((a, b) => a - b)
+        .map(g => '\u00B1' + DISTANCE_GROUPS[g].label);
+      return labels.join(', ');
+    },
+
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
       currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending
@@ -9913,6 +9952,13 @@ function createIntervalMathMode() {
       return items;
     },
 
+    getPracticingLabel() {
+      if (enabledGroups.size === DISTANCE_GROUPS.length) return 'all intervals';
+      const labels = [...enabledGroups].sort((a, b) => a - b)
+        .map(g => DISTANCE_GROUPS[g].label);
+      return labels.join(', ');
+    },
+
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
       currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending
@@ -10152,6 +10198,13 @@ function createKeySignaturesMode() {
         items.push(...getItemIdsForGroup(g));
       }
       return items;
+    },
+
+    getPracticingLabel() {
+      if (enabledGroups.size === KEY_GROUPS.length) return 'all keys';
+      const keys = [...enabledGroups].sort((a, b) => a - b)
+        .flatMap(g => KEY_GROUPS[g].keys);
+      return keys.join(', ');
     },
 
     presentQuestion(itemId) {
@@ -10436,6 +10489,13 @@ function createScaleDegreesMode() {
       return items;
     },
 
+    getPracticingLabel() {
+      if (enabledGroups.size === DEGREE_GROUPS.length) return 'all degrees';
+      const labels = [...enabledGroups].sort((a, b) => a - b)
+        .map(g => DEGREE_GROUPS[g].label);
+      return labels.join(', ');
+    },
+
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
       const prompt = container.querySelector('.quiz-prompt');
@@ -10695,6 +10755,13 @@ function createDiatonicChordsMode() {
         items.push(...getItemIdsForGroup(g));
       }
       return items;
+    },
+
+    getPracticingLabel() {
+      if (enabledGroups.size === CHORD_GROUPS.length) return 'all chords';
+      const labels = [...enabledGroups].sort((a, b) => a - b)
+        .map(g => CHORD_GROUPS[g].label);
+      return labels.join(', ');
     },
 
     presentQuestion(itemId) {
@@ -10999,6 +11066,13 @@ function createChordSpellingMode() {
         items.push(...getItemIdsForGroup(g));
       }
       return items;
+    },
+
+    getPracticingLabel() {
+      if (enabledGroups.size === SPELLING_GROUPS.length) return 'all chord types';
+      const labels = [...enabledGroups].sort((a, b) => a - b)
+        .map(g => SPELLING_GROUPS[g].label);
+      return labels.join(', ');
     },
 
     getExpectedResponseCount(itemId) {

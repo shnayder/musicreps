@@ -466,6 +466,14 @@ button {
   border-radius: 12px;
   padding: var(--space-5);
 }
+.practicing-label {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3);
+}
+.practicing-label:empty {
+  display: none;
+}
 .countdown-container {
   display: flex;
   align-items: center;

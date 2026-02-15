@@ -187,6 +187,13 @@ function createChordSpellingMode() {
       return items;
     },
 
+    getPracticingLabel() {
+      if (enabledGroups.size === SPELLING_GROUPS.length) return 'all chord types';
+      const labels = [...enabledGroups].sort((a, b) => a - b)
+        .map(g => SPELLING_GROUPS[g].label);
+      return labels.join(', ');
+    },
+
     getExpectedResponseCount(itemId) {
       const parsed = parseItem(itemId);
       return parsed.tones.length;

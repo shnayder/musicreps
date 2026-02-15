@@ -62,10 +62,12 @@ Write tests as you go, not just at the end.
 
 ## Versioning
 
-A version number is displayed top-right (`<div class="version">`). Increment it
-(e.g., v3.5 → v3.6) with every change so the user can confirm they have the
-latest build. The version appears in both `main.ts` and `build.ts`. Increment 
-the major version number after major changes.
+A version number is displayed top-right (`<div class="version">`). **Always bump
+the version with every change** — even tiny bug fixes or label tweaks. The user
+needs to confirm they're testing the latest build; a stale version number makes
+that impossible. The version appears in both `main.ts` and `build.ts` — update
+both. Increment the minor version for normal changes (v3.9 → v3.10) and the
+major version after large changes (v3.x → v4.0).
 
 ## Branching
 

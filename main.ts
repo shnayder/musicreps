@@ -124,7 +124,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.9</div>
+    <div class="version">v3.10</div>
   </div>
 
   <!-- Guitar Fretboard mode -->

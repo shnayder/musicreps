@@ -117,30 +117,30 @@ describe("engineSubmitAnswer", () => {
   const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
 
   it("sets correct feedback for correct answer", () => {
-    const s = engineSubmitAnswer(active, true, "C", 500);
+    const s = engineSubmitAnswer(active, true, "C");
     assert.equal(s.feedbackText, "Correct!");
     assert.equal(s.feedbackClass, "feedback correct");
   });
 
   it("sets incorrect feedback with correct answer", () => {
-    const s = engineSubmitAnswer(active, false, "D#/Eb", 800);
+    const s = engineSubmitAnswer(active, false, "D#/Eb");
     assert.equal(s.feedbackText, "Incorrect \u2014 D#/Eb");
     assert.equal(s.feedbackClass, "feedback incorrect");
   });
 
   it("sets answered=true and disables answers", () => {
-    const s = engineSubmitAnswer(active, true, "C", 500);
+    const s = engineSubmitAnswer(active, true, "C");
     assert.equal(s.answered, true);
     assert.equal(s.answersEnabled, false);
   });
 
-  it("shows response time", () => {
-    const s = engineSubmitAnswer(active, true, "C", 1234);
-    assert.equal(s.timeDisplayText, "1.2s");
+  it("clears time display (timing visible on countdown bar)", () => {
+    const s = engineSubmitAnswer(active, true, "C");
+    assert.equal(s.timeDisplayText, "");
   });
 
   it("shows hint text", () => {
-    const s = engineSubmitAnswer(active, true, "C", 500);
+    const s = engineSubmitAnswer(active, true, "C");
     assert.equal(s.hintText, "Tap anywhere or press Space for next");
   });
 });
@@ -154,7 +154,7 @@ describe("engineStop", () => {
 
   it("clears all quiz state even after answer", () => {
     const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
-    const answered = engineSubmitAnswer(active, true, "C", 500);
+    const answered = engineSubmitAnswer(active, true, "C");
     const s = engineStop(answered);
     assert.equal(s.phase, "idle");
     assert.equal(s.currentItemId, null);
@@ -309,7 +309,7 @@ describe("engineStop from calibration", () => {
 describe("engineRouteKey", () => {
   const idle = initialEngineState();
   const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
-  const answered = engineSubmitAnswer(active, true, "C", 500);
+  const answered = engineSubmitAnswer(active, true, "C");
   const calibIntro = engineCalibrationIntro(initialEngineState());
   const calibRunning = engineCalibrating(calibIntro);
   const calibResults = engineCalibrationResults(calibRunning, 600);
@@ -378,39 +378,39 @@ describe("engineTimedOut", () => {
   const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
 
   it("sets answered to true and disables answers", () => {
-    const s = engineTimedOut(active, "C", 3000);
+    const s = engineTimedOut(active, "C");
     assert.equal(s.answered, true);
     assert.equal(s.answersEnabled, false);
   });
 
   it("sets timedOut flag", () => {
-    const s = engineTimedOut(active, "C", 3000);
+    const s = engineTimedOut(active, "C");
     assert.equal(s.timedOut, true);
   });
 
   it("shows timeout feedback text", () => {
-    const s = engineTimedOut(active, "C", 3000);
+    const s = engineTimedOut(active, "C");
     assert.equal(s.feedbackText, "Time\u2019s up \u2014 C");
   });
 
   it("uses incorrect feedback class", () => {
-    const s = engineTimedOut(active, "C", 3000);
+    const s = engineTimedOut(active, "C");
     assert.equal(s.feedbackClass, "feedback incorrect");
   });
 
-  it("shows deadline in time display", () => {
-    const s = engineTimedOut(active, "C", 3000);
-    assert.equal(s.timeDisplayText, "limit: 3.0s");
+  it("clears time display on timeout (deadline shown on countdown bar)", () => {
+    const s = engineTimedOut(active, "C");
+    assert.equal(s.timeDisplayText, "");
   });
 
-  it("formats fractional deadline correctly", () => {
-    const s = engineTimedOut(active, "D#", 2450);
-    assert.equal(s.timeDisplayText, "limit: 2.5s");
+  it("clears time display regardless of deadline value", () => {
+    const s = engineTimedOut(active, "D#");
+    assert.equal(s.timeDisplayText, "");
     assert.equal(s.feedbackText, "Time\u2019s up \u2014 D#");
   });
 
   it("shows hint for advancing", () => {
-    const s = engineTimedOut(active, "C", 3000);
+    const s = engineTimedOut(active, "C");
     assert.equal(s.hintText, "Tap anywhere or press Space for next");
   });
 });
@@ -418,18 +418,13 @@ describe("engineTimedOut", () => {
 describe("engineSubmitAnswer time format", () => {
   const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
 
-  it("formats response time in seconds", () => {
-    const s = engineSubmitAnswer(active, true, "C", 1234);
-    assert.equal(s.timeDisplayText, "1.2s");
-  });
-
-  it("formats fast response time", () => {
-    const s = engineSubmitAnswer(active, true, "C", 800);
-    assert.equal(s.timeDisplayText, "0.8s");
+  it("clears time display (response visible on countdown bar)", () => {
+    const s = engineSubmitAnswer(active, true, "C");
+    assert.equal(s.timeDisplayText, "");
   });
 
   it("sets timedOut to false on normal answer", () => {
-    const s = engineSubmitAnswer(active, true, "C", 1000);
+    const s = engineSubmitAnswer(active, true, "C");
     assert.equal(s.timedOut, false);
   });
 });

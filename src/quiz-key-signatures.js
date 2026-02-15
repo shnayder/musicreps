@@ -145,6 +145,13 @@ function createKeySignaturesMode() {
       return items;
     },
 
+    getPracticingLabel() {
+      if (enabledGroups.size === KEY_GROUPS.length) return 'all keys';
+      const keys = [...enabledGroups].sort((a, b) => a - b)
+        .flatMap(g => KEY_GROUPS[g].keys);
+      return keys.join(', ');
+    },
+
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
       const prompt = container.querySelector('.quiz-prompt');

@@ -290,6 +290,7 @@ export function createQuizEngine(mode, container) {
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
     deadlineDisplay: container.querySelector('.deadline-display'),
+    practicingLabel: container.querySelector('.practicing-label'),
   };
 
   // --- Render: declaratively map state to DOM ---
@@ -457,7 +458,7 @@ export function createQuizEngine(mode, container) {
       els.progressFill.style.width = pct + '%';
     }
     if (els.progressText) {
-      els.progressText.textContent = state.masteredCount + ' / ' + state.totalEnabledCount + ' mastered';
+      els.progressText.textContent = state.masteredCount + ' / ' + state.totalEnabledCount + ' fluent';
     }
 
     setAnswerButtonsEnabled(state.answersEnabled);
@@ -532,7 +533,7 @@ export function createQuizEngine(mode, container) {
     selector.recordResponse(itemId, deadline, false);
     deadlineTracker.recordOutcome(itemId, false, rc);
 
-    state = engineTimedOut(state, result.correctAnswer, deadline);
+    state = engineTimedOut(state, result.correctAnswer);
 
     // Check mastery and progress
     const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
@@ -677,7 +678,7 @@ export function createQuizEngine(mode, container) {
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
     deadlineTracker.recordOutcome(state.currentItemId, result.correct, rc);
 
-    state = engineSubmitAnswer(state, result.correct, result.correctAnswer, responseTime);
+    state = engineSubmitAnswer(state, result.correct, result.correctAnswer);
 
     // Check if all enabled items are mastered
     const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
@@ -700,6 +701,12 @@ export function createQuizEngine(mode, container) {
     // Call onStart first so modes can tear down their idle UI (e.g. heatmap)
     // before the engine renders the quiz UI state.
     if (mode.onStart) mode.onStart();
+
+    // Set practicing label (e.g. "Practicing E, A strings")
+    if (els.practicingLabel) {
+      const label = mode.getPracticingLabel ? mode.getPracticingLabel() : '';
+      els.practicingLabel.textContent = label ? 'Practicing ' + label : '';
+    }
 
     // Compute initial progress
     const progress = computeProgress();
@@ -734,6 +741,7 @@ export function createQuizEngine(mode, container) {
       countdownInterval = null;
     }
     currentDeadline = null;
+    if (els.practicingLabel) els.practicingLabel.textContent = '';
     state = engineStop(state);
     render();   // render() clears calibrationContentEl when phase is idle
     if (mode.onStop) mode.onStop();

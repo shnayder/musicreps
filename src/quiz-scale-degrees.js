@@ -147,6 +147,13 @@ function createScaleDegreesMode() {
       return items;
     },
 
+    getPracticingLabel() {
+      if (enabledGroups.size === DEGREE_GROUPS.length) return 'all degrees';
+      const labels = [...enabledGroups].sort((a, b) => a - b)
+        .map(g => DEGREE_GROUPS[g].label);
+      return labels.join(', ');
+    },
+
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
       const prompt = container.querySelector('.quiz-prompt');
