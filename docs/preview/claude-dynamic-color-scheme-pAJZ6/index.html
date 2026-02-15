@@ -31,6 +31,10 @@
   --color-recommended: #FF9800;
   --color-highlight: #FFD700;
 
+  /* Themed UI accents (overridden per color scheme) */
+  --color-toggle-active: #4CAF50;
+  --color-toggle-recommended: #FF9800;
+
   /* Text (warm neutrals) */
   --color-text: hsl(30, 5%, 20%);
   --color-text-muted: hsl(30, 3%, 40%);
@@ -414,15 +418,15 @@ body {
   background: var(--color-surface-hover);
 }
 .string-toggle.active {
-  background: var(--color-success);
+  background: var(--color-toggle-active);
   color: white;
-  border-color: var(--color-success);
+  border-color: var(--color-toggle-active);
 }
 .string-toggle.recommended {
-  box-shadow: 0 0 0 2px var(--color-recommended);
+  box-shadow: 0 0 0 2px var(--color-toggle-recommended);
 }
 .string-toggle.active.recommended {
-  border-color: var(--color-recommended);
+  border-color: var(--color-toggle-recommended);
 }
 .distance-toggles {
   display: flex;
@@ -447,15 +451,15 @@ body {
   background: var(--color-surface-hover);
 }
 .distance-toggle.active {
-  background: var(--color-success);
+  background: var(--color-toggle-active);
   color: white;
-  border-color: var(--color-success);
+  border-color: var(--color-toggle-active);
 }
 .distance-toggle.recommended {
-  box-shadow: 0 0 0 2px var(--color-recommended);
+  box-shadow: 0 0 0 2px var(--color-toggle-recommended);
 }
 .distance-toggle.active.recommended {
-  border-color: var(--color-recommended);
+  border-color: var(--color-toggle-recommended);
 }
 .fretboard-container {
   position: relative;
@@ -1257,7 +1261,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.14</div>
+    <div class="version">v3.15</div>
     <button class="gear-btn" type="button" aria-label="Settings">⚙</button>
   </div>
 
@@ -11680,8 +11684,12 @@ function createChordSpellingMode() {
 
 // Color scheme definitions and dynamic switching.
 // Each scheme overrides the CSS custom properties defined in :root.
-// Only brand, topbar, and heatmap colors change — semantic colors
-// (success, error, focus) stay constant for consistent feedback.
+// Semantic feedback colors (success, error, focus) stay constant.
+//
+// Heatmap scales are multi-hue and colorblind-safe: each ramp has
+// monotonically decreasing lightness (~72% → ~35%) and spans ~100°
+// of hue, avoiding red-green as the sole differentiator.
+// See scripts/preview-heatmaps.html to visualize all scales.
 //
 // Depends on: resetHeatmapCache (from stats-display.js)
 
@@ -11695,30 +11703,36 @@ var COLOR_SCHEMES = {
       '--color-brand-bg':    'hsl(38, 60%, 95%)',
       '--color-topbar-bg':   'hsl(220, 15%, 18%)',
       '--color-topbar-text': 'hsl(0, 0%, 95%)',
-      '--heatmap-none':      'hsl(30, 5%, 85%)',
-      '--heatmap-1':         'hsl(215, 45%, 60%)',
-      '--heatmap-2':         'hsl(200, 40%, 65%)',
-      '--heatmap-3':         'hsl(50, 50%, 65%)',
-      '--heatmap-4':         'hsl(42, 70%, 58%)',
-      '--heatmap-5':         'hsl(38, 85%, 55%)',
+      '--color-toggle-active':      '#4CAF50',
+      '--color-toggle-recommended': '#FF9800',
+      // Blue → amber (original multi-hue scale)
+      '--heatmap-none': 'hsl(30, 5%, 85%)',
+      '--heatmap-1':    'hsl(215, 45%, 60%)',
+      '--heatmap-2':    'hsl(200, 40%, 65%)',
+      '--heatmap-3':    'hsl(50, 50%, 65%)',
+      '--heatmap-4':    'hsl(42, 70%, 58%)',
+      '--heatmap-5':    'hsl(38, 85%, 55%)',
     },
   },
 
   ocean: {
     name: 'Ocean',
-    // Deep navy header, teal brand, cool blue heatmap
+    // Deep navy header, teal brand
     vars: {
       '--color-brand':       'hsl(178, 65%, 42%)',
       '--color-brand-dark':  'hsl(178, 65%, 32%)',
       '--color-brand-bg':    'hsl(178, 40%, 94%)',
       '--color-topbar-bg':   'hsl(210, 50%, 22%)',
       '--color-topbar-text': 'hsl(180, 20%, 95%)',
-      '--heatmap-none':      'hsl(200, 8%, 85%)',
-      '--heatmap-1':         'hsl(200, 25%, 70%)',
-      '--heatmap-2':         'hsl(190, 35%, 62%)',
-      '--heatmap-3':         'hsl(180, 45%, 55%)',
-      '--heatmap-4':         'hsl(175, 55%, 45%)',
-      '--heatmap-5':         'hsl(170, 65%, 38%)',
+      '--color-toggle-active':      'hsl(178, 65%, 38%)',
+      '--color-toggle-recommended': 'hsl(35, 80%, 55%)',
+      // Lavender → blue → teal (cool spectrum)
+      '--heatmap-none': 'hsl(200, 8%, 85%)',
+      '--heatmap-1':    'hsl(280, 22%, 72%)',
+      '--heatmap-2':    'hsl(235, 32%, 62%)',
+      '--heatmap-3':    'hsl(205, 42%, 52%)',
+      '--heatmap-4':    'hsl(188, 55%, 42%)',
+      '--heatmap-5':    'hsl(175, 65%, 34%)',
     },
   },
 
@@ -11731,30 +11745,36 @@ var COLOR_SCHEMES = {
       '--color-brand-bg':    'hsl(152, 35%, 94%)',
       '--color-topbar-bg':   'hsl(160, 30%, 18%)',
       '--color-topbar-text': 'hsl(140, 15%, 95%)',
-      '--heatmap-none':      'hsl(140, 5%, 85%)',
-      '--heatmap-1':         'hsl(100, 20%, 70%)',
-      '--heatmap-2':         'hsl(120, 30%, 62%)',
-      '--heatmap-3':         'hsl(135, 40%, 52%)',
-      '--heatmap-4':         'hsl(145, 50%, 42%)',
-      '--heatmap-5':         'hsl(155, 60%, 35%)',
+      '--color-toggle-active':      'hsl(152, 55%, 38%)',
+      '--color-toggle-recommended': 'hsl(35, 80%, 55%)',
+      // Blue-violet → cyan → emerald
+      '--heatmap-none': 'hsl(140, 5%, 85%)',
+      '--heatmap-1':    'hsl(250, 22%, 72%)',
+      '--heatmap-2':    'hsl(215, 32%, 62%)',
+      '--heatmap-3':    'hsl(185, 40%, 50%)',
+      '--heatmap-4':    'hsl(165, 50%, 40%)',
+      '--heatmap-5':    'hsl(150, 58%, 33%)',
     },
   },
 
   sunset: {
     name: 'Sunset',
-    // Deep charcoal header, coral brand, warm progression
+    // Deep charcoal header, coral brand
     vars: {
       '--color-brand':       'hsl(12, 75%, 58%)',
       '--color-brand-dark':  'hsl(12, 75%, 45%)',
       '--color-brand-bg':    'hsl(12, 60%, 95%)',
       '--color-topbar-bg':   'hsl(250, 12%, 20%)',
       '--color-topbar-text': 'hsl(30, 20%, 95%)',
-      '--heatmap-none':      'hsl(20, 8%, 85%)',
-      '--heatmap-1':         'hsl(25, 30%, 72%)',
-      '--heatmap-2':         'hsl(20, 50%, 65%)',
-      '--heatmap-3':         'hsl(15, 65%, 58%)',
-      '--heatmap-4':         'hsl(8, 75%, 52%)',
-      '--heatmap-5':         'hsl(0, 80%, 48%)',
+      '--color-toggle-active':      'hsl(12, 72%, 52%)',
+      '--color-toggle-recommended': 'hsl(45, 85%, 55%)',
+      // Steel blue → purple → rose → coral
+      '--heatmap-none': 'hsl(20, 8%, 85%)',
+      '--heatmap-1':    'hsl(220, 25%, 72%)',
+      '--heatmap-2':    'hsl(270, 30%, 62%)',
+      '--heatmap-3':    'hsl(320, 38%, 52%)',
+      '--heatmap-4':    'hsl(350, 52%, 44%)',
+      '--heatmap-5':    'hsl(10, 68%, 38%)',
     },
   },
 
@@ -11767,12 +11787,15 @@ var COLOR_SCHEMES = {
       '--color-brand-bg':    'hsl(262, 40%, 95%)',
       '--color-topbar-bg':   'hsl(250, 35%, 18%)',
       '--color-topbar-text': 'hsl(260, 20%, 95%)',
-      '--heatmap-none':      'hsl(250, 8%, 85%)',
-      '--heatmap-1':         'hsl(270, 20%, 72%)',
-      '--heatmap-2':         'hsl(265, 35%, 65%)',
-      '--heatmap-3':         'hsl(260, 48%, 58%)',
-      '--heatmap-4':         'hsl(255, 55%, 52%)',
-      '--heatmap-5':         'hsl(250, 65%, 48%)',
+      '--color-toggle-active':      'hsl(262, 58%, 52%)',
+      '--color-toggle-recommended': 'hsl(35, 80%, 55%)',
+      // Teal → blue → indigo → violet
+      '--heatmap-none': 'hsl(250, 8%, 85%)',
+      '--heatmap-1':    'hsl(170, 25%, 72%)',
+      '--heatmap-2':    'hsl(205, 32%, 62%)',
+      '--heatmap-3':    'hsl(230, 40%, 52%)',
+      '--heatmap-4':    'hsl(250, 52%, 44%)',
+      '--heatmap-5':    'hsl(265, 62%, 37%)',
     },
   },
 
@@ -11785,66 +11808,78 @@ var COLOR_SCHEMES = {
       '--color-brand-bg':    'hsl(340, 40%, 95%)',
       '--color-topbar-bg':   'hsl(345, 25%, 20%)',
       '--color-topbar-text': 'hsl(340, 15%, 95%)',
-      '--heatmap-none':      'hsl(340, 5%, 85%)',
-      '--heatmap-1':         'hsl(350, 25%, 75%)',
-      '--heatmap-2':         'hsl(345, 40%, 68%)',
-      '--heatmap-3':         'hsl(340, 50%, 60%)',
-      '--heatmap-4':         'hsl(335, 58%, 52%)',
-      '--heatmap-5':         'hsl(330, 65%, 45%)',
+      '--color-toggle-active':      'hsl(340, 58%, 50%)',
+      '--color-toggle-recommended': 'hsl(40, 80%, 55%)',
+      // Blue → purple → magenta → rose
+      '--heatmap-none': 'hsl(340, 5%, 85%)',
+      '--heatmap-1':    'hsl(210, 25%, 72%)',
+      '--heatmap-2':    'hsl(250, 30%, 62%)',
+      '--heatmap-3':    'hsl(290, 38%, 52%)',
+      '--heatmap-4':    'hsl(320, 50%, 44%)',
+      '--heatmap-5':    'hsl(340, 60%, 37%)',
     },
   },
 
   slate: {
     name: 'Slate',
-    // Cool slate header, steel blue brand — minimal, professional
+    // Cool slate header, steel blue brand
     vars: {
       '--color-brand':       'hsl(215, 45%, 50%)',
       '--color-brand-dark':  'hsl(215, 45%, 38%)',
       '--color-brand-bg':    'hsl(215, 30%, 95%)',
       '--color-topbar-bg':   'hsl(220, 20%, 25%)',
       '--color-topbar-text': 'hsl(210, 10%, 95%)',
-      '--heatmap-none':      'hsl(215, 8%, 85%)',
-      '--heatmap-1':         'hsl(220, 20%, 72%)',
-      '--heatmap-2':         'hsl(218, 30%, 64%)',
-      '--heatmap-3':         'hsl(216, 38%, 56%)',
-      '--heatmap-4':         'hsl(214, 45%, 48%)',
-      '--heatmap-5':         'hsl(212, 55%, 42%)',
+      '--color-toggle-active':      'hsl(215, 45%, 46%)',
+      '--color-toggle-recommended': 'hsl(35, 80%, 55%)',
+      // Warm buff → teal → steel blue
+      '--heatmap-none': 'hsl(215, 8%, 85%)',
+      '--heatmap-1':    'hsl(45, 28%, 72%)',
+      '--heatmap-2':    'hsl(120, 18%, 60%)',
+      '--heatmap-3':    'hsl(180, 30%, 50%)',
+      '--heatmap-4':    'hsl(200, 42%, 42%)',
+      '--heatmap-5':    'hsl(218, 55%, 35%)',
     },
   },
 
   ember: {
     name: 'Ember',
-    // Dark brown header, warm copper brand, earth tones
+    // Dark brown header, warm copper brand
     vars: {
       '--color-brand':       'hsl(25, 70%, 50%)',
       '--color-brand-dark':  'hsl(25, 70%, 38%)',
       '--color-brand-bg':    'hsl(25, 45%, 95%)',
       '--color-topbar-bg':   'hsl(20, 25%, 18%)',
       '--color-topbar-text': 'hsl(25, 15%, 95%)',
-      '--heatmap-none':      'hsl(25, 8%, 85%)',
-      '--heatmap-1':         'hsl(35, 25%, 72%)',
-      '--heatmap-2':         'hsl(30, 45%, 62%)',
-      '--heatmap-3':         'hsl(25, 58%, 55%)',
-      '--heatmap-4':         'hsl(20, 65%, 48%)',
-      '--heatmap-5':         'hsl(15, 75%, 42%)',
+      '--color-toggle-active':      'hsl(25, 68%, 45%)',
+      '--color-toggle-recommended': 'hsl(50, 85%, 50%)',
+      // Blue → violet → rose → copper
+      '--heatmap-none': 'hsl(25, 8%, 85%)',
+      '--heatmap-1':    'hsl(220, 22%, 72%)',
+      '--heatmap-2':    'hsl(270, 28%, 62%)',
+      '--heatmap-3':    'hsl(325, 35%, 52%)',
+      '--heatmap-4':    'hsl(0, 50%, 44%)',
+      '--heatmap-5':    'hsl(22, 65%, 37%)',
     },
   },
 
   sage: {
     name: 'Sage',
-    // Muted olive-green header, sage brand — earthy calm
+    // Muted olive-green header, sage brand
     vars: {
       '--color-brand':       'hsl(90, 35%, 45%)',
       '--color-brand-dark':  'hsl(90, 35%, 35%)',
       '--color-brand-bg':    'hsl(90, 25%, 94%)',
       '--color-topbar-bg':   'hsl(100, 15%, 22%)',
       '--color-topbar-text': 'hsl(90, 10%, 95%)',
-      '--heatmap-none':      'hsl(90, 5%, 85%)',
-      '--heatmap-1':         'hsl(95, 15%, 72%)',
-      '--heatmap-2':         'hsl(92, 25%, 62%)',
-      '--heatmap-3':         'hsl(90, 32%, 52%)',
-      '--heatmap-4':         'hsl(88, 38%, 44%)',
-      '--heatmap-5':         'hsl(85, 45%, 38%)',
+      '--color-toggle-active':      'hsl(90, 35%, 42%)',
+      '--color-toggle-recommended': 'hsl(35, 80%, 55%)',
+      // Lavender → blue → teal → sage
+      '--heatmap-none': 'hsl(90, 5%, 85%)',
+      '--heatmap-1':    'hsl(260, 18%, 72%)',
+      '--heatmap-2':    'hsl(210, 25%, 62%)',
+      '--heatmap-3':    'hsl(160, 30%, 50%)',
+      '--heatmap-4':    'hsl(120, 35%, 42%)',
+      '--heatmap-5':    'hsl(88, 45%, 35%)',
     },
   },
 };
