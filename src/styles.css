@@ -90,7 +90,9 @@ body {
   display: flex;
   align-items: center;
   padding: var(--space-3) var(--space-5);
-  margin: 0 calc(-1 * var(--space-5));
+  margin: 0 auto;
+  max-width: 800px;
+  border-radius: 0 0 8px 8px;
   background: var(--color-topbar-bg);
   color: var(--color-topbar-text);
   position: relative;
@@ -274,7 +276,7 @@ body {
 }
 .fretboard-container {
   position: relative;
-  flex: 1;
+  width: 100%;
   min-width: 0;
   max-width: 1200px;
 }
@@ -508,10 +510,9 @@ button {
 .note-buttons {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: center;
   gap: var(--space-2);
-  margin: var(--space-3) auto var(--space-3) 0;
-  max-width: 220px;
+  margin: var(--space-3) auto;
 }
 .note-btn {
   min-width: 50px;
@@ -607,11 +608,13 @@ button {
 .phase-calibration .note-buttons:not(.calibration-active) {
   display: none;
 }
+/* !important overrides inline style="display:none" set by html-helpers.ts
+   on button groups that are hidden at rest (e.g. noteAnswerButtons in Speed Tap). */
 .phase-calibration .answer-buttons.calibration-active {
-  display: grid;
+  display: grid !important;
 }
 .phase-calibration .note-buttons.calibration-active {
-  display: flex;
+  display: flex !important;
 }
 .phase-calibration .speed-tap-status,
 .phase-calibration .fretboard-wrapper {
@@ -985,6 +988,8 @@ button {
   .top-bar {
     margin: 0 calc(-1 * var(--space-1));
     padding: var(--space-2) var(--space-3);
+    max-width: none;
+    border-radius: 0;
   }
 
   .fretboard-container {
