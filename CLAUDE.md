@@ -13,8 +13,9 @@ npx tsx --test src/*_test.ts                        # Run tests
 ```
 
 **Always bump the version** (`<div class="version">` in both `main.ts` and
-`build.ts`) with every change — even tiny fixes. Increment the minor version
-for normal changes (v3.11 → v3.12), major version after large changes.
+`build.ts`) with every change — even tiny fixes. Use semver-style patch bumps
+for normal changes (v3.16 → v3.16.1 → v3.16.2), and increment the minor
+version for features (v3.16.x → v3.17). Major version for large overhauls.
 
 **Both `main.ts` and `build.ts` use the same HTML template via shared helpers
 in `src/html-helpers.ts`.** Mode-specific content is passed as arguments to

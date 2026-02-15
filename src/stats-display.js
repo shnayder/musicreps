@@ -8,10 +8,6 @@
 
 var _heatmapColors = null;
 
-export function resetHeatmapCache() {
-  _heatmapColors = null;
-}
-
 function cssVar(name) {
   try {
     var val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -23,17 +19,26 @@ function cssVar(name) {
 function heatmapColors() {
   if (!_heatmapColors) {
     _heatmapColors = {
-      none:  cssVar('--heatmap-none')  || 'hsl(30, 5%, 85%)',
+      none:  cssVar('--heatmap-none')  || 'hsl(60, 5%, 93%)',
       level: [
-        cssVar('--heatmap-1') || 'hsl(215, 45%, 60%)',
-        cssVar('--heatmap-2') || 'hsl(200, 40%, 65%)',
-        cssVar('--heatmap-3') || 'hsl(50, 50%, 65%)',
-        cssVar('--heatmap-4') || 'hsl(42, 70%, 58%)',
-        cssVar('--heatmap-5') || 'hsl(38, 85%, 55%)',
+        cssVar('--heatmap-1') || 'hsl(15, 55%, 68%)',
+        cssVar('--heatmap-2') || 'hsl(35, 55%, 58%)',
+        cssVar('--heatmap-3') || 'hsl(55, 45%, 50%)',
+        cssVar('--heatmap-4') || 'hsl(72, 42%, 42%)',
+        cssVar('--heatmap-5') || 'hsl(88, 52%, 33%)',
       ],
     };
   }
   return _heatmapColors;
+}
+
+/**
+ * Returns true if white text should be used on this heatmap background.
+ * Parses lightness from hsl() strings; dark backgrounds (L <= 50%) get white.
+ */
+export function heatmapNeedsLightText(color) {
+  var m = color && color.match(/,\s*(\d+)%\s*\)/);
+  return m ? parseInt(m[1], 10) <= 50 : false;
 }
 
 // Labels for the retention legend (index matches heatmapColors().level)

@@ -5,24 +5,6 @@
 
 function createSettingsModal(options) {
   var onNotationChange = options.onNotationChange || function() {};
-  var onSchemeChange = options.onSchemeChange || function() {};
-
-  // --- Build color scheme swatch HTML ---
-
-  var swatchesHTML = '';
-  var schemeIds = Object.keys(COLOR_SCHEMES);
-  for (var i = 0; i < schemeIds.length; i++) {
-    var sid = schemeIds[i];
-    var scheme = COLOR_SCHEMES[sid];
-    var brandColor = scheme.vars['--color-brand'];
-    var topbarColor = scheme.vars['--color-topbar-bg'];
-    swatchesHTML +=
-      '<button class="scheme-swatch" data-scheme="' + sid + '" ' +
-        'aria-label="' + scheme.name + ' color scheme" title="' + scheme.name + '">' +
-        '<span class="swatch-fill" style="background:' + brandColor +
-          ';box-shadow:inset 0 -8px 0 ' + topbarColor + '"></span>' +
-      '</button>';
-  }
 
   // --- Build modal DOM ---
 
@@ -44,11 +26,6 @@ function createSettingsModal(options) {
           '<button class="settings-toggle-btn" data-notation="solfege">Do Re Mi</button>' +
         '</div>' +
       '</div>' +
-      '<div class="settings-field" style="margin-top:var(--space-5)">' +
-        '<div class="settings-label">Color scheme</div>' +
-        '<div class="scheme-swatches">' + swatchesHTML + '</div>' +
-        '<div class="scheme-name-label"></div>' +
-      '</div>' +
     '</div>';
 
   overlay.appendChild(modal);
@@ -58,8 +35,6 @@ function createSettingsModal(options) {
 
   var closeBtn = modal.querySelector('.settings-close-btn');
   var toggleBtns = modal.querySelectorAll('.settings-toggle-btn');
-  var schemeBtns = modal.querySelectorAll('.scheme-swatch');
-  var schemeLabel = modal.querySelector('.scheme-name-label');
 
   // --- State ---
 
@@ -70,20 +45,10 @@ function createSettingsModal(options) {
     });
   }
 
-  function updateSchemeState() {
-    var currentId = getColorSchemeId();
-    schemeBtns.forEach(function(btn) {
-      btn.classList.toggle('active', btn.dataset.scheme === currentId);
-    });
-    var scheme = COLOR_SCHEMES[currentId];
-    if (schemeLabel) schemeLabel.textContent = scheme ? scheme.name : '';
-  }
-
   // --- Open / Close ---
 
   function open() {
     updateToggleState();
-    updateSchemeState();
     overlay.classList.add('open');
   }
 
@@ -110,17 +75,6 @@ function createSettingsModal(options) {
         setUseSolfege(wantSolfege);
         updateToggleState();
         onNotationChange();
-      }
-    });
-  });
-
-  schemeBtns.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var id = btn.dataset.scheme;
-      if (id !== getColorSchemeId()) {
-        applyColorScheme(id);
-        updateSchemeState();
-        onSchemeChange();
       }
     });
   });

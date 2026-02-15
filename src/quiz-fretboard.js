@@ -40,16 +40,19 @@ function createFrettedInstrumentMode(instrument) {
     if (circle) circle.style.fill = color;
   }
 
-  function showNoteText(string, fret) {
+  function showNoteText(string, fret, bgColor) {
     const text = container.querySelector(
       `text[data-string="${string}"][data-fret="${fret}"]`
     );
-    if (text) text.textContent = displayNote(fb.getNoteAtPosition(string, fret));
+    if (text) {
+      text.textContent = displayNote(fb.getNoteAtPosition(string, fret));
+      text.style.fill = bgColor && heatmapNeedsLightText(bgColor) ? 'white' : '';
+    }
   }
 
   function clearAll() {
     container.querySelectorAll('.note-circle').forEach(c => c.style.fill = '');
-    container.querySelectorAll('.note-text').forEach(t => t.textContent = '');
+    container.querySelectorAll('.note-text').forEach(t => { t.textContent = ''; t.style.fill = ''; });
   }
 
   // --- String toggles ---
@@ -88,8 +91,9 @@ function createFrettedInstrumentMode(instrument) {
       for (const s of allStrings) {
         for (let f = 0; f < instrument.fretCount; f++) {
           const auto = engine.selector.getAutomaticity(`${s}-${f}`);
-          highlightCircle(s, f, getAutomaticityColor(auto));
-          showNoteText(s, f);
+          const color = getAutomaticityColor(auto);
+          highlightCircle(s, f, color);
+          showNoteText(s, f, color);
         }
       }
     } else {
@@ -97,8 +101,9 @@ function createFrettedInstrumentMode(instrument) {
         for (let f = 0; f < instrument.fretCount; f++) {
           const stats = engine.selector.getStats(`${s}-${f}`);
           const ewma = stats ? stats.ewma : null;
-          highlightCircle(s, f, getSpeedHeatmapColor(ewma, engine.baseline));
-          showNoteText(s, f);
+          const color = getSpeedHeatmapColor(ewma, engine.baseline);
+          highlightCircle(s, f, color);
+          showNoteText(s, f, color);
         }
       }
     }

@@ -107,7 +107,7 @@
 
   nav.init();
 
-  // Re-render stats on visible mode screens (shared by notation + scheme change)
+  // Re-render stats on visible mode screens after notation change
   function refreshVisibleStats() {
     document.querySelectorAll('.mode-screen').forEach(function(el) {
       if (el.style.display !== 'none') {
@@ -126,9 +126,6 @@
           refreshVisibleStats();
         }
       });
-    },
-    onSchemeChange: function() {
-      refreshVisibleStats();
     }
   });
 

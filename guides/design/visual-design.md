@@ -16,7 +16,7 @@ Aligned with the product vision in `guides/vision.md`:
 1. **Drill-first aesthetic** — nothing distracts from drilling. Chrome fades
    away during quiz; visual weight goes to the question and answer buttons.
 2. **Warmth over sterility** — inviting, like a good practice space. Warm
-   neutrals, amber brand, no cold gray wireframe feel.
+   neutrals, sage brand, no cold gray wireframe feel.
 3. **Feedback clarity** — correct/wrong instantly recognizable via distinct
    semantic colors (green/red). Never use brand or heatmap colors for feedback.
 4. **Information density** — stats scannable at a glance, not decorative.
@@ -28,28 +28,52 @@ Aligned with the product vision in `guides/vision.md`:
 
 ## Color System
 
+### Color Design Principles
+
+These principles govern all color decisions and should be applied when
+modifying the palette or adding new color tokens:
+
+1. **Bright ends, faded middle** — the heatmap scale has vivid, high-saturation
+   colors at both extremes ("needs work" and "automatic") with muted, lower-
+   saturation tones in the middle. This makes the endpoints pop and draws
+   attention to items that are either struggling or mastered.
+2. **Warm-to-cool sequential hue** — the heatmap transitions from warm
+   terracotta (hue ~15°) to cool sage (hue ~88°), a ~73° arc. This provides
+   good perceptual separation without relying on red/green as the sole
+   differentiator (colorblind-safe).
+3. **Monotonically decreasing lightness** — heatmap levels go from L=68% down
+   to L=33%. This ensures the scale reads correctly in grayscale and for users
+   with color vision deficiencies. Text switches to white for L ≤ 50%.
+4. **Sage brand is earthy, not neon** — the brand color sits at moderate
+   saturation (35%) and lightness (45%), evoking a natural, focused practice
+   space rather than a flashy game.
+5. **Semantic colors are sacrosanct** — green = correct, red = wrong, blue =
+   focus. These never change and are never used for decorative or brand purposes.
+   Brand color is never used for correct/wrong feedback.
+6. **Warm neutral chrome** — text, surfaces, and borders use warm-shifted
+   grays (`hsl(30, …)`) to avoid a sterile wireframe feel.
+
 ### Brand
 
-Warm amber/gold — musically evocative (brass, stage lighting), distinct from
-feedback colors, works on light and dark backgrounds.
+Sage green — natural, earthy feel. Distinct from feedback colors, works on
+light and dark backgrounds.
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--color-brand` | `hsl(38, 90%, 55%)` | Start Quiz CTA, active stats toggle, focus outlines |
-| `--color-brand-dark` | `hsl(38, 90%, 42%)` | CTA hover, nav active text |
-| `--color-brand-bg` | `hsl(38, 60%, 95%)` | Nav active item background |
+| `--color-brand` | `hsl(90, 35%, 45%)` | Start Quiz CTA, active stats toggle, focus outlines |
+| `--color-brand-dark` | `hsl(90, 35%, 35%)` | CTA hover, nav active text |
+| `--color-brand-bg` | `hsl(90, 25%, 94%)` | Nav active item background |
 
 **Rules:**
 - Brand color for CTAs and identity elements only
 - Never use brand color for correct/wrong feedback (use `--color-success`/`--color-error`)
-- Heatmap level 5 (mastered) intentionally matches brand amber
 
 ### Top Bar
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--color-topbar-bg` | `hsl(220, 15%, 18%)` | Dark top bar background |
-| `--color-topbar-text` | `hsl(0, 0%, 95%)` | Top bar text, hamburger icon |
+| `--color-topbar-bg` | `hsl(100, 15%, 22%)` | Dark top bar background |
+| `--color-topbar-text` | `hsl(90, 10%, 95%)` | Top bar text, hamburger icon |
 
 ### Semantic Colors
 
@@ -98,19 +122,21 @@ Subtle warmth instead of pure grays — shifted `hsl(30, …)` for cohesion.
 | `--color-border-light` | `hsl(30, 5%, 80%)` | Table borders, toggle separator |
 | `--color-border-lighter` | `hsl(30, 5%, 86%)` | Section dividers |
 
-### Heatmap (Blue to Amber)
+### Heatmap (Terracotta to Sage)
 
-Accessible sequential scale replacing red/green. Cool = needs work, warm =
-mastered. Brand amber as the goal color.
+Warm-to-cool sequential scale. High saturation at both ends ("bright ends,
+faded middle") for visual pop at the extremes. Monotonically decreasing
+lightness ensures grayscale readability. Text switches to white on levels
+3–5 (L ≤ 50%) via `heatmapNeedsLightText()`.
 
 | Token | Value | Meaning |
 |-------|-------|---------|
-| `--heatmap-none` | `hsl(30, 5%, 85%)` | No data |
-| `--heatmap-1` | `hsl(215, 45%, 60%)` | Needs work (steel blue) |
-| `--heatmap-2` | `hsl(200, 40%, 65%)` | Fading (lighter blue) |
-| `--heatmap-3` | `hsl(50, 50%, 65%)` | Getting there (warm yellow) |
-| `--heatmap-4` | `hsl(42, 70%, 58%)` | Solid (gold) |
-| `--heatmap-5` | `hsl(38, 85%, 55%)` | Automatic (amber = brand) |
+| `--heatmap-none` | `hsl(60, 5%, 93%)` | No data |
+| `--heatmap-1` | `hsl(15, 55%, 68%)` | Needs work (terracotta) |
+| `--heatmap-2` | `hsl(35, 55%, 58%)` | Fading (amber) |
+| `--heatmap-3` | `hsl(55, 45%, 50%)` | Getting there (olive) |
+| `--heatmap-4` | `hsl(72, 42%, 42%)` | Solid (olive-sage) |
+| `--heatmap-5` | `hsl(88, 52%, 33%)` | Automatic (deep sage) |
 
 ### Fretboard SVG
 
@@ -161,7 +187,7 @@ headings, CTA).
 
 ### Primary Button (Start Quiz)
 
-Brand amber background, white text, subtle shadow, hover darkens. Uses
+Brand sage background, white text, subtle shadow, hover darkens. Uses
 `.start-btn` class applied via `modeScreen()` scaffold.
 
 ```css
@@ -200,7 +226,7 @@ Active quiz area gets `--color-surface` background, 12px border-radius, and
 
 ### Navigation Drawer
 
-Grouped by mode category with uppercase labels. Active item uses brand amber
+Grouped by mode category with uppercase labels. Active item uses brand sage
 left-border and `--color-brand-bg` background.
 
 Groups:
@@ -257,7 +283,7 @@ Mouse/touch users see no outline (`:focus:not(:focus-visible)` removes it).
 ## Accessibility Standards
 
 - **WCAG AA contrast:** 4.5:1 for normal text, 3:1 for large text
-- **No red/green as sole differentiator:** Heatmap uses blue-to-amber
+- **No red/green as sole differentiator:** Heatmap uses terracotta-to-sage
 - **44px minimum touch targets:** All answer/note buttons are 48px tall
 - **`@media (prefers-reduced-motion: reduce)`:** Disables all transitions and
   animations
