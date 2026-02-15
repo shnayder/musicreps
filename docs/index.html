@@ -8466,10 +8466,15 @@ function createQuizEngine(mode, container) {
     nextQuestion();
   }
 
-  // Attach event listeners: keyboard on document (global), clicks on container
+  // Attach event listeners: keyboard on document (global), clicks on container.
+  // Also refreshes notation-dependent content (button labels, stats table)
+  // so that a mode activated after a global notation change shows current labels.
   function attach() {
     document.addEventListener('keydown', handleKeydown);
     container.addEventListener('click', handleClick);
+    refreshNoteButtonLabels(container);
+    var activeStatsBtn = container.querySelector('.stats-toggle-btn.active');
+    if (activeStatsBtn) activeStatsBtn.click();
   }
 
   function detach() {
