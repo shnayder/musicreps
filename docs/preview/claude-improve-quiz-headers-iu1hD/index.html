@@ -1041,7 +1041,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.9</div>
+    <div class="version">v3.10</div>
   </div>
 
   <!-- Guitar Fretboard mode -->
@@ -7105,9 +7105,8 @@ function engineNextQuestion(state, nextItemId, nowMs) {
  * @param {EngineState} state
  * @param {boolean} isCorrect
  * @param {string} correctAnswer - display string for incorrect feedback
- * @param {number} responseTimeMs
  */
-function engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs) {
+function engineSubmitAnswer(state, isCorrect, correctAnswer) {
   return {
     ...state,
     answered: true,
@@ -7124,9 +7123,8 @@ function engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs) {
  * Transition: timer expired before user answered.
  * @param {EngineState} state
  * @param {string} correctAnswer - display string for the correct answer
- * @param {number} deadlineMs - the deadline that was active
  */
-function engineTimedOut(state, correctAnswer, deadlineMs) {
+function engineTimedOut(state, correctAnswer) {
   return {
     ...state,
     answered: true,
@@ -7877,7 +7875,7 @@ function createQuizEngine(mode, container) {
     selector.recordResponse(itemId, deadline, false);
     deadlineTracker.recordOutcome(itemId, false, rc);
 
-    state = engineTimedOut(state, result.correctAnswer, deadline);
+    state = engineTimedOut(state, result.correctAnswer);
 
     // Check mastery and progress
     const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
@@ -8022,7 +8020,7 @@ function createQuizEngine(mode, container) {
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
     deadlineTracker.recordOutcome(state.currentItemId, result.correct, rc);
 
-    state = engineSubmitAnswer(state, result.correct, result.correctAnswer, responseTime);
+    state = engineSubmitAnswer(state, result.correct, result.correctAnswer);
 
     // Check if all enabled items are mastered
     const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
