@@ -734,6 +734,9 @@ button {
   margin: var(--space-5) 0;
   min-height: 2.5rem;
 }
+.quiz-prompt:empty {
+  display: none;
+}
 
 /* --- Answer buttons grid (shared by new modes) --- */
 .answer-buttons {

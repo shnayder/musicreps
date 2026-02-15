@@ -142,6 +142,7 @@ ${modeScreen("fretboard", {
   quizAreaContent: `<div class="countdown-container">
         <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
+      <div class="quiz-prompt"></div>
       ${pianoNoteButtons()}
       ${feedbackBlock()}`,
 })}
@@ -157,6 +158,7 @@ ${modeScreen("ukulele", {
   quizAreaContent: `<div class="countdown-container">
         <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
+      <div class="quiz-prompt"></div>
       ${pianoNoteButtons()}
       ${feedbackBlock()}`,
 })}

@@ -744,6 +744,9 @@ button {
   margin: var(--space-5) 0;
   min-height: 2.5rem;
 }
+.quiz-prompt:empty {
+  display: none;
+}
 
 /* --- Answer buttons grid (shared by new modes) --- */
 .answer-buttons {
@@ -2947,6 +2950,7 @@ button {
       <div class="countdown-container">
         <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
+      <div class="quiz-prompt"></div>
       <div class="note-buttons">
         <div class="note-row-accidentals">
           <button class="note-btn accidental" data-note="C#">C#</button>
@@ -4147,6 +4151,7 @@ button {
       <div class="countdown-container">
         <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
+      <div class="quiz-prompt"></div>
       <div class="note-buttons">
         <div class="note-row-accidentals">
           <button class="note-btn accidental" data-note="C#">C#</button>
