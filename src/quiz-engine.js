@@ -364,7 +364,7 @@ function runCalibration(opts) {
       pressStartTime = Date.now();
       trialStartTime = Date.now();
 
-      if (els.feedback) els.feedback.textContent = trialConfig.prompt;
+      if (els.quizPrompt) els.quizPrompt.textContent = trialConfig.prompt;
     } else {
       // Highlight mode (speed tap fallback)
       let idx;
@@ -379,7 +379,8 @@ function runCalibration(opts) {
     }
 
     prevBtn = targetBtn;
-    if (els.timeDisplay) els.timeDisplay.textContent = (trialIndex + 1) + ' / ' + TRIAL_COUNT;
+    if (els.progressText) els.progressText.textContent = (trialIndex + 1) + ' / ' + TRIAL_COUNT;
+    if (els.progressFill) els.progressFill.style.width = Math.round(((trialIndex + 1) / TRIAL_COUNT) * 100) + '%';
   }
 
   function recordPress() {
@@ -599,6 +600,8 @@ export function createQuizEngine(mode, container) {
     hint: container.querySelector('.hint'),
     stats: container.querySelector('.stats'),
     quizArea: container.querySelector('.quiz-area'),
+    quizPrompt: container.querySelector('.quiz-prompt'),
+    quizHeaderTitle: container.querySelector('.quiz-header-title'),
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
@@ -725,28 +728,37 @@ export function createQuizEngine(mode, container) {
       if (activeEl) activeEl.classList.remove('calibration-active');
     }
 
-    // Show/hide close button
-    if (inCalibration && !container.querySelector('.calibration-close-btn')) {
-      const closeBtn = document.createElement('button');
-      closeBtn.className = 'calibration-close-btn';
-      closeBtn.textContent = '\u00D7';
-      closeBtn.setAttribute('aria-label', 'Close speed check');
-      closeBtn.addEventListener('click', stop);
-      if (els.quizArea) {
-        els.quizArea.style.position = 'relative';
-        els.quizArea.appendChild(closeBtn);
-      }
-    }
-    if (!inCalibration) {
-      const closeBtn = container.querySelector('.calibration-close-btn');
-      if (closeBtn) closeBtn.remove();
+    // Sub-phase classes for calibration CSS (intro hides buttons, trials shows them)
+    container.classList.remove('calibration-intro', 'calibration-results');
+    if (state.phase === 'calibration-intro') container.classList.add('calibration-intro');
+    if (state.phase === 'calibration-results') container.classList.add('calibration-results');
+
+    // Quiz header title: "Speed Check" during calibration, empty otherwise
+    if (els.quizHeaderTitle) {
+      els.quizHeaderTitle.textContent = inCalibration ? 'Speed Check' : '';
     }
 
     const isActive = state.phase === 'active';
     if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
-    if (els.feedback) {
-      els.feedback.textContent = state.feedbackText;
-      els.feedback.className   = state.feedbackClass;
+
+    // During calibration, feedbackText goes in quiz-prompt (above buttons)
+    // so the heading/prompt appears in the same position as quiz questions.
+    // During active quiz, it stays in .feedback (below buttons).
+    if (inCalibration) {
+      if (els.quizPrompt) els.quizPrompt.textContent = state.feedbackText;
+      if (els.feedback) {
+        els.feedback.textContent = '';
+        els.feedback.className = 'feedback';
+      }
+    } else {
+      if (els.feedback) {
+        els.feedback.textContent = state.feedbackText;
+        els.feedback.className   = state.feedbackClass;
+      }
+      // Clear quiz-prompt when leaving calibration (presentQuestion rewrites it for quiz)
+      if (els.quizPrompt && state.phase === 'idle') {
+        els.quizPrompt.textContent = '';
+      }
     }
     if (els.timeDisplay) els.timeDisplay.textContent = state.timeDisplayText;
     if (els.hint)        els.hint.textContent        = state.hintText;

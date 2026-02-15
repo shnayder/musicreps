@@ -335,7 +335,8 @@ body {
 .phase-idle .quiz-session { display: none; }
 .phase-active .stats-section,
 .phase-active .quiz-config { display: none; }
-.phase-calibration > *:not(.quiz-area) { display: none; }
+.phase-calibration .stats-section,
+.phase-calibration .quiz-config { display: none; }
 
 /* --- Fretboard --- */
 .fretboard-wrapper {
@@ -792,32 +793,27 @@ button {
   display: flex;
 }
 .phase-calibration .speed-tap-status,
-.phase-calibration .fretboard-wrapper {
+.phase-calibration .fretboard-wrapper,
+.phase-calibration .practicing-label {
   display: none;
 }
 .phase-calibration .countdown-container,
-.phase-calibration .quiz-prompt,
-.phase-calibration .chord-slots {
+.phase-calibration .chord-slots,
+.phase-calibration .time-display {
   display: none;
 }
-.calibration-close-btn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: none;
-  border: none;
-  font-size: var(--text-xl);
-  color: var(--color-text-light);
-  cursor: pointer;
-  padding: var(--space-2) var(--space-3);
-  line-height: 1;
-  margin: 0;
-  border-radius: 4px;
-  transition: color 0.15s ease, background 0.15s ease;
+/* Calibration: hide question counter (progress bar shows trial count instead) */
+.phase-calibration .session-stats {
+  display: none;
 }
-.calibration-close-btn:hover {
-  color: var(--color-text);
-  background: var(--color-surface-hover);
+/* Intro + results: hide buttons and progress */
+.phase-calibration.calibration-intro .calibration-active,
+.phase-calibration.calibration-results .calibration-active {
+  display: none !important;
+}
+.phase-calibration.calibration-intro .progress-bar,
+.phase-calibration.calibration-results .progress-bar {
+  display: none;
 }
 
 /* --- Calibration highlight --- */
