@@ -3,10 +3,8 @@
 ## Overview
 
 Add a fixed-do solfège naming option that replaces letter-name notes (C, D, E)
-with solfège syllables (do, re, mi) throughout the entire app. The setting lives
-in a new global settings modal, accessed via a gear icon in the top bar. The
-"redo speed check" action also moves into this modal, centralizing app-wide
-configuration in one place.
+with solfège syllables (Do, Re, Mi) throughout the entire app. The setting lives
+in a new global settings modal, accessed via a gear icon in the top bar.
 
 ## Solfège naming system
 
@@ -14,29 +12,29 @@ configuration in one place.
 
 | Letter | Solfège | With sharp | With flat |
 |--------|---------|------------|-----------|
-| C | do | do# | do♭ |
-| D | re | re# | re♭ |
-| E | mi | mi# | mi♭ |
-| F | fa | fa# | fa♭ |
-| G | sol | sol# | sol♭ |
-| A | la | la# | la♭ |
-| B | si | si# | si♭ |
+| C | Do | Do# | Do♭ |
+| D | Re | Re# | Re♭ |
+| E | Mi | Mi# | Mi♭ |
+| F | Fa | Fa# | Fa♭ |
+| G | Sol | Sol# | Sol♭ |
+| A | La | La# | La♭ |
+| B | Si | Si# | Si♭ |
 
-- Uses **si** (Romance/Italian tradition), not ti.
+- Uses **Si** (Romance/Italian tradition), not Ti.
 - Accidentals append **#** or **♭** to the base syllable (not chromatic
-  solfège variants like di, ri, etc.).
-- Display is lowercase: do, re, mi (not Do, Re, Mi).
+  solfège variants like Di, Ri, etc.).
+- Display is capitalized: Do, Re, Mi.
 
 ### Where solfège names appear
 
 When the solfège setting is active, note names are replaced **everywhere**:
 
-- **Answer buttons** — "do", "re#/mi♭", etc. instead of "C", "C#/Db"
-- **Question prompts** — "do + 3 = ?", "What note is fret 5 on string 3?"
-  answer: "la" instead of "A"
-- **Feedback text** — "Correct! The answer is sol" instead of "G"
+- **Answer buttons** — "Do", "Re#/Mi♭", etc. instead of "C", "C#/Db"
+- **Question prompts** — "Do + 3 = ?", "What note is fret 5 on string 3?"
+  answer: "La" instead of "A"
+- **Feedback text** — "Correct! The answer is Sol" instead of "G"
 - **Fretboard labels** — neck dots show solfège syllables
-- **Key names** — "do major", "la minor" etc. wherever key names appear
+- **Key names** — "Do major", "La minor" etc. wherever key names appear
 
 ### Modes unaffected
 
@@ -48,6 +46,7 @@ m2, M3, P5 and semitone counts), so the solfège setting has no effect there.
 In solfège mode, keyboard shortcuts change to **solfège abbreviations**:
 
 - Type the syllable: `do`, `re`, `mi`, `fa`, `sol`, `la`, `si`
+- Case-insensitive — `Do`, `DO`, `do` all work.
 - For accidentals: syllable + `#` or `b` (e.g., `fa#`, `si b`)
 - The original letter keys (C, D, E...) are **inactive** in solfège mode.
 
@@ -59,64 +58,52 @@ sol needing the third.
 
 ### Access
 
-- **Gear icon** in the top bar, right side (replaces the version number
-  display — version can move into the modal or footer).
+- **Gear icon** in the top bar, right side (to the right of the version number).
 - Tapping the gear opens a modal overlay.
+- **Hidden during active quiz** — gear icon is not visible when a quiz or
+  calibration is in progress.
 
 ### Modal contents
 
 1. **Note naming** — toggle between two options:
    - **A B C** (letter names — current default)
-   - **do re mi** (fixed-do solfège)
+   - **Do Re Mi** (fixed-do solfège)
 
    Persisted in localStorage. Default: A B C.
 
-2. **Redo speed check** — button that triggers the calibration flow for the
-   current mode. Same behavior as today's per-mode "Redo speed check" button,
-   just accessed from the modal. Disabled if no mode is active or no baseline
-   exists yet (first calibration happens automatically on first quiz start).
-
-3. **Close** — "×" button in top-right corner, or tap the overlay backdrop.
+2. **Close** — "×" button in top-right corner, or tap the overlay backdrop.
 
 ### Layout
 
 The modal is a centered card over a dimmed backdrop (reuse the existing
-`--color-overlay` for backdrop). Compact — just the two settings stacked
-vertically with clear labels.
+`--color-overlay` for backdrop). Compact — just the notation setting with a
+clear label.
 
 ### Screen states
 
-- **Modal closed (default)**: gear icon visible in top bar, everything else
-  unchanged.
-- **Modal open**: dimmed overlay, settings card centered. Quiz is paused if
-  running (or rather, modal shouldn't open during an active quiz — only
-  available from idle state).
+- **Modal closed (default)**: gear icon visible in top bar (when idle),
+  everything else unchanged.
+- **Modal open**: dimmed overlay, settings card centered.
 
-### Interaction with quiz state
+## Calibration stays per-mode
 
-The settings gear is only tappable when the quiz is in **idle** state (not
-during active quizzing or calibration). During an active quiz the gear icon
-can either be hidden or visually disabled. This avoids mid-quiz setting changes
-that would require re-rendering questions.
-
-## Removing per-mode recalibrate button
-
-The "Redo speed check" button currently shown in each mode's idle screen moves
-to the settings modal. It no longer appears in the per-mode UI. This
-declutters the idle screen and centralizes app-wide actions.
+The "Redo speed check" button stays in each mode's idle screen. Different modes
+can have different calibration baselines, so per-mode placement makes sense.
 
 ## Resolved decisions
 
-- **si vs ti**: si — user prefers Romance/Italian tradition.
+- **Si vs Ti**: Si — Romance/Italian tradition.
+- **Capitalization**: Do, Re, Mi (capitalized). Consistent with how letter
+  names are capitalized (C, D, E).
 - **Scope of substitution**: everywhere (fretboard labels, questions, answers,
   feedback) — full immersion, not partial.
 - **Keyboard in solfège mode**: solfège abbreviations only; letter keys
-  disabled. Keeps the mental model consistent with what's on screen.
-- **Accidental style**: base syllable + # or ♭ symbol (do#, mi♭), not
-  chromatic solfège (di, me, etc.). Simpler to learn, direct parallel to the
+  disabled. Case-insensitive input. Keeps the mental model consistent with
+  what's on screen.
+- **Accidental style**: base syllable + # or ♭ symbol (Do#, Mi♭), not
+  chromatic solfège (Di, Me, etc.). Simpler to learn, direct parallel to the
   letter-name system.
-- **Settings access during quiz**: idle only. Avoids complexity of
-  mid-question setting changes.
-- **Calibration in settings**: single button triggers calibration for current
-  mode's provider. Since most modes share the same provider, one calibration
-  covers them all.
+- **Settings gear visibility**: hidden during active quiz/calibration. No
+  mid-quiz setting changes.
+- **Calibration**: stays per-mode (not moved to settings modal).
+- **Version number**: stays in header, to the left of the settings gear.

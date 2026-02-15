@@ -2,10 +2,9 @@
 
 ## Problem / Context
 
-Users want to drill note identification using solfège syllables (do, re, mi)
+Users want to drill note identification using solfège syllables (Do, Re, Mi)
 instead of letter names (C, D, E). This requires a global display setting that
-translates note names throughout the app, a settings modal to toggle it, and
-moving the recalibrate button into that modal.
+translates note names throughout the app and a settings modal to toggle it.
 
 Design spec: `plans/product-specs/active/2026-02-15-solfege-and-settings-spec.md`
 
@@ -18,14 +17,14 @@ letter-name — solfège is a display-only transformation.
 
 ```javascript
 const SOLFEGE_MAP = {
-  C: 'do', D: 're', E: 'mi', F: 'fa', G: 'sol', A: 'la', B: 'si'
+  C: 'Do', D: 'Re', E: 'Mi', F: 'Fa', G: 'Sol', A: 'La', B: 'Si'
 };
 
 let _useSolfege = false;
 function setUseSolfege(v) { _useSolfege = v; }
 function getUseSolfege() { return _useSolfege; }
 
-// "C#" → "do#", "Db" → "re♭", "C" → "do"
+// "C#" → "Do#", "Db" → "Re♭", "C" → "Do"
 function displayNote(name) {
   if (!_useSolfege || !name) return name;
   const letter = name[0].toUpperCase();
@@ -35,7 +34,7 @@ function displayNote(name) {
   return syl + acc;
 }
 
-// "C#/Db" → "do#/re♭"
+// "C#/Db" → "Do#/Re♭"
 function displayNotePair(displayName) {
   if (!_useSolfege) return displayName;
   if (!displayName.includes('/')) return displayNote(displayName);
@@ -51,6 +50,7 @@ Load on module evaluation (before any mode initializes).
 
 New `createSolfegeKeyHandler(submitAnswer, allowAccidentals)`:
 - Buffers 2-char solfège syllables: do→C, re→D, mi→E, fa→F, so→G, la→A, si→B
+- Case-insensitive input (accepts Do, DO, do, etc.)
 - After syllable resolves, waits 400ms for `#`/`b` accidental (same as letter handler)
 - All syllables unambiguous after 2 chars ("so"→G, "si"→B)
 
@@ -88,45 +88,38 @@ in their own stats render callbacks.
 ### Settings modal (new file: settings.js)
 
 ```
-createSettingsModal({ onNotationChange, onRecalibrate })
+createSettingsModal({ onNotationChange })
 ```
 
 - Creates modal DOM (overlay + card) and appends to body
-- Notation toggle: two-button group (A B C / do re mi)
-- Recalibrate button: disabled when no baseline exists
+- Notation toggle: two-button group (A B C / Do Re Mi)
 - Open/close: gear icon click opens, × or backdrop closes
-- Only opens from idle state (checks for `.phase-active` / `.phase-calibration`)
-- Returns `{ open, close, updateRecalibrateState }`
+- Returns `{ open, close }`
 
 ### Top bar changes
 
-Replace version number with gear icon (⚙ or SVG). Gear click opens settings
-modal. Version number optionally moves inside the modal footer.
+Add gear icon to the right of the version number. Gear click opens settings
+modal. Gear icon hidden during active quiz/calibration (CSS-driven via
+phase classes on mode-screen).
 
-### Recalibrate button removal
+### Calibration unchanged
 
-Remove `.recalibrate-btn` from `modeScreen()` scaffold. Remove the wiring in
-quiz-engine.js. The settings modal's recalibrate button calls the current
-mode's engine.recalibrate() via a callback wired in app.js.
-
-### Navigation extension
-
-Add `getCurrentModeId()` to the navigation return object. The settings modal
-uses this to determine which engine to recalibrate.
+Recalibrate button stays per-mode in the idle screen. No changes to
+calibration wiring in quiz-engine.js or modeScreen() scaffold.
 
 ## Implementation Steps
 
 ### 1. music-data.js — solfège data layer
-- Add `SOLFEGE_MAP`, `displayNote()`, `displayNotePair()`
+- Add `SOLFEGE_MAP` (capitalized: Do, Re, Mi, ...)
+- Add `displayNote()`, `displayNotePair()`
 - Add `getUseSolfege()`, `setUseSolfege(v)` with localStorage persistence
 - Load notation preference on module evaluation
 - Add tests for translation functions
 
 ### 2. quiz-engine.js — keyboard handlers
-- Add `createSolfegeKeyHandler(submitAnswer, allowAccidentals)`
+- Add `createSolfegeKeyHandler(submitAnswer, allowAccidentals)` (case-insensitive)
 - Add `createAdaptiveKeyHandler(submitAnswer, allowAccidentals)` wrapper
 - Add `refreshNoteButtonLabels(container)` utility
-- Remove `recalibrateBtn` wiring from `createQuizEngine`
 - Add tests for solfège key handler
 
 ### 3. stats-display.js — row label translation
@@ -138,7 +131,7 @@ uses this to determine which engine to recalibrate.
 ### 5. quiz-fretboard.js — fretboard display
 - `showNoteText()`: wrap `getNoteAtPosition()` result in `displayNote()`
 - Switch `createNoteKeyHandler` → `createAdaptiveKeyHandler`
-- In `init()`: refresh button labels on activate (call `refreshNoteButtonLabels`)
+- In `activate()`: refresh button labels (call `refreshNoteButtonLabels`)
 
 ### 6. quiz-speed-tap.js — note display
 - `showNoteText()`: wrap in `displayNote()`
@@ -184,42 +177,33 @@ uses this to determine which engine to recalibrate.
 - Switch to `createAdaptiveKeyHandler`
 
 ### 13. settings.js — new file
-- `createSettingsModal({ onNotationChange, onRecalibrate })`
-- DOM creation: overlay, card, notation toggle, recalibrate button, close button
+- `createSettingsModal({ onNotationChange })`
+- DOM creation: overlay, card, notation toggle, close button
 - localStorage read/write for notation
-- Idle-state check before opening
+- Open/close logic
 
 ### 14. styles.css — modal + gear styles
 - `.settings-overlay` — fixed, dimmed backdrop
 - `.settings-modal` — centered card
 - `.settings-toggle` — two-option notation switch
-- `.gear-btn` — top-bar gear icon
+- `.gear-btn` — top-bar gear icon, hidden during active quiz
 
-### 15. html-helpers.ts — template changes
-- Remove `.recalibrate-btn` from `modeScreen()`
-- Add `settingsModalHTML()` helper (or inline in template)
-
-### 16. main.ts + build.ts — wiring
-- Replace version `<div>` with gear icon `<button>`
+### 15. main.ts + build.ts — wiring
+- Add gear icon button after version number in top bar
 - Add settings modal HTML to template
 - Add `readFile('./src/settings.js')` to script concatenation (before navigation.js)
 - Both files stay in sync
 
-### 17. navigation.js — expose current mode
-- Add `getCurrentModeId()` to return object
-
-### 18. app.js — wire everything together
+### 16. app.js — wire everything together
 - Create settings modal with callbacks
 - `onNotationChange`: call `refreshNoteButtonLabels()` on current mode container,
   refresh stats display if showing
-- `onRecalibrate`: call current mode's engine.recalibrate()
-- Store engine references by mode ID for settings access
 
-### 19. Tests
+### 17. Tests
 - music-data: `displayNote`, `displayNotePair`, `setUseSolfege`
-- quiz-engine: solfège key handler buffer, disambiguation, accidentals
+- quiz-engine: solfège key handler buffer, disambiguation, accidentals, case insensitivity
 
-### 20. Version bump
+### 18. Version bump
 - v3.10 → v3.11
 
 ## Files Modified
@@ -227,7 +211,7 @@ uses this to determine which engine to recalibrate.
 | File | Changes |
 |------|---------|
 | `src/music-data.js` | Solfège map, translation fns, notation state |
-| `src/quiz-engine.js` | Solfège key handler, adaptive wrapper, remove recalibrate wiring, `refreshNoteButtonLabels` |
+| `src/quiz-engine.js` | Solfège key handler, adaptive wrapper, `refreshNoteButtonLabels` |
 | `src/stats-display.js` | Row label translation in `renderStatsGrid` |
 | `src/quiz-fretboard-state.js` | `displayNote` in correctAnswer |
 | `src/quiz-fretboard.js` | `displayNote` in showNoteText, adaptive key handler, label refresh |
@@ -241,9 +225,7 @@ uses this to determine which engine to recalibrate.
 | `src/quiz-chord-spelling.js` | `displayNote` in chord names, tone display |
 | `src/settings.js` | **New** — settings modal logic |
 | `src/styles.css` | Modal/gear styles |
-| `src/html-helpers.ts` | Remove recalibrate btn, add settings HTML |
-| `src/navigation.js` | Expose `getCurrentModeId()` |
-| `src/app.js` | Wire settings modal, engine map |
+| `src/app.js` | Wire settings modal |
 | `main.ts` | Gear icon, settings HTML, settings.js in build |
 | `build.ts` | Sync with main.ts |
 
@@ -251,9 +233,8 @@ uses this to determine which engine to recalibrate.
 
 - Unit tests: `displayNote`, `displayNotePair`, solfège key handler
 - Manual: toggle notation in settings → verify all modes show solfège
-- Manual: type solfège abbreviations → verify answer submission
-- Manual: recalibrate from settings modal → verify calibration flow
-- Manual: settings gear hidden/disabled during active quiz
+- Manual: type solfège abbreviations (any case) → verify answer submission
+- Manual: settings gear hidden during active quiz
 
 ## Rebase notes
 
