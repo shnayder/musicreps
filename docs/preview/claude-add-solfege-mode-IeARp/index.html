@@ -7182,29 +7182,32 @@ try {
 } catch (_) {}
 
 /**
- * Translate a letter-name note to solfège if solfège mode is active.
- * "C#" → "Do♯", "Db" → "Re♭", "C" → "Do". Preserves case: lowercase
- * input produces lowercase solfège (e.g., "e" → "mi" for high-E string).
- * Returns input unchanged if solfège is off or the name doesn't start
- * with a letter.
+ * Format a note name for display. Always replaces ASCII accidentals with
+ * Unicode symbols (# → ♯, b → ♭). In solfège mode, also translates the
+ * letter to a solfège syllable. Preserves case: lowercase input produces
+ * lowercase output (e.g., "e" → "mi" for high-E string).
  */
 function displayNote(name) {
-  if (!_useSolfege || !name) return name;
+  if (!name) return name;
   const letter = name[0].toUpperCase();
-  const syl = SOLFEGE_MAP[letter];
-  if (!syl) return name;
   const acc = name.slice(1).replace(/#/g, '\u266F').replace(/b/g, '\u266D');
+  if (!_useSolfege) {
+    return name[0] + acc;
+  }
+  const syl = SOLFEGE_MAP[letter];
+  if (!syl) return name[0] + acc;
   // Preserve case: lowercase input letter → lowercase solfège
   const out = name[0] === name[0].toLowerCase() ? syl.toLowerCase() : syl;
   return out + acc;
 }
 
 /**
- * Translate a display-name pair like "C#/Db" → "Do#/Re♭".
- * Handles both single names and slash-separated pairs.
+ * Format a display-name pair like "C#/Db" → "C♯/D♭" (letter mode)
+ * or "Do♯/Re♭" (solfège mode). Handles both single names and
+ * slash-separated pairs.
  */
 function displayNotePair(displayName) {
-  if (!_useSolfege) return displayName;
+  if (!displayName) return displayName;
   if (!displayName.includes('/')) return displayNote(displayName);
   const [s, f] = displayName.split('/');
   return displayNote(s) + '/' + displayNote(f);
