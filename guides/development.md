@@ -66,9 +66,8 @@ A version number is displayed top-right (`<div class="version">`). **Always bump
 the version with every change** — even tiny bug fixes or label tweaks. The user
 needs to confirm they're testing the latest build; a stale version number makes
 that impossible. The version appears in both `main.ts` and `build.ts` — update
-both. Use semver-style patch bumps for normal changes (v3.16 → v3.16.1 →
-v3.16.2), increment the minor version for new features (v3.16.x → v3.17), and
-the major version for large overhauls (v3.x → v4.0).
+both. Bump by 1 for normal changes (v3.13 → v3.14 → v3.15) and bump the major
+version for large overhauls (v3.x → v4.0).
 
 ## Branching
 
