@@ -35,12 +35,12 @@ export function pianoNoteButtons(): string {
       </div>`;
 }
 
-/** 12-note answer button grid (C, C#/Db, D, ... B). */
+/** 12-note answer button grid (C, C#, D, ... B). */
 export function noteAnswerButtons(opts?: { hidden?: boolean }): string {
   const notes: [string, string][] = [
-    ["C", "C"], ["C#", "C#/Db"], ["D", "D"], ["D#", "D#/Eb"],
-    ["E", "E"], ["F", "F"], ["F#", "F#/Gb"], ["G", "G"],
-    ["G#", "G#/Ab"], ["A", "A"], ["A#", "A#/Bb"], ["B", "B"],
+    ["C", "C"], ["C#", "C#"], ["D", "D"], ["D#", "D#"],
+    ["E", "E"], ["F", "F"], ["F#", "F#"], ["G", "G"],
+    ["G#", "G#"], ["A", "A"], ["A#", "A#"], ["B", "B"],
   ];
   const cls = opts?.hidden ? " answer-group-hidden" : "";
   return `<div class="answer-buttons answer-buttons-notes${cls}">\n`

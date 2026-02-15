@@ -12,6 +12,10 @@ npx tsx build.ts                                    # Build (Node)
 npx tsx --test src/*_test.ts                        # Run tests
 ```
 
+**Always bump the version** (`<div class="version">` in both `main.ts` and
+`build.ts`) with every change — even tiny fixes. Increment the minor version
+for normal changes (v3.11 → v3.12), major version after large changes.
+
 **Both `main.ts` and `build.ts` use the same HTML template via shared helpers
 in `src/html-helpers.ts`.** Mode-specific content is passed as arguments to
 `modeScreen()`. Only the nav/header chrome and mode-specific quiz-area content

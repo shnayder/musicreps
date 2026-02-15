@@ -3,10 +3,12 @@
 // ES module — exports stripped for browser inlining.
 
 export const DEFAULT_DEADLINE_CONFIG = {
-  decreaseFactor: 0.85,       // multiply deadline after correct answer
+  decreaseFactor: 0.85,       // multiply deadline after correct answer (staircase)
   increaseFactor: 1.4,        // multiply deadline after incorrect/timeout
   minDeadlineMargin: 1.3,     // multiply minTime by this for deadline floor
   ewmaMultiplier: 2.0,        // cold start: ewma * this for items with history
+  headroomMultiplier: 1.5,    // response-time anchored: responseTime * this
+  maxDropFactor: 0.5,         // max single-step decrease (never drop below this × current)
 };
 
 /**
@@ -26,15 +28,36 @@ export function computeInitialDeadline(ewma, adaptiveCfg, dlCfg) {
 
 /**
  * Adjust a deadline after an outcome.
- * - Correct: decrease (push harder)
- * - Incorrect/timeout: increase (ease off)
+ * - Correct: take the more aggressive of staircase (×0.85) and response-time
+ *   anchored (responseTime × 1.5), but never drop more than 50% in one step.
+ * - Incorrect/timeout: increase (ease off) by ×1.4.
  * Clamped to [minDeadline, maxDeadline].
+ *
+ * @param {number} currentDeadline
+ * @param {boolean} correct
+ * @param {object} adaptiveCfg
+ * @param {object} dlCfg
+ * @param {number|null} [responseTime] - actual response time in ms (correct answers only)
  */
-export function adjustDeadline(currentDeadline, correct, adaptiveCfg, dlCfg) {
+export function adjustDeadline(currentDeadline, correct, adaptiveCfg, dlCfg, responseTime) {
   const minDeadline = Math.round(adaptiveCfg.minTime * dlCfg.minDeadlineMargin);
   const maxDeadline = adaptiveCfg.maxResponseTime;
-  const factor = correct ? dlCfg.decreaseFactor : dlCfg.increaseFactor;
-  const adjusted = Math.round(currentDeadline * factor);
+
+  if (!correct) {
+    const adjusted = Math.round(currentDeadline * dlCfg.increaseFactor);
+    return Math.max(minDeadline, Math.min(maxDeadline, adjusted));
+  }
+
+  // Correct answer: use the more aggressive of staircase and response-anchored
+  const staircase = Math.round(currentDeadline * dlCfg.decreaseFactor);
+  let target = staircase;
+  if (responseTime != null && responseTime > 0) {
+    const anchored = Math.round(responseTime * dlCfg.headroomMultiplier);
+    target = Math.min(staircase, anchored);
+  }
+  // Cap max drop per step
+  const floor = Math.round(currentDeadline * dlCfg.maxDropFactor);
+  const adjusted = Math.max(target, floor);
   return Math.max(minDeadline, Math.min(maxDeadline, adjusted));
 }
 
@@ -76,12 +99,13 @@ export function createDeadlineTracker(storage, adaptiveCfg, dlCfg = DEFAULT_DEAD
    * @param {string} itemId
    * @param {boolean} correct
    * @param {number} [responseCount=1] - Expected number of physical responses
+   * @param {number|null} [responseTime] - actual response time in ms
    * @returns {number} the new deadline
    */
-  function recordOutcome(itemId, correct, responseCount = 1) {
+  function recordOutcome(itemId, correct, responseCount = 1, responseTime = null) {
     const current = storage.getDeadline(itemId);
     if (current == null) return; // shouldn't happen — getDeadline was called first
-    const newDeadline = adjustDeadline(current, correct, scaledAdaptiveCfg(responseCount), dlCfg);
+    const newDeadline = adjustDeadline(current, correct, scaledAdaptiveCfg(responseCount), dlCfg, responseTime);
     storage.saveDeadline(itemId, newDeadline);
     return newDeadline;
   }

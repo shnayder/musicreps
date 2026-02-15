@@ -61,6 +61,13 @@ export function pickAccidentalName(displayName, useFlats) {
   return useFlats ? flat : sharp;
 }
 
+/** Randomly pick one enharmonic spelling from a displayName like 'C#/Db'. */
+export function pickRandomAccidental(displayName) {
+  if (!displayName.includes('/')) return displayName;
+  const [sharp, flat] = displayName.split('/');
+  return Math.random() < 0.5 ? sharp : flat;
+}
+
 /** Check if a user input matches any accepted answer for a note. */
 export function noteMatchesInput(note, input) {
   return note.accepts.includes(input.toLowerCase());

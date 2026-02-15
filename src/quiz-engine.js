@@ -217,7 +217,7 @@ export function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => 
 export function refreshNoteButtonLabels(container) {
   container.querySelectorAll('.answer-btn-note').forEach(function(btn) {
     var note = NOTES.find(function(n) { return n.name === btn.dataset.note; });
-    if (note) btn.textContent = displayNotePair(note.displayName);
+    if (note) btn.textContent = displayNote(note.name);
   });
   container.querySelectorAll('.note-btn').forEach(function(btn) {
     var noteName = btn.dataset.note;
@@ -430,6 +430,7 @@ export function createQuizEngine(mode, container) {
 
   // DOM references (scoped to container)
   const els = {
+    countdownContainer: container.querySelector('.countdown-container'),
     countdownBar: container.querySelector('.countdown-bar'),
     feedback: container.querySelector('.feedback'),
     timeDisplay: container.querySelector('.time-display'),
@@ -598,6 +599,9 @@ export function createQuizEngine(mode, container) {
       els.countdownBar.classList.remove('expired');
       if (!isActive) els.countdownBar.style.width = '0%';
     }
+    if (els.countdownContainer && !isActive) {
+      els.countdownContainer.style.width = '';
+    }
     if (els.deadlineDisplay && !isActive) {
       els.deadlineDisplay.textContent = '';
     }
@@ -656,6 +660,13 @@ export function createQuizEngine(mode, container) {
     if (countdownInterval) clearInterval(countdownInterval);
 
     const targetTime = currentDeadline || selector.getConfig().automaticityTarget;
+
+    // Scale bar length proportional to deadline so bar speed is constant
+    if (els.countdownContainer) {
+      const maxTime = selector.getConfig().maxResponseTime;
+      const width = Math.max(60, Math.round(240 * Math.min(targetTime, maxTime) / maxTime));
+      els.countdownContainer.style.width = width + 'px';
+    }
     let expired = false;
     const startTime = Date.now();
     countdownInterval = setInterval(() => {
@@ -833,7 +844,7 @@ export function createQuizEngine(mode, container) {
     const result = mode.checkAnswer(state.currentItemId, input);
     const rc = getResponseCount(state.currentItemId);
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
-    deadlineTracker.recordOutcome(state.currentItemId, result.correct, rc);
+    deadlineTracker.recordOutcome(state.currentItemId, result.correct, rc, responseTime);
 
     state = engineSubmitAnswer(state, result.correct, result.correctAnswer);
 

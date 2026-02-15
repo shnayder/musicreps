@@ -148,7 +148,7 @@ export function renderStatsGrid(selector, colLabels, getItemId, statsMode, conta
 
   for (var n = 0; n < noteList.length; n++) {
     var note = noteList[n];
-    html += '<tr><td class="stats-grid-row-label">' + displayNotePair(note.displayName || note.name) + '</td>';
+    html += '<tr><td class="stats-grid-row-label">' + displayNote(note.name || note.displayName) + '</td>';
     for (var i = 0; i < colLabels.length; i++) {
       var itemId = getItemId(note.name, i);
       var color = Array.isArray(itemId)

@@ -22,11 +22,12 @@ function createNoteSemitonesMode() {
   }
 
   let currentItem = null;
+  let currentAccidentalChoice = null;
 
   // Build row definitions for the stats table
   function getTableRows() {
     return NOTES.map(note => ({
-      label: displayNotePair(note.displayName),
+      label: displayNote(note.name),
       sublabel: String(note.num),
       _colHeader: 'Note',
       fwdItemId: note.name + ':fwd',
@@ -58,9 +59,10 @@ function createNoteSemitonesMode() {
       const noteButtons = container.querySelector('.answer-buttons-notes');
       const numButtons = container.querySelector('.answer-buttons-numbers');
 
+      currentAccidentalChoice = pickRandomAccidental(currentItem.note.displayName);
       if (currentItem.dir === 'fwd') {
         // Show note, answer is number 0-11
-        prompt.textContent = displayNotePair(currentItem.note.displayName) + ' = ?';
+        prompt.textContent = displayNote(currentAccidentalChoice) + ' = ?';
         noteButtons.classList.add('answer-group-hidden');
         numButtons.classList.remove('answer-group-hidden');
       } else {
@@ -77,7 +79,7 @@ function createNoteSemitonesMode() {
         return { correct, correctAnswer: String(currentItem.note.num) };
       } else {
         const correct = noteMatchesInput(currentItem.note, input);
-        return { correct, correctAnswer: displayNotePair(currentItem.note.displayName) };
+        return { correct, correctAnswer: displayNote(currentAccidentalChoice) };
       }
     },
 

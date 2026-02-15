@@ -30,6 +30,7 @@ import {
   spelledNoteMatchesInput,
   spelledNoteMatchesSemitone,
   pickAccidentalName,
+  pickRandomAccidental,
   SOLFEGE_MAP,
   getUseSolfege,
   setUseSolfege,
@@ -484,6 +485,30 @@ describe("pickAccidentalName", () => {
     assert.equal(pickAccidentalName("F#/Gb", true), "Gb");
     assert.equal(pickAccidentalName("G#/Ab", true), "Ab");
     assert.equal(pickAccidentalName("A#/Bb", true), "Bb");
+  });
+});
+
+describe("pickRandomAccidental", () => {
+  it("returns natural notes unchanged", () => {
+    assert.equal(pickRandomAccidental("C"), "C");
+    assert.equal(pickRandomAccidental("D"), "D");
+    assert.equal(pickRandomAccidental("G"), "G");
+  });
+
+  it("returns either sharp or flat for enharmonic pairs", () => {
+    const valid = new Set(["C#", "Db"]);
+    for (let i = 0; i < 20; i++) {
+      assert.ok(valid.has(pickRandomAccidental("C#/Db")));
+    }
+  });
+
+  it("returns both forms over many trials", () => {
+    const results = new Set();
+    for (let i = 0; i < 100; i++) {
+      results.add(pickRandomAccidental("F#/Gb"));
+    }
+    assert.ok(results.has("F#"), "should sometimes return sharp");
+    assert.ok(results.has("Gb"), "should sometimes return flat");
   });
 });
 

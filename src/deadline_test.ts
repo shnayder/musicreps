@@ -67,6 +67,38 @@ describe("adjustDeadline", () => {
     const result = adjustDeadline(500, true, DEFAULT_CONFIG, dlCfg);
     assert.equal(result, minDeadline);
   });
+
+  it("uses response-time anchor when much faster than deadline", () => {
+    // deadline=9000, response=2000: anchored=3000, staircase=7650
+    // target=3000, floor=4500 → capped at 4500
+    const result = adjustDeadline(9000, true, DEFAULT_CONFIG, dlCfg, 2000);
+    assert.equal(result, 4500);
+  });
+
+  it("staircase wins when response is close to deadline", () => {
+    // deadline=3000, response=2500: anchored=3750, staircase=2550
+    // target=2550, floor=1500 → 2550
+    const result = adjustDeadline(3000, true, DEFAULT_CONFIG, dlCfg, 2500);
+    assert.equal(result, 2550);
+  });
+
+  it("max drop cap limits aggressive response-anchored decrease", () => {
+    // deadline=6000, response=1500: anchored=2250, staircase=5100
+    // target=2250, floor=3000 → capped at 3000
+    const result = adjustDeadline(6000, true, DEFAULT_CONFIG, dlCfg, 1500);
+    assert.equal(result, 3000);
+  });
+
+  it("ignores responseTime for incorrect answers", () => {
+    // Wrong answers always use increaseFactor regardless of responseTime
+    const result = adjustDeadline(3000, false, DEFAULT_CONFIG, dlCfg, 1000);
+    assert.equal(result, Math.round(3000 * 1.4));
+  });
+
+  it("falls back to staircase when responseTime is null", () => {
+    const result = adjustDeadline(9000, true, DEFAULT_CONFIG, dlCfg, null);
+    assert.equal(result, Math.round(9000 * 0.85));
+  });
 });
 
 describe("createDeadlineTracker", () => {
@@ -163,6 +195,17 @@ describe("createDeadlineTracker", () => {
     tracker.recordOutcome("item1", true, 3);
     const after = tracker.getDeadline("item1", null, 3);
     assert.equal(after, scaledMin);
+  });
+
+  it("recordOutcome uses response-time anchor for fast correct answers", () => {
+    const storage = createMemoryStorage();
+    const tracker = createDeadlineTracker(storage, DEFAULT_CONFIG);
+    tracker.getDeadline("item1", null); // 9000 (maxResponseTime)
+    // Fast response: 2000ms with 9000ms deadline
+    // anchored=3000, staircase=7650, target=3000, floor=4500 → 4500
+    tracker.recordOutcome("item1", true, 1, 2000);
+    const after = tracker.getDeadline("item1", null);
+    assert.equal(after, 4500);
   });
 
   it("updateConfig changes the adaptive config reference", () => {

@@ -30,7 +30,30 @@ Descending chromatic movement uses flats: A → **Ab** → G.
 
 *Applies to:* Semitone Math, Interval Math.
 
-### 5. Visual Readability
+### 5. Random Enharmonic Training
+When no harmonic, key, or directional context applies, randomly show either
+enharmonic spelling per question to train recognition of both. The user
+should be able to deal with either form.
+
+*Applies to:* Note ↔ Semitones (questions, correct answer feedback),
+Speed Tap (prompts).
+
+*Mechanism:* `pickRandomAccidental(displayName)` — 50/50 sharp or flat per
+question presentation.
+
+### 6. Sharp Default for Reference Displays
+Stats tables, heatmap row labels, answer button default labels, and other
+reference/static displays always use the sharp form for consistency and
+scannability. These are not quiz interactions, so training both forms is
+not relevant.
+
+*Applies to:* all stats grids (`renderStatsGrid` row labels), stats tables,
+Speed Tap stats headers, answer button idle labels (`refreshNoteButtonLabels`),
+HTML template button labels.
+
+*Mechanism:* `displayNote(note.name)` — the canonical `name` field uses sharps.
+
+### 7. Visual Readability
 Choose the simplest, most legible spelling. Avoid double-sharps (##) and
 double-flats (bb) unless the harmonic context requires them.
 
@@ -41,8 +64,8 @@ accidentals for the standard 12-note chromatic set).
 
 | Mode | Rule(s) | Mechanism |
 |------|---------|-----------|
-| **Fretboard** | — (no direction/key/chord context) | Canonical sharp form; accepts both sharp and flat input |
-| **Note ↔ Semitones** | — (no direction) | Shows dual name (C#/Db); accepts both |
+| **Fretboard** | Sharp default (rule 6) | `displayNote()` on canonical name; accepts both sharp and flat input |
+| **Note ↔ Semitones** | Random (rule 5) | `pickRandomAccidental()` in questions and correct answers; accepts both |
 | **Interval ↔ Semitones** | — (no notes involved) | N/A |
 | **Semitone Math** | Directional (rule 4) | `useFlats = (op === '-')` — sharps ascending, flats descending |
 | **Interval Math** | Directional (rule 4) | Same as Semitone Math |
@@ -50,6 +73,8 @@ accidentals for the standard 12-note chromatic set).
 | **Scale Degrees** | Harmonic + key (rules 1–2) | `getScaleDegreeNote()` letter-name arithmetic |
 | **Diatonic Chords** | Harmonic + key (rules 1–2) | `getScaleDegreeNote()` letter-name arithmetic |
 | **Chord Spelling** | Harmonic (rule 1) | `getChordTones()` letter-name arithmetic |
+| **Speed Tap** | Random (rule 5) | `pickRandomAccidental()` in prompts |
+| **All stats/buttons** | Sharp default (rule 6) | `displayNote(note.name)` for labels and buttons |
 
 ## Why directional convention works for math modes
 

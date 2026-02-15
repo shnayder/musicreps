@@ -118,6 +118,11 @@ body {
   padding: var(--space-2) var(--space-3);
   margin: 0;
   line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--color-topbar-text);
   border-radius: 6px;
   transition: background 0.15s ease;
@@ -140,9 +145,9 @@ body {
 .gear-btn {
   background: none;
   border: none;
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
   cursor: pointer;
-  padding: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   margin: 0;
   line-height: 1;
   min-width: 44px;
@@ -163,7 +168,7 @@ body {
   opacity: 0.5;
 }
 .gear-btn.hidden {
-  display: none;
+  visibility: hidden;
 }
 
 /* --- Settings modal --- */
@@ -619,7 +624,9 @@ button {
   align-items: center;
   gap: var(--space-3);
   width: 240px;
+  max-width: 90vw;
   margin: var(--space-5) auto;
+  transition: width 0.3s ease;
 }
 .countdown-track {
   flex: 1;
@@ -1199,7 +1206,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.12</div>
+    <div class="version">v3.13</div>
     <button class="gear-btn" type="button" aria-label="Settings">⚙</button>
   </div>
 
@@ -5872,16 +5879,16 @@ button {
     </div>
       <div class="answer-buttons answer-buttons-notes answer-group-hidden">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
         <button class="answer-btn answer-btn-note" data-note="E">E</button>
         <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
         <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
         <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
@@ -5925,16 +5932,16 @@ button {
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
         <button class="answer-btn answer-btn-note" data-note="E">E</button>
         <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
         <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
         <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="answer-buttons answer-buttons-numbers">
@@ -6062,16 +6069,16 @@ button {
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
         <button class="answer-btn answer-btn-note" data-note="E">E</button>
         <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
         <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
         <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
@@ -6118,16 +6125,16 @@ button {
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
         <button class="answer-btn answer-btn-note" data-note="E">E</button>
         <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
         <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
         <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
@@ -6191,16 +6198,16 @@ button {
       </div>
       <div class="answer-buttons answer-buttons-notes answer-group-hidden">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
         <button class="answer-btn answer-btn-note" data-note="E">E</button>
         <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
         <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
         <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
@@ -6247,16 +6254,16 @@ button {
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
         <button class="answer-btn answer-btn-note" data-note="E">E</button>
         <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
         <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
         <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="answer-buttons answer-buttons-degrees answer-group-hidden">
@@ -6312,16 +6319,16 @@ button {
       <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
         <button class="answer-btn answer-btn-note" data-note="E">E</button>
         <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
         <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
         <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="answer-buttons answer-buttons-numerals answer-group-hidden">
@@ -6378,16 +6385,16 @@ button {
       <div class="chord-slots"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#/Eb</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
         <button class="answer-btn answer-btn-note" data-note="E">E</button>
         <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#/Gb</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
         <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#/Ab</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
         <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
@@ -6954,6 +6961,13 @@ function pickAccidentalName(displayName, useFlats) {
   return useFlats ? flat : sharp;
 }
 
+/** Randomly pick one enharmonic spelling from a displayName like 'C#/Db'. */
+function pickRandomAccidental(displayName) {
+  if (!displayName.includes('/')) return displayName;
+  const [sharp, flat] = displayName.split('/');
+  return Math.random() < 0.5 ? sharp : flat;
+}
+
 /** Check if a user input matches any accepted answer for a note. */
 function noteMatchesInput(note, input) {
   return note.accepts.includes(input.toLowerCase());
@@ -7470,10 +7484,12 @@ function engineRouteKey(state, key) {
 // ES module — exports stripped for browser inlining.
 
 const DEFAULT_DEADLINE_CONFIG = {
-  decreaseFactor: 0.85,       // multiply deadline after correct answer
+  decreaseFactor: 0.85,       // multiply deadline after correct answer (staircase)
   increaseFactor: 1.4,        // multiply deadline after incorrect/timeout
   minDeadlineMargin: 1.3,     // multiply minTime by this for deadline floor
   ewmaMultiplier: 2.0,        // cold start: ewma * this for items with history
+  headroomMultiplier: 1.5,    // response-time anchored: responseTime * this
+  maxDropFactor: 0.5,         // max single-step decrease (never drop below this × current)
 };
 
 /**
@@ -7493,15 +7509,36 @@ function computeInitialDeadline(ewma, adaptiveCfg, dlCfg) {
 
 /**
  * Adjust a deadline after an outcome.
- * - Correct: decrease (push harder)
- * - Incorrect/timeout: increase (ease off)
+ * - Correct: take the more aggressive of staircase (×0.85) and response-time
+ *   anchored (responseTime × 1.5), but never drop more than 50% in one step.
+ * - Incorrect/timeout: increase (ease off) by ×1.4.
  * Clamped to [minDeadline, maxDeadline].
+ *
+ * @param {number} currentDeadline
+ * @param {boolean} correct
+ * @param {object} adaptiveCfg
+ * @param {object} dlCfg
+ * @param {number|null} [responseTime] - actual response time in ms (correct answers only)
  */
-function adjustDeadline(currentDeadline, correct, adaptiveCfg, dlCfg) {
+function adjustDeadline(currentDeadline, correct, adaptiveCfg, dlCfg, responseTime) {
   const minDeadline = Math.round(adaptiveCfg.minTime * dlCfg.minDeadlineMargin);
   const maxDeadline = adaptiveCfg.maxResponseTime;
-  const factor = correct ? dlCfg.decreaseFactor : dlCfg.increaseFactor;
-  const adjusted = Math.round(currentDeadline * factor);
+
+  if (!correct) {
+    const adjusted = Math.round(currentDeadline * dlCfg.increaseFactor);
+    return Math.max(minDeadline, Math.min(maxDeadline, adjusted));
+  }
+
+  // Correct answer: use the more aggressive of staircase and response-anchored
+  const staircase = Math.round(currentDeadline * dlCfg.decreaseFactor);
+  let target = staircase;
+  if (responseTime != null && responseTime > 0) {
+    const anchored = Math.round(responseTime * dlCfg.headroomMultiplier);
+    target = Math.min(staircase, anchored);
+  }
+  // Cap max drop per step
+  const floor = Math.round(currentDeadline * dlCfg.maxDropFactor);
+  const adjusted = Math.max(target, floor);
   return Math.max(minDeadline, Math.min(maxDeadline, adjusted));
 }
 
@@ -7543,12 +7580,13 @@ function createDeadlineTracker(storage, adaptiveCfg, dlCfg = DEFAULT_DEADLINE_CO
    * @param {string} itemId
    * @param {boolean} correct
    * @param {number} [responseCount=1] - Expected number of physical responses
+   * @param {number|null} [responseTime] - actual response time in ms
    * @returns {number} the new deadline
    */
-  function recordOutcome(itemId, correct, responseCount = 1) {
+  function recordOutcome(itemId, correct, responseCount = 1, responseTime = null) {
     const current = storage.getDeadline(itemId);
     if (current == null) return; // shouldn't happen — getDeadline was called first
-    const newDeadline = adjustDeadline(current, correct, scaledAdaptiveCfg(responseCount), dlCfg);
+    const newDeadline = adjustDeadline(current, correct, scaledAdaptiveCfg(responseCount), dlCfg, responseTime);
     storage.saveDeadline(itemId, newDeadline);
     return newDeadline;
   }
@@ -7782,7 +7820,7 @@ function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true) {
 function refreshNoteButtonLabels(container) {
   container.querySelectorAll('.answer-btn-note').forEach(function(btn) {
     var note = NOTES.find(function(n) { return n.name === btn.dataset.note; });
-    if (note) btn.textContent = displayNotePair(note.displayName);
+    if (note) btn.textContent = displayNote(note.name);
   });
   container.querySelectorAll('.note-btn').forEach(function(btn) {
     var noteName = btn.dataset.note;
@@ -7995,6 +8033,7 @@ function createQuizEngine(mode, container) {
 
   // DOM references (scoped to container)
   const els = {
+    countdownContainer: container.querySelector('.countdown-container'),
     countdownBar: container.querySelector('.countdown-bar'),
     feedback: container.querySelector('.feedback'),
     timeDisplay: container.querySelector('.time-display'),
@@ -8163,6 +8202,9 @@ function createQuizEngine(mode, container) {
       els.countdownBar.classList.remove('expired');
       if (!isActive) els.countdownBar.style.width = '0%';
     }
+    if (els.countdownContainer && !isActive) {
+      els.countdownContainer.style.width = '';
+    }
     if (els.deadlineDisplay && !isActive) {
       els.deadlineDisplay.textContent = '';
     }
@@ -8221,6 +8263,13 @@ function createQuizEngine(mode, container) {
     if (countdownInterval) clearInterval(countdownInterval);
 
     const targetTime = currentDeadline || selector.getConfig().automaticityTarget;
+
+    // Scale bar length proportional to deadline so bar speed is constant
+    if (els.countdownContainer) {
+      const maxTime = selector.getConfig().maxResponseTime;
+      const width = Math.max(60, Math.round(240 * Math.min(targetTime, maxTime) / maxTime));
+      els.countdownContainer.style.width = width + 'px';
+    }
     let expired = false;
     const startTime = Date.now();
     countdownInterval = setInterval(() => {
@@ -8398,7 +8447,7 @@ function createQuizEngine(mode, container) {
     const result = mode.checkAnswer(state.currentItemId, input);
     const rc = getResponseCount(state.currentItemId);
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
-    deadlineTracker.recordOutcome(state.currentItemId, result.correct, rc);
+    deadlineTracker.recordOutcome(state.currentItemId, result.correct, rc, responseTime);
 
     state = engineSubmitAnswer(state, result.correct, result.correctAnswer);
 
@@ -8715,7 +8764,7 @@ function renderStatsGrid(selector, colLabels, getItemId, statsMode, containerEl,
 
   for (var n = 0; n < noteList.length; n++) {
     var note = noteList[n];
-    html += '<tr><td class="stats-grid-row-label">' + displayNotePair(note.displayName || note.name) + '</td>';
+    html += '<tr><td class="stats-grid-row-label">' + displayNote(note.name || note.displayName) + '</td>';
     for (var i = 0; i < colLabels.length; i++) {
       var itemId = getItemId(note.name, i);
       var color = Array.isArray(itemId)
@@ -9377,7 +9426,7 @@ function createSpeedTapMode() {
   const statsControls = createStatsControls(container, (mode, el) => {
     let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
     for (const note of NOTES) {
-      html += '<th>' + displayNotePair(note.displayName) + '</th>';
+      html += '<th>' + displayNote(note.name) + '</th>';
     }
     html += '</tr></thead><tbody><tr>';
     for (const note of NOTES) {
@@ -9485,7 +9534,7 @@ function createSpeedTapMode() {
       const prompt = container.querySelector('.quiz-prompt');
       if (prompt) {
         const note = NOTES.find(n => n.name === currentNote);
-        prompt.textContent = 'Tap all ' + (note ? displayNotePair(note.displayName) : displayNote(currentNote));
+        prompt.textContent = 'Tap all ' + (note ? displayNote(pickRandomAccidental(note.displayName)) : displayNote(currentNote));
       }
       updateRoundProgress();
     },
@@ -9600,11 +9649,12 @@ function createNoteSemitonesMode() {
   }
 
   let currentItem = null;
+  let currentAccidentalChoice = null;
 
   // Build row definitions for the stats table
   function getTableRows() {
     return NOTES.map(note => ({
-      label: displayNotePair(note.displayName),
+      label: displayNote(note.name),
       sublabel: String(note.num),
       _colHeader: 'Note',
       fwdItemId: note.name + ':fwd',
@@ -9636,9 +9686,10 @@ function createNoteSemitonesMode() {
       const noteButtons = container.querySelector('.answer-buttons-notes');
       const numButtons = container.querySelector('.answer-buttons-numbers');
 
+      currentAccidentalChoice = pickRandomAccidental(currentItem.note.displayName);
       if (currentItem.dir === 'fwd') {
         // Show note, answer is number 0-11
-        prompt.textContent = displayNotePair(currentItem.note.displayName) + ' = ?';
+        prompt.textContent = displayNote(currentAccidentalChoice) + ' = ?';
         noteButtons.classList.add('answer-group-hidden');
         numButtons.classList.remove('answer-group-hidden');
       } else {
@@ -9655,7 +9706,7 @@ function createNoteSemitonesMode() {
         return { correct, correctAnswer: String(currentItem.note.num) };
       } else {
         const correct = noteMatchesInput(currentItem.note, input);
-        return { correct, correctAnswer: displayNotePair(currentItem.note.displayName) };
+        return { correct, correctAnswer: displayNote(currentAccidentalChoice) };
       }
     },
 

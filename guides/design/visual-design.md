@@ -134,7 +134,7 @@ SVG colors are applied via CSS rules (`.fretboard line`, `.note-circle`,
 | `--text-base` | 1rem | Body, buttons, nav items, hints |
 | `--text-md` | 1.125rem | Answer buttons, note buttons, chord slots |
 | `--text-lg` | 1.3rem | Mode title |
-| `--text-xl` | 1.5rem | Hamburger, feedback, close buttons |
+| `--text-xl` | 1.5rem | Hamburger, settings gear, feedback, close buttons |
 | `--text-2xl` | 2rem | Quiz prompts |
 
 Font weights: 400 (normal), 500 (medium — buttons/labels), 600 (semibold —
@@ -208,6 +208,15 @@ Groups:
 - **Theory Lookup:** Note ↔ Semitones, Interval ↔ Semitones
 - **Calculation:** Semitone Math, Interval Math
 - **Keys & Chords:** Key Signatures, Scale Degrees, Diatonic Chords, Chord Spelling
+
+### Top Bar Icons
+
+Hamburger (☰) and settings gear (⚙) must share the same `font-size`,
+`padding`, and `min-width`/`min-height` so the top bar height stays constant
+regardless of which icons are visible. Both use `--text-xl`,
+`padding: var(--space-2) var(--space-3)`, and 44×44px minimum touch targets.
+When the gear hides during an active quiz, use `visibility: hidden` (not
+`display: none`) so it reserves space and prevents layout shift.
 
 ---
 

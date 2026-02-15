@@ -74,7 +74,7 @@ function createSpeedTapMode() {
   const statsControls = createStatsControls(container, (mode, el) => {
     let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
     for (const note of NOTES) {
-      html += '<th>' + displayNotePair(note.displayName) + '</th>';
+      html += '<th>' + displayNote(note.name) + '</th>';
     }
     html += '</tr></thead><tbody><tr>';
     for (const note of NOTES) {
@@ -182,7 +182,7 @@ function createSpeedTapMode() {
       const prompt = container.querySelector('.quiz-prompt');
       if (prompt) {
         const note = NOTES.find(n => n.name === currentNote);
-        prompt.textContent = 'Tap all ' + (note ? displayNotePair(note.displayName) : displayNote(currentNote));
+        prompt.textContent = 'Tap all ' + (note ? displayNote(pickRandomAccidental(note.displayName)) : displayNote(currentNote));
       }
       updateRoundProgress();
     },
