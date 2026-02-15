@@ -62,6 +62,11 @@ function createSettingsModal(options) {
   overlay.addEventListener('click', function(e) {
     if (e.target === overlay) close();
   });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) {
+      close();
+    }
+  });
 
   toggleBtns.forEach(function(btn) {
     btn.addEventListener('click', function() {

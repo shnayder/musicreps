@@ -100,8 +100,9 @@ Bidirectional modes track each direction as a separate item.
 
 ## Keyboard Shortcuts
 
-- `C D E F G A B` — natural note
-- Letter + `#` / `b` — sharp/flat
+- `C D E F G A B` — natural note (letter mode)
+- `do re mi fa so la si` — natural note (solfège mode, case-insensitive)
+- Letter/syllable + `#` / `b` — sharp/flat
 - `0-9` — number (semitone modes)
 - `Space` / `Enter` — next question
 - `Escape` — stop quiz
