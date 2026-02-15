@@ -121,9 +121,12 @@
     }
   });
 
-  document.querySelector('.gear-btn').addEventListener('click', function() {
-    settings.open();
-  });
+  var gearBtn = document.querySelector('.gear-btn');
+  if (gearBtn) {
+    gearBtn.addEventListener('click', function() {
+      settings.open();
+    });
+  }
 
   // Register service worker for cache busting on iOS home screen
   if ('serviceWorker' in navigator) {

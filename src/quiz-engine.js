@@ -103,9 +103,9 @@ export function createSolfegeKeyHandler(submitAnswer, allowAccidentals = () => t
 
   function reset() {
     buffer = '';
-    pendingNote = null;
     if (pendingTimeout) clearTimeout(pendingTimeout);
     pendingTimeout = null;
+    pendingNote = null;
   }
 
   function submitPending() {
