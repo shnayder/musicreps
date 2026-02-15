@@ -189,13 +189,13 @@ var COLOR_SCHEMES = {
       '--color-topbar-text': 'hsl(90, 10%, 95%)',
       '--color-toggle-active':      'hsl(90, 35%, 42%)',
       '--color-toggle-recommended': 'hsl(35, 80%, 55%)',
-      // Warm terracotta → amber → olive → sage
-      '--heatmap-none': 'hsl(90, 8%, 92%)',
-      '--heatmap-1':    'hsl(18, 45%, 70%)',
-      '--heatmap-2':    'hsl(38, 50%, 60%)',
-      '--heatmap-3':    'hsl(58, 40%, 50%)',
-      '--heatmap-4':    'hsl(75, 38%, 42%)',
-      '--heatmap-5':    'hsl(88, 45%, 35%)',
+      // Warm terracotta → amber → olive → sage (high saturation)
+      '--heatmap-none': 'hsl(60, 5%, 93%)',
+      '--heatmap-1':    'hsl(15, 55%, 68%)',
+      '--heatmap-2':    'hsl(35, 55%, 58%)',
+      '--heatmap-3':    'hsl(55, 45%, 50%)',
+      '--heatmap-4':    'hsl(72, 42%, 42%)',
+      '--heatmap-5':    'hsl(88, 52%, 33%)',
     },
   },
 };
