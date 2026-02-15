@@ -45,6 +45,7 @@ jobs:
           SAFE_NAME=$(echo "${GITHUB_REF_NAME}" | sed 's/[^a-zA-Z0-9-]/-/g')
 
           git fetch origin main
+          git checkout -- .
           git checkout main
 
           mkdir -p "docs/preview/${SAFE_NAME}"
