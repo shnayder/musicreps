@@ -7897,9 +7897,11 @@ function getKeyForButton(btn) {
  *
  * @param {Element[]} buttons - available answer buttons
  * @param {Element|null} prevBtn - previous trial's button (to avoid repeats)
+ * @param {function} [rng] - random number generator (0–1), defaults to Math.random
  * @returns {Element}
  */
-function pickCalibrationButton(buttons, prevBtn) {
+function pickCalibrationButton(buttons, prevBtn, rng) {
+  const rand = rng || Math.random;
   const sharpBtns = buttons.filter(b => {
     const note = b.dataset.note;
     return note && note.includes('#');
@@ -7910,12 +7912,12 @@ function pickCalibrationButton(buttons, prevBtn) {
   });
 
   // ~35% chance of sharp if available
-  const useSharp = sharpBtns.length > 0 && Math.random() < 0.35;
+  const useSharp = sharpBtns.length > 0 && rand() < 0.35;
   const pool = useSharp ? sharpBtns : (naturalBtns.length > 0 ? naturalBtns : buttons);
 
   let btn;
   do {
-    btn = pool[Math.floor(Math.random() * pool.length)];
+    btn = pool[Math.floor(rand() * pool.length)];
   } while (btn === prevBtn && pool.length > 1);
   return btn;
 }
@@ -7966,16 +7968,10 @@ function runCalibration(opts) {
   function startTrial() {
     if (canceled) return;
 
-    // For multi-target trials, count warmup by trial (not by press)
-    const warmupPresses = isSearchMode() ? 0 : WARMUP_TRIALS;
-
     if (trialIndex >= TRIAL_COUNT) {
       cleanup();
-      // For search mode, warmup is counted differently: skip all presses
-      // from the first WARMUP_TRIALS trials
-      const median = isSearchMode()
-        ? computeMedian(times.slice(warmupPresses))
-        : computeMedian(times.slice(WARMUP_TRIALS));
+      // Warmup trials already filtered in recordPress() — use all collected times
+      const median = computeMedian(times);
       onComplete(median);
       return;
     }
