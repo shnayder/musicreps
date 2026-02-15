@@ -82,9 +82,12 @@
 }
 
 * { -webkit-tap-highlight-color: transparent; }
+html {
+  background: var(--color-surface);
+}
 body {
   font-family: system-ui, -apple-system, sans-serif;
-  max-width: 1400px;
+  max-width: 650px;
   margin: 0 auto;
   padding: 0 var(--space-5);
   display: flex;
@@ -93,6 +96,8 @@ body {
   min-height: 100dvh;
   color: var(--color-text);
   background: var(--color-bg);
+  border-left: 1px solid var(--color-border-lighter);
+  border-right: 1px solid var(--color-border-lighter);
 }
 
 /* --- Top bar & navigation --- */
@@ -100,9 +105,7 @@ body {
   display: flex;
   align-items: center;
   padding: var(--space-3) var(--space-5);
-  margin: 0 auto;
-  max-width: 800px;
-  border-radius: 0 0 8px 8px;
+  margin: 0 calc(-1 * var(--space-5));
   background: var(--color-topbar-bg);
   color: var(--color-topbar-text);
   position: relative;
@@ -613,18 +616,21 @@ button {
   grid-template-columns: repeat(3, 1fr);
 }
 
+/* --- Answer group visibility (toggled by mode JS for bidirectional questions) --- */
+.answer-group-hidden {
+  display: none;
+}
+
 /* --- Calibration overlay: inside quiz-area, hide non-calibration content --- */
 .phase-calibration .answer-buttons:not(.calibration-active),
 .phase-calibration .note-buttons:not(.calibration-active) {
   display: none;
 }
-/* !important overrides inline style="display:none" set by html-helpers.ts
-   on button groups that are hidden at rest (e.g. noteAnswerButtons in Speed Tap). */
 .phase-calibration .answer-buttons.calibration-active {
-  display: grid !important;
+  display: grid;
 }
 .phase-calibration .note-buttons.calibration-active {
-  display: flex !important;
+  display: flex;
 }
 .phase-calibration .speed-tap-status,
 .phase-calibration .fretboard-wrapper {
@@ -993,13 +999,13 @@ button {
   body {
     margin: 0;
     padding: 0 var(--space-1);
+    border-left: none;
+    border-right: none;
   }
 
   .top-bar {
     margin: 0 calc(-1 * var(--space-1));
     padding: var(--space-2) var(--space-3);
-    max-width: none;
-    border-radius: 0;
   }
 
   .fretboard-container {
@@ -5708,7 +5714,7 @@ button {
         </div>
       </div>
     </div>
-      <div class="answer-buttons answer-buttons-notes" style="display: none;">
+      <div class="answer-buttons answer-buttons-notes answer-group-hidden">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
@@ -6027,7 +6033,7 @@ button {
         <button class="answer-btn answer-btn-keysig" data-sig="6b">6b</button>
         <button class="answer-btn answer-btn-keysig" data-sig="7b">7b</button>
       </div>
-      <div class="answer-buttons answer-buttons-notes" style="display: none;">
+      <div class="answer-buttons answer-buttons-notes answer-group-hidden">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
@@ -6097,7 +6103,7 @@ button {
         <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
-      <div class="answer-buttons answer-buttons-degrees" style="display: none;">
+      <div class="answer-buttons answer-buttons-degrees answer-group-hidden">
         <button class="answer-btn answer-btn-degree" data-degree="1">1st</button>
         <button class="answer-btn answer-btn-degree" data-degree="2">2nd</button>
         <button class="answer-btn answer-btn-degree" data-degree="3">3rd</button>
@@ -6162,7 +6168,7 @@ button {
         <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
-      <div class="answer-buttons answer-buttons-numerals" style="display: none;">
+      <div class="answer-buttons answer-buttons-numerals answer-group-hidden">
         <button class="answer-btn answer-btn-numeral" data-numeral="I">I</button>
         <button class="answer-btn answer-btn-numeral" data-numeral="ii">ii</button>
         <button class="answer-btn answer-btn-numeral" data-numeral="iii">iii</button>
@@ -9261,13 +9267,13 @@ function createNoteSemitonesMode() {
       if (currentItem.dir === 'fwd') {
         // Show note, answer is number 0-11
         prompt.textContent = currentItem.note.displayName + ' = ?';
-        noteButtons.style.display = 'none';
-        numButtons.style.display = '';
+        noteButtons.classList.add('answer-group-hidden');
+        numButtons.classList.remove('answer-group-hidden');
       } else {
         // Show number, answer is note
         prompt.textContent = currentItem.note.num + ' = ?';
-        noteButtons.style.display = '';
-        numButtons.style.display = 'none';
+        noteButtons.classList.remove('answer-group-hidden');
+        numButtons.classList.add('answer-group-hidden');
       }
     },
 
@@ -9452,13 +9458,13 @@ function createIntervalSemitonesMode() {
       if (currentItem.dir === 'fwd') {
         // Show interval name, answer is number 1-12
         prompt.textContent = currentItem.interval.name + ' = ?';
-        intervalButtons.style.display = 'none';
-        numButtons.style.display = '';
+        intervalButtons.classList.add('answer-group-hidden');
+        numButtons.classList.remove('answer-group-hidden');
       } else {
         // Show number, answer is interval
         prompt.textContent = currentItem.interval.num + ' = ?';
-        intervalButtons.style.display = '';
-        numButtons.style.display = 'none';
+        intervalButtons.classList.remove('answer-group-hidden');
+        numButtons.classList.add('answer-group-hidden');
       }
     },
 
@@ -10238,13 +10244,13 @@ function createKeySignaturesMode() {
 
       if (currentItem.dir === 'fwd') {
         prompt.textContent = currentItem.key.root + ' major = ?';
-        sigButtons.style.display = '';
-        noteButtons.style.display = 'none';
+        sigButtons.classList.remove('answer-group-hidden');
+        noteButtons.classList.add('answer-group-hidden');
       } else {
         const label = keySignatureLabel(currentItem.key);
         prompt.textContent = label + ' major = ?';
-        sigButtons.style.display = 'none';
-        noteButtons.style.display = '';
+        sigButtons.classList.add('answer-group-hidden');
+        noteButtons.classList.remove('answer-group-hidden');
       }
     },
 
@@ -10527,12 +10533,12 @@ function createScaleDegreesMode() {
 
       if (currentItem.dir === 'fwd') {
         prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' + currentItem.key.root + ' major = ?';
-        noteButtons.style.display = '';
-        degreeButtons.style.display = 'none';
+        noteButtons.classList.remove('answer-group-hidden');
+        degreeButtons.classList.add('answer-group-hidden');
       } else {
         prompt.textContent = currentItem.key.root + ' major: ' + currentItem.noteName + ' = ?';
-        noteButtons.style.display = 'none';
-        degreeButtons.style.display = '';
+        noteButtons.classList.add('answer-group-hidden');
+        degreeButtons.classList.remove('answer-group-hidden');
       }
     },
 
@@ -10795,13 +10801,13 @@ function createDiatonicChordsMode() {
 
       if (currentItem.dir === 'fwd') {
         prompt.textContent = currentItem.chord.numeral + ' in ' + currentItem.key.root + ' major = ?';
-        noteButtons.style.display = '';
-        numeralButtons.style.display = 'none';
+        noteButtons.classList.remove('answer-group-hidden');
+        numeralButtons.classList.add('answer-group-hidden');
       } else {
         const chordName = currentItem.rootNote + currentItem.chord.qualityLabel;
         prompt.textContent = chordName + ' in ' + currentItem.key.root + ' major = ?';
-        noteButtons.style.display = 'none';
-        numeralButtons.style.display = '';
+        noteButtons.classList.add('answer-group-hidden');
+        numeralButtons.classList.remove('answer-group-hidden');
       }
     },
 
