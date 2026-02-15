@@ -9,14 +9,14 @@
 
   <style>
     :root {
-  /* Brand */
-  --color-brand: hsl(38, 90%, 55%);
-  --color-brand-dark: hsl(38, 90%, 42%);
-  --color-brand-bg: hsl(38, 60%, 95%);
+  /* Brand (sage) */
+  --color-brand: hsl(90, 35%, 45%);
+  --color-brand-dark: hsl(90, 35%, 35%);
+  --color-brand-bg: hsl(90, 25%, 94%);
 
   /* Top bar */
-  --color-topbar-bg: hsl(220, 15%, 18%);
-  --color-topbar-text: hsl(0, 0%, 95%);
+  --color-topbar-bg: hsl(100, 15%, 22%);
+  --color-topbar-text: hsl(90, 10%, 95%);
 
   /* Semantic colors */
   --color-success: #4CAF50;
@@ -30,6 +30,10 @@
   --color-focus-bg: #e3f2fd;
   --color-recommended: #FF9800;
   --color-highlight: #FFD700;
+
+  /* UI accents */
+  --color-toggle-active: hsl(90, 35%, 42%);
+  --color-toggle-recommended: hsl(35, 80%, 55%);
 
   /* Text (warm neutrals) */
   --color-text: hsl(30, 5%, 20%);
@@ -52,13 +56,13 @@
   /* Overlay */
   --color-overlay: rgba(0, 0, 0, 0.35);
 
-  /* Heatmap scale (blue → amber, accessible) */
-  --heatmap-none: hsl(30, 5%, 85%);
-  --heatmap-5: hsl(38, 85%, 55%);
-  --heatmap-4: hsl(42, 70%, 58%);
-  --heatmap-3: hsl(50, 50%, 65%);
-  --heatmap-2: hsl(200, 40%, 65%);
-  --heatmap-1: hsl(215, 45%, 60%);
+  /* Heatmap scale (warm terracotta → sage, high saturation) */
+  --heatmap-none: hsl(60, 5%, 93%);
+  --heatmap-1: hsl(15, 55%, 68%);
+  --heatmap-2: hsl(35, 55%, 58%);
+  --heatmap-3: hsl(55, 45%, 50%);
+  --heatmap-4: hsl(72, 42%, 42%);
+  --heatmap-5: hsl(88, 52%, 33%);
 
   /* Fretboard SVG */
   --color-fretboard-line: hsl(30, 5%, 30%);
@@ -375,15 +379,15 @@ body {
   background: var(--color-surface-hover);
 }
 .string-toggle.active {
-  background: var(--color-success);
+  background: var(--color-toggle-active);
   color: white;
-  border-color: var(--color-success);
+  border-color: var(--color-toggle-active);
 }
 .string-toggle.recommended {
-  box-shadow: 0 0 0 2px var(--color-recommended);
+  box-shadow: 0 0 0 2px var(--color-toggle-recommended);
 }
 .string-toggle.active.recommended {
-  border-color: var(--color-recommended);
+  border-color: var(--color-toggle-recommended);
 }
 .distance-toggles {
   display: flex;
@@ -408,15 +412,15 @@ body {
   background: var(--color-surface-hover);
 }
 .distance-toggle.active {
-  background: var(--color-success);
+  background: var(--color-toggle-active);
   color: white;
-  border-color: var(--color-success);
+  border-color: var(--color-toggle-active);
 }
 .distance-toggle.recommended {
-  box-shadow: 0 0 0 2px var(--color-recommended);
+  box-shadow: 0 0 0 2px var(--color-toggle-recommended);
 }
 .distance-toggle.active.recommended {
-  border-color: var(--color-recommended);
+  border-color: var(--color-toggle-recommended);
 }
 .fretboard-container {
   position: relative;
@@ -600,11 +604,22 @@ button {
   pointer-events: none;
 }
 
+/* --- Quiz-active visual focus (colored accent when quiz is running) --- */
+.phase-active .top-bar,
+.phase-calibration .top-bar {
+  box-shadow: 0 2px 0 var(--color-brand);
+}
+.phase-active .quiz-area.active {
+  border: 2px solid var(--color-brand);
+  border-top: 3px solid var(--color-brand);
+}
+
 /* --- Quiz area (subtle card containment) --- */
 .quiz-area {
   display: none;
   text-align: center;
   margin: var(--space-5) 0;
+  border: 2px solid transparent;
 }
 .quiz-area.active {
   display: block;
@@ -1205,7 +1220,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.16</div>
+    <div class="version">v3.15</div>
     <button class="gear-btn" type="button" aria-label="Settings">⚙</button>
   </div>
 
@@ -8840,17 +8855,26 @@ function cssVar(name) {
 function heatmapColors() {
   if (!_heatmapColors) {
     _heatmapColors = {
-      none:  cssVar('--heatmap-none')  || 'hsl(30, 5%, 85%)',
+      none:  cssVar('--heatmap-none')  || 'hsl(60, 5%, 93%)',
       level: [
-        cssVar('--heatmap-1') || 'hsl(215, 45%, 60%)',
-        cssVar('--heatmap-2') || 'hsl(200, 40%, 65%)',
-        cssVar('--heatmap-3') || 'hsl(50, 50%, 65%)',
-        cssVar('--heatmap-4') || 'hsl(42, 70%, 58%)',
-        cssVar('--heatmap-5') || 'hsl(38, 85%, 55%)',
+        cssVar('--heatmap-1') || 'hsl(15, 55%, 68%)',
+        cssVar('--heatmap-2') || 'hsl(35, 55%, 58%)',
+        cssVar('--heatmap-3') || 'hsl(55, 45%, 50%)',
+        cssVar('--heatmap-4') || 'hsl(72, 42%, 42%)',
+        cssVar('--heatmap-5') || 'hsl(88, 52%, 33%)',
       ],
     };
   }
   return _heatmapColors;
+}
+
+/**
+ * Returns true if white text should be used on this heatmap background.
+ * Parses lightness from hsl() strings; dark backgrounds (L <= 50%) get white.
+ */
+function heatmapNeedsLightText(color) {
+  var m = color && color.match(/,\s*(\d+)%\s*\)/);
+  return m ? parseInt(m[1], 10) <= 50 : false;
 }
 
 // Labels for the retention legend (index matches heatmapColors().level)
@@ -9292,16 +9316,19 @@ function createFrettedInstrumentMode(instrument) {
     if (circle) circle.style.fill = color;
   }
 
-  function showNoteText(string, fret) {
+  function showNoteText(string, fret, bgColor) {
     const text = container.querySelector(
       `text[data-string="${string}"][data-fret="${fret}"]`
     );
-    if (text) text.textContent = displayNote(fb.getNoteAtPosition(string, fret));
+    if (text) {
+      text.textContent = displayNote(fb.getNoteAtPosition(string, fret));
+      text.style.fill = bgColor && heatmapNeedsLightText(bgColor) ? 'white' : '';
+    }
   }
 
   function clearAll() {
     container.querySelectorAll('.note-circle').forEach(c => c.style.fill = '');
-    container.querySelectorAll('.note-text').forEach(t => t.textContent = '');
+    container.querySelectorAll('.note-text').forEach(t => { t.textContent = ''; t.style.fill = ''; });
   }
 
   // --- String toggles ---
@@ -9340,8 +9367,9 @@ function createFrettedInstrumentMode(instrument) {
       for (const s of allStrings) {
         for (let f = 0; f < instrument.fretCount; f++) {
           const auto = engine.selector.getAutomaticity(`${s}-${f}`);
-          highlightCircle(s, f, getAutomaticityColor(auto));
-          showNoteText(s, f);
+          const color = getAutomaticityColor(auto);
+          highlightCircle(s, f, color);
+          showNoteText(s, f, color);
         }
       }
     } else {
@@ -9349,8 +9377,9 @@ function createFrettedInstrumentMode(instrument) {
         for (let f = 0; f < instrument.fretCount; f++) {
           const stats = engine.selector.getStats(`${s}-${f}`);
           const ewma = stats ? stats.ewma : null;
-          highlightCircle(s, f, getSpeedHeatmapColor(ewma, engine.baseline));
-          showNoteText(s, f);
+          const color = getSpeedHeatmapColor(ewma, engine.baseline);
+          highlightCircle(s, f, color);
+          showNoteText(s, f, color);
         }
       }
     }
@@ -12190,15 +12219,23 @@ function createNavigation() {
 
   nav.init();
 
+  // Re-render stats on visible mode screens after notation change
+  function refreshVisibleStats() {
+    document.querySelectorAll('.mode-screen').forEach(function(el) {
+      if (el.style.display !== 'none') {
+        var activeToggle = el.querySelector('.stats-toggle-btn.active');
+        if (activeToggle) activeToggle.click();
+      }
+    });
+  }
+
   // Settings modal
   var settings = createSettingsModal({
     onNotationChange: function() {
       document.querySelectorAll('.mode-screen').forEach(function(el) {
         if (el.style.display !== 'none') {
           refreshNoteButtonLabels(el);
-          // Re-render stats if currently showing
-          var activeToggle = el.querySelector('.stats-toggle-btn.active');
-          if (activeToggle) activeToggle.click();
+          refreshVisibleStats();
         }
       });
     }
