@@ -13,6 +13,28 @@ import {
 // Reusable button blocks
 // ---------------------------------------------------------------------------
 
+/** Piano-style note buttons: naturals in bottom row, accidentals above. */
+export function pianoNoteButtons(): string {
+  return `<div class="note-buttons">
+        <div class="note-row-accidentals">
+          <button class="note-btn accidental" data-note="C#">C#</button>
+          <button class="note-btn accidental" data-note="D#">D#</button>
+          <button class="note-btn accidental" data-note="F#">F#</button>
+          <button class="note-btn accidental" data-note="G#">G#</button>
+          <button class="note-btn accidental" data-note="A#">A#</button>
+        </div>
+        <div class="note-row-naturals">
+          <button class="note-btn" data-note="C">C</button>
+          <button class="note-btn" data-note="D">D</button>
+          <button class="note-btn" data-note="E">E</button>
+          <button class="note-btn" data-note="F">F</button>
+          <button class="note-btn" data-note="G">G</button>
+          <button class="note-btn" data-note="A">A</button>
+          <button class="note-btn" data-note="B">B</button>
+        </div>
+      </div>`;
+}
+
 /** 12-note answer button grid (C, C#/Db, D, ... B). */
 export function noteAnswerButtons(opts?: { hidden?: boolean }): string {
   const notes: [string, string][] = [

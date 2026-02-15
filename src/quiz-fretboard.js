@@ -153,6 +153,8 @@ function createFrettedInstrumentMode(instrument) {
     container.querySelectorAll('.note-btn.accidental').forEach(btn => {
       btn.classList.toggle('hidden', naturalsOnly);
     });
+    const accRow = container.querySelector('.note-row-accidentals');
+    if (accRow) accRow.classList.toggle('hidden', naturalsOnly);
   }
 
   // --- Quiz mode interface ---
