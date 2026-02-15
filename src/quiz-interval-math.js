@@ -163,17 +163,17 @@ function createIntervalMathMode() {
       currentItem = parseItem(itemId);
       currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending
       const prompt = container.querySelector('.quiz-prompt');
-      const noteName = pickAccidentalName(currentItem.note.displayName, currentItem.useFlats);
+      const noteName = displayNote(pickAccidentalName(currentItem.note.displayName, currentItem.useFlats));
       prompt.textContent = noteName + ' ' + currentItem.op + ' ' + currentItem.interval.abbrev + ' = ?';
       container.querySelectorAll('.answer-btn-note').forEach(btn => {
         const note = NOTES.find(n => n.name === btn.dataset.note);
-        if (note) btn.textContent = pickAccidentalName(note.displayName, currentItem.useFlats);
+        if (note) btn.textContent = displayNote(pickAccidentalName(note.displayName, currentItem.useFlats));
       });
     },
 
     checkAnswer(itemId, input) {
       const correct = noteMatchesInput(currentItem.answer, input);
-      return { correct, correctAnswer: pickAccidentalName(currentItem.answer.displayName, currentItem.useFlats) };
+      return { correct, correctAnswer: displayNote(pickAccidentalName(currentItem.answer.displayName, currentItem.useFlats)) };
     },
 
     onStart() {
@@ -184,10 +184,7 @@ function createIntervalMathMode() {
 
     onStop() {
       noteKeyHandler.reset();
-      container.querySelectorAll('.answer-btn-note').forEach(btn => {
-        const note = NOTES.find(n => n.name === btn.dataset.note);
-        if (note) btn.textContent = note.displayName;
-      });
+      refreshNoteButtonLabels(container);
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
       statsControls.show('retention');
       refreshUI();
@@ -205,7 +202,7 @@ function createIntervalMathMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => true
   );
@@ -244,7 +241,7 @@ function createIntervalMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

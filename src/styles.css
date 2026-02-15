@@ -127,6 +127,131 @@ body {
   color: rgba(255, 255, 255, 0.5);
   padding-right: var(--space-2);
 }
+.gear-btn {
+  background: none;
+  border: none;
+  font-size: var(--text-lg);
+  cursor: pointer;
+  padding: var(--space-3);
+  margin: 0;
+  line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-topbar-text);
+  opacity: 0.7;
+  border-radius: 6px;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+.gear-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+.gear-btn:active {
+  opacity: 0.5;
+}
+.gear-btn.hidden {
+  display: none;
+}
+
+/* --- Settings modal --- */
+.settings-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-overlay);
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
+}
+.settings-overlay.open {
+  display: flex;
+}
+.settings-modal {
+  background: var(--color-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  width: 280px;
+  max-width: 90vw;
+  overflow: hidden;
+}
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+.settings-title {
+  font-weight: 600;
+  font-size: var(--text-base);
+}
+.settings-close-btn {
+  background: none;
+  border: none;
+  font-size: var(--text-xl);
+  cursor: pointer;
+  color: var(--color-text);
+  padding: 0;
+  line-height: 1;
+  opacity: 0.6;
+}
+.settings-close-btn:hover {
+  opacity: 1;
+}
+.settings-close-btn:active {
+  opacity: 0.4;
+}
+.settings-body {
+  padding: var(--space-5);
+}
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.settings-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+.settings-toggle-group {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+.settings-toggle-btn {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.settings-toggle-btn + .settings-toggle-btn {
+  border-left: 1px solid var(--color-border);
+}
+.settings-toggle-btn.active {
+  background: var(--color-brand);
+  color: white;
+}
+.settings-toggle-btn:hover:not(.active) {
+  background: var(--color-surface-hover);
+}
+.settings-toggle-btn:active {
+  opacity: 0.8;
+}
+
 .nav-overlay {
   display: none;
   position: fixed;

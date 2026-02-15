@@ -145,7 +145,7 @@ function createChordSpellingMode() {
 
     enteredTones.push({
       input,
-      display: isCorrect ? expected : input,
+      display: isCorrect ? displayNote(expected) : displayNote(input),
       correct: isCorrect,
     });
     renderSlots();
@@ -203,13 +203,13 @@ function createChordSpellingMode() {
       currentItem = parseItem(itemId);
       enteredTones = [];
       const prompt = container.querySelector('.quiz-prompt');
-      prompt.textContent = chordDisplayName(currentItem.rootName, currentItem.chordType) + ' = ?';
+      prompt.textContent = displayNote(currentItem.rootName) + currentItem.chordType.symbol + ' = ?';
       renderSlots();
     },
 
     checkAnswer(itemId, input) {
       const allCorrect = input === '__correct__';
-      const correctAnswer = currentItem.tones.join(' ');
+      const correctAnswer = currentItem.tones.map(displayNote).join(' ');
       return { correct: allCorrect, correctAnswer };
     },
 
@@ -242,7 +242,7 @@ function createChordSpellingMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     input => submitTone(input),
     () => true
   );
@@ -287,7 +287,7 @@ function createChordSpellingMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

@@ -137,6 +137,131 @@ body {
   color: rgba(255, 255, 255, 0.5);
   padding-right: var(--space-2);
 }
+.gear-btn {
+  background: none;
+  border: none;
+  font-size: var(--text-lg);
+  cursor: pointer;
+  padding: var(--space-3);
+  margin: 0;
+  line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-topbar-text);
+  opacity: 0.7;
+  border-radius: 6px;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+.gear-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+.gear-btn:active {
+  opacity: 0.5;
+}
+.gear-btn.hidden {
+  display: none;
+}
+
+/* --- Settings modal --- */
+.settings-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-overlay);
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
+}
+.settings-overlay.open {
+  display: flex;
+}
+.settings-modal {
+  background: var(--color-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  width: 280px;
+  max-width: 90vw;
+  overflow: hidden;
+}
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+.settings-title {
+  font-weight: 600;
+  font-size: var(--text-base);
+}
+.settings-close-btn {
+  background: none;
+  border: none;
+  font-size: var(--text-xl);
+  cursor: pointer;
+  color: var(--color-text);
+  padding: 0;
+  line-height: 1;
+  opacity: 0.6;
+}
+.settings-close-btn:hover {
+  opacity: 1;
+}
+.settings-close-btn:active {
+  opacity: 0.4;
+}
+.settings-body {
+  padding: var(--space-5);
+}
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.settings-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+.settings-toggle-group {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+.settings-toggle-btn {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.settings-toggle-btn + .settings-toggle-btn {
+  border-left: 1px solid var(--color-border);
+}
+.settings-toggle-btn.active {
+  background: var(--color-brand);
+  color: white;
+}
+.settings-toggle-btn:hover:not(.active) {
+  background: var(--color-surface-hover);
+}
+.settings-toggle-btn:active {
+  opacity: 0.8;
+}
+
 .nav-overlay {
   display: none;
   position: fixed;
@@ -1052,7 +1177,8 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.10</div>
+    <div class="version">v3.11</div>
+    <button class="gear-btn" type="button" aria-label="Settings">⚙</button>
   </div>
 
   <!-- Guitar Fretboard mode -->
@@ -2744,12 +2870,12 @@ button {
         <div class="toggle-group">
           <span class="toggle-group-label">Strings</span>
           <div class="string-toggles">
-            <button class="string-toggle" data-string="0">e</button>
-            <button class="string-toggle" data-string="1">B</button>
-            <button class="string-toggle" data-string="2">G</button>
-            <button class="string-toggle" data-string="3">D</button>
-            <button class="string-toggle" data-string="4">A</button>
-            <button class="string-toggle active" data-string="5">E</button>
+            <button class="string-toggle" data-string="0" data-string-note="e">e</button>
+            <button class="string-toggle" data-string="1" data-string-note="B">B</button>
+            <button class="string-toggle" data-string="2" data-string-note="G">G</button>
+            <button class="string-toggle" data-string="3" data-string-note="D">D</button>
+            <button class="string-toggle" data-string="4" data-string-note="A">A</button>
+            <button class="string-toggle active" data-string="5" data-string-note="E">E</button>
           </div>
         </div>
         <label class="setting-group">
@@ -3942,10 +4068,10 @@ button {
         <div class="toggle-group">
           <span class="toggle-group-label">Strings</span>
           <div class="string-toggles">
-            <button class="string-toggle" data-string="0">A</button>
-            <button class="string-toggle" data-string="1">E</button>
-            <button class="string-toggle active" data-string="2">C</button>
-            <button class="string-toggle" data-string="3">G</button>
+            <button class="string-toggle" data-string="0" data-string-note="A">A</button>
+            <button class="string-toggle" data-string="1" data-string-note="E">E</button>
+            <button class="string-toggle active" data-string="2" data-string-note="C">C</button>
+            <button class="string-toggle" data-string="3" data-string-note="G">G</button>
           </div>
         </div>
         <label class="setting-group">
@@ -7031,6 +7157,62 @@ const UKULELE = {
 const STRING_NAMES = GUITAR.stringNames;
 const STRING_OFFSETS = GUITAR.stringOffsets;
 
+// ---------------------------------------------------------------------------
+// Solfège notation
+// ---------------------------------------------------------------------------
+
+const SOLFEGE_MAP = {
+  C: 'Do', D: 'Re', E: 'Mi', F: 'Fa', G: 'Sol', A: 'La', B: 'Si'
+};
+
+let _useSolfege = false;
+
+/** Get current notation mode. */
+function getUseSolfege() { return _useSolfege; }
+
+/** Set notation mode and persist to localStorage. */
+function setUseSolfege(v) {
+  _useSolfege = v;
+  try { localStorage.setItem('fretboard_notation', v ? 'solfege' : 'letter'); } catch (_) {}
+}
+
+// Load notation preference on module evaluation
+try {
+  _useSolfege = localStorage.getItem('fretboard_notation') === 'solfege';
+} catch (_) {}
+
+/**
+ * Format a note name for display. Always replaces ASCII accidentals with
+ * Unicode symbols (# → ♯, b → ♭). In solfège mode, also translates the
+ * letter to a solfège syllable. Preserves case: lowercase input produces
+ * lowercase output (e.g., "e" → "mi" for high-E string).
+ */
+function displayNote(name) {
+  if (!name) return name;
+  const letter = name[0].toUpperCase();
+  const acc = name.slice(1).replace(/#/g, '\u266F').replace(/b/g, '\u266D');
+  if (!_useSolfege) {
+    return name[0] + acc;
+  }
+  const syl = SOLFEGE_MAP[letter];
+  if (!syl) return name[0] + acc;
+  // Preserve case: lowercase input letter → lowercase solfège
+  const out = name[0] === name[0].toLowerCase() ? syl.toLowerCase() : syl;
+  return out + acc;
+}
+
+/**
+ * Format a display-name pair like "C#/Db" → "C♯/D♭" (letter mode)
+ * or "Do♯/Re♭" (solfège mode). Handles both single names and
+ * slash-separated pairs.
+ */
+function displayNotePair(displayName) {
+  if (!displayName) return displayName;
+  if (!displayName.includes('/')) return displayNote(displayName);
+  const [s, f] = displayName.split('/');
+  return displayNote(s) + '/' + displayNote(f);
+}
+
 // Pure state transitions for the quiz engine.
 // No DOM, no timers, no side effects — just data in, data out.
 // ES module — exports stripped for browser inlining.
@@ -7435,6 +7617,154 @@ function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true) {
 }
 
 /**
+ * Create a keyboard handler for solfège input (Do Re Mi Fa Sol La Si + #/b).
+ * Case-insensitive. Buffers two characters to identify the syllable, then
+ * waits for an optional accidental. All syllables are unambiguous after 2 chars.
+ *
+ * @param {function} submitAnswer - Called with the internal note string (e.g. 'C', 'F#')
+ * @param {function} [allowAccidentals] - Returns true if accidentals are enabled
+ * @returns {{ handleKey(e): boolean, reset(): void }}
+ */
+function createSolfegeKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  const SOLFEGE_TO_NOTE = {
+    'do': 'C', 're': 'D', 'mi': 'E', 'fa': 'F',
+    'so': 'G', 'la': 'A', 'si': 'B'
+  };
+  const FIRST_CHARS = new Set(['d', 'r', 'm', 'f', 's', 'l']);
+
+  let buffer = '';
+  let pendingNote = null;
+  let pendingTimeout = null;
+
+  function reset() {
+    buffer = '';
+    if (pendingTimeout) clearTimeout(pendingTimeout);
+    pendingTimeout = null;
+    pendingNote = null;
+  }
+
+  function submitPending() {
+    if (pendingNote) {
+      clearTimeout(pendingTimeout);
+      submitAnswer(pendingNote);
+      pendingNote = null;
+      pendingTimeout = null;
+    }
+  }
+
+  function handleKey(e) {
+    const key = e.key.toLowerCase();
+
+    // Handle accidental after resolved syllable
+    if (pendingNote && allowAccidentals()) {
+      if (e.key === '#' || (e.shiftKey && e.key === '3')) {
+        e.preventDefault();
+        clearTimeout(pendingTimeout);
+        submitAnswer(pendingNote + '#');
+        pendingNote = null;
+        pendingTimeout = null;
+        return true;
+      }
+      // 'b' is flat (no solfège syllable starts with 'b')
+      if (key === 'b') {
+        e.preventDefault();
+        clearTimeout(pendingTimeout);
+        submitAnswer(pendingNote + 'b');
+        pendingNote = null;
+        pendingTimeout = null;
+        return true;
+      }
+    }
+
+    // Submit any pending note before starting new input
+    if (pendingNote && FIRST_CHARS.has(key)) {
+      submitPending();
+    }
+
+    // Continue building syllable
+    if (buffer.length > 0) {
+      e.preventDefault();
+      buffer += key;
+      const note = SOLFEGE_TO_NOTE[buffer];
+      if (note) {
+        buffer = '';
+        if (!allowAccidentals()) {
+          submitAnswer(note);
+        } else {
+          pendingNote = note;
+          pendingTimeout = setTimeout(() => {
+            submitAnswer(pendingNote);
+            pendingNote = null;
+            pendingTimeout = null;
+          }, 400);
+        }
+      } else if (buffer.length >= 2) {
+        // Invalid pair — reset
+        buffer = '';
+      }
+      return true;
+    }
+
+    // Start new syllable
+    if (FIRST_CHARS.has(key)) {
+      e.preventDefault();
+      // Submit any pending note first
+      submitPending();
+      buffer = key;
+      return true;
+    }
+
+    return false;
+  }
+
+  return { handleKey, reset };
+}
+
+/**
+ * Adaptive key handler: delegates to letter or solfège handler based on
+ * current notation mode. Drop-in replacement for createNoteKeyHandler.
+ *
+ * @param {function} submitAnswer - Called with the note string
+ * @param {function} [allowAccidentals] - Returns true if accidentals are enabled
+ * @returns {{ handleKey(e): boolean, reset(): void }}
+ */
+function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  const letterHandler = createNoteKeyHandler(submitAnswer, allowAccidentals);
+  const solfegeHandler = createSolfegeKeyHandler(submitAnswer, allowAccidentals);
+
+  return {
+    handleKey(e) {
+      return getUseSolfege()
+        ? solfegeHandler.handleKey(e)
+        : letterHandler.handleKey(e);
+    },
+    reset() {
+      letterHandler.reset();
+      solfegeHandler.reset();
+    }
+  };
+}
+
+/**
+ * Update all note button labels in a container to reflect current notation mode.
+ * Handles .answer-btn-note, .note-btn, and .string-toggle elements.
+ */
+function refreshNoteButtonLabels(container) {
+  container.querySelectorAll('.answer-btn-note').forEach(function(btn) {
+    var note = NOTES.find(function(n) { return n.name === btn.dataset.note; });
+    if (note) btn.textContent = displayNotePair(note.displayName);
+  });
+  container.querySelectorAll('.note-btn').forEach(function(btn) {
+    var noteName = btn.dataset.note;
+    if (noteName) btn.textContent = displayNote(noteName);
+  });
+  container.querySelectorAll('.string-toggle').forEach(function(btn) {
+    var stringNote = btn.dataset.stringNote;
+    if (stringNote) btn.textContent = displayNote(stringNote);
+  });
+}
+
+/**
  * Build human-readable threshold descriptions from a motor baseline.
  * Returns an array of { label, maxMs, meaning } objects describing the
  * heatmap speed bands. Used by the calibration results screen.
@@ -7749,6 +8079,10 @@ function createQuizEngine(mode, container) {
       : 'phase-idle';
     container.classList.remove('phase-idle', 'phase-active', 'phase-calibration');
     container.classList.add(phaseClass);
+
+    // Hide settings gear during active quiz/calibration
+    var gearBtn = document.querySelector('.gear-btn');
+    if (gearBtn) gearBtn.classList.toggle('hidden', phaseClass !== 'phase-idle');
 
     // Mark the calibration button container so CSS can hide others
     if (inCalibration && !container.querySelector('.calibration-active')) {
@@ -8346,7 +8680,7 @@ function renderStatsGrid(selector, colLabels, getItemId, statsMode, containerEl,
 
   for (var n = 0; n < noteList.length; n++) {
     var note = noteList[n];
-    html += '<tr><td class="stats-grid-row-label">' + (note.displayName || note.name) + '</td>';
+    html += '<tr><td class="stats-grid-row-label">' + displayNotePair(note.displayName || note.name) + '</td>';
     for (var i = 0; i < colLabels.length; i++) {
       var itemId = getItemId(note.name, i);
       var color = Array.isArray(itemId)
@@ -8578,7 +8912,7 @@ function createFretboardHelpers(musicData) {
   function checkFretboardAnswer(currentNote, input) {
     const note = musicData.notes.find(n => n.name === currentNote);
     const correct = !!(note && musicData.noteMatchesInput(note, input));
-    return { correct, correctAnswer: currentNote };
+    return { correct, correctAnswer: displayNote(currentNote) };
   }
 
   /**
@@ -8673,7 +9007,7 @@ function createFrettedInstrumentMode(instrument) {
     const text = container.querySelector(
       `text[data-string="${string}"][data-fret="${fret}"]`
     );
-    if (text) text.textContent = fb.getNoteAtPosition(string, fret);
+    if (text) text.textContent = displayNote(fb.getNoteAtPosition(string, fret));
   }
 
   function clearAll() {
@@ -8802,7 +9136,7 @@ function createFrettedInstrumentMode(instrument) {
     getPracticingLabel() {
       if (enabledStrings.size === instrument.stringCount) return 'all strings';
       const names = [...enabledStrings].sort((a, b) => b - a)
-        .map(s => instrument.stringNames[s]);
+        .map(s => displayNote(instrument.stringNames[s]));
       return names.join(', ') + ' string' + (names.length === 1 ? '' : 's');
     },
 
@@ -8855,7 +9189,7 @@ function createFrettedInstrumentMode(instrument) {
   const engine = createQuizEngine(mode, container);
 
   // Keyboard handler
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => !naturalsOnly
   );
@@ -8910,6 +9244,7 @@ function createFrettedInstrumentMode(instrument) {
     init,
     activate() {
       engine.attach();
+      refreshNoteButtonLabels(container);
       refreshUI();
       engine.showCalibrationIfNeeded();
     },
@@ -8985,7 +9320,7 @@ function createSpeedTapMode() {
     const text = container.querySelector(
       `text[data-string="${string}"][data-fret="${fret}"]`
     );
-    if (text) text.textContent = getNoteAtPosition(string, fret);
+    if (text) text.textContent = displayNote(getNoteAtPosition(string, fret));
   }
 
   function clearNoteText(string, fret) {
@@ -9005,7 +9340,7 @@ function createSpeedTapMode() {
   const statsControls = createStatsControls(container, (mode, el) => {
     let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
     for (const note of NOTES) {
-      html += '<th>' + note.displayName + '</th>';
+      html += '<th>' + displayNotePair(note.displayName) + '</th>';
     }
     html += '</tr></thead><tbody><tr>';
     for (const note of NOTES) {
@@ -9113,14 +9448,14 @@ function createSpeedTapMode() {
       const prompt = container.querySelector('.quiz-prompt');
       if (prompt) {
         const note = NOTES.find(n => n.name === currentNote);
-        prompt.textContent = 'Tap all ' + (note ? note.displayName : currentNote);
+        prompt.textContent = 'Tap all ' + (note ? displayNotePair(note.displayName) : displayNote(currentNote));
       }
       updateRoundProgress();
     },
 
     checkAnswer(itemId, input) {
       const allFound = input === 'complete';
-      return { correct: allFound, correctAnswer: currentNote };
+      return { correct: allFound, correctAnswer: displayNote(currentNote) };
     },
 
     onStart() {
@@ -9232,7 +9567,7 @@ function createNoteSemitonesMode() {
   // Build row definitions for the stats table
   function getTableRows() {
     return NOTES.map(note => ({
-      label: note.displayName,
+      label: displayNotePair(note.displayName),
       sublabel: String(note.num),
       _colHeader: 'Note',
       fwdItemId: note.name + ':fwd',
@@ -9266,7 +9601,7 @@ function createNoteSemitonesMode() {
 
       if (currentItem.dir === 'fwd') {
         // Show note, answer is number 0-11
-        prompt.textContent = currentItem.note.displayName + ' = ?';
+        prompt.textContent = displayNotePair(currentItem.note.displayName) + ' = ?';
         noteButtons.classList.add('answer-group-hidden');
         numButtons.classList.remove('answer-group-hidden');
       } else {
@@ -9283,7 +9618,7 @@ function createNoteSemitonesMode() {
         return { correct, correctAnswer: String(currentItem.note.num) };
       } else {
         const correct = noteMatchesInput(currentItem.note, input);
-        return { correct, correctAnswer: currentItem.note.displayName };
+        return { correct, correctAnswer: displayNotePair(currentItem.note.displayName) };
       }
     },
 
@@ -9352,7 +9687,7 @@ function createNoteSemitonesMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => true
   );
@@ -9385,7 +9720,7 @@ function createNoteSemitonesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
@@ -9737,17 +10072,17 @@ function createSemitoneMathMode() {
       currentItem = parseItem(itemId);
       currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending
       const prompt = container.querySelector('.quiz-prompt');
-      const noteName = pickAccidentalName(currentItem.note.displayName, currentItem.useFlats);
+      const noteName = displayNote(pickAccidentalName(currentItem.note.displayName, currentItem.useFlats));
       prompt.textContent = noteName + ' ' + currentItem.op + ' ' + currentItem.semitones + ' = ?';
       container.querySelectorAll('.answer-btn-note').forEach(btn => {
         const note = NOTES.find(n => n.name === btn.dataset.note);
-        if (note) btn.textContent = pickAccidentalName(note.displayName, currentItem.useFlats);
+        if (note) btn.textContent = displayNote(pickAccidentalName(note.displayName, currentItem.useFlats));
       });
     },
 
     checkAnswer(itemId, input) {
       const correct = noteMatchesInput(currentItem.answer, input);
-      return { correct, correctAnswer: pickAccidentalName(currentItem.answer.displayName, currentItem.useFlats) };
+      return { correct, correctAnswer: displayNote(pickAccidentalName(currentItem.answer.displayName, currentItem.useFlats)) };
     },
 
     onStart() {
@@ -9758,10 +10093,7 @@ function createSemitoneMathMode() {
 
     onStop() {
       noteKeyHandler.reset();
-      container.querySelectorAll('.answer-btn-note').forEach(btn => {
-        const note = NOTES.find(n => n.name === btn.dataset.note);
-        if (note) btn.textContent = note.displayName;
-      });
+      refreshNoteButtonLabels(container);
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
       statsControls.show('retention');
       refreshUI();
@@ -9779,7 +10111,7 @@ function createSemitoneMathMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => true
   );
@@ -9818,7 +10150,7 @@ function createSemitoneMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
@@ -9992,17 +10324,17 @@ function createIntervalMathMode() {
       currentItem = parseItem(itemId);
       currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending
       const prompt = container.querySelector('.quiz-prompt');
-      const noteName = pickAccidentalName(currentItem.note.displayName, currentItem.useFlats);
+      const noteName = displayNote(pickAccidentalName(currentItem.note.displayName, currentItem.useFlats));
       prompt.textContent = noteName + ' ' + currentItem.op + ' ' + currentItem.interval.abbrev + ' = ?';
       container.querySelectorAll('.answer-btn-note').forEach(btn => {
         const note = NOTES.find(n => n.name === btn.dataset.note);
-        if (note) btn.textContent = pickAccidentalName(note.displayName, currentItem.useFlats);
+        if (note) btn.textContent = displayNote(pickAccidentalName(note.displayName, currentItem.useFlats));
       });
     },
 
     checkAnswer(itemId, input) {
       const correct = noteMatchesInput(currentItem.answer, input);
-      return { correct, correctAnswer: pickAccidentalName(currentItem.answer.displayName, currentItem.useFlats) };
+      return { correct, correctAnswer: displayNote(pickAccidentalName(currentItem.answer.displayName, currentItem.useFlats)) };
     },
 
     onStart() {
@@ -10013,10 +10345,7 @@ function createIntervalMathMode() {
 
     onStop() {
       noteKeyHandler.reset();
-      container.querySelectorAll('.answer-btn-note').forEach(btn => {
-        const note = NOTES.find(n => n.name === btn.dataset.note);
-        if (note) btn.textContent = note.displayName;
-      });
+      refreshNoteButtonLabels(container);
       updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
       statsControls.show('retention');
       refreshUI();
@@ -10034,7 +10363,7 @@ function createIntervalMathMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => true
   );
@@ -10073,7 +10402,7 @@ function createIntervalMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
@@ -10194,7 +10523,7 @@ function createKeySignaturesMode() {
 
   function getTableRows() {
     return MAJOR_KEYS.map(key => ({
-      label: key.root + ' major',
+      label: displayNote(key.root) + ' major',
       sublabel: keySignatureLabel(key),
       _colHeader: 'Key',
       fwdItemId: key.root + ':fwd',
@@ -10243,7 +10572,7 @@ function createKeySignaturesMode() {
       const noteButtons = container.querySelector('.answer-buttons-notes');
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = currentItem.key.root + ' major = ?';
+        prompt.textContent = displayNote(currentItem.key.root) + ' major = ?';
         sigButtons.classList.remove('answer-group-hidden');
         noteButtons.classList.add('answer-group-hidden');
       } else {
@@ -10260,7 +10589,7 @@ function createKeySignaturesMode() {
         return { correct: input === expected, correctAnswer: expected };
       } else {
         const correct = spelledNoteMatchesSemitone(currentItem.key.root, input);
-        return { correct, correctAnswer: currentItem.key.root };
+        return { correct, correctAnswer: displayNote(currentItem.key.root) };
       }
     },
 
@@ -10315,7 +10644,7 @@ function createKeySignaturesMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     input => engine.submitAnswer(input),
     () => true
   );
@@ -10358,7 +10687,7 @@ function createKeySignaturesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
@@ -10532,11 +10861,11 @@ function createScaleDegreesMode() {
       const degreeButtons = container.querySelector('.answer-buttons-degrees');
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' + currentItem.key.root + ' major = ?';
+        prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' + displayNote(currentItem.key.root) + ' major = ?';
         noteButtons.classList.remove('answer-group-hidden');
         degreeButtons.classList.add('answer-group-hidden');
       } else {
-        prompt.textContent = currentItem.key.root + ' major: ' + currentItem.noteName + ' = ?';
+        prompt.textContent = displayNote(currentItem.key.root) + ' major: ' + displayNote(currentItem.noteName) + ' = ?';
         noteButtons.classList.add('answer-group-hidden');
         degreeButtons.classList.remove('answer-group-hidden');
       }
@@ -10545,7 +10874,7 @@ function createScaleDegreesMode() {
     checkAnswer(itemId, input) {
       if (currentItem.dir === 'fwd') {
         const correct = spelledNoteMatchesSemitone(currentItem.noteName, input);
-        return { correct, correctAnswer: currentItem.noteName };
+        return { correct, correctAnswer: displayNote(currentItem.noteName) };
       } else {
         const expectedDegree = String(currentItem.degree);
         return { correct: input === expectedDegree, correctAnswer: DEGREE_LABELS[currentItem.degree - 1] };
@@ -10586,7 +10915,7 @@ function createScaleDegreesMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     input => engine.submitAnswer(input),
     () => true
   );
@@ -10629,7 +10958,7 @@ function createScaleDegreesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
@@ -10800,12 +11129,12 @@ function createDiatonicChordsMode() {
       const numeralButtons = container.querySelector('.answer-buttons-numerals');
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = currentItem.chord.numeral + ' in ' + currentItem.key.root + ' major = ?';
+        prompt.textContent = currentItem.chord.numeral + ' in ' + displayNote(currentItem.key.root) + ' major = ?';
         noteButtons.classList.remove('answer-group-hidden');
         numeralButtons.classList.add('answer-group-hidden');
       } else {
-        const chordName = currentItem.rootNote + currentItem.chord.qualityLabel;
-        prompt.textContent = chordName + ' in ' + currentItem.key.root + ' major = ?';
+        const chordName = displayNote(currentItem.rootNote) + currentItem.chord.qualityLabel;
+        prompt.textContent = chordName + ' in ' + displayNote(currentItem.key.root) + ' major = ?';
         noteButtons.classList.add('answer-group-hidden');
         numeralButtons.classList.remove('answer-group-hidden');
       }
@@ -10814,7 +11143,7 @@ function createDiatonicChordsMode() {
     checkAnswer(itemId, input) {
       if (currentItem.dir === 'fwd') {
         const correct = spelledNoteMatchesSemitone(currentItem.rootNote, input);
-        const fullAnswer = currentItem.rootNote + ' ' + currentItem.chord.quality;
+        const fullAnswer = displayNote(currentItem.rootNote) + ' ' + currentItem.chord.quality;
         return { correct, correctAnswer: fullAnswer };
       } else {
         const expectedNumeral = currentItem.chord.numeral;
@@ -10856,7 +11185,7 @@ function createDiatonicChordsMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     input => engine.submitAnswer(input),
     () => true
   );
@@ -10899,7 +11228,7 @@ function createDiatonicChordsMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
@@ -11055,7 +11384,7 @@ function createChordSpellingMode() {
 
     enteredTones.push({
       input,
-      display: isCorrect ? expected : input,
+      display: isCorrect ? displayNote(expected) : displayNote(input),
       correct: isCorrect,
     });
     renderSlots();
@@ -11113,13 +11442,13 @@ function createChordSpellingMode() {
       currentItem = parseItem(itemId);
       enteredTones = [];
       const prompt = container.querySelector('.quiz-prompt');
-      prompt.textContent = chordDisplayName(currentItem.rootName, currentItem.chordType) + ' = ?';
+      prompt.textContent = displayNote(currentItem.rootName) + currentItem.chordType.symbol + ' = ?';
       renderSlots();
     },
 
     checkAnswer(itemId, input) {
       const allCorrect = input === '__correct__';
-      const correctAnswer = currentItem.tones.join(' ');
+      const correctAnswer = currentItem.tones.map(displayNote).join(' ');
       return { correct: allCorrect, correctAnswer };
     },
 
@@ -11152,7 +11481,7 @@ function createChordSpellingMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     input => submitTone(input),
     () => true
   );
@@ -11197,13 +11526,97 @@ function createChordSpellingMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
     },
   };
+}
+
+// Global settings modal: notation toggle (A B C / Do Re Mi).
+// Accessed via gear icon in top bar. Hidden during active quiz.
+//
+// Depends on globals: getUseSolfege, setUseSolfege
+
+function createSettingsModal(options) {
+  var onNotationChange = options.onNotationChange || function() {};
+
+  // --- Build modal DOM ---
+
+  var overlay = document.createElement('div');
+  overlay.className = 'settings-overlay';
+
+  var modal = document.createElement('div');
+  modal.className = 'settings-modal';
+  modal.innerHTML =
+    '<div class="settings-header">' +
+      '<span class="settings-title">Settings</span>' +
+      '<button class="settings-close-btn" aria-label="Close">\u00D7</button>' +
+    '</div>' +
+    '<div class="settings-body">' +
+      '<div class="settings-field">' +
+        '<div class="settings-label">Note names</div>' +
+        '<div class="settings-toggle-group">' +
+          '<button class="settings-toggle-btn" data-notation="letter">A B C</button>' +
+          '<button class="settings-toggle-btn" data-notation="solfege">Do Re Mi</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  // --- Refs ---
+
+  var closeBtn = modal.querySelector('.settings-close-btn');
+  var toggleBtns = modal.querySelectorAll('.settings-toggle-btn');
+
+  // --- State ---
+
+  function updateToggleState() {
+    var current = getUseSolfege() ? 'solfege' : 'letter';
+    toggleBtns.forEach(function(btn) {
+      btn.classList.toggle('active', btn.dataset.notation === current);
+    });
+  }
+
+  // --- Open / Close ---
+
+  function open() {
+    updateToggleState();
+    overlay.classList.add('open');
+  }
+
+  function close() {
+    overlay.classList.remove('open');
+  }
+
+  // --- Event handlers ---
+
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) close();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) {
+      close();
+    }
+  });
+
+  toggleBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var wantSolfege = btn.dataset.notation === 'solfege';
+      if (wantSolfege !== getUseSolfege()) {
+        setUseSolfege(wantSolfege);
+        updateToggleState();
+        onNotationChange();
+      }
+    });
+  });
+
+  return { open: open, close: close };
 }
 
 // Navigation: hamburger menu and mode switching.
@@ -11423,6 +11836,27 @@ function createNavigation() {
   });
 
   nav.init();
+
+  // Settings modal
+  var settings = createSettingsModal({
+    onNotationChange: function() {
+      document.querySelectorAll('.mode-screen').forEach(function(el) {
+        if (el.style.display !== 'none') {
+          refreshNoteButtonLabels(el);
+          // Re-render stats if currently showing
+          var activeToggle = el.querySelector('.stats-toggle-btn.active');
+          if (activeToggle) activeToggle.click();
+        }
+      });
+    }
+  });
+
+  var gearBtn = document.querySelector('.gear-btn');
+  if (gearBtn) {
+    gearBtn.addEventListener('click', function() {
+      settings.open();
+    });
+  }
 
   // Register service worker for cache busting on iOS home screen
   if ('serviceWorker' in navigator) {

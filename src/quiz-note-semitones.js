@@ -26,7 +26,7 @@ function createNoteSemitonesMode() {
   // Build row definitions for the stats table
   function getTableRows() {
     return NOTES.map(note => ({
-      label: note.displayName,
+      label: displayNotePair(note.displayName),
       sublabel: String(note.num),
       _colHeader: 'Note',
       fwdItemId: note.name + ':fwd',
@@ -60,7 +60,7 @@ function createNoteSemitonesMode() {
 
       if (currentItem.dir === 'fwd') {
         // Show note, answer is number 0-11
-        prompt.textContent = currentItem.note.displayName + ' = ?';
+        prompt.textContent = displayNotePair(currentItem.note.displayName) + ' = ?';
         noteButtons.classList.add('answer-group-hidden');
         numButtons.classList.remove('answer-group-hidden');
       } else {
@@ -77,7 +77,7 @@ function createNoteSemitonesMode() {
         return { correct, correctAnswer: String(currentItem.note.num) };
       } else {
         const correct = noteMatchesInput(currentItem.note, input);
-        return { correct, correctAnswer: currentItem.note.displayName };
+        return { correct, correctAnswer: displayNotePair(currentItem.note.displayName) };
       }
     },
 
@@ -146,7 +146,7 @@ function createNoteSemitonesMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => true
   );
@@ -179,7 +179,7 @@ function createNoteSemitonesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

@@ -161,11 +161,11 @@ function createScaleDegreesMode() {
       const degreeButtons = container.querySelector('.answer-buttons-degrees');
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' + currentItem.key.root + ' major = ?';
+        prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' + displayNote(currentItem.key.root) + ' major = ?';
         noteButtons.classList.remove('answer-group-hidden');
         degreeButtons.classList.add('answer-group-hidden');
       } else {
-        prompt.textContent = currentItem.key.root + ' major: ' + currentItem.noteName + ' = ?';
+        prompt.textContent = displayNote(currentItem.key.root) + ' major: ' + displayNote(currentItem.noteName) + ' = ?';
         noteButtons.classList.add('answer-group-hidden');
         degreeButtons.classList.remove('answer-group-hidden');
       }
@@ -174,7 +174,7 @@ function createScaleDegreesMode() {
     checkAnswer(itemId, input) {
       if (currentItem.dir === 'fwd') {
         const correct = spelledNoteMatchesSemitone(currentItem.noteName, input);
-        return { correct, correctAnswer: currentItem.noteName };
+        return { correct, correctAnswer: displayNote(currentItem.noteName) };
       } else {
         const expectedDegree = String(currentItem.degree);
         return { correct: input === expectedDegree, correctAnswer: DEGREE_LABELS[currentItem.degree - 1] };
@@ -215,7 +215,7 @@ function createScaleDegreesMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     input => engine.submitAnswer(input),
     () => true
   );
@@ -258,7 +258,7 @@ function createScaleDegreesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

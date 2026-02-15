@@ -110,7 +110,7 @@ function createKeySignaturesMode() {
 
   function getTableRows() {
     return MAJOR_KEYS.map(key => ({
-      label: key.root + ' major',
+      label: displayNote(key.root) + ' major',
       sublabel: keySignatureLabel(key),
       _colHeader: 'Key',
       fwdItemId: key.root + ':fwd',
@@ -159,7 +159,7 @@ function createKeySignaturesMode() {
       const noteButtons = container.querySelector('.answer-buttons-notes');
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = currentItem.key.root + ' major = ?';
+        prompt.textContent = displayNote(currentItem.key.root) + ' major = ?';
         sigButtons.classList.remove('answer-group-hidden');
         noteButtons.classList.add('answer-group-hidden');
       } else {
@@ -176,7 +176,7 @@ function createKeySignaturesMode() {
         return { correct: input === expected, correctAnswer: expected };
       } else {
         const correct = spelledNoteMatchesSemitone(currentItem.key.root, input);
-        return { correct, correctAnswer: currentItem.key.root };
+        return { correct, correctAnswer: displayNote(currentItem.key.root) };
       }
     },
 
@@ -231,7 +231,7 @@ function createKeySignaturesMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     input => engine.submitAnswer(input),
     () => true
   );
@@ -274,7 +274,7 @@ function createKeySignaturesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

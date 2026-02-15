@@ -44,7 +44,7 @@ function createFrettedInstrumentMode(instrument) {
     const text = container.querySelector(
       `text[data-string="${string}"][data-fret="${fret}"]`
     );
-    if (text) text.textContent = fb.getNoteAtPosition(string, fret);
+    if (text) text.textContent = displayNote(fb.getNoteAtPosition(string, fret));
   }
 
   function clearAll() {
@@ -173,7 +173,7 @@ function createFrettedInstrumentMode(instrument) {
     getPracticingLabel() {
       if (enabledStrings.size === instrument.stringCount) return 'all strings';
       const names = [...enabledStrings].sort((a, b) => b - a)
-        .map(s => instrument.stringNames[s]);
+        .map(s => displayNote(instrument.stringNames[s]));
       return names.join(', ') + ' string' + (names.length === 1 ? '' : 's');
     },
 
@@ -226,7 +226,7 @@ function createFrettedInstrumentMode(instrument) {
   const engine = createQuizEngine(mode, container);
 
   // Keyboard handler
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => !naturalsOnly
   );
@@ -281,6 +281,7 @@ function createFrettedInstrumentMode(instrument) {
     init,
     activate() {
       engine.attach();
+      refreshNoteButtonLabels(container);
       refreshUI();
       engine.showCalibrationIfNeeded();
     },

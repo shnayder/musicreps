@@ -82,6 +82,154 @@ export function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true
 }
 
 /**
+ * Create a keyboard handler for solfège input (Do Re Mi Fa Sol La Si + #/b).
+ * Case-insensitive. Buffers two characters to identify the syllable, then
+ * waits for an optional accidental. All syllables are unambiguous after 2 chars.
+ *
+ * @param {function} submitAnswer - Called with the internal note string (e.g. 'C', 'F#')
+ * @param {function} [allowAccidentals] - Returns true if accidentals are enabled
+ * @returns {{ handleKey(e): boolean, reset(): void }}
+ */
+export function createSolfegeKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  const SOLFEGE_TO_NOTE = {
+    'do': 'C', 're': 'D', 'mi': 'E', 'fa': 'F',
+    'so': 'G', 'la': 'A', 'si': 'B'
+  };
+  const FIRST_CHARS = new Set(['d', 'r', 'm', 'f', 's', 'l']);
+
+  let buffer = '';
+  let pendingNote = null;
+  let pendingTimeout = null;
+
+  function reset() {
+    buffer = '';
+    if (pendingTimeout) clearTimeout(pendingTimeout);
+    pendingTimeout = null;
+    pendingNote = null;
+  }
+
+  function submitPending() {
+    if (pendingNote) {
+      clearTimeout(pendingTimeout);
+      submitAnswer(pendingNote);
+      pendingNote = null;
+      pendingTimeout = null;
+    }
+  }
+
+  function handleKey(e) {
+    const key = e.key.toLowerCase();
+
+    // Handle accidental after resolved syllable
+    if (pendingNote && allowAccidentals()) {
+      if (e.key === '#' || (e.shiftKey && e.key === '3')) {
+        e.preventDefault();
+        clearTimeout(pendingTimeout);
+        submitAnswer(pendingNote + '#');
+        pendingNote = null;
+        pendingTimeout = null;
+        return true;
+      }
+      // 'b' is flat (no solfège syllable starts with 'b')
+      if (key === 'b') {
+        e.preventDefault();
+        clearTimeout(pendingTimeout);
+        submitAnswer(pendingNote + 'b');
+        pendingNote = null;
+        pendingTimeout = null;
+        return true;
+      }
+    }
+
+    // Submit any pending note before starting new input
+    if (pendingNote && FIRST_CHARS.has(key)) {
+      submitPending();
+    }
+
+    // Continue building syllable
+    if (buffer.length > 0) {
+      e.preventDefault();
+      buffer += key;
+      const note = SOLFEGE_TO_NOTE[buffer];
+      if (note) {
+        buffer = '';
+        if (!allowAccidentals()) {
+          submitAnswer(note);
+        } else {
+          pendingNote = note;
+          pendingTimeout = setTimeout(() => {
+            submitAnswer(pendingNote);
+            pendingNote = null;
+            pendingTimeout = null;
+          }, 400);
+        }
+      } else if (buffer.length >= 2) {
+        // Invalid pair — reset
+        buffer = '';
+      }
+      return true;
+    }
+
+    // Start new syllable
+    if (FIRST_CHARS.has(key)) {
+      e.preventDefault();
+      // Submit any pending note first
+      submitPending();
+      buffer = key;
+      return true;
+    }
+
+    return false;
+  }
+
+  return { handleKey, reset };
+}
+
+/**
+ * Adaptive key handler: delegates to letter or solfège handler based on
+ * current notation mode. Drop-in replacement for createNoteKeyHandler.
+ *
+ * @param {function} submitAnswer - Called with the note string
+ * @param {function} [allowAccidentals] - Returns true if accidentals are enabled
+ * @returns {{ handleKey(e): boolean, reset(): void }}
+ */
+export function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  const letterHandler = createNoteKeyHandler(submitAnswer, allowAccidentals);
+  const solfegeHandler = createSolfegeKeyHandler(submitAnswer, allowAccidentals);
+
+  return {
+    handleKey(e) {
+      return getUseSolfege()
+        ? solfegeHandler.handleKey(e)
+        : letterHandler.handleKey(e);
+    },
+    reset() {
+      letterHandler.reset();
+      solfegeHandler.reset();
+    }
+  };
+}
+
+/**
+ * Update all note button labels in a container to reflect current notation mode.
+ * Handles .answer-btn-note, .note-btn, and .string-toggle elements.
+ */
+export function refreshNoteButtonLabels(container) {
+  container.querySelectorAll('.answer-btn-note').forEach(function(btn) {
+    var note = NOTES.find(function(n) { return n.name === btn.dataset.note; });
+    if (note) btn.textContent = displayNotePair(note.displayName);
+  });
+  container.querySelectorAll('.note-btn').forEach(function(btn) {
+    var noteName = btn.dataset.note;
+    if (noteName) btn.textContent = displayNote(noteName);
+  });
+  container.querySelectorAll('.string-toggle').forEach(function(btn) {
+    var stringNote = btn.dataset.stringNote;
+    if (stringNote) btn.textContent = displayNote(stringNote);
+  });
+}
+
+/**
  * Build human-readable threshold descriptions from a motor baseline.
  * Returns an array of { label, maxMs, meaning } objects describing the
  * heatmap speed bands. Used by the calibration results screen.
@@ -396,6 +544,10 @@ export function createQuizEngine(mode, container) {
       : 'phase-idle';
     container.classList.remove('phase-idle', 'phase-active', 'phase-calibration');
     container.classList.add(phaseClass);
+
+    // Hide settings gear during active quiz/calibration
+    var gearBtn = document.querySelector('.gear-btn');
+    if (gearBtn) gearBtn.classList.toggle('hidden', phaseClass !== 'phase-idle');
 
     // Mark the calibration button container so CSS can hide others
     if (inCalibration && !container.querySelector('.calibration-active')) {

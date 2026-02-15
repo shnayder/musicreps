@@ -69,7 +69,7 @@ export function createFretboardHelpers(musicData) {
   function checkFretboardAnswer(currentNote, input) {
     const note = musicData.notes.find(n => n.name === currentNote);
     const correct = !!(note && musicData.noteMatchesInput(note, input));
-    return { correct, correctAnswer: currentNote };
+    return { correct, correctAnswer: displayNote(currentNote) };
   }
 
   /**

@@ -30,6 +30,11 @@ import {
   spelledNoteMatchesInput,
   spelledNoteMatchesSemitone,
   pickAccidentalName,
+  SOLFEGE_MAP,
+  getUseSolfege,
+  setUseSolfege,
+  displayNote,
+  displayNotePair,
 } from "./music-data.js";
 
 describe("NOTES", () => {
@@ -752,6 +757,158 @@ describe("key-signature consistency (rule 2)", () => {
     for (let d = 1; d <= 7; d++) {
       const note = getScaleDegreeNote("C", d);
       assert.ok(note.length === 1, `C major degree ${d} = ${note} should be natural`);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Solfège notation tests
+// ---------------------------------------------------------------------------
+
+describe("SOLFEGE_MAP", () => {
+  it("maps all 7 natural notes to solfège syllables", () => {
+    assert.equal(SOLFEGE_MAP.C, "Do");
+    assert.equal(SOLFEGE_MAP.D, "Re");
+    assert.equal(SOLFEGE_MAP.E, "Mi");
+    assert.equal(SOLFEGE_MAP.F, "Fa");
+    assert.equal(SOLFEGE_MAP.G, "Sol");
+    assert.equal(SOLFEGE_MAP.A, "La");
+    assert.equal(SOLFEGE_MAP.B, "Si");
+  });
+
+  it("has exactly 7 entries", () => {
+    assert.equal(Object.keys(SOLFEGE_MAP).length, 7);
+  });
+});
+
+describe("getUseSolfege / setUseSolfege", () => {
+  it("can toggle between letter and solfège mode", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(getUseSolfege(), true);
+      setUseSolfege(false);
+      assert.equal(getUseSolfege(), false);
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+});
+
+describe("displayNote", () => {
+  it("uses Unicode accidentals in letter mode", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(false);
+      assert.equal(displayNote("C"), "C");
+      assert.equal(displayNote("F#"), "F\u266F");
+      assert.equal(displayNote("Bb"), "B\u266D");
+      assert.equal(displayNote("C#"), "C\u266F");
+      assert.equal(displayNote("Eb"), "E\u266D");
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it("translates natural notes to solfège", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(displayNote("C"), "Do");
+      assert.equal(displayNote("D"), "Re");
+      assert.equal(displayNote("E"), "Mi");
+      assert.equal(displayNote("F"), "Fa");
+      assert.equal(displayNote("G"), "Sol");
+      assert.equal(displayNote("A"), "La");
+      assert.equal(displayNote("B"), "Si");
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it("translates sharps to solfège + ♯", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(displayNote("C#"), "Do\u266F");
+      assert.equal(displayNote("F#"), "Fa\u266F");
+      assert.equal(displayNote("G#"), "Sol\u266F");
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it("translates flats to solfège + ♭", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(displayNote("Bb"), "Si\u266D");
+      assert.equal(displayNote("Eb"), "Mi\u266D");
+      assert.equal(displayNote("Db"), "Re\u266D");
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it("preserves case: lowercase input → lowercase solfège", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(displayNote("e"), "mi");
+      assert.equal(displayNote("E"), "Mi");
+      assert.equal(displayNote("b"), "si");
+      assert.equal(displayNote("B"), "Si");
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it("handles null/empty gracefully", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(displayNote(""), "");
+      assert.equal(displayNote(null as any), null);
+      assert.equal(displayNote(undefined as any), undefined);
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+});
+
+describe("displayNotePair", () => {
+  it("uses Unicode accidentals in letter mode", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(false);
+      assert.equal(displayNotePair("C#/Db"), "C\u266F/D\u266D");
+      assert.equal(displayNotePair("C"), "C");
+      assert.equal(displayNotePair("F#"), "F\u266F");
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it("translates both halves of a pair", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(displayNotePair("C#/Db"), "Do\u266F/Re\u266D");
+      assert.equal(displayNotePair("F#/Gb"), "Fa\u266F/Sol\u266D");
+      assert.equal(displayNotePair("A#/Bb"), "La\u266F/Si\u266D");
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it("translates single names (no slash)", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(displayNotePair("C"), "Do");
+      assert.equal(displayNotePair("F#"), "Fa\u266F");
+    } finally {
+      setUseSolfege(original);
     }
   });
 });

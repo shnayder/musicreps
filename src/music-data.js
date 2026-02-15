@@ -293,3 +293,59 @@ export const UKULELE = {
 // Legacy exports (used by Speed Tap)
 export const STRING_NAMES = GUITAR.stringNames;
 export const STRING_OFFSETS = GUITAR.stringOffsets;
+
+// ---------------------------------------------------------------------------
+// Solfège notation
+// ---------------------------------------------------------------------------
+
+export const SOLFEGE_MAP = {
+  C: 'Do', D: 'Re', E: 'Mi', F: 'Fa', G: 'Sol', A: 'La', B: 'Si'
+};
+
+let _useSolfege = false;
+
+/** Get current notation mode. */
+export function getUseSolfege() { return _useSolfege; }
+
+/** Set notation mode and persist to localStorage. */
+export function setUseSolfege(v) {
+  _useSolfege = v;
+  try { localStorage.setItem('fretboard_notation', v ? 'solfege' : 'letter'); } catch (_) {}
+}
+
+// Load notation preference on module evaluation
+try {
+  _useSolfege = localStorage.getItem('fretboard_notation') === 'solfege';
+} catch (_) {}
+
+/**
+ * Format a note name for display. Always replaces ASCII accidentals with
+ * Unicode symbols (# → ♯, b → ♭). In solfège mode, also translates the
+ * letter to a solfège syllable. Preserves case: lowercase input produces
+ * lowercase output (e.g., "e" → "mi" for high-E string).
+ */
+export function displayNote(name) {
+  if (!name) return name;
+  const letter = name[0].toUpperCase();
+  const acc = name.slice(1).replace(/#/g, '\u266F').replace(/b/g, '\u266D');
+  if (!_useSolfege) {
+    return name[0] + acc;
+  }
+  const syl = SOLFEGE_MAP[letter];
+  if (!syl) return name[0] + acc;
+  // Preserve case: lowercase input letter → lowercase solfège
+  const out = name[0] === name[0].toLowerCase() ? syl.toLowerCase() : syl;
+  return out + acc;
+}
+
+/**
+ * Format a display-name pair like "C#/Db" → "C♯/D♭" (letter mode)
+ * or "Do♯/Re♭" (solfège mode). Handles both single names and
+ * slash-separated pairs.
+ */
+export function displayNotePair(displayName) {
+  if (!displayName) return displayName;
+  if (!displayName.includes('/')) return displayNote(displayName);
+  const [s, f] = displayName.split('/');
+  return displayNote(s) + '/' + displayNote(f);
+}

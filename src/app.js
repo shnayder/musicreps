@@ -107,6 +107,27 @@
 
   nav.init();
 
+  // Settings modal
+  var settings = createSettingsModal({
+    onNotationChange: function() {
+      document.querySelectorAll('.mode-screen').forEach(function(el) {
+        if (el.style.display !== 'none') {
+          refreshNoteButtonLabels(el);
+          // Re-render stats if currently showing
+          var activeToggle = el.querySelector('.stats-toggle-btn.active');
+          if (activeToggle) activeToggle.click();
+        }
+      });
+    }
+  });
+
+  var gearBtn = document.querySelector('.gear-btn');
+  if (gearBtn) {
+    gearBtn.addEventListener('click', function() {
+      settings.open();
+    });
+  }
+
   // Register service worker for cache busting on iOS home screen
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');

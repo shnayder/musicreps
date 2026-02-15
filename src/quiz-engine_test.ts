@@ -1,7 +1,12 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { createNoteKeyHandler, updateModeStats, getCalibrationThresholds } from "./quiz-engine.js";
+import { createNoteKeyHandler, createSolfegeKeyHandler, createAdaptiveKeyHandler, updateModeStats, getCalibrationThresholds } from "./quiz-engine.js";
+import { setUseSolfege, getUseSolfege } from "./music-data.js";
 import { DEFAULT_CONFIG, createMemoryStorage, createAdaptiveSelector } from "./adaptive.js";
+
+// createAdaptiveKeyHandler references getUseSolfege as a global (concatenated at runtime).
+// Make it available in the test environment.
+(globalThis as any).getUseSolfege = getUseSolfege;
 
 describe("quiz-engine defaults", () => {
   it("default automaticityTarget is 3000ms", () => {
@@ -128,6 +133,136 @@ describe("getCalibrationThresholds", () => {
     thresholds.forEach((t) => {
       assert.ok(t.meaning.length > 0, `${t.label} should have a meaning`);
     });
+  });
+});
+
+describe("createSolfegeKeyHandler", () => {
+  it("submits natural note from solfège syllable", () => {
+    const submitted: string[] = [];
+    const handler = createSolfegeKeyHandler(
+      (input: string) => submitted.push(input),
+      () => false,
+    );
+    handler.handleKey({ key: "d", preventDefault() {} } as any);
+    handler.handleKey({ key: "o", preventDefault() {} } as any);
+    assert.deepEqual(submitted, ["C"]);
+  });
+
+  it("handles all solfège syllables", () => {
+    const cases: [string, string, string][] = [
+      ["d", "o", "C"],
+      ["r", "e", "D"],
+      ["m", "i", "E"],
+      ["f", "a", "F"],
+      ["s", "o", "G"],
+      ["l", "a", "A"],
+      ["s", "i", "B"],
+    ];
+    for (const [k1, k2, expected] of cases) {
+      const submitted: string[] = [];
+      const handler = createSolfegeKeyHandler(
+        (input: string) => submitted.push(input),
+        () => false,
+      );
+      handler.handleKey({ key: k1, preventDefault() {} } as any);
+      handler.handleKey({ key: k2, preventDefault() {} } as any);
+      assert.deepEqual(submitted, [expected], `${k1}${k2} should submit ${expected}`);
+    }
+  });
+
+  it("is case-insensitive", () => {
+    const submitted: string[] = [];
+    const handler = createSolfegeKeyHandler(
+      (input: string) => submitted.push(input),
+      () => false,
+    );
+    handler.handleKey({ key: "D", preventDefault() {} } as any);
+    handler.handleKey({ key: "O", preventDefault() {} } as any);
+    assert.deepEqual(submitted, ["C"]);
+  });
+
+  it("submits sharp after solfège syllable", () => {
+    const submitted: string[] = [];
+    const handler = createSolfegeKeyHandler(
+      (input: string) => submitted.push(input),
+      () => true,
+    );
+    handler.handleKey({ key: "d", preventDefault() {} } as any);
+    handler.handleKey({ key: "o", preventDefault() {} } as any);
+    assert.equal(submitted.length, 0); // pending for accidental
+    handler.handleKey({ key: "#", shiftKey: false, preventDefault() {} } as any);
+    assert.deepEqual(submitted, ["C#"]);
+  });
+
+  it("submits flat after solfège syllable", () => {
+    const submitted: string[] = [];
+    const handler = createSolfegeKeyHandler(
+      (input: string) => submitted.push(input),
+      () => true,
+    );
+    handler.handleKey({ key: "r", preventDefault() {} } as any);
+    handler.handleKey({ key: "e", preventDefault() {} } as any);
+    handler.handleKey({ key: "b", shiftKey: false, preventDefault() {} } as any);
+    assert.deepEqual(submitted, ["Db"]);
+  });
+
+  it("ignores non-solfège keys", () => {
+    const submitted: string[] = [];
+    const handler = createSolfegeKeyHandler(
+      (input: string) => submitted.push(input),
+      () => true,
+    );
+    const handled = handler.handleKey({ key: "x", preventDefault() {} } as any);
+    assert.ok(!handled);
+    assert.deepEqual(submitted, []);
+  });
+
+  it("reset clears pending state", () => {
+    const submitted: string[] = [];
+    const handler = createSolfegeKeyHandler(
+      (input: string) => submitted.push(input),
+      () => true,
+    );
+    handler.handleKey({ key: "d", preventDefault() {} } as any);
+    handler.handleKey({ key: "o", preventDefault() {} } as any);
+    handler.reset();
+    // Should not submit after reset even if timeout fires
+    assert.deepEqual(submitted, []);
+  });
+});
+
+describe("createAdaptiveKeyHandler", () => {
+  it("delegates to letter handler when solfège is off", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(false);
+      const submitted: string[] = [];
+      const handler = createAdaptiveKeyHandler(
+        (input: string) => submitted.push(input),
+        () => false,
+      );
+      handler.handleKey({ key: "c", preventDefault() {} } as any);
+      assert.deepEqual(submitted, ["C"]);
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it("delegates to solfège handler when solfège is on", () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      const submitted: string[] = [];
+      const handler = createAdaptiveKeyHandler(
+        (input: string) => submitted.push(input),
+        () => false,
+      );
+      handler.handleKey({ key: "d", preventDefault() {} } as any);
+      handler.handleKey({ key: "o", preventDefault() {} } as any);
+      assert.deepEqual(submitted, ["C"]);
+    } finally {
+      setUseSolfege(original);
+    }
   });
 });
 

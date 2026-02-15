@@ -54,7 +54,7 @@ function createSpeedTapMode() {
     const text = container.querySelector(
       `text[data-string="${string}"][data-fret="${fret}"]`
     );
-    if (text) text.textContent = getNoteAtPosition(string, fret);
+    if (text) text.textContent = displayNote(getNoteAtPosition(string, fret));
   }
 
   function clearNoteText(string, fret) {
@@ -74,7 +74,7 @@ function createSpeedTapMode() {
   const statsControls = createStatsControls(container, (mode, el) => {
     let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
     for (const note of NOTES) {
-      html += '<th>' + note.displayName + '</th>';
+      html += '<th>' + displayNotePair(note.displayName) + '</th>';
     }
     html += '</tr></thead><tbody><tr>';
     for (const note of NOTES) {
@@ -182,14 +182,14 @@ function createSpeedTapMode() {
       const prompt = container.querySelector('.quiz-prompt');
       if (prompt) {
         const note = NOTES.find(n => n.name === currentNote);
-        prompt.textContent = 'Tap all ' + (note ? note.displayName : currentNote);
+        prompt.textContent = 'Tap all ' + (note ? displayNotePair(note.displayName) : displayNote(currentNote));
       }
       updateRoundProgress();
     },
 
     checkAnswer(itemId, input) {
       const allFound = input === 'complete';
-      return { correct: allFound, correctAnswer: currentNote };
+      return { correct: allFound, correctAnswer: displayNote(currentNote) };
     },
 
     onStart() {

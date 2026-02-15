@@ -61,6 +61,7 @@ async function buildHTML(): Promise<string> {
     quizScaleDegreesJS,
     quizDiatonicChordsJS,
     quizChordSpellingJS,
+    settingsJS,
     navigationJS,
     appJS,
   ] = await Promise.all([
@@ -83,6 +84,7 @@ async function buildHTML(): Promise<string> {
     readFile("./src/quiz-scale-degrees.js"),
     readFile("./src/quiz-diatonic-chords.js"),
     readFile("./src/quiz-chord-spelling.js"),
+    readFile("./src/settings.js"),
     readFile("./src/navigation.js"),
     readFile("./src/app.js"),
   ]);
@@ -124,7 +126,8 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.10</div>
+    <div class="version">v3.11</div>
+    <button class="gear-btn" type="button" aria-label="Settings">\u2699</button>
   </div>
 
   <!-- Guitar Fretboard mode -->
@@ -285,6 +288,7 @@ ${quizKeySignaturesJS}
 ${quizScaleDegreesJS}
 ${quizDiatonicChordsJS}
 ${quizChordSpellingJS}
+${settingsJS}
 ${navigationJS}
 ${appJS}
   </script>

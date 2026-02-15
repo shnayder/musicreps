@@ -160,12 +160,12 @@ function createDiatonicChordsMode() {
       const numeralButtons = container.querySelector('.answer-buttons-numerals');
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = currentItem.chord.numeral + ' in ' + currentItem.key.root + ' major = ?';
+        prompt.textContent = currentItem.chord.numeral + ' in ' + displayNote(currentItem.key.root) + ' major = ?';
         noteButtons.classList.remove('answer-group-hidden');
         numeralButtons.classList.add('answer-group-hidden');
       } else {
-        const chordName = currentItem.rootNote + currentItem.chord.qualityLabel;
-        prompt.textContent = chordName + ' in ' + currentItem.key.root + ' major = ?';
+        const chordName = displayNote(currentItem.rootNote) + currentItem.chord.qualityLabel;
+        prompt.textContent = chordName + ' in ' + displayNote(currentItem.key.root) + ' major = ?';
         noteButtons.classList.add('answer-group-hidden');
         numeralButtons.classList.remove('answer-group-hidden');
       }
@@ -174,7 +174,7 @@ function createDiatonicChordsMode() {
     checkAnswer(itemId, input) {
       if (currentItem.dir === 'fwd') {
         const correct = spelledNoteMatchesSemitone(currentItem.rootNote, input);
-        const fullAnswer = currentItem.rootNote + ' ' + currentItem.chord.quality;
+        const fullAnswer = displayNote(currentItem.rootNote) + ' ' + currentItem.chord.quality;
         return { correct, correctAnswer: fullAnswer };
       } else {
         const expectedNumeral = currentItem.chord.numeral;
@@ -216,7 +216,7 @@ function createDiatonicChordsMode() {
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
-  const noteKeyHandler = createNoteKeyHandler(
+  const noteKeyHandler = createAdaptiveKeyHandler(
     input => engine.submitAnswer(input),
     () => true
   );
@@ -259,7 +259,7 @@ function createDiatonicChordsMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
