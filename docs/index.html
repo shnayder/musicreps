@@ -82,9 +82,12 @@
 }
 
 * { -webkit-tap-highlight-color: transparent; }
+html {
+  background: var(--color-surface);
+}
 body {
   font-family: system-ui, -apple-system, sans-serif;
-  max-width: 1400px;
+  max-width: 650px;
   margin: 0 auto;
   padding: 0 var(--space-5);
   display: flex;
@@ -93,6 +96,8 @@ body {
   min-height: 100dvh;
   color: var(--color-text);
   background: var(--color-bg);
+  border-left: 1px solid var(--color-border-lighter);
+  border-right: 1px solid var(--color-border-lighter);
 }
 
 /* --- Top bar & navigation --- */
@@ -284,7 +289,7 @@ body {
 }
 .fretboard-container {
   position: relative;
-  flex: 1;
+  width: 100%;
   min-width: 0;
   max-width: 1200px;
 }
@@ -518,10 +523,9 @@ button {
 .note-buttons {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: center;
   gap: var(--space-2);
-  margin: var(--space-3) auto var(--space-3) 0;
-  max-width: 220px;
+  margin: var(--space-3) auto;
 }
 .note-btn {
   min-width: 50px;
@@ -610,6 +614,11 @@ button {
 }
 .answer-buttons-intervals {
   grid-template-columns: repeat(3, 1fr);
+}
+
+/* --- Answer group visibility (toggled by mode JS for bidirectional questions) --- */
+.answer-group-hidden {
+  display: none;
 }
 
 /* --- Calibration overlay: inside quiz-area, hide non-calibration content --- */
@@ -990,6 +999,8 @@ button {
   body {
     margin: 0;
     padding: 0 var(--space-1);
+    border-left: none;
+    border-right: none;
   }
 
   .top-bar {
@@ -5703,7 +5714,7 @@ button {
         </div>
       </div>
     </div>
-      <div class="answer-buttons answer-buttons-notes" style="display: none;">
+      <div class="answer-buttons answer-buttons-notes answer-group-hidden">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
@@ -6022,7 +6033,7 @@ button {
         <button class="answer-btn answer-btn-keysig" data-sig="6b">6b</button>
         <button class="answer-btn answer-btn-keysig" data-sig="7b">7b</button>
       </div>
-      <div class="answer-buttons answer-buttons-notes" style="display: none;">
+      <div class="answer-buttons answer-buttons-notes answer-group-hidden">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#/Db</button>
         <button class="answer-btn answer-btn-note" data-note="D">D</button>
@@ -6092,7 +6103,7 @@ button {
         <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
-      <div class="answer-buttons answer-buttons-degrees" style="display: none;">
+      <div class="answer-buttons answer-buttons-degrees answer-group-hidden">
         <button class="answer-btn answer-btn-degree" data-degree="1">1st</button>
         <button class="answer-btn answer-btn-degree" data-degree="2">2nd</button>
         <button class="answer-btn answer-btn-degree" data-degree="3">3rd</button>
@@ -6157,7 +6168,7 @@ button {
         <button class="answer-btn answer-btn-note" data-note="A#">A#/Bb</button>
         <button class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
-      <div class="answer-buttons answer-buttons-numerals" style="display: none;">
+      <div class="answer-buttons answer-buttons-numerals answer-group-hidden">
         <button class="answer-btn answer-btn-numeral" data-numeral="I">I</button>
         <button class="answer-btn answer-btn-numeral" data-numeral="ii">ii</button>
         <button class="answer-btn answer-btn-numeral" data-numeral="iii">iii</button>
@@ -7477,6 +7488,11 @@ function runCalibration(opts) {
   const TRIAL_COUNT = 10;
   const PAUSE_MS = 400;
 
+  // Skip the first 2 trials when computing baseline — users need a moment
+  // to understand the task and orient to the UI, so their first taps are
+  // noticeably slower and would inflate the baseline.
+  const WARMUP_TRIALS = 2;
+
   const times = [];
   let trialIndex = 0;
   let targetBtn = null;
@@ -7489,7 +7505,7 @@ function runCalibration(opts) {
     if (canceled) return;
     if (trialIndex >= TRIAL_COUNT) {
       cleanup();
-      const median = computeMedian(times);
+      const median = computeMedian(times.slice(WARMUP_TRIALS));
       onComplete(median);
       return;
     }
@@ -8140,8 +8156,21 @@ function createQuizEngine(mode, container) {
   /**
    * If no baseline exists, show the calibration intro screen.
    * Called by modes from their activate() hook.
+   *
+   * Re-checks localStorage because another mode sharing the same
+   * calibrationProvider may have completed calibration after this
+   * engine was created (e.g. guitar and ukulele both use 'button').
    */
   function showCalibrationIfNeeded() {
+    if (!motorBaseline) {
+      const stored = localStorage.getItem(baselineKey);
+      if (stored) {
+        const parsed = parseInt(stored, 10);
+        if (parsed > 0) {
+          applyBaseline(parsed);
+        }
+      }
+    }
     if (!motorBaseline && state.phase === 'idle') {
       startCalibration();
     }
@@ -9238,13 +9267,13 @@ function createNoteSemitonesMode() {
       if (currentItem.dir === 'fwd') {
         // Show note, answer is number 0-11
         prompt.textContent = currentItem.note.displayName + ' = ?';
-        noteButtons.style.display = 'none';
-        numButtons.style.display = '';
+        noteButtons.classList.add('answer-group-hidden');
+        numButtons.classList.remove('answer-group-hidden');
       } else {
         // Show number, answer is note
         prompt.textContent = currentItem.note.num + ' = ?';
-        noteButtons.style.display = '';
-        numButtons.style.display = 'none';
+        noteButtons.classList.remove('answer-group-hidden');
+        numButtons.classList.add('answer-group-hidden');
       }
     },
 
@@ -9429,13 +9458,13 @@ function createIntervalSemitonesMode() {
       if (currentItem.dir === 'fwd') {
         // Show interval name, answer is number 1-12
         prompt.textContent = currentItem.interval.name + ' = ?';
-        intervalButtons.style.display = 'none';
-        numButtons.style.display = '';
+        intervalButtons.classList.add('answer-group-hidden');
+        numButtons.classList.remove('answer-group-hidden');
       } else {
         // Show number, answer is interval
         prompt.textContent = currentItem.interval.num + ' = ?';
-        intervalButtons.style.display = '';
-        numButtons.style.display = 'none';
+        intervalButtons.classList.remove('answer-group-hidden');
+        numButtons.classList.add('answer-group-hidden');
       }
     },
 
@@ -10215,13 +10244,13 @@ function createKeySignaturesMode() {
 
       if (currentItem.dir === 'fwd') {
         prompt.textContent = currentItem.key.root + ' major = ?';
-        sigButtons.style.display = '';
-        noteButtons.style.display = 'none';
+        sigButtons.classList.remove('answer-group-hidden');
+        noteButtons.classList.add('answer-group-hidden');
       } else {
         const label = keySignatureLabel(currentItem.key);
         prompt.textContent = label + ' major = ?';
-        sigButtons.style.display = 'none';
-        noteButtons.style.display = '';
+        sigButtons.classList.add('answer-group-hidden');
+        noteButtons.classList.remove('answer-group-hidden');
       }
     },
 
@@ -10504,12 +10533,12 @@ function createScaleDegreesMode() {
 
       if (currentItem.dir === 'fwd') {
         prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' + currentItem.key.root + ' major = ?';
-        noteButtons.style.display = '';
-        degreeButtons.style.display = 'none';
+        noteButtons.classList.remove('answer-group-hidden');
+        degreeButtons.classList.add('answer-group-hidden');
       } else {
         prompt.textContent = currentItem.key.root + ' major: ' + currentItem.noteName + ' = ?';
-        noteButtons.style.display = 'none';
-        degreeButtons.style.display = '';
+        noteButtons.classList.add('answer-group-hidden');
+        degreeButtons.classList.remove('answer-group-hidden');
       }
     },
 
@@ -10772,13 +10801,13 @@ function createDiatonicChordsMode() {
 
       if (currentItem.dir === 'fwd') {
         prompt.textContent = currentItem.chord.numeral + ' in ' + currentItem.key.root + ' major = ?';
-        noteButtons.style.display = '';
-        numeralButtons.style.display = 'none';
+        noteButtons.classList.remove('answer-group-hidden');
+        numeralButtons.classList.add('answer-group-hidden');
       } else {
         const chordName = currentItem.rootNote + currentItem.chord.qualityLabel;
         prompt.textContent = chordName + ' in ' + currentItem.key.root + ' major = ?';
-        noteButtons.style.display = 'none';
-        numeralButtons.style.display = '';
+        noteButtons.classList.add('answer-group-hidden');
+        numeralButtons.classList.remove('answer-group-hidden');
       }
     },
 

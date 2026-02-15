@@ -194,7 +194,7 @@ ${modeScreen("speedTap", {
         <span class="speed-tap-progress"></span>
       </div>
       ${fretboardSVG()}
-      ${noteAnswerButtons('display: none;')}
+      ${noteAnswerButtons({ hidden: true })}
       ${feedbackBlock()}`,
 })}
 
@@ -235,7 +235,7 @@ ${modeScreen("keySignatures", {
   settingsHTML: DISTANCE_TOGGLES,
   quizAreaContent: `${countdownAndPrompt()}
       ${keysigAnswerButtons()}
-      ${noteAnswerButtons('display: none;')}
+      ${noteAnswerButtons({ hidden: true })}
       ${feedbackBlock()}`,
 })}
 
@@ -244,7 +244,7 @@ ${modeScreen("scaleDegrees", {
   settingsHTML: DISTANCE_TOGGLES,
   quizAreaContent: `${countdownAndPrompt()}
       ${noteAnswerButtons()}
-      ${degreeAnswerButtons('display: none;')}
+      ${degreeAnswerButtons({ hidden: true })}
       ${feedbackBlock()}`,
 })}
 
@@ -253,7 +253,7 @@ ${modeScreen("diatonicChords", {
   settingsHTML: DISTANCE_TOGGLES,
   quizAreaContent: `${countdownAndPrompt()}
       ${noteAnswerButtons()}
-      ${numeralAnswerButtons('display: none;')}
+      ${numeralAnswerButtons({ hidden: true })}
       ${feedbackBlock()}`,
 })}
 

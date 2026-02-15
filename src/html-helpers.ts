@@ -14,14 +14,14 @@ import {
 // ---------------------------------------------------------------------------
 
 /** 12-note answer button grid (C, C#/Db, D, ... B). */
-export function noteAnswerButtons(style?: string): string {
+export function noteAnswerButtons(opts?: { hidden?: boolean }): string {
   const notes: [string, string][] = [
     ["C", "C"], ["C#", "C#/Db"], ["D", "D"], ["D#", "D#/Eb"],
     ["E", "E"], ["F", "F"], ["F#", "F#/Gb"], ["G", "G"],
     ["G#", "G#/Ab"], ["A", "A"], ["A#", "A#/Bb"], ["B", "B"],
   ];
-  const styleAttr = style ? ` style="${style}"` : "";
-  return `<div class="answer-buttons answer-buttons-notes"${styleAttr}>\n`
+  const cls = opts?.hidden ? " answer-group-hidden" : "";
+  return `<div class="answer-buttons answer-buttons-notes${cls}">\n`
     + notes.map(([val, label]) =>
       `        <button class="answer-btn answer-btn-note" data-note="${val}">${label}</button>`
     ).join("\n") + "\n      </div>";
@@ -56,23 +56,23 @@ export function keysigAnswerButtons(): string {
 }
 
 /** Scale degree answer buttons (1st..7th). */
-export function degreeAnswerButtons(style?: string): string {
+export function degreeAnswerButtons(opts?: { hidden?: boolean }): string {
   const degrees: [string, string][] = [
     ["1", "1st"], ["2", "2nd"], ["3", "3rd"], ["4", "4th"],
     ["5", "5th"], ["6", "6th"], ["7", "7th"],
   ];
-  const styleAttr = style ? ` style="${style}"` : "";
-  return `<div class="answer-buttons answer-buttons-degrees"${styleAttr}>\n`
+  const cls = opts?.hidden ? " answer-group-hidden" : "";
+  return `<div class="answer-buttons answer-buttons-degrees${cls}">\n`
     + degrees.map(([val, label]) =>
       `        <button class="answer-btn answer-btn-degree" data-degree="${val}">${label}</button>`
     ).join("\n") + "\n      </div>";
 }
 
 /** Roman numeral answer buttons (I, ii, iii, IV, V, vi, vii\u00B0). */
-export function numeralAnswerButtons(style?: string): string {
+export function numeralAnswerButtons(opts?: { hidden?: boolean }): string {
   const numerals = ["I", "ii", "iii", "IV", "V", "vi", "vii\u00B0"];
-  const styleAttr = style ? ` style="${style}"` : "";
-  return `<div class="answer-buttons answer-buttons-numerals"${styleAttr}>\n`
+  const cls = opts?.hidden ? " answer-group-hidden" : "";
+  return `<div class="answer-buttons answer-buttons-numerals${cls}">\n`
     + numerals.map((n) =>
       `        <button class="answer-btn answer-btn-numeral" data-numeral="${n}">${n}</button>`
     ).join("\n") + "\n      </div>";

@@ -161,13 +161,13 @@ function createDiatonicChordsMode() {
 
       if (currentItem.dir === 'fwd') {
         prompt.textContent = currentItem.chord.numeral + ' in ' + currentItem.key.root + ' major = ?';
-        noteButtons.style.display = '';
-        numeralButtons.style.display = 'none';
+        noteButtons.classList.remove('answer-group-hidden');
+        numeralButtons.classList.add('answer-group-hidden');
       } else {
         const chordName = currentItem.rootNote + currentItem.chord.qualityLabel;
         prompt.textContent = chordName + ' in ' + currentItem.key.root + ' major = ?';
-        noteButtons.style.display = 'none';
-        numeralButtons.style.display = '';
+        noteButtons.classList.add('answer-group-hidden');
+        numeralButtons.classList.remove('answer-group-hidden');
       }
     },
 

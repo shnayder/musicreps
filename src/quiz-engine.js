@@ -135,6 +135,11 @@ function runCalibration(opts) {
   const TRIAL_COUNT = 10;
   const PAUSE_MS = 400;
 
+  // Skip the first 2 trials when computing baseline — users need a moment
+  // to understand the task and orient to the UI, so their first taps are
+  // noticeably slower and would inflate the baseline.
+  const WARMUP_TRIALS = 2;
+
   const times = [];
   let trialIndex = 0;
   let targetBtn = null;
@@ -147,7 +152,7 @@ function runCalibration(opts) {
     if (canceled) return;
     if (trialIndex >= TRIAL_COUNT) {
       cleanup();
-      const median = computeMedian(times);
+      const median = computeMedian(times.slice(WARMUP_TRIALS));
       onComplete(median);
       return;
     }
@@ -798,8 +803,21 @@ export function createQuizEngine(mode, container) {
   /**
    * If no baseline exists, show the calibration intro screen.
    * Called by modes from their activate() hook.
+   *
+   * Re-checks localStorage because another mode sharing the same
+   * calibrationProvider may have completed calibration after this
+   * engine was created (e.g. guitar and ukulele both use 'button').
    */
   function showCalibrationIfNeeded() {
+    if (!motorBaseline) {
+      const stored = localStorage.getItem(baselineKey);
+      if (stored) {
+        const parsed = parseInt(stored, 10);
+        if (parsed > 0) {
+          applyBaseline(parsed);
+        }
+      }
+    }
     if (!motorBaseline && state.phase === 'idle') {
       startCalibration();
     }

@@ -160,13 +160,13 @@ function createKeySignaturesMode() {
 
       if (currentItem.dir === 'fwd') {
         prompt.textContent = currentItem.key.root + ' major = ?';
-        sigButtons.style.display = '';
-        noteButtons.style.display = 'none';
+        sigButtons.classList.remove('answer-group-hidden');
+        noteButtons.classList.add('answer-group-hidden');
       } else {
         const label = keySignatureLabel(currentItem.key);
         prompt.textContent = label + ' major = ?';
-        sigButtons.style.display = 'none';
-        noteButtons.style.display = '';
+        sigButtons.classList.add('answer-group-hidden');
+        noteButtons.classList.remove('answer-group-hidden');
       }
     },
 

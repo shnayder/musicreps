@@ -162,12 +162,12 @@ function createScaleDegreesMode() {
 
       if (currentItem.dir === 'fwd') {
         prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' + currentItem.key.root + ' major = ?';
-        noteButtons.style.display = '';
-        degreeButtons.style.display = 'none';
+        noteButtons.classList.remove('answer-group-hidden');
+        degreeButtons.classList.add('answer-group-hidden');
       } else {
         prompt.textContent = currentItem.key.root + ' major: ' + currentItem.noteName + ' = ?';
-        noteButtons.style.display = 'none';
-        degreeButtons.style.display = '';
+        noteButtons.classList.add('answer-group-hidden');
+        degreeButtons.classList.remove('answer-group-hidden');
       }
     },
 

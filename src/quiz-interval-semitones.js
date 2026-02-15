@@ -60,13 +60,13 @@ function createIntervalSemitonesMode() {
       if (currentItem.dir === 'fwd') {
         // Show interval name, answer is number 1-12
         prompt.textContent = currentItem.interval.name + ' = ?';
-        intervalButtons.style.display = 'none';
-        numButtons.style.display = '';
+        intervalButtons.classList.add('answer-group-hidden');
+        numButtons.classList.remove('answer-group-hidden');
       } else {
         // Show number, answer is interval
         prompt.textContent = currentItem.interval.num + ' = ?';
-        intervalButtons.style.display = '';
-        numButtons.style.display = 'none';
+        intervalButtons.classList.remove('answer-group-hidden');
+        numButtons.classList.add('answer-group-hidden');
       }
     },
 

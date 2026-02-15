@@ -72,9 +72,12 @@
 }
 
 * { -webkit-tap-highlight-color: transparent; }
+html {
+  background: var(--color-surface);
+}
 body {
   font-family: system-ui, -apple-system, sans-serif;
-  max-width: 1400px;
+  max-width: 650px;
   margin: 0 auto;
   padding: 0 var(--space-5);
   display: flex;
@@ -83,6 +86,8 @@ body {
   min-height: 100dvh;
   color: var(--color-text);
   background: var(--color-bg);
+  border-left: 1px solid var(--color-border-lighter);
+  border-right: 1px solid var(--color-border-lighter);
 }
 
 /* --- Top bar & navigation --- */
@@ -274,7 +279,7 @@ body {
 }
 .fretboard-container {
   position: relative;
-  flex: 1;
+  width: 100%;
   min-width: 0;
   max-width: 1200px;
 }
@@ -508,10 +513,9 @@ button {
 .note-buttons {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: center;
   gap: var(--space-2);
-  margin: var(--space-3) auto var(--space-3) 0;
-  max-width: 220px;
+  margin: var(--space-3) auto;
 }
 .note-btn {
   min-width: 50px;
@@ -600,6 +604,11 @@ button {
 }
 .answer-buttons-intervals {
   grid-template-columns: repeat(3, 1fr);
+}
+
+/* --- Answer group visibility (toggled by mode JS for bidirectional questions) --- */
+.answer-group-hidden {
+  display: none;
 }
 
 /* --- Calibration overlay: inside quiz-area, hide non-calibration content --- */
@@ -980,6 +989,8 @@ button {
   body {
     margin: 0;
     padding: 0 var(--space-1);
+    border-left: none;
+    border-right: none;
   }
 
   .top-bar {

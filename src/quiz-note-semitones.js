@@ -61,13 +61,13 @@ function createNoteSemitonesMode() {
       if (currentItem.dir === 'fwd') {
         // Show note, answer is number 0-11
         prompt.textContent = currentItem.note.displayName + ' = ?';
-        noteButtons.style.display = 'none';
-        numButtons.style.display = '';
+        noteButtons.classList.add('answer-group-hidden');
+        numButtons.classList.remove('answer-group-hidden');
       } else {
         // Show number, answer is note
         prompt.textContent = currentItem.note.num + ' = ?';
-        noteButtons.style.display = '';
-        numButtons.style.display = 'none';
+        noteButtons.classList.remove('answer-group-hidden');
+        numButtons.classList.add('answer-group-hidden');
       }
     },
 
