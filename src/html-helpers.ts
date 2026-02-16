@@ -101,27 +101,6 @@ export function numeralAnswerButtons(opts?: { hidden?: boolean }): string {
 }
 
 // ---------------------------------------------------------------------------
-// Common sub-blocks
-// ---------------------------------------------------------------------------
-
-/** Quiz prompt (shared by all text quiz modes). */
-export function quizPrompt(): string {
-  return `<div class="quiz-prompt"></div>`;
-}
-
-/** @deprecated Use quizPrompt() instead. Alias kept for build script compatibility. */
-export function countdownAndPrompt(): string {
-  return quizPrompt();
-}
-
-/** Feedback + hint (shared by all modes). time-display used during calibration. */
-export function feedbackBlock(): string {
-  return `<div class="feedback"></div>
-      <div class="time-display"></div>
-      <div class="hint"></div>`;
-}
-
-// ---------------------------------------------------------------------------
 // Fretboard SVG + string toggle helpers
 // ---------------------------------------------------------------------------
 
@@ -232,7 +211,11 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
     </div>
     <div class="quiz-area">
       <div class="practicing-label"></div>
+      <div class="quiz-prompt"></div>
       ${opts.quizAreaContent}
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading">Time\u2019s up!</div>
         <div class="round-complete-count"></div>
