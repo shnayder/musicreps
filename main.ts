@@ -9,6 +9,7 @@ import {
   modeScreen,
   fretboardSVG,
   stringToggles,
+  fretboardIdleHTML,
 } from "./src/html-helpers.ts";
 
 // ---------------------------------------------------------------------------
@@ -123,28 +124,20 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v4.4</div>
+    <div class="version">v4.5</div>
     <button class="gear-btn" type="button" aria-label="Settings">\u2699</button>
   </div>
 
   <!-- Guitar Fretboard mode -->
 ${modeScreen("fretboard", {
-  settingsHTML: `${stringToggles(['e', 'B', 'G', 'D', 'A', 'E'], 5)}
-        <label class="setting-group">
-          <input type="checkbox" id="fretboard-naturals-only" checked>
-          Natural only
-        </label>`,
+  idleHTML: fretboardIdleHTML({ stringNames: ['e', 'B', 'G', 'D', 'A', 'E'], defaultString: 5, id: 'fretboard' }),
   beforeQuizArea: fretboardSVG({ id: "fretboard", stringCount: 6, fretCount: 13, fretMarkers: [3, 5, 7, 9, 12] }),
   quizAreaContent: `${pianoNoteButtons()}`,
 })}
 
   <!-- Ukulele Fretboard mode -->
 ${modeScreen("ukulele", {
-  settingsHTML: `${stringToggles(['A', 'E', 'C', 'G'], 2)}
-        <label class="setting-group">
-          <input type="checkbox" id="ukulele-naturals-only" checked>
-          Natural only
-        </label>`,
+  idleHTML: fretboardIdleHTML({ stringNames: ['A', 'E', 'C', 'G'], defaultString: 2, id: 'ukulele' }),
   beforeQuizArea: fretboardSVG({ id: "ukulele-fretboard", stringCount: 4, fretCount: 13, fretMarkers: [3, 5, 7, 10, 12] }),
   quizAreaContent: `${pianoNoteButtons()}`,
 })}

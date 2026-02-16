@@ -31,6 +31,9 @@ function createFrettedInstrumentMode(instrument) {
   const COLOR_SUCCESS = _cs.getPropertyValue('--color-success').trim();
   const COLOR_ERROR = _cs.getPropertyValue('--color-error').trim();
 
+  // --- Tab state ---
+  let activeTab = 'practice';
+
   // --- SVG helpers ---
 
   function highlightCircle(string, fret, color) {
@@ -83,6 +86,48 @@ function createFrettedInstrumentMode(instrument) {
     refreshUI();
   }
 
+  // --- Fretboard visibility ---
+
+  function showFretboard() {
+    const wrapper = container.querySelector('.fretboard-wrapper');
+    if (wrapper) wrapper.classList.remove('fretboard-hidden');
+  }
+
+  function hideFretboard() {
+    const wrapper = container.querySelector('.fretboard-wrapper');
+    if (wrapper) wrapper.classList.add('fretboard-hidden');
+  }
+
+  // --- Tab switching ---
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      var isPractice = el.classList.contains('tab-practice');
+      var isProgress = el.classList.contains('tab-progress');
+      if (tabName === 'practice') {
+        el.classList.toggle('active', isPractice);
+      } else {
+        el.classList.toggle('active', isProgress);
+      }
+    });
+    // Show fretboard only on progress tab (during idle)
+    if (tabName === 'progress') {
+      showFretboard();
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      hideFretboard();
+      clearAll();
+    }
+    // Update practice summary when switching to practice tab
+    if (tabName === 'practice') {
+      renderPracticeSummary();
+    }
+  }
+
   // --- Heatmap ---
 
   const statsControls = createStatsControls(container, (mode, el) => {
@@ -123,22 +168,22 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Recommendations ---
 
-  function updateRecommendations(selector) {
-    const result = computeRecommendations(
-      selector, allStrings,
+  function getRecommendationResult() {
+    return computeRecommendations(
+      engine.selector, allStrings,
       (s) => fb.getItemIdsForString(s, naturalsOnly),
       DEFAULT_CONFIG, {}
     );
+  }
+
+  function updateRecommendations(selector) {
+    const result = getRecommendationResult();
     recommendedStrings = result.recommended;
     updateStringToggles();
   }
 
   function applyRecommendations(selector) {
-    const result = computeRecommendations(
-      selector, allStrings,
-      (s) => fb.getItemIdsForString(s, naturalsOnly),
-      DEFAULT_CONFIG, {}
-    );
+    const result = getRecommendationResult();
     recommendedStrings = result.recommended;
     if (result.enabled) {
       enabledStrings = result.enabled;
@@ -150,6 +195,101 @@ function createFrettedInstrumentMode(instrument) {
   function refreshUI() {
     updateRecommendations(engine.selector);
     engine.updateIdleMessage();
+    renderPracticeSummary();
+    renderSessionSummary();
+  }
+
+  // --- Practice summary rendering ---
+
+  function computeStringAvgAutomaticity(stringIndex) {
+    const items = fb.getItemIdsForString(stringIndex, naturalsOnly);
+    var sum = 0, count = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) { sum += auto; count++; }
+    }
+    return count > 0 ? sum / count : null;
+  }
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    var chipsEl = container.querySelector('.practice-string-chips');
+    if (!statusLabel) return;
+
+    // Overall stats
+    var items = mode.getEnabledItems();
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) {
+        seen++;
+        if (auto > threshold) fluent++;
+      }
+    }
+
+    // All items (not just enabled)
+    var allItems = fb.getFretboardEnabledItems(new Set(allStrings), naturalsOnly);
+    var allFluent = 0;
+    for (var j = 0; j < allItems.length; j++) {
+      var a2 = engine.selector.getAutomaticity(allItems[j]);
+      if (a2 !== null && a2 > threshold) allFluent++;
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = allItems.length + ' positions to learn';
+    } else {
+      var pct = allItems.length > 0 ? Math.round((allFluent / allItems.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = allFluent + ' of ' + allItems.length + ' positions fluent';
+    }
+
+    // Recommendation
+    var result = getRecommendationResult();
+    if (result.recommended.size > 0) {
+      var names = [];
+      var sorted = Array.from(result.recommended).sort(function(a, b) { return b - a; });
+      for (var k = 0; k < sorted.length; k++) {
+        names.push(displayNote(instrument.stringNames[sorted[k]]));
+      }
+      recText.textContent = 'Recommended: ' + names.join(', ') + ' string' + (names.length > 1 ? 's' : '');
+      recBtn.classList.remove('hidden');
+    } else {
+      recText.textContent = '';
+      recBtn.classList.add('hidden');
+    }
+
+    // String chips
+    var chipHTML = '';
+    for (var s = 0; s < allStrings.length; s++) {
+      var avg = computeStringAvgAutomaticity(s);
+      var color = getAutomaticityColor(avg);
+      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
+      var name = displayNote(instrument.stringNames[s]);
+      chipHTML += '<div class="string-chip" style="background:' + color;
+      if (textColor) chipHTML += ';color:' + textColor;
+      chipHTML += '">' + name + '</div>';
+    }
+    chipsEl.innerHTML = chipHTML;
+  }
+
+  // --- Session summary ---
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    var count = enabledStrings.size;
+    var noteType = naturalsOnly ? 'natural notes' : 'all notes';
+    el.textContent = count + ' string' + (count !== 1 ? 's' : '') + ' \u00B7 ' + noteType + ' \u00B7 60s';
   }
 
   // --- Accidental buttons ---
@@ -210,13 +350,21 @@ function createFrettedInstrumentMode(instrument) {
       noteKeyHandler.reset();
       if (statsControls.mode) hideHeatmap();
       updateStats(engine.selector);
+      // Show fretboard for quiz (it may be hidden by practice tab)
+      showFretboard();
     },
 
     onStop() {
       noteKeyHandler.reset();
       clearAll();
       updateStats(engine.selector);
-      statsControls.show('retention');
+      // Restore tab state
+      if (activeTab === 'progress') {
+        showFretboard();
+        statsControls.show('retention');
+      } else {
+        hideFretboard();
+      }
       refreshUI();
     },
 
@@ -257,12 +405,21 @@ function createFrettedInstrumentMode(instrument) {
   function init() {
     loadEnabledStrings();
 
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchTab(btn.dataset.tab);
+      });
+    });
+
+    // String toggles
     container.querySelectorAll('.string-toggle').forEach(btn => {
       btn.addEventListener('click', () => {
         toggleString(parseInt(btn.dataset.string));
       });
     });
 
+    // Note buttons (for quiz)
     container.querySelectorAll('.note-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
@@ -270,6 +427,7 @@ function createFrettedInstrumentMode(instrument) {
       });
     });
 
+    // Naturals-only checkbox
     const naturalsCheckbox = container.querySelector('#' + instrument.id + '-naturals-only');
     if (naturalsCheckbox) {
       naturalsCheckbox.addEventListener('change', (e) => {
@@ -279,12 +437,26 @@ function createFrettedInstrumentMode(instrument) {
       });
     }
 
+    // Start button
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+
+    // Use recommendation button
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (recBtn) {
+      recBtn.addEventListener('click', () => {
+        applyRecommendations(engine.selector);
+        refreshUI();
+      });
+    }
 
     applyRecommendations(engine.selector);
     updateAccidentalButtons();
     updateStats(engine.selector);
-    statsControls.show('retention');
+
+    // Start on practice tab — hide fretboard, show practice content
+    hideFretboard();
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {

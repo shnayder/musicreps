@@ -150,6 +150,62 @@ ${stringNames.map((name, i) =>
 }
 
 // ---------------------------------------------------------------------------
+// Fretboard idle content (Practice + Progress tabs)
+// ---------------------------------------------------------------------------
+
+/** Build the tab-based idle content for a fretted instrument mode. */
+export function fretboardIdleHTML(config: {
+  stringNames: string[];
+  defaultString: number;
+  id: string;
+}): string {
+  const togglesHTML = stringToggles(config.stringNames, config.defaultString);
+  return `<div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-summary">
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
+        </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-string-chips"></div>
+      </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          ${togglesHTML}
+          <label class="setting-group">
+            <input type="checkbox" id="${config.id}-naturals-only" checked>
+            Natural only
+          </label>
+        </div>
+      </div>
+      <div class="practice-start">
+        <div class="session-summary-text"></div>
+        <div class="mastery-message">Looks like you've got this!</div>
+        <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
+      </div>
+      <details class="practice-advanced">
+        <summary>Advanced</summary>
+        <button class="recalibrate-btn">Redo speed check</button>
+      </details>
+    </div>
+    <div class="tab-content tab-progress">
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>`;
+}
+
+// ---------------------------------------------------------------------------
 // Mode screen scaffold
 // ---------------------------------------------------------------------------
 
@@ -158,8 +214,15 @@ interface ModeScreenOptions {
   settingsHTML?: string;
   /** HTML for inside the quiz-area div. */
   quizAreaContent: string;
-  /** HTML inserted between quiz-session and quiz-area (e.g. fretboard-wrapper). */
+  /** HTML inserted before stats-section (e.g. fretboard-wrapper). */
   beforeQuizArea?: string;
+  /**
+   * Custom idle-phase HTML replacing the standard stats-section + quiz-config.
+   * When provided, the mode owns its own idle layout (e.g. Practice/Progress
+   * tabs). Must include elements the engine expects (.start-btn,
+   * .mastery-message, .recalibrate-btn, .stats-container, .stats-toggle-btn).
+   */
+  idleHTML?: string;
 }
 
 /**
@@ -174,12 +237,17 @@ interface ModeScreenOptions {
  *   quiz-area        — question + answer buttons + feedback (active)
  */
 export function modeScreen(id: string, opts: ModeScreenOptions): string {
-  const settingsRow = opts.settingsHTML
-    ? `\n      <div class="settings-row">\n        ${opts.settingsHTML}\n      </div>`
-    : "";
   const beforeQuizArea = opts.beforeQuizArea ? "\n    " + opts.beforeQuizArea : "";
 
-  return `  <div class="mode-screen phase-idle" id="mode-${id}">${beforeQuizArea}
+  // Idle content: custom (tab-based) or standard scaffold
+  let idleContent: string;
+  if (opts.idleHTML) {
+    idleContent = "\n    " + opts.idleHTML;
+  } else {
+    const settingsRow = opts.settingsHTML
+      ? `\n      <div class="settings-row">\n        ${opts.settingsHTML}\n      </div>`
+      : "";
+    idleContent = `
     <div class="stats-section">
       <div class="stats-container"></div>
       <div class="stats-controls">
@@ -194,7 +262,10 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
         <div class="round-duration-label">60-second rounds</div>
         <button class="recalibrate-btn">Redo speed check</button>
       </div>
-    </div>
+    </div>`;
+  }
+
+  return `  <div class="mode-screen phase-idle" id="mode-${id}">${beforeQuizArea}${idleContent}
     <div class="quiz-session">
       <div class="quiz-header">
         <span class="quiz-header-title"></span>

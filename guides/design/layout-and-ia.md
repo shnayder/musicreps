@@ -251,6 +251,152 @@ Terms used in the UI and codebase with specific meanings in this app:
 
 ---
 
+## One Screen = One Primary Intention
+
+Each screen (or tab within a mode) should answer exactly one question:
+**observe progress**, **configure practice**, or **run practice**. Secondary
+tasks should collapse behind progressive disclosure (e.g., `<details>` or a
+separate tab).
+
+**Why:** When a single screen combines progress visualization, analysis mode
+switching, practice configuration, session launching, and calibration, there is
+no dominant user task. The user must parse the full screen to find what to do
+next.
+
+**Rules:**
+- Identify the primary intention for each visible state. If you can't name it
+  in one phrase, the screen is doing too much.
+- Use tabs or progressive disclosure to separate concerns that don't share the
+  same primary intention.
+- Secondary tasks (calibration, resets, advanced settings) should be visually
+  deprioritized — collapsed sections, smaller buttons, or a separate tab.
+
+---
+
+## Visualize, Don't Decode
+
+Avoid legends where possible. Encode state with direct labels, grouping, or
+simplified buckets. Reduce color categories to 3–4 meaningful states.
+
+**Why:** Legends add a layer of indirection — the user sees a color, then looks
+up its meaning. For quick scanning, the meaning should be inline or obvious
+from context.
+
+**Rules:**
+- Prefer direct labels on elements over requiring a legend lookup.
+- If a legend is needed (e.g., a heatmap), make it collapsible or inline.
+- Don't use more color states than a user can remember without the legend
+  (typically 3–4).
+- When showing performance data, provide a text summary ("12 of 78 fluent")
+  alongside any visual encoding.
+
+**Open question:** Some modes (math grids with many cells) may genuinely need
+5-level heatmaps. Evaluate whether those should use simplified 3-level when
+viewed at a distance, with full detail on demand.
+
+---
+
+## Action Gravity
+
+The next step must be visually obvious. Configuration controls live immediately
+adjacent to the action they affect. The primary action should be anchored
+consistently across screens.
+
+**Why:** Users must visually search for what to do next when secondary controls
+compete with the primary action. Configuration and action aren't grouped, so
+the flow from "choose settings" → "start" isn't a clear spatial path.
+
+**Rules:**
+- The primary CTA (Start Quiz) should be the most visually prominent element
+  in its state.
+- Configuration controls should lead spatially to the primary action (top to
+  bottom: configure → summary of what you'll practice → start).
+- Consistently anchor the primary action in the same zone across modes (bottom
+  of the idle section).
+
+---
+
+## One Interaction Grammar
+
+Define system-wide component roles and never reuse styles across roles:
+
+| Component | Role | Example |
+|-----------|------|---------|
+| Tabs | Mode/view switching | Practice / Progress |
+| Pills/chips | Multi-select filters | String selection |
+| Toggle | Binary rule | Natural notes only |
+| Button | Action | Start Quiz, Redo speed check |
+
+**Why:** When tabs, pills, toggles, and buttons all look similar or the same
+style is used for different roles, users can't predict what clicking an element
+will do. Visual grammar must be consistent.
+
+**Rules:**
+- Don't style a tab like a toggle or a filter chip like a button.
+- Each component type should have distinct visual treatment documented in the
+  visual design guide.
+- Selection states should vary by component type (tabs: underline/fill,
+  chips: background color, toggle: switch position).
+
+**Open question:** The current string toggles and Recall/Speed toggle use
+similar styling. Should string selection move to chips and Recall/Speed to
+proper segmented tabs?
+
+---
+
+## Data Abstraction Before Detail
+
+Show summaries first, detail on demand.
+
+**Why:** A full heatmap grid is overwhelming as the first thing a user sees.
+Most visits only need "how am I doing?" — the answer should be immediate, with
+drill-down available for diagnosis.
+
+**Rules:**
+- Top level: aggregate summary (e.g., "12 of 78 fluent", "Overall: Solid").
+- Second level: group-level breakdown (e.g., per-string mastery chips).
+- Third level: item-level detail (e.g., full fretboard heatmap, expanded grid).
+- Default to the highest abstraction level. Reveal detail on user action (tab
+  switch, tap, expand).
+
+---
+
+## State Should Explain Itself
+
+Recommendations and highlights must be explained inline, not via styling alone.
+Every highlighted element should answer "why this?"
+
+**Why:** An orange glow on a string toggle means nothing without explanation.
+The user sees emphasis but doesn't know why that string is recommended.
+
+**Rules:**
+- When recommending an action, explain the reasoning in text: "Recommended:
+  G and D strings — they need the most practice."
+- Provide an action button to accept the recommendation, not just a visual
+  highlight.
+- Explanations can be compact (a single line of muted text) but must be
+  present.
+
+---
+
+## Spatial Rhythm
+
+Consistent vertical sections with equal density zones. Avoid abrupt
+dense → empty transitions.
+
+**Why:** Uneven spacing creates visual noise and makes the interface feel
+unfinished. Dense clusters of controls next to large empty areas break scanning
+rhythm.
+
+**Rules:**
+- Use consistent section spacing (`--space-5` or `--space-6` between sections).
+- Each section should have similar visual density — if one section is very
+  dense, consider splitting or adding breathing room.
+- Empty states should still occupy reasonable space with placeholder or
+  instructional content, not collapse to zero height.
+
+---
+
 ## Summary of Principles
 
 | # | Principle | One-line test |
@@ -265,3 +411,10 @@ Terms used in the UI and codebase with specific meanings in this app:
 | 8 | Stats scope to configuration | Do stats show items the user can't currently be quizzed on? |
 | 9 | Stats need aggregate context | Can the user answer "how am I doing?" in under 2 seconds? |
 | 10 | Dense grids need support | Do axis labels, hover states, and summaries exist for large grids? |
+| 11 | One screen = one primary intention | Does this screen have a single dominant user task? |
+| 12 | Visualize, don't decode | Can the user understand the display without consulting a legend? |
+| 13 | Action gravity | Is the next step visually obvious? |
+| 14 | One interaction grammar | Is each component type visually distinct by role? |
+| 15 | Data abstraction before detail | Does the user see a summary before item-level data? |
+| 16 | State should explain itself | Does every highlight answer "why this?"? |
+| 17 | Spatial rhythm | Are density zones consistent without abrupt transitions? |
