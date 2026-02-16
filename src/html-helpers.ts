@@ -104,10 +104,14 @@ export function numeralAnswerButtons(opts?: { hidden?: boolean }): string {
 // Common sub-blocks
 // ---------------------------------------------------------------------------
 
-/** Countdown bar + quiz prompt (shared by all text quiz modes). */
+/** Quiz prompt (shared by all text quiz modes). */
+export function quizPrompt(): string {
+  return `<div class="quiz-prompt"></div>`;
+}
+
+/** @deprecated Use quizPrompt() instead. Alias kept for build script compatibility. */
 export function countdownAndPrompt(): string {
-  return `<div class="countdown-container"><div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span></div>
-      <div class="quiz-prompt"></div>`;
+  return quizPrompt();
 }
 
 /** Feedback + hint (shared by all modes). time-display used during calibration. */
@@ -208,6 +212,7 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
       <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
         <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
       </div>
     </div>
@@ -217,7 +222,8 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
         <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
       </div>
       <div class="session-stats">
-        <span>#<span class="question-count">0</span></span>
+        <span class="round-timer"></span>
+        <span class="round-answer-count">0 answers</span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
@@ -227,6 +233,15 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
     <div class="quiz-area">
       <div class="practicing-label"></div>
       ${opts.quizAreaContent}
+      <div class="round-complete" style="display: none;">
+        <div class="round-complete-heading">Time\u2019s up!</div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-correct"></div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
     </div>
   </div>`;
 }

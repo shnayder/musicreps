@@ -28,7 +28,6 @@ const css = read("src/styles.css");
 const adaptiveJS = readModule("src/adaptive.js");
 const musicDataJS = readModule("src/music-data.js");
 const quizEngineStateJS = readModule("src/quiz-engine-state.js");
-const deadlineJS = readModule("src/deadline.js");
 const quizEngineJS = readModule("src/quiz-engine.js");
 const statsDisplayJS = readModule("src/stats-display.js");
 const recommendationsJS = readModule("src/recommendations.js");
@@ -94,7 +93,7 @@ const html = `<!DOCTYPE html>
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.16</div>
+    <div class="version">v4.1</div>
     <button class="gear-btn" type="button" aria-label="Settings">\u2699</button>
   </div>
 
@@ -106,11 +105,7 @@ ${modeScreen("fretboard", {
           Natural only
         </label>`,
   beforeQuizArea: fretboardSVG({ id: "fretboard", stringCount: 6, fretCount: 13, fretMarkers: [3, 5, 7, 9, 12] }),
-  quizAreaContent: `<div class="countdown-container">
-        <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
-      </div>
-      <div class="quiz-prompt"></div>
-      ${pianoNoteButtons()}
+  quizAreaContent: `${pianoNoteButtons()}
       ${feedbackBlock()}`,
 })}
 
@@ -122,11 +117,7 @@ ${modeScreen("ukulele", {
           Natural only
         </label>`,
   beforeQuizArea: fretboardSVG({ id: "ukulele-fretboard", stringCount: 4, fretCount: 13, fretMarkers: [3, 5, 7, 10, 12] }),
-  quizAreaContent: `<div class="countdown-container">
-        <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
-      </div>
-      <div class="quiz-prompt"></div>
-      ${pianoNoteButtons()}
+  quizAreaContent: `${pianoNoteButtons()}
       ${feedbackBlock()}`,
 })}
 
@@ -217,7 +208,6 @@ ${modeScreen("chordSpelling", {
 ${adaptiveJS}
 ${musicDataJS}
 ${quizEngineStateJS}
-${deadlineJS}
 ${quizEngineJS}
 ${statsDisplayJS}
 ${recommendationsJS}

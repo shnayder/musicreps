@@ -32,7 +32,6 @@ src/
   adaptive.js            # Adaptive question selector (ES module)
   music-data.js          # Shared music theory data (ES module)
   quiz-engine-state.js   # Pure engine state transitions (ES module)
-  deadline.js            # Per-item adaptive deadline staircase (ES module)
   quiz-engine.js         # Shared quiz lifecycle (ES module)
   stats-display.js       # Stats color functions, rendering (ES module)
   recommendations.js     # Consolidate-before-expanding algorithm (ES module)
@@ -66,7 +65,7 @@ at build time — no framework, no bundler. Key patterns:
 - **Mode Plugin Interface** — each mode is a `createXxxMode()` factory
   providing `getEnabledItems`, `presentQuestion`, `checkAnswer`, `handleKey`,
   `onStart`/`onStop`, plus `init`/`activate`/`deactivate` lifecycle hooks.
-- **QuizEngine** — shared lifecycle (adaptive selection, timing, countdown,
+- **QuizEngine** — shared lifecycle (adaptive selection, 60-second round timer,
   feedback, keyboard/tap). Each mode gets its own engine instance.
 - **Factory Pattern** — `createFretboardHelpers(musicData)` injects globals
   for testability without ES imports in concatenated code.
@@ -129,6 +128,14 @@ Bidirectional modes track each direction as a separate item.
 The review checklist (`.claude/commands/review-checklist.md`) verifies these
 conventions — use `/review` to run it.
 
+## GitHub API Access
+
+`gh` CLI is not authenticated in the web environment. Use `curl` through the
+egress proxy instead — see [development.md](guides/development.md#github-api-access-web-environment)
+for the pattern.
+
 ## PR Requirements
 
 All PRs that change code (not just docs/plans) must pass `/review` before merging.
+**Always run `/review` before pushing final changes** — don't wait for the user
+to ask.

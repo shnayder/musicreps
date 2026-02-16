@@ -337,6 +337,8 @@ body {
 .phase-active .quiz-config { display: none; }
 .phase-calibration .stats-section,
 .phase-calibration .quiz-config { display: none; }
+.phase-round-complete .stats-section,
+.phase-round-complete .quiz-config { display: none; }
 
 /* --- Fretboard --- */
 .fretboard-wrapper {
@@ -625,37 +627,98 @@ button {
 .practicing-label:empty {
   display: none;
 }
-.countdown-container {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  width: 240px;
-  max-width: 90vw;
-  margin: var(--space-5) auto;
-  transition: width 0.3s ease;
+/* --- Round timer --- */
+.round-timer {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  min-width: 3em;
 }
-.countdown-track {
-  flex: 1;
-  height: 8px;
-  background: var(--color-surface-alt);
-  border-radius: 4px;
-  overflow: hidden;
+.round-timer-warning {
+  color: var(--color-error);
 }
-.countdown-bar {
-  height: 100%;
-  background: var(--color-success);
-  transition: width 0.1s linear;
+.round-answer-count {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-text-muted);
 }
-.countdown-bar.expired {
-  background: var(--color-error);
-}
-.deadline-display {
+.round-duration-label {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  min-width: 2.5em;
-  text-align: right;
-  flex-shrink: 0;
+  margin-top: var(--space-2);
 }
+
+/* --- Round complete --- */
+.round-complete {
+  text-align: center;
+  padding: var(--space-6) 0;
+}
+.round-complete-heading {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+.round-complete-count {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+.round-complete-correct {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-5);
+}
+.round-complete-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+.round-complete-continue {
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-brand);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+.round-complete-continue:hover {
+  opacity: 0.9;
+}
+.round-complete-continue:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+.round-complete-stop {
+  padding: var(--space-3) var(--space-5);
+  background: none;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: var(--text-base);
+  cursor: pointer;
+}
+.round-complete-stop:hover {
+  background: var(--color-surface-hover);
+}
+.round-complete-stop:active {
+  background: var(--color-surface-pressed);
+}
+/* Hide quiz prompt, answer buttons, and feedback during round-complete */
+.phase-round-complete .quiz-prompt,
+.phase-round-complete .answer-buttons,
+.phase-round-complete .note-buttons,
+.phase-round-complete .chord-slots,
+.phase-round-complete .feedback,
+.phase-round-complete .hint,
+.phase-round-complete .time-display,
+.phase-round-complete .practicing-label,
+.phase-round-complete .speed-tap-status,
+.phase-round-complete .fretboard-wrapper { display: none; }
 
 /* --- Note buttons (piano-style layout) --- */
 .note-buttons {
@@ -800,9 +863,7 @@ button {
 .phase-calibration .practicing-label {
   display: none;
 }
-.phase-calibration .countdown-container,
-.phase-calibration .chord-slots,
-.phase-calibration .time-display {
+.phase-calibration .chord-slots {
   display: none;
 }
 /* Calibration: hide question counter (progress bar shows trial count instead) */

@@ -5,7 +5,6 @@ import {
   engineStart,
   engineNextQuestion,
   engineSubmitAnswer,
-  engineTimedOut,
   engineStop,
   engineUpdateIdleMessage,
   engineUpdateMasteryAfterAnswer,
@@ -14,6 +13,9 @@ import {
   engineCalibrationIntro,
   engineCalibrating,
   engineCalibrationResults,
+  engineRoundTimerExpired,
+  engineRoundComplete,
+  engineContinueRound,
 } from "./quiz-engine-state.js";
 
 describe("initialEngineState", () => {
@@ -44,6 +46,14 @@ describe("initialEngineState", () => {
     assert.equal(s.masteryText, "");
     assert.equal(s.showMastery, false);
   });
+
+  it("has round tracking at zero", () => {
+    const s = initialEngineState();
+    assert.equal(s.roundNumber, 0);
+    assert.equal(s.roundAnswered, 0);
+    assert.equal(s.roundCorrect, 0);
+    assert.equal(s.roundTimerExpired, false);
+  });
 });
 
 describe("engineStart", () => {
@@ -67,6 +77,14 @@ describe("engineStart", () => {
     const before = { ...initialEngineState(), showMastery: true, masteryText: "test" };
     const s = engineStart(before);
     assert.equal(s.showMastery, false);
+  });
+
+  it("initializes round 1", () => {
+    const s = engineStart(initialEngineState());
+    assert.equal(s.roundNumber, 1);
+    assert.equal(s.roundAnswered, 0);
+    assert.equal(s.roundCorrect, 0);
+    assert.equal(s.roundTimerExpired, false);
   });
 });
 
@@ -134,7 +152,7 @@ describe("engineSubmitAnswer", () => {
     assert.equal(s.answersEnabled, false);
   });
 
-  it("clears time display (timing visible on countdown bar)", () => {
+  it("clears time display", () => {
     const s = engineSubmitAnswer(active, true, "C");
     assert.equal(s.timeDisplayText, "");
   });
@@ -142,6 +160,24 @@ describe("engineSubmitAnswer", () => {
   it("shows hint text", () => {
     const s = engineSubmitAnswer(active, true, "C");
     assert.equal(s.hintText, "Tap anywhere or press Space for next");
+  });
+
+  it("increments roundAnswered on each answer", () => {
+    const s1 = engineSubmitAnswer(active, true, "C");
+    assert.equal(s1.roundAnswered, 1);
+    // Simulate next question and answer
+    const q2 = engineNextQuestion(s1, "item-2", 2000);
+    const s2 = engineSubmitAnswer(q2, false, "D");
+    assert.equal(s2.roundAnswered, 2);
+  });
+
+  it("increments roundCorrect only for correct answers", () => {
+    const correct = engineSubmitAnswer(active, true, "C");
+    assert.equal(correct.roundCorrect, 1);
+
+    const q2 = engineNextQuestion(correct, "item-2", 2000);
+    const incorrect = engineSubmitAnswer(q2, false, "D");
+    assert.equal(incorrect.roundCorrect, 1); // still 1
   });
 });
 
@@ -389,69 +425,107 @@ describe("engineRouteKey", () => {
   });
 });
 
-describe("engineTimedOut", () => {
+describe("engineRoundTimerExpired", () => {
   const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
 
-  it("sets answered to true and disables answers", () => {
-    const s = engineTimedOut(active, "C");
-    assert.equal(s.answered, true);
+  it("sets roundTimerExpired to true", () => {
+    const s = engineRoundTimerExpired(active);
+    assert.equal(s.roundTimerExpired, true);
+  });
+
+  it("preserves other state", () => {
+    const s = engineRoundTimerExpired(active);
+    assert.equal(s.phase, "active");
+    assert.equal(s.currentItemId, "item-1");
+    assert.equal(s.answersEnabled, true);
+  });
+});
+
+describe("engineRoundComplete", () => {
+  const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
+  const withAnswers = engineSubmitAnswer(active, true, "C");
+
+  it("sets phase to round-complete", () => {
+    const s = engineRoundComplete(withAnswers);
+    assert.equal(s.phase, "round-complete");
+  });
+
+  it("disables answers and clears current item", () => {
+    const s = engineRoundComplete(withAnswers);
     assert.equal(s.answersEnabled, false);
+    assert.equal(s.currentItemId, null);
+    assert.equal(s.answered, false);
   });
 
-  it("sets timedOut flag", () => {
-    const s = engineTimedOut(active, "C");
-    assert.equal(s.timedOut, true);
+  it("preserves round counts", () => {
+    const s = engineRoundComplete(withAnswers);
+    assert.equal(s.roundAnswered, 1);
+    assert.equal(s.roundCorrect, 1);
+    assert.equal(s.roundNumber, 1);
   });
 
-  it("shows timeout feedback text", () => {
-    const s = engineTimedOut(active, "C");
-    assert.equal(s.feedbackText, "Time\u2019s up \u2014 C");
+  it("clears feedback", () => {
+    const s = engineRoundComplete(withAnswers);
+    assert.equal(s.feedbackText, "");
+    assert.equal(s.hintText, "");
+  });
+});
+
+describe("engineContinueRound", () => {
+  const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
+  const answered = engineSubmitAnswer(active, true, "C");
+  const roundComplete = engineRoundComplete(answered);
+
+  it("sets phase back to active", () => {
+    const s = engineContinueRound(roundComplete);
+    assert.equal(s.phase, "active");
   });
 
-  it("uses incorrect feedback class", () => {
-    const s = engineTimedOut(active, "C");
-    assert.equal(s.feedbackClass, "feedback incorrect");
+  it("increments round number", () => {
+    const s = engineContinueRound(roundComplete);
+    assert.equal(s.roundNumber, 2);
   });
 
-  it("clears time display on timeout (deadline shown on countdown bar)", () => {
-    const s = engineTimedOut(active, "C");
-    assert.equal(s.timeDisplayText, "");
+  it("resets round counters", () => {
+    const s = engineContinueRound(roundComplete);
+    assert.equal(s.roundAnswered, 0);
+    assert.equal(s.roundCorrect, 0);
+    assert.equal(s.roundTimerExpired, false);
   });
 
-  it("clears time display regardless of deadline value", () => {
-    const s = engineTimedOut(active, "D#");
-    assert.equal(s.timeDisplayText, "");
-    assert.equal(s.feedbackText, "Time\u2019s up \u2014 D#");
+  it("preserves session question count", () => {
+    const s = engineContinueRound(roundComplete);
+    assert.equal(s.questionCount, 1); // from the one question before round complete
+  });
+});
+
+describe("engineRouteKey in round-complete", () => {
+  const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
+  const answered = engineSubmitAnswer(active, true, "C");
+  const roundComplete = engineRoundComplete(answered);
+
+  it("Space returns continue", () => {
+    assert.deepEqual(engineRouteKey(roundComplete, " "), { action: "continue" });
   });
 
-  it("shows hint for advancing", () => {
-    const s = engineTimedOut(active, "C");
-    assert.equal(s.hintText, "Tap anywhere or press Space for next");
+  it("Enter returns continue", () => {
+    assert.deepEqual(engineRouteKey(roundComplete, "Enter"), { action: "continue" });
+  });
+
+  it("Escape returns stop", () => {
+    assert.deepEqual(engineRouteKey(roundComplete, "Escape"), { action: "stop" });
+  });
+
+  it("other keys return ignore", () => {
+    assert.deepEqual(engineRouteKey(roundComplete, "c"), { action: "ignore" });
   });
 });
 
 describe("engineSubmitAnswer time format", () => {
   const active = engineNextQuestion(engineStart(initialEngineState()), "item-1", 1000);
 
-  it("clears time display (response visible on countdown bar)", () => {
+  it("clears time display", () => {
     const s = engineSubmitAnswer(active, true, "C");
     assert.equal(s.timeDisplayText, "");
-  });
-
-  it("sets timedOut to false on normal answer", () => {
-    const s = engineSubmitAnswer(active, true, "C");
-    assert.equal(s.timedOut, false);
-  });
-});
-
-describe("timedOut in initial and next-question state", () => {
-  it("initial state has timedOut false", () => {
-    assert.equal(initialEngineState().timedOut, false);
-  });
-
-  it("next question resets timedOut", () => {
-    const active = engineStart(initialEngineState());
-    const q = engineNextQuestion(active, "item-1", 1000);
-    assert.equal(q.timedOut, false);
   });
 });

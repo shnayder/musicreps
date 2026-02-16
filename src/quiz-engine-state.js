@@ -8,7 +8,7 @@
  */
 export function initialEngineState() {
   return {
-    phase: 'idle',          // 'idle' | 'active' | 'calibration-intro' | 'calibrating' | 'calibration-results'
+    phase: 'idle',          // 'idle' | 'active' | 'round-complete' | 'calibration-intro' | 'calibrating' | 'calibration-results'
     currentItemId: null,
     answered: false,
     questionStartTime: null,
@@ -16,6 +16,12 @@ export function initialEngineState() {
     // Session tracking
     questionCount: 0,
     quizStartTime: null,
+
+    // Round tracking
+    roundNumber: 0,
+    roundAnswered: 0,
+    roundCorrect: 0,
+    roundTimerExpired: false,
 
     // Progress tracking
     masteredCount: 0,
@@ -37,12 +43,11 @@ export function initialEngineState() {
     // UI visibility
     quizActive: false,
     answersEnabled: false,
-    timedOut: false,
   };
 }
 
 /**
- * Transition: start the quiz.
+ * Transition: start the quiz (first round).
  * Caller should invoke mode.onStart() separately, then call engineNextQuestion.
  */
 export function engineStart(state) {
@@ -53,6 +58,10 @@ export function engineStart(state) {
     quizStartTime: Date.now(),
     quizActive: true,
     showMastery: false,
+    roundNumber: 1,
+    roundAnswered: 0,
+    roundCorrect: 0,
+    roundTimerExpired: false,
   };
 }
 
@@ -74,7 +83,6 @@ export function engineNextQuestion(state, nextItemId, nowMs) {
     timeDisplayText: '',
     hintText: '',
     answersEnabled: true,
-    timedOut: false,
   };
 }
 
@@ -93,25 +101,50 @@ export function engineSubmitAnswer(state, isCorrect, correctAnswer) {
     feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
     timeDisplayText: '',
     hintText: 'Tap anywhere or press Space for next',
-    timedOut: false,
+    roundAnswered: state.roundAnswered + 1,
+    roundCorrect: state.roundCorrect + (isCorrect ? 1 : 0),
   };
 }
 
 /**
- * Transition: timer expired before user answered.
- * @param {EngineState} state
- * @param {string} correctAnswer - display string for the correct answer
+ * Transition: mark the round timer as expired.
+ * The round doesn't end immediately — the user can finish their current question.
  */
-export function engineTimedOut(state, correctAnswer) {
+export function engineRoundTimerExpired(state) {
   return {
     ...state,
-    answered: true,
+    roundTimerExpired: true,
+  };
+}
+
+/**
+ * Transition: round is complete, show results.
+ */
+export function engineRoundComplete(state) {
+  return {
+    ...state,
+    phase: 'round-complete',
+    answered: false,
     answersEnabled: false,
-    feedbackText: 'Time\u2019s up \u2014 ' + correctAnswer,
-    feedbackClass: 'feedback incorrect',
-    timeDisplayText: '',
-    hintText: 'Tap anywhere or press Space for next',
-    timedOut: true,
+    currentItemId: null,
+    feedbackText: '',
+    feedbackClass: 'feedback',
+    hintText: '',
+  };
+}
+
+/**
+ * Transition: continue to the next round.
+ * Resets round counters but preserves session totals and quiz state.
+ */
+export function engineContinueRound(state) {
+  return {
+    ...state,
+    phase: 'active',
+    roundNumber: state.roundNumber + 1,
+    roundAnswered: 0,
+    roundCorrect: 0,
+    roundTimerExpired: false,
   };
 }
 
@@ -213,11 +246,15 @@ export function engineUpdateProgress(state, masteredCount, totalEnabledCount) {
  * Route a keydown event to an action descriptor. Pure — no DOM.
  * @param {EngineState} state
  * @param {string} key - e.key value
- * @returns {{ action: string }} action is one of 'stop', 'next', 'delegate', 'ignore'
+ * @returns {{ action: string }} action is one of 'stop', 'next', 'continue', 'delegate', 'ignore'
  */
 export function engineRouteKey(state, key) {
   if (state.phase === 'idle') return { action: 'ignore' };
   if (key === 'Escape') return { action: 'stop' };
+  if (state.phase === 'round-complete') {
+    if (key === ' ' || key === 'Enter') return { action: 'continue' };
+    return { action: 'ignore' };
+  }
   if (state.phase !== 'active') return { action: 'ignore' };
   if ((key === ' ' || key === 'Enter') && state.answered) return { action: 'next' };
   if (!state.answered) return { action: 'delegate' };

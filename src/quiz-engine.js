@@ -1,16 +1,15 @@
-// Shared quiz engine: manages adaptive selection, timing, countdown,
+// Shared quiz engine: manages adaptive selection, timing, round countdown,
 // feedback, and keyboard/tap handling for all quiz modes.
 //
 // Each quiz mode provides a config object; the engine handles the
 // shared lifecycle. ES module — exports stripped for browser inlining.
 //
 // Depends on globals (from quiz-engine-state.js): initialEngineState,
-// engineStart, engineNextQuestion, engineSubmitAnswer, engineTimedOut,
+// engineStart, engineNextQuestion, engineSubmitAnswer,
 // engineStop, engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer,
 // engineUpdateProgress, engineRouteKey, engineCalibrationIntro,
-// engineCalibrating, engineCalibrationResults
-//
-// Depends on globals (from deadline.js): createDeadlineTracker
+// engineCalibrating, engineCalibrationResults, engineRoundTimerExpired,
+// engineRoundComplete, engineContinueRound
 
 /**
  * Create a keyboard handler for note input (C D E F G A B + #/b for accidentals).
@@ -517,6 +516,9 @@ function runCalibration(opts) {
   return cleanup;
 }
 
+// Round duration in milliseconds
+const ROUND_DURATION_MS = 60000;
+
 /**
  * Create a quiz engine for a given mode.
  *
@@ -535,7 +537,7 @@ function runCalibration(opts) {
  *
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
- *     .countdown-bar, .feedback, .time-display, .hint,
+ *     .feedback, .time-display, .hint,
  *     .stats, .mastery-message
  *
  * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
@@ -547,7 +549,6 @@ export function createQuizEngine(mode, container) {
     ? (itemId) => mode.getExpectedResponseCount(itemId)
     : null;
   const selector = createAdaptiveSelector(storage, DEFAULT_CONFIG, Math.random, responseCountFn);
-  const deadlineTracker = createDeadlineTracker(storage, selector.getConfig());
 
   const provider = mode.calibrationProvider || 'button';
   const baselineKey = 'motorBaseline_' + provider;
@@ -572,17 +573,15 @@ export function createQuizEngine(mode, container) {
       motorBaseline = parsed;
       const scaledConfig = deriveScaledConfig(motorBaseline, DEFAULT_CONFIG);
       selector.updateConfig(scaledConfig);
-      deadlineTracker.updateConfig(scaledConfig);
     }
   }
 
   let state = initialEngineState();
-  let countdownInterval = null;
+  let roundTimerInterval = null;
+  let roundTimerStart = null;
 
   // DOM references (scoped to container)
   const els = {
-    countdownContainer: container.querySelector('.countdown-container'),
-    countdownBar: container.querySelector('.countdown-bar'),
     feedback: container.querySelector('.feedback'),
     timeDisplay: container.querySelector('.time-display'),
     hint: container.querySelector('.hint'),
@@ -593,11 +592,12 @@ export function createQuizEngine(mode, container) {
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
-    questionCountEl: container.querySelector('.question-count'),
+    roundTimerEl: container.querySelector('.round-timer'),
+    roundAnswerCount: container.querySelector('.round-answer-count'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
-    deadlineDisplay: container.querySelector('.deadline-display'),
     practicingLabel: container.querySelector('.practicing-label'),
+    roundCompleteEl: container.querySelector('.round-complete'),
   };
 
   // --- Render: declaratively map state to DOM ---
@@ -695,8 +695,9 @@ export function createQuizEngine(mode, container) {
     // Set phase class on container for CSS-driven visibility
     const phaseClass = inCalibration ? 'phase-calibration'
       : state.phase === 'active' ? 'phase-active'
+      : state.phase === 'round-complete' ? 'phase-round-complete'
       : 'phase-idle';
-    container.classList.remove('phase-idle', 'phase-active', 'phase-calibration');
+    container.classList.remove('phase-idle', 'phase-active', 'phase-calibration', 'phase-round-complete');
     container.classList.add(phaseClass);
 
     // Hide settings gear during active quiz/calibration
@@ -721,12 +722,18 @@ export function createQuizEngine(mode, container) {
     if (state.phase === 'calibration-intro') container.classList.add('calibration-intro');
     if (state.phase === 'calibration-results') container.classList.add('calibration-results');
 
-    // Quiz header title: "Speed Check" during calibration, empty otherwise
-    if (els.quizHeaderTitle) {
-      els.quizHeaderTitle.textContent = inCalibration ? 'Speed Check' : '';
-    }
-
     const isActive = state.phase === 'active';
+
+    // Quiz header title: context-dependent
+    if (els.quizHeaderTitle) {
+      if (inCalibration) {
+        els.quizHeaderTitle.textContent = 'Speed Check';
+      } else if (isActive || state.phase === 'round-complete') {
+        els.quizHeaderTitle.textContent = 'Round ' + state.roundNumber;
+      } else {
+        els.quizHeaderTitle.textContent = '';
+      }
+    }
     if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
 
     // During calibration, feedbackText goes in quiz-prompt (above buttons)
@@ -757,20 +764,11 @@ export function createQuizEngine(mode, container) {
     if (els.recalibrateBtn) {
       els.recalibrateBtn.style.display = (state.phase === 'idle' && motorBaseline) ? 'inline' : 'none';
     }
-    if (els.countdownBar) {
-      els.countdownBar.classList.remove('expired');
-      if (!isActive) els.countdownBar.style.width = '0%';
-    }
-    if (els.countdownContainer && !isActive) {
-      els.countdownContainer.style.width = '';
-    }
-    if (els.deadlineDisplay && !isActive) {
-      els.deadlineDisplay.textContent = '';
-    }
 
-    // Session stats (question count + elapsed time)
-    if (els.questionCountEl && isActive) {
-      els.questionCountEl.textContent = state.questionCount;
+    // Session stats: round answer count
+    if (els.roundAnswerCount && isActive) {
+      const count = state.roundAnswered;
+      els.roundAnswerCount.textContent = count + (count === 1 ? ' answer' : ' answers');
     }
 
     // Progress bar
@@ -786,6 +784,22 @@ export function createQuizEngine(mode, container) {
 
     setAnswerButtonsEnabled(state.answersEnabled);
 
+    // Round-complete overlay
+    if (els.roundCompleteEl) {
+      if (state.phase === 'round-complete') {
+        const pct = state.roundAnswered > 0
+          ? Math.round((state.roundCorrect / state.roundAnswered) * 100)
+          : 0;
+        els.roundCompleteEl.querySelector('.round-complete-count').textContent =
+          state.roundAnswered + (state.roundAnswered === 1 ? ' answer' : ' answers');
+        els.roundCompleteEl.querySelector('.round-complete-correct').textContent =
+          state.roundCorrect + ' correct (' + pct + '%)';
+        els.roundCompleteEl.style.display = 'block';
+      } else {
+        els.roundCompleteEl.style.display = 'none';
+      }
+    }
+
     // Create calibration content when entering those phases
     if (state.phase === 'calibration-intro' && !calibrationContentEl) {
       renderCalibrationIntro();
@@ -794,88 +808,86 @@ export function createQuizEngine(mode, container) {
     }
   }
 
-  // --- Countdown with adaptive deadline ---
+  // --- Round timer ---
 
-  let currentDeadline = null; // deadline for the current question (ms)
+  function formatRoundTime(ms) {
+    const totalSec = Math.max(0, Math.ceil(ms / 1000));
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return min + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  function startRoundTimer() {
+    if (roundTimerInterval) clearInterval(roundTimerInterval);
+    roundTimerStart = Date.now();
+
+    // Initialize display immediately so the timer isn't blank before first tick
+    if (els.roundTimerEl) {
+      els.roundTimerEl.textContent = formatRoundTime(ROUND_DURATION_MS);
+      els.roundTimerEl.classList.remove('round-timer-warning');
+    }
+
+    roundTimerInterval = setInterval(() => {
+      const elapsed = Date.now() - roundTimerStart;
+      const remaining = ROUND_DURATION_MS - elapsed;
+
+      if (els.roundTimerEl) {
+        els.roundTimerEl.textContent = formatRoundTime(remaining);
+        // Turn red in last 10 seconds
+        els.roundTimerEl.classList.toggle('round-timer-warning', remaining <= 10000 && remaining > 0);
+      }
+
+      if (remaining <= 0) {
+        clearInterval(roundTimerInterval);
+        roundTimerInterval = null;
+        if (els.roundTimerEl) {
+          els.roundTimerEl.textContent = '0:00';
+          els.roundTimerEl.classList.remove('round-timer-warning');
+        }
+        handleRoundTimerExpiry();
+      }
+    }, 200);
+  }
+
+  function stopRoundTimer() {
+    if (roundTimerInterval) {
+      clearInterval(roundTimerInterval);
+      roundTimerInterval = null;
+    }
+    roundTimerStart = null;
+    if (els.roundTimerEl) {
+      els.roundTimerEl.textContent = '';
+      els.roundTimerEl.classList.remove('round-timer-warning');
+    }
+  }
+
+  /**
+   * Handle round timer expiry. If the user has already answered the current
+   * question (waiting for Space/tap to advance), transition immediately.
+   * Otherwise, mark the timer as expired so the transition happens after
+   * they answer.
+   */
+  function handleRoundTimerExpiry() {
+    if (state.phase !== 'active') return;
+
+    state = engineRoundTimerExpired(state);
+
+    if (state.answered) {
+      // User is on the feedback screen — transition now
+      transitionToRoundComplete();
+    }
+    // Otherwise: user is mid-question. They'll finish, and nextQuestion()
+    // or submitAnswer() will check roundTimerExpired.
+  }
+
+  function transitionToRoundComplete() {
+    stopRoundTimer();
+    state = engineRoundComplete(state);
+    render();
+  }
 
   function getResponseCount(itemId) {
     return mode.getExpectedResponseCount ? mode.getExpectedResponseCount(itemId) : 1;
-  }
-
-  /**
-   * Get the per-item deadline for the current question.
-   * Uses the deadline tracker (persistent staircase) with EWMA cold start.
-   */
-  function getItemDeadline(itemId) {
-    const stats = selector.getStats(itemId);
-    const ewma = stats ? stats.ewma : null;
-    const rc = getResponseCount(itemId);
-    return deadlineTracker.getDeadline(itemId, ewma, rc);
-  }
-
-  function startCountdown() {
-    const bar = els.countdownBar;
-    if (!bar) return;
-    bar.style.width = '100%';
-    bar.classList.remove('expired');
-
-    if (countdownInterval) clearInterval(countdownInterval);
-
-    const targetTime = currentDeadline || selector.getConfig().automaticityTarget;
-
-    // Scale bar length proportional to deadline so bar speed is constant
-    if (els.countdownContainer) {
-      const maxTime = selector.getConfig().maxResponseTime;
-      const width = Math.max(60, Math.round(240 * Math.min(targetTime, maxTime) / maxTime));
-      els.countdownContainer.style.width = width + 'px';
-    }
-    let expired = false;
-    const startTime = Date.now();
-    countdownInterval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const remaining = Math.max(0, targetTime - elapsed);
-      bar.style.width = (remaining / targetTime) * 100 + '%';
-
-      if (remaining === 0 && !expired) {
-        expired = true;
-        bar.classList.add('expired');
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-        handleTimeout();
-      }
-    }, 50);
-  }
-
-  /**
-   * Handle timer expiry: auto-submit as incorrect, record to deadline tracker.
-   */
-  function handleTimeout() {
-    if (state.phase !== 'active' || state.answered) return;
-
-    const itemId = state.currentItemId;
-    const deadline = currentDeadline;
-
-    // Get the correct answer to display (pass empty string — always wrong, never crashes)
-    const result = mode.checkAnswer(itemId, '');
-
-    // Record as incorrect in both systems
-    const rc = getResponseCount(itemId);
-    selector.recordResponse(itemId, deadline, false);
-    deadlineTracker.recordOutcome(itemId, false, rc);
-
-    state = engineTimedOut(state, result.correctAnswer);
-
-    // Check mastery and progress
-    const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
-    state = engineUpdateMasteryAfterAnswer(state, allMastered);
-    const progress = computeProgress();
-    state = engineUpdateProgress(state, progress.masteredCount, progress.totalEnabledCount);
-
-    render();
-
-    if (mode.onAnswer) {
-      mode.onAnswer(itemId, { correct: false, correctAnswer: result.correctAnswer }, deadline);
-    }
   }
 
   function setAnswerButtonsEnabled(enabled) {
@@ -895,7 +907,6 @@ export function createQuizEngine(mode, container) {
     localStorage.setItem(baselineKey, String(baseline));
     const scaledConfig = deriveScaledConfig(baseline, DEFAULT_CONFIG);
     selector.updateConfig(scaledConfig);
-    deadlineTracker.updateConfig(scaledConfig);
   }
 
   // --- Calibration ---
@@ -1005,18 +1016,19 @@ export function createQuizEngine(mode, container) {
   // --- Engine lifecycle ---
 
   function nextQuestion() {
+    // If round timer expired, transition to round-complete instead
+    if (state.roundTimerExpired) {
+      transitionToRoundComplete();
+      return;
+    }
+
     const items = mode.getEnabledItems();
     if (items.length === 0) return;
 
     const nextItemId = selector.selectNext(items);
-    currentDeadline = getItemDeadline(nextItemId);
     state = engineNextQuestion(state, nextItemId, Date.now());
     render();
-    if (els.deadlineDisplay) {
-      els.deadlineDisplay.textContent = (currentDeadline / 1000).toFixed(1) + 's';
-    }
     mode.presentQuestion(state.currentItemId);
-    startCountdown();
   }
 
   function submitAnswer(input) {
@@ -1024,15 +1036,8 @@ export function createQuizEngine(mode, container) {
 
     const responseTime = Date.now() - state.questionStartTime;
 
-    if (countdownInterval) {
-      clearInterval(countdownInterval);
-      countdownInterval = null;
-    }
-
     const result = mode.checkAnswer(state.currentItemId, input);
-    const rc = getResponseCount(state.currentItemId);
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
-    deadlineTracker.recordOutcome(state.currentItemId, result.correct, rc, responseTime);
 
     state = engineSubmitAnswer(state, result.correct, result.correctAnswer);
 
@@ -1049,6 +1054,13 @@ export function createQuizEngine(mode, container) {
     // Let the mode react to the answer (e.g., highlight correct position)
     if (mode.onAnswer) {
       mode.onAnswer(state.currentItemId, result, responseTime);
+    }
+
+    // If round timer already expired, show feedback briefly then transition
+    if (state.roundTimerExpired) {
+      setTimeout(() => {
+        if (state.phase === 'active') transitionToRoundComplete();
+      }, 600);
     }
   }
 
@@ -1069,6 +1081,14 @@ export function createQuizEngine(mode, container) {
     state = engineUpdateProgress(state, progress.masteredCount, progress.totalEnabledCount);
 
     render();
+    startRoundTimer();
+    nextQuestion();
+  }
+
+  function continueQuiz() {
+    state = engineContinueRound(state);
+    render();
+    startRoundTimer();
     nextQuestion();
   }
 
@@ -1092,14 +1112,10 @@ export function createQuizEngine(mode, container) {
       calibrationCleanup();
       calibrationCleanup = null;
     }
-    if (countdownInterval) {
-      clearInterval(countdownInterval);
-      countdownInterval = null;
-    }
-    currentDeadline = null;
+    stopRoundTimer();
     if (els.practicingLabel) els.practicingLabel.textContent = '';
     state = engineStop(state);
-    render();   // render() clears calibrationContentEl when phase is idle
+    render();
     if (mode.onStop) mode.onStop();
     updateIdleMessage();
   }
@@ -1115,6 +1131,10 @@ export function createQuizEngine(mode, container) {
         e.preventDefault();
         nextQuestion();
         break;
+      case 'continue':
+        e.preventDefault();
+        continueQuiz();
+        break;
       case 'delegate':
         if (mode.handleKey) mode.handleKey(e, { submitAnswer });
         break;
@@ -1125,6 +1145,8 @@ export function createQuizEngine(mode, container) {
 
   // Tap-to-advance handler
   function handleClick(e) {
+    // In round-complete phase, only respond to the explicit buttons
+    if (state.phase === 'round-complete') return;
     if (state.phase !== 'active' || !state.answered) return;
     if (e.target.closest('.answer-btn, .note-btn, .quiz-config, .string-toggle')) return;
     nextQuestion();
@@ -1154,6 +1176,14 @@ export function createQuizEngine(mode, container) {
   // Wire up quiz header close button
   if (els.quizHeaderClose) {
     els.quizHeaderClose.addEventListener('click', stop);
+  }
+
+  // Wire up round-complete buttons
+  if (els.roundCompleteEl) {
+    const keepGoingBtn = els.roundCompleteEl.querySelector('.round-complete-continue');
+    const stopBtn = els.roundCompleteEl.querySelector('.round-complete-stop');
+    if (keepGoingBtn) keepGoingBtn.addEventListener('click', continueQuiz);
+    if (stopBtn) stopBtn.addEventListener('click', stop);
   }
 
   /**
@@ -1186,6 +1216,7 @@ export function createQuizEngine(mode, container) {
     showCalibrationIfNeeded,
     submitAnswer,
     nextQuestion,
+    continueQuiz,
     attach,
     detach,
     updateIdleMessage,

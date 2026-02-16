@@ -47,7 +47,6 @@ async function buildHTML(): Promise<string> {
     adaptiveJS,
     musicDataJS,
     quizEngineStateJS,
-    deadlineJS,
     quizEngineJS,
     statsDisplayJS,
     recommendationsJS,
@@ -70,7 +69,6 @@ async function buildHTML(): Promise<string> {
     readModule("./src/adaptive.js"),
     readModule("./src/music-data.js"),
     readModule("./src/quiz-engine-state.js"),
-    readModule("./src/deadline.js"),
     readModule("./src/quiz-engine.js"),
     readModule("./src/stats-display.js"),
     readModule("./src/recommendations.js"),
@@ -127,7 +125,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.16</div>
+    <div class="version">v4.1</div>
     <button class="gear-btn" type="button" aria-label="Settings">\u2699</button>
   </div>
 
@@ -139,11 +137,7 @@ ${modeScreen("fretboard", {
           Natural only
         </label>`,
   beforeQuizArea: fretboardSVG({ id: "fretboard", stringCount: 6, fretCount: 13, fretMarkers: [3, 5, 7, 9, 12] }),
-  quizAreaContent: `<div class="countdown-container">
-        <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
-      </div>
-      <div class="quiz-prompt"></div>
-      ${pianoNoteButtons()}
+  quizAreaContent: `${pianoNoteButtons()}
       ${feedbackBlock()}`,
 })}
 
@@ -155,11 +149,7 @@ ${modeScreen("ukulele", {
           Natural only
         </label>`,
   beforeQuizArea: fretboardSVG({ id: "ukulele-fretboard", stringCount: 4, fretCount: 13, fretMarkers: [3, 5, 7, 10, 12] }),
-  quizAreaContent: `<div class="countdown-container">
-        <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
-      </div>
-      <div class="quiz-prompt"></div>
-      ${pianoNoteButtons()}
+  quizAreaContent: `${pianoNoteButtons()}
       ${feedbackBlock()}`,
 })}
 
@@ -250,7 +240,6 @@ ${modeScreen("chordSpelling", {
 ${adaptiveJS}
 ${musicDataJS}
 ${quizEngineStateJS}
-${deadlineJS}
 ${quizEngineJS}
 ${statsDisplayJS}
 ${recommendationsJS}
