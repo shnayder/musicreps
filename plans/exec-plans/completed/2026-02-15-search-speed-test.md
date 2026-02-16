@@ -26,7 +26,7 @@ behavior (speed tap).
 ```javascript
 // Return value:
 {
-  prompt: 'Press F#',           // text to show in feedback area
+  prompt: 'Press F#',           // text to show in quiz-prompt area (above buttons)
   targetButtons: [btn],         // which button(s) must be pressed (in order)
 }
 ```
@@ -55,14 +55,15 @@ key sigs, scale degrees, diatonic chords):
 **Speed tap** (no method defined → fallback):
 - Engine highlights random button green, same as current behavior
 
-### Shared helper: `pickCalibrationButton(buttons, prevBtn)`
+### Shared helper: `pickCalibrationButton(buttons, prevBtn, rng)`
 
 Extract button selection into a shared helper in `quiz-engine.js` that modes
 call from their `getCalibrationTrialConfig`. This avoids duplicating accidental
 weighting across 8+ modes.
 
 ```javascript
-function pickCalibrationButton(buttons, prevBtn) {
+function pickCalibrationButton(buttons, prevBtn, rng) {
+  const rand = rng || Math.random;
   // Separate sharps from naturals using button text content
   const sharpBtns = buttons.filter(b => {
     const note = b.dataset.note;
@@ -74,16 +75,19 @@ function pickCalibrationButton(buttons, prevBtn) {
   });
 
   // ~35% chance of sharp if available
-  const useSharp = sharpBtns.length > 0 && Math.random() < 0.35;
+  const useSharp = sharpBtns.length > 0 && rand() < 0.35;
   const pool = useSharp ? sharpBtns : (naturalBtns.length > 0 ? naturalBtns : buttons);
 
   let btn;
   do {
-    btn = pool[Math.floor(Math.random() * pool.length)];
+    btn = pool[Math.floor(rand() * pool.length)];
   } while (btn === prevBtn && pool.length > 1);
   return btn;
 }
 ```
+
+The optional `rng` parameter accepts a custom random function for deterministic
+testing.
 
 Note: accidental detection uses `note.includes('#')` only — the button data
 attributes in `html-helpers.ts` use sharp names exclusively (C#, D#, F#, G#,
@@ -101,7 +105,7 @@ waits for the user to click/type it. The new version:
 1. Accepts an optional `getTrialConfig` function parameter
 2. Each trial calls `getTrialConfig(buttons, prevBtn)` if available
 3. If config is returned:
-   - Sets `els.feedback.textContent` to `config.prompt`
+   - Sets `els.quizPrompt.textContent` to `config.prompt` (above buttons)
    - Does NOT highlight any button
    - For multi-target trials, tracks sequential progress
    - Records per-press times (not per-trial) for baseline calculation
@@ -159,10 +163,13 @@ The engine determines the hint based on mode:
 
 ### Prompt display during trials
 
-For search trials, `els.feedback.textContent` is set to the trial prompt (e.g.,
-"Press F#") at the start of each trial. The hint area shows "Find and press the
-button" (set via `engineCalibrating()` hint text, which varies the same way as
-intro text).
+For search trials, `els.quizPrompt.textContent` is set to the trial prompt
+(e.g., "Press F#") at the start of each trial. The prompt appears above the
+answer buttons (in `.quiz-prompt`), matching where quiz questions appear during
+normal play. The render function routes `state.feedbackText` to `els.quizPrompt`
+during calibration phases, and to `els.feedback` (below buttons) during active
+quiz. The hint area shows "Find and press the button" (set via
+`engineCalibrating()` hint text, which varies the same way as intro text).
 
 For multi-press chord spelling trials, the prompt shows all notes: "Press C G E".
 No progress tracking within the prompt — the user knows what they've pressed
@@ -186,11 +193,10 @@ This mechanism only activates when `getTrialConfig` exists (search mode). For
 highlight mode (speed tap), the existing single-key `getKeyForButton()` logic
 continues unchanged.
 
-For interval-semitones buttons (`data-interval`), keyboard shortcuts during
-calibration are limited to single-key matches (digits for single-digit
-intervals). Multi-character interval names (m2, M3, etc.) are not feasible as
-keyboard shortcuts during timed calibration. Click is the primary input for
-interval buttons during calibration.
+Interval-semitones buttons (`data-interval`) have no keyboard shortcut during
+calibration — users tap/click them instead. Interval values are multi-character
+strings (m2, M3, P5, etc.) with no clean single-key mapping, so click is the
+only input method for interval buttons during calibration.
 
 **Dual listener safety**: During calibration, two `document` keydown listeners
 are active — the engine's main handler (which returns `'ignore'` for all keys
@@ -261,6 +267,7 @@ the wrong button during highlight calibration does nothing.
 | `src/quiz-diatonic-chords.js` | Add `getCalibrationTrialConfig()` |
 | `src/quiz-chord-spelling.js` | Add `getCalibrationTrialConfig()` (multi-target), `calibrationIntroHint` |
 | `src/quiz-engine-state_test.ts` | Test `engineCalibrationIntro` with hint override |
+| `src/quiz-engine_test.ts` | Test `pickCalibrationButton()` accidental weighting, no-repeat, edge cases |
 | `main.ts` | Version bump |
 | `build.ts` | Version bump |
 
