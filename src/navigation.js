@@ -40,13 +40,13 @@ function createNavigation() {
     if (currentModeId && modes[currentModeId]) {
       modes[currentModeId].deactivate();
       const currentScreen = document.getElementById('mode-' + currentModeId);
-      if (currentScreen) currentScreen.style.display = 'none';
+      if (currentScreen) currentScreen.classList.remove('mode-active');
     }
 
     // Activate new mode
     currentModeId = modeId;
     const newScreen = document.getElementById('mode-' + modeId);
-    if (newScreen) newScreen.style.display = '';
+    if (newScreen) newScreen.classList.add('mode-active');
     modes[modeId].activate();
 
     // Update title
@@ -92,11 +92,6 @@ function createNavigation() {
     for (const id of Object.keys(modes)) {
       modes[id].init();
     }
-
-    // Hide all mode screens initially
-    document.querySelectorAll('.mode-screen').forEach(el => {
-      el.style.display = 'none';
-    });
 
     // Switch to last-used mode or default
     const lastMode = localStorage.getItem(LAST_MODE_KEY);

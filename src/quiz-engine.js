@@ -681,19 +681,22 @@ export function createQuizEngine(mode, container) {
     insertAfterHint(div);
   }
 
-  function render() {
-    const inCalibration = state.phase === 'calibration-intro' ||
-                          state.phase === 'calibrating' ||
-                          state.phase === 'calibration-results';
+  // --- render sub-functions ---
 
-    // Clear calibration content when leaving calibration phases
-    const inCalibUI = state.phase === 'calibration-intro' || state.phase === 'calibration-results';
-    if (!inCalibUI) {
+  function isCalibrationPhase(phase) {
+    return phase === 'calibration-intro' || phase === 'calibrating' || phase === 'calibration-results';
+  }
+
+  function renderPhaseClass() {
+    var inCalibration = isCalibrationPhase(state.phase);
+
+    // Clear calibration content when leaving calibration UI phases
+    if (state.phase !== 'calibration-intro' && state.phase !== 'calibration-results') {
       clearCalibrationContent();
     }
 
     // Set phase class on container for CSS-driven visibility
-    const phaseClass = inCalibration ? 'phase-calibration'
+    var phaseClass = inCalibration ? 'phase-calibration'
       : state.phase === 'active' ? 'phase-active'
       : state.phase === 'round-complete' ? 'phase-round-complete'
       : 'phase-idle';
@@ -704,16 +707,20 @@ export function createQuizEngine(mode, container) {
     var gearBtn = document.querySelector('.gear-btn');
     if (gearBtn) gearBtn.classList.toggle('hidden', phaseClass !== 'phase-idle');
 
+    return { inCalibration: inCalibration, phaseClass: phaseClass };
+  }
+
+  function renderCalibrationMarking(inCalibration) {
     // Mark the calibration button container so CSS can hide others
     if (inCalibration && !container.querySelector('.calibration-active')) {
-      const buttons = getCalibrationButtons();
+      var buttons = getCalibrationButtons();
       if (buttons.length > 0) {
-        const parent = buttons[0].closest('.answer-buttons, .note-buttons');
+        var parent = buttons[0].closest('.answer-buttons, .note-buttons');
         if (parent) parent.classList.add('calibration-active');
       }
     }
     if (!inCalibration) {
-      const activeEl = container.querySelector('.calibration-active');
+      var activeEl = container.querySelector('.calibration-active');
       if (activeEl) activeEl.classList.remove('calibration-active');
     }
 
@@ -721,10 +728,10 @@ export function createQuizEngine(mode, container) {
     container.classList.remove('calibration-intro', 'calibration-results');
     if (state.phase === 'calibration-intro') container.classList.add('calibration-intro');
     if (state.phase === 'calibration-results') container.classList.add('calibration-results');
+  }
 
-    const isActive = state.phase === 'active';
-
-    // Quiz header title: context-dependent
+  function renderHeader(inCalibration) {
+    var isActive = state.phase === 'active';
     if (els.quizHeaderTitle) {
       if (inCalibration) {
         els.quizHeaderTitle.textContent = 'Speed Check';
@@ -735,7 +742,9 @@ export function createQuizEngine(mode, container) {
       }
     }
     if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
+  }
 
+  function renderFeedback(inCalibration) {
     // During calibration, feedbackText goes in quiz-prompt (above buttons)
     // so the heading/prompt appears in the same position as quiz questions.
     // During active quiz, it stays in .feedback (below buttons).
@@ -750,30 +759,34 @@ export function createQuizEngine(mode, container) {
         els.feedback.textContent = state.feedbackText;
         els.feedback.className   = state.feedbackClass;
       }
-      // Clear quiz-prompt when leaving calibration (presentQuestion rewrites it for quiz)
       if (els.quizPrompt && state.phase === 'idle') {
         els.quizPrompt.textContent = '';
       }
     }
     if (els.timeDisplay) els.timeDisplay.textContent = state.timeDisplayText;
     if (els.hint)        els.hint.textContent        = state.hintText;
+  }
+
+  function renderMessages() {
     if (els.masteryMessage) {
-      els.masteryMessage.textContent   = state.masteryText;
-      els.masteryMessage.style.display = state.showMastery ? 'block' : 'none';
+      els.masteryMessage.textContent = state.masteryText;
+      els.masteryMessage.classList.toggle('mastery-visible', state.showMastery);
     }
     if (els.recalibrateBtn) {
-      els.recalibrateBtn.style.display = (state.phase === 'idle' && motorBaseline) ? 'inline' : 'none';
+      els.recalibrateBtn.classList.toggle('has-baseline', !!motorBaseline);
     }
+  }
 
-    // Session stats: round answer count
-    if (els.roundAnswerCount && isActive) {
-      const count = state.roundAnswered;
+  function renderSessionStats() {
+    if (els.roundAnswerCount && state.phase === 'active') {
+      var count = state.roundAnswered;
       els.roundAnswerCount.textContent = count + (count === 1 ? ' answer' : ' answers');
     }
+  }
 
-    // Progress bar
+  function renderProgress() {
     if (els.progressFill) {
-      const pct = state.totalEnabledCount > 0
+      var pct = state.totalEnabledCount > 0
         ? Math.round((state.masteredCount / state.totalEnabledCount) * 100)
         : 0;
       els.progressFill.style.width = pct + '%';
@@ -781,31 +794,39 @@ export function createQuizEngine(mode, container) {
     if (els.progressText) {
       els.progressText.textContent = state.masteredCount + ' / ' + state.totalEnabledCount + ' fluent';
     }
+  }
 
-    setAnswerButtonsEnabled(state.answersEnabled);
-
-    // Round-complete overlay
-    if (els.roundCompleteEl) {
-      if (state.phase === 'round-complete') {
-        const pct = state.roundAnswered > 0
-          ? Math.round((state.roundCorrect / state.roundAnswered) * 100)
-          : 0;
-        els.roundCompleteEl.querySelector('.round-complete-count').textContent =
-          state.roundAnswered + (state.roundAnswered === 1 ? ' answer' : ' answers');
-        els.roundCompleteEl.querySelector('.round-complete-correct').textContent =
-          state.roundCorrect + ' correct (' + pct + '%)';
-        els.roundCompleteEl.style.display = 'block';
-      } else {
-        els.roundCompleteEl.style.display = 'none';
-      }
+  function renderRoundComplete() {
+    if (els.roundCompleteEl && state.phase === 'round-complete') {
+      var pct = state.roundAnswered > 0
+        ? Math.round((state.roundCorrect / state.roundAnswered) * 100)
+        : 0;
+      els.roundCompleteEl.querySelector('.round-complete-count').textContent =
+        state.roundAnswered + (state.roundAnswered === 1 ? ' answer' : ' answers');
+      els.roundCompleteEl.querySelector('.round-complete-correct').textContent =
+        state.roundCorrect + ' correct (' + pct + '%)';
     }
+  }
 
-    // Create calibration content when entering those phases
+  function renderCalibrationContent() {
     if (state.phase === 'calibration-intro' && !calibrationContentEl) {
       renderCalibrationIntro();
     } else if (state.phase === 'calibration-results' && !calibrationContentEl) {
       renderCalibrationResults();
     }
+  }
+
+  function render() {
+    var ctx = renderPhaseClass();
+    renderCalibrationMarking(ctx.inCalibration);
+    renderHeader(ctx.inCalibration);
+    renderFeedback(ctx.inCalibration);
+    renderMessages();
+    renderSessionStats();
+    renderProgress();
+    setAnswerButtonsEnabled(state.answersEnabled);
+    renderRoundComplete();
+    renderCalibrationContent();
   }
 
   // --- Round timer ---

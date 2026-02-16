@@ -194,7 +194,7 @@ function createSpeedTapMode() {
 
     onStart() {
       if (statsControls.mode) statsControls.hide();
-      if (fretboardWrapper) fretboardWrapper.style.display = '';
+      if (fretboardWrapper) fretboardWrapper.classList.remove('fretboard-hidden');
       updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);
     },
 
@@ -205,7 +205,7 @@ function createSpeedTapMode() {
       clearAll();
       currentNote = null;
       if (progressEl) progressEl.textContent = '';
-      if (fretboardWrapper) fretboardWrapper.style.display = 'none';
+      if (fretboardWrapper) fretboardWrapper.classList.add('fretboard-hidden');
       updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);
       statsControls.show('retention');
     },
@@ -251,7 +251,7 @@ function createSpeedTapMode() {
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
-    if (fretboardWrapper) fretboardWrapper.style.display = 'none';
+    if (fretboardWrapper) fretboardWrapper.classList.add('fretboard-hidden');
     updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);
     statsControls.show('retention');
   }

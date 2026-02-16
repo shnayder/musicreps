@@ -327,8 +327,12 @@ body {
 
 /* --- Mode screens --- */
 .mode-screen {
+  display: none;
   padding-top: var(--space-3);
   flex: 1;
+}
+.mode-screen.mode-active {
+  display: block;
 }
 
 /* --- Phase-driven visibility --- */
@@ -339,6 +343,16 @@ body {
 .phase-calibration .quiz-config { display: none; }
 .phase-round-complete .stats-section,
 .phase-round-complete .quiz-config { display: none; }
+
+/* Element-level visibility (replaces inline style="display: none;") */
+.mastery-message { display: none; }
+.mastery-message.mastery-visible { display: block; }
+.recalibrate-btn { display: none; }
+.phase-idle .recalibrate-btn.has-baseline { display: inline; }
+.round-complete { display: none; }
+.phase-round-complete .round-complete { display: block; }
+.stats-container.stats-hidden { display: none; }
+.fretboard-wrapper.fretboard-hidden { display: none; }
 
 /* --- Fretboard --- */
 .fretboard-wrapper {
@@ -873,7 +887,7 @@ button {
 /* Intro + results: hide buttons and progress */
 .phase-calibration.calibration-intro .calibration-active,
 .phase-calibration.calibration-results .calibration-active {
-  display: none !important;
+  display: none;
 }
 .phase-calibration.calibration-intro .progress-bar,
 .phase-calibration.calibration-results .progress-bar {

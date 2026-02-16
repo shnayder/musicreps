@@ -209,11 +209,11 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
       </div>
     </div>
     <div class="quiz-config">${settingsRow}
-      <div class="mastery-message" style="display: none;">Looks like you've got this!</div>
+      <div class="mastery-message">Looks like you've got this!</div>
       <div>
         <button class="start-btn">Start Quiz</button>
         <div class="round-duration-label">60-second rounds</div>
-        <button class="recalibrate-btn" style="display: none;">Redo speed check</button>
+        <button class="recalibrate-btn">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-session">
@@ -233,7 +233,7 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
     <div class="quiz-area">
       <div class="practicing-label"></div>
       ${opts.quizAreaContent}
-      <div class="round-complete" style="display: none;">
+      <div class="round-complete">
         <div class="round-complete-heading">Time\u2019s up!</div>
         <div class="round-complete-count"></div>
         <div class="round-complete-correct"></div>

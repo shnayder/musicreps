@@ -188,7 +188,7 @@ export function createStatsControls(container, renderFn) {
     statsMode = mode;
     statsContainer.innerHTML = '';
     renderFn(mode, statsContainer);
-    statsContainer.style.display = '';
+    statsContainer.classList.remove('stats-hidden');
     container.querySelectorAll('.stats-toggle-btn').forEach(function(b) {
       b.classList.toggle('active', b.dataset.mode === mode);
     });
@@ -196,7 +196,7 @@ export function createStatsControls(container, renderFn) {
 
   function hide() {
     statsMode = null;
-    statsContainer.style.display = 'none';
+    statsContainer.classList.add('stats-hidden');
     statsContainer.innerHTML = '';
   }
 

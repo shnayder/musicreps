@@ -109,22 +109,18 @@
 
   // Re-render stats on visible mode screens after notation change
   function refreshVisibleStats() {
-    document.querySelectorAll('.mode-screen').forEach(function(el) {
-      if (el.style.display !== 'none') {
-        var activeToggle = el.querySelector('.stats-toggle-btn.active');
-        if (activeToggle) activeToggle.click();
-      }
+    document.querySelectorAll('.mode-screen.mode-active').forEach(function(el) {
+      var activeToggle = el.querySelector('.stats-toggle-btn.active');
+      if (activeToggle) activeToggle.click();
     });
   }
 
   // Settings modal
   var settings = createSettingsModal({
     onNotationChange: function() {
-      document.querySelectorAll('.mode-screen').forEach(function(el) {
-        if (el.style.display !== 'none') {
-          refreshNoteButtonLabels(el);
-          refreshVisibleStats();
-        }
+      document.querySelectorAll('.mode-screen.mode-active').forEach(function(el) {
+        refreshNoteButtonLabels(el);
+        refreshVisibleStats();
       });
     }
   });
