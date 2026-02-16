@@ -1220,7 +1220,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.15</div>
+    <div class="version">v3.16</div>
     <button class="gear-btn" type="button" aria-label="Settings">⚙</button>
   </div>
 
@@ -8103,16 +8103,8 @@ function runCalibration(opts) {
         return;
       }
 
-      // For interval buttons, check data-interval match
-      const interval = targetBtn.dataset.interval;
-      if (interval) {
-        // Single-digit shortcuts only (no multi-char interval names)
-        const num = parseInt(e.key, 10);
-        if (!isNaN(num) && String(num) === interval) {
-          e.preventDefault();
-          recordPress();
-        }
-      }
+      // Interval buttons (data-interval="P5" etc.) have no keyboard
+      // shortcut during calibration — users tap/click them instead.
     } else {
       // Highlight mode: single-key match
       const expectedKey = getKeyForButton(targetBtn);
