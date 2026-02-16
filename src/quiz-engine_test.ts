@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { createNoteKeyHandler, createSolfegeKeyHandler, createAdaptiveKeyHandler, updateModeStats, getCalibrationThresholds } from "./quiz-engine.js";
+import { createNoteKeyHandler, createSolfegeKeyHandler, createAdaptiveKeyHandler, updateModeStats, getCalibrationThresholds, pickCalibrationButton } from "./quiz-engine.js";
 import { setUseSolfege, getUseSolfege } from "./music-data.js";
 import { DEFAULT_CONFIG, createMemoryStorage, createAdaptiveSelector } from "./adaptive.js";
 
@@ -263,6 +263,62 @@ describe("createAdaptiveKeyHandler", () => {
     } finally {
       setUseSolfege(original);
     }
+  });
+});
+
+// --- pickCalibrationButton tests ---
+
+function makeBtn(note: string) {
+  return { dataset: { note }, textContent: note } as any;
+}
+
+describe("pickCalibrationButton", () => {
+  const C = makeBtn("C");
+  const D = makeBtn("D");
+  const Cs = makeBtn("C#");
+  const Fs = makeBtn("F#");
+
+  it("returns a button from the pool", () => {
+    const btn = pickCalibrationButton([C, D, Cs], null, () => 0.5);
+    assert.ok([C, D, Cs].includes(btn));
+  });
+
+  it("picks a sharp button when rng < 0.35", () => {
+    // rng returns 0.1 for the sharp/natural decision, 0 for index selection
+    let call = 0;
+    const rng = () => [0.1, 0][call++];
+    const btn = pickCalibrationButton([C, D, Cs, Fs], null, rng);
+    assert.ok([Cs, Fs].includes(btn), "expected a sharp button");
+  });
+
+  it("picks a natural button when rng >= 0.35", () => {
+    let call = 0;
+    const rng = () => [0.5, 0][call++];
+    const btn = pickCalibrationButton([C, D, Cs, Fs], null, rng);
+    assert.ok([C, D].includes(btn), "expected a natural button");
+  });
+
+  it("avoids repeating the previous button", () => {
+    // Pool has only naturals [C, D]; first rng call picks index 0 (= C = prevBtn),
+    // second picks index 1 (= D) to break the do-while
+    let call = 0;
+    const rng = () => [0.5, 0, 0.99][call++];
+    const btn = pickCalibrationButton([C, D], C, rng);
+    assert.equal(btn, D);
+  });
+
+  it("allows repeat when pool has only one button", () => {
+    const rng = () => 0.5;
+    const btn = pickCalibrationButton([C], C, rng);
+    assert.equal(btn, C);
+  });
+
+  it("falls back to all buttons when no naturals exist", () => {
+    // All sharps, rng >= 0.35 so it would pick naturals, but none exist
+    let call = 0;
+    const rng = () => [0.5, 0][call++];
+    const btn = pickCalibrationButton([Cs, Fs], null, rng);
+    assert.ok([Cs, Fs].includes(btn));
   });
 });
 

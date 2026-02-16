@@ -237,6 +237,22 @@ function createChordSpellingMode() {
     getCalibrationButtons() {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
+
+    getCalibrationTrialConfig(buttons, prevBtn) {
+      // Multi-press: pick 2–4 random note buttons
+      const count = 2 + Math.floor(Math.random() * 3); // 2, 3, or 4
+      const targets = [];
+      let prev = prevBtn;
+      for (let i = 0; i < count; i++) {
+        const btn = pickCalibrationButton(buttons, prev);
+        targets.push(btn);
+        prev = btn;
+      }
+      const labels = targets.map(b => b.textContent);
+      return { prompt: 'Press ' + labels.join(' '), targetButtons: targets };
+    },
+
+    calibrationIntroHint: "We\u2019ll measure your response speed to set personalized targets. Press the notes shown in the prompt, in order \u2014 10 rounds total.",
   };
 
   const engine = createQuizEngine(mode, container);

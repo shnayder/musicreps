@@ -118,8 +118,10 @@ export function engineTimedOut(state, correctAnswer) {
 /**
  * Transition: enter calibration intro screen.
  * Shows explanation and a Start button; quiz controls are hidden.
+ * @param {EngineState} state
+ * @param {string} [hintOverride] - optional hint text (for search-mode calibration)
  */
-export function engineCalibrationIntro(state) {
+export function engineCalibrationIntro(state, hintOverride) {
   return {
     ...state,
     phase: 'calibration-intro',
@@ -128,7 +130,7 @@ export function engineCalibrationIntro(state) {
     answersEnabled: false,
     feedbackText: 'Quick Speed Check',
     feedbackClass: 'feedback',
-    hintText: "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
+    hintText: hintOverride || "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
     timeDisplayText: '',
     calibrationBaseline: null,
   };
@@ -137,14 +139,16 @@ export function engineCalibrationIntro(state) {
 /**
  * Transition: calibration trials are running.
  * Buttons enabled for tapping; trial counter shown in timeDisplay.
+ * @param {EngineState} state
+ * @param {string} [hintOverride] - optional hint text (for search-mode calibration)
  */
-export function engineCalibrating(state) {
+export function engineCalibrating(state, hintOverride) {
   return {
     ...state,
     phase: 'calibrating',
     answersEnabled: true,
     feedbackText: 'Speed check!',
-    hintText: 'Tap the highlighted button as fast as you can',
+    hintText: hintOverride || 'Tap the highlighted button as fast as you can',
   };
 }
 

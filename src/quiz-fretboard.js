@@ -227,6 +227,11 @@ function createFrettedInstrumentMode(instrument) {
     getCalibrationButtons() {
       return Array.from(container.querySelectorAll('.note-btn:not(.hidden)'));
     },
+
+    getCalibrationTrialConfig(buttons, prevBtn) {
+      const btn = pickCalibrationButton(buttons, prevBtn);
+      return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
+    },
   };
 
   // Create engine

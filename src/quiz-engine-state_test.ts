@@ -243,10 +243,18 @@ describe("engineCalibrationIntro", () => {
     assert.equal(s.answersEnabled, false);
   });
 
-  it("sets calibration heading and explanation", () => {
+  it("sets default calibration heading and explanation (highlight mode)", () => {
     const s = engineCalibrationIntro(initialEngineState());
     assert.equal(s.feedbackText, "Quick Speed Check");
     assert.ok(s.hintText.includes("tap speed"));
+    assert.ok(s.hintText.includes("highlighted button"));
+  });
+
+  it("uses hintOverride when provided (search mode)", () => {
+    const override = "Press the button shown in the prompt \u2014 10 rounds total.";
+    const s = engineCalibrationIntro(initialEngineState(), override);
+    assert.equal(s.feedbackText, "Quick Speed Check");
+    assert.equal(s.hintText, override);
   });
 });
 
@@ -261,10 +269,17 @@ describe("engineCalibrating", () => {
     assert.equal(s.answersEnabled, true);
   });
 
-  it("sets trial instruction text", () => {
+  it("sets default trial instruction text (highlight mode)", () => {
     const s = engineCalibrating(engineCalibrationIntro(initialEngineState()));
     assert.equal(s.feedbackText, "Speed check!");
     assert.ok(s.hintText.includes("highlighted button"));
+  });
+
+  it("uses hintOverride when provided (search mode)", () => {
+    const override = "Find and press the button";
+    const s = engineCalibrating(engineCalibrationIntro(initialEngineState()), override);
+    assert.equal(s.feedbackText, "Speed check!");
+    assert.equal(s.hintText, override);
   });
 });
 

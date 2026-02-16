@@ -83,6 +83,9 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 - [ ] localStorage keys are namespaced to the mode to avoid collisions
 - [ ] `handleKey()` returns `true` if key was handled, `false` otherwise
 - [ ] Keyboard state reset in `onStart()`, `onStop()`, `onDeactivate()`
+- [ ] Calibration matches mode interaction: modes with button-based answers
+      define `getCalibrationTrialConfig()` (search prompt, no highlight);
+      only speed tap uses the highlight fallback
 
 ## Code quality
 <!-- Full explanation: guides/coding-style.md -->

@@ -127,7 +127,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v3.14</div>
+    <div class="version">v3.16</div>
     <button class="gear-btn" type="button" aria-label="Settings">\u2699</button>
   </div>
 
@@ -142,6 +142,7 @@ ${modeScreen("fretboard", {
   quizAreaContent: `<div class="countdown-container">
         <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
+      <div class="quiz-prompt"></div>
       ${pianoNoteButtons()}
       ${feedbackBlock()}`,
 })}
@@ -157,6 +158,7 @@ ${modeScreen("ukulele", {
   quizAreaContent: `<div class="countdown-container">
         <div class="countdown-track"><div class="countdown-bar"></div></div><span class="deadline-display"></span>
       </div>
+      <div class="quiz-prompt"></div>
       ${pianoNoteButtons()}
       ${feedbackBlock()}`,
 })}

@@ -269,17 +269,50 @@ function getKeyForButton(btn) {
 }
 
 /**
+ * Pick a random calibration button, weighted toward accidentals ~35% of the time.
+ * Shared helper for mode getCalibrationTrialConfig implementations.
+ *
+ * @param {Element[]} buttons - available answer buttons
+ * @param {Element|null} prevBtn - previous trial's button (to avoid repeats)
+ * @param {function} [rng] - random number generator (0–1), defaults to Math.random
+ * @returns {Element}
+ */
+export function pickCalibrationButton(buttons, prevBtn, rng) {
+  const rand = rng || Math.random;
+  const sharpBtns = buttons.filter(b => {
+    const note = b.dataset.note;
+    return note && note.includes('#');
+  });
+  const naturalBtns = buttons.filter(b => {
+    const note = b.dataset.note;
+    return note && !note.includes('#');
+  });
+
+  // ~35% chance of sharp if available
+  const useSharp = sharpBtns.length > 0 && rand() < 0.35;
+  const pool = useSharp ? sharpBtns : (naturalBtns.length > 0 ? naturalBtns : buttons);
+
+  let btn;
+  do {
+    btn = pool[Math.floor(rand() * pool.length)];
+  } while (btn === prevBtn && pool.length > 1);
+  return btn;
+}
+
+/**
  * Run a motor-baseline calibration sequence.
- * Highlights random buttons one at a time; user taps or types to respond.
+ * In highlight mode (no getTrialConfig): highlights a random button green.
+ * In search mode (getTrialConfig provided): shows a text prompt, user finds the button.
  *
  * @param {object}   opts
- * @param {Element[]} opts.buttons    - answer buttons to use for calibration
- * @param {object}   opts.els        - engine DOM elements (feedback, hint, timeDisplay)
- * @param {Element}  opts.container  - mode container element
- * @param {function} opts.onComplete - called with median time in ms
+ * @param {Element[]} opts.buttons       - answer buttons to use for calibration
+ * @param {object}   opts.els           - engine DOM elements (feedback, hint, timeDisplay)
+ * @param {Element}  opts.container     - mode container element
+ * @param {function} opts.onComplete    - called with median time in ms
+ * @param {function} [opts.getTrialConfig] - mode's getCalibrationTrialConfig(buttons, prevBtn)
  */
 function runCalibration(opts) {
-  const { buttons, els, container, onComplete } = opts;
+  const { buttons, els, container, onComplete, getTrialConfig } = opts;
   const TRIAL_COUNT = 10;
   const PAUSE_MS = 400;
 
@@ -290,40 +323,85 @@ function runCalibration(opts) {
 
   const times = [];
   let trialIndex = 0;
-  let targetBtn = null;
+  let targetBtn = null;        // current target (single-target or current in sequence)
   let trialStartTime = null;
-  let prevBtnIndex = -1;
+  let prevBtn = null;
   let canceled = false;
   let pendingTimeout = null;
 
+  // Search mode state
+  let trialConfig = null;      // current trial's config from getTrialConfig
+  let targetIndex = 0;         // index within trialConfig.targetButtons
+  let pressStartTime = null;   // time of last press (for per-press timing)
+
+  // Accidental key support for search mode
+  let pendingNote = null;
+  let pendingNoteTimeout = null;
+
+  function isSearchMode() {
+    return !!getTrialConfig;
+  }
+
   function startTrial() {
     if (canceled) return;
+
     if (trialIndex >= TRIAL_COUNT) {
       cleanup();
-      const median = computeMedian(times.slice(WARMUP_TRIALS));
+      // Warmup trials already filtered in recordPress() — use all collected times
+      const median = computeMedian(times);
       onComplete(median);
       return;
     }
 
-    // Pick random button (not same as previous)
-    let idx;
-    do {
-      idx = Math.floor(Math.random() * buttons.length);
-    } while (idx === prevBtnIndex && buttons.length > 1);
-    prevBtnIndex = idx;
+    if (isSearchMode()) {
+      trialConfig = getTrialConfig(buttons, prevBtn);
+      targetIndex = 0;
+      targetBtn = trialConfig.targetButtons[0];
+      pressStartTime = Date.now();
+      trialStartTime = Date.now();
 
-    targetBtn = buttons[idx];
-    targetBtn.classList.add('calibration-target');
-    trialStartTime = Date.now();
+      if (els.quizPrompt) els.quizPrompt.textContent = trialConfig.prompt;
+    } else {
+      // Highlight mode (speed tap fallback)
+      let idx;
+      let prevBtnIndex = prevBtn ? buttons.indexOf(prevBtn) : -1;
+      do {
+        idx = Math.floor(Math.random() * buttons.length);
+      } while (idx === prevBtnIndex && buttons.length > 1);
 
-    if (els.timeDisplay) els.timeDisplay.textContent = (trialIndex + 1) + ' / ' + TRIAL_COUNT;
+      targetBtn = buttons[idx];
+      targetBtn.classList.add('calibration-target');
+      trialStartTime = Date.now();
+    }
+
+    prevBtn = targetBtn;
+    if (els.progressText) els.progressText.textContent = (trialIndex + 1) + ' / ' + TRIAL_COUNT;
+    if (els.progressFill) els.progressFill.style.width = Math.round(((trialIndex + 1) / TRIAL_COUNT) * 100) + '%';
   }
 
-  function recordTrial() {
-    const elapsed = Date.now() - trialStartTime;
-    times.push(elapsed);
-    targetBtn.classList.remove('calibration-target');
+  function recordPress() {
+    const now = Date.now();
+    const elapsed = now - (isSearchMode() ? pressStartTime : trialStartTime);
+
+    // Skip warmup trials
+    if (trialIndex >= WARMUP_TRIALS) {
+      times.push(elapsed);
+    }
+
+    if (isSearchMode() && trialConfig && targetIndex < trialConfig.targetButtons.length - 1) {
+      // Multi-target: advance to next target in sequence
+      targetIndex++;
+      targetBtn = trialConfig.targetButtons[targetIndex];
+      pressStartTime = now;
+      return; // don't advance trial
+    }
+
+    // Trial complete
+    if (!isSearchMode() && targetBtn) {
+      targetBtn.classList.remove('calibration-target');
+    }
     targetBtn = null;
+    trialConfig = null;
     trialIndex++;
     pendingTimeout = setTimeout(startTrial, PAUSE_MS);
   }
@@ -332,31 +410,102 @@ function runCalibration(opts) {
     if (!targetBtn) return;
     const clicked = e.target.closest('.note-btn, .answer-btn');
     if (clicked === targetBtn) {
-      recordTrial();
+      clearPendingNote();
+      recordPress();
     }
+  }
+
+  function clearPendingNote() {
+    if (pendingNoteTimeout) clearTimeout(pendingNoteTimeout);
+    pendingNote = null;
+    pendingNoteTimeout = null;
+  }
+
+  function checkNoteMatch(noteName) {
+    if (!targetBtn) return false;
+    const targetNote = targetBtn.dataset.note;
+    return targetNote && targetNote.toUpperCase() === noteName.toUpperCase();
   }
 
   function handleCalibrationKey(e) {
     if (!targetBtn) return;
-    const expectedKey = getKeyForButton(targetBtn);
-    if (expectedKey && e.key.toUpperCase() === expectedKey) {
-      e.preventDefault();
-      recordTrial();
+
+    if (isSearchMode()) {
+      const key = e.key.toUpperCase();
+
+      // Handle # or b after a pending note letter
+      if (pendingNote) {
+        if (e.key === '#' || (e.shiftKey && e.key === '3')) {
+          e.preventDefault();
+          clearTimeout(pendingNoteTimeout);
+          const combined = pendingNote + '#';
+          pendingNote = null;
+          pendingNoteTimeout = null;
+          if (checkNoteMatch(combined)) recordPress();
+          return;
+        }
+        if (e.key === 'b' || e.key === 'B') {
+          // 'B' by itself could be the note B, but after a pending note it's a flat
+          if (pendingNote !== 'B') {
+            e.preventDefault();
+            clearTimeout(pendingNoteTimeout);
+            const combined = pendingNote + 'b';
+            pendingNote = null;
+            pendingNoteTimeout = null;
+            if (checkNoteMatch(combined)) recordPress();
+            return;
+          }
+        }
+      }
+
+      // Note letter
+      if ('CDEFGAB'.includes(key)) {
+        e.preventDefault();
+        clearPendingNote();
+
+        // Check if target is a natural — if so, submit immediately
+        const targetNote = targetBtn.dataset.note;
+        if (targetNote && !targetNote.includes('#')) {
+          if (checkNoteMatch(key)) recordPress();
+        } else {
+          // Target is an accidental — wait for # or b
+          pendingNote = key;
+          pendingNoteTimeout = setTimeout(() => {
+            // Window expired, check natural
+            if (checkNoteMatch(pendingNote)) recordPress();
+            pendingNote = null;
+            pendingNoteTimeout = null;
+          }, 400);
+        }
+        return;
+      }
+
+      // Interval buttons (data-interval="P5" etc.) have no keyboard
+      // shortcut during calibration — users tap/click them instead.
+    } else {
+      // Highlight mode: single-key match
+      const expectedKey = getKeyForButton(targetBtn);
+      if (expectedKey && e.key.toUpperCase() === expectedKey) {
+        e.preventDefault();
+        recordPress();
+      }
     }
   }
 
   function cleanup() {
     canceled = true;
+    clearPendingNote();
     if (pendingTimeout !== null) {
       clearTimeout(pendingTimeout);
       pendingTimeout = null;
     }
     container.removeEventListener('click', handleCalibrationClick);
     document.removeEventListener('keydown', handleCalibrationKey);
-    if (targetBtn) {
+    if (targetBtn && !isSearchMode()) {
       targetBtn.classList.remove('calibration-target');
-      targetBtn = null;
     }
+    targetBtn = null;
+    trialConfig = null;
   }
 
   container.addEventListener('click', handleCalibrationClick);
@@ -381,6 +530,8 @@ function runCalibration(opts) {
  *   mode.onStop()     - Called when quiz stops (optional)
  *   mode.handleKey(e, state) - Mode-specific key handling, return true if handled (optional)
  *   mode.getCalibrationButtons() - Returns array of DOM elements for calibration (optional)
+ *   mode.getCalibrationTrialConfig(buttons, prevBtn) - Returns { prompt, targetButtons } for search calibration (optional)
+ *   mode.calibrationIntroHint - Custom intro hint text (optional, e.g. for chord spelling)
  *
  * @param {HTMLElement} container - Root element containing quiz DOM elements.
  *   Expected children (found by class):
@@ -437,6 +588,8 @@ export function createQuizEngine(mode, container) {
     hint: container.querySelector('.hint'),
     stats: container.querySelector('.stats'),
     quizArea: container.querySelector('.quiz-area'),
+    quizPrompt: container.querySelector('.quiz-prompt'),
+    quizHeaderTitle: container.querySelector('.quiz-header-title'),
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
@@ -563,28 +716,37 @@ export function createQuizEngine(mode, container) {
       if (activeEl) activeEl.classList.remove('calibration-active');
     }
 
-    // Show/hide close button
-    if (inCalibration && !container.querySelector('.calibration-close-btn')) {
-      const closeBtn = document.createElement('button');
-      closeBtn.className = 'calibration-close-btn';
-      closeBtn.textContent = '\u00D7';
-      closeBtn.setAttribute('aria-label', 'Close speed check');
-      closeBtn.addEventListener('click', stop);
-      if (els.quizArea) {
-        els.quizArea.style.position = 'relative';
-        els.quizArea.appendChild(closeBtn);
-      }
-    }
-    if (!inCalibration) {
-      const closeBtn = container.querySelector('.calibration-close-btn');
-      if (closeBtn) closeBtn.remove();
+    // Sub-phase classes for calibration CSS (intro hides buttons, trials shows them)
+    container.classList.remove('calibration-intro', 'calibration-results');
+    if (state.phase === 'calibration-intro') container.classList.add('calibration-intro');
+    if (state.phase === 'calibration-results') container.classList.add('calibration-results');
+
+    // Quiz header title: "Speed Check" during calibration, empty otherwise
+    if (els.quizHeaderTitle) {
+      els.quizHeaderTitle.textContent = inCalibration ? 'Speed Check' : '';
     }
 
     const isActive = state.phase === 'active';
     if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
-    if (els.feedback) {
-      els.feedback.textContent = state.feedbackText;
-      els.feedback.className   = state.feedbackClass;
+
+    // During calibration, feedbackText goes in quiz-prompt (above buttons)
+    // so the heading/prompt appears in the same position as quiz questions.
+    // During active quiz, it stays in .feedback (below buttons).
+    if (inCalibration) {
+      if (els.quizPrompt) els.quizPrompt.textContent = state.feedbackText;
+      if (els.feedback) {
+        els.feedback.textContent = '';
+        els.feedback.className = 'feedback';
+      }
+    } else {
+      if (els.feedback) {
+        els.feedback.textContent = state.feedbackText;
+        els.feedback.className   = state.feedbackClass;
+      }
+      // Clear quiz-prompt when leaving calibration (presentQuestion rewrites it for quiz)
+      if (els.quizPrompt && state.phase === 'idle') {
+        els.quizPrompt.textContent = '';
+      }
     }
     if (els.timeDisplay) els.timeDisplay.textContent = state.timeDisplayText;
     if (els.hint)        els.hint.textContent        = state.hintText;
@@ -752,11 +914,32 @@ export function createQuizEngine(mode, container) {
   }
 
   /**
+   * Determine if the mode uses search-based calibration (text prompt)
+   * vs highlight-based (speed tap fallback).
+   */
+  function hasSearchCalibration() {
+    return typeof mode.getCalibrationTrialConfig === 'function';
+  }
+
+  function getCalibrationIntroHint() {
+    if (mode.calibrationIntroHint) return mode.calibrationIntroHint;
+    if (hasSearchCalibration()) {
+      return "We\u2019ll measure your response speed to set personalized targets. Press the button shown in the prompt \u2014 10 rounds total.";
+    }
+    return undefined; // use default (highlight mode)
+  }
+
+  function getCalibrationTrialHint() {
+    if (hasSearchCalibration()) return 'Find and press the button';
+    return undefined; // use default (highlight mode)
+  }
+
+  /**
    * Enter the calibration intro screen.
    */
   function startCalibration() {
     if (mode.onStart) mode.onStart();
-    state = engineCalibrationIntro(state);
+    state = engineCalibrationIntro(state, getCalibrationIntroHint());
     render();
   }
 
@@ -770,13 +953,18 @@ export function createQuizEngine(mode, container) {
       return;
     }
 
-    state = engineCalibrating(state);
+    state = engineCalibrating(state, getCalibrationTrialHint());
     render();
+
+    const getTrialConfig = hasSearchCalibration()
+      ? (btns, prevBtn) => mode.getCalibrationTrialConfig(btns, prevBtn)
+      : undefined;
 
     calibrationCleanup = runCalibration({
       buttons,
       els,
       container,
+      getTrialConfig,
       onComplete: (median) => {
         calibrationCleanup = null;
         if (!Number.isFinite(median) || median <= 0) {

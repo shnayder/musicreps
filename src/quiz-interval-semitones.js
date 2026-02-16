@@ -132,6 +132,15 @@ function createIntervalSemitonesMode() {
     getCalibrationButtons() {
       return Array.from(container.querySelectorAll('.answer-btn-interval'));
     },
+
+    getCalibrationTrialConfig(buttons, prevBtn) {
+      // Uniform random — no accidental/natural distinction for intervals
+      let btn;
+      do {
+        btn = buttons[Math.floor(Math.random() * buttons.length)];
+      } while (btn === prevBtn && buttons.length > 1);
+      return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
+    },
   };
 
   let pendingDigit = null;

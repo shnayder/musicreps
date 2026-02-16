@@ -197,6 +197,11 @@ function createIntervalMathMode() {
     getCalibrationButtons() {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
+
+    getCalibrationTrialConfig(buttons, prevBtn) {
+      const btn = pickCalibrationButton(buttons, prevBtn);
+      return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
+    },
   };
 
   const engine = createQuizEngine(mode, container);
