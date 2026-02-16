@@ -200,9 +200,24 @@ happens to paint onto the same SVG that displays questions — that's fine as a
 rendering detail, but the layout shouldn't need `order` tricks or mode-specific
 CSS classes to accommodate it.
 
+**Navigation: class-based mode switching.** Currently `navigation.js` uses
+inline `style.display` for mode-screen visibility (lines 43, 49, 97-98). This
+puts mode-screen visibility outside the CSS system entirely — inline styles
+can't be overridden by class rules without `!important`. Replace with:
+```css
+.mode-screen { display: none; }
+.mode-screen.mode-active { display: block; }
+```
+Then `switchTo()` toggles `.mode-active` instead of setting `style.display`.
+This eliminates the last source of inline display toggles outside the engine.
+
+See: `plans/design-docs/2026-02-16-ui-and-build-architecture-review.md`
+Problem B for the full analysis.
+
 **Files:** `html-helpers.ts`, `build.ts` (template), `styles.css` (new
 wrappers, remove `order` hacks), `quiz-engine.js` (DOM queries for new
-structure), `quiz-fretboard.js` (remove `quiz-active` class toggling)
+structure), `quiz-fretboard.js` (remove `quiz-active` class toggling),
+`navigation.js` (class-based mode switching)
 
 **Risk:** Medium. Template change touches all modes. Test all 10 modes
 idle + quiz states.
@@ -244,9 +259,31 @@ on the container, and CSS rules keyed off that class.
 | `showHeatmapBtn` | CSS: `.phase-idle .stats-toggle { display: inline-flex }` |
 | `showStatsControls` | CSS: `.phase-idle .stats-controls { display: block }` |
 
+**Mode-specific visibility standardization.** Modes currently use three
+different patterns for showing/hiding elements during quiz lifecycle:
+`style.display` (speed-tap), custom `.hide()`/`.show()` (fretboard),
+CSS class toggles (note-semitones). Standardize all modes on CSS class toggles
+— the `.answer-group-hidden` pattern from `quiz-note-semitones.js` is the
+model. Each mode that needs to show/hide elements during `onStart()`/`onStop()`
+should use `classList.toggle('hidden')` or rely on the phase class, not
+`style.display`.
+
+**render() decomposition.** The 125-line `render()` function handles phase
+management, feedback, progress, calibration, and round-complete all in one
+block. Decompose into named helper functions (e.g. `renderHeader()`,
+`renderFeedback()`, `renderProgress()`, `renderCalibration()`,
+`renderRoundComplete()`) called from `render()`. This makes review easier and
+reduces the blast radius of changes to one sub-system. Not separate files —
+just small named functions within `quiz-engine.js`.
+
+See: `plans/design-docs/2026-02-16-ui-and-build-architecture-review.md`
+Problems C and D for the full analysis.
+
 **Files:** `quiz-engine-state.js` (remove flags), `quiz-engine.js` (simplify
-render, add phase class), `styles.css` (add phase rules, remove `!important`
-calibration hacks), `html-helpers.ts` (remove inline display:none)
+render, decompose into helpers, add phase class), `styles.css` (add phase
+rules, remove `!important` calibration hacks), `html-helpers.ts` (remove
+inline display:none), all `quiz-*.js` mode files (standardize on class-based
+visibility)
 
 **Risk:** Medium-high. Touches the engine's core state/render cycle. Every mode
 must be tested in all states. With Speed Tap migrated (Phase 2), all 10 modes
@@ -328,13 +365,14 @@ Phases 1-4 are sequential (each builds on the previous). Phase 5 requires
 | `src/html-helpers.ts` | 1,3,4 | Labels, DOM restructure, remove inline display:none |
 | `build.ts` | 1,3,4 | Mirror template changes |
 | `main.ts` | 1,3,4 | Mirror template changes |
-| `src/styles.css` | 1,3,4,5 | Label styles, wrapper styles, phase rules, layout |
-| `src/quiz-engine.js` | 1,2,3,4 | Progress text, baseConfig/useCountdown, DOM queries, phase class, simplify render |
+| `src/styles.css` | 1,3,4,5 | Label styles, wrapper styles, phase rules, mode-screen class visibility, layout |
+| `src/quiz-engine.js` | 1,2,3,4 | Progress text, baseConfig/useCountdown, DOM queries, phase class, decompose render into helpers |
 | `src/quiz-engine-state.js` | 4 | Remove visibility flags |
-| `src/quiz-speed-tap.js` | 2 | Rewrite to use createQuizEngine |
+| `src/navigation.js` | 3 | Class-based mode switching (replace inline style.display) |
+| `src/quiz-speed-tap.js` | 2,4 | Rewrite to use createQuizEngine, standardize visibility on CSS classes |
 | `src/stats-display.js` | 6 | Grid axis labels, summary, scoping |
-| `src/quiz-fretboard.js` | 3 | DOM query updates |
-| All other `quiz-*.js` | 3 | DOM query updates (if any) |
+| `src/quiz-fretboard.js` | 3,4 | DOM query updates, standardize visibility on CSS classes |
+| All other `quiz-*.js` | 3,4 | DOM query updates, standardize visibility on CSS classes |
 | `src/quiz-engine-state_test.ts` | 4 | Remove visibility flag assertions |
 
 ## Testing
