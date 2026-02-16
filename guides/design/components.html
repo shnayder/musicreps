@@ -668,6 +668,46 @@
   </div>
 
   <!-- ================================================================== -->
+  <h2>Fretboard</h2>
+  <p>The primary quiz surface for guitar and ukulele modes. SVG scales to fill
+     container width via <code>viewBox</code> + <code>width: 100%</code>.</p>
+
+  <h3>Full Guitar Fretboard (6 strings, 13 frets)</h3>
+  <div class="showcase">
+    <div class="showcase-label">Idle / heatmap view (all notes labeled)</div>
+    <div class="showcase-body" id="fretboard-full"></div>
+  </div>
+
+  <h3>Quiz Highlight States</h3>
+  <p>During a quiz, one note is highlighted. After answering, it turns green or red.</p>
+  <div class="showcase">
+    <div class="showcase-label">Question &rarr; correct &rarr; wrong</div>
+    <div class="showcase-body" id="fretboard-states"></div>
+  </div>
+
+  <h3>Fret Markers</h3>
+  <p>Inlay dots at standard positions (3, 5, 7, 9, double at 12) give orientation
+     without adding clutter.</p>
+  <div class="showcase">
+    <div class="showcase-label">Marker positions</div>
+    <div class="showcase-body" id="fretboard-markers-demo"></div>
+  </div>
+
+  <h3>Anatomy &amp; Dimensions</h3>
+  <div class="showcase">
+    <div class="showcase-label">SVG coordinate system</div>
+    <div class="showcase-body">
+      <div class="anno-block">
+        viewBox: 0 0 600 <em>h</em> &mdash; guitar h=240, ukulele h=160<br>
+        string spacing: 40px &middot; first string y=20 &middot; note circle r=15 &middot; font-size: 12, font-weight: 600<br>
+        fret spacing: decreasing (65, 61, 57, 54, 51, 48, 45, 42, 40, 37, 35, 33, 32)<br>
+        nut: stroke-width 4 at fretPositions[1] &middot; fret markers below SVG as HTML divs<br>
+        CSS scales: width:100%, height:auto &middot; max-width: 1200px
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
   <h2>Heatmap &amp; Stats</h2>
 
   <h3>Heatmap Cells</h3>
@@ -1056,6 +1096,132 @@
           + '<span class="anno">' + t.label + '</span>'
           + '</div>';
       }).join('');
+    })();
+
+    // ================================================================
+    // Fretboard generation (mirrors fretboard.ts logic)
+    // ================================================================
+    (function() {
+      var fretPositions = [0, 65, 126, 183, 237, 288, 336, 381, 423, 463, 500, 535, 568, 600];
+      // Guitar: standard tuning note names per string (high E to low E)
+      var stringOffsets = [4, 11, 7, 2, 9, 4]; // EBGDAE
+      var noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+      var markers = [3, 5, 7, 9, 12];
+
+      function getNoteAt(string, fret) {
+        return noteNames[(stringOffsets[string] + fret) % 12];
+      }
+
+      function noteX(fret) {
+        if (fret === 0) return fretPositions[0] + (fretPositions[1] - fretPositions[0]) / 2;
+        return (fretPositions[fret] + fretPositions[fret + 1]) / 2;
+      }
+
+      function buildFretboard(opts) {
+        var sc = opts.stringCount || 6;
+        var fc = opts.fretCount || 13;
+        var h = sc * 40;
+        var r = opts.circleRadius || 15;
+        var fontSize = opts.fontSize || 12;
+        var svg = '';
+
+        // Fret marker dots (between strings, at marker frets)
+        var midY = h / 2;
+        for (var m = 0; m < markers.length; m++) {
+          var fret = markers[m];
+          if (fret >= fc) continue;
+          var mx = (fretPositions[fret] + fretPositions[fret + 1]) / 2;
+          if (fret === 12) {
+            // Double dot at fret 12
+            var dotY1 = 20 + 1 * 40;
+            var dotY2 = 20 + (sc - 2) * 40;
+            svg += '<circle class="fret-marker" cx="' + mx + '" cy="' + dotY1 + '" r="5"/>';
+            svg += '<circle class="fret-marker" cx="' + mx + '" cy="' + dotY2 + '" r="5"/>';
+          } else {
+            svg += '<circle class="fret-marker" cx="' + mx + '" cy="' + midY + '" r="5"/>';
+          }
+        }
+
+        // Nut (wide bar)
+        svg += '<rect class="fretboard-nut" x="' + (fretPositions[1] - 3) + '" y="0" width="6" height="' + h + '" rx="1"/>';
+        // Frets (start from index 2; index 1 is the nut)
+        for (var i = 2; i < fretPositions.length; i++) {
+          svg += '<line x1="' + fretPositions[i] + '" y1="0" x2="' + fretPositions[i] + '" y2="' + h + '" stroke="var(--color-fretboard-line)" stroke-width="1"/>';
+        }
+        // Strings
+        for (var s = 0; s < sc; s++) {
+          var thickness = 1 + s * 0.5;
+          svg += '<line x1="0" y1="' + (20 + s * 40) + '" x2="600" y2="' + (20 + s * 40) + '" stroke="var(--color-fretboard-line)" stroke-width="' + thickness + '"/>';
+        }
+        // Notes
+        for (var si = 0; si < sc; si++) {
+          for (var fi = 0; fi < fc; fi++) {
+            var x = noteX(fi);
+            var y = 20 + si * 40;
+            var fill = opts.fillFn ? opts.fillFn(si, fi) : 'var(--color-bg)';
+            var stroke = 'var(--color-fretboard-line)';
+            var label = opts.labelFn ? opts.labelFn(si, fi) : '';
+            var textFill = opts.textFillFn ? opts.textFillFn(si, fi) : 'var(--color-text)';
+            svg += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1"/>';
+            if (label) {
+              svg += '<text x="' + x + '" y="' + y + '" text-anchor="middle" dominant-baseline="central" font-size="' + fontSize + '" fill="' + textFill + '" font-weight="600">' + label + '</text>';
+            }
+          }
+        }
+
+        return '<div class="fretboard-wrapper" style="display:flex;flex-direction:column;align-items:center;width:100%;">'
+          + '<div class="fretboard-container" style="position:relative;width:100%;">'
+          + '<svg class="fretboard" viewBox="0 0 600 ' + h + '" style="width:100%;height:auto;display:block;background:var(--color-bg);">'
+          + svg + '</svg>'
+          + '</div></div>';
+      }
+
+      // --- Full fretboard with all notes ---
+      document.getElementById('fretboard-full').innerHTML = buildFretboard({
+        labelFn: function(s, f) { return getNoteAt(s, f); },
+      }) + '<div class="anno-block">'
+        + 'viewBox: 0 0 600 240 &middot; scales to 100% width &middot; 6 strings &times; 13 frets<br>'
+        + 'circle r=15, font-size=12, font-weight=600, string spacing 40px &middot; nut stroke-width: 4'
+        + '</div>';
+
+      // --- Quiz highlight states ---
+      var highlight = v('--color-highlight');
+      var success = v('--color-success');
+      var error = v('--color-error');
+      document.getElementById('fretboard-states').innerHTML = buildFretboard({
+        stringCount: 3, fretCount: 7,
+        fillFn: function(s, f) {
+          if (s === 1 && f === 3) return highlight;
+          if (s === 0 && f === 5) return success;
+          if (s === 2 && f === 1) return error;
+          return 'var(--color-bg)';
+        },
+        labelFn: function(s, f) {
+          if (s === 0 && f === 5) return 'A';
+          if (s === 2 && f === 1) return 'F';
+          return '';
+        },
+        textFillFn: function(s, f) {
+          if (s === 0 && f === 5 || s === 2 && f === 1) return 'white';
+          return 'var(--color-text)';
+        },
+      }) + '<div class="showcase-row" style="margin-top:0.5rem;">'
+        + '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:' + highlight + ';border:1px solid var(--color-border);"></span>'
+        + '<span class="anno">question (--color-highlight)</span>'
+        + '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:' + success + ';margin-left:0.5rem;"></span>'
+        + '<span class="anno">correct (--color-success)</span>'
+        + '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:' + error + ';margin-left:0.5rem;"></span>'
+        + '<span class="anno">wrong (--color-error)</span>'
+        + '</div>';
+
+      // --- Fret markers demo ---
+      document.getElementById('fretboard-markers-demo').innerHTML = buildFretboard({
+        stringCount: 4, fretCount: 13,
+        labelFn: function() { return ''; },
+      }) + '<div class="anno-block">'
+        + 'single dot: frets 3, 5, 7, 9 (centered between strings)<br>'
+        + 'double dot: fret 12 (between string pairs) &middot; r=5, fill: --color-border-light, opacity 0.6'
+        + '</div>';
     })();
   </script>
 </body>

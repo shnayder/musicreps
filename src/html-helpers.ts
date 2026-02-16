@@ -5,6 +5,7 @@ import {
   fretPositions,
   fretLines,
   stringLines,
+  fretMarkerDots,
   noteElements,
   fretNumberElements,
 } from "./fretboard.ts";
@@ -121,8 +122,10 @@ export function fretboardSVG(config: FretboardSVGConfig = {}): string {
   return `<div class="fretboard-wrapper">
       <div class="fretboard-container">
         <svg class="fretboard"${idAttr} viewBox="0 0 600 ${h}">
-          <!-- Nut (thick line at fret 0) -->
-          <line x1="${fretPositions[1]}" y1="0" x2="${fretPositions[1]}" y2="${h}" stroke="#333" stroke-width="4"/>
+          <!-- Fret marker dots (inlays) -->
+          ${fretMarkerDots(sc, markers, fc)}
+          <!-- Nut (wide bar at fret 0) -->
+          <rect class="fretboard-nut" x="${fretPositions[1] - 3}" y="0" width="6" height="${h}" rx="1"/>
           <!-- Frets (vertical lines) -->
           ${fretLines(h)}
           <!-- Strings (horizontal lines) -->

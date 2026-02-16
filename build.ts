@@ -92,7 +92,7 @@ const html = `<!DOCTYPE html>
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v4.8</div>
+    <div class="version">v4.9</div>
     <button class="gear-btn" type="button" aria-label="Settings">\u2699</button>
   </div>
 

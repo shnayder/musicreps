@@ -625,6 +625,14 @@ body {
 }
 .note-text {
   fill: var(--color-text);
+  font-weight: 600;
+}
+.fretboard-nut {
+  fill: var(--color-text);
+}
+.fret-marker {
+  fill: var(--color-border-light);
+  opacity: 0.6;
 }
 .fret-numbers {
   position: relative;
