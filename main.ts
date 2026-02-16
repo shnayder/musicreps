@@ -6,9 +6,6 @@ import {
   keysigAnswerButtons,
   degreeAnswerButtons,
   numeralAnswerButtons,
-  quizPrompt,
-  countdownAndPrompt,
-  feedbackBlock,
   modeScreen,
   fretboardSVG,
   stringToggles,
@@ -126,7 +123,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v4.3</div>
+    <div class="version">v4.4</div>
     <button class="gear-btn" type="button" aria-label="Settings">\u2699</button>
   </div>
 
@@ -138,9 +135,7 @@ ${modeScreen("fretboard", {
           Natural only
         </label>`,
   beforeQuizArea: fretboardSVG({ id: "fretboard", stringCount: 6, fretCount: 13, fretMarkers: [3, 5, 7, 9, 12] }),
-  quizAreaContent: `${quizPrompt()}
-      ${pianoNoteButtons()}
-      ${feedbackBlock()}`,
+  quizAreaContent: `${pianoNoteButtons()}`,
 })}
 
   <!-- Ukulele Fretboard mode -->
@@ -151,9 +146,7 @@ ${modeScreen("ukulele", {
           Natural only
         </label>`,
   beforeQuizArea: fretboardSVG({ id: "ukulele-fretboard", stringCount: 4, fretCount: 13, fretMarkers: [3, 5, 7, 10, 12] }),
-  quizAreaContent: `${quizPrompt()}
-      ${pianoNoteButtons()}
-      ${feedbackBlock()}`,
+  quizAreaContent: `${pianoNoteButtons()}`,
 })}
 
   <!-- Speed Tap mode -->
@@ -162,81 +155,63 @@ ${modeScreen("speedTap", {
           <input type="checkbox" id="speed-tap-naturals-only" checked>
           Natural only
         </label>`,
-  quizAreaContent: `${countdownAndPrompt()}
-      <div class="speed-tap-status">
+  quizAreaContent: `<div class="speed-tap-status">
         <span class="speed-tap-progress"></span>
       </div>
       ${fretboardSVG()}
-      ${noteAnswerButtons({ hidden: true })}
-      ${feedbackBlock()}`,
+      ${noteAnswerButtons({ hidden: true })}`,
 })}
 
   <!-- Note Semitones mode -->
 ${modeScreen("noteSemitones", {
-  quizAreaContent: `${countdownAndPrompt()}
-      ${noteAnswerButtons()}
-      ${numberButtons(0, 11)}
-      ${feedbackBlock()}`,
+  quizAreaContent: `${noteAnswerButtons()}
+      ${numberButtons(0, 11)}`,
 })}
 
   <!-- Interval Semitones mode -->
 ${modeScreen("intervalSemitones", {
-  quizAreaContent: `${countdownAndPrompt()}
-      ${intervalAnswerButtons()}
-      ${numberButtons(1, 12)}
-      ${feedbackBlock()}`,
+  quizAreaContent: `${intervalAnswerButtons()}
+      ${numberButtons(1, 12)}`,
 })}
 
   <!-- Semitone Math mode -->
 ${modeScreen("semitoneMath", {
   settingsHTML: DISTANCE_TOGGLES,
-  quizAreaContent: `${countdownAndPrompt()}
-      ${noteAnswerButtons()}
-      ${feedbackBlock()}`,
+  quizAreaContent: `${noteAnswerButtons()}`,
 })}
 
   <!-- Interval Math mode -->
 ${modeScreen("intervalMath", {
   settingsHTML: DISTANCE_TOGGLES,
-  quizAreaContent: `${countdownAndPrompt()}
-      ${noteAnswerButtons()}
-      ${feedbackBlock()}`,
+  quizAreaContent: `${noteAnswerButtons()}`,
 })}
 
   <!-- Key Signatures mode -->
 ${modeScreen("keySignatures", {
   settingsHTML: DISTANCE_TOGGLES,
-  quizAreaContent: `${countdownAndPrompt()}
-      ${keysigAnswerButtons()}
-      ${noteAnswerButtons({ hidden: true })}
-      ${feedbackBlock()}`,
+  quizAreaContent: `${keysigAnswerButtons()}
+      ${noteAnswerButtons({ hidden: true })}`,
 })}
 
   <!-- Scale Degrees mode -->
 ${modeScreen("scaleDegrees", {
   settingsHTML: DISTANCE_TOGGLES,
-  quizAreaContent: `${countdownAndPrompt()}
-      ${noteAnswerButtons()}
-      ${degreeAnswerButtons({ hidden: true })}
-      ${feedbackBlock()}`,
+  quizAreaContent: `${noteAnswerButtons()}
+      ${degreeAnswerButtons({ hidden: true })}`,
 })}
 
   <!-- Diatonic Chords mode -->
 ${modeScreen("diatonicChords", {
   settingsHTML: DISTANCE_TOGGLES,
-  quizAreaContent: `${countdownAndPrompt()}
-      ${noteAnswerButtons()}
-      ${numeralAnswerButtons({ hidden: true })}
-      ${feedbackBlock()}`,
+  quizAreaContent: `${noteAnswerButtons()}
+      ${numeralAnswerButtons({ hidden: true })}`,
 })}
 
   <!-- Chord Spelling mode -->
 ${modeScreen("chordSpelling", {
   settingsHTML: DISTANCE_TOGGLES,
-  quizAreaContent: `${countdownAndPrompt()}
-      <div class="chord-slots"></div>
-      ${noteAnswerButtons()}
-      ${feedbackBlock()}`,
+  quizAreaContent: `<div class="chord-slots"></div>
+      ${noteAnswerButtons()}`,
 })}
 
   <script>
