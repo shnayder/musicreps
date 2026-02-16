@@ -66,7 +66,7 @@ at build time — no framework, no bundler. Key patterns:
 - **Mode Plugin Interface** — each mode is a `createXxxMode()` factory
   providing `getEnabledItems`, `presentQuestion`, `checkAnswer`, `handleKey`,
   `onStart`/`onStop`, plus `init`/`activate`/`deactivate` lifecycle hooks.
-- **QuizEngine** — shared lifecycle (adaptive selection, timing, countdown,
+- **QuizEngine** — shared lifecycle (adaptive selection, 60-second round timer,
   feedback, keyboard/tap). Each mode gets its own engine instance.
 - **Factory Pattern** — `createFretboardHelpers(musicData)` injects globals
   for testability without ES imports in concatenated code.
@@ -128,6 +128,12 @@ Bidirectional modes track each direction as a separate item.
 
 The review checklist (`.claude/commands/review-checklist.md`) verifies these
 conventions — use `/review` to run it.
+
+## GitHub API Access
+
+`gh` CLI is not authenticated in the web environment. Use `curl` through the
+egress proxy instead — see [development.md](guides/development.md#github-api-access-web-environment)
+for the pattern.
 
 ## PR Requirements
 
