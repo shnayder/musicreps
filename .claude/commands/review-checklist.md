@@ -151,3 +151,5 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       CLAUDE.md "Quiz Modes" table
 - [ ] If build output changed (new files in `docs/`): `docs/` file list in
       `guides/development.md` § Deployment updated
+- [ ] If new tech debt introduced: added to `plans/exec-plans/tech-debt-tracker.md`
+- [ ] If existing tech debt fixed: moved to "Fixed" section in tracker
