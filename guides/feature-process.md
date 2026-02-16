@@ -283,3 +283,5 @@ Also update `CLAUDE.md` if the change affects the top-level overview
 - If the implementation created any new technical debt, add it to
   `plans/exec-plans/tech-debt-tracker.md`.
 - If code review or bug fixes identified untracked existing debt, add it too.
+- If the implementation resolved an existing debt item, move it to the "Fixed"
+  section with a brief note on how it was resolved.
