@@ -347,12 +347,6 @@ body {
 
 /* --- Phase-driven visibility --- */
 .phase-idle .quiz-session { display: none; }
-.phase-active .stats-section,
-.phase-active .quiz-config { display: none; }
-.phase-calibration .stats-section,
-.phase-calibration .quiz-config { display: none; }
-.phase-round-complete .stats-section,
-.phase-round-complete .quiz-config { display: none; }
 
 /* Hide tabs and tab content during non-idle phases */
 /* .tab-content.active needs explicit override (higher specificity than .tab-content.active display:block) */
@@ -471,13 +465,13 @@ body {
 .practice-rec-btn.hidden {
   display: none;
 }
-.practice-string-chips {
+.practice-group-chips {
   display: flex;
   gap: var(--space-2);
   margin-top: var(--space-3);
   justify-content: center;
 }
-.practice-string-chips:empty {
+.practice-group-chips:empty {
   display: none;
 }
 .string-chip {
@@ -654,11 +648,6 @@ body {
   color: var(--color-text-muted);
 }
 
-/* --- Quiz config (shared) --- */
-.quiz-config {
-  text-align: center;
-  margin: var(--space-5) 0;
-}
 .settings-row {
   display: flex;
   align-items: center;
@@ -1475,7 +1464,7 @@ button {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">☰</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v4.7</div>
+    <div class="version">v4.8</div>
     <button class="gear-btn" type="button" aria-label="Settings">⚙</button>
   </div>
 
@@ -1495,7 +1484,7 @@ button {
           <span class="practice-rec-text"></span>
           <button class="practice-rec-btn">Use recommendation</button>
         </div>
-        <div class="practice-string-chips"></div>
+        <div class="practice-group-chips"></div>
       </div>
       <div class="practice-scope">
         <div class="settings-row">
@@ -4950,7 +4939,7 @@ button {
           <span class="practice-rec-text"></span>
           <button class="practice-rec-btn">Use recommendation</button>
         </div>
-        <div class="practice-string-chips"></div>
+        <div class="practice-group-chips"></div>
       </div>
       <div class="practice-scope">
         <div class="settings-row">
@@ -7293,25 +7282,47 @@ button {
 
   <!-- Speed Tap mode -->
   <div class="mode-screen phase-idle" id="mode-speedTap">
-    <div class="stats-section">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-summary">
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
+        </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-group-chips"></div>
+      </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <label class="setting-group">
+            <input type="checkbox" id="speed-tap-naturals-only" checked>
+            Natural only
+          </label>
+        </div>
+      </div>
+      <div class="practice-start">
+        <div class="session-summary-text"></div>
+        <div class="mastery-message">Looks like you've got this!</div>
+        <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
+      </div>
+      <details class="practice-advanced">
+        <summary>Advanced</summary>
+        <button class="recalibrate-btn">Redo speed check</button>
+      </details>
+    </div>
+    <div class="tab-content tab-progress">
+      
       <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
-      </div>
-    </div>
-    <div class="quiz-config">
-      <div class="settings-row">
-        <label class="setting-group">
-          <input type="checkbox" id="speed-tap-naturals-only" checked>
-          Natural only
-        </label>
-      </div>
-      <div class="mastery-message">Looks like you've got this!</div>
-      <div>
-        <button class="start-btn">Start Quiz</button>
-        <div class="round-duration-label">60-second rounds</div>
-        <button class="recalibrate-btn">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-session">
@@ -9040,19 +9051,39 @@ button {
 
   <!-- Note Semitones mode -->
   <div class="mode-screen phase-idle" id="mode-noteSemitones">
-    <div class="stats-section">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-summary">
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
+        </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-group-chips"></div>
+      </div>
+      <div class="practice-start">
+        <div class="session-summary-text"></div>
+        <div class="mastery-message">Looks like you've got this!</div>
+        <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
+      </div>
+      <details class="practice-advanced">
+        <summary>Advanced</summary>
+        <button class="recalibrate-btn">Redo speed check</button>
+      </details>
+    </div>
+    <div class="tab-content tab-progress">
+      
       <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
-      </div>
-    </div>
-    <div class="quiz-config">
-      <div class="mastery-message">Looks like you've got this!</div>
-      <div>
-        <button class="start-btn">Start Quiz</button>
-        <div class="round-duration-label">60-second rounds</div>
-        <button class="recalibrate-btn">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-session">
@@ -9117,19 +9148,39 @@ button {
 
   <!-- Interval Semitones mode -->
   <div class="mode-screen phase-idle" id="mode-intervalSemitones">
-    <div class="stats-section">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-summary">
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
+        </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-group-chips"></div>
+      </div>
+      <div class="practice-start">
+        <div class="session-summary-text"></div>
+        <div class="mastery-message">Looks like you've got this!</div>
+        <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
+      </div>
+      <details class="practice-advanced">
+        <summary>Advanced</summary>
+        <button class="recalibrate-btn">Redo speed check</button>
+      </details>
+    </div>
+    <div class="tab-content tab-progress">
+      
       <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
-      </div>
-    </div>
-    <div class="quiz-config">
-      <div class="mastery-message">Looks like you've got this!</div>
-      <div>
-        <button class="start-btn">Start Quiz</button>
-        <div class="round-duration-label">60-second rounds</div>
-        <button class="recalibrate-btn">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-session">
@@ -9194,22 +9245,44 @@ button {
 
   <!-- Semitone Math mode -->
   <div class="mode-screen phase-idle" id="mode-semitoneMath">
-    <div class="stats-section">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-summary">
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
+        </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-group-chips"></div>
+      </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+      <div class="practice-start">
+        <div class="session-summary-text"></div>
+        <div class="mastery-message">Looks like you've got this!</div>
+        <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
+      </div>
+      <details class="practice-advanced">
+        <summary>Advanced</summary>
+        <button class="recalibrate-btn">Redo speed check</button>
+      </details>
+    </div>
+    <div class="tab-content tab-progress">
+      
       <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
-      </div>
-    </div>
-    <div class="quiz-config">
-      <div class="settings-row">
-        <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-      </div>
-      <div class="mastery-message">Looks like you've got this!</div>
-      <div>
-        <button class="start-btn">Start Quiz</button>
-        <div class="round-duration-label">60-second rounds</div>
-        <button class="recalibrate-btn">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-session">
@@ -9260,22 +9333,44 @@ button {
 
   <!-- Interval Math mode -->
   <div class="mode-screen phase-idle" id="mode-intervalMath">
-    <div class="stats-section">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-summary">
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
+        </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-group-chips"></div>
+      </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+      <div class="practice-start">
+        <div class="session-summary-text"></div>
+        <div class="mastery-message">Looks like you've got this!</div>
+        <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
+      </div>
+      <details class="practice-advanced">
+        <summary>Advanced</summary>
+        <button class="recalibrate-btn">Redo speed check</button>
+      </details>
+    </div>
+    <div class="tab-content tab-progress">
+      
       <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
-      </div>
-    </div>
-    <div class="quiz-config">
-      <div class="settings-row">
-        <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-      </div>
-      <div class="mastery-message">Looks like you've got this!</div>
-      <div>
-        <button class="start-btn">Start Quiz</button>
-        <div class="round-duration-label">60-second rounds</div>
-        <button class="recalibrate-btn">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-session">
@@ -9326,22 +9421,44 @@ button {
 
   <!-- Key Signatures mode -->
   <div class="mode-screen phase-idle" id="mode-keySignatures">
-    <div class="stats-section">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-summary">
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
+        </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-group-chips"></div>
+      </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+      <div class="practice-start">
+        <div class="session-summary-text"></div>
+        <div class="mastery-message">Looks like you've got this!</div>
+        <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
+      </div>
+      <details class="practice-advanced">
+        <summary>Advanced</summary>
+        <button class="recalibrate-btn">Redo speed check</button>
+      </details>
+    </div>
+    <div class="tab-content tab-progress">
+      
       <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
-      </div>
-    </div>
-    <div class="quiz-config">
-      <div class="settings-row">
-        <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-      </div>
-      <div class="mastery-message">Looks like you've got this!</div>
-      <div>
-        <button class="start-btn">Start Quiz</button>
-        <div class="round-duration-label">60-second rounds</div>
-        <button class="recalibrate-btn">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-session">
@@ -9409,22 +9526,44 @@ button {
 
   <!-- Scale Degrees mode -->
   <div class="mode-screen phase-idle" id="mode-scaleDegrees">
-    <div class="stats-section">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-summary">
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
+        </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-group-chips"></div>
+      </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+      <div class="practice-start">
+        <div class="session-summary-text"></div>
+        <div class="mastery-message">Looks like you've got this!</div>
+        <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
+      </div>
+      <details class="practice-advanced">
+        <summary>Advanced</summary>
+        <button class="recalibrate-btn">Redo speed check</button>
+      </details>
+    </div>
+    <div class="tab-content tab-progress">
+      
       <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
-      </div>
-    </div>
-    <div class="quiz-config">
-      <div class="settings-row">
-        <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-      </div>
-      <div class="mastery-message">Looks like you've got this!</div>
-      <div>
-        <button class="start-btn">Start Quiz</button>
-        <div class="round-duration-label">60-second rounds</div>
-        <button class="recalibrate-btn">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-session">
@@ -9484,22 +9623,44 @@ button {
 
   <!-- Diatonic Chords mode -->
   <div class="mode-screen phase-idle" id="mode-diatonicChords">
-    <div class="stats-section">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-summary">
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
+        </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-group-chips"></div>
+      </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+      <div class="practice-start">
+        <div class="session-summary-text"></div>
+        <div class="mastery-message">Looks like you've got this!</div>
+        <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
+      </div>
+      <details class="practice-advanced">
+        <summary>Advanced</summary>
+        <button class="recalibrate-btn">Redo speed check</button>
+      </details>
+    </div>
+    <div class="tab-content tab-progress">
+      
       <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
-      </div>
-    </div>
-    <div class="quiz-config">
-      <div class="settings-row">
-        <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-      </div>
-      <div class="mastery-message">Looks like you've got this!</div>
-      <div>
-        <button class="start-btn">Start Quiz</button>
-        <div class="round-duration-label">60-second rounds</div>
-        <button class="recalibrate-btn">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-session">
@@ -9559,22 +9720,44 @@ button {
 
   <!-- Chord Spelling mode -->
   <div class="mode-screen phase-idle" id="mode-chordSpelling">
-    <div class="stats-section">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-summary">
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
+        </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-group-chips"></div>
+      </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+      <div class="practice-start">
+        <div class="session-summary-text"></div>
+        <div class="mastery-message">Looks like you've got this!</div>
+        <button class="start-btn">Start Quiz</button>
+        <div class="round-duration-label">60-second rounds</div>
+      </div>
+      <details class="practice-advanced">
+        <summary>Advanced</summary>
+        <button class="recalibrate-btn">Redo speed check</button>
+      </details>
+    </div>
+    <div class="tab-content tab-progress">
+      
       <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
-      </div>
-    </div>
-    <div class="quiz-config">
-      <div class="settings-row">
-        <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-      </div>
-      <div class="mastery-message">Looks like you've got this!</div>
-      <div>
-        <button class="start-btn">Start Quiz</button>
-        <div class="round-duration-label">60-second rounds</div>
-        <button class="recalibrate-btn">Redo speed check</button>
       </div>
     </div>
     <div class="quiz-session">
@@ -10989,14 +11172,6 @@ function getCalibrationThresholds(baseline) {
   ];
 }
 
-/**
- * Update aggregate stats display for a set of item IDs.
- * Currently a no-op (median display was removed).
- */
-function updateModeStats(selector, itemIds, statsEl) {
-  if (!statsEl) return;
-  statsEl.textContent = '';
-}
 
 /**
  * Determine the keyboard key that would activate a given button.
@@ -11912,7 +12087,7 @@ function createQuizEngine(mode, container) {
     // In round-complete phase, only respond to the explicit buttons
     if (state.phase === 'round-complete') return;
     if (state.phase !== 'active' || !state.answered) return;
-    if (e.target.closest('.answer-btn, .note-btn, .quiz-config, .string-toggle')) return;
+    if (e.target.closest('.answer-btn, .note-btn, .string-toggle')) return;
     nextQuestion();
   }
 
@@ -12638,7 +12813,7 @@ function createFrettedInstrumentMode(instrument) {
     var statusDetail = container.querySelector('.practice-status-detail');
     var recText = container.querySelector('.practice-rec-text');
     var recBtn = container.querySelector('.practice-rec-btn');
-    var chipsEl = container.querySelector('.practice-string-chips');
+    var chipsEl = container.querySelector('.practice-group-chips');
     if (!statusLabel) return;
 
     // Overall stats
@@ -12909,7 +13084,7 @@ function createUkuleleFretboardMode() {
 // Uses createQuizEngine with getExpectedResponseCount for multi-tap scaling.
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
-// createQuizEngine, createStatsControls, updateModeStats,
+// createQuizEngine, createStatsControls,
 // getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend,
 // DEFAULT_CONFIG
 
@@ -12974,6 +13149,69 @@ function createSpeedTapMode() {
   function clearAll() {
     container.querySelectorAll('.note-circle').forEach(c => c.style.fill = '');
     container.querySelectorAll('.note-text').forEach(t => t.textContent = '');
+  }
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (!statusLabel) return;
+
+    var items = mode.getEnabledItems();
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = items.length + ' notes to learn';
+    } else {
+      var pct = items.length > 0 ? Math.round((fluent / items.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = fluent + ' of ' + items.length + ' notes fluent';
+    }
+
+    // No groups, so no recommendation
+    recText.textContent = '';
+    recBtn.classList.add('hidden');
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    var items = mode.getEnabledItems();
+    el.textContent = items.length + ' notes \u00B7 60s';
   }
 
   // --- Note stats view ---
@@ -13050,7 +13288,7 @@ function createSpeedTapMode() {
   }
 
   function handleFretboardClick(e) {
-    if (e.target.closest('.quiz-config, .setting-group')) return;
+    if (e.target.closest('.setting-group')) return;
 
     if (engine.isActive && !engine.isAnswered && roundActive) {
       const target = e.target.closest('circle[data-string][data-fret]') ||
@@ -13102,7 +13340,6 @@ function createSpeedTapMode() {
     onStart() {
       if (statsControls.mode) statsControls.hide();
       if (fretboardWrapper) fretboardWrapper.classList.remove('fretboard-hidden');
-      updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);
     },
 
     onStop() {
@@ -13113,8 +13350,11 @@ function createSpeedTapMode() {
       currentNote = null;
       if (progressEl) progressEl.textContent = '';
       if (fretboardWrapper) fretboardWrapper.classList.add('fretboard-hidden');
-      updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
+      renderPracticeSummary();
+      renderSessionSummary();
     },
 
     onAnswer(itemId, result, responseTime) {
@@ -13149,18 +13389,26 @@ function createSpeedTapMode() {
   }
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     const naturalsCheckbox = container.querySelector('#speed-tap-naturals-only');
     if (naturalsCheckbox) {
       naturalsCheckbox.addEventListener('change', (e) => {
         naturalsOnly = e.target.checked;
+        engine.updateIdleMessage();
+        renderPracticeSummary();
+        renderSessionSummary();
       });
     }
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
     if (fretboardWrapper) fretboardWrapper.classList.add('fretboard-hidden');
-    updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
@@ -13170,6 +13418,8 @@ function createSpeedTapMode() {
     activate() {
       engine.attach();
       container.addEventListener('click', handleFretboardClick);
+      engine.updateIdleMessage();
+      renderPracticeSummary();
       engine.showCalibrationIfNeeded();
     },
     deactivate() {
@@ -13185,7 +13435,7 @@ function createSpeedTapMode() {
 // 24 items total (12 notes x 2 directions).
 //
 // Depends on globals: NOTES, createQuizEngine, createNoteKeyHandler,
-// updateModeStats, renderStatsTable, buildStatsLegend
+// renderStatsTable, buildStatsLegend
 
 function createNoteSemitonesMode() {
   const container = document.getElementById('mode-noteSemitones');
@@ -13205,6 +13455,67 @@ function createNoteSemitonesMode() {
 
   let currentItem = null;
   let currentAccidentalChoice = null;
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (!statusLabel) return;
+
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < ALL_ITEMS.length; i++) {
+      var auto = engine.selector.getAutomaticity(ALL_ITEMS[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+    } else {
+      var pct = ALL_ITEMS.length > 0 ? Math.round((fluent / ALL_ITEMS.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = fluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+    }
+
+    // No groups, so no recommendation
+    recText.textContent = '';
+    recBtn.classList.add('hidden');
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    el.textContent = ALL_ITEMS.length + ' items \u00B7 60s';
+  }
 
   // Build row definitions for the stats table
   function getTableRows() {
@@ -13270,8 +13581,7 @@ function createNoteSemitonesMode() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
-      statsControls.hide();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      if (statsControls.mode) statsControls.hide();
     },
 
     onStop() {
@@ -13279,8 +13589,11 @@ function createNoteSemitonesMode() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
+      renderPracticeSummary();
+      renderSessionSummary();
     },
 
     handleKey(e, { submitAnswer }) {
@@ -13341,6 +13654,11 @@ function createNoteSemitonesMode() {
   );
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     // Note answer buttons
     container.querySelectorAll('.answer-btn-note').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -13360,15 +13678,15 @@ function createNoteSemitonesMode() {
     // Start/stop
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
-    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshNoteButtonLabels(container); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); engine.updateIdleMessage(); renderPracticeSummary(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
@@ -13384,7 +13702,7 @@ function createNoteSemitonesMode() {
 // 24 items total (12 intervals x 2 directions).
 //
 // Depends on globals: INTERVALS, intervalMatchesInput, createQuizEngine,
-// updateModeStats, renderStatsTable, buildStatsLegend
+// renderStatsTable, buildStatsLegend
 
 function createIntervalSemitonesMode() {
   const container = document.getElementById('mode-intervalSemitones');
@@ -13403,6 +13721,67 @@ function createIntervalSemitonesMode() {
   }
 
   let currentItem = null;
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (!statusLabel) return;
+
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < ALL_ITEMS.length; i++) {
+      var auto = engine.selector.getAutomaticity(ALL_ITEMS[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+    } else {
+      var pct = ALL_ITEMS.length > 0 ? Math.round((fluent / ALL_ITEMS.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = fluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+    }
+
+    // No groups, so no recommendation
+    recText.textContent = '';
+    recBtn.classList.add('hidden');
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    el.textContent = ALL_ITEMS.length + ' items \u00B7 60s';
+  }
 
   function getTableRows() {
     return INTERVALS.map(interval => ({
@@ -13465,16 +13844,18 @@ function createIntervalSemitonesMode() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
-      statsControls.hide();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      if (statsControls.mode) statsControls.hide();
     },
 
     onStop() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
+      renderPracticeSummary();
+      renderSessionSummary();
     },
 
     handleKey(e, { submitAnswer }) {
@@ -13531,6 +13912,11 @@ function createIntervalSemitonesMode() {
   engine.storage.preload(ALL_ITEMS);
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     // Interval answer buttons
     container.querySelectorAll('.answer-btn-interval').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -13550,15 +13936,15 @@ function createIntervalSemitonesMode() {
     // Start/stop
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
-    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
     mode,
     engine,
     init,
-    activate() { engine.attach(); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); engine.updateIdleMessage(); renderPracticeSummary(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
@@ -13575,7 +13961,7 @@ function createIntervalSemitonesMode() {
 //
 // Depends on globals: NOTES, noteAdd, noteSub, noteMatchesInput,
 // pickAccidentalName, createQuizEngine, createNoteKeyHandler,
-// updateModeStats, renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
+// renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
 // computeRecommendations
 
 function createSemitoneMathMode() {
@@ -13650,27 +14036,25 @@ function createSemitoneMathMode() {
 
   const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
 
-  function updateRecommendations(selector) {
+  function getRecommendationResult() {
     const allGroups = DISTANCE_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    return computeRecommendations(engine.selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+  }
+
+  function updateRecommendations(selector) {
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
   function applyRecommendations(selector) {
-    const allGroups = DISTANCE_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
       enabledGroups = result.enabled;
       saveEnabledGroups();
     }
     updateGroupToggles();
-  }
-
-  function refreshUI() {
-    updateRecommendations(engine.selector);
-    engine.updateIdleMessage();
   }
 
   function toggleGroup(g) {
@@ -13681,6 +14065,109 @@ function createSemitoneMathMode() {
     }
     saveEnabledGroups();
     refreshUI();
+  }
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  function refreshUI() {
+    updateRecommendations(engine.selector);
+    engine.updateIdleMessage();
+    renderPracticeSummary();
+    renderSessionSummary();
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    var chipsEl = container.querySelector('.practice-group-chips');
+    if (!statusLabel) return;
+
+    var items = mode.getEnabledItems();
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+    var allFluent = 0;
+    for (var j = 0; j < ALL_ITEMS.length; j++) {
+      var a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
+      if (a2 !== null && a2 > threshold) allFluent++;
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+    } else {
+      var pct = ALL_ITEMS.length > 0 ? Math.round((allFluent / ALL_ITEMS.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+    }
+
+    var result = getRecommendationResult();
+    if (result.recommended.size > 0) {
+      var names = [];
+      var sorted = Array.from(result.recommended).sort(function(a, b) { return a - b; });
+      for (var k = 0; k < sorted.length; k++) {
+        names.push('\u00B1' + DISTANCE_GROUPS[sorted[k]].label);
+      }
+      recText.textContent = 'Recommended: ' + names.join(', ');
+      recBtn.classList.remove('hidden');
+    } else {
+      recText.textContent = '';
+      recBtn.classList.add('hidden');
+    }
+
+    var chipHTML = '';
+    for (var g = 0; g < DISTANCE_GROUPS.length; g++) {
+      var gItems = getItemIdsForGroup(g);
+      var sum = 0, count = 0;
+      for (var gi = 0; gi < gItems.length; gi++) {
+        var ga = engine.selector.getAutomaticity(gItems[gi]);
+        if (ga !== null) { sum += ga; count++; }
+      }
+      var avg = count > 0 ? sum / count : null;
+      var color = getAutomaticityColor(avg);
+      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
+      chipHTML += '<div class="string-chip" style="background:' + color;
+      if (textColor) chipHTML += ';color:' + textColor;
+      chipHTML += '">\u00B1' + DISTANCE_GROUPS[g].label + '</div>';
+    }
+    chipsEl.innerHTML = chipHTML;
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    var items = mode.getEnabledItems();
+    el.textContent = items.length + ' items \u00B7 60s';
   }
 
   // --- Stats ---
@@ -13744,15 +14231,15 @@ function createSemitoneMathMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      statsControls.hide();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      if (statsControls.mode) statsControls.hide();
     },
 
     onStop() {
       noteKeyHandler.reset();
       refreshNoteButtonLabels(container);
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
       refreshUI();
     },
 
@@ -13779,6 +14266,11 @@ function createSemitoneMathMode() {
   );
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     // Generate distance group toggle buttons
     const togglesDiv = container.querySelector('.distance-toggles');
     DISTANCE_GROUPS.forEach((group, i) => {
@@ -13800,12 +14292,20 @@ function createSemitoneMathMode() {
       });
     });
 
-    // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
+    // Use recommendation button
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (recBtn) {
+      recBtn.addEventListener('click', () => {
+        applyRecommendations(engine.selector);
+        refreshUI();
+      });
+    }
+
     applyRecommendations(engine.selector);
-    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
@@ -13829,7 +14329,7 @@ function createSemitoneMathMode() {
 //
 // Depends on globals: NOTES, INTERVALS, noteAdd, noteSub,
 // noteMatchesInput, pickAccidentalName, createQuizEngine,
-// createNoteKeyHandler, updateModeStats, renderStatsGrid,
+// createNoteKeyHandler, renderStatsGrid,
 // buildStatsLegend, DEFAULT_CONFIG, computeRecommendations
 
 function createIntervalMathMode() {
@@ -13909,27 +14409,25 @@ function createIntervalMathMode() {
 
   const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
 
-  function updateRecommendations(selector) {
+  function getRecommendationResult() {
     const allGroups = DISTANCE_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    return computeRecommendations(engine.selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+  }
+
+  function updateRecommendations(selector) {
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
   function applyRecommendations(selector) {
-    const allGroups = DISTANCE_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
       enabledGroups = result.enabled;
       saveEnabledGroups();
     }
     updateGroupToggles();
-  }
-
-  function refreshUI() {
-    updateRecommendations(engine.selector);
-    engine.updateIdleMessage();
   }
 
   function toggleGroup(g) {
@@ -13940,6 +14438,109 @@ function createIntervalMathMode() {
     }
     saveEnabledGroups();
     refreshUI();
+  }
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  function refreshUI() {
+    updateRecommendations(engine.selector);
+    engine.updateIdleMessage();
+    renderPracticeSummary();
+    renderSessionSummary();
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    var chipsEl = container.querySelector('.practice-group-chips');
+    if (!statusLabel) return;
+
+    var items = mode.getEnabledItems();
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+    var allFluent = 0;
+    for (var j = 0; j < ALL_ITEMS.length; j++) {
+      var a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
+      if (a2 !== null && a2 > threshold) allFluent++;
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+    } else {
+      var pct = ALL_ITEMS.length > 0 ? Math.round((allFluent / ALL_ITEMS.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+    }
+
+    var result = getRecommendationResult();
+    if (result.recommended.size > 0) {
+      var names = [];
+      var sorted = Array.from(result.recommended).sort(function(a, b) { return a - b; });
+      for (var k = 0; k < sorted.length; k++) {
+        names.push(DISTANCE_GROUPS[sorted[k]].label);
+      }
+      recText.textContent = 'Recommended: ' + names.join(', ');
+      recBtn.classList.remove('hidden');
+    } else {
+      recText.textContent = '';
+      recBtn.classList.add('hidden');
+    }
+
+    var chipHTML = '';
+    for (var g = 0; g < DISTANCE_GROUPS.length; g++) {
+      var gItems = getItemIdsForGroup(g);
+      var sum = 0, count = 0;
+      for (var gi = 0; gi < gItems.length; gi++) {
+        var ga = engine.selector.getAutomaticity(gItems[gi]);
+        if (ga !== null) { sum += ga; count++; }
+      }
+      var avg = count > 0 ? sum / count : null;
+      var color = getAutomaticityColor(avg);
+      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
+      chipHTML += '<div class="string-chip" style="background:' + color;
+      if (textColor) chipHTML += ';color:' + textColor;
+      chipHTML += '">' + DISTANCE_GROUPS[g].label + '</div>';
+    }
+    chipsEl.innerHTML = chipHTML;
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    var items = mode.getEnabledItems();
+    el.textContent = items.length + ' items \u00B7 60s';
   }
 
   // --- Stats ---
@@ -14001,15 +14602,15 @@ function createIntervalMathMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      statsControls.hide();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      if (statsControls.mode) statsControls.hide();
     },
 
     onStop() {
       noteKeyHandler.reset();
       refreshNoteButtonLabels(container);
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
       refreshUI();
     },
 
@@ -14036,6 +14637,11 @@ function createIntervalMathMode() {
   );
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     // Generate distance group toggle buttons
     const togglesDiv = container.querySelector('.distance-toggles');
     DISTANCE_GROUPS.forEach((group, i) => {
@@ -14057,12 +14663,20 @@ function createIntervalMathMode() {
       });
     });
 
-    // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
+    // Use recommendation button
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (recBtn) {
+      recBtn.addEventListener('click', () => {
+        applyRecommendations(engine.selector);
+        refreshUI();
+      });
+    }
+
     applyRecommendations(engine.selector);
-    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
@@ -14085,7 +14699,7 @@ function createIntervalMathMode() {
 //
 // Depends on globals: MAJOR_KEYS, keySignatureLabel, keyBySignatureLabel,
 // spelledNoteMatchesSemitone, createQuizEngine, createNoteKeyHandler,
-// updateModeStats, renderStatsTable, buildStatsLegend, DEFAULT_CONFIG,
+// renderStatsTable, buildStatsLegend, DEFAULT_CONFIG,
 // computeRecommendations
 
 function createKeySignaturesMode() {
@@ -14151,27 +14765,25 @@ function createKeySignaturesMode() {
 
   const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
 
-  function updateRecommendations(selector) {
+  function getRecommendationResult() {
     const allGroups = KEY_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    return computeRecommendations(engine.selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+  }
+
+  function updateRecommendations(selector) {
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
   function applyRecommendations(selector) {
-    const allGroups = KEY_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
       enabledGroups = result.enabled;
       saveEnabledGroups();
     }
     updateGroupToggles();
-  }
-
-  function refreshUI() {
-    updateRecommendations(engine.selector);
-    engine.updateIdleMessage();
   }
 
   function toggleGroup(g) {
@@ -14182,6 +14794,109 @@ function createKeySignaturesMode() {
     }
     saveEnabledGroups();
     refreshUI();
+  }
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  function refreshUI() {
+    updateRecommendations(engine.selector);
+    engine.updateIdleMessage();
+    renderPracticeSummary();
+    renderSessionSummary();
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    var chipsEl = container.querySelector('.practice-group-chips');
+    if (!statusLabel) return;
+
+    var items = mode.getEnabledItems();
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+    var allFluent = 0;
+    for (var j = 0; j < ALL_ITEMS.length; j++) {
+      var a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
+      if (a2 !== null && a2 > threshold) allFluent++;
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+    } else {
+      var pct = ALL_ITEMS.length > 0 ? Math.round((allFluent / ALL_ITEMS.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+    }
+
+    var result = getRecommendationResult();
+    if (result.recommended.size > 0) {
+      var names = [];
+      var sorted = Array.from(result.recommended).sort(function(a, b) { return a - b; });
+      for (var k = 0; k < sorted.length; k++) {
+        names.push(KEY_GROUPS[sorted[k]].label);
+      }
+      recText.textContent = 'Recommended: ' + names.join(', ');
+      recBtn.classList.remove('hidden');
+    } else {
+      recText.textContent = '';
+      recBtn.classList.add('hidden');
+    }
+
+    var chipHTML = '';
+    for (var g = 0; g < KEY_GROUPS.length; g++) {
+      var gItems = getItemIdsForGroup(g);
+      var sum = 0, count = 0;
+      for (var gi = 0; gi < gItems.length; gi++) {
+        var ga = engine.selector.getAutomaticity(gItems[gi]);
+        if (ga !== null) { sum += ga; count++; }
+      }
+      var avg = count > 0 ? sum / count : null;
+      var color = getAutomaticityColor(avg);
+      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
+      chipHTML += '<div class="string-chip" style="background:' + color;
+      if (textColor) chipHTML += ';color:' + textColor;
+      chipHTML += '">' + KEY_GROUPS[g].label + '</div>';
+    }
+    chipsEl.innerHTML = chipHTML;
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    var items = mode.getEnabledItems();
+    el.textContent = items.length + ' items \u00B7 60s';
   }
 
   // --- Stats ---
@@ -14262,14 +14977,14 @@ function createKeySignaturesMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      statsControls.hide();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      if (statsControls.mode) statsControls.hide();
     },
 
     onStop() {
       noteKeyHandler.reset();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
       refreshUI();
     },
 
@@ -14322,6 +15037,11 @@ function createKeySignaturesMode() {
   );
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     const togglesDiv = container.querySelector('.distance-toggles');
     KEY_GROUPS.forEach((group, i) => {
       const btn = document.createElement('button');
@@ -14350,9 +15070,18 @@ function createKeySignaturesMode() {
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
+    // Use recommendation button
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (recBtn) {
+      recBtn.addEventListener('click', () => {
+        applyRecommendations(engine.selector);
+        refreshUI();
+      });
+    }
+
     applyRecommendations(engine.selector);
-    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
@@ -14377,7 +15106,7 @@ function createKeySignaturesMode() {
 //
 // Depends on globals: MAJOR_KEYS, getScaleDegreeNote, findScaleDegree,
 // spelledNoteMatchesSemitone, NOTES, createQuizEngine, createNoteKeyHandler,
-// updateModeStats, renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
+// renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
 // computeRecommendations
 
 function createScaleDegreesMode() {
@@ -14452,27 +15181,25 @@ function createScaleDegreesMode() {
 
   const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
 
-  function updateRecommendations(selector) {
+  function getRecommendationResult() {
     const allGroups = DEGREE_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    return computeRecommendations(engine.selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+  }
+
+  function updateRecommendations(selector) {
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
   function applyRecommendations(selector) {
-    const allGroups = DEGREE_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
       enabledGroups = result.enabled;
       saveEnabledGroups();
     }
     updateGroupToggles();
-  }
-
-  function refreshUI() {
-    updateRecommendations(engine.selector);
-    engine.updateIdleMessage();
   }
 
   function toggleGroup(g) {
@@ -14483,6 +15210,109 @@ function createScaleDegreesMode() {
     }
     saveEnabledGroups();
     refreshUI();
+  }
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  function refreshUI() {
+    updateRecommendations(engine.selector);
+    engine.updateIdleMessage();
+    renderPracticeSummary();
+    renderSessionSummary();
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    var chipsEl = container.querySelector('.practice-group-chips');
+    if (!statusLabel) return;
+
+    var items = mode.getEnabledItems();
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+    var allFluent = 0;
+    for (var j = 0; j < ALL_ITEMS.length; j++) {
+      var a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
+      if (a2 !== null && a2 > threshold) allFluent++;
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+    } else {
+      var pct = ALL_ITEMS.length > 0 ? Math.round((allFluent / ALL_ITEMS.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+    }
+
+    var result = getRecommendationResult();
+    if (result.recommended.size > 0) {
+      var names = [];
+      var sorted = Array.from(result.recommended).sort(function(a, b) { return a - b; });
+      for (var k = 0; k < sorted.length; k++) {
+        names.push(DEGREE_GROUPS[sorted[k]].label);
+      }
+      recText.textContent = 'Recommended: ' + names.join(', ');
+      recBtn.classList.remove('hidden');
+    } else {
+      recText.textContent = '';
+      recBtn.classList.add('hidden');
+    }
+
+    var chipHTML = '';
+    for (var g = 0; g < DEGREE_GROUPS.length; g++) {
+      var gItems = getItemIdsForGroup(g);
+      var sum = 0, count = 0;
+      for (var gi = 0; gi < gItems.length; gi++) {
+        var ga = engine.selector.getAutomaticity(gItems[gi]);
+        if (ga !== null) { sum += ga; count++; }
+      }
+      var avg = count > 0 ? sum / count : null;
+      var color = getAutomaticityColor(avg);
+      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
+      chipHTML += '<div class="string-chip" style="background:' + color;
+      if (textColor) chipHTML += ';color:' + textColor;
+      chipHTML += '">' + DEGREE_GROUPS[g].label + '</div>';
+    }
+    chipsEl.innerHTML = chipHTML;
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    var items = mode.getEnabledItems();
+    el.textContent = items.length + ' items \u00B7 60s';
   }
 
   // --- Stats ---
@@ -14555,14 +15385,14 @@ function createScaleDegreesMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      statsControls.hide();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      if (statsControls.mode) statsControls.hide();
     },
 
     onStop() {
       noteKeyHandler.reset();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
       refreshUI();
     },
 
@@ -14598,6 +15428,11 @@ function createScaleDegreesMode() {
   );
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     const togglesDiv = container.querySelector('.distance-toggles');
     DEGREE_GROUPS.forEach((group, i) => {
       const btn = document.createElement('button');
@@ -14626,9 +15461,18 @@ function createScaleDegreesMode() {
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
+    // Use recommendation button
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (recBtn) {
+      recBtn.addEventListener('click', () => {
+        applyRecommendations(engine.selector);
+        refreshUI();
+      });
+    }
+
     applyRecommendations(engine.selector);
-    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
@@ -14651,7 +15495,7 @@ function createScaleDegreesMode() {
 //
 // Depends on globals: MAJOR_KEYS, DIATONIC_CHORDS, ROMAN_NUMERALS,
 // getScaleDegreeNote, spelledNoteMatchesSemitone,
-// createQuizEngine, createNoteKeyHandler, updateModeStats,
+// createQuizEngine, createNoteKeyHandler,
 // renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
 // computeRecommendations
 
@@ -14725,27 +15569,25 @@ function createDiatonicChordsMode() {
 
   const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
 
-  function updateRecommendations(selector) {
+  function getRecommendationResult() {
     const allGroups = CHORD_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    return computeRecommendations(engine.selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+  }
+
+  function updateRecommendations(selector) {
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
   function applyRecommendations(selector) {
-    const allGroups = CHORD_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
       enabledGroups = result.enabled;
       saveEnabledGroups();
     }
     updateGroupToggles();
-  }
-
-  function refreshUI() {
-    updateRecommendations(engine.selector);
-    engine.updateIdleMessage();
   }
 
   function toggleGroup(g) {
@@ -14756,6 +15598,109 @@ function createDiatonicChordsMode() {
     }
     saveEnabledGroups();
     refreshUI();
+  }
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  function refreshUI() {
+    updateRecommendations(engine.selector);
+    engine.updateIdleMessage();
+    renderPracticeSummary();
+    renderSessionSummary();
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    var chipsEl = container.querySelector('.practice-group-chips');
+    if (!statusLabel) return;
+
+    var items = mode.getEnabledItems();
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+    var allFluent = 0;
+    for (var j = 0; j < ALL_ITEMS.length; j++) {
+      var a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
+      if (a2 !== null && a2 > threshold) allFluent++;
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+    } else {
+      var pct = ALL_ITEMS.length > 0 ? Math.round((allFluent / ALL_ITEMS.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+    }
+
+    var result = getRecommendationResult();
+    if (result.recommended.size > 0) {
+      var names = [];
+      var sorted = Array.from(result.recommended).sort(function(a, b) { return a - b; });
+      for (var k = 0; k < sorted.length; k++) {
+        names.push(CHORD_GROUPS[sorted[k]].label);
+      }
+      recText.textContent = 'Recommended: ' + names.join(', ');
+      recBtn.classList.remove('hidden');
+    } else {
+      recText.textContent = '';
+      recBtn.classList.add('hidden');
+    }
+
+    var chipHTML = '';
+    for (var g = 0; g < CHORD_GROUPS.length; g++) {
+      var gItems = getItemIdsForGroup(g);
+      var sum = 0, count = 0;
+      for (var gi = 0; gi < gItems.length; gi++) {
+        var ga = engine.selector.getAutomaticity(gItems[gi]);
+        if (ga !== null) { sum += ga; count++; }
+      }
+      var avg = count > 0 ? sum / count : null;
+      var color = getAutomaticityColor(avg);
+      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
+      chipHTML += '<div class="string-chip" style="background:' + color;
+      if (textColor) chipHTML += ';color:' + textColor;
+      chipHTML += '">' + CHORD_GROUPS[g].label + '</div>';
+    }
+    chipsEl.innerHTML = chipHTML;
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    var items = mode.getEnabledItems();
+    el.textContent = items.length + ' items \u00B7 60s';
   }
 
   // --- Stats ---
@@ -14830,14 +15775,14 @@ function createDiatonicChordsMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      statsControls.hide();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      if (statsControls.mode) statsControls.hide();
     },
 
     onStop() {
       noteKeyHandler.reset();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
       refreshUI();
     },
 
@@ -14873,6 +15818,11 @@ function createDiatonicChordsMode() {
   );
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     const togglesDiv = container.querySelector('.distance-toggles');
     CHORD_GROUPS.forEach((group, i) => {
       const btn = document.createElement('button');
@@ -14901,9 +15851,18 @@ function createDiatonicChordsMode() {
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
+    // Use recommendation button
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (recBtn) {
+      recBtn.addEventListener('click', () => {
+        applyRecommendations(engine.selector);
+        refreshUI();
+      });
+    }
+
     applyRecommendations(engine.selector);
-    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
@@ -14925,7 +15884,7 @@ function createDiatonicChordsMode() {
 //
 // Depends on globals: CHORD_TYPES, CHORD_ROOTS, getChordTones,
 // chordDisplayName, spelledNoteMatchesInput,
-// createQuizEngine, createNoteKeyHandler, updateModeStats,
+// createQuizEngine, createNoteKeyHandler,
 // renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
 // computeRecommendations
 
@@ -15000,27 +15959,25 @@ function createChordSpellingMode() {
 
   const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
 
-  function updateRecommendations(selector) {
+  function getRecommendationResult() {
     const allGroups = SPELLING_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    return computeRecommendations(engine.selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+  }
+
+  function updateRecommendations(selector) {
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
   function applyRecommendations(selector) {
-    const allGroups = SPELLING_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
       enabledGroups = result.enabled;
       saveEnabledGroups();
     }
     updateGroupToggles();
-  }
-
-  function refreshUI() {
-    updateRecommendations(engine.selector);
-    engine.updateIdleMessage();
   }
 
   function toggleGroup(g) {
@@ -15031,6 +15988,109 @@ function createChordSpellingMode() {
     }
     saveEnabledGroups();
     refreshUI();
+  }
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  function refreshUI() {
+    updateRecommendations(engine.selector);
+    engine.updateIdleMessage();
+    renderPracticeSummary();
+    renderSessionSummary();
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    var chipsEl = container.querySelector('.practice-group-chips');
+    if (!statusLabel) return;
+
+    var items = mode.getEnabledItems();
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+    var allFluent = 0;
+    for (var j = 0; j < ALL_ITEMS.length; j++) {
+      var a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
+      if (a2 !== null && a2 > threshold) allFluent++;
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+    } else {
+      var pct = ALL_ITEMS.length > 0 ? Math.round((allFluent / ALL_ITEMS.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+    }
+
+    var result = getRecommendationResult();
+    if (result.recommended.size > 0) {
+      var names = [];
+      var sorted = Array.from(result.recommended).sort(function(a, b) { return a - b; });
+      for (var k = 0; k < sorted.length; k++) {
+        names.push(SPELLING_GROUPS[sorted[k]].label);
+      }
+      recText.textContent = 'Recommended: ' + names.join(', ');
+      recBtn.classList.remove('hidden');
+    } else {
+      recText.textContent = '';
+      recBtn.classList.add('hidden');
+    }
+
+    var chipHTML = '';
+    for (var g = 0; g < SPELLING_GROUPS.length; g++) {
+      var gItems = getItemIdsForGroup(g);
+      var sum = 0, count = 0;
+      for (var gi = 0; gi < gItems.length; gi++) {
+        var ga = engine.selector.getAutomaticity(gItems[gi]);
+        if (ga !== null) { sum += ga; count++; }
+      }
+      var avg = count > 0 ? sum / count : null;
+      var color = getAutomaticityColor(avg);
+      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
+      chipHTML += '<div class="string-chip" style="background:' + color;
+      if (textColor) chipHTML += ';color:' + textColor;
+      chipHTML += '">' + SPELLING_GROUPS[g].label + '</div>';
+    }
+    chipsEl.innerHTML = chipHTML;
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    var items = mode.getEnabledItems();
+    el.textContent = items.length + ' items \u00B7 60s';
   }
 
   // --- Multi-note entry state ---
@@ -15137,8 +16197,7 @@ function createChordSpellingMode() {
     onStart() {
       noteKeyHandler.reset();
       enteredTones = [];
-      statsControls.hide();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      if (statsControls.mode) statsControls.hide();
     },
 
     onStop() {
@@ -15146,8 +16205,9 @@ function createChordSpellingMode() {
       enteredTones = [];
       const slotsDiv = container.querySelector('.chord-slots');
       slotsDiv.innerHTML = '';
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
       refreshUI();
     },
 
@@ -15185,6 +16245,11 @@ function createChordSpellingMode() {
   );
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     const togglesDiv = container.querySelector('.distance-toggles');
     SPELLING_GROUPS.forEach((group, i) => {
       const btn = document.createElement('button');
@@ -15215,9 +16280,18 @@ function createChordSpellingMode() {
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
+    // Use recommendation button
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (recBtn) {
+      recBtn.addEventListener('click', () => {
+        applyRecommendations(engine.selector);
+        refreshUI();
+      });
+    }
+
     applyRecommendations(engine.selector);
-    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
