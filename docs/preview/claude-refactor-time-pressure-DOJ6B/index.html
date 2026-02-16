@@ -725,6 +725,7 @@ button {
 .phase-round-complete .chord-slots,
 .phase-round-complete .feedback,
 .phase-round-complete .hint,
+.phase-round-complete .time-display,
 .phase-round-complete .practicing-label,
 .phase-round-complete .speed-tap-status,
 .phase-round-complete .fretboard-wrapper { display: none; }
@@ -8734,7 +8735,6 @@ function createQuizEngine(mode, container) {
     const responseTime = Date.now() - state.questionStartTime;
 
     const result = mode.checkAnswer(state.currentItemId, input);
-    const rc = getResponseCount(state.currentItemId);
     selector.recordResponse(state.currentItemId, responseTime, result.correct);
 
     state = engineSubmitAnswer(state, result.correct, result.correctAnswer);
@@ -8756,7 +8756,9 @@ function createQuizEngine(mode, container) {
 
     // If round timer already expired, show feedback briefly then transition
     if (state.roundTimerExpired) {
-      setTimeout(() => transitionToRoundComplete(), 600);
+      setTimeout(() => {
+        if (state.phase === 'active') transitionToRoundComplete();
+      }, 600);
     }
   }
 
