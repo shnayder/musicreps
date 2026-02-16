@@ -821,6 +821,12 @@ export function createQuizEngine(mode, container) {
     if (roundTimerInterval) clearInterval(roundTimerInterval);
     roundTimerStart = Date.now();
 
+    // Initialize display immediately so the timer isn't blank before first tick
+    if (els.roundTimerEl) {
+      els.roundTimerEl.textContent = formatRoundTime(ROUND_DURATION_MS);
+      els.roundTimerEl.classList.remove('round-timer-warning');
+    }
+
     roundTimerInterval = setInterval(() => {
       const elapsed = Date.now() - roundTimerStart;
       const remaining = ROUND_DURATION_MS - elapsed;
