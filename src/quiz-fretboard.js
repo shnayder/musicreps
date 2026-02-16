@@ -202,7 +202,7 @@ function createFrettedInstrumentMode(instrument) {
     var statusDetail = container.querySelector('.practice-status-detail');
     var recText = container.querySelector('.practice-rec-text');
     var recBtn = container.querySelector('.practice-rec-btn');
-    var chipsEl = container.querySelector('.practice-string-chips');
+    var chipsEl = container.querySelector('.practice-group-chips');
     if (!statusLabel) return;
 
     // Overall stats

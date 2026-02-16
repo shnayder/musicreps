@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { createNoteKeyHandler, createSolfegeKeyHandler, createAdaptiveKeyHandler, updateModeStats, getCalibrationThresholds, pickCalibrationButton } from "./quiz-engine.js";
+import { createNoteKeyHandler, createSolfegeKeyHandler, createAdaptiveKeyHandler, getCalibrationThresholds, pickCalibrationButton } from "./quiz-engine.js";
 import { setUseSolfege, getUseSolfege } from "./music-data.js";
 import { DEFAULT_CONFIG, createMemoryStorage, createAdaptiveSelector } from "./adaptive.js";
 
@@ -73,24 +73,6 @@ describe("createNoteKeyHandler", () => {
   });
 });
 
-describe("updateModeStats", () => {
-  it("clears stats element", () => {
-    const storage = createMemoryStorage();
-    const selector = createAdaptiveSelector(storage);
-    selector.recordResponse("a", 2000, true);
-
-    const el = { textContent: "old", innerHTML: "old" } as any;
-    updateModeStats(selector, ["a", "b", "c"], el);
-    assert.equal(el.textContent, "");
-  });
-
-  it("handles missing element gracefully", () => {
-    const storage = createMemoryStorage();
-    const selector = createAdaptiveSelector(storage);
-    // Should not throw
-    updateModeStats(selector, ["x", "y"], null as any);
-  });
-});
 
 describe("getCalibrationThresholds", () => {
   it("returns 5 threshold bands", () => {

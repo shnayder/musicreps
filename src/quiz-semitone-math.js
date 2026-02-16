@@ -5,7 +5,7 @@
 //
 // Depends on globals: NOTES, noteAdd, noteSub, noteMatchesInput,
 // pickAccidentalName, createQuizEngine, createNoteKeyHandler,
-// updateModeStats, renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
+// renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
 // computeRecommendations
 
 function createSemitoneMathMode() {
@@ -80,27 +80,25 @@ function createSemitoneMathMode() {
 
   const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
 
-  function updateRecommendations(selector) {
+  function getRecommendationResult() {
     const allGroups = DISTANCE_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    return computeRecommendations(engine.selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+  }
+
+  function updateRecommendations(selector) {
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
   function applyRecommendations(selector) {
-    const allGroups = DISTANCE_GROUPS.map((_, i) => i);
-    const result = computeRecommendations(selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
       enabledGroups = result.enabled;
       saveEnabledGroups();
     }
     updateGroupToggles();
-  }
-
-  function refreshUI() {
-    updateRecommendations(engine.selector);
-    engine.updateIdleMessage();
   }
 
   function toggleGroup(g) {
@@ -111,6 +109,109 @@ function createSemitoneMathMode() {
     }
     saveEnabledGroups();
     refreshUI();
+  }
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  function refreshUI() {
+    updateRecommendations(engine.selector);
+    engine.updateIdleMessage();
+    renderPracticeSummary();
+    renderSessionSummary();
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    var chipsEl = container.querySelector('.practice-group-chips');
+    if (!statusLabel) return;
+
+    var items = mode.getEnabledItems();
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+    var allFluent = 0;
+    for (var j = 0; j < ALL_ITEMS.length; j++) {
+      var a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
+      if (a2 !== null && a2 > threshold) allFluent++;
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+    } else {
+      var pct = ALL_ITEMS.length > 0 ? Math.round((allFluent / ALL_ITEMS.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+    }
+
+    var result = getRecommendationResult();
+    if (result.recommended.size > 0) {
+      var names = [];
+      var sorted = Array.from(result.recommended).sort(function(a, b) { return a - b; });
+      for (var k = 0; k < sorted.length; k++) {
+        names.push('\u00B1' + DISTANCE_GROUPS[sorted[k]].label);
+      }
+      recText.textContent = 'Recommended: ' + names.join(', ');
+      recBtn.classList.remove('hidden');
+    } else {
+      recText.textContent = '';
+      recBtn.classList.add('hidden');
+    }
+
+    var chipHTML = '';
+    for (var g = 0; g < DISTANCE_GROUPS.length; g++) {
+      var gItems = getItemIdsForGroup(g);
+      var sum = 0, count = 0;
+      for (var gi = 0; gi < gItems.length; gi++) {
+        var ga = engine.selector.getAutomaticity(gItems[gi]);
+        if (ga !== null) { sum += ga; count++; }
+      }
+      var avg = count > 0 ? sum / count : null;
+      var color = getAutomaticityColor(avg);
+      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
+      chipHTML += '<div class="string-chip" style="background:' + color;
+      if (textColor) chipHTML += ';color:' + textColor;
+      chipHTML += '">\u00B1' + DISTANCE_GROUPS[g].label + '</div>';
+    }
+    chipsEl.innerHTML = chipHTML;
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    var items = mode.getEnabledItems();
+    el.textContent = items.length + ' items \u00B7 60s';
   }
 
   // --- Stats ---
@@ -174,15 +275,15 @@ function createSemitoneMathMode() {
 
     onStart() {
       noteKeyHandler.reset();
-      statsControls.hide();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      if (statsControls.mode) statsControls.hide();
     },
 
     onStop() {
       noteKeyHandler.reset();
       refreshNoteButtonLabels(container);
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
       refreshUI();
     },
 
@@ -209,6 +310,11 @@ function createSemitoneMathMode() {
   );
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     // Generate distance group toggle buttons
     const togglesDiv = container.querySelector('.distance-toggles');
     DISTANCE_GROUPS.forEach((group, i) => {
@@ -230,12 +336,20 @@ function createSemitoneMathMode() {
       });
     });
 
-    // Start/stop/stats
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
+    // Use recommendation button
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (recBtn) {
+      recBtn.addEventListener('click', () => {
+        applyRecommendations(engine.selector);
+        refreshUI();
+      });
+    }
+
     applyRecommendations(engine.selector);
-    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {

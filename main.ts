@@ -8,6 +8,7 @@ import {
   numeralAnswerButtons,
   modeScreen,
   fretboardSVG,
+  tabbedIdleHTML,
   fretboardIdleHTML,
 } from "./src/html-helpers.ts";
 
@@ -123,7 +124,7 @@ async function buildHTML(): Promise<string> {
   <div class="top-bar">
     <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
     <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v4.7</div>
+    <div class="version">v4.8</div>
     <button class="gear-btn" type="button" aria-label="Settings">\u2699</button>
   </div>
 
@@ -143,10 +144,10 @@ ${modeScreen("ukulele", {
 
   <!-- Speed Tap mode -->
 ${modeScreen("speedTap", {
-  settingsHTML: `<label class="setting-group">
-          <input type="checkbox" id="speed-tap-naturals-only" checked>
-          Natural only
-        </label>`,
+  idleHTML: tabbedIdleHTML({ practiceScope: `<label class="setting-group">
+            <input type="checkbox" id="speed-tap-naturals-only" checked>
+            Natural only
+          </label>` }),
   quizAreaContent: `<div class="speed-tap-status">
         <span class="speed-tap-progress"></span>
       </div>
@@ -156,52 +157,54 @@ ${modeScreen("speedTap", {
 
   <!-- Note Semitones mode -->
 ${modeScreen("noteSemitones", {
+  idleHTML: tabbedIdleHTML({}),
   quizAreaContent: `${noteAnswerButtons()}
       ${numberButtons(0, 11)}`,
 })}
 
   <!-- Interval Semitones mode -->
 ${modeScreen("intervalSemitones", {
+  idleHTML: tabbedIdleHTML({}),
   quizAreaContent: `${intervalAnswerButtons()}
       ${numberButtons(1, 12)}`,
 })}
 
   <!-- Semitone Math mode -->
 ${modeScreen("semitoneMath", {
-  settingsHTML: DISTANCE_TOGGLES,
+  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `${noteAnswerButtons()}`,
 })}
 
   <!-- Interval Math mode -->
 ${modeScreen("intervalMath", {
-  settingsHTML: DISTANCE_TOGGLES,
+  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `${noteAnswerButtons()}`,
 })}
 
   <!-- Key Signatures mode -->
 ${modeScreen("keySignatures", {
-  settingsHTML: DISTANCE_TOGGLES,
+  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `${keysigAnswerButtons()}
       ${noteAnswerButtons({ hidden: true })}`,
 })}
 
   <!-- Scale Degrees mode -->
 ${modeScreen("scaleDegrees", {
-  settingsHTML: DISTANCE_TOGGLES,
+  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `${noteAnswerButtons()}
       ${degreeAnswerButtons({ hidden: true })}`,
 })}
 
   <!-- Diatonic Chords mode -->
 ${modeScreen("diatonicChords", {
-  settingsHTML: DISTANCE_TOGGLES,
+  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `${noteAnswerButtons()}
       ${numeralAnswerButtons({ hidden: true })}`,
 })}
 
   <!-- Chord Spelling mode -->
 ${modeScreen("chordSpelling", {
-  settingsHTML: DISTANCE_TOGGLES,
+  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `<div class="chord-slots"></div>
       ${noteAnswerButtons()}`,
 })}

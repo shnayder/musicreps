@@ -246,14 +246,6 @@ export function getCalibrationThresholds(baseline) {
   ];
 }
 
-/**
- * Update aggregate stats display for a set of item IDs.
- * Currently a no-op (median display was removed).
- */
-export function updateModeStats(selector, itemIds, statsEl) {
-  if (!statsEl) return;
-  statsEl.textContent = '';
-}
 
 /**
  * Determine the keyboard key that would activate a given button.
@@ -1169,7 +1161,7 @@ export function createQuizEngine(mode, container) {
     // In round-complete phase, only respond to the explicit buttons
     if (state.phase === 'round-complete') return;
     if (state.phase !== 'active' || !state.answered) return;
-    if (e.target.closest('.answer-btn, .note-btn, .quiz-config, .string-toggle')) return;
+    if (e.target.closest('.answer-btn, .note-btn, .string-toggle')) return;
     nextQuestion();
   }
 

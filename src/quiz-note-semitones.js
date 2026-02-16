@@ -3,7 +3,7 @@
 // 24 items total (12 notes x 2 directions).
 //
 // Depends on globals: NOTES, createQuizEngine, createNoteKeyHandler,
-// updateModeStats, renderStatsTable, buildStatsLegend
+// renderStatsTable, buildStatsLegend
 
 function createNoteSemitonesMode() {
   const container = document.getElementById('mode-noteSemitones');
@@ -23,6 +23,67 @@ function createNoteSemitonesMode() {
 
   let currentItem = null;
   let currentAccidentalChoice = null;
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (!statusLabel) return;
+
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < ALL_ITEMS.length; i++) {
+      var auto = engine.selector.getAutomaticity(ALL_ITEMS[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+    } else {
+      var pct = ALL_ITEMS.length > 0 ? Math.round((fluent / ALL_ITEMS.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = fluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+    }
+
+    // No groups, so no recommendation
+    recText.textContent = '';
+    recBtn.classList.add('hidden');
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    el.textContent = ALL_ITEMS.length + ' items \u00B7 60s';
+  }
 
   // Build row definitions for the stats table
   function getTableRows() {
@@ -88,8 +149,7 @@ function createNoteSemitonesMode() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
-      statsControls.hide();
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
+      if (statsControls.mode) statsControls.hide();
     },
 
     onStop() {
@@ -97,8 +157,11 @@ function createNoteSemitonesMode() {
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
       pendingDigitTimeout = null;
-      updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
+      renderPracticeSummary();
+      renderSessionSummary();
     },
 
     handleKey(e, { submitAnswer }) {
@@ -159,6 +222,11 @@ function createNoteSemitonesMode() {
   );
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     // Note answer buttons
     container.querySelectorAll('.answer-btn-note').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -178,15 +246,15 @@ function createNoteSemitonesMode() {
     // Start/stop
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
-    updateModeStats(engine.selector, ALL_ITEMS, engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshNoteButtonLabels(container); engine.updateIdleMessage(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); engine.updateIdleMessage(); renderPracticeSummary(); engine.showCalibrationIfNeeded(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

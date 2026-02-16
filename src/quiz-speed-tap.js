@@ -2,7 +2,7 @@
 // Uses createQuizEngine with getExpectedResponseCount for multi-tap scaling.
 //
 // Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
-// createQuizEngine, createStatsControls, updateModeStats,
+// createQuizEngine, createStatsControls,
 // getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend,
 // DEFAULT_CONFIG
 
@@ -67,6 +67,69 @@ function createSpeedTapMode() {
   function clearAll() {
     container.querySelectorAll('.note-circle').forEach(c => c.style.fill = '');
     container.querySelectorAll('.note-text').forEach(t => t.textContent = '');
+  }
+
+  // --- Tab state ---
+  let activeTab = 'practice';
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    container.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active',
+        tabName === 'practice' ? el.classList.contains('tab-practice')
+                               : el.classList.contains('tab-progress'));
+    });
+    if (tabName === 'progress') {
+      statsControls.show(statsControls.mode || 'retention');
+    } else {
+      renderPracticeSummary();
+    }
+  }
+
+  // --- Practice summary ---
+
+  function renderPracticeSummary() {
+    var statusLabel = container.querySelector('.practice-status-label');
+    var statusDetail = container.querySelector('.practice-status-detail');
+    var recText = container.querySelector('.practice-rec-text');
+    var recBtn = container.querySelector('.practice-rec-btn');
+    if (!statusLabel) return;
+
+    var items = mode.getEnabledItems();
+    var threshold = engine.selector.getConfig().automaticityThreshold;
+    var fluent = 0, seen = 0;
+    for (var i = 0; i < items.length; i++) {
+      var auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    }
+
+    if (seen === 0) {
+      statusLabel.textContent = 'Ready to start';
+      statusDetail.textContent = items.length + ' notes to learn';
+    } else {
+      var pct = items.length > 0 ? Math.round((fluent / items.length) * 100) : 0;
+      var label;
+      if (pct >= 80) label = 'Strong';
+      else if (pct >= 50) label = 'Solid';
+      else if (pct >= 20) label = 'Building';
+      else label = 'Getting started';
+      statusLabel.textContent = 'Overall: ' + label;
+      statusDetail.textContent = fluent + ' of ' + items.length + ' notes fluent';
+    }
+
+    // No groups, so no recommendation
+    recText.textContent = '';
+    recBtn.classList.add('hidden');
+  }
+
+  function renderSessionSummary() {
+    var el = container.querySelector('.session-summary-text');
+    if (!el) return;
+    var items = mode.getEnabledItems();
+    el.textContent = items.length + ' notes \u00B7 60s';
   }
 
   // --- Note stats view ---
@@ -143,7 +206,7 @@ function createSpeedTapMode() {
   }
 
   function handleFretboardClick(e) {
-    if (e.target.closest('.quiz-config, .setting-group')) return;
+    if (e.target.closest('.setting-group')) return;
 
     if (engine.isActive && !engine.isAnswered && roundActive) {
       const target = e.target.closest('circle[data-string][data-fret]') ||
@@ -195,7 +258,6 @@ function createSpeedTapMode() {
     onStart() {
       if (statsControls.mode) statsControls.hide();
       if (fretboardWrapper) fretboardWrapper.classList.remove('fretboard-hidden');
-      updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);
     },
 
     onStop() {
@@ -206,8 +268,11 @@ function createSpeedTapMode() {
       currentNote = null;
       if (progressEl) progressEl.textContent = '';
       if (fretboardWrapper) fretboardWrapper.classList.add('fretboard-hidden');
-      updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);
-      statsControls.show('retention');
+      if (activeTab === 'progress') {
+        statsControls.show('retention');
+      }
+      renderPracticeSummary();
+      renderSessionSummary();
     },
 
     onAnswer(itemId, result, responseTime) {
@@ -242,18 +307,26 @@ function createSpeedTapMode() {
   }
 
   function init() {
+    // Tab switching
+    container.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
     const naturalsCheckbox = container.querySelector('#speed-tap-naturals-only');
     if (naturalsCheckbox) {
       naturalsCheckbox.addEventListener('change', (e) => {
         naturalsOnly = e.target.checked;
+        engine.updateIdleMessage();
+        renderPracticeSummary();
+        renderSessionSummary();
       });
     }
 
     container.querySelector('.start-btn').addEventListener('click', () => engine.start());
 
     if (fretboardWrapper) fretboardWrapper.classList.add('fretboard-hidden');
-    updateModeStats(engine.selector, mode.getEnabledItems(), engine.els.stats);
-    statsControls.show('retention');
+    renderPracticeSummary();
+    renderSessionSummary();
   }
 
   return {
@@ -263,6 +336,8 @@ function createSpeedTapMode() {
     activate() {
       engine.attach();
       container.addEventListener('click', handleFretboardClick);
+      engine.updateIdleMessage();
+      renderPracticeSummary();
       engine.showCalibrationIfNeeded();
     },
     deactivate() {
