@@ -95,10 +95,9 @@ FretboardMapSection
  └── Legend (heatmap color scale)
 ```
 
-The fretboard SVG is the same element used during the active quiz (for
-highlighting the question position). It lives outside the tab content divs
-in the DOM so it can be shown during both idle/progress and active phases.
-Visibility is controlled via CSS classes.
+The progress tab has its own fretboard SVG (heatmap view), and the quiz area
+has a separate SVG instance (question highlight). They are independent DOM
+elements — no sharing or special placement required.
 
 ### 3. Future Enhancements
 
@@ -117,18 +116,16 @@ Visibility is controlled via CSS classes.
 |---------|:-:|:-:|:-:|:-:|:-:|
 | Tab bar | ✓ | ✓ | — | — | — |
 | Practice tab content | ✓ | — | — | — | — |
-| Progress tab content | — | ✓ | — | — | — |
-| Fretboard SVG | — | ✓ | ✓ | — | — |
+| Progress tab content (incl. heatmap SVG) | — | ✓ | — | — | — |
 | Quiz session | — | — | ✓ | ✓ | ✓ |
-| Quiz area | — | — | ✓ | ✓ | ✓ |
+| Quiz area (incl. fretboard SVG) | — | — | ✓ | ✓ | ✓ |
 
 ---
 
 ## Decision Log
 
-- **Fretboard SVG placement:** Lives outside tab content divs so it can serve
-  both idle-progress (heatmap) and active-quiz (question highlight) phases
-  without DOM duplication.
+- **Fretboard SVG placement:** Separate SVG instances in the progress tab
+  (heatmap) and quiz area (question highlight). No DOM sharing needed.
 - **Practice tab is default:** Users visit this screen to practice. Progress
   inspection is secondary — available one tap away but not the landing state.
 - **Collapsed advanced section:** Recalibration is infrequent. Hiding it behind
