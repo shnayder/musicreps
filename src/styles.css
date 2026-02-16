@@ -689,6 +689,10 @@ button {
 .round-complete-continue:hover {
   opacity: 0.9;
 }
+.round-complete-continue:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
 .round-complete-stop {
   padding: var(--space-3) var(--space-5);
   background: none;
@@ -700,6 +704,9 @@ button {
 }
 .round-complete-stop:hover {
   background: var(--color-surface-hover);
+}
+.round-complete-stop:active {
+  background: var(--color-surface-pressed);
 }
 /* Hide quiz prompt, answer buttons, and feedback during round-complete */
 .phase-round-complete .quiz-prompt,

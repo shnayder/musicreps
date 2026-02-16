@@ -592,8 +592,6 @@ export function createQuizEngine(mode, container) {
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
-    quizHeaderTitle: container.querySelector('.quiz-header-title'),
-    questionCountEl: container.querySelector('.question-count'),
     roundTimerEl: container.querySelector('.round-timer'),
     roundAnswerCount: container.querySelector('.round-answer-count'),
     progressFill: container.querySelector('.progress-fill'),
@@ -724,12 +722,18 @@ export function createQuizEngine(mode, container) {
     if (state.phase === 'calibration-intro') container.classList.add('calibration-intro');
     if (state.phase === 'calibration-results') container.classList.add('calibration-results');
 
-    // Quiz header title: "Speed Check" during calibration, empty otherwise
-    if (els.quizHeaderTitle) {
-      els.quizHeaderTitle.textContent = inCalibration ? 'Speed Check' : '';
-    }
-
     const isActive = state.phase === 'active';
+
+    // Quiz header title: context-dependent
+    if (els.quizHeaderTitle) {
+      if (inCalibration) {
+        els.quizHeaderTitle.textContent = 'Speed Check';
+      } else if (isActive || state.phase === 'round-complete') {
+        els.quizHeaderTitle.textContent = 'Round ' + state.roundNumber;
+      } else {
+        els.quizHeaderTitle.textContent = '';
+      }
+    }
     if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
 
     // During calibration, feedbackText goes in quiz-prompt (above buttons)
@@ -761,24 +765,10 @@ export function createQuizEngine(mode, container) {
       els.recalibrateBtn.style.display = (state.phase === 'idle' && motorBaseline) ? 'inline' : 'none';
     }
 
-    // Quiz header title: show round number during active quiz
-    if (els.quizHeaderTitle) {
-      if (isActive || state.phase === 'round-complete') {
-        els.quizHeaderTitle.textContent = 'Round ' + state.roundNumber;
-      } else {
-        els.quizHeaderTitle.textContent = '';
-      }
-    }
-
     // Session stats: round answer count
     if (els.roundAnswerCount && isActive) {
       const count = state.roundAnswered;
       els.roundAnswerCount.textContent = count + (count === 1 ? ' answer' : ' answers');
-    }
-
-    // Session stats (question count)
-    if (els.questionCountEl && isActive) {
-      els.questionCountEl.textContent = state.questionCount;
     }
 
     // Progress bar
@@ -1061,9 +1051,9 @@ export function createQuizEngine(mode, container) {
       mode.onAnswer(state.currentItemId, result, responseTime);
     }
 
-    // If round timer already expired, transition after showing brief feedback
+    // If round timer already expired, show feedback briefly then transition
     if (state.roundTimerExpired) {
-      transitionToRoundComplete();
+      setTimeout(() => transitionToRoundComplete(), 600);
     }
   }
 
