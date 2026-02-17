@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fretboard Design Explorations</title>
+<style>
+  /* ===== Page chrome ===== */
+  :root {
+    --page-bg: #f5f4f1;
+    --card-bg: #fff;
+    --text: hsl(30, 5%, 20%);
+    --text-muted: hsl(30, 3%, 45%);
+    --border: hsl(30, 5%, 85%);
+    --brand: hsl(90, 35%, 45%);
+
+    /* Heatmap: terracotta → sage */
+    --heat-none: hsl(60, 5%, 93%);
+    --heat-1: hsl(15, 55%, 68%);
+    --heat-2: hsl(35, 55%, 58%);
+    --heat-3: hsl(55, 45%, 50%);
+    --heat-4: hsl(72, 42%, 42%);
+    --heat-5: hsl(88, 52%, 33%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--page-bg);
+    color: var(--text);
+    padding: 2rem 1rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+  .exploration {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .exploration h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  .exploration .desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .fretboard-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ===== Shared: state toggle buttons ===== */
+  .state-toggles {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .state-btn {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .state-btn:hover { background: #f0efec; }
+  .state-btn.active {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+  }
+
+  /* ===== Legend ===== */
+  .legend {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  /* ============================================================
+     EXPLORATION 1 — Transparent Text
+     ============================================================ */
+  .ex1-board {
+    position: relative;
+  }
+  .ex1-board svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .ex1-board .ex1-string {
+    stroke: hsl(30, 8%, 72%);
+  }
+  .ex1-board .ex1-fret {
+    stroke: hsl(30, 5%, 82%);
+  }
+  .ex1-board .ex1-nut {
+    fill: hsl(30, 8%, 55%);
+  }
+  .ex1-board .ex1-marker {
+    fill: hsl(30, 5%, 90%);
+  }
+  .ex1-board .ex1-note {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: hsl(30, 5%, 38%);
+    cursor: pointer;
+    transition: fill 0.15s;
+  }
+  .ex1-board .ex1-note:hover {
+    fill: hsl(30, 5%, 15%);
+  }
+  /* Highlighted note (quiz active) */
+  .ex1-board .ex1-note.highlighted {
+    fill: hsl(45, 90%, 42%);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  /* Stats coloring — classes added by state toggle */
+  .ex1-board .ex1-note.heat-none { fill: hsl(30, 3%, 80%); }
+  .ex1-board .ex1-note.heat-1 { fill: var(--heat-1); }
+  .ex1-board .ex1-note.heat-2 { fill: var(--heat-2); }
+  .ex1-board .ex1-note.heat-3 { fill: var(--heat-3); }
+  .ex1-board .ex1-note.heat-4 { fill: var(--heat-4); font-weight: 700; }
+  .ex1-board .ex1-note.heat-5 { fill: var(--heat-5); font-weight: 700; }
+
+  /* ============================================================
+     EXPLORATION 2 — Dot Grid
+     ============================================================ */
+  .ex2-board svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .ex2-board .ex2-string {
+    stroke: hsl(30, 5%, 80%);
+  }
+  .ex2-board .ex2-fret {
+    stroke: hsl(30, 5%, 88%);
+  }
+  .ex2-board .ex2-nut {
+    fill: hsl(30, 5%, 50%);
+  }
+  .ex2-board .ex2-marker-text {
+    font-family: system-ui, sans-serif;
+    font-size: 9px;
+    fill: hsl(30, 3%, 72%);
+    text-anchor: middle;
+  }
+  .ex2-board .ex2-dot {
+    fill: hsl(30, 5%, 68%);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ex2-board .ex2-dot:hover {
+    fill: hsl(30, 5%, 35%);
+    r: 10;
+  }
+  .ex2-board .ex2-dot.highlighted {
+    fill: hsl(45, 90%, 50%);
+    r: 12;
+  }
+  /* Stats coloring */
+  .ex2-board .ex2-dot.heat-none { fill: hsl(30, 3%, 88%); }
+  .ex2-board .ex2-dot.heat-1 { fill: var(--heat-1); }
+  .ex2-board .ex2-dot.heat-2 { fill: var(--heat-2); }
+  .ex2-board .ex2-dot.heat-3 { fill: var(--heat-3); }
+  .ex2-board .ex2-dot.heat-4 { fill: var(--heat-4); }
+  .ex2-board .ex2-dot.heat-5 { fill: var(--heat-5); }
+  /* Tooltip (CSS-only) */
+  .ex2-board .ex2-tooltip-group .ex2-tooltip-bg {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .ex2-board .ex2-tooltip-group .ex2-tooltip-text {
+    opacity: 0;
+    transition: opacity 0.15s;
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    text-anchor: middle;
+    fill: #fff;
+    pointer-events: none;
+  }
+  .ex2-board .ex2-tooltip-group:hover .ex2-tooltip-bg,
+  .ex2-board .ex2-tooltip-group:hover .ex2-tooltip-text {
+    opacity: 1;
+  }
+
+  /* ============================================================
+     EXPLORATION 3 — Vertical Dark
+     ============================================================ */
+  .ex3-wrap {
+    background: hsl(220, 15%, 13%);
+    border-radius: 8px;
+    padding: 1.25rem 1rem;
+    display: flex;
+    justify-content: center;
+  }
+  .ex3-board svg {
+    height: auto;
+    max-height: 520px;
+    display: block;
+  }
+  .ex3-board .ex3-string {
+    stroke: hsl(40, 15%, 50%);
+  }
+  .ex3-board .ex3-fret {
+    stroke: hsl(220, 8%, 28%);
+  }
+  .ex3-board .ex3-nut {
+    fill: hsl(40, 20%, 65%);
+  }
+  .ex3-board .ex3-marker {
+    fill: hsl(220, 8%, 20%);
+  }
+  .ex3-board .ex3-marker-text {
+    font-family: system-ui, sans-serif;
+    font-size: 9px;
+    fill: hsl(220, 5%, 40%);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .ex3-board .ex3-dot {
+    fill: hsl(220, 8%, 30%);
+    stroke: hsl(220, 8%, 40%);
+    stroke-width: 0.5;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ex3-board .ex3-dot:hover {
+    fill: hsl(40, 70%, 55%);
+    stroke: hsl(40, 70%, 65%);
+  }
+  .ex3-board .ex3-note-text {
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 9px;
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: hsl(220, 5%, 55%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .ex3-board .ex3-note-group:hover .ex3-note-text {
+    opacity: 1;
+    fill: hsl(40, 70%, 95%);
+  }
+  .ex3-board .ex3-dot.highlighted {
+    fill: hsl(45, 90%, 50%);
+    stroke: hsl(45, 90%, 60%);
+  }
+  .ex3-board .ex3-note-group:hover .ex3-dot.highlighted + .ex3-note-text {
+    fill: hsl(220, 15%, 13%);
+  }
+  /* Stats */
+  .ex3-board .ex3-dot.heat-none { fill: hsl(220, 8%, 22%); stroke: hsl(220, 8%, 30%); }
+  .ex3-board .ex3-dot.heat-1 { fill: hsl(15, 45%, 45%); stroke: hsl(15, 45%, 55%); }
+  .ex3-board .ex3-dot.heat-2 { fill: hsl(35, 45%, 42%); stroke: hsl(35, 45%, 52%); }
+  .ex3-board .ex3-dot.heat-3 { fill: hsl(55, 40%, 38%); stroke: hsl(55, 40%, 48%); }
+  .ex3-board .ex3-dot.heat-4 { fill: hsl(72, 38%, 35%); stroke: hsl(72, 38%, 45%); }
+  .ex3-board .ex3-dot.heat-5 { fill: hsl(88, 45%, 35%); stroke: hsl(88, 45%, 45%); }
+  /* Show text on hover for stats too */
+  .ex3-board .ex3-note-group .ex3-note-text.stats-visible {
+    opacity: 0.7;
+    fill: hsl(220, 5%, 55%);
+  }
+  .ex3-board .ex3-note-group:hover .ex3-note-text.stats-visible {
+    opacity: 1;
+    fill: hsl(40, 70%, 95%);
+  }
+
+  /* String labels for vertical */
+  .ex3-board .ex3-string-label {
+    font-family: system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    fill: hsl(220, 5%, 50%);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+
+  /* ============================================================
+     EXPLORATION 4 — Cell Grid (GitHub heatmap style)
+     ============================================================ */
+  .ex4-board {
+    overflow-x: auto;
+  }
+  .ex4-grid {
+    display: grid;
+    grid-template-columns: 28px repeat(13, 1fr);
+    gap: 3px;
+    min-width: 500px;
+  }
+  .ex4-header-cell {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+  }
+  .ex4-string-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ex4-cell {
+    height: 34px;
+    border-radius: 5px;
+    background: hsl(60, 5%, 93%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: hsl(30, 5%, 55%);
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    user-select: none;
+  }
+  .ex4-cell:hover {
+    outline: 2px solid hsl(30, 5%, 50%);
+    outline-offset: -1px;
+    z-index: 1;
+    color: hsl(30, 5%, 25%);
+  }
+  .ex4-cell.highlighted {
+    background: hsl(45, 90%, 55%);
+    color: hsl(30, 5%, 15%);
+    font-weight: 700;
+    box-shadow: 0 0 0 2px hsl(45, 80%, 45%);
+    z-index: 2;
+  }
+  /* Stats */
+  .ex4-cell.heat-none { background: hsl(60, 5%, 93%); color: hsl(30, 3%, 72%); }
+  .ex4-cell.heat-1 { background: var(--heat-1); color: #fff; }
+  .ex4-cell.heat-2 { background: var(--heat-2); color: #fff; }
+  .ex4-cell.heat-3 { background: var(--heat-3); color: #fff; }
+  .ex4-cell.heat-4 { background: var(--heat-4); color: #fff; }
+  .ex4-cell.heat-5 { background: var(--heat-5); color: #fff; }
+  /* Fret markers row */
+  .ex4-fret-markers {
+    display: grid;
+    grid-template-columns: 28px repeat(13, 1fr);
+    gap: 3px;
+    min-width: 500px;
+  }
+  .ex4-fret-marker {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-align: center;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ex4-fret-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: hsl(30, 5%, 78%);
+    display: inline-block;
+  }
+
+  /* ============================================================
+     EXPLORATION 5 — Glass / Premium
+     ============================================================ */
+  .ex5-wrap {
+    background: linear-gradient(135deg, hsl(25, 30%, 25%) 0%, hsl(20, 20%, 18%) 100%);
+    border-radius: 10px;
+    padding: 1.5rem 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Subtle wood grain overlay */
+  .ex5-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      92deg,
+      transparent,
+      transparent 8px,
+      rgba(255,255,255,0.015) 8px,
+      rgba(255,255,255,0.015) 9px
+    );
+    pointer-events: none;
+  }
+  .ex5-board svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+  }
+  .ex5-board .ex5-string {
+    stroke: hsl(40, 30%, 60%);
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
+  }
+  .ex5-board .ex5-fret {
+    stroke: hsl(30, 10%, 45%);
+  }
+  .ex5-board .ex5-nut {
+    fill: hsl(40, 15%, 75%);
+  }
+  .ex5-board .ex5-marker {
+    fill: rgba(255, 255, 255, 0.06);
+  }
+  .ex5-board .ex5-note-circle {
+    fill: rgba(255, 255, 255, 0.07);
+    stroke: rgba(255, 255, 255, 0.12);
+    stroke-width: 0.5;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ex5-board .ex5-note-circle:hover {
+    fill: rgba(255, 255, 255, 0.18);
+    stroke: rgba(255, 255, 255, 0.3);
+  }
+  .ex5-board .ex5-note-text {
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 10.5px;
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: rgba(255, 255, 255, 0.55);
+    pointer-events: none;
+    transition: fill 0.2s;
+  }
+  .ex5-board .ex5-note-group:hover .ex5-note-text {
+    fill: rgba(255, 255, 255, 0.95);
+  }
+  .ex5-board .ex5-note-circle.highlighted {
+    fill: rgba(255, 215, 0, 0.35);
+    stroke: rgba(255, 215, 0, 0.7);
+    stroke-width: 1.5;
+  }
+  .ex5-board .ex5-note-group:has(.highlighted) .ex5-note-text {
+    fill: hsl(45, 90%, 75%);
+    font-weight: 700;
+  }
+  /* Stats */
+  .ex5-board .ex5-note-circle.heat-none { fill: rgba(255,255,255,0.04); stroke: rgba(255,255,255,0.08); }
+  .ex5-board .ex5-note-circle.heat-1 { fill: hsla(15, 55%, 55%, 0.45); stroke: hsla(15, 55%, 65%, 0.6); }
+  .ex5-board .ex5-note-circle.heat-2 { fill: hsla(35, 55%, 50%, 0.45); stroke: hsla(35, 55%, 60%, 0.6); }
+  .ex5-board .ex5-note-circle.heat-3 { fill: hsla(55, 45%, 45%, 0.45); stroke: hsla(55, 45%, 55%, 0.6); }
+  .ex5-board .ex5-note-circle.heat-4 { fill: hsla(72, 42%, 40%, 0.55); stroke: hsla(72, 42%, 50%, 0.6); }
+  .ex5-board .ex5-note-circle.heat-5 { fill: hsla(88, 52%, 38%, 0.6); stroke: hsla(88, 52%, 48%, 0.7); }
+  /* Fret numbers */
+  .ex5-fret-numbers {
+    display: flex;
+    position: relative;
+    height: 1.25rem;
+  }
+  .ex5-fret-num {
+    position: absolute;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: hsl(30, 10%, 50%);
+    transform: translateX(-50%);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 600px) {
+    body { padding: 1rem 0.5rem; }
+    .exploration { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Fretboard Design Explorations</h1>
+<p class="subtitle">5 directions for the guitar fretboard — quiz highlighting + stats heatmap states</p>
+
+<!-- ================================================================
+     EXPLORATION 1 — Transparent Text
+     ================================================================ -->
+<div class="exploration" id="exp1">
+  <h2>1. Transparent Text</h2>
+  <p class="desc">
+    No circles at all. Note names float directly on the strings. Stats are conveyed through text
+    color intensity (terracotta → sage scale). Active quiz note uses a warm gold. Clean and airy —
+    lets the fretboard structure breathe.
+  </p>
+  <div class="state-toggles" data-exp="1">
+    <button class="state-btn active" data-state="quiz">Quiz active</button>
+    <button class="state-btn" data-state="stats">Heatmap</button>
+    <button class="state-btn" data-state="blank">Blank</button>
+  </div>
+  <div class="fretboard-wrap">
+    <div class="ex1-board" id="ex1-board"></div>
+  </div>
+  <div class="legend" id="ex1-legend" style="display:none"></div>
+</div>
+
+<!-- ================================================================
+     EXPLORATION 2 — Dot Grid
+     ================================================================ -->
+<div class="exploration" id="exp2">
+  <h2>2. Dot Grid</h2>
+  <p class="desc">
+    Even grid spacing (not realistic fret distances). Small filled dots for each position —
+    minimal footprint, great for data-dense views. Hover reveals the note name in a tooltip.
+    Stats shown by dot color. Compact and information-rich.
+  </p>
+  <div class="state-toggles" data-exp="2">
+    <button class="state-btn active" data-state="quiz">Quiz active</button>
+    <button class="state-btn" data-state="stats">Heatmap</button>
+    <button class="state-btn" data-state="blank">Blank</button>
+  </div>
+  <div class="fretboard-wrap">
+    <div class="ex2-board" id="ex2-board"></div>
+  </div>
+  <div class="legend" id="ex2-legend" style="display:none"></div>
+</div>
+
+<!-- ================================================================
+     EXPLORATION 3 — Vertical Dark
+     ================================================================ -->
+<div class="exploration" id="exp3">
+  <h2>3. Vertical Dark</h2>
+  <p class="desc">
+    Rotated 90° — strings run horizontally, frets descend vertically, matching the perspective
+    of looking down at your guitar. Dark background with warm string tones. Dots are subtle;
+    note names appear on hover. Stats glow softly against the dark surface.
+  </p>
+  <div class="state-toggles" data-exp="3">
+    <button class="state-btn active" data-state="quiz">Quiz active</button>
+    <button class="state-btn" data-state="stats">Heatmap</button>
+    <button class="state-btn" data-state="blank">Blank</button>
+  </div>
+  <div class="ex3-wrap">
+    <div class="fretboard-wrap">
+      <div class="ex3-board" id="ex3-board"></div>
+    </div>
+  </div>
+  <div class="legend" id="ex3-legend" style="display:none"></div>
+</div>
+
+<!-- ================================================================
+     EXPLORATION 4 — Cell Grid (GitHub heatmap style)
+     ================================================================ -->
+<div class="exploration" id="exp4">
+  <h2>4. Cell Grid</h2>
+  <p class="desc">
+    GitHub-contributions-style grid. Each fretboard position is a rounded cell with the note name
+    inside. Even spacing, no fret lines or strings — pure data visualization. Cells color-fill
+    for stats. Great for the analytics dashboard use case.
+  </p>
+  <div class="state-toggles" data-exp="4">
+    <button class="state-btn active" data-state="quiz">Quiz active</button>
+    <button class="state-btn" data-state="stats">Heatmap</button>
+    <button class="state-btn" data-state="blank">Blank</button>
+  </div>
+  <div class="fretboard-wrap">
+    <div class="ex4-board" id="ex4-board"></div>
+  </div>
+  <div class="legend" id="ex4-legend" style="display:none"></div>
+</div>
+
+<!-- ================================================================
+     EXPLORATION 5 — Glass / Premium
+     ================================================================ -->
+<div class="exploration" id="exp5">
+  <h2>5. Warm Wood / Glass</h2>
+  <p class="desc">
+    Premium feel: dark wood-toned background with warm string colors. Notes live in subtle frosted
+    circles that glow on hover. Stats use translucent colored fills that feel layered on the surface.
+    Realistic fret spacing preserved. The most "physical instrument" of the five.
+  </p>
+  <div class="state-toggles" data-exp="5">
+    <button class="state-btn active" data-state="quiz">Quiz active</button>
+    <button class="state-btn" data-state="stats">Heatmap</button>
+    <button class="state-btn" data-state="blank">Blank</button>
+  </div>
+  <div class="ex5-wrap">
+    <div class="fretboard-wrap">
+      <div class="ex5-board" id="ex5-board"></div>
+    </div>
+  </div>
+  <div class="legend" id="ex5-legend" style="display:none"></div>
+</div>
+
+<script>
+// ===== Shared data =====
+const NOTES_ALL = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const STRING_NAMES = ['e','B','G','D','A','E'];  // high to low
+const STRING_OFFSETS = [4, 11, 7, 2, 9, 4];
+const FRET_COUNT = 13; // 0-12
+const MARKERS = [3, 5, 7, 9, 12];
+// Realistic fret positions (same as app)
+const FRET_POS = [0, 65, 126, 183, 237, 288, 336, 381, 423, 463, 500, 535, 568, 600];
+// Even grid positions
+const EVEN_SPACING = 44;
+const EVEN_POS = Array.from({length: 14}, (_, i) => i * EVEN_SPACING);
+
+function noteAt(string, fret) {
+  return NOTES_ALL[(STRING_OFFSETS[string] + fret) % 12];
+}
+
+// Simulated skill data for heatmap demo
+function fakeSkill(string, fret) {
+  // Create a plausible pattern: open strings and low frets better known,
+  // some strings stronger than others
+  const base = Math.max(0, 1 - fret * 0.065);
+  const stringBonus = [0.1, 0.05, 0, -0.05, 0.15, 0.2][string]; // E and A stronger
+  const noise = Math.sin(string * 7 + fret * 13) * 0.15;
+  return Math.max(0, Math.min(1, base + stringBonus + noise));
+}
+
+function heatLevel(skill) {
+  if (skill === null) return 'none';
+  if (skill > 0.8) return '5';
+  if (skill > 0.6) return '4';
+  if (skill > 0.4) return '3';
+  if (skill > 0.2) return '2';
+  return '1';
+}
+
+const LEGEND_HTML = `
+  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-none)"></span>Unseen</div>
+  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-1)"></span>&lt;20%</div>
+  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-2)"></span>&gt;20%</div>
+  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-3)"></span>&gt;40%</div>
+  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-4)"></span>&gt;60%</div>
+  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-5)"></span>&gt;80%</div>
+`;
+
+// Quiz highlight position: string 4 (A string), fret 5 (= D note)
+const HL_STRING = 4;
+const HL_FRET = 5;
+
+// ===================================================================
+// EXPLORATION 1 — Transparent Text
+// ===================================================================
+function buildEx1() {
+  const W = 600, stringGap = 38, padY = 18;
+  const H = (5 * stringGap) + padY * 2;
+  let svg = `<svg viewBox="0 0 ${W} ${H}">`;
+
+  // Fret marker dots
+  for (const m of MARKERS) {
+    const cx = (FRET_POS[m] + FRET_POS[m + 1]) / 2;
+    if (m === 12) {
+      svg += `<circle class="ex1-marker" cx="${cx}" cy="${padY + 1 * stringGap}" r="4"/>`;
+      svg += `<circle class="ex1-marker" cx="${cx}" cy="${padY + 4 * stringGap}" r="4"/>`;
+    } else {
+      svg += `<circle class="ex1-marker" cx="${cx}" cy="${H / 2}" r="4"/>`;
+    }
+  }
+
+  // Nut
+  svg += `<rect class="ex1-nut" x="${FRET_POS[1] - 2.5}" y="0" width="5" height="${H}" rx="1"/>`;
+
+  // Frets
+  for (let f = 2; f < FRET_POS.length; f++) {
+    svg += `<line class="ex1-fret" x1="${FRET_POS[f]}" y1="0" x2="${FRET_POS[f]}" y2="${H}" stroke-width="1"/>`;
+  }
+
+  // Strings
+  for (let s = 0; s < 6; s++) {
+    const y = padY + s * stringGap;
+    const thick = 1 + s * 0.4;
+    svg += `<line class="ex1-string" x1="0" y1="${y}" x2="${W}" y2="${y}" stroke-width="${thick}"/>`;
+  }
+
+  // Notes (text only — no circles)
+  for (let s = 0; s < 6; s++) {
+    for (let f = 0; f < FRET_COUNT; f++) {
+      const x = f === 0
+        ? FRET_POS[0] + (FRET_POS[1] - FRET_POS[0]) / 2
+        : (FRET_POS[f] + FRET_POS[f + 1]) / 2;
+      const y = padY + s * stringGap;
+      const note = noteAt(s, f);
+      svg += `<text class="ex1-note" data-s="${s}" data-f="${f}" x="${x}" y="${y}">${note}</text>`;
+    }
+  }
+  svg += '</svg>';
+  document.getElementById('ex1-board').innerHTML = svg;
+}
+
+function updateEx1(state) {
+  const board = document.getElementById('ex1-board');
+  const legend = document.getElementById('ex1-legend');
+  board.querySelectorAll('.ex1-note').forEach(t => {
+    const s = +t.dataset.s, f = +t.dataset.f;
+    // Clear
+    t.className = 'ex1-note';
+    t.style.fontSize = '';
+    t.style.fontWeight = '';
+
+    if (state === 'quiz') {
+      if (s === HL_STRING && f === HL_FRET) {
+        t.classList.add('highlighted');
+      }
+      // Show all note names
+    } else if (state === 'stats') {
+      const skill = fakeSkill(s, f);
+      t.classList.add('heat-' + heatLevel(skill));
+    } else {
+      // blank — just show note names in default color
+    }
+  });
+  legend.style.display = state === 'stats' ? 'flex' : 'none';
+  legend.innerHTML = state === 'stats' ? LEGEND_HTML : '';
+}
+
+// ===================================================================
+// EXPLORATION 2 — Dot Grid
+// ===================================================================
+function buildEx2() {
+  const colW = EVEN_SPACING, padX = colW / 2 + 2;
+  const rowH = 36, padY = 16;
+  const W = padX * 2 + (FRET_COUNT) * colW;
+  const H = padY * 2 + 5 * rowH;
+  let svg = `<svg viewBox="0 0 ${W} ${H}">`;
+
+  // Nut
+  const nutX = padX + colW / 2 + colW - 1;
+  svg += `<rect class="ex2-nut" x="${nutX}" y="${padY - 4}" width="3" height="${5 * rowH + 8}" rx="1"/>`;
+
+  // Horizontal string lines
+  for (let s = 0; s < 6; s++) {
+    const y = padY + s * rowH;
+    const thick = 0.8 + s * 0.2;
+    svg += `<line class="ex2-string" x1="${padX}" y1="${y}" x2="${W - padX}" y2="${y}" stroke-width="${thick}"/>`;
+  }
+
+  // Vertical fret lines (skip 0)
+  for (let f = 1; f <= FRET_COUNT; f++) {
+    const x = padX + f * colW + colW / 2;
+    svg += `<line class="ex2-fret" x1="${x}" y1="${padY - 4}" x2="${x}" y2="${padY + 5 * rowH + 4}" stroke-width="1"/>`;
+  }
+
+  // Fret markers (numbers below)
+  for (const m of MARKERS) {
+    const x = padX + (m + 0.5) * colW + colW / 2;
+    if (m === 12) {
+      svg += `<circle cx="${x}" cy="${padY - 8}" r="2.5" fill="hsl(30,5%,82%)"/>`;
+      svg += `<circle cx="${x}" cy="${padY + 5 * rowH + 8}" r="2.5" fill="hsl(30,5%,82%)"/>`;
+    } else {
+      svg += `<circle cx="${x}" cy="${padY + 5 * rowH + 8}" r="2.5" fill="hsl(30,5%,82%)"/>`;
+    }
+    svg += `<text class="ex2-marker-text" x="${x}" y="${H - 2}">${m}</text>`;
+  }
+
+  // Note dots (with hover tooltip)
+  for (let s = 0; s < 6; s++) {
+    for (let f = 0; f < FRET_COUNT; f++) {
+      const x = padX + (f + 0.5) * colW + colW / 2;
+      const y = padY + s * rowH;
+      const note = noteAt(s, f);
+      svg += `<g class="ex2-tooltip-group" data-s="${s}" data-f="${f}">`;
+      svg += `<circle class="ex2-dot" data-s="${s}" data-f="${f}" cx="${x}" cy="${y}" r="6"/>`;
+      svg += `<rect class="ex2-tooltip-bg" x="${x - 14}" y="${y - 24}" width="28" height="17" rx="4" fill="hsl(30,5%,25%)"/>`;
+      svg += `<text class="ex2-tooltip-text" x="${x}" y="${y - 15}">${note}</text>`;
+      svg += `</g>`;
+    }
+  }
+
+  svg += '</svg>';
+  document.getElementById('ex2-board').innerHTML = svg;
+}
+
+function updateEx2(state) {
+  const board = document.getElementById('ex2-board');
+  const legend = document.getElementById('ex2-legend');
+  board.querySelectorAll('.ex2-dot').forEach(dot => {
+    const s = +dot.dataset.s, f = +dot.dataset.f;
+    dot.className = 'ex2-dot';
+    dot.setAttribute('r', '6');
+
+    if (state === 'quiz') {
+      if (s === HL_STRING && f === HL_FRET) {
+        dot.classList.add('highlighted');
+      }
+    } else if (state === 'stats') {
+      const skill = fakeSkill(s, f);
+      dot.classList.add('heat-' + heatLevel(skill));
+    }
+  });
+  legend.style.display = state === 'stats' ? 'flex' : 'none';
+  legend.innerHTML = state === 'stats' ? LEGEND_HTML : '';
+}
+
+// ===================================================================
+// EXPLORATION 3 — Vertical Dark
+// ===================================================================
+function buildEx3() {
+  // Vertical: X = strings (horizontal), Y = frets (top to bottom)
+  const colW = 42, padX = 22;
+  const rowH = 36, padY = 24;
+  const W = padX * 2 + 5 * colW;
+  const H = padY * 2 + FRET_COUNT * rowH;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="${W}">`;
+
+  // Fret marker background rectangles
+  for (const m of MARKERS) {
+    const y = padY + m * rowH;
+    svg += `<rect class="ex3-marker" x="0" y="${y - rowH / 2}" width="${W}" height="${rowH}" rx="0"/>`;
+  }
+
+  // Nut (horizontal bar at top)
+  svg += `<rect class="ex3-nut" x="${padX - 4}" y="${padY + rowH / 2 - 1.5}" width="${5 * colW + 8}" height="3" rx="1"/>`;
+
+  // Fret lines (horizontal)
+  for (let f = 2; f <= FRET_COUNT; f++) {
+    const y = padY + f * rowH - rowH / 2;
+    svg += `<line class="ex3-fret" x1="${padX - 4}" y1="${y}" x2="${padX + 5 * colW + 4}" y2="${y}" stroke-width="1"/>`;
+  }
+
+  // Strings (vertical)
+  for (let s = 0; s < 6; s++) {
+    const x = padX + s * colW;
+    const thick = 0.8 + (5 - s) * 0.35; // reversed: low E (s=5) thickest, but in vertical it's rightmost
+    svg += `<line class="ex3-string" x1="${x}" y1="${padY}" x2="${x}" y2="${H - padY}" stroke-width="${thick}"/>`;
+  }
+
+  // String labels (top)
+  for (let s = 0; s < 6; s++) {
+    const x = padX + s * colW;
+    svg += `<text class="ex3-string-label" x="${x}" y="${12}">${STRING_NAMES[s]}</text>`;
+  }
+
+  // Fret marker numbers (right side)
+  for (const m of MARKERS) {
+    const y = padY + m * rowH;
+    svg += `<text class="ex3-marker-text" x="${W - 8}" y="${y}">${m}</text>`;
+  }
+
+  // Note dots with hover text
+  for (let s = 0; s < 6; s++) {
+    for (let f = 0; f < FRET_COUNT; f++) {
+      const x = padX + s * colW;
+      const y = padY + f * rowH;
+      const note = noteAt(s, f);
+      svg += `<g class="ex3-note-group" data-s="${s}" data-f="${f}">`;
+      svg += `<circle class="ex3-dot" data-s="${s}" data-f="${f}" cx="${x}" cy="${y}" r="8"/>`;
+      svg += `<text class="ex3-note-text" data-s="${s}" data-f="${f}" x="${x}" y="${y}">${note}</text>`;
+      svg += `</g>`;
+    }
+  }
+
+  svg += '</svg>';
+  document.getElementById('ex3-board').innerHTML = svg;
+}
+
+function updateEx3(state) {
+  const board = document.getElementById('ex3-board');
+  const legend = document.getElementById('ex3-legend');
+  board.querySelectorAll('.ex3-dot').forEach(dot => {
+    const s = +dot.dataset.s, f = +dot.dataset.f;
+    dot.className = 'ex3-dot';
+
+    if (state === 'quiz') {
+      if (s === HL_STRING && f === HL_FRET) {
+        dot.classList.add('highlighted');
+      }
+    } else if (state === 'stats') {
+      const skill = fakeSkill(s, f);
+      dot.classList.add('heat-' + heatLevel(skill));
+    }
+  });
+  // Show note text in stats mode (faded)
+  board.querySelectorAll('.ex3-note-text').forEach(t => {
+    t.classList.toggle('stats-visible', state === 'stats');
+  });
+  legend.style.display = state === 'stats' ? 'flex' : 'none';
+  legend.innerHTML = state === 'stats' ? LEGEND_HTML : '';
+}
+
+// ===================================================================
+// EXPLORATION 4 — Cell Grid
+// ===================================================================
+function buildEx4() {
+  const board = document.getElementById('ex4-board');
+  let html = '<div class="ex4-grid">';
+
+  // Header row: empty + fret numbers
+  html += '<div class="ex4-header-cell"></div>';
+  for (let f = 0; f < FRET_COUNT; f++) {
+    const isMarker = MARKERS.includes(f);
+    html += `<div class="ex4-header-cell">${isMarker ? f : ''}</div>`;
+  }
+
+  // Data rows
+  for (let s = 0; s < 6; s++) {
+    html += `<div class="ex4-string-label">${STRING_NAMES[s]}</div>`;
+    for (let f = 0; f < FRET_COUNT; f++) {
+      const note = noteAt(s, f);
+      html += `<div class="ex4-cell" data-s="${s}" data-f="${f}">${note}</div>`;
+    }
+  }
+  html += '</div>';
+
+  // Fret marker dots row
+  html += '<div class="ex4-fret-markers">';
+  html += '<div></div>';
+  for (let f = 0; f < FRET_COUNT; f++) {
+    const isMarker = MARKERS.includes(f);
+    html += `<div class="ex4-fret-marker">${isMarker ? '<span class="ex4-fret-dot"></span>' : ''}</div>`;
+  }
+  html += '</div>';
+
+  board.innerHTML = html;
+}
+
+function updateEx4(state) {
+  const board = document.getElementById('ex4-board');
+  const legend = document.getElementById('ex4-legend');
+  board.querySelectorAll('.ex4-cell').forEach(cell => {
+    const s = +cell.dataset.s, f = +cell.dataset.f;
+    cell.className = 'ex4-cell';
+
+    if (state === 'quiz') {
+      if (s === HL_STRING && f === HL_FRET) {
+        cell.classList.add('highlighted');
+      }
+    } else if (state === 'stats') {
+      const skill = fakeSkill(s, f);
+      cell.classList.add('heat-' + heatLevel(skill));
+    }
+  });
+  legend.style.display = state === 'stats' ? 'flex' : 'none';
+  legend.innerHTML = state === 'stats' ? LEGEND_HTML : '';
+}
+
+// ===================================================================
+// EXPLORATION 5 — Glass / Premium
+// ===================================================================
+function buildEx5() {
+  const W = 600, stringGap = 38, padY = 18;
+  const H = (5 * stringGap) + padY * 2;
+  let svg = `<svg viewBox="0 0 ${W} ${H}">`;
+
+  // Fret marker dots (subtle)
+  for (const m of MARKERS) {
+    const cx = (FRET_POS[m] + FRET_POS[m + 1]) / 2;
+    if (m === 12) {
+      svg += `<circle class="ex5-marker" cx="${cx}" cy="${padY + 1 * stringGap}" r="5"/>`;
+      svg += `<circle class="ex5-marker" cx="${cx}" cy="${padY + 4 * stringGap}" r="5"/>`;
+    } else {
+      svg += `<circle class="ex5-marker" cx="${cx}" cy="${H / 2}" r="5"/>`;
+    }
+  }
+
+  // Nut
+  svg += `<rect class="ex5-nut" x="${FRET_POS[1] - 2}" y="0" width="4" height="${H}" rx="1"/>`;
+
+  // Frets
+  for (let f = 2; f < FRET_POS.length; f++) {
+    svg += `<line class="ex5-fret" x1="${FRET_POS[f]}" y1="0" x2="${FRET_POS[f]}" y2="${H}" stroke-width="1"/>`;
+  }
+
+  // Strings
+  for (let s = 0; s < 6; s++) {
+    const y = padY + s * stringGap;
+    const thick = 0.8 + s * 0.45;
+    svg += `<line class="ex5-string" x1="0" y1="${y}" x2="${W}" y2="${y}" stroke-width="${thick}"/>`;
+  }
+
+  // Note circles + text
+  for (let s = 0; s < 6; s++) {
+    for (let f = 0; f < FRET_COUNT; f++) {
+      const x = f === 0
+        ? FRET_POS[0] + (FRET_POS[1] - FRET_POS[0]) / 2
+        : (FRET_POS[f] + FRET_POS[f + 1]) / 2;
+      const y = padY + s * stringGap;
+      const note = noteAt(s, f);
+      svg += `<g class="ex5-note-group" data-s="${s}" data-f="${f}">`;
+      svg += `<circle class="ex5-note-circle" data-s="${s}" data-f="${f}" cx="${x}" cy="${y}" r="14"/>`;
+      svg += `<text class="ex5-note-text" x="${x}" y="${y}">${note}</text>`;
+      svg += `</g>`;
+    }
+  }
+  svg += '</svg>';
+
+  // Fret numbers
+  let fretNums = '<div class="ex5-fret-numbers">';
+  for (const m of MARKERS) {
+    const x = (FRET_POS[m] + FRET_POS[m + 1]) / 2;
+    const pct = (x / W) * 100;
+    fretNums += `<span class="ex5-fret-num" style="left:${pct}%">${m}</span>`;
+  }
+  fretNums += '</div>';
+
+  document.getElementById('ex5-board').innerHTML = svg + fretNums;
+}
+
+function updateEx5(state) {
+  const board = document.getElementById('ex5-board');
+  const legend = document.getElementById('ex5-legend');
+  board.querySelectorAll('.ex5-note-circle').forEach(c => {
+    const s = +c.dataset.s, f = +c.dataset.f;
+    c.className = 'ex5-note-circle';
+
+    if (state === 'quiz') {
+      if (s === HL_STRING && f === HL_FRET) {
+        c.classList.add('highlighted');
+      }
+    } else if (state === 'stats') {
+      const skill = fakeSkill(s, f);
+      c.classList.add('heat-' + heatLevel(skill));
+    }
+  });
+  legend.style.display = state === 'stats' ? 'flex' : 'none';
+  legend.innerHTML = state === 'stats' ? LEGEND_HTML : '';
+}
+
+// ===================================================================
+// Build all + wire up state toggles
+// ===================================================================
+buildEx1(); updateEx1('quiz');
+buildEx2(); updateEx2('quiz');
+buildEx3(); updateEx3('quiz');
+buildEx4(); updateEx4('quiz');
+buildEx5(); updateEx5('quiz');
+
+const updaters = {
+  1: updateEx1,
+  2: updateEx2,
+  3: updateEx3,
+  4: updateEx4,
+  5: updateEx5,
+};
+
+document.querySelectorAll('.state-toggles').forEach(group => {
+  const exp = group.dataset.exp;
+  group.addEventListener('click', e => {
+    const btn = e.target.closest('.state-btn');
+    if (!btn) return;
+    group.querySelectorAll('.state-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    updaters[exp](btn.dataset.state);
+  });
+});
+</script>
+</body>
+</html>
