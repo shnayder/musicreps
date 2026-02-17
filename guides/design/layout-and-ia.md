@@ -4,6 +4,9 @@ Principles for screen layout, content hierarchy, and information architecture.
 Complements the visual design system in `visual-design.md` — that guide covers
 *what things look like*; this one covers *where things go and why*.
 
+For the full principles index (product, visual, and UX), see
+[design-principles.md](../design-principles.md).
+
 ---
 
 ## Screen States Are Distinct Designs

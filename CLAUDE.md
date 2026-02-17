@@ -119,7 +119,8 @@ Bidirectional modes track each direction as a separate item.
 | [coding-style.md](guides/coding-style.md) | Naming, file structure, DOM rules, testing patterns |
 | [development.md](guides/development.md) | Commands, testing, versioning, branching, deployment, GitHub API |
 | [feature-process.md](guides/feature-process.md) | When/how to write plans, design spec + implementation plan templates |
-| [vision.md](guides/vision.md) | Product vision, design principles, roadmap |
+| [vision.md](guides/vision.md) | Product vision |
+| [design-principles.md](guides/design-principles.md) | Product, visual, and UX design principles |
 | [visual-design.md](guides/design/visual-design.md) | Color system, typography, spacing, component patterns |
 | [layout-and-ia.md](guides/design/layout-and-ia.md) | Screen states, content hierarchy, grouping, labels |
 | [accidental-conventions.md](guides/accidental-conventions.md) | Sharp/flat naming rules by mode, rule priority |

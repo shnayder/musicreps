@@ -9,20 +9,9 @@ content hierarchy, and information architecture — *where things go and why*.
 
 ---
 
-## Design Principles
-
-Aligned with the product vision in `guides/vision.md`:
-
-1. **Drill-first aesthetic** — nothing distracts from drilling. Chrome fades
-   away during quiz; visual weight goes to the question and answer buttons.
-2. **Warmth over sterility** — inviting, like a good practice space. Warm
-   neutrals, sage brand, no cold gray wireframe feel.
-3. **Feedback clarity** — correct/wrong instantly recognizable via distinct
-   semantic colors (green/red). Never use brand or heatmap colors for feedback.
-4. **Information density** — stats scannable at a glance, not decorative.
-   Heatmaps use accessible color scale; tables compact but readable.
-5. **Mobile-primary** — thumb-friendly 48px touch targets, no hover-dependent
-   interactions. All hover states are enhancements, not requirements.
+For visual design principles (drill-first aesthetic, warmth, feedback clarity,
+information density, mobile-primary), see
+[design-principles.md](../design-principles.md).
 
 ---
 

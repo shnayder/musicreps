@@ -403,6 +403,14 @@ rule applies and document the choice in `accidental-conventions.md`.
 
 ## Adding a New Quiz Mode
 
+**Reuse shared infrastructure.** Adaptive selector, `computeRecommendations()`,
+`createStatsControls()`, `createNoteKeyHandler()`. A new mode should feel
+like a natural extension, not a separate app.
+
+**Consistency over accommodation.** When a mode behaves differently, ask
+"should it?" not "how do we support that?" Change the outlier to match the
+standard rather than adding complexity. Per-mode flags are a code smell.
+
 Step-by-step checklist:
 
 1. **Create** `src/quiz-{mode}.js` following the `createXxxMode()` pattern

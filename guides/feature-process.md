@@ -4,9 +4,10 @@ How to plan, design, implement, and document changes.
 
 ## Context
 
-- `vision.md` describes the long-term vision, design principles, and roadmap.
-  Relevant when making major design decisions, rarely relevant when following
-  existing patterns.
+- `vision.md` describes the product vision.
+  [design-principles.md](design-principles.md) covers product, visual, and UX
+  principles. Relevant when making major design decisions, rarely relevant when
+  following existing patterns.
 
 ## When to Write What
 
@@ -86,9 +87,10 @@ Before considering a spec ready for review, verify:
 
 - [ ] **Stays at product level.** No state shapes, function signatures,
   storage keys, or DOM structure. Those belong in the implementation plan.
-- [ ] **Consistent with design principles.** Check `vision.md` — especially
-  "fewer options" (can the system adapt instead of adding a toggle?) and
-  "short-session friendly" (does state need to persist?).
+- [ ] **Consistent with design principles.** Check
+  [design-principles.md](design-principles.md) — especially "fewer options"
+  (can the system adapt instead of adding a toggle?) and "short-session
+  friendly" (does state need to persist?).
 - [ ] **Single user-facing metric where possible.** Avoid exposing internal
   distinctions (speed vs accuracy, timeout vs wrong) unless they're genuinely
   useful to the user.
@@ -124,7 +126,7 @@ Before writing code, verify that your design:
 - **Consistency over accommodation**: if a mode behaves differently, ask
   "should it?" before "how do we support that?" Change the outlier to match
   the standard rather than adding per-mode flags or overrides. See
-  "Consistency over accommodation" in [vision.md](vision.md).
+  [architecture.md](architecture.md).
 
 ## Templates
 
