@@ -2,7 +2,7 @@
 
 ## Context
 
-The fretboard-trainer is a single-page quiz app built with vanilla JS, no
+The app (musicreps) is a single-page quiz app built with vanilla JS, no
 framework, all files concatenated into one HTML file at build time. It's
 growing from prototype to long-lived product. Two concerns motivate this review:
 

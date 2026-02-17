@@ -1,8 +1,8 @@
-# Fretboard Trainer
+# Music Reps
 
-Interactive quiz for learning guitar fretboard note positions.
+Interactive music theory drill app — fretboard notes, intervals, key signatures, and more.
 
-**[Try it live](https://shnayder.github.io/fretboard-trainer/)**
+**[Try it live](https://shnayder.github.io/musicreps/)**
 
 ## Features
 

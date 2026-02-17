@@ -1,6 +1,6 @@
 # Visual Design Guide
 
-Current-state reference for Fretboard Trainer's design system — colors,
+Current-state reference for Music Reps' design system — colors,
 typography, spacing, and component patterns. All values are defined as CSS
 custom properties in `src/styles.css` `:root`. See the live color reference
 at `guides/design/colors.html`.

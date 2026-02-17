@@ -1,4 +1,4 @@
-# Fretboard Trainer — Review Checklist
+# Music Reps — Review Checklist
 
 Use this checklist when reviewing changes. Evaluate every item as Pass, Fail,
 or N/A. Do not skip items — mark N/A explicitly if a category does not apply.

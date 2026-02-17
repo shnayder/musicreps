@@ -4,10 +4,6 @@
   --color-brand-dark: hsl(90, 35%, 35%);
   --color-brand-bg: hsl(90, 25%, 94%);
 
-  /* Top bar */
-  --color-topbar-bg: hsl(100, 15%, 22%);
-  --color-topbar-text: hsl(90, 10%, 95%);
-
   /* Semantic colors */
   --color-success: #4CAF50;
   --color-success-dark: #388E3C;
@@ -94,76 +90,57 @@ body {
   border-right: 1px solid var(--color-border-lighter);
 }
 
-/* --- Top bar & navigation --- */
-.top-bar {
-  display: flex;
-  align-items: center;
-  padding: var(--space-3) var(--space-5);
-  margin: 0 calc(-1 * var(--space-5));
-  background: var(--color-topbar-bg);
-  color: var(--color-topbar-text);
-  position: relative;
+/* --- Home screen --- */
+.home-screen { display: flex; flex-direction: column; min-height: 100dvh;
+  padding: var(--space-5); }
+.home-screen.hidden { display: none; }
+.home-header { text-align: center; padding: var(--space-6) 0 var(--space-4); }
+.home-title { font-size: var(--text-2xl); font-weight: 700; color: var(--color-text); margin: 0; }
+.home-modes { flex: 1; }
+.home-group-label { font-size: var(--text-xs); font-weight: 600;
+  text-transform: uppercase; color: var(--color-text-muted);
+  letter-spacing: 0.05em; margin-top: var(--space-5);
+  margin-bottom: var(--space-2); padding-left: var(--space-2); }
+.home-group-label:first-child { margin-top: 0; }
+.home-mode-btn { display: flex; flex-direction: column; width: 100%;
+  text-align: left; padding: var(--space-4) var(--space-4);
+  background: var(--color-bg); border: 1px solid var(--color-border-lighter);
+  border-radius: 8px; margin-bottom: var(--space-2); cursor: pointer; }
+.home-mode-btn:hover { background: var(--color-surface); }
+.home-mode-btn:active { background: var(--color-surface-pressed); }
+.home-mode-name { font-size: var(--text-base); font-weight: 600;
+  color: var(--color-text); }
+.home-mode-desc { font-size: var(--text-sm); color: var(--color-text-muted); }
+.home-footer { display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-4) 0; border-top: 1px solid var(--color-border-lighter);
+  margin-top: var(--space-4); }
+.home-settings-btn {
+  background: none; border: 1px solid var(--color-border-light);
+  border-radius: 6px; padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm); color: var(--color-text-muted); cursor: pointer;
+  margin: 0; min-height: 44px; display: flex; align-items: center;
 }
-.hamburger {
-  background: none;
-  border: none;
-  font-size: var(--text-xl);
-  cursor: pointer;
-  padding: var(--space-2) var(--space-3);
-  margin: 0;
-  line-height: 1;
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-topbar-text);
-  border-radius: 6px;
-  transition: background 0.15s ease;
-}
-.hamburger:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-.top-bar h1 {
-  margin: 0;
-  font-size: var(--text-lg);
-  font-weight: 600;
-  flex: 1;
-  text-align: center;
-}
+.home-settings-btn:hover { background: var(--color-surface-hover); }
+.home-settings-btn:active { background: var(--color-surface-pressed); }
 .version {
   font-size: var(--text-xs);
-  color: rgba(255, 255, 255, 0.5);
-  padding-right: var(--space-2);
+  color: var(--color-text-light);
 }
-.gear-btn {
-  background: none;
-  border: none;
-  font-size: var(--text-xl);
-  cursor: pointer;
-  padding: var(--space-2) var(--space-3);
-  margin: 0;
-  line-height: 1;
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-topbar-text);
-  opacity: 0.7;
-  border-radius: 6px;
-  transition: background 0.15s ease, opacity 0.15s ease;
-}
-.gear-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  opacity: 1;
-}
-.gear-btn:active {
-  opacity: 0.5;
-}
-.gear-btn.hidden {
-  visibility: hidden;
-}
+
+/* --- Mode top bar --- */
+.mode-top-bar { display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) 0; margin-bottom: var(--space-3); }
+.mode-back-btn { background: none; border: none; font-size: var(--text-xl);
+  cursor: pointer; padding: var(--space-2); min-width: 44px; min-height: 44px;
+  color: var(--color-text-muted); margin: 0; display: flex; align-items: center;
+  justify-content: center; border-radius: 6px; }
+.mode-back-btn:hover { background: var(--color-surface-hover); }
+.mode-back-btn:active { background: var(--color-surface-pressed); }
+.mode-title { margin: 0; font-size: var(--text-lg); font-weight: 600; flex: 1; }
+/* Hide mode top bar during active quiz and calibration */
+.phase-active .mode-top-bar,
+.phase-calibration .mode-top-bar,
+.phase-round-complete .mode-top-bar { display: none; }
 
 /* --- Settings modal --- */
 .settings-overlay {
@@ -261,69 +238,6 @@ body {
   opacity: 0.8;
 }
 
-.nav-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--color-overlay);
-  z-index: 99;
-}
-.nav-overlay.open {
-  display: block;
-}
-.nav-drawer {
-  position: fixed;
-  top: 0;
-  left: -280px;
-  width: 260px;
-  height: 100%;
-  background: var(--color-bg);
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-  transition: left 0.2s ease;
-  padding: var(--space-5) 0;
-  overflow-y: auto;
-}
-.nav-drawer.open {
-  left: 0;
-}
-.nav-group-label {
-  padding: var(--space-4) var(--space-6) var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-light);
-}
-.nav-group-label:first-child {
-  padding-top: var(--space-3);
-}
-.nav-drawer button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: var(--space-4) var(--space-6);
-  border: none;
-  border-left: 3px solid transparent;
-  background: none;
-  font-size: var(--text-base);
-  cursor: pointer;
-  color: var(--color-text);
-  margin: 0;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.nav-drawer button:hover {
-  background: var(--color-surface-hover);
-}
-.nav-drawer button.active {
-  background: var(--color-brand-bg);
-  color: var(--color-brand-dark);
-  border-left-color: var(--color-brand);
-  font-weight: 600;
-}
 
 /* --- Mode screens --- */
 .mode-screen {
@@ -395,9 +309,9 @@ body {
   display: block;
 }
 
-/* --- Practice summary --- */
-.practice-summary {
-  margin-bottom: var(--space-5);
+/* --- Practice card --- */
+.practice-card {
+  margin-bottom: var(--space-4);
   padding: var(--space-4) var(--space-5);
   background: var(--color-surface);
   border-radius: 8px;
@@ -455,39 +369,19 @@ body {
 .practice-rec-btn.hidden {
   display: none;
 }
-.practice-group-chips {
-  display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-  justify-content: center;
-}
-.practice-group-chips:empty {
-  display: none;
-}
-.string-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 24px;
-  border-radius: 4px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  transition: background 0.15s ease;
-}
 
-/* --- Practice scope --- */
+/* --- Practice scope (inside practice card) --- */
 .practice-scope {
-  margin-bottom: var(--space-5);
+  margin-top: var(--space-4);
 }
 .practice-scope .settings-row {
   margin-bottom: 0;
 }
 
-/* --- Practice start --- */
+/* --- Practice start (inside practice card) --- */
 .practice-start {
   text-align: center;
-  margin-bottom: var(--space-5);
+  margin-top: var(--space-4);
 }
 .session-summary-text {
   font-size: var(--text-sm);
@@ -542,8 +436,8 @@ body {
   justify-content: center;
 }
 .string-toggle {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
   background: var(--color-surface);
@@ -576,7 +470,7 @@ body {
   justify-content: center;
 }
 .distance-toggle {
-  height: 28px;
+  height: 36px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
   background: var(--color-surface);
@@ -710,20 +604,35 @@ button {
   background: var(--color-surface-pressed);
 }
 
-/* --- Quiz header (shown during quiz) --- */
-.quiz-header {
+/* --- Quiz countdown bar — full-width, thin, at top --- */
+.quiz-countdown-bar {
+  height: 4px;
+  background: var(--color-surface-alt);
+  margin: 0 calc(-1 * var(--space-5));
+  margin-bottom: var(--space-2);
+}
+.quiz-countdown-fill {
+  height: 100%;
+  background: var(--color-brand);
+  transition: width 0.2s linear;
+  width: 100%;
+}
+.round-timer-warning .quiz-countdown-fill {
+  background: var(--color-error);
+}
+
+/* --- Quiz session info — single compact row --- */
+.quiz-session-info {
   display: flex;
   align-items: center;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid var(--color-surface-alt);
-  margin-bottom: var(--space-3);
-}
-.quiz-header-title {
-  flex: 1;
-  font-size: var(--text-base);
-  font-weight: 500;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
   color: var(--color-text-muted);
+  padding: 0 0 var(--space-2);
 }
+.quiz-info-context { flex: 1; }
+.quiz-info-time { font-variant-numeric: tabular-nums; }
+.quiz-info-count { font-variant-numeric: tabular-nums; }
 .quiz-header-close {
   background: none;
   border: none;
@@ -739,19 +648,6 @@ button {
 .quiz-header-close:hover {
   color: var(--color-text);
   background: var(--color-surface-hover);
-}
-
-/* --- Session stats (question count + elapsed time) --- */
-.session-stats {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-6);
-  font-size: var(--text-sm);
-  color: var(--color-text-light);
-  margin-bottom: var(--space-3);
-}
-.session-stats span {
-  font-variant-numeric: tabular-nums;
 }
 
 /* --- Progress bar --- */
@@ -787,14 +683,17 @@ button {
   pointer-events: none;
 }
 
-/* --- Quiz-active visual focus (colored accent when quiz is running) --- */
-.phase-active .top-bar,
-.phase-calibration .top-bar {
-  box-shadow: 0 2px 0 var(--color-brand);
+/* --- Quiz-active visual focus --- */
+.phase-active,
+.phase-round-complete,
+.phase-calibration {
+  background: var(--color-surface);
+  margin: 0 calc(-1 * var(--space-5));
+  padding: 0 var(--space-5);
 }
 .phase-active .quiz-area.active {
-  border: 2px solid var(--color-brand);
-  border-top: 3px solid var(--color-brand);
+  border: 1px solid var(--color-border-lighter);
+  padding: var(--space-3) var(--space-3);
 }
 
 /* --- Quiz area (subtle card containment) --- */
@@ -810,36 +709,6 @@ button {
   border-radius: 12px;
   padding: var(--space-5);
 }
-.practicing-label {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  margin-bottom: var(--space-3);
-}
-.practicing-label:empty {
-  display: none;
-}
-/* --- Round timer --- */
-.round-timer {
-  font-size: var(--text-xl);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text);
-  min-width: 3em;
-}
-.round-timer-warning {
-  color: var(--color-error);
-}
-.round-answer-count {
-  font-size: var(--text-lg);
-  font-weight: 500;
-  color: var(--color-text-muted);
-}
-.round-duration-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-top: var(--space-2);
-}
-
 /* --- Round complete --- */
 .round-complete {
   text-align: center;
@@ -851,16 +720,23 @@ button {
   color: var(--color-text);
   margin-bottom: var(--space-4);
 }
-.round-complete-count {
-  font-size: var(--text-lg);
-  font-weight: 500;
-  color: var(--color-text);
-  margin-bottom: var(--space-2);
+.round-complete-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-6);
+  margin: var(--space-5) 0;
 }
-.round-complete-correct {
-  font-size: var(--text-base);
+.round-stat {
+  display: flex;
+  flex-direction: column;
+}
+.round-stat-value {
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+.round-stat-label {
+  font-size: var(--text-xs);
   color: var(--color-text-muted);
-  margin-bottom: var(--space-5);
 }
 .round-complete-actions {
   display: flex;
@@ -907,7 +783,6 @@ button {
 .phase-round-complete .feedback,
 .phase-round-complete .hint,
 .phase-round-complete .time-display,
-.phase-round-complete .practicing-label,
 .phase-round-complete .speed-tap-status,
 .phase-round-complete .fretboard-wrapper { display: none; }
 
@@ -1050,15 +925,14 @@ button {
   display: flex;
 }
 .phase-calibration .speed-tap-status,
-.phase-calibration .fretboard-wrapper,
-.phase-calibration .practicing-label {
+.phase-calibration .fretboard-wrapper {
   display: none;
 }
 .phase-calibration .chord-slots {
   display: none;
 }
-/* Calibration: hide question counter (progress bar shows trial count instead) */
-.phase-calibration .session-stats {
+/* Calibration: hide quiz info (progress bar shows trial count instead) */
+.phase-calibration .quiz-session-info {
   display: none;
 }
 /* Intro + results: hide buttons and progress */
@@ -1391,7 +1265,7 @@ button {
   outline-color: var(--color-brand-dark);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 4px rgba(209, 147, 27, 0.3);
 }
-.nav-drawer button:focus-visible {
+.home-mode-btn:focus-visible {
   outline-offset: -2px;
 }
 
@@ -1413,9 +1287,15 @@ button {
     border-right: none;
   }
 
-  .top-bar {
+  .quiz-countdown-bar {
     margin: 0 calc(-1 * var(--space-1));
-    padding: var(--space-2) var(--space-3);
+  }
+
+  .phase-active,
+  .phase-round-complete,
+  .phase-calibration {
+    margin: 0 calc(-1 * var(--space-1));
+    padding: 0 var(--space-1);
   }
 
   .fretboard-container {

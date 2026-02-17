@@ -96,7 +96,7 @@ Pushes to `claude/*` branches automatically deploy a preview build via GitHub
 Actions. The workflow (`.github/workflows/deploy-preview.yml`) builds the app
 and commits the output to `docs/preview/<branch-name>/` on main.
 
-- **Preview URL:** `shnayder.github.io/fretboard-trainer/preview/<branch-name>/`
+- **Preview URL:** `shnayder.github.io/musicreps/preview/<branch-name>/`
 - **Cleanup:** `.github/workflows/cleanup-preview.yml` removes the preview
   directory when the branch is deleted or PR is closed.
 - **PR comment:** the deploy workflow posts the preview URL on any associated PR.
@@ -128,17 +128,17 @@ PROXY_URL="$GLOBAL_AGENT_HTTP_PROXY"
 # List open PRs
 curl -sS --proxy "$PROXY_URL" \
   -H "Accept: application/vnd.github.v3+json" \
-  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls?state=open"
+  "https://api.github.com/repos/shnayder/musicreps/pulls?state=open"
 
 # Get PR review comments
 curl -sS --proxy "$PROXY_URL" \
   -H "Accept: application/vnd.github.v3+json" \
-  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls/{PR_NUMBER}/comments"
+  "https://api.github.com/repos/shnayder/musicreps/pulls/{PR_NUMBER}/comments"
 
 # Get issue/PR conversation comments
 curl -sS --proxy "$PROXY_URL" \
   -H "Accept: application/vnd.github.v3+json" \
-  "https://api.github.com/repos/shnayder/fretboard-trainer/issues/{PR_NUMBER}/comments"
+  "https://api.github.com/repos/shnayder/musicreps/issues/{PR_NUMBER}/comments"
 ```
 
 The proxy authenticates automatically via the JWT in `GLOBAL_AGENT_HTTP_PROXY`.

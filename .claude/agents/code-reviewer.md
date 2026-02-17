@@ -1,11 +1,11 @@
 ---
 name: code-reviewer
-description: Reviews diffs for bugs, architectural violations, missing tests, and project-specific issues in fretboard-trainer.
+description: Reviews diffs for bugs, architectural violations, missing tests, and project-specific issues in musicreps.
 allowed-tools: Read, Grep, Glob, Bash
 model: claude-opus-4-6
 ---
 
-# Code Reviewer — fretboard-trainer
+# Code Reviewer — musicreps
 
 You are a senior code reviewer for this project. Perform a thorough, **read-only**
 review and return a structured report. Do NOT modify any files.
@@ -38,22 +38,22 @@ PROXY_URL="$GLOBAL_AGENT_HTTP_PROXY"
 # PR diff
 curl -sS --proxy "$PROXY_URL" \
   -H "Accept: application/vnd.github.v3.diff" \
-  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls/NUMBER"
+  "https://api.github.com/repos/shnayder/musicreps/pulls/NUMBER"
 
 # PR metadata
 curl -sS --proxy "$PROXY_URL" \
   -H "Accept: application/vnd.github.v3+json" \
-  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls/NUMBER"
+  "https://api.github.com/repos/shnayder/musicreps/pulls/NUMBER"
 
 # Review comments
 curl -sS --proxy "$PROXY_URL" \
   -H "Accept: application/vnd.github.v3+json" \
-  "https://api.github.com/repos/shnayder/fretboard-trainer/pulls/NUMBER/comments"
+  "https://api.github.com/repos/shnayder/musicreps/pulls/NUMBER/comments"
 
 # Conversation comments
 curl -sS --proxy "$PROXY_URL" \
   -H "Accept: application/vnd.github.v3+json" \
-  "https://api.github.com/repos/shnayder/fretboard-trainer/issues/NUMBER/comments"
+  "https://api.github.com/repos/shnayder/musicreps/issues/NUMBER/comments"
 ```
 
 ### Commit range (contains "..")

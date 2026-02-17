@@ -60,7 +60,7 @@ const html = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fretboard Trainer</title>
+  <title>Music Reps</title>
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 
@@ -72,7 +72,7 @@ const html = `<!DOCTYPE html>
   <!-- Home screen -->
   <div class="home-screen" id="home-screen">
     <div class="home-header">
-      <h1 class="home-title">Fretboard Trainer</h1>
+      <h1 class="home-title">Music Reps</h1>
     </div>
     <div class="home-modes">
       <div class="home-group-label">Fretboard</div>
@@ -126,7 +126,7 @@ const html = `<!DOCTYPE html>
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v5.0</span>
+      <span class="version">v5.1</span>
     </div>
   </div>
 
