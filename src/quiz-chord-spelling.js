@@ -144,7 +144,6 @@ function createChordSpellingMode() {
     var statusDetail = container.querySelector('.practice-status-detail');
     var recText = container.querySelector('.practice-rec-text');
     var recBtn = container.querySelector('.practice-rec-btn');
-    var chipsEl = container.querySelector('.practice-group-chips');
     if (!statusLabel) return;
 
     var items = mode.getEnabledItems();
@@ -188,22 +187,6 @@ function createChordSpellingMode() {
       recBtn.classList.add('hidden');
     }
 
-    var chipHTML = '';
-    for (var g = 0; g < SPELLING_GROUPS.length; g++) {
-      var gItems = getItemIdsForGroup(g);
-      var sum = 0, count = 0;
-      for (var gi = 0; gi < gItems.length; gi++) {
-        var ga = engine.selector.getAutomaticity(gItems[gi]);
-        if (ga !== null) { sum += ga; count++; }
-      }
-      var avg = count > 0 ? sum / count : null;
-      var color = getAutomaticityColor(avg);
-      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
-      chipHTML += '<div class="string-chip" style="background:' + color;
-      if (textColor) chipHTML += ';color:' + textColor;
-      chipHTML += '">' + SPELLING_GROUPS[g].label + '</div>';
-    }
-    chipsEl.innerHTML = chipHTML;
   }
 
   function renderSessionSummary() {
@@ -304,7 +287,7 @@ function createChordSpellingMode() {
       currentItem = parseItem(itemId);
       enteredTones = [];
       const prompt = container.querySelector('.quiz-prompt');
-      prompt.textContent = displayNote(currentItem.rootName) + currentItem.chordType.symbol + ' = ?';
+      prompt.textContent = displayNote(currentItem.rootName) + currentItem.chordType.symbol;
       renderSlots();
     },
 

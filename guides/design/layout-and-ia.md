@@ -154,8 +154,8 @@ compete for attention.
 - Configuration toggles (string selection, group selection, naturals-only)
 - Recall/Speed toggle
 - Recalibrate button
-- Settings gear (use `visibility: hidden` so it reserves space and the
-  top bar height stays constant)
+- Mode top bar (back button + title)
+- Mode tabs
 
 ---
 

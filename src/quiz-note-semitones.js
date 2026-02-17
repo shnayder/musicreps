@@ -123,12 +123,12 @@ function createNoteSemitonesMode() {
       currentAccidentalChoice = pickRandomAccidental(currentItem.note.displayName);
       if (currentItem.dir === 'fwd') {
         // Show note, answer is number 0-11
-        prompt.textContent = displayNote(currentAccidentalChoice) + ' = ?';
+        prompt.textContent = displayNote(currentAccidentalChoice);
         noteButtons.classList.add('answer-group-hidden');
         numButtons.classList.remove('answer-group-hidden');
       } else {
         // Show number, answer is note
-        prompt.textContent = currentItem.note.num + ' = ?';
+        prompt.textContent = String(currentItem.note.num);
         noteButtons.classList.remove('answer-group-hidden');
         numButtons.classList.add('answer-group-hidden');
       }

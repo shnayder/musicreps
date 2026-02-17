@@ -22,6 +22,7 @@ export function initialEngineState() {
     roundAnswered: 0,
     roundCorrect: 0,
     roundTimerExpired: false,
+    roundResponseTimes: [],
 
     // Progress tracking
     masteredCount: 0,
@@ -62,6 +63,7 @@ export function engineStart(state) {
     roundAnswered: 0,
     roundCorrect: 0,
     roundTimerExpired: false,
+    roundResponseTimes: [],
   };
 }
 
@@ -145,6 +147,7 @@ export function engineContinueRound(state) {
     roundAnswered: 0,
     roundCorrect: 0,
     roundTimerExpired: false,
+    roundResponseTimes: [],
   };
 }
 

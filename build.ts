@@ -69,35 +69,70 @@ const html = `<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <!-- Navigation -->
-  <div class="nav-overlay"></div>
-  <div class="nav-drawer" id="nav-drawer">
-    <div class="nav-group-label">Fretboard</div>
-    <button data-mode="fretboard">Guitar Fretboard</button>
-    <button data-mode="ukulele">Ukulele Fretboard</button>
-    <button data-mode="speedTap">Speed Tap</button>
-    <div class="nav-group-label">Theory Lookup</div>
-    <button data-mode="noteSemitones">Note \u2194 Semitones</button>
-    <button data-mode="intervalSemitones">Interval \u2194 Semitones</button>
-    <div class="nav-group-label">Calculation</div>
-    <button data-mode="semitoneMath">Semitone Math</button>
-    <button data-mode="intervalMath">Interval Math</button>
-    <div class="nav-group-label">Keys &amp; Chords</div>
-    <button data-mode="keySignatures">Key Signatures</button>
-    <button data-mode="scaleDegrees">Scale Degrees</button>
-    <button data-mode="diatonicChords">Diatonic Chords</button>
-    <button data-mode="chordSpelling">Chord Spelling</button>
-  </div>
-
-  <div class="top-bar">
-    <button class="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-drawer">\u2630</button>
-    <h1 id="mode-title">Guitar Fretboard</h1>
-    <div class="version">v4.9</div>
-    <button class="gear-btn" type="button" aria-label="Settings">\u2699</button>
+  <!-- Home screen -->
+  <div class="home-screen" id="home-screen">
+    <div class="home-header">
+      <h1 class="home-title">Fretboard Trainer</h1>
+    </div>
+    <div class="home-modes">
+      <div class="home-group-label">Fretboard</div>
+      <button data-mode="fretboard" class="home-mode-btn">
+        <span class="home-mode-name">Guitar Fretboard</span>
+        <span class="home-mode-desc">Name notes on the guitar neck</span>
+      </button>
+      <button data-mode="ukulele" class="home-mode-btn">
+        <span class="home-mode-name">Ukulele Fretboard</span>
+        <span class="home-mode-desc">Name notes on the ukulele</span>
+      </button>
+      <button data-mode="speedTap" class="home-mode-btn">
+        <span class="home-mode-name">Speed Tap</span>
+        <span class="home-mode-desc">Find all positions of a note</span>
+      </button>
+      <div class="home-group-label">Theory Lookup</div>
+      <button data-mode="noteSemitones" class="home-mode-btn">
+        <span class="home-mode-name">Note \u2194 Semitones</span>
+        <span class="home-mode-desc">Convert between notes and semitone numbers</span>
+      </button>
+      <button data-mode="intervalSemitones" class="home-mode-btn">
+        <span class="home-mode-name">Interval \u2194 Semitones</span>
+        <span class="home-mode-desc">Convert between intervals and semitone counts</span>
+      </button>
+      <div class="home-group-label">Calculation</div>
+      <button data-mode="semitoneMath" class="home-mode-btn">
+        <span class="home-mode-name">Semitone Math</span>
+        <span class="home-mode-desc">Add or subtract semitones from a note</span>
+      </button>
+      <button data-mode="intervalMath" class="home-mode-btn">
+        <span class="home-mode-name">Interval Math</span>
+        <span class="home-mode-desc">Apply intervals up or down from a note</span>
+      </button>
+      <div class="home-group-label">Keys &amp; Chords</div>
+      <button data-mode="keySignatures" class="home-mode-btn">
+        <span class="home-mode-name">Key Signatures</span>
+        <span class="home-mode-desc">Match keys to their sharps and flats</span>
+      </button>
+      <button data-mode="scaleDegrees" class="home-mode-btn">
+        <span class="home-mode-name">Scale Degrees</span>
+        <span class="home-mode-desc">Name notes by scale degree in any key</span>
+      </button>
+      <button data-mode="diatonicChords" class="home-mode-btn">
+        <span class="home-mode-name">Diatonic Chords</span>
+        <span class="home-mode-desc">Identify chords built on each scale degree</span>
+      </button>
+      <button data-mode="chordSpelling" class="home-mode-btn">
+        <span class="home-mode-name">Chord Spelling</span>
+        <span class="home-mode-desc">Spell out the notes in any chord</span>
+      </button>
+    </div>
+    <div class="home-footer">
+      <button class="home-settings-btn" type="button">Settings</button>
+      <span class="version">v5.0</span>
+    </div>
   </div>
 
   <!-- Guitar Fretboard mode -->
 ${modeScreen("fretboard", {
+  modeName: 'Guitar Fretboard',
   idleHTML: fretboardIdleHTML({ stringNames: ['e', 'B', 'G', 'D', 'A', 'E'], defaultString: 5, id: 'fretboard', fretboardSVG: fretboardSVG({ stringCount: 6, fretCount: 13, fretMarkers: [3, 5, 7, 9, 12] }) }),
   quizAreaContent: `${fretboardSVG({ stringCount: 6, fretCount: 13, fretMarkers: [3, 5, 7, 9, 12] })}
       ${pianoNoteButtons()}`,
@@ -105,6 +140,7 @@ ${modeScreen("fretboard", {
 
   <!-- Ukulele Fretboard mode -->
 ${modeScreen("ukulele", {
+  modeName: 'Ukulele Fretboard',
   idleHTML: fretboardIdleHTML({ stringNames: ['A', 'E', 'C', 'G'], defaultString: 2, id: 'ukulele', fretboardSVG: fretboardSVG({ stringCount: 4, fretCount: 13, fretMarkers: [3, 5, 7, 10, 12] }) }),
   quizAreaContent: `${fretboardSVG({ stringCount: 4, fretCount: 13, fretMarkers: [3, 5, 7, 10, 12] })}
       ${pianoNoteButtons()}`,
@@ -112,6 +148,7 @@ ${modeScreen("ukulele", {
 
   <!-- Speed Tap mode -->
 ${modeScreen("speedTap", {
+  modeName: 'Speed Tap',
   idleHTML: tabbedIdleHTML({ practiceScope: `<label class="setting-group">
             <input type="checkbox" id="speed-tap-naturals-only" checked>
             Natural only
@@ -125,6 +162,7 @@ ${modeScreen("speedTap", {
 
   <!-- Note Semitones mode -->
 ${modeScreen("noteSemitones", {
+  modeName: 'Note \u2194 Semitones',
   idleHTML: tabbedIdleHTML({}),
   quizAreaContent: `${noteAnswerButtons()}
       ${numberButtons(0, 11)}`,
@@ -132,6 +170,7 @@ ${modeScreen("noteSemitones", {
 
   <!-- Interval Semitones mode -->
 ${modeScreen("intervalSemitones", {
+  modeName: 'Interval \u2194 Semitones',
   idleHTML: tabbedIdleHTML({}),
   quizAreaContent: `${intervalAnswerButtons()}
       ${numberButtons(1, 12)}`,
@@ -139,18 +178,21 @@ ${modeScreen("intervalSemitones", {
 
   <!-- Semitone Math mode -->
 ${modeScreen("semitoneMath", {
+  modeName: 'Semitone Math',
   idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `${noteAnswerButtons()}`,
 })}
 
   <!-- Interval Math mode -->
 ${modeScreen("intervalMath", {
+  modeName: 'Interval Math',
   idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `${noteAnswerButtons()}`,
 })}
 
   <!-- Key Signatures mode -->
 ${modeScreen("keySignatures", {
+  modeName: 'Key Signatures',
   idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `${keysigAnswerButtons()}
       ${noteAnswerButtons({ hidden: true })}`,
@@ -158,6 +200,7 @@ ${modeScreen("keySignatures", {
 
   <!-- Scale Degrees mode -->
 ${modeScreen("scaleDegrees", {
+  modeName: 'Scale Degrees',
   idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `${noteAnswerButtons()}
       ${degreeAnswerButtons({ hidden: true })}`,
@@ -165,6 +208,7 @@ ${modeScreen("scaleDegrees", {
 
   <!-- Diatonic Chords mode -->
 ${modeScreen("diatonicChords", {
+  modeName: 'Diatonic Chords',
   idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `${noteAnswerButtons()}
       ${numeralAnswerButtons({ hidden: true })}`,
@@ -172,6 +216,7 @@ ${modeScreen("diatonicChords", {
 
   <!-- Chord Spelling mode -->
 ${modeScreen("chordSpelling", {
+  modeName: 'Chord Spelling',
   idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
   quizAreaContent: `<div class="chord-slots"></div>
       ${noteAnswerButtons()}`,

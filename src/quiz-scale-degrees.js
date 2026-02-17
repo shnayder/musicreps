@@ -145,7 +145,6 @@ function createScaleDegreesMode() {
     var statusDetail = container.querySelector('.practice-status-detail');
     var recText = container.querySelector('.practice-rec-text');
     var recBtn = container.querySelector('.practice-rec-btn');
-    var chipsEl = container.querySelector('.practice-group-chips');
     if (!statusLabel) return;
 
     var items = mode.getEnabledItems();
@@ -189,22 +188,6 @@ function createScaleDegreesMode() {
       recBtn.classList.add('hidden');
     }
 
-    var chipHTML = '';
-    for (var g = 0; g < DEGREE_GROUPS.length; g++) {
-      var gItems = getItemIdsForGroup(g);
-      var sum = 0, count = 0;
-      for (var gi = 0; gi < gItems.length; gi++) {
-        var ga = engine.selector.getAutomaticity(gItems[gi]);
-        if (ga !== null) { sum += ga; count++; }
-      }
-      var avg = count > 0 ? sum / count : null;
-      var color = getAutomaticityColor(avg);
-      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
-      chipHTML += '<div class="string-chip" style="background:' + color;
-      if (textColor) chipHTML += ';color:' + textColor;
-      chipHTML += '">' + DEGREE_GROUPS[g].label + '</div>';
-    }
-    chipsEl.innerHTML = chipHTML;
   }
 
   function renderSessionSummary() {
@@ -262,11 +245,11 @@ function createScaleDegreesMode() {
       const degreeButtons = container.querySelector('.answer-buttons-degrees');
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' + displayNote(currentItem.key.root) + ' major = ?';
+        prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' + displayNote(currentItem.key.root) + ' major';
         noteButtons.classList.remove('answer-group-hidden');
         degreeButtons.classList.add('answer-group-hidden');
       } else {
-        prompt.textContent = displayNote(currentItem.key.root) + ' major: ' + displayNote(currentItem.noteName) + ' = ?';
+        prompt.textContent = displayNote(currentItem.key.root) + ' major: ' + displayNote(currentItem.noteName);
         noteButtons.classList.add('answer-group-hidden');
         degreeButtons.classList.remove('answer-group-hidden');
       }

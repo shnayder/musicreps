@@ -144,7 +144,6 @@ function createDiatonicChordsMode() {
     var statusDetail = container.querySelector('.practice-status-detail');
     var recText = container.querySelector('.practice-rec-text');
     var recBtn = container.querySelector('.practice-rec-btn');
-    var chipsEl = container.querySelector('.practice-group-chips');
     if (!statusLabel) return;
 
     var items = mode.getEnabledItems();
@@ -188,22 +187,6 @@ function createDiatonicChordsMode() {
       recBtn.classList.add('hidden');
     }
 
-    var chipHTML = '';
-    for (var g = 0; g < CHORD_GROUPS.length; g++) {
-      var gItems = getItemIdsForGroup(g);
-      var sum = 0, count = 0;
-      for (var gi = 0; gi < gItems.length; gi++) {
-        var ga = engine.selector.getAutomaticity(gItems[gi]);
-        if (ga !== null) { sum += ga; count++; }
-      }
-      var avg = count > 0 ? sum / count : null;
-      var color = getAutomaticityColor(avg);
-      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
-      chipHTML += '<div class="string-chip" style="background:' + color;
-      if (textColor) chipHTML += ';color:' + textColor;
-      chipHTML += '">' + CHORD_GROUPS[g].label + '</div>';
-    }
-    chipsEl.innerHTML = chipHTML;
   }
 
   function renderSessionSummary() {
@@ -261,12 +244,12 @@ function createDiatonicChordsMode() {
       const numeralButtons = container.querySelector('.answer-buttons-numerals');
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = currentItem.chord.numeral + ' in ' + displayNote(currentItem.key.root) + ' major = ?';
+        prompt.textContent = currentItem.chord.numeral + ' in ' + displayNote(currentItem.key.root) + ' major';
         noteButtons.classList.remove('answer-group-hidden');
         numeralButtons.classList.add('answer-group-hidden');
       } else {
         const chordName = displayNote(currentItem.rootNote) + currentItem.chord.qualityLabel;
-        prompt.textContent = chordName + ' in ' + displayNote(currentItem.key.root) + ' major = ?';
+        prompt.textContent = chordName + ' in ' + displayNote(currentItem.key.root) + ' major';
         noteButtons.classList.add('answer-group-hidden');
         numeralButtons.classList.remove('answer-group-hidden');
       }

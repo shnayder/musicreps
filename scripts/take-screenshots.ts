@@ -88,14 +88,15 @@ async function main() {
     await page.reload();
     await page.waitForLoadState('networkidle');
 
-    // Helper: switch to a mode via hamburger menu
+    // Helper: switch to a mode via home screen
     async function switchToMode(modeId: string) {
-      await page.click('.hamburger');
-      await page.waitForSelector('.nav-drawer.open');
+      // Go home first (click back button if in a mode)
+      const backBtn = await page.$('.mode-back-btn');
+      if (backBtn) {
+        await page.click('.mode-back-btn');
+        await page.waitForTimeout(200);
+      }
       await page.click(`[data-mode="${modeId}"]`);
-      // Wait for drawer to close
-      await page.waitForSelector('.nav-drawer.open', { state: 'hidden', timeout: 3000 })
-        .catch(() => {}); // drawer might already be closed if same mode
       await page.waitForTimeout(300); // settle animations
     }
 

@@ -136,7 +136,6 @@ function createKeySignaturesMode() {
     var statusDetail = container.querySelector('.practice-status-detail');
     var recText = container.querySelector('.practice-rec-text');
     var recBtn = container.querySelector('.practice-rec-btn');
-    var chipsEl = container.querySelector('.practice-group-chips');
     if (!statusLabel) return;
 
     var items = mode.getEnabledItems();
@@ -180,22 +179,6 @@ function createKeySignaturesMode() {
       recBtn.classList.add('hidden');
     }
 
-    var chipHTML = '';
-    for (var g = 0; g < KEY_GROUPS.length; g++) {
-      var gItems = getItemIdsForGroup(g);
-      var sum = 0, count = 0;
-      for (var gi = 0; gi < gItems.length; gi++) {
-        var ga = engine.selector.getAutomaticity(gItems[gi]);
-        if (ga !== null) { sum += ga; count++; }
-      }
-      var avg = count > 0 ? sum / count : null;
-      var color = getAutomaticityColor(avg);
-      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
-      chipHTML += '<div class="string-chip" style="background:' + color;
-      if (textColor) chipHTML += ';color:' + textColor;
-      chipHTML += '">' + KEY_GROUPS[g].label + '</div>';
-    }
-    chipsEl.innerHTML = chipHTML;
   }
 
   function renderSessionSummary() {
@@ -260,12 +243,12 @@ function createKeySignaturesMode() {
       const noteButtons = container.querySelector('.answer-buttons-notes');
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = displayNote(currentItem.key.root) + ' major = ?';
+        prompt.textContent = displayNote(currentItem.key.root) + ' major';
         sigButtons.classList.remove('answer-group-hidden');
         noteButtons.classList.add('answer-group-hidden');
       } else {
         const label = keySignatureLabel(currentItem.key);
-        prompt.textContent = label + ' major = ?';
+        prompt.textContent = label + ' major';
         sigButtons.classList.add('answer-group-hidden');
         noteButtons.classList.remove('answer-group-hidden');
       }

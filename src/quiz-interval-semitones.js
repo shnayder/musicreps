@@ -120,12 +120,12 @@ function createIntervalSemitonesMode() {
 
       if (currentItem.dir === 'fwd') {
         // Show interval name, answer is number 1-12
-        prompt.textContent = currentItem.interval.name + ' = ?';
+        prompt.textContent = currentItem.interval.name;
         intervalButtons.classList.add('answer-group-hidden');
         numButtons.classList.remove('answer-group-hidden');
       } else {
         // Show number, answer is interval
-        prompt.textContent = currentItem.interval.num + ' = ?';
+        prompt.textContent = String(currentItem.interval.num);
         intervalButtons.classList.remove('answer-group-hidden');
         numButtons.classList.add('answer-group-hidden');
       }

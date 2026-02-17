@@ -571,6 +571,7 @@ export function createQuizEngine(mode, container) {
   let state = initialEngineState();
   let roundTimerInterval = null;
   let roundTimerStart = null;
+  let autoAdvanceTimer = null;
 
   // DOM references (scoped to container)
   const els = {
@@ -580,15 +581,16 @@ export function createQuizEngine(mode, container) {
     stats: container.querySelector('.stats'),
     quizArea: container.querySelector('.quiz-area'),
     quizPrompt: container.querySelector('.quiz-prompt'),
-    quizHeaderTitle: container.querySelector('.quiz-header-title'),
     masteryMessage: container.querySelector('.mastery-message'),
     recalibrateBtn: container.querySelector('.recalibrate-btn'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
-    roundTimerEl: container.querySelector('.round-timer'),
-    roundAnswerCount: container.querySelector('.round-answer-count'),
+    countdownFill: container.querySelector('.quiz-countdown-fill'),
+    countdownBar: container.querySelector('.quiz-countdown-bar'),
+    quizInfoContext: container.querySelector('.quiz-info-context'),
+    quizInfoTime: container.querySelector('.quiz-info-time'),
+    quizInfoCount: container.querySelector('.quiz-info-count'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
-    practicingLabel: container.querySelector('.practicing-label'),
     roundCompleteEl: container.querySelector('.round-complete'),
   };
 
@@ -695,10 +697,6 @@ export function createQuizEngine(mode, container) {
     container.classList.remove('phase-idle', 'phase-active', 'phase-calibration', 'phase-round-complete');
     container.classList.add(phaseClass);
 
-    // Hide settings gear during active quiz/calibration
-    var gearBtn = document.querySelector('.gear-btn');
-    if (gearBtn) gearBtn.classList.toggle('hidden', phaseClass !== 'phase-idle');
-
     return { inCalibration: inCalibration, phaseClass: phaseClass };
   }
 
@@ -723,16 +721,6 @@ export function createQuizEngine(mode, container) {
   }
 
   function renderHeader(inCalibration) {
-    var isActive = state.phase === 'active';
-    if (els.quizHeaderTitle) {
-      if (inCalibration) {
-        els.quizHeaderTitle.textContent = 'Speed Check';
-      } else if (isActive || state.phase === 'round-complete') {
-        els.quizHeaderTitle.textContent = 'Round ' + state.roundNumber;
-      } else {
-        els.quizHeaderTitle.textContent = '';
-      }
-    }
     if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
   }
 
@@ -770,9 +758,15 @@ export function createQuizEngine(mode, container) {
   }
 
   function renderSessionStats() {
-    if (els.roundAnswerCount && state.phase === 'active') {
-      var count = state.roundAnswered;
-      els.roundAnswerCount.textContent = count + (count === 1 ? ' answer' : ' answers');
+    if (state.phase === 'active') {
+      if (els.quizInfoContext) {
+        var label = mode.getPracticingLabel ? mode.getPracticingLabel() : '';
+        els.quizInfoContext.textContent = label;
+      }
+      if (els.quizInfoCount) {
+        var count = state.roundAnswered;
+        els.quizInfoCount.textContent = count + (count === 1 ? ' answer' : ' answers');
+      }
     }
   }
 
@@ -790,13 +784,28 @@ export function createQuizEngine(mode, container) {
 
   function renderRoundComplete() {
     if (els.roundCompleteEl && state.phase === 'round-complete') {
-      var pct = state.roundAnswered > 0
-        ? Math.round((state.roundCorrect / state.roundAnswered) * 100)
-        : 0;
-      els.roundCompleteEl.querySelector('.round-complete-count').textContent =
-        state.roundAnswered + (state.roundAnswered === 1 ? ' answer' : ' answers');
-      els.roundCompleteEl.querySelector('.round-complete-correct').textContent =
-        state.roundCorrect + ' correct (' + pct + '%)';
+      var heading = els.roundCompleteEl.querySelector('.round-complete-heading');
+      if (heading) heading.textContent = 'Round ' + state.roundNumber + ' complete';
+
+      var correctEl = els.roundCompleteEl.querySelector('.round-stat-correct');
+      if (correctEl) correctEl.textContent = state.roundCorrect + ' / ' + state.roundAnswered;
+
+      var medianEl = els.roundCompleteEl.querySelector('.round-stat-median');
+      if (medianEl) {
+        if (state.roundResponseTimes && state.roundResponseTimes.length > 0) {
+          var sorted = state.roundResponseTimes.slice().sort(function(a, b) { return a - b; });
+          var mid = Math.floor(sorted.length / 2);
+          var median = sorted.length % 2 === 0
+            ? (sorted[mid - 1] + sorted[mid]) / 2
+            : sorted[mid];
+          medianEl.textContent = (median / 1000).toFixed(1) + 's';
+        } else {
+          medianEl.textContent = '\u2014';
+        }
+      }
+
+      var fluentEl = els.roundCompleteEl.querySelector('.round-stat-fluent');
+      if (fluentEl) fluentEl.textContent = state.masteredCount + ' / ' + state.totalEnabledCount;
     }
   }
 
@@ -834,29 +843,29 @@ export function createQuizEngine(mode, container) {
     if (roundTimerInterval) clearInterval(roundTimerInterval);
     roundTimerStart = Date.now();
 
-    // Initialize display immediately so the timer isn't blank before first tick
-    if (els.roundTimerEl) {
-      els.roundTimerEl.textContent = formatRoundTime(ROUND_DURATION_MS);
-      els.roundTimerEl.classList.remove('round-timer-warning');
-    }
+    // Initialize countdown bar and time display
+    if (els.countdownFill) els.countdownFill.style.width = '100%';
+    if (els.countdownBar) els.countdownBar.classList.remove('round-timer-warning');
+    if (els.quizInfoTime) els.quizInfoTime.textContent = formatRoundTime(ROUND_DURATION_MS);
 
     roundTimerInterval = setInterval(() => {
       const elapsed = Date.now() - roundTimerStart;
       const remaining = ROUND_DURATION_MS - elapsed;
+      const pct = Math.max(0, (remaining / ROUND_DURATION_MS) * 100);
 
-      if (els.roundTimerEl) {
-        els.roundTimerEl.textContent = formatRoundTime(remaining);
-        // Turn red in last 10 seconds
-        els.roundTimerEl.classList.toggle('round-timer-warning', remaining <= 10000 && remaining > 0);
+      if (els.countdownFill) els.countdownFill.style.width = pct + '%';
+      if (els.quizInfoTime) els.quizInfoTime.textContent = formatRoundTime(remaining);
+      // Turn red in last 10 seconds
+      if (els.countdownBar) {
+        els.countdownBar.classList.toggle('round-timer-warning', remaining <= 10000 && remaining > 0);
       }
 
       if (remaining <= 0) {
         clearInterval(roundTimerInterval);
         roundTimerInterval = null;
-        if (els.roundTimerEl) {
-          els.roundTimerEl.textContent = '0:00';
-          els.roundTimerEl.classList.remove('round-timer-warning');
-        }
+        if (els.countdownFill) els.countdownFill.style.width = '0%';
+        if (els.quizInfoTime) els.quizInfoTime.textContent = '0:00';
+        if (els.countdownBar) els.countdownBar.classList.remove('round-timer-warning');
         handleRoundTimerExpiry();
       }
     }, 200);
@@ -868,10 +877,9 @@ export function createQuizEngine(mode, container) {
       roundTimerInterval = null;
     }
     roundTimerStart = null;
-    if (els.roundTimerEl) {
-      els.roundTimerEl.textContent = '';
-      els.roundTimerEl.classList.remove('round-timer-warning');
-    }
+    if (els.countdownFill) els.countdownFill.style.width = '100%';
+    if (els.countdownBar) els.countdownBar.classList.remove('round-timer-warning');
+    if (els.quizInfoTime) els.quizInfoTime.textContent = '';
   }
 
   /**
@@ -1029,6 +1037,8 @@ export function createQuizEngine(mode, container) {
   // --- Engine lifecycle ---
 
   function nextQuestion() {
+    if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; }
+
     // If round timer expired, transition to round-complete instead
     if (state.roundTimerExpired) {
       transitionToRoundComplete();
@@ -1054,6 +1064,9 @@ export function createQuizEngine(mode, container) {
 
     state = engineSubmitAnswer(state, result.correct, result.correctAnswer);
 
+    // Track response time for median calculation at round end
+    state = { ...state, roundResponseTimes: [...state.roundResponseTimes, responseTime] };
+
     // Check if all enabled items are mastered
     const allMastered = selector.checkAllAutomatic(mode.getEnabledItems());
     state = engineUpdateMasteryAfterAnswer(state, allMastered);
@@ -1074,6 +1087,11 @@ export function createQuizEngine(mode, container) {
       setTimeout(() => {
         if (state.phase === 'active') transitionToRoundComplete();
       }, 600);
+    } else {
+      // Auto-advance after 1 second
+      autoAdvanceTimer = setTimeout(() => {
+        if (state.phase === 'active' && state.answered) nextQuestion();
+      }, 1000);
     }
   }
 
@@ -1082,12 +1100,6 @@ export function createQuizEngine(mode, container) {
     // Call onStart first so modes can tear down their idle UI (e.g. heatmap)
     // before the engine renders the quiz UI state.
     if (mode.onStart) mode.onStart();
-
-    // Set practicing label (e.g. "Practicing E, A strings")
-    if (els.practicingLabel) {
-      const label = mode.getPracticingLabel ? mode.getPracticingLabel() : '';
-      els.practicingLabel.textContent = label ? 'Practicing ' + label : '';
-    }
 
     // Compute initial progress
     const progress = computeProgress();
@@ -1121,12 +1133,12 @@ export function createQuizEngine(mode, container) {
   }
 
   function stop() {
+    if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; }
     if (calibrationCleanup) {
       calibrationCleanup();
       calibrationCleanup = null;
     }
     stopRoundTimer();
-    if (els.practicingLabel) els.practicingLabel.textContent = '';
     state = engineStop(state);
     render();
     if (mode.onStop) mode.onStop();
@@ -1142,6 +1154,7 @@ export function createQuizEngine(mode, container) {
         break;
       case 'next':
         e.preventDefault();
+        if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; }
         nextQuestion();
         break;
       case 'continue':
@@ -1162,6 +1175,7 @@ export function createQuizEngine(mode, container) {
     if (state.phase === 'round-complete') return;
     if (state.phase !== 'active' || !state.answered) return;
     if (e.target.closest('.answer-btn, .note-btn, .string-toggle')) return;
+    if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; }
     nextQuestion();
   }
 

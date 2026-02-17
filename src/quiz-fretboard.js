@@ -187,22 +187,11 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Practice summary rendering ---
 
-  function computeStringAvgAutomaticity(stringIndex) {
-    const items = fb.getItemIdsForString(stringIndex, naturalsOnly);
-    var sum = 0, count = 0;
-    for (var i = 0; i < items.length; i++) {
-      var auto = engine.selector.getAutomaticity(items[i]);
-      if (auto !== null) { sum += auto; count++; }
-    }
-    return count > 0 ? sum / count : null;
-  }
-
   function renderPracticeSummary() {
     var statusLabel = container.querySelector('.practice-status-label');
     var statusDetail = container.querySelector('.practice-status-detail');
     var recText = container.querySelector('.practice-rec-text');
     var recBtn = container.querySelector('.practice-rec-btn');
-    var chipsEl = container.querySelector('.practice-group-chips');
     if (!statusLabel) return;
 
     // Overall stats
@@ -254,18 +243,6 @@ function createFrettedInstrumentMode(instrument) {
       recBtn.classList.add('hidden');
     }
 
-    // String chips
-    var chipHTML = '';
-    for (var s = 0; s < allStrings.length; s++) {
-      var avg = computeStringAvgAutomaticity(s);
-      var color = getAutomaticityColor(avg);
-      var textColor = heatmapNeedsLightText(color) ? 'white' : '';
-      var name = displayNote(instrument.stringNames[s]);
-      chipHTML += '<div class="string-chip" style="background:' + color;
-      if (textColor) chipHTML += ';color:' + textColor;
-      chipHTML += '">' + name + '</div>';
-    }
-    chipsEl.innerHTML = chipHTML;
   }
 
   // --- Session summary ---

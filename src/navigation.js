@@ -1,40 +1,37 @@
-// Navigation: hamburger menu and mode switching.
+// Navigation: home screen and mode switching.
 // Persists last-used mode in localStorage.
 //
-// Depends on DOM: .hamburger, .nav-drawer, .mode-screen, [data-mode]
+// Depends on DOM: .home-screen, .home-mode-btn, .mode-screen, .mode-back-btn
 
 function createNavigation() {
   const LAST_MODE_KEY = 'fretboard_lastMode';
   const modes = {}; // id -> { init, activate, deactivate, name }
   let currentModeId = null;
 
-  const hamburger = document.querySelector('.hamburger');
-  const drawer = document.querySelector('.nav-drawer');
-  const overlay = document.querySelector('.nav-overlay');
-  const modeTitle = document.getElementById('mode-title');
-
-  function closeDrawer() {
-    if (drawer) drawer.classList.remove('open');
-    if (overlay) overlay.classList.remove('open');
-    if (hamburger) hamburger.setAttribute('aria-expanded', 'false');
-  }
-
-  function openDrawer() {
-    if (drawer) drawer.classList.add('open');
-    if (overlay) overlay.classList.add('open');
-    if (hamburger) hamburger.setAttribute('aria-expanded', 'true');
-  }
+  const homeScreen = document.getElementById('home-screen');
 
   function registerMode(id, modeController) {
     modes[id] = modeController;
   }
 
+  function navigateHome() {
+    // Stop quiz if active in current mode
+    if (currentModeId && modes[currentModeId]) {
+      modes[currentModeId].deactivate();
+      const currentScreen = document.getElementById('mode-' + currentModeId);
+      if (currentScreen) currentScreen.classList.remove('mode-active');
+    }
+    currentModeId = null;
+
+    // Show home screen
+    if (homeScreen) homeScreen.classList.remove('hidden');
+  }
+
   function switchTo(modeId) {
     if (!modes[modeId]) return;
-    if (currentModeId === modeId) {
-      closeDrawer();
-      return;
-    }
+
+    // Hide home screen
+    if (homeScreen) homeScreen.classList.add('hidden');
 
     // Deactivate current mode
     if (currentModeId && modes[currentModeId]) {
@@ -49,55 +46,40 @@ function createNavigation() {
     if (newScreen) newScreen.classList.add('mode-active');
     modes[modeId].activate();
 
-    // Update title
-    if (modeTitle) modeTitle.textContent = modes[modeId].name || modeId;
-
-    // Update active state in drawer
-    drawer.querySelectorAll('[data-mode]').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.mode === modeId);
-    });
-
     // Persist
     localStorage.setItem(LAST_MODE_KEY, modeId);
-    closeDrawer();
   }
 
   function init() {
-    // Hamburger toggle
-    if (hamburger) {
-      hamburger.addEventListener('click', () => {
-        if (drawer.classList.contains('open')) {
-          closeDrawer();
-        } else {
-          openDrawer();
-        }
-      });
-    }
-
-    // Overlay click closes drawer
-    if (overlay) {
-      overlay.addEventListener('click', closeDrawer);
-    }
-
-    // Mode buttons in drawer
-    if (drawer) {
-      drawer.querySelectorAll('[data-mode]').forEach(btn => {
-        btn.addEventListener('click', () => {
+    // Home screen mode buttons
+    if (homeScreen) {
+      homeScreen.querySelectorAll('.home-mode-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
           switchTo(btn.dataset.mode);
         });
       });
     }
+
+    // Mode back buttons (one per mode screen)
+    document.querySelectorAll('.mode-back-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        navigateHome();
+      });
+    });
 
     // Initialize all registered modes
     for (const id of Object.keys(modes)) {
       modes[id].init();
     }
 
-    // Switch to last-used mode or default
+    // Switch to last-used mode or show home screen
     const lastMode = localStorage.getItem(LAST_MODE_KEY);
-    const startMode = (lastMode && modes[lastMode]) ? lastMode : Object.keys(modes)[0];
-    if (startMode) switchTo(startMode);
+    if (lastMode && modes[lastMode]) {
+      switchTo(lastMode);
+    } else {
+      navigateHome();
+    }
   }
 
-  return { registerMode, switchTo, init };
+  return { registerMode, switchTo, navigateHome, init };
 }

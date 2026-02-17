@@ -127,9 +127,9 @@
     }
   });
 
-  var gearBtn = document.querySelector('.gear-btn');
-  if (gearBtn) {
-    gearBtn.addEventListener('click', function() {
+  var settingsBtn = document.querySelector('.home-settings-btn');
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', function() {
       settings.open();
     });
   }

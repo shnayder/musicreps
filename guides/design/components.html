@@ -431,7 +431,7 @@
       </div>
       <div class="anno-block">
         inactive: surface bg, border color text &middot; active: --color-toggle-active fill<br>
-        recommended: 2px --color-toggle-recommended glow &middot; 28px &times; 28px
+        recommended: 2px --color-toggle-recommended glow &middot; 36px &times; 36px
       </div>
     </div>
   </div>
@@ -491,7 +491,7 @@
   <div class="showcase">
     <div class="showcase-label">Quiz card (active phase)</div>
     <div class="showcase-body">
-      <div style="background: var(--color-surface); border-radius: 12px; padding: var(--space-5); border: 2px solid var(--color-brand); border-top: 3px solid var(--color-brand); text-align: center; max-width: 400px;">
+      <div style="background: var(--color-surface); border-radius: 12px; padding: var(--space-5); border: 1px solid var(--color-border-lighter); text-align: center; max-width: 400px;">
         <div style="font-size: var(--text-2xl); font-weight: 600; margin-bottom: var(--space-3);">What note?</div>
         <div style="display: flex; justify-content: center; gap: var(--space-3); margin-bottom: var(--space-3);">
           <button class="answer-btn" style="width: 56px;">C</button>
@@ -503,17 +503,17 @@
       </div>
       <div class="anno-block">
         bg: var(--color-surface) &middot; border-radius: 12px &middot; padding: var(--space-5)<br>
-        active border: 2px solid var(--color-brand), 3px top
+        active border: 1px solid var(--color-border-lighter)
       </div>
     </div>
   </div>
 
-  <h3>Practice Summary Card</h3>
-  <p>Status + recommendation above the start button.</p>
+  <h3>Practice Card</h3>
+  <p>Consolidated card: status + recommendation + scope toggles + CTA.</p>
   <div class="showcase">
-    <div class="showcase-label">Practice summary</div>
+    <div class="showcase-label">Practice card</div>
     <div class="showcase-body">
-      <div class="practice-summary" style="max-width: 400px;">
+      <div class="practice-card" style="max-width: 400px;">
         <div class="practice-status">
           <span class="practice-status-label">Consolidating</span>
           <span class="practice-status-detail">Master current strings before adding more</span>
@@ -577,6 +577,35 @@
     </div>
   </div>
 
+  <h3>Round Complete Stats</h3>
+  <p>Three stats shown at end of each round.</p>
+  <div class="showcase">
+    <div class="showcase-label">End-of-round summary</div>
+    <div class="showcase-body">
+      <div style="text-align: center; padding: var(--space-4) 0;">
+        <div style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-4);">Round 1 complete</div>
+        <div style="display: flex; justify-content: center; gap: var(--space-6);">
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-size: var(--text-xl); font-weight: 600;">8 / 12</span>
+            <span style="font-size: var(--text-xs); color: var(--color-text-muted);">correct</span>
+          </div>
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-size: var(--text-xl); font-weight: 600;">1.2s</span>
+            <span style="font-size: var(--text-xs); color: var(--color-text-muted);">median time</span>
+          </div>
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-size: var(--text-xl); font-weight: 600;">5 / 24</span>
+            <span style="font-size: var(--text-xs); color: var(--color-text-muted);">fluent</span>
+          </div>
+        </div>
+      </div>
+      <div class="anno-block">
+        value: --text-xl font-weight 600 &middot; label: --text-xs --color-text-muted<br>
+        layout: flex row, gap --space-6
+      </div>
+    </div>
+  </div>
+
   <!-- ================================================================== -->
   <h2>Progress &amp; Timing</h2>
 
@@ -597,30 +626,25 @@
     </div>
   </div>
 
-  <h3>Session Stats</h3>
+  <h3>Quiz Session Info</h3>
+  <p>Compact info row below the countdown bar during active quiz.</p>
   <div class="showcase">
-    <div class="showcase-label">Question count + timer</div>
+    <div class="showcase-label">Countdown bar + info row</div>
     <div class="showcase-body">
-      <div class="session-stats" style="margin: 0;">
-        <span>Q: 13</span>
-        <span>0:42</span>
+      <div style="max-width: 400px;">
+        <div class="quiz-countdown-bar" style="margin: 0 0 var(--space-2) 0;">
+          <div class="quiz-countdown-fill" style="width: 65%;"></div>
+        </div>
+        <div class="quiz-session-info" style="margin: 0;">
+          <span class="quiz-info-context">e, B strings</span>
+          <span class="quiz-info-time">0:42</span>
+          <span class="quiz-info-count">13 answers</span>
+          <button class="quiz-header-close" style="margin: 0;">&times;</button>
+        </div>
       </div>
       <div class="anno-block">
-        font-size: var(--text-sm) &middot; color: var(--color-text-light)<br>
-        gap: var(--space-6) &middot; tabular-nums
-      </div>
-    </div>
-  </div>
-
-  <h3>Round Timer</h3>
-  <div class="showcase">
-    <div class="showcase-label">Countdown states</div>
-    <div class="showcase-body">
-      <div class="showcase-row">
-        <span class="round-timer">0:47</span>
-        <span class="anno">normal</span>
-        <span class="round-timer round-timer-warning">0:08</span>
-        <span class="anno">warning (&lt; 10s, error color)</span>
+        countdown: 4px height, brand fill depleting over 60s, red in last 10s<br>
+        info row: font-size var(--text-sm), color var(--color-text-muted), tabular-nums
       </div>
     </div>
   </div>
@@ -628,41 +652,46 @@
   <!-- ================================================================== -->
   <h2>Navigation</h2>
 
-  <h3>Top Bar</h3>
+  <h3>Home Screen</h3>
+  <p>Full-screen mode selector. Entry point for the app.</p>
   <div class="showcase">
-    <div class="showcase-label">Header bar</div>
+    <div class="showcase-label">Mode cards with group labels</div>
     <div class="showcase-body" style="padding: 0;">
-      <div class="top-bar" style="margin: 0; position: static;">
-        <button class="hamburger" style="margin: 0;">&#9776;</button>
-        <h1 style="font-size: var(--text-lg);">Guitar Fretboard</h1>
-        <span class="version">v3.42</span>
-        <button class="gear-btn" style="margin: 0;">&#9881;</button>
+      <div style="max-width: 360px; padding: var(--space-4);">
+        <div class="home-group-label">Fretboard</div>
+        <button class="home-mode-btn" style="pointer-events: none;">
+          <span class="home-mode-name">Guitar Fretboard</span>
+          <span class="home-mode-desc">Name notes on the guitar neck</span>
+        </button>
+        <button class="home-mode-btn" style="pointer-events: none;">
+          <span class="home-mode-name">Ukulele Fretboard</span>
+          <span class="home-mode-desc">Name notes on the ukulele</span>
+        </button>
+        <div class="home-group-label">Theory Lookup</div>
+        <button class="home-mode-btn" style="pointer-events: none;">
+          <span class="home-mode-name">Note &harr; Semitones</span>
+          <span class="home-mode-desc">Convert notes to semitone numbers</span>
+        </button>
       </div>
       <div class="anno-block" style="padding: 0.5rem 0.75rem;">
-        bg: var(--color-topbar-bg) &middot; color: var(--color-topbar-text)<br>
-        hamburger + gear: 44px min touch target &middot; version: 0.5 opacity
+        mode buttons: flex column, 1px border, 8px radius<br>
+        group labels: uppercase, --text-xs, letter-spacing 0.05em, --color-text-muted
       </div>
     </div>
   </div>
 
-  <h3>Nav Drawer Items</h3>
+  <h3>Mode Top Bar</h3>
+  <p>Back button + mode title. Hidden during quiz/calibration.</p>
   <div class="showcase">
-    <div class="showcase-label">Drawer item states</div>
+    <div class="showcase-label">Mode header</div>
     <div class="showcase-body" style="padding: 0;">
-      <div style="max-width: 260px; padding: var(--space-3) 0;">
-        <div class="nav-group-label" style="padding-top: var(--space-3);">Fretboard</div>
-        <div style="position: relative;">
-          <button style="display: block; width: 100%; text-align: left; padding: var(--space-4) var(--space-6); border: none; border-left: 3px solid transparent; background: none; font-size: var(--text-base); color: var(--color-text); margin: 0; cursor: pointer;">Guitar Fretboard</button>
-          <button class="active" style="display: block; width: 100%; text-align: left; padding: var(--space-4) var(--space-6); border: none; border-left: 3px solid var(--color-brand); background: var(--color-brand-bg); font-size: var(--text-base); color: var(--color-brand-dark); font-weight: 600; margin: 0; cursor: pointer;">Ukulele Fretboard</button>
-        </div>
-        <div class="nav-group-label">Theory Lookup</div>
-        <div>
-          <button style="display: block; width: 100%; text-align: left; padding: var(--space-4) var(--space-6); border: none; border-left: 3px solid transparent; background: none; font-size: var(--text-base); color: var(--color-text); margin: 0; cursor: pointer;">Note &harr; Semitones</button>
-        </div>
+      <div class="mode-top-bar" style="margin: 0; padding: var(--space-3) var(--space-4);">
+        <button class="mode-back-btn" style="margin: 0;">&larr;</button>
+        <h1 class="mode-title">Guitar Fretboard</h1>
       </div>
       <div class="anno-block" style="padding: 0.5rem 0.75rem;">
-        active: brand-bg + brand-dark text + brand left border + font-weight 600<br>
-        group labels: uppercase, --text-xs, letter-spacing 0.05em
+        back button: 44px touch target, --text-xl &middot; title: --text-lg, font-weight 600<br>
+        hidden during phase-active, phase-calibration, phase-round-complete
       </div>
     </div>
   </div>
@@ -756,11 +785,6 @@
           <div style="width: 46%; height: 12px; background: var(--color-brand); opacity: 0.3; border-radius: 2px;"></div>
         </div>
         <div class="space-track">
-          <span class="space-label">nav-drawer</span>
-          <span class="space-value">260px</span>
-          <div style="width: 40%; height: 12px; background: var(--color-brand); opacity: 0.3; border-radius: 2px;"></div>
-        </div>
-        <div class="space-track">
           <span class="space-label">settings-modal</span>
           <span class="space-value">280px</span>
           <div style="width: 43%; height: 12px; background: var(--color-brand); opacity: 0.3; border-radius: 2px;"></div>
@@ -840,7 +864,7 @@
   <h2>Interaction &amp; Motion</h2>
 
   <h3>Transitions</h3>
-  <p>Color: 0.15s ease. Transform: 0.1s ease. Progress: 0.3s ease. Nav slide: 0.2s ease.</p>
+  <p>Color: 0.15s ease. Transform: 0.1s ease. Progress: 0.3s ease. Countdown: 0.2s linear.</p>
   <div class="showcase">
     <div class="showcase-label">Hover &amp; press (try it)</div>
     <div class="showcase-body">
@@ -1001,8 +1025,8 @@
         { v: '--text-base',usage: 'Body, buttons, nav items' },
         { v: '--text-md',  usage: 'Answer buttons, note buttons' },
         { v: '--text-lg',  usage: 'Mode title, answer count' },
-        { v: '--text-xl',  usage: 'Hamburger, feedback, timer' },
-        { v: '--text-2xl', usage: 'Quiz prompts' },
+        { v: '--text-xl',  usage: 'Back button, feedback, close buttons' },
+        { v: '--text-2xl', usage: 'Home title, quiz prompts' },
       ];
       var el = document.getElementById('type-scale');
       el.innerHTML = tokens.map(function(t) {
@@ -1021,7 +1045,7 @@
       var radii = [
         { r: '3px', label: '3px', usage: 'legend swatch' },
         { r: '4px', label: '4px', usage: 'toggle, heatmap cell, fret number' },
-        { r: '6px', label: '6px', usage: 'chord slot, mastery, hamburger, small btn' },
+        { r: '6px', label: '6px', usage: 'chord slot, mastery, small btn' },
         { r: '8px', label: '8px', usage: 'CTA, answer btn, practice summary, settings' },
         { r: '10px', label: '10px', usage: 'progress bar' },
         { r: '12px', label: '12px', usage: 'quiz card, settings modal' },
@@ -1081,10 +1105,10 @@
     // --- Touch targets ---
     (function() {
       var targets = [
-        { el: '<button class="hamburger" style="margin:0;">&#9776;</button>', label: 'hamburger 44px', size: 44 },
+        { el: '<button class="mode-back-btn" style="margin:0;">&larr;</button>', label: 'back-btn 44px', size: 44 },
         { el: '<button class="note-btn" style="width:56px;margin:0;">C</button>', label: 'note-btn 48px', size: 48 },
         { el: '<button class="answer-btn" style="width:56px;margin:0;">5</button>', label: 'answer-btn 48px', size: 48 },
-        { el: '<button class="string-toggle active" style="margin:0;">E</button>', label: 'toggle 28px', size: 28 },
+        { el: '<button class="string-toggle active" style="margin:0;">E</button>', label: 'toggle 36px', size: 36 },
       ];
       var el = document.getElementById('touch-targets');
       el.innerHTML = targets.map(function(t) {
