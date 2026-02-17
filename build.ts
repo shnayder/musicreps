@@ -2,7 +2,7 @@
 // Node-compatible build script — mirrors the Deno --build path in main.ts.
 // Usage: npx tsx build.ts
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -221,4 +221,17 @@ self.addEventListener('fetch', (event) => {
 mkdirSync(join(__dirname, "docs"), { recursive: true });
 writeFileSync(join(__dirname, "docs/index.html"), html);
 writeFileSync(join(__dirname, "docs/sw.js"), sw);
-console.log("Built to docs/index.html + docs/sw.js");
+
+// Copy design reference pages to docs/design/ so they're accessible from deploys.
+// Rewrite the stylesheet path from ../../src/styles.css to styles.css (co-located copy).
+const designSrc = join(__dirname, "guides/design");
+const designDst = join(__dirname, "docs/design");
+mkdirSync(designDst, { recursive: true });
+writeFileSync(join(designDst, "styles.css"), css);
+for (const file of readdirSync(designSrc).filter(f => f.endsWith(".html"))) {
+  const content = readFileSync(join(designSrc, file), "utf-8")
+    .replace('href="../../src/styles.css"', 'href="styles.css"');
+  writeFileSync(join(designDst, file), content);
+}
+
+console.log("Built to docs/index.html + docs/sw.js + docs/design/");

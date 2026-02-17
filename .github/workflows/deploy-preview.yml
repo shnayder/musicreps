@@ -38,7 +38,7 @@ jobs:
       - name: Stash build output
         run: |
           mkdir -p /tmp/preview-build
-          cp docs/* /tmp/preview-build/ 2>/dev/null || true
+          cp -r docs/* /tmp/preview-build/ 2>/dev/null || true
 
       - name: Deploy to preview directory on main
         run: |
@@ -49,7 +49,7 @@ jobs:
           git checkout main
 
           mkdir -p "docs/preview/${SAFE_NAME}"
-          cp /tmp/preview-build/* "docs/preview/${SAFE_NAME}/"
+          cp -r /tmp/preview-build/* "docs/preview/${SAFE_NAME}/"
 
           # Generate preview index page listing all preview subdirectories
           cd docs/preview
@@ -57,13 +57,19 @@ jobs:
           <!DOCTYPE html>
           <html><head><meta charset="utf-8"><title>Preview Builds</title>
           <style>body{font-family:system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1rem}
-          a{display:block;padding:.5rem 0;font-size:1.1rem}</style></head>
+          a{display:block;padding:.5rem 0;font-size:1.1rem}
+          h2{font-size:1rem;margin-top:1.5rem;color:#666}</style></head>
           <body><h1>Preview Builds</h1><ul>
           INDEXEOF
           for dir in */; do
             [ "$dir" = "*/" ] && continue
             name="${dir%/}"
             echo "<li><a href=\"${name}/\">${name}</a></li>" >> index.html
+            # Add design page links if they exist in the preview
+            if [ -d "${name}/design" ]; then
+              echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/components.html\">${name} — Design System</a></li>" >> index.html
+              echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/colors.html\">${name} — Color System</a></li>" >> index.html
+            fi
           done
           echo "</ul></body></html>" >> index.html
           cd ../..
