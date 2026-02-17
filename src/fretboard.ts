@@ -9,10 +9,10 @@ export const fretPositions = [
 /** Maximum fretCount supported by fretPositions (needs positions[fret+1]). */
 const MAX_FRET_COUNT = fretPositions.length - 1; // 13
 
-/** Generate SVG fret lines (vertical). */
+/** Generate SVG fret lines (vertical). Starts from fret 2; fret 1 (nut) is a separate element. */
 export function fretLines(svgHeight: number = 240): string {
   return fretPositions
-    .slice(1)
+    .slice(2)
     .map(
       (x) =>
         `<line x1="${x}" y1="0" x2="${x}" y2="${svgHeight}" stroke="#333" stroke-width="1"/>`,
@@ -26,6 +26,30 @@ export function stringLines(stringCount: number = 6): string {
     const thickness = 1 + i * 0.5;
     return `<line x1="0" y1="${20 + i * 40}" x2="600" y2="${20 + i * 40}" stroke="#333" stroke-width="${thickness}"/>`;
   }).join("\n      ");
+}
+
+/** Generate SVG inlay dots at standard fret marker positions. */
+export function fretMarkerDots(
+  stringCount: number = 6,
+  markers: number[] = [3, 5, 7, 9, 12],
+  fretCount: number = 13,
+): string {
+  const svgHeight = stringCount * 40;
+  const midY = svgHeight / 2;
+  return markers
+    .filter((fret) => fret < fretCount)
+    .map((fret) => {
+      const cx = (fretPositions[fret] + fretPositions[fret + 1]) / 2;
+      if (fret === 12) {
+        // Double dot — at string 1 and string (n-2) y-positions
+        const y1 = 20 + 1 * 40;
+        const y2 = 20 + (stringCount - 2) * 40;
+        return `<circle class="fret-marker" cx="${cx}" cy="${y1}" r="5"/>`
+          + `<circle class="fret-marker" cx="${cx}" cy="${y2}" r="5"/>`;
+      }
+      return `<circle class="fret-marker" cx="${cx}" cy="${midY}" r="5"/>`;
+    })
+    .join("\n      ");
 }
 
 /** Generate SVG circles and text elements for every note position. */
@@ -46,7 +70,7 @@ export function noteElements(stringCount: number = 6, fretCount: number = 13): s
       data-fret="${fret}"
       cx="${x}"
       cy="${y}"
-      r="14"
+      r="15"
       fill="white"
       stroke="#333"
       stroke-width="1"
@@ -58,7 +82,8 @@ export function noteElements(stringCount: number = 6, fretCount: number = 13): s
       y="${y}"
       text-anchor="middle"
       dominant-baseline="central"
-      font-size="11"
+      font-size="12"
+      font-weight="600"
       fill="#333"
     ></text>`;
     }).join("\n      "),
