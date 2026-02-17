@@ -516,7 +516,7 @@ function buildMoments(): void {
       phase: 'active',
       quizAreaActive: true,
       quizPrompt: 'What note is this?',
-      highlightNotes: [{ s: 5, f: 3, fill: '#FFD700' }],
+      highlightNotes: [{ s: 5, f: 3, fill: 'var(--color-highlight)' }],
       hideAccidentals: true,
       countdown: 72,
       infoContext: 'e, B strings',
@@ -894,23 +894,23 @@ ${m5a}
 ${m5b}
   </div>
 
-  <h2>7. Practice Tab: Consolidating</h2>
+  <h2>6. Practice Tab: Consolidating</h2>
   <p>Idle state with practice card showing consolidation recommendation.</p>
 ${m7}
 
-  <h2>8. Practice Tab: Ready to Expand</h2>
+  <h2>7. Practice Tab: Ready to Expand</h2>
   <p>All current items mastered &mdash; recommendation to add more scope.</p>
 ${m8}
 
-  <h2>9. Home Screen</h2>
+  <h2>8. Home Screen</h2>
   <p>Mode selector with grouped mode buttons and footer.</p>
 ${m9}
 
-  <h2>10. Progress Tab + Heatmap</h2>
+  <h2>9. Progress Tab + Heatmap</h2>
   <p>Progress tab with stats toggle and heatmap table.</p>
 ${m10}
 
-  <h2>11. Countdown Bar States</h2>
+  <h2>10. Countdown Bar States</h2>
   <p>Isolated countdown bar at different fill levels, including warning state.</p>
 ${m11}
 
