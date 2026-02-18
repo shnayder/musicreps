@@ -118,6 +118,127 @@ and commits the output to `docs/preview/<branch-name>/` on main.
   directory when the branch is deleted or PR is closed.
 - **PR comment:** the deploy workflow posts the preview URL on any associated PR.
 
+## iOS App (Capacitor)
+
+The iOS app is a Capacitor wrapper around the same `docs/index.html` build.
+The Xcode project lives in `ios/App/`.
+
+### Prerequisites
+
+- Xcode 16+ with iOS Simulator runtime installed
+- Capacitor deps already in `package.json` — just `npm install` if needed
+
+### Build and run in Simulator
+
+```bash
+# 1. Build web content + copy into Xcode project
+npx tsx build.ts && npx cap copy ios
+
+# 2. Build the iOS app for Simulator
+xcodebuild -project ios/App/App.xcodeproj \
+  -scheme App -configuration Debug \
+  -destination 'platform=iOS Simulator,name=iPhone 16' build
+
+# 3. Boot a simulator (skip if already running)
+xcrun simctl boot "iPhone 16"
+
+# 4. Install the app
+xcrun simctl install booted \
+  ~/Library/Developer/Xcode/DerivedData/App-*/Build/Products/Debug-iphonesimulator/App.app
+
+# 5. Launch the app
+xcrun simctl launch booted com.musicreps.app
+```
+
+Or do it all in one shot:
+
+```bash
+npx tsx build.ts && npx cap copy ios && \
+xcodebuild -project ios/App/App.xcodeproj \
+  -scheme App -configuration Debug \
+  -destination 'platform=iOS Simulator,name=iPhone 16' build && \
+xcrun simctl install booted \
+  ~/Library/Developer/Xcode/DerivedData/App-*/Build/Products/Debug-iphonesimulator/App.app && \
+xcrun simctl launch booted com.musicreps.app
+```
+
+### Opening in Xcode
+
+```bash
+npx cap open ios
+```
+
+This opens the Xcode project where you can run/debug with the play button,
+inspect the view hierarchy, or manage signing for device builds.
+
+### Useful Simulator commands
+
+```bash
+# List available simulators
+xcrun simctl list devices available
+
+# Take a screenshot
+xcrun simctl io booted screenshot /tmp/screenshot.png
+
+# Open a URL in the simulator's browser
+xcrun simctl openurl booted "https://example.com"
+
+# View app logs (useful for JS console.log output)
+xcrun simctl spawn booted log stream --predicate 'process == "App"' --level debug
+
+# Shut down the simulator
+xcrun simctl shutdown booted
+```
+
+### Resetting app state
+
+localStorage persists between launches. To start fresh:
+
+```bash
+# Uninstall and reinstall the app (clears all data)
+xcrun simctl uninstall booted com.musicreps.app
+xcrun simctl install booted \
+  ~/Library/Developer/Xcode/DerivedData/App-*/Build/Products/Debug-iphonesimulator/App.app
+xcrun simctl launch booted com.musicreps.app
+```
+
+Or reset the entire simulator to factory state:
+
+```bash
+xcrun simctl erase booted
+```
+
+### Iterating on changes
+
+After editing JS/CSS/HTML, you only need to rebuild web content and copy it
+into the Xcode project — no native rebuild needed unless you changed Swift
+code:
+
+```bash
+npx tsx build.ts && npx cap copy ios
+```
+
+Then relaunch the app in the Simulator (or kill and reopen it — Capacitor
+loads from local files, so the new content appears on next launch).
+
+If you changed Swift code or Capacitor config, you need a full rebuild:
+
+```bash
+xcodebuild -project ios/App/App.xcodeproj \
+  -scheme App -configuration Debug \
+  -destination 'platform=iOS Simulator,name=iPhone 16' build
+```
+
+### Key paths
+
+| Path | Contents |
+|------|----------|
+| `capacitor.config.ts` | App name, bundle ID, web dir |
+| `ios/App/App/AppDelegate.swift` | Native app lifecycle |
+| `ios/App/App/Info.plist` | iOS app configuration |
+| `ios/App/App/Assets.xcassets/` | App icon and launch images |
+| `ios/App/App/public/` | Web content (copied, gitignored) |
+
 ## Code Review & PR
 
 Every branch that changes code follows these steps before merging:

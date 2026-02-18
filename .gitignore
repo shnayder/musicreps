@@ -2,3 +2,14 @@
 .vscode/
 node_modules/
 screenshots/
+
+# iOS (Capacitor) — generated/copied at build time
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/App/App/config.xml
+ios/App/Pods/
+ios/App/build/
+ios/App/output/
+ios/DerivedData/
+ios/xcuserdata/
+ios/capacitor-cordova-ios-plugins/

@@ -135,7 +135,8 @@
   }
 
   // Register service worker for cache busting on iOS home screen
-  if ('serviceWorker' in navigator) {
+  // Skip in Capacitor — app runs from local files, no SW needed
+  if ('serviceWorker' in navigator && !window.Capacitor) {
     navigator.serviceWorker.register('sw.js');
   }
 })();
