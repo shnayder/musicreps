@@ -588,6 +588,7 @@ export function createQuizEngine(mode, container) {
     countdownBar: container.querySelector('.quiz-countdown-bar'),
     quizInfoContext: container.querySelector('.quiz-info-context'),
     quizInfoTime: container.querySelector('.quiz-info-time'),
+    quizLastQuestion: container.querySelector('.quiz-last-question'),
     quizInfoCount: container.querySelector('.quiz-info-count'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
@@ -907,6 +908,7 @@ export function createQuizEngine(mode, container) {
       els.countdownBar.classList.remove('last-question');
     }
     if (els.quizInfoTime) els.quizInfoTime.textContent = '';
+    if (els.quizLastQuestion) els.quizLastQuestion.textContent = '';
   }
 
   /**
@@ -924,8 +926,8 @@ export function createQuizEngine(mode, container) {
       // User is on the feedback screen — transition now
       transitionToRoundComplete();
     } else {
-      // User is mid-question — signal "last question"
-      if (els.quizInfoTime) els.quizInfoTime.textContent = 'Last question';
+      // User is mid-question — signal "last question" next to the prompt
+      if (els.quizLastQuestion) els.quizLastQuestion.textContent = 'Last question';
       if (els.countdownBar) els.countdownBar.classList.add('last-question');
     }
   }

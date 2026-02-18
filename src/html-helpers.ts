@@ -169,6 +169,17 @@ export function tabbedIdleHTML(config: {
   const practiceScope = config.practiceScope
     ? `\n      <div class="practice-scope">\n        <div class="settings-row">\n          ${config.practiceScope}\n        </div>\n      </div>`
     : '';
+  // When no practiceScope, fold recommendation + mastery into the status zone
+  // to avoid an empty scope zone with double dividers.
+  const recBlock = `<div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>`;
+  const masteryBlock = `<div class="mastery-message">Looks like you've got this!</div>`;
+  const statusExtra = config.practiceScope ? '' : `\n          ${recBlock}\n          ${masteryBlock}`;
+  const scopeZone = config.practiceScope
+    ? `\n        <div class="practice-zone practice-zone-scope">\n          ${recBlock}${practiceScope}\n          ${masteryBlock}\n        </div>`
+    : '';
   return `<div class="mode-tabs">
       <button class="mode-tab active" data-tab="practice">Practice</button>
       <button class="mode-tab" data-tab="progress">Progress</button>
@@ -179,15 +190,8 @@ export function tabbedIdleHTML(config: {
           <div class="practice-status">
             <span class="practice-status-label"></span>
             <span class="practice-status-detail"></span>
-          </div>
-        </div>
-        <div class="practice-zone practice-zone-scope">
-          <div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
-          </div>${practiceScope}
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
+          </div>${statusExtra}
+        </div>${scopeZone}
         <div class="practice-zone practice-zone-action">
           <div class="session-summary-text"></div>
           <button class="start-btn">Start Quiz</button>
@@ -205,6 +209,17 @@ export function tabbedIdleHTML(config: {
     </div>`;
 }
 
+/** Notes toggle HTML (natural / sharps & flats). Reused by fretboard and speed tap. */
+export function notesToggleHTML(): string {
+  return `<div class="toggle-group">
+            <span class="toggle-group-label">Notes</span>
+            <div class="notes-toggles">
+              <button class="notes-toggle active" data-notes="natural">natural</button>
+              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
+            </div>
+          </div>`;
+}
+
 /** Build the tab-based idle content for a fretted instrument mode. */
 export function fretboardIdleHTML(config: {
   stringNames: string[];
@@ -213,15 +228,8 @@ export function fretboardIdleHTML(config: {
   fretboardSVG: string;
 }): string {
   const togglesHTML = stringToggles(config.stringNames, config.defaultString);
-  const notesHTML = `<div class="toggle-group">
-            <span class="toggle-group-label">Notes</span>
-            <div class="notes-toggles">
-              <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="accidentals">accidentals</button>
-            </div>
-          </div>`;
   return tabbedIdleHTML({
-    practiceScope: togglesHTML + '\n          ' + notesHTML,
+    practiceScope: togglesHTML + '\n          ' + notesToggleHTML(),
     progressContent: config.fretboardSVG,
   });
 }
@@ -273,7 +281,10 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       ${opts.quizAreaContent}
       <div class="feedback"></div>
       <div class="time-display"></div>

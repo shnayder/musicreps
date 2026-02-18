@@ -28,14 +28,29 @@ const config = { expansionThreshold: 0.7 };
 // ---------------------------------------------------------------------------
 
 describe("computeRecommendations", () => {
-  it("returns empty recommended and null enabled when no items started", () => {
+  it("recommends first unstarted group on fresh start", () => {
     const sel = mockSelector({
       0: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
       1: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
     });
     const result = computeRecommendations(sel, [0, 1], stubGetItemIds, config, {});
-    assert.equal(result.recommended.size, 0);
-    assert.equal(result.enabled, null);
+    assert.ok(result.recommended.has(0), "should recommend first group");
+    assert.ok(result.enabled!.has(0), "should enable first group");
+    assert.equal(result.expandIndex, 0);
+    assert.equal(result.expandNewCount, 10);
+  });
+
+  it("uses sortUnstarted on fresh start to pick first group", () => {
+    const sel = mockSelector({
+      0: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
+      1: { dueCount: 0, unseenCount: 5, masteredCount: 0, totalCount: 5 },
+    });
+    // Sort by totalCount ascending — should pick index 1 (5 items)
+    const opts = { sortUnstarted: (a: any, b: any) => a.totalCount - b.totalCount };
+    const result = computeRecommendations(sel, [0, 1], stubGetItemIds, config, opts);
+    assert.ok(result.recommended.has(1), "should recommend sorted-first group");
+    assert.equal(result.expandIndex, 1);
+    assert.equal(result.expandNewCount, 5);
   });
 
   // ---------------------------------------------------------------------------

@@ -180,9 +180,6 @@ function createKeySignaturesMode() {
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
       recBtn.classList.remove('hidden');
-    } else if (seen === 0) {
-      recText.textContent = 'Suggestion: start with ' + KEY_GROUPS[0].label;
-      recBtn.classList.remove('hidden');
     } else {
       recText.textContent = '';
       recBtn.classList.add('hidden');

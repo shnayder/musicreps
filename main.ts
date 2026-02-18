@@ -10,6 +10,7 @@ import {
   fretboardSVG,
   tabbedIdleHTML,
   fretboardIdleHTML,
+  notesToggleHTML,
 } from "./src/html-helpers.ts";
 
 // ---------------------------------------------------------------------------
@@ -158,7 +159,7 @@ async function buildHTML(): Promise<string> {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v6.3</span>
+      <span class="version">v6.4</span>
     </div>
   </div>
 
@@ -181,10 +182,7 @@ ${modeScreen("ukulele", {
   <!-- Speed Tap mode -->
 ${modeScreen("speedTap", {
   modeName: 'Speed Tap',
-  idleHTML: tabbedIdleHTML({ practiceScope: `<label class="setting-group">
-            <input type="checkbox" id="speed-tap-naturals-only" checked>
-            Natural only
-          </label>` }),
+  idleHTML: tabbedIdleHTML({ practiceScope: notesToggleHTML() }),
   quizAreaContent: `<div class="speed-tap-status">
         <span class="speed-tap-progress"></span>
       </div>

@@ -379,9 +379,17 @@ consolidation of what's already been started:
    recommend those above the median
 4. **Expansion gate**: only suggest one unstarted group when
    `consolidationRatio >= expansionThreshold` (0.7)
-5. **First launch**: no data → return null (keep persisted selection)
+5. **First launch**: no data → recommend the first unstarted group (respecting
+   `sortUnstarted` if provided) with `enabled` populated so "Use suggestion"
+   works immediately
 
 Config: `expansionThreshold` (default 0.7) in `DEFAULT_CONFIG`.
+
+**Ownership rule**: `computeRecommendations()` owns *all* suggestion logic,
+including the first-launch default. Per-mode `renderPracticeSummary` should
+never special-case "no data yet" — the recommendation result's `expandIndex`
+and `expandNewCount` fields tell the UI what to display. This keeps suggestion
+logic unit-testable in one place instead of scattered across 8 mode files.
 
 ### Distance Group Progression (Math Modes)
 
@@ -453,7 +461,7 @@ to generate a two-tab idle layout:
     .practice-scope                        ← mode-specific config
       .settings-row
         (string toggles, group toggles,
-         naturals-only checkbox, etc.)
+         notes toggle, etc.)
     .practice-start
       .session-summary-text                ← "48 items · 60s"
       .mastery-message                     ← "Looks like you've got this!"
@@ -472,8 +480,9 @@ to generate a two-tab idle layout:
 ### Mode categories
 
 **Fretboard modes** (Guitar, Ukulele): Use `fretboardIdleHTML()` which adds
-string toggles + naturals-only checkbox to `practiceScope`, and a fretboard
-SVG to `progressContent` for the heatmap overlay.
+string toggles + notes toggle (natural / sharps & flats / all) to
+`practiceScope`, and a fretboard SVG to `progressContent` for the heatmap
+overlay.
 
 **Group modes** (Semitone Math, Interval Math, Key Signatures, Scale Degrees,
 Diatonic Chords, Chord Spelling): Pass `DISTANCE_TOGGLES` as `practiceScope`.
@@ -481,12 +490,13 @@ Each mode generates its own group toggle buttons at init time and uses
 `computeRecommendations()` for recommendations.
 
 **Simple modes** (Note Semitones, Interval Semitones): No `practiceScope` —
-all items always enabled. Practice card shows overall status only; no
-recommendation.
+all items always enabled. When `practiceScope` is empty, the recommendation
+and mastery elements fold into the status zone (no separate scope zone is
+emitted), avoiding double dividers.
 
-**Speed Tap**: Passes a naturals-only checkbox as `practiceScope`. The
-fretboard lives in the quiz area (not in idle) and is hidden/shown via
-`.fretboard-hidden` during start/stop.
+**Speed Tap**: Passes a notes toggle (natural / sharps & flats / all) as
+`practiceScope`. The fretboard lives in the quiz area (not in idle) and is
+hidden/shown via `.fretboard-hidden` during start/stop.
 
 ### Quiz phase
 

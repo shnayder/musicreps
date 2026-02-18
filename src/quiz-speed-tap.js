@@ -9,7 +9,8 @@
 function createSpeedTapMode() {
   var container = document.getElementById('mode-speedTap');
 
-  var naturalsOnly = true;
+  var NOTE_FILTER_KEY = 'speedTap_noteFilter';
+  var noteFilter = 'natural'; // 'natural', 'sharps-flats', or 'all'
   var currentNote = null;
   var targetPositions = [];
   var foundPositions = new Set();
@@ -209,7 +210,9 @@ function createSpeedTapMode() {
     storageNamespace: 'speedTap',
 
     getEnabledItems: function() {
-      return naturalsOnly ? NATURAL_NOTES.slice() : NOTES.map(function(n) { return n.name; });
+      if (noteFilter === 'natural') return NATURAL_NOTES.slice();
+      if (noteFilter === 'sharps-flats') return NOTES.filter(function(n) { return !NATURAL_NOTES.includes(n.name); }).map(function(n) { return n.name; });
+      return NOTES.map(function(n) { return n.name; });
     },
 
     getExpectedResponseCount: function(itemId) {
@@ -295,21 +298,52 @@ function createSpeedTapMode() {
     engine.storage.getStats(NOTES[i].name);
   }
 
+  // --- Note filter persistence ---
+
+  function loadNoteFilter() {
+    var saved = localStorage.getItem(NOTE_FILTER_KEY);
+    if (saved && (saved === 'natural' || saved === 'sharps-flats' || saved === 'all')) {
+      noteFilter = saved;
+    }
+    updateNoteToggles();
+  }
+
+  function saveNoteFilter() {
+    try { localStorage.setItem(NOTE_FILTER_KEY, noteFilter); } catch (_) {}
+  }
+
+  function updateNoteToggles() {
+    var naturalBtn = container.querySelector('.notes-toggle[data-notes="natural"]');
+    var accBtn = container.querySelector('.notes-toggle[data-notes="sharps-flats"]');
+    if (naturalBtn) naturalBtn.classList.toggle('active', noteFilter === 'natural' || noteFilter === 'all');
+    if (accBtn) accBtn.classList.toggle('active', noteFilter === 'sharps-flats' || noteFilter === 'all');
+  }
+
   function init() {
+    loadNoteFilter();
+
     // Tab switching
     container.querySelectorAll('.mode-tab').forEach(function(btn) {
       btn.addEventListener('click', function() { switchTab(btn.dataset.tab); });
     });
 
-    var naturalsCheckbox = container.querySelector('#speed-tap-naturals-only');
-    if (naturalsCheckbox) {
-      naturalsCheckbox.addEventListener('change', function(e) {
-        naturalsOnly = e.target.checked;
+    // Notes toggles (natural / sharps & flats)
+    container.querySelectorAll('.notes-toggle').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btn.classList.toggle('active');
+        var anyActive = container.querySelector('.notes-toggle.active');
+        if (!anyActive) btn.classList.add('active');
+        var naturalActive = container.querySelector('.notes-toggle[data-notes="natural"].active');
+        var accActive = container.querySelector('.notes-toggle[data-notes="sharps-flats"].active');
+        if (naturalActive && accActive) noteFilter = 'all';
+        else if (accActive) noteFilter = 'sharps-flats';
+        else noteFilter = 'natural';
+        saveNoteFilter();
         engine.updateIdleMessage();
         renderPracticeSummary();
         renderSessionSummary();
       });
-    }
+    });
 
     container.querySelector('.start-btn').addEventListener('click', function() { engine.start(); });
 

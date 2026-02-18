@@ -19,7 +19,7 @@
  * @returns {{ recommended: Set, enabled: Set|null, consolidateIndices: number[],
  *             consolidateDueCount: number, expandIndex: number|null, expandNewCount: number }}
  *   recommended: indices to highlight with orange borders
- *   enabled: indices to auto-select, or null if no data (first launch)
+ *   enabled: indices to auto-select, or null if no groups exist
  *   consolidateIndices: group indices needing consolidation work
  *   consolidateDueCount: total items needing work in consolidation groups
  *   expandIndex: group index being added for expansion, or null
@@ -33,6 +33,14 @@ export function computeRecommendations(selector, allIndices, getItemIds, config,
   const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
 
   if (started.length === 0) {
+    // Fresh start: recommend the first unstarted group so "Use suggestion" works
+    if (unstarted.length > 0) {
+      const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
+      const first = sorted[0];
+      return { recommended: new Set([first.string]), enabled: new Set([first.string]),
+               consolidateIndices: [], consolidateDueCount: 0,
+               expandIndex: first.string, expandNewCount: first.totalCount };
+    }
     return { recommended: new Set(), enabled: null,
              consolidateIndices: [], consolidateDueCount: 0,
              expandIndex: null, expandNewCount: 0 };

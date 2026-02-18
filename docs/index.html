@@ -715,7 +715,8 @@ button {
   overflow: hidden;
   position: relative;
 }
-.phase-active .progress-bar { display: none; }
+.phase-active .progress-bar,
+.phase-round-complete .progress-bar { display: none; }
 .progress-fill {
   height: 100%;
   background: var(--color-success);
@@ -826,7 +827,7 @@ button {
   background: var(--color-surface-pressed);
 }
 /* Hide quiz prompt, answer buttons, and feedback during round-complete */
-.phase-round-complete .quiz-prompt,
+.phase-round-complete .quiz-prompt-row,
 .phase-round-complete .answer-buttons,
 .phase-round-complete .note-buttons,
 .phase-round-complete .chord-slots,
@@ -907,13 +908,27 @@ button {
 }
 
 /* --- Quiz prompt (text modes) --- */
-.quiz-prompt {
-  font-size: var(--text-2xl);
-  font-weight: 600;
+.quiz-prompt-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-2);
   margin: var(--space-5) 0;
   min-height: 2.5rem;
 }
+.quiz-prompt {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+}
 .quiz-prompt:empty {
+  display: none;
+}
+.quiz-last-question {
+  font-size: var(--text-sm);
+  color: var(--color-error);
+  font-weight: 500;
+}
+.quiz-last-question:empty {
   display: none;
 }
 
@@ -1425,7 +1440,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v6.3</span>
+      <span class="version">v6.4</span>
     </div>
   </div>
 
@@ -1469,7 +1484,7 @@ button {
             <span class="toggle-group-label">Notes</span>
             <div class="notes-toggles">
               <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="accidentals">accidentals</button>
+              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
             </div>
           </div>
         </div>
@@ -1627,7 +1642,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
         <svg class="fretboard" viewBox="0 0 600 226">
@@ -1821,7 +1839,7 @@ button {
             <span class="toggle-group-label">Notes</span>
             <div class="notes-toggles">
               <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="accidentals">accidentals</button>
+              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
             </div>
           </div>
         </div>
@@ -1951,7 +1969,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
         <svg class="fretboard" viewBox="0 0 600 150">
@@ -2104,10 +2125,13 @@ button {
           </div>
       <div class="practice-scope">
         <div class="settings-row">
-          <label class="setting-group">
-            <input type="checkbox" id="speed-tap-naturals-only" checked>
-            Natural only
-          </label>
+          <div class="toggle-group">
+            <span class="toggle-group-label">Notes</span>
+            <div class="notes-toggles">
+              <button class="notes-toggle active" data-notes="natural">natural</button>
+              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
+            </div>
+          </div>
         </div>
       </div>
           <div class="mastery-message">Looks like you've got this!</div>
@@ -2145,7 +2169,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="speed-tap-status">
         <span class="speed-tap-progress"></span>
       </div>
@@ -2317,8 +2344,6 @@ button {
             <span class="practice-status-label"></span>
             <span class="practice-status-detail"></span>
           </div>
-        </div>
-        <div class="practice-zone practice-zone-scope">
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button class="practice-rec-btn">Use suggestion</button>
@@ -2358,7 +2383,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
@@ -2422,8 +2450,6 @@ button {
             <span class="practice-status-label"></span>
             <span class="practice-status-detail"></span>
           </div>
-        </div>
-        <div class="practice-zone practice-zone-scope">
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button class="practice-rec-btn">Use suggestion</button>
@@ -2463,7 +2489,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="answer-buttons answer-buttons-intervals">
         <button class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
         <button class="answer-btn answer-btn-interval" data-interval="M2">M2</button>
@@ -2573,7 +2602,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
@@ -2669,7 +2701,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
@@ -2765,7 +2800,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="answer-buttons answer-buttons-keysig">
         <button class="answer-btn answer-btn-keysig" data-sig="0">0</button>
         <button class="answer-btn answer-btn-keysig" data-sig="1#">1#</button>
@@ -2878,7 +2916,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
@@ -2983,7 +3024,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
@@ -3088,7 +3132,10 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt"></div>
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
       <div class="chord-slots"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -4833,6 +4880,7 @@ function createQuizEngine(mode, container) {
     countdownBar: container.querySelector('.quiz-countdown-bar'),
     quizInfoContext: container.querySelector('.quiz-info-context'),
     quizInfoTime: container.querySelector('.quiz-info-time'),
+    quizLastQuestion: container.querySelector('.quiz-last-question'),
     quizInfoCount: container.querySelector('.quiz-info-count'),
     progressFill: container.querySelector('.progress-fill'),
     progressText: container.querySelector('.progress-text'),
@@ -5152,6 +5200,7 @@ function createQuizEngine(mode, container) {
       els.countdownBar.classList.remove('last-question');
     }
     if (els.quizInfoTime) els.quizInfoTime.textContent = '';
+    if (els.quizLastQuestion) els.quizLastQuestion.textContent = '';
   }
 
   /**
@@ -5169,8 +5218,8 @@ function createQuizEngine(mode, container) {
       // User is on the feedback screen — transition now
       transitionToRoundComplete();
     } else {
-      // User is mid-question — signal "last question"
-      if (els.quizInfoTime) els.quizInfoTime.textContent = 'Last question';
+      // User is mid-question — signal "last question" next to the prompt
+      if (els.quizLastQuestion) els.quizLastQuestion.textContent = 'Last question';
       if (els.countdownBar) els.countdownBar.classList.add('last-question');
     }
   }
@@ -5811,7 +5860,7 @@ function buildStatsLegend(statsMode, baseline) {
  * @returns {{ recommended: Set, enabled: Set|null, consolidateIndices: number[],
  *             consolidateDueCount: number, expandIndex: number|null, expandNewCount: number }}
  *   recommended: indices to highlight with orange borders
- *   enabled: indices to auto-select, or null if no data (first launch)
+ *   enabled: indices to auto-select, or null if no groups exist
  *   consolidateIndices: group indices needing consolidation work
  *   consolidateDueCount: total items needing work in consolidation groups
  *   expandIndex: group index being added for expansion, or null
@@ -5825,6 +5874,14 @@ function computeRecommendations(selector, allIndices, getItemIds, config, option
   const unstarted = recs.filter(r => r.unseenCount === r.totalCount);
 
   if (started.length === 0) {
+    // Fresh start: recommend the first unstarted group so "Use suggestion" works
+    if (unstarted.length > 0) {
+      const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
+      const first = sorted[0];
+      return { recommended: new Set([first.string]), enabled: new Set([first.string]),
+               consolidateIndices: [], consolidateDueCount: 0,
+               expandIndex: first.string, expandNewCount: first.totalCount };
+    }
     return { recommended: new Set(), enabled: null,
              consolidateIndices: [], consolidateDueCount: 0,
              expandIndex: null, expandNewCount: 0 };
@@ -5949,17 +6006,29 @@ function createFretboardHelpers(musicData) {
   }
 
   /**
+   * Test whether a note passes the filter.
+   * @param {string} note
+   * @param {string} noteFilter - 'natural', 'sharps-flats', or 'all'
+   * @returns {boolean}
+   */
+  function notePassesFilter(note, noteFilter) {
+    if (noteFilter === 'all') return true;
+    const isNatural = musicData.naturalNotes.includes(note);
+    return noteFilter === 'natural' ? isNatural : !isNatural;
+  }
+
+  /**
    * Compute the list of enabled item IDs.
    * @param {Set<number>} enabledStrings
-   * @param {boolean} naturalsOnly
+   * @param {string} noteFilter - 'natural', 'sharps-flats', or 'all'
    * @returns {string[]}
    */
-  function getFretboardEnabledItems(enabledStrings, naturalsOnly) {
+  function getFretboardEnabledItems(enabledStrings, noteFilter) {
     const items = [];
     for (const s of enabledStrings) {
       for (let f = 0; f < fretCount; f++) {
         const note = getNoteAtPosition(s, f);
-        if (!naturalsOnly || musicData.naturalNotes.includes(note)) {
+        if (notePassesFilter(note, noteFilter)) {
           items.push(s + '-' + f);
         }
       }
@@ -5970,14 +6039,14 @@ function createFretboardHelpers(musicData) {
   /**
    * Compute item IDs for a specific string (used for recommendations).
    * @param {number} string
-   * @param {boolean} naturalsOnly
+   * @param {string} noteFilter - 'natural', 'sharps-flats', or 'all'
    * @returns {string[]}
    */
-  function getItemIdsForString(string, naturalsOnly) {
+  function getItemIdsForString(string, noteFilter) {
     const items = [];
     for (let f = 0; f < fretCount; f++) {
       const note = getNoteAtPosition(string, f);
-      if (!naturalsOnly || musicData.naturalNotes.includes(note)) {
+      if (notePassesFilter(note, noteFilter)) {
         items.push(string + '-' + f);
       }
     }
@@ -6006,8 +6075,9 @@ function createFretboardHelpers(musicData) {
 function createFrettedInstrumentMode(instrument) {
   var container = document.getElementById('mode-' + instrument.id);
   var STRINGS_KEY = instrument.storageNamespace + '_enabledStrings';
+  var NOTE_FILTER_KEY = instrument.storageNamespace + '_noteFilter';
   var enabledStrings = new Set([instrument.defaultString]);
-  var naturalsOnly = true;
+  var noteFilter = 'natural'; // 'natural', 'sharps-flats', or 'all'
   var recommendedStrings = new Set();
   var allStrings = Array.from({length: instrument.stringCount}, function(_, i) { return i; });
 
@@ -6140,6 +6210,27 @@ function createFrettedInstrumentMode(instrument) {
     refreshUI();
   }
 
+  // --- Note filter persistence ---
+
+  function loadNoteFilter() {
+    var saved = localStorage.getItem(NOTE_FILTER_KEY);
+    if (saved && (saved === 'natural' || saved === 'sharps-flats' || saved === 'all')) {
+      noteFilter = saved;
+    }
+    updateNoteToggles();
+  }
+
+  function saveNoteFilter() {
+    try { localStorage.setItem(NOTE_FILTER_KEY, noteFilter); } catch (_) {}
+  }
+
+  function updateNoteToggles() {
+    var naturalBtn = container.querySelector('.notes-toggle[data-notes="natural"]');
+    var accBtn = container.querySelector('.notes-toggle[data-notes="sharps-flats"]');
+    if (naturalBtn) naturalBtn.classList.toggle('active', noteFilter === 'natural' || noteFilter === 'all');
+    if (accBtn) accBtn.classList.toggle('active', noteFilter === 'sharps-flats' || noteFilter === 'all');
+  }
+
   // --- Tab switching ---
 
   function switchTab(tabName) {
@@ -6204,11 +6295,14 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Recommendations ---
 
+  // Sort unstarted strings: lowest pitch first (highest string index = lowest pitch)
+  var recsOptions = { sortUnstarted: function(a, b) { return b.string - a.string; } };
+
   function getRecommendationResult() {
     return computeRecommendations(
       engine.selector, allStrings,
-      function(s) { return fb.getItemIdsForString(s, naturalsOnly); },
-      DEFAULT_CONFIG, {}
+      function(s) { return fb.getItemIdsForString(s, noteFilter); },
+      DEFAULT_CONFIG, recsOptions
     );
   }
 
@@ -6257,7 +6351,7 @@ function createFrettedInstrumentMode(instrument) {
     }
 
     // All items (not just enabled)
-    var allItems = fb.getFretboardEnabledItems(new Set(allStrings), naturalsOnly);
+    var allItems = fb.getFretboardEnabledItems(new Set(allStrings), noteFilter);
     var allFluent = 0;
     for (var j = 0; j < allItems.length; j++) {
       var a2 = engine.selector.getAutomaticity(allItems[j]);
@@ -6295,15 +6389,6 @@ function createFrettedInstrumentMode(instrument) {
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
       recBtn.classList.remove('hidden');
-    } else if (seen === 0) {
-      // Default suggestion for fresh start
-      var defaultNames = [];
-      var defaultStrings = [instrument.stringCount - 1, instrument.stringCount - 2];
-      for (var d = 0; d < defaultStrings.length; d++) {
-        if (defaultStrings[d] >= 0) defaultNames.push(displayNote(instrument.stringNames[defaultStrings[d]]));
-      }
-      recText.textContent = 'Suggestion: start with ' + defaultNames.join(', ') + ' strings';
-      recBtn.classList.remove('hidden');
     } else {
       recText.textContent = '';
       recBtn.classList.add('hidden');
@@ -6313,22 +6398,28 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Session summary ---
 
+  function noteFilterLabel() {
+    if (noteFilter === 'natural') return 'natural notes';
+    if (noteFilter === 'sharps-flats') return 'sharps and flats';
+    return 'all notes';
+  }
+
   function renderSessionSummary() {
     var el = container.querySelector('.session-summary-text');
     if (!el) return;
     var count = enabledStrings.size;
-    var noteType = naturalsOnly ? 'natural notes' : 'all notes';
-    el.textContent = count + ' string' + (count !== 1 ? 's' : '') + ' \u00B7 ' + noteType + ' \u00B7 60s';
+    el.textContent = count + ' string' + (count !== 1 ? 's' : '') + ' \u00B7 ' + noteFilterLabel() + ' \u00B7 60s';
   }
 
   // --- Accidental buttons ---
 
   function updateAccidentalButtons() {
+    var hideAcc = noteFilter === 'natural';
     container.querySelectorAll('.note-btn.accidental').forEach(function(btn) {
-      btn.classList.toggle('hidden', naturalsOnly);
+      btn.classList.toggle('hidden', hideAcc);
     });
     var accRow = container.querySelector('.note-row-accidentals');
-    if (accRow) accRow.classList.toggle('hidden', naturalsOnly);
+    if (accRow) accRow.classList.toggle('hidden', hideAcc);
   }
 
   // --- Quiz mode interface ---
@@ -6343,14 +6434,20 @@ function createFrettedInstrumentMode(instrument) {
     storageNamespace: instrument.storageNamespace,
 
     getEnabledItems: function() {
-      return fb.getFretboardEnabledItems(enabledStrings, naturalsOnly);
+      return fb.getFretboardEnabledItems(enabledStrings, noteFilter);
     },
 
     getPracticingLabel: function() {
-      if (enabledStrings.size === instrument.stringCount) return 'all strings';
-      var names = Array.from(enabledStrings).sort(function(a, b) { return b - a; })
-        .map(function(s) { return displayNote(instrument.stringNames[s]); });
-      return names.join(', ') + ' string' + (names.length === 1 ? '' : 's');
+      var parts = [];
+      if (enabledStrings.size < instrument.stringCount) {
+        var names = Array.from(enabledStrings).sort(function(a, b) { return b - a; })
+          .map(function(s) { return displayNote(instrument.stringNames[s]); });
+        parts.push(names.join(', ') + ' string' + (names.length === 1 ? '' : 's'));
+      } else {
+        parts.push('all strings');
+      }
+      if (noteFilter !== 'all') parts.push(noteFilterLabel());
+      return parts.join(', ');
     },
 
     presentQuestion: function(itemId) {
@@ -6412,7 +6509,7 @@ function createFrettedInstrumentMode(instrument) {
   // Keyboard handler
   var noteKeyHandler = createAdaptiveKeyHandler(
     function(input) { engine.submitAnswer(input); },
-    function() { return !naturalsOnly; }
+    function() { return noteFilter !== 'natural'; }
   );
 
   // Pre-cache all positions
@@ -6428,6 +6525,7 @@ function createFrettedInstrumentMode(instrument) {
 
   function init() {
     loadEnabledStrings();
+    loadNoteFilter();
 
     // Tab switching
     container.querySelectorAll('.mode-tab').forEach(function(btn) {
@@ -6451,7 +6549,7 @@ function createFrettedInstrumentMode(instrument) {
       });
     });
 
-    // Notes toggles (natural / accidentals)
+    // Notes toggles (natural / sharps & flats)
     container.querySelectorAll('.notes-toggle').forEach(function(btn) {
       btn.addEventListener('click', function() {
         btn.classList.toggle('active');
@@ -6459,8 +6557,11 @@ function createFrettedInstrumentMode(instrument) {
         var anyActive = container.querySelector('.notes-toggle.active');
         if (!anyActive) btn.classList.add('active');
         var naturalActive = container.querySelector('.notes-toggle[data-notes="natural"].active');
-        var accActive = container.querySelector('.notes-toggle[data-notes="accidentals"].active');
-        naturalsOnly = naturalActive && !accActive;
+        var accActive = container.querySelector('.notes-toggle[data-notes="sharps-flats"].active');
+        if (naturalActive && accActive) noteFilter = 'all';
+        else if (accActive) noteFilter = 'sharps-flats';
+        else noteFilter = 'natural';
+        saveNoteFilter();
         updateAccidentalButtons();
         refreshUI();
       });
@@ -6531,7 +6632,8 @@ function createUkuleleFretboardMode() {
 function createSpeedTapMode() {
   var container = document.getElementById('mode-speedTap');
 
-  var naturalsOnly = true;
+  var NOTE_FILTER_KEY = 'speedTap_noteFilter';
+  var noteFilter = 'natural'; // 'natural', 'sharps-flats', or 'all'
   var currentNote = null;
   var targetPositions = [];
   var foundPositions = new Set();
@@ -6731,7 +6833,9 @@ function createSpeedTapMode() {
     storageNamespace: 'speedTap',
 
     getEnabledItems: function() {
-      return naturalsOnly ? NATURAL_NOTES.slice() : NOTES.map(function(n) { return n.name; });
+      if (noteFilter === 'natural') return NATURAL_NOTES.slice();
+      if (noteFilter === 'sharps-flats') return NOTES.filter(function(n) { return !NATURAL_NOTES.includes(n.name); }).map(function(n) { return n.name; });
+      return NOTES.map(function(n) { return n.name; });
     },
 
     getExpectedResponseCount: function(itemId) {
@@ -6817,21 +6921,52 @@ function createSpeedTapMode() {
     engine.storage.getStats(NOTES[i].name);
   }
 
+  // --- Note filter persistence ---
+
+  function loadNoteFilter() {
+    var saved = localStorage.getItem(NOTE_FILTER_KEY);
+    if (saved && (saved === 'natural' || saved === 'sharps-flats' || saved === 'all')) {
+      noteFilter = saved;
+    }
+    updateNoteToggles();
+  }
+
+  function saveNoteFilter() {
+    try { localStorage.setItem(NOTE_FILTER_KEY, noteFilter); } catch (_) {}
+  }
+
+  function updateNoteToggles() {
+    var naturalBtn = container.querySelector('.notes-toggle[data-notes="natural"]');
+    var accBtn = container.querySelector('.notes-toggle[data-notes="sharps-flats"]');
+    if (naturalBtn) naturalBtn.classList.toggle('active', noteFilter === 'natural' || noteFilter === 'all');
+    if (accBtn) accBtn.classList.toggle('active', noteFilter === 'sharps-flats' || noteFilter === 'all');
+  }
+
   function init() {
+    loadNoteFilter();
+
     // Tab switching
     container.querySelectorAll('.mode-tab').forEach(function(btn) {
       btn.addEventListener('click', function() { switchTab(btn.dataset.tab); });
     });
 
-    var naturalsCheckbox = container.querySelector('#speed-tap-naturals-only');
-    if (naturalsCheckbox) {
-      naturalsCheckbox.addEventListener('change', function(e) {
-        naturalsOnly = e.target.checked;
+    // Notes toggles (natural / sharps & flats)
+    container.querySelectorAll('.notes-toggle').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btn.classList.toggle('active');
+        var anyActive = container.querySelector('.notes-toggle.active');
+        if (!anyActive) btn.classList.add('active');
+        var naturalActive = container.querySelector('.notes-toggle[data-notes="natural"].active');
+        var accActive = container.querySelector('.notes-toggle[data-notes="sharps-flats"].active');
+        if (naturalActive && accActive) noteFilter = 'all';
+        else if (accActive) noteFilter = 'sharps-flats';
+        else noteFilter = 'natural';
+        saveNoteFilter();
         engine.updateIdleMessage();
         renderPracticeSummary();
         renderSessionSummary();
       });
-    }
+    });
 
     container.querySelector('.start-btn').addEventListener('click', function() { engine.start(); });
 
@@ -7573,9 +7708,6 @@ function createSemitoneMathMode() {
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
       recBtn.classList.remove('hidden');
-    } else if (seen === 0) {
-      recText.textContent = 'Suggestion: start with ' + DISTANCE_GROUPS[0].label;
-      recBtn.classList.remove('hidden');
     } else {
       recText.textContent = '';
       recBtn.classList.add('hidden');
@@ -7942,9 +8074,6 @@ function createIntervalMathMode() {
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
       recBtn.classList.remove('hidden');
-    } else if (seen === 0) {
-      recText.textContent = 'Suggestion: start with ' + DISTANCE_GROUPS[0].label;
-      recBtn.classList.remove('hidden');
     } else {
       recText.textContent = '';
       recBtn.classList.add('hidden');
@@ -8293,9 +8422,6 @@ function createKeySignaturesMode() {
           + ' \u2014 ' + result.expandNewCount + ' new item' + (result.expandNewCount !== 1 ? 's' : ''));
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
-      recBtn.classList.remove('hidden');
-    } else if (seen === 0) {
-      recText.textContent = 'Suggestion: start with ' + KEY_GROUPS[0].label;
       recBtn.classList.remove('hidden');
     } else {
       recText.textContent = '';
@@ -8707,9 +8833,6 @@ function createScaleDegreesMode() {
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
       recBtn.classList.remove('hidden');
-    } else if (seen === 0) {
-      recText.textContent = 'Suggestion: start with ' + DEGREE_GROUPS[0].label;
-      recBtn.classList.remove('hidden');
     } else {
       recText.textContent = '';
       recBtn.classList.add('hidden');
@@ -9091,9 +9214,6 @@ function createDiatonicChordsMode() {
           + ' \u2014 ' + result.expandNewCount + ' new item' + (result.expandNewCount !== 1 ? 's' : ''));
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
-      recBtn.classList.remove('hidden');
-    } else if (seen === 0) {
-      recText.textContent = 'Suggestion: start with ' + CHORD_GROUPS[0].label;
       recBtn.classList.remove('hidden');
     } else {
       recText.textContent = '';
@@ -9479,9 +9599,6 @@ function createChordSpellingMode() {
           + ' \u2014 ' + result.expandNewCount + ' new item' + (result.expandNewCount !== 1 ? 's' : ''));
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
-      recBtn.classList.remove('hidden');
-    } else if (seen === 0) {
-      recText.textContent = 'Suggestion: start with ' + SPELLING_GROUPS[0].label;
       recBtn.classList.remove('hidden');
     } else {
       recText.textContent = '';

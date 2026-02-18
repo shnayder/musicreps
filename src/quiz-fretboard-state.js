@@ -73,17 +73,29 @@ export function createFretboardHelpers(musicData) {
   }
 
   /**
+   * Test whether a note passes the filter.
+   * @param {string} note
+   * @param {string} noteFilter - 'natural', 'sharps-flats', or 'all'
+   * @returns {boolean}
+   */
+  function notePassesFilter(note, noteFilter) {
+    if (noteFilter === 'all') return true;
+    const isNatural = musicData.naturalNotes.includes(note);
+    return noteFilter === 'natural' ? isNatural : !isNatural;
+  }
+
+  /**
    * Compute the list of enabled item IDs.
    * @param {Set<number>} enabledStrings
-   * @param {boolean} naturalsOnly
+   * @param {string} noteFilter - 'natural', 'sharps-flats', or 'all'
    * @returns {string[]}
    */
-  function getFretboardEnabledItems(enabledStrings, naturalsOnly) {
+  function getFretboardEnabledItems(enabledStrings, noteFilter) {
     const items = [];
     for (const s of enabledStrings) {
       for (let f = 0; f < fretCount; f++) {
         const note = getNoteAtPosition(s, f);
-        if (!naturalsOnly || musicData.naturalNotes.includes(note)) {
+        if (notePassesFilter(note, noteFilter)) {
           items.push(s + '-' + f);
         }
       }
@@ -94,14 +106,14 @@ export function createFretboardHelpers(musicData) {
   /**
    * Compute item IDs for a specific string (used for recommendations).
    * @param {number} string
-   * @param {boolean} naturalsOnly
+   * @param {string} noteFilter - 'natural', 'sharps-flats', or 'all'
    * @returns {string[]}
    */
-  function getItemIdsForString(string, naturalsOnly) {
+  function getItemIdsForString(string, noteFilter) {
     const items = [];
     for (let f = 0; f < fretCount; f++) {
       const note = getNoteAtPosition(string, f);
-      if (!naturalsOnly || musicData.naturalNotes.includes(note)) {
+      if (notePassesFilter(note, noteFilter)) {
         items.push(string + '-' + f);
       }
     }
