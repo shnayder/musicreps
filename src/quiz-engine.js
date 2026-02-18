@@ -366,8 +366,8 @@ function runCalibration(opts) {
     }
 
     prevBtn = targetBtn;
-    if (els.progressText) els.progressText.textContent = (trialIndex + 1) + ' / ' + TRIAL_COUNT;
-    if (els.progressFill) els.progressFill.style.width = Math.round(((trialIndex + 1) / TRIAL_COUNT) * 100) + '%';
+    if (els.progressText) els.progressText.textContent = trialIndex + ' / ' + TRIAL_COUNT;
+    if (els.progressFill) els.progressFill.style.width = Math.round((trialIndex / TRIAL_COUNT) * 100) + '%';
   }
 
   function recordPress() {
@@ -582,7 +582,7 @@ export function createQuizEngine(mode, container) {
     quizArea: container.querySelector('.quiz-area'),
     quizPrompt: container.querySelector('.quiz-prompt'),
     masteryMessage: container.querySelector('.mastery-message'),
-    recalibrateBtn: container.querySelector('.recalibrate-btn'),
+    baselineInfo: container.querySelector('.baseline-info'),
     quizHeaderClose: container.querySelector('.quiz-header-close'),
     countdownFill: container.querySelector('.quiz-countdown-fill'),
     countdownBar: container.querySelector('.quiz-countdown-bar'),
@@ -752,9 +752,6 @@ export function createQuizEngine(mode, container) {
       els.masteryMessage.textContent = state.masteryText;
       els.masteryMessage.classList.toggle('mastery-visible', state.showMastery);
     }
-    if (els.recalibrateBtn) {
-      els.recalibrateBtn.classList.toggle('has-baseline', !!motorBaseline);
-    }
   }
 
   function renderSessionStats() {
@@ -814,6 +811,22 @@ export function createQuizEngine(mode, container) {
       renderCalibrationIntro();
     } else if (state.phase === 'calibration-results' && !calibrationContentEl) {
       renderCalibrationResults();
+    }
+  }
+
+  function renderBaselineInfo() {
+    if (!els.baselineInfo) return;
+    if (motorBaseline) {
+      els.baselineInfo.innerHTML = 'Response time baseline: ' + formatMs(motorBaseline)
+        + ' <button class="baseline-rerun-btn">Rerun speed check</button>';
+    } else {
+      els.baselineInfo.innerHTML = 'Response time baseline: 1s <span class="baseline-default-tag">default</span>. '
+        + 'Do a speed check (10 taps, ~15s) to track progress more accurately. '
+        + '<button class="baseline-rerun-btn">Speed check</button>';
+    }
+    var btn = els.baselineInfo.querySelector('.baseline-rerun-btn');
+    if (btn) {
+      btn.addEventListener('click', function() { startCalibration(); });
     }
   }
 
@@ -878,7 +891,10 @@ export function createQuizEngine(mode, container) {
     }
     roundTimerStart = null;
     if (els.countdownFill) els.countdownFill.style.width = '100%';
-    if (els.countdownBar) els.countdownBar.classList.remove('round-timer-warning');
+    if (els.countdownBar) {
+      els.countdownBar.classList.remove('round-timer-warning');
+      els.countdownBar.classList.remove('last-question');
+    }
     if (els.quizInfoTime) els.quizInfoTime.textContent = '';
   }
 
@@ -896,9 +912,11 @@ export function createQuizEngine(mode, container) {
     if (state.answered) {
       // User is on the feedback screen — transition now
       transitionToRoundComplete();
+    } else {
+      // User is mid-question — signal "last question"
+      if (els.quizInfoTime) els.quizInfoTime.textContent = 'Last question';
+      if (els.countdownBar) els.countdownBar.classList.add('last-question');
     }
-    // Otherwise: user is mid-question. They'll finish, and nextQuestion()
-    // or submitAnswer() will check roundTimerExpired.
   }
 
   function transitionToRoundComplete() {
@@ -923,11 +941,27 @@ export function createQuizEngine(mode, container) {
 
   // --- Baseline application ---
 
+  /**
+   * Sync baseline from localStorage (another mode may have completed
+   * calibration since this engine was created). Called on attach().
+   */
+  function syncBaselineFromStorage() {
+    if (motorBaseline) return; // already have one
+    const stored = localStorage.getItem(baselineKey);
+    if (stored) {
+      const parsed = parseInt(stored, 10);
+      if (parsed > 0) {
+        applyBaseline(parsed);
+      }
+    }
+  }
+
   function applyBaseline(baseline) {
     motorBaseline = baseline;
     localStorage.setItem(baselineKey, String(baseline));
     const scaledConfig = deriveScaledConfig(baseline, DEFAULT_CONFIG);
     selector.updateConfig(scaledConfig);
+    renderBaselineInfo();
   }
 
   // --- Calibration ---
@@ -962,7 +996,7 @@ export function createQuizEngine(mode, container) {
   }
 
   function getCalibrationTrialHint() {
-    if (hasSearchCalibration()) return 'Find and press the button';
+    if (hasSearchCalibration()) return ''; // prompt already tells user what to press
     return undefined; // use default (highlight mode)
   }
 
@@ -1117,10 +1151,6 @@ export function createQuizEngine(mode, container) {
     nextQuestion();
   }
 
-  function recalibrate() {
-    startCalibration();
-  }
-
   function updateIdleMessage() {
     if (state.phase !== 'idle') return;
     const items = mode.getEnabledItems();
@@ -1183,6 +1213,7 @@ export function createQuizEngine(mode, container) {
   // Also refreshes notation-dependent content (button labels, stats table)
   // so that a mode activated after a global notation change shows current labels.
   function attach() {
+    syncBaselineFromStorage();
     document.addEventListener('keydown', handleKeydown);
     container.addEventListener('click', handleClick);
     refreshNoteButtonLabels(container);
@@ -1193,11 +1224,6 @@ export function createQuizEngine(mode, container) {
   function detach() {
     document.removeEventListener('keydown', handleKeydown);
     container.removeEventListener('click', handleClick);
-  }
-
-  // Wire up recalibrate button
-  if (els.recalibrateBtn) {
-    els.recalibrateBtn.addEventListener('click', recalibrate);
   }
 
   // Wire up quiz header close button
@@ -1222,24 +1248,18 @@ export function createQuizEngine(mode, container) {
    * engine was created (e.g. guitar and ukulele both use 'button').
    */
   function showCalibrationIfNeeded() {
-    if (!motorBaseline) {
-      const stored = localStorage.getItem(baselineKey);
-      if (stored) {
-        const parsed = parseInt(stored, 10);
-        if (parsed > 0) {
-          applyBaseline(parsed);
-        }
-      }
-    }
+    syncBaselineFromStorage();
     if (!motorBaseline && state.phase === 'idle') {
       startCalibration();
     }
   }
 
+  // Render baseline info once at initialization
+  renderBaselineInfo();
+
   return {
     start,
     stop,
-    recalibrate,
     showCalibrationIfNeeded,
     submitAnswer,
     nextQuestion,

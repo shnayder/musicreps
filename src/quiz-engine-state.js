@@ -166,7 +166,7 @@ export function engineCalibrationIntro(state, hintOverride) {
     answersEnabled: false,
     feedbackText: 'Quick Speed Check',
     feedbackClass: 'feedback',
-    hintText: hintOverride || "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
+    hintText: hintOverride !== undefined ? hintOverride : "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
     timeDisplayText: '',
     calibrationBaseline: null,
   };
@@ -184,7 +184,7 @@ export function engineCalibrating(state, hintOverride) {
     phase: 'calibrating',
     answersEnabled: true,
     feedbackText: 'Speed check!',
-    hintText: hintOverride || 'Tap the highlighted button as fast as you can',
+    hintText: hintOverride !== undefined ? hintOverride : 'Tap the highlighted button as fast as you can',
   };
 }
 

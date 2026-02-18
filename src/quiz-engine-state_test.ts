@@ -292,6 +292,11 @@ describe("engineCalibrationIntro", () => {
     assert.equal(s.feedbackText, "Quick Speed Check");
     assert.equal(s.hintText, override);
   });
+
+  it("accepts empty string hintOverride without falling through to default", () => {
+    const s = engineCalibrationIntro(initialEngineState(), '');
+    assert.equal(s.hintText, '');
+  });
 });
 
 describe("engineCalibrating", () => {
@@ -316,6 +321,11 @@ describe("engineCalibrating", () => {
     const s = engineCalibrating(engineCalibrationIntro(initialEngineState()), override);
     assert.equal(s.feedbackText, "Speed check!");
     assert.equal(s.hintText, override);
+  });
+
+  it("accepts empty string hintOverride without falling through to default", () => {
+    const s = engineCalibrating(engineCalibrationIntro(initialEngineState()), '');
+    assert.equal(s.hintText, '');
   });
 });
 

@@ -478,7 +478,6 @@ function createFrettedInstrumentMode(instrument) {
       engine.attach();
       refreshNoteButtonLabels(container);
       refreshUI();
-      engine.showCalibrationIfNeeded();
     },
     deactivate: function() {
       if (engine.isRunning) engine.stop();

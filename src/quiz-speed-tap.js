@@ -327,7 +327,6 @@ function createSpeedTapMode() {
       container.addEventListener('click', handleFretboardClick);
       engine.updateIdleMessage();
       renderPracticeSummary();
-      engine.showCalibrationIfNeeded();
     },
     deactivate: function() {
       if (engine.isRunning) engine.stop();

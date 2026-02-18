@@ -362,7 +362,7 @@ function createDiatonicChordsMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

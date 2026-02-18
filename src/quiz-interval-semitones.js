@@ -245,7 +245,7 @@ function createIntervalSemitonesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); engine.updateIdleMessage(); renderPracticeSummary(); engine.showCalibrationIfNeeded(); },
+    activate() { engine.attach(); engine.updateIdleMessage(); renderPracticeSummary(); },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();
