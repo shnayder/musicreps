@@ -6,8 +6,8 @@ import {
   fretLines,
   stringLines,
   fretMarkerDots,
-  noteElements,
-  fretNumberElements,
+  positionCircles,
+  svgHeight,
 } from "./fretboard.ts";
 
 // ---------------------------------------------------------------------------
@@ -116,7 +116,7 @@ interface FretboardSVGConfig {
 export function fretboardSVG(config: FretboardSVGConfig = {}): string {
   const sc = config.stringCount ?? 6;
   const fc = config.fretCount ?? 13;
-  const h = sc * 40;
+  const h = svgHeight(sc);
   const markers = config.fretMarkers ?? [3, 5, 7, 9, 12];
   const idAttr = config.id ? ` id="${config.id}"` : "";
   return `<div class="fretboard-wrapper">
@@ -125,17 +125,20 @@ export function fretboardSVG(config: FretboardSVGConfig = {}): string {
           <!-- Fret marker dots (inlays) -->
           ${fretMarkerDots(sc, markers, fc)}
           <!-- Nut (wide bar at fret 0) -->
-          <rect class="fretboard-nut" x="${fretPositions[1] - 3}" y="0" width="6" height="${h}" rx="1"/>
+          <rect class="fb-nut" x="${fretPositions[1] - 2}" y="0" width="4" height="${h}" rx="1"/>
           <!-- Frets (vertical lines) -->
           ${fretLines(h)}
           <!-- Strings (horizontal lines) -->
           ${stringLines(sc)}
-          <!-- Note circles -->
-          ${noteElements(sc, fc)}
+          <!-- Position circles -->
+          ${positionCircles(sc, fc)}
         </svg>
-        <div class="fret-numbers">
-          ${fretNumberElements(markers)}
-        </div>
+        <div class="hover-card"><div class="hc-inner">
+          <div class="hc-note"></div>
+          <div class="hc-string-fret"></div>
+          <div class="hc-detail"></div>
+          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
+        </div></div>
       </div>
     </div>`;
 }

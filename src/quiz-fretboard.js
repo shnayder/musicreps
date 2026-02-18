@@ -8,66 +8,120 @@
 // computeRecommendations, createFretboardHelpers, toggleFretboardString
 
 function createFrettedInstrumentMode(instrument) {
-  const container = document.getElementById('mode-' + instrument.id);
-  const STRINGS_KEY = instrument.storageNamespace + '_enabledStrings';
-  let enabledStrings = new Set([instrument.defaultString]);
-  let naturalsOnly = true;
-  let recommendedStrings = new Set();
-  const allStrings = Array.from({length: instrument.stringCount}, (_, i) => i);
+  var container = document.getElementById('mode-' + instrument.id);
+  var STRINGS_KEY = instrument.storageNamespace + '_enabledStrings';
+  var enabledStrings = new Set([instrument.defaultString]);
+  var naturalsOnly = true;
+  var recommendedStrings = new Set();
+  var allStrings = Array.from({length: instrument.stringCount}, function(_, i) { return i; });
 
   // --- Pure helpers (from quiz-fretboard-state.js) ---
 
-  const fb = createFretboardHelpers({
+  var fb = createFretboardHelpers({
     notes: NOTES,
     naturalNotes: NATURAL_NOTES,
     stringOffsets: instrument.stringOffsets,
     fretCount: instrument.fretCount,
-    noteMatchesInput,
+    noteMatchesInput: noteMatchesInput,
   });
 
-  // --- Colors (from CSS custom properties, cached once) ---
-  const _cs = getComputedStyle(document.documentElement);
-  const COLOR_HIGHLIGHT = _cs.getPropertyValue('--color-highlight').trim();
-  const COLOR_SUCCESS = _cs.getPropertyValue('--color-success').trim();
-  const COLOR_ERROR = _cs.getPropertyValue('--color-error').trim();
+  // --- Fretboard fill colors ---
+  var FB_QUIZ_HL = 'hsl(50, 100%, 50%)';
 
   // --- Tab state ---
-  let activeTab = 'practice';
+  var activeTab = 'practice';
 
   // --- Two fretboard instances: progress (heatmap) and quiz (highlighting) ---
-  const progressFretboard = container.querySelector('.tab-progress .fretboard-wrapper');
-  const quizFretboard = container.querySelector('.quiz-area .fretboard-wrapper');
+  var progressFretboard = container.querySelector('.tab-progress .fretboard-wrapper');
+  var quizFretboard = container.querySelector('.quiz-area .fretboard-wrapper');
 
   // --- SVG helpers (scoped to a specific fretboard instance) ---
 
-  function highlightCircle(root, string, fret, color) {
-    const circle = root.querySelector(
-      `circle[data-string="${string}"][data-fret="${fret}"]`
+  function setCircleFill(root, string, fret, color) {
+    var circle = root.querySelector(
+      'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
     );
     if (circle) circle.style.fill = color;
   }
 
-  function showNoteText(root, string, fret, bgColor) {
-    const text = root.querySelector(
-      `text[data-string="${string}"][data-fret="${fret}"]`
-    );
-    if (text) {
-      text.textContent = displayNote(fb.getNoteAtPosition(string, fret));
-      text.style.fill = bgColor && heatmapNeedsLightText(bgColor) ? 'white' : '';
-    }
+  function clearAll(root) {
+    root.querySelectorAll('.fb-pos').forEach(function(c) { c.style.fill = ''; });
   }
 
-  function clearAll(root) {
-    root.querySelectorAll('.note-circle').forEach(c => c.style.fill = '');
-    root.querySelectorAll('.note-text').forEach(t => { t.textContent = ''; t.style.fill = ''; });
+  // --- Hover card setup ---
+
+  function setupHoverCard(fretboardWrapper) {
+    var card = fretboardWrapper.querySelector('.hover-card');
+    if (!card) return;
+
+    function showCard(el) {
+      var s = parseInt(el.getAttribute('data-string'));
+      var f = parseInt(el.getAttribute('data-fret'));
+      var note = fb.getNoteAtPosition(s, f);
+      var itemId = s + '-' + f;
+      var auto = engine.selector.getAutomaticity(itemId);
+
+      card.querySelector('.hc-note').textContent = displayNote(note);
+      card.querySelector('.hc-string-fret').textContent =
+        displayNote(instrument.stringNames[s]) + ' string, fret ' + f;
+
+      if (auto !== null) {
+        var pct = Math.round(auto * 100);
+        var label;
+        if (auto > 0.8) label = 'Automatic';
+        else if (auto > 0.6) label = 'Solid';
+        else if (auto > 0.4) label = 'Getting there';
+        else if (auto > 0.2) label = 'Fading';
+        else label = 'Needs work';
+        card.querySelector('.hc-detail').textContent = label + ' \u00B7 ' + pct + '%';
+        var barFill = card.querySelector('.hc-bar-fill');
+        barFill.style.width = pct + '%';
+        barFill.style.background = getAutomaticityColor(auto);
+      } else {
+        card.querySelector('.hc-detail').textContent = 'Not seen yet';
+        var barFill2 = card.querySelector('.hc-bar-fill');
+        barFill2.style.width = '0%';
+        barFill2.style.background = '';
+      }
+
+      // Position card above circle (or below if near top)
+      var containerRect = fretboardWrapper.querySelector('.fretboard-container').getBoundingClientRect();
+      var elRect = el.getBoundingClientRect();
+      var cx = elRect.left + elRect.width / 2 - containerRect.left;
+      var cy = elRect.top - containerRect.top;
+
+      // If circle is near top of fretboard, show card below instead
+      if (cy < 50) {
+        card.style.left = cx + 'px';
+        card.style.top = (cy + elRect.height + 6) + 'px';
+        card.style.transform = 'translate(-50%, 0)';
+      } else {
+        card.style.left = cx + 'px';
+        card.style.top = (cy - 6) + 'px';
+        card.style.transform = 'translate(-50%, -100%)';
+      }
+      card.classList.add('visible');
+    }
+
+    function hideCard() { card.classList.remove('visible'); }
+
+    var svg = fretboardWrapper.querySelector('svg');
+    svg.addEventListener('mouseover', function(e) {
+      var el = e.target.closest('.fb-pos');
+      if (el) showCard(el);
+    });
+    svg.addEventListener('mouseout', function(e) {
+      var el = e.target.closest('.fb-pos');
+      if (el) hideCard();
+    });
   }
 
   // --- String toggles ---
 
   function loadEnabledStrings() {
-    const saved = localStorage.getItem(STRINGS_KEY);
+    var saved = localStorage.getItem(STRINGS_KEY);
     if (saved) {
-      try { enabledStrings = new Set(JSON.parse(saved)); } catch {}
+      try { enabledStrings = new Set(JSON.parse(saved)); } catch(e) {}
     }
     updateStringToggles();
   }
@@ -77,8 +131,8 @@ function createFrettedInstrumentMode(instrument) {
   }
 
   function updateStringToggles() {
-    container.querySelectorAll('.string-toggle').forEach(btn => {
-      const s = parseInt(btn.dataset.string);
+    container.querySelectorAll('.string-toggle').forEach(function(btn) {
+      var s = parseInt(btn.dataset.string);
       btn.classList.toggle('active', enabledStrings.has(s));
       btn.classList.toggle('recommended', recommendedStrings.has(s));
     });
@@ -94,10 +148,10 @@ function createFrettedInstrumentMode(instrument) {
 
   function switchTab(tabName) {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach(function(btn) {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
-    container.querySelectorAll('.tab-content').forEach(el => {
+    container.querySelectorAll('.tab-content').forEach(function(el) {
       var isPractice = el.classList.contains('tab-practice');
       var isProgress = el.classList.contains('tab-progress');
       if (tabName === 'practice') {
@@ -116,25 +170,25 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Heatmap (renders on the progress fretboard) ---
 
-  const statsControls = createStatsControls(container, (mode, el) => {
+  var statsControls = createStatsControls(container, function(mode, el) {
     el.innerHTML = buildStatsLegend(mode, engine.baseline);
     if (mode === 'retention') {
-      for (const s of allStrings) {
-        for (let f = 0; f < instrument.fretCount; f++) {
-          const auto = engine.selector.getAutomaticity(`${s}-${f}`);
-          const color = getAutomaticityColor(auto);
-          highlightCircle(progressFretboard, s, f, color);
-          showNoteText(progressFretboard, s, f, color);
+      for (var si = 0; si < allStrings.length; si++) {
+        var s = allStrings[si];
+        for (var f = 0; f < instrument.fretCount; f++) {
+          var auto = engine.selector.getAutomaticity(s + '-' + f);
+          var color = getAutomaticityColor(auto);
+          setCircleFill(progressFretboard, s, f, color);
         }
       }
     } else {
-      for (const s of allStrings) {
-        for (let f = 0; f < instrument.fretCount; f++) {
-          const stats = engine.selector.getStats(`${s}-${f}`);
-          const ewma = stats ? stats.ewma : null;
-          const color = getSpeedHeatmapColor(ewma, engine.baseline);
-          highlightCircle(progressFretboard, s, f, color);
-          showNoteText(progressFretboard, s, f, color);
+      for (var sj = 0; sj < allStrings.length; sj++) {
+        var s2 = allStrings[sj];
+        for (var f2 = 0; f2 < instrument.fretCount; f2++) {
+          var stats = engine.selector.getStats(s2 + '-' + f2);
+          var ewma = stats ? stats.ewma : null;
+          var color2 = getSpeedHeatmapColor(ewma, engine.baseline);
+          setCircleFill(progressFretboard, s2, f2, color2);
         }
       }
     }
@@ -148,7 +202,7 @@ function createFrettedInstrumentMode(instrument) {
   // --- Stats ---
 
   function updateStats(selector) {
-    const statsEl = container.querySelector('.stats');
+    var statsEl = container.querySelector('.stats');
     if (statsEl) statsEl.textContent = '';
   }
 
@@ -157,19 +211,19 @@ function createFrettedInstrumentMode(instrument) {
   function getRecommendationResult() {
     return computeRecommendations(
       engine.selector, allStrings,
-      (s) => fb.getItemIdsForString(s, naturalsOnly),
+      function(s) { return fb.getItemIdsForString(s, naturalsOnly); },
       DEFAULT_CONFIG, {}
     );
   }
 
   function updateRecommendations(selector) {
-    const result = getRecommendationResult();
+    var result = getRecommendationResult();
     recommendedStrings = result.recommended;
     updateStringToggles();
   }
 
   function applyRecommendations(selector) {
-    const result = getRecommendationResult();
+    var result = getRecommendationResult();
     recommendedStrings = result.recommended;
     if (result.enabled) {
       enabledStrings = result.enabled;
@@ -258,64 +312,64 @@ function createFrettedInstrumentMode(instrument) {
   // --- Accidental buttons ---
 
   function updateAccidentalButtons() {
-    container.querySelectorAll('.note-btn.accidental').forEach(btn => {
+    container.querySelectorAll('.note-btn.accidental').forEach(function(btn) {
       btn.classList.toggle('hidden', naturalsOnly);
     });
-    const accRow = container.querySelector('.note-row-accidentals');
+    var accRow = container.querySelector('.note-row-accidentals');
     if (accRow) accRow.classList.toggle('hidden', naturalsOnly);
   }
 
   // --- Quiz mode interface ---
 
-  let currentString = null;
-  let currentFret = null;
-  let currentNote = null;
+  var currentString = null;
+  var currentFret = null;
+  var currentNote = null;
 
-  const mode = {
+  var mode = {
     id: instrument.id,
     name: instrument.name,
     storageNamespace: instrument.storageNamespace,
 
-    getEnabledItems() {
+    getEnabledItems: function() {
       return fb.getFretboardEnabledItems(enabledStrings, naturalsOnly);
     },
 
-    getPracticingLabel() {
+    getPracticingLabel: function() {
       if (enabledStrings.size === instrument.stringCount) return 'all strings';
-      const names = [...enabledStrings].sort((a, b) => b - a)
-        .map(s => displayNote(instrument.stringNames[s]));
+      var names = Array.from(enabledStrings).sort(function(a, b) { return b - a; })
+        .map(function(s) { return displayNote(instrument.stringNames[s]); });
       return names.join(', ') + ' string' + (names.length === 1 ? '' : 's');
     },
 
-    presentQuestion(itemId) {
+    presentQuestion: function(itemId) {
       clearAll(quizFretboard);
-      const q = fb.parseFretboardItem(itemId);
+      var q = fb.parseFretboardItem(itemId);
       currentString = q.currentString;
       currentFret = q.currentFret;
       currentNote = q.currentNote;
-      highlightCircle(quizFretboard, q.currentString, q.currentFret, COLOR_HIGHLIGHT);
+      // Highlight active position, rest stay at default blank fill
+      setCircleFill(quizFretboard, q.currentString, q.currentFret, FB_QUIZ_HL);
     },
 
-    checkAnswer(itemId, input) {
+    checkAnswer: function(itemId, input) {
       return fb.checkFretboardAnswer(currentNote, input);
     },
 
-    onAnswer(itemId, result, responseTime) {
+    onAnswer: function(itemId, result, responseTime) {
       if (result.correct) {
-        highlightCircle(quizFretboard, currentString, currentFret, COLOR_SUCCESS);
+        setCircleFill(quizFretboard, currentString, currentFret, 'var(--color-success)');
       } else {
-        highlightCircle(quizFretboard, currentString, currentFret, COLOR_ERROR);
+        setCircleFill(quizFretboard, currentString, currentFret, 'var(--color-error)');
       }
-      showNoteText(quizFretboard, currentString, currentFret);
     },
 
-    onStart() {
+    onStart: function() {
       noteKeyHandler.reset();
       if (statsControls.mode) hideHeatmap();
       updateStats(engine.selector);
     },
 
-    onStop() {
+    onStop: function() {
       noteKeyHandler.reset();
       clearAll(quizFretboard);
       updateStats(engine.selector);
@@ -325,34 +379,34 @@ function createFrettedInstrumentMode(instrument) {
       refreshUI();
     },
 
-    handleKey(e, { submitAnswer }) {
+    handleKey: function(e, ctx) {
       return noteKeyHandler.handleKey(e);
     },
 
-    getCalibrationButtons() {
+    getCalibrationButtons: function() {
       return Array.from(container.querySelectorAll('.note-btn:not(.hidden)'));
     },
 
-    getCalibrationTrialConfig(buttons, prevBtn) {
-      const btn = pickCalibrationButton(buttons, prevBtn);
+    getCalibrationTrialConfig: function(buttons, prevBtn) {
+      var btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
   };
 
   // Create engine
-  const engine = createQuizEngine(mode, container);
+  var engine = createQuizEngine(mode, container);
 
   // Keyboard handler
-  const noteKeyHandler = createAdaptiveKeyHandler(
-    (input) => engine.submitAnswer(input),
-    () => !naturalsOnly
+  var noteKeyHandler = createAdaptiveKeyHandler(
+    function(input) { engine.submitAnswer(input); },
+    function() { return !naturalsOnly; }
   );
 
   // Pre-cache all positions
-  const allItemIds = [];
-  for (const s of allStrings) {
-    for (let f = 0; f < instrument.fretCount; f++) {
-      allItemIds.push(`${s}-${f}`);
+  var allItemIds = [];
+  for (var si = 0; si < allStrings.length; si++) {
+    for (var fi = 0; fi < instrument.fretCount; fi++) {
+      allItemIds.push(allStrings[si] + '-' + fi);
     }
   }
   engine.storage.preload(allItemIds);
@@ -363,31 +417,31 @@ function createFrettedInstrumentMode(instrument) {
     loadEnabledStrings();
 
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach(btn => {
-      btn.addEventListener('click', () => {
+    container.querySelectorAll('.mode-tab').forEach(function(btn) {
+      btn.addEventListener('click', function() {
         switchTab(btn.dataset.tab);
       });
     });
 
     // String toggles
-    container.querySelectorAll('.string-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
+    container.querySelectorAll('.string-toggle').forEach(function(btn) {
+      btn.addEventListener('click', function() {
         toggleString(parseInt(btn.dataset.string));
       });
     });
 
     // Note buttons (for quiz)
-    container.querySelectorAll('.note-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+    container.querySelectorAll('.note-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
         if (!engine.isActive || engine.isAnswered) return;
         engine.submitAnswer(btn.dataset.note);
       });
     });
 
     // Naturals-only checkbox
-    const naturalsCheckbox = container.querySelector('#' + instrument.id + '-naturals-only');
+    var naturalsCheckbox = container.querySelector('#' + instrument.id + '-naturals-only');
     if (naturalsCheckbox) {
-      naturalsCheckbox.addEventListener('change', (e) => {
+      naturalsCheckbox.addEventListener('change', function(e) {
         naturalsOnly = e.target.checked;
         updateAccidentalButtons();
         refreshUI();
@@ -395,16 +449,19 @@ function createFrettedInstrumentMode(instrument) {
     }
 
     // Start button
-    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.start-btn').addEventListener('click', function() { engine.start(); });
 
     // Use recommendation button
     var recBtn = container.querySelector('.practice-rec-btn');
     if (recBtn) {
-      recBtn.addEventListener('click', () => {
+      recBtn.addEventListener('click', function() {
         applyRecommendations(engine.selector);
         refreshUI();
       });
     }
+
+    // Hover card only on progress fretboard (not quiz — would reveal the answer)
+    if (progressFretboard) setupHoverCard(progressFretboard);
 
     applyRecommendations(engine.selector);
     updateAccidentalButtons();
@@ -414,21 +471,21 @@ function createFrettedInstrumentMode(instrument) {
   }
 
   return {
-    mode,
-    engine,
-    init,
-    activate() {
+    mode: mode,
+    engine: engine,
+    init: init,
+    activate: function() {
       engine.attach();
       refreshNoteButtonLabels(container);
       refreshUI();
       engine.showCalibrationIfNeeded();
     },
-    deactivate() {
+    deactivate: function() {
       if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
     },
-    onNotationChange() {
+    onNotationChange: function() {
       if (!container.classList.contains('mode-active')) return;
       renderPracticeSummary();
       if (activeTab === 'progress' && statsControls.mode) {

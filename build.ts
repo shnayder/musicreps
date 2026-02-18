@@ -107,7 +107,7 @@ const HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v5.1</span>
+      <span class="version">v6.0</span>
     </div>
   </div>`;
 
@@ -292,7 +292,7 @@ interface MomentOverrides {
   practiceRecText?: string;
   sessionSummary?: string;
   showMastery?: boolean;
-  highlightNotes?: Array<{s: number; f: number; fill: string; text?: string}>;
+  highlightNotes?: Array<{s: number; f: number; fill: string}>;
   chordSlotsHtml?: string;
   hideAccidentals?: boolean;
   toggleState?: { active: number[]; recommended?: number };
@@ -418,19 +418,13 @@ function prepareMoment(source: string, o: MomentOverrides): string {
     'class="mastery-message mastery-visible"',
   );
 
-  // Fretboard note highlighting
+  // Fretboard note highlighting (circle-based design)
   if (o.highlightNotes) {
     for (const n of o.highlightNotes) {
       const circleRe = new RegExp(
-        `(<circle\\s+class="note-circle"\\s+data-string="${n.s}"\\s+data-fret="${n.f}"\\s+cx="[^"]*"\\s+cy="[^"]*"\\s+r="15"\\s+)fill="white"`,
+        `(<circle\\s+class="fb-pos"\\s+data-string="${n.s}"\\s+data-fret="${n.f}"\\s+cx="[^"]*"\\s+cy="[^"]*"\\s+)r="10"`,
       );
-      r(circleRe, `$1fill="${n.fill}"`);
-      if (n.text) {
-        const textRe = new RegExp(
-          `(class="note-text"\\s+data-string="${n.s}"\\s+data-fret="${n.f}"[^>]*>)(</text>)`,
-        );
-        r(textRe, `$1${n.text}$2`);
-      }
+      r(circleRe, `$1r="10" style="fill: ${n.fill}"`);
     }
   }
 
@@ -534,7 +528,7 @@ function buildMoments(): void {
       phase: 'active',
       quizAreaActive: true,
       quizPrompt: 'What note is this?',
-      highlightNotes: [{ s: 5, f: 3, fill: 'var(--color-highlight)' }],
+      highlightNotes: [{ s: 5, f: 3, fill: 'hsl(50, 100%, 50%)' }],
       hideAccidentals: true,
       countdown: 72,
       infoContext: 'e, B strings',

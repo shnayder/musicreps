@@ -8,37 +8,45 @@ import {
   buildStatsLegend,
 } from "./stats-display.js";
 
+// Heatmap palette (matches fallback values in stats-display.js)
+const NONE = "hsl(30, 4%, 85%)";
+const L1 = "hsl(12, 48%, 65%)";
+const L2 = "hsl(30, 48%, 58%)";
+const L3 = "hsl(50, 40%, 50%)";
+const L4 = "hsl(72, 38%, 42%)";
+const L5 = "hsl(90, 45%, 35%)";
+
 // ---------------------------------------------------------------------------
 // getAutomaticityColor
 // ---------------------------------------------------------------------------
 
 describe("getAutomaticityColor", () => {
   it("returns grey for null", () => {
-    assert.equal(getAutomaticityColor(null), "hsl(60, 5%, 93%)");
+    assert.equal(getAutomaticityColor(null), NONE);
   });
 
   it("returns sage for high automaticity (>0.8)", () => {
-    assert.equal(getAutomaticityColor(0.9), "hsl(88, 52%, 33%)");
+    assert.equal(getAutomaticityColor(0.9), L5);
   });
 
   it("returns olive-sage for 0.6-0.8", () => {
-    assert.equal(getAutomaticityColor(0.7), "hsl(72, 42%, 42%)");
+    assert.equal(getAutomaticityColor(0.7), L4);
   });
 
   it("returns olive for 0.4-0.6", () => {
-    assert.equal(getAutomaticityColor(0.5), "hsl(55, 45%, 50%)");
+    assert.equal(getAutomaticityColor(0.5), L3);
   });
 
   it("returns amber for 0.2-0.4", () => {
-    assert.equal(getAutomaticityColor(0.3), "hsl(35, 55%, 58%)");
+    assert.equal(getAutomaticityColor(0.3), L2);
   });
 
   it("returns terracotta for low automaticity (<=0.2)", () => {
-    assert.equal(getAutomaticityColor(0.1), "hsl(15, 55%, 68%)");
+    assert.equal(getAutomaticityColor(0.1), L1);
   });
 
   it("returns terracotta for zero", () => {
-    assert.equal(getAutomaticityColor(0), "hsl(15, 55%, 68%)");
+    assert.equal(getAutomaticityColor(0), L1);
   });
 });
 
@@ -48,47 +56,47 @@ describe("getAutomaticityColor", () => {
 
 describe("getSpeedHeatmapColor", () => {
   it("returns grey for null", () => {
-    assert.equal(getSpeedHeatmapColor(null), "hsl(60, 5%, 93%)");
+    assert.equal(getSpeedHeatmapColor(null), NONE);
   });
 
   it("returns sage for fast (<1500ms) with default baseline", () => {
-    assert.equal(getSpeedHeatmapColor(1000), "hsl(88, 52%, 33%)");
+    assert.equal(getSpeedHeatmapColor(1000), L5);
   });
 
   it("returns olive-sage for 1500-3000ms with default baseline", () => {
-    assert.equal(getSpeedHeatmapColor(2000), "hsl(72, 42%, 42%)");
+    assert.equal(getSpeedHeatmapColor(2000), L4);
   });
 
   it("returns olive for 3000-4500ms with default baseline", () => {
-    assert.equal(getSpeedHeatmapColor(4000), "hsl(55, 45%, 50%)");
+    assert.equal(getSpeedHeatmapColor(4000), L3);
   });
 
   it("returns amber for 4500-6000ms with default baseline", () => {
-    assert.equal(getSpeedHeatmapColor(5000), "hsl(35, 55%, 58%)");
+    assert.equal(getSpeedHeatmapColor(5000), L2);
   });
 
   it("returns terracotta for slow (>=6000ms) with default baseline", () => {
-    assert.equal(getSpeedHeatmapColor(7000), "hsl(15, 55%, 68%)");
+    assert.equal(getSpeedHeatmapColor(7000), L1);
   });
 
   it("scales thresholds with baseline=1500 (mobile user)", () => {
     // sage: < 1500*1.5 = 2250ms
-    assert.equal(getSpeedHeatmapColor(2000, 1500), "hsl(88, 52%, 33%)");
+    assert.equal(getSpeedHeatmapColor(2000, 1500), L5);
     // olive-sage: 2250-4500ms
-    assert.equal(getSpeedHeatmapColor(3000, 1500), "hsl(72, 42%, 42%)");
+    assert.equal(getSpeedHeatmapColor(3000, 1500), L4);
     // olive: 4500-6750ms
-    assert.equal(getSpeedHeatmapColor(5000, 1500), "hsl(55, 45%, 50%)");
+    assert.equal(getSpeedHeatmapColor(5000, 1500), L3);
     // amber: 6750-9000ms
-    assert.equal(getSpeedHeatmapColor(8000, 1500), "hsl(35, 55%, 58%)");
+    assert.equal(getSpeedHeatmapColor(8000, 1500), L2);
     // terracotta: >= 9000ms
-    assert.equal(getSpeedHeatmapColor(10000, 1500), "hsl(15, 55%, 68%)");
+    assert.equal(getSpeedHeatmapColor(10000, 1500), L1);
   });
 
   it("scales thresholds with baseline=700 (fast keyboard user)", () => {
     // sage: < 700*1.5 = 1050ms
-    assert.equal(getSpeedHeatmapColor(900, 700), "hsl(88, 52%, 33%)");
+    assert.equal(getSpeedHeatmapColor(900, 700), L5);
     // 1200ms is above amber threshold with baseline 700
-    assert.equal(getSpeedHeatmapColor(1200, 700), "hsl(72, 42%, 42%)");
+    assert.equal(getSpeedHeatmapColor(1200, 700), L4);
   });
 });
 
@@ -102,7 +110,7 @@ describe("getStatsCellColor", () => {
       getAutomaticity: () => 0.9,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColor(selector, "test", "retention"), "hsl(88, 52%, 33%)");
+    assert.equal(getStatsCellColor(selector, "test", "retention"), L5);
   });
 
   it("delegates to getSpeedHeatmapColor in speed mode", () => {
@@ -110,7 +118,7 @@ describe("getStatsCellColor", () => {
       getAutomaticity: () => null,
       getStats: () => ({ ewma: 2000 }),
     };
-    assert.equal(getStatsCellColor(selector, "test", "speed"), "hsl(72, 42%, 42%)");
+    assert.equal(getStatsCellColor(selector, "test", "speed"), L4);
   });
 
   it("passes baseline through to getSpeedHeatmapColor", () => {
@@ -119,7 +127,7 @@ describe("getStatsCellColor", () => {
       getStats: () => ({ ewma: 2000 }),
     };
     // With baseline=1500, 2000ms is < 2250 (1500*1.5) → sage
-    assert.equal(getStatsCellColor(selector, "test", "speed", 1500), "hsl(88, 52%, 33%)");
+    assert.equal(getStatsCellColor(selector, "test", "speed", 1500), L5);
   });
 
   it("returns grey for speed mode with no stats", () => {
@@ -127,7 +135,7 @@ describe("getStatsCellColor", () => {
       getAutomaticity: () => null,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColor(selector, "test", "speed"), "hsl(60, 5%, 93%)");
+    assert.equal(getStatsCellColor(selector, "test", "speed"), NONE);
   });
 
   it("returns grey for retention mode with null automaticity", () => {
@@ -135,7 +143,7 @@ describe("getStatsCellColor", () => {
       getAutomaticity: () => null,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColor(selector, "test", "retention"), "hsl(60, 5%, 93%)");
+    assert.equal(getStatsCellColor(selector, "test", "retention"), NONE);
   });
 
   it("returns lowest level for retention mode with zero automaticity (wrong-only item)", () => {
@@ -143,7 +151,7 @@ describe("getStatsCellColor", () => {
       getAutomaticity: () => 0,
       getStats: () => ({ ewma: 9000 }),
     };
-    assert.equal(getStatsCellColor(selector, "test", "retention"), "hsl(15, 55%, 68%)");
+    assert.equal(getStatsCellColor(selector, "test", "retention"), L1);
   });
 });
 
@@ -168,7 +176,7 @@ describe("getStatsCellColorMerged", () => {
       getAutomaticity: () => null,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColorMerged(selector, ["A+3", "A-3"], "retention"), "hsl(60, 5%, 93%)");
+    assert.equal(getStatsCellColorMerged(selector, ["A+3", "A-3"], "retention"), NONE);
   });
 
   it("returns grey when no items have data (speed)", () => {
@@ -176,7 +184,7 @@ describe("getStatsCellColorMerged", () => {
       getAutomaticity: () => null,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColorMerged(selector, ["A+3", "A-3"], "speed"), "hsl(60, 5%, 93%)");
+    assert.equal(getStatsCellColorMerged(selector, ["A+3", "A-3"], "speed"), NONE);
   });
 
   it("averages automaticity across both directions (retention)", () => {
@@ -187,7 +195,7 @@ describe("getStatsCellColorMerged", () => {
     };
     // average = 0.8, which is exactly the >0.8 boundary → falls to 0.6-0.8 bucket
     // Actually 0.8 is NOT > 0.8, so it's the 0.6-0.8 bucket
-    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "retention"), "hsl(72, 42%, 42%)");
+    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "retention"), L4);
   });
 
   it("uses only available direction when one is unseen (retention)", () => {
@@ -197,7 +205,7 @@ describe("getStatsCellColorMerged", () => {
       getStats: () => null,
     };
     // Only C+3 has data (0.9), so result = 0.9 → >0.8 bucket = sage
-    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "retention"), "hsl(88, 52%, 33%)");
+    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "retention"), L5);
   });
 
   it("averages ewma across both directions (speed)", () => {
@@ -210,7 +218,7 @@ describe("getStatsCellColorMerged", () => {
       getStats: (id: string) => data[id] ?? null,
     };
     // average = 1500, which is NOT < 1500, so it's the 1500-3000 bucket
-    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "speed"), "hsl(72, 42%, 42%)");
+    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "speed"), L4);
   });
 
   it("uses only available direction when one is unseen (speed)", () => {
@@ -223,7 +231,7 @@ describe("getStatsCellColorMerged", () => {
       getStats: (id: string) => data[id] ?? null,
     };
     // Only C+3 has data (1000ms) → <1500 bucket = sage
-    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "speed"), "hsl(88, 52%, 33%)");
+    assert.equal(getStatsCellColorMerged(selector, ["C+3", "C-3"], "speed"), L5);
   });
 });
 

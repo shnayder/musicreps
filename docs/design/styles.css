@@ -42,16 +42,13 @@
   /* Overlay */
   --color-overlay: rgba(0, 0, 0, 0.35);
 
-  /* Heatmap scale (warm terracotta → sage, high saturation) */
-  --heatmap-none: hsl(60, 5%, 93%);
-  --heatmap-1: hsl(15, 55%, 68%);
-  --heatmap-2: hsl(35, 55%, 58%);
-  --heatmap-3: hsl(55, 45%, 50%);
-  --heatmap-4: hsl(72, 42%, 42%);
-  --heatmap-5: hsl(88, 52%, 33%);
-
-  /* Fretboard SVG */
-  --color-fretboard-line: hsl(30, 5%, 30%);
+  /* Heatmap scale (warm → sage, matches fretboard circle palette) */
+  --heatmap-none: hsl(30, 4%, 85%);
+  --heatmap-1: hsl(12, 48%, 65%);
+  --heatmap-2: hsl(30, 48%, 58%);
+  --heatmap-3: hsl(50, 40%, 50%);
+  --heatmap-4: hsl(72, 38%, 42%);
+  --heatmap-5: hsl(90, 45%, 35%);
 
   /* Typography scale */
   --text-xs: 0.75rem;
@@ -509,36 +506,41 @@ body {
   background: var(--color-bg);
   touch-action: manipulation;
 }
-/* SVG fretboard colors via CSS (overrides inline presentation attributes) */
-.fretboard line {
-  stroke: var(--color-fretboard-line);
+/* SVG fretboard — new circle-based design */
+.fb-string { stroke: hsl(30, 8%, 72%); }
+.fb-fret { stroke: hsl(30, 5%, 82%); }
+.fb-nut { fill: hsl(30, 8%, 48%); }
+.fb-marker { fill: hsl(30, 5%, 62%); }
+.fb-pos {
+  fill: hsl(30, 5%, 90%);
+  stroke: none;
+  cursor: pointer;
+  transition: fill 0.15s;
 }
-.note-circle {
-  stroke: var(--color-fretboard-line);
-  fill: var(--color-bg);
-}
-.note-text {
-  fill: var(--color-text);
-  font-weight: 600;
-}
-.fretboard-nut {
-  fill: var(--color-text);
-}
-.fret-marker {
-  fill: var(--color-border-light);
-  opacity: 0.6;
-}
-.fret-numbers {
-  position: relative;
-  height: 1.5rem;
-  width: 100%;
-}
-.fret-number {
+
+/* Hover card */
+.hover-card {
   position: absolute;
-  transform: translateX(-50%);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.12s;
 }
+.hover-card.visible { opacity: 1; }
+.hc-inner {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  min-width: 65px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+  text-align: center;
+}
+.hc-note { font-size: var(--text-sm); font-weight: 700; color: var(--color-text); }
+.hc-string-fret { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 0.05rem; }
+.hc-detail { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 0.12rem; }
+.hc-bar { height: 3px; border-radius: 2px; background: hsl(30, 5%, 90%); margin-top: 0.25rem; overflow: hidden; }
+.hc-bar-fill { height: 100%; border-radius: 2px; transition: width 0.2s; }
 
 .settings-row {
   display: flex;

@@ -1317,52 +1317,45 @@
       function buildFretboard(opts) {
         var sc = opts.stringCount || 6;
         var fc = opts.fretCount || 13;
-        var h = sc * 40;
-        var r = opts.circleRadius || 15;
-        var fontSize = opts.fontSize || 12;
+        var padY = 18, gap = 38;
+        var h = (sc - 1) * gap + padY * 2;
+        var r = 10;
         var svg = '';
 
-        // Fret marker dots (between strings, at marker frets)
+        function noteY(s) { return padY + s * gap; }
+
+        // Fret marker dots
         var midY = h / 2;
         for (var m = 0; m < markers.length; m++) {
           var fret = markers[m];
           if (fret >= fc) continue;
           var mx = (fretPositions[fret] + fretPositions[fret + 1]) / 2;
           if (fret === 12) {
-            // Double dot at fret 12
-            var dotY1 = 20 + 1 * 40;
-            var dotY2 = 20 + (sc - 2) * 40;
-            svg += '<circle class="fret-marker" cx="' + mx + '" cy="' + dotY1 + '" r="5"/>';
-            svg += '<circle class="fret-marker" cx="' + mx + '" cy="' + dotY2 + '" r="5"/>';
+            svg += '<circle class="fb-marker" cx="' + mx + '" cy="' + ((noteY(1) + noteY(2)) / 2) + '" r="4"/>';
+            svg += '<circle class="fb-marker" cx="' + mx + '" cy="' + ((noteY(sc - 3) + noteY(sc - 2)) / 2) + '" r="4"/>';
           } else {
-            svg += '<circle class="fret-marker" cx="' + mx + '" cy="' + midY + '" r="5"/>';
+            svg += '<circle class="fb-marker" cx="' + mx + '" cy="' + midY + '" r="4"/>';
           }
         }
 
-        // Nut (wide bar)
-        svg += '<rect class="fretboard-nut" x="' + (fretPositions[1] - 3) + '" y="0" width="6" height="' + h + '" rx="1"/>';
-        // Frets (start from index 2; index 1 is the nut)
+        // Nut
+        svg += '<rect class="fb-nut" x="' + (fretPositions[1] - 2) + '" y="0" width="4" height="' + h + '" rx="1"/>';
+        // Frets
         for (var i = 2; i < fretPositions.length; i++) {
-          svg += '<line x1="' + fretPositions[i] + '" y1="0" x2="' + fretPositions[i] + '" y2="' + h + '" stroke="var(--color-fretboard-line)" stroke-width="1"/>';
+          svg += '<line class="fb-fret" x1="' + fretPositions[i] + '" y1="0" x2="' + fretPositions[i] + '" y2="' + h + '" stroke-width="1"/>';
         }
         // Strings
         for (var s = 0; s < sc; s++) {
-          var thickness = 1 + s * 0.5;
-          svg += '<line x1="0" y1="' + (20 + s * 40) + '" x2="600" y2="' + (20 + s * 40) + '" stroke="var(--color-fretboard-line)" stroke-width="' + thickness + '"/>';
+          var thickness = 1 + s * 0.4;
+          svg += '<line class="fb-string" x1="0" y1="' + noteY(s) + '" x2="600" y2="' + noteY(s) + '" stroke-width="' + thickness + '"/>';
         }
-        // Notes
+        // Position circles
         for (var si = 0; si < sc; si++) {
           for (var fi = 0; fi < fc; fi++) {
             var x = noteX(fi);
-            var y = 20 + si * 40;
-            var fill = opts.fillFn ? opts.fillFn(si, fi) : 'var(--color-bg)';
-            var stroke = 'var(--color-fretboard-line)';
-            var label = opts.labelFn ? opts.labelFn(si, fi) : '';
-            var textFill = opts.textFillFn ? opts.textFillFn(si, fi) : 'var(--color-text)';
-            svg += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1"/>';
-            if (label) {
-              svg += '<text x="' + x + '" y="' + y + '" text-anchor="middle" dominant-baseline="central" font-size="' + fontSize + '" fill="' + textFill + '" font-weight="600">' + label + '</text>';
-            }
+            var y = noteY(si);
+            var fill = opts.fillFn ? opts.fillFn(si, fi) : 'hsl(30, 5%, 90%)';
+            svg += '<circle class="fb-pos" cx="' + x + '" cy="' + y + '" r="' + r + '" style="fill:' + fill + '"/>';
           }
         }
 
@@ -1373,38 +1366,30 @@
           + '</div></div>';
       }
 
-      // --- Full fretboard with all notes ---
+      var blank = 'hsl(30, 5%, 90%)';
+
+      // --- Full fretboard ---
       document.getElementById('fretboard-full').innerHTML = buildFretboard({
-        labelFn: function(s, f) { return getNoteAt(s, f); },
       }) + '<div class="anno-block">'
-        + 'viewBox: 0 0 600 240 &middot; scales to 100% width &middot; 6 strings &times; 13 frets<br>'
-        + 'circle r=15, font-size=12, font-weight=600, string spacing 40px &middot; nut stroke-width: 4'
+        + 'viewBox: 0 0 600 226 &middot; scales to 100% width &middot; 6 strings &times; 13 frets<br>'
+        + 'circle r=10, no text, no stroke, string spacing 38px, padY 18px'
         + '</div>';
 
       // --- Quiz highlight states ---
-      var highlight = v('--color-highlight');
+      var quizHl = 'hsl(50, 100%, 50%)';
       var success = v('--color-success');
       var error = v('--color-error');
       document.getElementById('fretboard-states').innerHTML = buildFretboard({
         stringCount: 3, fretCount: 7,
         fillFn: function(s, f) {
-          if (s === 1 && f === 3) return highlight;
+          if (s === 1 && f === 3) return quizHl;
           if (s === 0 && f === 5) return success;
           if (s === 2 && f === 1) return error;
-          return 'var(--color-bg)';
-        },
-        labelFn: function(s, f) {
-          if (s === 0 && f === 5) return 'A';
-          if (s === 2 && f === 1) return 'F';
-          return '';
-        },
-        textFillFn: function(s, f) {
-          if (s === 0 && f === 5 || s === 2 && f === 1) return 'white';
-          return 'var(--color-text)';
+          return blank;
         },
       }) + '<div class="showcase-row" style="margin-top:0.5rem;">'
-        + '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:' + highlight + ';border:1px solid var(--color-border);"></span>'
-        + '<span class="anno">question (--color-highlight)</span>'
+        + '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:' + quizHl + ';border:1px solid var(--color-border);"></span>'
+        + '<span class="anno">question (hsl(50, 100%, 50%))</span>'
         + '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:' + success + ';margin-left:0.5rem;"></span>'
         + '<span class="anno">correct (--color-success)</span>'
         + '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:' + error + ';margin-left:0.5rem;"></span>'
@@ -1414,10 +1399,9 @@
       // --- Fret markers demo ---
       document.getElementById('fretboard-markers-demo').innerHTML = buildFretboard({
         stringCount: 4, fretCount: 13,
-        labelFn: function() { return ''; },
       }) + '<div class="anno-block">'
         + 'single dot: frets 3, 5, 7, 9 (centered between strings)<br>'
-        + 'double dot: fret 12 (between string pairs) &middot; r=5, fill: --color-border-light, opacity 0.6'
+        + 'double dot: fret 12 (between string pairs 1-2 and (n-3)-(n-2)) &middot; r=4, class: fb-marker'
         + '</div>';
     })();
   </script>

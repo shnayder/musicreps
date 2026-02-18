@@ -116,30 +116,38 @@ Subtle warmth instead of pure grays — shifted `hsl(30, …)` for cohesion.
 | `--color-border-light` | `hsl(30, 5%, 80%)` | Table borders, toggle separator |
 | `--color-border-lighter` | `hsl(30, 5%, 86%)` | Section dividers |
 
-### Heatmap (Terracotta to Sage)
+### Heatmap (Warm to Sage)
 
-Warm-to-cool sequential scale. High saturation at both ends ("bright ends,
-faded middle") for visual pop at the extremes. Monotonically decreasing
-lightness ensures grayscale readability. Text switches to white on levels
-3–5 (L ≤ 50%) via `heatmapNeedsLightText()`.
+Warm-to-cool sequential scale matching the fretboard circle palette.
+Monotonically decreasing lightness ensures grayscale readability. Text
+switches to white on levels 3–5 (L ≤ 50%) via `heatmapNeedsLightText()`.
 
 | Token | Value | Meaning |
 |-------|-------|---------|
-| `--heatmap-none` | `hsl(60, 5%, 93%)` | No data |
-| `--heatmap-1` | `hsl(15, 55%, 68%)` | Needs work (terracotta) |
-| `--heatmap-2` | `hsl(35, 55%, 58%)` | Fading (amber) |
-| `--heatmap-3` | `hsl(55, 45%, 50%)` | Getting there (olive) |
-| `--heatmap-4` | `hsl(72, 42%, 42%)` | Solid (olive-sage) |
-| `--heatmap-5` | `hsl(88, 52%, 33%)` | Automatic (deep sage) |
+| `--heatmap-none` | `hsl(30, 4%, 85%)` | No data (unseen) |
+| `--heatmap-1` | `hsl(12, 48%, 65%)` | Needs work (<20%) |
+| `--heatmap-2` | `hsl(30, 48%, 58%)` | Fading (>20%) |
+| `--heatmap-3` | `hsl(50, 40%, 50%)` | Getting there (>40%) |
+| `--heatmap-4` | `hsl(72, 38%, 42%)` | Solid (>60%) |
+| `--heatmap-5` | `hsl(90, 45%, 35%)` | Automatic (>80%) |
 
 ### Fretboard SVG
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--color-fretboard-line` | `hsl(30, 5%, 30%)` | Fret lines, string lines, note circle borders |
+Circle-based design — one `<circle class="fb-pos">` per position with inline
+fill color. No text inside circles; hover card shows note details.
 
-SVG colors are applied via CSS rules (`.fretboard line`, `.note-circle`,
-`.note-text`) which override inline presentation attributes.
+| Element | Color | Usage |
+|---------|-------|-------|
+| `.fb-pos` (default) | `hsl(30, 5%, 90%)` | Dormant position circles |
+| `.fb-pos` (quiz highlight) | `hsl(50, 100%, 50%)` | Active question — vivid yellow |
+| `.fb-pos` (tap correct) | `hsl(90, 45%, 35%)` | Found position — sage green |
+| `.fb-string` | `hsl(30, 8%, 72%)` | String lines |
+| `.fb-fret` | `hsl(30, 5%, 82%)` | Fret lines |
+| `.fb-nut` | `hsl(30, 8%, 48%)` | Nut bar at fret 0 |
+| `.fb-marker` | `hsl(30, 5%, 62%)` | Inlay dots (3, 5, 7, 9, double at 12) |
+
+Heatmap colors on fretboard circles match the `--heatmap-*` scale above.
+No fret numbers — dropped for legibility at mobile sizes.
 
 ---
 

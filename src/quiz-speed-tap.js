@@ -7,27 +7,35 @@
 // DEFAULT_CONFIG
 
 function createSpeedTapMode() {
-  const container = document.getElementById('mode-speedTap');
+  var container = document.getElementById('mode-speedTap');
 
-  let naturalsOnly = true;
-  let currentNote = null;
-  let targetPositions = [];
-  let foundPositions = new Set();
-  let roundActive = false;
-  let wrongFlashTimeouts = new Set();
-  const noteNames = NOTES.map(n => n.name);
+  var naturalsOnly = true;
+  var currentNote = null;
+  var targetPositions = [];
+  var foundPositions = new Set();
+  var roundActive = false;
+  var wrongFlashTimeouts = new Set();
+  var noteNames = NOTES.map(function(n) { return n.name; });
+
+  // --- Fretboard fill colors ---
+  var FB_TAP_NEUTRAL = 'hsl(30, 4%, 90%)';
+  var FB_TAP_CORRECT = 'hsl(90, 45%, 35%)';
+
+  // --- Colors (from CSS custom properties, cached once) ---
+  var _cs = getComputedStyle(document.documentElement);
+  var COLOR_ERROR = _cs.getPropertyValue('--color-error').trim();
 
   // --- Note/position helpers ---
 
   function getNoteAtPosition(string, fret) {
-    const offset = STRING_OFFSETS[string];
+    var offset = STRING_OFFSETS[string];
     return noteNames[(offset + fret) % 12];
   }
 
   function getPositionsForNote(noteName) {
-    const positions = [];
-    for (let s = 0; s < 6; s++) {
-      for (let f = 0; f <= 12; f++) {
+    var positions = [];
+    for (var s = 0; s < 6; s++) {
+      for (var f = 0; f <= 12; f++) {
         if (getNoteAtPosition(s, f) === noteName) {
           positions.push({ string: s, fret: f });
         }
@@ -36,48 +44,28 @@ function createSpeedTapMode() {
     return positions;
   }
 
-  // --- Colors (from CSS custom properties, cached once) ---
-  const _cs = getComputedStyle(document.documentElement);
-  const COLOR_SUCCESS = _cs.getPropertyValue('--color-success').trim();
-  const COLOR_ERROR = _cs.getPropertyValue('--color-error').trim();
-
   // --- SVG helpers ---
 
-  function highlightCircle(string, fret, color) {
-    const circle = container.querySelector(
-      `circle[data-string="${string}"][data-fret="${fret}"]`
+  function setCircleFill(string, fret, color) {
+    var circle = container.querySelector(
+      'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
     );
     if (circle) circle.style.fill = color;
   }
 
-  function showNoteText(string, fret) {
-    const text = container.querySelector(
-      `text[data-string="${string}"][data-fret="${fret}"]`
-    );
-    if (text) text.textContent = displayNote(getNoteAtPosition(string, fret));
-  }
-
-  function clearNoteText(string, fret) {
-    const text = container.querySelector(
-      `text[data-string="${string}"][data-fret="${fret}"]`
-    );
-    if (text) text.textContent = '';
-  }
-
   function clearAll() {
-    container.querySelectorAll('.note-circle').forEach(c => c.style.fill = '');
-    container.querySelectorAll('.note-text').forEach(t => t.textContent = '');
+    container.querySelectorAll('.fb-pos').forEach(function(c) { c.style.fill = ''; });
   }
 
   // --- Tab state ---
-  let activeTab = 'practice';
+  var activeTab = 'practice';
 
   function switchTab(tabName) {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach(function(btn) {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
-    container.querySelectorAll('.tab-content').forEach(el => {
+    container.querySelectorAll('.tab-content').forEach(function(el) {
       el.classList.toggle('active',
         tabName === 'practice' ? el.classList.contains('tab-practice')
                                : el.classList.contains('tab-progress'));
@@ -134,20 +122,20 @@ function createSpeedTapMode() {
 
   // --- Note stats view ---
 
-  const statsControls = createStatsControls(container, (mode, el) => {
-    let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
-    for (const note of NOTES) {
-      html += '<th>' + displayNote(note.name) + '</th>';
+  var statsControls = createStatsControls(container, function(mode, el) {
+    var html = '<table class="stats-table speed-tap-stats"><thead><tr>';
+    for (var i = 0; i < NOTES.length; i++) {
+      html += '<th>' + displayNote(NOTES[i].name) + '</th>';
     }
     html += '</tr></thead><tbody><tr>';
-    for (const note of NOTES) {
+    for (var j = 0; j < NOTES.length; j++) {
       if (mode === 'retention') {
-        const auto = engine.selector.getAutomaticity(note.name);
+        var auto = engine.selector.getAutomaticity(NOTES[j].name);
         html += '<td class="stats-cell" style="background:' + getAutomaticityColor(auto) + '"></td>';
       } else {
-        const stats = engine.selector.getStats(note.name);
-        const posCount = getPositionsForNote(note.name).length;
-        const perPosMs = stats ? stats.ewma / posCount : null;
+        var stats = engine.selector.getStats(NOTES[j].name);
+        var posCount = getPositionsForNote(NOTES[j].name).length;
+        var perPosMs = stats ? stats.ewma / posCount : null;
         html += '<td class="stats-cell" style="background:' + getSpeedHeatmapColor(perPosMs) + '"></td>';
       }
     }
@@ -158,8 +146,8 @@ function createSpeedTapMode() {
 
   // --- DOM ---
 
-  const progressEl = container.querySelector('.speed-tap-progress');
-  const fretboardWrapper = container.querySelector('.fretboard-wrapper');
+  var progressEl = container.querySelector('.speed-tap-progress');
+  var fretboardWrapper = container.querySelector('.fretboard-wrapper');
 
   // --- Round progress display ---
 
@@ -174,15 +162,14 @@ function createSpeedTapMode() {
   function handleCircleTap(string, fret) {
     if (!engine.isActive || engine.isAnswered || !roundActive) return;
 
-    const key = string + '-' + fret;
+    var key = string + '-' + fret;
     if (foundPositions.has(key)) return;
 
-    const tappedNote = getNoteAtPosition(string, fret);
+    var tappedNote = getNoteAtPosition(string, fret);
 
     if (tappedNote === currentNote) {
       foundPositions.add(key);
-      highlightCircle(string, fret, COLOR_SUCCESS);
-      showNoteText(string, fret);
+      setCircleFill(string, fret, FB_TAP_CORRECT);
       updateRoundProgress();
 
       if (foundPositions.size === targetPositions.length) {
@@ -190,15 +177,13 @@ function createSpeedTapMode() {
         engine.submitAnswer('complete');
       }
     } else {
-      // Wrong tap — flash red, show actual note, then reset
-      highlightCircle(string, fret, COLOR_ERROR);
-      showNoteText(string, fret);
+      // Wrong tap — flash red, then reset
+      setCircleFill(string, fret, COLOR_ERROR);
 
-      const timeout = setTimeout(() => {
+      var timeout = setTimeout(function() {
         wrongFlashTimeouts.delete(timeout);
         if (!foundPositions.has(key)) {
-          highlightCircle(string, fret, '');
-          clearNoteText(string, fret);
+          setCircleFill(string, fret, FB_TAP_NEUTRAL);
         }
       }, 800);
       wrongFlashTimeouts.add(timeout);
@@ -209,8 +194,7 @@ function createSpeedTapMode() {
     if (e.target.closest('.setting-group')) return;
 
     if (engine.isActive && !engine.isAnswered && roundActive) {
-      const target = e.target.closest('circle[data-string][data-fret]') ||
-                     e.target.closest('text[data-string][data-fret]');
+      var target = e.target.closest('circle.fb-pos[data-string][data-fret]');
       if (target) {
         handleCircleTap(parseInt(target.dataset.string), parseInt(target.dataset.fret));
       }
@@ -219,21 +203,21 @@ function createSpeedTapMode() {
 
   // --- Mode interface ---
 
-  const mode = {
+  var mode = {
     id: 'speedTap',
     name: 'Speed Tap',
     storageNamespace: 'speedTap',
 
-    getEnabledItems() {
-      return naturalsOnly ? NATURAL_NOTES.slice() : NOTES.map(n => n.name);
+    getEnabledItems: function() {
+      return naturalsOnly ? NATURAL_NOTES.slice() : NOTES.map(function(n) { return n.name; });
     },
 
-    getExpectedResponseCount(itemId) {
+    getExpectedResponseCount: function(itemId) {
       return getPositionsForNote(itemId).length;
     },
 
-    presentQuestion(itemId) {
-      wrongFlashTimeouts.forEach(t => clearTimeout(t));
+    presentQuestion: function(itemId) {
+      wrongFlashTimeouts.forEach(function(t) { clearTimeout(t); });
       wrongFlashTimeouts.clear();
       clearAll();
 
@@ -242,27 +226,32 @@ function createSpeedTapMode() {
       foundPositions = new Set();
       roundActive = true;
 
-      const prompt = container.querySelector('.quiz-prompt');
+      // Set all circles to tap-neutral
+      container.querySelectorAll('.fb-pos').forEach(function(c) {
+        c.style.fill = FB_TAP_NEUTRAL;
+      });
+
+      var prompt = container.querySelector('.quiz-prompt');
       if (prompt) {
-        const note = NOTES.find(n => n.name === currentNote);
+        var note = NOTES.find(function(n) { return n.name === currentNote; });
         prompt.textContent = 'Tap all ' + (note ? displayNote(pickRandomAccidental(note.displayName)) : displayNote(currentNote));
       }
       updateRoundProgress();
     },
 
-    checkAnswer(itemId, input) {
-      const allFound = input === 'complete';
+    checkAnswer: function(itemId, input) {
+      var allFound = input === 'complete';
       return { correct: allFound, correctAnswer: displayNote(currentNote) };
     },
 
-    onStart() {
+    onStart: function() {
       if (statsControls.mode) statsControls.hide();
       if (fretboardWrapper) fretboardWrapper.classList.remove('fretboard-hidden');
     },
 
-    onStop() {
+    onStop: function() {
       roundActive = false;
-      wrongFlashTimeouts.forEach(t => clearTimeout(t));
+      wrongFlashTimeouts.forEach(function(t) { clearTimeout(t); });
       wrongFlashTimeouts.clear();
       clearAll();
       currentNote = null;
@@ -275,46 +264,46 @@ function createSpeedTapMode() {
       renderSessionSummary();
     },
 
-    onAnswer(itemId, result, responseTime) {
+    onAnswer: function(itemId, result, responseTime) {
       roundActive = false;
       if (!result.correct) {
         // On timeout: reveal remaining target positions
-        for (const pos of targetPositions) {
-          const key = pos.string + '-' + pos.fret;
+        for (var i = 0; i < targetPositions.length; i++) {
+          var pos = targetPositions[i];
+          var key = pos.string + '-' + pos.fret;
           if (!foundPositions.has(key)) {
-            highlightCircle(pos.string, pos.fret, COLOR_ERROR);
-            showNoteText(pos.string, pos.fret);
+            setCircleFill(pos.string, pos.fret, COLOR_ERROR);
           }
         }
       }
     },
 
-    handleKey(e, ctx) {
+    handleKey: function(e, ctx) {
       // Speed Tap doesn't use keyboard for answers
       return false;
     },
 
-    getCalibrationButtons() {
+    getCalibrationButtons: function() {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
   };
 
-  const engine = createQuizEngine(mode, container);
+  var engine = createQuizEngine(mode, container);
 
   // Pre-cache stats for all notes
-  for (const note of NOTES) {
-    engine.storage.getStats(note.name);
+  for (var i = 0; i < NOTES.length; i++) {
+    engine.storage.getStats(NOTES[i].name);
   }
 
   function init() {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach(btn => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    container.querySelectorAll('.mode-tab').forEach(function(btn) {
+      btn.addEventListener('click', function() { switchTab(btn.dataset.tab); });
     });
 
-    const naturalsCheckbox = container.querySelector('#speed-tap-naturals-only');
+    var naturalsCheckbox = container.querySelector('#speed-tap-naturals-only');
     if (naturalsCheckbox) {
-      naturalsCheckbox.addEventListener('change', (e) => {
+      naturalsCheckbox.addEventListener('change', function(e) {
         naturalsOnly = e.target.checked;
         engine.updateIdleMessage();
         renderPracticeSummary();
@@ -322,7 +311,7 @@ function createSpeedTapMode() {
       });
     }
 
-    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.start-btn').addEventListener('click', function() { engine.start(); });
 
     if (fretboardWrapper) fretboardWrapper.classList.add('fretboard-hidden');
     renderPracticeSummary();
@@ -330,17 +319,17 @@ function createSpeedTapMode() {
   }
 
   return {
-    mode,
-    engine,
-    init,
-    activate() {
+    mode: mode,
+    engine: engine,
+    init: init,
+    activate: function() {
       engine.attach();
       container.addEventListener('click', handleFretboardClick);
       engine.updateIdleMessage();
       renderPracticeSummary();
       engine.showCalibrationIfNeeded();
     },
-    deactivate() {
+    deactivate: function() {
       if (engine.isRunning) engine.stop();
       engine.detach();
       container.removeEventListener('click', handleFretboardClick);

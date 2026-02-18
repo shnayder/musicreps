@@ -9,13 +9,36 @@ export const fretPositions = [
 /** Maximum fretCount supported by fretPositions (needs positions[fret+1]). */
 const MAX_FRET_COUNT = fretPositions.length - 1; // 13
 
+/** Y padding above/below outermost strings. */
+const PAD_Y = 18;
+
+/** Spacing between adjacent strings. */
+const STRING_GAP = 38;
+
+/** Compute the Y coordinate for a string index. */
+export function stringY(stringIndex: number): number {
+  return PAD_Y + stringIndex * STRING_GAP;
+}
+
+/** Compute the X coordinate for a note at a given fret. */
+export function noteX(fret: number): number {
+  return fret === 0
+    ? (fretPositions[0] + fretPositions[1]) / 2
+    : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
+}
+
+/** Compute SVG height for a given string count. */
+export function svgHeight(stringCount: number): number {
+  return (stringCount - 1) * STRING_GAP + PAD_Y * 2;
+}
+
 /** Generate SVG fret lines (vertical). Starts from fret 2; fret 1 (nut) is a separate element. */
-export function fretLines(svgHeight: number = 240): string {
+export function fretLines(height: number): string {
   return fretPositions
     .slice(2)
     .map(
       (x) =>
-        `<line x1="${x}" y1="0" x2="${x}" y2="${svgHeight}" stroke="#333" stroke-width="1"/>`,
+        `<line class="fb-fret" x1="${x}" y1="0" x2="${x}" y2="${height}" stroke-width="1"/>`,
     )
     .join("\n      ");
 }
@@ -23,8 +46,8 @@ export function fretLines(svgHeight: number = 240): string {
 /** Generate SVG string lines (horizontal, thicker for lower strings). */
 export function stringLines(stringCount: number = 6): string {
   return Array.from({ length: stringCount }, (_, i) => {
-    const thickness = 1 + i * 0.5;
-    return `<line x1="0" y1="${20 + i * 40}" x2="600" y2="${20 + i * 40}" stroke="#333" stroke-width="${thickness}"/>`;
+    const thickness = 1 + i * 0.4;
+    return `<line class="fb-string" x1="0" y1="${stringY(i)}" x2="600" y2="${stringY(i)}" stroke-width="${thickness}"/>`;
   }).join("\n      ");
 }
 
@@ -34,73 +57,39 @@ export function fretMarkerDots(
   markers: number[] = [3, 5, 7, 9, 12],
   fretCount: number = 13,
 ): string {
-  const svgHeight = stringCount * 40;
-  const midY = svgHeight / 2;
+  const h = svgHeight(stringCount);
   return markers
     .filter((fret) => fret < fretCount)
     .map((fret) => {
-      const cx = (fretPositions[fret] + fretPositions[fret + 1]) / 2;
+      const cx = noteX(fret);
       if (fret === 12) {
-        // Double dot — at string 1 and string (n-2) y-positions
-        const y1 = 20 + 1 * 40;
-        const y2 = 20 + (stringCount - 2) * 40;
-        return `<circle class="fret-marker" cx="${cx}" cy="${y1}" r="5"/>`
-          + `<circle class="fret-marker" cx="${cx}" cy="${y2}" r="5"/>`;
+        // Double dot at fret 12
+        let y1: number, y2: number;
+        if (stringCount <= 4) {
+          // Not enough strings for distinct "between" positions — place on strings 1 and (n-2)
+          y1 = stringY(1);
+          y2 = stringY(stringCount - 2);
+        } else {
+          // 5+ strings: between strings 1-2 and (n-3)-(n-2)
+          y1 = (stringY(1) + stringY(2)) / 2;
+          y2 = (stringY(stringCount - 3) + stringY(stringCount - 2)) / 2;
+        }
+        return `<circle class="fb-marker" cx="${cx}" cy="${y1}" r="4"/>`
+          + `<circle class="fb-marker" cx="${cx}" cy="${y2}" r="4"/>`;
       }
-      return `<circle class="fret-marker" cx="${cx}" cy="${midY}" r="5"/>`;
+      return `<circle class="fb-marker" cx="${cx}" cy="${h / 2}" r="4"/>`;
     })
     .join("\n      ");
 }
 
-/** Generate SVG circles and text elements for every note position. */
-export function noteElements(stringCount: number = 6, fretCount: number = 13): string {
+/** Generate SVG position circles — one per fret position, no text. */
+export function positionCircles(stringCount: number = 6, fretCount: number = 13): string {
   if (fretCount > MAX_FRET_COUNT) {
     throw new Error(`fretCount ${fretCount} exceeds max ${MAX_FRET_COUNT} (fretPositions has ${fretPositions.length} entries)`);
   }
   return Array.from({ length: stringCount }, (_, string) =>
     Array.from({ length: fretCount }, (_, fret) => {
-      const x =
-        fret === 0
-          ? fretPositions[0] + (fretPositions[1] - fretPositions[0]) / 2
-          : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
-      const y = 20 + string * 40;
-      return `<circle
-      class="note-circle"
-      data-string="${string}"
-      data-fret="${fret}"
-      cx="${x}"
-      cy="${y}"
-      r="15"
-      fill="white"
-      stroke="#333"
-      stroke-width="1"
-    /><text
-      class="note-text"
-      data-string="${string}"
-      data-fret="${fret}"
-      x="${x}"
-      y="${y}"
-      text-anchor="middle"
-      dominant-baseline="central"
-      font-size="12"
-      font-weight="600"
-      fill="#333"
-    ></text>`;
+      return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${noteX(fret)}" cy="${stringY(string)}" r="10"/>`;
     }).join("\n      "),
   ).join("\n      ");
-}
-
-/** Fret-number markers positioned as HTML divs. */
-export function fretNumberElements(markers: number[] = [3, 5, 7, 9, 12]): string {
-  const maxMarker = MAX_FRET_COUNT - 1; // needs positions[fret+1]
-  return markers
-    .map((fret) => {
-      if (fret > maxMarker) {
-        throw new Error(`fret marker ${fret} exceeds max ${maxMarker} (fretPositions has ${fretPositions.length} entries)`);
-      }
-      const x = (fretPositions[fret] + fretPositions[fret + 1]) / 2;
-      const pct = (x / 600) * 100;
-      return `<div class="fret-number" style="left: ${pct}%">${fret}</div>`;
-    })
-    .join("\n    ");
 }
