@@ -257,6 +257,7 @@ body {
 }
 
 /* --- Phase-driven visibility --- */
+.quiz-session { position: relative; }
 .phase-idle .quiz-session { display: none; }
 
 /* Hide tabs and tab content during non-idle phases */
@@ -437,7 +438,7 @@ body {
 .tab-content .stats-controls {
   text-align: center;
   margin: var(--space-3) 0;
-  padding-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
 }
 
 /* --- Fretboard --- */
@@ -634,12 +635,15 @@ button {
   gap: var(--space-3);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  padding: 0 0 var(--space-2);
+  padding: 0 var(--space-6) var(--space-2) 0;
 }
 .quiz-info-context { flex: 1; }
 .quiz-info-time { font-variant-numeric: tabular-nums; }
 .quiz-info-count { font-variant-numeric: tabular-nums; }
 .quiz-header-close {
+  position: absolute;
+  top: var(--space-3);
+  right: 0;
   background: none;
   border: none;
   font-size: var(--text-xl);
@@ -650,6 +654,7 @@ button {
   margin: 0;
   border-radius: 4px;
   transition: color 0.15s ease, background 0.15s ease;
+  z-index: 1;
 }
 .quiz-header-close:hover {
   color: var(--color-text);
@@ -1168,12 +1173,11 @@ button {
   height: 20px;
 }
 
-/* --- Stats controls (divider between stats and quiz sections) --- */
+/* --- Stats controls (toggle above chart) --- */
 .stats-controls {
   text-align: center;
   margin: var(--space-3) 0;
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--color-border-lighter);
+  padding-bottom: var(--space-2);
 }
 
 /* --- Stats mode toggle (Recall / Speed) --- */
@@ -1382,7 +1386,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v6.1</span>
+      <span class="version">v6.2</span>
     </div>
   </div>
 
@@ -1552,12 +1556,12 @@ button {
         </div></div>
       </div>
     </div>
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -1567,8 +1571,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -1876,12 +1880,12 @@ button {
         </div></div>
       </div>
     </div>
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -1891,8 +1895,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2073,12 +2077,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -2088,8 +2092,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2289,12 +2293,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -2304,8 +2308,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2397,12 +2401,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -2412,8 +2416,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2510,12 +2514,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -2525,8 +2529,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2609,12 +2613,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -2624,8 +2628,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2708,12 +2712,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -2723,8 +2727,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2824,12 +2828,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -2839,8 +2843,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2932,12 +2936,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -2947,8 +2951,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -3040,12 +3044,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
-      <div class="stats-container"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
+      <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-bar">
@@ -3055,8 +3059,8 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
-        <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -4128,7 +4132,7 @@ function engineCalibrationIntro(state, hintOverride) {
     answersEnabled: false,
     feedbackText: 'Quick Speed Check',
     feedbackClass: 'feedback',
-    hintText: hintOverride || "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
+    hintText: hintOverride !== undefined ? hintOverride : "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
     timeDisplayText: '',
     calibrationBaseline: null,
   };
@@ -4146,7 +4150,7 @@ function engineCalibrating(state, hintOverride) {
     phase: 'calibrating',
     answersEnabled: true,
     feedbackText: 'Speed check!',
-    hintText: hintOverride || 'Tap the highlighted button as fast as you can',
+    hintText: hintOverride !== undefined ? hintOverride : 'Tap the highlighted button as fast as you can',
   };
 }
 
@@ -4594,8 +4598,8 @@ function runCalibration(opts) {
     }
 
     prevBtn = targetBtn;
-    if (els.progressText) els.progressText.textContent = (trialIndex + 1) + ' / ' + TRIAL_COUNT;
-    if (els.progressFill) els.progressFill.style.width = Math.round(((trialIndex + 1) / TRIAL_COUNT) * 100) + '%';
+    if (els.progressText) els.progressText.textContent = trialIndex + ' / ' + TRIAL_COUNT;
+    if (els.progressFill) els.progressFill.style.width = Math.round((trialIndex / TRIAL_COUNT) * 100) + '%';
   }
 
   function recordPress() {
@@ -5169,6 +5173,21 @@ function createQuizEngine(mode, container) {
 
   // --- Baseline application ---
 
+  /**
+   * Sync baseline from localStorage (another mode may have completed
+   * calibration since this engine was created). Called on attach().
+   */
+  function syncBaselineFromStorage() {
+    if (motorBaseline) return; // already have one
+    const stored = localStorage.getItem(baselineKey);
+    if (stored) {
+      const parsed = parseInt(stored, 10);
+      if (parsed > 0) {
+        applyBaseline(parsed);
+      }
+    }
+  }
+
   function applyBaseline(baseline) {
     motorBaseline = baseline;
     localStorage.setItem(baselineKey, String(baseline));
@@ -5209,7 +5228,7 @@ function createQuizEngine(mode, container) {
   }
 
   function getCalibrationTrialHint() {
-    if (hasSearchCalibration()) return 'Find and press the button';
+    if (hasSearchCalibration()) return ''; // prompt already tells user what to press
     return undefined; // use default (highlight mode)
   }
 
@@ -5426,6 +5445,7 @@ function createQuizEngine(mode, container) {
   // Also refreshes notation-dependent content (button labels, stats table)
   // so that a mode activated after a global notation change shows current labels.
   function attach() {
+    syncBaselineFromStorage();
     document.addEventListener('keydown', handleKeydown);
     container.addEventListener('click', handleClick);
     refreshNoteButtonLabels(container);
@@ -5460,15 +5480,7 @@ function createQuizEngine(mode, container) {
    * engine was created (e.g. guitar and ukulele both use 'button').
    */
   function showCalibrationIfNeeded() {
-    if (!motorBaseline) {
-      const stored = localStorage.getItem(baselineKey);
-      if (stored) {
-        const parsed = parseInt(stored, 10);
-        if (parsed > 0) {
-          applyBaseline(parsed);
-        }
-      }
-    }
+    syncBaselineFromStorage();
     if (!motorBaseline && state.phase === 'idle') {
       startCalibration();
     }

@@ -247,6 +247,7 @@ body {
 }
 
 /* --- Phase-driven visibility --- */
+.quiz-session { position: relative; }
 .phase-idle .quiz-session { display: none; }
 
 /* Hide tabs and tab content during non-idle phases */
@@ -427,7 +428,7 @@ body {
 .tab-content .stats-controls {
   text-align: center;
   margin: var(--space-3) 0;
-  padding-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
 }
 
 /* --- Fretboard --- */
@@ -624,12 +625,15 @@ button {
   gap: var(--space-3);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  padding: 0 0 var(--space-2);
+  padding: 0 var(--space-6) var(--space-2) 0;
 }
 .quiz-info-context { flex: 1; }
 .quiz-info-time { font-variant-numeric: tabular-nums; }
 .quiz-info-count { font-variant-numeric: tabular-nums; }
 .quiz-header-close {
+  position: absolute;
+  top: var(--space-3);
+  right: 0;
   background: none;
   border: none;
   font-size: var(--text-xl);
@@ -640,6 +644,7 @@ button {
   margin: 0;
   border-radius: 4px;
   transition: color 0.15s ease, background 0.15s ease;
+  z-index: 1;
 }
 .quiz-header-close:hover {
   color: var(--color-text);
@@ -1158,12 +1163,11 @@ button {
   height: 20px;
 }
 
-/* --- Stats controls (divider between stats and quiz sections) --- */
+/* --- Stats controls (toggle above chart) --- */
 .stats-controls {
   text-align: center;
   margin: var(--space-3) 0;
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--color-border-lighter);
+  padding-bottom: var(--space-2);
 }
 
 /* --- Stats mode toggle (Recall / Speed) --- */
