@@ -6,7 +6,9 @@ custom properties in `src/styles.css` `:root`.
 
 ### Design reference pages
 
-Live HTML pages for visual iteration — edit `src/styles.css`, rebuild, refresh.
+Live HTML pages for visual iteration. Hand-written pages (`colors.html`,
+`components.html`) link directly to `src/styles.css` — just edit and refresh.
+`moments.html` is build-generated, so run `npx tsx build.ts` after edits.
 
 | Page | Contents | Source |
 |------|----------|--------|

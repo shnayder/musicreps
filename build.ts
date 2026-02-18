@@ -301,101 +301,119 @@ interface MomentOverrides {
   statsText?: string;
 }
 
+/** Replace `target` with `replacement` in `html`, throwing if target is absent. */
+function replaceOrThrow(html: string, target: string | RegExp, replacement: string | ((...args: string[]) => string)): string {
+  if (typeof target === 'string') {
+    if (!html.includes(target)) {
+      throw new Error(`prepareMoment: target not found: ${target.slice(0, 80)}`);
+    }
+    return html.replace(target, replacement as string);
+  }
+  // RegExp target
+  if (!target.test(html)) {
+    throw new Error(`prepareMoment: regex not matched: ${target.source.slice(0, 80)}`);
+  }
+  return html.replace(target, replacement as (...args: string[]) => string);
+}
+
 function prepareMoment(source: string, o: MomentOverrides): string {
   let h = source;
+  const r = (target: string | RegExp, replacement: string | ((...args: string[]) => string)) => {
+    h = replaceOrThrow(h, target, replacement);
+  };
 
   // Phase + visibility
-  if (o.phase) h = h.replace('phase-idle', `phase-${o.phase}`);
-  if (o.quizAreaActive) h = h.replace('class="quiz-area"', 'class="quiz-area active"');
+  if (o.phase) r('phase-idle', `phase-${o.phase}`);
+  if (o.quizAreaActive) r('class="quiz-area"', 'class="quiz-area active"');
 
   // Quiz content
-  if (o.quizPrompt) h = h.replace(
+  if (o.quizPrompt) r(
     '<div class="quiz-prompt"></div>',
     `<div class="quiz-prompt">${o.quizPrompt}</div>`,
   );
-  if (o.feedbackHtml) h = h.replace(
+  if (o.feedbackHtml) r(
     '<div class="feedback"></div>',
     `<div class="feedback">${o.feedbackHtml}</div>`,
   );
-  if (o.timeDisplay) h = h.replace(
+  if (o.timeDisplay) r(
     '<div class="time-display"></div>',
     `<div class="time-display">${o.timeDisplay}</div>`,
   );
-  if (o.hint) h = h.replace(
+  if (o.hint) r(
     '<div class="hint"></div>',
     `<div class="hint">${o.hint}</div>`,
   );
 
   // Countdown
-  if (o.countdown !== undefined) h = h.replace(
+  if (o.countdown !== undefined) r(
     '<div class="quiz-countdown-fill"></div>',
     `<div class="quiz-countdown-fill" style="width: ${o.countdown}%;"></div>`,
   );
-  if (o.countdownWarning) h = h.replace(
+  if (o.countdownWarning) r(
     'class="quiz-countdown-bar"',
     'class="quiz-countdown-bar round-timer-warning"',
   );
 
   // Session info
-  if (o.infoContext) h = h.replace(
+  if (o.infoContext) r(
     '<span class="quiz-info-context"></span>',
     `<span class="quiz-info-context">${o.infoContext}</span>`,
   );
-  if (o.infoTime) h = h.replace(
+  if (o.infoTime) r(
     '<span class="quiz-info-time"></span>',
     `<span class="quiz-info-time">${o.infoTime}</span>`,
   );
-  if (o.infoCount) h = h.replace(
+  if (o.infoCount) r(
     '<span class="quiz-info-count"></span>',
     `<span class="quiz-info-count">${o.infoCount}</span>`,
   );
 
   // Progress bar
-  if (o.progressPercent !== undefined) h = h.replace(
+  if (o.progressPercent !== undefined) r(
     'style="width: 0%"',
     `style="width: ${o.progressPercent}%"`,
   );
-  if (o.progressText) h = h.replace(
+  if (o.progressText) r(
     '<div class="progress-text">0 / 0 fluent</div>',
     `<div class="progress-text">${o.progressText}</div>`,
   );
 
   // Round complete
-  if (o.roundHeading) h = h.replace(
+  if (o.roundHeading) r(
     '<div class="round-complete-heading"></div>',
     `<div class="round-complete-heading">${o.roundHeading}</div>`,
   );
-  if (o.roundCorrect) h = h.replace(
+  if (o.roundCorrect) r(
     '<span class="round-stat-value round-stat-correct"></span>',
     `<span class="round-stat-value round-stat-correct">${o.roundCorrect}</span>`,
   );
-  if (o.roundMedian) h = h.replace(
+  if (o.roundMedian) r(
     '<span class="round-stat-value round-stat-median"></span>',
     `<span class="round-stat-value round-stat-median">${o.roundMedian}</span>`,
   );
-  if (o.roundFluent) h = h.replace(
+  if (o.roundFluent) r(
     '<span class="round-stat-value round-stat-fluent"></span>',
     `<span class="round-stat-value round-stat-fluent">${o.roundFluent}</span>`,
   );
 
   // Practice card
-  if (o.practiceStatusLabel) h = h.replace(
+  if (o.practiceStatusLabel) r(
     '<span class="practice-status-label"></span>',
     `<span class="practice-status-label">${o.practiceStatusLabel}</span>`,
   );
-  if (o.practiceStatusDetail) h = h.replace(
+  if (o.practiceStatusDetail) r(
     '<span class="practice-status-detail"></span>',
     `<span class="practice-status-detail">${o.practiceStatusDetail}</span>`,
   );
-  if (o.practiceRecText) h = h.replace(
+  if (o.practiceRecText) r(
     '<span class="practice-rec-text"></span>',
     `<span class="practice-rec-text">${o.practiceRecText}</span>`,
   );
-  if (o.sessionSummary) h = h.replace(
+  if (o.sessionSummary) r(
     '<div class="session-summary-text"></div>',
     `<div class="session-summary-text">${o.sessionSummary}</div>`,
   );
-  if (o.showMastery) h = h.replace(
+  if (o.showMastery) r(
     'class="mastery-message"',
     'class="mastery-message mastery-visible"',
   );
@@ -406,41 +424,41 @@ function prepareMoment(source: string, o: MomentOverrides): string {
       const circleRe = new RegExp(
         `(<circle\\s+class="note-circle"\\s+data-string="${n.s}"\\s+data-fret="${n.f}"\\s+cx="[^"]*"\\s+cy="[^"]*"\\s+r="15"\\s+)fill="white"`,
       );
-      h = h.replace(circleRe, `$1fill="${n.fill}"`);
+      r(circleRe, `$1fill="${n.fill}"`);
       if (n.text) {
         const textRe = new RegExp(
           `(class="note-text"\\s+data-string="${n.s}"\\s+data-fret="${n.f}"[^>]*>)(</text>)`,
         );
-        h = h.replace(textRe, `$1${n.text}$2`);
+        r(textRe, `$1${n.text}$2`);
       }
     }
   }
 
   // Chord slots
-  if (o.chordSlotsHtml) h = h.replace(
+  if (o.chordSlotsHtml) r(
     '<div class="chord-slots"></div>',
     `<div class="chord-slots">${o.chordSlotsHtml}</div>`,
   );
 
   // Hide accidentals (naturals-only mode)
-  if (o.hideAccidentals) h = h.replace(
+  if (o.hideAccidentals) r(
     'class="note-row-accidentals"',
     'class="note-row-accidentals" style="display: none;"',
   );
 
   // String toggle state
   if (o.toggleState) {
-    // Reset all toggles (remove default active)
+    // Reset all toggles (remove default active) — global replace, no throw needed
     h = h.replace(/class="string-toggle active"/g, 'class="string-toggle"');
     for (const idx of o.toggleState.active) {
-      h = h.replace(
+      r(
         `class="string-toggle" data-string="${idx}"`,
         `class="string-toggle active" data-string="${idx}"`,
       );
     }
     if (o.toggleState.recommended !== undefined) {
       const ri = o.toggleState.recommended;
-      h = h.replace(
+      r(
         new RegExp(`class="string-toggle( active)?" data-string="${ri}"`),
         (_, act) => `class="string-toggle${act || ''} recommended" data-string="${ri}"`,
       );
@@ -449,18 +467,18 @@ function prepareMoment(source: string, o: MomentOverrides): string {
 
   // Progress tab active
   if (o.progressTabActive) {
-    h = h.replace('class="mode-tab active" data-tab="practice"', 'class="mode-tab" data-tab="practice"');
-    h = h.replace('class="mode-tab" data-tab="progress"', 'class="mode-tab active" data-tab="progress"');
-    h = h.replace('class="tab-content tab-practice active"', 'class="tab-content tab-practice"');
-    h = h.replace('class="tab-content tab-progress"', 'class="tab-content tab-progress" style="display:block;"');
+    r('class="mode-tab active" data-tab="practice"', 'class="mode-tab" data-tab="practice"');
+    r('class="mode-tab" data-tab="progress"', 'class="mode-tab active" data-tab="progress"');
+    r('class="tab-content tab-practice active"', 'class="tab-content tab-practice"');
+    r('class="tab-content tab-progress"', 'class="tab-content tab-progress" style="display:block;"');
   }
 
   // Stats injection
-  if (o.statsHtml) h = h.replace(
+  if (o.statsHtml) r(
     '<div class="stats-container"></div>',
     `<div class="stats-container">${o.statsHtml}</div>`,
   );
-  if (o.statsText) h = h.replace(
+  if (o.statsText) r(
     '<span class="stats"></span>',
     `<span class="stats">${o.statsText}</span>`,
   );
