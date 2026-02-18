@@ -137,6 +137,7 @@ Bidirectional modes track each direction as a separate item.
 | [visual-design.md](guides/design/visual-design.md) | Color system, typography, spacing, component patterns |
 | [coding-style.md](guides/coding-style.md) | Naming, file structure, DOM rules, testing patterns |
 | [accidental-conventions.md](guides/accidental-conventions.md) | Sharp/flat naming rules by mode, rule priority |
+| [terminology.md](guides/terminology.md) | User-facing terms and their internal equivalents |
 
 **Process** — how to work on the codebase:
 

@@ -234,11 +234,8 @@ new users and hard to scan without support.
 
 ## UX Terminology
 
-Terms used in the UI and codebase with specific meanings in this app:
-
-| Term | Meaning | Why this word |
-|------|---------|---------------|
-| **fluent** | An item the user can recall quickly and accurately right now (automaticity above threshold). Used in the progress bar: "5 / 78 fluent". | "Mastered" implies permanent learning, but you'll forget by next session. "Fluent" captures speed + accuracy without claiming permanence — you can be fluent today and rusty tomorrow. Matches the underlying automaticity metric. |
+See [terminology.md](../terminology.md) for the canonical list of user-facing
+terms and their internal equivalents.
 
 ---
 

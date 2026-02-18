@@ -45,6 +45,11 @@ How the product should work — what it does and doesn't do for users.
    which items — but the user can always choose something else. All modes remain
    accessible. Guidance over enforcement.
 
+10. **Practice, not performance.** Time constraints serve automaticity — pushing
+    for speed should feel like building a skill, not racing a clock. If a user
+    knows the material but the UI makes them feel like they're failing, the
+    design is wrong. Urgency cues should pace, not punish.
+
 ---
 
 ## Visual Design Principles
@@ -65,8 +70,10 @@ How the app should look and feel. See
 4. **Information density** — stats scannable at a glance, not decorative.
    Heatmaps use accessible color scale; tables compact but readable.
 
-5. **Mobile-primary** — thumb-friendly 48px touch targets, no hover-dependent
-   interactions. All hover states are enhancements, not requirements.
+5. **Mobile-primary** — thumb-friendly 48px touch targets with clear press
+   feedback, no hover-dependent interactions. All hover states are
+   enhancements, not requirements. Every tap should produce immediate visual
+   confirmation that the input registered.
 
 ---
 

@@ -85,6 +85,9 @@ Use the date you start the work. Use kebab-case for the description.
 
 Before considering a spec ready for review, verify:
 
+- [ ] **Links to source documents.** If the spec implements part of a larger
+  design doc, exploration, or backlog item, link to it in the Overview so
+  readers can find the original context.
 - [ ] **Stays at product level.** No state shapes, function signatures,
   storage keys, or DOM structure. Those belong in the implementation plan.
 - [ ] **Consistent with design principles.** Check

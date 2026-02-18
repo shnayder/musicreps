@@ -8,11 +8,10 @@ Branch: workstream/design
 - Cleaning up and reorganizing design guides
 - Fretboard polish — fret markers, visual clutter. Remove accidentals? Allow not showing notes at all?
   - https://claude.ai/code/session_01QcUZoZnGwepxvQhzv5NrSC
+  -> waiting for web site to come back. plans/design-docs/2026-02-17-fretboard-polish.md
 
 ## Backlog
 - Quiz view
-  - remove x/y fluent bar. Not needed during quiz.
-  - 
 - Color system and brand identity
 - UI language -- glossary, etc.
 - Component documentation — visual-design.md has brief patterns, needs expansion
@@ -20,12 +19,9 @@ Branch: workstream/design
   and components.html exist; process documented in visual-design.md
 - Think about, document tone — playful, formal, serious, laid back
 - Mode headers design
-- Full-screen modes, no header (part of home screen revamp)
-- Landscape mode (or lock vertical)
-- Speed check should be styled as a secondary action
-- Don't use red/green scales (accessibility)
-- Intervals displayed piano-style (like notes)
-- Double tap zooms — it shouldn't (from user feedback)
+- Either support landscape mode or lock vertical. MVP: lock vertical.
+- Double tap currently zooms — it shouldn't (from user feedback)
+- Intervals should be displayed piano-style (like notes)
 
 ## User Feedback (design-relevant)
 - "What am I supposed to do?" — onboarding/discoverability
