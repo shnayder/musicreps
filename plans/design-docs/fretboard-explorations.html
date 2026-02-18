@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fretboard Design — Direction 1 Variations</title>
+<title>Fretboard — Circle Color Variations</title>
 <style>
   :root {
     --page-bg: #f5f4f1;
@@ -12,12 +12,6 @@
     --text-muted: hsl(30, 3%, 45%);
     --border: hsl(30, 5%, 85%);
     --brand: hsl(90, 35%, 45%);
-    --heat-none: hsl(60, 5%, 93%);
-    --heat-1: hsl(15, 55%, 68%);
-    --heat-2: hsl(35, 55%, 58%);
-    --heat-3: hsl(55, 45%, 50%);
-    --heat-4: hsl(72, 42%, 42%);
-    --heat-5: hsl(88, 52%, 33%);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -28,8 +22,8 @@
     max-width: 400px;
     margin: 0 auto;
   }
-  h1 { font-size: 1.2rem; font-weight: 700; text-align: center; margin-bottom: 0.25rem; }
-  .subtitle { text-align: center; color: var(--text-muted); font-size: 0.75rem; margin-bottom: 1rem; }
+  h1 { font-size: 1.15rem; font-weight: 700; text-align: center; margin-bottom: 0.2rem; }
+  .subtitle { text-align: center; color: var(--text-muted); font-size: 0.72rem; margin-bottom: 1rem; line-height: 1.4; }
   .exploration {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -39,7 +33,7 @@
   }
   .exploration h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.15rem; }
   .exploration .desc {
-    font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.4;
+    font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.4;
   }
   .fretboard-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; position: relative; }
 
@@ -59,59 +53,7 @@
     display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; justify-content: center;
   }
   .legend-item { display: flex; align-items: center; gap: 0.15rem; font-size: 0.6rem; color: var(--text-muted); }
-  .legend-swatch { width: 9px; height: 9px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.08); }
-
-  /* ===== Shared fretboard styles ===== */
-  .fb svg { width: 100%; height: auto; display: block; }
-  .fb .fb-string { stroke: hsl(30, 8%, 72%); }
-  .fb .fb-fret { stroke: hsl(30, 5%, 82%); }
-  .fb .fb-nut { fill: hsl(30, 8%, 52%); }
-  .fb .fb-marker { fill: hsl(30, 5%, 75%); }
-  .fb .fb-fret-num {
-    font-family: system-ui, sans-serif; font-size: 8px; font-weight: 500;
-    fill: hsl(30, 3%, 65%); text-anchor: middle;
-  }
-
-  /* Quiz highlight */
-  .fb .fb-quiz-hl {
-    fill: hsl(45, 90%, 55%); opacity: 0; transition: opacity 0.15s;
-  }
-  .fb .fb-quiz-hl.visible { opacity: 1; }
-
-  /* Tap target */
-  .fb .fb-tap {
-    fill: transparent; stroke: hsl(30, 5%, 65%); stroke-width: 1;
-    opacity: 0; cursor: pointer; transition: opacity 0.15s;
-  }
-  .fb .fb-tap.visible { opacity: 1; }
-  .fb .fb-tap.correct {
-    fill: hsla(90, 45%, 50%, 0.25); stroke: hsl(90, 45%, 45%); stroke-width: 1.5;
-  }
-
-  /* Heatmap dot */
-  .fb .fb-dot {
-    opacity: 0; cursor: pointer; transition: opacity 0.15s;
-  }
-  .fb .fb-dot.visible { opacity: 1; }
-  .fb .fb-dot.heat-none { fill: hsl(30, 3%, 82%); }
-  .fb .fb-dot.heat-1 { fill: var(--heat-1); }
-  .fb .fb-dot.heat-2 { fill: var(--heat-2); }
-  .fb .fb-dot.heat-3 { fill: var(--heat-3); }
-  .fb .fb-dot.heat-4 { fill: var(--heat-4); }
-  .fb .fb-dot.heat-5 { fill: var(--heat-5); }
-
-  /* Ring variant (dots drawn as outlined rings) */
-  .fb .fb-ring {
-    fill: transparent; stroke-width: 1.5; opacity: 0;
-    cursor: pointer; transition: opacity 0.15s;
-  }
-  .fb .fb-ring.visible { opacity: 1; }
-  .fb .fb-ring.heat-none { stroke: hsl(30, 3%, 82%); }
-  .fb .fb-ring.heat-1 { stroke: var(--heat-1); }
-  .fb .fb-ring.heat-2 { stroke: var(--heat-2); }
-  .fb .fb-ring.heat-3 { stroke: var(--heat-3); }
-  .fb .fb-ring.heat-4 { stroke: var(--heat-4); }
-  .fb .fb-ring.heat-5 { stroke: var(--heat-5); }
+  .legend-swatch { width: 9px; height: 9px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.08); }
 
   /* Tap quiz prompt */
   .tap-prompt {
@@ -119,7 +61,21 @@
     text-align: center; padding: 0.3rem 0; min-height: 1.3rem;
   }
 
-  /* ===== Hover card (shared) ===== */
+  /* ===== Fretboard ===== */
+  .fb svg { width: 100%; height: auto; display: block; }
+  .fb .fb-string { stroke: hsl(30, 8%, 72%); }
+  .fb .fb-fret { stroke: hsl(30, 5%, 82%); }
+  .fb .fb-nut { fill: hsl(30, 8%, 48%); }
+  .fb .fb-marker { fill: hsl(30, 5%, 62%); }
+
+  /* Single circle per position — no stroke, solid fill */
+  .fb .fb-pos {
+    stroke: none;
+    cursor: pointer;
+    transition: fill 0.15s;
+  }
+
+  /* ===== Hover card ===== */
   .hover-card {
     position: absolute;
     pointer-events: none;
@@ -128,162 +84,36 @@
     transition: opacity 0.12s;
   }
   .hover-card.visible { opacity: 1; }
-
-  /* Style A: small dark pill */
-  .hover-card.style-pill .hc-inner {
-    background: hsl(30, 5%, 22%); color: #fff; border-radius: 6px;
-    padding: 0.25rem 0.5rem; font-size: 0.7rem; font-weight: 600;
-    white-space: nowrap; text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  }
-  .hover-card.style-pill .hc-detail {
-    font-size: 0.55rem; font-weight: 400; opacity: 0.7; margin-top: 0.1rem;
-  }
-
-  /* Style B: card with bar */
-  .hover-card.style-card .hc-inner {
+  .hover-card .hc-inner {
     background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
-    padding: 0.4rem 0.55rem; min-width: 70px;
+    padding: 0.35rem 0.5rem; min-width: 65px;
     box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+    text-align: center;
   }
-  .hover-card.style-card .hc-note {
+  .hover-card .hc-note {
     font-size: 0.85rem; font-weight: 700; color: var(--text);
   }
-  .hover-card.style-card .hc-detail {
-    font-size: 0.6rem; color: var(--text-muted); margin-top: 0.15rem;
+  .hover-card .hc-string-fret {
+    font-size: 0.55rem; color: var(--text-muted); margin-top: 0.05rem;
   }
-  .hover-card.style-card .hc-bar {
+  .hover-card .hc-detail {
+    font-size: 0.58rem; color: var(--text-muted); margin-top: 0.12rem;
+  }
+  .hover-card .hc-bar {
     height: 3px; border-radius: 2px; background: hsl(30, 5%, 90%);
-    margin-top: 0.3rem; overflow: hidden;
+    margin-top: 0.25rem; overflow: hidden;
   }
-  .hover-card.style-card .hc-bar-fill {
+  .hover-card .hc-bar-fill {
     height: 100%; border-radius: 2px; transition: width 0.2s;
   }
-
-  /* ===== Per-variation overrides ===== */
-
-  /* A: Whisper — ultra-thin, tiny dots */
-  #v-a .fb-string { stroke: hsl(30, 5%, 80%); }
-  #v-a .fb-fret { stroke: hsl(30, 3%, 87%); }
-  #v-a .fb-tap { stroke: hsl(30, 5%, 72%); stroke-width: 0.75; }
-
-  /* B: Standard — balanced default */
-  /* (uses shared defaults) */
-
-  /* C: Even Grid — same as B but even spacing */
-  #v-c .fb-fret { stroke: hsl(30, 3%, 85%); }
-
-  /* D: Rings — colored outlines instead of filled dots */
-  #v-d .fb-ring { stroke-width: 2; }
-
-  /* E: Data Dense — dot size encodes skill */
-  /* (handled in JS) */
 </style>
 </head>
 <body>
 
-<h1>Direction 1 — Variations</h1>
-<p class="subtitle">Clean fretboard, dots for heatmap, circles for tap targets, hover card for detail</p>
+<h1>Circle Color Variations</h1>
+<p class="subtitle">Same circle size everywhere. No borders. Solid fills hide the strings. Realistic fret spacing. Hover any dot for detail.</p>
 
-<div class="exploration" id="v-a">
-  <h2>A. Whisper</h2>
-  <p class="desc">
-    Ultra-minimal. Tiny dots (r=3), thin strings. The fretboard nearly disappears
-    until you interact. Small dark pill tooltip.
-  </p>
-  <div class="state-toggles" data-v="a">
-    <button class="state-btn active" data-state="quiz">Quiz</button>
-    <button class="state-btn" data-state="tap">Tap quiz</button>
-    <button class="state-btn" data-state="stats">Heatmap</button>
-    <button class="state-btn" data-state="blank">Blank</button>
-  </div>
-  <div class="tap-prompt" id="tap-prompt-a"></div>
-  <div class="fretboard-wrap">
-    <div class="fb" id="fb-a"></div>
-    <div class="hover-card style-pill" id="hc-a"><div class="hc-inner"><span class="hc-note"></span><div class="hc-detail"></div></div></div>
-  </div>
-  <div class="legend" id="legend-a" style="display:none"></div>
-</div>
-
-<div class="exploration" id="v-b">
-  <h2>B. Standard</h2>
-  <p class="desc">
-    Balanced default. Medium dots (r=5), normal strings. Card tooltip with note
-    name and skill bar — room for future stats.
-  </p>
-  <div class="state-toggles" data-v="b">
-    <button class="state-btn active" data-state="quiz">Quiz</button>
-    <button class="state-btn" data-state="tap">Tap quiz</button>
-    <button class="state-btn" data-state="stats">Heatmap</button>
-    <button class="state-btn" data-state="blank">Blank</button>
-  </div>
-  <div class="tap-prompt" id="tap-prompt-b"></div>
-  <div class="fretboard-wrap">
-    <div class="fb" id="fb-b"></div>
-    <div class="hover-card style-card" id="hc-b"><div class="hc-inner"><span class="hc-note"></span><div class="hc-detail"></div><div class="hc-bar"><div class="hc-bar-fill"></div></div></div></div>
-  </div>
-  <div class="legend" id="legend-b" style="display:none"></div>
-</div>
-
-<div class="exploration" id="v-c">
-  <h2>C. Even Grid</h2>
-  <p class="desc">
-    Same as B but with equal fret spacing — cleaner geometry, easier to scan.
-    Trade-off: loses the "real neck" feel.
-  </p>
-  <div class="state-toggles" data-v="c">
-    <button class="state-btn active" data-state="quiz">Quiz</button>
-    <button class="state-btn" data-state="tap">Tap quiz</button>
-    <button class="state-btn" data-state="stats">Heatmap</button>
-    <button class="state-btn" data-state="blank">Blank</button>
-  </div>
-  <div class="tap-prompt" id="tap-prompt-c"></div>
-  <div class="fretboard-wrap">
-    <div class="fb" id="fb-c"></div>
-    <div class="hover-card style-card" id="hc-c"><div class="hc-inner"><span class="hc-note"></span><div class="hc-detail"></div><div class="hc-bar"><div class="hc-bar-fill"></div></div></div></div>
-  </div>
-  <div class="legend" id="legend-c" style="display:none"></div>
-</div>
-
-<div class="exploration" id="v-d">
-  <h2>D. Rings</h2>
-  <p class="desc">
-    Heatmap uses colored ring outlines instead of filled dots — feels like an overlay
-    rather than dots on a map. Slightly more fretboard visible through.
-  </p>
-  <div class="state-toggles" data-v="d">
-    <button class="state-btn active" data-state="quiz">Quiz</button>
-    <button class="state-btn" data-state="tap">Tap quiz</button>
-    <button class="state-btn" data-state="stats">Heatmap</button>
-    <button class="state-btn" data-state="blank">Blank</button>
-  </div>
-  <div class="tap-prompt" id="tap-prompt-d"></div>
-  <div class="fretboard-wrap">
-    <div class="fb" id="fb-d"></div>
-    <div class="hover-card style-pill" id="hc-d"><div class="hc-inner"><span class="hc-note"></span><div class="hc-detail"></div></div></div>
-  </div>
-  <div class="legend" id="legend-d" style="display:none"></div>
-</div>
-
-<div class="exploration" id="v-e">
-  <h2>E. Data Dense</h2>
-  <p class="desc">
-    Dot size encodes skill: bigger dots = weaker (needs attention), smaller = stronger.
-    Adds an information channel beyond color alone.
-  </p>
-  <div class="state-toggles" data-v="e">
-    <button class="state-btn active" data-state="quiz">Quiz</button>
-    <button class="state-btn" data-state="tap">Tap quiz</button>
-    <button class="state-btn" data-state="stats">Heatmap</button>
-    <button class="state-btn" data-state="blank">Blank</button>
-  </div>
-  <div class="tap-prompt" id="tap-prompt-e"></div>
-  <div class="fretboard-wrap">
-    <div class="fb" id="fb-e"></div>
-    <div class="hover-card style-card" id="hc-e"><div class="hc-inner"><span class="hc-note"></span><div class="hc-detail"></div><div class="hc-bar"><div class="hc-bar-fill"></div></div></div></div>
-  </div>
-  <div class="legend" id="legend-e" style="display:none"></div>
-</div>
+<div id="explorations"></div>
 
 <script>
 // ===== Data =====
@@ -295,28 +125,11 @@ const MARKERS = [3, 5, 7, 9, 12];
 const FRET_POS = [0,65,126,183,237,288,336,381,423,463,500,535,568,600];
 const W = 600, GAP = 38, PAD_Y = 18;
 const H = 5 * GAP + PAD_Y * 2;
+const R = 13; // uniform circle radius
 
 function noteAt(s, f) { return NOTES[(STR_OFFSETS[s] + f) % 12]; }
-
-// Even grid positions
-const EVEN_W = W - 30; // leave room for open string
-const OPEN_W = 50;     // wider open-string zone
-const CELL_W = (EVEN_W - OPEN_W) / 12;
-function evenX(f) {
-  if (f === 0) return OPEN_W / 2;
-  return OPEN_W + (f - 0.5) * CELL_W;
-}
-function evenFretX(f) {
-  if (f === 0) return 0;
-  if (f === 1) return OPEN_W;
-  return OPEN_W + (f - 1) * CELL_W;
-}
-
-function noteX(f, even) {
-  if (even) return evenX(f);
-  return f === 0
-    ? FRET_POS[0] + (FRET_POS[1] - FRET_POS[0]) / 2
-    : (FRET_POS[f] + FRET_POS[f + 1]) / 2;
+function noteX(f) {
+  return f === 0 ? (FRET_POS[0] + FRET_POS[1]) / 2 : (FRET_POS[f] + FRET_POS[f + 1]) / 2;
 }
 function noteY(s) { return PAD_Y + s * GAP; }
 
@@ -327,12 +140,12 @@ function fakeSkill(s, f) {
   return Math.max(0, Math.min(1, base + bonus + noise));
 }
 function heatLevel(sk) {
-  if (sk === null) return 'none';
-  if (sk > 0.8) return '5';
-  if (sk > 0.6) return '4';
-  if (sk > 0.4) return '3';
-  if (sk > 0.2) return '2';
-  return '1';
+  if (sk > 0.8) return 5;
+  if (sk > 0.6) return 4;
+  if (sk > 0.4) return 3;
+  if (sk > 0.2) return 2;
+  if (sk > 0) return 1;
+  return 0;
 }
 function heatLabel(sk) {
   if (sk > 0.8) return 'Automatic';
@@ -342,182 +155,198 @@ function heatLabel(sk) {
   return 'Needs work';
 }
 
-const HL_S = 4, HL_F = 5; // quiz: A string fret 5 = D
-const TAP_NOTE = 'G';     // tap quiz: "Find G"
+const HL_S = 4, HL_F = 5;
+const TAP_NOTE = 'G';
 
-const LEGEND_HTML = `
-  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-none)"></span>Unseen</div>
-  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-1)"></span>&lt;20%</div>
-  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-2)"></span>&gt;20%</div>
-  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-3)"></span>&gt;40%</div>
-  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-4)"></span>&gt;60%</div>
-  <div class="legend-item"><span class="legend-swatch" style="background:var(--heat-5)"></span>&gt;80%</div>
-`;
-
-// ===== Configs =====
-const CONFIGS = {
-  a: { dotR: 3,  tapR: 10, quizR: 8,  even: false, rings: false, sizeEncode: false, stringW: s => 0.7 + s * 0.3 },
-  b: { dotR: 5,  tapR: 12, quizR: 10, even: false, rings: false, sizeEncode: false, stringW: s => 1 + s * 0.4 },
-  c: { dotR: 5,  tapR: 12, quizR: 10, even: true,  rings: false, sizeEncode: false, stringW: s => 1 + s * 0.4 },
-  d: { dotR: 7,  tapR: 12, quizR: 10, even: false, rings: true,  sizeEncode: false, stringW: s => 1 + s * 0.4 },
-  e: { dotR: 5,  tapR: 12, quizR: 10, even: false, rings: false, sizeEncode: true,  stringW: s => 1 + s * 0.4 },
+// ===== Color palettes =====
+// Each palette defines fills for: blank, quiz-hl, quiz-other, tap-neutral, tap-correct, heat[0..5]
+const PALETTES = {
+  a: {
+    name: 'A. Cream',
+    desc: 'Warm off-white circles. Soft and approachable. Gold quiz highlight. Fully opaque — strings completely hidden.',
+    blank:    'hsl(35, 18%, 92%)',
+    quizHl:   'hsl(45, 88%, 58%)',
+    quizOther:'hsl(35, 18%, 92%)',
+    tapNeutral:'hsl(35, 15%, 89%)',
+    tapCorrect:'hsl(90, 38%, 78%)',
+    heat: ['hsl(35, 10%, 90%)', 'hsl(12, 50%, 70%)', 'hsl(30, 50%, 62%)', 'hsl(50, 42%, 52%)', 'hsl(72, 40%, 44%)', 'hsl(90, 48%, 36%)'],
+  },
+  b: {
+    name: 'B. Warm Gray',
+    desc: 'Medium warm gray — more visible positions, reads like a real instrument diagram. Amber highlight.',
+    blank:    'hsl(30, 6%, 83%)',
+    quizHl:   'hsl(42, 85%, 52%)',
+    quizOther:'hsl(30, 6%, 83%)',
+    tapNeutral:'hsl(30, 5%, 80%)',
+    tapCorrect:'hsl(90, 35%, 70%)',
+    heat: ['hsl(30, 4%, 85%)', 'hsl(12, 48%, 65%)', 'hsl(30, 48%, 58%)', 'hsl(50, 40%, 50%)', 'hsl(72, 38%, 42%)', 'hsl(90, 45%, 35%)'],
+  },
+  c: {
+    name: 'C. Translucent',
+    desc: 'Semi-transparent circles — strings faintly show through. Layered, atmospheric feel.',
+    blank:    'hsla(30, 12%, 92%, 0.72)',
+    quizHl:   'hsl(45, 90%, 55%)',
+    quizOther:'hsla(30, 12%, 92%, 0.72)',
+    tapNeutral:'hsla(30, 10%, 88%, 0.72)',
+    tapCorrect:'hsla(90, 40%, 70%, 0.8)',
+    heat: ['hsla(30, 6%, 88%, 0.72)', 'hsla(12, 52%, 68%, 0.82)', 'hsla(30, 52%, 58%, 0.82)', 'hsla(50, 42%, 50%, 0.85)', 'hsla(72, 40%, 42%, 0.88)', 'hsla(90, 48%, 35%, 0.9)'],
+  },
+  d: {
+    name: 'D. Cool Slate',
+    desc: 'Cool-tinted circles — blue-gray instead of warm. Heat scale shifts to teal/navy. Different mood entirely.',
+    blank:    'hsl(210, 10%, 89%)',
+    quizHl:   'hsl(48, 88%, 55%)',
+    quizOther:'hsl(210, 10%, 89%)',
+    tapNeutral:'hsl(210, 8%, 86%)',
+    tapCorrect:'hsl(160, 32%, 75%)',
+    heat: ['hsl(210, 6%, 88%)', 'hsl(200, 35%, 70%)', 'hsl(190, 38%, 58%)', 'hsl(175, 35%, 48%)', 'hsl(160, 38%, 40%)', 'hsl(150, 42%, 33%)'],
+  },
+  e: {
+    name: 'E. High Contrast',
+    desc: 'Darker neutral circles, vivid colors. Heatmap pops. Best readability but busier.',
+    blank:    'hsl(30, 5%, 77%)',
+    quizHl:   'hsl(50, 100%, 50%)',
+    quizOther:'hsl(30, 5%, 77%)',
+    tapNeutral:'hsl(30, 4%, 74%)',
+    tapCorrect:'hsl(120, 42%, 58%)',
+    heat: ['hsl(30, 3%, 80%)', 'hsl(8, 58%, 58%)', 'hsl(28, 58%, 50%)', 'hsl(48, 50%, 44%)', 'hsl(68, 48%, 36%)', 'hsl(88, 55%, 30%)'],
+  },
 };
 
-// ===== Build =====
-function buildFretboard(id, cfg) {
-  const even = cfg.even;
-  const nutX = even ? OPEN_W : FRET_POS[1];
-  const totalW = even ? EVEN_W : W;
-  let svg = `<svg viewBox="0 0 ${totalW} ${H}">`;
+// ===== Generate HTML =====
+const container = document.getElementById('explorations');
+for (const [id, pal] of Object.entries(PALETTES)) {
+  const div = document.createElement('div');
+  div.className = 'exploration';
+  div.id = 'v-' + id;
+  div.innerHTML = `
+    <h2>${pal.name}</h2>
+    <p class="desc">${pal.desc}</p>
+    <div class="state-toggles" data-v="${id}">
+      <button class="state-btn active" data-state="quiz">Quiz</button>
+      <button class="state-btn" data-state="tap">Tap quiz</button>
+      <button class="state-btn" data-state="stats">Heatmap</button>
+      <button class="state-btn" data-state="blank">Blank</button>
+    </div>
+    <div class="tap-prompt" id="tap-prompt-${id}"></div>
+    <div class="fretboard-wrap">
+      <div class="fb" id="fb-${id}"></div>
+      <div class="hover-card" id="hc-${id}"><div class="hc-inner">
+        <div class="hc-note"></div>
+        <div class="hc-string-fret"></div>
+        <div class="hc-detail"></div>
+        <div class="hc-bar"><div class="hc-bar-fill"></div></div>
+      </div></div>
+    </div>
+    <div class="legend" id="legend-${id}" style="display:none"></div>
+  `;
+  container.appendChild(div);
+}
 
-  // Fret markers — darker, fret 12 between strings
+// ===== Build =====
+function buildFretboard(id) {
+  let svg = `<svg viewBox="0 0 ${W} ${H}">`;
+
+  // Fret markers — between strings for 12
   for (const m of MARKERS) {
-    const cx = noteX(m, even);
+    const cx = noteX(m);
     if (m === 12) {
-      // Between 2nd & 3rd strings (index 1 & 2), and 3rd & 4th (index 3 & 4)
-      const y1 = (noteY(1) + noteY(2)) / 2;
-      const y2 = (noteY(3) + noteY(4)) / 2;
-      svg += `<circle class="fb-marker" cx="${cx}" cy="${y1}" r="4"/>`;
-      svg += `<circle class="fb-marker" cx="${cx}" cy="${y2}" r="4"/>`;
+      svg += `<circle class="fb-marker" cx="${cx}" cy="${(noteY(1) + noteY(2)) / 2}" r="4"/>`;
+      svg += `<circle class="fb-marker" cx="${cx}" cy="${(noteY(3) + noteY(4)) / 2}" r="4"/>`;
     } else {
       svg += `<circle class="fb-marker" cx="${cx}" cy="${H / 2}" r="4"/>`;
     }
   }
 
   // Nut
-  svg += `<rect class="fb-nut" x="${nutX - 2}" y="0" width="4" height="${H}" rx="1"/>`;
+  svg += `<rect class="fb-nut" x="${FRET_POS[1] - 2}" y="0" width="4" height="${H}" rx="1"/>`;
 
   // Frets
-  if (even) {
-    for (let f = 2; f <= FRETS; f++) {
-      const x = evenFretX(f);
-      svg += `<line class="fb-fret" x1="${x}" y1="0" x2="${x}" y2="${H}" stroke-width="1"/>`;
-    }
-  } else {
-    for (let f = 2; f < FRET_POS.length; f++) {
-      svg += `<line class="fb-fret" x1="${FRET_POS[f]}" y1="0" x2="${FRET_POS[f]}" y2="${H}" stroke-width="1"/>`;
-    }
+  for (let f = 2; f < FRET_POS.length; f++) {
+    svg += `<line class="fb-fret" x1="${FRET_POS[f]}" y1="0" x2="${FRET_POS[f]}" y2="${H}" stroke-width="1"/>`;
   }
 
   // Strings
   for (let s = 0; s < 6; s++) {
-    svg += `<line class="fb-string" x1="0" y1="${noteY(s)}" x2="${totalW}" y2="${noteY(s)}" stroke-width="${cfg.stringW(s)}"/>`;
+    const thick = 1 + s * 0.4;
+    svg += `<line class="fb-string" x1="0" y1="${noteY(s)}" x2="${W}" y2="${noteY(s)}" stroke-width="${thick}"/>`;
   }
 
-  // Per-position elements
+  // Position circles — one per position, filled inline
   for (let s = 0; s < 6; s++) {
     for (let f = 0; f < FRETS; f++) {
-      const x = noteX(f, even), y = noteY(s);
-      const ds = `data-s="${s}" data-f="${f}"`;
-
-      // Quiz highlight (solid dot)
-      svg += `<circle class="fb-quiz-hl" ${ds} cx="${x}" cy="${y}" r="${cfg.quizR}"/>`;
-
-      // Tap target (outlined circle)
-      svg += `<circle class="fb-tap" ${ds} cx="${x}" cy="${y}" r="${cfg.tapR}"/>`;
-
-      // Heatmap dot or ring
-      if (cfg.rings) {
-        svg += `<circle class="fb-ring" ${ds} cx="${x}" cy="${y}" r="${cfg.dotR}"/>`;
-      } else {
-        svg += `<circle class="fb-dot" ${ds} cx="${x}" cy="${y}" r="${cfg.dotR}"/>`;
-      }
+      svg += `<circle class="fb-pos" data-s="${s}" data-f="${f}" cx="${noteX(f)}" cy="${noteY(s)}" r="${R}"/>`;
     }
-  }
-
-  // Fret numbers
-  for (const m of MARKERS) {
-    const cx = noteX(m, even);
-    svg += `<text class="fb-fret-num" x="${cx}" y="${H - 3}">${m}</text>`;
   }
 
   svg += '</svg>';
   document.getElementById('fb-' + id).innerHTML = svg;
 }
 
-// ===== Update state =====
-function updateState(id, state, cfg) {
+// ===== Update =====
+function updateState(id, state) {
+  const pal = PALETTES[id];
   const root = document.getElementById('fb-' + id);
   const legend = document.getElementById('legend-' + id);
   const prompt = document.getElementById('tap-prompt-' + id);
-  const dotSel = cfg.rings ? '.fb-ring' : '.fb-dot';
-
-  // Reset all
-  root.querySelectorAll('.fb-quiz-hl').forEach(c => c.setAttribute('class', 'fb-quiz-hl'));
-  root.querySelectorAll('.fb-tap').forEach(c => c.setAttribute('class', 'fb-tap'));
-  root.querySelectorAll(dotSel).forEach(c => {
-    c.setAttribute('class', cfg.rings ? 'fb-ring' : 'fb-dot');
-    if (cfg.sizeEncode) c.setAttribute('r', cfg.dotR);
-  });
 
   prompt.textContent = '';
 
-  if (state === 'quiz') {
-    root.querySelectorAll('.fb-quiz-hl').forEach(c => {
-      if (+c.dataset.s === HL_S && +c.dataset.f === HL_F) {
-        c.setAttribute('class', 'fb-quiz-hl visible');
-      }
-    });
-  } else if (state === 'tap') {
-    prompt.textContent = 'Find: ' + TAP_NOTE;
-    // Show all tap targets
-    root.querySelectorAll('.fb-tap').forEach(c => {
-      c.setAttribute('class', 'fb-tap visible');
-      // Highlight correct positions (all G notes for demo)
-      const note = noteAt(+c.dataset.s, +c.dataset.f);
-      if (note === TAP_NOTE) {
-        c.setAttribute('class', 'fb-tap visible correct');
-      }
-    });
-  } else if (state === 'stats') {
-    root.querySelectorAll(dotSel).forEach(c => {
-      const s = +c.dataset.s, f = +c.dataset.f;
-      const sk = fakeSkill(s, f);
-      const base = cfg.rings ? 'fb-ring' : 'fb-dot';
-      c.setAttribute('class', base + ' visible heat-' + heatLevel(sk));
-      if (cfg.sizeEncode) {
-        // Bigger = weaker: r from 3 (strong) to 9 (weak)
-        const r = 3 + (1 - sk) * 6;
-        c.setAttribute('r', r.toFixed(1));
-      }
-    });
-  }
-  // blank: everything hidden (default)
+  root.querySelectorAll('.fb-pos').forEach(c => {
+    const s = +c.dataset.s, f = +c.dataset.f;
 
-  legend.style.display = state === 'stats' ? 'flex' : 'none';
-  legend.innerHTML = state === 'stats' ? LEGEND_HTML : '';
+    if (state === 'blank') {
+      c.style.fill = pal.blank;
+    } else if (state === 'quiz') {
+      c.style.fill = (s === HL_S && f === HL_F) ? pal.quizHl : pal.quizOther;
+    } else if (state === 'tap') {
+      const note = noteAt(s, f);
+      c.style.fill = (note === TAP_NOTE) ? pal.tapCorrect : pal.tapNeutral;
+    } else if (state === 'stats') {
+      const sk = fakeSkill(s, f);
+      c.style.fill = pal.heat[heatLevel(sk)];
+    }
+  });
+
+  if (state === 'tap') {
+    prompt.textContent = 'Find: ' + TAP_NOTE;
+  }
+
+  // Legend for heatmap
+  if (state === 'stats') {
+    const labels = ['Unseen', '<20%', '>20%', '>40%', '>60%', '>80%'];
+    legend.style.display = 'flex';
+    legend.innerHTML = pal.heat.map((c, i) =>
+      `<div class="legend-item"><span class="legend-swatch" style="background:${c}"></span>${labels[i]}</div>`
+    ).join('');
+  } else {
+    legend.style.display = 'none';
+    legend.innerHTML = '';
+  }
 }
 
 // ===== Hover card =====
-function setupHoverCard(id, cfg) {
+function setupHoverCard(id) {
   const root = document.getElementById('fb-' + id);
   const card = document.getElementById('hc-' + id);
-  const dotSel = cfg.rings ? '.fb-ring' : '.fb-dot';
 
   function showCard(el) {
     const s = +el.dataset.s, f = +el.dataset.f;
     const note = noteAt(s, f);
     const sk = fakeSkill(s, f);
     const pct = Math.round(sk * 100);
+    const pal = PALETTES[id];
 
     card.querySelector('.hc-note').textContent = note;
-    const detail = card.querySelector('.hc-detail');
-    if (detail) detail.textContent = heatLabel(sk) + ' \u00B7 ' + pct + '%';
+    card.querySelector('.hc-string-fret').textContent = STR_NAMES[s] + ' string, fret ' + f;
+    card.querySelector('.hc-detail').textContent = heatLabel(sk) + ' \u00B7 ' + pct + '%';
 
     const barFill = card.querySelector('.hc-bar-fill');
-    if (barFill) {
-      barFill.style.width = pct + '%';
-      // Color from the heatmap scale
-      const colors = ['hsl(15,55%,68%)', 'hsl(35,55%,58%)', 'hsl(55,45%,50%)', 'hsl(72,42%,42%)', 'hsl(88,52%,33%)'];
-      const ci = sk > 0.8 ? 4 : sk > 0.6 ? 3 : sk > 0.4 ? 2 : sk > 0.2 ? 1 : 0;
-      barFill.style.background = colors[ci];
-    }
+    barFill.style.width = pct + '%';
+    barFill.style.background = pal.heat[heatLevel(sk)];
 
-    // Position the card near the element
-    const svgRect = root.querySelector('svg').getBoundingClientRect();
     const wrapRect = root.closest('.fretboard-wrap').getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
-
     const cx = elRect.left + elRect.width / 2 - wrapRect.left;
     const cy = elRect.top - wrapRect.top;
 
@@ -527,29 +356,25 @@ function setupHoverCard(id, cfg) {
     card.classList.add('visible');
   }
 
-  function hideCard() {
-    card.classList.remove('visible');
-  }
+  function hideCard() { card.classList.remove('visible'); }
 
-  // Attach to all interactive elements (dots/rings + tap targets)
   root.addEventListener('mouseover', e => {
-    const el = e.target.closest(dotSel + '.visible, .fb-tap.visible');
+    const el = e.target.closest('.fb-pos');
     if (el) showCard(el);
   });
   root.addEventListener('mouseout', e => {
-    const el = e.target.closest(dotSel + ', .fb-tap');
+    const el = e.target.closest('.fb-pos');
     if (el) hideCard();
   });
 }
 
 // ===== Init =====
-for (const [id, cfg] of Object.entries(CONFIGS)) {
-  buildFretboard(id, cfg);
-  updateState(id, 'quiz', cfg);
-  setupHoverCard(id, cfg);
+for (const id of Object.keys(PALETTES)) {
+  buildFretboard(id);
+  updateState(id, 'quiz');
+  setupHoverCard(id);
 }
 
-// Wire up toggles
 document.querySelectorAll('.state-toggles').forEach(group => {
   const id = group.dataset.v;
   group.addEventListener('click', e => {
@@ -557,7 +382,7 @@ document.querySelectorAll('.state-toggles').forEach(group => {
     if (!btn) return;
     group.querySelectorAll('.state-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    updateState(id, btn.dataset.state, CONFIGS[id]);
+    updateState(id, btn.dataset.state);
   });
 });
 </script>
