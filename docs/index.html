@@ -1455,7 +1455,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v6.6</span>
+      <span class="version">v6.7</span>
     </div>
   </div>
 
@@ -4319,7 +4319,7 @@ function engineRouteKey(state, key) {
 // engineRoundComplete, engineContinueRound
 
 /**
- * Create a keyboard handler for note input (C D E F G A B + #/b for accidentals).
+ * Create a keyboard handler for note input (C D E F G A B + #/s/b for accidentals).
  * Used by any mode where the answer is a note name.
  *
  * The handler keeps an internal timeout to allow a short window after a note key
@@ -4344,9 +4344,9 @@ function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true) {
   function handleKey(e) {
     const key = e.key.toUpperCase();
 
-    // Handle # for sharps or b for flats after a pending note
+    // Handle #/s for sharps or b for flats after a pending note
     if (pendingNote && allowAccidentals()) {
-      if (e.key === '#' || (e.shiftKey && e.key === '3')) {
+      if (e.key === '#' || e.key === 's' || e.key === 'S' || (e.shiftKey && e.key === '3')) {
         e.preventDefault();
         clearTimeout(pendingTimeout);
         submitAnswer(pendingNote + '#');
@@ -4731,9 +4731,9 @@ function runCalibration(opts) {
     if (isSearchMode()) {
       const key = e.key.toUpperCase();
 
-      // Handle # or b after a pending note letter
+      // Handle #/s or b after a pending note letter
       if (pendingNote) {
-        if (e.key === '#' || (e.shiftKey && e.key === '3')) {
+        if (e.key === '#' || e.key === 's' || e.key === 'S' || (e.shiftKey && e.key === '3')) {
           e.preventDefault();
           clearTimeout(pendingNoteTimeout);
           const combined = pendingNote + '#';
@@ -5505,6 +5505,7 @@ function createQuizEngine(mode, container) {
     const routed = engineRouteKey(state, e.key);
     switch (routed.action) {
       case 'stop':
+        e.stopImmediatePropagation();
         stop();
         break;
       case 'next':
@@ -10048,6 +10049,20 @@ function createNavigation() {
       btn.addEventListener('click', function() {
         navigateHome();
       });
+    });
+
+    // Escape key navigates home when idle on a mode screen.
+    // During active quiz/calibration the container has phase-active,
+    // phase-calibration, or phase-round-complete — we only act on phase-idle
+    // so the quiz engine handles Escape independently in other phases.
+    document.addEventListener('keydown', function(e) {
+      if (e.key !== 'Escape' || !currentModeId) return;
+      // Don't interfere with open modals (e.g. settings)
+      if (document.querySelector('.settings-overlay.open')) return;
+      // Only navigate home when the quiz is idle (not running/calibrating)
+      var modeScreen = document.getElementById('mode-' + currentModeId);
+      if (modeScreen && !modeScreen.classList.contains('phase-idle')) return;
+      navigateHome();
     });
 
     // Initialize all registered modes
