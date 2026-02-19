@@ -48,12 +48,12 @@ describe('computeInitialDeadline', () => {
 
 describe('adjustDeadline', () => {
   it('decreases deadline on correct answer', () => {
-    const result = adjustDeadline(3000, true, DEFAULT_CONFIG, dlCfg);
+    const result = adjustDeadline(3000, true, DEFAULT_CONFIG, dlCfg, null);
     assert.equal(result, Math.round(3000 * 0.85)); // 2550
   });
 
   it('increases deadline on incorrect answer', () => {
-    const result = adjustDeadline(3000, false, DEFAULT_CONFIG, dlCfg);
+    const result = adjustDeadline(3000, false, DEFAULT_CONFIG, dlCfg, null);
     assert.equal(result, Math.round(3000 * 1.4)); // 4200
   });
 
@@ -61,7 +61,13 @@ describe('adjustDeadline', () => {
     const minDeadline = Math.round(
       DEFAULT_CONFIG.minTime * dlCfg.minDeadlineMargin,
     );
-    const result = adjustDeadline(minDeadline, true, DEFAULT_CONFIG, dlCfg);
+    const result = adjustDeadline(
+      minDeadline,
+      true,
+      DEFAULT_CONFIG,
+      dlCfg,
+      null,
+    );
     assert.equal(result, minDeadline);
   });
 
@@ -71,6 +77,7 @@ describe('adjustDeadline', () => {
       false,
       DEFAULT_CONFIG,
       dlCfg,
+      null,
     );
     assert.equal(result, DEFAULT_CONFIG.maxResponseTime);
   });
@@ -79,7 +86,7 @@ describe('adjustDeadline', () => {
     const minDeadline = Math.round(
       DEFAULT_CONFIG.minTime * dlCfg.minDeadlineMargin,
     );
-    const result = adjustDeadline(500, true, DEFAULT_CONFIG, dlCfg);
+    const result = adjustDeadline(500, true, DEFAULT_CONFIG, dlCfg, null);
     assert.equal(result, minDeadline);
   });
 

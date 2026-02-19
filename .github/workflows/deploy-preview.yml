@@ -32,6 +32,9 @@ jobs:
       - name: Lint
         run: deno lint
 
+      - name: Format check
+        run: deno fmt --check
+
       - name: Setup Node (for esbuild)
         uses: actions/setup-node@v4
         with:
@@ -39,6 +42,12 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Type check
+        run: deno check src/**/*.ts
+
+      - name: Test
+        run: deno test --no-check --allow-read
 
       - name: Build
         run: deno task build

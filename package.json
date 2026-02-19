@@ -1,6 +1,7 @@
 {
   "private": true,
   "devDependencies": {
+    "@types/node": "^25.3.0",
     "esbuild": "^0.27.3",
     "playwright": "^1.52.0"
   },

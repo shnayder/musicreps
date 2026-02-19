@@ -1633,7 +1633,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v6.15</span>
+      <span class="version">v6.17</span>
     </div>
   </div>
 
@@ -3422,7 +3422,15 @@ button {
     return false;
   }
   var LETTER_NAMES = ["C", "D", "E", "F", "G", "A", "B"];
-  var NATURAL_SEMITONES = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  var NATURAL_SEMITONES = {
+    C: 0,
+    D: 2,
+    E: 4,
+    F: 5,
+    G: 7,
+    A: 9,
+    B: 11
+  };
   var MAJOR_SCALE_STEPS = [0, 2, 4, 5, 7, 9, 11];
   function parseSpelledNote(name) {
     if (!name) return { letter: "", accidental: 0 };
@@ -5280,7 +5288,9 @@ button {
       document.addEventListener("keydown", handleKeydown);
       container.addEventListener("click", handleClick);
       refreshNoteButtonLabels(container);
-      const activeStatsBtn = container.querySelector(".stats-toggle-btn.active");
+      const activeStatsBtn = container.querySelector(
+        ".stats-toggle-btn.active"
+      );
       if (activeStatsBtn) activeStatsBtn.click();
     }
     function detach() {
@@ -5473,26 +5483,32 @@ button {
   }
   function createStatsControls(container, renderFn) {
     let statsMode = null;
-    const statsContainer = container.querySelector(".stats-container");
+    const statsContainer = container.querySelector(
+      ".stats-container"
+    );
     function show(mode) {
       statsMode = mode;
       statsContainer.innerHTML = "";
       renderFn(mode, statsContainer);
       statsContainer.classList.remove("stats-hidden");
-      container.querySelectorAll(".stats-toggle-btn").forEach(function(b) {
-        b.classList.toggle("active", b.dataset.mode === mode);
-      });
+      container.querySelectorAll(".stats-toggle-btn").forEach(
+        function(b) {
+          b.classList.toggle("active", b.dataset.mode === mode);
+        }
+      );
     }
     function hide() {
       statsMode = null;
       statsContainer.classList.add("stats-hidden");
       statsContainer.innerHTML = "";
     }
-    container.querySelectorAll(".stats-toggle-btn").forEach(function(btn) {
-      btn.addEventListener("click", function() {
-        show(btn.dataset.mode);
-      });
-    });
+    container.querySelectorAll(".stats-toggle-btn").forEach(
+      function(btn) {
+        btn.addEventListener("click", function() {
+          show(btn.dataset.mode);
+        });
+      }
+    );
     return {
       show,
       hide,
@@ -5803,11 +5819,13 @@ button {
       localStorage.setItem(STRINGS_KEY, JSON.stringify([...enabledStrings]));
     }
     function updateStringToggles() {
-      container.querySelectorAll(".string-toggle").forEach(function(btn) {
-        const s = parseInt(btn.dataset.string);
-        btn.classList.toggle("active", enabledStrings.has(s));
-        btn.classList.toggle("recommended", recommendedStrings.has(s));
-      });
+      container.querySelectorAll(".string-toggle").forEach(
+        function(btn) {
+          const s = parseInt(btn.dataset.string);
+          btn.classList.toggle("active", enabledStrings.has(s));
+          btn.classList.toggle("recommended", recommendedStrings.has(s));
+        }
+      );
     }
     function toggleString(s) {
       enabledStrings = toggleFretboardString(enabledStrings, s);
@@ -5849,9 +5867,11 @@ button {
     }
     function switchTab(tabName) {
       activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach(function(btn) {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
+      container.querySelectorAll(".mode-tab").forEach(
+        function(btn) {
+          btn.classList.toggle("active", btn.dataset.tab === tabName);
+        }
+      );
       container.querySelectorAll(".tab-content").forEach(function(el) {
         const isPractice = el.classList.contains("tab-practice");
         const isProgress = el.classList.contains("tab-progress");
@@ -5868,29 +5888,35 @@ button {
         renderPracticeSummary();
       }
     }
-    const statsControls = createStatsControls(container, function(mode2, el) {
-      el.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
-      if (mode2 === "retention") {
-        for (let si = 0; si < allStrings.length; si++) {
-          const s = allStrings[si];
-          for (let f = 0; f < instrument.fretCount; f++) {
-            const auto = engine.selector.getAutomaticity(s + "-" + f);
-            const color = getAutomaticityColor(auto);
-            setCircleFill(progressFretboard, s, f, color);
+    const statsControls = createStatsControls(
+      container,
+      function(mode2, el) {
+        el.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
+        if (mode2 === "retention") {
+          for (let si = 0; si < allStrings.length; si++) {
+            const s = allStrings[si];
+            for (let f = 0; f < instrument.fretCount; f++) {
+              const auto = engine.selector.getAutomaticity(s + "-" + f);
+              const color = getAutomaticityColor(auto);
+              setCircleFill(progressFretboard, s, f, color);
+            }
           }
-        }
-      } else {
-        for (let sj = 0; sj < allStrings.length; sj++) {
-          const s2 = allStrings[sj];
-          for (let f2 = 0; f2 < instrument.fretCount; f2++) {
-            const stats = engine.selector.getStats(s2 + "-" + f2);
-            const ewma = stats ? stats.ewma : null;
-            const color2 = getSpeedHeatmapColor(ewma, engine.baseline ?? void 0);
-            setCircleFill(progressFretboard, s2, f2, color2);
+        } else {
+          for (let sj = 0; sj < allStrings.length; sj++) {
+            const s2 = allStrings[sj];
+            for (let f2 = 0; f2 < instrument.fretCount; f2++) {
+              const stats = engine.selector.getStats(s2 + "-" + f2);
+              const ewma = stats ? stats.ewma : null;
+              const color2 = getSpeedHeatmapColor(
+                ewma,
+                engine.baseline ?? void 0
+              );
+              setCircleFill(progressFretboard, s2, f2, color2);
+            }
           }
         }
       }
-    });
+    );
     function hideHeatmap() {
       statsControls.hide();
       clearAll(progressFretboard);
@@ -5987,9 +6013,11 @@ button {
       if (result.recommended.size > 0) {
         const parts = [];
         if (result.consolidateIndices.length > 0) {
-          const cNames = result.consolidateIndices.sort(function(a, b) {
-            return b - a;
-          }).map(function(s) {
+          const cNames = result.consolidateIndices.sort(
+            function(a, b) {
+              return b - a;
+            }
+          ).map(function(s) {
             return displayNote(instrument.stringNames[s]);
           });
           parts.push(
@@ -6026,9 +6054,11 @@ button {
     }
     function updateAccidentalButtons() {
       const hideAcc = noteFilter === "natural";
-      container.querySelectorAll(".note-btn.accidental").forEach(function(btn) {
-        btn.classList.toggle("hidden", hideAcc);
-      });
+      container.querySelectorAll(".note-btn.accidental").forEach(
+        function(btn) {
+          btn.classList.toggle("hidden", hideAcc);
+        }
+      );
       const accRow = container.querySelector(".note-row-accidentals");
       if (accRow) accRow.classList.toggle("hidden", hideAcc);
     }
@@ -6045,9 +6075,11 @@ button {
       getPracticingLabel: function() {
         const parts = [];
         if (enabledStrings.size < instrument.stringCount) {
-          const names = Array.from(enabledStrings).sort(function(a, b) {
-            return b - a;
-          }).map(function(s) {
+          const names = Array.from(enabledStrings).sort(
+            function(a, b) {
+              return b - a;
+            }
+          ).map(function(s) {
             return displayNote(instrument.stringNames[s]);
           });
           parts.push(
@@ -6132,41 +6164,49 @@ button {
     function init() {
       loadEnabledStrings();
       loadNoteFilter();
-      container.querySelectorAll(".mode-tab").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          switchTab(btn.dataset.tab);
-        });
-      });
-      container.querySelectorAll(".string-toggle").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          toggleString(parseInt(btn.dataset.string));
-        });
-      });
-      container.querySelectorAll(".note-btn").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.note);
-        });
-      });
-      container.querySelectorAll(".notes-toggle").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          btn.classList.toggle("active");
-          const anyActive = container.querySelector(".notes-toggle.active");
-          if (!anyActive) btn.classList.add("active");
-          const naturalActive = container.querySelector(
-            '.notes-toggle[data-notes="natural"].active'
-          );
-          const accActive = container.querySelector(
-            '.notes-toggle[data-notes="sharps-flats"].active'
-          );
-          if (naturalActive && accActive) noteFilter = "all";
-          else if (accActive) noteFilter = "sharps-flats";
-          else noteFilter = "natural";
-          saveNoteFilter();
-          updateAccidentalButtons();
-          refreshUI();
-        });
-      });
+      container.querySelectorAll(".mode-tab").forEach(
+        function(btn) {
+          btn.addEventListener("click", function() {
+            switchTab(btn.dataset.tab);
+          });
+        }
+      );
+      container.querySelectorAll(".string-toggle").forEach(
+        function(btn) {
+          btn.addEventListener("click", function() {
+            toggleString(parseInt(btn.dataset.string));
+          });
+        }
+      );
+      container.querySelectorAll(".note-btn").forEach(
+        function(btn) {
+          btn.addEventListener("click", function() {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.note);
+          });
+        }
+      );
+      container.querySelectorAll(".notes-toggle").forEach(
+        function(btn) {
+          btn.addEventListener("click", function() {
+            btn.classList.toggle("active");
+            const anyActive = container.querySelector(".notes-toggle.active");
+            if (!anyActive) btn.classList.add("active");
+            const naturalActive = container.querySelector(
+              '.notes-toggle[data-notes="natural"].active'
+            );
+            const accActive = container.querySelector(
+              '.notes-toggle[data-notes="sharps-flats"].active'
+            );
+            if (naturalActive && accActive) noteFilter = "all";
+            else if (accActive) noteFilter = "sharps-flats";
+            else noteFilter = "natural";
+            saveNoteFilter();
+            updateAccidentalButtons();
+            refreshUI();
+          });
+        }
+      );
       container.querySelector(".start-btn").addEventListener(
         "click",
         function() {
@@ -6269,9 +6309,11 @@ button {
     let activeTab = "practice";
     function switchTab(tabName) {
       activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach(function(btn) {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
+      container.querySelectorAll(".mode-tab").forEach(
+        function(btn) {
+          btn.classList.toggle("active", btn.dataset.tab === tabName);
+        }
+      );
       container.querySelectorAll(".tab-content").forEach(function(el) {
         el.classList.toggle(
           "active",
@@ -6322,27 +6364,30 @@ button {
       const items = mode.getEnabledItems();
       el.textContent = items.length + " notes \xB7 60s";
     }
-    const statsControls = createStatsControls(container, function(mode2, el) {
-      let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
-      for (let i = 0; i < NOTES.length; i++) {
-        html += "<th>" + displayNote(NOTES[i].name) + "</th>";
-      }
-      html += "</tr></thead><tbody><tr>";
-      for (let j = 0; j < NOTES.length; j++) {
-        if (mode2 === "retention") {
-          const auto = engine.selector.getAutomaticity(NOTES[j].name);
-          html += '<td class="stats-cell" style="background:' + getAutomaticityColor(auto) + '"></td>';
-        } else {
-          const stats = engine.selector.getStats(NOTES[j].name);
-          const posCount = getPositionsForNote(NOTES[j].name).length;
-          const perPosMs = stats ? stats.ewma / posCount : null;
-          html += '<td class="stats-cell" style="background:' + getSpeedHeatmapColor(perPosMs, engine.baseline ?? void 0) + '"></td>';
+    const statsControls = createStatsControls(
+      container,
+      function(mode2, el) {
+        let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
+        for (let i = 0; i < NOTES.length; i++) {
+          html += "<th>" + displayNote(NOTES[i].name) + "</th>";
         }
+        html += "</tr></thead><tbody><tr>";
+        for (let j = 0; j < NOTES.length; j++) {
+          if (mode2 === "retention") {
+            const auto = engine.selector.getAutomaticity(NOTES[j].name);
+            html += '<td class="stats-cell" style="background:' + getAutomaticityColor(auto) + '"></td>';
+          } else {
+            const stats = engine.selector.getStats(NOTES[j].name);
+            const posCount = getPositionsForNote(NOTES[j].name).length;
+            const perPosMs = stats ? stats.ewma / posCount : null;
+            html += '<td class="stats-cell" style="background:' + getSpeedHeatmapColor(perPosMs, engine.baseline ?? void 0) + '"></td>';
+          }
+        }
+        html += "</tr></tbody></table>";
+        html += buildStatsLegend(mode2, engine.baseline ?? void 0);
+        el.innerHTML = html;
       }
-      html += "</tr></tbody></table>";
-      html += buildStatsLegend(mode2, engine.baseline ?? void 0);
-      el.innerHTML = html;
-    });
+    );
     const progressEl = container.querySelector(".speed-tap-progress");
     const fretboardWrapper = container.querySelector(".fretboard-wrapper");
     function updateRoundProgress() {
@@ -6514,31 +6559,35 @@ button {
     }
     function init() {
       loadNoteFilter();
-      container.querySelectorAll(".mode-tab").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          switchTab(btn.dataset.tab);
-        });
-      });
-      container.querySelectorAll(".notes-toggle").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          btn.classList.toggle("active");
-          const anyActive = container.querySelector(".notes-toggle.active");
-          if (!anyActive) btn.classList.add("active");
-          const naturalActive = container.querySelector(
-            '.notes-toggle[data-notes="natural"].active'
-          );
-          const accActive = container.querySelector(
-            '.notes-toggle[data-notes="sharps-flats"].active'
-          );
-          if (naturalActive && accActive) noteFilter = "all";
-          else if (accActive) noteFilter = "sharps-flats";
-          else noteFilter = "natural";
-          saveNoteFilter();
-          engine.updateIdleMessage();
-          renderPracticeSummary();
-          renderSessionSummary();
-        });
-      });
+      container.querySelectorAll(".mode-tab").forEach(
+        function(btn) {
+          btn.addEventListener("click", function() {
+            switchTab(btn.dataset.tab);
+          });
+        }
+      );
+      container.querySelectorAll(".notes-toggle").forEach(
+        function(btn) {
+          btn.addEventListener("click", function() {
+            btn.classList.toggle("active");
+            const anyActive = container.querySelector(".notes-toggle.active");
+            if (!anyActive) btn.classList.add("active");
+            const naturalActive = container.querySelector(
+              '.notes-toggle[data-notes="natural"].active'
+            );
+            const accActive = container.querySelector(
+              '.notes-toggle[data-notes="sharps-flats"].active'
+            );
+            if (naturalActive && accActive) noteFilter = "all";
+            else if (accActive) noteFilter = "sharps-flats";
+            else noteFilter = "natural";
+            saveNoteFilter();
+            engine.updateIdleMessage();
+            renderPracticeSummary();
+            renderSessionSummary();
+          });
+        }
+      );
       container.querySelector(".start-btn").addEventListener(
         "click",
         function() {
@@ -6692,7 +6741,10 @@ button {
           return { correct, correctAnswer: String(currentItem.note.num) };
         } else {
           const correct = noteMatchesInput(currentItem.note, input);
-          return { correct, correctAnswer: displayNote(currentAccidentalChoice) };
+          return {
+            correct,
+            correctAnswer: displayNote(currentAccidentalChoice)
+          };
         }
       },
       onStart() {
@@ -6764,18 +6816,22 @@ button {
       container.querySelectorAll(".mode-tab").forEach((btn) => {
         btn.addEventListener("click", () => switchTab(btn.dataset.tab));
       });
-      container.querySelectorAll(".answer-btn-note").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.note);
-        });
-      });
-      container.querySelectorAll(".answer-btn-num").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.num);
-        });
-      });
+      container.querySelectorAll(".answer-btn-note").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.note);
+          });
+        }
+      );
+      container.querySelectorAll(".answer-btn-num").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.num);
+          });
+        }
+      );
       container.querySelector(".start-btn").addEventListener(
         "click",
         () => engine.start()
@@ -6994,18 +7050,22 @@ button {
       container.querySelectorAll(".mode-tab").forEach((btn) => {
         btn.addEventListener("click", () => switchTab(btn.dataset.tab));
       });
-      container.querySelectorAll(".answer-btn-interval").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.interval);
-        });
-      });
-      container.querySelectorAll(".answer-btn-num").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.num);
-        });
-      });
+      container.querySelectorAll(".answer-btn-interval").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.interval);
+          });
+        }
+      );
+      container.querySelectorAll(".answer-btn-num").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.num);
+          });
+        }
+      );
       container.querySelector(".start-btn").addEventListener(
         "click",
         () => engine.start()
@@ -7432,11 +7492,13 @@ button {
       localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
     }
     function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach((btn) => {
-        const g = parseInt(btn.dataset.group);
-        btn.classList.toggle("active", enabledGroups.has(g));
-        btn.classList.toggle("recommended", recommendedGroups.has(g));
-      });
+      container.querySelectorAll(".distance-toggle").forEach(
+        (btn) => {
+          const g = parseInt(btn.dataset.group);
+          btn.classList.toggle("active", enabledGroups.has(g));
+          btn.classList.toggle("recommended", recommendedGroups.has(g));
+        }
+      );
     }
     const recsOptions = {
       sortUnstarted: (a, b) => a.string - b.string
@@ -7609,14 +7671,16 @@ button {
           pickAccidentalName(currentItem.note.displayName, currentItem.useFlats)
         );
         prompt.textContent = noteName + " " + currentItem.op + " " + currentItem.interval.abbrev;
-        container.querySelectorAll(".answer-btn-note").forEach((btn) => {
-          const note = NOTES.find((n) => n.name === btn.dataset.note);
-          if (note) {
-            btn.textContent = displayNote(
-              pickAccidentalName(note.displayName, currentItem.useFlats)
-            );
+        container.querySelectorAll(".answer-btn-note").forEach(
+          (btn) => {
+            const note = NOTES.find((n) => n.name === btn.dataset.note);
+            if (note) {
+              btn.textContent = displayNote(
+                pickAccidentalName(note.displayName, currentItem.useFlats)
+              );
+            }
           }
-        });
+        );
       },
       checkAnswer(_itemId, input) {
         const correct = noteMatchesInput(currentItem.answer, input);
@@ -7675,12 +7739,14 @@ button {
         togglesDiv.appendChild(btn);
       });
       loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-note").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.note);
-        });
-      });
+      container.querySelectorAll(".answer-btn-note").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.note);
+          });
+        }
+      );
       container.querySelector(".start-btn").addEventListener(
         "click",
         () => engine.start()
@@ -7759,11 +7825,13 @@ button {
       localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
     }
     function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach((btn) => {
-        const g = parseInt(btn.dataset.group);
-        btn.classList.toggle("active", enabledGroups.has(g));
-        btn.classList.toggle("recommended", recommendedGroups.has(g));
-      });
+      container.querySelectorAll(".distance-toggle").forEach(
+        (btn) => {
+          const g = parseInt(btn.dataset.group);
+          btn.classList.toggle("active", enabledGroups.has(g));
+          btn.classList.toggle("recommended", recommendedGroups.has(g));
+        }
+      );
     }
     const recsOptions = {
       sortUnstarted: (a, b) => a.string - b.string
@@ -7955,7 +8023,10 @@ button {
           const expected = keySignatureLabel(currentItem.key);
           return { correct: input === expected, correctAnswer: expected };
         } else {
-          const correct = spelledNoteMatchesSemitone(currentItem.key.root, input);
+          const correct = spelledNoteMatchesSemitone(
+            currentItem.key.root,
+            input
+          );
           return { correct, correctAnswer: displayNote(currentItem.key.root) };
         }
       },
@@ -8028,18 +8099,22 @@ button {
         togglesDiv.appendChild(btn);
       });
       loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-keysig").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.sig);
-        });
-      });
-      container.querySelectorAll(".answer-btn-note").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.note);
-        });
-      });
+      container.querySelectorAll(".answer-btn-keysig").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.sig);
+          });
+        }
+      );
+      container.querySelectorAll(".answer-btn-note").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.note);
+          });
+        }
+      );
       container.querySelector(".start-btn").addEventListener(
         "click",
         () => engine.start()
@@ -8128,11 +8203,13 @@ button {
       localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
     }
     function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach((btn) => {
-        const g = parseInt(btn.dataset.group);
-        btn.classList.toggle("active", enabledGroups.has(g));
-        btn.classList.toggle("recommended", recommendedGroups.has(g));
-      });
+      container.querySelectorAll(".distance-toggle").forEach(
+        (btn) => {
+          const g = parseInt(btn.dataset.group);
+          btn.classList.toggle("active", enabledGroups.has(g));
+          btn.classList.toggle("recommended", recommendedGroups.has(g));
+        }
+      );
     }
     const recsOptions = {
       sortUnstarted: (a, b) => a.string - b.string
@@ -8318,7 +8395,10 @@ button {
       },
       checkAnswer(_itemId, input) {
         if (currentItem.dir === "fwd") {
-          const correct = spelledNoteMatchesSemitone(currentItem.noteName, input);
+          const correct = spelledNoteMatchesSemitone(
+            currentItem.noteName,
+            input
+          );
           return { correct, correctAnswer: displayNote(currentItem.noteName) };
         } else {
           const expectedDegree = String(currentItem.degree);
@@ -8380,18 +8460,22 @@ button {
         togglesDiv.appendChild(btn);
       });
       loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-note").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.note);
-        });
-      });
-      container.querySelectorAll(".answer-btn-degree").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.degree);
-        });
-      });
+      container.querySelectorAll(".answer-btn-note").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.note);
+          });
+        }
+      );
+      container.querySelectorAll(".answer-btn-degree").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.degree);
+          });
+        }
+      );
       container.querySelector(".start-btn").addEventListener(
         "click",
         () => engine.start()
@@ -8840,11 +8924,13 @@ button {
       localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
     }
     function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach((btn) => {
-        const g = parseInt(btn.dataset.group);
-        btn.classList.toggle("active", enabledGroups.has(g));
-        btn.classList.toggle("recommended", recommendedGroups.has(g));
-      });
+      container.querySelectorAll(".distance-toggle").forEach(
+        (btn) => {
+          const g = parseInt(btn.dataset.group);
+          btn.classList.toggle("active", enabledGroups.has(g));
+          btn.classList.toggle("recommended", recommendedGroups.has(g));
+        }
+      );
     }
     const recsOptions = {
       sortUnstarted: (a, b) => a.string - b.string
@@ -9122,19 +9208,21 @@ button {
         togglesDiv.appendChild(btn);
       });
       loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-note").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          let input = btn.dataset.note;
-          if (currentItem && enteredTones.length < currentItem.tones.length) {
-            const expected = currentItem.tones[enteredTones.length];
-            if (spelledNoteMatchesSemitone(expected, input)) {
-              input = expected;
+      container.querySelectorAll(".answer-btn-note").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            let input = btn.dataset.note;
+            if (currentItem && enteredTones.length < currentItem.tones.length) {
+              const expected = currentItem.tones[enteredTones.length];
+              if (spelledNoteMatchesSemitone(expected, input)) {
+                input = expected;
+              }
             }
-          }
-          submitTone(input);
-        });
-      });
+            submitTone(input);
+          });
+        }
+      );
       container.querySelector(".start-btn").addEventListener(
         "click",
         () => engine.start()

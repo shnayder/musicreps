@@ -56,27 +56,27 @@ describe('getAutomaticityColor', () => {
 
 describe('getSpeedHeatmapColor', () => {
   it('returns grey for null', () => {
-    assert.equal(getSpeedHeatmapColor(null), NONE);
+    assert.equal(getSpeedHeatmapColor(null, null), NONE);
   });
 
   it('returns sage for fast (<1500ms) with default baseline', () => {
-    assert.equal(getSpeedHeatmapColor(1000), L5);
+    assert.equal(getSpeedHeatmapColor(1000, null), L5);
   });
 
   it('returns olive-sage for 1500-3000ms with default baseline', () => {
-    assert.equal(getSpeedHeatmapColor(2000), L4);
+    assert.equal(getSpeedHeatmapColor(2000, null), L4);
   });
 
   it('returns olive for 3000-4500ms with default baseline', () => {
-    assert.equal(getSpeedHeatmapColor(4000), L3);
+    assert.equal(getSpeedHeatmapColor(4000, null), L3);
   });
 
   it('returns amber for 4500-6000ms with default baseline', () => {
-    assert.equal(getSpeedHeatmapColor(5000), L2);
+    assert.equal(getSpeedHeatmapColor(5000, null), L2);
   });
 
   it('returns terracotta for slow (>=6000ms) with default baseline', () => {
-    assert.equal(getSpeedHeatmapColor(7000), L1);
+    assert.equal(getSpeedHeatmapColor(7000, null), L1);
   });
 
   it('scales thresholds with baseline=1500 (mobile user)', () => {
@@ -110,22 +110,22 @@ describe('getStatsCellColor', () => {
       getAutomaticity: () => 0.9,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColor(selector, 'test', 'retention'), L5);
+    assert.equal(getStatsCellColor(selector, 'test', 'retention', null), L5);
   });
 
   it('delegates to getSpeedHeatmapColor in speed mode', () => {
     const selector = {
       getAutomaticity: () => null,
       getStats: () => ({ ewma: 2000 }),
-    };
-    assert.equal(getStatsCellColor(selector, 'test', 'speed'), L4);
+    } as any;
+    assert.equal(getStatsCellColor(selector, 'test', 'speed', null), L4);
   });
 
   it('passes baseline through to getSpeedHeatmapColor', () => {
     const selector = {
       getAutomaticity: () => null,
       getStats: () => ({ ewma: 2000 }),
-    };
+    } as any;
     // With baseline=1500, 2000ms is < 2250 (1500*1.5) → sage
     assert.equal(getStatsCellColor(selector, 'test', 'speed', 1500), L5);
   });
@@ -135,7 +135,7 @@ describe('getStatsCellColor', () => {
       getAutomaticity: () => null,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColor(selector, 'test', 'speed'), NONE);
+    assert.equal(getStatsCellColor(selector, 'test', 'speed', null), NONE);
   });
 
   it('returns grey for retention mode with null automaticity', () => {
@@ -143,15 +143,15 @@ describe('getStatsCellColor', () => {
       getAutomaticity: () => null,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColor(selector, 'test', 'retention'), NONE);
+    assert.equal(getStatsCellColor(selector, 'test', 'retention', null), NONE);
   });
 
   it('returns lowest level for retention mode with zero automaticity (wrong-only item)', () => {
     const selector = {
       getAutomaticity: () => 0,
       getStats: () => ({ ewma: 9000 }),
-    };
-    assert.equal(getStatsCellColor(selector, 'test', 'retention'), L1);
+    } as any;
+    assert.equal(getStatsCellColor(selector, 'test', 'retention', null), L1);
   });
 });
 
@@ -166,8 +166,8 @@ describe('getStatsCellColorMerged', () => {
       getStats: () => null,
     };
     assert.equal(
-      getStatsCellColorMerged(selector, 'C+3' as any, 'retention'),
-      getStatsCellColor(selector, 'C+3', 'retention'),
+      getStatsCellColorMerged(selector, 'C+3' as any, 'retention', null),
+      getStatsCellColor(selector, 'C+3', 'retention', null),
     );
   });
 
@@ -177,7 +177,7 @@ describe('getStatsCellColorMerged', () => {
       getStats: () => null,
     };
     assert.equal(
-      getStatsCellColorMerged(selector, ['A+3', 'A-3'], 'retention'),
+      getStatsCellColorMerged(selector, ['A+3', 'A-3'], 'retention', null),
       NONE,
     );
   });
@@ -188,7 +188,7 @@ describe('getStatsCellColorMerged', () => {
       getStats: () => null,
     };
     assert.equal(
-      getStatsCellColorMerged(selector, ['A+3', 'A-3'], 'speed'),
+      getStatsCellColorMerged(selector, ['A+3', 'A-3'], 'speed', null),
       NONE,
     );
   });
@@ -202,7 +202,7 @@ describe('getStatsCellColorMerged', () => {
     // average = 0.8, which is exactly the >0.8 boundary → falls to 0.6-0.8 bucket
     // Actually 0.8 is NOT > 0.8, so it's the 0.6-0.8 bucket
     assert.equal(
-      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'retention'),
+      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'retention', null),
       L4,
     );
   });
@@ -215,7 +215,7 @@ describe('getStatsCellColorMerged', () => {
     };
     // Only C+3 has data (0.9), so result = 0.9 → >0.8 bucket = sage
     assert.equal(
-      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'retention'),
+      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'retention', null),
       L5,
     );
   });
@@ -228,10 +228,10 @@ describe('getStatsCellColorMerged', () => {
     const selector = {
       getAutomaticity: () => null,
       getStats: (id: string) => data[id] ?? null,
-    };
+    } as any;
     // average = 1500, which is NOT < 1500, so it's the 1500-3000 bucket
     assert.equal(
-      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'speed'),
+      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'speed', null),
       L4,
     );
   });
@@ -244,10 +244,10 @@ describe('getStatsCellColorMerged', () => {
     const selector = {
       getAutomaticity: () => null,
       getStats: (id: string) => data[id] ?? null,
-    };
+    } as any;
     // Only C+3 has data (1000ms) → <1500 bucket = sage
     assert.equal(
-      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'speed'),
+      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'speed', null),
       L5,
     );
   });

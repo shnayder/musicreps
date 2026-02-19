@@ -67,7 +67,11 @@ export function engineStart(state: EngineState): EngineState {
 }
 
 /** Transition: present the next question. */
-export function engineNextQuestion(state: EngineState, nextItemId: string, nowMs: number): EngineState {
+export function engineNextQuestion(
+  state: EngineState,
+  nextItemId: string,
+  nowMs: number,
+): EngineState {
   return {
     ...state,
     currentItemId: nextItemId,
@@ -83,7 +87,11 @@ export function engineNextQuestion(state: EngineState, nextItemId: string, nowMs
 }
 
 /** Transition: submit an answer. */
-export function engineSubmitAnswer(state: EngineState, isCorrect: boolean, correctAnswer: string): EngineState {
+export function engineSubmitAnswer(
+  state: EngineState,
+  isCorrect: boolean,
+  correctAnswer: string,
+): EngineState {
   return {
     ...state,
     answered: true,
@@ -144,7 +152,10 @@ export function engineContinueRound(state: EngineState): EngineState {
  * Transition: enter calibration intro screen.
  * Shows explanation and a Start button; quiz controls are hidden.
  */
-export function engineCalibrationIntro(state: EngineState, hintOverride?: string): EngineState {
+export function engineCalibrationIntro(
+  state: EngineState,
+  hintOverride?: string,
+): EngineState {
   return {
     ...state,
     phase: 'calibration-intro',
@@ -165,7 +176,10 @@ export function engineCalibrationIntro(state: EngineState, hintOverride?: string
  * Transition: calibration trials are running.
  * Buttons enabled for tapping; trial counter shown in timeDisplay.
  */
-export function engineCalibrating(state: EngineState, hintOverride?: string): EngineState {
+export function engineCalibrating(
+  state: EngineState,
+  hintOverride?: string,
+): EngineState {
   return {
     ...state,
     phase: 'calibrating',
@@ -178,7 +192,10 @@ export function engineCalibrating(state: EngineState, hintOverride?: string): En
 }
 
 /** Transition: calibration complete, show results. */
-export function engineCalibrationResults(state: EngineState, baseline: number): EngineState {
+export function engineCalibrationResults(
+  state: EngineState,
+  baseline: number,
+): EngineState {
   return {
     ...state,
     phase: 'calibration-results',
@@ -203,7 +220,11 @@ export function engineStop(_state: EngineState): EngineState {
  * Transition: update the idle mastery/review message.
  * No-op if the engine is active.
  */
-export function engineUpdateIdleMessage(state: EngineState, allMastered: boolean, needsReview: boolean): EngineState {
+export function engineUpdateIdleMessage(
+  state: EngineState,
+  allMastered: boolean,
+  needsReview: boolean,
+): EngineState {
   if (state.phase !== 'idle') return state;
   if (allMastered) {
     return {
@@ -221,7 +242,10 @@ export function engineUpdateIdleMessage(state: EngineState, allMastered: boolean
 /**
  * Transition: update mastery message after an answer (during quiz).
  */
-export function engineUpdateMasteryAfterAnswer(state: EngineState, allMastered: boolean): EngineState {
+export function engineUpdateMasteryAfterAnswer(
+  state: EngineState,
+  allMastered: boolean,
+): EngineState {
   if (allMastered) {
     return {
       ...state,
@@ -235,12 +259,19 @@ export function engineUpdateMasteryAfterAnswer(state: EngineState, allMastered: 
 /**
  * Transition: update progress counts (mastered vs total enabled items).
  */
-export function engineUpdateProgress(state: EngineState, masteredCount: number, totalEnabledCount: number): EngineState {
+export function engineUpdateProgress(
+  state: EngineState,
+  masteredCount: number,
+  totalEnabledCount: number,
+): EngineState {
   return { ...state, masteredCount, totalEnabledCount };
 }
 
 /** Route a keydown event to an action descriptor. Pure -- no DOM. */
-export function engineRouteKey(state: EngineState, key: string): { action: 'stop' | 'next' | 'continue' | 'delegate' | 'ignore' } {
+export function engineRouteKey(
+  state: EngineState,
+  key: string,
+): { action: 'stop' | 'next' | 'continue' | 'delegate' | 'ignore' } {
   if (state.phase === 'idle') return { action: 'ignore' };
   if (key === 'Escape') return { action: 'stop' };
   if (state.phase === 'round-complete') {

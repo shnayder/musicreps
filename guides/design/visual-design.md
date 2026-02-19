@@ -10,11 +10,11 @@ Live HTML pages for visual iteration. Hand-written pages (`colors.html`,
 `components.html`) link directly to `src/styles.css` — just edit and refresh.
 `moments.html` is build-generated, so run `deno task build` after edits.
 
-| Page                               | Contents                                       | Source                                   |
-| ---------------------------------- | ---------------------------------------------- | ---------------------------------------- |
-| [colors.html](colors.html)         | Color swatches, heatmap scale, semantic tokens | Hand-written                             |
-| [components.html](components.html) | Isolated component specimens                   | Hand-written                             |
-| [moments.html](moments.html)       | Assembled screen layouts at 402px (all phases) | **Build-generated** (`deno task build`)  |
+| Page                               | Contents                                       | Source                                  |
+| ---------------------------------- | ---------------------------------------------- | --------------------------------------- |
+| [colors.html](colors.html)         | Color swatches, heatmap scale, semantic tokens | Hand-written                            |
+| [components.html](components.html) | Isolated component specimens                   | Hand-written                            |
+| [moments.html](moments.html)       | Assembled screen layouts at 402px (all phases) | **Build-generated** (`deno task build`) |
 
 `moments.html` uses the same `modeScreen()`, `fretboardSVG()`, and button
 helpers as the production app, so it never drifts from reality. To add or change

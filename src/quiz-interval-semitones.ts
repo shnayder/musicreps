@@ -224,7 +224,10 @@ export function createIntervalSemitonesMode() {
       return Array.from(container.querySelectorAll('.answer-btn-interval'));
     },
 
-    getCalibrationTrialConfig(buttons: HTMLElement[], prevBtn: HTMLElement | null) {
+    getCalibrationTrialConfig(
+      buttons: HTMLElement[],
+      prevBtn: HTMLElement | null,
+    ) {
       // Uniform random — no accidental/natural distinction for intervals
       let btn: HTMLElement;
       do {
@@ -247,20 +250,24 @@ export function createIntervalSemitonesMode() {
     });
 
     // Interval answer buttons
-    container.querySelectorAll<HTMLElement>('.answer-btn-interval').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.interval!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-interval').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.interval!);
+        });
+      },
+    );
 
     // Number answer buttons
-    container.querySelectorAll<HTMLElement>('.answer-btn-num').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.num!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-num').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.num!);
+        });
+      },
+    );
 
     // Start/stop
     container.querySelector('.start-btn')!.addEventListener(

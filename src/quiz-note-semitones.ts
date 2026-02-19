@@ -175,7 +175,10 @@ export function createNoteSemitonesMode() {
         return { correct, correctAnswer: String(currentItem!.note.num) };
       } else {
         const correct = noteMatchesInput(currentItem!.note, input);
-        return { correct, correctAnswer: displayNote(currentAccidentalChoice!) };
+        return {
+          correct,
+          correctAnswer: displayNote(currentAccidentalChoice!),
+        };
       }
     },
 
@@ -242,7 +245,10 @@ export function createNoteSemitonesMode() {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
 
-    getCalibrationTrialConfig(buttons: HTMLElement[], prevBtn: HTMLElement | null) {
+    getCalibrationTrialConfig(
+      buttons: HTMLElement[],
+      prevBtn: HTMLElement | null,
+    ) {
       const btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
@@ -266,20 +272,24 @@ export function createNoteSemitonesMode() {
     });
 
     // Note answer buttons
-    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.note!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.note!);
+        });
+      },
+    );
 
     // Number answer buttons
-    container.querySelectorAll<HTMLElement>('.answer-btn-num').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.num!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-num').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.num!);
+        });
+      },
+    );
 
     // Start/stop
     container.querySelector('.start-btn')!.addEventListener(

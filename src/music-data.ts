@@ -94,7 +94,15 @@ export function intervalMatchesInput(interval: Interval, input: string) {
 // ---------------------------------------------------------------------------
 
 export const LETTER_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-export const NATURAL_SEMITONES: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+export const NATURAL_SEMITONES: Record<string, number> = {
+  C: 0,
+  D: 2,
+  E: 4,
+  F: 5,
+  G: 7,
+  A: 9,
+  B: 11,
+};
 export const MAJOR_SCALE_STEPS = [0, 2, 4, 5, 7, 9, 11]; // cumulative semitones per degree
 
 /** Parse a spelled note name like 'F#', 'Bb', 'Ebb' into { letter, accidental }. */
@@ -440,7 +448,10 @@ export function spelledNoteMatchesInput(expectedName: string, input: string) {
  * Check if a user input matches a spelled note by semitone (lenient).
  * Used for button taps where user can't distinguish enharmonics.
  */
-export function spelledNoteMatchesSemitone(expectedName: string, input: string) {
+export function spelledNoteMatchesSemitone(
+  expectedName: string,
+  input: string,
+) {
   return spelledNoteSemitone(expectedName) === spelledNoteSemitone(input);
 }
 

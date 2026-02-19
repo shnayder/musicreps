@@ -11,16 +11,22 @@ deno task build                                  # Build to docs/
 deno task test                                   # Run tests
 deno task lint                                   # Lint check
 deno task fmt                                    # Format check
+deno task check                                  # Type-check all TS
+deno task ok                                     # All checks + build
 ```
+
+**Run `deno task ok` before pushing.** It runs lint, format check, type check,
+tests, and build in sequence — any failure stops the chain. Don't push broken
+code by accident.
 
 **Always bump the version** (`VERSION` in `src/build-template.ts`) with every
 change — even tiny fixes. Bump by 1 for normal changes (v3.13 → v3.14 → v3.15).
 Bump the major version for large overhauls (v3.x → v4.0).
 
 **The HTML template lives in `src/build-template.ts`** — the single source of
-truth for the page structure and version number. `main.ts` handles both
-building (with `--build`) and dev serving. Mode-specific content is passed as
-arguments to `modeScreen()` in `src/html-helpers.ts`.
+truth for the page structure and version number. `main.ts` handles both building
+(with `--build`) and dev serving. Mode-specific content is passed as arguments
+to `modeScreen()` in `src/html-helpers.ts`.
 
 ## Structure
 

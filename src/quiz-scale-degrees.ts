@@ -94,11 +94,13 @@ export function createScaleDegreesMode() {
   }
 
   function updateGroupToggles(): void {
-    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach((btn) => {
-      const g = parseInt(btn.dataset.group!);
-      btn.classList.toggle('active', enabledGroups.has(g));
-      btn.classList.toggle('recommended', recommendedGroups.has(g));
-    });
+    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach(
+      (btn) => {
+        const g = parseInt(btn.dataset.group!);
+        btn.classList.toggle('active', enabledGroups.has(g));
+        btn.classList.toggle('recommended', recommendedGroups.has(g));
+      },
+    );
   }
 
   const recsOptions = {
@@ -332,7 +334,10 @@ export function createScaleDegreesMode() {
 
     checkAnswer(_itemId: string, input: string) {
       if (currentItem!.dir === 'fwd') {
-        const correct = spelledNoteMatchesSemitone(currentItem!.noteName, input);
+        const correct = spelledNoteMatchesSemitone(
+          currentItem!.noteName,
+          input,
+        );
         return { correct, correctAnswer: displayNote(currentItem!.noteName) };
       } else {
         const expectedDegree = String(currentItem!.degree);
@@ -376,7 +381,10 @@ export function createScaleDegreesMode() {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
 
-    getCalibrationTrialConfig(buttons: HTMLElement[], prevBtn: HTMLElement | null) {
+    getCalibrationTrialConfig(
+      buttons: HTMLElement[],
+      prevBtn: HTMLElement | null,
+    ) {
       const btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
@@ -412,19 +420,23 @@ export function createScaleDegreesMode() {
 
     loadEnabledGroups();
 
-    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.note!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.note!);
+        });
+      },
+    );
 
-    container.querySelectorAll<HTMLElement>('.answer-btn-degree').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.degree!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-degree').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.degree!);
+        });
+      },
+    );
 
     container.querySelector('.start-btn')!.addEventListener(
       'click',

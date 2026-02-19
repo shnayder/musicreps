@@ -8,7 +8,10 @@ import type { Note, StringRecommendation } from './types.ts';
  * Toggle a string in the enabled set. Returns a new Set.
  * Ensures at least one string is always enabled.
  */
-export function toggleFretboardString(enabledStrings: Set<number>, string: number): Set<number> {
+export function toggleFretboardString(
+  enabledStrings: Set<number>,
+  string: number,
+): Set<number> {
   const next = new Set(enabledStrings);
   if (next.has(string)) {
     if (next.size > 1) next.delete(string);
@@ -40,7 +43,9 @@ export function createFretboardHelpers(musicData: {
   }
 
   /** Parse a fretboard item ID (e.g. '3-5') into question state. */
-  function parseFretboardItem(itemId: string): { currentString: number; currentFret: number; currentNote: string } {
+  function parseFretboardItem(
+    itemId: string,
+  ): { currentString: number; currentFret: number; currentNote: string } {
     const [s, f] = itemId.split('-').map(Number);
     return {
       currentString: s,
@@ -50,7 +55,10 @@ export function createFretboardHelpers(musicData: {
   }
 
   /** Check if an input matches the current fretboard question. */
-  function checkFretboardAnswer(currentNote: string, input: string): { correct: boolean; correctAnswer: string } {
+  function checkFretboardAnswer(
+    currentNote: string,
+    input: string,
+  ): { correct: boolean; correctAnswer: string } {
     const note = musicData.notes.find((n) => n.name === currentNote);
     const correct = !!(note && musicData.noteMatchesInput(note, input));
     return { correct, correctAnswer: displayNote(currentNote) };
@@ -64,7 +72,10 @@ export function createFretboardHelpers(musicData: {
   }
 
   /** Compute the list of enabled item IDs. */
-  function getFretboardEnabledItems(enabledStrings: Set<number>, noteFilter: string): string[] {
+  function getFretboardEnabledItems(
+    enabledStrings: Set<number>,
+    noteFilter: string,
+  ): string[] {
     const items = [];
     for (const s of enabledStrings) {
       for (let f = 0; f < fretCount; f++) {

@@ -33,6 +33,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Lint
+        run: deno lint
+
+      - name: Format check
+        run: deno fmt --check
+
+      - name: Type check
+        run: deno check src/**/*.ts
+
+      - name: Test
+        run: deno test --no-check --allow-read
+
       - name: Build
         run: deno task build
 

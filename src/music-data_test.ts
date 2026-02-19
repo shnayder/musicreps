@@ -184,8 +184,11 @@ describe('parseSpelledNote', () => {
   });
 
   it('handles null/undefined gracefully', () => {
-    assert.deepEqual(parseSpelledNote(null), { letter: '', accidental: 0 });
-    assert.deepEqual(parseSpelledNote(undefined), {
+    assert.deepEqual(parseSpelledNote(null as any), {
+      letter: '',
+      accidental: 0,
+    });
+    assert.deepEqual(parseSpelledNote(undefined as any), {
       letter: '',
       accidental: 0,
     });

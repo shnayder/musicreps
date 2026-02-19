@@ -1382,7 +1382,9 @@ export function createQuizEngine(
     document.addEventListener('keydown', handleKeydown);
     container.addEventListener('click', handleClick);
     refreshNoteButtonLabels(container);
-    const activeStatsBtn = container.querySelector('.stats-toggle-btn.active') as HTMLElement | null;
+    const activeStatsBtn = container.querySelector(
+      '.stats-toggle-btn.active',
+    ) as HTMLElement | null;
     if (activeStatsBtn) activeStatsBtn.click();
   }
 

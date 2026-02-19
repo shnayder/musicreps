@@ -12,11 +12,22 @@
         "no-process-global"
       ]
     },
-    "exclude": ["docs/", "node_modules/", "scripts/"]
+    "exclude": [
+      "docs/",
+      "node_modules/",
+      "scripts/",
+      "guides/design/moments.html",
+      "plans/generated/"
+    ]
   },
   "fmt": {
     "singleQuote": true,
-    "exclude": ["docs/", "node_modules/"]
+    "exclude": [
+      "docs/",
+      "node_modules/",
+      "guides/design/moments.html",
+      "plans/generated/"
+    ]
   },
   "tasks": {
     "build": "deno run --allow-read --allow-write --allow-run main.ts --build",
@@ -25,6 +36,7 @@
     "lint": "deno lint",
     "fmt": "deno fmt --check",
     "fmt:fix": "deno fmt",
-    "check": "deno check src/**/*.ts"
+    "check": "deno check src/**/*.ts",
+    "ok": "deno lint && deno fmt --check && deno check src/**/*.ts && deno test --no-check --allow-read && deno run --allow-read --allow-write --allow-run main.ts --build"
   }
 }

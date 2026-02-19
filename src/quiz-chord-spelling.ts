@@ -52,7 +52,9 @@ export function createChordSpellingMode() {
     }
   }
 
-  function parseItem(itemId: string): { rootName: string; chordType: ChordType; tones: string[] } {
+  function parseItem(
+    itemId: string,
+  ): { rootName: string; chordType: ChordType; tones: string[] } {
     const colonIdx = itemId.indexOf(':');
     const rootName = itemId.substring(0, colonIdx);
     const typeName = itemId.substring(colonIdx + 1);
@@ -89,11 +91,13 @@ export function createChordSpellingMode() {
   }
 
   function updateGroupToggles(): void {
-    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach((btn) => {
-      const g = parseInt(btn.dataset.group!);
-      btn.classList.toggle('active', enabledGroups.has(g));
-      btn.classList.toggle('recommended', recommendedGroups.has(g));
-    });
+    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach(
+      (btn) => {
+        const g = parseInt(btn.dataset.group!);
+        btn.classList.toggle('active', enabledGroups.has(g));
+        btn.classList.toggle('recommended', recommendedGroups.has(g));
+      },
+    );
   }
 
   const recsOptions = {
@@ -250,7 +254,9 @@ export function createChordSpellingMode() {
 
   // --- Multi-note entry state ---
 
-  let currentItem: { rootName: string; chordType: ChordType; tones: string[] } | null = null;
+  let currentItem:
+    | { rootName: string; chordType: ChordType; tones: string[] }
+    | null = null;
   let enteredTones: { input: string; display: string; correct: boolean }[] = [];
 
   function renderSlots(): void {
@@ -391,7 +397,10 @@ export function createChordSpellingMode() {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
 
-    getCalibrationTrialConfig(buttons: HTMLElement[], prevBtn: HTMLElement | null) {
+    getCalibrationTrialConfig(
+      buttons: HTMLElement[],
+      prevBtn: HTMLElement | null,
+    ) {
       // Multi-press: pick 2–4 random note buttons
       const count = 2 + Math.floor(Math.random() * 3); // 2, 3, or 4
       const targets: HTMLElement[] = [];
@@ -439,21 +448,23 @@ export function createChordSpellingMode() {
 
     loadEnabledGroups();
 
-    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        let input = btn.dataset.note!;
-        // Resolve enharmonic: buttons can't distinguish A#/Bb, so if the
-        // button's pitch matches the expected tone, use the expected spelling.
-        if (currentItem && enteredTones.length < currentItem.tones.length) {
-          const expected = currentItem.tones[enteredTones.length];
-          if (spelledNoteMatchesSemitone(expected, input)) {
-            input = expected;
+    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          let input = btn.dataset.note!;
+          // Resolve enharmonic: buttons can't distinguish A#/Bb, so if the
+          // button's pitch matches the expected tone, use the expected spelling.
+          if (currentItem && enteredTones.length < currentItem.tones.length) {
+            const expected = currentItem.tones[enteredTones.length];
+            if (spelledNoteMatchesSemitone(expected, input)) {
+              input = expected;
+            }
           }
-        }
-        submitTone(input);
-      });
-    });
+          submitTone(input);
+        });
+      },
+    );
 
     container.querySelector('.start-btn')!.addEventListener(
       'click',

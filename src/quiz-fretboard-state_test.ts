@@ -388,7 +388,13 @@ describe('computeNotePrioritization', () => {
 
   it("suggests 'natural' when no data (all unseen)", () => {
     const stats = [
-      { masteredCount: 0, dueCount: 0, unseenCount: 8, totalCount: 8 },
+      {
+        string: 0,
+        masteredCount: 0,
+        dueCount: 0,
+        unseenCount: 8,
+        totalCount: 8,
+      },
     ];
     const result = computeNotePrioritization(stats, threshold);
     assert.equal(result.suggestedFilter, 'natural');
@@ -398,7 +404,13 @@ describe('computeNotePrioritization', () => {
   it("suggests 'natural' when below threshold", () => {
     // 3 mastered out of 6 seen = 0.5, below 0.7
     const stats = [
-      { masteredCount: 3, dueCount: 3, unseenCount: 2, totalCount: 8 },
+      {
+        string: 0,
+        masteredCount: 3,
+        dueCount: 3,
+        unseenCount: 2,
+        totalCount: 8,
+      },
     ];
     const result = computeNotePrioritization(stats, threshold);
     assert.equal(result.suggestedFilter, 'natural');
@@ -408,7 +420,13 @@ describe('computeNotePrioritization', () => {
   it("suggests 'all' when at threshold", () => {
     // 7 mastered out of 10 seen = 0.7, at threshold
     const stats = [
-      { masteredCount: 7, dueCount: 3, unseenCount: 0, totalCount: 10 },
+      {
+        string: 0,
+        masteredCount: 7,
+        dueCount: 3,
+        unseenCount: 0,
+        totalCount: 10,
+      },
     ];
     const result = computeNotePrioritization(stats, threshold);
     assert.equal(result.suggestedFilter, 'all');
@@ -418,7 +436,13 @@ describe('computeNotePrioritization', () => {
   it("suggests 'all' when above threshold", () => {
     // 8 mastered out of 10 seen = 0.8
     const stats = [
-      { masteredCount: 8, dueCount: 2, unseenCount: 0, totalCount: 10 },
+      {
+        string: 0,
+        masteredCount: 8,
+        dueCount: 2,
+        unseenCount: 0,
+        totalCount: 10,
+      },
     ];
     const result = computeNotePrioritization(stats, threshold);
     assert.equal(result.suggestedFilter, 'all');
@@ -427,8 +451,20 @@ describe('computeNotePrioritization', () => {
   it('aggregates across multiple strings', () => {
     // String 0: 4/5 mastered, String 1: 3/5 mastered → 7/10 = 0.7
     const stats = [
-      { masteredCount: 4, dueCount: 1, unseenCount: 3, totalCount: 8 },
-      { masteredCount: 3, dueCount: 2, unseenCount: 3, totalCount: 8 },
+      {
+        string: 0,
+        masteredCount: 4,
+        dueCount: 1,
+        unseenCount: 3,
+        totalCount: 8,
+      },
+      {
+        string: 1,
+        masteredCount: 3,
+        dueCount: 2,
+        unseenCount: 3,
+        totalCount: 8,
+      },
     ];
     const result = computeNotePrioritization(stats, threshold);
     assert.equal(result.suggestedFilter, 'all');
@@ -437,7 +473,13 @@ describe('computeNotePrioritization', () => {
 
   it('returns correct ratio', () => {
     const stats = [
-      { masteredCount: 2, dueCount: 8, unseenCount: 0, totalCount: 10 },
+      {
+        string: 0,
+        masteredCount: 2,
+        dueCount: 8,
+        unseenCount: 0,
+        totalCount: 10,
+      },
     ];
     const result = computeNotePrioritization(stats, threshold);
     assert.equal(result.naturalMasteryRatio, 0.2);

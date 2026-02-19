@@ -54,7 +54,13 @@ export function createSemitoneMathMode() {
 
   function parseItem(
     itemId: string,
-  ): { note: Note; op: string; semitones: number; answer: Note; useFlats: boolean } {
+  ): {
+    note: Note;
+    op: string;
+    semitones: number;
+    answer: Note;
+    useFlats: boolean;
+  } {
     const match = itemId.match(/^([A-G]#?)([+-])(\d+)$/)!;
     const noteName = match[1];
     const op = match[2];

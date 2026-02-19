@@ -43,7 +43,9 @@ function createFrettedInstrumentMode(instrument: Instrument) {
   let enabledStrings = new Set<number>([instrument.defaultString]);
   let noteFilter: 'natural' | 'sharps-flats' | 'all' = 'natural';
   let recommendedStrings = new Set<number>();
-  let lastNotePri: { suggestedFilter: string; naturalMasteryRatio: number } | null = null;
+  let lastNotePri:
+    | { suggestedFilter: string; naturalMasteryRatio: number }
+    | null = null;
   const allStrings: number[] = Array.from(
     { length: instrument.stringCount },
     function (_: unknown, i: number) {
@@ -77,7 +79,12 @@ function createFrettedInstrumentMode(instrument: Instrument) {
 
   // --- SVG helpers (scoped to a specific fretboard instance) ---
 
-  function setCircleFill(root: HTMLElement, string: number, fret: number, color: string): void {
+  function setCircleFill(
+    root: HTMLElement,
+    string: number,
+    fret: number,
+    color: string,
+  ): void {
     const circle = root.querySelector(
       'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]',
     ) as SVGElement | null;
@@ -93,7 +100,9 @@ function createFrettedInstrumentMode(instrument: Instrument) {
   // --- Hover card setup ---
 
   function setupHoverCard(fretboardWrapper: HTMLElement): void {
-    const card = fretboardWrapper.querySelector('.hover-card') as HTMLElement | null;
+    const card = fretboardWrapper.querySelector('.hover-card') as
+      | HTMLElement
+      | null;
     if (!card) return;
 
     function showCard(el: Element): void {
@@ -180,11 +189,13 @@ function createFrettedInstrumentMode(instrument: Instrument) {
   }
 
   function updateStringToggles(): void {
-    container.querySelectorAll<HTMLElement>('.string-toggle').forEach(function (btn) {
-      const s = parseInt(btn.dataset.string!);
-      btn.classList.toggle('active', enabledStrings.has(s));
-      btn.classList.toggle('recommended', recommendedStrings.has(s));
-    });
+    container.querySelectorAll<HTMLElement>('.string-toggle').forEach(
+      function (btn) {
+        const s = parseInt(btn.dataset.string!);
+        btn.classList.toggle('active', enabledStrings.has(s));
+        btn.classList.toggle('recommended', recommendedStrings.has(s));
+      },
+    );
   }
 
   function toggleString(s: number): void {
@@ -237,9 +248,11 @@ function createFrettedInstrumentMode(instrument: Instrument) {
 
   function switchTab(tabName: string): void {
     activeTab = tabName;
-    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(function (btn) {
-      btn.classList.toggle('active', btn.dataset.tab === tabName);
-    });
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(
+      function (btn) {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+      },
+    );
     container.querySelectorAll('.tab-content').forEach(function (el) {
       const isPractice = el.classList.contains('tab-practice');
       const isProgress = el.classList.contains('tab-progress');
@@ -259,29 +272,35 @@ function createFrettedInstrumentMode(instrument: Instrument) {
 
   // --- Heatmap (renders on the progress fretboard) ---
 
-  const statsControls = createStatsControls(container, function (mode: string, el: HTMLElement) {
-    el.innerHTML = buildStatsLegend(mode, engine.baseline ?? undefined);
-    if (mode === 'retention') {
-      for (let si = 0; si < allStrings.length; si++) {
-        const s = allStrings[si];
-        for (let f = 0; f < instrument.fretCount; f++) {
-          const auto = engine.selector.getAutomaticity(s + '-' + f);
-          const color = getAutomaticityColor(auto);
-          setCircleFill(progressFretboard, s, f, color);
+  const statsControls = createStatsControls(
+    container,
+    function (mode: string, el: HTMLElement) {
+      el.innerHTML = buildStatsLegend(mode, engine.baseline ?? undefined);
+      if (mode === 'retention') {
+        for (let si = 0; si < allStrings.length; si++) {
+          const s = allStrings[si];
+          for (let f = 0; f < instrument.fretCount; f++) {
+            const auto = engine.selector.getAutomaticity(s + '-' + f);
+            const color = getAutomaticityColor(auto);
+            setCircleFill(progressFretboard, s, f, color);
+          }
+        }
+      } else {
+        for (let sj = 0; sj < allStrings.length; sj++) {
+          const s2 = allStrings[sj];
+          for (let f2 = 0; f2 < instrument.fretCount; f2++) {
+            const stats = engine.selector.getStats(s2 + '-' + f2);
+            const ewma = stats ? stats.ewma : null;
+            const color2 = getSpeedHeatmapColor(
+              ewma,
+              engine.baseline ?? undefined,
+            );
+            setCircleFill(progressFretboard, s2, f2, color2);
+          }
         }
       }
-    } else {
-      for (let sj = 0; sj < allStrings.length; sj++) {
-        const s2 = allStrings[sj];
-        for (let f2 = 0; f2 < instrument.fretCount; f2++) {
-          const stats = engine.selector.getStats(s2 + '-' + f2);
-          const ewma = stats ? stats.ewma : null;
-          const color2 = getSpeedHeatmapColor(ewma, engine.baseline ?? undefined);
-          setCircleFill(progressFretboard, s2, f2, color2);
-        }
-      }
-    }
-  });
+    },
+  );
 
   function hideHeatmap(): void {
     statsControls.hide();
@@ -407,9 +426,11 @@ function createFrettedInstrumentMode(instrument: Instrument) {
       // Build rationale text
       const parts: string[] = [];
       if (result.consolidateIndices.length > 0) {
-        const cNames = result.consolidateIndices.sort(function (a: number, b: number) {
-          return b - a;
-        })
+        const cNames = result.consolidateIndices.sort(
+          function (a: number, b: number) {
+            return b - a;
+          },
+        )
           .map(function (s: number) {
             return displayNote(instrument.stringNames[s]);
           });
@@ -462,9 +483,11 @@ function createFrettedInstrumentMode(instrument: Instrument) {
 
   function updateAccidentalButtons(): void {
     const hideAcc = noteFilter === 'natural';
-    container.querySelectorAll<HTMLElement>('.note-btn.accidental').forEach(function (btn) {
-      btn.classList.toggle('hidden', hideAcc);
-    });
+    container.querySelectorAll<HTMLElement>('.note-btn.accidental').forEach(
+      function (btn) {
+        btn.classList.toggle('hidden', hideAcc);
+      },
+    );
     const accRow = container.querySelector('.note-row-accidentals');
     if (accRow) accRow.classList.toggle('hidden', hideAcc);
   }
@@ -487,9 +510,11 @@ function createFrettedInstrumentMode(instrument: Instrument) {
     getPracticingLabel: function (): string {
       const parts: string[] = [];
       if (enabledStrings.size < instrument.stringCount) {
-        const names = Array.from(enabledStrings).sort(function (a: number, b: number) {
-          return b - a;
-        })
+        const names = Array.from(enabledStrings).sort(
+          function (a: number, b: number) {
+            return b - a;
+          },
+        )
           .map(function (s: number) {
             return displayNote(instrument.stringNames[s]);
           });
@@ -518,7 +543,11 @@ function createFrettedInstrumentMode(instrument: Instrument) {
       return fb.checkFretboardAnswer(currentNote!, input);
     },
 
-    onAnswer: function (_itemId: string, result: CheckAnswerResult, _responseTime: number): void {
+    onAnswer: function (
+      _itemId: string,
+      result: CheckAnswerResult,
+      _responseTime: number,
+    ): void {
       if (result.correct) {
         setCircleFill(
           quizFretboard,
@@ -552,7 +581,10 @@ function createFrettedInstrumentMode(instrument: Instrument) {
       refreshUI();
     },
 
-    handleKey: function (e: KeyboardEvent, _ctx: { submitAnswer: (input: string) => void }): boolean {
+    handleKey: function (
+      e: KeyboardEvent,
+      _ctx: { submitAnswer: (input: string) => void },
+    ): boolean {
       return noteKeyHandler.handleKey(e);
     },
 
@@ -560,7 +592,10 @@ function createFrettedInstrumentMode(instrument: Instrument) {
       return Array.from(container.querySelectorAll('.note-btn:not(.hidden)'));
     },
 
-    getCalibrationTrialConfig: function (buttons: HTMLElement[], prevBtn: HTMLElement | null): CalibrationTrialConfig {
+    getCalibrationTrialConfig: function (
+      buttons: HTMLElement[],
+      prevBtn: HTMLElement | null,
+    ): CalibrationTrialConfig {
       const btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
@@ -595,48 +630,56 @@ function createFrettedInstrumentMode(instrument: Instrument) {
     loadNoteFilter();
 
     // Tab switching
-    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        switchTab(btn.dataset.tab!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(
+      function (btn) {
+        btn.addEventListener('click', function () {
+          switchTab(btn.dataset.tab!);
+        });
+      },
+    );
 
     // String toggles
-    container.querySelectorAll<HTMLElement>('.string-toggle').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        toggleString(parseInt(btn.dataset.string!));
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.string-toggle').forEach(
+      function (btn) {
+        btn.addEventListener('click', function () {
+          toggleString(parseInt(btn.dataset.string!));
+        });
+      },
+    );
 
     // Note buttons (for quiz)
-    container.querySelectorAll<HTMLElement>('.note-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.note!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.note-btn').forEach(
+      function (btn) {
+        btn.addEventListener('click', function () {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.note!);
+        });
+      },
+    );
 
     // Notes toggles (natural / sharps & flats)
-    container.querySelectorAll<HTMLElement>('.notes-toggle').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        btn.classList.toggle('active');
-        // Ensure at least one is active
-        const anyActive = container.querySelector('.notes-toggle.active');
-        if (!anyActive) btn.classList.add('active');
-        const naturalActive = container.querySelector(
-          '.notes-toggle[data-notes="natural"].active',
-        );
-        const accActive = container.querySelector(
-          '.notes-toggle[data-notes="sharps-flats"].active',
-        );
-        if (naturalActive && accActive) noteFilter = 'all';
-        else if (accActive) noteFilter = 'sharps-flats';
-        else noteFilter = 'natural';
-        saveNoteFilter();
-        updateAccidentalButtons();
-        refreshUI();
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.notes-toggle').forEach(
+      function (btn) {
+        btn.addEventListener('click', function () {
+          btn.classList.toggle('active');
+          // Ensure at least one is active
+          const anyActive = container.querySelector('.notes-toggle.active');
+          if (!anyActive) btn.classList.add('active');
+          const naturalActive = container.querySelector(
+            '.notes-toggle[data-notes="natural"].active',
+          );
+          const accActive = container.querySelector(
+            '.notes-toggle[data-notes="sharps-flats"].active',
+          );
+          if (naturalActive && accActive) noteFilter = 'all';
+          else if (accActive) noteFilter = 'sharps-flats';
+          else noteFilter = 'natural';
+          saveNoteFilter();
+          updateAccidentalButtons();
+          refreshUI();
+        });
+      },
+    );
 
     // Start button
     container.querySelector('.start-btn')!.addEventListener(
@@ -652,7 +695,10 @@ function createFrettedInstrumentMode(instrument: Instrument) {
       recBtn.addEventListener('click', function () {
         applyRecommendations();
         if (lastNotePri) {
-          noteFilter = lastNotePri.suggestedFilter as 'natural' | 'sharps-flats' | 'all';
+          noteFilter = lastNotePri.suggestedFilter as
+            | 'natural'
+            | 'sharps-flats'
+            | 'all';
           saveNoteFilter();
           updateNoteToggles();
           updateAccidentalButtons();

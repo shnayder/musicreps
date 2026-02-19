@@ -46,7 +46,9 @@ export function createSpeedTapMode() {
     return noteNames[(offset + fret) % 12];
   }
 
-  function getPositionsForNote(noteName: string): { string: number; fret: number }[] {
+  function getPositionsForNote(
+    noteName: string,
+  ): { string: number; fret: number }[] {
     const positions: { string: number; fret: number }[] = [];
     for (let s = 0; s < 6; s++) {
       for (let f = 0; f <= 12; f++) {
@@ -78,9 +80,11 @@ export function createSpeedTapMode() {
 
   function switchTab(tabName: string): void {
     activeTab = tabName;
-    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(function (btn) {
-      btn.classList.toggle('active', btn.dataset.tab === tabName);
-    });
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(
+      function (btn) {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+      },
+    );
     container.querySelectorAll('.tab-content').forEach(function (el) {
       el.classList.toggle(
         'active',
@@ -147,29 +151,33 @@ export function createSpeedTapMode() {
 
   // --- Note stats view ---
 
-  const statsControls = createStatsControls(container, function (mode: string, el: HTMLElement) {
-    let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
-    for (let i = 0; i < NOTES.length; i++) {
-      html += '<th>' + displayNote(NOTES[i].name) + '</th>';
-    }
-    html += '</tr></thead><tbody><tr>';
-    for (let j = 0; j < NOTES.length; j++) {
-      if (mode === 'retention') {
-        const auto = engine.selector.getAutomaticity(NOTES[j].name);
-        html += '<td class="stats-cell" style="background:' +
-          getAutomaticityColor(auto) + '"></td>';
-      } else {
-        const stats = engine.selector.getStats(NOTES[j].name);
-        const posCount = getPositionsForNote(NOTES[j].name).length;
-        const perPosMs = stats ? stats.ewma / posCount : null;
-        html += '<td class="stats-cell" style="background:' +
-          getSpeedHeatmapColor(perPosMs, engine.baseline ?? undefined) + '"></td>';
+  const statsControls = createStatsControls(
+    container,
+    function (mode: string, el: HTMLElement) {
+      let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
+      for (let i = 0; i < NOTES.length; i++) {
+        html += '<th>' + displayNote(NOTES[i].name) + '</th>';
       }
-    }
-    html += '</tr></tbody></table>';
-    html += buildStatsLegend(mode, engine.baseline ?? undefined);
-    el.innerHTML = html;
-  });
+      html += '</tr></thead><tbody><tr>';
+      for (let j = 0; j < NOTES.length; j++) {
+        if (mode === 'retention') {
+          const auto = engine.selector.getAutomaticity(NOTES[j].name);
+          html += '<td class="stats-cell" style="background:' +
+            getAutomaticityColor(auto) + '"></td>';
+        } else {
+          const stats = engine.selector.getStats(NOTES[j].name);
+          const posCount = getPositionsForNote(NOTES[j].name).length;
+          const perPosMs = stats ? stats.ewma / posCount : null;
+          html += '<td class="stats-cell" style="background:' +
+            getSpeedHeatmapColor(perPosMs, engine.baseline ?? undefined) +
+            '"></td>';
+        }
+      }
+      html += '</tr></tbody></table>';
+      html += buildStatsLegend(mode, engine.baseline ?? undefined);
+      el.innerHTML = html;
+    },
+  );
 
   // --- DOM ---
 
@@ -318,7 +326,11 @@ export function createSpeedTapMode() {
       renderSessionSummary();
     },
 
-    onAnswer: function (_itemId: string, result: CheckAnswerResult, _responseTime: number): void {
+    onAnswer: function (
+      _itemId: string,
+      result: CheckAnswerResult,
+      _responseTime: number,
+    ): void {
       roundActive = false;
       if (!result.correct) {
         // On timeout: reveal remaining target positions
@@ -332,7 +344,10 @@ export function createSpeedTapMode() {
       }
     },
 
-    handleKey: function (_e: KeyboardEvent, _ctx: { submitAnswer: (input: string) => void }): boolean {
+    handleKey: function (
+      _e: KeyboardEvent,
+      _ctx: { submitAnswer: (input: string) => void },
+    ): boolean {
       // Speed Tap doesn't use keyboard for answers
       return false;
     },
@@ -393,33 +408,37 @@ export function createSpeedTapMode() {
     loadNoteFilter();
 
     // Tab switching
-    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        switchTab(btn.dataset.tab!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(
+      function (btn) {
+        btn.addEventListener('click', function () {
+          switchTab(btn.dataset.tab!);
+        });
+      },
+    );
 
     // Notes toggles (natural / sharps & flats)
-    container.querySelectorAll<HTMLElement>('.notes-toggle').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        btn.classList.toggle('active');
-        const anyActive = container.querySelector('.notes-toggle.active');
-        if (!anyActive) btn.classList.add('active');
-        const naturalActive = container.querySelector(
-          '.notes-toggle[data-notes="natural"].active',
-        );
-        const accActive = container.querySelector(
-          '.notes-toggle[data-notes="sharps-flats"].active',
-        );
-        if (naturalActive && accActive) noteFilter = 'all';
-        else if (accActive) noteFilter = 'sharps-flats';
-        else noteFilter = 'natural';
-        saveNoteFilter();
-        engine.updateIdleMessage();
-        renderPracticeSummary();
-        renderSessionSummary();
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.notes-toggle').forEach(
+      function (btn) {
+        btn.addEventListener('click', function () {
+          btn.classList.toggle('active');
+          const anyActive = container.querySelector('.notes-toggle.active');
+          if (!anyActive) btn.classList.add('active');
+          const naturalActive = container.querySelector(
+            '.notes-toggle[data-notes="natural"].active',
+          );
+          const accActive = container.querySelector(
+            '.notes-toggle[data-notes="sharps-flats"].active',
+          );
+          if (naturalActive && accActive) noteFilter = 'all';
+          else if (accActive) noteFilter = 'sharps-flats';
+          else noteFilter = 'natural';
+          saveNoteFilter();
+          engine.updateIdleMessage();
+          renderPracticeSummary();
+          renderSessionSummary();
+        });
+      },
+    );
 
     container.querySelector('.start-btn')!.addEventListener(
       'click',

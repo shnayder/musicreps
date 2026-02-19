@@ -7,11 +7,21 @@ import type { RecommendationResult, StringRecommendation } from './types.ts';
 
 // Compute which subsets (strings, distance groups) to recommend and enable.
 export function computeRecommendations(
-  selector: { getStringRecommendations(indices: number[], getItemIds: (index: number) => string[]): StringRecommendation[] },
+  selector: {
+    getStringRecommendations(
+      indices: number[],
+      getItemIds: (index: number) => string[],
+    ): StringRecommendation[];
+  },
   allIndices: number[],
   getItemIds: (index: number) => string[],
   config: { expansionThreshold: number },
-  options?: { sortUnstarted?: (a: StringRecommendation, b: StringRecommendation) => number },
+  options?: {
+    sortUnstarted?: (
+      a: StringRecommendation,
+      b: StringRecommendation,
+    ) => number;
+  },
 ): RecommendationResult {
   const sortUnstarted = options && options.sortUnstarted;
   const recs = selector.getStringRecommendations(allIndices, getItemIds);

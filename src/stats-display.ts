@@ -62,7 +62,10 @@ export function getAutomaticityColor(auto: number | null): string {
   return c.level[0];
 }
 
-export function getSpeedHeatmapColor(ms: number | null, baseline: number | null | undefined): string {
+export function getSpeedHeatmapColor(
+  ms: number | null,
+  baseline: number | null | undefined,
+): string {
   const c = heatmapColors();
   if (ms === null) return c.none;
   const b = baseline || 1000;
@@ -74,7 +77,10 @@ export function getSpeedHeatmapColor(ms: number | null, baseline: number | null 
 }
 
 export function getStatsCellColor(
-  selector: { getAutomaticity(id: string): number | null; getStats(id: string): ItemStats | null },
+  selector: {
+    getAutomaticity(id: string): number | null;
+    getStats(id: string): ItemStats | null;
+  },
   itemId: string,
   statsMode: string,
   baseline: number | null | undefined,
@@ -92,7 +98,10 @@ export function getStatsCellColor(
  * Returns grey when no items have data.
  */
 export function getStatsCellColorMerged(
-  selector: { getAutomaticity(id: string): number | null; getStats(id: string): ItemStats | null },
+  selector: {
+    getAutomaticity(id: string): number | null;
+    getStats(id: string): ItemStats | null;
+  },
   itemIds: string | string[],
   statsMode: string,
   baseline: number | null | undefined,
@@ -132,7 +141,10 @@ type StatsTableRow = {
 };
 
 export function renderStatsTable(
-  selector: { getAutomaticity(id: string): number | null; getStats(id: string): ItemStats | null },
+  selector: {
+    getAutomaticity(id: string): number | null;
+    getStats(id: string): ItemStats | null;
+  },
   rows: StatsTableRow[],
   fwdHeader: string,
   revHeader: string,
@@ -177,7 +189,10 @@ export function renderStatsTable(
 
 /** Render a heatmap grid for math modes (12 notes x 11 offsets/intervals). */
 export function renderStatsGrid(
-  selector: { getAutomaticity(id: string): number | null; getStats(id: string): ItemStats | null },
+  selector: {
+    getAutomaticity(id: string): number | null;
+    getStats(id: string): ItemStats | null;
+  },
   colLabels: string[],
   getItemId: (noteName: string, colIndex: number) => string | string[],
   statsMode: string,
@@ -219,16 +234,20 @@ export function createStatsControls(
   renderFn: (mode: string, el: HTMLElement) => void,
 ) {
   let statsMode: string | null = null;
-  const statsContainer = container.querySelector('.stats-container') as HTMLElement;
+  const statsContainer = container.querySelector(
+    '.stats-container',
+  ) as HTMLElement;
 
   function show(mode: string) {
     statsMode = mode;
     statsContainer.innerHTML = '';
     renderFn(mode, statsContainer);
     statsContainer.classList.remove('stats-hidden');
-    container.querySelectorAll<HTMLButtonElement>('.stats-toggle-btn').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.mode === mode);
-    });
+    container.querySelectorAll<HTMLButtonElement>('.stats-toggle-btn').forEach(
+      function (b) {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      },
+    );
   }
 
   function hide() {
@@ -238,11 +257,13 @@ export function createStatsControls(
   }
 
   // Wire toggle buttons
-  container.querySelectorAll<HTMLButtonElement>('.stats-toggle-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      show(btn.dataset.mode!);
-    });
-  });
+  container.querySelectorAll<HTMLButtonElement>('.stats-toggle-btn').forEach(
+    function (btn) {
+      btn.addEventListener('click', function () {
+        show(btn.dataset.mode!);
+      });
+    },
+  );
 
   return {
     show: show,

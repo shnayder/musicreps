@@ -1,7 +1,7 @@
 # TypeScript Type Annotations
 
-**Branch:** `claude/ts-type-annotations`
-**Depends on:** Phase 3 (consolidate build on Deno) — PR #86
+**Branch:** `claude/ts-type-annotations` **Depends on:** Phase 3 (consolidate
+build on Deno) — PR #86
 
 ## Problem / Context
 
@@ -16,8 +16,8 @@ reference. This plan covers the phased implementation order.
 
 ## Phasing
 
-The dependency graph dictates order: annotate leaves first so imports
-type-check immediately.
+The dependency graph dictates order: annotate leaves first so imports type-check
+immediately.
 
 ### Phase 0: Infrastructure (~70 errors eliminated)
 
@@ -44,8 +44,8 @@ esbuild:
 
 ### Phase 2: Pure foundation (6 files, ~200 errors)
 
-- `music-data.ts` — type arrays (`NOTES`, `INTERVALS`, etc.), helper
-  functions, `Record<string, number>` for lookup objects
+- `music-data.ts` — type arrays (`NOTES`, `INTERVALS`, etc.), helper functions,
+  `Record<string, number>` for lookup objects
 - `adaptive.ts` — type pure functions, factory, storage adapter
 - `quiz-engine-state.ts` — type state transitions
 - `recommendations.ts` — type algorithm
@@ -55,13 +55,13 @@ esbuild:
 ### Phase 3: Engine + stats (2 files, ~150 errors)
 
 - `stats-display.ts` — type color functions, stats rendering
-- `quiz-engine.ts` — largest file (~1460 lines), type key handlers,
-  calibration, engine factory. Uses `EngineEls` interface for DOM cache.
+- `quiz-engine.ts` — largest file (~1460 lines), type key handlers, calibration,
+  engine factory. Uses `EngineEls` interface for DOM cache.
 
 ### Phase 4: Quiz modes (10 files, ~350 errors)
 
-Start with `quiz-note-semitones.ts` as template (simplest), then apply the
-same pattern to remaining 9 modes.
+Start with `quiz-note-semitones.ts` as template (simplest), then apply the same
+pattern to remaining 9 modes.
 
 Order: note-semitones, interval-semitones, key-signatures, scale-degrees,
 diatonic-chords, semitone-math, interval-math, chord-spelling, speed-tap,
@@ -85,6 +85,7 @@ fretboard.
 ## Key Patterns
 
 **DOM element cache** (in quiz-engine.ts):
+
 ```typescript
 interface EngineEls {
   feedback: HTMLElement;
@@ -94,6 +95,7 @@ interface EngineEls {
 ```
 
 **Storage adapter** (shared interface):
+
 ```typescript
 interface StorageAdapter {
   getStats(itemId: string): ItemStats | null;

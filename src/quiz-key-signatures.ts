@@ -80,11 +80,13 @@ export function createKeySignaturesMode() {
   }
 
   function updateGroupToggles(): void {
-    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach((btn) => {
-      const g = parseInt(btn.dataset.group!);
-      btn.classList.toggle('active', enabledGroups.has(g));
-      btn.classList.toggle('recommended', recommendedGroups.has(g));
-    });
+    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach(
+      (btn) => {
+        const g = parseInt(btn.dataset.group!);
+        btn.classList.toggle('active', enabledGroups.has(g));
+        btn.classList.toggle('recommended', recommendedGroups.has(g));
+      },
+    );
   }
 
   const recsOptions = {
@@ -319,7 +321,10 @@ export function createKeySignaturesMode() {
         const expected = keySignatureLabel(currentItem!.key);
         return { correct: input === expected, correctAnswer: expected };
       } else {
-        const correct = spelledNoteMatchesSemitone(currentItem!.key.root, input);
+        const correct = spelledNoteMatchesSemitone(
+          currentItem!.key.root,
+          input,
+        );
         return { correct, correctAnswer: displayNote(currentItem!.key.root) };
       }
     },
@@ -374,7 +379,10 @@ export function createKeySignaturesMode() {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
 
-    getCalibrationTrialConfig(buttons: HTMLElement[], prevBtn: HTMLElement | null) {
+    getCalibrationTrialConfig(
+      buttons: HTMLElement[],
+      prevBtn: HTMLElement | null,
+    ) {
       const btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
@@ -410,19 +418,23 @@ export function createKeySignaturesMode() {
 
     loadEnabledGroups();
 
-    container.querySelectorAll<HTMLElement>('.answer-btn-keysig').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.sig!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-keysig').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.sig!);
+        });
+      },
+    );
 
-    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.note!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.note!);
+        });
+      },
+    );
 
     container.querySelector('.start-btn')!.addEventListener(
       'click',

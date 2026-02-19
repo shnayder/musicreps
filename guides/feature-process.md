@@ -211,10 +211,10 @@ Technical approach:
 
 ## Files Modified
 
-| File       | Changes               |
-| ---------- | --------------------- |
-| `src/...`  | Description           |
-| `main.ts`  | Build script changes  |
+| File      | Changes              |
+| --------- | -------------------- |
+| `src/...` | Description          |
+| `main.ts` | Build script changes |
 
 ## Testing
 

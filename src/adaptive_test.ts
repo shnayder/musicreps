@@ -53,6 +53,8 @@ describe('computeWeight', () => {
       ewma: 2000,
       sampleCount: 1,
       lastSeen: 0,
+      stability: null,
+      lastCorrectAt: null,
     };
     assert.equal(computeWeight(stats, cfg), 2.0);
   });
@@ -63,6 +65,8 @@ describe('computeWeight', () => {
       ewma: 500,
       sampleCount: 5,
       lastSeen: 0,
+      stability: null,
+      lastCorrectAt: null,
     };
     // max(500, 1000) / 1000 = 1.0
     assert.equal(computeWeight(stats, cfg), 1.0);
@@ -77,6 +81,8 @@ describe('computeWeight', () => {
       ewma: 2000,
       sampleCount: 1,
       lastSeen: 0,
+      stability: null,
+      lastCorrectAt: null,
     };
     const seenWeight = computeWeight(seenOnce, cfg);
     assert.ok(
@@ -93,6 +99,8 @@ describe('computeWeight', () => {
       ewma: 2500,
       sampleCount: 2,
       lastSeen: 0,
+      stability: null,
+      lastCorrectAt: null,
     };
     assert.ok(
       unseenWeight > computeWeight(mediumSlow, cfg),
@@ -106,6 +114,8 @@ describe('computeWeight', () => {
       ewma: 5000,
       sampleCount: 2,
       lastSeen: 0,
+      stability: null,
+      lastCorrectAt: null,
     };
     assert.ok(
       computeWeight(verySlow, cfg) > unseenWeight,
@@ -133,7 +143,7 @@ describe('computeRecall', () => {
 
   it('returns null for unseen items', () => {
     assert.equal(computeRecall(null, 10), null);
-    assert.equal(computeRecall(undefined, 10), null);
+    assert.equal(computeRecall(undefined as any, 10), null);
     assert.equal(computeRecall(4, null), null);
   });
 
@@ -161,7 +171,7 @@ describe('computeSpeedScore', () => {
   it('returns 1.0 at minTime', () => {
     const score = computeSpeedScore(cfg.minTime, cfg);
     assert.ok(
-      Math.abs(score - 1.0) < 0.01,
+      Math.abs(score! - 1.0) < 0.01,
       `at minTime should be ~1.0, got ${score}`,
     );
   });
@@ -169,14 +179,14 @@ describe('computeSpeedScore', () => {
   it('returns ~0.5 at automaticityTarget', () => {
     const score = computeSpeedScore(cfg.automaticityTarget, cfg);
     assert.ok(
-      Math.abs(score - 0.5) < 0.01,
+      Math.abs(score! - 0.5) < 0.01,
       `at target should be ~0.5, got ${score}`,
     );
   });
 
   it('returns low value for very slow responses', () => {
     const score = computeSpeedScore(8000, cfg);
-    assert.ok(score < 0.1, `at 8000ms should be < 0.1, got ${score}`);
+    assert.ok(score! < 0.1, `at 8000ms should be < 0.1, got ${score}`);
   });
 
   it('returns null for null input', () => {
@@ -469,7 +479,7 @@ describe('createAdaptiveSelector', () => {
       selector.recordResponse('x', 1000 + i * 100);
     }
     const stats = selector.getStats('x');
-    assert.equal(stats.recentTimes.length, 3);
+    assert.equal(stats!.recentTimes.length, 3);
   });
 
   it('clamps outlier response times to maxResponseTime', () => {
@@ -495,8 +505,8 @@ describe('createAdaptiveSelector', () => {
     selector.recordResponse('0-0', 60_000);
 
     const stats = selector.getStats('0-0');
-    assert.equal(stats.ewma, 9000);
-    assert.deepEqual(stats.recentTimes, [9000]);
+    assert.equal(stats!.ewma, 9000);
+    assert.deepEqual(stats!.recentTimes, [9000]);
   });
 
   // --- THE KEY BUG-FIX TEST ---
@@ -563,8 +573,8 @@ describe('createAdaptiveSelector', () => {
 
     const stats = selector.getStats('0-0');
     assert.ok(stats);
-    assert.equal(stats.stability, DEFAULT_CONFIG.initialStability);
-    assert.ok(stats.lastCorrectAt > 0);
+    assert.equal(stats!.stability, DEFAULT_CONFIG.initialStability);
+    assert.ok(stats!.lastCorrectAt! > 0);
   });
 
   it('recordResponse grows stability on subsequent correct answers', () => {
@@ -574,7 +584,7 @@ describe('createAdaptiveSelector', () => {
     const s1 = selector.getStats('0-0')!.stability;
     selector.recordResponse('0-0', 2000);
     const s2 = selector.getStats('0-0')!.stability;
-    assert.ok(s2 > s1, `stability should grow: ${s2} > ${s1}`);
+    assert.ok(s2! > s1!, `stability should grow: ${s2} > ${s1}`);
   });
 
   it('recordResponse with correct=false reduces stability', () => {
@@ -589,7 +599,7 @@ describe('createAdaptiveSelector', () => {
     selector.recordResponse('0-0', 3000, false);
     const afterWrong = selector.getStats('0-0')!.stability;
     assert.ok(
-      afterWrong < beforeWrong,
+      afterWrong! < beforeWrong!,
       `stability should decrease on wrong: ${afterWrong} < ${beforeWrong}`,
     );
   });
@@ -1035,7 +1045,11 @@ describe('createAdaptiveSelector with responseCountFn', () => {
     // but within scaled max 9000*3 = 27000ms)
     sel.recordResponse('item1', 20000, true);
     const stats = sel.getStats('item1');
-    assert.equal(stats.ewma, 20000, 'should not clamp to base maxResponseTime');
+    assert.equal(
+      stats!.ewma,
+      20000,
+      'should not clamp to base maxResponseTime',
+    );
   });
 
   it('getAutomaticity uses scaled config for speed score', () => {
@@ -1103,7 +1117,7 @@ describe('createAdaptiveSelector with responseCountFn', () => {
     sel.recordResponse('item1', 10000, true);
     const stats = sel.getStats('item1');
     // Should clamp to base maxResponseTime (9000)
-    assert.equal(stats.ewma, 9000);
+    assert.equal(stats!.ewma, 9000);
   });
 });
 

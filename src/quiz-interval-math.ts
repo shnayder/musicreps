@@ -57,7 +57,9 @@ export function createIntervalMathMode() {
     }
   }
 
-  function parseItem(itemId: string): { note: Note; op: string; interval: Interval; answer: Note } {
+  function parseItem(
+    itemId: string,
+  ): { note: Note; op: string; interval: Interval; answer: Note } {
     const match = itemId.match(/^([A-G]#?)([+-])(.+)$/)!;
     const noteName = match[1];
     const op = match[2];
@@ -100,11 +102,13 @@ export function createIntervalMathMode() {
   }
 
   function updateGroupToggles(): void {
-    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach((btn) => {
-      const g = parseInt(btn.dataset.group!);
-      btn.classList.toggle('active', enabledGroups.has(g));
-      btn.classList.toggle('recommended', recommendedGroups.has(g));
-    });
+    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach(
+      (btn) => {
+        const g = parseInt(btn.dataset.group!);
+        btn.classList.toggle('active', enabledGroups.has(g));
+        btn.classList.toggle('recommended', recommendedGroups.has(g));
+      },
+    );
   }
 
   const recsOptions = {
@@ -261,7 +265,13 @@ export function createIntervalMathMode() {
 
   // --- Stats ---
 
-  let currentItem: { note: Note; op: string; interval: Interval; answer: Note; useFlats?: boolean } | null = null;
+  let currentItem: {
+    note: Note;
+    op: string;
+    interval: Interval;
+    answer: Note;
+    useFlats?: boolean;
+  } | null = null;
 
   const statsControls = createStatsControls(container, (mode, el) => {
     const colLabels = MATH_INTERVALS.map((i) => i.abbrev);
@@ -316,14 +326,16 @@ export function createIntervalMathMode() {
       );
       prompt!.textContent = noteName + ' ' + currentItem.op + ' ' +
         currentItem.interval.abbrev;
-      container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
-        const note = NOTES.find((n) => n.name === btn.dataset.note!);
-        if (note) {
-          btn.textContent = displayNote(
-            pickAccidentalName(note.displayName, currentItem!.useFlats!),
-          );
-        }
-      });
+      container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach(
+        (btn) => {
+          const note = NOTES.find((n) => n.name === btn.dataset.note!);
+          if (note) {
+            btn.textContent = displayNote(
+              pickAccidentalName(note.displayName, currentItem!.useFlats!),
+            );
+          }
+        },
+      );
     },
 
     checkAnswer(_itemId: string, input: string) {
@@ -355,7 +367,9 @@ export function createIntervalMathMode() {
 
     handleKey(
       e: KeyboardEvent,
-      { submitAnswer: _submitAnswer }: { submitAnswer: (input: string) => void },
+      { submitAnswer: _submitAnswer }: {
+        submitAnswer: (input: string) => void;
+      },
     ): boolean {
       return noteKeyHandler.handleKey(e);
     },
@@ -364,7 +378,10 @@ export function createIntervalMathMode() {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
 
-    getCalibrationTrialConfig(buttons: HTMLElement[], prevBtn: HTMLElement | null) {
+    getCalibrationTrialConfig(
+      buttons: HTMLElement[],
+      prevBtn: HTMLElement | null,
+    ) {
       const btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
@@ -402,12 +419,14 @@ export function createIntervalMathMode() {
     loadEnabledGroups();
 
     // Note answer buttons
-    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.note!);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.note!);
+        });
+      },
+    );
 
     container.querySelector('.start-btn')!.addEventListener(
       'click',

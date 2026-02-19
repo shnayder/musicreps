@@ -1,7 +1,12 @@
 // Per-item adaptive deadline staircase for the spaced repetition timer.
 // Pure functions + factory, same pattern as adaptive.js.
 
-import type { AdaptiveConfig, DeadlineConfig, DeadlineTracker, StorageAdapter } from './types.ts';
+import type {
+  AdaptiveConfig,
+  DeadlineConfig,
+  DeadlineTracker,
+  StorageAdapter,
+} from './types.ts';
 
 export const DEFAULT_DEADLINE_CONFIG: DeadlineConfig = {
   decreaseFactor: 0.85, // multiply deadline after correct answer (staircase)
@@ -18,7 +23,11 @@ export const DEFAULT_DEADLINE_CONFIG: DeadlineConfig = {
  * - If no EWMA (unseen): maxDeadline (generous ceiling)
  * Clamped to [minDeadline, maxDeadline].
  */
-export function computeInitialDeadline(ewma: number | null, adaptiveCfg: AdaptiveConfig, dlCfg: DeadlineConfig): number {
+export function computeInitialDeadline(
+  ewma: number | null,
+  adaptiveCfg: AdaptiveConfig,
+  dlCfg: DeadlineConfig,
+): number {
   const minDeadline = Math.round(adaptiveCfg.minTime * dlCfg.minDeadlineMargin);
   const maxDeadline = adaptiveCfg.maxResponseTime;
   if (ewma != null) {
@@ -85,7 +94,11 @@ export function createDeadlineTracker(
    * Get the current deadline for an item.
    * Loads from storage if persisted, otherwise cold-starts from EWMA.
    */
-  function getDeadline(itemId: string, ewma: number | null, responseCount: number = 1): number {
+  function getDeadline(
+    itemId: string,
+    ewma: number | null,
+    responseCount: number = 1,
+  ): number {
     const stored = storage.getDeadline(itemId);
     if (stored != null && stored > 0) return stored;
     const initial = computeInitialDeadline(
