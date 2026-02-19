@@ -3,33 +3,16 @@
 // and quiz-interval-math.js into a single pure function.
 // Pure w.r.t. configuration: callers pass `config.expansionThreshold`.
 
-/**
- * Compute which subsets (strings, distance groups) to recommend and enable.
- *
- * @param {object} selector - Adaptive selector (provides getStringRecommendations)
- * @param {Array} allIndices - All subset indices (e.g. [0,1,2,3,4,5] for strings)
- * @param {function} getItemIds - (index) => array of item IDs for that subset
- * @param {object} config - Must have expansionThreshold
- * @param {object} [options]
- * @param {function} [options.sortUnstarted] - Comparator for unstarted items.
- *   If provided, sorts unstarted before picking next expansion.
- *   Default: no sort (use first unstarted as-is).
- * @returns {{ recommended: Set, enabled: Set|null, consolidateIndices: number[],
- *             consolidateDueCount: number, expandIndex: number|null, expandNewCount: number }}
- *   recommended: indices to highlight with orange borders
- *   enabled: indices to auto-select, or null if no groups exist
- *   consolidateIndices: group indices needing consolidation work
- *   consolidateDueCount: total items needing work in consolidation groups
- *   expandIndex: group index being added for expansion, or null
- *   expandNewCount: new items in expansion group
- */
+import type { RecommendationResult, StringRecommendation } from './types.ts';
+
+// Compute which subsets (strings, distance groups) to recommend and enable.
 export function computeRecommendations(
-  selector,
-  allIndices,
-  getItemIds,
-  config,
-  options,
-) {
+  selector: { getStringRecommendations(indices: number[], getItemIds: (index: number) => string[]): StringRecommendation[] },
+  allIndices: number[],
+  getItemIds: (index: number) => string[],
+  config: { expansionThreshold: number },
+  options?: { sortUnstarted?: (a: StringRecommendation, b: StringRecommendation) => number },
+): RecommendationResult {
   const sortUnstarted = options && options.sortUnstarted;
   const recs = selector.getStringRecommendations(allIndices, getItemIds);
 
@@ -75,9 +58,9 @@ export function computeRecommendations(
 
   const workCounts = startedByWork.map((r) => r.dueCount + r.unseenCount);
   const medianWork = workCounts[Math.floor(workCounts.length / 2)];
-  const recommended = new Set();
-  const enabled = new Set();
-  const consolidateIndices = [];
+  const recommended = new Set<number>();
+  const enabled = new Set<number>();
+  const consolidateIndices: number[] = [];
   let consolidateDueCount = 0;
   for (const r of startedByWork) {
     if (r.dueCount + r.unseenCount > medianWork) {
@@ -95,8 +78,8 @@ export function computeRecommendations(
     consolidateDueCount += r.dueCount + r.unseenCount;
   }
 
-  let expandIndex = null;
-  let expandNewCount = 0;
+  let expandIndex: number | null = null;
+  let expandNewCount: number = 0;
   if (consolidatedRatio >= config.expansionThreshold && unstarted.length > 0) {
     const sorted = sortUnstarted
       ? [...unstarted].sort(sortUnstarted)

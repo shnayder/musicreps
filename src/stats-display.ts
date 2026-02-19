@@ -2,12 +2,13 @@
 // modes, and heatmap grid rendering for math modes.
 
 import { displayNote, NOTES } from './music-data.ts';
+import type { ItemStats, Note } from './types.ts';
 
 // --- Heatmap color scale (read from CSS custom properties) ---
 
-let _heatmapColors = null;
+let _heatmapColors: { none: string; level: string[] } | null = null;
 
-function cssVar(name) {
+function cssVar(name: string): string {
   try {
     const val = getComputedStyle(document.documentElement).getPropertyValue(
       name,
@@ -37,7 +38,7 @@ function heatmapColors() {
  * Returns true if white text should be used on this heatmap background.
  * Parses lightness from hsl() strings; dark backgrounds (L <= 50%) get white.
  */
-export function heatmapNeedsLightText(color) {
+export function heatmapNeedsLightText(color: string): boolean {
   const m = color && color.match(/,\s*(\d+)%\s*\)/);
   return m ? parseInt(m[1], 10) <= 50 : false;
 }
@@ -51,7 +52,7 @@ const RETENTION_LABELS = [
   'Automatic (&gt;80%)',
 ];
 
-export function getAutomaticityColor(auto) {
+export function getAutomaticityColor(auto: number | null): string {
   const c = heatmapColors();
   if (auto === null) return c.none;
   if (auto > 0.8) return c.level[4];
@@ -61,7 +62,7 @@ export function getAutomaticityColor(auto) {
   return c.level[0];
 }
 
-export function getSpeedHeatmapColor(ms, baseline) {
+export function getSpeedHeatmapColor(ms: number | null, baseline: number | null | undefined): string {
   const c = heatmapColors();
   if (ms === null) return c.none;
   const b = baseline || 1000;
@@ -72,7 +73,12 @@ export function getSpeedHeatmapColor(ms, baseline) {
   return c.level[0];
 }
 
-export function getStatsCellColor(selector, itemId, statsMode, baseline) {
+export function getStatsCellColor(
+  selector: { getAutomaticity(id: string): number | null; getStats(id: string): ItemStats | null },
+  itemId: string,
+  statsMode: string,
+  baseline: number | null | undefined,
+): string {
   if (statsMode === 'retention') {
     return getAutomaticityColor(selector.getAutomaticity(itemId));
   }
@@ -86,11 +92,11 @@ export function getStatsCellColor(selector, itemId, statsMode, baseline) {
  * Returns grey when no items have data.
  */
 export function getStatsCellColorMerged(
-  selector,
-  itemIds,
-  statsMode,
-  baseline,
-) {
+  selector: { getAutomaticity(id: string): number | null; getStats(id: string): ItemStats | null },
+  itemIds: string | string[],
+  statsMode: string,
+  baseline: number | null | undefined,
+): string {
   if (typeof itemIds === 'string') {
     return getStatsCellColor(selector, itemIds, statsMode, baseline);
   }
@@ -116,26 +122,24 @@ export function getStatsCellColorMerged(
   return getSpeedHeatmapColor(count2 > 0 ? sum2 / count2 : null, baseline);
 }
 
-/**
- * Render a reference table for bidirectional lookup modes.
- *
- * @param {object}   selector  - adaptive selector instance
- * @param {Array}    rows      - [{ label, sublabel, _colHeader, fwdItemId, revItemId }]
- * @param {string}   fwdHeader - column header for forward direction (e.g. "N\u2192#")
- * @param {string}   revHeader - column header for reverse direction (e.g. "#\u2192N")
- * @param {string}   statsMode - 'retention' | 'speed'
- * @param {Element}  containerEl
- * @param {number}   [baseline] - motor baseline in ms (optional)
- */
+/** Render a reference table for bidirectional lookup modes. */
+type StatsTableRow = {
+  label: string;
+  sublabel: string;
+  _colHeader: string;
+  fwdItemId: string;
+  revItemId: string;
+};
+
 export function renderStatsTable(
-  selector,
-  rows,
-  fwdHeader,
-  revHeader,
-  statsMode,
-  containerEl,
-  baseline,
-) {
+  selector: { getAutomaticity(id: string): number | null; getStats(id: string): ItemStats | null },
+  rows: StatsTableRow[],
+  fwdHeader: string,
+  revHeader: string,
+  statsMode: string,
+  containerEl: HTMLElement,
+  baseline?: number,
+): void {
   if (!rows || rows.length === 0) {
     containerEl.innerHTML = '';
     return;
@@ -171,26 +175,16 @@ export function renderStatsTable(
   containerEl.innerHTML = html;
 }
 
-/**
- * Render a heatmap grid for math modes (12 notes x 11 offsets/intervals).
- *
- * @param {object}   selector    - adaptive selector instance
- * @param {Array}    colLabels   - column header labels (e.g. ["1","2",...] or ["m2","M2",...])
- * @param {Function} getItemId   - (noteName, colIndex) => itemId string or array of strings
- * @param {string}   statsMode   - 'retention' | 'speed'
- * @param {Element}  containerEl
- * @param {Array}    [notes]     - optional notes array (defaults to global NOTES)
- * @param {number}   [baseline]  - motor baseline in ms (optional)
- */
+/** Render a heatmap grid for math modes (12 notes x 11 offsets/intervals). */
 export function renderStatsGrid(
-  selector,
-  colLabels,
-  getItemId,
-  statsMode,
-  containerEl,
-  notes,
-  baseline,
-) {
+  selector: { getAutomaticity(id: string): number | null; getStats(id: string): ItemStats | null },
+  colLabels: string[],
+  getItemId: (noteName: string, colIndex: number) => string | string[],
+  statsMode: string,
+  containerEl: HTMLElement,
+  notes?: Note[],
+  baseline?: number,
+): void {
   const noteList = notes || NOTES;
   let html = '<table class="stats-grid"><thead><tr><th></th>';
   for (let c = 0; c < colLabels.length; c++) {
@@ -219,21 +213,20 @@ export function renderStatsGrid(
 /**
  * Create shared stats toggle controls for a mode.
  * Manages Recall/Speed toggle state, button wiring, show/hide of stats container.
- *
- * @param {Element}  container - mode's root container element
- * @param {Function} renderFn  - (mode, statsContainerEl) => void; populates stats content
- * @returns {{ show(mode), hide(), mode }}
  */
-export function createStatsControls(container, renderFn) {
-  let statsMode = null;
-  const statsContainer = container.querySelector('.stats-container');
+export function createStatsControls(
+  container: HTMLElement,
+  renderFn: (mode: string, el: HTMLElement) => void,
+) {
+  let statsMode: string | null = null;
+  const statsContainer = container.querySelector('.stats-container') as HTMLElement;
 
-  function show(mode) {
+  function show(mode: string) {
     statsMode = mode;
     statsContainer.innerHTML = '';
     renderFn(mode, statsContainer);
     statsContainer.classList.remove('stats-hidden');
-    container.querySelectorAll('.stats-toggle-btn').forEach(function (b) {
+    container.querySelectorAll<HTMLButtonElement>('.stats-toggle-btn').forEach(function (b) {
       b.classList.toggle('active', b.dataset.mode === mode);
     });
   }
@@ -245,9 +238,9 @@ export function createStatsControls(container, renderFn) {
   }
 
   // Wire toggle buttons
-  container.querySelectorAll('.stats-toggle-btn').forEach(function (btn) {
+  container.querySelectorAll<HTMLButtonElement>('.stats-toggle-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      show(btn.dataset.mode);
+      show(btn.dataset.mode!);
     });
   });
 
@@ -260,23 +253,17 @@ export function createStatsControls(container, renderFn) {
   };
 }
 
-function formatThreshold(ms) {
+function formatThreshold(ms: number): string {
   const s = ms / 1000;
   return s % 1 === 0 ? s + 's' : s.toFixed(1) + 's';
 }
 
-/**
- * Build a legend item HTML for a single heatmap level.
- */
-function legendItem(color, label) {
+function legendItem(color: string, label: string): string {
   return '<div class="legend-item"><div class="legend-swatch" style="background:' +
     color + '"></div>' + label + '</div>';
 }
 
-/**
- * Build a shared legend HTML string.
- */
-export function buildStatsLegend(statsMode, baseline) {
+export function buildStatsLegend(statsMode: string, baseline?: number): string {
   const c = heatmapColors();
   let html = '<div class="heatmap-legend active">';
   html += legendItem(c.none, 'No data');

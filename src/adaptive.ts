@@ -4,7 +4,15 @@
 // This is the single source of truth. Tests import it as an ES module.
 // main.ts reads it at build time and strips "export" for browser inlining.
 
-export const DEFAULT_CONFIG = {
+import type {
+  AdaptiveConfig,
+  AdaptiveSelector,
+  ItemStats,
+  StorageAdapter,
+  StringRecommendation,
+} from './types.ts';
+
+export const DEFAULT_CONFIG: AdaptiveConfig = {
   minTime: 1000,
   unseenBoost: 3,
   ewmaAlpha: 0.3,
@@ -27,7 +35,11 @@ export const DEFAULT_CONFIG = {
 // Pure functions
 // ---------------------------------------------------------------------------
 
-export function computeEwma(oldEwma, newTime, alpha) {
+export function computeEwma(
+  oldEwma: number,
+  newTime: number,
+  alpha: number,
+): number {
   return alpha * newTime + (1 - alpha) * oldEwma;
 }
 
@@ -35,7 +47,10 @@ export function computeEwma(oldEwma, newTime, alpha) {
  * Predicted recall using half-life model: P = 2^(-t/S).
  * At t = stability, P = 0.5. Returns null for unseen items.
  */
-export function computeRecall(stabilityHours, elapsedHours) {
+export function computeRecall(
+  stabilityHours: number | null,
+  elapsedHours: number | null,
+): number | null {
   if (stabilityHours == null || elapsedHours == null) return null;
   if (stabilityHours <= 0) return 0;
   if (elapsedHours <= 0) return 1;
@@ -52,7 +67,11 @@ export function computeRecall(stabilityHours, elapsedHours) {
  * For multi-response items (responseCount > 1), timing thresholds are
  * scaled proportionally so the ratios stay the same.
  */
-export function computeSpeedScore(ewmaMs, cfg, responseCount = 1) {
+export function computeSpeedScore(
+  ewmaMs: number | null,
+  cfg: AdaptiveConfig,
+  responseCount: number = 1,
+): number | null {
   if (ewmaMs == null) return null;
   const effectiveTarget = cfg.automaticityTarget * responseCount;
   const effectiveMin = cfg.minTime * responseCount;
@@ -65,7 +84,10 @@ export function computeSpeedScore(ewmaMs, cfg, responseCount = 1) {
  * "Do I know this without thinking?" — combines "have I forgotten it?"
  * with "was I ever fast at it?" Returns null for unseen items.
  */
-export function computeAutomaticity(recall, speedScore) {
+export function computeAutomaticity(
+  recall: number | null,
+  speedScore: number | null,
+): number | null {
   if (recall == null || speedScore == null) return null;
   return recall * speedScore;
 }
@@ -76,7 +98,11 @@ export function computeAutomaticity(recall, speedScore) {
  * This shows "needs work" (lowest heatmap level) instead of "no data"
  * for items the user has attempted but never answered correctly.
  */
-export function computeAutomaticityForDisplay(recall, speedScore, hasSeen) {
+export function computeAutomaticityForDisplay(
+  recall: number | null,
+  speedScore: number | null,
+  hasSeen: boolean,
+): number | null {
   const value = computeAutomaticity(recall, speedScore);
   if (value == null && hasSeen) return 0;
   return value;
@@ -90,11 +116,11 @@ export function computeAutomaticityForDisplay(recall, speedScore, hasSeen) {
  *   that true stability must be at least elapsedHours * 1.5.
  */
 export function updateStability(
-  oldStability,
-  responseTimeMs,
-  elapsedHours,
-  cfg,
-) {
+  oldStability: number | null,
+  responseTimeMs: number,
+  elapsedHours: number | null,
+  cfg: AdaptiveConfig,
+): number {
   if (oldStability == null) {
     return cfg.initialStability;
   }
@@ -110,7 +136,10 @@ export function updateStability(
   let newStability = oldStability * cfg.stabilityGrowthBase * speedFactor;
 
   // Self-correction: fast answer after long gap means true half-life is long
-  if (elapsedHours > 0 && responseTimeMs < cfg.selfCorrectionThreshold) {
+  if (
+    elapsedHours !== null && elapsedHours > 0 &&
+    responseTimeMs < cfg.selfCorrectionThreshold
+  ) {
     newStability = Math.max(newStability, elapsedHours * 1.5);
   }
 
@@ -121,7 +150,10 @@ export function updateStability(
  * Compute new stability after a wrong answer.
  * Reduces stability but floors at initialStability.
  */
-export function computeStabilityAfterWrong(oldStability, cfg) {
+export function computeStabilityAfterWrong(
+  oldStability: number | null,
+  cfg: AdaptiveConfig,
+): number {
   if (oldStability == null) return cfg.initialStability;
   return Math.max(
     cfg.initialStability,
@@ -135,7 +167,10 @@ export function computeStabilityAfterWrong(oldStability, cfg) {
  * - Seen items get ewma / minTime (slower = heavier),
  *   scaled by recall factor (low recall = more weight).
  */
-export function computeWeight(stats, cfg) {
+export function computeWeight(
+  stats: ItemStats | null,
+  cfg: AdaptiveConfig,
+): number {
   if (!stats) {
     return cfg.unseenBoost;
   }
@@ -155,7 +190,11 @@ export function computeWeight(stats, cfg) {
  * Weighted random selection. rand should be in [0, 1).
  * Injected for deterministic testing.
  */
-export function selectWeighted(items, weights, rand) {
+export function selectWeighted(
+  items: string[],
+  weights: number[],
+  rand: number,
+): string {
   const totalWeight = weights.reduce((sum, w) => sum + w, 0);
   if (totalWeight === 0) {
     return items[Math.floor(rand * items.length)];
@@ -173,7 +212,10 @@ export function selectWeighted(items, weights, rand) {
  * The default config assumes baseline = 1000ms. This scales all
  * absolute timing thresholds proportionally to the measured baseline.
  */
-export function deriveScaledConfig(motorBaseline, baseCfg = DEFAULT_CONFIG) {
+export function deriveScaledConfig(
+  motorBaseline: number,
+  baseCfg: AdaptiveConfig = DEFAULT_CONFIG,
+): AdaptiveConfig {
   const scale = motorBaseline / 1000;
   return {
     ...baseCfg,
@@ -189,7 +231,7 @@ export function deriveScaledConfig(motorBaseline, baseCfg = DEFAULT_CONFIG) {
 /**
  * Compute median of a numeric array (non-mutating — copies and sorts internally).
  */
-export function computeMedian(values) {
+export function computeMedian(values: number[]): number | null {
   if (values.length === 0) return null;
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
@@ -202,16 +244,16 @@ export function computeMedian(values) {
 // ---------------------------------------------------------------------------
 
 export function createAdaptiveSelector(
-  storage,
-  cfg = DEFAULT_CONFIG,
-  randomFn = Math.random,
-  responseCountFn = null,
-) {
-  function getResponseCount(itemId) {
+  storage: StorageAdapter,
+  cfg: AdaptiveConfig = DEFAULT_CONFIG,
+  randomFn: () => number = Math.random,
+  responseCountFn: ((itemId: string) => number) | null = null,
+): AdaptiveSelector {
+  function getResponseCount(itemId: string): number {
     return responseCountFn ? responseCountFn(itemId) : 1;
   }
 
-  function scaledConfig(itemId) {
+  function scaledConfig(itemId: string): AdaptiveConfig {
     const rc = getResponseCount(itemId);
     if (rc <= 1) return cfg;
     return {
@@ -223,7 +265,11 @@ export function createAdaptiveSelector(
     };
   }
 
-  function recordResponse(itemId, timeMs, correct = true) {
+  function recordResponse(
+    itemId: string,
+    timeMs: number,
+    correct: boolean = true,
+  ): void {
     const itemCfg = scaledConfig(itemId);
     const clamped = Math.min(timeMs, itemCfg.maxResponseTime);
     const existing = storage.getStats(itemId);
@@ -288,15 +334,15 @@ export function createAdaptiveSelector(
     }
   }
 
-  function getWeight(itemId) {
+  function getWeight(itemId: string): number {
     return computeWeight(storage.getStats(itemId), scaledConfig(itemId));
   }
 
-  function getStats(itemId) {
+  function getStats(itemId: string): ItemStats | null {
     return storage.getStats(itemId);
   }
 
-  function selectNext(validItems) {
+  function selectNext(validItems: string[]): string {
     if (validItems.length === 0) {
       throw new Error('validItems cannot be empty');
     }
@@ -315,7 +361,7 @@ export function createAdaptiveSelector(
     return selected;
   }
 
-  function getRecall(itemId) {
+  function getRecall(itemId: string): number | null {
     const stats = storage.getStats(itemId);
     if (!stats || stats.stability == null || stats.lastCorrectAt == null) {
       return null;
@@ -324,7 +370,7 @@ export function createAdaptiveSelector(
     return computeRecall(stats.stability, elapsedHours);
   }
 
-  function getAutomaticity(itemId) {
+  function getAutomaticity(itemId: string): number | null {
     const stats = storage.getStats(itemId);
     if (!stats) return null;
     const recall = getRecall(itemId);
@@ -333,16 +379,16 @@ export function createAdaptiveSelector(
   }
 
   /**
-   * Recommend strings to review. Returns array of
-   * { string, dueCount, unseenCount, masteredCount, totalCount }
-   * sorted by needsWork (dueCount + unseenCount) descending.
-   * getItemIds(stringIndex) should return the item IDs for that string.
+   * Recommend strings to review, sorted by needsWork descending.
    *
    * - unseenCount: items with no recall data (never answered correctly)
    * - dueCount: items with established recall that dropped below threshold
    * - masteredCount: items with recall >= threshold (currently retained)
    */
-  function getStringRecommendations(stringIndices, getItemIds) {
+  function getStringRecommendations(
+    stringIndices: number[],
+    getItemIds: (index: number) => string[],
+  ): StringRecommendation[] {
     const results = stringIndices.map((s) => {
       const items = getItemIds(s);
       let dueCount = 0;
@@ -376,7 +422,7 @@ export function createAdaptiveSelector(
    * Check if all items have recall >= recallThreshold.
    * Returns false if any item is unseen or below threshold.
    */
-  function checkAllMastered(items) {
+  function checkAllMastered(items: string[]): boolean {
     for (const id of items) {
       const recall = getRecall(id);
       if (recall === null || recall < cfg.recallThreshold) return false;
@@ -389,7 +435,7 @@ export function createAdaptiveSelector(
    * This is the "fully automatic" bar — both remembered AND fast.
    * Matches the "Automatic (>80%)" band in the stats heatmap.
    */
-  function checkAllAutomatic(items) {
+  function checkAllAutomatic(items: string[]): boolean {
     for (const id of items) {
       const auto = getAutomaticity(id);
       if (auto === null || auto <= cfg.automaticityThreshold) return false;
@@ -404,7 +450,7 @@ export function createAdaptiveSelector(
    * correct answers as evidence) but at least one item's recall has since
    * decayed below threshold.
    */
-  function checkNeedsReview(items) {
+  function checkNeedsReview(items: string[]): boolean {
     if (items.length === 0) return false;
     let hasDueItem = false;
     for (const id of items) {
@@ -421,11 +467,11 @@ export function createAdaptiveSelector(
     return hasDueItem;
   }
 
-  function updateConfig(newCfg) {
+  function updateConfig(newCfg: Partial<AdaptiveConfig>): void {
     cfg = { ...cfg, ...newCfg };
   }
 
-  function getConfig() {
+  function getConfig(): AdaptiveConfig {
     return cfg;
   }
 
@@ -449,28 +495,28 @@ export function createAdaptiveSelector(
 // In-memory storage (for tests)
 // ---------------------------------------------------------------------------
 
-export function createMemoryStorage() {
-  const stats = new Map();
-  const deadlines = new Map();
-  let lastSelected = null;
+export function createMemoryStorage(): StorageAdapter {
+  const stats = new Map<string, ItemStats>();
+  const deadlines = new Map<string, number>();
+  let lastSelected: string | null = null;
 
   return {
-    getStats(itemId) {
+    getStats(itemId: string): ItemStats | null {
       return stats.get(itemId) ?? null;
     },
-    saveStats(itemId, s) {
+    saveStats(itemId: string, s: ItemStats): void {
       stats.set(itemId, s);
     },
-    getLastSelected() {
+    getLastSelected(): string | null {
       return lastSelected;
     },
-    setLastSelected(itemId) {
+    setLastSelected(itemId: string): void {
       lastSelected = itemId;
     },
-    getDeadline(itemId) {
+    getDeadline(itemId: string): number | null {
       return deadlines.get(itemId) ?? null;
     },
-    saveDeadline(itemId, deadline) {
+    saveDeadline(itemId: string, deadline: number): void {
       deadlines.set(itemId, deadline);
     },
   };
@@ -480,14 +526,14 @@ export function createMemoryStorage() {
 // localStorage-backed storage (for browser)
 // ---------------------------------------------------------------------------
 
-export function createLocalStorageAdapter(namespace) {
-  const cache = {};
-  const mkKey = (itemId) => `adaptive_${namespace}_${itemId}`;
-  const dlKey = (itemId) => `deadline_${namespace}_${itemId}`;
+export function createLocalStorageAdapter(namespace: string): StorageAdapter {
+  const cache: Record<string, ItemStats | number | null> = {};
+  const mkKey = (itemId: string): string => `adaptive_${namespace}_${itemId}`;
+  const dlKey = (itemId: string): string => `deadline_${namespace}_${itemId}`;
   const lastKey = `adaptive_${namespace}_lastSelected`;
 
   return {
-    getStats(itemId) {
+    getStats(itemId: string): ItemStats | null {
       const k = mkKey(itemId);
       if (!(k in cache)) {
         const data = localStorage.getItem(k);
@@ -497,34 +543,34 @@ export function createLocalStorageAdapter(namespace) {
           cache[k] = null;
         }
       }
-      return cache[k];
+      return cache[k] as ItemStats | null;
     },
-    saveStats(itemId, stats) {
+    saveStats(itemId: string, stats: ItemStats): void {
       const k = mkKey(itemId);
       cache[k] = stats;
       localStorage.setItem(k, JSON.stringify(stats));
     },
-    getLastSelected() {
+    getLastSelected(): string | null {
       return localStorage.getItem(lastKey);
     },
-    setLastSelected(itemId) {
+    setLastSelected(itemId: string): void {
       localStorage.setItem(lastKey, itemId);
     },
-    getDeadline(itemId) {
+    getDeadline(itemId: string): number | null {
       const k = dlKey(itemId);
       if (!(k in cache)) {
         const data = localStorage.getItem(k);
         cache[k] = data ? Number(data) : null;
       }
-      return cache[k];
+      return cache[k] as number | null;
     },
-    saveDeadline(itemId, deadline) {
+    saveDeadline(itemId: string, deadline: number): void {
       const k = dlKey(itemId);
       cache[k] = deadline;
       localStorage.setItem(k, String(deadline));
     },
     /** Pre-populate cache to avoid localStorage reads during gameplay. */
-    preload(itemIds) {
+    preload(itemIds: string[]): void {
       for (const itemId of itemIds) {
         this.getStats(itemId);
       }

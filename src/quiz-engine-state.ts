@@ -1,11 +1,10 @@
 // Pure state transitions for the quiz engine.
 // No DOM, no timers, no side effects — just data in, data out.
 
-/**
- * Create the initial (idle) engine state.
- * @returns {EngineState}
- */
-export function initialEngineState() {
+import type { EngineState } from './types.ts';
+
+/** Create the initial (idle) engine state. */
+export function initialEngineState(): EngineState {
   return {
     phase: 'idle', // 'idle' | 'active' | 'round-complete' | 'calibration-intro' | 'calibrating' | 'calibration-results'
     currentItemId: null,
@@ -51,7 +50,7 @@ export function initialEngineState() {
  * Transition: start the quiz (first round).
  * Caller should invoke mode.onStart() separately, then call engineNextQuestion.
  */
-export function engineStart(state) {
+export function engineStart(state: EngineState): EngineState {
   return {
     ...state,
     phase: 'active',
@@ -67,13 +66,8 @@ export function engineStart(state) {
   };
 }
 
-/**
- * Transition: present the next question.
- * @param {EngineState} state
- * @param {string} nextItemId - selected by the adaptive selector
- * @param {number} nowMs - current timestamp (Date.now())
- */
-export function engineNextQuestion(state, nextItemId, nowMs) {
+/** Transition: present the next question. */
+export function engineNextQuestion(state: EngineState, nextItemId: string, nowMs: number): EngineState {
   return {
     ...state,
     currentItemId: nextItemId,
@@ -88,13 +82,8 @@ export function engineNextQuestion(state, nextItemId, nowMs) {
   };
 }
 
-/**
- * Transition: submit an answer.
- * @param {EngineState} state
- * @param {boolean} isCorrect
- * @param {string} correctAnswer - display string for incorrect feedback
- */
-export function engineSubmitAnswer(state, isCorrect, correctAnswer) {
+/** Transition: submit an answer. */
+export function engineSubmitAnswer(state: EngineState, isCorrect: boolean, correctAnswer: string): EngineState {
   return {
     ...state,
     answered: true,
@@ -112,7 +101,7 @@ export function engineSubmitAnswer(state, isCorrect, correctAnswer) {
  * Transition: mark the round timer as expired.
  * The round doesn't end immediately — the user can finish their current question.
  */
-export function engineRoundTimerExpired(state) {
+export function engineRoundTimerExpired(state: EngineState): EngineState {
   return {
     ...state,
     roundTimerExpired: true,
@@ -122,7 +111,7 @@ export function engineRoundTimerExpired(state) {
 /**
  * Transition: round is complete, show results.
  */
-export function engineRoundComplete(state) {
+export function engineRoundComplete(state: EngineState): EngineState {
   return {
     ...state,
     phase: 'round-complete',
@@ -139,7 +128,7 @@ export function engineRoundComplete(state) {
  * Transition: continue to the next round.
  * Resets round counters but preserves session totals and quiz state.
  */
-export function engineContinueRound(state) {
+export function engineContinueRound(state: EngineState): EngineState {
   return {
     ...state,
     phase: 'active',
@@ -154,10 +143,8 @@ export function engineContinueRound(state) {
 /**
  * Transition: enter calibration intro screen.
  * Shows explanation and a Start button; quiz controls are hidden.
- * @param {EngineState} state
- * @param {string} [hintOverride] - optional hint text (for search-mode calibration)
  */
-export function engineCalibrationIntro(state, hintOverride) {
+export function engineCalibrationIntro(state: EngineState, hintOverride?: string): EngineState {
   return {
     ...state,
     phase: 'calibration-intro',
@@ -177,10 +164,8 @@ export function engineCalibrationIntro(state, hintOverride) {
 /**
  * Transition: calibration trials are running.
  * Buttons enabled for tapping; trial counter shown in timeDisplay.
- * @param {EngineState} state
- * @param {string} [hintOverride] - optional hint text (for search-mode calibration)
  */
-export function engineCalibrating(state, hintOverride) {
+export function engineCalibrating(state: EngineState, hintOverride?: string): EngineState {
   return {
     ...state,
     phase: 'calibrating',
@@ -192,11 +177,8 @@ export function engineCalibrating(state, hintOverride) {
   };
 }
 
-/**
- * Transition: calibration complete, show results.
- * @param {number} baseline - measured motor baseline in ms
- */
-export function engineCalibrationResults(state, baseline) {
+/** Transition: calibration complete, show results. */
+export function engineCalibrationResults(state: EngineState, baseline: number): EngineState {
   return {
     ...state,
     phase: 'calibration-results',
@@ -213,7 +195,7 @@ export function engineCalibrationResults(state, baseline) {
  * Transition: stop the quiz (return to idle).
  * Works from any phase — quiz, calibration, or already idle.
  */
-export function engineStop(_state) {
+export function engineStop(_state: EngineState): EngineState {
   return initialEngineState();
 }
 
@@ -221,7 +203,7 @@ export function engineStop(_state) {
  * Transition: update the idle mastery/review message.
  * No-op if the engine is active.
  */
-export function engineUpdateIdleMessage(state, allMastered, needsReview) {
+export function engineUpdateIdleMessage(state: EngineState, allMastered: boolean, needsReview: boolean): EngineState {
   if (state.phase !== 'idle') return state;
   if (allMastered) {
     return {
@@ -239,7 +221,7 @@ export function engineUpdateIdleMessage(state, allMastered, needsReview) {
 /**
  * Transition: update mastery message after an answer (during quiz).
  */
-export function engineUpdateMasteryAfterAnswer(state, allMastered) {
+export function engineUpdateMasteryAfterAnswer(state: EngineState, allMastered: boolean): EngineState {
   if (allMastered) {
     return {
       ...state,
@@ -253,17 +235,12 @@ export function engineUpdateMasteryAfterAnswer(state, allMastered) {
 /**
  * Transition: update progress counts (mastered vs total enabled items).
  */
-export function engineUpdateProgress(state, masteredCount, totalEnabledCount) {
+export function engineUpdateProgress(state: EngineState, masteredCount: number, totalEnabledCount: number): EngineState {
   return { ...state, masteredCount, totalEnabledCount };
 }
 
-/**
- * Route a keydown event to an action descriptor. Pure — no DOM.
- * @param {EngineState} state
- * @param {string} key - e.key value
- * @returns {{ action: string }} action is one of 'stop', 'next', 'continue', 'delegate', 'ignore'
- */
-export function engineRouteKey(state, key) {
+/** Route a keydown event to an action descriptor. Pure -- no DOM. */
+export function engineRouteKey(state: EngineState, key: string): { action: 'stop' | 'next' | 'continue' | 'delegate' | 'ignore' } {
   if (state.phase === 'idle') return { action: 'ignore' };
   if (key === 'Escape') return { action: 'stop' };
   if (state.phase === 'round-complete') {

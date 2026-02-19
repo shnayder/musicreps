@@ -2,7 +2,16 @@
 // Used by all quiz modes. This is an ES module — main.ts strips
 // "export" keywords for browser inlining (same pattern as adaptive.js).
 
-export const NOTES = [
+import type {
+  ChordType,
+  DiatonicChord,
+  Instrument,
+  Interval,
+  MajorKey,
+  Note,
+} from './types.ts';
+
+export const NOTES: Note[] = [
   { name: 'C', displayName: 'C', num: 0, accepts: ['c'] },
   { name: 'C#', displayName: 'C#/Db', num: 1, accepts: ['c#', 'db'] },
   { name: 'D', displayName: 'D', num: 2, accepts: ['d'] },
@@ -19,7 +28,7 @@ export const NOTES = [
 
 export const NATURAL_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 
-export const INTERVALS = [
+export const INTERVALS: Interval[] = [
   { name: 'minor 2nd', num: 1, abbrev: 'm2' },
   { name: 'Major 2nd', num: 2, abbrev: 'M2' },
   { name: 'minor 3rd', num: 3, abbrev: 'm3' },
@@ -35,46 +44,46 @@ export const INTERVALS = [
 ];
 
 /** Look up a note by its semitone number (0–11). */
-export function noteByNum(num) {
+export function noteByNum(num: number) {
   return NOTES[((num % 12) + 12) % 12];
 }
 
 /** Look up an interval by its semitone count (1–12). */
-export function intervalByNum(num) {
+export function intervalByNum(num: number) {
   return INTERVALS.find((i) => i.num === num) || null;
 }
 
 /** Add semitones to a note number, wrapping at 12. Returns the result note. */
-export function noteAdd(noteNum, semitones) {
+export function noteAdd(noteNum: number, semitones: number) {
   return noteByNum(noteNum + semitones);
 }
 
 /** Subtract semitones from a note number, wrapping at 12. Returns the result note. */
-export function noteSub(noteNum, semitones) {
+export function noteSub(noteNum: number, semitones: number) {
   return noteByNum(noteNum - semitones);
 }
 
 /** Pick a single accidental spelling from a displayName like 'C#/Db'. */
-export function pickAccidentalName(displayName, useFlats) {
+export function pickAccidentalName(displayName: string, useFlats: boolean) {
   if (!displayName.includes('/')) return displayName;
   const [sharp, flat] = displayName.split('/');
   return useFlats ? flat : sharp;
 }
 
 /** Randomly pick one enharmonic spelling from a displayName like 'C#/Db'. */
-export function pickRandomAccidental(displayName) {
+export function pickRandomAccidental(displayName: string) {
   if (!displayName.includes('/')) return displayName;
   const [sharp, flat] = displayName.split('/');
   return Math.random() < 0.5 ? sharp : flat;
 }
 
 /** Check if a user input matches any accepted answer for a note. */
-export function noteMatchesInput(note, input) {
+export function noteMatchesInput(note: Note, input: string) {
   return note.accepts.includes(input.toLowerCase());
 }
 
 /** Check if a user input matches an interval abbreviation (case-sensitive). */
-export function intervalMatchesInput(interval, input) {
+export function intervalMatchesInput(interval: Interval, input: string) {
   if (input === interval.abbrev) return true;
   if (interval.altAbbrevs && interval.altAbbrevs.includes(input)) return true;
   return false;
@@ -85,11 +94,11 @@ export function intervalMatchesInput(interval, input) {
 // ---------------------------------------------------------------------------
 
 export const LETTER_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-export const NATURAL_SEMITONES = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+export const NATURAL_SEMITONES: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 export const MAJOR_SCALE_STEPS = [0, 2, 4, 5, 7, 9, 11]; // cumulative semitones per degree
 
 /** Parse a spelled note name like 'F#', 'Bb', 'Ebb' into { letter, accidental }. */
-export function parseSpelledNote(name) {
+export function parseSpelledNote(name: string) {
   if (!name) return { letter: '', accidental: 0 };
   const letter = name[0].toUpperCase();
   let acc = 0;
@@ -101,25 +110,24 @@ export function parseSpelledNote(name) {
 }
 
 /** Build a note name from letter + accidental offset. */
-export function spelledNoteName(letter, accidental) {
+export function spelledNoteName(letter: string, accidental: number) {
   if (accidental === 0) return letter;
   if (accidental > 0) return letter + '#'.repeat(accidental);
   return letter + 'b'.repeat(-accidental);
 }
 
 /** Get the semitone value (0-11) of a spelled note. */
-export function spelledNoteSemitone(name) {
+export function spelledNoteSemitone(name: string) {
   const { letter, accidental } = parseSpelledNote(name);
   return ((NATURAL_SEMITONES[letter] + accidental) % 12 + 12) % 12;
 }
 
 /**
  * Get the note name for a scale degree in a major key.
- * keyRoot: e.g., 'D', 'Bb', 'F#'
- * degree: 1-7 (1 = root)
+ * keyRoot: e.g., 'D', 'Bb', 'F#'. degree: 1-7 (1 = root).
  * Returns spelled note name, e.g., 'F#', 'Eb'.
  */
-export function getScaleDegreeNote(keyRoot, degree) {
+export function getScaleDegreeNote(keyRoot: string, degree: number) {
   const root = parseSpelledNote(keyRoot);
   const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
   const rootSemitone =
@@ -140,7 +148,7 @@ export function getScaleDegreeNote(keyRoot, degree) {
  * Reverse lookup: given a key and a note, find which degree (1-7) it is.
  * Returns the degree number, or 0 if the note isn't in the scale.
  */
-export function findScaleDegree(keyRoot, noteName) {
+export function findScaleDegree(keyRoot: string, noteName: string) {
   const noteSemitone = spelledNoteSemitone(noteName);
   for (let d = 1; d <= 7; d++) {
     const degreeName = getScaleDegreeNote(keyRoot, d);
@@ -153,7 +161,7 @@ export function findScaleDegree(keyRoot, noteName) {
 // Key signatures
 // ---------------------------------------------------------------------------
 
-export const MAJOR_KEYS = [
+export const MAJOR_KEYS: MajorKey[] = [
   {
     root: 'C',
     sharps: 0,
@@ -241,14 +249,14 @@ export const MAJOR_KEYS = [
 ];
 
 /** Build a display label for a key signature, e.g., '2#', '3b', '0'. */
-export function keySignatureLabel(key) {
+export function keySignatureLabel(key: MajorKey) {
   if (key.accidentalCount === 0) return '0';
   if (key.accidentalType === 'sharps') return key.accidentalCount + '#';
   return key.accidentalCount + 'b';
 }
 
 /** Find a key by its signature label (e.g., '2#' -> D major). */
-export function keyBySignatureLabel(label) {
+export function keyBySignatureLabel(label: string) {
   return MAJOR_KEYS.find((k) => keySignatureLabel(k) === label) || null;
 }
 
@@ -256,7 +264,7 @@ export function keyBySignatureLabel(label) {
 // Diatonic chords (major key harmonization)
 // ---------------------------------------------------------------------------
 
-export const DIATONIC_CHORDS = [
+export const DIATONIC_CHORDS: DiatonicChord[] = [
   { degree: 1, numeral: 'I', quality: 'major', qualityLabel: '' },
   { degree: 2, numeral: 'ii', quality: 'minor', qualityLabel: 'm' },
   { degree: 3, numeral: 'iii', quality: 'minor', qualityLabel: 'm' },
@@ -278,7 +286,7 @@ export const ROMAN_NUMERALS = DIATONIC_CHORDS.map((c) => c.numeral);
 // ---------------------------------------------------------------------------
 
 // Letter offset from root for each chord-tone label
-const DEGREE_LETTER_OFFSETS = {
+const DEGREE_LETTER_OFFSETS: Record<string, number> = {
   'R': 0,
   '2': 1,
   'b3': 2,
@@ -292,7 +300,7 @@ const DEGREE_LETTER_OFFSETS = {
   '7': 6,
 };
 
-export const CHORD_TYPES = [
+export const CHORD_TYPES: ChordType[] = [
   {
     name: 'major',
     symbol: '',
@@ -392,13 +400,13 @@ export const CHORD_ROOTS = [
  * Compute the correctly-spelled chord tones for a given root and chord type.
  * Returns array of spelled note names, e.g., ['C', 'Eb', 'G'] for Cm.
  */
-export function getChordTones(rootName, chordType) {
+export function getChordTones(rootName: string, chordType: ChordType) {
   const root = parseSpelledNote(rootName);
   const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
   const rootSemitone =
     ((NATURAL_SEMITONES[root.letter] + root.accidental) % 12 + 12) % 12;
 
-  return chordType.intervals.map((interval, i) => {
+  return chordType.intervals.map((interval: number, i: number) => {
     const degreeLabel = chordType.degrees[i];
     const letterOffset = DEGREE_LETTER_OFFSETS[degreeLabel];
     const targetLetter = LETTER_NAMES[(rootLetterIdx + letterOffset) % 7];
@@ -413,7 +421,7 @@ export function getChordTones(rootName, chordType) {
 }
 
 /** Build chord display name, e.g., 'Cm7', 'F#dim', 'Bbmaj7'. */
-export function chordDisplayName(rootName, chordType) {
+export function chordDisplayName(rootName: string, chordType: ChordType) {
   return rootName + chordType.symbol;
 }
 
@@ -421,7 +429,7 @@ export function chordDisplayName(rootName, chordType) {
  * Check if a user input matches a spelled note exactly (strict enharmonic).
  * Matches case-insensitively but requires correct letter + accidental.
  */
-export function spelledNoteMatchesInput(expectedName, input) {
+export function spelledNoteMatchesInput(expectedName: string, input: string) {
   const expected = parseSpelledNote(expectedName);
   const given = parseSpelledNote(input);
   return given.letter.toUpperCase() === expected.letter.toUpperCase() &&
@@ -432,7 +440,7 @@ export function spelledNoteMatchesInput(expectedName, input) {
  * Check if a user input matches a spelled note by semitone (lenient).
  * Used for button taps where user can't distinguish enharmonics.
  */
-export function spelledNoteMatchesSemitone(expectedName, input) {
+export function spelledNoteMatchesSemitone(expectedName: string, input: string) {
   return spelledNoteSemitone(expectedName) === spelledNoteSemitone(input);
 }
 
@@ -440,7 +448,7 @@ export function spelledNoteMatchesSemitone(expectedName, input) {
 // Instrument configurations
 // ---------------------------------------------------------------------------
 
-export const GUITAR = {
+export const GUITAR: Instrument = {
   id: 'fretboard', // mode ID (preserved for backward compat)
   name: 'Guitar Fretboard',
   storageNamespace: 'fretboard',
@@ -452,7 +460,7 @@ export const GUITAR = {
   fretMarkers: [3, 5, 7, 9, 12],
 };
 
-export const UKULELE = {
+export const UKULELE: Instrument = {
   id: 'ukulele',
   name: 'Ukulele Fretboard',
   storageNamespace: 'ukulele',
@@ -472,7 +480,7 @@ export const STRING_OFFSETS = GUITAR.stringOffsets;
 // Solfège notation
 // ---------------------------------------------------------------------------
 
-export const SOLFEGE_MAP = {
+export const SOLFEGE_MAP: Record<string, string> = {
   C: 'Do',
   D: 'Re',
   E: 'Mi',
@@ -490,7 +498,7 @@ export function getUseSolfege() {
 }
 
 /** Set notation mode and persist to localStorage. */
-export function setUseSolfege(v) {
+export function setUseSolfege(v: boolean) {
   _useSolfege = v;
   try {
     localStorage.setItem('fretboard_notation', v ? 'solfege' : 'letter');
@@ -508,7 +516,7 @@ try {
  * letter to a solfège syllable. Preserves case: lowercase input produces
  * lowercase output (e.g., "e" → "mi" for high-E string).
  */
-export function displayNote(name) {
+export function displayNote(name: string) {
   if (!name) return name;
   const letter = name[0].toUpperCase();
   const acc = name.slice(1).replace(/#/g, '\u266F').replace(/b/g, '\u266D');
@@ -527,7 +535,7 @@ export function displayNote(name) {
  * or "Do♯/Re♭" (solfège mode). Handles both single names and
  * slash-separated pairs.
  */
-export function displayNotePair(displayName) {
+export function displayNotePair(displayName: string) {
   if (!displayName) return displayName;
   if (!displayName.includes('/')) return displayNote(displayName);
   const [s, f] = displayName.split('/');

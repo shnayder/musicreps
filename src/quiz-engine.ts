@@ -29,6 +29,14 @@ import {
   deriveScaledConfig,
 } from './adaptive.ts';
 import { displayNote, getUseSolfege, NOTES } from './music-data.ts';
+import type {
+  CalibrationTrialConfig,
+  EngineEls,
+  EngineState,
+  NoteKeyHandler,
+  QuizEngine,
+  QuizMode,
+} from './types.ts';
 
 /**
  * Create a keyboard handler for note input (C D E F G A B + #/s/b for accidentals).
@@ -38,25 +46,21 @@ import { displayNote, getUseSolfege, NOTES } from './music-data.ts';
  * is pressed for an accidental key (`#` / `b`) to be entered. Callers should
  * invoke `reset()` when the quiz stops and before restarting to clear any pending
  * note and prevent stale input from being submitted after the quiz has ended.
- *
- * @param {function} submitAnswer - Called with the note string (e.g. 'C', 'C#', 'Db')
- * @param {function} [allowAccidentals] - Returns true if accidentals are enabled
- * @returns {{ handleKey(e): boolean, reset(): void }}
  */
 export function createNoteKeyHandler(
-  submitAnswer,
-  allowAccidentals = () => true,
-) {
-  let pendingNote = null;
-  let pendingTimeout = null;
+  submitAnswer: (note: string) => void,
+  allowAccidentals: () => boolean = () => true,
+): NoteKeyHandler {
+  let pendingNote: string | null = null;
+  let pendingTimeout: number | null = null;
 
-  function reset() {
+  function reset(): void {
     if (pendingTimeout) clearTimeout(pendingTimeout);
     pendingNote = null;
     pendingTimeout = null;
   }
 
-  function handleKey(e) {
+  function handleKey(e: KeyboardEvent): boolean {
     const key = e.key.toUpperCase();
 
     // Handle #/s for sharps or b for flats after a pending note
@@ -66,7 +70,7 @@ export function createNoteKeyHandler(
         (e.shiftKey && e.key === '3')
       ) {
         e.preventDefault();
-        clearTimeout(pendingTimeout);
+        if (pendingTimeout) clearTimeout(pendingTimeout);
         submitAnswer(pendingNote + '#');
         pendingNote = null;
         pendingTimeout = null;
@@ -74,7 +78,7 @@ export function createNoteKeyHandler(
       }
       if (e.key === 'b' || e.key === 'B') {
         e.preventDefault();
-        clearTimeout(pendingTimeout);
+        if (pendingTimeout) clearTimeout(pendingTimeout);
         submitAnswer(pendingNote + 'b');
         pendingNote = null;
         pendingTimeout = null;
@@ -91,7 +95,7 @@ export function createNoteKeyHandler(
       } else {
         pendingNote = key;
         pendingTimeout = setTimeout(() => {
-          submitAnswer(pendingNote);
+          submitAnswer(pendingNote!);
           pendingNote = null;
           pendingTimeout = null;
         }, 400);
@@ -109,16 +113,12 @@ export function createNoteKeyHandler(
  * Create a keyboard handler for solfège input (Do Re Mi Fa Sol La Si + #/b).
  * Case-insensitive. Buffers two characters to identify the syllable, then
  * waits for an optional accidental. All syllables are unambiguous after 2 chars.
- *
- * @param {function} submitAnswer - Called with the internal note string (e.g. 'C', 'F#')
- * @param {function} [allowAccidentals] - Returns true if accidentals are enabled
- * @returns {{ handleKey(e): boolean, reset(): void }}
  */
 export function createSolfegeKeyHandler(
-  submitAnswer,
-  allowAccidentals = () => true,
-) {
-  const SOLFEGE_TO_NOTE = {
+  submitAnswer: (note: string) => void,
+  allowAccidentals: () => boolean = () => true,
+): NoteKeyHandler {
+  const SOLFEGE_TO_NOTE: Record<string, string> = {
     'do': 'C',
     're': 'D',
     'mi': 'E',
@@ -129,34 +129,34 @@ export function createSolfegeKeyHandler(
   };
   const FIRST_CHARS = new Set(['d', 'r', 'm', 'f', 's', 'l']);
 
-  let buffer = '';
-  let pendingNote = null;
-  let pendingTimeout = null;
+  let buffer: string = '';
+  let pendingNote: string | null = null;
+  let pendingTimeout: number | null = null;
 
-  function reset() {
+  function reset(): void {
     buffer = '';
     if (pendingTimeout) clearTimeout(pendingTimeout);
     pendingTimeout = null;
     pendingNote = null;
   }
 
-  function submitPending() {
+  function submitPending(): void {
     if (pendingNote) {
-      clearTimeout(pendingTimeout);
+      if (pendingTimeout) clearTimeout(pendingTimeout);
       submitAnswer(pendingNote);
       pendingNote = null;
       pendingTimeout = null;
     }
   }
 
-  function handleKey(e) {
+  function handleKey(e: KeyboardEvent): boolean {
     const key = e.key.toLowerCase();
 
     // Handle accidental after resolved syllable
     if (pendingNote && allowAccidentals()) {
       if (e.key === '#' || (e.shiftKey && e.key === '3')) {
         e.preventDefault();
-        clearTimeout(pendingTimeout);
+        if (pendingTimeout) clearTimeout(pendingTimeout);
         submitAnswer(pendingNote + '#');
         pendingNote = null;
         pendingTimeout = null;
@@ -165,7 +165,7 @@ export function createSolfegeKeyHandler(
       // 'b' is flat (no solfège syllable starts with 'b')
       if (key === 'b') {
         e.preventDefault();
-        clearTimeout(pendingTimeout);
+        if (pendingTimeout) clearTimeout(pendingTimeout);
         submitAnswer(pendingNote + 'b');
         pendingNote = null;
         pendingTimeout = null;
@@ -190,7 +190,7 @@ export function createSolfegeKeyHandler(
         } else {
           pendingNote = note;
           pendingTimeout = setTimeout(() => {
-            submitAnswer(pendingNote);
+            submitAnswer(pendingNote!);
             pendingNote = null;
             pendingTimeout = null;
           }, 400);
@@ -220,15 +220,11 @@ export function createSolfegeKeyHandler(
 /**
  * Adaptive key handler: delegates to letter or solfège handler based on
  * current notation mode. Drop-in replacement for createNoteKeyHandler.
- *
- * @param {function} submitAnswer - Called with the note string
- * @param {function} [allowAccidentals] - Returns true if accidentals are enabled
- * @returns {{ handleKey(e): boolean, reset(): void }}
  */
 export function createAdaptiveKeyHandler(
-  submitAnswer,
-  allowAccidentals = () => true,
-) {
+  submitAnswer: (note: string) => void,
+  allowAccidentals: () => boolean = () => true,
+): NoteKeyHandler {
   const letterHandler = createNoteKeyHandler(submitAnswer, allowAccidentals);
   const solfegeHandler = createSolfegeKeyHandler(
     submitAnswer,
@@ -236,12 +232,12 @@ export function createAdaptiveKeyHandler(
   );
 
   return {
-    handleKey(e) {
+    handleKey(e: KeyboardEvent): boolean {
       return getUseSolfege()
         ? solfegeHandler.handleKey(e)
         : letterHandler.handleKey(e);
     },
-    reset() {
+    reset(): void {
       letterHandler.reset();
       solfegeHandler.reset();
     },
@@ -252,32 +248,36 @@ export function createAdaptiveKeyHandler(
  * Update all note button labels in a container to reflect current notation mode.
  * Handles .answer-btn-note, .note-btn, and .string-toggle elements.
  */
-export function refreshNoteButtonLabels(container) {
-  container.querySelectorAll('.answer-btn-note').forEach(function (btn) {
-    const note = NOTES.find(function (n) {
-      return n.name === btn.dataset.note;
-    });
-    if (note) btn.textContent = displayNote(note.name);
-  });
-  container.querySelectorAll('.note-btn').forEach(function (btn) {
-    const noteName = btn.dataset.note;
-    if (noteName) btn.textContent = displayNote(noteName);
-  });
-  container.querySelectorAll('.string-toggle').forEach(function (btn) {
-    const stringNote = btn.dataset.stringNote;
-    if (stringNote) btn.textContent = displayNote(stringNote);
-  });
+export function refreshNoteButtonLabels(container: HTMLElement): void {
+  container.querySelectorAll<HTMLButtonElement>('.answer-btn-note').forEach(
+    function (btn) {
+      const note = NOTES.find(function (n) {
+        return n.name === btn.dataset.note;
+      });
+      if (note) btn.textContent = displayNote(note.name);
+    },
+  );
+  container.querySelectorAll<HTMLButtonElement>('.note-btn').forEach(
+    function (btn) {
+      const noteName = btn.dataset.note;
+      if (noteName) btn.textContent = displayNote(noteName);
+    },
+  );
+  container.querySelectorAll<HTMLButtonElement>('.string-toggle').forEach(
+    function (btn) {
+      const stringNote = btn.dataset.stringNote;
+      if (stringNote) btn.textContent = displayNote(stringNote);
+    },
+  );
 }
 
 /**
  * Build human-readable threshold descriptions from a motor baseline.
- * Returns an array of { label, maxMs, meaning } objects describing the
- * heatmap speed bands. Used by the calibration results screen.
- *
- * @param {number} baseline - Motor baseline in ms
- * @returns {{ label: string, maxMs: number|null, meaning: string }[]}
+ * Used by the calibration results screen.
  */
-export function getCalibrationThresholds(baseline) {
+export function getCalibrationThresholds(
+  baseline: number,
+): { label: string; maxMs: number | null; meaning: string }[] {
   return [
     {
       label: 'Automatic',
@@ -307,7 +307,7 @@ export function getCalibrationThresholds(baseline) {
  * Determine the keyboard key that would activate a given button.
  * Returns null if no single-key shortcut exists (e.g. sharps, two-digit numbers).
  */
-function getKeyForButton(btn) {
+function getKeyForButton(btn: HTMLElement): string | null {
   const note = btn.dataset.note;
   if (note && note.length === 1 && 'CDEFGAB'.includes(note.toUpperCase())) {
     return note.toUpperCase();
@@ -320,13 +320,12 @@ function getKeyForButton(btn) {
 /**
  * Pick a random calibration button, weighted toward accidentals ~35% of the time.
  * Shared helper for mode getCalibrationTrialConfig implementations.
- *
- * @param {Element[]} buttons - available answer buttons
- * @param {Element|null} prevBtn - previous trial's button (to avoid repeats)
- * @param {function} [rng] - random number generator (0–1), defaults to Math.random
- * @returns {Element}
  */
-export function pickCalibrationButton(buttons, prevBtn, rng) {
+export function pickCalibrationButton(
+  buttons: HTMLElement[],
+  prevBtn: HTMLElement | null,
+  rng?: () => number,
+): HTMLElement {
   const rand = rng || Math.random;
   const sharpBtns = buttons.filter((b) => {
     const note = b.dataset.note;
@@ -354,15 +353,17 @@ export function pickCalibrationButton(buttons, prevBtn, rng) {
  * Run a motor-baseline calibration sequence.
  * In highlight mode (no getTrialConfig): highlights a random button green.
  * In search mode (getTrialConfig provided): shows a text prompt, user finds the button.
- *
- * @param {object}   opts
- * @param {Element[]} opts.buttons       - answer buttons to use for calibration
- * @param {object}   opts.els           - engine DOM elements (feedback, hint, timeDisplay)
- * @param {Element}  opts.container     - mode container element
- * @param {function} opts.onComplete    - called with median time in ms
- * @param {function} [opts.getTrialConfig] - mode's getCalibrationTrialConfig(buttons, prevBtn)
  */
-function runCalibration(opts) {
+function runCalibration(opts: {
+  buttons: HTMLElement[];
+  els: EngineEls;
+  container: HTMLElement;
+  onComplete: (median: number | null) => void;
+  getTrialConfig?: (
+    buttons: HTMLElement[],
+    prevBtn: HTMLElement | null,
+  ) => CalibrationTrialConfig;
+}): () => void {
   const { buttons, els, container, onComplete, getTrialConfig } = opts;
   const TRIAL_COUNT = 10;
   const PAUSE_MS = 400;
@@ -372,22 +373,22 @@ function runCalibration(opts) {
   // noticeably slower and would inflate the baseline.
   const WARMUP_TRIALS = 2;
 
-  const times = [];
+  const times: number[] = [];
   let trialIndex = 0;
-  let targetBtn = null; // current target (single-target or current in sequence)
-  let trialStartTime = null;
-  let prevBtn = null;
+  let targetBtn: HTMLElement | null = null; // current target (single-target or current in sequence)
+  let trialStartTime: number | null = null;
+  let prevBtn: HTMLElement | null = null;
   let canceled = false;
-  let pendingTimeout = null;
+  let pendingTimeout: number | null = null;
 
   // Search mode state
-  let trialConfig = null; // current trial's config from getTrialConfig
+  let trialConfig: CalibrationTrialConfig | null = null; // current trial's config from getTrialConfig
   let targetIndex = 0; // index within trialConfig.targetButtons
-  let pressStartTime = null; // time of last press (for per-press timing)
+  let pressStartTime: number | null = null; // time of last press (for per-press timing)
 
   // Accidental key support for search mode
-  let pendingNote = null;
-  let pendingNoteTimeout = null;
+  let pendingNote: string | null = null;
+  let pendingNoteTimeout: number | null = null;
 
   function isSearchMode() {
     return !!getTrialConfig;
@@ -405,7 +406,7 @@ function runCalibration(opts) {
     }
 
     if (isSearchMode()) {
-      trialConfig = getTrialConfig(buttons, prevBtn);
+      trialConfig = getTrialConfig!(buttons, prevBtn);
       targetIndex = 0;
       targetBtn = trialConfig.targetButtons[0];
       pressStartTime = Date.now();
@@ -437,7 +438,7 @@ function runCalibration(opts) {
 
   function recordPress() {
     const now = Date.now();
-    const elapsed = now - (isSearchMode() ? pressStartTime : trialStartTime);
+    const elapsed = now - (isSearchMode() ? pressStartTime! : trialStartTime!);
 
     // Skip warmup trials
     if (trialIndex >= WARMUP_TRIALS) {
@@ -465,9 +466,9 @@ function runCalibration(opts) {
     pendingTimeout = setTimeout(startTrial, PAUSE_MS);
   }
 
-  function handleCalibrationClick(e) {
+  function handleCalibrationClick(e: MouseEvent): void {
     if (!targetBtn) return;
-    const clicked = e.target.closest('.note-btn, .answer-btn');
+    const clicked = (e.target as HTMLElement).closest('.note-btn, .answer-btn');
     if (clicked === targetBtn) {
       clearPendingNote();
       recordPress();
@@ -480,13 +481,13 @@ function runCalibration(opts) {
     pendingNoteTimeout = null;
   }
 
-  function checkNoteMatch(noteName) {
+  function checkNoteMatch(noteName: string): boolean {
     if (!targetBtn) return false;
     const targetNote = targetBtn.dataset.note;
-    return targetNote && targetNote.toUpperCase() === noteName.toUpperCase();
+    return !!targetNote && targetNote.toUpperCase() === noteName.toUpperCase();
   }
 
-  function handleCalibrationKey(e) {
+  function handleCalibrationKey(e: KeyboardEvent): void {
     if (!targetBtn) return;
 
     if (isSearchMode()) {
@@ -499,7 +500,7 @@ function runCalibration(opts) {
           (e.shiftKey && e.key === '3')
         ) {
           e.preventDefault();
-          clearTimeout(pendingNoteTimeout);
+          if (pendingNoteTimeout) clearTimeout(pendingNoteTimeout);
           const combined = pendingNote + '#';
           pendingNote = null;
           pendingNoteTimeout = null;
@@ -510,7 +511,7 @@ function runCalibration(opts) {
           // 'B' by itself could be the note B, but after a pending note it's a flat
           if (pendingNote !== 'B') {
             e.preventDefault();
-            clearTimeout(pendingNoteTimeout);
+            if (pendingNoteTimeout) clearTimeout(pendingNoteTimeout);
             const combined = pendingNote + 'b';
             pendingNote = null;
             pendingNoteTimeout = null;
@@ -534,7 +535,7 @@ function runCalibration(opts) {
           pendingNote = key;
           pendingNoteTimeout = setTimeout(() => {
             // Window expired, check natural
-            if (checkNoteMatch(pendingNote)) recordPress();
+            if (checkNoteMatch(pendingNote!)) recordPress();
             pendingNote = null;
             pendingNoteTimeout = null;
           }, 400);
@@ -583,34 +584,18 @@ function runCalibration(opts) {
 const ROUND_DURATION_MS = 60000;
 
 /**
- * Create a quiz engine for a given mode.
- *
- * @param {object} mode - Quiz mode configuration:
- *   mode.id           - Unique mode identifier
- *   mode.storageNamespace - Key prefix for adaptive storage
- *   mode.getEnabledItems() - Returns array of item IDs eligible for quiz
- *   mode.presentQuestion(itemId) - Updates DOM to show the question
- *   mode.checkAnswer(itemId, input) - Returns { correct, correctAnswer }
- *   mode.onStart()    - Called when quiz starts (optional)
- *   mode.onStop()     - Called when quiz stops (optional)
- *   mode.handleKey(e, state) - Mode-specific key handling, return true if handled (optional)
- *   mode.getCalibrationButtons() - Returns array of DOM elements for calibration (optional)
- *   mode.getCalibrationTrialConfig(buttons, prevBtn) - Returns { prompt, targetButtons } for search calibration (optional)
- *   mode.calibrationIntroHint - Custom intro hint text (optional, e.g. for chord spelling)
- *
- * @param {HTMLElement} container - Root element containing quiz DOM elements.
- *   Expected children (found by class):
- *     .feedback, .time-display, .hint,
- *     .stats, .mastery-message
- *
- * @returns {{ start, stop, submitAnswer, nextQuestion, attach, detach,
- *             updateIdleMessage, isActive, isAnswered, selector, storage, els, baseline }}
+ * Create a quiz engine for a given mode. Manages adaptive selection, timing,
+ * round countdown, feedback, and keyboard/tap handling.
  */
-export function createQuizEngine(mode, container) {
+export function createQuizEngine(
+  mode: QuizMode,
+  container: HTMLElement,
+): QuizEngine {
   const storage = createLocalStorageAdapter(mode.storageNamespace);
-  const responseCountFn = mode.getExpectedResponseCount
-    ? (itemId) => mode.getExpectedResponseCount(itemId)
-    : null;
+  const responseCountFn: ((itemId: string) => number) | null =
+    mode.getExpectedResponseCount
+      ? (itemId: string) => mode.getExpectedResponseCount!(itemId)
+      : null;
   const selector = createAdaptiveSelector(
     storage,
     DEFAULT_CONFIG,
@@ -621,13 +606,13 @@ export function createQuizEngine(mode, container) {
   const provider = mode.calibrationProvider || 'button';
   const baselineKey = 'motorBaseline_' + provider;
   const legacyBaselineKey = 'motorBaseline_' + mode.storageNamespace;
-  let motorBaseline = null;
-  let calibrationCleanup = null; // cancel function for running trials
-  let calibrationContentEl = null; // dynamically-created DOM for intro/results
+  let motorBaseline: number | null = null;
+  let calibrationCleanup: (() => void) | null = null; // cancel function for running trials
+  let calibrationContentEl: HTMLElement | null = null; // dynamically-created DOM for intro/results
 
   // Load stored baseline and apply to config at init time.
   // Check shared provider key first; fall back to legacy per-mode key for migration.
-  let storedBaseline = localStorage.getItem(baselineKey);
+  let storedBaseline: string | null = localStorage.getItem(baselineKey);
   if (!storedBaseline && legacyBaselineKey !== baselineKey) {
     storedBaseline = localStorage.getItem(legacyBaselineKey);
     if (storedBaseline) {
@@ -644,13 +629,13 @@ export function createQuizEngine(mode, container) {
     }
   }
 
-  let state = initialEngineState();
-  let roundTimerInterval = null;
-  let roundTimerStart = null;
-  let autoAdvanceTimer = null;
+  let state: EngineState = initialEngineState();
+  let roundTimerInterval: number | null = null;
+  let roundTimerStart: number | null = null;
+  let autoAdvanceTimer: number | null = null;
 
   // DOM references (scoped to container)
-  const els = {
+  const els: EngineEls = {
     feedback: container.querySelector('.feedback'),
     timeDisplay: container.querySelector('.time-display'),
     hint: container.querySelector('.hint'),
@@ -680,7 +665,7 @@ export function createQuizEngine(mode, container) {
     }
   }
 
-  function insertAfterHint(el) {
+  function insertAfterHint(el: HTMLElement): void {
     if (els.hint && els.hint.parentNode) {
       els.hint.parentNode.insertBefore(el, els.hint.nextSibling);
     }
@@ -698,7 +683,7 @@ export function createQuizEngine(mode, container) {
 
   function renderCalibrationResults() {
     clearCalibrationContent();
-    const baseline = state.calibrationBaseline;
+    const baseline = state.calibrationBaseline!;
     const thresholds = getCalibrationThresholds(baseline);
 
     const div = document.createElement('div');
@@ -733,7 +718,7 @@ export function createQuizEngine(mode, container) {
       const tdTime = document.createElement('td');
       tdTime.textContent = t.maxMs !== null
         ? '< ' + formatMs(t.maxMs)
-        : '> ' + formatMs(thresholds[thresholds.length - 2].maxMs);
+        : '> ' + formatMs(thresholds[thresholds.length - 2].maxMs!);
       tr.appendChild(tdTime);
 
       const tdMeaning = document.createElement('td');
@@ -757,7 +742,7 @@ export function createQuizEngine(mode, container) {
 
   // --- render sub-functions ---
 
-  function isCalibrationPhase(phase) {
+  function isCalibrationPhase(phase: string): boolean {
     return phase === 'calibration-intro' || phase === 'calibrating' ||
       phase === 'calibration-results';
   }
@@ -792,7 +777,7 @@ export function createQuizEngine(mode, container) {
     return { inCalibration: inCalibration, phaseClass: phaseClass };
   }
 
-  function renderCalibrationMarking(inCalibration) {
+  function renderCalibrationMarking(inCalibration: boolean): void {
     // Mark the calibration button container so CSS can hide others
     if (inCalibration && !container.querySelector('.calibration-active')) {
       const buttons = getCalibrationButtons();
@@ -816,11 +801,11 @@ export function createQuizEngine(mode, container) {
     }
   }
 
-  function renderHeader(_inCalibration) {
+  function renderHeader(_inCalibration: boolean): void {
     if (els.quizArea) els.quizArea.classList.toggle('active', state.quizActive);
   }
 
-  function renderFeedback(inCalibration) {
+  function renderFeedback(inCalibration: boolean): void {
     // During calibration, feedbackText goes in quiz-prompt (above buttons)
     // so the heading/prompt appears in the same position as quiz questions.
     // During active quiz, it stays in .feedback (below buttons).
@@ -973,7 +958,7 @@ export function createQuizEngine(mode, container) {
 
   // --- Round timer ---
 
-  function formatRoundTime(ms) {
+  function formatRoundTime(ms: number): string {
     const totalSec = Math.max(0, Math.ceil(ms / 1000));
     const min = Math.floor(totalSec / 60);
     const sec = totalSec % 60;
@@ -994,7 +979,7 @@ export function createQuizEngine(mode, container) {
     }
 
     roundTimerInterval = setInterval(() => {
-      const elapsed = Date.now() - roundTimerStart;
+      const elapsed = Date.now() - roundTimerStart!;
       const remaining = ROUND_DURATION_MS - elapsed;
       const pct = Math.max(0, (remaining / ROUND_DURATION_MS) * 100);
 
@@ -1011,7 +996,7 @@ export function createQuizEngine(mode, container) {
       }
 
       if (remaining <= 0) {
-        clearInterval(roundTimerInterval);
+        if (roundTimerInterval) clearInterval(roundTimerInterval);
         roundTimerInterval = null;
         if (els.countdownFill) els.countdownFill.style.width = '0%';
         if (els.quizInfoTime) els.quizInfoTime.textContent = '0:00';
@@ -1069,20 +1054,21 @@ export function createQuizEngine(mode, container) {
     render();
   }
 
-  function _getResponseCount(itemId) {
+  function _getResponseCount(itemId: string): number {
     return mode.getExpectedResponseCount
       ? mode.getExpectedResponseCount(itemId)
       : 1;
   }
 
-  function setAnswerButtonsEnabled(enabled) {
-    container.querySelectorAll('.answer-btn, .note-btn').forEach((btn) => {
-      btn.disabled = !enabled;
-      // pointer-events: none lets taps fall through to the parent so
-      // the tap-to-advance handler still fires on mobile (disabled
-      // buttons swallow click events and prevent bubbling).
-      btn.style.pointerEvents = enabled ? '' : 'none';
-    });
+  function setAnswerButtonsEnabled(enabled: boolean): void {
+    container.querySelectorAll<HTMLButtonElement>('.answer-btn, .note-btn')
+      .forEach((btn) => {
+        btn.disabled = !enabled;
+        // pointer-events: none lets taps fall through to the parent so
+        // the tap-to-advance handler still fires on mobile (disabled
+        // buttons swallow click events and prevent bubbling).
+        btn.style.pointerEvents = enabled ? '' : 'none';
+      });
   }
 
   // --- Baseline application ---
@@ -1102,7 +1088,7 @@ export function createQuizEngine(mode, container) {
     }
   }
 
-  function applyBaseline(baseline) {
+  function applyBaseline(baseline: number): void {
     motorBaseline = baseline;
     localStorage.setItem(baselineKey, String(baseline));
     const scaledConfig = deriveScaledConfig(baseline, DEFAULT_CONFIG);
@@ -1112,18 +1098,20 @@ export function createQuizEngine(mode, container) {
 
   // --- Calibration ---
 
-  function getCalibrationButtons() {
+  function getCalibrationButtons(): HTMLElement[] {
     if (mode.getCalibrationButtons) return mode.getCalibrationButtons();
     // Fallback: all visible note/answer buttons
     return Array.from(
-      container.querySelectorAll('.note-btn:not(.hidden), .answer-btn'),
+      container.querySelectorAll<HTMLElement>(
+        '.note-btn:not(.hidden), .answer-btn',
+      ),
     );
   }
 
   /**
    * Format milliseconds as a human-readable string (e.g., "0.9s" or "1.8s").
    */
-  function formatMs(ms) {
+  function formatMs(ms: number): string {
     return (ms / 1000).toFixed(1) + 's';
   }
 
@@ -1171,7 +1159,8 @@ export function createQuizEngine(mode, container) {
     render();
 
     const getTrialConfig = hasSearchCalibration()
-      ? (btns, prevBtn) => mode.getCalibrationTrialConfig(btns, prevBtn)
+      ? (btns: HTMLElement[], prevBtn: HTMLElement | null) =>
+        mode.getCalibrationTrialConfig!(btns, prevBtn)
       : undefined;
 
     calibrationCleanup = runCalibration({
@@ -1179,9 +1168,9 @@ export function createQuizEngine(mode, container) {
       els,
       container,
       getTrialConfig,
-      onComplete: (median) => {
+      onComplete: (median: number | null) => {
         calibrationCleanup = null;
-        if (!Number.isFinite(median) || median <= 0) {
+        if (median === null || !Number.isFinite(median) || median <= 0) {
           // Invalid measurement — abort to idle
           stop();
           return;
@@ -1236,16 +1225,16 @@ export function createQuizEngine(mode, container) {
     const nextItemId = selector.selectNext(items);
     state = engineNextQuestion(state, nextItemId, Date.now());
     render();
-    mode.presentQuestion(state.currentItemId);
+    mode.presentQuestion(state.currentItemId!);
   }
 
-  function submitAnswer(input) {
+  function submitAnswer(input: string): void {
     if (state.phase !== 'active' || state.answered) return;
 
-    const responseTime = Date.now() - state.questionStartTime;
+    const responseTime = Date.now() - state.questionStartTime!;
 
-    const result = mode.checkAnswer(state.currentItemId, input);
-    selector.recordResponse(state.currentItemId, responseTime, result.correct);
+    const result = mode.checkAnswer(state.currentItemId!, input);
+    selector.recordResponse(state.currentItemId!, responseTime, result.correct);
 
     state = engineSubmitAnswer(state, result.correct, result.correctAnswer);
 
@@ -1271,7 +1260,7 @@ export function createQuizEngine(mode, container) {
 
     // Let the mode react to the answer (e.g., highlight correct position)
     if (mode.onAnswer) {
-      mode.onAnswer(state.currentItemId, result, responseTime);
+      mode.onAnswer(state.currentItemId!, result, responseTime);
     }
 
     // If round timer already expired, show feedback briefly then transition
@@ -1341,7 +1330,7 @@ export function createQuizEngine(mode, container) {
   }
 
   // Keyboard handler — uses pure routing, delegates mode-specific keys
-  function handleKeydown(e) {
+  function handleKeydown(e: KeyboardEvent): void {
     const routed = engineRouteKey(state, e.key);
     switch (routed.action) {
       case 'stop':
@@ -1369,11 +1358,15 @@ export function createQuizEngine(mode, container) {
   }
 
   // Tap-to-advance handler
-  function handleClick(e) {
+  function handleClick(e: MouseEvent): void {
     // In round-complete phase, only respond to the explicit buttons
     if (state.phase === 'round-complete') return;
     if (state.phase !== 'active' || !state.answered) return;
-    if (e.target.closest('.answer-btn, .note-btn, .string-toggle')) return;
+    if (
+      (e.target as HTMLElement).closest(
+        '.answer-btn, .note-btn, .string-toggle',
+      )
+    ) return;
     if (autoAdvanceTimer) {
       clearTimeout(autoAdvanceTimer);
       autoAdvanceTimer = null;
@@ -1389,7 +1382,7 @@ export function createQuizEngine(mode, container) {
     document.addEventListener('keydown', handleKeydown);
     container.addEventListener('click', handleClick);
     refreshNoteButtonLabels(container);
-    const activeStatsBtn = container.querySelector('.stats-toggle-btn.active');
+    const activeStatsBtn = container.querySelector('.stats-toggle-btn.active') as HTMLElement | null;
     if (activeStatsBtn) activeStatsBtn.click();
   }
 
