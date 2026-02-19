@@ -1,14 +1,14 @@
 // Chord Spelling quiz mode: spell out all notes of a chord in root-up order.
 // "Cm7" -> user enters C, Eb, G, Bb in sequence.
 // ~132 items: 12 roots x chord types, grouped by chord type.
-//
-// Depends on globals: CHORD_TYPES, CHORD_ROOTS, getChordTones,
-// chordDisplayName, spelledNoteMatchesInput,
-// createQuizEngine, createNoteKeyHandler,
-// renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
-// computeRecommendations
 
-function createChordSpellingMode() {
+import { CHORD_TYPES, CHORD_ROOTS, getChordTones, chordDisplayName, spelledNoteMatchesInput, spelledNoteMatchesSemitone, displayNote } from './music-data.js';
+import { DEFAULT_CONFIG } from './adaptive.js';
+import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
+import { renderStatsGrid, buildStatsLegend, createStatsControls } from './stats-display.js';
+import { computeRecommendations } from './recommendations.js';
+
+export function createChordSpellingMode() {
   const container = document.getElementById('mode-chordSpelling');
   const GROUPS_KEY = 'chordSpelling_enabledGroups';
 

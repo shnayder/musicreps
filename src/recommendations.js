@@ -1,8 +1,6 @@
 // Shared recommendation algorithm: consolidate-before-expanding.
 // Extracts the duplicated logic from quiz-fretboard.js, quiz-semitone-math.js,
 // and quiz-interval-math.js into a single pure function.
-//
-// This is an ES module — exports stripped for browser inlining.
 // Pure w.r.t. configuration: callers pass `config.expansionThreshold`.
 
 /**

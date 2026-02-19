@@ -1,12 +1,11 @@
 // Speed Tap quiz mode: tap all positions of a given note as fast as possible.
 // Uses createQuizEngine with getExpectedResponseCount for multi-tap scaling.
-//
-// Depends on globals: NOTES, NATURAL_NOTES, STRING_OFFSETS,
-// createQuizEngine, createStatsControls,
-// getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend,
-// DEFAULT_CONFIG
 
-function createSpeedTapMode() {
+import { NOTES, NATURAL_NOTES, STRING_OFFSETS, displayNote, pickRandomAccidental } from './music-data.js';
+import { createQuizEngine } from './quiz-engine.js';
+import { getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend, createStatsControls } from './stats-display.js';
+
+export function createSpeedTapMode() {
   var container = document.getElementById('mode-speedTap');
 
   var NOTE_FILTER_KEY = 'speedTap_noteFilter';

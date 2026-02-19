@@ -1,12 +1,13 @@
 // Fretboard quiz mode: identify the note at a highlighted fretboard position.
 // Parameterized factory supports any fretted instrument (guitar, ukulele, etc.).
 // Plugs into the shared quiz engine via the mode interface.
-//
-// Depends on globals: NOTES, NATURAL_NOTES, GUITAR, UKULELE,
-// noteMatchesInput, createQuizEngine, createNoteKeyHandler, DEFAULT_CONFIG,
-// getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend,
-// computeRecommendations, createFretboardHelpers, toggleFretboardString,
-// computeNotePrioritization
+
+import { NOTES, NATURAL_NOTES, GUITAR, UKULELE, noteMatchesInput, displayNote } from './music-data.js';
+import { DEFAULT_CONFIG } from './adaptive.js';
+import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
+import { getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend, createStatsControls } from './stats-display.js';
+import { computeRecommendations } from './recommendations.js';
+import { createFretboardHelpers, toggleFretboardString, computeNotePrioritization } from './quiz-fretboard-state.js';
 
 function createFrettedInstrumentMode(instrument) {
   var container = document.getElementById('mode-' + instrument.id);
@@ -570,10 +571,10 @@ function createFrettedInstrumentMode(instrument) {
   };
 }
 
-function createGuitarFretboardMode() {
+export function createGuitarFretboardMode() {
   return createFrettedInstrumentMode(GUITAR);
 }
 
-function createUkuleleFretboardMode() {
+export function createUkuleleFretboardMode() {
   return createFrettedInstrumentMode(UKULELE);
 }

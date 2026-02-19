@@ -1,6 +1,7 @@
 {
   "private": true,
   "devDependencies": {
+    "esbuild": "^0.27.3",
     "playwright": "^1.52.0",
     "tsx": "^4.19.0",
     "typescript": "^5.9.3"

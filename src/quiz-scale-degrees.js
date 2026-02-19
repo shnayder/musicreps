@@ -2,13 +2,14 @@
 // Forward: "5th of D major?" -> A, Reverse: "In D major, A is the ?" -> 5th
 // 168 items: 12 keys x 7 degrees x 2 directions.
 // Grouped by degree (not by key) for progressive unlocking.
-//
-// Depends on globals: MAJOR_KEYS, getScaleDegreeNote, findScaleDegree,
-// spelledNoteMatchesSemitone, NOTES, createQuizEngine, createNoteKeyHandler,
-// renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
-// computeRecommendations
 
-function createScaleDegreesMode() {
+import { MAJOR_KEYS, getScaleDegreeNote, findScaleDegree, spelledNoteMatchesSemitone, NOTES, displayNote } from './music-data.js';
+import { DEFAULT_CONFIG } from './adaptive.js';
+import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
+import { renderStatsGrid, buildStatsLegend, createStatsControls } from './stats-display.js';
+import { computeRecommendations } from './recommendations.js';
+
+export function createScaleDegreesMode() {
   const container = document.getElementById('mode-scaleDegrees');
   const GROUPS_KEY = 'scaleDegrees_enabledGroups';
 

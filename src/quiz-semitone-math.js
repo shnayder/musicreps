@@ -2,13 +2,14 @@
 // "C + 3 = ?" -> D#/Eb,  "G - 5 = ?" -> D
 // 264 items: 12 notes x 11 intervals (1-11) x 2 directions (+/-).
 // Grouped by semitone count into 6 distance groups for progressive unlocking.
-//
-// Depends on globals: NOTES, noteAdd, noteSub, noteMatchesInput,
-// pickAccidentalName, createQuizEngine, createNoteKeyHandler,
-// renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
-// computeRecommendations
 
-function createSemitoneMathMode() {
+import { NOTES, noteAdd, noteSub, noteMatchesInput, pickAccidentalName, displayNote } from './music-data.js';
+import { DEFAULT_CONFIG } from './adaptive.js';
+import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
+import { renderStatsGrid, buildStatsLegend, createStatsControls } from './stats-display.js';
+import { computeRecommendations } from './recommendations.js';
+
+export function createSemitoneMathMode() {
   const container = document.getElementById('mode-semitoneMath');
   const GROUPS_KEY = 'semitoneMath_enabledGroups';
 

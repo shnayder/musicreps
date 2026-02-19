@@ -1,25 +1,29 @@
 import {
-  SOURCE_MANIFEST,
   assembleHTML,
   SERVICE_WORKER,
 } from "./src/build-template.ts";
 
 // ---------------------------------------------------------------------------
-// Read source files
+// Bundle JS with esbuild (subprocess for Deno compatibility)
 // ---------------------------------------------------------------------------
 
-function resolve(rel: string): string | URL {
-  return new URL(rel, import.meta.url);
+function resolve(rel: string): string {
+  return new URL(rel, import.meta.url).pathname;
 }
 
-async function readFile(rel: string): Promise<string> {
-  return Deno.readTextFile(resolve(rel));
-}
-
-/** Read a JS module and strip `export ` keywords for browser inlining. */
-async function readModule(rel: string): Promise<string> {
-  const src = await readFile(rel);
-  return src.replace(/^export /gm, "");
+async function bundleJS(): Promise<string> {
+  const entryPoint = resolve("./src/app.js");
+  const cmd = new Deno.Command("npx", {
+    args: ["esbuild", "--bundle", "--format=iife", entryPoint],
+    stdout: "piped",
+    stderr: "piped",
+  });
+  const output = await cmd.output();
+  if (!output.success) {
+    const err = new TextDecoder().decode(output.stderr);
+    throw new Error(`esbuild failed:\n${err}`);
+  }
+  return new TextDecoder().decode(output.stdout);
 }
 
 // ---------------------------------------------------------------------------
@@ -27,13 +31,9 @@ async function readModule(rel: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function buildHTML(): Promise<string> {
-  const css = await readFile("./src/styles.css");
-  const scripts = await Promise.all(
-    SOURCE_MANIFEST.map((f) =>
-      f.module ? readModule("./" + f.path) : readFile("./" + f.path)
-    ),
-  );
-  return assembleHTML(css, scripts);
+  const css = await Deno.readTextFile(resolve("./src/styles.css"));
+  const js = await bundleJS();
+  return assembleHTML(css, js);
 }
 
 // ---------------------------------------------------------------------------

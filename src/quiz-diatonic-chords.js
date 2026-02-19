@@ -2,14 +2,14 @@
 // Forward: "IV in Bb major?" -> Eb, Reverse: "Dm is what in C major?" -> ii
 // 168 items: 12 keys x 7 degrees x 2 directions.
 // Grouped by degree importance for progressive unlocking.
-//
-// Depends on globals: MAJOR_KEYS, DIATONIC_CHORDS, ROMAN_NUMERALS,
-// getScaleDegreeNote, spelledNoteMatchesSemitone,
-// createQuizEngine, createNoteKeyHandler,
-// renderStatsGrid, buildStatsLegend, DEFAULT_CONFIG,
-// computeRecommendations
 
-function createDiatonicChordsMode() {
+import { MAJOR_KEYS, DIATONIC_CHORDS, ROMAN_NUMERALS, getScaleDegreeNote, spelledNoteMatchesSemitone, displayNote } from './music-data.js';
+import { DEFAULT_CONFIG } from './adaptive.js';
+import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
+import { renderStatsGrid, buildStatsLegend, createStatsControls } from './stats-display.js';
+import { computeRecommendations } from './recommendations.js';
+
+export function createDiatonicChordsMode() {
   const container = document.getElementById('mode-diatonicChords');
   const GROUPS_KEY = 'diatonicChords_enabledGroups';
 

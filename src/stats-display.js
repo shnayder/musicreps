@@ -1,8 +1,7 @@
 // Stats display helpers: shared color functions, table rendering for lookup
 // modes, and heatmap grid rendering for math modes.
-//
-// ES module — main.ts strips "export" keywords for browser inlining.
-// Depends on globals (browser): NOTES, INTERVALS
+
+import { NOTES, displayNote } from './music-data.js';
 
 // --- Heatmap color scale (read from CSS custom properties) ---
 

@@ -5,17 +5,17 @@ Day-to-day workflow reference for building, testing, and deploying.
 ## Prerequisites
 
 - **Deno** (preferred) or **Node.js** with `npx`
-- No `npm install` needed for build/test — the app has zero runtime dependencies
-- Playwright required for screenshots only: `npm install && npx playwright install chromium`. Only works locally, when `CLAUDE_CODE_REMOTE` is not set to `true`.
+- `npm install` required for esbuild (dev dependency)
+- Playwright required for screenshots only: `npx playwright install chromium`. Only works locally, when `CLAUDE_CODE_REMOTE` is not set to `true`.
 
 ## Commands
 
 ```bash
-# Dev server (serves index.html + sw.js on localhost:8000)
-deno run --allow-net --allow-read main.ts
+# Dev server (serves index.html + sw.js on localhost:8001)
+deno run --allow-net --allow-read --allow-run main.ts
 
 # Build for GitHub Pages (Deno)
-deno run --allow-write --allow-read main.ts --build
+deno run --allow-write --allow-read --allow-run main.ts --build
 
 # Build for GitHub Pages (Node — when Deno is unavailable)
 npx tsx build.ts
@@ -27,17 +27,18 @@ npx tsx --test src/*_test.ts
 npx tsx scripts/take-screenshots.ts
 ```
 
-## Template Sync
+## Build System
 
-Both `main.ts` and `build.ts` contain the HTML template. When changing the
-template (HTML structure, nav buttons, mode screens, or version number), update
-**both** files. This is the single most common source of bugs — the review
-checklist checks it first.
+The HTML template, version number, and page structure live in
+`src/build-template.ts` — the single source of truth. Source files are ES
+modules bundled by esbuild into a single IIFE `<script>` block:
 
-What lives in both files:
-- HTML structure (nav drawer, mode screens, SVG fretboard)
-- `<script>` block with file reads and concatenation order
-- Version number in `<div class="version">`
+- `build.ts` (Node): uses `esbuild.buildSync()` JS API
+- `main.ts` (Deno): shells out to esbuild CLI via `Deno.Command`
+
+To add a new source file, just create it with proper `import`/`export`
+statements and import it from where it's needed. esbuild resolves the
+module graph automatically from the entry point (`src/app.js`).
 
 ## Testing
 
@@ -62,12 +63,12 @@ Write tests as you go, not just at the end.
 
 ## Versioning
 
-A version number is displayed top-right (`<div class="version">`). **Always bump
-the version with every change** — even tiny bug fixes or label tweaks. The user
-needs to confirm they're testing the latest build; a stale version number makes
-that impossible. The version appears in both `main.ts` and `build.ts` — update
-both. Bump by 1 for normal changes (v3.13 → v3.14 → v3.15) and bump the major
-version for large overhauls (v3.x → v4.0).
+A version number is displayed on the home screen (`<span class="version">`).
+**Always bump the version with every change** — even tiny bug fixes or label
+tweaks. The user needs to confirm they're testing the latest build; a stale
+version number makes that impossible. The version lives in one place:
+`VERSION` in `src/build-template.ts`. Bump by 1 for normal changes (v3.13 →
+v3.14 → v3.15) and bump the major version for large overhauls (v3.x → v4.0).
 
 ## Branching
 

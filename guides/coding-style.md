@@ -16,28 +16,13 @@ rules — this guide explains them.
 
 ## Module Patterns
 
-### ES module files (built with `readModule`)
+All source files are standard ES modules with `import`/`export` statements.
+esbuild bundles them into a single IIFE at build time. Tests import the same
+modules directly via `node:test` + `tsx`.
 
-Files that need to be **both** imported by tests **and** used in the browser.
-Use `export` on functions and constants; `readModule()` strips `export` at
-build time so they become globals in the concatenated script.
-
-Current ES module files:
-`adaptive.js`, `music-data.js`, `quiz-engine-state.js`, `quiz-engine.js`,
-`quiz-fretboard-state.js`, `stats-display.js`, `recommendations.js`
-
-### Plain script files (built with `read`)
-
-Files that only run in browser context. Use function declarations or IIFEs.
-No `export` keywords.
-
-Current plain files: all `quiz-*.js` mode files (except state modules),
-`navigation.js`, `app.js`
-
-### Choosing between them
-
-New file has pure logic that tests need to import? → ES module with `export`.
-New file is browser-only glue (DOM, event wiring)? → Plain script.
+- Use `export` on any function or constant that other files need
+- Use `import { ... } from './module.js'` for dependencies
+- Entry point is `src/app.js` — it imports all modes and wires them up
 
 ## Naming Conventions
 
@@ -107,12 +92,11 @@ preserves anything you might need to recover.
 
 ## Comments
 
-- **File headers**: purpose, dependencies, build treatment. See
+- **File headers**: purpose and key constraints. See
   `quiz-engine-state.js` for the gold standard:
   ```
   // Pure state transitions for the quiz engine.
   // No DOM, no timers, no side effects — just data in, data out.
-  // ES module — exports stripped for browser inlining.
   ```
 - **JSDoc** on exported functions with `@param` and `@returns`.
 - **Inline comments** only for non-obvious logic (math formulas, threshold

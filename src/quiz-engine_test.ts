@@ -4,9 +4,6 @@ import { createNoteKeyHandler, createSolfegeKeyHandler, createAdaptiveKeyHandler
 import { setUseSolfege, getUseSolfege } from "./music-data.js";
 import { DEFAULT_CONFIG, createMemoryStorage, createAdaptiveSelector } from "./adaptive.js";
 
-// createAdaptiveKeyHandler references getUseSolfege as a global (concatenated at runtime).
-// Make it available in the test environment.
-(globalThis as any).getUseSolfege = getUseSolfege;
 
 describe("quiz-engine defaults", () => {
   it("default automaticityTarget is 3000ms", () => {
@@ -316,7 +313,6 @@ describe("pickCalibrationButton", () => {
   });
 });
 
-// Note: createQuizEngine requires DOM + global createAdaptiveSelector/
-// createLocalStorageAdapter. Full integration tests run in the browser.
-// The engine is intentionally thin — most logic lives in adaptive.js
-// (well-tested) and the mode configs.
+// Note: createQuizEngine requires DOM (document.querySelector etc.).
+// Full integration tests run in the browser. The engine is intentionally
+// thin — most logic lives in adaptive.js (well-tested) and the mode configs.

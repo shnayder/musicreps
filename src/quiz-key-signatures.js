@@ -2,13 +2,14 @@
 // Forward: "D major -> ?" -> "2#", Reverse: "3b -> ?" -> Eb
 // 24 items: 12 major keys x 2 directions.
 // Grouped by accidental count for progressive unlocking.
-//
-// Depends on globals: MAJOR_KEYS, keySignatureLabel, keyBySignatureLabel,
-// spelledNoteMatchesSemitone, createQuizEngine, createNoteKeyHandler,
-// renderStatsTable, buildStatsLegend, DEFAULT_CONFIG,
-// computeRecommendations
 
-function createKeySignaturesMode() {
+import { MAJOR_KEYS, keySignatureLabel, keyBySignatureLabel, spelledNoteMatchesSemitone, displayNote } from './music-data.js';
+import { DEFAULT_CONFIG } from './adaptive.js';
+import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
+import { renderStatsTable, buildStatsLegend, createStatsControls } from './stats-display.js';
+import { computeRecommendations } from './recommendations.js';
+
+export function createKeySignaturesMode() {
   const container = document.getElementById('mode-keySignatures');
   const GROUPS_KEY = 'keySignatures_enabledGroups';
 

@@ -2,14 +2,17 @@
 // feedback, and keyboard/tap handling for all quiz modes.
 //
 // Each quiz mode provides a config object; the engine handles the
-// shared lifecycle. ES module — exports stripped for browser inlining.
-//
-// Depends on globals (from quiz-engine-state.js): initialEngineState,
-// engineStart, engineNextQuestion, engineSubmitAnswer,
-// engineStop, engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer,
-// engineUpdateProgress, engineRouteKey, engineCalibrationIntro,
-// engineCalibrating, engineCalibrationResults, engineRoundTimerExpired,
-// engineRoundComplete, engineContinueRound
+// shared lifecycle.
+
+import {
+  initialEngineState, engineStart, engineNextQuestion, engineSubmitAnswer,
+  engineStop, engineUpdateIdleMessage, engineUpdateMasteryAfterAnswer,
+  engineUpdateProgress, engineRouteKey, engineCalibrationIntro,
+  engineCalibrating, engineCalibrationResults, engineRoundTimerExpired,
+  engineRoundComplete, engineContinueRound,
+} from './quiz-engine-state.js';
+import { DEFAULT_CONFIG, createAdaptiveSelector, computeMedian, createLocalStorageAdapter, deriveScaledConfig } from './adaptive.js';
+import { NOTES, getUseSolfege, displayNote } from './music-data.js';
 
 /**
  * Create a keyboard handler for note input (C D E F G A B + #/s/b for accidentals).

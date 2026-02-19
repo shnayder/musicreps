@@ -1,11 +1,12 @@
 // Note Semitones quiz mode: bidirectional note <-> semitone number.
 // Forward: "C# = ?" -> 1, Reverse: "3 = ?" -> D#/Eb
 // 24 items total (12 notes x 2 directions).
-//
-// Depends on globals: NOTES, createQuizEngine, createNoteKeyHandler,
-// renderStatsTable, buildStatsLegend
 
-function createNoteSemitonesMode() {
+import { NOTES, noteMatchesInput, displayNote, pickRandomAccidental } from './music-data.js';
+import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
+import { renderStatsTable, buildStatsLegend, createStatsControls } from './stats-display.js';
+
+export function createNoteSemitonesMode() {
   const container = document.getElementById('mode-noteSemitones');
 
   // Build item list: 12 notes x 2 directions

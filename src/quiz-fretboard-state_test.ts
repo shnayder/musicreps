@@ -7,7 +7,6 @@ import {
   GUITAR,
   UKULELE,
   noteMatchesInput,
-  displayNote,
 } from "./music-data.js";
 import {
   toggleFretboardString,
@@ -15,9 +14,6 @@ import {
   computeNotePrioritization,
 } from "./quiz-fretboard-state.js";
 
-// quiz-fretboard-state.js references displayNote as a global (concatenated at runtime).
-// Make it available in the test environment.
-(globalThis as any).displayNote = displayNote;
 
 // ---------------------------------------------------------------------------
 // Guitar helpers (backward compat — uses legacy STRING_OFFSETS)

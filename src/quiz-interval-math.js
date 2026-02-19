@@ -3,13 +3,14 @@
 // 264 items: 12 notes x 11 intervals (m2-M7) x 2 directions (+/-).
 // Excludes octave/P8 (adding 12 semitones gives same note).
 // Grouped by interval pair into 6 distance groups for progressive unlocking.
-//
-// Depends on globals: NOTES, INTERVALS, noteAdd, noteSub,
-// noteMatchesInput, pickAccidentalName, createQuizEngine,
-// createNoteKeyHandler, renderStatsGrid,
-// buildStatsLegend, DEFAULT_CONFIG, computeRecommendations
 
-function createIntervalMathMode() {
+import { NOTES, INTERVALS, noteAdd, noteSub, noteMatchesInput, pickAccidentalName, displayNote } from './music-data.js';
+import { DEFAULT_CONFIG } from './adaptive.js';
+import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
+import { renderStatsGrid, buildStatsLegend, createStatsControls } from './stats-display.js';
+import { computeRecommendations } from './recommendations.js';
+
+export function createIntervalMathMode() {
   const container = document.getElementById('mode-intervalMath');
   const GROUPS_KEY = 'intervalMath_enabledGroups';
 

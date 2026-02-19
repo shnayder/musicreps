@@ -1,6 +1,5 @@
 // Per-item adaptive deadline staircase for the spaced repetition timer.
 // Pure functions + factory, same pattern as adaptive.js.
-// ES module — exports stripped for browser inlining.
 
 export const DEFAULT_DEADLINE_CONFIG = {
   decreaseFactor: 0.85,       // multiply deadline after correct answer (staircase)

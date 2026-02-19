@@ -7,37 +7,35 @@ product is headed, see [vision.md](vision.md).
 
 ## System Overview
 
-Single-page vanilla JS app — no framework, no bundler, no npm dependencies.
-All `.js` source files are concatenated into a single `<script>` block inside
-one HTML file at build time. This was chosen for simplicity: the app is small
-enough that a concatenation build gives full code visibility and instant
-builds, with no module resolution overhead in the browser.
+Single-page vanilla JS app — no framework, minimal tooling. Source files are
+standard ES modules with `import`/`export` statements. esbuild bundles them
+into a single IIFE `<script>` block inside one HTML file at build time.
+No globals leak into the browser scope.
 
 ## Module Dependency Graph
 
-Concatenation order (from `build.ts`) defines the dependency graph. Each file
-can reference globals defined by files above it:
+All source files use standard ES module `import`/`export`. esbuild resolves
+the dependency graph from the entry point (`src/app.js`):
 
 ```
 adaptive.js              ← Config, selector factory, forgetting model
 music-data.js            ← NOTES, INTERVALS, helpers
 quiz-engine-state.js     ← Pure state transitions (idle/active/calibration)
 quiz-engine.js           ← Engine factory, keyboard handler, calibration
+  imports: quiz-engine-state, adaptive, music-data
 stats-display.js         ← Color functions, table/grid rendering
+  imports: music-data
 recommendations.js       ← Consolidate-before-expanding algorithm
 quiz-fretboard-state.js  ← Pure fretboard helpers (factory pattern)
+  imports: music-data
 quiz-fretboard.js        ← Fretboard quiz mode
-quiz-speed-tap.js        ← Speed tap mode
-quiz-note-semitones.js   ← Note ↔ Semitones mode
-quiz-interval-semitones.js
-quiz-semitone-math.js
-quiz-interval-math.js
-quiz-key-signatures.js
-quiz-scale-degrees.js
-quiz-diatonic-chords.js
-quiz-chord-spelling.js
-navigation.js            ← Hamburger menu, mode switching
-app.js                   ← Registers all modes, starts navigation (loaded last)
+  imports: music-data, adaptive, quiz-engine, stats-display, recommendations, quiz-fretboard-state
+quiz-speed-tap.js .. quiz-chord-spelling.js  ← 9 more quiz modes
+  imports: music-data, quiz-engine, stats-display, + mode-specific deps
+navigation.js            ← Home screen, mode switching
+settings.js              ← Settings modal
+  imports: music-data
+app.js                   ← Entry point: imports all modes, registers, starts
 ```
 
 **Layers**: Foundation modules (adaptive, music-data) → Engine (state +
@@ -46,61 +44,39 @@ Mode implementations → Navigation → App init.
 
 ## Build System
 
+### esbuild Bundling
+
+Source files are standard ES modules with `import`/`export`. esbuild bundles
+them from the entry point (`src/app.js`) into a single IIFE — no globals leak
+into the browser scope. Both build scripts and tests use the same source files
+directly.
+
+- `build.ts` (Node): uses esbuild's JS API (`esbuild.buildSync()`)
+- `main.ts` (Deno): shells out to esbuild CLI via `Deno.Command`
+
 ### Shared Template (`src/build-template.ts`)
 
-The HTML template, source file manifest, and version number live in
-`src/build-template.ts` — the single source of truth. Both `main.ts` (Deno)
-and `build.ts` (Node) import from it:
+The HTML template and version number live in `src/build-template.ts` — the
+single source of truth. Both build scripts import from it:
 
 ```typescript
-import { SOURCE_MANIFEST, assembleHTML, SERVICE_WORKER } from "./src/build-template.ts";
+import { assembleHTML, SERVICE_WORKER } from "./src/build-template.ts";
 ```
 
 Key exports:
 
 | Export | Purpose |
 |--------|---------|
-| `VERSION` | Single version string (e.g. `"v6.8"`) |
-| `SOURCE_MANIFEST` | Ordered array of `{ path, module }` entries |
-| `assembleHTML(css, scripts)` | Assembles the complete index.html |
+| `VERSION` | Single version string (e.g. `"v6.9"`) |
+| `assembleHTML(css, js)` | Assembles the complete index.html |
 | `SERVICE_WORKER` | Service worker JS string |
 | `HOME_SCREEN_HTML` | Home screen markup (also used by moments) |
 | `DISTANCE_TOGGLES` | Shared toggle HTML fragment |
 
-### readModule() vs read()
-
-```javascript
-const read = (rel) => readFileSync(join(__dirname, rel), "utf-8");
-const readModule = (rel) => read(rel).replace(/^export /gm, "");
-```
-
-- `readModule()`: reads the file and strips `export` at the start of lines.
-  Used for ES module files that tests import directly.
-- `read()`: reads the file verbatim. Used for browser-only files.
-
-The `SOURCE_MANIFEST` array tracks which files need export-stripping
-(`module: true`) vs. verbatim read (`module: false`).
-
-### The ES Module ↔ Browser Global Bridge
-
-Source files use `export` so tests can import functions directly (`import {
-computeMedian } from './src/adaptive.js'`). At build time, `readModule()`
-strips `export` keywords, turning exported functions into globals within the
-concatenated `<script>` scope.
-
-This means:
-- Tests see proper ES modules with named exports
-- The browser sees a flat script where all functions are in scope
-- **No `import` statements** in source files — they wouldn't work in the
-  concatenated context. Dependencies come from concatenation order.
-
 ### Adding a New Source File
 
-1. Create `src/new-file.js`
-2. Add one entry to `SOURCE_MANIFEST` in `src/build-template.ts`:
-   - `{ path: "src/new-file.js", module: true }` if it uses `export`
-   - `{ path: "src/new-file.js", module: false }` if it doesn't
-3. Position it after its dependencies, before its dependents
+1. Create `src/new-file.js` with proper `import`/`export` statements
+2. Import it from the file(s) that need it — esbuild handles the rest
 
 ### Moments Page Generation
 
@@ -165,8 +141,7 @@ function render() {
   lookup, answer checking, item enumeration
 
 **When to use it**: Any logic that affects UI state and could benefit from
-testability. Pure state modules get the `*-state.js` suffix and are built
-with `readModule()`.
+testability. Pure state modules get the `*-state.js` suffix.
 
 ### Mode Plugin Interface
 
@@ -211,15 +186,10 @@ nav.registerMode('xxx', {
 });
 ```
 
-### Factory Pattern for Testability
+### Factory Pattern for Multi-Instrument Reuse
 
-Solves the dependency injection problem without ES imports.
-
-Problem: `quiz-fretboard-state.js` needs `NOTES` and `STRING_OFFSETS` from
-`music-data.js`. In the browser they're globals (concatenation order). But
-tests can't rely on globals — they import from ES modules.
-
-Solution: a factory function that accepts dependencies as parameters:
+`createFretboardHelpers(musicData)` accepts instrument-specific parameters
+(string offsets, fret count) to support multiple instruments with shared logic:
 
 ```javascript
 export function createFretboardHelpers(musicData) {
@@ -232,8 +202,8 @@ export function createFretboardHelpers(musicData) {
 }
 ```
 
-Browser: `createFretboardHelpers({ notes: NOTES, naturalNotes: NATURAL_NOTES, stringOffsets: instrument.stringOffsets, fretCount: instrument.fretCount, noteMatchesInput })`
-Tests: `createFretboardHelpers({ notes: NOTES, ..., stringOffsets: UKULELE.stringOffsets, fretCount: UKULELE.fretCount, noteMatchesInput })`
+Guitar: `createFretboardHelpers({ ..., stringOffsets: GUITAR.stringOffsets, fretCount: GUITAR.fretCount })`
+Ukulele: `createFretboardHelpers({ ..., stringOffsets: UKULELE.stringOffsets, fretCount: UKULELE.fretCount })`
 
 #### Instrument Configs
 
@@ -565,20 +535,20 @@ standard rather than adding complexity. Per-mode flags are a code smell.
 Step-by-step checklist:
 
 1. **Create** `src/quiz-{mode}.js` following the `createXxxMode()` pattern
+   with proper `import`/`export` statements
 2. **Define** item ID format and `ALL_ITEMS` list
 3. **Implement** mode object: `getEnabledItems`, `presentQuestion`,
    `checkAnswer`, `handleKey`, `onStart`, `onStop`
 4. **Groups** (if applicable): use `computeRecommendations()` from
    `recommendations.js` for progressive unlocking
 5. **Stats**: add `createStatsControls()` with a render callback
-6. **Manifest**: add entry to `SOURCE_MANIFEST` in `src/build-template.ts`
-7. **HTML**: add mode screen call in `modeScreens()` in
+6. **HTML**: add mode screen call in `modeScreens()` in
    `src/build-template.ts`, and nav button in `HOME_SCREEN_HTML`
-8. **Register** mode in `app.js`
-10. **Tests**: create `src/quiz-{mode}_test.ts` if pure logic was extracted
-11. **Accidentals**: determine which naming convention applies (see
+7. **Register** mode in `app.js` (import the create function + register)
+8. **Tests**: create `src/quiz-{mode}_test.ts` if pure logic was extracted
+9. **Accidentals**: determine which naming convention applies (see
     [accidental-conventions.md](accidental-conventions.md)) and update
     that guide's mode table
-12. **CLAUDE.md**: update quiz modes table with item count, answer type,
+10. **CLAUDE.md**: update quiz modes table with item count, answer type,
     and ID format
-13. **Version**: bump in both `main.ts` and `build.ts`
+11. **Version**: bump `VERSION` in `src/build-template.ts`

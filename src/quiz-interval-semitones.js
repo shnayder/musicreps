@@ -1,11 +1,12 @@
 // Interval Semitones quiz mode: bidirectional interval <-> semitone number.
 // Forward: "minor 3rd = ?" -> 3, Reverse: "7 = ?" -> Perfect 5th
 // 24 items total (12 intervals x 2 directions).
-//
-// Depends on globals: INTERVALS, intervalMatchesInput, createQuizEngine,
-// renderStatsTable, buildStatsLegend
 
-function createIntervalSemitonesMode() {
+import { INTERVALS, intervalMatchesInput } from './music-data.js';
+import { createQuizEngine } from './quiz-engine.js';
+import { renderStatsTable, buildStatsLegend, createStatsControls } from './stats-display.js';
+
+export function createIntervalSemitonesMode() {
   const container = document.getElementById('mode-intervalSemitones');
 
   // Build item list: 12 intervals x 2 directions

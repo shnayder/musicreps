@@ -1,10 +1,7 @@
 // Pure state and helpers for fretboard quiz modes (guitar, ukulele, etc.).
 // No DOM, no side effects — testable logic extracted from quiz-fretboard.js.
-// ES module — exports stripped for browser inlining.
-//
-// In browser, depends on globals: NOTES, NATURAL_NOTES,
-// noteMatchesInput (from music-data.js, concatenated before this file).
-// Tests import these from music-data.js directly.
+
+import { displayNote } from './music-data.js';
 
 /**
  * Toggle a string in the enabled set. Returns a new Set.

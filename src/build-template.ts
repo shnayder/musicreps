@@ -1,6 +1,6 @@
 // Shared build template — single source of truth for the HTML assembly,
-// source file manifest, and version number. Imported by both main.ts (Deno)
-// and build.ts (Node) to eliminate duplication between build scripts.
+// and version number. Imported by both main.ts (Deno) and build.ts (Node)
+// to eliminate duplication between build scripts.
 
 import {
   pianoNoteButtons,
@@ -21,54 +21,7 @@ import {
 // Version — single source of truth
 // ---------------------------------------------------------------------------
 
-export const VERSION = "v6.8";
-
-// ---------------------------------------------------------------------------
-// Source file manifest — concatenation order defines the dependency graph
-// ---------------------------------------------------------------------------
-
-export interface SourceEntry {
-  /** Path relative to project root. */
-  path: string;
-  /** True for ES module files (exports stripped for browser inlining). */
-  module: boolean;
-}
-
-/**
- * Ordered list of JS source files concatenated into the `<script>` block.
- * Order matters: each file can reference globals from files above it.
- *
- * - `module: true` → file uses `export`; build strips `export ` keywords
- * - `module: false` → file is read verbatim (browser-only, no exports)
- */
-export const SOURCE_MANIFEST: SourceEntry[] = [
-  // Foundation
-  { path: "src/adaptive.js", module: true },
-  { path: "src/music-data.js", module: true },
-  // Engine
-  { path: "src/quiz-engine-state.js", module: true },
-  { path: "src/quiz-engine.js", module: true },
-  // Shared display
-  { path: "src/stats-display.js", module: true },
-  { path: "src/recommendations.js", module: true },
-  // Mode-specific state
-  { path: "src/quiz-fretboard-state.js", module: true },
-  // Mode implementations
-  { path: "src/quiz-fretboard.js", module: false },
-  { path: "src/quiz-speed-tap.js", module: false },
-  { path: "src/quiz-note-semitones.js", module: false },
-  { path: "src/quiz-interval-semitones.js", module: false },
-  { path: "src/quiz-semitone-math.js", module: false },
-  { path: "src/quiz-interval-math.js", module: false },
-  { path: "src/quiz-key-signatures.js", module: false },
-  { path: "src/quiz-scale-degrees.js", module: false },
-  { path: "src/quiz-diatonic-chords.js", module: false },
-  { path: "src/quiz-chord-spelling.js", module: false },
-  // App chrome
-  { path: "src/settings.js", module: false },
-  { path: "src/navigation.js", module: false },
-  { path: "src/app.js", module: false },
-];
+export const VERSION = "v6.9";
 
 // ---------------------------------------------------------------------------
 // Shared HTML fragments
@@ -238,13 +191,12 @@ ${modeScreen("chordSpelling", {
 // ---------------------------------------------------------------------------
 
 /**
- * Assemble the complete index.html from pre-read source content.
+ * Assemble the complete index.html.
  *
  * @param css - Contents of styles.css
- * @param scripts - JS source contents in SOURCE_MANIFEST order,
- *                  already processed (exports stripped for modules)
+ * @param js - Bundled JS (esbuild IIFE output)
  */
-export function assembleHTML(css: string, scripts: string[]): string {
+export function assembleHTML(css: string, js: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -264,7 +216,7 @@ ${HOME_SCREEN_HTML}
 ${modeScreens()}
 
   <script>
-${scripts.join('\n')}
+${js}
   </script>
 </body>
 </html>`;

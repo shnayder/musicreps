@@ -8,9 +8,9 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import * as esbuild from "esbuild";
 
 import {
-  SOURCE_MANIFEST,
   assembleHTML,
   SERVICE_WORKER,
   DISTANCE_TOGGLES,
@@ -35,15 +35,18 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const read = (rel: string) => readFileSync(join(__dirname, rel), "utf-8");
 
 // ---------------------------------------------------------------------------
-// Read source files using the shared manifest
+// Bundle JS with esbuild
 // ---------------------------------------------------------------------------
 
 const css = read("src/styles.css");
-const scripts = SOURCE_MANIFEST.map((f) => {
-  const content = read(f.path);
-  return f.module ? content.replace(/^export /gm, "") : content;
+const result = esbuild.buildSync({
+  entryPoints: [join(__dirname, "src/app.js")],
+  bundle: true,
+  format: "iife",
+  write: false,
 });
-const html = assembleHTML(css, scripts);
+const js = result.outputFiles[0].text;
+const html = assembleHTML(css, js);
 
 // ---------------------------------------------------------------------------
 // Moments page generation

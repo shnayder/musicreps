@@ -1,9 +1,7 @@
 // Navigation: home screen and mode switching.
 // Persists last-used mode in localStorage.
-//
-// Depends on DOM: .home-screen, .home-mode-btn, .mode-screen, .mode-back-btn
 
-function createNavigation() {
+export function createNavigation() {
   const LAST_MODE_KEY = 'fretboard_lastMode';
   const modes = {}; // id -> { init, activate, deactivate, name }
   let currentModeId = null;

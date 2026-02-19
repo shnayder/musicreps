@@ -117,9 +117,8 @@ Before writing code, verify that your design:
   [architecture.md](architecture.md) for pattern details.
 - **Extends shared abstractions** when that's cleaner than working around them.
   If adding a new state phase to the engine, add it to `quiz-engine-state.js`.
-- **Follows build system conventions**: `readModule()` for ES modules,
-  correct concatenation position, template sync in both `main.ts` and
-  `build.ts`. See [architecture.md](architecture.md#build-system).
+- **Follows build system conventions**: proper ES module `import`/`export`,
+  entry point is `src/app.js`. See [architecture.md](architecture.md#build-system).
 - **Reuses shared helpers**: `computeRecommendations()` for progression,
   `createStatsControls()` for stats display, `createNoteKeyHandler()` for
   keyboard input, `deriveScaledConfig()` for timing thresholds.
@@ -193,7 +192,7 @@ Technical approach:
 - Data structures and state shape
 - Key functions and signatures
 - UI changes (HTML/CSS)
-- Build integration (new files, readModule vs read, concatenation position)
+- Build integration (new files, imports, entry point wiring)
 
 ## Implementation Steps
 

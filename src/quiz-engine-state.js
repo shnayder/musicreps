@@ -1,6 +1,5 @@
 // Pure state transitions for the quiz engine.
 // No DOM, no timers, no side effects — just data in, data out.
-// ES module — exports stripped for browser inlining.
 
 /**
  * Create the initial (idle) engine state.

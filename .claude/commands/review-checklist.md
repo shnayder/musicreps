@@ -8,14 +8,11 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 ## Build system consistency
 <!-- Full explanation: guides/architecture.md § Build System -->
 
-- [ ] New source files registered in **both** `main.ts` and `build.ts`
-- [ ] Files with `export` keywords read via `readModule()` (strips exports);
-      files without `export` read via `readFile()` / `read()`
-- [ ] Concatenation order correct: modules that export come before modules that
-      consume them (e.g., `music-data.js` before quiz modes)
-- [ ] Version number in `<div class="version">` bumped in both `main.ts` and
-      `build.ts`
-- [ ] If HTML template changed: updated in **both** build files
+- [ ] New source files use proper ES module `import`/`export` statements
+- [ ] New source files imported from the modules that need them (esbuild
+      resolves the dependency graph automatically from `src/app.js`)
+- [ ] Version number bumped in `src/build-template.ts` (`VERSION` constant)
+- [ ] If HTML template changed: updated in `src/build-template.ts`
 
 ## Architecture patterns
 <!-- Full explanation: guides/architecture.md § Key Patterns -->
