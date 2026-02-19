@@ -2,6 +2,7 @@
 // Forward: "C# = ?" -> 1, Reverse: "3 = ?" -> D#/Eb
 // 24 items total (12 notes x 2 directions).
 
+import type { Note } from './types.ts';
 import {
   displayNote,
   noteMatchesInput,
@@ -21,30 +22,30 @@ import {
 } from './stats-display.ts';
 
 export function createNoteSemitonesMode() {
-  const container = document.getElementById('mode-noteSemitones');
+  const container = document.getElementById('mode-noteSemitones')!;
 
   // Build item list: 12 notes x 2 directions
-  const ALL_ITEMS = [];
+  const ALL_ITEMS: string[] = [];
   for (const note of NOTES) {
     ALL_ITEMS.push(note.name + ':fwd'); // note -> number
     ALL_ITEMS.push(note.name + ':rev'); // number -> note
   }
 
-  function parseItem(itemId) {
+  function parseItem(itemId: string): { note: Note; dir: string } {
     const [noteName, dir] = itemId.split(':');
-    const note = NOTES.find((n) => n.name === noteName);
+    const note = NOTES.find((n) => n.name === noteName)!;
     return { note, dir };
   }
 
-  let currentItem = null;
-  let currentAccidentalChoice = null;
+  let currentItem: { note: Note; dir: string } | null = null;
+  let currentAccidentalChoice: string | null = null;
 
   // --- Tab state ---
   let activeTab = 'practice';
 
-  function switchTab(tabName) {
+  function switchTab(tabName: string): void {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
     container.querySelectorAll('.tab-content').forEach((el) => {
@@ -64,7 +65,7 @@ export function createNoteSemitonesMode() {
 
   // --- Practice summary ---
 
-  function renderPracticeSummary() {
+  function renderPracticeSummary(): void {
     const statusLabel = container.querySelector('.practice-status-label');
     const statusDetail = container.querySelector('.practice-status-detail');
     const recText = container.querySelector('.practice-rec-text');
@@ -83,7 +84,7 @@ export function createNoteSemitonesMode() {
 
     if (seen === 0) {
       statusLabel.textContent = 'Ready to start';
-      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+      statusDetail!.textContent = ALL_ITEMS.length + ' items to learn';
     } else {
       const pct = ALL_ITEMS.length > 0
         ? Math.round((fluent / ALL_ITEMS.length) * 100)
@@ -94,16 +95,16 @@ export function createNoteSemitonesMode() {
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = fluent + ' of ' + ALL_ITEMS.length +
+      statusDetail!.textContent = fluent + ' of ' + ALL_ITEMS.length +
         ' items fluent';
     }
 
     // No groups, so no recommendation
-    recText.textContent = '';
-    recBtn.classList.add('hidden');
+    recText!.textContent = '';
+    recBtn!.classList.add('hidden');
   }
 
-  function renderSessionSummary() {
+  function renderSessionSummary(): void {
     const el = container.querySelector('.session-summary-text');
     if (!el) return;
     el.textContent = ALL_ITEMS.length + ' items \u00B7 60s';
@@ -130,10 +131,10 @@ export function createNoteSemitonesMode() {
       '#\u2192N',
       mode,
       tableDiv,
-      engine.baseline,
+      engine.baseline ?? undefined,
     );
     const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
+    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline ?? undefined);
     el.appendChild(legendDiv);
   });
 
@@ -142,11 +143,11 @@ export function createNoteSemitonesMode() {
     name: 'Note \u2194 Semitones',
     storageNamespace: 'noteSemitones',
 
-    getEnabledItems() {
+    getEnabledItems(): string[] {
       return ALL_ITEMS;
     },
 
-    presentQuestion(itemId) {
+    presentQuestion(itemId: string): void {
       currentItem = parseItem(itemId);
       const prompt = container.querySelector('.quiz-prompt');
       const noteButtons = container.querySelector('.answer-buttons-notes');
@@ -157,28 +158,28 @@ export function createNoteSemitonesMode() {
       );
       if (currentItem.dir === 'fwd') {
         // Show note, answer is number 0-11
-        prompt.textContent = displayNote(currentAccidentalChoice);
-        noteButtons.classList.add('answer-group-hidden');
-        numButtons.classList.remove('answer-group-hidden');
+        prompt!.textContent = displayNote(currentAccidentalChoice);
+        noteButtons!.classList.add('answer-group-hidden');
+        numButtons!.classList.remove('answer-group-hidden');
       } else {
         // Show number, answer is note
-        prompt.textContent = String(currentItem.note.num);
-        noteButtons.classList.remove('answer-group-hidden');
-        numButtons.classList.add('answer-group-hidden');
+        prompt!.textContent = String(currentItem.note.num);
+        noteButtons!.classList.remove('answer-group-hidden');
+        numButtons!.classList.add('answer-group-hidden');
       }
     },
 
-    checkAnswer(_itemId, input) {
-      if (currentItem.dir === 'fwd') {
-        const correct = parseInt(input, 10) === currentItem.note.num;
-        return { correct, correctAnswer: String(currentItem.note.num) };
+    checkAnswer(_itemId: string, input: string) {
+      if (currentItem!.dir === 'fwd') {
+        const correct = parseInt(input, 10) === currentItem!.note.num;
+        return { correct, correctAnswer: String(currentItem!.note.num) };
       } else {
-        const correct = noteMatchesInput(currentItem.note, input);
-        return { correct, correctAnswer: displayNote(currentAccidentalChoice) };
+        const correct = noteMatchesInput(currentItem!.note, input);
+        return { correct, correctAnswer: displayNote(currentAccidentalChoice!) };
       }
     },
 
-    onStart() {
+    onStart(): void {
       noteKeyHandler.reset();
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
@@ -186,7 +187,7 @@ export function createNoteSemitonesMode() {
       if (statsControls.mode) statsControls.hide();
     },
 
-    onStop() {
+    onStop(): void {
       noteKeyHandler.reset();
       if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
       pendingDigit = null;
@@ -198,8 +199,11 @@ export function createNoteSemitonesMode() {
       renderSessionSummary();
     },
 
-    handleKey(e, { submitAnswer }) {
-      if (currentItem.dir === 'rev') {
+    handleKey(
+      e: KeyboardEvent,
+      { submitAnswer }: { submitAnswer: (input: string) => void },
+    ): boolean {
+      if (currentItem!.dir === 'rev') {
         return noteKeyHandler.handleKey(e);
       }
       // Forward: number keys 0-9 for semitone answer
@@ -208,7 +212,7 @@ export function createNoteSemitonesMode() {
         // Handle two-digit: 10, 11
         if (pendingDigit !== null) {
           const num = pendingDigit * 10 + parseInt(e.key);
-          clearTimeout(pendingDigitTimeout);
+          clearTimeout(pendingDigitTimeout!);
           pendingDigit = null;
           pendingDigitTimeout = null;
           if (num <= 11) {
@@ -234,51 +238,51 @@ export function createNoteSemitonesMode() {
       return false;
     },
 
-    getCalibrationButtons() {
+    getCalibrationButtons(): HTMLElement[] {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
 
-    getCalibrationTrialConfig(buttons, prevBtn) {
+    getCalibrationTrialConfig(buttons: HTMLElement[], prevBtn: HTMLElement | null) {
       const btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
   };
 
-  let pendingDigit = null;
-  let pendingDigitTimeout = null;
+  let pendingDigit: number | null = null;
+  let pendingDigitTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const engine = createQuizEngine(mode, container);
-  engine.storage.preload(ALL_ITEMS);
+  engine.storage.preload?.(ALL_ITEMS);
 
   const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => true,
   );
 
-  function init() {
+  function init(): void {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach((btn) => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach((btn) => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab!));
     });
 
     // Note answer buttons
-    container.querySelectorAll('.answer-btn-note').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.note);
+        engine.submitAnswer(btn.dataset.note!);
       });
     });
 
     // Number answer buttons
-    container.querySelectorAll('.answer-btn-num').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.answer-btn-num').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.num);
+        engine.submitAnswer(btn.dataset.num!);
       });
     });
 
     // Start/stop
-    container.querySelector('.start-btn').addEventListener(
+    container.querySelector('.start-btn')!.addEventListener(
       'click',
       () => engine.start(),
     );

@@ -3,6 +3,7 @@
 // 168 items: 12 keys x 7 degrees x 2 directions.
 // Grouped by degree (not by key) for progressive unlocking.
 
+import type { MajorKey, StringRecommendation } from './types.ts';
 import {
   displayNote,
   getScaleDegreeNote,
@@ -24,7 +25,7 @@ import {
 import { computeRecommendations } from './recommendations.ts';
 
 export function createScaleDegreesMode() {
-  const container = document.getElementById('mode-scaleDegrees');
+  const container = document.getElementById('mode-scaleDegrees')!;
   const GROUPS_KEY = 'scaleDegrees_enabledGroups';
 
   // Groups by degree
@@ -35,11 +36,11 @@ export function createScaleDegreesMode() {
     { degrees: [2, 6], label: '2nd,6th' },
   ];
 
-  let enabledGroups = new Set([0]);
-  let recommendedGroups = new Set();
+  let enabledGroups = new Set<number>([0]);
+  let recommendedGroups = new Set<number>();
 
   // Build full item list
-  const ALL_ITEMS = [];
+  const ALL_ITEMS: string[] = [];
   for (const key of MAJOR_KEYS) {
     for (let d = 1; d <= 7; d++) {
       ALL_ITEMS.push(key.root + ':' + d + ':fwd');
@@ -49,19 +50,24 @@ export function createScaleDegreesMode() {
 
   const DEGREE_LABELS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th'];
 
-  function parseItem(itemId) {
+  function parseItem(itemId: string): {
+    key: MajorKey;
+    degree: number;
+    dir: string;
+    noteName: string;
+  } {
     const parts = itemId.split(':');
     const keyRoot = parts[0];
     const degree = parseInt(parts[1]);
     const dir = parts[2];
-    const key = MAJOR_KEYS.find((k) => k.root === keyRoot);
+    const key = MAJOR_KEYS.find((k) => k.root === keyRoot)!;
     const noteName = getScaleDegreeNote(keyRoot, degree);
     return { key, degree, dir, noteName };
   }
 
-  function getItemIdsForGroup(groupIndex) {
+  function getItemIdsForGroup(groupIndex: number): string[] {
     const degrees = DEGREE_GROUPS[groupIndex].degrees;
-    const items = [];
+    const items: string[] = [];
     for (const key of MAJOR_KEYS) {
       for (const d of degrees) {
         items.push(key.root + ':' + d + ':fwd');
@@ -73,7 +79,7 @@ export function createScaleDegreesMode() {
 
   // --- Group management ---
 
-  function loadEnabledGroups() {
+  function loadEnabledGroups(): void {
     const saved = localStorage.getItem(GROUPS_KEY);
     if (saved) {
       try {
@@ -83,22 +89,25 @@ export function createScaleDegreesMode() {
     updateGroupToggles();
   }
 
-  function saveEnabledGroups() {
+  function saveEnabledGroups(): void {
     localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
   }
 
-  function updateGroupToggles() {
-    container.querySelectorAll('.distance-toggle').forEach((btn) => {
-      const g = parseInt(btn.dataset.group);
+  function updateGroupToggles(): void {
+    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach((btn) => {
+      const g = parseInt(btn.dataset.group!);
       btn.classList.toggle('active', enabledGroups.has(g));
       btn.classList.toggle('recommended', recommendedGroups.has(g));
     });
   }
 
-  const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+  const recsOptions = {
+    sortUnstarted: (a: StringRecommendation, b: StringRecommendation) =>
+      a.string - b.string,
+  };
 
   function getRecommendationResult() {
-    const allGroups = DEGREE_GROUPS.map((_, i) => i);
+    const allGroups = DEGREE_GROUPS.map((_: unknown, i: number) => i);
     return computeRecommendations(
       engine.selector,
       allGroups,
@@ -108,13 +117,13 @@ export function createScaleDegreesMode() {
     );
   }
 
-  function updateRecommendations(_selector) {
+  function updateRecommendations(): void {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
-  function applyRecommendations(_selector) {
+  function applyRecommendations(): void {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
@@ -124,7 +133,7 @@ export function createScaleDegreesMode() {
     updateGroupToggles();
   }
 
-  function toggleGroup(g) {
+  function toggleGroup(g: number): void {
     if (enabledGroups.has(g)) {
       if (enabledGroups.size > 1) enabledGroups.delete(g);
     } else {
@@ -137,9 +146,9 @@ export function createScaleDegreesMode() {
   // --- Tab state ---
   let activeTab = 'practice';
 
-  function switchTab(tabName) {
+  function switchTab(tabName: string): void {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
     container.querySelectorAll('.tab-content').forEach((el) => {
@@ -157,8 +166,8 @@ export function createScaleDegreesMode() {
     }
   }
 
-  function refreshUI() {
-    updateRecommendations(engine.selector);
+  function refreshUI(): void {
+    updateRecommendations();
     engine.updateIdleMessage();
     renderPracticeSummary();
     renderSessionSummary();
@@ -166,7 +175,7 @@ export function createScaleDegreesMode() {
 
   // --- Practice summary ---
 
-  function renderPracticeSummary() {
+  function renderPracticeSummary(): void {
     const statusLabel = container.querySelector('.practice-status-label');
     const statusDetail = container.querySelector('.practice-status-detail');
     const recText = container.querySelector('.practice-rec-text');
@@ -191,7 +200,7 @@ export function createScaleDegreesMode() {
 
     if (seen === 0) {
       statusLabel.textContent = 'Ready to start';
-      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+      statusDetail!.textContent = ALL_ITEMS.length + ' items to learn';
     } else {
       const pct = ALL_ITEMS.length > 0
         ? Math.round((allFluent / ALL_ITEMS.length) * 100)
@@ -202,13 +211,13 @@ export function createScaleDegreesMode() {
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length +
+      statusDetail!.textContent = allFluent + ' of ' + ALL_ITEMS.length +
         ' items fluent';
     }
 
     const result = getRecommendationResult();
     if (result.recommended.size > 0) {
-      const parts = [];
+      const parts: string[] = [];
       if (result.consolidateIndices.length > 0) {
         const cNames = result.consolidateIndices.sort(function (a, b) {
           return a - b;
@@ -229,15 +238,15 @@ export function createScaleDegreesMode() {
             (result.expandNewCount !== 1 ? 's' : ''),
         );
       }
-      recText.textContent = 'Suggestion: ' + parts.join('\n');
-      recBtn.classList.remove('hidden');
+      recText!.textContent = 'Suggestion: ' + parts.join('\n');
+      recBtn!.classList.remove('hidden');
     } else {
-      recText.textContent = '';
-      recBtn.classList.add('hidden');
+      recText!.textContent = '';
+      recBtn!.classList.add('hidden');
     }
   }
 
-  function renderSessionSummary() {
+  function renderSessionSummary(): void {
     const el = container.querySelector('.session-summary-text');
     if (!el) return;
     const items = mode.getEnabledItems();
@@ -246,7 +255,12 @@ export function createScaleDegreesMode() {
 
   // --- Stats ---
 
-  let currentItem = null;
+  let currentItem: {
+    key: MajorKey;
+    degree: number;
+    dir: string;
+    noteName: string;
+  } | null = null;
 
   const statsControls = createStatsControls(container, (mode, el) => {
     const colLabels = DEGREE_LABELS;
@@ -260,17 +274,17 @@ export function createScaleDegreesMode() {
     renderStatsGrid(
       engine.selector,
       colLabels,
-      (keyRoot, colIdx) => {
+      (keyRoot: string, colIdx: number) => {
         const d = colIdx + 1;
         return [keyRoot + ':' + d + ':fwd', keyRoot + ':' + d + ':rev'];
       },
       mode,
       gridDiv,
       keyNotes,
-      engine.baseline,
+      engine.baseline ?? undefined,
     );
     const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
+    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline ?? undefined);
     el.appendChild(legendDiv);
   });
 
@@ -281,15 +295,15 @@ export function createScaleDegreesMode() {
     name: 'Scale Degrees',
     storageNamespace: 'scaleDegrees',
 
-    getEnabledItems() {
-      const items = [];
+    getEnabledItems(): string[] {
+      const items: string[] = [];
       for (const g of enabledGroups) {
         items.push(...getItemIdsForGroup(g));
       }
       return items;
     },
 
-    getPracticingLabel() {
+    getPracticingLabel(): string {
       if (enabledGroups.size === DEGREE_GROUPS.length) return 'all degrees';
       const degrees = [...enabledGroups].sort((a, b) => a - b)
         .flatMap((g) => DEGREE_GROUPS[g].degrees)
@@ -297,44 +311,44 @@ export function createScaleDegreesMode() {
       return degrees.map((d) => DEGREE_LABELS[d - 1]).join(', ') + ' degrees';
     },
 
-    presentQuestion(itemId) {
+    presentQuestion(itemId: string): void {
       currentItem = parseItem(itemId);
       const prompt = container.querySelector('.quiz-prompt');
       const noteButtons = container.querySelector('.answer-buttons-notes');
       const degreeButtons = container.querySelector('.answer-buttons-degrees');
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' +
+        prompt!.textContent = DEGREE_LABELS[currentItem.degree - 1] + ' of ' +
           displayNote(currentItem.key.root) + ' major';
-        noteButtons.classList.remove('answer-group-hidden');
-        degreeButtons.classList.add('answer-group-hidden');
+        noteButtons!.classList.remove('answer-group-hidden');
+        degreeButtons!.classList.add('answer-group-hidden');
       } else {
-        prompt.textContent = displayNote(currentItem.key.root) + ' major: ' +
+        prompt!.textContent = displayNote(currentItem.key.root) + ' major: ' +
           displayNote(currentItem.noteName);
-        noteButtons.classList.add('answer-group-hidden');
-        degreeButtons.classList.remove('answer-group-hidden');
+        noteButtons!.classList.add('answer-group-hidden');
+        degreeButtons!.classList.remove('answer-group-hidden');
       }
     },
 
-    checkAnswer(_itemId, input) {
-      if (currentItem.dir === 'fwd') {
-        const correct = spelledNoteMatchesSemitone(currentItem.noteName, input);
-        return { correct, correctAnswer: displayNote(currentItem.noteName) };
+    checkAnswer(_itemId: string, input: string) {
+      if (currentItem!.dir === 'fwd') {
+        const correct = spelledNoteMatchesSemitone(currentItem!.noteName, input);
+        return { correct, correctAnswer: displayNote(currentItem!.noteName) };
       } else {
-        const expectedDegree = String(currentItem.degree);
+        const expectedDegree = String(currentItem!.degree);
         return {
           correct: input === expectedDegree,
-          correctAnswer: DEGREE_LABELS[currentItem.degree - 1],
+          correctAnswer: DEGREE_LABELS[currentItem!.degree - 1],
         };
       }
     },
 
-    onStart() {
+    onStart(): void {
       noteKeyHandler.reset();
       if (statsControls.mode) statsControls.hide();
     },
 
-    onStop() {
+    onStop(): void {
       noteKeyHandler.reset();
       if (activeTab === 'progress') {
         statsControls.show('retention');
@@ -342,8 +356,11 @@ export function createScaleDegreesMode() {
       refreshUI();
     },
 
-    handleKey(e, { submitAnswer }) {
-      if (currentItem.dir === 'fwd') {
+    handleKey(
+      e: KeyboardEvent,
+      { submitAnswer }: { submitAnswer: (input: string) => void },
+    ): boolean {
+      if (currentItem!.dir === 'fwd') {
         return noteKeyHandler.handleKey(e);
       }
       // Reverse: number keys 1-7
@@ -355,35 +372,35 @@ export function createScaleDegreesMode() {
       return false;
     },
 
-    getCalibrationButtons() {
+    getCalibrationButtons(): HTMLElement[] {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
 
-    getCalibrationTrialConfig(buttons, prevBtn) {
+    getCalibrationTrialConfig(buttons: HTMLElement[], prevBtn: HTMLElement | null) {
       const btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
   };
 
   const engine = createQuizEngine(mode, container);
-  engine.storage.preload(ALL_ITEMS);
+  engine.storage.preload?.(ALL_ITEMS);
 
   const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => true,
   );
 
-  function init() {
+  function init(): void {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach((btn) => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach((btn) => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab!));
     });
 
     // Set section heading
     const toggleLabel = container.querySelector('.toggle-group-label');
     if (toggleLabel) toggleLabel.textContent = 'Degrees';
 
-    const togglesDiv = container.querySelector('.distance-toggles');
+    const togglesDiv = container.querySelector('.distance-toggles')!;
     DEGREE_GROUPS.forEach((group, i) => {
       const btn = document.createElement('button');
       btn.className = 'distance-toggle';
@@ -395,21 +412,21 @@ export function createScaleDegreesMode() {
 
     loadEnabledGroups();
 
-    container.querySelectorAll('.answer-btn-note').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.note);
+        engine.submitAnswer(btn.dataset.note!);
       });
     });
 
-    container.querySelectorAll('.answer-btn-degree').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.answer-btn-degree').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.degree);
+        engine.submitAnswer(btn.dataset.degree!);
       });
     });
 
-    container.querySelector('.start-btn').addEventListener(
+    container.querySelector('.start-btn')!.addEventListener(
       'click',
       () => engine.start(),
     );
@@ -418,12 +435,12 @@ export function createScaleDegreesMode() {
     const recBtn = container.querySelector('.practice-rec-btn');
     if (recBtn) {
       recBtn.addEventListener('click', () => {
-        applyRecommendations(engine.selector);
+        applyRecommendations();
         refreshUI();
       });
     }
 
-    updateRecommendations(engine.selector);
+    updateRecommendations();
     renderPracticeSummary();
     renderSessionSummary();
   }

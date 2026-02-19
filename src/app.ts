@@ -1,6 +1,12 @@
 // App initialization: registers quiz modes and starts navigation.
 // Entry point — esbuild bundles all imports into a single IIFE.
 
+declare global {
+  interface Window {
+    Capacitor?: unknown;
+  }
+}
+
 import {
   createGuitarFretboardMode,
   createUkuleleFretboardMode,
@@ -122,19 +128,23 @@ nav.registerMode('chordSpelling', {
 nav.init();
 
 // Re-render stats on visible mode screens after notation change
-function refreshVisibleStats() {
-  document.querySelectorAll('.mode-screen.mode-active').forEach(function (el) {
-    const activeToggle = el.querySelector('.stats-toggle-btn.active');
-    if (activeToggle) activeToggle.click();
-  });
+function refreshVisibleStats(): void {
+  document.querySelectorAll('.mode-screen.mode-active').forEach(
+    function (el: Element): void {
+      const activeToggle: Element | null = el.querySelector(
+        '.stats-toggle-btn.active',
+      );
+      if (activeToggle) (activeToggle as HTMLElement).click();
+    },
+  );
 }
 
 // Settings modal
 const settings = createSettingsModal({
-  onNotationChange: function () {
+  onNotationChange: function (): void {
     document.querySelectorAll('.mode-screen.mode-active').forEach(
-      function (el) {
-        refreshNoteButtonLabels(el);
+      function (el: Element): void {
+        refreshNoteButtonLabels(el as HTMLElement);
         refreshVisibleStats();
       },
     );
@@ -143,9 +153,11 @@ const settings = createSettingsModal({
   },
 });
 
-const settingsBtn = document.querySelector('.home-settings-btn');
+const settingsBtn: Element | null = document.querySelector(
+  '.home-settings-btn',
+);
 if (settingsBtn) {
-  settingsBtn.addEventListener('click', function () {
+  settingsBtn.addEventListener('click', function (): void {
     settings.open();
   });
 }

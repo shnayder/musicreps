@@ -2,7 +2,7 @@
 // modes, and heatmap grid rendering for math modes.
 
 import { displayNote, NOTES } from './music-data.ts';
-import type { ItemStats, Note } from './types.ts';
+import type { ItemStats } from './types.ts';
 
 // --- Heatmap color scale (read from CSS custom properties) ---
 
@@ -182,7 +182,7 @@ export function renderStatsGrid(
   getItemId: (noteName: string, colIndex: number) => string | string[],
   statsMode: string,
   containerEl: HTMLElement,
-  notes?: Note[],
+  notes?: { name: string; displayName: string }[],
   baseline?: number,
 ): void {
   const noteList = notes || NOTES;

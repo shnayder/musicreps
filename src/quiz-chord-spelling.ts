@@ -2,6 +2,7 @@
 // "Cm7" -> user enters C, Eb, G, Bb in sequence.
 // ~132 items: 12 roots x chord types, grouped by chord type.
 
+import type { ChordType, StringRecommendation } from './types.ts';
 import {
   CHORD_ROOTS,
   CHORD_TYPES,
@@ -25,11 +26,11 @@ import {
 import { computeRecommendations } from './recommendations.ts';
 
 export function createChordSpellingMode() {
-  const container = document.getElementById('mode-chordSpelling');
+  const container = document.getElementById('mode-chordSpelling')!;
   const GROUPS_KEY = 'chordSpelling_enabledGroups';
 
   // Group chord types by their group index
-  const SPELLING_GROUPS = [];
+  const SPELLING_GROUPS: { types: ChordType[]; label: string }[] = [];
   let maxGroup = 0;
   for (const ct of CHORD_TYPES) {
     if (ct.group > maxGroup) maxGroup = ct.group;
@@ -40,29 +41,29 @@ export function createChordSpellingMode() {
     SPELLING_GROUPS.push({ types, label });
   }
 
-  let enabledGroups = new Set([0]);
-  let recommendedGroups = new Set();
+  let enabledGroups = new Set<number>([0]);
+  let recommendedGroups = new Set<number>();
 
   // Build full item list
-  const ALL_ITEMS = [];
+  const ALL_ITEMS: string[] = [];
   for (const root of CHORD_ROOTS) {
     for (const type of CHORD_TYPES) {
       ALL_ITEMS.push(root + ':' + type.name);
     }
   }
 
-  function parseItem(itemId) {
+  function parseItem(itemId: string): { rootName: string; chordType: ChordType; tones: string[] } {
     const colonIdx = itemId.indexOf(':');
     const rootName = itemId.substring(0, colonIdx);
     const typeName = itemId.substring(colonIdx + 1);
-    const chordType = CHORD_TYPES.find((t) => t.name === typeName);
+    const chordType = CHORD_TYPES.find((t) => t.name === typeName)!;
     const tones = getChordTones(rootName, chordType);
     return { rootName, chordType, tones };
   }
 
-  function getItemIdsForGroup(groupIndex) {
+  function getItemIdsForGroup(groupIndex: number): string[] {
     const types = SPELLING_GROUPS[groupIndex].types;
-    const items = [];
+    const items: string[] = [];
     for (const root of CHORD_ROOTS) {
       for (const type of types) {
         items.push(root + ':' + type.name);
@@ -73,7 +74,7 @@ export function createChordSpellingMode() {
 
   // --- Group management ---
 
-  function loadEnabledGroups() {
+  function loadEnabledGroups(): void {
     const saved = localStorage.getItem(GROUPS_KEY);
     if (saved) {
       try {
@@ -83,22 +84,25 @@ export function createChordSpellingMode() {
     updateGroupToggles();
   }
 
-  function saveEnabledGroups() {
+  function saveEnabledGroups(): void {
     localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
   }
 
-  function updateGroupToggles() {
-    container.querySelectorAll('.distance-toggle').forEach((btn) => {
-      const g = parseInt(btn.dataset.group);
+  function updateGroupToggles(): void {
+    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach((btn) => {
+      const g = parseInt(btn.dataset.group!);
       btn.classList.toggle('active', enabledGroups.has(g));
       btn.classList.toggle('recommended', recommendedGroups.has(g));
     });
   }
 
-  const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+  const recsOptions = {
+    sortUnstarted: (a: StringRecommendation, b: StringRecommendation) =>
+      a.string - b.string,
+  };
 
   function getRecommendationResult() {
-    const allGroups = SPELLING_GROUPS.map((_, i) => i);
+    const allGroups = SPELLING_GROUPS.map((_: unknown, i: number) => i);
     return computeRecommendations(
       engine.selector,
       allGroups,
@@ -108,13 +112,13 @@ export function createChordSpellingMode() {
     );
   }
 
-  function updateRecommendations(_selector) {
+  function updateRecommendations(): void {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
-  function applyRecommendations(_selector) {
+  function applyRecommendations(): void {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
@@ -124,7 +128,7 @@ export function createChordSpellingMode() {
     updateGroupToggles();
   }
 
-  function toggleGroup(g) {
+  function toggleGroup(g: number): void {
     if (enabledGroups.has(g)) {
       if (enabledGroups.size > 1) enabledGroups.delete(g);
     } else {
@@ -137,9 +141,9 @@ export function createChordSpellingMode() {
   // --- Tab state ---
   let activeTab = 'practice';
 
-  function switchTab(tabName) {
+  function switchTab(tabName: string): void {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
     container.querySelectorAll('.tab-content').forEach((el) => {
@@ -157,8 +161,8 @@ export function createChordSpellingMode() {
     }
   }
 
-  function refreshUI() {
-    updateRecommendations(engine.selector);
+  function refreshUI(): void {
+    updateRecommendations();
     engine.updateIdleMessage();
     renderPracticeSummary();
     renderSessionSummary();
@@ -166,7 +170,7 @@ export function createChordSpellingMode() {
 
   // --- Practice summary ---
 
-  function renderPracticeSummary() {
+  function renderPracticeSummary(): void {
     const statusLabel = container.querySelector('.practice-status-label');
     const statusDetail = container.querySelector('.practice-status-detail');
     const recText = container.querySelector('.practice-rec-text');
@@ -191,7 +195,7 @@ export function createChordSpellingMode() {
 
     if (seen === 0) {
       statusLabel.textContent = 'Ready to start';
-      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+      statusDetail!.textContent = ALL_ITEMS.length + ' items to learn';
     } else {
       const pct = ALL_ITEMS.length > 0
         ? Math.round((allFluent / ALL_ITEMS.length) * 100)
@@ -202,13 +206,13 @@ export function createChordSpellingMode() {
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length +
+      statusDetail!.textContent = allFluent + ' of ' + ALL_ITEMS.length +
         ' items fluent';
     }
 
     const result = getRecommendationResult();
     if (result.recommended.size > 0) {
-      const parts = [];
+      const parts: string[] = [];
       if (result.consolidateIndices.length > 0) {
         const cNames = result.consolidateIndices.sort(function (a, b) {
           return a - b;
@@ -229,15 +233,15 @@ export function createChordSpellingMode() {
             (result.expandNewCount !== 1 ? 's' : ''),
         );
       }
-      recText.textContent = 'Suggestion: ' + parts.join('\n');
-      recBtn.classList.remove('hidden');
+      recText!.textContent = 'Suggestion: ' + parts.join('\n');
+      recBtn!.classList.remove('hidden');
     } else {
-      recText.textContent = '';
-      recBtn.classList.add('hidden');
+      recText!.textContent = '';
+      recBtn!.classList.add('hidden');
     }
   }
 
-  function renderSessionSummary() {
+  function renderSessionSummary(): void {
     const el = container.querySelector('.session-summary-text');
     if (!el) return;
     const items = mode.getEnabledItems();
@@ -246,13 +250,13 @@ export function createChordSpellingMode() {
 
   // --- Multi-note entry state ---
 
-  let currentItem = null;
-  let enteredTones = [];
+  let currentItem: { rootName: string; chordType: ChordType; tones: string[] } | null = null;
+  let enteredTones: { input: string; display: string; correct: boolean }[] = [];
 
-  function renderSlots() {
+  function renderSlots(): void {
     const slotsDiv = container.querySelector('.chord-slots');
     if (!currentItem) {
-      slotsDiv.innerHTML = '';
+      slotsDiv!.innerHTML = '';
       return;
     }
     let html = '';
@@ -267,10 +271,10 @@ export function createChordSpellingMode() {
       }
       html += '<span class="' + cls + '">' + content + '</span>';
     }
-    slotsDiv.innerHTML = html;
+    slotsDiv!.innerHTML = html;
   }
 
-  function submitTone(input) {
+  function submitTone(input: string): void {
     if (!engine.isActive || engine.isAnswered) return;
     if (!currentItem || enteredTones.length >= currentItem.tones.length) return;
 
@@ -308,10 +312,10 @@ export function createChordSpellingMode() {
       mode,
       gridDiv,
       rootNotes,
-      engine.baseline,
+      engine.baseline ?? undefined,
     );
     const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
+    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline ?? undefined);
     el.appendChild(legendDiv);
   });
 
@@ -322,15 +326,15 @@ export function createChordSpellingMode() {
     name: 'Chord Spelling',
     storageNamespace: 'chordSpelling',
 
-    getEnabledItems() {
-      const items = [];
+    getEnabledItems(): string[] {
+      const items: string[] = [];
       for (const g of enabledGroups) {
         items.push(...getItemIdsForGroup(g));
       }
       return items;
     },
 
-    getPracticingLabel() {
+    getPracticingLabel(): string {
       if (enabledGroups.size === SPELLING_GROUPS.length) {
         return 'all chord types';
       }
@@ -339,55 +343,58 @@ export function createChordSpellingMode() {
       return labels.join(', ') + ' chords';
     },
 
-    getExpectedResponseCount(itemId) {
+    getExpectedResponseCount(itemId: string): number {
       const parsed = parseItem(itemId);
       return parsed.tones.length;
     },
 
-    presentQuestion(itemId) {
+    presentQuestion(itemId: string): void {
       currentItem = parseItem(itemId);
       enteredTones = [];
       const prompt = container.querySelector('.quiz-prompt');
-      prompt.textContent = displayNote(currentItem.rootName) +
+      prompt!.textContent = displayNote(currentItem.rootName) +
         currentItem.chordType.symbol;
       renderSlots();
     },
 
-    checkAnswer(_itemId, input) {
+    checkAnswer(_itemId: string, input: string) {
       const allCorrect = input === '__correct__';
-      const correctAnswer = currentItem.tones.map(displayNote).join(' ');
+      const correctAnswer = currentItem!.tones.map(displayNote).join(' ');
       return { correct: allCorrect, correctAnswer };
     },
 
-    onStart() {
+    onStart(): void {
       noteKeyHandler.reset();
       enteredTones = [];
       if (statsControls.mode) statsControls.hide();
     },
 
-    onStop() {
+    onStop(): void {
       noteKeyHandler.reset();
       enteredTones = [];
       const slotsDiv = container.querySelector('.chord-slots');
-      slotsDiv.innerHTML = '';
+      slotsDiv!.innerHTML = '';
       if (activeTab === 'progress') {
         statsControls.show('retention');
       }
       refreshUI();
     },
 
-    handleKey(e, _ctx) {
+    handleKey(
+      e: KeyboardEvent,
+      _ctx: { submitAnswer: (input: string) => void },
+    ): boolean {
       return noteKeyHandler.handleKey(e);
     },
 
-    getCalibrationButtons() {
+    getCalibrationButtons(): HTMLElement[] {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
 
-    getCalibrationTrialConfig(buttons, prevBtn) {
+    getCalibrationTrialConfig(buttons: HTMLElement[], prevBtn: HTMLElement | null) {
       // Multi-press: pick 2–4 random note buttons
       const count = 2 + Math.floor(Math.random() * 3); // 2, 3, or 4
-      const targets = [];
+      const targets: HTMLElement[] = [];
       let prev = prevBtn;
       for (let i = 0; i < count; i++) {
         const btn = pickCalibrationButton(buttons, prev);
@@ -403,24 +410,24 @@ export function createChordSpellingMode() {
   };
 
   const engine = createQuizEngine(mode, container);
-  engine.storage.preload(ALL_ITEMS);
+  engine.storage.preload?.(ALL_ITEMS);
 
   const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => submitTone(input),
     () => true,
   );
 
-  function init() {
+  function init(): void {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach((btn) => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach((btn) => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab!));
     });
 
     // Set section heading
     const toggleLabel = container.querySelector('.toggle-group-label');
     if (toggleLabel) toggleLabel.textContent = 'Chord types';
 
-    const togglesDiv = container.querySelector('.distance-toggles');
+    const togglesDiv = container.querySelector('.distance-toggles')!;
     SPELLING_GROUPS.forEach((group, i) => {
       const btn = document.createElement('button');
       btn.className = 'distance-toggle';
@@ -432,10 +439,10 @@ export function createChordSpellingMode() {
 
     loadEnabledGroups();
 
-    container.querySelectorAll('.answer-btn-note').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
-        let input = btn.dataset.note;
+        let input = btn.dataset.note!;
         // Resolve enharmonic: buttons can't distinguish A#/Bb, so if the
         // button's pitch matches the expected tone, use the expected spelling.
         if (currentItem && enteredTones.length < currentItem.tones.length) {
@@ -448,7 +455,7 @@ export function createChordSpellingMode() {
       });
     });
 
-    container.querySelector('.start-btn').addEventListener(
+    container.querySelector('.start-btn')!.addEventListener(
       'click',
       () => engine.start(),
     );
@@ -457,12 +464,12 @@ export function createChordSpellingMode() {
     const recBtn = container.querySelector('.practice-rec-btn');
     if (recBtn) {
       recBtn.addEventListener('click', () => {
-        applyRecommendations(engine.selector);
+        applyRecommendations();
         refreshUI();
       });
     }
 
-    updateRecommendations(engine.selector);
+    updateRecommendations();
     renderPracticeSummary();
     renderSessionSummary();
   }

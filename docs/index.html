@@ -1633,7 +1633,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v6.14</span>
+      <span class="version">v6.15</span>
     </div>
   </div>
 
@@ -5869,7 +5869,7 @@ button {
       }
     }
     const statsControls = createStatsControls(container, function(mode2, el) {
-      el.innerHTML = buildStatsLegend(mode2, engine.baseline);
+      el.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
       if (mode2 === "retention") {
         for (let si = 0; si < allStrings.length; si++) {
           const s = allStrings[si];
@@ -5885,7 +5885,7 @@ button {
           for (let f2 = 0; f2 < instrument.fretCount; f2++) {
             const stats = engine.selector.getStats(s2 + "-" + f2);
             const ewma = stats ? stats.ewma : null;
-            const color2 = getSpeedHeatmapColor(ewma, engine.baseline);
+            const color2 = getSpeedHeatmapColor(ewma, engine.baseline ?? void 0);
             setCircleFill(progressFretboard, s2, f2, color2);
           }
         }
@@ -5895,7 +5895,7 @@ button {
       statsControls.hide();
       clearAll(progressFretboard);
     }
-    function updateStats(_selector) {
+    function updateStats() {
       const statsEl = container.querySelector(".stats");
       if (statsEl) statsEl.textContent = "";
     }
@@ -5915,12 +5915,12 @@ button {
         recsOptions
       );
     }
-    function updateRecommendations(_selector) {
+    function updateRecommendations() {
       const result = getRecommendationResult();
       recommendedStrings = result.recommended;
       updateStringToggles();
     }
-    function applyRecommendations(_selector) {
+    function applyRecommendations() {
       const result = getRecommendationResult();
       recommendedStrings = result.recommended;
       if (result.enabled) {
@@ -5930,7 +5930,7 @@ button {
       updateStringToggles();
     }
     function refreshUI() {
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       engine.updateIdleMessage();
       renderPracticeSummary();
       renderSessionSummary();
@@ -6091,12 +6091,12 @@ button {
       onStart: function() {
         noteKeyHandler.reset();
         if (statsControls.mode) hideHeatmap();
-        updateStats(engine.selector);
+        updateStats();
       },
       onStop: function() {
         noteKeyHandler.reset();
         clearAll(quizFretboard);
-        updateStats(engine.selector);
+        updateStats();
         if (activeTab === "progress") {
           statsControls.show("retention");
         }
@@ -6128,7 +6128,7 @@ button {
         allItemIds.push(allStrings[si] + "-" + fi);
       }
     }
-    engine.storage.preload(allItemIds);
+    engine.storage.preload?.(allItemIds);
     function init() {
       loadEnabledStrings();
       loadNoteFilter();
@@ -6176,7 +6176,7 @@ button {
       const recBtn = container.querySelector(".practice-rec-btn");
       if (recBtn) {
         recBtn.addEventListener("click", function() {
-          applyRecommendations(engine.selector);
+          applyRecommendations();
           if (lastNotePri) {
             noteFilter = lastNotePri.suggestedFilter;
             saveNoteFilter();
@@ -6187,9 +6187,9 @@ button {
         });
       }
       if (progressFretboard) setupHoverCard(progressFretboard);
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       updateAccidentalButtons();
-      updateStats(engine.selector);
+      updateStats();
       renderPracticeSummary();
       renderSessionSummary();
     }
@@ -6336,11 +6336,11 @@ button {
           const stats = engine.selector.getStats(NOTES[j].name);
           const posCount = getPositionsForNote(NOTES[j].name).length;
           const perPosMs = stats ? stats.ewma / posCount : null;
-          html += '<td class="stats-cell" style="background:' + getSpeedHeatmapColor(perPosMs) + '"></td>';
+          html += '<td class="stats-cell" style="background:' + getSpeedHeatmapColor(perPosMs, engine.baseline ?? void 0) + '"></td>';
         }
       }
       html += "</tr></tbody></table>";
-      html += buildStatsLegend(mode2, engine.baseline);
+      html += buildStatsLegend(mode2, engine.baseline ?? void 0);
       el.innerHTML = html;
     });
     const progressEl = container.querySelector(".speed-tap-progress");
@@ -6377,7 +6377,9 @@ button {
     function handleFretboardClick(e) {
       if (e.target.closest(".setting-group")) return;
       if (engine.isActive && !engine.isAnswered && roundActive) {
-        const target = e.target.closest("circle.fb-pos[data-string][data-fret]");
+        const target = e.target.closest(
+          "circle.fb-pos[data-string][data-fret]"
+        );
         if (target) {
           handleCircleTap(
             parseInt(target.dataset.string),
@@ -6653,10 +6655,10 @@ button {
         "#\u2192N",
         mode2,
         tableDiv,
-        engine.baseline
+        engine.baseline ?? void 0
       );
       const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline);
+      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
       el.appendChild(legendDiv);
     });
     const mode = {
@@ -6753,7 +6755,7 @@ button {
     let pendingDigit = null;
     let pendingDigitTimeout = null;
     const engine = createQuizEngine(mode, container);
-    engine.storage.preload(ALL_ITEMS);
+    engine.storage.preload?.(ALL_ITEMS);
     const noteKeyHandler = createAdaptiveKeyHandler(
       (input) => engine.submitAnswer(input),
       () => true
@@ -6888,10 +6890,10 @@ button {
         "#\u2192I",
         mode2,
         tableDiv,
-        engine.baseline
+        engine.baseline ?? void 0
       );
       const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline);
+      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
       el.appendChild(legendDiv);
     });
     const mode = {
@@ -6987,7 +6989,7 @@ button {
     let pendingDigit = null;
     let pendingDigitTimeout = null;
     const engine = createQuizEngine(mode, container);
-    engine.storage.preload(ALL_ITEMS);
+    engine.storage.preload?.(ALL_ITEMS);
     function init() {
       container.querySelectorAll(".mode-tab").forEach((btn) => {
         btn.addEventListener("click", () => switchTab(btn.dataset.tab));
@@ -7057,7 +7059,7 @@ button {
       const semitones = parseInt(match[3]);
       const note = NOTES.find((n) => n.name === noteName);
       const answer = op === "+" ? noteAdd(note.num, semitones) : noteSub(note.num, semitones);
-      return { note, op, semitones, answer };
+      return { note, op, semitones, answer, useFlats: op === "-" };
     }
     function getItemIdsForGroup(groupIndex) {
       const distances = DISTANCE_GROUPS[groupIndex].distances;
@@ -7084,13 +7086,17 @@ button {
       localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
     }
     function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach((btn) => {
-        const g = parseInt(btn.dataset.group);
-        btn.classList.toggle("active", enabledGroups.has(g));
-        btn.classList.toggle("recommended", recommendedGroups.has(g));
-      });
+      container.querySelectorAll(".distance-toggle").forEach(
+        (btn) => {
+          const g = parseInt(btn.dataset.group);
+          btn.classList.toggle("active", enabledGroups.has(g));
+          btn.classList.toggle("recommended", recommendedGroups.has(g));
+        }
+      );
     }
-    const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+    const recsOptions = {
+      sortUnstarted: (a, b) => a.string - b.string
+    };
     function getRecommendationResult() {
       const allGroups = DISTANCE_GROUPS.map((_, i) => i);
       return computeRecommendations(
@@ -7101,12 +7107,12 @@ button {
         recsOptions
       );
     }
-    function updateRecommendations(_selector) {
+    function updateRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       updateGroupToggles();
     }
-    function applyRecommendations(_selector) {
+    function applyRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       if (result.enabled) {
@@ -7143,7 +7149,7 @@ button {
       }
     }
     function refreshUI() {
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       engine.updateIdleMessage();
       renderPracticeSummary();
       renderSessionSummary();
@@ -7230,10 +7236,10 @@ button {
         mode2,
         gridDiv,
         void 0,
-        engine.baseline
+        engine.baseline ?? void 0
       );
       const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline);
+      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
       el.appendChild(legendDiv);
     });
     const mode = {
@@ -7260,14 +7266,16 @@ button {
           pickAccidentalName(currentItem.note.displayName, currentItem.useFlats)
         );
         prompt.textContent = noteName + " " + currentItem.op + " " + currentItem.semitones;
-        container.querySelectorAll(".answer-btn-note").forEach((btn) => {
-          const note = NOTES.find((n) => n.name === btn.dataset.note);
-          if (note) {
-            btn.textContent = displayNote(
-              pickAccidentalName(note.displayName, currentItem.useFlats)
-            );
+        container.querySelectorAll(".answer-btn-note").forEach(
+          (btn) => {
+            const note = NOTES.find((n) => n.name === btn.dataset.note);
+            if (note) {
+              btn.textContent = displayNote(
+                pickAccidentalName(note.displayName, currentItem.useFlats)
+              );
+            }
           }
-        });
+        );
       },
       checkAnswer(_itemId, input) {
         const correct = noteMatchesInput(currentItem.answer, input);
@@ -7305,7 +7313,7 @@ button {
       }
     };
     const engine = createQuizEngine(mode, container);
-    engine.storage.preload(ALL_ITEMS);
+    engine.storage.preload?.(ALL_ITEMS);
     const noteKeyHandler = createAdaptiveKeyHandler(
       (input) => engine.submitAnswer(input),
       () => true
@@ -7326,12 +7334,14 @@ button {
         togglesDiv.appendChild(btn);
       });
       loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-note").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.note);
-        });
-      });
+      container.querySelectorAll(".answer-btn-note").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.note);
+          });
+        }
+      );
       container.querySelector(".start-btn").addEventListener(
         "click",
         () => engine.start()
@@ -7339,11 +7349,11 @@ button {
       const recBtn = container.querySelector(".practice-rec-btn");
       if (recBtn) {
         recBtn.addEventListener("click", () => {
-          applyRecommendations(engine.selector);
+          applyRecommendations();
           refreshUI();
         });
       }
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       renderPracticeSummary();
       renderSessionSummary();
     }
@@ -7428,7 +7438,9 @@ button {
         btn.classList.toggle("recommended", recommendedGroups.has(g));
       });
     }
-    const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+    const recsOptions = {
+      sortUnstarted: (a, b) => a.string - b.string
+    };
     function getRecommendationResult() {
       const allGroups = DISTANCE_GROUPS.map((_, i) => i);
       return computeRecommendations(
@@ -7439,12 +7451,12 @@ button {
         recsOptions
       );
     }
-    function updateRecommendations(_selector) {
+    function updateRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       updateGroupToggles();
     }
-    function applyRecommendations(_selector) {
+    function applyRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       if (result.enabled) {
@@ -7481,7 +7493,7 @@ button {
       }
     }
     function refreshUI() {
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       engine.updateIdleMessage();
       renderPracticeSummary();
       renderSessionSummary();
@@ -7567,10 +7579,10 @@ button {
         mode2,
         gridDiv,
         void 0,
-        engine.baseline
+        engine.baseline ?? void 0
       );
       const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline);
+      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
       el.appendChild(legendDiv);
     });
     const mode = {
@@ -7642,7 +7654,7 @@ button {
       }
     };
     const engine = createQuizEngine(mode, container);
-    engine.storage.preload(ALL_ITEMS);
+    engine.storage.preload?.(ALL_ITEMS);
     const noteKeyHandler = createAdaptiveKeyHandler(
       (input) => engine.submitAnswer(input),
       () => true
@@ -7676,11 +7688,11 @@ button {
       const recBtn = container.querySelector(".practice-rec-btn");
       if (recBtn) {
         recBtn.addEventListener("click", () => {
-          applyRecommendations(engine.selector);
+          applyRecommendations();
           refreshUI();
         });
       }
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       renderPracticeSummary();
       renderSessionSummary();
     }
@@ -7753,7 +7765,9 @@ button {
         btn.classList.toggle("recommended", recommendedGroups.has(g));
       });
     }
-    const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+    const recsOptions = {
+      sortUnstarted: (a, b) => a.string - b.string
+    };
     function getRecommendationResult() {
       const allGroups = KEY_GROUPS.map((_, i) => i);
       return computeRecommendations(
@@ -7764,12 +7778,12 @@ button {
         recsOptions
       );
     }
-    function updateRecommendations(_selector) {
+    function updateRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       updateGroupToggles();
     }
-    function applyRecommendations(_selector) {
+    function applyRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       if (result.enabled) {
@@ -7806,7 +7820,7 @@ button {
       }
     }
     function refreshUI() {
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       engine.updateIdleMessage();
       renderPracticeSummary();
       renderSessionSummary();
@@ -7896,10 +7910,10 @@ button {
         "Sig\u2192Key",
         mode2,
         tableDiv,
-        engine.baseline
+        engine.baseline ?? void 0
       );
       const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline);
+      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
       el.appendChild(legendDiv);
     });
     let pendingSigDigit = null;
@@ -7993,7 +8007,7 @@ button {
       }
     };
     const engine = createQuizEngine(mode, container);
-    engine.storage.preload(ALL_ITEMS);
+    engine.storage.preload?.(ALL_ITEMS);
     const noteKeyHandler = createAdaptiveKeyHandler(
       (input) => engine.submitAnswer(input),
       () => true
@@ -8033,11 +8047,11 @@ button {
       const recBtn = container.querySelector(".practice-rec-btn");
       if (recBtn) {
         recBtn.addEventListener("click", () => {
-          applyRecommendations(engine.selector);
+          applyRecommendations();
           refreshUI();
         });
       }
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       renderPracticeSummary();
       renderSessionSummary();
     }
@@ -8120,7 +8134,9 @@ button {
         btn.classList.toggle("recommended", recommendedGroups.has(g));
       });
     }
-    const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+    const recsOptions = {
+      sortUnstarted: (a, b) => a.string - b.string
+    };
     function getRecommendationResult() {
       const allGroups = DEGREE_GROUPS.map((_, i) => i);
       return computeRecommendations(
@@ -8131,12 +8147,12 @@ button {
         recsOptions
       );
     }
-    function updateRecommendations(_selector) {
+    function updateRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       updateGroupToggles();
     }
-    function applyRecommendations(_selector) {
+    function applyRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       if (result.enabled) {
@@ -8173,7 +8189,7 @@ button {
       }
     }
     function refreshUI() {
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       engine.updateIdleMessage();
       renderPracticeSummary();
       renderSessionSummary();
@@ -8263,10 +8279,10 @@ button {
         mode2,
         gridDiv,
         keyNotes,
-        engine.baseline
+        engine.baseline ?? void 0
       );
       const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline);
+      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
       el.appendChild(legendDiv);
     });
     const mode = {
@@ -8343,7 +8359,7 @@ button {
       }
     };
     const engine = createQuizEngine(mode, container);
-    engine.storage.preload(ALL_ITEMS);
+    engine.storage.preload?.(ALL_ITEMS);
     const noteKeyHandler = createAdaptiveKeyHandler(
       (input) => engine.submitAnswer(input),
       () => true
@@ -8383,11 +8399,11 @@ button {
       const recBtn = container.querySelector(".practice-rec-btn");
       if (recBtn) {
         recBtn.addEventListener("click", () => {
-          applyRecommendations(engine.selector);
+          applyRecommendations();
           refreshUI();
         });
       }
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       renderPracticeSummary();
       renderSessionSummary();
     }
@@ -8461,13 +8477,17 @@ button {
       localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
     }
     function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach((btn) => {
-        const g = parseInt(btn.dataset.group);
-        btn.classList.toggle("active", enabledGroups.has(g));
-        btn.classList.toggle("recommended", recommendedGroups.has(g));
-      });
+      container.querySelectorAll(".distance-toggle").forEach(
+        (btn) => {
+          const g = parseInt(btn.dataset.group);
+          btn.classList.toggle("active", enabledGroups.has(g));
+          btn.classList.toggle("recommended", recommendedGroups.has(g));
+        }
+      );
     }
-    const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+    const recsOptions = {
+      sortUnstarted: (a, b) => a.string - b.string
+    };
     function getRecommendationResult() {
       const allGroups = CHORD_GROUPS.map((_, i) => i);
       return computeRecommendations(
@@ -8478,12 +8498,12 @@ button {
         recsOptions
       );
     }
-    function updateRecommendations(_selector) {
+    function updateRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       updateGroupToggles();
     }
-    function applyRecommendations(_selector) {
+    function applyRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       if (result.enabled) {
@@ -8520,7 +8540,7 @@ button {
       }
     }
     function refreshUI() {
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       engine.updateIdleMessage();
       renderPracticeSummary();
       renderSessionSummary();
@@ -8610,10 +8630,10 @@ button {
         mode2,
         gridDiv,
         keyNotes,
-        engine.baseline
+        engine.baseline ?? void 0
       );
       const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline);
+      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
       el.appendChild(legendDiv);
     });
     const mode = {
@@ -8652,7 +8672,10 @@ button {
       },
       checkAnswer(_itemId, input) {
         if (currentItem.dir === "fwd") {
-          const correct = spelledNoteMatchesSemitone(currentItem.rootNote, input);
+          const correct = spelledNoteMatchesSemitone(
+            currentItem.rootNote,
+            input
+          );
           const fullAnswer = displayNote(currentItem.rootNote) + " " + currentItem.chord.quality;
           return { correct, correctAnswer: fullAnswer };
         } else {
@@ -8694,7 +8717,7 @@ button {
       }
     };
     const engine = createQuizEngine(mode, container);
-    engine.storage.preload(ALL_ITEMS);
+    engine.storage.preload?.(ALL_ITEMS);
     const noteKeyHandler = createAdaptiveKeyHandler(
       (input) => engine.submitAnswer(input),
       () => true
@@ -8715,18 +8738,22 @@ button {
         togglesDiv.appendChild(btn);
       });
       loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-note").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.note);
-        });
-      });
-      container.querySelectorAll(".answer-btn-numeral").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!engine.isActive || engine.isAnswered) return;
-          engine.submitAnswer(btn.dataset.numeral);
-        });
-      });
+      container.querySelectorAll(".answer-btn-note").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.note);
+          });
+        }
+      );
+      container.querySelectorAll(".answer-btn-numeral").forEach(
+        (btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            engine.submitAnswer(btn.dataset.numeral);
+          });
+        }
+      );
       container.querySelector(".start-btn").addEventListener(
         "click",
         () => engine.start()
@@ -8734,11 +8761,11 @@ button {
       const recBtn = container.querySelector(".practice-rec-btn");
       if (recBtn) {
         recBtn.addEventListener("click", () => {
-          applyRecommendations(engine.selector);
+          applyRecommendations();
           refreshUI();
         });
       }
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       renderPracticeSummary();
       renderSessionSummary();
     }
@@ -8819,7 +8846,9 @@ button {
         btn.classList.toggle("recommended", recommendedGroups.has(g));
       });
     }
-    const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+    const recsOptions = {
+      sortUnstarted: (a, b) => a.string - b.string
+    };
     function getRecommendationResult() {
       const allGroups = SPELLING_GROUPS.map((_, i) => i);
       return computeRecommendations(
@@ -8830,12 +8859,12 @@ button {
         recsOptions
       );
     }
-    function updateRecommendations(_selector) {
+    function updateRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       updateGroupToggles();
     }
-    function applyRecommendations(_selector) {
+    function applyRecommendations() {
       const result = getRecommendationResult();
       recommendedGroups = result.recommended;
       if (result.enabled) {
@@ -8872,7 +8901,7 @@ button {
       }
     }
     function refreshUI() {
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       engine.updateIdleMessage();
       renderPracticeSummary();
       renderSessionSummary();
@@ -8996,10 +9025,10 @@ button {
         mode2,
         gridDiv,
         rootNotes,
-        engine.baseline
+        engine.baseline ?? void 0
       );
       const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline);
+      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
       el.appendChild(legendDiv);
     });
     const mode = {
@@ -9072,7 +9101,7 @@ button {
       calibrationIntroHint: "We\u2019ll measure your response speed to set personalized targets. Press the notes shown in the prompt, in order \u2014 10 rounds total."
     };
     const engine = createQuizEngine(mode, container);
-    engine.storage.preload(ALL_ITEMS);
+    engine.storage.preload?.(ALL_ITEMS);
     const noteKeyHandler = createAdaptiveKeyHandler(
       (input) => submitTone(input),
       () => true
@@ -9113,11 +9142,11 @@ button {
       const recBtn = container.querySelector(".practice-rec-btn");
       if (recBtn) {
         recBtn.addEventListener("click", () => {
-          applyRecommendations(engine.selector);
+          applyRecommendations();
           refreshUI();
         });
       }
-      updateRecommendations(engine.selector);
+      updateRecommendations();
       renderPracticeSummary();
       renderSessionSummary();
     }
@@ -9172,17 +9201,21 @@ button {
     }
     function init() {
       if (homeScreen) {
-        homeScreen.querySelectorAll(".home-mode-btn").forEach(function(btn) {
-          btn.addEventListener("click", function() {
-            switchTo(btn.dataset.mode);
-          });
-        });
+        homeScreen.querySelectorAll(".home-mode-btn").forEach(
+          function(btn) {
+            btn.addEventListener("click", function() {
+              switchTo(btn.dataset.mode);
+            });
+          }
+        );
       }
-      document.querySelectorAll(".mode-back-btn").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          navigateHome();
-        });
-      });
+      document.querySelectorAll(".mode-back-btn").forEach(
+        function(btn) {
+          btn.addEventListener("click", function() {
+            navigateHome();
+          });
+        }
+      );
       document.addEventListener("keydown", function(e) {
         if (e.key !== "Escape" || !currentModeId) return;
         if (document.querySelector(".settings-overlay.open")) return;
@@ -9332,10 +9365,14 @@ button {
   });
   nav.init();
   function refreshVisibleStats() {
-    document.querySelectorAll(".mode-screen.mode-active").forEach(function(el) {
-      const activeToggle = el.querySelector(".stats-toggle-btn.active");
-      if (activeToggle) activeToggle.click();
-    });
+    document.querySelectorAll(".mode-screen.mode-active").forEach(
+      function(el) {
+        const activeToggle = el.querySelector(
+          ".stats-toggle-btn.active"
+        );
+        if (activeToggle) activeToggle.click();
+      }
+    );
   }
   var settings = createSettingsModal({
     onNotationChange: function() {
@@ -9349,7 +9386,9 @@ button {
       ukulele.onNotationChange();
     }
   });
-  var settingsBtn = document.querySelector(".home-settings-btn");
+  var settingsBtn = document.querySelector(
+    ".home-settings-btn"
+  );
   if (settingsBtn) {
     settingsBtn.addEventListener("click", function() {
       settings.open();

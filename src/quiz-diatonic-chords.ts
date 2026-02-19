@@ -3,6 +3,7 @@
 // 168 items: 12 keys x 7 degrees x 2 directions.
 // Grouped by degree importance for progressive unlocking.
 
+import type { DiatonicChord, MajorKey, StringRecommendation } from './types.ts';
 import {
   DIATONIC_CHORDS,
   displayNote,
@@ -26,7 +27,7 @@ import {
 import { computeRecommendations } from './recommendations.ts';
 
 export function createDiatonicChordsMode() {
-  const container = document.getElementById('mode-diatonicChords');
+  const container = document.getElementById('mode-diatonicChords')!;
   const GROUPS_KEY = 'diatonicChords_enabledGroups';
 
   // Groups by degree importance
@@ -36,11 +37,11 @@ export function createDiatonicChordsMode() {
     { degrees: [3, 7], label: 'iii,vii\u00B0' },
   ];
 
-  let enabledGroups = new Set([0]);
-  let recommendedGroups = new Set();
+  let enabledGroups = new Set<number>([0]);
+  let recommendedGroups = new Set<number>();
 
   // Build full item list
-  const ALL_ITEMS = [];
+  const ALL_ITEMS: string[] = [];
   for (const key of MAJOR_KEYS) {
     for (let d = 1; d <= 7; d++) {
       ALL_ITEMS.push(key.root + ':' + d + ':fwd');
@@ -48,20 +49,28 @@ export function createDiatonicChordsMode() {
     }
   }
 
-  function parseItem(itemId) {
+  function parseItem(
+    itemId: string,
+  ): {
+    key: MajorKey;
+    degree: number;
+    dir: string;
+    chord: DiatonicChord;
+    rootNote: string;
+  } {
     const parts = itemId.split(':');
     const keyRoot = parts[0];
     const degree = parseInt(parts[1]);
     const dir = parts[2];
-    const key = MAJOR_KEYS.find((k) => k.root === keyRoot);
+    const key = MAJOR_KEYS.find((k) => k.root === keyRoot)!;
     const chord = DIATONIC_CHORDS[degree - 1];
     const rootNote = getScaleDegreeNote(keyRoot, degree);
     return { key, degree, dir, chord, rootNote };
   }
 
-  function getItemIdsForGroup(groupIndex) {
+  function getItemIdsForGroup(groupIndex: number): string[] {
     const degrees = CHORD_GROUPS[groupIndex].degrees;
-    const items = [];
+    const items: string[] = [];
     for (const key of MAJOR_KEYS) {
       for (const d of degrees) {
         items.push(key.root + ':' + d + ':fwd');
@@ -73,7 +82,7 @@ export function createDiatonicChordsMode() {
 
   // --- Group management ---
 
-  function loadEnabledGroups() {
+  function loadEnabledGroups(): void {
     const saved = localStorage.getItem(GROUPS_KEY);
     if (saved) {
       try {
@@ -83,22 +92,27 @@ export function createDiatonicChordsMode() {
     updateGroupToggles();
   }
 
-  function saveEnabledGroups() {
+  function saveEnabledGroups(): void {
     localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
   }
 
-  function updateGroupToggles() {
-    container.querySelectorAll('.distance-toggle').forEach((btn) => {
-      const g = parseInt(btn.dataset.group);
-      btn.classList.toggle('active', enabledGroups.has(g));
-      btn.classList.toggle('recommended', recommendedGroups.has(g));
-    });
+  function updateGroupToggles(): void {
+    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach(
+      (btn) => {
+        const g = parseInt(btn.dataset.group!);
+        btn.classList.toggle('active', enabledGroups.has(g));
+        btn.classList.toggle('recommended', recommendedGroups.has(g));
+      },
+    );
   }
 
-  const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+  const recsOptions = {
+    sortUnstarted: (a: StringRecommendation, b: StringRecommendation) =>
+      a.string - b.string,
+  };
 
   function getRecommendationResult() {
-    const allGroups = CHORD_GROUPS.map((_, i) => i);
+    const allGroups = CHORD_GROUPS.map((_: unknown, i: number) => i);
     return computeRecommendations(
       engine.selector,
       allGroups,
@@ -108,13 +122,13 @@ export function createDiatonicChordsMode() {
     );
   }
 
-  function updateRecommendations(_selector) {
+  function updateRecommendations(): void {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
-  function applyRecommendations(_selector) {
+  function applyRecommendations(): void {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
@@ -124,7 +138,7 @@ export function createDiatonicChordsMode() {
     updateGroupToggles();
   }
 
-  function toggleGroup(g) {
+  function toggleGroup(g: number): void {
     if (enabledGroups.has(g)) {
       if (enabledGroups.size > 1) enabledGroups.delete(g);
     } else {
@@ -137,9 +151,9 @@ export function createDiatonicChordsMode() {
   // --- Tab state ---
   let activeTab = 'practice';
 
-  function switchTab(tabName) {
+  function switchTab(tabName: string): void {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
     container.querySelectorAll('.tab-content').forEach((el) => {
@@ -157,8 +171,8 @@ export function createDiatonicChordsMode() {
     }
   }
 
-  function refreshUI() {
-    updateRecommendations(engine.selector);
+  function refreshUI(): void {
+    updateRecommendations();
     engine.updateIdleMessage();
     renderPracticeSummary();
     renderSessionSummary();
@@ -166,7 +180,7 @@ export function createDiatonicChordsMode() {
 
   // --- Practice summary ---
 
-  function renderPracticeSummary() {
+  function renderPracticeSummary(): void {
     const statusLabel = container.querySelector('.practice-status-label');
     const statusDetail = container.querySelector('.practice-status-detail');
     const recText = container.querySelector('.practice-rec-text');
@@ -191,7 +205,7 @@ export function createDiatonicChordsMode() {
 
     if (seen === 0) {
       statusLabel.textContent = 'Ready to start';
-      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+      statusDetail!.textContent = ALL_ITEMS.length + ' items to learn';
     } else {
       const pct = ALL_ITEMS.length > 0
         ? Math.round((allFluent / ALL_ITEMS.length) * 100)
@@ -202,13 +216,13 @@ export function createDiatonicChordsMode() {
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length +
+      statusDetail!.textContent = allFluent + ' of ' + ALL_ITEMS.length +
         ' items fluent';
     }
 
     const result = getRecommendationResult();
     if (result.recommended.size > 0) {
-      const parts = [];
+      const parts: string[] = [];
       if (result.consolidateIndices.length > 0) {
         const cNames = result.consolidateIndices.sort(function (a, b) {
           return a - b;
@@ -229,15 +243,15 @@ export function createDiatonicChordsMode() {
             (result.expandNewCount !== 1 ? 's' : ''),
         );
       }
-      recText.textContent = 'Suggestion: ' + parts.join('\n');
-      recBtn.classList.remove('hidden');
+      recText!.textContent = 'Suggestion: ' + parts.join('\n');
+      recBtn!.classList.remove('hidden');
     } else {
-      recText.textContent = '';
-      recBtn.classList.add('hidden');
+      recText!.textContent = '';
+      recBtn!.classList.add('hidden');
     }
   }
 
-  function renderSessionSummary() {
+  function renderSessionSummary(): void {
     const el = container.querySelector('.session-summary-text');
     if (!el) return;
     const items = mode.getEnabledItems();
@@ -246,7 +260,13 @@ export function createDiatonicChordsMode() {
 
   // --- Stats ---
 
-  let currentItem = null;
+  let currentItem: {
+    key: MajorKey;
+    degree: number;
+    chord: DiatonicChord;
+    dir: string;
+    rootNote: string;
+  } | null = null;
 
   const statsControls = createStatsControls(container, (mode, el) => {
     const colLabels = ROMAN_NUMERALS;
@@ -267,10 +287,10 @@ export function createDiatonicChordsMode() {
       mode,
       gridDiv,
       keyNotes,
-      engine.baseline,
+      engine.baseline ?? undefined,
     );
     const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
+    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline ?? undefined);
     el.appendChild(legendDiv);
   });
 
@@ -281,15 +301,15 @@ export function createDiatonicChordsMode() {
     name: 'Diatonic Chords',
     storageNamespace: 'diatonicChords',
 
-    getEnabledItems() {
-      const items = [];
+    getEnabledItems(): string[] {
+      const items: string[] = [];
       for (const g of enabledGroups) {
         items.push(...getItemIdsForGroup(g));
       }
       return items;
     },
 
-    getPracticingLabel() {
+    getPracticingLabel(): string {
       if (enabledGroups.size === CHORD_GROUPS.length) return 'all chords';
       const numerals = [...enabledGroups].sort((a, b) => a - b)
         .flatMap((g) => CHORD_GROUPS[g].degrees)
@@ -298,7 +318,7 @@ export function createDiatonicChordsMode() {
       return numerals.join(', ') + ' chords';
     },
 
-    presentQuestion(itemId) {
+    presentQuestion(itemId: string): void {
       currentItem = parseItem(itemId);
       const prompt = container.querySelector('.quiz-prompt');
       const noteButtons = container.querySelector('.answer-buttons-notes');
@@ -307,28 +327,31 @@ export function createDiatonicChordsMode() {
       );
 
       if (currentItem.dir === 'fwd') {
-        prompt.textContent = currentItem.chord.numeral + ' in ' +
+        prompt!.textContent = currentItem.chord.numeral + ' in ' +
           displayNote(currentItem.key.root) + ' major';
-        noteButtons.classList.remove('answer-group-hidden');
-        numeralButtons.classList.add('answer-group-hidden');
+        noteButtons!.classList.remove('answer-group-hidden');
+        numeralButtons!.classList.add('answer-group-hidden');
       } else {
         const chordName = displayNote(currentItem.rootNote) +
           currentItem.chord.qualityLabel;
-        prompt.textContent = chordName + ' in ' +
+        prompt!.textContent = chordName + ' in ' +
           displayNote(currentItem.key.root) + ' major';
-        noteButtons.classList.add('answer-group-hidden');
-        numeralButtons.classList.remove('answer-group-hidden');
+        noteButtons!.classList.add('answer-group-hidden');
+        numeralButtons!.classList.remove('answer-group-hidden');
       }
     },
 
-    checkAnswer(_itemId, input) {
-      if (currentItem.dir === 'fwd') {
-        const correct = spelledNoteMatchesSemitone(currentItem.rootNote, input);
-        const fullAnswer = displayNote(currentItem.rootNote) + ' ' +
-          currentItem.chord.quality;
+    checkAnswer(_itemId: string, input: string) {
+      if (currentItem!.dir === 'fwd') {
+        const correct = spelledNoteMatchesSemitone(
+          currentItem!.rootNote,
+          input,
+        );
+        const fullAnswer = displayNote(currentItem!.rootNote) + ' ' +
+          currentItem!.chord.quality;
         return { correct, correctAnswer: fullAnswer };
       } else {
-        const expectedNumeral = currentItem.chord.numeral;
+        const expectedNumeral = currentItem!.chord.numeral;
         return {
           correct: input === expectedNumeral,
           correctAnswer: expectedNumeral,
@@ -336,12 +359,12 @@ export function createDiatonicChordsMode() {
       }
     },
 
-    onStart() {
+    onStart(): void {
       noteKeyHandler.reset();
       if (statsControls.mode) statsControls.hide();
     },
 
-    onStop() {
+    onStop(): void {
       noteKeyHandler.reset();
       if (activeTab === 'progress') {
         statsControls.show('retention');
@@ -349,8 +372,11 @@ export function createDiatonicChordsMode() {
       refreshUI();
     },
 
-    handleKey(e, { submitAnswer }) {
-      if (currentItem.dir === 'fwd') {
+    handleKey(
+      e: KeyboardEvent,
+      { submitAnswer }: { submitAnswer: (input: string) => void },
+    ): boolean {
+      if (currentItem!.dir === 'fwd') {
         return noteKeyHandler.handleKey(e);
       }
       // Reverse: number keys 1-7 for roman numeral
@@ -362,35 +388,38 @@ export function createDiatonicChordsMode() {
       return false;
     },
 
-    getCalibrationButtons() {
+    getCalibrationButtons(): HTMLElement[] {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
 
-    getCalibrationTrialConfig(buttons, prevBtn) {
+    getCalibrationTrialConfig(
+      buttons: HTMLElement[],
+      prevBtn: HTMLElement | null,
+    ) {
       const btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
   };
 
   const engine = createQuizEngine(mode, container);
-  engine.storage.preload(ALL_ITEMS);
+  engine.storage.preload?.(ALL_ITEMS);
 
   const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => true,
   );
 
-  function init() {
+  function init(): void {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach((btn) => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach((btn) => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab!));
     });
 
     // Set section heading
     const toggleLabel = container.querySelector('.toggle-group-label');
     if (toggleLabel) toggleLabel.textContent = 'Chords';
 
-    const togglesDiv = container.querySelector('.distance-toggles');
+    const togglesDiv = container.querySelector('.distance-toggles')!;
     CHORD_GROUPS.forEach((group, i) => {
       const btn = document.createElement('button');
       btn.className = 'distance-toggle';
@@ -402,21 +431,25 @@ export function createDiatonicChordsMode() {
 
     loadEnabledGroups();
 
-    container.querySelectorAll('.answer-btn-note').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.note);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.note!);
+        });
+      },
+    );
 
-    container.querySelectorAll('.answer-btn-numeral').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.numeral);
-      });
-    });
+    container.querySelectorAll<HTMLElement>('.answer-btn-numeral').forEach(
+      (btn) => {
+        btn.addEventListener('click', () => {
+          if (!engine.isActive || engine.isAnswered) return;
+          engine.submitAnswer(btn.dataset.numeral!);
+        });
+      },
+    );
 
-    container.querySelector('.start-btn').addEventListener(
+    container.querySelector('.start-btn')!.addEventListener(
       'click',
       () => engine.start(),
     );
@@ -425,12 +458,12 @@ export function createDiatonicChordsMode() {
     const recBtn = container.querySelector('.practice-rec-btn');
     if (recBtn) {
       recBtn.addEventListener('click', () => {
-        applyRecommendations(engine.selector);
+        applyRecommendations();
         refreshUI();
       });
     }
 
-    updateRecommendations(engine.selector);
+    updateRecommendations();
     renderPracticeSummary();
     renderSessionSummary();
   }

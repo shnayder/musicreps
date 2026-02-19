@@ -4,6 +4,7 @@
 // Excludes octave/P8 (adding 12 semitones gives same note).
 // Grouped by interval pair into 6 distance groups for progressive unlocking.
 
+import type { Interval, Note, StringRecommendation } from './types.ts';
 import {
   displayNote,
   INTERVALS,
@@ -28,7 +29,7 @@ import {
 import { computeRecommendations } from './recommendations.ts';
 
 export function createIntervalMathMode() {
-  const container = document.getElementById('mode-intervalMath');
+  const container = document.getElementById('mode-intervalMath')!;
   const GROUPS_KEY = 'intervalMath_enabledGroups';
 
   // Intervals 1-11 only (no octave)
@@ -44,11 +45,11 @@ export function createIntervalMathMode() {
     { distances: [11], label: 'M7' },
   ];
 
-  let enabledGroups = new Set([0]); // Default: first group only
-  let recommendedGroups = new Set();
+  let enabledGroups = new Set<number>([0]); // Default: first group only
+  let recommendedGroups = new Set<number>();
 
   // Build full item list (for preloading & stats display)
-  const ALL_ITEMS = [];
+  const ALL_ITEMS: string[] = [];
   for (const note of NOTES) {
     for (const interval of MATH_INTERVALS) {
       ALL_ITEMS.push(note.name + '+' + interval.abbrev);
@@ -56,13 +57,13 @@ export function createIntervalMathMode() {
     }
   }
 
-  function parseItem(itemId) {
-    const match = itemId.match(/^([A-G]#?)([+-])(.+)$/);
+  function parseItem(itemId: string): { note: Note; op: string; interval: Interval; answer: Note } {
+    const match = itemId.match(/^([A-G]#?)([+-])(.+)$/)!;
     const noteName = match[1];
     const op = match[2];
     const abbrev = match[3];
-    const note = NOTES.find((n) => n.name === noteName);
-    const interval = MATH_INTERVALS.find((i) => i.abbrev === abbrev);
+    const note = NOTES.find((n) => n.name === noteName)!;
+    const interval = MATH_INTERVALS.find((i) => i.abbrev === abbrev)!;
     const answer = op === '+'
       ? noteAdd(note.num, interval.num)
       : noteSub(note.num, interval.num);
@@ -71,10 +72,10 @@ export function createIntervalMathMode() {
 
   // --- Distance group helpers ---
 
-  function getItemIdsForGroup(groupIndex) {
+  function getItemIdsForGroup(groupIndex: number): string[] {
     const distances = DISTANCE_GROUPS[groupIndex].distances;
     const intervals = MATH_INTERVALS.filter((i) => distances.includes(i.num));
-    const items = [];
+    const items: string[] = [];
     for (const note of NOTES) {
       for (const interval of intervals) {
         items.push(note.name + '+' + interval.abbrev);
@@ -84,7 +85,7 @@ export function createIntervalMathMode() {
     return items;
   }
 
-  function loadEnabledGroups() {
+  function loadEnabledGroups(): void {
     const saved = localStorage.getItem(GROUPS_KEY);
     if (saved) {
       try {
@@ -94,22 +95,25 @@ export function createIntervalMathMode() {
     updateGroupToggles();
   }
 
-  function saveEnabledGroups() {
+  function saveEnabledGroups(): void {
     localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
   }
 
-  function updateGroupToggles() {
-    container.querySelectorAll('.distance-toggle').forEach((btn) => {
-      const g = parseInt(btn.dataset.group);
+  function updateGroupToggles(): void {
+    container.querySelectorAll<HTMLElement>('.distance-toggle').forEach((btn) => {
+      const g = parseInt(btn.dataset.group!);
       btn.classList.toggle('active', enabledGroups.has(g));
       btn.classList.toggle('recommended', recommendedGroups.has(g));
     });
   }
 
-  const recsOptions = { sortUnstarted: (a, b) => a.string - b.string };
+  const recsOptions = {
+    sortUnstarted: (a: StringRecommendation, b: StringRecommendation) =>
+      a.string - b.string,
+  };
 
   function getRecommendationResult() {
-    const allGroups = DISTANCE_GROUPS.map((_, i) => i);
+    const allGroups = DISTANCE_GROUPS.map((_: unknown, i: number) => i);
     return computeRecommendations(
       engine.selector,
       allGroups,
@@ -119,13 +123,13 @@ export function createIntervalMathMode() {
     );
   }
 
-  function updateRecommendations(_selector) {
+  function updateRecommendations(): void {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
-  function applyRecommendations(_selector) {
+  function applyRecommendations(): void {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
@@ -135,7 +139,7 @@ export function createIntervalMathMode() {
     updateGroupToggles();
   }
 
-  function toggleGroup(g) {
+  function toggleGroup(g: number): void {
     if (enabledGroups.has(g)) {
       if (enabledGroups.size > 1) enabledGroups.delete(g);
     } else {
@@ -148,9 +152,9 @@ export function createIntervalMathMode() {
   // --- Tab state ---
   let activeTab = 'practice';
 
-  function switchTab(tabName) {
+  function switchTab(tabName: string): void {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
     container.querySelectorAll('.tab-content').forEach((el) => {
@@ -168,8 +172,8 @@ export function createIntervalMathMode() {
     }
   }
 
-  function refreshUI() {
-    updateRecommendations(engine.selector);
+  function refreshUI(): void {
+    updateRecommendations();
     engine.updateIdleMessage();
     renderPracticeSummary();
     renderSessionSummary();
@@ -177,7 +181,7 @@ export function createIntervalMathMode() {
 
   // --- Practice summary ---
 
-  function renderPracticeSummary() {
+  function renderPracticeSummary(): void {
     const statusLabel = container.querySelector('.practice-status-label');
     const statusDetail = container.querySelector('.practice-status-detail');
     const recText = container.querySelector('.practice-rec-text');
@@ -202,7 +206,7 @@ export function createIntervalMathMode() {
 
     if (seen === 0) {
       statusLabel.textContent = 'Ready to start';
-      statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
+      statusDetail!.textContent = ALL_ITEMS.length + ' items to learn';
     } else {
       const pct = ALL_ITEMS.length > 0
         ? Math.round((allFluent / ALL_ITEMS.length) * 100)
@@ -213,13 +217,13 @@ export function createIntervalMathMode() {
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length +
+      statusDetail!.textContent = allFluent + ' of ' + ALL_ITEMS.length +
         ' items fluent';
     }
 
     const result = getRecommendationResult();
     if (result.recommended.size > 0) {
-      const parts = [];
+      const parts: string[] = [];
       if (result.consolidateIndices.length > 0) {
         const cNames = result.consolidateIndices.sort(function (a, b) {
           return a - b;
@@ -240,15 +244,15 @@ export function createIntervalMathMode() {
             (result.expandNewCount !== 1 ? 's' : ''),
         );
       }
-      recText.textContent = 'Suggestion: ' + parts.join('\n');
-      recBtn.classList.remove('hidden');
+      recText!.textContent = 'Suggestion: ' + parts.join('\n');
+      recBtn!.classList.remove('hidden');
     } else {
-      recText.textContent = '';
-      recBtn.classList.add('hidden');
+      recText!.textContent = '';
+      recBtn!.classList.add('hidden');
     }
   }
 
-  function renderSessionSummary() {
+  function renderSessionSummary(): void {
     const el = container.querySelector('.session-summary-text');
     if (!el) return;
     const items = mode.getEnabledItems();
@@ -257,7 +261,7 @@ export function createIntervalMathMode() {
 
   // --- Stats ---
 
-  let currentItem = null;
+  let currentItem: { note: Note; op: string; interval: Interval; answer: Note; useFlats?: boolean } | null = null;
 
   const statsControls = createStatsControls(container, (mode, el) => {
     const colLabels = MATH_INTERVALS.map((i) => i.abbrev);
@@ -274,10 +278,10 @@ export function createIntervalMathMode() {
       mode,
       gridDiv,
       undefined,
-      engine.baseline,
+      engine.baseline ?? undefined,
     );
     const legendDiv = document.createElement('div');
-    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
+    legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline ?? undefined);
     el.appendChild(legendDiv);
   });
 
@@ -288,59 +292,59 @@ export function createIntervalMathMode() {
     name: 'Interval Math',
     storageNamespace: 'intervalMath',
 
-    getEnabledItems() {
-      const items = [];
+    getEnabledItems(): string[] {
+      const items: string[] = [];
       for (const g of enabledGroups) {
         items.push(...getItemIdsForGroup(g));
       }
       return items;
     },
 
-    getPracticingLabel() {
+    getPracticingLabel(): string {
       if (enabledGroups.size === DISTANCE_GROUPS.length) return 'all intervals';
       const labels = [...enabledGroups].sort((a, b) => a - b)
         .map((g) => DISTANCE_GROUPS[g].label);
       return labels.join(', ') + ' intervals';
     },
 
-    presentQuestion(itemId) {
+    presentQuestion(itemId: string): void {
       currentItem = parseItem(itemId);
       currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending
       const prompt = container.querySelector('.quiz-prompt');
       const noteName = displayNote(
         pickAccidentalName(currentItem.note.displayName, currentItem.useFlats),
       );
-      prompt.textContent = noteName + ' ' + currentItem.op + ' ' +
+      prompt!.textContent = noteName + ' ' + currentItem.op + ' ' +
         currentItem.interval.abbrev;
-      container.querySelectorAll('.answer-btn-note').forEach((btn) => {
-        const note = NOTES.find((n) => n.name === btn.dataset.note);
+      container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
+        const note = NOTES.find((n) => n.name === btn.dataset.note!);
         if (note) {
           btn.textContent = displayNote(
-            pickAccidentalName(note.displayName, currentItem.useFlats),
+            pickAccidentalName(note.displayName, currentItem!.useFlats!),
           );
         }
       });
     },
 
-    checkAnswer(_itemId, input) {
-      const correct = noteMatchesInput(currentItem.answer, input);
+    checkAnswer(_itemId: string, input: string) {
+      const correct = noteMatchesInput(currentItem!.answer, input);
       return {
         correct,
         correctAnswer: displayNote(
           pickAccidentalName(
-            currentItem.answer.displayName,
-            currentItem.useFlats,
+            currentItem!.answer.displayName,
+            currentItem!.useFlats!,
           ),
         ),
       };
     },
 
-    onStart() {
+    onStart(): void {
       noteKeyHandler.reset();
       if (statsControls.mode) statsControls.hide();
     },
 
-    onStop() {
+    onStop(): void {
       noteKeyHandler.reset();
       refreshNoteButtonLabels(container);
       if (activeTab === 'progress') {
@@ -349,32 +353,35 @@ export function createIntervalMathMode() {
       refreshUI();
     },
 
-    handleKey(e, { submitAnswer: _submitAnswer }) {
+    handleKey(
+      e: KeyboardEvent,
+      { submitAnswer: _submitAnswer }: { submitAnswer: (input: string) => void },
+    ): boolean {
       return noteKeyHandler.handleKey(e);
     },
 
-    getCalibrationButtons() {
+    getCalibrationButtons(): HTMLElement[] {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
 
-    getCalibrationTrialConfig(buttons, prevBtn) {
+    getCalibrationTrialConfig(buttons: HTMLElement[], prevBtn: HTMLElement | null) {
       const btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
   };
 
   const engine = createQuizEngine(mode, container);
-  engine.storage.preload(ALL_ITEMS);
+  engine.storage.preload?.(ALL_ITEMS);
 
   const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
     () => true,
   );
 
-  function init() {
+  function init(): void {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach((btn) => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach((btn) => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab!));
     });
 
     // Set section heading
@@ -382,7 +389,7 @@ export function createIntervalMathMode() {
     if (toggleLabel) toggleLabel.textContent = 'Intervals';
 
     // Generate distance group toggle buttons
-    const togglesDiv = container.querySelector('.distance-toggles');
+    const togglesDiv = container.querySelector('.distance-toggles')!;
     DISTANCE_GROUPS.forEach((group, i) => {
       const btn = document.createElement('button');
       btn.className = 'distance-toggle';
@@ -395,14 +402,14 @@ export function createIntervalMathMode() {
     loadEnabledGroups();
 
     // Note answer buttons
-    container.querySelectorAll('.answer-btn-note').forEach((btn) => {
+    container.querySelectorAll<HTMLElement>('.answer-btn-note').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.note);
+        engine.submitAnswer(btn.dataset.note!);
       });
     });
 
-    container.querySelector('.start-btn').addEventListener(
+    container.querySelector('.start-btn')!.addEventListener(
       'click',
       () => engine.start(),
     );
@@ -411,12 +418,12 @@ export function createIntervalMathMode() {
     const recBtn = container.querySelector('.practice-rec-btn');
     if (recBtn) {
       recBtn.addEventListener('click', () => {
-        applyRecommendations(engine.selector);
+        applyRecommendations();
         refreshUI();
       });
     }
 
-    updateRecommendations(engine.selector);
+    updateRecommendations();
     renderPracticeSummary();
     renderSessionSummary();
   }

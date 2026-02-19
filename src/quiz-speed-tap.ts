@@ -1,6 +1,7 @@
 // Speed Tap quiz mode: tap all positions of a given note as fast as possible.
 // Uses createQuizEngine with getExpectedResponseCount for multi-tap scaling.
 
+import type { CheckAnswerResult } from './types.ts';
 import {
   displayNote,
   NATURAL_NOTES,
@@ -17,16 +18,16 @@ import {
 } from './stats-display.ts';
 
 export function createSpeedTapMode() {
-  const container = document.getElementById('mode-speedTap');
+  const container = document.getElementById('mode-speedTap')!;
 
   const NOTE_FILTER_KEY = 'speedTap_noteFilter';
-  let noteFilter = 'natural'; // 'natural', 'sharps-flats', or 'all'
-  let currentNote = null;
-  let targetPositions = [];
-  let foundPositions = new Set();
+  let noteFilter: 'natural' | 'sharps-flats' | 'all' = 'natural';
+  let currentNote: string | null = null;
+  let targetPositions: { string: number; fret: number }[] = [];
+  let foundPositions = new Set<string>();
   let roundActive = false;
-  const wrongFlashTimeouts = new Set();
-  const noteNames = NOTES.map(function (n) {
+  const wrongFlashTimeouts = new Set<ReturnType<typeof setTimeout>>();
+  const noteNames: string[] = NOTES.map(function (n) {
     return n.name;
   });
 
@@ -40,13 +41,13 @@ export function createSpeedTapMode() {
 
   // --- Note/position helpers ---
 
-  function getNoteAtPosition(string, fret) {
+  function getNoteAtPosition(string: number, fret: number): string {
     const offset = STRING_OFFSETS[string];
     return noteNames[(offset + fret) % 12];
   }
 
-  function getPositionsForNote(noteName) {
-    const positions = [];
+  function getPositionsForNote(noteName: string): { string: number; fret: number }[] {
+    const positions: { string: number; fret: number }[] = [];
     for (let s = 0; s < 6; s++) {
       for (let f = 0; f <= 12; f++) {
         if (getNoteAtPosition(s, f) === noteName) {
@@ -59,15 +60,15 @@ export function createSpeedTapMode() {
 
   // --- SVG helpers ---
 
-  function setCircleFill(string, fret, color) {
+  function setCircleFill(string: number, fret: number, color: string): void {
     const circle = container.querySelector(
       'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]',
-    );
+    ) as SVGElement | null;
     if (circle) circle.style.fill = color;
   }
 
-  function clearAll() {
-    container.querySelectorAll('.fb-pos').forEach(function (c) {
+  function clearAll(): void {
+    container.querySelectorAll<SVGElement>('.fb-pos').forEach(function (c) {
       c.style.fill = '';
     });
   }
@@ -75,9 +76,9 @@ export function createSpeedTapMode() {
   // --- Tab state ---
   let activeTab = 'practice';
 
-  function switchTab(tabName) {
+  function switchTab(tabName: string): void {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach(function (btn) {
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(function (btn) {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
     container.querySelectorAll('.tab-content').forEach(function (el) {
@@ -97,7 +98,7 @@ export function createSpeedTapMode() {
 
   // --- Practice summary ---
 
-  function renderPracticeSummary() {
+  function renderPracticeSummary(): void {
     const statusLabel = container.querySelector('.practice-status-label');
     const statusDetail = container.querySelector('.practice-status-detail');
     const recText = container.querySelector('.practice-rec-text');
@@ -117,27 +118,27 @@ export function createSpeedTapMode() {
 
     if (seen === 0) {
       statusLabel.textContent = 'Ready to start';
-      statusDetail.textContent = items.length + ' notes to learn';
+      statusDetail!.textContent = items.length + ' notes to learn';
     } else {
       const pct = items.length > 0
         ? Math.round((fluent / items.length) * 100)
         : 0;
-      let label;
+      let label: string;
       if (pct >= 80) label = 'Strong';
       else if (pct >= 50) label = 'Solid';
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = fluent + ' of ' + items.length +
+      statusDetail!.textContent = fluent + ' of ' + items.length +
         ' notes fluent';
     }
 
     // No groups, so no recommendation
-    recText.textContent = '';
-    recBtn.classList.add('hidden');
+    recText!.textContent = '';
+    recBtn!.classList.add('hidden');
   }
 
-  function renderSessionSummary() {
+  function renderSessionSummary(): void {
     const el = container.querySelector('.session-summary-text');
     if (!el) return;
     const items = mode.getEnabledItems();
@@ -146,7 +147,7 @@ export function createSpeedTapMode() {
 
   // --- Note stats view ---
 
-  const statsControls = createStatsControls(container, function (mode, el) {
+  const statsControls = createStatsControls(container, function (mode: string, el: HTMLElement) {
     let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
     for (let i = 0; i < NOTES.length; i++) {
       html += '<th>' + displayNote(NOTES[i].name) + '</th>';
@@ -162,11 +163,11 @@ export function createSpeedTapMode() {
         const posCount = getPositionsForNote(NOTES[j].name).length;
         const perPosMs = stats ? stats.ewma / posCount : null;
         html += '<td class="stats-cell" style="background:' +
-          getSpeedHeatmapColor(perPosMs) + '"></td>';
+          getSpeedHeatmapColor(perPosMs, engine.baseline ?? undefined) + '"></td>';
       }
     }
     html += '</tr></tbody></table>';
-    html += buildStatsLegend(mode, engine.baseline);
+    html += buildStatsLegend(mode, engine.baseline ?? undefined);
     el.innerHTML = html;
   });
 
@@ -177,7 +178,7 @@ export function createSpeedTapMode() {
 
   // --- Round progress display ---
 
-  function updateRoundProgress() {
+  function updateRoundProgress(): void {
     if (progressEl) {
       progressEl.textContent = foundPositions.size + ' / ' +
         targetPositions.length;
@@ -186,7 +187,7 @@ export function createSpeedTapMode() {
 
   // --- Circle tap handling ---
 
-  function handleCircleTap(string, fret) {
+  function handleCircleTap(string: number, fret: number): void {
     if (!engine.isActive || engine.isAnswered || !roundActive) return;
 
     const key = string + '-' + fret;
@@ -217,15 +218,17 @@ export function createSpeedTapMode() {
     }
   }
 
-  function handleFretboardClick(e) {
-    if (e.target.closest('.setting-group')) return;
+  function handleFretboardClick(e: MouseEvent): void {
+    if ((e.target as HTMLElement).closest('.setting-group')) return;
 
     if (engine.isActive && !engine.isAnswered && roundActive) {
-      const target = e.target.closest('circle.fb-pos[data-string][data-fret]');
+      const target = (e.target as HTMLElement).closest(
+        'circle.fb-pos[data-string][data-fret]',
+      ) as SVGElement | null;
       if (target) {
         handleCircleTap(
-          parseInt(target.dataset.string),
-          parseInt(target.dataset.fret),
+          parseInt(target.dataset!.string!),
+          parseInt(target.dataset!.fret!),
         );
       }
     }
@@ -238,7 +241,7 @@ export function createSpeedTapMode() {
     name: 'Speed Tap',
     storageNamespace: 'speedTap',
 
-    getEnabledItems: function () {
+    getEnabledItems: function (): string[] {
       if (noteFilter === 'natural') return NATURAL_NOTES.slice();
       if (noteFilter === 'sharps-flats') {
         return NOTES.filter(function (n) {
@@ -252,11 +255,11 @@ export function createSpeedTapMode() {
       });
     },
 
-    getExpectedResponseCount: function (itemId) {
+    getExpectedResponseCount: function (itemId: string): number {
       return getPositionsForNote(itemId).length;
     },
 
-    presentQuestion: function (itemId) {
+    presentQuestion: function (itemId: string): void {
       wrongFlashTimeouts.forEach(function (t) {
         clearTimeout(t);
       });
@@ -269,7 +272,7 @@ export function createSpeedTapMode() {
       roundActive = true;
 
       // Set all circles to tap-neutral
-      container.querySelectorAll('.fb-pos').forEach(function (c) {
+      container.querySelectorAll<SVGElement>('.fb-pos').forEach(function (c) {
         c.style.fill = FB_TAP_NEUTRAL;
       });
 
@@ -281,24 +284,24 @@ export function createSpeedTapMode() {
         prompt.textContent = 'Tap all ' +
           (note
             ? displayNote(pickRandomAccidental(note.displayName))
-            : displayNote(currentNote));
+            : displayNote(currentNote!));
       }
       updateRoundProgress();
     },
 
-    checkAnswer: function (_itemId, input) {
+    checkAnswer: function (_itemId: string, input: string): CheckAnswerResult {
       const allFound = input === 'complete';
-      return { correct: allFound, correctAnswer: displayNote(currentNote) };
+      return { correct: allFound, correctAnswer: displayNote(currentNote!) };
     },
 
-    onStart: function () {
+    onStart: function (): void {
       if (statsControls.mode) statsControls.hide();
       if (fretboardWrapper) {
         fretboardWrapper.classList.remove('fretboard-hidden');
       }
     },
 
-    onStop: function () {
+    onStop: function (): void {
       roundActive = false;
       wrongFlashTimeouts.forEach(function (t) {
         clearTimeout(t);
@@ -315,7 +318,7 @@ export function createSpeedTapMode() {
       renderSessionSummary();
     },
 
-    onAnswer: function (_itemId, result, _responseTime) {
+    onAnswer: function (_itemId: string, result: CheckAnswerResult, _responseTime: number): void {
       roundActive = false;
       if (!result.correct) {
         // On timeout: reveal remaining target positions
@@ -329,12 +332,12 @@ export function createSpeedTapMode() {
       }
     },
 
-    handleKey: function (_e, _ctx) {
+    handleKey: function (_e: KeyboardEvent, _ctx: { submitAnswer: (input: string) => void }): boolean {
       // Speed Tap doesn't use keyboard for answers
       return false;
     },
 
-    getCalibrationButtons: function () {
+    getCalibrationButtons: function (): HTMLElement[] {
       return Array.from(container.querySelectorAll('.answer-btn-note'));
     },
   };
@@ -348,7 +351,7 @@ export function createSpeedTapMode() {
 
   // --- Note filter persistence ---
 
-  function loadNoteFilter() {
+  function loadNoteFilter(): void {
     const saved = localStorage.getItem(NOTE_FILTER_KEY);
     if (
       saved &&
@@ -359,17 +362,17 @@ export function createSpeedTapMode() {
     updateNoteToggles();
   }
 
-  function saveNoteFilter() {
+  function saveNoteFilter(): void {
     try {
       localStorage.setItem(NOTE_FILTER_KEY, noteFilter);
     } catch (_) { /* expected */ }
   }
 
-  function updateNoteToggles() {
-    const naturalBtn = container.querySelector(
+  function updateNoteToggles(): void {
+    const naturalBtn = container.querySelector<HTMLElement>(
       '.notes-toggle[data-notes="natural"]',
     );
-    const accBtn = container.querySelector(
+    const accBtn = container.querySelector<HTMLElement>(
       '.notes-toggle[data-notes="sharps-flats"]',
     );
     if (naturalBtn) {
@@ -386,18 +389,18 @@ export function createSpeedTapMode() {
     }
   }
 
-  function init() {
+  function init(): void {
     loadNoteFilter();
 
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach(function (btn) {
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        switchTab(btn.dataset.tab);
+        switchTab(btn.dataset.tab!);
       });
     });
 
     // Notes toggles (natural / sharps & flats)
-    container.querySelectorAll('.notes-toggle').forEach(function (btn) {
+    container.querySelectorAll<HTMLElement>('.notes-toggle').forEach(function (btn) {
       btn.addEventListener('click', function () {
         btn.classList.toggle('active');
         const anyActive = container.querySelector('.notes-toggle.active');
@@ -418,7 +421,7 @@ export function createSpeedTapMode() {
       });
     });
 
-    container.querySelector('.start-btn').addEventListener(
+    container.querySelector('.start-btn')!.addEventListener(
       'click',
       function () {
         engine.start();
@@ -434,13 +437,13 @@ export function createSpeedTapMode() {
     mode: mode,
     engine: engine,
     init: init,
-    activate: function () {
+    activate: function (): void {
       engine.attach();
       container.addEventListener('click', handleFretboardClick);
       engine.updateIdleMessage();
       renderPracticeSummary();
     },
-    deactivate: function () {
+    deactivate: function (): void {
       if (engine.isRunning) engine.stop();
       engine.detach();
       container.removeEventListener('click', handleFretboardClick);

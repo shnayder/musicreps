@@ -2,6 +2,12 @@
 // Parameterized factory supports any fretted instrument (guitar, ukulele, etc.).
 // Plugs into the shared quiz engine via the mode interface.
 
+import type {
+  CalibrationTrialConfig,
+  CheckAnswerResult,
+  Instrument,
+  StringRecommendation,
+} from './types.ts';
 import {
   displayNote,
   GUITAR,
@@ -30,17 +36,17 @@ import {
   toggleFretboardString,
 } from './quiz-fretboard-state.ts';
 
-function createFrettedInstrumentMode(instrument) {
-  const container = document.getElementById('mode-' + instrument.id);
+function createFrettedInstrumentMode(instrument: Instrument) {
+  const container = document.getElementById('mode-' + instrument.id)!;
   const STRINGS_KEY = instrument.storageNamespace + '_enabledStrings';
   const NOTE_FILTER_KEY = instrument.storageNamespace + '_noteFilter';
-  let enabledStrings = new Set([instrument.defaultString]);
-  let noteFilter = 'natural'; // 'natural', 'sharps-flats', or 'all'
-  let recommendedStrings = new Set();
-  let lastNotePri = null;
-  const allStrings = Array.from(
+  let enabledStrings = new Set<number>([instrument.defaultString]);
+  let noteFilter: 'natural' | 'sharps-flats' | 'all' = 'natural';
+  let recommendedStrings = new Set<number>();
+  let lastNotePri: { suggestedFilter: string; naturalMasteryRatio: number } | null = null;
+  const allStrings: number[] = Array.from(
     { length: instrument.stringCount },
-    function (_, i) {
+    function (_: unknown, i: number) {
       return i;
     },
   );
@@ -64,59 +70,59 @@ function createFrettedInstrumentMode(instrument) {
   // --- Two fretboard instances: progress (heatmap) and quiz (highlighting) ---
   const progressFretboard = container.querySelector(
     '.tab-progress .fretboard-wrapper',
-  );
+  ) as HTMLElement;
   const quizFretboard = container.querySelector(
     '.quiz-area .fretboard-wrapper',
-  );
+  ) as HTMLElement;
 
   // --- SVG helpers (scoped to a specific fretboard instance) ---
 
-  function setCircleFill(root, string, fret, color) {
+  function setCircleFill(root: HTMLElement, string: number, fret: number, color: string): void {
     const circle = root.querySelector(
       'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]',
-    );
+    ) as SVGElement | null;
     if (circle) circle.style.fill = color;
   }
 
-  function clearAll(root) {
-    root.querySelectorAll('.fb-pos').forEach(function (c) {
+  function clearAll(root: HTMLElement): void {
+    root.querySelectorAll<SVGElement>('.fb-pos').forEach(function (c) {
       c.style.fill = '';
     });
   }
 
   // --- Hover card setup ---
 
-  function setupHoverCard(fretboardWrapper) {
-    const card = fretboardWrapper.querySelector('.hover-card');
+  function setupHoverCard(fretboardWrapper: HTMLElement): void {
+    const card = fretboardWrapper.querySelector('.hover-card') as HTMLElement | null;
     if (!card) return;
 
-    function showCard(el) {
-      const s = parseInt(el.getAttribute('data-string'));
-      const f = parseInt(el.getAttribute('data-fret'));
+    function showCard(el: Element): void {
+      const s = parseInt(el.getAttribute('data-string')!);
+      const f = parseInt(el.getAttribute('data-fret')!);
       const note = fb.getNoteAtPosition(s, f);
       const itemId = s + '-' + f;
       const auto = engine.selector.getAutomaticity(itemId);
 
-      card.querySelector('.hc-note').textContent = displayNote(note);
-      card.querySelector('.hc-string-fret').textContent =
+      card!.querySelector('.hc-note')!.textContent = displayNote(note);
+      card!.querySelector('.hc-string-fret')!.textContent =
         displayNote(instrument.stringNames[s]) + ' string, fret ' + f;
 
       if (auto !== null) {
         const pct = Math.round(auto * 100);
-        let label;
+        let label: string;
         if (auto > 0.8) label = 'Automatic';
         else if (auto > 0.6) label = 'Solid';
         else if (auto > 0.4) label = 'Getting there';
         else if (auto > 0.2) label = 'Fading';
         else label = 'Needs work';
-        card.querySelector('.hc-detail').textContent = label + ' \u00B7 ' +
+        card!.querySelector('.hc-detail')!.textContent = label + ' \u00B7 ' +
           pct + '%';
-        const barFill = card.querySelector('.hc-bar-fill');
+        const barFill = card!.querySelector('.hc-bar-fill') as HTMLElement;
         barFill.style.width = pct + '%';
         barFill.style.background = getAutomaticityColor(auto);
       } else {
-        card.querySelector('.hc-detail').textContent = 'Not seen yet';
-        const barFill2 = card.querySelector('.hc-bar-fill');
+        card!.querySelector('.hc-detail')!.textContent = 'Not seen yet';
+        const barFill2 = card!.querySelector('.hc-bar-fill') as HTMLElement;
         barFill2.style.width = '0%';
         barFill2.style.background = '';
       }
@@ -124,64 +130,64 @@ function createFrettedInstrumentMode(instrument) {
       // Position card above circle (or below if near top)
       const containerRect = fretboardWrapper.querySelector(
         '.fretboard-container',
-      ).getBoundingClientRect();
+      )!.getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
       const cx = elRect.left + elRect.width / 2 - containerRect.left;
       const cy = elRect.top - containerRect.top;
 
       // If circle is near top of fretboard, show card below instead
       if (cy < 50) {
-        card.style.left = cx + 'px';
-        card.style.top = (cy + elRect.height + 6) + 'px';
-        card.style.transform = 'translate(-50%, 0)';
+        card!.style.left = cx + 'px';
+        card!.style.top = (cy + elRect.height + 6) + 'px';
+        card!.style.transform = 'translate(-50%, 0)';
       } else {
-        card.style.left = cx + 'px';
-        card.style.top = (cy - 6) + 'px';
-        card.style.transform = 'translate(-50%, -100%)';
+        card!.style.left = cx + 'px';
+        card!.style.top = (cy - 6) + 'px';
+        card!.style.transform = 'translate(-50%, -100%)';
       }
-      card.classList.add('visible');
+      card!.classList.add('visible');
     }
 
-    function hideCard() {
-      card.classList.remove('visible');
+    function hideCard(): void {
+      card!.classList.remove('visible');
     }
 
-    const svg = fretboardWrapper.querySelector('svg');
-    svg.addEventListener('mouseover', function (e) {
-      const el = e.target.closest('.fb-pos');
+    const svg = fretboardWrapper.querySelector('svg')!;
+    svg.addEventListener('mouseover', function (e: MouseEvent) {
+      const el = (e.target as Element).closest('.fb-pos');
       if (el) showCard(el);
     });
-    svg.addEventListener('mouseout', function (e) {
-      const el = e.target.closest('.fb-pos');
+    svg.addEventListener('mouseout', function (e: MouseEvent) {
+      const el = (e.target as Element).closest('.fb-pos');
       if (el) hideCard();
     });
   }
 
   // --- String toggles ---
 
-  function loadEnabledStrings() {
+  function loadEnabledStrings(): void {
     const saved = localStorage.getItem(STRINGS_KEY);
     if (saved) {
       try {
-        enabledStrings = new Set(JSON.parse(saved));
+        enabledStrings = new Set<number>(JSON.parse(saved));
       } catch (_e) { /* expected */ }
     }
     updateStringToggles();
   }
 
-  function saveEnabledStrings() {
+  function saveEnabledStrings(): void {
     localStorage.setItem(STRINGS_KEY, JSON.stringify([...enabledStrings]));
   }
 
-  function updateStringToggles() {
-    container.querySelectorAll('.string-toggle').forEach(function (btn) {
-      const s = parseInt(btn.dataset.string);
+  function updateStringToggles(): void {
+    container.querySelectorAll<HTMLElement>('.string-toggle').forEach(function (btn) {
+      const s = parseInt(btn.dataset.string!);
       btn.classList.toggle('active', enabledStrings.has(s));
       btn.classList.toggle('recommended', recommendedStrings.has(s));
     });
   }
 
-  function toggleString(s) {
+  function toggleString(s: number): void {
     enabledStrings = toggleFretboardString(enabledStrings, s);
     saveEnabledStrings();
     refreshUI();
@@ -189,7 +195,7 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Note filter persistence ---
 
-  function loadNoteFilter() {
+  function loadNoteFilter(): void {
     const saved = localStorage.getItem(NOTE_FILTER_KEY);
     if (
       saved &&
@@ -200,17 +206,17 @@ function createFrettedInstrumentMode(instrument) {
     updateNoteToggles();
   }
 
-  function saveNoteFilter() {
+  function saveNoteFilter(): void {
     try {
       localStorage.setItem(NOTE_FILTER_KEY, noteFilter);
     } catch (_) { /* expected */ }
   }
 
-  function updateNoteToggles() {
-    const naturalBtn = container.querySelector(
+  function updateNoteToggles(): void {
+    const naturalBtn = container.querySelector<HTMLElement>(
       '.notes-toggle[data-notes="natural"]',
     );
-    const accBtn = container.querySelector(
+    const accBtn = container.querySelector<HTMLElement>(
       '.notes-toggle[data-notes="sharps-flats"]',
     );
     if (naturalBtn) {
@@ -229,9 +235,9 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Tab switching ---
 
-  function switchTab(tabName) {
+  function switchTab(tabName: string): void {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach(function (btn) {
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(function (btn) {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
     container.querySelectorAll('.tab-content').forEach(function (el) {
@@ -253,8 +259,8 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Heatmap (renders on the progress fretboard) ---
 
-  const statsControls = createStatsControls(container, function (mode, el) {
-    el.innerHTML = buildStatsLegend(mode, engine.baseline);
+  const statsControls = createStatsControls(container, function (mode: string, el: HTMLElement) {
+    el.innerHTML = buildStatsLegend(mode, engine.baseline ?? undefined);
     if (mode === 'retention') {
       for (let si = 0; si < allStrings.length; si++) {
         const s = allStrings[si];
@@ -270,21 +276,21 @@ function createFrettedInstrumentMode(instrument) {
         for (let f2 = 0; f2 < instrument.fretCount; f2++) {
           const stats = engine.selector.getStats(s2 + '-' + f2);
           const ewma = stats ? stats.ewma : null;
-          const color2 = getSpeedHeatmapColor(ewma, engine.baseline);
+          const color2 = getSpeedHeatmapColor(ewma, engine.baseline ?? undefined);
           setCircleFill(progressFretboard, s2, f2, color2);
         }
       }
     }
   });
 
-  function hideHeatmap() {
+  function hideHeatmap(): void {
     statsControls.hide();
     clearAll(progressFretboard);
   }
 
   // --- Stats ---
 
-  function updateStats(_selector) {
+  function updateStats(): void {
     const statsEl = container.querySelector('.stats');
     if (statsEl) statsEl.textContent = '';
   }
@@ -293,7 +299,7 @@ function createFrettedInstrumentMode(instrument) {
 
   // Sort unstarted strings: lowest pitch first (highest string index = lowest pitch)
   const recsOptions = {
-    sortUnstarted: function (a, b) {
+    sortUnstarted: function (a: StringRecommendation, b: StringRecommendation) {
       return b.string - a.string;
     },
   };
@@ -302,7 +308,7 @@ function createFrettedInstrumentMode(instrument) {
     return computeRecommendations(
       engine.selector,
       allStrings,
-      function (s) {
+      function (s: number) {
         return fb.getItemIdsForString(s, 'all');
       },
       DEFAULT_CONFIG,
@@ -310,13 +316,13 @@ function createFrettedInstrumentMode(instrument) {
     );
   }
 
-  function updateRecommendations(_selector) {
+  function updateRecommendations(): void {
     const result = getRecommendationResult();
     recommendedStrings = result.recommended;
     updateStringToggles();
   }
 
-  function applyRecommendations(_selector) {
+  function applyRecommendations(): void {
     const result = getRecommendationResult();
     recommendedStrings = result.recommended;
     if (result.enabled) {
@@ -326,8 +332,8 @@ function createFrettedInstrumentMode(instrument) {
     updateStringToggles();
   }
 
-  function refreshUI() {
-    updateRecommendations(engine.selector);
+  function refreshUI(): void {
+    updateRecommendations();
     engine.updateIdleMessage();
     renderPracticeSummary();
     renderSessionSummary();
@@ -335,7 +341,7 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Practice summary rendering ---
 
-  function renderPracticeSummary() {
+  function renderPracticeSummary(): void {
     const statusLabel = container.querySelector('.practice-status-label');
     const statusDetail = container.querySelector('.practice-status-detail');
     const recText = container.querySelector('.practice-rec-text');
@@ -356,7 +362,7 @@ function createFrettedInstrumentMode(instrument) {
 
     // All items (not just enabled)
     const allItems = fb.getFretboardEnabledItems(
-      new Set(allStrings),
+      new Set<number>(allStrings),
       noteFilter,
     );
     let allFluent = 0;
@@ -367,18 +373,18 @@ function createFrettedInstrumentMode(instrument) {
 
     if (seen === 0) {
       statusLabel.textContent = 'Ready to start';
-      statusDetail.textContent = allItems.length + ' positions to learn';
+      statusDetail!.textContent = allItems.length + ' positions to learn';
     } else {
       const pct = allItems.length > 0
         ? Math.round((allFluent / allItems.length) * 100)
         : 0;
-      let label;
+      let label: string;
       if (pct >= 80) label = 'Strong';
       else if (pct >= 50) label = 'Solid';
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = allFluent + ' of ' + allItems.length +
+      statusDetail!.textContent = allFluent + ' of ' + allItems.length +
         ' positions fluent';
     }
 
@@ -388,7 +394,7 @@ function createFrettedInstrumentMode(instrument) {
     // Note-type prioritization: naturals first, then add accidentals
     const naturalStats = engine.selector.getStringRecommendations(
       [...result.recommended],
-      function (s) {
+      function (s: number) {
         return fb.getItemIdsForString(s, 'natural');
       },
     );
@@ -399,12 +405,12 @@ function createFrettedInstrumentMode(instrument) {
 
     if (result.recommended.size > 0) {
       // Build rationale text
-      const parts = [];
+      const parts: string[] = [];
       if (result.consolidateIndices.length > 0) {
-        const cNames = result.consolidateIndices.sort(function (a, b) {
+        const cNames = result.consolidateIndices.sort(function (a: number, b: number) {
           return b - a;
         })
-          .map(function (s) {
+          .map(function (s: number) {
             return displayNote(instrument.stringNames[s]);
           });
         parts.push(
@@ -428,23 +434,23 @@ function createFrettedInstrumentMode(instrument) {
       } else {
         parts.push('add sharps & flats');
       }
-      recText.textContent = 'Suggestion: ' + parts.join(', ');
-      recBtn.classList.remove('hidden');
+      recText!.textContent = 'Suggestion: ' + parts.join(', ');
+      recBtn!.classList.remove('hidden');
     } else {
-      recText.textContent = '';
-      recBtn.classList.add('hidden');
+      recText!.textContent = '';
+      recBtn!.classList.add('hidden');
     }
   }
 
   // --- Session summary ---
 
-  function noteFilterLabel() {
+  function noteFilterLabel(): string {
     if (noteFilter === 'natural') return 'natural notes';
     if (noteFilter === 'sharps-flats') return 'sharps and flats';
     return 'all notes';
   }
 
-  function renderSessionSummary() {
+  function renderSessionSummary(): void {
     const el = container.querySelector('.session-summary-text');
     if (!el) return;
     const count = enabledStrings.size;
@@ -454,9 +460,9 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Accidental buttons ---
 
-  function updateAccidentalButtons() {
+  function updateAccidentalButtons(): void {
     const hideAcc = noteFilter === 'natural';
-    container.querySelectorAll('.note-btn.accidental').forEach(function (btn) {
+    container.querySelectorAll<HTMLElement>('.note-btn.accidental').forEach(function (btn) {
       btn.classList.toggle('hidden', hideAcc);
     });
     const accRow = container.querySelector('.note-row-accidentals');
@@ -465,26 +471,26 @@ function createFrettedInstrumentMode(instrument) {
 
   // --- Quiz mode interface ---
 
-  let currentString = null;
-  let currentFret = null;
-  let currentNote = null;
+  let currentString: number | null = null;
+  let currentFret: number | null = null;
+  let currentNote: string | null = null;
 
   const mode = {
     id: instrument.id,
     name: instrument.name,
     storageNamespace: instrument.storageNamespace,
 
-    getEnabledItems: function () {
+    getEnabledItems: function (): string[] {
       return fb.getFretboardEnabledItems(enabledStrings, noteFilter);
     },
 
-    getPracticingLabel: function () {
-      const parts = [];
+    getPracticingLabel: function (): string {
+      const parts: string[] = [];
       if (enabledStrings.size < instrument.stringCount) {
-        const names = Array.from(enabledStrings).sort(function (a, b) {
+        const names = Array.from(enabledStrings).sort(function (a: number, b: number) {
           return b - a;
         })
-          .map(function (s) {
+          .map(function (s: number) {
             return displayNote(instrument.stringNames[s]);
           });
         parts.push(
@@ -497,7 +503,7 @@ function createFrettedInstrumentMode(instrument) {
       return parts.join(', ');
     },
 
-    presentQuestion: function (itemId) {
+    presentQuestion: function (itemId: string): void {
       clearAll(quizFretboard);
       const q = fb.parseFretboardItem(itemId);
       currentString = q.currentString;
@@ -505,56 +511,56 @@ function createFrettedInstrumentMode(instrument) {
       currentNote = q.currentNote;
       // Highlight active position, rest stay at default blank fill
       setCircleFill(quizFretboard, q.currentString, q.currentFret, FB_QUIZ_HL);
-      container.querySelector('.quiz-prompt').textContent = 'Name this note.';
+      container.querySelector('.quiz-prompt')!.textContent = 'Name this note.';
     },
 
-    checkAnswer: function (_itemId, input) {
-      return fb.checkFretboardAnswer(currentNote, input);
+    checkAnswer: function (_itemId: string, input: string): CheckAnswerResult {
+      return fb.checkFretboardAnswer(currentNote!, input);
     },
 
-    onAnswer: function (_itemId, result, _responseTime) {
+    onAnswer: function (_itemId: string, result: CheckAnswerResult, _responseTime: number): void {
       if (result.correct) {
         setCircleFill(
           quizFretboard,
-          currentString,
-          currentFret,
+          currentString!,
+          currentFret!,
           'var(--color-success)',
         );
       } else {
         setCircleFill(
           quizFretboard,
-          currentString,
-          currentFret,
+          currentString!,
+          currentFret!,
           'var(--color-error)',
         );
       }
     },
 
-    onStart: function () {
+    onStart: function (): void {
       noteKeyHandler.reset();
       if (statsControls.mode) hideHeatmap();
-      updateStats(engine.selector);
+      updateStats();
     },
 
-    onStop: function () {
+    onStop: function (): void {
       noteKeyHandler.reset();
       clearAll(quizFretboard);
-      updateStats(engine.selector);
+      updateStats();
       if (activeTab === 'progress') {
         statsControls.show('retention');
       }
       refreshUI();
     },
 
-    handleKey: function (e, _ctx) {
+    handleKey: function (e: KeyboardEvent, _ctx: { submitAnswer: (input: string) => void }): boolean {
       return noteKeyHandler.handleKey(e);
     },
 
-    getCalibrationButtons: function () {
+    getCalibrationButtons: function (): HTMLElement[] {
       return Array.from(container.querySelectorAll('.note-btn:not(.hidden)'));
     },
 
-    getCalibrationTrialConfig: function (buttons, prevBtn) {
+    getCalibrationTrialConfig: function (buttons: HTMLElement[], prevBtn: HTMLElement | null): CalibrationTrialConfig {
       const btn = pickCalibrationButton(buttons, prevBtn);
       return { prompt: 'Press ' + btn.textContent, targetButtons: [btn] };
     },
@@ -565,7 +571,7 @@ function createFrettedInstrumentMode(instrument) {
 
   // Keyboard handler
   const noteKeyHandler = createAdaptiveKeyHandler(
-    function (input) {
+    function (input: string) {
       engine.submitAnswer(input);
     },
     function () {
@@ -574,44 +580,44 @@ function createFrettedInstrumentMode(instrument) {
   );
 
   // Pre-cache all positions
-  const allItemIds = [];
+  const allItemIds: string[] = [];
   for (let si = 0; si < allStrings.length; si++) {
     for (let fi = 0; fi < instrument.fretCount; fi++) {
       allItemIds.push(allStrings[si] + '-' + fi);
     }
   }
-  engine.storage.preload(allItemIds);
+  engine.storage.preload?.(allItemIds);
 
   // --- Wire up DOM ---
 
-  function init() {
+  function init(): void {
     loadEnabledStrings();
     loadNoteFilter();
 
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach(function (btn) {
+    container.querySelectorAll<HTMLElement>('.mode-tab').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        switchTab(btn.dataset.tab);
+        switchTab(btn.dataset.tab!);
       });
     });
 
     // String toggles
-    container.querySelectorAll('.string-toggle').forEach(function (btn) {
+    container.querySelectorAll<HTMLElement>('.string-toggle').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        toggleString(parseInt(btn.dataset.string));
+        toggleString(parseInt(btn.dataset.string!));
       });
     });
 
     // Note buttons (for quiz)
-    container.querySelectorAll('.note-btn').forEach(function (btn) {
+    container.querySelectorAll<HTMLElement>('.note-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         if (!engine.isActive || engine.isAnswered) return;
-        engine.submitAnswer(btn.dataset.note);
+        engine.submitAnswer(btn.dataset.note!);
       });
     });
 
     // Notes toggles (natural / sharps & flats)
-    container.querySelectorAll('.notes-toggle').forEach(function (btn) {
+    container.querySelectorAll<HTMLElement>('.notes-toggle').forEach(function (btn) {
       btn.addEventListener('click', function () {
         btn.classList.toggle('active');
         // Ensure at least one is active
@@ -633,7 +639,7 @@ function createFrettedInstrumentMode(instrument) {
     });
 
     // Start button
-    container.querySelector('.start-btn').addEventListener(
+    container.querySelector('.start-btn')!.addEventListener(
       'click',
       function () {
         engine.start();
@@ -644,9 +650,9 @@ function createFrettedInstrumentMode(instrument) {
     const recBtn = container.querySelector('.practice-rec-btn');
     if (recBtn) {
       recBtn.addEventListener('click', function () {
-        applyRecommendations(engine.selector);
+        applyRecommendations();
         if (lastNotePri) {
-          noteFilter = lastNotePri.suggestedFilter;
+          noteFilter = lastNotePri.suggestedFilter as 'natural' | 'sharps-flats' | 'all';
           saveNoteFilter();
           updateNoteToggles();
           updateAccidentalButtons();
@@ -658,9 +664,9 @@ function createFrettedInstrumentMode(instrument) {
     // Hover card only on progress fretboard (not quiz — would reveal the answer)
     if (progressFretboard) setupHoverCard(progressFretboard);
 
-    updateRecommendations(engine.selector);
+    updateRecommendations();
     updateAccidentalButtons();
-    updateStats(engine.selector);
+    updateStats();
     renderPracticeSummary();
     renderSessionSummary();
   }
@@ -669,17 +675,17 @@ function createFrettedInstrumentMode(instrument) {
     mode: mode,
     engine: engine,
     init: init,
-    activate: function () {
+    activate: function (): void {
       engine.attach();
       refreshNoteButtonLabels(container);
       refreshUI();
     },
-    deactivate: function () {
+    deactivate: function (): void {
       if (engine.isRunning) engine.stop();
       engine.detach();
       noteKeyHandler.reset();
     },
-    onNotationChange: function () {
+    onNotationChange: function (): void {
       if (!container.classList.contains('mode-active')) return;
       renderPracticeSummary();
       if (activeTab === 'progress' && statsControls.mode) {

@@ -1,18 +1,30 @@
 // Navigation: home screen and mode switching.
 // Persists last-used mode in localStorage.
 
-export function createNavigation() {
+type ModeController = {
+  init(): void;
+  activate(): void;
+  deactivate(): void;
+  name: string;
+};
+
+export function createNavigation(): {
+  registerMode: (id: string, modeController: ModeController) => void;
+  switchTo: (modeId: string) => void;
+  navigateHome: () => void;
+  init: () => void;
+} {
   const LAST_MODE_KEY = 'fretboard_lastMode';
-  const modes = {}; // id -> { init, activate, deactivate, name }
-  let currentModeId = null;
+  const modes: Record<string, ModeController> = {};
+  let currentModeId: string | null = null;
 
-  const homeScreen = document.getElementById('home-screen');
+  const homeScreen: HTMLElement | null = document.getElementById('home-screen');
 
-  function registerMode(id, modeController) {
+  function registerMode(id: string, modeController: ModeController): void {
     modes[id] = modeController;
   }
 
-  function navigateHome() {
+  function navigateHome(): void {
     // Stop quiz if active in current mode
     if (currentModeId && modes[currentModeId]) {
       modes[currentModeId].deactivate();
@@ -25,7 +37,7 @@ export function createNavigation() {
     if (homeScreen) homeScreen.classList.remove('hidden');
   }
 
-  function switchTo(modeId) {
+  function switchTo(modeId: string): void {
     if (!modes[modeId]) return;
 
     // Hide home screen
@@ -48,28 +60,32 @@ export function createNavigation() {
     localStorage.setItem(LAST_MODE_KEY, modeId);
   }
 
-  function init() {
+  function init(): void {
     // Home screen mode buttons
     if (homeScreen) {
-      homeScreen.querySelectorAll('.home-mode-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          switchTo(btn.dataset.mode);
-        });
-      });
+      homeScreen.querySelectorAll<HTMLElement>('.home-mode-btn').forEach(
+        function (btn: HTMLElement): void {
+          btn.addEventListener('click', function (): void {
+            switchTo(btn.dataset.mode!);
+          });
+        },
+      );
     }
 
     // Mode back buttons (one per mode screen)
-    document.querySelectorAll('.mode-back-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        navigateHome();
-      });
-    });
+    document.querySelectorAll('.mode-back-btn').forEach(
+      function (btn: Element): void {
+        btn.addEventListener('click', function (): void {
+          navigateHome();
+        });
+      },
+    );
 
     // Escape key navigates home when idle on a mode screen.
     // During active quiz/calibration the container has phase-active,
     // phase-calibration, or phase-round-complete — we only act on phase-idle
     // so the quiz engine handles Escape independently in other phases.
-    document.addEventListener('keydown', function (e) {
+    document.addEventListener('keydown', function (e: KeyboardEvent): void {
       if (e.key !== 'Escape' || !currentModeId) return;
       // Don't interfere with open modals (e.g. settings)
       if (document.querySelector('.settings-overlay.open')) return;
@@ -85,7 +101,7 @@ export function createNavigation() {
     }
 
     // Switch to last-used mode or show home screen
-    const lastMode = localStorage.getItem(LAST_MODE_KEY);
+    const lastMode: string | null = localStorage.getItem(LAST_MODE_KEY);
     if (lastMode && modes[lastMode]) {
       switchTo(lastMode);
     } else {

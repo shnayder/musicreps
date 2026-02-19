@@ -3,15 +3,21 @@
 
 import { getUseSolfege, setUseSolfege } from './music-data.ts';
 
-export function createSettingsModal(options) {
-  const onNotationChange = options.onNotationChange || function () {};
+export function createSettingsModal(
+  options: { onNotationChange?: () => void },
+): {
+  open: () => void;
+  close: () => void;
+} {
+  const onNotationChange: () => void = options.onNotationChange ||
+    function (): void {};
 
   // --- Build modal DOM ---
 
-  const overlay = document.createElement('div');
+  const overlay: HTMLDivElement = document.createElement('div');
   overlay.className = 'settings-overlay';
 
-  const modal = document.createElement('div');
+  const modal: HTMLDivElement = document.createElement('div');
   modal.className = 'settings-modal';
   modal.innerHTML = '<div class="settings-header">' +
     '<span class="settings-title">Settings</span>' +
@@ -32,44 +38,46 @@ export function createSettingsModal(options) {
 
   // --- Refs ---
 
-  const closeBtn = modal.querySelector('.settings-close-btn');
-  const toggleBtns = modal.querySelectorAll('.settings-toggle-btn');
+  const closeBtn: Element = modal.querySelector('.settings-close-btn')!;
+  const toggleBtns: NodeListOf<HTMLElement> = modal.querySelectorAll<
+    HTMLElement
+  >('.settings-toggle-btn');
 
   // --- State ---
 
-  function updateToggleState() {
-    const current = getUseSolfege() ? 'solfege' : 'letter';
-    toggleBtns.forEach(function (btn) {
+  function updateToggleState(): void {
+    const current: string = getUseSolfege() ? 'solfege' : 'letter';
+    toggleBtns.forEach(function (btn: HTMLElement): void {
       btn.classList.toggle('active', btn.dataset.notation === current);
     });
   }
 
   // --- Open / Close ---
 
-  function open() {
+  function open(): void {
     updateToggleState();
     overlay.classList.add('open');
   }
 
-  function close() {
+  function close(): void {
     overlay.classList.remove('open');
   }
 
   // --- Event handlers ---
 
   closeBtn.addEventListener('click', close);
-  overlay.addEventListener('click', function (e) {
+  overlay.addEventListener('click', function (e: MouseEvent): void {
     if (e.target === overlay) close();
   });
-  document.addEventListener('keydown', function (e) {
+  document.addEventListener('keydown', function (e: KeyboardEvent): void {
     if (e.key === 'Escape' && overlay.classList.contains('open')) {
       close();
     }
   });
 
-  toggleBtns.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const wantSolfege = btn.dataset.notation === 'solfege';
+  toggleBtns.forEach(function (btn: HTMLElement): void {
+    btn.addEventListener('click', function (): void {
+      const wantSolfege: boolean = btn.dataset.notation === 'solfege';
       if (wantSolfege !== getUseSolfege()) {
         setUseSolfege(wantSolfege);
         updateToggleState();
