@@ -1,432 +1,585 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Color System — Music Reps</title>
-  <!-- Pull in the real stylesheet so CSS variables are live -->
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    /* Override app layout for this reference page */
-    body {
-      max-width: 720px;
-      padding: 2rem 1rem;
-      min-height: auto;
-      color: var(--color-text);
-      line-height: 1.5;
-    }
-    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
-    .subtitle { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
-    h2 { font-size: 1.1rem; margin: 2rem 0 0.75rem; padding-bottom: 0.25rem; border-bottom: 1px solid var(--color-border-lighter); }
-    p { font-size: 0.85rem; color: var(--color-text-muted); margin: 0 0 1rem; }
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color System — Music Reps</title>
+    <!-- Pull in the real stylesheet so CSS variables are live -->
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      /* Override app layout for this reference page */
+      body {
+        max-width: 720px;
+        padding: 2rem 1rem;
+        min-height: auto;
+        color: var(--color-text);
+        line-height: 1.5;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 0 0 0.25rem;
+      }
+      .subtitle {
+        color: var(--color-text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin: 2rem 0 0.75rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px solid var(--color-border-lighter);
+      }
+      p {
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+        margin: 0 0 1rem;
+      }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
-    .swatch-card {
-      border: 1px solid var(--color-border-light);
-      border-radius: 6px;
-      overflow: hidden;
-      font-size: 0.8rem;
-    }
-    .swatch-color {
-      height: 48px;
-      border-bottom: 1px solid var(--color-border-light);
-    }
-    .swatch-info { padding: 0.4rem 0.6rem; }
-    .swatch-var {
-      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
-      font-size: 0.75rem;
-      color: var(--color-text);
-      font-weight: 500;
-    }
-    .swatch-value {
-      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
-      font-size: 0.7rem;
-      color: var(--color-text-light);
-    }
-    .swatch-note {
-      font-size: 0.7rem;
-      color: var(--color-text-muted);
-      margin-top: 0.15rem;
-    }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.75rem;
+      }
+      .swatch-card {
+        border: 1px solid var(--color-border-light);
+        border-radius: 6px;
+        overflow: hidden;
+        font-size: 0.8rem;
+      }
+      .swatch-color {
+        height: 48px;
+        border-bottom: 1px solid var(--color-border-light);
+      }
+      .swatch-info {
+        padding: 0.4rem 0.6rem;
+      }
+      .swatch-var {
+        font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+        font-size: 0.75rem;
+        color: var(--color-text);
+        font-weight: 500;
+      }
+      .swatch-value {
+        font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+        font-size: 0.7rem;
+        color: var(--color-text-light);
+      }
+      .swatch-note {
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+        margin-top: 0.15rem;
+      }
 
-    .heatmap-strip {
-      display: flex;
-      gap: 2px;
-      margin: 0.5rem 0;
-    }
-    .heatmap-step {
-      flex: 1;
-      height: 36px;
-      border-radius: 4px;
-      border: 1px solid var(--color-border-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.65rem;
-      font-weight: 500;
-    }
+      .heatmap-strip {
+        display: flex;
+        gap: 2px;
+        margin: 0.5rem 0;
+      }
+      .heatmap-step {
+        flex: 1;
+        height: 36px;
+        border-radius: 4px;
+        border: 1px solid var(--color-border-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+        font-weight: 500;
+      }
 
-    .pair-row {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin: 0.5rem 0;
-      font-size: 0.8rem;
-    }
-    .pair-swatch {
-      width: 32px;
-      height: 32px;
-      border-radius: 4px;
-      border: 1px solid var(--color-border-light);
-      flex-shrink: 0;
-    }
-    .pair-on-bg {
-      padding: 0.3rem 0.6rem;
-      border-radius: 4px;
-      font-weight: 600;
-      font-size: 0.8rem;
-    }
+      .pair-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0.5rem 0;
+        font-size: 0.8rem;
+      }
+      .pair-swatch {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        border: 1px solid var(--color-border-light);
+        flex-shrink: 0;
+      }
+      .pair-on-bg {
+        padding: 0.3rem 0.6rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
 
-    .example-box {
-      border: 1px solid var(--color-border-light);
-      border-radius: 6px;
-      padding: 1rem;
-      margin: 0.75rem 0;
-    }
-    .example-row {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin: 0.5rem 0;
-    }
-    .example-btn {
-      padding: 0.4rem 1rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      border: 2px solid;
-      cursor: default;
-    }
+      .example-box {
+        border: 1px solid var(--color-border-light);
+        border-radius: 6px;
+        padding: 1rem;
+        margin: 0.75rem 0;
+      }
+      .example-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0.5rem 0;
+      }
+      .example-btn {
+        padding: 0.4rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: 2px solid;
+        cursor: default;
+      }
 
-    .slot-demo {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.5rem;
-      height: 2rem;
-      border: 2px solid;
-      border-radius: 6px;
-      font-size: 1rem;
-      font-weight: 600;
-    }
+      .slot-demo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2rem;
+        border: 2px solid;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+      }
 
-    .scale-row {
-      display: flex;
-      align-items: baseline;
-      gap: 0.75rem;
-      margin: 0.3rem 0;
-      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
-      font-size: 0.75rem;
-      color: var(--color-text-muted);
-    }
-    .scale-sample {
-      color: var(--color-text);
-    }
+      .scale-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+        margin: 0.3rem 0;
+        font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+      }
+      .scale-sample {
+        color: var(--color-text);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Color System</h1>
+    <div class="subtitle">
+      Music Reps design reference &mdash; all values read live from
+      <code>src/styles.css</code> <code>:root</code> variables.
+    </div>
+    <div style="margin-bottom: 1rem; font-size: 0.8rem">
+      <a
+        href="components.html"
+        style="color: var(--color-brand-dark); text-decoration: none"
+      >Design System (components, spacing, layout) &rarr;</a>
+    </div>
 
-  </style>
-</head>
-<body>
-  <h1>Color System</h1>
-  <div class="subtitle">
-    Music Reps design reference &mdash; all values read live from
-    <code>src/styles.css</code> <code>:root</code> variables.
-  </div>
-  <div style="margin-bottom:1rem;font-size:0.8rem;"><a href="components.html" style="color:var(--color-brand-dark);text-decoration:none;">Design System (components, spacing, layout) &rarr;</a></div>
+    <!-- ================================================================== -->
+    <h2>Brand</h2>
+    <p>Sage green — natural, earthy feel. Used for CTAs and identity.</p>
 
-  <!-- ================================================================== -->
-  <h2>Brand</h2>
-  <p>Sage green — natural, earthy feel. Used for CTAs and identity.</p>
+    <div id="brand-colors" class="grid"></div>
 
-  <div id="brand-colors" class="grid"></div>
+    <!-- ================================================================== -->
+    <h2>Top Bar</h2>
+    <div id="topbar-colors" class="grid"></div>
 
-  <!-- ================================================================== -->
-  <h2>Top Bar</h2>
-  <div id="topbar-colors" class="grid"></div>
+    <!-- ================================================================== -->
+    <h2>Semantic Colors</h2>
+    <p>
+      Core roles used across the UI. Each role has a primary, dark, background,
+      and text variant where applicable.
+    </p>
 
-  <!-- ================================================================== -->
-  <h2>Semantic Colors</h2>
-  <p>Core roles used across the UI. Each role has a primary, dark, background,
-     and text variant where applicable.</p>
+    <div id="semantic-colors" class="grid"></div>
 
-  <div id="semantic-colors" class="grid"></div>
+    <!-- ================================================================== -->
+    <h2>Semantic Pairings</h2>
+    <p>How the bg + text variants look together.</p>
 
-  <!-- ================================================================== -->
-  <h2>Semantic Pairings</h2>
-  <p>How the bg + text variants look together.</p>
+    <div id="semantic-pairings"></div>
 
-  <div id="semantic-pairings"></div>
+    <!-- ================================================================== -->
+    <h2>Text</h2>
+    <p>Warm neutrals — subtle warmth instead of pure grays.</p>
+    <div id="text-colors" class="grid"></div>
 
-  <!-- ================================================================== -->
-  <h2>Text</h2>
-  <p>Warm neutrals — subtle warmth instead of pure grays.</p>
-  <div id="text-colors" class="grid"></div>
+    <!-- ================================================================== -->
+    <h2>Surfaces &amp; Backgrounds</h2>
+    <div id="surface-colors" class="grid"></div>
 
-  <!-- ================================================================== -->
-  <h2>Surfaces &amp; Backgrounds</h2>
-  <div id="surface-colors" class="grid"></div>
+    <!-- ================================================================== -->
+    <h2>Borders</h2>
+    <div id="border-colors" class="grid"></div>
 
-  <!-- ================================================================== -->
-  <h2>Borders</h2>
-  <div id="border-colors" class="grid"></div>
+    <!-- ================================================================== -->
+    <h2>Heatmap Scale</h2>
+    <p>
+      Warm terracotta → sage sequential scale. Bright at both ends, muted in the
+      middle. No red/green dependency.
+    </p>
 
-  <!-- ================================================================== -->
-  <h2>Heatmap Scale</h2>
-  <p>Warm terracotta → sage sequential scale. Bright at both ends, muted in
-     the middle. No red/green dependency.</p>
+    <div id="heatmap-strip" class="heatmap-strip"></div>
 
-  <div id="heatmap-strip" class="heatmap-strip"></div>
+    <!-- ================================================================== -->
+    <h2>Typography Scale</h2>
+    <p>7 tokens consolidating 15+ previous sizes.</p>
+    <div id="type-scale"></div>
 
-  <!-- ================================================================== -->
-  <h2>Typography Scale</h2>
-  <p>7 tokens consolidating 15+ previous sizes.</p>
-  <div id="type-scale"></div>
+    <!-- ================================================================== -->
+    <h2>Spacing Scale</h2>
+    <p>6 tokens consolidating 9+ previous gap/padding values.</p>
+    <div id="spacing-scale"></div>
 
-  <!-- ================================================================== -->
-  <h2>Spacing Scale</h2>
-  <p>6 tokens consolidating 9+ previous gap/padding values.</p>
-  <div id="spacing-scale"></div>
+    <!-- ================================================================== -->
+    <h2>In Context</h2>
+    <p>Examples of how colors combine in actual UI patterns.</p>
 
-  <!-- ================================================================== -->
-  <h2>In Context</h2>
-  <p>Examples of how colors combine in actual UI patterns.</p>
+    <div id="examples"></div>
 
-  <div id="examples"></div>
+    <script>
+      // --- Color reference rendering ---
+      function v(name) {
+        return getComputedStyle(document.documentElement)
+          .getPropertyValue(name).trim();
+      }
 
-  <script>
-    // --- Color reference rendering ---
-    function v(name) {
-      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    }
+      // --- Render a group of swatch cards into a container ---
+      function renderSwatches(containerId, vars) {
+        var el = document.getElementById(containerId);
+        el.innerHTML = vars.map(function (item) {
+          var val = v(item.v);
+          var contrast = needsLightText(val) ? 'color:white;' : '';
+          return '<div class="swatch-card">' +
+            '<div class="swatch-color" style="background:' + val + ';' +
+            contrast + '"></div>' +
+            '<div class="swatch-info">' +
+            '<div class="swatch-var">' + item.v + '</div>' +
+            '<div class="swatch-value">' + val + '</div>' +
+            (item.note
+              ? '<div class="swatch-note">' + item.note + '</div>'
+              : '') +
+            '</div></div>';
+        }).join('');
+      }
 
-    // --- Render a group of swatch cards into a container ---
-    function renderSwatches(containerId, vars) {
-      var el = document.getElementById(containerId);
-      el.innerHTML = vars.map(function(item) {
-        var val = v(item.v);
-        var contrast = needsLightText(val) ? 'color:white;' : '';
-        return '<div class="swatch-card">'
-          + '<div class="swatch-color" style="background:' + val + ';' + contrast + '"></div>'
-          + '<div class="swatch-info">'
-          + '<div class="swatch-var">' + item.v + '</div>'
-          + '<div class="swatch-value">' + val + '</div>'
-          + (item.note ? '<div class="swatch-note">' + item.note + '</div>' : '')
-          + '</div></div>';
-      }).join('');
-    }
+      function needsLightText(color) {
+        // Quick luminance check for hex colors
+        if (color.charAt(0) !== '#') return false;
+        var hex = color.length === 4
+          ? color[1] + color[1] + color[2] + color[2] + color[3] +
+            color[3]
+          : color.slice(1);
+        var r = parseInt(hex.substr(0, 2), 16);
+        var g = parseInt(hex.substr(2, 2), 16);
+        var b = parseInt(hex.substr(4, 2), 16);
+        return (r * 0.299 + g * 0.587 + b * 0.114) < 140;
+      }
 
-    function needsLightText(color) {
-      // Quick luminance check for hex colors
-      if (color.charAt(0) !== '#') return false;
-      var hex = color.length === 4
-        ? color[1]+color[1]+color[2]+color[2]+color[3]+color[3]
-        : color.slice(1);
-      var r = parseInt(hex.substr(0,2), 16);
-      var g = parseInt(hex.substr(2,2), 16);
-      var b = parseInt(hex.substr(4,2), 16);
-      return (r * 0.299 + g * 0.587 + b * 0.114) < 140;
-    }
+      function renderAll() {
+        // --- Brand ---
+        renderSwatches('brand-colors', [
+          {
+            v: '--color-brand',
+            note: 'Start Quiz CTA, active stats toggle, focus outline',
+          },
+          {
+            v: '--color-brand-dark',
+            note: 'Hover CTA, nav active text',
+          },
+          { v: '--color-brand-bg', note: 'Nav active item background' },
+        ]);
 
-    function renderAll() {
+        // --- Top bar ---
+        renderSwatches('topbar-colors', [
+          { v: '--color-topbar-bg', note: 'Dark top bar background' },
+          {
+            v: '--color-topbar-text',
+            note: 'Top bar text, hamburger icon',
+          },
+        ]);
 
-    // --- Brand ---
-    renderSwatches('brand-colors', [
-      { v: '--color-brand',      note: 'Start Quiz CTA, active stats toggle, focus outline' },
-      { v: '--color-brand-dark', note: 'Hover CTA, nav active text' },
-      { v: '--color-brand-bg',   note: 'Nav active item background' },
-    ]);
+        // --- Semantic colors ---
+        renderSwatches('semantic-colors', [
+          {
+            v: '--color-success',
+            note: 'Correct answer feedback, progress',
+          },
+          {
+            v: '--color-success-dark',
+            note: 'Calibration target border, pressed CTA',
+          },
+          { v: '--color-success-bg', note: 'Mastery message bg' },
+          { v: '--color-success-text', note: 'Text on success-bg' },
+          {
+            v: '--color-error',
+            note: 'Incorrect answer, expired countdown',
+          },
+          { v: '--color-error-bg', note: 'Wrong chord-slot bg' },
+          { v: '--color-error-text', note: 'Text on error-bg' },
+          { v: '--color-focus', note: 'Active chord-slot border' },
+          { v: '--color-focus-bg', note: 'Active chord-slot bg' },
+          {
+            v: '--color-toggle-active',
+            note: 'Active string/distance toggle (themed)',
+          },
+          {
+            v: '--color-toggle-recommended',
+            note: 'Recommended toggle glow (themed)',
+          },
+          {
+            v: '--color-highlight',
+            note: 'Gold — current fretboard question (SVG)',
+          },
+        ]);
 
-    // --- Top bar ---
-    renderSwatches('topbar-colors', [
-      { v: '--color-topbar-bg',   note: 'Dark top bar background' },
-      { v: '--color-topbar-text', note: 'Top bar text, hamburger icon' },
-    ]);
+        // --- Pairings ---
+        (function () {
+          var pairs = [
+            {
+              bg: '--color-success-bg',
+              text: '--color-success-text',
+              label: 'Success',
+            },
+            {
+              bg: '--color-error-bg',
+              text: '--color-error-text',
+              label: 'Error',
+            },
+            {
+              bg: '--color-focus-bg',
+              text: '--color-focus',
+              label: 'Focus',
+            },
+            {
+              bg: '--color-brand-bg',
+              text: '--color-brand-dark',
+              label: 'Brand',
+            },
+          ];
+          var el = document.getElementById('semantic-pairings');
+          el.innerHTML = pairs.map(function (p) {
+            return '<div class="pair-row">' +
+              '<span class="pair-on-bg" style="background:' + v(p.bg) +
+              ';color:' + v(p.text) + ';">' + p.label +
+              ' text on bg</span>' +
+              '<span class="swatch-value">' + p.bg + ' + ' + p.text +
+              '</span>' +
+              '</div>';
+          }).join('');
+        })();
 
-    // --- Semantic colors ---
-    renderSwatches('semantic-colors', [
-      { v: '--color-success',      note: 'Correct answer feedback, progress' },
-      { v: '--color-success-dark', note: 'Calibration target border, pressed CTA' },
-      { v: '--color-success-bg',   note: 'Mastery message bg' },
-      { v: '--color-success-text', note: 'Text on success-bg' },
-      { v: '--color-error',        note: 'Incorrect answer, expired countdown' },
-      { v: '--color-error-bg',     note: 'Wrong chord-slot bg' },
-      { v: '--color-error-text',   note: 'Text on error-bg' },
-      { v: '--color-focus',        note: 'Active chord-slot border' },
-      { v: '--color-focus-bg',     note: 'Active chord-slot bg' },
-      { v: '--color-toggle-active',      note: 'Active string/distance toggle (themed)' },
-      { v: '--color-toggle-recommended', note: 'Recommended toggle glow (themed)' },
-      { v: '--color-highlight',    note: 'Gold — current fretboard question (SVG)' },
-    ]);
+        // --- Text ---
+        renderSwatches('text-colors', [
+          { v: '--color-text', note: 'Primary text, headings' },
+          {
+            v: '--color-text-muted',
+            note: 'Secondary text, labels, hints',
+          },
+          {
+            v: '--color-text-light',
+            note: 'Tertiary text, session stats, close buttons',
+          },
+        ]);
 
-    // --- Pairings ---
-    (function() {
-      var pairs = [
-        { bg: '--color-success-bg', text: '--color-success-text', label: 'Success' },
-        { bg: '--color-error-bg',   text: '--color-error-text',   label: 'Error' },
-        { bg: '--color-focus-bg',   text: '--color-focus',        label: 'Focus' },
-        { bg: '--color-brand-bg',   text: '--color-brand-dark',   label: 'Brand' },
-      ];
-      var el = document.getElementById('semantic-pairings');
-      el.innerHTML = pairs.map(function(p) {
-        return '<div class="pair-row">'
-          + '<span class="pair-on-bg" style="background:' + v(p.bg)
-          + ';color:' + v(p.text) + ';">' + p.label + ' text on bg</span>'
-          + '<span class="swatch-value">' + p.bg + ' + ' + p.text + '</span>'
-          + '</div>';
-      }).join('');
-    })();
+        // --- Surfaces ---
+        renderSwatches('surface-colors', [
+          { v: '--color-bg', note: 'Page background, button default' },
+          {
+            v: '--color-surface',
+            note: 'Quiz card bg, inactive toggles, table headers',
+          },
+          {
+            v: '--color-surface-hover',
+            note: 'Button/nav hover state',
+          },
+          {
+            v: '--color-surface-alt',
+            note: 'Progress bar bg, countdown bg',
+          },
+          {
+            v: '--color-surface-pressed',
+            note: 'Button :active state',
+          },
+          {
+            v: '--color-surface-accent',
+            note: 'Accidental note button bg',
+          },
+        ]);
 
-    // --- Text ---
-    renderSwatches('text-colors', [
-      { v: '--color-text',       note: 'Primary text, headings' },
-      { v: '--color-text-muted', note: 'Secondary text, labels, hints' },
-      { v: '--color-text-light', note: 'Tertiary text, session stats, close buttons' },
-    ]);
+        // --- Borders ---
+        renderSwatches('border-colors', [
+          {
+            v: '--color-border',
+            note: 'Toggle borders, chord-slot borders',
+          },
+          {
+            v: '--color-border-light',
+            note: 'Table borders, toggle separator',
+          },
+          { v: '--color-border-lighter', note: 'Section dividers' },
+        ]);
 
-    // --- Surfaces ---
-    renderSwatches('surface-colors', [
-      { v: '--color-bg',              note: 'Page background, button default' },
-      { v: '--color-surface',         note: 'Quiz card bg, inactive toggles, table headers' },
-      { v: '--color-surface-hover',   note: 'Button/nav hover state' },
-      { v: '--color-surface-alt',     note: 'Progress bar bg, countdown bg' },
-      { v: '--color-surface-pressed', note: 'Button :active state' },
-      { v: '--color-surface-accent',  note: 'Accidental note button bg' },
-    ]);
+        // --- Heatmap strip ---
+        (function () {
+          var steps = [
+            { v: '--heatmap-1', label: '1 (worst)' },
+            { v: '--heatmap-2', label: '2' },
+            { v: '--heatmap-3', label: '3' },
+            { v: '--heatmap-4', label: '4' },
+            { v: '--heatmap-5', label: '5 (best)' },
+          ];
+          var none = { v: '--heatmap-none', label: 'none' };
+          var el = document.getElementById('heatmap-strip');
+          el.innerHTML = [none].concat(steps).map(function (s) {
+            return '<div class="heatmap-step" style="background:' +
+              v(s.v) + ';">' + s.label + '</div>';
+          }).join('');
+        })();
 
-    // --- Borders ---
-    renderSwatches('border-colors', [
-      { v: '--color-border',         note: 'Toggle borders, chord-slot borders' },
-      { v: '--color-border-light',   note: 'Table borders, toggle separator' },
-      { v: '--color-border-lighter', note: 'Section dividers' },
-    ]);
+        // --- Typography scale ---
+        (function () {
+          var tokens = [
+            {
+              v: '--text-xs',
+              label: 'xs',
+              desc: 'Legend labels, tiny stats',
+            },
+            {
+              v: '--text-sm',
+              label: 'sm',
+              desc: 'Session stats, settings, table text',
+            },
+            {
+              v: '--text-base',
+              label: 'base',
+              desc: 'Body, buttons, nav items',
+            },
+            { v: '--text-md', label: 'md', desc: 'Answer buttons' },
+            { v: '--text-lg', label: 'lg', desc: 'Mode title' },
+            {
+              v: '--text-xl',
+              label: 'xl',
+              desc: 'Hamburger, feedback',
+            },
+            { v: '--text-2xl', label: '2xl', desc: 'Quiz prompts' },
+          ];
+          var el = document.getElementById('type-scale');
+          el.innerHTML = tokens.map(function (t) {
+            return '<div class="scale-row">' +
+              '<span style="width:6rem;">' + t.v + '</span>' +
+              '<span style="width:4rem;">' + v(t.v) + '</span>' +
+              '<span class="scale-sample" style="font-size:' + v(t.v) +
+              ';">Ag</span>' +
+              '<span>' + t.desc + '</span>' +
+              '</div>';
+          }).join('');
+        })();
 
-    // --- Heatmap strip ---
-    (function() {
-      var steps = [
-        { v: '--heatmap-1', label: '1 (worst)' },
-        { v: '--heatmap-2', label: '2' },
-        { v: '--heatmap-3', label: '3' },
-        { v: '--heatmap-4', label: '4' },
-        { v: '--heatmap-5', label: '5 (best)' },
-      ];
-      var none = { v: '--heatmap-none', label: 'none' };
-      var el = document.getElementById('heatmap-strip');
-      el.innerHTML = [none].concat(steps).map(function(s) {
-        return '<div class="heatmap-step" style="background:' + v(s.v) + ';">' + s.label + '</div>';
-      }).join('');
-    })();
+        // --- Spacing scale ---
+        (function () {
+          var tokens = [
+            { v: '--space-1', desc: 'Toggle gaps, pixel-level' },
+            { v: '--space-2', desc: 'Button grid gaps, tight padding' },
+            { v: '--space-3', desc: 'Standard gap, small padding' },
+            { v: '--space-4', desc: 'Section gaps, nav padding' },
+            { v: '--space-5', desc: 'Body padding, section spacing' },
+            { v: '--space-6', desc: 'Large section gaps' },
+          ];
+          var el = document.getElementById('spacing-scale');
+          el.innerHTML = tokens.map(function (t) {
+            return '<div class="scale-row">' +
+              '<span style="width:6rem;">' + t.v + '</span>' +
+              '<span style="width:4rem;">' + v(t.v) + '</span>' +
+              '<span style="display:inline-block;width:' + v(t.v) +
+              ';height:12px;background:var(--color-brand);border-radius:2px;"></span>' +
+              '<span>' + t.desc + '</span>' +
+              '</div>';
+          }).join('');
+        })();
 
-    // --- Typography scale ---
-    (function() {
-      var tokens = [
-        { v: '--text-xs',  label: 'xs',  desc: 'Legend labels, tiny stats' },
-        { v: '--text-sm',  label: 'sm',  desc: 'Session stats, settings, table text' },
-        { v: '--text-base',label: 'base',desc: 'Body, buttons, nav items' },
-        { v: '--text-md',  label: 'md',  desc: 'Answer buttons' },
-        { v: '--text-lg',  label: 'lg',  desc: 'Mode title' },
-        { v: '--text-xl',  label: 'xl',  desc: 'Hamburger, feedback' },
-        { v: '--text-2xl', label: '2xl', desc: 'Quiz prompts' },
-      ];
-      var el = document.getElementById('type-scale');
-      el.innerHTML = tokens.map(function(t) {
-        return '<div class="scale-row">'
-          + '<span style="width:6rem;">' + t.v + '</span>'
-          + '<span style="width:4rem;">' + v(t.v) + '</span>'
-          + '<span class="scale-sample" style="font-size:' + v(t.v) + ';">Ag</span>'
-          + '<span>' + t.desc + '</span>'
-          + '</div>';
-      }).join('');
-    })();
+        // --- In-context examples ---
+        (function () {
+          var el = document.getElementById('examples');
+          var html = '';
 
-    // --- Spacing scale ---
-    (function() {
-      var tokens = [
-        { v: '--space-1', desc: 'Toggle gaps, pixel-level' },
-        { v: '--space-2', desc: 'Button grid gaps, tight padding' },
-        { v: '--space-3', desc: 'Standard gap, small padding' },
-        { v: '--space-4', desc: 'Section gaps, nav padding' },
-        { v: '--space-5', desc: 'Body padding, section spacing' },
-        { v: '--space-6', desc: 'Large section gaps' },
-      ];
-      var el = document.getElementById('spacing-scale');
-      el.innerHTML = tokens.map(function(t) {
-        return '<div class="scale-row">'
-          + '<span style="width:6rem;">' + t.v + '</span>'
-          + '<span style="width:4rem;">' + v(t.v) + '</span>'
-          + '<span style="display:inline-block;width:' + v(t.v) + ';height:12px;background:var(--color-brand);border-radius:2px;"></span>'
-          + '<span>' + t.desc + '</span>'
-          + '</div>';
-      }).join('');
-    })();
+          // CTA button
+          html += '<div class="example-box">';
+          html += '<div style="font-size:0.75rem;color:' +
+            v('--color-text-muted') +
+            ';margin-bottom:0.5rem;">Primary CTA</div>';
+          html += '<div class="example-row">';
+          html += '<span class="example-btn" style="background:' +
+            v('--color-brand') +
+            ';border-color:' + v('--color-brand') +
+            ';color:white;">Start Quiz</span>';
+          html += '<span class="example-btn" style="background:' +
+            v('--color-bg') +
+            ';border-color:' + v('--color-border') + ';color:' +
+            v('--color-text') + ';">Stop Quiz</span>';
+          html += '</div></div>';
 
-    // --- In-context examples ---
-    (function() {
-      var el = document.getElementById('examples');
-      var html = '';
+          // Toggle buttons (now themed)
+          html += '<div class="example-box">';
+          html += '<div style="font-size:0.75rem;color:' +
+            v('--color-text-muted') +
+            ';margin-bottom:0.5rem;">Toggle states (themed)</div>';
+          html += '<div class="example-row">';
+          html += '<span class="example-btn" style="background:' +
+            v('--color-surface') +
+            ';border-color:' + v('--color-border') + ';color:' +
+            v('--color-border') + ';">Inactive</span>';
+          html += '<span class="example-btn" style="background:' +
+            v('--color-toggle-active') +
+            ';border-color:' + v('--color-toggle-active') +
+            ';color:white;">Active</span>';
+          html += '<span class="example-btn" style="background:' +
+            v('--color-toggle-active') +
+            ';border-color:' + v('--color-toggle-recommended') +
+            ';color:white;box-shadow:0 0 0 2px ' +
+            v('--color-toggle-recommended') + ';">Recommended</span>';
+          html += '</div></div>';
 
-      // CTA button
-      html += '<div class="example-box">';
-      html += '<div style="font-size:0.75rem;color:' + v('--color-text-muted') + ';margin-bottom:0.5rem;">Primary CTA</div>';
-      html += '<div class="example-row">';
-      html += '<span class="example-btn" style="background:' + v('--color-brand')
-        + ';border-color:' + v('--color-brand') + ';color:white;">Start Quiz</span>';
-      html += '<span class="example-btn" style="background:' + v('--color-bg')
-        + ';border-color:' + v('--color-border') + ';color:' + v('--color-text') + ';">Stop Quiz</span>';
-      html += '</div></div>';
+          // Chord slots
+          html += '<div class="example-box">';
+          html += '<div style="font-size:0.75rem;color:' +
+            v('--color-text-muted') +
+            ';margin-bottom:0.5rem;">Chord spelling slots</div>';
+          html += '<div class="example-row">';
+          html += '<span class="slot-demo" style="background:' +
+            v('--color-surface') +
+            ';border-color:' + v('--color-border') + ';">_</span>';
+          html += '<span class="slot-demo" style="background:' +
+            v('--color-focus-bg') +
+            ';border-color:' + v('--color-focus') + ';">_</span>';
+          html += '<span class="slot-demo" style="background:' +
+            v('--color-success-bg') +
+            ';border-color:' + v('--color-success') + ';color:' +
+            v('--color-success-text') + ';">C</span>';
+          html += '<span class="slot-demo" style="background:' +
+            v('--color-error-bg') +
+            ';border-color:' + v('--color-error') + ';color:' +
+            v('--color-error-text') + ';">D</span>';
+          html += '<span style="font-size:0.7rem;color:' +
+            v('--color-text-light') +
+            ';">empty &rarr; active &rarr; correct &rarr; wrong</span>';
+          html += '</div></div>';
 
-      // Toggle buttons (now themed)
-      html += '<div class="example-box">';
-      html += '<div style="font-size:0.75rem;color:' + v('--color-text-muted') + ';margin-bottom:0.5rem;">Toggle states (themed)</div>';
-      html += '<div class="example-row">';
-      html += '<span class="example-btn" style="background:' + v('--color-surface')
-        + ';border-color:' + v('--color-border') + ';color:' + v('--color-border') + ';">Inactive</span>';
-      html += '<span class="example-btn" style="background:' + v('--color-toggle-active')
-        + ';border-color:' + v('--color-toggle-active') + ';color:white;">Active</span>';
-      html += '<span class="example-btn" style="background:' + v('--color-toggle-active')
-        + ';border-color:' + v('--color-toggle-recommended') + ';color:white;box-shadow:0 0 0 2px '
-        + v('--color-toggle-recommended') + ';">Recommended</span>';
-      html += '</div></div>';
+          // Feedback text
+          html += '<div class="example-box">';
+          html += '<div style="font-size:0.75rem;color:' +
+            v('--color-text-muted') +
+            ';margin-bottom:0.5rem;">Feedback text</div>';
+          html += '<div class="example-row">';
+          html +=
+            '<span style="font-size:1.2rem;font-weight:600;color:' +
+            v('--color-success') + ';">Correct!</span>';
+          html +=
+            '<span style="font-size:1.2rem;font-weight:600;color:' +
+            v('--color-error') + ';">Wrong — it was C</span>';
+          html += '</div></div>';
 
-      // Chord slots
-      html += '<div class="example-box">';
-      html += '<div style="font-size:0.75rem;color:' + v('--color-text-muted') + ';margin-bottom:0.5rem;">Chord spelling slots</div>';
-      html += '<div class="example-row">';
-      html += '<span class="slot-demo" style="background:' + v('--color-surface')
-        + ';border-color:' + v('--color-border') + ';">_</span>';
-      html += '<span class="slot-demo" style="background:' + v('--color-focus-bg')
-        + ';border-color:' + v('--color-focus') + ';">_</span>';
-      html += '<span class="slot-demo" style="background:' + v('--color-success-bg')
-        + ';border-color:' + v('--color-success') + ';color:' + v('--color-success-text') + ';">C</span>';
-      html += '<span class="slot-demo" style="background:' + v('--color-error-bg')
-        + ';border-color:' + v('--color-error') + ';color:' + v('--color-error-text') + ';">D</span>';
-      html += '<span style="font-size:0.7rem;color:' + v('--color-text-light')
-        + ';">empty &rarr; active &rarr; correct &rarr; wrong</span>';
-      html += '</div></div>';
+          el.innerHTML = html;
+        })();
+      } // end renderAll
 
-      // Feedback text
-      html += '<div class="example-box">';
-      html += '<div style="font-size:0.75rem;color:' + v('--color-text-muted') + ';margin-bottom:0.5rem;">Feedback text</div>';
-      html += '<div class="example-row">';
-      html += '<span style="font-size:1.2rem;font-weight:600;color:' + v('--color-success') + ';">Correct!</span>';
-      html += '<span style="font-size:1.2rem;font-weight:600;color:' + v('--color-error') + ';">Wrong — it was C</span>';
-      html += '</div></div>';
-
-      el.innerHTML = html;
-    })();
-
-    } // end renderAll
-
-    // Initial render
-    renderAll();
-  </script>
-</body>
+      // Initial render
+      renderAll();
+    </script>
+  </body>
 </html>
