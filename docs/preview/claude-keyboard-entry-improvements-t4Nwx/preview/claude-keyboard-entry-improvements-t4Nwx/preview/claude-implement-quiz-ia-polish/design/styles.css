@@ -71,17 +71,12 @@
 * { -webkit-tap-highlight-color: transparent; }
 html {
   background: var(--color-surface);
-  overscroll-behavior: none;
 }
 body {
   font-family: system-ui, -apple-system, sans-serif;
   max-width: 650px;
   margin: 0 auto;
   padding: 0 var(--space-5);
-  padding-top: env(safe-area-inset-top, 0);
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  padding-left: max(var(--space-5), env(safe-area-inset-left, 0));
-  padding-right: max(var(--space-5), env(safe-area-inset-right, 0));
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -90,7 +85,6 @@ body {
   background: var(--color-bg);
   border-left: 1px solid var(--color-border-lighter);
   border-right: 1px solid var(--color-border-lighter);
-  overscroll-behavior: none;
 }
 
 /* --- Home screen --- */
@@ -140,13 +134,10 @@ body {
 .mode-back-btn:hover { background: var(--color-surface-hover); }
 .mode-back-btn:active { background: var(--color-surface-pressed); }
 .mode-title { margin: 0; font-size: var(--text-lg); font-weight: 600; flex: 1; }
-/* Hide back button during active quiz and calibration; keep title visible */
-.phase-active .mode-back-btn,
-.phase-calibration .mode-back-btn,
-.phase-round-complete .mode-back-btn { display: none; }
+/* Hide mode top bar during active quiz and calibration */
 .phase-active .mode-top-bar,
 .phase-calibration .mode-top-bar,
-.phase-round-complete .mode-top-bar { margin-bottom: 0; }
+.phase-round-complete .mode-top-bar { display: none; }
 
 /* --- Settings modal --- */
 .settings-overlay {
@@ -356,6 +347,7 @@ body {
 .practice-rec-text {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+  white-space: pre-line;
 }
 .practice-rec-text:empty {
   display: none;
@@ -833,10 +825,7 @@ button {
 .phase-round-complete .hint,
 .phase-round-complete .time-display,
 .phase-round-complete .speed-tap-status,
-.phase-round-complete .fretboard-wrapper,
-.phase-round-complete .quiz-countdown-row,
-.phase-round-complete .quiz-session-info,
-.phase-round-complete .quiz-header-close { display: none; }
+.phase-round-complete .fretboard-wrapper { display: none; }
 
 /* --- Note buttons (piano-style layout) --- */
 .note-buttons {
@@ -1348,10 +1337,6 @@ button {
   body {
     margin: 0;
     padding: 0 var(--space-1);
-    padding-top: env(safe-area-inset-top, 0);
-    padding-bottom: env(safe-area-inset-bottom, 0);
-    padding-left: max(var(--space-1), env(safe-area-inset-left, 0));
-    padding-right: max(var(--space-1), env(safe-area-inset-right, 0));
     border-left: none;
     border-right: none;
   }

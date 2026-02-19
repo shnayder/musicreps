@@ -155,17 +155,14 @@
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
-          <div class="practice-status">
-            <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
-          </div>
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
         </div>
-        <div class="practice-zone practice-zone-scope">
-          <div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
-          </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
       <div class="practice-scope">
         <div class="settings-row">
           <div class="toggle-group">
@@ -179,19 +176,15 @@
             <button class="string-toggle active" data-string="5" data-string-note="E">E</button>
           </div>
         </div>
-          <div class="toggle-group">
-            <span class="toggle-group-label">Notes</span>
-            <div class="notes-toggles">
-              <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
-            </div>
-          </div>
+          <label class="setting-group">
+            <input type="checkbox" id="fretboard-naturals-only" checked>
+            Natural only
+          </label>
         </div>
       </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
+        <div class="practice-start">
           <div class="session-summary-text"></div>
+          <div class="mastery-message">Looks like you've got this!</div>
           <button class="start-btn">Start Quiz</button>
         </div>
       </div>
@@ -316,22 +309,20 @@
         </div></div>
       </div>
     </div>
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
-        <div class="quiz-countdown-bar">
-          <div class="quiz-countdown-fill" style="width: 72%;"></div>
-        </div>
-        <span class="quiz-info-time">0:42</span>
+      <div class="quiz-countdown-bar">
+        <div class="quiz-countdown-fill" style="width: 72%;"></div>
       </div>
       <div class="quiz-session-info">
         <span class="quiz-info-context">e, B strings</span>
+        <span class="quiz-info-time">0:42</span>
         <span class="quiz-info-count">7 answers</span>
       </div>
       <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -341,10 +332,7 @@
       </div>
     </div>
     <div class="quiz-area active">
-      <div class="quiz-prompt-row">
-        <div class="quiz-prompt">What note is this?</div>
-        <div class="quiz-last-question"></div>
-      </div>
+      <div class="quiz-prompt">What note is this?</div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
         <svg class="fretboard" viewBox="0 0 600 226">
@@ -486,11 +474,20 @@
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
-          <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-correct"></span>
+            <span class="round-stat-label">correct</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-median"></span>
+            <span class="round-stat-label">median time</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-fluent"></span>
+            <span class="round-stat-label">fluent</span>
+          </div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -519,48 +516,42 @@
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
-          <div class="practice-status">
-            <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
-          </div>
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
         </div>
-        <div class="practice-zone practice-zone-scope">
-          <div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
-          </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
       <div class="practice-scope">
         <div class="settings-row">
           <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
         </div>
       </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
+        <div class="practice-start">
           <div class="session-summary-text"></div>
+          <div class="mastery-message">Looks like you've got this!</div>
           <button class="start-btn">Start Quiz</button>
         </div>
       </div>
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
-        <div class="quiz-countdown-bar">
-          <div class="quiz-countdown-fill" style="width: 55%;"></div>
-        </div>
-        <span class="quiz-info-time">0:28</span>
+      <div class="quiz-countdown-bar">
+        <div class="quiz-countdown-fill" style="width: 55%;"></div>
       </div>
       <div class="quiz-session-info">
         <span class="quiz-info-context">+1 to +5</span>
+        <span class="quiz-info-time">0:28</span>
         <span class="quiz-info-count">14 answers</span>
       </div>
       <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -570,10 +561,7 @@
       </div>
     </div>
     <div class="quiz-area active">
-      <div class="quiz-prompt-row">
-        <div class="quiz-prompt">C + 3 = ?</div>
-        <div class="quiz-last-question"></div>
-      </div>
+      <div class="quiz-prompt">C + 3 = ?</div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
@@ -592,11 +580,20 @@
       <div class="time-display">0.82s</div>
       <div class="hint">Press Space for next question</div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
-          <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-correct"></span>
+            <span class="round-stat-label">correct</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-median"></span>
+            <span class="round-stat-label">median time</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-fluent"></span>
+            <span class="round-stat-label">fluent</span>
+          </div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -625,48 +622,42 @@
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
-          <div class="practice-status">
-            <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
-          </div>
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
         </div>
-        <div class="practice-zone practice-zone-scope">
-          <div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
-          </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
       <div class="practice-scope">
         <div class="settings-row">
           <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
         </div>
       </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
+        <div class="practice-start">
           <div class="session-summary-text"></div>
+          <div class="mastery-message">Looks like you've got this!</div>
           <button class="start-btn">Start Quiz</button>
         </div>
       </div>
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
-        <div class="quiz-countdown-bar">
-          <div class="quiz-countdown-fill" style="width: 38%;"></div>
-        </div>
-        <span class="quiz-info-time">0:18</span>
+      <div class="quiz-countdown-bar">
+        <div class="quiz-countdown-fill" style="width: 38%;"></div>
       </div>
       <div class="quiz-session-info">
         <span class="quiz-info-context">+m2 to +P5</span>
+        <span class="quiz-info-time">0:18</span>
         <span class="quiz-info-count">22 answers</span>
       </div>
       <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -676,10 +667,7 @@
       </div>
     </div>
     <div class="quiz-area active">
-      <div class="quiz-prompt-row">
-        <div class="quiz-prompt">G + M3 = ?</div>
-        <div class="quiz-last-question"></div>
-      </div>
+      <div class="quiz-prompt">G + M3 = ?</div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
@@ -698,11 +686,20 @@
       <div class="time-display">1.34s</div>
       <div class="hint">Press Space for next question</div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
-          <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-correct"></span>
+            <span class="round-stat-label">correct</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-median"></span>
+            <span class="round-stat-label">median time</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-fluent"></span>
+            <span class="round-stat-label">fluent</span>
+          </div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -731,48 +728,42 @@
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
-          <div class="practice-status">
-            <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
-          </div>
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
         </div>
-        <div class="practice-zone practice-zone-scope">
-          <div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
-          </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
       <div class="practice-scope">
         <div class="settings-row">
           <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
         </div>
       </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
+        <div class="practice-start">
           <div class="session-summary-text"></div>
+          <div class="mastery-message">Looks like you've got this!</div>
           <button class="start-btn">Start Quiz</button>
         </div>
       </div>
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
-        <div class="quiz-countdown-bar">
-          <div class="quiz-countdown-fill" style="width: 60%;"></div>
-        </div>
-        <span class="quiz-info-time">0:35</span>
+      <div class="quiz-countdown-bar">
+        <div class="quiz-countdown-fill" style="width: 60%;"></div>
       </div>
       <div class="quiz-session-info">
         <span class="quiz-info-context">major, minor</span>
+        <span class="quiz-info-time">0:35</span>
         <span class="quiz-info-count">5 answers</span>
       </div>
       <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -782,10 +773,7 @@
       </div>
     </div>
     <div class="quiz-area active">
-      <div class="quiz-prompt-row">
-        <div class="quiz-prompt">Spell: D major</div>
-        <div class="quiz-last-question"></div>
-      </div>
+      <div class="quiz-prompt">Spell: D major</div>
       <div class="chord-slots">
             <span class="chord-slot correct">D</span>
             <span class="chord-slot correct">F#</span>
@@ -809,11 +797,20 @@
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
-          <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-correct"></span>
+            <span class="round-stat-label">correct</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-median"></span>
+            <span class="round-stat-label">median time</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-fluent"></span>
+            <span class="round-stat-label">fluent</span>
+          </div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -843,17 +840,14 @@
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
-          <div class="practice-status">
-            <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
-          </div>
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
         </div>
-        <div class="practice-zone practice-zone-scope">
-          <div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
-          </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
       <div class="practice-scope">
         <div class="settings-row">
           <div class="toggle-group">
@@ -867,19 +861,15 @@
             <button class="string-toggle active" data-string="5" data-string-note="E">E</button>
           </div>
         </div>
-          <div class="toggle-group">
-            <span class="toggle-group-label">Notes</span>
-            <div class="notes-toggles">
-              <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
-            </div>
-          </div>
+          <label class="setting-group">
+            <input type="checkbox" id="fretboard-naturals-only" checked>
+            Natural only
+          </label>
         </div>
       </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
+        <div class="practice-start">
           <div class="session-summary-text"></div>
+          <div class="mastery-message">Looks like you've got this!</div>
           <button class="start-btn">Start Quiz</button>
         </div>
       </div>
@@ -1004,35 +994,30 @@
         </div></div>
       </div>
     </div>
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
-        <div class="quiz-countdown-bar">
-          <div class="quiz-countdown-fill" style="width: 0%;"></div>
-        </div>
-        <span class="quiz-info-time">0:00</span>
+      <div class="quiz-countdown-bar">
+        <div class="quiz-countdown-fill" style="width: 0%;"></div>
       </div>
       <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
-        <span class="quiz-info-count"></span>
+        <span class="quiz-info-context">e, B strings</span>
+        <span class="quiz-info-time">1:00</span>
+        <span class="quiz-info-count">18 answers</span>
       </div>
       <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
-        <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 fluent</div>
+        <div class="progress-fill" style="width: 65%"></div>
+        <div class="progress-text">12 / 18 fluent</div>
       </div>
     </div>
     <div class="quiz-area active">
-      <div class="quiz-prompt-row">
-        <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
-      </div>
+      <div class="quiz-prompt"></div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
         <svg class="fretboard" viewBox="0 0 600 226">
@@ -1174,11 +1159,20 @@
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context">e, B strings &middot; 12 / 18 fluent</div>
-        <div class="round-complete-heading">Round complete</div>
+        <div class="round-complete-heading">Round 3 complete</div>
         <div class="round-complete-stats">
-          <div class="round-stat-line round-stat-correct">16 / 18 correct &middot; 63s</div>
-          <div class="round-stat-line round-stat-median">0.9s median response time</div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-correct">16 / 18</span>
+            <span class="round-stat-label">correct</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-median">0.9s</span>
+            <span class="round-stat-label">median time</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-fluent">12 / 18</span>
+            <span class="round-stat-label">fluent</span>
+          </div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -1204,17 +1198,14 @@
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
-          <div class="practice-status">
-            <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
-          </div>
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
         </div>
-        <div class="practice-zone practice-zone-scope">
-          <div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
-          </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
       <div class="practice-scope">
         <div class="settings-row">
           <div class="toggle-group">
@@ -1228,19 +1219,15 @@
             <button class="string-toggle active" data-string="5" data-string-note="E">E</button>
           </div>
         </div>
-          <div class="toggle-group">
-            <span class="toggle-group-label">Notes</span>
-            <div class="notes-toggles">
-              <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
-            </div>
-          </div>
+          <label class="setting-group">
+            <input type="checkbox" id="fretboard-naturals-only" checked>
+            Natural only
+          </label>
         </div>
       </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
+        <div class="practice-start">
           <div class="session-summary-text"></div>
+          <div class="mastery-message">Looks like you've got this!</div>
           <button class="start-btn">Start Quiz</button>
         </div>
       </div>
@@ -1365,35 +1352,30 @@
         </div></div>
       </div>
     </div>
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
-        <div class="quiz-countdown-bar">
-          <div class="quiz-countdown-fill" style="width: 0%;"></div>
-        </div>
-        <span class="quiz-info-time">0:00</span>
+      <div class="quiz-countdown-bar">
+        <div class="quiz-countdown-fill" style="width: 0%;"></div>
       </div>
       <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
-        <span class="quiz-info-count"></span>
+        <span class="quiz-info-context">all strings</span>
+        <span class="quiz-info-time">1:00</span>
+        <span class="quiz-info-count">9 answers</span>
       </div>
       <button class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
-        <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 fluent</div>
+        <div class="progress-fill" style="width: 15%"></div>
+        <div class="progress-text">3 / 24 fluent</div>
       </div>
     </div>
     <div class="quiz-area active">
-      <div class="quiz-prompt-row">
-        <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
-      </div>
+      <div class="quiz-prompt"></div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
         <svg class="fretboard" viewBox="0 0 600 226">
@@ -1535,11 +1517,20 @@
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context">all strings &middot; 3 / 24 fluent</div>
-        <div class="round-complete-heading">Round complete</div>
+        <div class="round-complete-heading">Round 1 complete</div>
         <div class="round-complete-stats">
-          <div class="round-stat-line round-stat-correct">5 / 9 correct &middot; 62s</div>
-          <div class="round-stat-line round-stat-median">2.8s median response time</div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-correct">5 / 9</span>
+            <span class="round-stat-label">correct</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-median">2.8s</span>
+            <span class="round-stat-label">median time</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-fluent">3 / 24</span>
+            <span class="round-stat-label">fluent</span>
+          </div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -1569,18 +1560,14 @@
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
-          <div class="practice-status">
-            <span class="practice-status-label">Consolidating</span>
-            <span class="practice-status-detail">Master current strings before adding more</span>
-          </div>
+        <div class="practice-status">
+          <span class="practice-status-label">Consolidating</span>
+          <span class="practice-status-detail">Master current strings before adding more</span>
         </div>
-        <div class="practice-zone practice-zone-scope">
-          <div class="practice-recommendation">
-            <span class="practice-rec-text">Suggestion: solidify e, B strings — 8 slow items
-start G string — 13 new items</span>
-            <button class="practice-rec-btn">Use suggestion</button>
-          </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text">Recommended: add string D</span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
       <div class="practice-scope">
         <div class="settings-row">
           <div class="toggle-group">
@@ -1594,19 +1581,15 @@ start G string — 13 new items</span>
             <button class="string-toggle" data-string="5" data-string-note="E">E</button>
           </div>
         </div>
-          <div class="toggle-group">
-            <span class="toggle-group-label">Notes</span>
-            <div class="notes-toggles">
-              <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
-            </div>
-          </div>
+          <label class="setting-group">
+            <input type="checkbox" id="fretboard-naturals-only" checked>
+            Natural only
+          </label>
         </div>
       </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
+        <div class="practice-start">
           <div class="session-summary-text">26 items across 2 strings</div>
+          <div class="mastery-message">Looks like you've got this!</div>
           <button class="start-btn">Start Quiz</button>
         </div>
       </div>
@@ -1731,22 +1714,20 @@ start G string — 13 new items</span>
         </div></div>
       </div>
     </div>
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
-        <div class="quiz-countdown-bar">
-          <div class="quiz-countdown-fill"></div>
-        </div>
-        <span class="quiz-info-time"></span>
+      <div class="quiz-countdown-bar">
+        <div class="quiz-countdown-fill"></div>
       </div>
       <div class="quiz-session-info">
         <span class="quiz-info-context"></span>
+        <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
       </div>
       <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -1756,10 +1737,7 @@ start G string — 13 new items</span>
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt-row">
-        <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
-      </div>
+      <div class="quiz-prompt"></div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
         <svg class="fretboard" viewBox="0 0 600 226">
@@ -1901,11 +1879,20 @@ start G string — 13 new items</span>
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
-          <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-correct"></span>
+            <span class="round-stat-label">correct</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-median"></span>
+            <span class="round-stat-label">median time</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-fluent"></span>
+            <span class="round-stat-label">fluent</span>
+          </div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -1934,17 +1921,14 @@ start G string — 13 new items</span>
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
-          <div class="practice-status">
-            <span class="practice-status-label">Ready to expand</span>
-            <span class="practice-status-detail">Current strings mastered</span>
-          </div>
+        <div class="practice-status">
+          <span class="practice-status-label">Ready to expand</span>
+          <span class="practice-status-detail">Current strings mastered</span>
         </div>
-        <div class="practice-zone practice-zone-scope">
-          <div class="practice-recommendation">
-            <span class="practice-rec-text">Suggestion: start G string — 13 new items</span>
-            <button class="practice-rec-btn">Use suggestion</button>
-          </div>
+        <div class="practice-recommendation">
+          <span class="practice-rec-text">Recommended: add string G</span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
       <div class="practice-scope">
         <div class="settings-row">
           <div class="toggle-group">
@@ -1958,19 +1942,15 @@ start G string — 13 new items</span>
             <button class="string-toggle" data-string="5" data-string-note="E">E</button>
           </div>
         </div>
-          <div class="toggle-group">
-            <span class="toggle-group-label">Notes</span>
-            <div class="notes-toggles">
-              <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
-            </div>
-          </div>
+          <label class="setting-group">
+            <input type="checkbox" id="fretboard-naturals-only" checked>
+            Natural only
+          </label>
         </div>
       </div>
-          <div class="mastery-message mastery-visible">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
+        <div class="practice-start">
           <div class="session-summary-text">39 items across 3 strings</div>
+          <div class="mastery-message mastery-visible">Looks like you've got this!</div>
           <button class="start-btn">Start Quiz</button>
         </div>
       </div>
@@ -2095,22 +2075,20 @@ start G string — 13 new items</span>
         </div></div>
       </div>
     </div>
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
-        <div class="quiz-countdown-bar">
-          <div class="quiz-countdown-fill"></div>
-        </div>
-        <span class="quiz-info-time"></span>
+      <div class="quiz-countdown-bar">
+        <div class="quiz-countdown-fill"></div>
       </div>
       <div class="quiz-session-info">
         <span class="quiz-info-context"></span>
+        <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
       </div>
       <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -2120,10 +2098,7 @@ start G string — 13 new items</span>
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt-row">
-        <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
-      </div>
+      <div class="quiz-prompt"></div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
         <svg class="fretboard" viewBox="0 0 600 226">
@@ -2265,11 +2240,20 @@ start G string — 13 new items</span>
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
-          <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-correct"></span>
+            <span class="round-stat-label">correct</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-median"></span>
+            <span class="round-stat-label">median time</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-fluent"></span>
+            <span class="round-stat-label">fluent</span>
+          </div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -2343,7 +2327,7 @@ start G string — 13 new items</span>
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v6.7</span>
+      <span class="version">v6.2</span>
     </div>
   </div>
     </div>
@@ -2366,26 +2350,23 @@ start G string — 13 new items</span>
     </div>
     <div class="tab-content tab-practice">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
-          <div class="practice-status">
-            <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
-          </div>
-          <div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
-          </div>
-          <div class="mastery-message">Looks like you've got this!</div>
+        <div class="practice-status">
+          <span class="practice-status-label"></span>
+          <span class="practice-status-detail"></span>
         </div>
-        <div class="practice-zone practice-zone-action">
+        <div class="practice-recommendation">
+          <span class="practice-rec-text"></span>
+          <button class="practice-rec-btn">Use recommendation</button>
+        </div>
+        <div class="practice-start">
           <div class="session-summary-text"></div>
+          <div class="mastery-message">Looks like you've got this!</div>
           <button class="start-btn">Start Quiz</button>
         </div>
       </div>
     </div>
     <div class="tab-content tab-progress" style="display:block;">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats">4 / 12 items fluent</span>
@@ -2422,16 +2403,15 @@ start G string — 13 new items</span>
               <div class="legend-item"><span class="legend-swatch" style="background: var(--heatmap-4);"></span>Solid</div>
               <div class="legend-item"><span class="legend-swatch" style="background: var(--heatmap-5);"></span>Automatic</div>
             </div></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
-        <div class="quiz-countdown-bar">
-          <div class="quiz-countdown-fill"></div>
-        </div>
-        <span class="quiz-info-time"></span>
+      <div class="quiz-countdown-bar">
+        <div class="quiz-countdown-fill"></div>
       </div>
       <div class="quiz-session-info">
         <span class="quiz-info-context"></span>
+        <span class="quiz-info-time"></span>
         <span class="quiz-info-count"></span>
       </div>
       <button class="quiz-header-close" aria-label="Stop quiz">×</button>
@@ -2441,10 +2421,7 @@ start G string — 13 new items</span>
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-prompt-row">
-        <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
-      </div>
+      <div class="quiz-prompt"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button class="answer-btn answer-btn-note" data-note="C">C</button>
         <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
@@ -2477,11 +2454,20 @@ start G string — 13 new items</span>
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
-          <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-correct"></span>
+            <span class="round-stat-label">correct</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-median"></span>
+            <span class="round-stat-label">median time</span>
+          </div>
+          <div class="round-stat">
+            <span class="round-stat-value round-stat-fluent"></span>
+            <span class="round-stat-label">fluent</span>
+          </div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>

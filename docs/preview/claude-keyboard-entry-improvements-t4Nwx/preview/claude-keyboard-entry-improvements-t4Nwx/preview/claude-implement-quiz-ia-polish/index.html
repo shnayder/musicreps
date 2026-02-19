@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Music Reps</title>
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -81,17 +81,12 @@
 * { -webkit-tap-highlight-color: transparent; }
 html {
   background: var(--color-surface);
-  overscroll-behavior: none;
 }
 body {
   font-family: system-ui, -apple-system, sans-serif;
   max-width: 650px;
   margin: 0 auto;
   padding: 0 var(--space-5);
-  padding-top: env(safe-area-inset-top, 0);
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  padding-left: max(var(--space-5), env(safe-area-inset-left, 0));
-  padding-right: max(var(--space-5), env(safe-area-inset-right, 0));
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -100,7 +95,6 @@ body {
   background: var(--color-bg);
   border-left: 1px solid var(--color-border-lighter);
   border-right: 1px solid var(--color-border-lighter);
-  overscroll-behavior: none;
 }
 
 /* --- Home screen --- */
@@ -150,13 +144,10 @@ body {
 .mode-back-btn:hover { background: var(--color-surface-hover); }
 .mode-back-btn:active { background: var(--color-surface-pressed); }
 .mode-title { margin: 0; font-size: var(--text-lg); font-weight: 600; flex: 1; }
-/* Hide back button during active quiz and calibration; keep title visible */
-.phase-active .mode-back-btn,
-.phase-calibration .mode-back-btn,
-.phase-round-complete .mode-back-btn { display: none; }
+/* Hide mode top bar during active quiz and calibration */
 .phase-active .mode-top-bar,
 .phase-calibration .mode-top-bar,
-.phase-round-complete .mode-top-bar { margin-bottom: 0; }
+.phase-round-complete .mode-top-bar { display: none; }
 
 /* --- Settings modal --- */
 .settings-overlay {
@@ -366,6 +357,7 @@ body {
 .practice-rec-text {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+  white-space: pre-line;
 }
 .practice-rec-text:empty {
   display: none;
@@ -843,10 +835,7 @@ button {
 .phase-round-complete .hint,
 .phase-round-complete .time-display,
 .phase-round-complete .speed-tap-status,
-.phase-round-complete .fretboard-wrapper,
-.phase-round-complete .quiz-countdown-row,
-.phase-round-complete .quiz-session-info,
-.phase-round-complete .quiz-header-close { display: none; }
+.phase-round-complete .fretboard-wrapper { display: none; }
 
 /* --- Note buttons (piano-style layout) --- */
 .note-buttons {
@@ -1358,10 +1347,6 @@ button {
   body {
     margin: 0;
     padding: 0 var(--space-1);
-    padding-top: env(safe-area-inset-top, 0);
-    padding-bottom: env(safe-area-inset-bottom, 0);
-    padding-left: max(var(--space-1), env(safe-area-inset-left, 0));
-    padding-right: max(var(--space-1), env(safe-area-inset-right, 0));
     border-left: none;
     border-right: none;
   }
@@ -1455,7 +1440,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v6.7</span>
+      <span class="version">v6.4</span>
     </div>
   </div>
 
@@ -1632,12 +1617,12 @@ button {
         </div></div>
       </div>
     </div>
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -1959,12 +1944,12 @@ button {
         </div></div>
       </div>
     </div>
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -2159,12 +2144,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -2373,12 +2358,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -2479,12 +2464,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -2592,12 +2577,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -2691,12 +2676,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -2790,12 +2775,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -2906,12 +2891,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -3014,12 +2999,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -3122,12 +3107,12 @@ button {
     </div>
     <div class="tab-content tab-progress">
       
-      <div class="baseline-info"></div>
       <div class="stats-controls">
         <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
+      <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
       <div class="quiz-countdown-row">
@@ -4319,7 +4304,7 @@ function engineRouteKey(state, key) {
 // engineRoundComplete, engineContinueRound
 
 /**
- * Create a keyboard handler for note input (C D E F G A B + #/s/b for accidentals).
+ * Create a keyboard handler for note input (C D E F G A B + #/b for accidentals).
  * Used by any mode where the answer is a note name.
  *
  * The handler keeps an internal timeout to allow a short window after a note key
@@ -4344,9 +4329,9 @@ function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true) {
   function handleKey(e) {
     const key = e.key.toUpperCase();
 
-    // Handle #/s for sharps or b for flats after a pending note
+    // Handle # for sharps or b for flats after a pending note
     if (pendingNote && allowAccidentals()) {
-      if (e.key === '#' || e.key === 's' || e.key === 'S' || (e.shiftKey && e.key === '3')) {
+      if (e.key === '#' || (e.shiftKey && e.key === '3')) {
         e.preventDefault();
         clearTimeout(pendingTimeout);
         submitAnswer(pendingNote + '#');
@@ -4731,9 +4716,9 @@ function runCalibration(opts) {
     if (isSearchMode()) {
       const key = e.key.toUpperCase();
 
-      // Handle #/s or b after a pending note letter
+      // Handle # or b after a pending note letter
       if (pendingNote) {
-        if (e.key === '#' || e.key === 's' || e.key === 'S' || (e.shiftKey && e.key === '3')) {
+        if (e.key === '#' || (e.shiftKey && e.key === '3')) {
           e.preventDefault();
           clearTimeout(pendingNoteTimeout);
           const combined = pendingNote + '#';
@@ -5135,21 +5120,18 @@ function createQuizEngine(mode, container) {
 
   function renderBaselineInfo() {
     if (!els.baselineInfo) return;
-    els.baselineInfo.textContent = '';
-    var text = document.createElement('span');
-    var btn = document.createElement('button');
-    btn.className = 'baseline-rerun-btn';
-    btn.addEventListener('click', function() { startCalibration(); });
     if (motorBaseline) {
-      text.textContent = 'Response time baseline: ' + formatMs(motorBaseline) + ' ';
-      btn.textContent = 'Rerun speed check';
+      els.baselineInfo.innerHTML = 'Response time baseline: ' + formatMs(motorBaseline)
+        + ' <button class="baseline-rerun-btn">Rerun speed check</button>';
     } else {
-      text.textContent = 'Response time baseline: 1s (default). '
-        + 'Do a speed check (10 taps, ~15s) to track progress more accurately. ';
-      btn.textContent = 'Speed check';
+      els.baselineInfo.innerHTML = 'Response time baseline: 1s <span class="baseline-default-tag">default</span>. '
+        + 'Do a speed check (10 taps, ~15s) to track progress more accurately. '
+        + '<button class="baseline-rerun-btn">Speed check</button>';
     }
-    els.baselineInfo.appendChild(text);
-    els.baselineInfo.appendChild(btn);
+    var btn = els.baselineInfo.querySelector('.baseline-rerun-btn');
+    if (btn) {
+      btn.addEventListener('click', function() { startCalibration(); });
+    }
   }
 
   function render() {
@@ -5505,7 +5487,6 @@ function createQuizEngine(mode, container) {
     const routed = engineRouteKey(state, e.key);
     switch (routed.action) {
       case 'stop':
-        e.stopImmediatePropagation();
         stop();
         break;
       case 'next':
@@ -6082,31 +6063,6 @@ function createFretboardHelpers(musicData) {
   };
 }
 
-/**
- * Compute which note filter to suggest based on natural-note mastery.
- * Consolidate-before-expanding applied to note types: master naturals
- * before adding accidentals.
- *
- * @param {Array<{masteredCount: number, dueCount: number, unseenCount: number, totalCount: number}>} naturalStats
- *   Per-string stats for natural notes only (from getStringRecommendations
- *   called with a natural-only getItemIds).
- * @param {number} threshold - mastery ratio gate (e.g. 0.7)
- * @returns {{ suggestedFilter: string, naturalMasteryRatio: number }}
- */
-function computeNotePrioritization(naturalStats, threshold) {
-  let totalSeen = 0;
-  let totalMastered = 0;
-  for (const r of naturalStats) {
-    totalSeen += r.masteredCount + r.dueCount;
-    totalMastered += r.masteredCount;
-  }
-  const ratio = totalSeen > 0 ? totalMastered / totalSeen : 0;
-  if (totalSeen === 0 || ratio < threshold) {
-    return { suggestedFilter: 'natural', naturalMasteryRatio: ratio };
-  }
-  return { suggestedFilter: 'all', naturalMasteryRatio: ratio };
-}
-
 // Fretboard quiz mode: identify the note at a highlighted fretboard position.
 // Parameterized factory supports any fretted instrument (guitar, ukulele, etc.).
 // Plugs into the shared quiz engine via the mode interface.
@@ -6114,8 +6070,7 @@ function computeNotePrioritization(naturalStats, threshold) {
 // Depends on globals: NOTES, NATURAL_NOTES, GUITAR, UKULELE,
 // noteMatchesInput, createQuizEngine, createNoteKeyHandler, DEFAULT_CONFIG,
 // getAutomaticityColor, getSpeedHeatmapColor, buildStatsLegend,
-// computeRecommendations, createFretboardHelpers, toggleFretboardString,
-// computeNotePrioritization
+// computeRecommendations, createFretboardHelpers, toggleFretboardString
 
 function createFrettedInstrumentMode(instrument) {
   var container = document.getElementById('mode-' + instrument.id);
@@ -6124,7 +6079,6 @@ function createFrettedInstrumentMode(instrument) {
   var enabledStrings = new Set([instrument.defaultString]);
   var noteFilter = 'natural'; // 'natural', 'sharps-flats', or 'all'
   var recommendedStrings = new Set();
-  var lastNotePri = null;
   var allStrings = Array.from({length: instrument.stringCount}, function(_, i) { return i; });
 
   // --- Pure helpers (from quiz-fretboard-state.js) ---
@@ -6347,7 +6301,7 @@ function createFrettedInstrumentMode(instrument) {
   function getRecommendationResult() {
     return computeRecommendations(
       engine.selector, allStrings,
-      function(s) { return fb.getItemIdsForString(s, 'all'); },
+      function(s) { return fb.getItemIdsForString(s, noteFilter); },
       DEFAULT_CONFIG, recsOptions
     );
   }
@@ -6420,14 +6374,6 @@ function createFrettedInstrumentMode(instrument) {
 
     // Recommendation
     var result = getRecommendationResult();
-
-    // Note-type prioritization: naturals first, then add accidentals
-    var naturalStats = engine.selector.getStringRecommendations(
-      [...result.recommended],
-      function(s) { return fb.getItemIdsForString(s, 'natural'); }
-    );
-    lastNotePri = computeNotePrioritization(naturalStats, DEFAULT_CONFIG.expansionThreshold);
-
     if (result.recommended.size > 0) {
       // Build rationale text
       var parts = [];
@@ -6441,13 +6387,7 @@ function createFrettedInstrumentMode(instrument) {
         parts.push('start ' + displayNote(instrument.stringNames[result.expandIndex]) + ' string'
           + ' \u2014 ' + result.expandNewCount + ' new item' + (result.expandNewCount !== 1 ? 's' : ''));
       }
-      // Append note filter suggestion
-      if (lastNotePri.suggestedFilter === 'natural') {
-        parts.push('naturals first');
-      } else {
-        parts.push('add sharps & flats');
-      }
-      recText.textContent = 'Suggestion: ' + parts.join(', ');
+      recText.textContent = 'Suggestion: ' + parts.join('\n');
       recBtn.classList.remove('hidden');
     } else {
       recText.textContent = '';
@@ -6635,12 +6575,6 @@ function createFrettedInstrumentMode(instrument) {
     if (recBtn) {
       recBtn.addEventListener('click', function() {
         applyRecommendations(engine.selector);
-        if (lastNotePri) {
-          noteFilter = lastNotePri.suggestedFilter;
-          saveNoteFilter();
-          updateNoteToggles();
-          updateAccidentalButtons();
-        }
         refreshUI();
       });
     }
@@ -6648,7 +6582,7 @@ function createFrettedInstrumentMode(instrument) {
     // Hover card only on progress fretboard (not quiz — would reveal the answer)
     if (progressFretboard) setupHoverCard(progressFretboard);
 
-    updateRecommendations(engine.selector);
+    applyRecommendations(engine.selector);
     updateAccidentalButtons();
     updateStats(engine.selector);
     renderPracticeSummary();
@@ -7925,7 +7859,7 @@ function createSemitoneMathMode() {
       });
     }
 
-    updateRecommendations(engine.selector);
+    applyRecommendations(engine.selector);
     renderPracticeSummary();
     renderSessionSummary();
   }
@@ -8289,7 +8223,7 @@ function createIntervalMathMode() {
       });
     }
 
-    updateRecommendations(engine.selector);
+    applyRecommendations(engine.selector);
     renderPracticeSummary();
     renderSessionSummary();
   }
@@ -8688,7 +8622,7 @@ function createKeySignaturesMode() {
       });
     }
 
-    updateRecommendations(engine.selector);
+    applyRecommendations(engine.selector);
     renderPracticeSummary();
     renderSessionSummary();
   }
@@ -9073,7 +9007,7 @@ function createScaleDegreesMode() {
       });
     }
 
-    updateRecommendations(engine.selector);
+    applyRecommendations(engine.selector);
     renderPracticeSummary();
     renderSessionSummary();
   }
@@ -9458,7 +9392,7 @@ function createDiatonicChordsMode() {
       });
     }
 
-    updateRecommendations(engine.selector);
+    applyRecommendations(engine.selector);
     renderPracticeSummary();
     renderSessionSummary();
   }
@@ -9880,7 +9814,7 @@ function createChordSpellingMode() {
       });
     }
 
-    updateRecommendations(engine.selector);
+    applyRecommendations(engine.selector);
     renderPracticeSummary();
     renderSessionSummary();
   }
@@ -10051,20 +9985,6 @@ function createNavigation() {
       });
     });
 
-    // Escape key navigates home when idle on a mode screen.
-    // During active quiz/calibration the container has phase-active,
-    // phase-calibration, or phase-round-complete — we only act on phase-idle
-    // so the quiz engine handles Escape independently in other phases.
-    document.addEventListener('keydown', function(e) {
-      if (e.key !== 'Escape' || !currentModeId) return;
-      // Don't interfere with open modals (e.g. settings)
-      if (document.querySelector('.settings-overlay.open')) return;
-      // Only navigate home when the quiz is idle (not running/calibrating)
-      var modeScreen = document.getElementById('mode-' + currentModeId);
-      if (modeScreen && !modeScreen.classList.contains('phase-idle')) return;
-      navigateHome();
-    });
-
     // Initialize all registered modes
     for (const id of Object.keys(modes)) {
       modes[id].init();
@@ -10219,8 +10139,7 @@ function createNavigation() {
   }
 
   // Register service worker for cache busting on iOS home screen
-  // Skip in Capacitor — app runs from local files, no SW needed
-  if ('serviceWorker' in navigator && !window.Capacitor) {
+  if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');
   }
 })();
