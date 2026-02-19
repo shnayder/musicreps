@@ -1633,7 +1633,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v6.17</span>
+      <span class="version">v6.18</span>
     </div>
   </div>
 
@@ -3380,20 +3380,6 @@ button {
     { name: "B", displayName: "B", num: 11, accepts: ["b"] }
   ];
   var NATURAL_NOTES = ["C", "D", "E", "F", "G", "A", "B"];
-  var INTERVALS = [
-    { name: "minor 2nd", num: 1, abbrev: "m2" },
-    { name: "Major 2nd", num: 2, abbrev: "M2" },
-    { name: "minor 3rd", num: 3, abbrev: "m3" },
-    { name: "Major 3rd", num: 4, abbrev: "M3" },
-    { name: "Perfect 4th", num: 5, abbrev: "P4" },
-    { name: "Tritone", num: 6, abbrev: "TT", altAbbrevs: ["A4", "d5"] },
-    { name: "Perfect 5th", num: 7, abbrev: "P5" },
-    { name: "minor 6th", num: 8, abbrev: "m6" },
-    { name: "Major 6th", num: 9, abbrev: "M6" },
-    { name: "minor 7th", num: 10, abbrev: "m7" },
-    { name: "Major 7th", num: 11, abbrev: "M7" },
-    { name: "Octave", num: 12, abbrev: "P8" }
-  ];
   function noteByNum(num) {
     return NOTES[(num % 12 + 12) % 12];
   }
@@ -3416,144 +3402,6 @@ button {
   function noteMatchesInput(note, input) {
     return note.accepts.includes(input.toLowerCase());
   }
-  function intervalMatchesInput(interval, input) {
-    if (input === interval.abbrev) return true;
-    if (interval.altAbbrevs && interval.altAbbrevs.includes(input)) return true;
-    return false;
-  }
-  var LETTER_NAMES = ["C", "D", "E", "F", "G", "A", "B"];
-  var NATURAL_SEMITONES = {
-    C: 0,
-    D: 2,
-    E: 4,
-    F: 5,
-    G: 7,
-    A: 9,
-    B: 11
-  };
-  var MAJOR_SCALE_STEPS = [0, 2, 4, 5, 7, 9, 11];
-  function parseSpelledNote(name) {
-    if (!name) return { letter: "", accidental: 0 };
-    const letter = name[0].toUpperCase();
-    let acc = 0;
-    for (let i = 1; i < name.length; i++) {
-      if (name[i] === "#") acc++;
-      else if (name[i] === "b") acc--;
-    }
-    return { letter, accidental: acc };
-  }
-  function spelledNoteName(letter, accidental) {
-    if (accidental === 0) return letter;
-    if (accidental > 0) return letter + "#".repeat(accidental);
-    return letter + "b".repeat(-accidental);
-  }
-  function spelledNoteSemitone(name) {
-    const { letter, accidental } = parseSpelledNote(name);
-    return ((NATURAL_SEMITONES[letter] + accidental) % 12 + 12) % 12;
-  }
-  function getScaleDegreeNote(keyRoot, degree) {
-    const root = parseSpelledNote(keyRoot);
-    const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
-    const rootSemitone = ((NATURAL_SEMITONES[root.letter] + root.accidental) % 12 + 12) % 12;
-    const targetLetterIdx = (rootLetterIdx + degree - 1) % 7;
-    const targetLetter = LETTER_NAMES[targetLetterIdx];
-    const targetSemitone = (rootSemitone + MAJOR_SCALE_STEPS[degree - 1]) % 12;
-    const naturalSemitone = NATURAL_SEMITONES[targetLetter];
-    let acc = (targetSemitone - naturalSemitone + 12) % 12;
-    if (acc > 6) acc -= 12;
-    return spelledNoteName(targetLetter, acc);
-  }
-  var MAJOR_KEYS = [
-    {
-      root: "C",
-      sharps: 0,
-      flats: 0,
-      accidentalCount: 0,
-      accidentalType: "none"
-    },
-    {
-      root: "G",
-      sharps: 1,
-      flats: 0,
-      accidentalCount: 1,
-      accidentalType: "sharps"
-    },
-    {
-      root: "D",
-      sharps: 2,
-      flats: 0,
-      accidentalCount: 2,
-      accidentalType: "sharps"
-    },
-    {
-      root: "A",
-      sharps: 3,
-      flats: 0,
-      accidentalCount: 3,
-      accidentalType: "sharps"
-    },
-    {
-      root: "E",
-      sharps: 4,
-      flats: 0,
-      accidentalCount: 4,
-      accidentalType: "sharps"
-    },
-    {
-      root: "B",
-      sharps: 5,
-      flats: 0,
-      accidentalCount: 5,
-      accidentalType: "sharps"
-    },
-    {
-      root: "F#",
-      sharps: 6,
-      flats: 0,
-      accidentalCount: 6,
-      accidentalType: "sharps"
-    },
-    {
-      root: "F",
-      sharps: 0,
-      flats: 1,
-      accidentalCount: 1,
-      accidentalType: "flats"
-    },
-    {
-      root: "Bb",
-      sharps: 0,
-      flats: 2,
-      accidentalCount: 2,
-      accidentalType: "flats"
-    },
-    {
-      root: "Eb",
-      sharps: 0,
-      flats: 3,
-      accidentalCount: 3,
-      accidentalType: "flats"
-    },
-    {
-      root: "Ab",
-      sharps: 0,
-      flats: 4,
-      accidentalCount: 4,
-      accidentalType: "flats"
-    },
-    {
-      root: "Db",
-      sharps: 0,
-      flats: 5,
-      accidentalCount: 5,
-      accidentalType: "flats"
-    }
-  ];
-  function keySignatureLabel(key) {
-    if (key.accidentalCount === 0) return "0";
-    if (key.accidentalType === "sharps") return key.accidentalCount + "#";
-    return key.accidentalCount + "b";
-  }
   var DIATONIC_CHORDS = [
     { degree: 1, numeral: "I", quality: "major", qualityLabel: "" },
     { degree: 2, numeral: "ii", quality: "minor", qualityLabel: "m" },
@@ -3569,135 +3417,6 @@ button {
     }
   ];
   var ROMAN_NUMERALS = DIATONIC_CHORDS.map((c) => c.numeral);
-  var DEGREE_LETTER_OFFSETS = {
-    "R": 0,
-    "2": 1,
-    "b3": 2,
-    "3": 2,
-    "4": 3,
-    "b5": 4,
-    "5": 4,
-    "#5": 4,
-    "6": 5,
-    "b7": 6,
-    "7": 6
-  };
-  var CHORD_TYPES = [
-    {
-      name: "major",
-      symbol: "",
-      intervals: [0, 4, 7],
-      degrees: ["R", "3", "5"],
-      group: 0
-    },
-    {
-      name: "minor",
-      symbol: "m",
-      intervals: [0, 3, 7],
-      degrees: ["R", "b3", "5"],
-      group: 1
-    },
-    {
-      name: "dom7",
-      symbol: "7",
-      intervals: [0, 4, 7, 10],
-      degrees: ["R", "3", "5", "b7"],
-      group: 2
-    },
-    {
-      name: "maj7",
-      symbol: "maj7",
-      intervals: [0, 4, 7, 11],
-      degrees: ["R", "3", "5", "7"],
-      group: 3
-    },
-    {
-      name: "min7",
-      symbol: "m7",
-      intervals: [0, 3, 7, 10],
-      degrees: ["R", "b3", "5", "b7"],
-      group: 4
-    },
-    {
-      name: "dim",
-      symbol: "dim",
-      intervals: [0, 3, 6],
-      degrees: ["R", "b3", "b5"],
-      group: 5
-    },
-    {
-      name: "aug",
-      symbol: "aug",
-      intervals: [0, 4, 8],
-      degrees: ["R", "3", "#5"],
-      group: 5
-    },
-    {
-      name: "halfdim",
-      symbol: "m7b5",
-      intervals: [0, 3, 6, 10],
-      degrees: ["R", "b3", "b5", "b7"],
-      group: 5
-    },
-    {
-      name: "sus2",
-      symbol: "sus2",
-      intervals: [0, 2, 7],
-      degrees: ["R", "2", "5"],
-      group: 6
-    },
-    {
-      name: "sus4",
-      symbol: "sus4",
-      intervals: [0, 5, 7],
-      degrees: ["R", "4", "5"],
-      group: 6
-    },
-    {
-      name: "6",
-      symbol: "6",
-      intervals: [0, 4, 7, 9],
-      degrees: ["R", "3", "5", "6"],
-      group: 6
-    }
-  ];
-  var CHORD_ROOTS = [
-    "C",
-    "Db",
-    "D",
-    "Eb",
-    "E",
-    "F",
-    "F#",
-    "G",
-    "Ab",
-    "A",
-    "Bb",
-    "B"
-  ];
-  function getChordTones(rootName, chordType) {
-    const root = parseSpelledNote(rootName);
-    const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
-    const rootSemitone = ((NATURAL_SEMITONES[root.letter] + root.accidental) % 12 + 12) % 12;
-    return chordType.intervals.map((interval, i) => {
-      const degreeLabel = chordType.degrees[i];
-      const letterOffset = DEGREE_LETTER_OFFSETS[degreeLabel];
-      const targetLetter = LETTER_NAMES[(rootLetterIdx + letterOffset) % 7];
-      const targetSemitone = (rootSemitone + interval) % 12;
-      const naturalSemitone = NATURAL_SEMITONES[targetLetter];
-      let acc = (targetSemitone - naturalSemitone + 12) % 12;
-      if (acc > 6) acc -= 12;
-      return spelledNoteName(targetLetter, acc);
-    });
-  }
-  function spelledNoteMatchesInput(expectedName, input) {
-    const expected = parseSpelledNote(expectedName);
-    const given = parseSpelledNote(input);
-    return given.letter.toUpperCase() === expected.letter.toUpperCase() && given.accidental === expected.accidental;
-  }
-  function spelledNoteMatchesSemitone(expectedName, input) {
-    return spelledNoteSemitone(expectedName) === spelledNoteSemitone(input);
-  }
   var GUITAR = {
     id: "fretboard",
     // mode ID (preserved for backward compat)
@@ -3712,21 +3431,6 @@ button {
     defaultString: 5,
     // low E
     fretMarkers: [3, 5, 7, 9, 12]
-  };
-  var UKULELE = {
-    id: "ukulele",
-    name: "Ukulele Fretboard",
-    storageNamespace: "ukulele",
-    stringCount: 4,
-    fretCount: 13,
-    // frets 0–12
-    stringNames: ["A", "E", "C", "G"],
-    // 1st (top) to 4th (bottom)
-    stringOffsets: [9, 4, 0, 7],
-    // A=9, E=4, C=0, G=7
-    defaultString: 2,
-    // C string (lowest pitch)
-    fretMarkers: [3, 5, 7, 10, 12]
   };
   var STRING_NAMES = GUITAR.stringNames;
   var STRING_OFFSETS = GUITAR.stringOffsets;
@@ -5625,16 +5329,783 @@ button {
     };
   }
 
-  // src/quiz-fretboard-state.ts
-  function toggleFretboardString(enabledStrings, string) {
-    const next = new Set(enabledStrings);
-    if (next.has(string)) {
-      if (next.size > 1) next.delete(string);
-    } else {
-      next.add(string);
+  // src/mode-ui-state.ts
+  function countFluent(itemIds, getAutomaticity, threshold) {
+    let fluent = 0;
+    let seen = 0;
+    for (let i = 0; i < itemIds.length; i++) {
+      const auto = getAutomaticity(itemIds[i]);
+      if (auto !== null) {
+        seen++;
+        if (auto > threshold) fluent++;
+      }
     }
-    return next;
+    return { fluent, seen };
   }
+  function statusLabelFromPct(pct) {
+    if (pct >= 80) return "Strong";
+    if (pct >= 50) return "Solid";
+    if (pct >= 20) return "Building";
+    return "Getting started";
+  }
+  function buildRecommendationText(result, getGroupLabel, extraParts) {
+    if (result.recommended.size === 0) return "";
+    const parts = [];
+    if (result.consolidateIndices.length > 0) {
+      const labels = result.consolidateIndices.slice().sort((a, b) => a - b).map(getGroupLabel);
+      parts.push(
+        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
+      );
+    }
+    if (result.expandIndex !== null) {
+      parts.push(
+        "start " + getGroupLabel(result.expandIndex) + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
+      );
+    }
+    if (extraParts) {
+      for (let i = 0; i < extraParts.length; i++) {
+        parts.push(extraParts[i]);
+      }
+    }
+    return parts.length > 0 ? "Suggestion: " + parts.join(", ") : "";
+  }
+  function computePracticeSummary(opts) {
+    const threshold = opts.selector.getConfig().automaticityThreshold;
+    const { fluent, seen } = countFluent(
+      opts.allItemIds,
+      (id) => opts.selector.getAutomaticity(id),
+      threshold
+    );
+    const total = opts.allItemIds.length;
+    let statusLabel;
+    let statusDetail;
+    if (seen === 0) {
+      statusLabel = "Ready to start";
+      statusDetail = total + " " + opts.itemNoun + " to learn";
+    } else {
+      const pct = total > 0 ? Math.round(fluent / total * 100) : 0;
+      statusLabel = "Overall: " + statusLabelFromPct(pct);
+      statusDetail = fluent + " of " + total + " " + opts.itemNoun + " fluent";
+    }
+    const hasRec = opts.recommendation !== null && opts.recommendation.recommended.size > 0;
+    return {
+      statusLabel,
+      statusDetail,
+      recommendationText: opts.recommendationText,
+      showRecommendationButton: hasRec,
+      sessionSummary: opts.sessionSummary,
+      masteryText: opts.masteryText,
+      showMastery: opts.showMastery,
+      enabledItemCount: total
+    };
+  }
+
+  // src/mode-controller.ts
+  function loadScopeState(def) {
+    const spec = def.scopeSpec;
+    if (spec.kind === "none") return { kind: "none" };
+    if (spec.kind === "groups") {
+      let enabled = new Set(spec.defaultEnabled);
+      const saved = localStorage.getItem(spec.storageKey);
+      if (saved) {
+        try {
+          enabled = new Set(JSON.parse(saved));
+        } catch (_) {
+        }
+      }
+      return { kind: "groups", enabledGroups: enabled };
+    }
+    if (spec.kind === "fretboard") {
+      const inst = spec.instrument;
+      let enabledStrings = /* @__PURE__ */ new Set([inst.defaultString]);
+      const stringsKey = inst.storageNamespace + "_enabledStrings";
+      const saved = localStorage.getItem(stringsKey);
+      if (saved) {
+        try {
+          enabledStrings = new Set(JSON.parse(saved));
+        } catch (_) {
+        }
+      }
+      let noteFilter = "natural";
+      const filterKey = inst.storageNamespace + "_noteFilter";
+      const savedFilter = localStorage.getItem(filterKey);
+      if (savedFilter === "natural" || savedFilter === "sharps-flats" || savedFilter === "all") {
+        noteFilter = savedFilter;
+      }
+      return { kind: "fretboard", enabledStrings, noteFilter };
+    }
+    if (spec.kind === "note-filter") {
+      let noteFilter = "natural";
+      const saved = localStorage.getItem(spec.storageKey);
+      if (saved === "natural" || saved === "sharps-flats" || saved === "all") {
+        noteFilter = saved;
+      }
+      return { kind: "note-filter", noteFilter };
+    }
+    return { kind: "none" };
+  }
+  function saveScopeState(def, scope) {
+    const spec = def.scopeSpec;
+    if (spec.kind === "groups" && scope.kind === "groups") {
+      localStorage.setItem(
+        spec.storageKey,
+        JSON.stringify([...scope.enabledGroups])
+      );
+    } else if (spec.kind === "fretboard" && scope.kind === "fretboard") {
+      const inst = spec.instrument;
+      localStorage.setItem(
+        inst.storageNamespace + "_enabledStrings",
+        JSON.stringify([...scope.enabledStrings])
+      );
+      try {
+        localStorage.setItem(
+          inst.storageNamespace + "_noteFilter",
+          scope.noteFilter
+        );
+      } catch (_) {
+      }
+    } else if (spec.kind === "note-filter" && scope.kind === "note-filter") {
+      try {
+        localStorage.setItem(spec.storageKey, scope.noteFilter);
+      } catch (_) {
+      }
+    }
+  }
+  function createModeController(def) {
+    const container = document.getElementById("mode-" + def.id);
+    let uiState = {
+      activeTab: "practice",
+      scope: loadScopeState(def),
+      practice: emptyPracticeSummary(),
+      statsMode: null,
+      recommendation: null
+    };
+    const quizAreaEls = {
+      promptEl: container.querySelector(".quiz-prompt"),
+      quizArea: container.querySelector(".quiz-area"),
+      container
+    };
+    if (def.scopeSpec.kind === "fretboard") {
+      quizAreaEls.fretboardWrapper = container.querySelector(
+        ".quiz-area .fretboard-wrapper"
+      );
+      quizAreaEls.progressFretboardWrapper = container.querySelector(
+        ".tab-progress .fretboard-wrapper"
+      );
+    }
+    const quizMode = {
+      id: def.id,
+      storageNamespace: def.storageNamespace,
+      getEnabledItems() {
+        return def.getEnabledItems(uiState.scope);
+      },
+      presentQuestion(itemId) {
+        const question = def.getQuestion(itemId);
+        if (def.prompt.kind === "text") {
+          quizAreaEls.promptEl.textContent = def.prompt.getText(question);
+        } else {
+          def.prompt.clear(quizAreaEls);
+          def.prompt.render(question, quizAreaEls);
+        }
+        if (def.response.kind === "bidirectional") {
+          const activeGroupId = def.response.getActiveGroup(question);
+          for (const group of def.response.groups) {
+            const groupEl = container.querySelector(
+              ".answer-buttons-" + group.id
+            );
+            if (groupEl) {
+              groupEl.classList.toggle(
+                "answer-group-hidden",
+                group.id !== activeGroupId
+              );
+            }
+          }
+        }
+      },
+      checkAnswer(itemId, input) {
+        return def.checkAnswer(itemId, input);
+      },
+      onStart() {
+        keyHandler.reset();
+        if (statsControls.mode) statsControls.hide();
+        clearProgressFretboard();
+      },
+      onStop() {
+        keyHandler.reset();
+        if (def.prompt.kind === "custom") {
+          def.prompt.clear(quizAreaEls);
+        }
+        refreshNoteButtonLabels(container);
+        if (uiState.activeTab === "progress") {
+          statsControls.show("retention");
+        }
+        refreshUI();
+      },
+      handleKey(e, _ctx) {
+        return keyHandler.handleKey(e);
+      },
+      onAnswer(itemId, result, _responseTime) {
+        if (def.prompt.kind === "custom" && def.prompt.onAnswer) {
+          const question = def.getQuestion(itemId);
+          def.prompt.onAnswer(question, result, quizAreaEls);
+        }
+      },
+      getPracticingLabel() {
+        return def.getPracticingLabel(uiState.scope);
+      }
+    };
+    if (def.getExpectedResponseCount) {
+      const fn = def.getExpectedResponseCount.bind(def);
+      quizMode.getExpectedResponseCount = fn;
+    }
+    if (def.calibrationProvider) {
+      quizMode.calibrationProvider = def.calibrationProvider;
+    }
+    if (def.calibrationSpec?.introHint) {
+      quizMode.calibrationIntroHint = def.calibrationSpec.introHint;
+    }
+    if (def.calibrationSpec?.getButtons) {
+      const getButtons = def.calibrationSpec.getButtons;
+      quizMode.getCalibrationButtons = () => getButtons(container);
+    } else if (def.response.kind === "buttons") {
+      quizMode.getCalibrationButtons = () => Array.from(container.querySelectorAll(".note-btn:not(.hidden)"));
+    }
+    if (def.calibrationSpec?.getTrialConfig) {
+      quizMode.getCalibrationTrialConfig = def.calibrationSpec.getTrialConfig;
+    } else {
+      quizMode.getCalibrationTrialConfig = (buttons, prevBtn) => {
+        const btn = pickCalibrationButton(buttons, prevBtn);
+        return { prompt: "Press " + btn.textContent, targetButtons: [btn] };
+      };
+    }
+    const engine = createQuizEngine(quizMode, container);
+    const keyHandler = createKeyHandlerFromResponse(
+      def,
+      (input) => engine.submitAnswer(input),
+      () => uiState.scope
+    );
+    engine.storage.preload?.(def.allItemIds);
+    const statsControls = createStatsControls(container, renderStats);
+    function clearProgressFretboard() {
+      if (quizAreaEls.progressFretboardWrapper) {
+        quizAreaEls.progressFretboardWrapper.querySelectorAll(".fb-pos").forEach((c) => c.style.fill = "");
+      }
+    }
+    function getRecommendationResult() {
+      const spec = def.scopeSpec;
+      if (spec.kind === "groups") {
+        const allIndices = spec.groups.map((g) => g.index);
+        return computeRecommendations(
+          engine.selector,
+          allIndices,
+          (index) => spec.groups[index].itemIds,
+          DEFAULT_CONFIG,
+          spec.sortUnstarted ? { sortUnstarted: spec.sortUnstarted } : void 0
+        );
+      }
+      if (spec.kind === "fretboard") {
+        const inst = spec.instrument;
+        const allStrings = Array.from(
+          { length: inst.stringCount },
+          (_, i) => i
+        );
+        return computeRecommendations(
+          engine.selector,
+          allStrings,
+          (s) => {
+            const prefix = s + "-";
+            return def.allItemIds.filter((id) => id.startsWith(prefix));
+          },
+          DEFAULT_CONFIG,
+          {
+            sortUnstarted: (a, b) => b.string - a.string
+          }
+        );
+      }
+      return null;
+    }
+    function getRecommendationText(result) {
+      if (!result || result.recommended.size === 0) return "";
+      const spec = def.scopeSpec;
+      const extras = def.getRecommendationContext?.(result, engine.selector)?.extraParts ?? [];
+      if (spec.kind === "groups") {
+        return buildRecommendationText(
+          result,
+          (index) => spec.groups[index].label,
+          extras
+        );
+      }
+      if (spec.kind === "fretboard") {
+        const inst = spec.instrument;
+        return buildRecommendationText(
+          result,
+          (s) => displayNote(inst.stringNames[s]) + " string",
+          extras
+        );
+      }
+      return "";
+    }
+    function renderStats(mode, el) {
+      const statsSpec = def.stats;
+      if (statsSpec.kind === "table") {
+        const tableDiv = document.createElement("div");
+        el.appendChild(tableDiv);
+        renderStatsTable(
+          engine.selector,
+          statsSpec.getRows(),
+          statsSpec.fwdHeader,
+          statsSpec.revHeader,
+          mode,
+          tableDiv,
+          engine.baseline ?? void 0
+        );
+        const legendDiv = document.createElement("div");
+        legendDiv.innerHTML = buildStatsLegend(
+          mode,
+          engine.baseline ?? void 0
+        );
+        el.appendChild(legendDiv);
+      } else if (statsSpec.kind === "grid") {
+        const gridDiv = document.createElement("div");
+        el.appendChild(gridDiv);
+        renderStatsGrid(
+          engine.selector,
+          statsSpec.colLabels,
+          statsSpec.getItemId,
+          mode,
+          gridDiv,
+          statsSpec.notes,
+          engine.baseline ?? void 0
+        );
+        const legendDiv = document.createElement("div");
+        legendDiv.innerHTML = buildStatsLegend(
+          mode,
+          engine.baseline ?? void 0
+        );
+        el.appendChild(legendDiv);
+      } else if (statsSpec.kind === "custom") {
+        statsSpec.render(
+          mode,
+          el,
+          engine.selector,
+          engine.baseline,
+          container
+        );
+      }
+    }
+    function refreshUI() {
+      const rec = getRecommendationResult();
+      uiState = {
+        ...uiState,
+        recommendation: rec,
+        practice: computePracticeSummaryForController(rec)
+      };
+      renderIdleUI();
+      updateScopeToggles();
+      engine.updateIdleMessage();
+    }
+    function computePracticeSummaryForController(rec) {
+      const recText = getRecommendationText(rec);
+      const itemNoun = def.scopeSpec.kind === "fretboard" ? "positions" : "items";
+      const enabledItems = def.getEnabledItems(uiState.scope);
+      const allMastered = enabledItems.length > 0 && engine.selector.checkAllMastered(enabledItems);
+      const needsReview = !allMastered && engine.selector.checkNeedsReview(enabledItems);
+      let masteryText = "";
+      let showMastery = false;
+      if (allMastered) {
+        masteryText = "Looks like you\u2019ve got this!";
+        showMastery = true;
+      } else if (needsReview) {
+        masteryText = "Time to review?";
+        showMastery = true;
+      }
+      return computePracticeSummary({
+        allItemIds: def.allItemIds,
+        selector: engine.selector,
+        itemNoun,
+        recommendation: rec,
+        recommendationText: recText,
+        sessionSummary: def.getSessionSummary(uiState.scope),
+        masteryText,
+        showMastery
+      });
+    }
+    function renderIdleUI() {
+      const p = uiState.practice;
+      const statusLabel = container.querySelector(".practice-status-label");
+      const statusDetail = container.querySelector(".practice-status-detail");
+      const recText = container.querySelector(".practice-rec-text");
+      const recBtn = container.querySelector(".practice-rec-btn");
+      const sessionSummary = container.querySelector(".session-summary-text");
+      const masteryMsg = container.querySelector(".mastery-message");
+      if (statusLabel) statusLabel.textContent = p.statusLabel;
+      if (statusDetail) statusDetail.textContent = p.statusDetail;
+      if (recText) recText.textContent = p.recommendationText;
+      if (recBtn) recBtn.classList.toggle("hidden", !p.showRecommendationButton);
+      if (sessionSummary) sessionSummary.textContent = p.sessionSummary;
+      if (masteryMsg) {
+        masteryMsg.textContent = p.masteryText;
+        masteryMsg.classList.toggle("visible", p.showMastery);
+      }
+    }
+    function updateScopeToggles() {
+      const scope = uiState.scope;
+      const rec = uiState.recommendation;
+      if (scope.kind === "groups") {
+        container.querySelectorAll(".distance-toggle").forEach(
+          (btn) => {
+            const g = parseInt(btn.dataset.group);
+            btn.classList.toggle("active", scope.enabledGroups.has(g));
+            btn.classList.toggle(
+              "recommended",
+              rec ? rec.recommended.has(g) : false
+            );
+          }
+        );
+      } else if (scope.kind === "fretboard") {
+        container.querySelectorAll(".string-toggle").forEach(
+          (btn) => {
+            const s = parseInt(btn.dataset.string);
+            btn.classList.toggle("active", scope.enabledStrings.has(s));
+            btn.classList.toggle(
+              "recommended",
+              rec ? rec.recommended.has(s) : false
+            );
+          }
+        );
+        const naturalBtn = container.querySelector(
+          '.notes-toggle[data-notes="natural"]'
+        );
+        const accBtn = container.querySelector(
+          '.notes-toggle[data-notes="sharps-flats"]'
+        );
+        if (naturalBtn) {
+          naturalBtn.classList.toggle(
+            "active",
+            scope.noteFilter === "natural" || scope.noteFilter === "all"
+          );
+        }
+        if (accBtn) {
+          accBtn.classList.toggle(
+            "active",
+            scope.noteFilter === "sharps-flats" || scope.noteFilter === "all"
+          );
+        }
+        const hideAcc = scope.noteFilter === "natural";
+        container.querySelectorAll(".note-btn.accidental").forEach(
+          (btn) => btn.classList.toggle("hidden", hideAcc)
+        );
+        const accRow = container.querySelector(".note-row-accidentals");
+        if (accRow) accRow.classList.toggle("hidden", hideAcc);
+      }
+    }
+    function switchTab(tabName) {
+      uiState = { ...uiState, activeTab: tabName };
+      container.querySelectorAll(".mode-tab").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.tab === tabName);
+      });
+      container.querySelectorAll(".tab-content").forEach((el) => {
+        const isPractice = el.classList.contains("tab-practice");
+        const isProgress = el.classList.contains("tab-progress");
+        if (tabName === "practice") {
+          el.classList.toggle("active", isPractice);
+        } else {
+          el.classList.toggle("active", isProgress);
+        }
+      });
+      if (tabName === "progress") {
+        statsControls.show(statsControls.mode || "retention");
+      } else {
+        clearProgressFretboard();
+        refreshUI();
+      }
+    }
+    function toggleGroup(groupIndex) {
+      if (uiState.scope.kind !== "groups") return;
+      const current = uiState.scope.enabledGroups;
+      const next = new Set(current);
+      if (next.has(groupIndex)) {
+        if (next.size > 1) next.delete(groupIndex);
+      } else {
+        next.add(groupIndex);
+      }
+      uiState = { ...uiState, scope: { kind: "groups", enabledGroups: next } };
+      saveScopeState(def, uiState.scope);
+      refreshUI();
+    }
+    function toggleFretboardString(s) {
+      if (uiState.scope.kind !== "fretboard") return;
+      const current = uiState.scope.enabledStrings;
+      const next = new Set(current);
+      if (next.has(s)) {
+        if (next.size > 1) next.delete(s);
+      } else {
+        next.add(s);
+      }
+      uiState = {
+        ...uiState,
+        scope: {
+          kind: "fretboard",
+          enabledStrings: next,
+          noteFilter: uiState.scope.noteFilter
+        }
+      };
+      saveScopeState(def, uiState.scope);
+      refreshUI();
+    }
+    function setNoteFilter(filter) {
+      if (uiState.scope.kind === "fretboard") {
+        uiState = {
+          ...uiState,
+          scope: {
+            kind: "fretboard",
+            enabledStrings: uiState.scope.enabledStrings,
+            noteFilter: filter
+          }
+        };
+      } else if (uiState.scope.kind === "note-filter") {
+        uiState = {
+          ...uiState,
+          scope: { kind: "note-filter", noteFilter: filter }
+        };
+      }
+      saveScopeState(def, uiState.scope);
+      refreshUI();
+    }
+    function applyRecommendations() {
+      const rec = getRecommendationResult();
+      if (!rec || rec.recommended.size === 0) return;
+      if (uiState.scope.kind === "groups" && rec.enabled) {
+        uiState = {
+          ...uiState,
+          scope: { kind: "groups", enabledGroups: rec.enabled }
+        };
+        saveScopeState(def, uiState.scope);
+      } else if (uiState.scope.kind === "fretboard" && rec.enabled) {
+        let noteFilter = uiState.scope.noteFilter;
+        const ctx = def.getRecommendationContext?.(rec, engine.selector);
+        if (ctx?.noteFilter) noteFilter = ctx.noteFilter;
+        uiState = {
+          ...uiState,
+          scope: {
+            kind: "fretboard",
+            enabledStrings: rec.enabled,
+            noteFilter
+          }
+        };
+        saveScopeState(def, uiState.scope);
+      }
+      refreshUI();
+    }
+    function init() {
+      container.querySelectorAll(".mode-tab").forEach((btn) => {
+        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+      });
+      container.querySelector(".start-btn").addEventListener("click", () => {
+        engine.start();
+      });
+      const recBtn = container.querySelector(".practice-rec-btn");
+      if (recBtn) {
+        recBtn.addEventListener("click", () => applyRecommendations());
+      }
+      wireScope();
+      wireAnswerButtons();
+      refreshUI();
+    }
+    function wireScope() {
+      const spec = def.scopeSpec;
+      if (spec.kind === "groups") {
+        const togglesDiv = container.querySelector(".distance-toggles");
+        if (togglesDiv) {
+          for (const group of spec.groups) {
+            const btn = document.createElement("button");
+            btn.className = "distance-toggle";
+            btn.dataset.group = String(group.index);
+            btn.textContent = group.label;
+            btn.addEventListener("click", () => toggleGroup(group.index));
+            togglesDiv.appendChild(btn);
+          }
+        }
+        if (spec.label) {
+          const toggleLabel = container.querySelector(".toggle-group-label");
+          if (toggleLabel) toggleLabel.textContent = spec.label;
+        }
+      } else if (spec.kind === "fretboard") {
+        container.querySelectorAll(".string-toggle").forEach(
+          (btn) => {
+            btn.addEventListener("click", () => {
+              toggleFretboardString(parseInt(btn.dataset.string));
+            });
+          }
+        );
+        container.querySelectorAll(".notes-toggle").forEach(
+          (btn) => {
+            btn.addEventListener("click", () => {
+              btn.classList.toggle("active");
+              const anyActive = container.querySelector(".notes-toggle.active");
+              if (!anyActive) btn.classList.add("active");
+              const naturalActive = container.querySelector(
+                '.notes-toggle[data-notes="natural"].active'
+              );
+              const accActive = container.querySelector(
+                '.notes-toggle[data-notes="sharps-flats"].active'
+              );
+              let filter;
+              if (naturalActive && accActive) filter = "all";
+              else if (accActive) filter = "sharps-flats";
+              else filter = "natural";
+              setNoteFilter(filter);
+            });
+          }
+        );
+        if (quizAreaEls.progressFretboardWrapper) {
+          setupHoverCard(
+            quizAreaEls.progressFretboardWrapper,
+            def,
+            engine.selector
+          );
+        }
+      }
+    }
+    function wireAnswerButtons() {
+      const resp = def.response;
+      if (resp.kind === "buttons") {
+        container.querySelectorAll(
+          ".note-btn, .answer-btn"
+        ).forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            const answer = resp.getButtonAnswer(btn);
+            if (answer) engine.submitAnswer(answer);
+          });
+        });
+      } else if (resp.kind === "bidirectional") {
+        container.querySelectorAll(".answer-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (!engine.isActive || engine.isAnswered) return;
+            for (const group of resp.groups) {
+              const answer = group.getButtonAnswer(btn);
+              if (answer) {
+                engine.submitAnswer(answer);
+                return;
+              }
+            }
+          });
+        });
+      }
+    }
+    function activate() {
+      engine.attach();
+      refreshNoteButtonLabels(container);
+      refreshUI();
+    }
+    function deactivate() {
+      if (engine.isRunning) engine.stop();
+      engine.detach();
+      keyHandler.reset();
+    }
+    function onNotationChange() {
+      if (!container.classList.contains("mode-active")) return;
+      refreshUI();
+      if (uiState.activeTab === "progress" && statsControls.mode) {
+        statsControls.show(statsControls.mode);
+      }
+    }
+    return { init, activate, deactivate, onNotationChange };
+  }
+  function emptyPracticeSummary() {
+    return {
+      statusLabel: "",
+      statusDetail: "",
+      recommendationText: "",
+      showRecommendationButton: false,
+      sessionSummary: "",
+      masteryText: "",
+      showMastery: false,
+      enabledItemCount: 0
+    };
+  }
+  function createKeyHandlerFromResponse(def, submitAnswer, getScope) {
+    const resp = def.response;
+    if (resp.kind === "buttons" || resp.kind === "bidirectional") {
+      return resp.createKeyHandler(submitAnswer, getScope);
+    }
+    if (resp.kind === "sequential") {
+      return resp.createKeyHandler(submitAnswer, getScope);
+    }
+    if (resp.kind === "spatial" && resp.createKeyHandler) {
+      return resp.createKeyHandler(submitAnswer, getScope);
+    }
+    return { handleKey: () => false, reset: () => {
+    } };
+  }
+  function setupHoverCard(wrapper, def, selector) {
+    const card = wrapper.querySelector(".hover-card");
+    if (!card) return;
+    const svg = wrapper.querySelector("svg");
+    if (!svg) return;
+    svg.addEventListener("mouseover", (e) => {
+      const el = e.target.closest(".fb-pos");
+      if (!el) return;
+      const s = parseInt(el.getAttribute("data-string"));
+      const f = parseInt(el.getAttribute("data-fret"));
+      const itemId = s + "-" + f;
+      const question = def.getQuestion(itemId);
+      const note = question.currentNote || "";
+      const auto = selector.getAutomaticity(itemId);
+      const noteEl = card.querySelector(".hc-note");
+      if (noteEl) noteEl.textContent = displayNote(note);
+      const stringFretEl = card.querySelector(".hc-string-fret");
+      if (stringFretEl && def.scopeSpec.kind === "fretboard") {
+        const inst = def.scopeSpec.instrument;
+        stringFretEl.textContent = displayNote(inst.stringNames[s]) + " string, fret " + f;
+      }
+      const detailEl = card.querySelector(".hc-detail");
+      const barFill = card.querySelector(".hc-bar-fill");
+      if (auto !== null) {
+        const pct = Math.round(auto * 100);
+        let label;
+        if (auto > 0.8) label = "Automatic";
+        else if (auto > 0.6) label = "Solid";
+        else if (auto > 0.4) label = "Getting there";
+        else if (auto > 0.2) label = "Fading";
+        else label = "Needs work";
+        if (detailEl) detailEl.textContent = label + " \xB7 " + pct + "%";
+        if (barFill) {
+          barFill.style.width = pct + "%";
+          barFill.style.background = getAutomaticityColor(auto);
+        }
+      } else {
+        if (detailEl) detailEl.textContent = "Not seen yet";
+        if (barFill) {
+          barFill.style.width = "0%";
+          barFill.style.background = "";
+        }
+      }
+      const containerRect = wrapper.querySelector(
+        ".fretboard-container"
+      ).getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const cx = elRect.left + elRect.width / 2 - containerRect.left;
+      const cy = elRect.top - containerRect.top;
+      if (cy < 50) {
+        card.style.left = cx + "px";
+        card.style.top = cy + elRect.height + 6 + "px";
+        card.style.transform = "translate(-50%, 0)";
+      } else {
+        card.style.left = cx + "px";
+        card.style.top = cy - 6 + "px";
+        card.style.transform = "translate(-50%, -100%)";
+      }
+      card.classList.add("visible");
+    });
+    svg.addEventListener("mouseout", (e) => {
+      const el = e.target.closest(".fb-pos");
+      if (el) card.classList.remove("visible");
+    });
+  }
+
+  // src/quiz-fretboard-state.ts
   function createFretboardHelpers(musicData) {
     const noteNames = musicData.notes.map((n) => n.name);
     const fretCount = musicData.fretCount || 13;
@@ -5705,21 +6176,20 @@ button {
     return { suggestedFilter: "all", naturalMasteryRatio: ratio };
   }
 
-  // src/quiz-fretboard.ts
-  function createFrettedInstrumentMode(instrument) {
-    const container = document.getElementById("mode-" + instrument.id);
-    const STRINGS_KEY = instrument.storageNamespace + "_enabledStrings";
-    const NOTE_FILTER_KEY = instrument.storageNamespace + "_noteFilter";
-    let enabledStrings = /* @__PURE__ */ new Set([instrument.defaultString]);
-    let noteFilter = "natural";
-    let recommendedStrings = /* @__PURE__ */ new Set();
-    let lastNotePri = null;
-    const allStrings = Array.from(
-      { length: instrument.stringCount },
-      function(_, i) {
-        return i;
-      }
+  // src/modes/fretboard.ts
+  var FB_QUIZ_HL = "hsl(50, 100%, 50%)";
+  function setCircleFill(root, string, fret, color) {
+    const circle = root.querySelector(
+      'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
     );
+    if (circle) circle.style.fill = color;
+  }
+  function clearAll(root) {
+    root.querySelectorAll(".fb-pos").forEach((c) => {
+      c.style.fill = "";
+    });
+  }
+  function fretboardDefinition(instrument) {
     const fb = createFretboardHelpers({
       notes: NOTES,
       naturalNotes: NATURAL_NOTES,
@@ -5727,1384 +6197,329 @@ button {
       fretCount: instrument.fretCount,
       noteMatchesInput
     });
-    const FB_QUIZ_HL = "hsl(50, 100%, 50%)";
-    let activeTab = "practice";
-    const progressFretboard = container.querySelector(
-      ".tab-progress .fretboard-wrapper"
+    const allStrings = Array.from(
+      { length: instrument.stringCount },
+      (_, i) => i
     );
-    const quizFretboard = container.querySelector(
-      ".quiz-area .fretboard-wrapper"
-    );
-    function setCircleFill(root, string, fret, color) {
-      const circle = root.querySelector(
-        'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
-      );
-      if (circle) circle.style.fill = color;
-    }
-    function clearAll(root) {
-      root.querySelectorAll(".fb-pos").forEach(function(c) {
-        c.style.fill = "";
-      });
-    }
-    function setupHoverCard(fretboardWrapper) {
-      const card = fretboardWrapper.querySelector(".hover-card");
-      if (!card) return;
-      function showCard(el) {
-        const s = parseInt(el.getAttribute("data-string"));
-        const f = parseInt(el.getAttribute("data-fret"));
-        const note = fb.getNoteAtPosition(s, f);
-        const itemId = s + "-" + f;
-        const auto = engine.selector.getAutomaticity(itemId);
-        card.querySelector(".hc-note").textContent = displayNote(note);
-        card.querySelector(".hc-string-fret").textContent = displayNote(instrument.stringNames[s]) + " string, fret " + f;
-        if (auto !== null) {
-          const pct = Math.round(auto * 100);
-          let label;
-          if (auto > 0.8) label = "Automatic";
-          else if (auto > 0.6) label = "Solid";
-          else if (auto > 0.4) label = "Getting there";
-          else if (auto > 0.2) label = "Fading";
-          else label = "Needs work";
-          card.querySelector(".hc-detail").textContent = label + " \xB7 " + pct + "%";
-          const barFill = card.querySelector(".hc-bar-fill");
-          barFill.style.width = pct + "%";
-          barFill.style.background = getAutomaticityColor(auto);
-        } else {
-          card.querySelector(".hc-detail").textContent = "Not seen yet";
-          const barFill2 = card.querySelector(".hc-bar-fill");
-          barFill2.style.width = "0%";
-          barFill2.style.background = "";
-        }
-        const containerRect = fretboardWrapper.querySelector(
-          ".fretboard-container"
-        ).getBoundingClientRect();
-        const elRect = el.getBoundingClientRect();
-        const cx = elRect.left + elRect.width / 2 - containerRect.left;
-        const cy = elRect.top - containerRect.top;
-        if (cy < 50) {
-          card.style.left = cx + "px";
-          card.style.top = cy + elRect.height + 6 + "px";
-          card.style.transform = "translate(-50%, 0)";
-        } else {
-          card.style.left = cx + "px";
-          card.style.top = cy - 6 + "px";
-          card.style.transform = "translate(-50%, -100%)";
-        }
-        card.classList.add("visible");
-      }
-      function hideCard() {
-        card.classList.remove("visible");
-      }
-      const svg = fretboardWrapper.querySelector("svg");
-      svg.addEventListener("mouseover", function(e) {
-        const el = e.target.closest(".fb-pos");
-        if (el) showCard(el);
-      });
-      svg.addEventListener("mouseout", function(e) {
-        const el = e.target.closest(".fb-pos");
-        if (el) hideCard();
-      });
-    }
-    function loadEnabledStrings() {
-      const saved = localStorage.getItem(STRINGS_KEY);
-      if (saved) {
-        try {
-          enabledStrings = new Set(JSON.parse(saved));
-        } catch (_e) {
-        }
-      }
-      updateStringToggles();
-    }
-    function saveEnabledStrings() {
-      localStorage.setItem(STRINGS_KEY, JSON.stringify([...enabledStrings]));
-    }
-    function updateStringToggles() {
-      container.querySelectorAll(".string-toggle").forEach(
-        function(btn) {
-          const s = parseInt(btn.dataset.string);
-          btn.classList.toggle("active", enabledStrings.has(s));
-          btn.classList.toggle("recommended", recommendedStrings.has(s));
-        }
-      );
-    }
-    function toggleString(s) {
-      enabledStrings = toggleFretboardString(enabledStrings, s);
-      saveEnabledStrings();
-      refreshUI();
-    }
-    function loadNoteFilter() {
-      const saved = localStorage.getItem(NOTE_FILTER_KEY);
-      if (saved && (saved === "natural" || saved === "sharps-flats" || saved === "all")) {
-        noteFilter = saved;
-      }
-      updateNoteToggles();
-    }
-    function saveNoteFilter() {
-      try {
-        localStorage.setItem(NOTE_FILTER_KEY, noteFilter);
-      } catch (_) {
+    const ALL_ITEMS = [];
+    for (const s of allStrings) {
+      for (let f = 0; f < instrument.fretCount; f++) {
+        ALL_ITEMS.push(s + "-" + f);
       }
     }
-    function updateNoteToggles() {
-      const naturalBtn = container.querySelector(
-        '.notes-toggle[data-notes="natural"]'
-      );
-      const accBtn = container.querySelector(
-        '.notes-toggle[data-notes="sharps-flats"]'
-      );
-      if (naturalBtn) {
-        naturalBtn.classList.toggle(
-          "active",
-          noteFilter === "natural" || noteFilter === "all"
-        );
-      }
-      if (accBtn) {
-        accBtn.classList.toggle(
-          "active",
-          noteFilter === "sharps-flats" || noteFilter === "all"
-        );
-      }
-    }
-    function switchTab(tabName) {
-      activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach(
-        function(btn) {
-          btn.classList.toggle("active", btn.dataset.tab === tabName);
-        }
-      );
-      container.querySelectorAll(".tab-content").forEach(function(el) {
-        const isPractice = el.classList.contains("tab-practice");
-        const isProgress = el.classList.contains("tab-progress");
-        if (tabName === "practice") {
-          el.classList.toggle("active", isPractice);
-        } else {
-          el.classList.toggle("active", isProgress);
-        }
-      });
-      if (tabName === "progress") {
-        statsControls.show(statsControls.mode || "retention");
-      } else {
-        clearAll(progressFretboard);
-        renderPracticeSummary();
-      }
-    }
-    const statsControls = createStatsControls(
-      container,
-      function(mode2, el) {
-        el.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
-        if (mode2 === "retention") {
-          for (let si = 0; si < allStrings.length; si++) {
-            const s = allStrings[si];
-            for (let f = 0; f < instrument.fretCount; f++) {
-              const auto = engine.selector.getAutomaticity(s + "-" + f);
-              const color = getAutomaticityColor(auto);
-              setCircleFill(progressFretboard, s, f, color);
-            }
-          }
-        } else {
-          for (let sj = 0; sj < allStrings.length; sj++) {
-            const s2 = allStrings[sj];
-            for (let f2 = 0; f2 < instrument.fretCount; f2++) {
-              const stats = engine.selector.getStats(s2 + "-" + f2);
-              const ewma = stats ? stats.ewma : null;
-              const color2 = getSpeedHeatmapColor(
-                ewma,
-                engine.baseline ?? void 0
-              );
-              setCircleFill(progressFretboard, s2, f2, color2);
-            }
-          }
-        }
-      }
-    );
-    function hideHeatmap() {
-      statsControls.hide();
-      clearAll(progressFretboard);
-    }
-    function updateStats() {
-      const statsEl = container.querySelector(".stats");
-      if (statsEl) statsEl.textContent = "";
-    }
-    const recsOptions = {
-      sortUnstarted: function(a, b) {
-        return b.string - a.string;
-      }
-    };
-    function getRecommendationResult() {
-      return computeRecommendations(
-        engine.selector,
-        allStrings,
-        function(s) {
-          return fb.getItemIdsForString(s, "all");
-        },
-        DEFAULT_CONFIG,
-        recsOptions
-      );
-    }
-    function updateRecommendations() {
-      const result = getRecommendationResult();
-      recommendedStrings = result.recommended;
-      updateStringToggles();
-    }
-    function applyRecommendations() {
-      const result = getRecommendationResult();
-      recommendedStrings = result.recommended;
-      if (result.enabled) {
-        enabledStrings = result.enabled;
-        saveEnabledStrings();
-      }
-      updateStringToggles();
-    }
-    function refreshUI() {
-      updateRecommendations();
-      engine.updateIdleMessage();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    function renderPracticeSummary() {
-      const statusLabel = container.querySelector(".practice-status-label");
-      const statusDetail = container.querySelector(".practice-status-detail");
-      const recText = container.querySelector(".practice-rec-text");
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (!statusLabel) return;
-      const items = mode.getEnabledItems();
-      const threshold = engine.selector.getConfig().automaticityThreshold;
-      let fluent = 0, seen = 0;
-      for (let i = 0; i < items.length; i++) {
-        const auto = engine.selector.getAutomaticity(items[i]);
-        if (auto !== null) {
-          seen++;
-          if (auto > threshold) fluent++;
-        }
-      }
-      const allItems = fb.getFretboardEnabledItems(
-        new Set(allStrings),
-        noteFilter
-      );
-      let allFluent = 0;
-      for (let j = 0; j < allItems.length; j++) {
-        const a2 = engine.selector.getAutomaticity(allItems[j]);
-        if (a2 !== null && a2 > threshold) allFluent++;
-      }
-      if (seen === 0) {
-        statusLabel.textContent = "Ready to start";
-        statusDetail.textContent = allItems.length + " positions to learn";
-      } else {
-        const pct = allItems.length > 0 ? Math.round(allFluent / allItems.length * 100) : 0;
-        let label;
-        if (pct >= 80) label = "Strong";
-        else if (pct >= 50) label = "Solid";
-        else if (pct >= 20) label = "Building";
-        else label = "Getting started";
-        statusLabel.textContent = "Overall: " + label;
-        statusDetail.textContent = allFluent + " of " + allItems.length + " positions fluent";
-      }
-      const result = getRecommendationResult();
-      const naturalStats = engine.selector.getStringRecommendations(
-        [...result.recommended],
-        function(s) {
-          return fb.getItemIdsForString(s, "natural");
-        }
-      );
-      lastNotePri = computeNotePrioritization(
-        naturalStats,
-        DEFAULT_CONFIG.expansionThreshold
-      );
-      if (result.recommended.size > 0) {
-        const parts = [];
-        if (result.consolidateIndices.length > 0) {
-          const cNames = result.consolidateIndices.sort(
-            function(a, b) {
-              return b - a;
-            }
-          ).map(function(s) {
-            return displayNote(instrument.stringNames[s]);
-          });
-          parts.push(
-            "solidify " + cNames.join(", ") + " string" + (cNames.length > 1 ? "s" : "") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
-          );
-        }
-        if (result.expandIndex !== null) {
-          parts.push(
-            "start " + displayNote(instrument.stringNames[result.expandIndex]) + " string \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
-          );
-        }
-        if (lastNotePri.suggestedFilter === "natural") {
-          parts.push("naturals first");
-        } else {
-          parts.push("add sharps & flats");
-        }
-        recText.textContent = "Suggestion: " + parts.join(", ");
-        recBtn.classList.remove("hidden");
-      } else {
-        recText.textContent = "";
-        recBtn.classList.add("hidden");
-      }
-    }
-    function noteFilterLabel() {
-      if (noteFilter === "natural") return "natural notes";
-      if (noteFilter === "sharps-flats") return "sharps and flats";
-      return "all notes";
-    }
-    function renderSessionSummary() {
-      const el = container.querySelector(".session-summary-text");
-      if (!el) return;
-      const count = enabledStrings.size;
-      el.textContent = count + " string" + (count !== 1 ? "s" : "") + " \xB7 " + noteFilterLabel() + " \xB7 60s";
-    }
-    function updateAccidentalButtons() {
-      const hideAcc = noteFilter === "natural";
-      container.querySelectorAll(".note-btn.accidental").forEach(
-        function(btn) {
-          btn.classList.toggle("hidden", hideAcc);
-        }
-      );
-      const accRow = container.querySelector(".note-row-accidentals");
-      if (accRow) accRow.classList.toggle("hidden", hideAcc);
-    }
-    let currentString = null;
-    let currentFret = null;
-    let currentNote = null;
-    const mode = {
+    return {
       id: instrument.id,
       name: instrument.name,
       storageNamespace: instrument.storageNamespace,
-      getEnabledItems: function() {
-        return fb.getFretboardEnabledItems(enabledStrings, noteFilter);
+      allItemIds: ALL_ITEMS,
+      getEnabledItems(scope) {
+        if (scope.kind !== "fretboard") {
+          return fb.getFretboardEnabledItems(
+            new Set(allStrings),
+            "natural"
+          );
+        }
+        return fb.getFretboardEnabledItems(
+          scope.enabledStrings,
+          scope.noteFilter
+        );
       },
-      getPracticingLabel: function() {
-        const parts = [];
-        if (enabledStrings.size < instrument.stringCount) {
-          const names = Array.from(enabledStrings).sort(
-            function(a, b) {
-              return b - a;
-            }
-          ).map(function(s) {
-            return displayNote(instrument.stringNames[s]);
+      scopeSpec: {
+        kind: "fretboard",
+        instrument
+      },
+      getQuestion(itemId) {
+        return fb.parseFretboardItem(itemId);
+      },
+      checkAnswer(_itemId, input) {
+        const q = fb.parseFretboardItem(_itemId);
+        return fb.checkFretboardAnswer(q.currentNote, input);
+      },
+      prompt: {
+        kind: "custom",
+        render(q, els) {
+          if (els.fretboardWrapper) {
+            clearAll(els.fretboardWrapper);
+            setCircleFill(
+              els.fretboardWrapper,
+              q.currentString,
+              q.currentFret,
+              FB_QUIZ_HL
+            );
+          }
+          els.promptEl.textContent = "Name this note.";
+        },
+        clear(els) {
+          if (els.fretboardWrapper) {
+            clearAll(els.fretboardWrapper);
+          }
+        },
+        onAnswer(q, result, els) {
+          if (els.fretboardWrapper) {
+            const color = result.correct ? "var(--color-success)" : "var(--color-error)";
+            setCircleFill(
+              els.fretboardWrapper,
+              q.currentString,
+              q.currentFret,
+              color
+            );
+          }
+        }
+      },
+      response: {
+        kind: "buttons",
+        answerButtonsHTML: "",
+        // already in build-template
+        createKeyHandler(submitAnswer, getScope) {
+          return createAdaptiveKeyHandler(submitAnswer, () => {
+            const scope = getScope();
+            return scope.kind === "fretboard" && scope.noteFilter !== "natural";
           });
+        },
+        getButtonAnswer(btn) {
+          return btn.dataset.note ?? null;
+        }
+      },
+      stats: {
+        kind: "custom",
+        render(statsMode, statsEl, selector, baseline, modeContainer) {
+          statsEl.innerHTML = buildStatsLegend(
+            statsMode,
+            baseline ?? void 0
+          );
+          const progressFb = modeContainer.querySelector(
+            ".tab-progress .fretboard-wrapper"
+          );
+          if (!progressFb) return;
+          for (const s of allStrings) {
+            for (let f = 0; f < instrument.fretCount; f++) {
+              const itemId = s + "-" + f;
+              if (statsMode === "retention") {
+                const auto = selector.getAutomaticity(itemId);
+                setCircleFill(progressFb, s, f, getAutomaticityColor(auto));
+              } else {
+                const stats = selector.getStats(itemId);
+                const ewma = stats ? stats.ewma : null;
+                setCircleFill(
+                  progressFb,
+                  s,
+                  f,
+                  getSpeedHeatmapColor(ewma, baseline ?? void 0)
+                );
+              }
+            }
+          }
+        }
+      },
+      getPracticingLabel(scope) {
+        if (scope.kind !== "fretboard") return "all strings";
+        const parts = [];
+        if (scope.enabledStrings.size < instrument.stringCount) {
+          const names = Array.from(scope.enabledStrings).sort((a, b) => b - a).map((s) => displayNote(instrument.stringNames[s]));
           parts.push(
             names.join(", ") + " string" + (names.length === 1 ? "" : "s")
           );
         } else {
           parts.push("all strings");
         }
-        if (noteFilter !== "all") parts.push(noteFilterLabel());
+        const noteLabel = noteFilterLabel(scope.noteFilter);
+        if (scope.noteFilter !== "all") parts.push(noteLabel);
         return parts.join(", ");
       },
-      presentQuestion: function(itemId) {
-        clearAll(quizFretboard);
-        const q = fb.parseFretboardItem(itemId);
-        currentString = q.currentString;
-        currentFret = q.currentFret;
-        currentNote = q.currentNote;
-        setCircleFill(quizFretboard, q.currentString, q.currentFret, FB_QUIZ_HL);
-        container.querySelector(".quiz-prompt").textContent = "Name this note.";
-      },
-      checkAnswer: function(_itemId, input) {
-        return fb.checkFretboardAnswer(currentNote, input);
-      },
-      onAnswer: function(_itemId, result, _responseTime) {
-        if (result.correct) {
-          setCircleFill(
-            quizFretboard,
-            currentString,
-            currentFret,
-            "var(--color-success)"
-          );
-        } else {
-          setCircleFill(
-            quizFretboard,
-            currentString,
-            currentFret,
-            "var(--color-error)"
-          );
+      getSessionSummary(scope) {
+        if (scope.kind !== "fretboard") {
+          return "1 string \xB7 natural notes \xB7 60s";
         }
+        const count = scope.enabledStrings.size;
+        return count + " string" + (count !== 1 ? "s" : "") + " \xB7 " + noteFilterLabel(scope.noteFilter) + " \xB7 60s";
       },
-      onStart: function() {
-        noteKeyHandler.reset();
-        if (statsControls.mode) hideHeatmap();
-        updateStats();
-      },
-      onStop: function() {
-        noteKeyHandler.reset();
-        clearAll(quizFretboard);
-        updateStats();
-        if (activeTab === "progress") {
-          statsControls.show("retention");
-        }
-        refreshUI();
-      },
-      handleKey: function(e, _ctx) {
-        return noteKeyHandler.handleKey(e);
-      },
-      getCalibrationButtons: function() {
-        return Array.from(container.querySelectorAll(".note-btn:not(.hidden)"));
-      },
-      getCalibrationTrialConfig: function(buttons, prevBtn) {
-        const btn = pickCalibrationButton(buttons, prevBtn);
-        return { prompt: "Press " + btn.textContent, targetButtons: [btn] };
-      }
-    };
-    const engine = createQuizEngine(mode, container);
-    const noteKeyHandler = createAdaptiveKeyHandler(
-      function(input) {
-        engine.submitAnswer(input);
-      },
-      function() {
-        return noteFilter !== "natural";
-      }
-    );
-    const allItemIds = [];
-    for (let si = 0; si < allStrings.length; si++) {
-      for (let fi = 0; fi < instrument.fretCount; fi++) {
-        allItemIds.push(allStrings[si] + "-" + fi);
-      }
-    }
-    engine.storage.preload?.(allItemIds);
-    function init() {
-      loadEnabledStrings();
-      loadNoteFilter();
-      container.querySelectorAll(".mode-tab").forEach(
-        function(btn) {
-          btn.addEventListener("click", function() {
-            switchTab(btn.dataset.tab);
-          });
-        }
-      );
-      container.querySelectorAll(".string-toggle").forEach(
-        function(btn) {
-          btn.addEventListener("click", function() {
-            toggleString(parseInt(btn.dataset.string));
-          });
-        }
-      );
-      container.querySelectorAll(".note-btn").forEach(
-        function(btn) {
-          btn.addEventListener("click", function() {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.note);
-          });
-        }
-      );
-      container.querySelectorAll(".notes-toggle").forEach(
-        function(btn) {
-          btn.addEventListener("click", function() {
-            btn.classList.toggle("active");
-            const anyActive = container.querySelector(".notes-toggle.active");
-            if (!anyActive) btn.classList.add("active");
-            const naturalActive = container.querySelector(
-              '.notes-toggle[data-notes="natural"].active'
-            );
-            const accActive = container.querySelector(
-              '.notes-toggle[data-notes="sharps-flats"].active'
-            );
-            if (naturalActive && accActive) noteFilter = "all";
-            else if (accActive) noteFilter = "sharps-flats";
-            else noteFilter = "natural";
-            saveNoteFilter();
-            updateAccidentalButtons();
-            refreshUI();
-          });
-        }
-      );
-      container.querySelector(".start-btn").addEventListener(
-        "click",
-        function() {
-          engine.start();
-        }
-      );
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (recBtn) {
-        recBtn.addEventListener("click", function() {
-          applyRecommendations();
-          if (lastNotePri) {
-            noteFilter = lastNotePri.suggestedFilter;
-            saveNoteFilter();
-            updateNoteToggles();
-            updateAccidentalButtons();
-          }
-          refreshUI();
-        });
-      }
-      if (progressFretboard) setupHoverCard(progressFretboard);
-      updateRecommendations();
-      updateAccidentalButtons();
-      updateStats();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    return {
-      mode,
-      engine,
-      init,
-      activate: function() {
-        engine.attach();
-        refreshNoteButtonLabels(container);
-        refreshUI();
-      },
-      deactivate: function() {
-        if (engine.isRunning) engine.stop();
-        engine.detach();
-        noteKeyHandler.reset();
-      },
-      onNotationChange: function() {
-        if (!container.classList.contains("mode-active")) return;
-        renderPracticeSummary();
-        if (activeTab === "progress" && statsControls.mode) {
-          statsControls.show(statsControls.mode);
-        }
+      getRecommendationContext(rec, selector) {
+        const naturalStats = selector.getStringRecommendations(
+          [...rec.recommended],
+          (s) => fb.getItemIdsForString(s, "natural")
+        );
+        const pri = computeNotePrioritization(
+          naturalStats,
+          DEFAULT_CONFIG.expansionThreshold
+        );
+        const extraParts = pri.suggestedFilter === "natural" ? ["naturals first"] : ["add sharps & flats"];
+        const noteFilter = pri.suggestedFilter === "natural" ? "natural" : "all";
+        return { extraParts, noteFilter };
       }
     };
   }
-  function createGuitarFretboardMode() {
-    return createFrettedInstrumentMode(GUITAR);
-  }
-  function createUkuleleFretboardMode() {
-    return createFrettedInstrumentMode(UKULELE);
+  function noteFilterLabel(filter) {
+    if (filter === "natural") return "natural notes";
+    if (filter === "sharps-flats") return "sharps and flats";
+    return "all notes";
   }
 
-  // src/quiz-speed-tap.ts
-  function createSpeedTapMode() {
-    const container = document.getElementById("mode-speedTap");
-    const NOTE_FILTER_KEY = "speedTap_noteFilter";
-    let noteFilter = "natural";
-    let currentNote = null;
-    let targetPositions = [];
-    let foundPositions = /* @__PURE__ */ new Set();
-    let roundActive = false;
-    const wrongFlashTimeouts = /* @__PURE__ */ new Set();
-    const noteNames = NOTES.map(function(n) {
-      return n.name;
-    });
-    const FB_TAP_NEUTRAL = "hsl(30, 4%, 90%)";
-    const FB_TAP_CORRECT = "hsl(90, 45%, 35%)";
-    const _cs = getComputedStyle(document.documentElement);
-    const COLOR_ERROR = _cs.getPropertyValue("--color-error").trim();
-    function getNoteAtPosition(string, fret) {
-      const offset = STRING_OFFSETS[string];
-      return noteNames[(offset + fret) % 12];
-    }
-    function getPositionsForNote(noteName) {
-      const positions = [];
-      for (let s = 0; s < 6; s++) {
-        for (let f = 0; f <= 12; f++) {
-          if (getNoteAtPosition(s, f) === noteName) {
-            positions.push({ string: s, fret: f });
-          }
-        }
-      }
-      return positions;
-    }
-    function setCircleFill(string, fret, color) {
-      const circle = container.querySelector(
-        'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
-      );
-      if (circle) circle.style.fill = color;
-    }
-    function clearAll() {
-      container.querySelectorAll(".fb-pos").forEach(function(c) {
-        c.style.fill = "";
-      });
-    }
-    let activeTab = "practice";
-    function switchTab(tabName) {
-      activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach(
-        function(btn) {
-          btn.classList.toggle("active", btn.dataset.tab === tabName);
-        }
-      );
-      container.querySelectorAll(".tab-content").forEach(function(el) {
-        el.classList.toggle(
-          "active",
-          tabName === "practice" ? el.classList.contains("tab-practice") : el.classList.contains("tab-progress")
-        );
-      });
-      if (tabName === "progress") {
-        statsControls.show(statsControls.mode || "retention");
-      } else {
-        renderPracticeSummary();
-      }
-    }
-    function renderPracticeSummary() {
-      const statusLabel = container.querySelector(".practice-status-label");
-      const statusDetail = container.querySelector(".practice-status-detail");
-      const recText = container.querySelector(".practice-rec-text");
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (!statusLabel) return;
-      const items = mode.getEnabledItems();
-      const threshold = engine.selector.getConfig().automaticityThreshold;
-      let fluent = 0, seen = 0;
-      for (let i = 0; i < items.length; i++) {
-        const auto = engine.selector.getAutomaticity(items[i]);
-        if (auto !== null) {
-          seen++;
-          if (auto > threshold) fluent++;
-        }
-      }
-      if (seen === 0) {
-        statusLabel.textContent = "Ready to start";
-        statusDetail.textContent = items.length + " notes to learn";
-      } else {
-        const pct = items.length > 0 ? Math.round(fluent / items.length * 100) : 0;
-        let label;
-        if (pct >= 80) label = "Strong";
-        else if (pct >= 50) label = "Solid";
-        else if (pct >= 20) label = "Building";
-        else label = "Getting started";
-        statusLabel.textContent = "Overall: " + label;
-        statusDetail.textContent = fluent + " of " + items.length + " notes fluent";
-      }
-      recText.textContent = "";
-      recBtn.classList.add("hidden");
-    }
-    function renderSessionSummary() {
-      const el = container.querySelector(".session-summary-text");
-      if (!el) return;
-      const items = mode.getEnabledItems();
-      el.textContent = items.length + " notes \xB7 60s";
-    }
-    const statsControls = createStatsControls(
-      container,
-      function(mode2, el) {
-        let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
-        for (let i = 0; i < NOTES.length; i++) {
-          html += "<th>" + displayNote(NOTES[i].name) + "</th>";
-        }
-        html += "</tr></thead><tbody><tr>";
-        for (let j = 0; j < NOTES.length; j++) {
-          if (mode2 === "retention") {
-            const auto = engine.selector.getAutomaticity(NOTES[j].name);
-            html += '<td class="stats-cell" style="background:' + getAutomaticityColor(auto) + '"></td>';
-          } else {
-            const stats = engine.selector.getStats(NOTES[j].name);
-            const posCount = getPositionsForNote(NOTES[j].name).length;
-            const perPosMs = stats ? stats.ewma / posCount : null;
-            html += '<td class="stats-cell" style="background:' + getSpeedHeatmapColor(perPosMs, engine.baseline ?? void 0) + '"></td>';
-          }
-        }
-        html += "</tr></tbody></table>";
-        html += buildStatsLegend(mode2, engine.baseline ?? void 0);
-        el.innerHTML = html;
-      }
-    );
-    const progressEl = container.querySelector(".speed-tap-progress");
-    const fretboardWrapper = container.querySelector(".fretboard-wrapper");
-    function updateRoundProgress() {
-      if (progressEl) {
-        progressEl.textContent = foundPositions.size + " / " + targetPositions.length;
-      }
-    }
-    function handleCircleTap(string, fret) {
-      if (!engine.isActive || engine.isAnswered || !roundActive) return;
-      const key = string + "-" + fret;
-      if (foundPositions.has(key)) return;
-      const tappedNote = getNoteAtPosition(string, fret);
-      if (tappedNote === currentNote) {
-        foundPositions.add(key);
-        setCircleFill(string, fret, FB_TAP_CORRECT);
-        updateRoundProgress();
-        if (foundPositions.size === targetPositions.length) {
-          roundActive = false;
-          engine.submitAnswer("complete");
-        }
-      } else {
-        setCircleFill(string, fret, COLOR_ERROR);
-        const timeout = setTimeout(function() {
-          wrongFlashTimeouts.delete(timeout);
-          if (!foundPositions.has(key)) {
-            setCircleFill(string, fret, FB_TAP_NEUTRAL);
-          }
-        }, 800);
-        wrongFlashTimeouts.add(timeout);
-      }
-    }
-    function handleFretboardClick(e) {
-      if (e.target.closest(".setting-group")) return;
-      if (engine.isActive && !engine.isAnswered && roundActive) {
-        const target = e.target.closest(
-          "circle.fb-pos[data-string][data-fret]"
-        );
-        if (target) {
-          handleCircleTap(
-            parseInt(target.dataset.string),
-            parseInt(target.dataset.fret)
-          );
-        }
-      }
-    }
-    const mode = {
-      id: "speedTap",
-      name: "Speed Tap",
-      storageNamespace: "speedTap",
-      getEnabledItems: function() {
-        if (noteFilter === "natural") return NATURAL_NOTES.slice();
-        if (noteFilter === "sharps-flats") {
-          return NOTES.filter(function(n) {
-            return !NATURAL_NOTES.includes(n.name);
-          }).map(function(n) {
-            return n.name;
-          });
-        }
-        return NOTES.map(function(n) {
-          return n.name;
-        });
-      },
-      getExpectedResponseCount: function(itemId) {
-        return getPositionsForNote(itemId).length;
-      },
-      presentQuestion: function(itemId) {
-        wrongFlashTimeouts.forEach(function(t) {
-          clearTimeout(t);
-        });
-        wrongFlashTimeouts.clear();
-        clearAll();
-        currentNote = itemId;
-        targetPositions = getPositionsForNote(currentNote);
-        foundPositions = /* @__PURE__ */ new Set();
-        roundActive = true;
-        container.querySelectorAll(".fb-pos").forEach(function(c) {
-          c.style.fill = FB_TAP_NEUTRAL;
-        });
-        const prompt = container.querySelector(".quiz-prompt");
-        if (prompt) {
-          const note = NOTES.find(function(n) {
-            return n.name === currentNote;
-          });
-          prompt.textContent = "Tap all " + (note ? displayNote(pickRandomAccidental(note.displayName)) : displayNote(currentNote));
-        }
-        updateRoundProgress();
-      },
-      checkAnswer: function(_itemId, input) {
-        const allFound = input === "complete";
-        return { correct: allFound, correctAnswer: displayNote(currentNote) };
-      },
-      onStart: function() {
-        if (statsControls.mode) statsControls.hide();
-        if (fretboardWrapper) {
-          fretboardWrapper.classList.remove("fretboard-hidden");
-        }
-      },
-      onStop: function() {
-        roundActive = false;
-        wrongFlashTimeouts.forEach(function(t) {
-          clearTimeout(t);
-        });
-        wrongFlashTimeouts.clear();
-        clearAll();
-        currentNote = null;
-        if (progressEl) progressEl.textContent = "";
-        if (fretboardWrapper) fretboardWrapper.classList.add("fretboard-hidden");
-        if (activeTab === "progress") {
-          statsControls.show("retention");
-        }
-        renderPracticeSummary();
-        renderSessionSummary();
-      },
-      onAnswer: function(_itemId, result, _responseTime) {
-        roundActive = false;
-        if (!result.correct) {
-          for (let i = 0; i < targetPositions.length; i++) {
-            const pos = targetPositions[i];
-            const key = pos.string + "-" + pos.fret;
-            if (!foundPositions.has(key)) {
-              setCircleFill(pos.string, pos.fret, COLOR_ERROR);
-            }
-          }
-        }
-      },
-      handleKey: function(_e, _ctx) {
-        return false;
-      },
-      getCalibrationButtons: function() {
-        return Array.from(container.querySelectorAll(".answer-btn-note"));
-      }
-    };
-    const engine = createQuizEngine(mode, container);
-    for (let i = 0; i < NOTES.length; i++) {
-      engine.storage.getStats(NOTES[i].name);
-    }
-    function loadNoteFilter() {
-      const saved = localStorage.getItem(NOTE_FILTER_KEY);
-      if (saved && (saved === "natural" || saved === "sharps-flats" || saved === "all")) {
-        noteFilter = saved;
-      }
-      updateNoteToggles();
-    }
-    function saveNoteFilter() {
-      try {
-        localStorage.setItem(NOTE_FILTER_KEY, noteFilter);
-      } catch (_) {
-      }
-    }
-    function updateNoteToggles() {
-      const naturalBtn = container.querySelector(
-        '.notes-toggle[data-notes="natural"]'
-      );
-      const accBtn = container.querySelector(
-        '.notes-toggle[data-notes="sharps-flats"]'
-      );
-      if (naturalBtn) {
-        naturalBtn.classList.toggle(
-          "active",
-          noteFilter === "natural" || noteFilter === "all"
-        );
-      }
-      if (accBtn) {
-        accBtn.classList.toggle(
-          "active",
-          noteFilter === "sharps-flats" || noteFilter === "all"
-        );
-      }
-    }
-    function init() {
-      loadNoteFilter();
-      container.querySelectorAll(".mode-tab").forEach(
-        function(btn) {
-          btn.addEventListener("click", function() {
-            switchTab(btn.dataset.tab);
-          });
-        }
-      );
-      container.querySelectorAll(".notes-toggle").forEach(
-        function(btn) {
-          btn.addEventListener("click", function() {
-            btn.classList.toggle("active");
-            const anyActive = container.querySelector(".notes-toggle.active");
-            if (!anyActive) btn.classList.add("active");
-            const naturalActive = container.querySelector(
-              '.notes-toggle[data-notes="natural"].active'
-            );
-            const accActive = container.querySelector(
-              '.notes-toggle[data-notes="sharps-flats"].active'
-            );
-            if (naturalActive && accActive) noteFilter = "all";
-            else if (accActive) noteFilter = "sharps-flats";
-            else noteFilter = "natural";
-            saveNoteFilter();
-            engine.updateIdleMessage();
-            renderPracticeSummary();
-            renderSessionSummary();
-          });
-        }
-      );
-      container.querySelector(".start-btn").addEventListener(
-        "click",
-        function() {
-          engine.start();
-        }
-      );
-      if (fretboardWrapper) fretboardWrapper.classList.add("fretboard-hidden");
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    return {
-      mode,
-      engine,
-      init,
-      activate: function() {
-        engine.attach();
-        container.addEventListener("click", handleFretboardClick);
-        engine.updateIdleMessage();
-        renderPracticeSummary();
-      },
-      deactivate: function() {
-        if (engine.isRunning) engine.stop();
-        engine.detach();
-        container.removeEventListener("click", handleFretboardClick);
-      }
-    };
-  }
-
-  // src/quiz-note-semitones.ts
-  function createNoteSemitonesMode() {
-    const container = document.getElementById("mode-noteSemitones");
+  // src/modes/note-semitones.ts
+  function noteSemitonesDefinition() {
     const ALL_ITEMS = [];
     for (const note of NOTES) {
       ALL_ITEMS.push(note.name + ":fwd");
       ALL_ITEMS.push(note.name + ":rev");
     }
-    function parseItem(itemId) {
-      const [noteName, dir] = itemId.split(":");
-      const note = NOTES.find((n) => n.name === noteName);
-      return { note, dir };
-    }
-    let currentItem = null;
-    let currentAccidentalChoice = null;
-    let activeTab = "practice";
-    function switchTab(tabName) {
-      activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
-      container.querySelectorAll(".tab-content").forEach((el) => {
-        el.classList.toggle(
-          "active",
-          tabName === "practice" ? el.classList.contains("tab-practice") : el.classList.contains("tab-progress")
-        );
-      });
-      if (tabName === "progress") {
-        statsControls.show(statsControls.mode || "retention");
-      } else {
-        renderPracticeSummary();
-      }
-    }
-    function renderPracticeSummary() {
-      const statusLabel = container.querySelector(".practice-status-label");
-      const statusDetail = container.querySelector(".practice-status-detail");
-      const recText = container.querySelector(".practice-rec-text");
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (!statusLabel) return;
-      const threshold = engine.selector.getConfig().automaticityThreshold;
-      let fluent = 0, seen = 0;
-      for (let i = 0; i < ALL_ITEMS.length; i++) {
-        const auto = engine.selector.getAutomaticity(ALL_ITEMS[i]);
-        if (auto !== null) {
-          seen++;
-          if (auto > threshold) fluent++;
-        }
-      }
-      if (seen === 0) {
-        statusLabel.textContent = "Ready to start";
-        statusDetail.textContent = ALL_ITEMS.length + " items to learn";
-      } else {
-        const pct = ALL_ITEMS.length > 0 ? Math.round(fluent / ALL_ITEMS.length * 100) : 0;
-        let label;
-        if (pct >= 80) label = "Strong";
-        else if (pct >= 50) label = "Solid";
-        else if (pct >= 20) label = "Building";
-        else label = "Getting started";
-        statusLabel.textContent = "Overall: " + label;
-        statusDetail.textContent = fluent + " of " + ALL_ITEMS.length + " items fluent";
-      }
-      recText.textContent = "";
-      recBtn.classList.add("hidden");
-    }
-    function renderSessionSummary() {
-      const el = container.querySelector(".session-summary-text");
-      if (!el) return;
-      el.textContent = ALL_ITEMS.length + " items \xB7 60s";
-    }
-    function getTableRows() {
-      return NOTES.map((note) => ({
-        label: displayNote(note.name),
-        sublabel: String(note.num),
-        _colHeader: "Note",
-        fwdItemId: note.name + ":fwd",
-        revItemId: note.name + ":rev"
-      }));
-    }
-    const statsControls = createStatsControls(container, function(mode2, el) {
-      const tableDiv = document.createElement("div");
-      el.appendChild(tableDiv);
-      renderStatsTable(
-        engine.selector,
-        getTableRows(),
-        "N\u2192#",
-        "#\u2192N",
-        mode2,
-        tableDiv,
-        engine.baseline ?? void 0
-      );
-      const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
-      el.appendChild(legendDiv);
-    });
-    const mode = {
+    let currentQuestion = null;
+    return {
       id: "noteSemitones",
       name: "Note \u2194 Semitones",
       storageNamespace: "noteSemitones",
-      getEnabledItems() {
+      allItemIds: ALL_ITEMS,
+      getEnabledItems(_scope) {
         return ALL_ITEMS;
       },
-      presentQuestion(itemId) {
-        currentItem = parseItem(itemId);
-        const prompt = container.querySelector(".quiz-prompt");
-        const noteButtons = container.querySelector(".answer-buttons-notes");
-        const numButtons = container.querySelector(".answer-buttons-numbers");
-        currentAccidentalChoice = pickRandomAccidental(
-          currentItem.note.displayName
-        );
-        if (currentItem.dir === "fwd") {
-          prompt.textContent = displayNote(currentAccidentalChoice);
-          noteButtons.classList.add("answer-group-hidden");
-          numButtons.classList.remove("answer-group-hidden");
-        } else {
-          prompt.textContent = String(currentItem.note.num);
-          noteButtons.classList.remove("answer-group-hidden");
-          numButtons.classList.add("answer-group-hidden");
-        }
+      scopeSpec: { kind: "none" },
+      getQuestion(itemId) {
+        const [noteName, dir] = itemId.split(":");
+        const note = NOTES.find((n) => n.name === noteName);
+        const accidentalChoice = pickRandomAccidental(note.displayName);
+        currentQuestion = {
+          note,
+          dir,
+          accidentalChoice
+        };
+        return currentQuestion;
       },
       checkAnswer(_itemId, input) {
-        if (currentItem.dir === "fwd") {
-          const correct = parseInt(input, 10) === currentItem.note.num;
-          return { correct, correctAnswer: String(currentItem.note.num) };
+        const q = currentQuestion;
+        if (q.dir === "fwd") {
+          const correct = parseInt(input, 10) === q.note.num;
+          return { correct, correctAnswer: String(q.note.num) };
         } else {
-          const correct = noteMatchesInput(currentItem.note, input);
+          const correct = noteMatchesInput(q.note, input);
           return {
             correct,
-            correctAnswer: displayNote(currentAccidentalChoice)
+            correctAnswer: displayNote(q.accidentalChoice)
           };
         }
       },
-      onStart() {
-        noteKeyHandler.reset();
-        if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
-        pendingDigit = null;
-        pendingDigitTimeout = null;
-        if (statsControls.mode) statsControls.hide();
-      },
-      onStop() {
-        noteKeyHandler.reset();
-        if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
-        pendingDigit = null;
-        pendingDigitTimeout = null;
-        if (activeTab === "progress") {
-          statsControls.show("retention");
+      prompt: {
+        kind: "text",
+        getText(q) {
+          return q.dir === "fwd" ? displayNote(q.accidentalChoice) : String(q.note.num);
         }
-        renderPracticeSummary();
-        renderSessionSummary();
       },
-      handleKey(e, { submitAnswer }) {
-        if (currentItem.dir === "rev") {
-          return noteKeyHandler.handleKey(e);
-        }
-        if (e.key >= "0" && e.key <= "9") {
-          e.preventDefault();
-          if (pendingDigit !== null) {
-            const num = pendingDigit * 10 + parseInt(e.key);
-            clearTimeout(pendingDigitTimeout);
-            pendingDigit = null;
-            pendingDigitTimeout = null;
-            if (num <= 11) {
-              submitAnswer(String(num));
+      response: {
+        kind: "bidirectional",
+        groups: [
+          {
+            id: "notes",
+            html: "",
+            // already in build-template
+            getButtonAnswer(btn) {
+              return btn.dataset.note ?? null;
             }
-            return true;
+          },
+          {
+            id: "numbers",
+            html: "",
+            // already in build-template
+            getButtonAnswer(btn) {
+              return btn.dataset.num ?? null;
+            }
           }
-          const d = parseInt(e.key);
-          if (d >= 2) {
-            submitAnswer(String(d));
-          } else {
-            pendingDigit = d;
-            pendingDigitTimeout = setTimeout(() => {
-              submitAnswer(String(pendingDigit));
-              pendingDigit = null;
-              pendingDigitTimeout = null;
-            }, 400);
-          }
-          return true;
-        }
-        return false;
-      },
-      getCalibrationButtons() {
-        return Array.from(container.querySelectorAll(".answer-btn-note"));
-      },
-      getCalibrationTrialConfig(buttons, prevBtn) {
-        const btn = pickCalibrationButton(buttons, prevBtn);
-        return { prompt: "Press " + btn.textContent, targetButtons: [btn] };
-      }
-    };
-    let pendingDigit = null;
-    let pendingDigitTimeout = null;
-    const engine = createQuizEngine(mode, container);
-    engine.storage.preload?.(ALL_ITEMS);
-    const noteKeyHandler = createAdaptiveKeyHandler(
-      (input) => engine.submitAnswer(input),
-      () => true
-    );
-    function init() {
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
-      container.querySelectorAll(".answer-btn-note").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.note);
-          });
-        }
-      );
-      container.querySelectorAll(".answer-btn-num").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.num);
-          });
-        }
-      );
-      container.querySelector(".start-btn").addEventListener(
-        "click",
-        () => engine.start()
-      );
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    return {
-      mode,
-      engine,
-      init,
-      activate() {
-        engine.attach();
-        refreshNoteButtonLabels(container);
-        engine.updateIdleMessage();
-        renderPracticeSummary();
-      },
-      deactivate() {
-        if (engine.isRunning) engine.stop();
-        engine.detach();
-        noteKeyHandler.reset();
-        if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
-        pendingDigit = null;
-      }
-    };
-  }
-
-  // src/quiz-interval-semitones.ts
-  function createIntervalSemitonesMode() {
-    const container = document.getElementById("mode-intervalSemitones");
-    const ALL_ITEMS = [];
-    for (const interval of INTERVALS) {
-      ALL_ITEMS.push(interval.abbrev + ":fwd");
-      ALL_ITEMS.push(interval.abbrev + ":rev");
-    }
-    function parseItem(itemId) {
-      const [abbrev, dir] = itemId.split(":");
-      const interval = INTERVALS.find((i) => i.abbrev === abbrev);
-      return { interval, dir };
-    }
-    let currentItem = null;
-    let activeTab = "practice";
-    function switchTab(tabName) {
-      activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
-      container.querySelectorAll(".tab-content").forEach((el) => {
-        el.classList.toggle(
-          "active",
-          tabName === "practice" ? el.classList.contains("tab-practice") : el.classList.contains("tab-progress")
-        );
-      });
-      if (tabName === "progress") {
-        statsControls.show(statsControls.mode || "retention");
-      } else {
-        renderPracticeSummary();
-      }
-    }
-    function renderPracticeSummary() {
-      const statusLabel = container.querySelector(".practice-status-label");
-      const statusDetail = container.querySelector(".practice-status-detail");
-      const recText = container.querySelector(".practice-rec-text");
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (!statusLabel) return;
-      const threshold = engine.selector.getConfig().automaticityThreshold;
-      let fluent = 0, seen = 0;
-      for (let i = 0; i < ALL_ITEMS.length; i++) {
-        const auto = engine.selector.getAutomaticity(ALL_ITEMS[i]);
-        if (auto !== null) {
-          seen++;
-          if (auto > threshold) fluent++;
-        }
-      }
-      if (seen === 0) {
-        statusLabel.textContent = "Ready to start";
-        statusDetail.textContent = ALL_ITEMS.length + " items to learn";
-      } else {
-        const pct = ALL_ITEMS.length > 0 ? Math.round(fluent / ALL_ITEMS.length * 100) : 0;
-        let label;
-        if (pct >= 80) label = "Strong";
-        else if (pct >= 50) label = "Solid";
-        else if (pct >= 20) label = "Building";
-        else label = "Getting started";
-        statusLabel.textContent = "Overall: " + label;
-        statusDetail.textContent = fluent + " of " + ALL_ITEMS.length + " items fluent";
-      }
-      recText.textContent = "";
-      recBtn.classList.add("hidden");
-    }
-    function renderSessionSummary() {
-      const el = container.querySelector(".session-summary-text");
-      if (!el) return;
-      el.textContent = ALL_ITEMS.length + " items \xB7 60s";
-    }
-    function getTableRows() {
-      return INTERVALS.map((interval) => ({
-        label: interval.abbrev,
-        sublabel: String(interval.num),
-        _colHeader: "Interval",
-        fwdItemId: interval.abbrev + ":fwd",
-        revItemId: interval.abbrev + ":rev"
-      }));
-    }
-    const statsControls = createStatsControls(container, function(mode2, el) {
-      const tableDiv = document.createElement("div");
-      el.appendChild(tableDiv);
-      renderStatsTable(
-        engine.selector,
-        getTableRows(),
-        "I\u2192#",
-        "#\u2192I",
-        mode2,
-        tableDiv,
-        engine.baseline ?? void 0
-      );
-      const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
-      el.appendChild(legendDiv);
-    });
-    const mode = {
-      id: "intervalSemitones",
-      name: "Interval \u2194 Semitones",
-      storageNamespace: "intervalSemitones",
-      getEnabledItems() {
-        return ALL_ITEMS;
-      },
-      presentQuestion(itemId) {
-        currentItem = parseItem(itemId);
-        const prompt = container.querySelector(".quiz-prompt");
-        const intervalButtons = container.querySelector(
-          ".answer-buttons-intervals"
-        );
-        const numButtons = container.querySelector(".answer-buttons-numbers");
-        if (currentItem.dir === "fwd") {
-          prompt.textContent = currentItem.interval.name;
-          intervalButtons.classList.add("answer-group-hidden");
-          numButtons.classList.remove("answer-group-hidden");
-        } else {
-          prompt.textContent = String(currentItem.interval.num);
-          intervalButtons.classList.remove("answer-group-hidden");
-          numButtons.classList.add("answer-group-hidden");
-        }
-      },
-      checkAnswer(_itemId, input) {
-        if (currentItem.dir === "fwd") {
-          const correct = parseInt(input, 10) === currentItem.interval.num;
-          return { correct, correctAnswer: String(currentItem.interval.num) };
-        } else {
-          const correct = intervalMatchesInput(currentItem.interval, input);
-          return { correct, correctAnswer: currentItem.interval.abbrev };
-        }
-      },
-      onStart() {
-        if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
-        pendingDigit = null;
-        pendingDigitTimeout = null;
-        if (statsControls.mode) statsControls.hide();
-      },
-      onStop() {
-        if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
-        pendingDigit = null;
-        pendingDigitTimeout = null;
-        if (activeTab === "progress") {
-          statsControls.show("retention");
-        }
-        renderPracticeSummary();
-        renderSessionSummary();
-      },
-      handleKey(e, { submitAnswer }) {
-        if (currentItem.dir === "fwd") {
-          if (e.key >= "0" && e.key <= "9") {
-            e.preventDefault();
-            if (pendingDigit !== null) {
-              const num = pendingDigit * 10 + parseInt(e.key);
-              clearTimeout(pendingDigitTimeout);
-              pendingDigit = null;
-              pendingDigitTimeout = null;
-              if (num >= 1 && num <= 12) {
-                submitAnswer(String(num));
+        ],
+        getActiveGroup(question) {
+          const q = question;
+          return q.dir === "fwd" ? "numbers" : "notes";
+        },
+        createKeyHandler(submitAnswer, _getScope) {
+          const noteHandler = createAdaptiveKeyHandler(
+            submitAnswer,
+            () => true
+          );
+          let pendingDigit = null;
+          let pendingDigitTimeout = null;
+          return {
+            handleKey(e) {
+              if (currentQuestion?.dir === "rev") {
+                return noteHandler.handleKey(e);
               }
-              return true;
+              if (e.key >= "0" && e.key <= "9") {
+                e.preventDefault();
+                if (pendingDigit !== null) {
+                  const num = pendingDigit * 10 + parseInt(e.key);
+                  clearTimeout(pendingDigitTimeout);
+                  pendingDigit = null;
+                  pendingDigitTimeout = null;
+                  if (num <= 11) submitAnswer(String(num));
+                  return true;
+                }
+                const d = parseInt(e.key);
+                if (d >= 2) {
+                  submitAnswer(String(d));
+                } else {
+                  pendingDigit = d;
+                  pendingDigitTimeout = setTimeout(() => {
+                    submitAnswer(String(pendingDigit));
+                    pendingDigit = null;
+                    pendingDigitTimeout = null;
+                  }, 400);
+                }
+                return true;
+              }
+              return false;
+            },
+            reset() {
+              noteHandler.reset();
+              if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
+              pendingDigit = null;
+              pendingDigitTimeout = null;
             }
-            const d = parseInt(e.key);
-            if (d >= 2 && d <= 9) {
-              submitAnswer(String(d));
-            } else {
-              pendingDigit = d;
-              pendingDigitTimeout = setTimeout(() => {
-                if (pendingDigit >= 1) submitAnswer(String(pendingDigit));
-                pendingDigit = null;
-                pendingDigitTimeout = null;
-              }, 400);
-            }
-            return true;
-          }
+          };
         }
-        return false;
       },
-      getCalibrationButtons() {
-        return Array.from(container.querySelectorAll(".answer-btn-interval"));
-      },
-      getCalibrationTrialConfig(buttons, prevBtn) {
-        let btn;
-        do {
-          btn = buttons[Math.floor(Math.random() * buttons.length)];
-        } while (btn === prevBtn && buttons.length > 1);
-        return { prompt: "Press " + btn.textContent, targetButtons: [btn] };
-      }
-    };
-    let pendingDigit = null;
-    let pendingDigitTimeout = null;
-    const engine = createQuizEngine(mode, container);
-    engine.storage.preload?.(ALL_ITEMS);
-    function init() {
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
-      container.querySelectorAll(".answer-btn-interval").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.interval);
-          });
+      stats: {
+        kind: "table",
+        fwdHeader: "N\u2192#",
+        revHeader: "#\u2192N",
+        getRows() {
+          return NOTES.map((note) => ({
+            label: displayNote(note.name),
+            sublabel: String(note.num),
+            _colHeader: "Note",
+            fwdItemId: note.name + ":fwd",
+            revItemId: note.name + ":rev"
+          }));
         }
-      );
-      container.querySelectorAll(".answer-btn-num").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.num);
-          });
-        }
-      );
-      container.querySelector(".start-btn").addEventListener(
-        "click",
-        () => engine.start()
-      );
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    return {
-      mode,
-      engine,
-      init,
-      activate() {
-        engine.attach();
-        engine.updateIdleMessage();
-        renderPracticeSummary();
       },
-      deactivate() {
-        if (engine.isRunning) engine.stop();
-        engine.detach();
-        if (pendingDigitTimeout) clearTimeout(pendingDigitTimeout);
-        pendingDigit = null;
+      getPracticingLabel(_scope) {
+        return "all items";
+      },
+      getSessionSummary(_scope) {
+        return ALL_ITEMS.length + " items \xB7 60s";
+      },
+      calibrationSpec: {
+        getButtons(container) {
+          return Array.from(container.querySelectorAll(".answer-btn-note"));
+        }
       }
     };
   }
 
-  // src/quiz-semitone-math.ts
-  function createSemitoneMathMode() {
-    const container = document.getElementById("mode-semitoneMath");
-    const GROUPS_KEY = "semitoneMath_enabledGroups";
-    const DISTANCE_GROUPS = [
-      { distances: [1, 2], label: "\xB11\u20132" },
-      { distances: [3, 4], label: "\xB13\u20134" },
-      { distances: [5, 6], label: "\xB15\u20136" },
-      { distances: [7, 8], label: "\xB17\u20138" },
-      { distances: [9, 10], label: "\xB19\u201310" },
-      { distances: [11], label: "\xB111" }
-    ];
-    let enabledGroups = /* @__PURE__ */ new Set([0]);
-    let recommendedGroups = /* @__PURE__ */ new Set();
+  // src/modes/semitone-math.ts
+  var DISTANCE_GROUPS = [
+    { distances: [1, 2], label: "\xB11\u20132" },
+    { distances: [3, 4], label: "\xB13\u20134" },
+    { distances: [5, 6], label: "\xB15\u20136" },
+    { distances: [7, 8], label: "\xB17\u20138" },
+    { distances: [9, 10], label: "\xB19\u201310" },
+    { distances: [11], label: "\xB111" }
+  ];
+  function getItemIdsForGroup(groupIndex) {
+    const distances = DISTANCE_GROUPS[groupIndex].distances;
+    const items = [];
+    for (const note of NOTES) {
+      for (const d of distances) {
+        items.push(note.name + "+" + d);
+        items.push(note.name + "-" + d);
+      }
+    }
+    return items;
+  }
+  function semitoneMathDefinition() {
     const ALL_ITEMS = [];
     for (const note of NOTES) {
       for (let s = 1; s <= 11; s++) {
@@ -7112,2145 +6527,116 @@ button {
         ALL_ITEMS.push(note.name + "-" + s);
       }
     }
-    function parseItem(itemId) {
-      const match = itemId.match(/^([A-G]#?)([+-])(\d+)$/);
-      const noteName = match[1];
-      const op = match[2];
-      const semitones = parseInt(match[3]);
-      const note = NOTES.find((n) => n.name === noteName);
-      const answer = op === "+" ? noteAdd(note.num, semitones) : noteSub(note.num, semitones);
-      return { note, op, semitones, answer, useFlats: op === "-" };
-    }
-    function getItemIdsForGroup(groupIndex) {
-      const distances = DISTANCE_GROUPS[groupIndex].distances;
-      const items = [];
-      for (const note of NOTES) {
-        for (const d of distances) {
-          items.push(note.name + "+" + d);
-          items.push(note.name + "-" + d);
-        }
-      }
-      return items;
-    }
-    function loadEnabledGroups() {
-      const saved = localStorage.getItem(GROUPS_KEY);
-      if (saved) {
-        try {
-          enabledGroups = new Set(JSON.parse(saved));
-        } catch {
-        }
-      }
-      updateGroupToggles();
-    }
-    function saveEnabledGroups() {
-      localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
-    }
-    function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach(
-        (btn) => {
-          const g = parseInt(btn.dataset.group);
-          btn.classList.toggle("active", enabledGroups.has(g));
-          btn.classList.toggle("recommended", recommendedGroups.has(g));
-        }
-      );
-    }
-    const recsOptions = {
-      sortUnstarted: (a, b) => a.string - b.string
-    };
-    function getRecommendationResult() {
-      const allGroups = DISTANCE_GROUPS.map((_, i) => i);
-      return computeRecommendations(
-        engine.selector,
-        allGroups,
-        getItemIdsForGroup,
-        DEFAULT_CONFIG,
-        recsOptions
-      );
-    }
-    function updateRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      updateGroupToggles();
-    }
-    function applyRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      if (result.enabled) {
-        enabledGroups = result.enabled;
-        saveEnabledGroups();
-      }
-      updateGroupToggles();
-    }
-    function toggleGroup(g) {
-      if (enabledGroups.has(g)) {
-        if (enabledGroups.size > 1) enabledGroups.delete(g);
-      } else {
-        enabledGroups.add(g);
-      }
-      saveEnabledGroups();
-      refreshUI();
-    }
-    let activeTab = "practice";
-    function switchTab(tabName) {
-      activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
-      container.querySelectorAll(".tab-content").forEach((el) => {
-        el.classList.toggle(
-          "active",
-          tabName === "practice" ? el.classList.contains("tab-practice") : el.classList.contains("tab-progress")
-        );
-      });
-      if (tabName === "progress") {
-        statsControls.show(statsControls.mode || "retention");
-      } else {
-        renderPracticeSummary();
-      }
-    }
-    function refreshUI() {
-      updateRecommendations();
-      engine.updateIdleMessage();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    function renderPracticeSummary() {
-      const statusLabel = container.querySelector(".practice-status-label");
-      const statusDetail = container.querySelector(".practice-status-detail");
-      const recText = container.querySelector(".practice-rec-text");
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (!statusLabel) return;
-      const items = mode.getEnabledItems();
-      const threshold = engine.selector.getConfig().automaticityThreshold;
-      let fluent = 0, seen = 0;
-      for (let i = 0; i < items.length; i++) {
-        const auto = engine.selector.getAutomaticity(items[i]);
-        if (auto !== null) {
-          seen++;
-          if (auto > threshold) fluent++;
-        }
-      }
-      let allFluent = 0;
-      for (let j = 0; j < ALL_ITEMS.length; j++) {
-        const a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
-        if (a2 !== null && a2 > threshold) allFluent++;
-      }
-      if (seen === 0) {
-        statusLabel.textContent = "Ready to start";
-        statusDetail.textContent = ALL_ITEMS.length + " items to learn";
-      } else {
-        const pct = ALL_ITEMS.length > 0 ? Math.round(allFluent / ALL_ITEMS.length * 100) : 0;
-        let label;
-        if (pct >= 80) label = "Strong";
-        else if (pct >= 50) label = "Solid";
-        else if (pct >= 20) label = "Building";
-        else label = "Getting started";
-        statusLabel.textContent = "Overall: " + label;
-        statusDetail.textContent = allFluent + " of " + ALL_ITEMS.length + " items fluent";
-      }
-      const result = getRecommendationResult();
-      if (result.recommended.size > 0) {
-        const parts = [];
-        if (result.consolidateIndices.length > 0) {
-          const cNames = result.consolidateIndices.sort(function(a, b) {
-            return a - b;
-          }).map(function(g) {
-            return DISTANCE_GROUPS[g].label;
-          });
-          parts.push(
-            "solidify " + cNames.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
-          );
-        }
-        if (result.expandIndex !== null) {
-          parts.push(
-            "start " + DISTANCE_GROUPS[result.expandIndex].label + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
-          );
-        }
-        recText.textContent = "Suggestion: " + parts.join("\n");
-        recBtn.classList.remove("hidden");
-      } else {
-        recText.textContent = "";
-        recBtn.classList.add("hidden");
-      }
-    }
-    function renderSessionSummary() {
-      const el = container.querySelector(".session-summary-text");
-      if (!el) return;
-      const items = mode.getEnabledItems();
-      el.textContent = items.length + " items \xB7 60s";
-    }
-    let currentItem = null;
-    const statsControls = createStatsControls(container, (mode2, el) => {
-      const colLabels = [];
-      for (let s = 1; s <= 11; s++) colLabels.push(String(s));
-      const gridDiv = document.createElement("div");
-      gridDiv.className = "stats-grid-wrapper";
-      el.appendChild(gridDiv);
-      renderStatsGrid(
-        engine.selector,
-        colLabels,
-        (noteName, colIdx) => {
-          const n = colIdx + 1;
-          return [noteName + "+" + n, noteName + "-" + n];
-        },
-        mode2,
-        gridDiv,
-        void 0,
-        engine.baseline ?? void 0
-      );
-      const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
-      el.appendChild(legendDiv);
-    });
-    const mode = {
+    const groups = DISTANCE_GROUPS.map((g, i) => ({
+      index: i,
+      label: g.label,
+      itemIds: getItemIdsForGroup(i)
+    }));
+    let currentQuestion = null;
+    return {
       id: "semitoneMath",
       name: "Semitone Math",
       storageNamespace: "semitoneMath",
-      getEnabledItems() {
+      allItemIds: ALL_ITEMS,
+      getEnabledItems(scope) {
+        if (scope.kind !== "groups") return ALL_ITEMS;
         const items = [];
-        for (const g of enabledGroups) {
+        for (const g of scope.enabledGroups) {
           items.push(...getItemIdsForGroup(g));
         }
         return items;
       },
-      getPracticingLabel() {
-        if (enabledGroups.size === DISTANCE_GROUPS.length) return "all distances";
-        const labels = [...enabledGroups].sort((a, b) => a - b).map((g) => DISTANCE_GROUPS[g].label);
+      scopeSpec: {
+        kind: "groups",
+        groups,
+        defaultEnabled: [0],
+        storageKey: "semitoneMath_enabledGroups",
+        label: "Distances",
+        sortUnstarted: (a, b) => a.string - b.string
+      },
+      getQuestion(itemId) {
+        const match = itemId.match(/^([A-G]#?)([+-])(\d+)$/);
+        const noteName = match[1];
+        const op = match[2];
+        const semitones = parseInt(match[3]);
+        const note = NOTES.find((n) => n.name === noteName);
+        const answer = op === "+" ? noteAdd(note.num, semitones) : noteSub(note.num, semitones);
+        const useFlats = op === "-";
+        const promptNoteName = displayNote(
+          pickAccidentalName(note.displayName, useFlats)
+        );
+        currentQuestion = {
+          note,
+          op,
+          semitones,
+          answer,
+          useFlats,
+          promptText: promptNoteName + " " + op + " " + semitones
+        };
+        return currentQuestion;
+      },
+      checkAnswer(_itemId, input) {
+        const q = currentQuestion;
+        const correct = noteMatchesInput(q.answer, input);
+        return {
+          correct,
+          correctAnswer: displayNote(
+            pickAccidentalName(q.answer.displayName, q.useFlats)
+          )
+        };
+      },
+      prompt: {
+        kind: "custom",
+        render(q, els) {
+          els.promptEl.textContent = q.promptText;
+          els.container.querySelectorAll(".answer-btn-note").forEach((btn) => {
+            const note = NOTES.find((n) => n.name === btn.dataset.note);
+            if (note) {
+              btn.textContent = displayNote(
+                pickAccidentalName(note.displayName, q.useFlats)
+              );
+            }
+          });
+        },
+        clear(els) {
+          refreshNoteButtonLabels(els.container);
+        }
+      },
+      response: {
+        kind: "buttons",
+        answerButtonsHTML: "",
+        // already in build-template
+        createKeyHandler(submitAnswer, _getScope) {
+          return createAdaptiveKeyHandler(submitAnswer, () => true);
+        },
+        getButtonAnswer(btn) {
+          return btn.dataset.note ?? null;
+        }
+      },
+      stats: {
+        kind: "grid",
+        colLabels: Array.from({ length: 11 }, (_, i) => String(i + 1)),
+        getItemId(noteName, colIdx) {
+          const n = colIdx + 1;
+          return [noteName + "+" + n, noteName + "-" + n];
+        }
+      },
+      getPracticingLabel(scope) {
+        if (scope.kind !== "groups") return "all distances";
+        if (scope.enabledGroups.size === DISTANCE_GROUPS.length) {
+          return "all distances";
+        }
+        const labels = [...scope.enabledGroups].sort((a, b) => a - b).map((g) => DISTANCE_GROUPS[g].label);
         return labels.join(", ") + " semitones";
       },
-      presentQuestion(itemId) {
-        currentItem = parseItem(itemId);
-        currentItem.useFlats = currentItem.op === "-";
-        const prompt = container.querySelector(".quiz-prompt");
-        const noteName = displayNote(
-          pickAccidentalName(currentItem.note.displayName, currentItem.useFlats)
-        );
-        prompt.textContent = noteName + " " + currentItem.op + " " + currentItem.semitones;
-        container.querySelectorAll(".answer-btn-note").forEach(
-          (btn) => {
-            const note = NOTES.find((n) => n.name === btn.dataset.note);
-            if (note) {
-              btn.textContent = displayNote(
-                pickAccidentalName(note.displayName, currentItem.useFlats)
-              );
-            }
-          }
-        );
+      getSessionSummary(scope) {
+        const count = this.getEnabledItems(scope).length;
+        return count + " items \xB7 60s";
       },
-      checkAnswer(_itemId, input) {
-        const correct = noteMatchesInput(currentItem.answer, input);
-        return {
-          correct,
-          correctAnswer: displayNote(
-            pickAccidentalName(
-              currentItem.answer.displayName,
-              currentItem.useFlats
-            )
-          )
-        };
-      },
-      onStart() {
-        noteKeyHandler.reset();
-        if (statsControls.mode) statsControls.hide();
-      },
-      onStop() {
-        noteKeyHandler.reset();
-        refreshNoteButtonLabels(container);
-        if (activeTab === "progress") {
-          statsControls.show("retention");
+      calibrationSpec: {
+        getButtons(container) {
+          return Array.from(container.querySelectorAll(".answer-btn-note"));
         }
-        refreshUI();
-      },
-      handleKey(e, { submitAnswer: _submitAnswer }) {
-        return noteKeyHandler.handleKey(e);
-      },
-      getCalibrationButtons() {
-        return Array.from(container.querySelectorAll(".answer-btn-note"));
-      },
-      getCalibrationTrialConfig(buttons, prevBtn) {
-        const btn = pickCalibrationButton(buttons, prevBtn);
-        return { prompt: "Press " + btn.textContent, targetButtons: [btn] };
-      }
-    };
-    const engine = createQuizEngine(mode, container);
-    engine.storage.preload?.(ALL_ITEMS);
-    const noteKeyHandler = createAdaptiveKeyHandler(
-      (input) => engine.submitAnswer(input),
-      () => true
-    );
-    function init() {
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
-      const toggleLabel = container.querySelector(".toggle-group-label");
-      if (toggleLabel) toggleLabel.textContent = "Distances";
-      const togglesDiv = container.querySelector(".distance-toggles");
-      DISTANCE_GROUPS.forEach((group, i) => {
-        const btn = document.createElement("button");
-        btn.className = "distance-toggle";
-        btn.dataset.group = String(i);
-        btn.textContent = group.label;
-        btn.addEventListener("click", () => toggleGroup(i));
-        togglesDiv.appendChild(btn);
-      });
-      loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-note").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.note);
-          });
-        }
-      );
-      container.querySelector(".start-btn").addEventListener(
-        "click",
-        () => engine.start()
-      );
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (recBtn) {
-        recBtn.addEventListener("click", () => {
-          applyRecommendations();
-          refreshUI();
-        });
-      }
-      updateRecommendations();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    return {
-      mode,
-      engine,
-      init,
-      activate() {
-        engine.attach();
-        refreshNoteButtonLabels(container);
-        refreshUI();
-      },
-      deactivate() {
-        if (engine.isRunning) engine.stop();
-        engine.detach();
-        noteKeyHandler.reset();
-      }
-    };
-  }
-
-  // src/quiz-interval-math.ts
-  function createIntervalMathMode() {
-    const container = document.getElementById("mode-intervalMath");
-    const GROUPS_KEY = "intervalMath_enabledGroups";
-    const MATH_INTERVALS = INTERVALS.filter((i) => i.num >= 1 && i.num <= 11);
-    const DISTANCE_GROUPS = [
-      { distances: [1, 2], label: "m2 M2" },
-      { distances: [3, 4], label: "m3 M3" },
-      { distances: [5, 6], label: "P4 TT" },
-      { distances: [7, 8], label: "P5 m6" },
-      { distances: [9, 10], label: "M6 m7" },
-      { distances: [11], label: "M7" }
-    ];
-    let enabledGroups = /* @__PURE__ */ new Set([0]);
-    let recommendedGroups = /* @__PURE__ */ new Set();
-    const ALL_ITEMS = [];
-    for (const note of NOTES) {
-      for (const interval of MATH_INTERVALS) {
-        ALL_ITEMS.push(note.name + "+" + interval.abbrev);
-        ALL_ITEMS.push(note.name + "-" + interval.abbrev);
-      }
-    }
-    function parseItem(itemId) {
-      const match = itemId.match(/^([A-G]#?)([+-])(.+)$/);
-      const noteName = match[1];
-      const op = match[2];
-      const abbrev = match[3];
-      const note = NOTES.find((n) => n.name === noteName);
-      const interval = MATH_INTERVALS.find((i) => i.abbrev === abbrev);
-      const answer = op === "+" ? noteAdd(note.num, interval.num) : noteSub(note.num, interval.num);
-      return { note, op, interval, answer };
-    }
-    function getItemIdsForGroup(groupIndex) {
-      const distances = DISTANCE_GROUPS[groupIndex].distances;
-      const intervals = MATH_INTERVALS.filter((i) => distances.includes(i.num));
-      const items = [];
-      for (const note of NOTES) {
-        for (const interval of intervals) {
-          items.push(note.name + "+" + interval.abbrev);
-          items.push(note.name + "-" + interval.abbrev);
-        }
-      }
-      return items;
-    }
-    function loadEnabledGroups() {
-      const saved = localStorage.getItem(GROUPS_KEY);
-      if (saved) {
-        try {
-          enabledGroups = new Set(JSON.parse(saved));
-        } catch {
-        }
-      }
-      updateGroupToggles();
-    }
-    function saveEnabledGroups() {
-      localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
-    }
-    function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach(
-        (btn) => {
-          const g = parseInt(btn.dataset.group);
-          btn.classList.toggle("active", enabledGroups.has(g));
-          btn.classList.toggle("recommended", recommendedGroups.has(g));
-        }
-      );
-    }
-    const recsOptions = {
-      sortUnstarted: (a, b) => a.string - b.string
-    };
-    function getRecommendationResult() {
-      const allGroups = DISTANCE_GROUPS.map((_, i) => i);
-      return computeRecommendations(
-        engine.selector,
-        allGroups,
-        getItemIdsForGroup,
-        DEFAULT_CONFIG,
-        recsOptions
-      );
-    }
-    function updateRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      updateGroupToggles();
-    }
-    function applyRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      if (result.enabled) {
-        enabledGroups = result.enabled;
-        saveEnabledGroups();
-      }
-      updateGroupToggles();
-    }
-    function toggleGroup(g) {
-      if (enabledGroups.has(g)) {
-        if (enabledGroups.size > 1) enabledGroups.delete(g);
-      } else {
-        enabledGroups.add(g);
-      }
-      saveEnabledGroups();
-      refreshUI();
-    }
-    let activeTab = "practice";
-    function switchTab(tabName) {
-      activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
-      container.querySelectorAll(".tab-content").forEach((el) => {
-        el.classList.toggle(
-          "active",
-          tabName === "practice" ? el.classList.contains("tab-practice") : el.classList.contains("tab-progress")
-        );
-      });
-      if (tabName === "progress") {
-        statsControls.show(statsControls.mode || "retention");
-      } else {
-        renderPracticeSummary();
-      }
-    }
-    function refreshUI() {
-      updateRecommendations();
-      engine.updateIdleMessage();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    function renderPracticeSummary() {
-      const statusLabel = container.querySelector(".practice-status-label");
-      const statusDetail = container.querySelector(".practice-status-detail");
-      const recText = container.querySelector(".practice-rec-text");
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (!statusLabel) return;
-      const items = mode.getEnabledItems();
-      const threshold = engine.selector.getConfig().automaticityThreshold;
-      let fluent = 0, seen = 0;
-      for (let i = 0; i < items.length; i++) {
-        const auto = engine.selector.getAutomaticity(items[i]);
-        if (auto !== null) {
-          seen++;
-          if (auto > threshold) fluent++;
-        }
-      }
-      let allFluent = 0;
-      for (let j = 0; j < ALL_ITEMS.length; j++) {
-        const a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
-        if (a2 !== null && a2 > threshold) allFluent++;
-      }
-      if (seen === 0) {
-        statusLabel.textContent = "Ready to start";
-        statusDetail.textContent = ALL_ITEMS.length + " items to learn";
-      } else {
-        const pct = ALL_ITEMS.length > 0 ? Math.round(allFluent / ALL_ITEMS.length * 100) : 0;
-        let label;
-        if (pct >= 80) label = "Strong";
-        else if (pct >= 50) label = "Solid";
-        else if (pct >= 20) label = "Building";
-        else label = "Getting started";
-        statusLabel.textContent = "Overall: " + label;
-        statusDetail.textContent = allFluent + " of " + ALL_ITEMS.length + " items fluent";
-      }
-      const result = getRecommendationResult();
-      if (result.recommended.size > 0) {
-        const parts = [];
-        if (result.consolidateIndices.length > 0) {
-          const cNames = result.consolidateIndices.sort(function(a, b) {
-            return a - b;
-          }).map(function(g) {
-            return DISTANCE_GROUPS[g].label;
-          });
-          parts.push(
-            "solidify " + cNames.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
-          );
-        }
-        if (result.expandIndex !== null) {
-          parts.push(
-            "start " + DISTANCE_GROUPS[result.expandIndex].label + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
-          );
-        }
-        recText.textContent = "Suggestion: " + parts.join("\n");
-        recBtn.classList.remove("hidden");
-      } else {
-        recText.textContent = "";
-        recBtn.classList.add("hidden");
-      }
-    }
-    function renderSessionSummary() {
-      const el = container.querySelector(".session-summary-text");
-      if (!el) return;
-      const items = mode.getEnabledItems();
-      el.textContent = items.length + " items \xB7 60s";
-    }
-    let currentItem = null;
-    const statsControls = createStatsControls(container, (mode2, el) => {
-      const colLabels = MATH_INTERVALS.map((i) => i.abbrev);
-      const gridDiv = document.createElement("div");
-      gridDiv.className = "stats-grid-wrapper";
-      el.appendChild(gridDiv);
-      renderStatsGrid(
-        engine.selector,
-        colLabels,
-        (noteName, colIdx) => {
-          const abbrev = MATH_INTERVALS[colIdx].abbrev;
-          return [noteName + "+" + abbrev, noteName + "-" + abbrev];
-        },
-        mode2,
-        gridDiv,
-        void 0,
-        engine.baseline ?? void 0
-      );
-      const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
-      el.appendChild(legendDiv);
-    });
-    const mode = {
-      id: "intervalMath",
-      name: "Interval Math",
-      storageNamespace: "intervalMath",
-      getEnabledItems() {
-        const items = [];
-        for (const g of enabledGroups) {
-          items.push(...getItemIdsForGroup(g));
-        }
-        return items;
-      },
-      getPracticingLabel() {
-        if (enabledGroups.size === DISTANCE_GROUPS.length) return "all intervals";
-        const labels = [...enabledGroups].sort((a, b) => a - b).map((g) => DISTANCE_GROUPS[g].label);
-        return labels.join(", ") + " intervals";
-      },
-      presentQuestion(itemId) {
-        currentItem = parseItem(itemId);
-        currentItem.useFlats = currentItem.op === "-";
-        const prompt = container.querySelector(".quiz-prompt");
-        const noteName = displayNote(
-          pickAccidentalName(currentItem.note.displayName, currentItem.useFlats)
-        );
-        prompt.textContent = noteName + " " + currentItem.op + " " + currentItem.interval.abbrev;
-        container.querySelectorAll(".answer-btn-note").forEach(
-          (btn) => {
-            const note = NOTES.find((n) => n.name === btn.dataset.note);
-            if (note) {
-              btn.textContent = displayNote(
-                pickAccidentalName(note.displayName, currentItem.useFlats)
-              );
-            }
-          }
-        );
-      },
-      checkAnswer(_itemId, input) {
-        const correct = noteMatchesInput(currentItem.answer, input);
-        return {
-          correct,
-          correctAnswer: displayNote(
-            pickAccidentalName(
-              currentItem.answer.displayName,
-              currentItem.useFlats
-            )
-          )
-        };
-      },
-      onStart() {
-        noteKeyHandler.reset();
-        if (statsControls.mode) statsControls.hide();
-      },
-      onStop() {
-        noteKeyHandler.reset();
-        refreshNoteButtonLabels(container);
-        if (activeTab === "progress") {
-          statsControls.show("retention");
-        }
-        refreshUI();
-      },
-      handleKey(e, { submitAnswer: _submitAnswer }) {
-        return noteKeyHandler.handleKey(e);
-      },
-      getCalibrationButtons() {
-        return Array.from(container.querySelectorAll(".answer-btn-note"));
-      },
-      getCalibrationTrialConfig(buttons, prevBtn) {
-        const btn = pickCalibrationButton(buttons, prevBtn);
-        return { prompt: "Press " + btn.textContent, targetButtons: [btn] };
-      }
-    };
-    const engine = createQuizEngine(mode, container);
-    engine.storage.preload?.(ALL_ITEMS);
-    const noteKeyHandler = createAdaptiveKeyHandler(
-      (input) => engine.submitAnswer(input),
-      () => true
-    );
-    function init() {
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
-      const toggleLabel = container.querySelector(".toggle-group-label");
-      if (toggleLabel) toggleLabel.textContent = "Intervals";
-      const togglesDiv = container.querySelector(".distance-toggles");
-      DISTANCE_GROUPS.forEach((group, i) => {
-        const btn = document.createElement("button");
-        btn.className = "distance-toggle";
-        btn.dataset.group = String(i);
-        btn.textContent = group.label;
-        btn.addEventListener("click", () => toggleGroup(i));
-        togglesDiv.appendChild(btn);
-      });
-      loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-note").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.note);
-          });
-        }
-      );
-      container.querySelector(".start-btn").addEventListener(
-        "click",
-        () => engine.start()
-      );
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (recBtn) {
-        recBtn.addEventListener("click", () => {
-          applyRecommendations();
-          refreshUI();
-        });
-      }
-      updateRecommendations();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    return {
-      mode,
-      engine,
-      init,
-      activate() {
-        engine.attach();
-        refreshNoteButtonLabels(container);
-        refreshUI();
-      },
-      deactivate() {
-        if (engine.isRunning) engine.stop();
-        engine.detach();
-        noteKeyHandler.reset();
-      }
-    };
-  }
-
-  // src/quiz-key-signatures.ts
-  function createKeySignaturesMode() {
-    const container = document.getElementById("mode-keySignatures");
-    const GROUPS_KEY = "keySignatures_enabledGroups";
-    const KEY_GROUPS = [
-      { keys: ["C", "G", "F"], label: "C G F" },
-      { keys: ["D", "Bb"], label: "D B\u266D" },
-      { keys: ["A", "Eb"], label: "A E\u266D" },
-      { keys: ["E", "Ab"], label: "E A\u266D" },
-      { keys: ["B", "Db", "F#"], label: "B D\u266D F\u266F" }
-    ];
-    let enabledGroups = /* @__PURE__ */ new Set([0, 1]);
-    let recommendedGroups = /* @__PURE__ */ new Set();
-    const ALL_ITEMS = [];
-    for (const key of MAJOR_KEYS) {
-      ALL_ITEMS.push(key.root + ":fwd");
-      ALL_ITEMS.push(key.root + ":rev");
-    }
-    function parseItem(itemId) {
-      const [rootName, dir] = itemId.split(":");
-      const key = MAJOR_KEYS.find((k) => k.root === rootName);
-      return { key, dir };
-    }
-    function getItemIdsForGroup(groupIndex) {
-      const roots = KEY_GROUPS[groupIndex].keys;
-      const items = [];
-      for (const root of roots) {
-        items.push(root + ":fwd");
-        items.push(root + ":rev");
-      }
-      return items;
-    }
-    function loadEnabledGroups() {
-      const saved = localStorage.getItem(GROUPS_KEY);
-      if (saved) {
-        try {
-          enabledGroups = new Set(JSON.parse(saved));
-        } catch {
-        }
-      }
-      updateGroupToggles();
-    }
-    function saveEnabledGroups() {
-      localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
-    }
-    function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach(
-        (btn) => {
-          const g = parseInt(btn.dataset.group);
-          btn.classList.toggle("active", enabledGroups.has(g));
-          btn.classList.toggle("recommended", recommendedGroups.has(g));
-        }
-      );
-    }
-    const recsOptions = {
-      sortUnstarted: (a, b) => a.string - b.string
-    };
-    function getRecommendationResult() {
-      const allGroups = KEY_GROUPS.map((_, i) => i);
-      return computeRecommendations(
-        engine.selector,
-        allGroups,
-        getItemIdsForGroup,
-        DEFAULT_CONFIG,
-        recsOptions
-      );
-    }
-    function updateRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      updateGroupToggles();
-    }
-    function applyRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      if (result.enabled) {
-        enabledGroups = result.enabled;
-        saveEnabledGroups();
-      }
-      updateGroupToggles();
-    }
-    function toggleGroup(g) {
-      if (enabledGroups.has(g)) {
-        if (enabledGroups.size > 1) enabledGroups.delete(g);
-      } else {
-        enabledGroups.add(g);
-      }
-      saveEnabledGroups();
-      refreshUI();
-    }
-    let activeTab = "practice";
-    function switchTab(tabName) {
-      activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
-      container.querySelectorAll(".tab-content").forEach((el) => {
-        el.classList.toggle(
-          "active",
-          tabName === "practice" ? el.classList.contains("tab-practice") : el.classList.contains("tab-progress")
-        );
-      });
-      if (tabName === "progress") {
-        statsControls.show(statsControls.mode || "retention");
-      } else {
-        renderPracticeSummary();
-      }
-    }
-    function refreshUI() {
-      updateRecommendations();
-      engine.updateIdleMessage();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    function renderPracticeSummary() {
-      const statusLabel = container.querySelector(".practice-status-label");
-      const statusDetail = container.querySelector(".practice-status-detail");
-      const recText = container.querySelector(".practice-rec-text");
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (!statusLabel) return;
-      const items = mode.getEnabledItems();
-      const threshold = engine.selector.getConfig().automaticityThreshold;
-      let fluent = 0, seen = 0;
-      for (let i = 0; i < items.length; i++) {
-        const auto = engine.selector.getAutomaticity(items[i]);
-        if (auto !== null) {
-          seen++;
-          if (auto > threshold) fluent++;
-        }
-      }
-      let allFluent = 0;
-      for (let j = 0; j < ALL_ITEMS.length; j++) {
-        const a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
-        if (a2 !== null && a2 > threshold) allFluent++;
-      }
-      if (seen === 0) {
-        statusLabel.textContent = "Ready to start";
-        statusDetail.textContent = ALL_ITEMS.length + " items to learn";
-      } else {
-        const pct = ALL_ITEMS.length > 0 ? Math.round(allFluent / ALL_ITEMS.length * 100) : 0;
-        let label;
-        if (pct >= 80) label = "Strong";
-        else if (pct >= 50) label = "Solid";
-        else if (pct >= 20) label = "Building";
-        else label = "Getting started";
-        statusLabel.textContent = "Overall: " + label;
-        statusDetail.textContent = allFluent + " of " + ALL_ITEMS.length + " items fluent";
-      }
-      const result = getRecommendationResult();
-      if (result.recommended.size > 0) {
-        const parts = [];
-        if (result.consolidateIndices.length > 0) {
-          const cNames = result.consolidateIndices.sort(function(a, b) {
-            return a - b;
-          }).map(function(g) {
-            return KEY_GROUPS[g].label;
-          });
-          parts.push(
-            "solidify " + cNames.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
-          );
-        }
-        if (result.expandIndex !== null) {
-          parts.push(
-            "start " + KEY_GROUPS[result.expandIndex].label + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
-          );
-        }
-        recText.textContent = "Suggestion: " + parts.join("\n");
-        recBtn.classList.remove("hidden");
-      } else {
-        recText.textContent = "";
-        recBtn.classList.add("hidden");
-      }
-    }
-    function renderSessionSummary() {
-      const el = container.querySelector(".session-summary-text");
-      if (!el) return;
-      const items = mode.getEnabledItems();
-      el.textContent = items.length + " items \xB7 60s";
-    }
-    let currentItem = null;
-    function getTableRows() {
-      return MAJOR_KEYS.map((key) => ({
-        label: displayNote(key.root) + " major",
-        sublabel: keySignatureLabel(key),
-        _colHeader: "Key",
-        fwdItemId: key.root + ":fwd",
-        revItemId: key.root + ":rev"
-      }));
-    }
-    const statsControls = createStatsControls(container, (mode2, el) => {
-      const tableDiv = document.createElement("div");
-      el.appendChild(tableDiv);
-      renderStatsTable(
-        engine.selector,
-        getTableRows(),
-        "Key\u2192Sig",
-        "Sig\u2192Key",
-        mode2,
-        tableDiv,
-        engine.baseline ?? void 0
-      );
-      const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
-      el.appendChild(legendDiv);
-    });
-    let pendingSigDigit = null;
-    let pendingSigTimeout = null;
-    const mode = {
-      id: "keySignatures",
-      name: "Key Signatures",
-      storageNamespace: "keySignatures",
-      getEnabledItems() {
-        const items = [];
-        for (const g of enabledGroups) {
-          items.push(...getItemIdsForGroup(g));
-        }
-        return items;
-      },
-      getPracticingLabel() {
-        if (enabledGroups.size === KEY_GROUPS.length) return "all keys";
-        const keys = [...enabledGroups].sort((a, b) => a - b).flatMap((g) => KEY_GROUPS[g].keys).map((k) => displayNote(k));
-        return keys.join(", ");
-      },
-      presentQuestion(itemId) {
-        currentItem = parseItem(itemId);
-        const prompt = container.querySelector(".quiz-prompt");
-        const sigButtons = container.querySelector(".answer-buttons-keysig");
-        const noteButtons = container.querySelector(".answer-buttons-notes");
-        if (currentItem.dir === "fwd") {
-          prompt.textContent = displayNote(currentItem.key.root) + " major";
-          sigButtons.classList.remove("answer-group-hidden");
-          noteButtons.classList.add("answer-group-hidden");
-        } else {
-          const label = keySignatureLabel(currentItem.key);
-          prompt.textContent = label + " major";
-          sigButtons.classList.add("answer-group-hidden");
-          noteButtons.classList.remove("answer-group-hidden");
-        }
-      },
-      checkAnswer(_itemId, input) {
-        if (currentItem.dir === "fwd") {
-          const expected = keySignatureLabel(currentItem.key);
-          return { correct: input === expected, correctAnswer: expected };
-        } else {
-          const correct = spelledNoteMatchesSemitone(
-            currentItem.key.root,
-            input
-          );
-          return { correct, correctAnswer: displayNote(currentItem.key.root) };
-        }
-      },
-      onStart() {
-        noteKeyHandler.reset();
-        if (statsControls.mode) statsControls.hide();
-      },
-      onStop() {
-        noteKeyHandler.reset();
-        if (activeTab === "progress") {
-          statsControls.show("retention");
-        }
-        refreshUI();
-      },
-      handleKey(e, { submitAnswer }) {
-        if (currentItem.dir === "rev") {
-          return noteKeyHandler.handleKey(e);
-        }
-        if (e.key >= "0" && e.key <= "7") {
-          e.preventDefault();
-          if (pendingSigTimeout) clearTimeout(pendingSigTimeout);
-          pendingSigDigit = e.key;
-          pendingSigTimeout = setTimeout(() => {
-            if (pendingSigDigit === "0") {
-              submitAnswer("0");
-            }
-            pendingSigDigit = null;
-            pendingSigTimeout = null;
-          }, 600);
-          return true;
-        }
-        if (pendingSigDigit !== null && (e.key === "#" || e.key === "b")) {
-          e.preventDefault();
-          clearTimeout(pendingSigTimeout);
-          const answer = pendingSigDigit + e.key;
-          pendingSigDigit = null;
-          pendingSigTimeout = null;
-          submitAnswer(answer);
-          return true;
-        }
-        return false;
-      },
-      getCalibrationButtons() {
-        return Array.from(container.querySelectorAll(".answer-btn-note"));
-      },
-      getCalibrationTrialConfig(buttons, prevBtn) {
-        const btn = pickCalibrationButton(buttons, prevBtn);
-        return { prompt: "Press " + btn.textContent, targetButtons: [btn] };
-      }
-    };
-    const engine = createQuizEngine(mode, container);
-    engine.storage.preload?.(ALL_ITEMS);
-    const noteKeyHandler = createAdaptiveKeyHandler(
-      (input) => engine.submitAnswer(input),
-      () => true
-    );
-    function init() {
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
-      const toggleLabel = container.querySelector(".toggle-group-label");
-      if (toggleLabel) toggleLabel.textContent = "Keys";
-      const togglesDiv = container.querySelector(".distance-toggles");
-      KEY_GROUPS.forEach((group, i) => {
-        const btn = document.createElement("button");
-        btn.className = "distance-toggle";
-        btn.dataset.group = String(i);
-        btn.textContent = group.label;
-        btn.addEventListener("click", () => toggleGroup(i));
-        togglesDiv.appendChild(btn);
-      });
-      loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-keysig").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.sig);
-          });
-        }
-      );
-      container.querySelectorAll(".answer-btn-note").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.note);
-          });
-        }
-      );
-      container.querySelector(".start-btn").addEventListener(
-        "click",
-        () => engine.start()
-      );
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (recBtn) {
-        recBtn.addEventListener("click", () => {
-          applyRecommendations();
-          refreshUI();
-        });
-      }
-      updateRecommendations();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    return {
-      mode,
-      engine,
-      init,
-      activate() {
-        engine.attach();
-        refreshNoteButtonLabels(container);
-        refreshUI();
-      },
-      deactivate() {
-        if (engine.isRunning) engine.stop();
-        engine.detach();
-        noteKeyHandler.reset();
-        if (pendingSigTimeout) clearTimeout(pendingSigTimeout);
-        pendingSigDigit = null;
-      }
-    };
-  }
-
-  // src/quiz-scale-degrees.ts
-  function createScaleDegreesMode() {
-    const container = document.getElementById("mode-scaleDegrees");
-    const GROUPS_KEY = "scaleDegrees_enabledGroups";
-    const DEGREE_GROUPS = [
-      { degrees: [1, 5], label: "1st,5th" },
-      { degrees: [4], label: "4th" },
-      { degrees: [3, 7], label: "3rd,7th" },
-      { degrees: [2, 6], label: "2nd,6th" }
-    ];
-    let enabledGroups = /* @__PURE__ */ new Set([0]);
-    let recommendedGroups = /* @__PURE__ */ new Set();
-    const ALL_ITEMS = [];
-    for (const key of MAJOR_KEYS) {
-      for (let d = 1; d <= 7; d++) {
-        ALL_ITEMS.push(key.root + ":" + d + ":fwd");
-        ALL_ITEMS.push(key.root + ":" + d + ":rev");
-      }
-    }
-    const DEGREE_LABELS = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th"];
-    function parseItem(itemId) {
-      const parts = itemId.split(":");
-      const keyRoot = parts[0];
-      const degree = parseInt(parts[1]);
-      const dir = parts[2];
-      const key = MAJOR_KEYS.find((k) => k.root === keyRoot);
-      const noteName = getScaleDegreeNote(keyRoot, degree);
-      return { key, degree, dir, noteName };
-    }
-    function getItemIdsForGroup(groupIndex) {
-      const degrees = DEGREE_GROUPS[groupIndex].degrees;
-      const items = [];
-      for (const key of MAJOR_KEYS) {
-        for (const d of degrees) {
-          items.push(key.root + ":" + d + ":fwd");
-          items.push(key.root + ":" + d + ":rev");
-        }
-      }
-      return items;
-    }
-    function loadEnabledGroups() {
-      const saved = localStorage.getItem(GROUPS_KEY);
-      if (saved) {
-        try {
-          enabledGroups = new Set(JSON.parse(saved));
-        } catch {
-        }
-      }
-      updateGroupToggles();
-    }
-    function saveEnabledGroups() {
-      localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
-    }
-    function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach(
-        (btn) => {
-          const g = parseInt(btn.dataset.group);
-          btn.classList.toggle("active", enabledGroups.has(g));
-          btn.classList.toggle("recommended", recommendedGroups.has(g));
-        }
-      );
-    }
-    const recsOptions = {
-      sortUnstarted: (a, b) => a.string - b.string
-    };
-    function getRecommendationResult() {
-      const allGroups = DEGREE_GROUPS.map((_, i) => i);
-      return computeRecommendations(
-        engine.selector,
-        allGroups,
-        getItemIdsForGroup,
-        DEFAULT_CONFIG,
-        recsOptions
-      );
-    }
-    function updateRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      updateGroupToggles();
-    }
-    function applyRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      if (result.enabled) {
-        enabledGroups = result.enabled;
-        saveEnabledGroups();
-      }
-      updateGroupToggles();
-    }
-    function toggleGroup(g) {
-      if (enabledGroups.has(g)) {
-        if (enabledGroups.size > 1) enabledGroups.delete(g);
-      } else {
-        enabledGroups.add(g);
-      }
-      saveEnabledGroups();
-      refreshUI();
-    }
-    let activeTab = "practice";
-    function switchTab(tabName) {
-      activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
-      container.querySelectorAll(".tab-content").forEach((el) => {
-        el.classList.toggle(
-          "active",
-          tabName === "practice" ? el.classList.contains("tab-practice") : el.classList.contains("tab-progress")
-        );
-      });
-      if (tabName === "progress") {
-        statsControls.show(statsControls.mode || "retention");
-      } else {
-        renderPracticeSummary();
-      }
-    }
-    function refreshUI() {
-      updateRecommendations();
-      engine.updateIdleMessage();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    function renderPracticeSummary() {
-      const statusLabel = container.querySelector(".practice-status-label");
-      const statusDetail = container.querySelector(".practice-status-detail");
-      const recText = container.querySelector(".practice-rec-text");
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (!statusLabel) return;
-      const items = mode.getEnabledItems();
-      const threshold = engine.selector.getConfig().automaticityThreshold;
-      let fluent = 0, seen = 0;
-      for (let i = 0; i < items.length; i++) {
-        const auto = engine.selector.getAutomaticity(items[i]);
-        if (auto !== null) {
-          seen++;
-          if (auto > threshold) fluent++;
-        }
-      }
-      let allFluent = 0;
-      for (let j = 0; j < ALL_ITEMS.length; j++) {
-        const a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
-        if (a2 !== null && a2 > threshold) allFluent++;
-      }
-      if (seen === 0) {
-        statusLabel.textContent = "Ready to start";
-        statusDetail.textContent = ALL_ITEMS.length + " items to learn";
-      } else {
-        const pct = ALL_ITEMS.length > 0 ? Math.round(allFluent / ALL_ITEMS.length * 100) : 0;
-        let label;
-        if (pct >= 80) label = "Strong";
-        else if (pct >= 50) label = "Solid";
-        else if (pct >= 20) label = "Building";
-        else label = "Getting started";
-        statusLabel.textContent = "Overall: " + label;
-        statusDetail.textContent = allFluent + " of " + ALL_ITEMS.length + " items fluent";
-      }
-      const result = getRecommendationResult();
-      if (result.recommended.size > 0) {
-        const parts = [];
-        if (result.consolidateIndices.length > 0) {
-          const cNames = result.consolidateIndices.sort(function(a, b) {
-            return a - b;
-          }).map(function(g) {
-            return DEGREE_GROUPS[g].label;
-          });
-          parts.push(
-            "solidify " + cNames.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
-          );
-        }
-        if (result.expandIndex !== null) {
-          parts.push(
-            "start " + DEGREE_GROUPS[result.expandIndex].label + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
-          );
-        }
-        recText.textContent = "Suggestion: " + parts.join("\n");
-        recBtn.classList.remove("hidden");
-      } else {
-        recText.textContent = "";
-        recBtn.classList.add("hidden");
-      }
-    }
-    function renderSessionSummary() {
-      const el = container.querySelector(".session-summary-text");
-      if (!el) return;
-      const items = mode.getEnabledItems();
-      el.textContent = items.length + " items \xB7 60s";
-    }
-    let currentItem = null;
-    const statsControls = createStatsControls(container, (mode2, el) => {
-      const colLabels = DEGREE_LABELS;
-      const gridDiv = document.createElement("div");
-      gridDiv.className = "stats-grid-wrapper";
-      el.appendChild(gridDiv);
-      const keyNotes = MAJOR_KEYS.map((k) => ({
-        name: k.root,
-        displayName: k.root
-      }));
-      renderStatsGrid(
-        engine.selector,
-        colLabels,
-        (keyRoot, colIdx) => {
-          const d = colIdx + 1;
-          return [keyRoot + ":" + d + ":fwd", keyRoot + ":" + d + ":rev"];
-        },
-        mode2,
-        gridDiv,
-        keyNotes,
-        engine.baseline ?? void 0
-      );
-      const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
-      el.appendChild(legendDiv);
-    });
-    const mode = {
-      id: "scaleDegrees",
-      name: "Scale Degrees",
-      storageNamespace: "scaleDegrees",
-      getEnabledItems() {
-        const items = [];
-        for (const g of enabledGroups) {
-          items.push(...getItemIdsForGroup(g));
-        }
-        return items;
-      },
-      getPracticingLabel() {
-        if (enabledGroups.size === DEGREE_GROUPS.length) return "all degrees";
-        const degrees = [...enabledGroups].sort((a, b) => a - b).flatMap((g) => DEGREE_GROUPS[g].degrees).sort((a, b) => a - b);
-        return degrees.map((d) => DEGREE_LABELS[d - 1]).join(", ") + " degrees";
-      },
-      presentQuestion(itemId) {
-        currentItem = parseItem(itemId);
-        const prompt = container.querySelector(".quiz-prompt");
-        const noteButtons = container.querySelector(".answer-buttons-notes");
-        const degreeButtons = container.querySelector(".answer-buttons-degrees");
-        if (currentItem.dir === "fwd") {
-          prompt.textContent = DEGREE_LABELS[currentItem.degree - 1] + " of " + displayNote(currentItem.key.root) + " major";
-          noteButtons.classList.remove("answer-group-hidden");
-          degreeButtons.classList.add("answer-group-hidden");
-        } else {
-          prompt.textContent = displayNote(currentItem.key.root) + " major: " + displayNote(currentItem.noteName);
-          noteButtons.classList.add("answer-group-hidden");
-          degreeButtons.classList.remove("answer-group-hidden");
-        }
-      },
-      checkAnswer(_itemId, input) {
-        if (currentItem.dir === "fwd") {
-          const correct = spelledNoteMatchesSemitone(
-            currentItem.noteName,
-            input
-          );
-          return { correct, correctAnswer: displayNote(currentItem.noteName) };
-        } else {
-          const expectedDegree = String(currentItem.degree);
-          return {
-            correct: input === expectedDegree,
-            correctAnswer: DEGREE_LABELS[currentItem.degree - 1]
-          };
-        }
-      },
-      onStart() {
-        noteKeyHandler.reset();
-        if (statsControls.mode) statsControls.hide();
-      },
-      onStop() {
-        noteKeyHandler.reset();
-        if (activeTab === "progress") {
-          statsControls.show("retention");
-        }
-        refreshUI();
-      },
-      handleKey(e, { submitAnswer }) {
-        if (currentItem.dir === "fwd") {
-          return noteKeyHandler.handleKey(e);
-        }
-        if (e.key >= "1" && e.key <= "7") {
-          e.preventDefault();
-          submitAnswer(e.key);
-          return true;
-        }
-        return false;
-      },
-      getCalibrationButtons() {
-        return Array.from(container.querySelectorAll(".answer-btn-note"));
-      },
-      getCalibrationTrialConfig(buttons, prevBtn) {
-        const btn = pickCalibrationButton(buttons, prevBtn);
-        return { prompt: "Press " + btn.textContent, targetButtons: [btn] };
-      }
-    };
-    const engine = createQuizEngine(mode, container);
-    engine.storage.preload?.(ALL_ITEMS);
-    const noteKeyHandler = createAdaptiveKeyHandler(
-      (input) => engine.submitAnswer(input),
-      () => true
-    );
-    function init() {
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
-      const toggleLabel = container.querySelector(".toggle-group-label");
-      if (toggleLabel) toggleLabel.textContent = "Degrees";
-      const togglesDiv = container.querySelector(".distance-toggles");
-      DEGREE_GROUPS.forEach((group, i) => {
-        const btn = document.createElement("button");
-        btn.className = "distance-toggle";
-        btn.dataset.group = String(i);
-        btn.textContent = group.label;
-        btn.addEventListener("click", () => toggleGroup(i));
-        togglesDiv.appendChild(btn);
-      });
-      loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-note").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.note);
-          });
-        }
-      );
-      container.querySelectorAll(".answer-btn-degree").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.degree);
-          });
-        }
-      );
-      container.querySelector(".start-btn").addEventListener(
-        "click",
-        () => engine.start()
-      );
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (recBtn) {
-        recBtn.addEventListener("click", () => {
-          applyRecommendations();
-          refreshUI();
-        });
-      }
-      updateRecommendations();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    return {
-      mode,
-      engine,
-      init,
-      activate() {
-        engine.attach();
-        refreshNoteButtonLabels(container);
-        refreshUI();
-      },
-      deactivate() {
-        if (engine.isRunning) engine.stop();
-        engine.detach();
-        noteKeyHandler.reset();
-      }
-    };
-  }
-
-  // src/quiz-diatonic-chords.ts
-  function createDiatonicChordsMode() {
-    const container = document.getElementById("mode-diatonicChords");
-    const GROUPS_KEY = "diatonicChords_enabledGroups";
-    const CHORD_GROUPS = [
-      { degrees: [1, 4, 5], label: "I,IV,V" },
-      { degrees: [2, 6], label: "ii,vi" },
-      { degrees: [3, 7], label: "iii,vii\xB0" }
-    ];
-    let enabledGroups = /* @__PURE__ */ new Set([0]);
-    let recommendedGroups = /* @__PURE__ */ new Set();
-    const ALL_ITEMS = [];
-    for (const key of MAJOR_KEYS) {
-      for (let d = 1; d <= 7; d++) {
-        ALL_ITEMS.push(key.root + ":" + d + ":fwd");
-        ALL_ITEMS.push(key.root + ":" + d + ":rev");
-      }
-    }
-    function parseItem(itemId) {
-      const parts = itemId.split(":");
-      const keyRoot = parts[0];
-      const degree = parseInt(parts[1]);
-      const dir = parts[2];
-      const key = MAJOR_KEYS.find((k) => k.root === keyRoot);
-      const chord = DIATONIC_CHORDS[degree - 1];
-      const rootNote = getScaleDegreeNote(keyRoot, degree);
-      return { key, degree, dir, chord, rootNote };
-    }
-    function getItemIdsForGroup(groupIndex) {
-      const degrees = CHORD_GROUPS[groupIndex].degrees;
-      const items = [];
-      for (const key of MAJOR_KEYS) {
-        for (const d of degrees) {
-          items.push(key.root + ":" + d + ":fwd");
-          items.push(key.root + ":" + d + ":rev");
-        }
-      }
-      return items;
-    }
-    function loadEnabledGroups() {
-      const saved = localStorage.getItem(GROUPS_KEY);
-      if (saved) {
-        try {
-          enabledGroups = new Set(JSON.parse(saved));
-        } catch {
-        }
-      }
-      updateGroupToggles();
-    }
-    function saveEnabledGroups() {
-      localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
-    }
-    function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach(
-        (btn) => {
-          const g = parseInt(btn.dataset.group);
-          btn.classList.toggle("active", enabledGroups.has(g));
-          btn.classList.toggle("recommended", recommendedGroups.has(g));
-        }
-      );
-    }
-    const recsOptions = {
-      sortUnstarted: (a, b) => a.string - b.string
-    };
-    function getRecommendationResult() {
-      const allGroups = CHORD_GROUPS.map((_, i) => i);
-      return computeRecommendations(
-        engine.selector,
-        allGroups,
-        getItemIdsForGroup,
-        DEFAULT_CONFIG,
-        recsOptions
-      );
-    }
-    function updateRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      updateGroupToggles();
-    }
-    function applyRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      if (result.enabled) {
-        enabledGroups = result.enabled;
-        saveEnabledGroups();
-      }
-      updateGroupToggles();
-    }
-    function toggleGroup(g) {
-      if (enabledGroups.has(g)) {
-        if (enabledGroups.size > 1) enabledGroups.delete(g);
-      } else {
-        enabledGroups.add(g);
-      }
-      saveEnabledGroups();
-      refreshUI();
-    }
-    let activeTab = "practice";
-    function switchTab(tabName) {
-      activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
-      container.querySelectorAll(".tab-content").forEach((el) => {
-        el.classList.toggle(
-          "active",
-          tabName === "practice" ? el.classList.contains("tab-practice") : el.classList.contains("tab-progress")
-        );
-      });
-      if (tabName === "progress") {
-        statsControls.show(statsControls.mode || "retention");
-      } else {
-        renderPracticeSummary();
-      }
-    }
-    function refreshUI() {
-      updateRecommendations();
-      engine.updateIdleMessage();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    function renderPracticeSummary() {
-      const statusLabel = container.querySelector(".practice-status-label");
-      const statusDetail = container.querySelector(".practice-status-detail");
-      const recText = container.querySelector(".practice-rec-text");
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (!statusLabel) return;
-      const items = mode.getEnabledItems();
-      const threshold = engine.selector.getConfig().automaticityThreshold;
-      let fluent = 0, seen = 0;
-      for (let i = 0; i < items.length; i++) {
-        const auto = engine.selector.getAutomaticity(items[i]);
-        if (auto !== null) {
-          seen++;
-          if (auto > threshold) fluent++;
-        }
-      }
-      let allFluent = 0;
-      for (let j = 0; j < ALL_ITEMS.length; j++) {
-        const a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
-        if (a2 !== null && a2 > threshold) allFluent++;
-      }
-      if (seen === 0) {
-        statusLabel.textContent = "Ready to start";
-        statusDetail.textContent = ALL_ITEMS.length + " items to learn";
-      } else {
-        const pct = ALL_ITEMS.length > 0 ? Math.round(allFluent / ALL_ITEMS.length * 100) : 0;
-        let label;
-        if (pct >= 80) label = "Strong";
-        else if (pct >= 50) label = "Solid";
-        else if (pct >= 20) label = "Building";
-        else label = "Getting started";
-        statusLabel.textContent = "Overall: " + label;
-        statusDetail.textContent = allFluent + " of " + ALL_ITEMS.length + " items fluent";
-      }
-      const result = getRecommendationResult();
-      if (result.recommended.size > 0) {
-        const parts = [];
-        if (result.consolidateIndices.length > 0) {
-          const cNames = result.consolidateIndices.sort(function(a, b) {
-            return a - b;
-          }).map(function(g) {
-            return CHORD_GROUPS[g].label;
-          });
-          parts.push(
-            "solidify " + cNames.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
-          );
-        }
-        if (result.expandIndex !== null) {
-          parts.push(
-            "start " + CHORD_GROUPS[result.expandIndex].label + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
-          );
-        }
-        recText.textContent = "Suggestion: " + parts.join("\n");
-        recBtn.classList.remove("hidden");
-      } else {
-        recText.textContent = "";
-        recBtn.classList.add("hidden");
-      }
-    }
-    function renderSessionSummary() {
-      const el = container.querySelector(".session-summary-text");
-      if (!el) return;
-      const items = mode.getEnabledItems();
-      el.textContent = items.length + " items \xB7 60s";
-    }
-    let currentItem = null;
-    const statsControls = createStatsControls(container, (mode2, el) => {
-      const colLabels = ROMAN_NUMERALS;
-      const gridDiv = document.createElement("div");
-      gridDiv.className = "stats-grid-wrapper";
-      el.appendChild(gridDiv);
-      const keyNotes = MAJOR_KEYS.map((k) => ({
-        name: k.root,
-        displayName: k.root
-      }));
-      renderStatsGrid(
-        engine.selector,
-        colLabels,
-        (keyRoot, colIdx) => {
-          const d = colIdx + 1;
-          return [keyRoot + ":" + d + ":fwd", keyRoot + ":" + d + ":rev"];
-        },
-        mode2,
-        gridDiv,
-        keyNotes,
-        engine.baseline ?? void 0
-      );
-      const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
-      el.appendChild(legendDiv);
-    });
-    const mode = {
-      id: "diatonicChords",
-      name: "Diatonic Chords",
-      storageNamespace: "diatonicChords",
-      getEnabledItems() {
-        const items = [];
-        for (const g of enabledGroups) {
-          items.push(...getItemIdsForGroup(g));
-        }
-        return items;
-      },
-      getPracticingLabel() {
-        if (enabledGroups.size === CHORD_GROUPS.length) return "all chords";
-        const numerals = [...enabledGroups].sort((a, b) => a - b).flatMap((g) => CHORD_GROUPS[g].degrees).sort((a, b) => a - b).map((d) => ROMAN_NUMERALS[d - 1]);
-        return numerals.join(", ") + " chords";
-      },
-      presentQuestion(itemId) {
-        currentItem = parseItem(itemId);
-        const prompt = container.querySelector(".quiz-prompt");
-        const noteButtons = container.querySelector(".answer-buttons-notes");
-        const numeralButtons = container.querySelector(
-          ".answer-buttons-numerals"
-        );
-        if (currentItem.dir === "fwd") {
-          prompt.textContent = currentItem.chord.numeral + " in " + displayNote(currentItem.key.root) + " major";
-          noteButtons.classList.remove("answer-group-hidden");
-          numeralButtons.classList.add("answer-group-hidden");
-        } else {
-          const chordName = displayNote(currentItem.rootNote) + currentItem.chord.qualityLabel;
-          prompt.textContent = chordName + " in " + displayNote(currentItem.key.root) + " major";
-          noteButtons.classList.add("answer-group-hidden");
-          numeralButtons.classList.remove("answer-group-hidden");
-        }
-      },
-      checkAnswer(_itemId, input) {
-        if (currentItem.dir === "fwd") {
-          const correct = spelledNoteMatchesSemitone(
-            currentItem.rootNote,
-            input
-          );
-          const fullAnswer = displayNote(currentItem.rootNote) + " " + currentItem.chord.quality;
-          return { correct, correctAnswer: fullAnswer };
-        } else {
-          const expectedNumeral = currentItem.chord.numeral;
-          return {
-            correct: input === expectedNumeral,
-            correctAnswer: expectedNumeral
-          };
-        }
-      },
-      onStart() {
-        noteKeyHandler.reset();
-        if (statsControls.mode) statsControls.hide();
-      },
-      onStop() {
-        noteKeyHandler.reset();
-        if (activeTab === "progress") {
-          statsControls.show("retention");
-        }
-        refreshUI();
-      },
-      handleKey(e, { submitAnswer }) {
-        if (currentItem.dir === "fwd") {
-          return noteKeyHandler.handleKey(e);
-        }
-        if (e.key >= "1" && e.key <= "7") {
-          e.preventDefault();
-          submitAnswer(ROMAN_NUMERALS[parseInt(e.key) - 1]);
-          return true;
-        }
-        return false;
-      },
-      getCalibrationButtons() {
-        return Array.from(container.querySelectorAll(".answer-btn-note"));
-      },
-      getCalibrationTrialConfig(buttons, prevBtn) {
-        const btn = pickCalibrationButton(buttons, prevBtn);
-        return { prompt: "Press " + btn.textContent, targetButtons: [btn] };
-      }
-    };
-    const engine = createQuizEngine(mode, container);
-    engine.storage.preload?.(ALL_ITEMS);
-    const noteKeyHandler = createAdaptiveKeyHandler(
-      (input) => engine.submitAnswer(input),
-      () => true
-    );
-    function init() {
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
-      const toggleLabel = container.querySelector(".toggle-group-label");
-      if (toggleLabel) toggleLabel.textContent = "Chords";
-      const togglesDiv = container.querySelector(".distance-toggles");
-      CHORD_GROUPS.forEach((group, i) => {
-        const btn = document.createElement("button");
-        btn.className = "distance-toggle";
-        btn.dataset.group = String(i);
-        btn.textContent = group.label;
-        btn.addEventListener("click", () => toggleGroup(i));
-        togglesDiv.appendChild(btn);
-      });
-      loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-note").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.note);
-          });
-        }
-      );
-      container.querySelectorAll(".answer-btn-numeral").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            engine.submitAnswer(btn.dataset.numeral);
-          });
-        }
-      );
-      container.querySelector(".start-btn").addEventListener(
-        "click",
-        () => engine.start()
-      );
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (recBtn) {
-        recBtn.addEventListener("click", () => {
-          applyRecommendations();
-          refreshUI();
-        });
-      }
-      updateRecommendations();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    return {
-      mode,
-      engine,
-      init,
-      activate() {
-        engine.attach();
-        refreshNoteButtonLabels(container);
-        refreshUI();
-      },
-      deactivate() {
-        if (engine.isRunning) engine.stop();
-        engine.detach();
-        noteKeyHandler.reset();
-      }
-    };
-  }
-
-  // src/quiz-chord-spelling.ts
-  function createChordSpellingMode() {
-    const container = document.getElementById("mode-chordSpelling");
-    const GROUPS_KEY = "chordSpelling_enabledGroups";
-    const SPELLING_GROUPS = [];
-    let maxGroup = 0;
-    for (const ct of CHORD_TYPES) {
-      if (ct.group > maxGroup) maxGroup = ct.group;
-    }
-    for (let g = 0; g <= maxGroup; g++) {
-      const types = CHORD_TYPES.filter((t) => t.group === g);
-      const label = types.map((t) => t.symbol || "maj").join(", ");
-      SPELLING_GROUPS.push({ types, label });
-    }
-    let enabledGroups = /* @__PURE__ */ new Set([0]);
-    let recommendedGroups = /* @__PURE__ */ new Set();
-    const ALL_ITEMS = [];
-    for (const root of CHORD_ROOTS) {
-      for (const type of CHORD_TYPES) {
-        ALL_ITEMS.push(root + ":" + type.name);
-      }
-    }
-    function parseItem(itemId) {
-      const colonIdx = itemId.indexOf(":");
-      const rootName = itemId.substring(0, colonIdx);
-      const typeName = itemId.substring(colonIdx + 1);
-      const chordType = CHORD_TYPES.find((t) => t.name === typeName);
-      const tones = getChordTones(rootName, chordType);
-      return { rootName, chordType, tones };
-    }
-    function getItemIdsForGroup(groupIndex) {
-      const types = SPELLING_GROUPS[groupIndex].types;
-      const items = [];
-      for (const root of CHORD_ROOTS) {
-        for (const type of types) {
-          items.push(root + ":" + type.name);
-        }
-      }
-      return items;
-    }
-    function loadEnabledGroups() {
-      const saved = localStorage.getItem(GROUPS_KEY);
-      if (saved) {
-        try {
-          enabledGroups = new Set(JSON.parse(saved));
-        } catch {
-        }
-      }
-      updateGroupToggles();
-    }
-    function saveEnabledGroups() {
-      localStorage.setItem(GROUPS_KEY, JSON.stringify([...enabledGroups]));
-    }
-    function updateGroupToggles() {
-      container.querySelectorAll(".distance-toggle").forEach(
-        (btn) => {
-          const g = parseInt(btn.dataset.group);
-          btn.classList.toggle("active", enabledGroups.has(g));
-          btn.classList.toggle("recommended", recommendedGroups.has(g));
-        }
-      );
-    }
-    const recsOptions = {
-      sortUnstarted: (a, b) => a.string - b.string
-    };
-    function getRecommendationResult() {
-      const allGroups = SPELLING_GROUPS.map((_, i) => i);
-      return computeRecommendations(
-        engine.selector,
-        allGroups,
-        getItemIdsForGroup,
-        DEFAULT_CONFIG,
-        recsOptions
-      );
-    }
-    function updateRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      updateGroupToggles();
-    }
-    function applyRecommendations() {
-      const result = getRecommendationResult();
-      recommendedGroups = result.recommended;
-      if (result.enabled) {
-        enabledGroups = result.enabled;
-        saveEnabledGroups();
-      }
-      updateGroupToggles();
-    }
-    function toggleGroup(g) {
-      if (enabledGroups.has(g)) {
-        if (enabledGroups.size > 1) enabledGroups.delete(g);
-      } else {
-        enabledGroups.add(g);
-      }
-      saveEnabledGroups();
-      refreshUI();
-    }
-    let activeTab = "practice";
-    function switchTab(tabName) {
-      activeTab = tabName;
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
-      container.querySelectorAll(".tab-content").forEach((el) => {
-        el.classList.toggle(
-          "active",
-          tabName === "practice" ? el.classList.contains("tab-practice") : el.classList.contains("tab-progress")
-        );
-      });
-      if (tabName === "progress") {
-        statsControls.show(statsControls.mode || "retention");
-      } else {
-        renderPracticeSummary();
-      }
-    }
-    function refreshUI() {
-      updateRecommendations();
-      engine.updateIdleMessage();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    function renderPracticeSummary() {
-      const statusLabel = container.querySelector(".practice-status-label");
-      const statusDetail = container.querySelector(".practice-status-detail");
-      const recText = container.querySelector(".practice-rec-text");
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (!statusLabel) return;
-      const items = mode.getEnabledItems();
-      const threshold = engine.selector.getConfig().automaticityThreshold;
-      let fluent = 0, seen = 0;
-      for (let i = 0; i < items.length; i++) {
-        const auto = engine.selector.getAutomaticity(items[i]);
-        if (auto !== null) {
-          seen++;
-          if (auto > threshold) fluent++;
-        }
-      }
-      let allFluent = 0;
-      for (let j = 0; j < ALL_ITEMS.length; j++) {
-        const a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
-        if (a2 !== null && a2 > threshold) allFluent++;
-      }
-      if (seen === 0) {
-        statusLabel.textContent = "Ready to start";
-        statusDetail.textContent = ALL_ITEMS.length + " items to learn";
-      } else {
-        const pct = ALL_ITEMS.length > 0 ? Math.round(allFluent / ALL_ITEMS.length * 100) : 0;
-        let label;
-        if (pct >= 80) label = "Strong";
-        else if (pct >= 50) label = "Solid";
-        else if (pct >= 20) label = "Building";
-        else label = "Getting started";
-        statusLabel.textContent = "Overall: " + label;
-        statusDetail.textContent = allFluent + " of " + ALL_ITEMS.length + " items fluent";
-      }
-      const result = getRecommendationResult();
-      if (result.recommended.size > 0) {
-        const parts = [];
-        if (result.consolidateIndices.length > 0) {
-          const cNames = result.consolidateIndices.sort(function(a, b) {
-            return a - b;
-          }).map(function(g) {
-            return SPELLING_GROUPS[g].label;
-          });
-          parts.push(
-            "solidify " + cNames.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
-          );
-        }
-        if (result.expandIndex !== null) {
-          parts.push(
-            "start " + SPELLING_GROUPS[result.expandIndex].label + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
-          );
-        }
-        recText.textContent = "Suggestion: " + parts.join("\n");
-        recBtn.classList.remove("hidden");
-      } else {
-        recText.textContent = "";
-        recBtn.classList.add("hidden");
-      }
-    }
-    function renderSessionSummary() {
-      const el = container.querySelector(".session-summary-text");
-      if (!el) return;
-      const items = mode.getEnabledItems();
-      el.textContent = items.length + " items \xB7 60s";
-    }
-    let currentItem = null;
-    let enteredTones = [];
-    function renderSlots() {
-      const slotsDiv = container.querySelector(".chord-slots");
-      if (!currentItem) {
-        slotsDiv.innerHTML = "";
-        return;
-      }
-      let html = "";
-      for (let i = 0; i < currentItem.tones.length; i++) {
-        let cls = "chord-slot";
-        let content = "_";
-        if (i < enteredTones.length) {
-          content = enteredTones[i].display;
-          cls += enteredTones[i].correct ? " correct" : " wrong";
-        } else if (i === enteredTones.length) {
-          cls += " active";
-        }
-        html += '<span class="' + cls + '">' + content + "</span>";
-      }
-      slotsDiv.innerHTML = html;
-    }
-    function submitTone(input) {
-      if (!engine.isActive || engine.isAnswered) return;
-      if (!currentItem || enteredTones.length >= currentItem.tones.length) return;
-      const idx = enteredTones.length;
-      const expected = currentItem.tones[idx];
-      const isCorrect = spelledNoteMatchesInput(expected, input);
-      enteredTones.push({
-        input,
-        display: isCorrect ? displayNote(expected) : displayNote(input),
-        correct: isCorrect
-      });
-      renderSlots();
-      if (enteredTones.length === currentItem.tones.length) {
-        const allCorrect = enteredTones.every((t) => t.correct);
-        engine.submitAnswer(allCorrect ? "__correct__" : "__wrong__");
-      }
-    }
-    const statsControls = createStatsControls(container, (mode2, el) => {
-      const colLabels = CHORD_TYPES.map((t) => t.symbol || "maj");
-      const gridDiv = document.createElement("div");
-      gridDiv.className = "stats-grid-wrapper";
-      el.appendChild(gridDiv);
-      const rootNotes = CHORD_ROOTS.map((r) => ({ name: r, displayName: r }));
-      renderStatsGrid(
-        engine.selector,
-        colLabels,
-        (rootName, colIdx) => {
-          return rootName + ":" + CHORD_TYPES[colIdx].name;
-        },
-        mode2,
-        gridDiv,
-        rootNotes,
-        engine.baseline ?? void 0
-      );
-      const legendDiv = document.createElement("div");
-      legendDiv.innerHTML = buildStatsLegend(mode2, engine.baseline ?? void 0);
-      el.appendChild(legendDiv);
-    });
-    const mode = {
-      id: "chordSpelling",
-      name: "Chord Spelling",
-      storageNamespace: "chordSpelling",
-      getEnabledItems() {
-        const items = [];
-        for (const g of enabledGroups) {
-          items.push(...getItemIdsForGroup(g));
-        }
-        return items;
-      },
-      getPracticingLabel() {
-        if (enabledGroups.size === SPELLING_GROUPS.length) {
-          return "all chord types";
-        }
-        const labels = [...enabledGroups].sort((a, b) => a - b).map((g) => SPELLING_GROUPS[g].label);
-        return labels.join(", ") + " chords";
-      },
-      getExpectedResponseCount(itemId) {
-        const parsed = parseItem(itemId);
-        return parsed.tones.length;
-      },
-      presentQuestion(itemId) {
-        currentItem = parseItem(itemId);
-        enteredTones = [];
-        const prompt = container.querySelector(".quiz-prompt");
-        prompt.textContent = displayNote(currentItem.rootName) + currentItem.chordType.symbol;
-        renderSlots();
-      },
-      checkAnswer(_itemId, input) {
-        const allCorrect = input === "__correct__";
-        const correctAnswer = currentItem.tones.map(displayNote).join(" ");
-        return { correct: allCorrect, correctAnswer };
-      },
-      onStart() {
-        noteKeyHandler.reset();
-        enteredTones = [];
-        if (statsControls.mode) statsControls.hide();
-      },
-      onStop() {
-        noteKeyHandler.reset();
-        enteredTones = [];
-        const slotsDiv = container.querySelector(".chord-slots");
-        slotsDiv.innerHTML = "";
-        if (activeTab === "progress") {
-          statsControls.show("retention");
-        }
-        refreshUI();
-      },
-      handleKey(e, _ctx) {
-        return noteKeyHandler.handleKey(e);
-      },
-      getCalibrationButtons() {
-        return Array.from(container.querySelectorAll(".answer-btn-note"));
-      },
-      getCalibrationTrialConfig(buttons, prevBtn) {
-        const count = 2 + Math.floor(Math.random() * 3);
-        const targets = [];
-        let prev = prevBtn;
-        for (let i = 0; i < count; i++) {
-          const btn = pickCalibrationButton(buttons, prev);
-          targets.push(btn);
-          prev = btn;
-        }
-        const labels = targets.map((b) => b.textContent);
-        return { prompt: "Press " + labels.join(" "), targetButtons: targets };
-      },
-      calibrationIntroHint: "We\u2019ll measure your response speed to set personalized targets. Press the notes shown in the prompt, in order \u2014 10 rounds total."
-    };
-    const engine = createQuizEngine(mode, container);
-    engine.storage.preload?.(ALL_ITEMS);
-    const noteKeyHandler = createAdaptiveKeyHandler(
-      (input) => submitTone(input),
-      () => true
-    );
-    function init() {
-      container.querySelectorAll(".mode-tab").forEach((btn) => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
-      const toggleLabel = container.querySelector(".toggle-group-label");
-      if (toggleLabel) toggleLabel.textContent = "Chord types";
-      const togglesDiv = container.querySelector(".distance-toggles");
-      SPELLING_GROUPS.forEach((group, i) => {
-        const btn = document.createElement("button");
-        btn.className = "distance-toggle";
-        btn.dataset.group = String(i);
-        btn.textContent = group.label;
-        btn.addEventListener("click", () => toggleGroup(i));
-        togglesDiv.appendChild(btn);
-      });
-      loadEnabledGroups();
-      container.querySelectorAll(".answer-btn-note").forEach(
-        (btn) => {
-          btn.addEventListener("click", () => {
-            if (!engine.isActive || engine.isAnswered) return;
-            let input = btn.dataset.note;
-            if (currentItem && enteredTones.length < currentItem.tones.length) {
-              const expected = currentItem.tones[enteredTones.length];
-              if (spelledNoteMatchesSemitone(expected, input)) {
-                input = expected;
-              }
-            }
-            submitTone(input);
-          });
-        }
-      );
-      container.querySelector(".start-btn").addEventListener(
-        "click",
-        () => engine.start()
-      );
-      const recBtn = container.querySelector(".practice-rec-btn");
-      if (recBtn) {
-        recBtn.addEventListener("click", () => {
-          applyRecommendations();
-          refreshUI();
-        });
-      }
-      updateRecommendations();
-      renderPracticeSummary();
-      renderSessionSummary();
-    }
-    return {
-      mode,
-      engine,
-      init,
-      activate() {
-        engine.attach();
-        refreshNoteButtonLabels(container);
-        refreshUI();
-      },
-      deactivate() {
-        if (engine.isRunning) engine.stop();
-        engine.detach();
-        noteKeyHandler.reset();
       }
     };
   }
@@ -9374,82 +6760,26 @@ button {
 
   // src/app.ts
   var nav = createNavigation();
-  var guitar = createGuitarFretboardMode();
+  var guitar = createModeController(fretboardDefinition(GUITAR));
   nav.registerMode("fretboard", {
     name: "Guitar Fretboard",
     init: guitar.init,
     activate: guitar.activate,
     deactivate: guitar.deactivate
   });
-  var ukulele = createUkuleleFretboardMode();
-  nav.registerMode("ukulele", {
-    name: "Ukulele Fretboard",
-    init: ukulele.init,
-    activate: ukulele.activate,
-    deactivate: ukulele.deactivate
-  });
-  var speedTap = createSpeedTapMode();
-  nav.registerMode("speedTap", {
-    name: "Speed Tap",
-    init: speedTap.init,
-    activate: speedTap.activate,
-    deactivate: speedTap.deactivate
-  });
-  var noteSemitones = createNoteSemitonesMode();
+  var noteSemitones = createModeController(noteSemitonesDefinition());
   nav.registerMode("noteSemitones", {
     name: "Note \u2194 Semitones",
     init: noteSemitones.init,
     activate: noteSemitones.activate,
     deactivate: noteSemitones.deactivate
   });
-  var intervalSemitones = createIntervalSemitonesMode();
-  nav.registerMode("intervalSemitones", {
-    name: "Interval \u2194 Semitones",
-    init: intervalSemitones.init,
-    activate: intervalSemitones.activate,
-    deactivate: intervalSemitones.deactivate
-  });
-  var semitoneMath = createSemitoneMathMode();
+  var semitoneMath = createModeController(semitoneMathDefinition());
   nav.registerMode("semitoneMath", {
     name: "Semitone Math",
     init: semitoneMath.init,
     activate: semitoneMath.activate,
     deactivate: semitoneMath.deactivate
-  });
-  var intervalMath = createIntervalMathMode();
-  nav.registerMode("intervalMath", {
-    name: "Interval Math",
-    init: intervalMath.init,
-    activate: intervalMath.activate,
-    deactivate: intervalMath.deactivate
-  });
-  var keySignatures = createKeySignaturesMode();
-  nav.registerMode("keySignatures", {
-    name: "Key Signatures",
-    init: keySignatures.init,
-    activate: keySignatures.activate,
-    deactivate: keySignatures.deactivate
-  });
-  var scaleDegrees = createScaleDegreesMode();
-  nav.registerMode("scaleDegrees", {
-    name: "Scale Degrees",
-    init: scaleDegrees.init,
-    activate: scaleDegrees.activate,
-    deactivate: scaleDegrees.deactivate
-  });
-  var diatonicChords = createDiatonicChordsMode();
-  nav.registerMode("diatonicChords", {
-    name: "Diatonic Chords",
-    init: diatonicChords.init,
-    activate: diatonicChords.activate,
-    deactivate: diatonicChords.deactivate
-  });
-  var chordSpelling = createChordSpellingMode();
-  nav.registerMode("chordSpelling", {
-    name: "Chord Spelling",
-    init: chordSpelling.init,
-    activate: chordSpelling.activate,
-    deactivate: chordSpelling.deactivate
   });
   nav.init();
   function refreshVisibleStats() {
@@ -9470,8 +6800,9 @@ button {
           refreshVisibleStats();
         }
       );
-      guitar.onNotationChange();
-      ukulele.onNotationChange();
+      guitar.onNotationChange?.();
+      noteSemitones.onNotationChange?.();
+      semitoneMath.onNotationChange?.();
     }
   });
   var settingsBtn = document.querySelector(

@@ -1,5 +1,11 @@
 // App initialization: registers quiz modes and starts navigation.
 // Entry point — esbuild bundles all imports into a single IIFE.
+//
+// During ModeDefinition refactoring, only 3 representative modes are active:
+//   - Guitar Fretboard (SVG prompt, note buttons, heatmap stats, fretboard scope)
+//   - Semitone Math (text prompt, note buttons, grid stats, group scope)
+//   - Note Semitones (text prompt, bidirectional response, table stats, no scope)
+// The rest are temporarily disabled. See plans/design-docs/ for the full plan.
 
 declare global {
   interface Window {
@@ -7,27 +13,28 @@ declare global {
   }
 }
 
-import {
-  createGuitarFretboardMode,
-  createUkuleleFretboardMode,
-} from './quiz-fretboard.ts';
-import { createSpeedTapMode } from './quiz-speed-tap.ts';
-import { createNoteSemitonesMode } from './quiz-note-semitones.ts';
-import { createIntervalSemitonesMode } from './quiz-interval-semitones.ts';
-import { createSemitoneMathMode } from './quiz-semitone-math.ts';
-import { createIntervalMathMode } from './quiz-interval-math.ts';
-import { createKeySignaturesMode } from './quiz-key-signatures.ts';
-import { createScaleDegreesMode } from './quiz-scale-degrees.ts';
-import { createDiatonicChordsMode } from './quiz-diatonic-chords.ts';
-import { createChordSpellingMode } from './quiz-chord-spelling.ts';
+import { GUITAR } from './music-data.ts';
+import { createModeController } from './mode-controller.ts';
+import { fretboardDefinition } from './modes/fretboard.ts';
+import { noteSemitonesDefinition } from './modes/note-semitones.ts';
+import { semitoneMathDefinition } from './modes/semitone-math.ts';
+// Disabled during refactoring:
+// import { createUkuleleFretboardMode } from './quiz-fretboard.ts';
+// import { createSpeedTapMode } from './quiz-speed-tap.ts';
+// import { createIntervalSemitonesMode } from './quiz-interval-semitones.ts';
+// import { createIntervalMathMode } from './quiz-interval-math.ts';
+// import { createKeySignaturesMode } from './quiz-key-signatures.ts';
+// import { createScaleDegreesMode } from './quiz-scale-degrees.ts';
+// import { createDiatonicChordsMode } from './quiz-diatonic-chords.ts';
+// import { createChordSpellingMode } from './quiz-chord-spelling.ts';
 import { createNavigation } from './navigation.ts';
 import { createSettingsModal } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
 
 const nav = createNavigation();
 
-// Register guitar fretboard mode
-const guitar = createGuitarFretboardMode();
+// --- Guitar Fretboard ---
+const guitar = createModeController(fretboardDefinition(GUITAR));
 nav.registerMode('fretboard', {
   name: 'Guitar Fretboard',
   init: guitar.init,
@@ -35,26 +42,14 @@ nav.registerMode('fretboard', {
   deactivate: guitar.deactivate,
 });
 
-// Register ukulele fretboard mode
-const ukulele = createUkuleleFretboardMode();
-nav.registerMode('ukulele', {
-  name: 'Ukulele Fretboard',
-  init: ukulele.init,
-  activate: ukulele.activate,
-  deactivate: ukulele.deactivate,
-});
+// --- Modes disabled during ModeDefinition refactoring ---
+// const ukulele = createModeController(fretboardDefinition(UKULELE));
+// nav.registerMode('ukulele', { name: 'Ukulele Fretboard', init: ukulele.init, activate: ukulele.activate, deactivate: ukulele.deactivate });
+// const speedTap = createSpeedTapMode();
+// nav.registerMode('speedTap', { name: 'Speed Tap', init: speedTap.init, activate: speedTap.activate, deactivate: speedTap.deactivate });
 
-// Speed Tap mode
-const speedTap = createSpeedTapMode();
-nav.registerMode('speedTap', {
-  name: 'Speed Tap',
-  init: speedTap.init,
-  activate: speedTap.activate,
-  deactivate: speedTap.deactivate,
-});
-
-// Note <-> Semitones mode
-const noteSemitones = createNoteSemitonesMode();
+// --- Note <-> Semitones ---
+const noteSemitones = createModeController(noteSemitonesDefinition());
 nav.registerMode('noteSemitones', {
   name: 'Note \u2194 Semitones',
   init: noteSemitones.init,
@@ -62,17 +57,12 @@ nav.registerMode('noteSemitones', {
   deactivate: noteSemitones.deactivate,
 });
 
-// Interval <-> Semitones mode
-const intervalSemitones = createIntervalSemitonesMode();
-nav.registerMode('intervalSemitones', {
-  name: 'Interval \u2194 Semitones',
-  init: intervalSemitones.init,
-  activate: intervalSemitones.activate,
-  deactivate: intervalSemitones.deactivate,
-});
+// --- More modes disabled during ModeDefinition refactoring ---
+// const intervalSemitones = createIntervalSemitonesMode();
+// nav.registerMode('intervalSemitones', { name: 'Interval ↔ Semitones', init: intervalSemitones.init, activate: intervalSemitones.activate, deactivate: intervalSemitones.deactivate });
 
-// Semitone Math mode
-const semitoneMath = createSemitoneMathMode();
+// --- Semitone Math ---
+const semitoneMath = createModeController(semitoneMathDefinition());
 nav.registerMode('semitoneMath', {
   name: 'Semitone Math',
   init: semitoneMath.init,
@@ -80,50 +70,17 @@ nav.registerMode('semitoneMath', {
   deactivate: semitoneMath.deactivate,
 });
 
-// Interval Math mode
-const intervalMath = createIntervalMathMode();
-nav.registerMode('intervalMath', {
-  name: 'Interval Math',
-  init: intervalMath.init,
-  activate: intervalMath.activate,
-  deactivate: intervalMath.deactivate,
-});
-
-// Key Signatures mode
-const keySignatures = createKeySignaturesMode();
-nav.registerMode('keySignatures', {
-  name: 'Key Signatures',
-  init: keySignatures.init,
-  activate: keySignatures.activate,
-  deactivate: keySignatures.deactivate,
-});
-
-// Scale Degrees mode
-const scaleDegrees = createScaleDegreesMode();
-nav.registerMode('scaleDegrees', {
-  name: 'Scale Degrees',
-  init: scaleDegrees.init,
-  activate: scaleDegrees.activate,
-  deactivate: scaleDegrees.deactivate,
-});
-
-// Diatonic Chords mode
-const diatonicChords = createDiatonicChordsMode();
-nav.registerMode('diatonicChords', {
-  name: 'Diatonic Chords',
-  init: diatonicChords.init,
-  activate: diatonicChords.activate,
-  deactivate: diatonicChords.deactivate,
-});
-
-// Chord Spelling mode
-const chordSpelling = createChordSpellingMode();
-nav.registerMode('chordSpelling', {
-  name: 'Chord Spelling',
-  init: chordSpelling.init,
-  activate: chordSpelling.activate,
-  deactivate: chordSpelling.deactivate,
-});
+// --- More modes disabled during ModeDefinition refactoring ---
+// const intervalMath = createIntervalMathMode();
+// nav.registerMode('intervalMath', { name: 'Interval Math', init: intervalMath.init, activate: intervalMath.activate, deactivate: intervalMath.deactivate });
+// const keySignatures = createKeySignaturesMode();
+// nav.registerMode('keySignatures', { name: 'Key Signatures', init: keySignatures.init, activate: keySignatures.activate, deactivate: keySignatures.deactivate });
+// const scaleDegrees = createScaleDegreesMode();
+// nav.registerMode('scaleDegrees', { name: 'Scale Degrees', init: scaleDegrees.init, activate: scaleDegrees.activate, deactivate: scaleDegrees.deactivate });
+// const diatonicChords = createDiatonicChordsMode();
+// nav.registerMode('diatonicChords', { name: 'Diatonic Chords', init: diatonicChords.init, activate: diatonicChords.activate, deactivate: diatonicChords.deactivate });
+// const chordSpelling = createChordSpellingMode();
+// nav.registerMode('chordSpelling', { name: 'Chord Spelling', init: chordSpelling.init, activate: chordSpelling.activate, deactivate: chordSpelling.deactivate });
 
 nav.init();
 
@@ -148,8 +105,9 @@ const settings = createSettingsModal({
         refreshVisibleStats();
       },
     );
-    guitar.onNotationChange();
-    ukulele.onNotationChange();
+    guitar.onNotationChange?.();
+    noteSemitones.onNotationChange?.();
+    semitoneMath.onNotationChange?.();
   },
 });
 

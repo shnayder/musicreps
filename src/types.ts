@@ -293,3 +293,286 @@ export type NoteKeyHandler = {
   handleKey(e: KeyboardEvent): boolean;
   reset(): void;
 };
+
+// ---------------------------------------------------------------------------
+// Mode definition — the complete specification of a quiz mode
+// ---------------------------------------------------------------------------
+
+export type NoteFilter = 'natural' | 'sharps-flats' | 'all';
+
+// --- Scope: what controls appear and what the user has selected ---
+
+export type GroupDef = {
+  index: number;
+  label: string;
+  /** Item IDs belonging to this group. Precomputed at mode creation. */
+  itemIds: string[];
+};
+
+/** Build-time configuration: what scope controls to render. */
+export type ScopeSpec =
+  | { kind: 'none' }
+  | {
+    kind: 'groups';
+    groups: GroupDef[];
+    defaultEnabled: number[];
+    storageKey: string;
+    /** Label for the toggle group heading (defaults to "Groups" in HTML). */
+    label?: string;
+    /** Sort function for recommending which unstarted group to expand next. */
+    sortUnstarted?: (
+      a: StringRecommendation,
+      b: StringRecommendation,
+    ) => number;
+  }
+  | {
+    kind: 'fretboard';
+    instrument: Instrument;
+  }
+  | {
+    kind: 'note-filter';
+    storageKey: string;
+  };
+
+/** Runtime state: what the user has currently selected. */
+export type ScopeState =
+  | { kind: 'none' }
+  | { kind: 'groups'; enabledGroups: ReadonlySet<number> }
+  | {
+    kind: 'fretboard';
+    enabledStrings: ReadonlySet<number>;
+    noteFilter: NoteFilter;
+  }
+  | { kind: 'note-filter'; noteFilter: NoteFilter };
+
+// --- Prompt: how questions appear ---
+
+/**
+ * 'text': infrastructure sets .quiz-prompt textContent. Zero DOM in mode.
+ * 'custom': mode gets a callback for full control (fretboard SVG, speed tap).
+ */
+export type PromptSpec<TQuestion> =
+  | {
+    kind: 'text';
+    /** Pure: derive prompt string from question data. */
+    getText(question: TQuestion): string;
+  }
+  | {
+    kind: 'custom';
+    /** Render the question into the quiz area. */
+    render(question: TQuestion, els: QuizAreaEls): void;
+    /** Clear the previous question (before render and on stop). */
+    clear(els: QuizAreaEls): void;
+    /** Visual feedback after answer (e.g., green/red fretboard circle). */
+    onAnswer?(
+      question: TQuestion,
+      result: CheckAnswerResult,
+      els: QuizAreaEls,
+    ): void;
+  };
+
+// --- Response: how answers are collected ---
+
+export type AnswerGroup = {
+  id: string;
+  html: string;
+  getButtonAnswer(btn: HTMLElement): string | null;
+};
+
+export type KeyHandlerFactory = (
+  submitAnswer: (input: string) => void,
+  getScope: () => ScopeState,
+) => NoteKeyHandler;
+
+export type SequentialState = {
+  expectedCount: number;
+  entries: { input: string; display: string; correct: boolean }[];
+};
+
+export type SequentialInputResult =
+  | { status: 'continue'; state: SequentialState }
+  | { status: 'complete'; correct: boolean; correctAnswer: string };
+
+export type ResponseSpec =
+  | {
+    kind: 'buttons';
+    /** Build-time HTML for the answer button area. */
+    answerButtonsHTML: string;
+    createKeyHandler: KeyHandlerFactory;
+    /** Extract the answer string from a clicked button. */
+    getButtonAnswer(btn: HTMLElement): string | null;
+  }
+  | {
+    kind: 'bidirectional';
+    /** Two or more button groups, shown/hidden per question. */
+    groups: AnswerGroup[];
+    /** Which group ID to show for a given question. */
+    getActiveGroup(question: unknown): string;
+    createKeyHandler: KeyHandlerFactory;
+  }
+  | {
+    kind: 'sequential';
+    answerButtonsHTML: string;
+    createKeyHandler: KeyHandlerFactory;
+    handleInput(
+      itemId: string,
+      input: string,
+      state: SequentialState,
+    ): SequentialInputResult;
+    initSequentialState(itemId: string): SequentialState;
+    renderProgress(state: SequentialState, els: QuizAreaEls): void;
+  }
+  | {
+    kind: 'spatial';
+    handleTap(
+      target: HTMLElement,
+      itemId: string,
+    ): CheckAnswerResult | null;
+    createKeyHandler?: KeyHandlerFactory;
+  };
+
+// --- Stats visualization ---
+
+export type StatsSpec =
+  | {
+    kind: 'table';
+    getRows(): StatsTableRow[];
+    fwdHeader: string;
+    revHeader: string;
+  }
+  | {
+    kind: 'grid';
+    colLabels: string[];
+    getItemId(noteName: string, colIndex: number): string | string[];
+    notes?: { name: string; displayName: string }[];
+  }
+  | {
+    kind: 'custom';
+    render(
+      statsMode: string,
+      statsEl: HTMLElement,
+      selector: AdaptiveSelector,
+      baseline: number | null,
+      modeContainer: HTMLElement,
+    ): void;
+  };
+
+export type StatsTableRow = {
+  label: string;
+  sublabel: string;
+  _colHeader: string;
+  fwdItemId: string;
+  revItemId: string;
+};
+
+// --- Calibration ---
+
+export type CalibrationSpec = {
+  introHint?: string;
+  getButtons?(container: HTMLElement): HTMLElement[];
+  getTrialConfig?(
+    buttons: HTMLElement[],
+    prevBtn: HTMLElement | null,
+  ): CalibrationTrialConfig;
+};
+
+// --- DOM references for mode callbacks ---
+
+export type QuizAreaEls = {
+  promptEl: HTMLElement;
+  quizArea: HTMLElement;
+  /** The mode-screen container element. */
+  container: HTMLElement;
+  /** Fretboard SVG wrapper (present only in fretboard modes). */
+  fretboardWrapper?: HTMLElement;
+  /** Fretboard SVG wrapper in progress tab (for heatmap). */
+  progressFretboardWrapper?: HTMLElement;
+};
+
+// --- ModeDefinition: the central interface ---
+
+/**
+ * Complete specification of a quiz mode. Provides data and pure logic;
+ * the shared ModeController handles DOM, lifecycle, and engine wiring.
+ *
+ * Generic TQuestion captures the mode's per-question data shape.
+ */
+export interface ModeDefinition<TQuestion = unknown> {
+  id: string;
+  name: string;
+  storageNamespace: string;
+
+  /** All possible item IDs. Used for storage preload and "all items" stats. */
+  allItemIds: string[];
+
+  /** Which items are eligible given the current scope selection. */
+  getEnabledItems(scope: ScopeState): string[];
+
+  scopeSpec: ScopeSpec;
+
+  /** Derive question data from an item ID. Pure. */
+  getQuestion(itemId: string): TQuestion;
+
+  /** Check if user input is correct. Pure. */
+  checkAnswer(itemId: string, input: string): CheckAnswerResult;
+
+  prompt: PromptSpec<TQuestion>;
+  response: ResponseSpec;
+  stats: StatsSpec;
+
+  /** Human-readable label for what's being practiced. */
+  getPracticingLabel(scope: ScopeState): string;
+
+  /** Session summary line ("3 strings · natural notes · 60s"). */
+  getSessionSummary(scope: ScopeState): string;
+
+  /** Calibration provider key (shared across modes with same button layout). */
+  calibrationProvider?: string;
+
+  /** Custom calibration config. */
+  calibrationSpec?: CalibrationSpec;
+
+  /** For multi-entry modes: expected response count per item. */
+  getExpectedResponseCount?(itemId: string): number;
+
+  /**
+   * Optional: enriches recommendation with extra context.
+   * Returns extra text parts for the message, and optional note filter
+   * to apply when the user clicks "Use suggestion".
+   */
+  getRecommendationContext?(
+    rec: RecommendationResult,
+    selector: AdaptiveSelector,
+  ): { extraParts: string[]; noteFilter?: NoteFilter };
+}
+
+// --- ModeUIState: the mode-level state object for State+Render ---
+
+export type PracticeSummaryState = {
+  statusLabel: string;
+  statusDetail: string;
+  recommendationText: string;
+  showRecommendationButton: boolean;
+  sessionSummary: string;
+  masteryText: string;
+  showMastery: boolean;
+  enabledItemCount: number;
+};
+
+export type ModeUIState = {
+  activeTab: 'practice' | 'progress';
+  scope: ScopeState;
+  practice: PracticeSummaryState;
+  statsMode: 'retention' | 'speed' | null;
+  recommendation: RecommendationResult | null;
+};
+
+// --- ModeController: returned by createModeController ---
+
+export interface ModeController {
+  init(): void;
+  activate(): void;
+  deactivate(): void;
+  /** Handle notation changes (refresh labels, stats). */
+  onNotationChange?(): void;
+}
