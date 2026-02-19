@@ -1,20 +1,22 @@
 # Engineering Backlog
 
-Owner: engineering workstream
-Branch: workstream/engineering
+Owner: engineering workstream Branch: workstream/engineering
 
 ## Active
+
 - Fretboard quiz: need a "finish this question" state when timer runs out
 
 ## Bugs
+
 - BUG: notes <-> semitones: A# not accepted for 10 — said "Bb"
 - BUG: speed tap doesn't seem to have warmup
 - BUG: interval/note <-> semitones warmup has too many options
 - BUG: 6# not getting recognized in key signatures mode
 
 ## Backlog
-- NIT: notes <-> semitones keyboard: if answer is C and I type C, don't wait
-  for accidental — mark it correct immediately
+
+- NIT: notes <-> semitones keyboard: if answer is C and I type C, don't wait for
+  accidental — mark it correct immediately
 - Key signatures: use unicode sharp and flat symbols (check throughout app)
 - Key signatures: keyboard mode for multi-char input needs cleanup
 - Scale degrees: keyboard answers are 1st, 2nd, etc but expects 1,2,3 — be

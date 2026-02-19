@@ -7,7 +7,7 @@
  */
 export function initialEngineState() {
   return {
-    phase: 'idle',          // 'idle' | 'active' | 'round-complete' | 'calibration-intro' | 'calibrating' | 'calibration-results'
+    phase: 'idle', // 'idle' | 'active' | 'round-complete' | 'calibration-intro' | 'calibrating' | 'calibration-results'
     currentItemId: null,
     answered: false,
     questionStartTime: null,
@@ -166,7 +166,9 @@ export function engineCalibrationIntro(state, hintOverride) {
     answersEnabled: false,
     feedbackText: 'Quick Speed Check',
     feedbackClass: 'feedback',
-    hintText: hintOverride !== undefined ? hintOverride : "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
+    hintText: hintOverride !== undefined
+      ? hintOverride
+      : 'We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.',
     timeDisplayText: '',
     calibrationBaseline: null,
   };
@@ -184,7 +186,9 @@ export function engineCalibrating(state, hintOverride) {
     phase: 'calibrating',
     answersEnabled: true,
     feedbackText: 'Speed check!',
-    hintText: hintOverride !== undefined ? hintOverride : 'Tap the highlighted button as fast as you can',
+    hintText: hintOverride !== undefined
+      ? hintOverride
+      : 'Tap the highlighted button as fast as you can',
   };
 }
 
@@ -209,7 +213,7 @@ export function engineCalibrationResults(state, baseline) {
  * Transition: stop the quiz (return to idle).
  * Works from any phase — quiz, calibration, or already idle.
  */
-export function engineStop(state) {
+export function engineStop(_state) {
   return initialEngineState();
 }
 
@@ -220,7 +224,11 @@ export function engineStop(state) {
 export function engineUpdateIdleMessage(state, allMastered, needsReview) {
   if (state.phase !== 'idle') return state;
   if (allMastered) {
-    return { ...state, masteryText: 'Looks like you\u2019ve got this!', showMastery: true };
+    return {
+      ...state,
+      masteryText: 'Looks like you\u2019ve got this!',
+      showMastery: true,
+    };
   }
   if (needsReview) {
     return { ...state, masteryText: 'Time to review?', showMastery: true };
@@ -233,7 +241,11 @@ export function engineUpdateIdleMessage(state, allMastered, needsReview) {
  */
 export function engineUpdateMasteryAfterAnswer(state, allMastered) {
   if (allMastered) {
-    return { ...state, masteryText: 'Looks like you\u2019ve got this!', showMastery: true };
+    return {
+      ...state,
+      masteryText: 'Looks like you\u2019ve got this!',
+      showMastery: true,
+    };
   }
   return { ...state, showMastery: false };
 }
@@ -259,7 +271,9 @@ export function engineRouteKey(state, key) {
     return { action: 'ignore' };
   }
   if (state.phase !== 'active') return { action: 'ignore' };
-  if ((key === ' ' || key === 'Enter') && state.answered) return { action: 'next' };
+  if ((key === ' ' || key === 'Enter') && state.answered) {
+    return { action: 'next' };
+  }
   if (!state.answered) return { action: 'delegate' };
   return { action: 'ignore' };
 }

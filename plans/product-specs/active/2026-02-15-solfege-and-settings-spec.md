@@ -11,18 +11,18 @@ in a new global settings modal, accessed via a gear icon in the top bar.
 ### Fixed-do mapping
 
 | Letter | Solfège | With sharp | With flat |
-|--------|---------|------------|-----------|
-| C | Do | Do# | Do♭ |
-| D | Re | Re# | Re♭ |
-| E | Mi | Mi# | Mi♭ |
-| F | Fa | Fa# | Fa♭ |
-| G | Sol | Sol# | Sol♭ |
-| A | La | La# | La♭ |
-| B | Si | Si# | Si♭ |
+| ------ | ------- | ---------- | --------- |
+| C      | Do      | Do#        | Do♭       |
+| D      | Re      | Re#        | Re♭       |
+| E      | Mi      | Mi#        | Mi♭       |
+| F      | Fa      | Fa#        | Fa♭       |
+| G      | Sol     | Sol#       | Sol♭      |
+| A      | La      | La#        | La♭       |
+| B      | Si      | Si#        | Si♭       |
 
 - Uses **Si** (Romance/Italian tradition), not Ti.
-- Accidentals append **#** or **♭** to the base syllable (not chromatic
-  solfège variants like Di, Ri, etc.).
+- Accidentals append **#** or **♭** to the base syllable (not chromatic solfège
+  variants like Di, Ri, etc.).
 - Display is capitalized: Do, Re, Mi.
 
 ### Where solfège names appear
@@ -38,8 +38,8 @@ When the solfège setting is active, note names are replaced **everywhere**:
 
 ### Modes unaffected
 
-**Interval ↔ Semitones** does not use note names (only interval names like
-m2, M3, P5 and semitone counts), so the solfège setting has no effect there.
+**Interval ↔ Semitones** does not use note names (only interval names like m2,
+M3, P5 and semitone counts), so the solfège setting has no effect there.
 
 ### Keyboard input
 
@@ -50,9 +50,9 @@ In solfège mode, keyboard shortcuts change to **solfège abbreviations**:
 - For accidentals: syllable + `#` or `b` (e.g., `fa#`, `si b`)
 - The original letter keys (C, D, E...) are **inactive** in solfège mode.
 
-All syllables are unambiguous after two characters (do, re, mi, fa, so→sol,
-la, si), so auto-submit after the second character is possible for most, with
-sol needing the third.
+All syllables are unambiguous after two characters (do, re, mi, fa, so→sol, la,
+si), so auto-submit after the second character is possible for most, with sol
+needing the third.
 
 ## Global settings modal
 
@@ -93,16 +93,16 @@ can have different calibration baselines, so per-mode placement makes sense.
 ## Resolved decisions
 
 - **Si vs Ti**: Si — Romance/Italian tradition.
-- **Capitalization**: Do, Re, Mi (capitalized). Consistent with how letter
-  names are capitalized (C, D, E).
+- **Capitalization**: Do, Re, Mi (capitalized). Consistent with how letter names
+  are capitalized (C, D, E).
 - **Scope of substitution**: everywhere (fretboard labels, questions, answers,
   feedback) — full immersion, not partial.
 - **Keyboard in solfège mode**: solfège abbreviations only; letter keys
   disabled. Case-insensitive input. Keeps the mental model consistent with
   what's on screen.
-- **Accidental style**: base syllable + # or ♭ symbol (Do#, Mi♭), not
-  chromatic solfège (Di, Me, etc.). Simpler to learn, direct parallel to the
-  letter-name system.
+- **Accidental style**: base syllable + # or ♭ symbol (Do#, Mi♭), not chromatic
+  solfège (Di, Me, etc.). Simpler to learn, direct parallel to the letter-name
+  system.
 - **Settings gear visibility**: hidden during active quiz/calibration. No
   mid-quiz setting changes.
 - **Calibration**: stays per-mode (not moved to settings modal).

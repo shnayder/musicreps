@@ -1,9 +1,12 @@
-Review the current branch's changes by delegating to the **code-reviewer** subagent.
+Review the current branch's changes by delegating to the **code-reviewer**
+subagent.
 
 ## How to determine the scope
 
 Parse `$ARGUMENTS`:
-- **Empty or "diff"** → tell the subagent to review the current working tree diff
+
+- **Empty or "diff"** → tell the subagent to review the current working tree
+  diff
 - **A number (e.g. "42")** → tell it to review PR #42
 - **Contains ".." (e.g. "main..HEAD")** → tell it to review that commit range
 

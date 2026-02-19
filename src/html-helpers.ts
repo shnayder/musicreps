@@ -2,13 +2,13 @@
 // button blocks. Imported by both main.ts and build.ts to eliminate duplication.
 
 import {
-  fretPositions,
   fretLines,
-  stringLines,
   fretMarkerDots,
+  fretPositions,
   positionCircles,
+  stringLines,
   svgHeight,
-} from "./fretboard.ts";
+} from './fretboard.ts';
 
 // ---------------------------------------------------------------------------
 // Reusable button blocks
@@ -39,66 +39,111 @@ export function pianoNoteButtons(): string {
 /** 12-note answer button grid (C, C#, D, ... B). */
 export function noteAnswerButtons(opts?: { hidden?: boolean }): string {
   const notes: [string, string][] = [
-    ["C", "C"], ["C#", "C#"], ["D", "D"], ["D#", "D#"],
-    ["E", "E"], ["F", "F"], ["F#", "F#"], ["G", "G"],
-    ["G#", "G#"], ["A", "A"], ["A#", "A#"], ["B", "B"],
+    ['C', 'C'],
+    ['C#', 'C#'],
+    ['D', 'D'],
+    ['D#', 'D#'],
+    ['E', 'E'],
+    ['F', 'F'],
+    ['F#', 'F#'],
+    ['G', 'G'],
+    ['G#', 'G#'],
+    ['A', 'A'],
+    ['A#', 'A#'],
+    ['B', 'B'],
   ];
-  const cls = opts?.hidden ? " answer-group-hidden" : "";
-  return `<div class="answer-buttons answer-buttons-notes${cls}">\n`
-    + notes.map(([val, label]) =>
+  const cls = opts?.hidden ? ' answer-group-hidden' : '';
+  return `<div class="answer-buttons answer-buttons-notes${cls}">\n` +
+    notes.map(([val, label]) =>
       `        <button class="answer-btn answer-btn-note" data-note="${val}">${label}</button>`
-    ).join("\n") + "\n      </div>";
+    ).join('\n') + '\n      </div>';
 }
 
 /** Number answer buttons (start..end inclusive). */
 export function numberButtons(start: number, end: number): string {
   const btns = [];
   for (let i = start; i <= end; i++) {
-    btns.push(`        <button class="answer-btn answer-btn-num" data-num="${i}">${i}</button>`);
+    btns.push(
+      `        <button class="answer-btn answer-btn-num" data-num="${i}">${i}</button>`,
+    );
   }
-  return `<div class="answer-buttons answer-buttons-numbers">\n`
-    + btns.join("\n") + "\n      </div>";
+  return `<div class="answer-buttons answer-buttons-numbers">\n` +
+    btns.join('\n') + '\n      </div>';
 }
 
 /** Interval answer buttons (m2..P8). */
 export function intervalAnswerButtons(): string {
-  const intervals = ["m2", "M2", "m3", "M3", "P4", "TT", "P5", "m6", "M6", "m7", "M7", "P8"];
-  return `<div class="answer-buttons answer-buttons-intervals">\n`
-    + intervals.map((i) =>
+  const intervals = [
+    'm2',
+    'M2',
+    'm3',
+    'M3',
+    'P4',
+    'TT',
+    'P5',
+    'm6',
+    'M6',
+    'm7',
+    'M7',
+    'P8',
+  ];
+  return `<div class="answer-buttons answer-buttons-intervals">\n` +
+    intervals.map((i) =>
       `        <button class="answer-btn answer-btn-interval" data-interval="${i}">${i}</button>`
-    ).join("\n") + "\n      </div>";
+    ).join('\n') + '\n      </div>';
 }
 
 /** Key signature answer buttons (0, 1#..7#, 1b..7b). */
 export function keysigAnswerButtons(): string {
-  const sigs = ["0", "1#", "2#", "3#", "4#", "5#", "6#", "7#", "1b", "2b", "3b", "4b", "5b", "6b", "7b"];
-  return `<div class="answer-buttons answer-buttons-keysig">\n`
-    + sigs.map((s) =>
+  const sigs = [
+    '0',
+    '1#',
+    '2#',
+    '3#',
+    '4#',
+    '5#',
+    '6#',
+    '7#',
+    '1b',
+    '2b',
+    '3b',
+    '4b',
+    '5b',
+    '6b',
+    '7b',
+  ];
+  return `<div class="answer-buttons answer-buttons-keysig">\n` +
+    sigs.map((s) =>
       `        <button class="answer-btn answer-btn-keysig" data-sig="${s}">${s}</button>`
-    ).join("\n") + "\n      </div>";
+    ).join('\n') + '\n      </div>';
 }
 
 /** Scale degree answer buttons (1st..7th). */
 export function degreeAnswerButtons(opts?: { hidden?: boolean }): string {
   const degrees: [string, string][] = [
-    ["1", "1st"], ["2", "2nd"], ["3", "3rd"], ["4", "4th"],
-    ["5", "5th"], ["6", "6th"], ["7", "7th"],
+    ['1', '1st'],
+    ['2', '2nd'],
+    ['3', '3rd'],
+    ['4', '4th'],
+    ['5', '5th'],
+    ['6', '6th'],
+    ['7', '7th'],
   ];
-  const cls = opts?.hidden ? " answer-group-hidden" : "";
-  return `<div class="answer-buttons answer-buttons-degrees${cls}">\n`
-    + degrees.map(([val, label]) =>
+  const cls = opts?.hidden ? ' answer-group-hidden' : '';
+  return `<div class="answer-buttons answer-buttons-degrees${cls}">\n` +
+    degrees.map(([val, label]) =>
       `        <button class="answer-btn answer-btn-degree" data-degree="${val}">${label}</button>`
-    ).join("\n") + "\n      </div>";
+    ).join('\n') + '\n      </div>';
 }
 
 /** Roman numeral answer buttons (I, ii, iii, IV, V, vi, vii\u00B0). */
 export function numeralAnswerButtons(opts?: { hidden?: boolean }): string {
-  const numerals = ["I", "ii", "iii", "IV", "V", "vi", "vii\u00B0"];
-  const cls = opts?.hidden ? " answer-group-hidden" : "";
-  return `<div class="answer-buttons answer-buttons-numerals${cls}">\n`
-    + numerals.map((n) =>
+  const numerals = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii\u00B0'];
+  const cls = opts?.hidden ? ' answer-group-hidden' : '';
+  return `<div class="answer-buttons answer-buttons-numerals${cls}">\n` +
+    numerals.map((n) =>
       `        <button class="answer-btn answer-btn-numeral" data-numeral="${n}">${n}</button>`
-    ).join("\n") + "\n      </div>";
+    ).join('\n') + '\n      </div>';
 }
 
 // ---------------------------------------------------------------------------
@@ -118,14 +163,16 @@ export function fretboardSVG(config: FretboardSVGConfig = {}): string {
   const fc = config.fretCount ?? 13;
   const h = svgHeight(sc);
   const markers = config.fretMarkers ?? [3, 5, 7, 9, 12];
-  const idAttr = config.id ? ` id="${config.id}"` : "";
+  const idAttr = config.id ? ` id="${config.id}"` : '';
   return `<div class="fretboard-wrapper">
       <div class="fretboard-container">
         <svg class="fretboard"${idAttr} viewBox="0 0 600 ${h}">
           <!-- Fret marker dots (inlays) -->
           ${fretMarkerDots(sc, markers, fc)}
           <!-- Nut (wide bar at fret 0) -->
-          <rect class="fb-nut" x="${fretPositions[1] - 2}" y="0" width="4" height="${h}" rx="1"/>
+          <rect class="fb-nut" x="${
+    fretPositions[1] - 2
+  }" y="0" width="4" height="${h}" rx="1"/>
           <!-- Frets (vertical lines) -->
           ${fretLines(h)}
           <!-- Strings (horizontal lines) -->
@@ -144,13 +191,20 @@ export function fretboardSVG(config: FretboardSVGConfig = {}): string {
 }
 
 /** Generate string toggle buttons for a fretted instrument mode. */
-export function stringToggles(stringNames: string[], defaultString: number): string {
+export function stringToggles(
+  stringNames: string[],
+  defaultString: number,
+): string {
   return `<div class="toggle-group">
           <span class="toggle-group-label">Strings</span>
           <div class="string-toggles">
-${stringNames.map((name, i) =>
-  `            <button class="string-toggle${i === defaultString ? ' active' : ''}" data-string="${i}" data-string-note="${name}">${name}</button>`
-).join('\n')}
+${
+    stringNames.map((name, i) =>
+      `            <button class="string-toggle${
+        i === defaultString ? ' active' : ''
+      }" data-string="${i}" data-string-note="${name}">${name}</button>`
+    ).join('\n')
+  }
           </div>
         </div>`;
 }
@@ -175,8 +229,11 @@ export function tabbedIdleHTML(config: {
             <span class="practice-rec-text"></span>
             <button class="practice-rec-btn">Use suggestion</button>
           </div>`;
-  const masteryBlock = `<div class="mastery-message">Looks like you've got this!</div>`;
-  const statusExtra = config.practiceScope ? '' : `\n          ${recBlock}\n          ${masteryBlock}`;
+  const masteryBlock =
+    `<div class="mastery-message">Looks like you've got this!</div>`;
+  const statusExtra = config.practiceScope
+    ? ''
+    : `\n          ${recBlock}\n          ${masteryBlock}`;
   const scopeZone = config.practiceScope
     ? `\n        <div class="practice-zone practice-zone-scope">\n          ${recBlock}${practiceScope}\n          ${masteryBlock}\n        </div>`
     : '';

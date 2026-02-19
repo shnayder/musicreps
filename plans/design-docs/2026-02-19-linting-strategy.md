@@ -1,7 +1,6 @@
 # Linting Strategy Review
 
-**Date:** 2026-02-19
-**Status:** Discussion / not yet decided
+**Date:** 2026-02-19 **Status:** Discussion / not yet decided
 
 ## Current State
 
@@ -29,17 +28,17 @@ No linting or formatting tools. Conventions enforced by documentation
 
 ## High-Value Rules (both tools have these)
 
-| Need | Rule |
-|------|------|
-| Unused vars/imports | `no-unused-vars`, `no-unused-imports` |
-| `const` over `let` | `prefer-const` / `useConst` |
-| Ban `var` | `no-var` / `noVar` |
-| `===` over `==` | `eqeqeq` / `noDoubleEquals` |
-| No `debugger` | `no-debugger` / `noDebugger` |
-| No `console.log` | `no-console` / `noConsoleLog` |
-| No fallthrough | `no-fallthrough` / `noFallthroughSwitchClause` |
-| No self-assign | `no-self-assign` / `noSelfAssign` |
-| No unreachable code | `no-unreachable` |
+| Need                | Rule                                           |
+| ------------------- | ---------------------------------------------- |
+| Unused vars/imports | `no-unused-vars`, `no-unused-imports`          |
+| `const` over `let`  | `prefer-const` / `useConst`                    |
+| Ban `var`           | `no-var` / `noVar`                             |
+| `===` over `==`     | `eqeqeq` / `noDoubleEquals`                    |
+| No `debugger`       | `no-debugger` / `noDebugger`                   |
+| No `console.log`    | `no-console` / `noConsoleLog`                  |
+| No fallthrough      | `no-fallthrough` / `noFallthroughSwitchClause` |
+| No self-assign      | `no-self-assign` / `noSelfAssign`              |
+| No unreachable code | `no-unreachable`                               |
 
 ## What Stays in the Review Checklist
 
@@ -63,24 +62,24 @@ Deno's own TLS stack doesn't honor `NODE_EXTRA_CA_CERTS`. Fix:
 export DENO_TLS_CA_STORE=system
 ```
 
-This tells Deno to use the system cert store (which includes the proxy CA).
-With this set, all Deno commands work: `deno lint`, `deno fmt`, `deno test`,
+This tells Deno to use the system cert store (which includes the proxy CA). With
+this set, all Deno commands work: `deno lint`, `deno fmt`, `deno test`,
 `deno run main.ts --build`.
 
 **Test results:**
 
-| Command | Status | Notes |
-|---------|--------|-------|
-| `deno lint` | works | Found real issues (unused param, empty catch) |
-| `deno fmt --check` | works | Detected formatting diffs |
-| `deno check` | works | Type-checked .ts files |
-| `deno run main.ts --build` | works | Built successfully |
-| `deno test --no-check` | works | 105 steps, 0 failures |
+| Command                    | Status | Notes                                         |
+| -------------------------- | ------ | --------------------------------------------- |
+| `deno lint`                | works  | Found real issues (unused param, empty catch) |
+| `deno fmt --check`         | works  | Detected formatting diffs                     |
+| `deno check`               | works  | Type-checked .ts files                        |
+| `deno run main.ts --build` | works  | Built successfully                            |
+| `deno test --no-check`     | works  | 105 steps, 0 failures                         |
 
 ## Node Build Path Assessment
 
-`main.ts` (Deno, 70 lines) and `build.ts` (Node, 730 lines) share the core
-via `assembleHTML()` from `build-template.ts`. They diverge on:
+`main.ts` (Deno, 70 lines) and `build.ts` (Node, 730 lines) share the core via
+`assembleHTML()` from `build-template.ts`. They diverge on:
 
 - esbuild invocation (Deno.Command vs JS API)
 - File I/O (Deno vs node:fs)
@@ -88,14 +87,15 @@ via `assembleHTML()` from `build-template.ts`. They diverge on:
 - CI uses the Node path (`npx tsx build.ts`)
 
 Migration to Deno-only would require:
+
 1. Moving moments generation into the Deno build script
 2. Swapping CI from `actions/setup-node` to `denoland/setup-deno`
 3. Adding `DENO_TLS_CA_STORE=system` to Claude web environment config
 
 ## Recommendation
 
-If consolidating on Deno: use `deno lint` + `deno fmt` + `deno check`.
-If keeping dual paths: use Biome.
+If consolidating on Deno: use `deno lint` + `deno fmt` + `deno check`. If
+keeping dual paths: use Biome.
 
 Either way, the lint rules to enable are the same — the high-value table above.
 The Deno path has the advantage of also enabling type checking via `deno check`,

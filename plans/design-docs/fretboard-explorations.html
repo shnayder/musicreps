@@ -1,225 +1,390 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fretboard — Circle Color Variations</title>
-<style>
-  :root {
-    --page-bg: #f5f4f1;
-    --card-bg: #fff;
-    --text: hsl(30, 5%, 20%);
-    --text-muted: hsl(30, 3%, 45%);
-    --border: hsl(30, 5%, 85%);
-    --brand: hsl(90, 35%, 45%);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: system-ui, -apple-system, sans-serif;
-    background: var(--page-bg);
-    color: var(--text);
-    padding: 1rem 0.5rem;
-    max-width: 400px;
-    margin: 0 auto;
-  }
-  h1 { font-size: 1.15rem; font-weight: 700; text-align: center; margin-bottom: 0.2rem; }
-  .subtitle { text-align: center; color: var(--text-muted); font-size: 0.72rem; margin-bottom: 1rem; line-height: 1.4; }
-  .exploration {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.75rem;
-    margin-bottom: 1.25rem;
-  }
-  .exploration h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.15rem; }
-  .exploration .desc {
-    font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.4;
-  }
-  .fretboard-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; position: relative; }
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fretboard — Circle Color Variations</title>
+    <style>
+      :root {
+        --page-bg: #f5f4f1;
+        --card-bg: #fff;
+        --text: hsl(30, 5%, 20%);
+        --text-muted: hsl(30, 3%, 45%);
+        --border: hsl(30, 5%, 85%);
+        --brand: hsl(90, 35%, 45%);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: var(--page-bg);
+        color: var(--text);
+        padding: 1rem 0.5rem;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 0.2rem;
+      }
+      .subtitle {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.72rem;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+      }
+      .exploration {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.75rem;
+        margin-bottom: 1.25rem;
+      }
+      .exploration h2 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 0.15rem;
+      }
+      .exploration .desc {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+      }
+      .fretboard-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+      }
 
-  /* State toggles */
-  .state-toggles { display: flex; gap: 0.2rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
-  .state-btn {
-    font-size: 0.65rem; font-weight: 500; padding: 0.2rem 0.5rem;
-    border: 1px solid var(--border); border-radius: 5px;
-    background: var(--card-bg); color: var(--text-muted);
-    cursor: pointer; transition: all 0.15s;
-  }
-  .state-btn:hover { background: #f0efec; }
-  .state-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+      /* State toggles */
+      .state-toggles {
+        display: flex;
+        gap: 0.2rem;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .state-btn {
+        font-size: 0.65rem;
+        font-weight: 500;
+        padding: 0.2rem 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        background: var(--card-bg);
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .state-btn:hover {
+        background: #f0efec;
+      }
+      .state-btn.active {
+        background: var(--brand);
+        color: #fff;
+        border-color: var(--brand);
+      }
 
-  /* Legend */
-  .legend {
-    display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; justify-content: center;
-  }
-  .legend-item { display: flex; align-items: center; gap: 0.15rem; font-size: 0.6rem; color: var(--text-muted); }
-  .legend-swatch { width: 9px; height: 9px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.08); }
+      /* Legend */
+      .legend {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+        justify-content: center;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.15rem;
+        font-size: 0.6rem;
+        color: var(--text-muted);
+      }
+      .legend-swatch {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+      }
 
-  /* Tap quiz prompt */
-  .tap-prompt {
-    font-size: 0.72rem; font-weight: 600; color: var(--text);
-    text-align: center; padding: 0.3rem 0; min-height: 1.3rem;
-  }
+      /* Tap quiz prompt */
+      .tap-prompt {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text);
+        text-align: center;
+        padding: 0.3rem 0;
+        min-height: 1.3rem;
+      }
 
-  /* ===== Fretboard ===== */
-  .fb svg { width: 100%; height: auto; display: block; }
-  .fb .fb-string { stroke: hsl(30, 8%, 72%); }
-  .fb .fb-fret { stroke: hsl(30, 5%, 82%); }
-  .fb .fb-nut { fill: hsl(30, 8%, 48%); }
-  .fb .fb-marker { fill: hsl(30, 5%, 62%); }
+      /* ===== Fretboard ===== */
+      .fb svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .fb .fb-string {
+        stroke: hsl(30, 8%, 72%);
+      }
+      .fb .fb-fret {
+        stroke: hsl(30, 5%, 82%);
+      }
+      .fb .fb-nut {
+        fill: hsl(30, 8%, 48%);
+      }
+      .fb .fb-marker {
+        fill: hsl(30, 5%, 62%);
+      }
 
-  /* Single circle per position — no stroke, solid fill */
-  .fb .fb-pos {
-    stroke: none;
-    cursor: pointer;
-    transition: fill 0.15s;
-  }
+      /* Single circle per position — no stroke, solid fill */
+      .fb .fb-pos {
+        stroke: none;
+        cursor: pointer;
+        transition: fill 0.15s;
+      }
 
-  /* ===== Hover card ===== */
-  .hover-card {
-    position: absolute;
-    pointer-events: none;
-    z-index: 10;
-    opacity: 0;
-    transition: opacity 0.12s;
-  }
-  .hover-card.visible { opacity: 1; }
-  .hover-card .hc-inner {
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
-    padding: 0.35rem 0.5rem; min-width: 65px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
-    text-align: center;
-  }
-  .hover-card .hc-note {
-    font-size: 0.85rem; font-weight: 700; color: var(--text);
-  }
-  .hover-card .hc-string-fret {
-    font-size: 0.55rem; color: var(--text-muted); margin-top: 0.05rem;
-  }
-  .hover-card .hc-detail {
-    font-size: 0.58rem; color: var(--text-muted); margin-top: 0.12rem;
-  }
-  .hover-card .hc-bar {
-    height: 3px; border-radius: 2px; background: hsl(30, 5%, 90%);
-    margin-top: 0.25rem; overflow: hidden;
-  }
-  .hover-card .hc-bar-fill {
-    height: 100%; border-radius: 2px; transition: width 0.2s;
-  }
-</style>
-</head>
-<body>
+      /* ===== Hover card ===== */
+      .hover-card {
+        position: absolute;
+        pointer-events: none;
+        z-index: 10;
+        opacity: 0;
+        transition: opacity 0.12s;
+      }
+      .hover-card.visible {
+        opacity: 1;
+      }
+      .hover-card .hc-inner {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.35rem 0.5rem;
+        min-width: 65px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+        text-align: center;
+      }
+      .hover-card .hc-note {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .hover-card .hc-string-fret {
+        font-size: 0.55rem;
+        color: var(--text-muted);
+        margin-top: 0.05rem;
+      }
+      .hover-card .hc-detail {
+        font-size: 0.58rem;
+        color: var(--text-muted);
+        margin-top: 0.12rem;
+      }
+      .hover-card .hc-bar {
+        height: 3px;
+        border-radius: 2px;
+        background: hsl(30, 5%, 90%);
+        margin-top: 0.25rem;
+        overflow: hidden;
+      }
+      .hover-card .hc-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.2s;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Circle Color Variations</h1>
+    <p class="subtitle">
+      Same circle size everywhere. No borders. Solid fills hide the strings.
+      Realistic fret spacing. Hover any dot for detail.
+    </p>
 
-<h1>Circle Color Variations</h1>
-<p class="subtitle">Same circle size everywhere. No borders. Solid fills hide the strings. Realistic fret spacing. Hover any dot for detail.</p>
+    <div id="explorations"></div>
 
-<div id="explorations"></div>
+    <script>
+      // ===== Data =====
+      const NOTES = [
+        'C',
+        'C#',
+        'D',
+        'D#',
+        'E',
+        'F',
+        'F#',
+        'G',
+        'G#',
+        'A',
+        'A#',
+        'B',
+      ];
+      const STR_NAMES = ['e', 'B', 'G', 'D', 'A', 'E'];
+      const STR_OFFSETS = [4, 11, 7, 2, 9, 4];
+      const FRETS = 13;
+      const MARKERS = [3, 5, 7, 9, 12];
+      const FRET_POS = [
+        0,
+        65,
+        126,
+        183,
+        237,
+        288,
+        336,
+        381,
+        423,
+        463,
+        500,
+        535,
+        568,
+        600,
+      ];
+      const W = 600, GAP = 38, PAD_Y = 18;
+      const H = 5 * GAP + PAD_Y * 2;
+      const R = 13; // uniform circle radius
 
-<script>
-// ===== Data =====
-const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-const STR_NAMES = ['e','B','G','D','A','E'];
-const STR_OFFSETS = [4, 11, 7, 2, 9, 4];
-const FRETS = 13;
-const MARKERS = [3, 5, 7, 9, 12];
-const FRET_POS = [0,65,126,183,237,288,336,381,423,463,500,535,568,600];
-const W = 600, GAP = 38, PAD_Y = 18;
-const H = 5 * GAP + PAD_Y * 2;
-const R = 13; // uniform circle radius
+      function noteAt(s, f) {
+        return NOTES[(STR_OFFSETS[s] + f) % 12];
+      }
+      function noteX(f) {
+        return f === 0
+          ? (FRET_POS[0] + FRET_POS[1]) / 2
+          : (FRET_POS[f] + FRET_POS[f + 1]) / 2;
+      }
+      function noteY(s) {
+        return PAD_Y + s * GAP;
+      }
 
-function noteAt(s, f) { return NOTES[(STR_OFFSETS[s] + f) % 12]; }
-function noteX(f) {
-  return f === 0 ? (FRET_POS[0] + FRET_POS[1]) / 2 : (FRET_POS[f] + FRET_POS[f + 1]) / 2;
-}
-function noteY(s) { return PAD_Y + s * GAP; }
+      function fakeSkill(s, f) {
+        const base = Math.max(0, 1 - f * 0.065);
+        const bonus = [0.1, 0.05, 0, -0.05, 0.15, 0.2][s];
+        const noise = Math.sin(s * 7 + f * 13) * 0.15;
+        return Math.max(0, Math.min(1, base + bonus + noise));
+      }
+      function heatLevel(sk) {
+        if (sk > 0.8) return 5;
+        if (sk > 0.6) return 4;
+        if (sk > 0.4) return 3;
+        if (sk > 0.2) return 2;
+        if (sk > 0) return 1;
+        return 0;
+      }
+      function heatLabel(sk) {
+        if (sk > 0.8) return 'Automatic';
+        if (sk > 0.6) return 'Solid';
+        if (sk > 0.4) return 'Getting there';
+        if (sk > 0.2) return 'Fading';
+        return 'Needs work';
+      }
 
-function fakeSkill(s, f) {
-  const base = Math.max(0, 1 - f * 0.065);
-  const bonus = [0.1, 0.05, 0, -0.05, 0.15, 0.2][s];
-  const noise = Math.sin(s * 7 + f * 13) * 0.15;
-  return Math.max(0, Math.min(1, base + bonus + noise));
-}
-function heatLevel(sk) {
-  if (sk > 0.8) return 5;
-  if (sk > 0.6) return 4;
-  if (sk > 0.4) return 3;
-  if (sk > 0.2) return 2;
-  if (sk > 0) return 1;
-  return 0;
-}
-function heatLabel(sk) {
-  if (sk > 0.8) return 'Automatic';
-  if (sk > 0.6) return 'Solid';
-  if (sk > 0.4) return 'Getting there';
-  if (sk > 0.2) return 'Fading';
-  return 'Needs work';
-}
+      const HL_S = 4, HL_F = 5;
+      const TAP_NOTE = 'G';
 
-const HL_S = 4, HL_F = 5;
-const TAP_NOTE = 'G';
+      // ===== Color palettes =====
+      // Each palette defines fills for: blank, quiz-hl, quiz-other, tap-neutral, tap-correct, heat[0..5]
+      const PALETTES = {
+        a: {
+          name: 'A. Cream',
+          desc:
+            'Warm off-white circles. Soft and approachable. Gold quiz highlight. Fully opaque — strings completely hidden.',
+          blank: 'hsl(35, 18%, 92%)',
+          quizHl: 'hsl(45, 88%, 58%)',
+          quizOther: 'hsl(35, 18%, 92%)',
+          tapNeutral: 'hsl(35, 15%, 89%)',
+          tapCorrect: 'hsl(90, 38%, 78%)',
+          heat: [
+            'hsl(35, 10%, 90%)',
+            'hsl(12, 50%, 70%)',
+            'hsl(30, 50%, 62%)',
+            'hsl(50, 42%, 52%)',
+            'hsl(72, 40%, 44%)',
+            'hsl(90, 48%, 36%)',
+          ],
+        },
+        b: {
+          name: 'B. Warm Gray',
+          desc:
+            'Medium warm gray — more visible positions, reads like a real instrument diagram. Amber highlight.',
+          blank: 'hsl(30, 6%, 83%)',
+          quizHl: 'hsl(42, 85%, 52%)',
+          quizOther: 'hsl(30, 6%, 83%)',
+          tapNeutral: 'hsl(30, 5%, 80%)',
+          tapCorrect: 'hsl(90, 35%, 70%)',
+          heat: [
+            'hsl(30, 4%, 85%)',
+            'hsl(12, 48%, 65%)',
+            'hsl(30, 48%, 58%)',
+            'hsl(50, 40%, 50%)',
+            'hsl(72, 38%, 42%)',
+            'hsl(90, 45%, 35%)',
+          ],
+        },
+        c: {
+          name: 'C. Translucent',
+          desc:
+            'Semi-transparent circles — strings faintly show through. Layered, atmospheric feel.',
+          blank: 'hsla(30, 12%, 92%, 0.72)',
+          quizHl: 'hsl(45, 90%, 55%)',
+          quizOther: 'hsla(30, 12%, 92%, 0.72)',
+          tapNeutral: 'hsla(30, 10%, 88%, 0.72)',
+          tapCorrect: 'hsla(90, 40%, 70%, 0.8)',
+          heat: [
+            'hsla(30, 6%, 88%, 0.72)',
+            'hsla(12, 52%, 68%, 0.82)',
+            'hsla(30, 52%, 58%, 0.82)',
+            'hsla(50, 42%, 50%, 0.85)',
+            'hsla(72, 40%, 42%, 0.88)',
+            'hsla(90, 48%, 35%, 0.9)',
+          ],
+        },
+        d: {
+          name: 'D. Cool Slate',
+          desc:
+            'Cool-tinted circles — blue-gray instead of warm. Heat scale shifts to teal/navy. Different mood entirely.',
+          blank: 'hsl(210, 10%, 89%)',
+          quizHl: 'hsl(48, 88%, 55%)',
+          quizOther: 'hsl(210, 10%, 89%)',
+          tapNeutral: 'hsl(210, 8%, 86%)',
+          tapCorrect: 'hsl(160, 32%, 75%)',
+          heat: [
+            'hsl(210, 6%, 88%)',
+            'hsl(200, 35%, 70%)',
+            'hsl(190, 38%, 58%)',
+            'hsl(175, 35%, 48%)',
+            'hsl(160, 38%, 40%)',
+            'hsl(150, 42%, 33%)',
+          ],
+        },
+        e: {
+          name: 'E. High Contrast',
+          desc:
+            'Darker neutral circles, vivid colors. Heatmap pops. Best readability but busier.',
+          blank: 'hsl(30, 5%, 77%)',
+          quizHl: 'hsl(50, 100%, 50%)',
+          quizOther: 'hsl(30, 5%, 77%)',
+          tapNeutral: 'hsl(30, 4%, 74%)',
+          tapCorrect: 'hsl(120, 42%, 58%)',
+          heat: [
+            'hsl(30, 3%, 80%)',
+            'hsl(8, 58%, 58%)',
+            'hsl(28, 58%, 50%)',
+            'hsl(48, 50%, 44%)',
+            'hsl(68, 48%, 36%)',
+            'hsl(88, 55%, 30%)',
+          ],
+        },
+      };
 
-// ===== Color palettes =====
-// Each palette defines fills for: blank, quiz-hl, quiz-other, tap-neutral, tap-correct, heat[0..5]
-const PALETTES = {
-  a: {
-    name: 'A. Cream',
-    desc: 'Warm off-white circles. Soft and approachable. Gold quiz highlight. Fully opaque — strings completely hidden.',
-    blank:    'hsl(35, 18%, 92%)',
-    quizHl:   'hsl(45, 88%, 58%)',
-    quizOther:'hsl(35, 18%, 92%)',
-    tapNeutral:'hsl(35, 15%, 89%)',
-    tapCorrect:'hsl(90, 38%, 78%)',
-    heat: ['hsl(35, 10%, 90%)', 'hsl(12, 50%, 70%)', 'hsl(30, 50%, 62%)', 'hsl(50, 42%, 52%)', 'hsl(72, 40%, 44%)', 'hsl(90, 48%, 36%)'],
-  },
-  b: {
-    name: 'B. Warm Gray',
-    desc: 'Medium warm gray — more visible positions, reads like a real instrument diagram. Amber highlight.',
-    blank:    'hsl(30, 6%, 83%)',
-    quizHl:   'hsl(42, 85%, 52%)',
-    quizOther:'hsl(30, 6%, 83%)',
-    tapNeutral:'hsl(30, 5%, 80%)',
-    tapCorrect:'hsl(90, 35%, 70%)',
-    heat: ['hsl(30, 4%, 85%)', 'hsl(12, 48%, 65%)', 'hsl(30, 48%, 58%)', 'hsl(50, 40%, 50%)', 'hsl(72, 38%, 42%)', 'hsl(90, 45%, 35%)'],
-  },
-  c: {
-    name: 'C. Translucent',
-    desc: 'Semi-transparent circles — strings faintly show through. Layered, atmospheric feel.',
-    blank:    'hsla(30, 12%, 92%, 0.72)',
-    quizHl:   'hsl(45, 90%, 55%)',
-    quizOther:'hsla(30, 12%, 92%, 0.72)',
-    tapNeutral:'hsla(30, 10%, 88%, 0.72)',
-    tapCorrect:'hsla(90, 40%, 70%, 0.8)',
-    heat: ['hsla(30, 6%, 88%, 0.72)', 'hsla(12, 52%, 68%, 0.82)', 'hsla(30, 52%, 58%, 0.82)', 'hsla(50, 42%, 50%, 0.85)', 'hsla(72, 40%, 42%, 0.88)', 'hsla(90, 48%, 35%, 0.9)'],
-  },
-  d: {
-    name: 'D. Cool Slate',
-    desc: 'Cool-tinted circles — blue-gray instead of warm. Heat scale shifts to teal/navy. Different mood entirely.',
-    blank:    'hsl(210, 10%, 89%)',
-    quizHl:   'hsl(48, 88%, 55%)',
-    quizOther:'hsl(210, 10%, 89%)',
-    tapNeutral:'hsl(210, 8%, 86%)',
-    tapCorrect:'hsl(160, 32%, 75%)',
-    heat: ['hsl(210, 6%, 88%)', 'hsl(200, 35%, 70%)', 'hsl(190, 38%, 58%)', 'hsl(175, 35%, 48%)', 'hsl(160, 38%, 40%)', 'hsl(150, 42%, 33%)'],
-  },
-  e: {
-    name: 'E. High Contrast',
-    desc: 'Darker neutral circles, vivid colors. Heatmap pops. Best readability but busier.',
-    blank:    'hsl(30, 5%, 77%)',
-    quizHl:   'hsl(50, 100%, 50%)',
-    quizOther:'hsl(30, 5%, 77%)',
-    tapNeutral:'hsl(30, 4%, 74%)',
-    tapCorrect:'hsl(120, 42%, 58%)',
-    heat: ['hsl(30, 3%, 80%)', 'hsl(8, 58%, 58%)', 'hsl(28, 58%, 50%)', 'hsl(48, 50%, 44%)', 'hsl(68, 48%, 36%)', 'hsl(88, 55%, 30%)'],
-  },
-};
-
-// ===== Generate HTML =====
-const container = document.getElementById('explorations');
-for (const [id, pal] of Object.entries(PALETTES)) {
-  const div = document.createElement('div');
-  div.className = 'exploration';
-  div.id = 'v-' + id;
-  div.innerHTML = `
+      // ===== Generate HTML =====
+      const container = document.getElementById('explorations');
+      for (const [id, pal] of Object.entries(PALETTES)) {
+        const div = document.createElement('div');
+        div.className = 'exploration';
+        div.id = 'v-' + id;
+        div.innerHTML = `
     <h2>${pal.name}</h2>
     <p class="desc">${pal.desc}</p>
     <div class="state-toggles" data-v="${id}">
@@ -240,151 +405,186 @@ for (const [id, pal] of Object.entries(PALETTES)) {
     </div>
     <div class="legend" id="legend-${id}" style="display:none"></div>
   `;
-  container.appendChild(div);
-}
+        container.appendChild(div);
+      }
 
-// ===== Build =====
-function buildFretboard(id) {
-  let svg = `<svg viewBox="0 0 ${W} ${H}">`;
+      // ===== Build =====
+      function buildFretboard(id) {
+        let svg = `<svg viewBox="0 0 ${W} ${H}">`;
 
-  // Fret markers — between strings for 12
-  for (const m of MARKERS) {
-    const cx = noteX(m);
-    if (m === 12) {
-      svg += `<circle class="fb-marker" cx="${cx}" cy="${(noteY(1) + noteY(2)) / 2}" r="4"/>`;
-      svg += `<circle class="fb-marker" cx="${cx}" cy="${(noteY(3) + noteY(4)) / 2}" r="4"/>`;
-    } else {
-      svg += `<circle class="fb-marker" cx="${cx}" cy="${H / 2}" r="4"/>`;
-    }
-  }
+        // Fret markers — between strings for 12
+        for (const m of MARKERS) {
+          const cx = noteX(m);
+          if (m === 12) {
+            svg += `<circle class="fb-marker" cx="${cx}" cy="${
+              (noteY(1) + noteY(2)) / 2
+            }" r="4"/>`;
+            svg += `<circle class="fb-marker" cx="${cx}" cy="${
+              (noteY(3) + noteY(4)) / 2
+            }" r="4"/>`;
+          } else {
+            svg += `<circle class="fb-marker" cx="${cx}" cy="${
+              H / 2
+            }" r="4"/>`;
+          }
+        }
 
-  // Nut
-  svg += `<rect class="fb-nut" x="${FRET_POS[1] - 2}" y="0" width="4" height="${H}" rx="1"/>`;
+        // Nut
+        svg += `<rect class="fb-nut" x="${
+          FRET_POS[1] - 2
+        }" y="0" width="4" height="${H}" rx="1"/>`;
 
-  // Frets
-  for (let f = 2; f < FRET_POS.length; f++) {
-    svg += `<line class="fb-fret" x1="${FRET_POS[f]}" y1="0" x2="${FRET_POS[f]}" y2="${H}" stroke-width="1"/>`;
-  }
+        // Frets
+        for (let f = 2; f < FRET_POS.length; f++) {
+          svg += `<line class="fb-fret" x1="${
+            FRET_POS[f]
+          }" y1="0" x2="${FRET_POS[f]}" y2="${H}" stroke-width="1"/>`;
+        }
 
-  // Strings
-  for (let s = 0; s < 6; s++) {
-    const thick = 1 + s * 0.4;
-    svg += `<line class="fb-string" x1="0" y1="${noteY(s)}" x2="${W}" y2="${noteY(s)}" stroke-width="${thick}"/>`;
-  }
+        // Strings
+        for (let s = 0; s < 6; s++) {
+          const thick = 1 + s * 0.4;
+          svg += `<line class="fb-string" x1="0" y1="${
+            noteY(s)
+          }" x2="${W}" y2="${noteY(s)}" stroke-width="${thick}"/>`;
+        }
 
-  // Position circles — one per position, filled inline
-  for (let s = 0; s < 6; s++) {
-    for (let f = 0; f < FRETS; f++) {
-      svg += `<circle class="fb-pos" data-s="${s}" data-f="${f}" cx="${noteX(f)}" cy="${noteY(s)}" r="${R}"/>`;
-    }
-  }
+        // Position circles — one per position, filled inline
+        for (let s = 0; s < 6; s++) {
+          for (let f = 0; f < FRETS; f++) {
+            svg +=
+              `<circle class="fb-pos" data-s="${s}" data-f="${f}" cx="${
+                noteX(f)
+              }" cy="${noteY(s)}" r="${R}"/>`;
+          }
+        }
 
-  svg += '</svg>';
-  document.getElementById('fb-' + id).innerHTML = svg;
-}
+        svg += '</svg>';
+        document.getElementById('fb-' + id).innerHTML = svg;
+      }
 
-// ===== Update =====
-function updateState(id, state) {
-  const pal = PALETTES[id];
-  const root = document.getElementById('fb-' + id);
-  const legend = document.getElementById('legend-' + id);
-  const prompt = document.getElementById('tap-prompt-' + id);
+      // ===== Update =====
+      function updateState(id, state) {
+        const pal = PALETTES[id];
+        const root = document.getElementById('fb-' + id);
+        const legend = document.getElementById('legend-' + id);
+        const prompt = document.getElementById('tap-prompt-' + id);
 
-  prompt.textContent = '';
+        prompt.textContent = '';
 
-  root.querySelectorAll('.fb-pos').forEach(c => {
-    const s = +c.dataset.s, f = +c.dataset.f;
+        root.querySelectorAll('.fb-pos').forEach((c) => {
+          const s = +c.dataset.s, f = +c.dataset.f;
 
-    if (state === 'blank') {
-      c.style.fill = pal.blank;
-    } else if (state === 'quiz') {
-      c.style.fill = (s === HL_S && f === HL_F) ? pal.quizHl : pal.quizOther;
-    } else if (state === 'tap') {
-      const note = noteAt(s, f);
-      c.style.fill = (note === TAP_NOTE) ? pal.tapCorrect : pal.tapNeutral;
-    } else if (state === 'stats') {
-      const sk = fakeSkill(s, f);
-      c.style.fill = pal.heat[heatLevel(sk)];
-    }
-  });
+          if (state === 'blank') {
+            c.style.fill = pal.blank;
+          } else if (state === 'quiz') {
+            c.style.fill = (s === HL_S && f === HL_F)
+              ? pal.quizHl
+              : pal.quizOther;
+          } else if (state === 'tap') {
+            const note = noteAt(s, f);
+            c.style.fill = (note === TAP_NOTE)
+              ? pal.tapCorrect
+              : pal.tapNeutral;
+          } else if (state === 'stats') {
+            const sk = fakeSkill(s, f);
+            c.style.fill = pal.heat[heatLevel(sk)];
+          }
+        });
 
-  if (state === 'tap') {
-    prompt.textContent = 'Find: ' + TAP_NOTE;
-  }
+        if (state === 'tap') {
+          prompt.textContent = 'Find: ' + TAP_NOTE;
+        }
 
-  // Legend for heatmap
-  if (state === 'stats') {
-    const labels = ['Unseen', '<20%', '>20%', '>40%', '>60%', '>80%'];
-    legend.style.display = 'flex';
-    legend.innerHTML = pal.heat.map((c, i) =>
-      `<div class="legend-item"><span class="legend-swatch" style="background:${c}"></span>${labels[i]}</div>`
-    ).join('');
-  } else {
-    legend.style.display = 'none';
-    legend.innerHTML = '';
-  }
-}
+        // Legend for heatmap
+        if (state === 'stats') {
+          const labels = [
+            'Unseen',
+            '<20%',
+            '>20%',
+            '>40%',
+            '>60%',
+            '>80%',
+          ];
+          legend.style.display = 'flex';
+          legend.innerHTML = pal.heat.map((c, i) =>
+            `<div class="legend-item"><span class="legend-swatch" style="background:${c}"></span>${
+              labels[i]
+            }</div>`
+          ).join('');
+        } else {
+          legend.style.display = 'none';
+          legend.innerHTML = '';
+        }
+      }
 
-// ===== Hover card =====
-function setupHoverCard(id) {
-  const root = document.getElementById('fb-' + id);
-  const card = document.getElementById('hc-' + id);
+      // ===== Hover card =====
+      function setupHoverCard(id) {
+        const root = document.getElementById('fb-' + id);
+        const card = document.getElementById('hc-' + id);
 
-  function showCard(el) {
-    const s = +el.dataset.s, f = +el.dataset.f;
-    const note = noteAt(s, f);
-    const sk = fakeSkill(s, f);
-    const pct = Math.round(sk * 100);
-    const pal = PALETTES[id];
+        function showCard(el) {
+          const s = +el.dataset.s, f = +el.dataset.f;
+          const note = noteAt(s, f);
+          const sk = fakeSkill(s, f);
+          const pct = Math.round(sk * 100);
+          const pal = PALETTES[id];
 
-    card.querySelector('.hc-note').textContent = note;
-    card.querySelector('.hc-string-fret').textContent = STR_NAMES[s] + ' string, fret ' + f;
-    card.querySelector('.hc-detail').textContent = heatLabel(sk) + ' \u00B7 ' + pct + '%';
+          card.querySelector('.hc-note').textContent = note;
+          card.querySelector('.hc-string-fret').textContent =
+            STR_NAMES[s] + ' string, fret ' + f;
+          card.querySelector('.hc-detail').textContent = heatLabel(sk) +
+            ' \u00B7 ' + pct + '%';
 
-    const barFill = card.querySelector('.hc-bar-fill');
-    barFill.style.width = pct + '%';
-    barFill.style.background = pal.heat[heatLevel(sk)];
+          const barFill = card.querySelector('.hc-bar-fill');
+          barFill.style.width = pct + '%';
+          barFill.style.background = pal.heat[heatLevel(sk)];
 
-    const wrapRect = root.closest('.fretboard-wrap').getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
-    const cx = elRect.left + elRect.width / 2 - wrapRect.left;
-    const cy = elRect.top - wrapRect.top;
+          const wrapRect = root.closest('.fretboard-wrap')
+            .getBoundingClientRect();
+          const elRect = el.getBoundingClientRect();
+          const cx = elRect.left + elRect.width / 2 - wrapRect.left;
+          const cy = elRect.top - wrapRect.top;
 
-    card.style.left = cx + 'px';
-    card.style.top = (cy - 6) + 'px';
-    card.style.transform = 'translate(-50%, -100%)';
-    card.classList.add('visible');
-  }
+          card.style.left = cx + 'px';
+          card.style.top = (cy - 6) + 'px';
+          card.style.transform = 'translate(-50%, -100%)';
+          card.classList.add('visible');
+        }
 
-  function hideCard() { card.classList.remove('visible'); }
+        function hideCard() {
+          card.classList.remove('visible');
+        }
 
-  root.addEventListener('mouseover', e => {
-    const el = e.target.closest('.fb-pos');
-    if (el) showCard(el);
-  });
-  root.addEventListener('mouseout', e => {
-    const el = e.target.closest('.fb-pos');
-    if (el) hideCard();
-  });
-}
+        root.addEventListener('mouseover', (e) => {
+          const el = e.target.closest('.fb-pos');
+          if (el) showCard(el);
+        });
+        root.addEventListener('mouseout', (e) => {
+          const el = e.target.closest('.fb-pos');
+          if (el) hideCard();
+        });
+      }
 
-// ===== Init =====
-for (const id of Object.keys(PALETTES)) {
-  buildFretboard(id);
-  updateState(id, 'quiz');
-  setupHoverCard(id);
-}
+      // ===== Init =====
+      for (const id of Object.keys(PALETTES)) {
+        buildFretboard(id);
+        updateState(id, 'quiz');
+        setupHoverCard(id);
+      }
 
-document.querySelectorAll('.state-toggles').forEach(group => {
-  const id = group.dataset.v;
-  group.addEventListener('click', e => {
-    const btn = e.target.closest('.state-btn');
-    if (!btn) return;
-    group.querySelectorAll('.state-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    updateState(id, btn.dataset.state);
-  });
-});
-</script>
-</body>
+      document.querySelectorAll('.state-toggles').forEach((group) => {
+        const id = group.dataset.v;
+        group.addEventListener('click', (e) => {
+          const btn = e.target.closest('.state-btn');
+          if (!btn) return;
+          group.querySelectorAll('.state-btn').forEach((b) =>
+            b.classList.remove('active')
+          );
+          btn.classList.add('active');
+          updateState(id, btn.dataset.state);
+        });
+      });
+    </script>
+  </body>
 </html>

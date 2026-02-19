@@ -2,17 +2,19 @@
 
 ## Overview
 
-Ship Music Reps to the iOS App Store as a free app using Capacitor (web app in
-a native WebView shell). v0.1 is a derisking milestone: validate the full
+Ship Music Reps to the iOS App Store as a free app using Capacitor (web app in a
+native WebView shell). v0.1 is a derisking milestone: validate the full
 submission pipeline with minimal scope, then iterate on monetization and polish.
 
-**Approach**: Capacitor wraps the existing single-file HTML build (`docs/index.html`)
-as on-device content. No network needed. All 11 quiz modes ship unlocked. No IAP.
+**Approach**: Capacitor wraps the existing single-file HTML build
+(`docs/index.html`) as on-device content. No network needed. All 11 quiz modes
+ship unlocked. No IAP.
 
 **Why Capacitor**: The app is a self-contained vanilla JS app with zero runtime
-dependencies. The build already produces a single HTML file with all CSS/JS inlined.
-Capacitor adds a thin native shell around this — minimal code changes, no rewrite.
-Alternatives (React Native, Flutter) would require rewriting the entire UI.
+dependencies. The build already produces a single HTML file with all CSS/JS
+inlined. Capacitor adds a thin native shell around this — minimal code changes,
+no rewrite. Alternatives (React Native, Flutter) would require rewriting the
+entire UI.
 
 **Why free for v0.1**: Removes StoreKit/IAP complexity (the largest single scope
 risk). Lets us validate App Store submission, review process, and on-device
@@ -25,7 +27,7 @@ behavior before adding payments.
 Apple Developer account ($99/year), Xcode, CocoaPods. Hard blockers — do first.
 
 - [ ] Enroll in Apple Developer Program (individual, instant–48hr approval)
-   - decide individual vs org
+  - decide individual vs org
 - [x] Install Xcode 15+ (12 GB, install iOS Simulator runtime)
 - [x] Install CocoaPods (`brew install cocoapods`)
 - [ ] Choose bundle ID (see Open Questions)
@@ -47,16 +49,17 @@ Initialize project, establish build pipeline, verify app runs in Simulator.
 Minimal changes for the app to behave well in a native shell.
 
 - [x] Conditionally skip service worker registration when inside Capacitor
-  (`window.Capacitor` detection — one-line change in `app.js`)
-- [x] Add `viewport-fit=cover` to viewport meta tag (in `main.ts` and `build.ts`)
+      (`window.Capacitor` detection — one-line change in `app.js`)
+- [x] Add `viewport-fit=cover` to viewport meta tag (in `main.ts` and
+      `build.ts`)
 - [x] Add safe area inset padding in CSS (`env(safe-area-inset-*)` —
-  backwards-compatible with web)
+      backwards-compatible with web)
 - [x] Disable rubber-band bounce scrolling (`overscroll-behavior: none`)
 - [ ] Test all 11 modes on Simulator: layout, touch targets, quiz flow, feedback
 
-**Not changing for v0.1**: localStorage stays as-is (works in WKWebView, eviction
-is an edge case on modern iOS). Status bar uses default styling (dark text on light
-bg matches our theme). No haptics, no custom splash screen.
+**Not changing for v0.1**: localStorage stays as-is (works in WKWebView,
+eviction is an edge case on modern iOS). Status bar uses default styling (dark
+text on light bg matches our theme). No haptics, no custom splash screen.
 
 ### Phase 3: TestFlight
 
@@ -76,12 +79,12 @@ app on a real device as early as possible.
 
 ### Phase 4: App Store Assets
 
-Can be done in parallel with Phase 3 testing, or after. Only needed for
-Phase 5 submission.
+Can be done in parallel with Phase 3 testing, or after. Only needed for Phase 5
+submission.
 
 - [ ] Create 1024x1024 app icon (scale/refine existing `apple-touch-icon.png`)
 - [ ] Take screenshots on iPhone 6.7" Simulator (3–5: home screen, active quiz,
-  feedback, stats/heatmap)
+      feedback, stats/heatmap)
 - [ ] Write App Store description, subtitle, keywords
 - [ ] Create privacy policy page (hosted on GitHub Pages — "collects no data")
 - [ ] Set App Privacy to "Data Not Collected"
@@ -97,6 +100,7 @@ Phase 5 submission.
 ### Must resolve before submission
 
 **App name and bundle ID**: Bundle ID is permanent. Options:
+
 - `com.musicreps.app` — simple, works if "Music Reps" stays the brand
 - `com.{brand}.musicreps` — if a parent brand emerges for the multi-app family
 - Need to decide display name too: "Music Reps" vs "Music Reps: Theory Drills"
@@ -115,19 +119,20 @@ production. Design effort TBD.
 
 ## Risks
 
-| Risk | Likelihood | Mitigation |
-|------|-----------|------------|
-| App Review rejection (4.2 minimum functionality) | Low | On-device content, 11 modes, adaptive difficulty — substantial app. Include reviewer notes. |
-| localStorage eviction on iOS | Low | Accept for v0.1. Modern iOS evicts less aggressively. Migrate to `@capacitor/preferences` in v0.2 if needed. |
-| Safe area layout issues on specific devices | Medium | Test multiple Simulator sizes. CSS `env()` handles most cases. |
-| First-time Xcode/signing confusion | Medium | Budget extra time. Xcode auto-signing handles most complexity. |
-| Apple Developer enrollment delay | Low | Enroll first, before any other work. |
+| Risk                                             | Likelihood | Mitigation                                                                                                   |
+| ------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| App Review rejection (4.2 minimum functionality) | Low        | On-device content, 11 modes, adaptive difficulty — substantial app. Include reviewer notes.                  |
+| localStorage eviction on iOS                     | Low        | Accept for v0.1. Modern iOS evicts less aggressively. Migrate to `@capacitor/preferences` in v0.2 if needed. |
+| Safe area layout issues on specific devices      | Medium     | Test multiple Simulator sizes. CSS `env()` handles most cases.                                               |
+| First-time Xcode/signing confusion               | Medium     | Budget extra time. Xcode auto-signing handles most complexity.                                               |
+| Apple Developer enrollment delay                 | Low        | Enroll first, before any other work.                                                                         |
 
 ## Scope: What's Deferred to Post-v0.1
 
 - **In-App Purchases** — largest scope item, requires StoreKit 2, receipt
   validation, content gating, pricing decisions
-- **localStorage → Preferences migration** — only if data loss surfaces in practice
+- **localStorage → Preferences migration** — only if data loss surfaces in
+  practice
 - **iPad layout** — shipping iPhone-only for v0.1
 - **Cloud sync** — explicitly out of scope
 - **Push notifications** — no use case yet

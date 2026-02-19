@@ -1,7 +1,8 @@
 # Quiz IA Polish: Phase 2 — Design Spec
 
-Phase 2 (IA fixes) from the [Quiz Polish exploration](../../design-docs/2026-02-17-quiz-polish.md).
-Builds on [Phase 1](2026-02-17-quiz-flow-polish-spec.md) (flow fixes).
+Phase 2 (IA fixes) from the
+[Quiz Polish exploration](../../design-docs/2026-02-17-quiz-polish.md). Builds
+on [Phase 1](2026-02-17-quiz-flow-polish-spec.md) (flow fixes).
 
 ## Overview
 
@@ -21,8 +22,8 @@ has a clear purpose and nothing requires guesswork.
 The practice card puts status, recommendation, scope toggles, session summary,
 mastery message, and Start button in one flat gray box with no internal
 structure. A user scanning the card can't tell where "how am I doing" ends and
-"what should I practice" begins. Per *Group related controls* and *Visual
-containers match logical groups*, related controls need to be visually grouped
+"what should I practice" begins. Per _Group related controls_ and _Visual
+containers match logical groups_, related controls need to be visually grouped
 with clear boundaries.
 
 ### Design
@@ -58,10 +59,13 @@ Strings
 The "mastery" message ("Looks like you've got this!") appears here when
 applicable — it's encouragement tied to the set selection.
 ```
-**Future** master message should be rephrased -- if we're well-calibrated to only show it when the user really does "got this", it should encourage them to add more groups, or move to another quiz. Today, I often see it when 
 
-The suggestion section explains *why* those groups are recommended (see
-section 2 below). The toggles below let the user override.
+**Future** master message should be rephrased -- if we're well-calibrated to
+only show it when the user really does "got this", it should encourage them to
+add more groups, or move to another quiz. Today, I often see it when
+
+The suggestion section explains _why_ those groups are recommended (see section
+2 below). The toggles below let the user override.
 
 **Zone 3: Action** — "Go"
 
@@ -88,23 +92,24 @@ noticeably more spacing between them than within them.
 Group-based modes show toggle buttons with opaque labels like "1,2", "3,4",
 "0-1". No section heading explains what dimension is being selected. No
 description hints at what's inside each group. The user must memorize group
-contents or guess. Per *Label everything* and *Visualize, don't decode*, every
+contents or guess. Per _Label everything_ and _Visualize, don't decode_, every
 toggle needs a label that a first-time user can understand.
 
 ### Current state by mode
 
-| Mode | Section heading | Toggle labels |
-|------|----------------|---------------|
-| Fretboard | "Strings" | e, B, G, D, A, E |
-| Semitone Math | *(none)* | 1,2 / 3,4 / 5,6 / 7,8 / 9,10 |
-| Interval Math | *(none)* | m2,M2 / m3,M3 / P4,TT / P5,m6 / M6,m7,M7 |
-| Key Signatures | *(none)* | 0-1 / 2 / 3 / 4 |
-| Scale Degrees | *(none)* | 1st,5th / 4th / 3rd,7th / 2nd,6th |
-| Diatonic Chords | *(none)* | I,IV,V / ii,vi / iii,vii° |
-| Chord Spelling | *(none)* | *(derived from chord type names)* |
+| Mode            | Section heading | Toggle labels                            |
+| --------------- | --------------- | ---------------------------------------- |
+| Fretboard       | "Strings"       | e, B, G, D, A, E                         |
+| Semitone Math   | _(none)_        | 1,2 / 3,4 / 5,6 / 7,8 / 9,10             |
+| Interval Math   | _(none)_        | m2,M2 / m3,M3 / P4,TT / P5,m6 / M6,m7,M7 |
+| Key Signatures  | _(none)_        | 0-1 / 2 / 3 / 4                          |
+| Scale Degrees   | _(none)_        | 1st,5th / 4th / 3rd,7th / 2nd,6th        |
+| Diatonic Chords | _(none)_        | I,IV,V / ii,vi / iii,vii°                |
+| Chord Spelling  | _(none)_        | _(derived from chord type names)_        |
 
 Fretboard is the only mode that gets this close to right — a heading ("Strings")
-and self-explanatory labels (string names). A clearer description for first-time users may still be helpful: "strings to practice", etc.
+and self-explanatory labels (string names). A clearer description for first-time
+users may still be helpful: "strings to practice", etc.
 
 ### Design
 
@@ -112,25 +117,25 @@ Every mode with scope toggles gets:
 
 1. **A section heading** describing the dimension being selected
 2. **Descriptive toggle labels** that tell the user what's in each group
-3. **A parenthetical or subtitle** on each toggle showing group contents
-   when the label alone isn't enough
+3. **A parenthetical or subtitle** on each toggle showing group contents when
+   the label alone isn't enough
 
 Proposed headings and labels:
 
-| Mode | Heading | Toggle labels |
-|------|---------|---------------|
-| Fretboard | Strings | e, B, G, D, A, E *(unchanged)* |
-| Semitone Math | Distances | ±1–2, ±3–4, ±5–6, ±7–8, ±9–10 |
-| Interval Math | Intervals | m2 M2, m3 M3, P4 TT, P5 m6, M6 m7 M7 |
-| Key Signatures | Keys | C G F, D B♭, A E♭, E A♭, B D♭ F♯ |
-| Scale Degrees | Degrees | 1st 5th, 4th, 3rd 7th, 2nd 6th |
-| Diatonic Chords | Chords | I IV V, ii vi, iii vii° |
-| Chord Spelling | Chord types | maj, min, dom7, maj7, min7, dim aug hdim7, sus 6th |
+| Mode            | Heading     | Toggle labels                                      |
+| --------------- | ----------- | -------------------------------------------------- |
+| Fretboard       | Strings     | e, B, G, D, A, E _(unchanged)_                     |
+| Semitone Math   | Distances   | ±1–2, ±3–4, ±5–6, ±7–8, ±9–10                      |
+| Interval Math   | Intervals   | m2 M2, m3 M3, P4 TT, P5 m6, M6 m7 M7               |
+| Key Signatures  | Keys        | C G F, D B♭, A E♭, E A♭, B D♭ F♯                   |
+| Scale Degrees   | Degrees     | 1st 5th, 4th, 3rd 7th, 2nd 6th                     |
+| Diatonic Chords | Chords      | I IV V, ii vi, iii vii°                            |
+| Chord Spelling  | Chord types | maj, min, dom7, maj7, min7, dim aug hdim7, sus 6th |
 
-**Key Signatures note**: showing the actual key names (C G F) is far more
-useful than the accidental count (0-1). The user is practicing keys, not
-counting accidentals. The grouping by difficulty is preserved but the labels
-show what's actually in each group.
+**Key Signatures note**: showing the actual key names (C G F) is far more useful
+than the accidental count (0-1). The user is practicing keys, not counting
+accidentals. The grouping by difficulty is preserved but the labels show what's
+actually in each group.
 
 **Interval Math note**: interval name labels are already more descriptive than
 semitone math's numeric labels. Adding the section heading "Intervals" provides
@@ -138,9 +143,14 @@ sufficient context.
 
 ### Fretboard checkbox
 
-Replace "Natural notes only" checkbox with a similar pattern to string selection: "natural notes" + "accidentals". The user can pick one or both. Same IA level as the string selector. They both configure what you're practicing, so treat them similarly. Also gets a label -- "Notes".
+Replace "Natural notes only" checkbox with a similar pattern to string
+selection: "natural notes" + "accidentals". The user can pick one or both. Same
+IA level as the string selector. They both configure what you're practicing, so
+treat them similarly. Also gets a label -- "Notes".
 
-Design with space for additional scope configuration later. e.g. we might add a fret range config, so you can practice all strings, frets 1-5, or accidentals on frets 9-15, etc. (Not in scope for this change.)
+Design with space for additional scope configuration later. e.g. we might add a
+fret range config, so you can practice all strings, frets 1-5, or accidentals on
+frets 9-15, etc. (Not in scope for this change.)
 
 ---
 
@@ -150,8 +160,8 @@ Design with space for additional scope configuration later. e.g. we might add a 
 
 When there's no practice history, the recommendation area collapses to nothing.
 New users get no guidance on where to start. When recommendations are present,
-they say "Recommended: G, D" without explaining why. Per *State should explain
-itself*, every recommendation needs a rationale, and the area should never be
+they say "Recommended: G, D" without explaining why. Per _State should explain
+itself_, every recommendation needs a rationale, and the area should never be
 empty.
 
 ### Design
@@ -166,13 +176,14 @@ Suggestion: start with [first group label]
 ```
 
 Examples:
+
 - Fretboard: "Suggestion: start with E, A strings"
 - Semitone Math: "Suggestion: start with ±1–2"
 - Scale Degrees: "Suggestion: start with 1st, 5th"
 - Chord Spelling: "Suggestion: start with major triads"
 
-The default always points to group 0 — the easiest/most fundamental group.
-This follows the existing consolidate-before-expanding design.
+The default always points to group 0 — the easiest/most fundamental group. This
+follows the existing consolidate-before-expanding design.
 
 **With history — consolidating:**
 
@@ -182,7 +193,7 @@ Suggestion: solidify [group] — [N] items need work
 [Use suggestion]
 ```
 
-The rationale explains *why*: which group needs work and what would be added.
+The rationale explains _why_: which group needs work and what would be added.
 Two-line format when the recommendation includes both consolidation and
 expansion.
 
@@ -197,8 +208,8 @@ No suggestion needed. The mastery message in Zone 3 handles encouragement.
 ### Recommendation integration with toggles
 
 When the user taps [Use suggestion], the toggles update to match the
-recommendation. This already works today — no change to the mechanism, just
-the presentation.
+recommendation. This already works today — no change to the mechanism, just the
+presentation.
 
 ---
 
@@ -209,7 +220,7 @@ the presentation.
 During fretboard quizzing, the question is a highlighted dot on the fretboard
 diagram with no text prompt. The user must infer "identify this note" from
 context. The fretboard dominates visually but the small highlight dot is the
-only thing that matters. Per *Content hierarchy follows interaction priority*,
+only thing that matters. Per _Content hierarchy follows interaction priority_,
 the question is priority #1 and should command attention.
 
 ### Design
@@ -221,8 +232,8 @@ Name this note.
 ```
 
 The prompt should be brief and consistent — the same text every question, since
-the fretboard highlight already shows *which* note. The purpose is to
-reinforce what the user is doing and provide a text anchor for the eye.
+the fretboard highlight already shows _which_ note. The purpose is to reinforce
+what the user is doing and provide a text anchor for the eye.
 
 The highlight dot size and color are visual concerns deferred to Phase 4.
 
@@ -235,12 +246,12 @@ The highlight dot size and color are visual concerns deferred to Phase 4.
 Two issues with the active quiz screen:
 
 **Context label is cryptic.** The session info row shows scope filter shorthand
-("±1,2", "E string", "maj") that reads as jargon. Per *Label everything*, labels
+("±1,2", "E string", "maj") that reads as jargon. Per _Label everything_, labels
 should be self-interpreting.
 
 **Progress bar is ambiguous.** "0 / 48 fluent" during a quiz could mean this
 round or all-time. It's all-time, but the mid-quiz context is confusing. Per
-*Minimize chrome during quiz*, overall fluency isn't relevant during the
+_Minimize chrome during quiz_, overall fluency isn't relevant during the
 question-answer loop.
 
 ### Design
@@ -249,23 +260,22 @@ question-answer loop.
 being practiced. The description should be a complete phrase, not filter
 shorthand:
 
-| Mode | Current | New |
-|------|---------|-----|
-| Fretboard | "G, D strings" | "G, D strings" *(already clear)* |
-| Semitone Math | "±1,2, ±3,4" | "±1–4 semitones" |
-| Interval Math | "m2,M2, m3,M3" | "m2–M3 intervals" |
-| Key Signatures | "D, Bb, A, Eb" | "D, B♭, A, E♭" *(already clear)* |
-| Scale Degrees | "1st,5th, 4th" | "1st, 4th, 5th degrees" |
-| Diatonic Chords | "I,IV,V, ii,vi" | "I, IV, V, ii, vi chords" |
-| Chord Spelling | "maj, min" | "major, minor triads" |
+| Mode            | Current         | New                              |
+| --------------- | --------------- | -------------------------------- |
+| Fretboard       | "G, D strings"  | "G, D strings" _(already clear)_ |
+| Semitone Math   | "±1,2, ±3,4"    | "±1–4 semitones"                 |
+| Interval Math   | "m2,M2, m3,M3"  | "m2–M3 intervals"                |
+| Key Signatures  | "D, Bb, A, Eb"  | "D, B♭, A, E♭" _(already clear)_ |
+| Scale Degrees   | "1st,5th, 4th"  | "1st, 4th, 5th degrees"          |
+| Diatonic Chords | "I,IV,V, ii,vi" | "I, IV, V, ii, vi chords"        |
+| Chord Spelling  | "maj, min"      | "major, minor triads"            |
 
-The goal is a phrase that would make sense to someone glancing at the screen
-for the first time.
+The goal is a phrase that would make sense to someone glancing at the screen for
+the first time.
 
 **Remove the progress bar** from the active quiz phase. Overall fluency is
-useful on the Practice tab and round-complete screen, not mid-quiz. This
-reduces chrome during the question-answer loop per *Minimize chrome during
-quiz*.
+useful on the Practice tab and round-complete screen, not mid-quiz. This reduces
+chrome during the question-answer loop per _Minimize chrome during quiz_.
 
 ---
 
@@ -275,8 +285,8 @@ quiz*.
 
 The round-complete screen shows three numbers floating in space ("8 / 9
 correct", "1.2s median", "5 / 78 fluent") with no context about what was being
-practiced, and the fluency stat is confusingly placed. Per *Visual containers
-match logical groups*, the screen needs clear structure.
+practiced, and the fluency stat is confusingly placed. Per _Visual containers
+match logical groups_, the screen needs clear structure.
 
 ### Design
 
@@ -304,7 +314,8 @@ Round stats are about this round only: correct count, total round time
 (including last-question wait from Phase 1), and median response time. These are
 clearly round-scoped because they're under the "Round complete" heading.
 
-Remove the round number for now. It's not a boxing match, and there's no round target.
+Remove the round number for now. It's not a boxing match, and there's no round
+target.
 
 **Actions:**
 
@@ -328,19 +339,19 @@ Unchanged from today.
 ### Problem
 
 The depleting bar and the numeric timer both show time remaining — two
-representations of the same data. Per *One way to do each thing*, this is
-redundant. However, each serves a different purpose: the bar is glanceable at
-a distance, the number is precise.
+representations of the same data. Per _One way to do each thing_, this is
+redundant. However, each serves a different purpose: the bar is glanceable at a
+distance, the number is precise.
 
 ### Design
 
-Keep both but visually connect them so they read as one element rather than
-two independent displays. The timer text should feel like a label *on* the bar,
-not a separate data point in the session info row.
+Keep both but visually connect them so they read as one element rather than two
+independent displays. The timer text should feel like a label _on_ the bar, not
+a separate data point in the session info row.
 
-Exact visual treatment (positioning, typography) is deferred to Phase 4. The
-IA decision is: **the timer text moves from the session info row to adjacent
-to the countdown bar**, making the connection between bar and number obvious.
+Exact visual treatment (positioning, typography) is deferred to Phase 4. The IA
+decision is: **the timer text moves from the session info row to adjacent to the
+countdown bar**, making the connection between bar and number obvious.
 
 The session info row then contains only: context label + answer count + ×
 button.
@@ -390,8 +401,8 @@ button.
 └─────────────────────────────────────────┘
 ```
 
-Note: "Status", "Scope", "Action" are zone names for this spec — they may or
-may not appear as visible headings. The section heading for toggles ("Strings",
+Note: "Status", "Scope", "Action" are zone names for this spec — they may or may
+not appear as visible headings. The section heading for toggles ("Strings",
 "Distances", etc.) does appear.
 
 ### Active quiz
@@ -457,12 +468,12 @@ Round complete
   they belong together.
 
 - **Recommendation always present**: show a default suggestion on fresh start
-  rather than collapsing the area. The default points to group 0 for every
-  mode — consistent with consolidate-before-expanding.
+  rather than collapsing the area. The default points to group 0 for every mode
+  — consistent with consolidate-before-expanding.
 
 - **Recommendation rationale**: include brief explanation ("8 items need work",
   "13 new items") rather than just naming groups. The user should understand
-  *why* without consulting the progress tab.
+  _why_ without consulting the progress tab.
 
 - **Key Signatures toggle labels**: show key names (C G F) rather than
   accidental counts (0-1). The user is learning keys, not counting accidentals.
@@ -474,9 +485,9 @@ Round complete
   reinforce the task, not duplicate information.
 
 - **Progress bar removal**: remove from active quiz entirely rather than
-  relabeling. Mid-quiz fluency is neither actionable nor clearly scoped.
-  Fluency appears on the round-complete screen's context line where it has
-  clear meaning.
+  relabeling. Mid-quiz fluency is neither actionable nor clearly scoped. Fluency
+  appears on the round-complete screen's context line where it has clear
+  meaning.
 
 - **Round duration**: include total time (with last-question wait) rather than
   just timer duration. The user experienced 63 seconds, not 60 — showing the

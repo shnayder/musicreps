@@ -7,10 +7,10 @@ measures how fast the user taps it. This captures raw motor speed but not the
 visual search cost of finding a button — which is a significant component of
 real quiz response time.
 
-The fix: instead of highlighting the target, show a text prompt ("Press F#")
-and let the user find and press the button. Speed tap keeps the current
-highlight behavior since its real task (fretboard taps) is different from
-button-based calibration.
+The fix: instead of highlighting the target, show a text prompt ("Press F#") and
+let the user find and press the button. Speed tap keeps the current highlight
+behavior since its real task (fretboard taps) is different from button-based
+calibration.
 
 Chord spelling gets multi-press trials ("Press C G E") to match its sequential
 answer format.
@@ -37,22 +37,26 @@ behavior).
 
 **Note-button modes** (fretboard, note↔semitones, semitone math, interval math,
 key sigs, scale degrees, diatonic chords):
+
 - Pick a random button from `buttons`, weighted toward accidentals ~35% of the
   time (see accidental selection below)
 - Read the button's label text for the prompt
 - Return `{ prompt: 'Press F#', targetButtons: [btn] }`
 
 **Interval-button mode** (interval↔semitones):
+
 - Same as note-button modes but reads `data-interval` instead of `data-note`
 - Interval buttons have no accidental/natural distinction — all buttons are
   equally likely
 - Return `{ prompt: 'Press P5', targetButtons: [btn] }`
 
 **Chord spelling**:
+
 - Pick 2–4 random note buttons (matching realistic chord lengths)
 - Return `{ prompt: 'Press C G E', targetButtons: [btn1, btn2, btn3] }`
 
 **Speed tap** (no method defined → fallback):
+
 - Engine highlights random button green, same as current behavior
 
 ### Shared helper: `pickCalibrationButton(buttons, prevBtn, rng)`
@@ -65,18 +69,20 @@ weighting across 8+ modes.
 function pickCalibrationButton(buttons, prevBtn, rng) {
   const rand = rng || Math.random;
   // Separate sharps from naturals using button text content
-  const sharpBtns = buttons.filter(b => {
+  const sharpBtns = buttons.filter((b) => {
     const note = b.dataset.note;
     return note && note.includes('#');
   });
-  const naturalBtns = buttons.filter(b => {
+  const naturalBtns = buttons.filter((b) => {
     const note = b.dataset.note;
     return note && !note.includes('#');
   });
 
   // ~35% chance of sharp if available
   const useSharp = sharpBtns.length > 0 && rand() < 0.35;
-  const pool = useSharp ? sharpBtns : (naturalBtns.length > 0 ? naturalBtns : buttons);
+  const pool = useSharp
+    ? sharpBtns
+    : (naturalBtns.length > 0 ? naturalBtns : buttons);
 
   let btn;
   do {
@@ -115,6 +121,7 @@ waits for the user to click/type it. The new version:
 picks random button and highlights (existing logic).
 
 **Multi-target handling**: For trials with multiple `targetButtons`:
+
 - Each correct press records a time sample and advances to the next target
 - The time for each press is measured from the previous press (or trial start
   for the first press)
@@ -131,10 +138,11 @@ single `targetBtn`.
 ### State shape during calibration
 
 Add to the closure in `runCalibration()`:
+
 ```javascript
-let trialConfig = null;        // current trial's config from getTrialConfig
-let targetIndex = 0;           // index within trialConfig.targetButtons
-let pressStartTime = null;     // time of last press (for per-press timing)
+let trialConfig = null; // current trial's config from getTrialConfig
+let targetIndex = 0; // index within trialConfig.targetButtons
+let pressStartTime = null; // time of last press (for per-press timing)
 ```
 
 ### Intro text
@@ -148,15 +156,16 @@ export function engineCalibrationIntro(state, hintOverride) {
     ...state,
     phase: 'calibration-intro',
     // ...
-    hintText: hintOverride || "We\u2019ll measure your tap speed ...",
+    hintText: hintOverride || 'We\u2019ll measure your tap speed ...',
   };
 }
 ```
 
 The engine determines the hint based on mode:
-- If mode has `getCalibrationTrialConfig`: "We'll measure your response speed
-  to set personalized targets. Press the button shown in the prompt — 10
-  rounds total."
+
+- If mode has `getCalibrationTrialConfig`: "We'll measure your response speed to
+  set personalized targets. Press the button shown in the prompt — 10 rounds
+  total."
 - If mode has `calibrationIntroHint` string: use that (for chord spelling:
   "...Press the notes shown in the prompt, in order — 10 rounds total.")
 - Otherwise: current text (speed tap fallback)
@@ -171,15 +180,15 @@ during calibration phases, and to `els.feedback` (below buttons) during active
 quiz. The hint area shows "Find and press the button" (set via
 `engineCalibrating()` hint text, which varies the same way as intro text).
 
-For multi-press chord spelling trials, the prompt shows all notes: "Press C G E".
-No progress tracking within the prompt — the user knows what they've pressed
+For multi-press chord spelling trials, the prompt shows all notes: "Press C G
+E". No progress tracking within the prompt — the user knows what they've pressed
 because they just pressed it.
 
 ### Accidental keyboard support
 
-For search trials, the user sees "Press F#" and should be able to type `F`
-then `#` via keyboard. The calibration key handler needs to support this
-two-key sequence.
+For search trials, the user sees "Press F#" and should be able to type `F` then
+`#` via keyboard. The calibration key handler needs to support this two-key
+sequence.
 
 **Approach**: Add a pending-key mechanism to `handleCalibrationKey`, similar to
 the one in `createNoteKeyHandler` / `createAdaptiveKeyHandler`:
@@ -208,8 +217,8 @@ handler acts on them.
 
 ### Wrong press behavior in multi-target trials
 
-Wrong presses (button click or keyboard) are silently ignored. The user stays
-on the current target in the sequence. No visual or audio feedback for wrong
+Wrong presses (button click or keyboard) are silently ignored. The user stays on
+the current target in the sequence. No visual or audio feedback for wrong
 presses during calibration — this matches the existing behavior where clicking
 the wrong button during highlight calibration does nothing.
 
@@ -253,35 +262,35 @@ the wrong button during highlight calibration does nothing.
 
 ## Files Modified
 
-| File | Changes |
-|------|---------|
-| `src/quiz-engine.js` | Add `pickCalibrationButton()`. Modify `runCalibration()` for search prompts, multi-target, per-press timing, accidental keys. Update `beginCalibrationTrials()`. |
-| `src/quiz-engine-state.js` | `engineCalibrationIntro(state, hintOverride)` — accept optional hint. |
-| `src/quiz-fretboard.js` | Add `getCalibrationTrialConfig()` |
-| `src/quiz-note-semitones.js` | Add `getCalibrationTrialConfig()` |
-| `src/quiz-interval-semitones.js` | Add `getCalibrationTrialConfig()` (interval-specific) |
-| `src/quiz-semitone-math.js` | Add `getCalibrationTrialConfig()` |
-| `src/quiz-interval-math.js` | Add `getCalibrationTrialConfig()` |
-| `src/quiz-key-signatures.js` | Add `getCalibrationTrialConfig()` |
-| `src/quiz-scale-degrees.js` | Add `getCalibrationTrialConfig()` |
-| `src/quiz-diatonic-chords.js` | Add `getCalibrationTrialConfig()` |
-| `src/quiz-chord-spelling.js` | Add `getCalibrationTrialConfig()` (multi-target), `calibrationIntroHint` |
-| `src/quiz-engine-state_test.ts` | Test `engineCalibrationIntro` with hint override |
-| `src/quiz-engine_test.ts` | Test `pickCalibrationButton()` accidental weighting, no-repeat, edge cases |
-| `main.ts` | Version bump |
-| `build.ts` | Version bump |
+| File                             | Changes                                                                                                                                                          |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/quiz-engine.js`             | Add `pickCalibrationButton()`. Modify `runCalibration()` for search prompts, multi-target, per-press timing, accidental keys. Update `beginCalibrationTrials()`. |
+| `src/quiz-engine-state.js`       | `engineCalibrationIntro(state, hintOverride)` — accept optional hint.                                                                                            |
+| `src/quiz-fretboard.js`          | Add `getCalibrationTrialConfig()`                                                                                                                                |
+| `src/quiz-note-semitones.js`     | Add `getCalibrationTrialConfig()`                                                                                                                                |
+| `src/quiz-interval-semitones.js` | Add `getCalibrationTrialConfig()` (interval-specific)                                                                                                            |
+| `src/quiz-semitone-math.js`      | Add `getCalibrationTrialConfig()`                                                                                                                                |
+| `src/quiz-interval-math.js`      | Add `getCalibrationTrialConfig()`                                                                                                                                |
+| `src/quiz-key-signatures.js`     | Add `getCalibrationTrialConfig()`                                                                                                                                |
+| `src/quiz-scale-degrees.js`      | Add `getCalibrationTrialConfig()`                                                                                                                                |
+| `src/quiz-diatonic-chords.js`    | Add `getCalibrationTrialConfig()`                                                                                                                                |
+| `src/quiz-chord-spelling.js`     | Add `getCalibrationTrialConfig()` (multi-target), `calibrationIntroHint`                                                                                         |
+| `src/quiz-engine-state_test.ts`  | Test `engineCalibrationIntro` with hint override                                                                                                                 |
+| `src/quiz-engine_test.ts`        | Test `pickCalibrationButton()` accidental weighting, no-repeat, edge cases                                                                                       |
+| `main.ts`                        | Version bump                                                                                                                                                     |
+| `build.ts`                       | Version bump                                                                                                                                                     |
 
 ## Testing
 
 - Unit test `pickCalibrationButton()` accidental weighting (mock Math.random)
 - Unit test `engineCalibrationIntro` with and without hint override
-- Manual testing: run calibration in each mode, verify prompt appears,
-  buttons are NOT highlighted, correct button press advances trial
-- Manual testing: chord spelling calibration with multi-press sequences,
-  verify per-press timing produces reasonable baseline
+- Manual testing: run calibration in each mode, verify prompt appears, buttons
+  are NOT highlighted, correct button press advances trial
+- Manual testing: chord spelling calibration with multi-press sequences, verify
+  per-press timing produces reasonable baseline
 - Manual testing: speed tap still uses highlight behavior
-- Manual testing: keyboard input with accidentals (F then #) works during
-  search trials
+- Manual testing: keyboard input with accidentals (F then #) works during search
+  trials
 - Manual testing: interval↔semitones shows "Press P5" style prompts
 - Manual testing: wrong presses silently ignored during both single and
   multi-target trials

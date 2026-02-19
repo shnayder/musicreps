@@ -3,8 +3,8 @@
 ## Context
 
 The app (musicreps) is a single-page quiz app built with vanilla JS, no
-framework, all files concatenated into one HTML file at build time. It's
-growing from prototype to long-lived product. Two concerns motivate this review:
+framework, all files concatenated into one HTML file at build time. It's growing
+from prototype to long-lived product. Two concerns motivate this review:
 
 1. **DOM-dependent logic is hard to unit test** and prone to ordering bugs
    ("called hideTheMessage() after displayTheThingy(), should have called it
@@ -15,15 +15,15 @@ growing from prototype to long-lived product. Two concerns motivate this review:
    - Mastery/review message not clearing when strings or naturals-only toggle
    - Recommendation highlights (orange borders) never refreshing after init
 
-   Root cause: fire-and-forget UI updates with no mechanism to recompute
-   derived state when inputs change. This is an O(n*m) wiring problem — every
-   mutation must trigger all dependent UI updates, every new derived element
-   must be wired into every mutation site.
+   Root cause: fire-and-forget UI updates with no mechanism to recompute derived
+   state when inputs change. This is an O(n*m) wiring problem — every mutation
+   must trigger all dependent UI updates, every new derived element must be
+   wired into every mutation site.
 
 ## What's Already Good
 
-- **adaptive.js** — Pure functions, injected storage, injected RNG, 790 lines
-  of tests. Gold standard for the rest of the codebase.
+- **adaptive.js** — Pure functions, injected storage, injected RNG, 790 lines of
+  tests. Gold standard for the rest of the codebase.
 - **music-data.js** — Pure data + pure functions, fully tested.
 - **stats-display.js** — Color functions are pure, tested.
 - **Mode interface** — Clean contract (`getEnabledItems`, `presentQuestion`,
@@ -35,8 +35,8 @@ and **DOM-interleaved logic in quiz modes**.
 
 ## Recommended Pattern: State + Render
 
-Instead of imperatively mutating DOM across scattered function calls, maintain
-a **state object** and always **render the full state to DOM**.
+Instead of imperatively mutating DOM across scattered function calls, maintain a
+**state object** and always **render the full state to DOM**.
 
 ```
 state = pureTransition(state, event)   // testable
@@ -44,16 +44,16 @@ render(state, domElements)             // thin, declarative, idempotent
 ```
 
 **Why this eliminates ordering bugs:** The render function reads the state and
-sets every DOM property independently. There's no sequence to get wrong.
-Whether you called `start()` then `submitAnswer()` or went through some unusual
-path, `render()` always produces the correct DOM for the current state.
+sets every DOM property independently. There's no sequence to get wrong. Whether
+you called `start()` then `submitAnswer()` or went through some unusual path,
+`render()` always produces the correct DOM for the current state.
 
-**Why this eliminates stale-UI bugs:** With a single `render(state)` call
-after every state change, derived displays are always recomputed. No O(n*m)
-wiring — just "mutate state, call render."
+**Why this eliminates stale-UI bugs:** With a single `render(state)` call after
+every state change, derived displays are always recomputed. No O(n*m) wiring —
+just "mutate state, call render."
 
-**Why not full Elm Architecture:** Virtual DOM diffing is heavy machinery for
-an app this size. State + Render gives the same benefits without a framework.
+**Why not full Elm Architecture:** Virtual DOM diffing is heavy machinery for an
+app this size. State + Render gives the same benefits without a framework.
 Render functions are simple enough (~10-20 lines of `el.style.display = ...`)
 that they don't need their own test coverage.
 
@@ -68,13 +68,20 @@ algorithm. Low risk, high value, no architectural change to the engine.
 
 Extract the duplicated ~50-line algorithm from three files into a single shared
 ES module:
+
 - `src/quiz-fretboard.js:150-196`
 - `src/quiz-semitone-math.js:91-139`
 - `src/quiz-interval-math.js:97-145`
 
 ```javascript
 // src/recommendations.js — ES module, exports stripped for browser inlining
-export function computeRecommendations(selector, allIndices, getItemIds, config, options) {
+export function computeRecommendations(
+  selector,
+  allIndices,
+  getItemIds,
+  config,
+  options,
+) {
   // Returns { recommended: Set, enabled: Set | null }
   // Pure function — no side effects, no DOM
 }
@@ -87,6 +94,7 @@ directly. Handle via optional `sortUnstarted` in options.
 #### Step 1b: Create `src/recommendations_test.ts`
 
 Test the pure algorithm:
+
 - No started items → empty recommended, null enabled
 - Consolidation below threshold → no expansion
 - Consolidation above threshold → includes next unstarted
@@ -101,16 +109,26 @@ For each of the 3 modes (fretboard, semitoneMath, intervalMath):
 ```javascript
 function updateRecommendations(selector) {
   // Recompute highlights only — safe to call anytime
-  const result = computeRecommendations(selector, allIndices, getItemIds,
-                                         DEFAULT_CONFIG, options);
+  const result = computeRecommendations(
+    selector,
+    allIndices,
+    getItemIds,
+    DEFAULT_CONFIG,
+    options,
+  );
   recommendedXxx = result.recommended;
   updateXxxToggles();
 }
 
 function applyRecommendations(selector) {
   // Full init: highlights + override enabled set — called only at page load
-  const result = computeRecommendations(selector, allIndices, getItemIds,
-                                         DEFAULT_CONFIG, options);
+  const result = computeRecommendations(
+    selector,
+    allIndices,
+    getItemIds,
+    DEFAULT_CONFIG,
+    options,
+  );
   recommendedXxx = result.recommended;
   if (result.enabled) {
     enabledXxx = result.enabled;
@@ -134,22 +152,28 @@ function refreshUI() {
 Wire into all mutation sites:
 
 **quiz-fretboard.js:**
-- `toggleString()` — add `refreshUI()` *(fixes Bug 1: mastery message)*
-- Naturals-only handler — add `refreshUI()` *(fixes Bug 1)*
-- `activate()` — replace bare `engine.updateIdleMessage()` with `refreshUI()` *(fixes Bug 2: stale borders)*
-- `onStop()` — add `refreshUI()` *(fixes Bug 2)*
+
+- `toggleString()` — add `refreshUI()` _(fixes Bug 1: mastery message)_
+- Naturals-only handler — add `refreshUI()` _(fixes Bug 1)_
+- `activate()` — replace bare `engine.updateIdleMessage()` with `refreshUI()`
+  _(fixes Bug 2: stale borders)_
+- `onStop()` — add `refreshUI()` _(fixes Bug 2)_
 
 **quiz-semitone-math.js:**
+
 - `toggleGroup()` — replace `engine.updateIdleMessage()` with `refreshUI()`
-- `activate()` — replace bare `engine.updateIdleMessage()` with `refreshUI()` *(fixes Bug 2)*
-- `onStop()` — add `refreshUI()` *(fixes Bug 2)*
+- `activate()` — replace bare `engine.updateIdleMessage()` with `refreshUI()`
+  _(fixes Bug 2)_
+- `onStop()` — add `refreshUI()` _(fixes Bug 2)_
 
 **quiz-interval-math.js:**
+
 - Same changes as semitone-math
 
 #### Step 1e: Update build files
 
 Add `recommendations.js` to both `main.ts` and `build.ts`:
+
 - Read with `readModule()` (strips exports)
 - Concatenate after `statsDisplayJS`, before quiz mode files
 - Update the `Promise.all` array in `main.ts:46-59`
@@ -167,15 +191,15 @@ Add `recommendations.js` to both `main.ts` and `build.ts`:
 **Problem:** `quiz-engine.js` has state spread across closure variables
 (`active`, `currentItemId`, `answered`, `questionStartTime`, `expired`) and
 directly manipulates DOM in `start()`, `stop()`, `submitAnswer()`,
-`clearFeedback()`, `startCountdown()`, `updateIdleMessage()`. The test file
-says "createQuizEngine requires DOM + globals."
+`clearFeedback()`, `startCountdown()`, `updateIdleMessage()`. The test file says
+"createQuizEngine requires DOM + globals."
 
 **Solution:** Create `src/quiz-engine-state.js` with pure state transitions:
 
 ```javascript
 export function initialEngineState() {
   return {
-    phase: 'idle',          // 'idle' | 'active'
+    phase: 'idle', // 'idle' | 'active'
     currentItemId: null,
     answered: false,
     questionStartTime: null,
@@ -189,30 +213,54 @@ export function initialEngineState() {
 }
 
 export function engineNextQuestion(state, nextItemId, nowMs) {
-  return { ...state, phase: 'active', currentItemId: nextItemId,
-           answered: false, questionStartTime: nowMs,
-           feedbackText: '', feedbackClass: 'feedback',
-           timeDisplayText: '', hintText: '' };
+  return {
+    ...state,
+    phase: 'active',
+    currentItemId: nextItemId,
+    answered: false,
+    questionStartTime: nowMs,
+    feedbackText: '',
+    feedbackClass: 'feedback',
+    timeDisplayText: '',
+    hintText: '',
+  };
 }
 
-export function engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs) {
-  return { ...state, answered: true,
-           feedbackText: isCorrect ? 'Correct!' : 'Incorrect — ' + correctAnswer,
-           feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
-           timeDisplayText: responseTimeMs + ' ms',
-           hintText: 'Tap anywhere or press Space for next' };
+export function engineSubmitAnswer(
+  state,
+  isCorrect,
+  correctAnswer,
+  responseTimeMs,
+) {
+  return {
+    ...state,
+    answered: true,
+    feedbackText: isCorrect ? 'Correct!' : 'Incorrect — ' + correctAnswer,
+    feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
+    timeDisplayText: responseTimeMs + ' ms',
+    hintText: 'Tap anywhere or press Space for next',
+  };
 }
 
 export function engineStop(state) {
-  return { ...state, phase: 'idle', currentItemId: null, answered: false,
-           questionStartTime: null, feedbackText: '', timeDisplayText: '',
-           hintText: '' };
+  return {
+    ...state,
+    phase: 'idle',
+    currentItemId: null,
+    answered: false,
+    questionStartTime: null,
+    feedbackText: '',
+    timeDisplayText: '',
+    hintText: '',
+  };
 }
 
 export function engineHandleKey(state, key) {
   if (state.phase !== 'active') return { action: 'ignore' };
   if (key === 'Escape') return { action: 'escape' };
-  if ((key === ' ' || key === 'Enter') && state.answered) return { action: 'next' };
+  if ((key === ' ' || key === 'Enter') && state.answered) {
+    return { action: 'next' };
+  }
   if (!state.answered) return { action: 'delegate' };
   return { action: 'ignore' };
 }
@@ -224,19 +272,19 @@ function:
 ```javascript
 function renderEngineState(state, els) {
   const idle = state.phase === 'idle';
-  if (els.startBtn)      els.startBtn.style.display     = idle ? 'inline' : 'none';
-  if (els.stopBtn)       els.stopBtn.style.display      = idle ? 'none' : 'inline';
-  if (els.heatmapBtn)    els.heatmapBtn.style.display   = idle ? 'inline' : 'none';
+  if (els.startBtn) els.startBtn.style.display = idle ? 'inline' : 'none';
+  if (els.stopBtn) els.stopBtn.style.display = idle ? 'none' : 'inline';
+  if (els.heatmapBtn) els.heatmapBtn.style.display = idle ? 'inline' : 'none';
   if (els.statsControls) els.statsControls.style.display = idle ? '' : 'none';
-  if (els.quizArea)      els.quizArea.classList.toggle('active', !idle);
+  if (els.quizArea) els.quizArea.classList.toggle('active', !idle);
   if (els.feedback) {
     els.feedback.textContent = state.feedbackText;
-    els.feedback.className   = state.feedbackClass;
+    els.feedback.className = state.feedbackClass;
   }
   if (els.timeDisplay) els.timeDisplay.textContent = state.timeDisplayText;
-  if (els.hint)        els.hint.textContent        = state.hintText;
+  if (els.hint) els.hint.textContent = state.hintText;
   if (els.masteryMessage) {
-    els.masteryMessage.textContent   = state.masteryText;
+    els.masteryMessage.textContent = state.masteryText;
     els.masteryMessage.style.display = state.showMastery ? 'block' : 'none';
   }
 }
@@ -249,10 +297,11 @@ text/class, mastery messages — all without DOM or timers.
 
 ### Phase 3: Extract mode-specific pure logic (DONE — fretboard only)
 
-Each quiz mode has pure logic tangled with DOM. Split into state module +
-thin render.
+Each quiz mode has pure logic tangled with DOM. Split into state module + thin
+render.
 
 **Before** (`quiz-fretboard.js` `presentQuestion`):
+
 ```javascript
 presentQuestion(itemId) {
   clearAll();                                      // DOM
@@ -264,23 +313,31 @@ presentQuestion(itemId) {
 ```
 
 **After** — state module (`quiz-fretboard-state.js`):
+
 ```javascript
 export function fretboardPresent(state, itemId) {
   const [s, f] = itemId.split('-').map(Number);
-  return { ...state, currentString: s, currentFret: f,
-           currentNote: getNoteAtPosition(s, f),
-           highlight: { string: s, fret: f, color: '#FFD700' },
-           shownNotes: [] };
+  return {
+    ...state,
+    currentString: s,
+    currentFret: f,
+    currentNote: getNoteAtPosition(s, f),
+    highlight: { string: s, fret: f, color: '#FFD700' },
+    shownNotes: [],
+  };
 }
 
 export function fretboardOnCorrect(state) {
-  return { ...state,
-           highlight: { ...state.highlight, color: '#4CAF50' },
-           shownNotes: [{ string: state.currentString, fret: state.currentFret }] };
+  return {
+    ...state,
+    highlight: { ...state.highlight, color: '#4CAF50' },
+    shownNotes: [{ string: state.currentString, fret: state.currentFret }],
+  };
 }
 ```
 
 **Priority within modes:**
+
 - Fretboard — most complex, most benefit
 - Math modes — moderate; `presentQuestion` is already almost pure (2 lines)
 - Semitone lookup modes — simplest; extraction optional
@@ -288,8 +345,8 @@ export function fretboardOnCorrect(state) {
 ### Phase 4: Playwright for visual dev iteration (future)
 
 Add a lightweight `scripts/screenshot.ts` that launches Playwright, loads the
-built `docs/index.html`, and captures screenshots. Not a test suite — a dev
-tool so Claude can see the screen during feature iteration and give UX feedback.
+built `docs/index.html`, and captures screenshots. Not a test suite — a dev tool
+so Claude can see the screen during feature iteration and give UX feedback.
 
 - `npx playwright install chromium` (one-time setup)
 - `npx tsx scripts/screenshot.ts` → captures full page + per-mode screenshots
@@ -310,8 +367,8 @@ Better: add JSDoc type annotations to `.js` files + `"checkJs": true` in
 export function computeRecommendations(selector, ...) { }
 ```
 
-Run `npx tsc --noEmit` to check. Editor gets autocomplete/errors. Build
-stays the same.
+Run `npx tsc --noEmit` to check. Editor gets autocomplete/errors. Build stays
+the same.
 
 ### Phase 6: Navigation state (future, low priority)
 
@@ -320,25 +377,25 @@ routes, etc.).
 
 ## Files Modified (Phase 1 — what we're implementing now)
 
-| File | Changes |
-|------|---------|
-| `src/recommendations.js` | **New** — shared pure `computeRecommendations()` |
-| `src/recommendations_test.ts` | **New** — tests for the algorithm |
-| `src/quiz-fretboard.js` | Replace `applyRecommendations` with compute/update/apply + `refreshUI()` + wire into toggleString, naturals handler, activate, onStop |
-| `src/quiz-semitone-math.js` | Same refactor + `refreshUI()` + wire into toggleGroup, activate, onStop |
-| `src/quiz-interval-math.js` | Same refactor + `refreshUI()` + wire into toggleGroup, activate, onStop |
-| `main.ts` | Add `recommendationsJS` to reads + template |
-| `build.ts` | Add `recommendationsJS` to reads + template |
+| File                          | Changes                                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/recommendations.js`      | **New** — shared pure `computeRecommendations()`                                                                                      |
+| `src/recommendations_test.ts` | **New** — tests for the algorithm                                                                                                     |
+| `src/quiz-fretboard.js`       | Replace `applyRecommendations` with compute/update/apply + `refreshUI()` + wire into toggleString, naturals handler, activate, onStop |
+| `src/quiz-semitone-math.js`   | Same refactor + `refreshUI()` + wire into toggleGroup, activate, onStop                                                               |
+| `src/quiz-interval-math.js`   | Same refactor + `refreshUI()` + wire into toggleGroup, activate, onStop                                                               |
+| `main.ts`                     | Add `recommendationsJS` to reads + template                                                                                           |
+| `build.ts`                    | Add `recommendationsJS` to reads + template                                                                                           |
 
 ## Build System Integration (all phases)
 
 New files follow the same pattern as `adaptive.js`:
 
-| New file | Build treatment | Concatenation position |
-|----------|----------------|----------------------|
-| `src/recommendations.js` | `readModule()` | After `stats-display.js` |
-| `src/quiz-engine-state.js` *(Phase 2)* | `readModule()` | Before `quiz-engine.js` |
-| `src/quiz-fretboard-state.js` *(Phase 3)* | `readModule()` | Before `quiz-fretboard.js` |
+| New file                                  | Build treatment | Concatenation position     |
+| ----------------------------------------- | --------------- | -------------------------- |
+| `src/recommendations.js`                  | `readModule()`  | After `stats-display.js`   |
+| `src/quiz-engine-state.js` _(Phase 2)_    | `readModule()`  | Before `quiz-engine.js`    |
+| `src/quiz-fretboard-state.js` _(Phase 3)_ | `readModule()`  | Before `quiz-fretboard.js` |
 
 ## Testing Strategy
 
@@ -354,7 +411,8 @@ names or missing elements — both immediately visible in the browser.
 1. `npx tsx --test src/*_test.ts` — all tests pass (existing + new)
 2. `npx tsx build.ts` — build succeeds
 3. Manual verification scenarios:
-   - Toggle fretboard string → mastery message disappears if new items not mastered
+   - Toggle fretboard string → mastery message disappears if new items not
+     mastered
    - Toggle naturals-only → mastery message recalculates
    - Complete quiz, stop → orange recommendation borders update
    - Switch modes and back → recommendations reflect current data
@@ -367,14 +425,19 @@ names or missing elements — both immediately visible in the browser.
 ### What was done
 
 Created `src/quiz-engine-state.js` with 8 pure state transition functions:
+
 - `initialEngineState()` — idle state with UI visibility flags
 - `engineStart(state)` — activate quiz, flip button visibility
-- `engineNextQuestion(state, nextItemId, nowMs)` — set item/timestamp, clear feedback
-- `engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs)` — compute feedback
+- `engineNextQuestion(state, nextItemId, nowMs)` — set item/timestamp, clear
+  feedback
+- `engineSubmitAnswer(state, isCorrect, correctAnswer, responseTimeMs)` —
+  compute feedback
 - `engineStop(state)` — return to idle (delegates to `initialEngineState()`)
-- `engineUpdateIdleMessage(state, allMastered, needsReview)` — mastery/review message
+- `engineUpdateIdleMessage(state, allMastered, needsReview)` — mastery/review
+  message
 - `engineUpdateMasteryAfterAnswer(state, allMastered)` — in-quiz mastery check
-- `engineRouteKey(state, key)` — pure keyboard routing → `{action: 'stop'|'next'|'delegate'|'ignore'}`
+- `engineRouteKey(state, key)` — pure keyboard routing →
+  `{action: 'stop'|'next'|'delegate'|'ignore'}`
 
 The state shape includes UI visibility booleans (`showStartBtn`, `showStopBtn`,
 `showHeatmapBtn`, `showStatsControls`, `quizActive`, `answersEnabled`) that the
@@ -382,6 +445,7 @@ original plan didn't have. These let tests verify that state transitions produce
 the correct UI configuration.
 
 Refactored `quiz-engine.js`:
+
 - Replaced closure variables (`active`, `currentItemId`, `answered`,
   `questionStartTime`) with a single `state` object
 - Added `render()` function that declaratively maps state→DOM
@@ -390,23 +454,25 @@ Refactored `quiz-engine.js`:
 - `isActive`/`isAnswered` getters now read from `state.phase`/`state.answered`
 
 ### Deviations from plan
+
 - Plan sketched `engineHandleKey` returning `{action: 'escape'}` — implemented
   as `{action: 'stop'}` for clarity (matches the function it triggers)
 - `engineStop` returns `initialEngineState()` instead of spreading individual
   fields — simpler and guarantees reset to clean state
-- Added `engineUpdateMasteryAfterAnswer` as separate from `engineUpdateIdleMessage`
-  (plan had this)
+- Added `engineUpdateMasteryAfterAnswer` as separate from
+  `engineUpdateIdleMessage` (plan had this)
 
 ### Tests: 35 test cases in `src/quiz-engine-state_test.ts`
 
 ### Files modified
-| File | Changes |
-|------|---------|
-| `src/quiz-engine-state.js` | **New** — 8 pure state transition functions |
-| `src/quiz-engine-state_test.ts` | **New** — 35 test cases |
-| `src/quiz-engine.js` | Replaced closure vars with state object + render() |
-| `main.ts` | Added `quizEngineStateJS` to reads + template |
-| `build.ts` | Added `quizEngineStateJS` to reads + template |
+
+| File                            | Changes                                            |
+| ------------------------------- | -------------------------------------------------- |
+| `src/quiz-engine-state.js`      | **New** — 8 pure state transition functions        |
+| `src/quiz-engine-state_test.ts` | **New** — 35 test cases                            |
+| `src/quiz-engine.js`            | Replaced closure vars with state object + render() |
+| `main.ts`                       | Added `quizEngineStateJS` to reads + template      |
+| `build.ts`                      | Added `quizEngineStateJS` to reads + template      |
 
 ---
 
@@ -415,8 +481,10 @@ Refactored `quiz-engine.js`:
 ### What was done
 
 Created `src/quiz-fretboard-state.js` with:
+
 - `toggleFretboardString(enabledStrings, string)` — immutable Set toggle
-- `createFretboardHelpers(musicData)` — factory that binds music data and returns:
+- `createFretboardHelpers(musicData)` — factory that binds music data and
+  returns:
   - `getNoteAtPosition(string, fret)`
   - `parseFretboardItem(itemId)`
   - `checkFretboardAnswer(currentNote, input)`
@@ -426,21 +494,25 @@ Created `src/quiz-fretboard-state.js` with:
 The factory pattern solves the import/global problem: `readModule()` only strips
 `export`, not `import`, so the module can't use ES `import` statements (they'd
 appear as syntax errors in the concatenated browser code). Instead, the browser
-passes globals (`NOTES`, `STRING_OFFSETS`, etc.) via the factory; tests pass
-the imported values.
+passes globals (`NOTES`, `STRING_OFFSETS`, etc.) via the factory; tests pass the
+imported values.
 
 Refactored `quiz-fretboard.js`:
+
 - Creates `fb = createFretboardHelpers({...})` at module scope
-- `getEnabledItems()` → `fb.getFretboardEnabledItems(enabledStrings, naturalsOnly)`
+- `getEnabledItems()` →
+  `fb.getFretboardEnabledItems(enabledStrings, naturalsOnly)`
 - `presentQuestion()` → uses `fb.parseFretboardItem(itemId)` for pure parse
 - `checkAnswer()` → `fb.checkFretboardAnswer(currentNote, input)`
 - `getItemIdsForString()` → `fb.getItemIdsForString(s, naturalsOnly)`
 - `toggleString()` → `toggleFretboardString(enabledStrings, s)` (immutable)
 - **Eliminated duplicated handleKey state machine** (40 lines) — replaced with
-  `createNoteKeyHandler` from quiz-engine.js (same helper used by all other modes)
+  `createNoteKeyHandler` from quiz-engine.js (same helper used by all other
+  modes)
 - Added `noteKeyHandler.reset()` to `onStart()`, `onStop()`, and `deactivate()`
 
 ### Scope decision
+
 Only fretboard mode was extracted (most complex, most benefit). Math modes
 (`quiz-semitone-math.js`, `quiz-interval-math.js`) were skipped — their
 `presentQuestion` is 2 lines and `handleKey` already delegates to
@@ -448,12 +520,13 @@ Only fretboard mode was extracted (most complex, most benefit). Math modes
 `quiz-interval-semitones.js`) were also skipped for the same reason.
 
 ### Deviations from plan
+
 - Plan sketched `fretboardPresent(state, itemId)` returning a full state object
   with `highlight` and `shownNotes` fields. Instead used a lighter approach:
   `parseFretboardItem` returns `{currentString, currentFret, currentNote}` and
-  the mode file assigns to closure vars + calls DOM helpers. This avoids a
-  full render function for fretboard-specific DOM (SVG circle highlighting),
-  which would be complex to implement declaratively.
+  the mode file assigns to closure vars + calls DOM helpers. This avoids a full
+  render function for fretboard-specific DOM (SVG circle highlighting), which
+  would be complex to implement declaratively.
 - Plan didn't mention the factory pattern for music data injection — this was
   needed to solve the import/global problem.
 - `checkFretboardAnswer` takes `currentNote` as a parameter rather than being
@@ -462,10 +535,11 @@ Only fretboard mode was extracted (most complex, most benefit). Math modes
 ### Tests: 30 test cases in `src/quiz-fretboard-state_test.ts`
 
 ### Files modified
-| File | Changes |
-|------|---------|
-| `src/quiz-fretboard-state.js` | **New** — `toggleFretboardString` + `createFretboardHelpers` factory |
-| `src/quiz-fretboard-state_test.ts` | **New** — 30 test cases |
-| `src/quiz-fretboard.js` | Use state module, replace inline handleKey with createNoteKeyHandler |
-| `main.ts` | Added `quizFretboardStateJS` to reads + template |
-| `build.ts` | Added `quizFretboardStateJS` to reads + template |
+
+| File                               | Changes                                                              |
+| ---------------------------------- | -------------------------------------------------------------------- |
+| `src/quiz-fretboard-state.js`      | **New** — `toggleFretboardString` + `createFretboardHelpers` factory |
+| `src/quiz-fretboard-state_test.ts` | **New** — 30 test cases                                              |
+| `src/quiz-fretboard.js`            | Use state module, replace inline handleKey with createNoteKeyHandler |
+| `main.ts`                          | Added `quizFretboardStateJS` to reads + template                     |
+| `build.ts`                         | Added `quizFretboardStateJS` to reads + template                     |

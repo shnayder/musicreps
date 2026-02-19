@@ -2,9 +2,13 @@
 // Forward: "minor 3rd = ?" -> 3, Reverse: "7 = ?" -> Perfect 5th
 // 24 items total (12 intervals x 2 directions).
 
-import { INTERVALS, intervalMatchesInput } from './music-data.js';
+import { intervalMatchesInput, INTERVALS } from './music-data.js';
 import { createQuizEngine } from './quiz-engine.js';
-import { renderStatsTable, buildStatsLegend, createStatsControls } from './stats-display.js';
+import {
+  buildStatsLegend,
+  createStatsControls,
+  renderStatsTable,
+} from './stats-display.js';
 
 export function createIntervalSemitonesMode() {
   const container = document.getElementById('mode-intervalSemitones');
@@ -18,7 +22,7 @@ export function createIntervalSemitonesMode() {
 
   function parseItem(itemId) {
     const [abbrev, dir] = itemId.split(':');
-    const interval = INTERVALS.find(i => i.abbrev === abbrev);
+    const interval = INTERVALS.find((i) => i.abbrev === abbrev);
     return { interval, dir };
   }
 
@@ -29,13 +33,16 @@ export function createIntervalSemitonesMode() {
 
   function switchTab(tabName) {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
-    container.querySelectorAll('.tab-content').forEach(el => {
-      el.classList.toggle('active',
-        tabName === 'practice' ? el.classList.contains('tab-practice')
-                               : el.classList.contains('tab-progress'));
+    container.querySelectorAll('.tab-content').forEach((el) => {
+      el.classList.toggle(
+        'active',
+        tabName === 'practice'
+          ? el.classList.contains('tab-practice')
+          : el.classList.contains('tab-progress'),
+      );
     });
     if (tabName === 'progress') {
       statsControls.show(statsControls.mode || 'retention');
@@ -47,31 +54,37 @@ export function createIntervalSemitonesMode() {
   // --- Practice summary ---
 
   function renderPracticeSummary() {
-    var statusLabel = container.querySelector('.practice-status-label');
-    var statusDetail = container.querySelector('.practice-status-detail');
-    var recText = container.querySelector('.practice-rec-text');
-    var recBtn = container.querySelector('.practice-rec-btn');
+    const statusLabel = container.querySelector('.practice-status-label');
+    const statusDetail = container.querySelector('.practice-status-detail');
+    const recText = container.querySelector('.practice-rec-text');
+    const recBtn = container.querySelector('.practice-rec-btn');
     if (!statusLabel) return;
 
-    var threshold = engine.selector.getConfig().automaticityThreshold;
-    var fluent = 0, seen = 0;
-    for (var i = 0; i < ALL_ITEMS.length; i++) {
-      var auto = engine.selector.getAutomaticity(ALL_ITEMS[i]);
-      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    const threshold = engine.selector.getConfig().automaticityThreshold;
+    let fluent = 0, seen = 0;
+    for (let i = 0; i < ALL_ITEMS.length; i++) {
+      const auto = engine.selector.getAutomaticity(ALL_ITEMS[i]);
+      if (auto !== null) {
+        seen++;
+        if (auto > threshold) fluent++;
+      }
     }
 
     if (seen === 0) {
       statusLabel.textContent = 'Ready to start';
       statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
     } else {
-      var pct = ALL_ITEMS.length > 0 ? Math.round((fluent / ALL_ITEMS.length) * 100) : 0;
-      var label;
+      const pct = ALL_ITEMS.length > 0
+        ? Math.round((fluent / ALL_ITEMS.length) * 100)
+        : 0;
+      let label;
       if (pct >= 80) label = 'Strong';
       else if (pct >= 50) label = 'Solid';
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = fluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+      statusDetail.textContent = fluent + ' of ' + ALL_ITEMS.length +
+        ' items fluent';
     }
 
     // No groups, so no recommendation
@@ -80,13 +93,13 @@ export function createIntervalSemitonesMode() {
   }
 
   function renderSessionSummary() {
-    var el = container.querySelector('.session-summary-text');
+    const el = container.querySelector('.session-summary-text');
     if (!el) return;
     el.textContent = ALL_ITEMS.length + ' items \u00B7 60s';
   }
 
   function getTableRows() {
-    return INTERVALS.map(interval => ({
+    return INTERVALS.map((interval) => ({
       label: interval.abbrev,
       sublabel: String(interval.num),
       _colHeader: 'Interval',
@@ -95,10 +108,18 @@ export function createIntervalSemitonesMode() {
     }));
   }
 
-  const statsControls = createStatsControls(container, function(mode, el) {
+  const statsControls = createStatsControls(container, function (mode, el) {
     const tableDiv = document.createElement('div');
     el.appendChild(tableDiv);
-    renderStatsTable(engine.selector, getTableRows(), 'I\u2192#', '#\u2192I', mode, tableDiv, engine.baseline);
+    renderStatsTable(
+      engine.selector,
+      getTableRows(),
+      'I\u2192#',
+      '#\u2192I',
+      mode,
+      tableDiv,
+      engine.baseline,
+    );
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
     el.appendChild(legendDiv);
@@ -116,7 +137,9 @@ export function createIntervalSemitonesMode() {
     presentQuestion(itemId) {
       currentItem = parseItem(itemId);
       const prompt = container.querySelector('.quiz-prompt');
-      const intervalButtons = container.querySelector('.answer-buttons-intervals');
+      const intervalButtons = container.querySelector(
+        '.answer-buttons-intervals',
+      );
       const numButtons = container.querySelector('.answer-buttons-numbers');
 
       if (currentItem.dir === 'fwd') {
@@ -132,7 +155,7 @@ export function createIntervalSemitonesMode() {
       }
     },
 
-    checkAnswer(itemId, input) {
+    checkAnswer(_itemId, input) {
       if (currentItem.dir === 'fwd') {
         const correct = parseInt(input, 10) === currentItem.interval.num;
         return { correct, correctAnswer: String(currentItem.interval.num) };
@@ -215,12 +238,12 @@ export function createIntervalSemitonesMode() {
 
   function init() {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
     // Interval answer buttons
-    container.querySelectorAll('.answer-btn-interval').forEach(btn => {
+    container.querySelectorAll('.answer-btn-interval').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
         engine.submitAnswer(btn.dataset.interval);
@@ -228,7 +251,7 @@ export function createIntervalSemitonesMode() {
     });
 
     // Number answer buttons
-    container.querySelectorAll('.answer-btn-num').forEach(btn => {
+    container.querySelectorAll('.answer-btn-num').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
         engine.submitAnswer(btn.dataset.num);
@@ -236,7 +259,10 @@ export function createIntervalSemitonesMode() {
     });
 
     // Start/stop
-    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.start-btn').addEventListener(
+      'click',
+      () => engine.start(),
+    );
 
     renderPracticeSummary();
     renderSessionSummary();
@@ -246,7 +272,11 @@ export function createIntervalSemitonesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); engine.updateIdleMessage(); renderPracticeSummary(); },
+    activate() {
+      engine.attach();
+      engine.updateIdleMessage();
+      renderPracticeSummary();
+    },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

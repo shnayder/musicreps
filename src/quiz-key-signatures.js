@@ -3,10 +3,24 @@
 // 24 items: 12 major keys x 2 directions.
 // Grouped by accidental count for progressive unlocking.
 
-import { MAJOR_KEYS, keySignatureLabel, keyBySignatureLabel, spelledNoteMatchesSemitone, displayNote } from './music-data.js';
+import {
+  displayNote,
+  keySignatureLabel,
+  MAJOR_KEYS,
+  spelledNoteMatchesSemitone,
+} from './music-data.js';
 import { DEFAULT_CONFIG } from './adaptive.js';
-import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
-import { renderStatsTable, buildStatsLegend, createStatsControls } from './stats-display.js';
+import {
+  createAdaptiveKeyHandler,
+  createQuizEngine,
+  pickCalibrationButton,
+  refreshNoteButtonLabels,
+} from './quiz-engine.js';
+import {
+  buildStatsLegend,
+  createStatsControls,
+  renderStatsTable,
+} from './stats-display.js';
 import { computeRecommendations } from './recommendations.js';
 
 export function createKeySignaturesMode() {
@@ -15,11 +29,11 @@ export function createKeySignaturesMode() {
 
   // Group definitions: keys grouped by accidental count
   const KEY_GROUPS = [
-    { keys: ['C', 'G', 'F'],     label: 'C G F' },
-    { keys: ['D', 'Bb'],         label: 'D B\u266D' },
-    { keys: ['A', 'Eb'],         label: 'A E\u266D' },
-    { keys: ['E', 'Ab'],         label: 'E A\u266D' },
-    { keys: ['B', 'Db', 'F#'],   label: 'B D\u266D F\u266F' },
+    { keys: ['C', 'G', 'F'], label: 'C G F' },
+    { keys: ['D', 'Bb'], label: 'D B\u266D' },
+    { keys: ['A', 'Eb'], label: 'A E\u266D' },
+    { keys: ['E', 'Ab'], label: 'E A\u266D' },
+    { keys: ['B', 'Db', 'F#'], label: 'B D\u266D F\u266F' },
   ];
 
   let enabledGroups = new Set([0, 1]); // Default: groups 0+1
@@ -34,7 +48,7 @@ export function createKeySignaturesMode() {
 
   function parseItem(itemId) {
     const [rootName, dir] = itemId.split(':');
-    const key = MAJOR_KEYS.find(k => k.root === rootName);
+    const key = MAJOR_KEYS.find((k) => k.root === rootName);
     return { key, dir };
   }
 
@@ -53,7 +67,9 @@ export function createKeySignaturesMode() {
   function loadEnabledGroups() {
     const saved = localStorage.getItem(GROUPS_KEY);
     if (saved) {
-      try { enabledGroups = new Set(JSON.parse(saved)); } catch {}
+      try {
+        enabledGroups = new Set(JSON.parse(saved));
+      } catch { /* expected */ }
     }
     updateGroupToggles();
   }
@@ -63,7 +79,7 @@ export function createKeySignaturesMode() {
   }
 
   function updateGroupToggles() {
-    container.querySelectorAll('.distance-toggle').forEach(btn => {
+    container.querySelectorAll('.distance-toggle').forEach((btn) => {
       const g = parseInt(btn.dataset.group);
       btn.classList.toggle('active', enabledGroups.has(g));
       btn.classList.toggle('recommended', recommendedGroups.has(g));
@@ -74,16 +90,22 @@ export function createKeySignaturesMode() {
 
   function getRecommendationResult() {
     const allGroups = KEY_GROUPS.map((_, i) => i);
-    return computeRecommendations(engine.selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    return computeRecommendations(
+      engine.selector,
+      allGroups,
+      getItemIdsForGroup,
+      DEFAULT_CONFIG,
+      recsOptions,
+    );
   }
 
-  function updateRecommendations(selector) {
+  function updateRecommendations(_selector) {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
-  function applyRecommendations(selector) {
+  function applyRecommendations(_selector) {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
@@ -108,13 +130,16 @@ export function createKeySignaturesMode() {
 
   function switchTab(tabName) {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
-    container.querySelectorAll('.tab-content').forEach(el => {
-      el.classList.toggle('active',
-        tabName === 'practice' ? el.classList.contains('tab-practice')
-                               : el.classList.contains('tab-progress'));
+    container.querySelectorAll('.tab-content').forEach((el) => {
+      el.classList.toggle(
+        'active',
+        tabName === 'practice'
+          ? el.classList.contains('tab-practice')
+          : el.classList.contains('tab-progress'),
+      );
     });
     if (tabName === 'progress') {
       statsControls.show(statsControls.mode || 'retention');
@@ -133,22 +158,25 @@ export function createKeySignaturesMode() {
   // --- Practice summary ---
 
   function renderPracticeSummary() {
-    var statusLabel = container.querySelector('.practice-status-label');
-    var statusDetail = container.querySelector('.practice-status-detail');
-    var recText = container.querySelector('.practice-rec-text');
-    var recBtn = container.querySelector('.practice-rec-btn');
+    const statusLabel = container.querySelector('.practice-status-label');
+    const statusDetail = container.querySelector('.practice-status-detail');
+    const recText = container.querySelector('.practice-rec-text');
+    const recBtn = container.querySelector('.practice-rec-btn');
     if (!statusLabel) return;
 
-    var items = mode.getEnabledItems();
-    var threshold = engine.selector.getConfig().automaticityThreshold;
-    var fluent = 0, seen = 0;
-    for (var i = 0; i < items.length; i++) {
-      var auto = engine.selector.getAutomaticity(items[i]);
-      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    const items = mode.getEnabledItems();
+    const threshold = engine.selector.getConfig().automaticityThreshold;
+    let fluent = 0, seen = 0;
+    for (let i = 0; i < items.length; i++) {
+      const auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) {
+        seen++;
+        if (auto > threshold) fluent++;
+      }
     }
-    var allFluent = 0;
-    for (var j = 0; j < ALL_ITEMS.length; j++) {
-      var a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
+    let allFluent = 0;
+    for (let j = 0; j < ALL_ITEMS.length; j++) {
+      const a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
       if (a2 !== null && a2 > threshold) allFluent++;
     }
 
@@ -156,28 +184,41 @@ export function createKeySignaturesMode() {
       statusLabel.textContent = 'Ready to start';
       statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
     } else {
-      var pct = ALL_ITEMS.length > 0 ? Math.round((allFluent / ALL_ITEMS.length) * 100) : 0;
-      var label;
+      const pct = ALL_ITEMS.length > 0
+        ? Math.round((allFluent / ALL_ITEMS.length) * 100)
+        : 0;
+      let label;
       if (pct >= 80) label = 'Strong';
       else if (pct >= 50) label = 'Solid';
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length +
+        ' items fluent';
     }
 
-    var result = getRecommendationResult();
+    const result = getRecommendationResult();
     if (result.recommended.size > 0) {
-      var parts = [];
+      const parts = [];
       if (result.consolidateIndices.length > 0) {
-        var cNames = result.consolidateIndices.sort(function(a, b) { return a - b; })
-          .map(function(g) { return KEY_GROUPS[g].label; });
-        parts.push('solidify ' + cNames.join(', ')
-          + ' \u2014 ' + result.consolidateDueCount + ' slow item' + (result.consolidateDueCount !== 1 ? 's' : ''));
+        const cNames = result.consolidateIndices.sort(function (a, b) {
+          return a - b;
+        })
+          .map(function (g) {
+            return KEY_GROUPS[g].label;
+          });
+        parts.push(
+          'solidify ' + cNames.join(', ') +
+            ' \u2014 ' + result.consolidateDueCount + ' slow item' +
+            (result.consolidateDueCount !== 1 ? 's' : ''),
+        );
       }
       if (result.expandIndex !== null) {
-        parts.push('start ' + KEY_GROUPS[result.expandIndex].label
-          + ' \u2014 ' + result.expandNewCount + ' new item' + (result.expandNewCount !== 1 ? 's' : ''));
+        parts.push(
+          'start ' + KEY_GROUPS[result.expandIndex].label +
+            ' \u2014 ' + result.expandNewCount + ' new item' +
+            (result.expandNewCount !== 1 ? 's' : ''),
+        );
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
       recBtn.classList.remove('hidden');
@@ -185,13 +226,12 @@ export function createKeySignaturesMode() {
       recText.textContent = '';
       recBtn.classList.add('hidden');
     }
-
   }
 
   function renderSessionSummary() {
-    var el = container.querySelector('.session-summary-text');
+    const el = container.querySelector('.session-summary-text');
     if (!el) return;
-    var items = mode.getEnabledItems();
+    const items = mode.getEnabledItems();
     el.textContent = items.length + ' items \u00B7 60s';
   }
 
@@ -200,7 +240,7 @@ export function createKeySignaturesMode() {
   let currentItem = null;
 
   function getTableRows() {
-    return MAJOR_KEYS.map(key => ({
+    return MAJOR_KEYS.map((key) => ({
       label: displayNote(key.root) + ' major',
       sublabel: keySignatureLabel(key),
       _colHeader: 'Key',
@@ -212,7 +252,15 @@ export function createKeySignaturesMode() {
   const statsControls = createStatsControls(container, (mode, el) => {
     const tableDiv = document.createElement('div');
     el.appendChild(tableDiv);
-    renderStatsTable(engine.selector, getTableRows(), 'Key\u2192Sig', 'Sig\u2192Key', mode, tableDiv, engine.baseline);
+    renderStatsTable(
+      engine.selector,
+      getTableRows(),
+      'Key\u2192Sig',
+      'Sig\u2192Key',
+      mode,
+      tableDiv,
+      engine.baseline,
+    );
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
     el.appendChild(legendDiv);
@@ -239,8 +287,8 @@ export function createKeySignaturesMode() {
     getPracticingLabel() {
       if (enabledGroups.size === KEY_GROUPS.length) return 'all keys';
       const keys = [...enabledGroups].sort((a, b) => a - b)
-        .flatMap(g => KEY_GROUPS[g].keys)
-        .map(k => displayNote(k));
+        .flatMap((g) => KEY_GROUPS[g].keys)
+        .map((k) => displayNote(k));
       return keys.join(', ');
     },
 
@@ -262,7 +310,7 @@ export function createKeySignaturesMode() {
       }
     },
 
-    checkAnswer(itemId, input) {
+    checkAnswer(_itemId, input) {
       if (currentItem.dir === 'fwd') {
         const expected = keySignatureLabel(currentItem.key);
         return { correct: input === expected, correctAnswer: expected };
@@ -329,18 +377,18 @@ export function createKeySignaturesMode() {
   engine.storage.preload(ALL_ITEMS);
 
   const noteKeyHandler = createAdaptiveKeyHandler(
-    input => engine.submitAnswer(input),
-    () => true
+    (input) => engine.submitAnswer(input),
+    () => true,
   );
 
   function init() {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
     // Set section heading
-    var toggleLabel = container.querySelector('.toggle-group-label');
+    const toggleLabel = container.querySelector('.toggle-group-label');
     if (toggleLabel) toggleLabel.textContent = 'Keys';
 
     const togglesDiv = container.querySelector('.distance-toggles');
@@ -355,24 +403,27 @@ export function createKeySignaturesMode() {
 
     loadEnabledGroups();
 
-    container.querySelectorAll('.answer-btn-keysig').forEach(btn => {
+    container.querySelectorAll('.answer-btn-keysig').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
         engine.submitAnswer(btn.dataset.sig);
       });
     });
 
-    container.querySelectorAll('.answer-btn-note').forEach(btn => {
+    container.querySelectorAll('.answer-btn-note').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
         engine.submitAnswer(btn.dataset.note);
       });
     });
 
-    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.start-btn').addEventListener(
+      'click',
+      () => engine.start(),
+    );
 
     // Use recommendation button
-    var recBtn = container.querySelector('.practice-rec-btn');
+    const recBtn = container.querySelector('.practice-rec-btn');
     if (recBtn) {
       recBtn.addEventListener('click', () => {
         applyRecommendations(engine.selector);
@@ -389,7 +440,11 @@ export function createKeySignaturesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); },
+    activate() {
+      engine.attach();
+      refreshNoteButtonLabels(container);
+      refreshUI();
+    },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

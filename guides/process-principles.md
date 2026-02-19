@@ -10,11 +10,12 @@ but the principles behind them.
 
 The goal is to continuously improve context, tooling, and process so that
 changes and improvements happen faster, with less review and fewer bugs over
-time. Every feature is an opportunity to leave the codebase in better shape
-than we found it -- better guides, sharper conventions, more reusable patterns,
+time. Every feature is an opportunity to leave the codebase in better shape than
+we found it -- better guides, sharper conventions, more reusable patterns,
 tighter review automation.
 
 This means:
+
 - When a bug reveals a missing convention, document the convention.
 - When a feature requires a pattern that will recur, extract it as shared
   infrastructure.

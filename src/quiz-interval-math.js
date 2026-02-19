@@ -4,10 +4,27 @@
 // Excludes octave/P8 (adding 12 semitones gives same note).
 // Grouped by interval pair into 6 distance groups for progressive unlocking.
 
-import { NOTES, INTERVALS, noteAdd, noteSub, noteMatchesInput, pickAccidentalName, displayNote } from './music-data.js';
+import {
+  displayNote,
+  INTERVALS,
+  noteAdd,
+  noteMatchesInput,
+  NOTES,
+  noteSub,
+  pickAccidentalName,
+} from './music-data.js';
 import { DEFAULT_CONFIG } from './adaptive.js';
-import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
-import { renderStatsGrid, buildStatsLegend, createStatsControls } from './stats-display.js';
+import {
+  createAdaptiveKeyHandler,
+  createQuizEngine,
+  pickCalibrationButton,
+  refreshNoteButtonLabels,
+} from './quiz-engine.js';
+import {
+  buildStatsLegend,
+  createStatsControls,
+  renderStatsGrid,
+} from './stats-display.js';
 import { computeRecommendations } from './recommendations.js';
 
 export function createIntervalMathMode() {
@@ -15,16 +32,16 @@ export function createIntervalMathMode() {
   const GROUPS_KEY = 'intervalMath_enabledGroups';
 
   // Intervals 1-11 only (no octave)
-  const MATH_INTERVALS = INTERVALS.filter(i => i.num >= 1 && i.num <= 11);
+  const MATH_INTERVALS = INTERVALS.filter((i) => i.num >= 1 && i.num <= 11);
 
   // Distance groups: pairs of intervals by semitone count
   const DISTANCE_GROUPS = [
-    { distances: [1, 2],   label: 'm2 M2' },
-    { distances: [3, 4],   label: 'm3 M3' },
-    { distances: [5, 6],   label: 'P4 TT' },
-    { distances: [7, 8],   label: 'P5 m6' },
-    { distances: [9, 10],  label: 'M6 m7' },
-    { distances: [11],     label: 'M7' },
+    { distances: [1, 2], label: 'm2 M2' },
+    { distances: [3, 4], label: 'm3 M3' },
+    { distances: [5, 6], label: 'P4 TT' },
+    { distances: [7, 8], label: 'P5 m6' },
+    { distances: [9, 10], label: 'M6 m7' },
+    { distances: [11], label: 'M7' },
   ];
 
   let enabledGroups = new Set([0]); // Default: first group only
@@ -44,9 +61,11 @@ export function createIntervalMathMode() {
     const noteName = match[1];
     const op = match[2];
     const abbrev = match[3];
-    const note = NOTES.find(n => n.name === noteName);
-    const interval = MATH_INTERVALS.find(i => i.abbrev === abbrev);
-    const answer = op === '+' ? noteAdd(note.num, interval.num) : noteSub(note.num, interval.num);
+    const note = NOTES.find((n) => n.name === noteName);
+    const interval = MATH_INTERVALS.find((i) => i.abbrev === abbrev);
+    const answer = op === '+'
+      ? noteAdd(note.num, interval.num)
+      : noteSub(note.num, interval.num);
     return { note, op, interval, answer };
   }
 
@@ -54,7 +73,7 @@ export function createIntervalMathMode() {
 
   function getItemIdsForGroup(groupIndex) {
     const distances = DISTANCE_GROUPS[groupIndex].distances;
-    const intervals = MATH_INTERVALS.filter(i => distances.includes(i.num));
+    const intervals = MATH_INTERVALS.filter((i) => distances.includes(i.num));
     const items = [];
     for (const note of NOTES) {
       for (const interval of intervals) {
@@ -68,7 +87,9 @@ export function createIntervalMathMode() {
   function loadEnabledGroups() {
     const saved = localStorage.getItem(GROUPS_KEY);
     if (saved) {
-      try { enabledGroups = new Set(JSON.parse(saved)); } catch {}
+      try {
+        enabledGroups = new Set(JSON.parse(saved));
+      } catch { /* expected */ }
     }
     updateGroupToggles();
   }
@@ -78,7 +99,7 @@ export function createIntervalMathMode() {
   }
 
   function updateGroupToggles() {
-    container.querySelectorAll('.distance-toggle').forEach(btn => {
+    container.querySelectorAll('.distance-toggle').forEach((btn) => {
       const g = parseInt(btn.dataset.group);
       btn.classList.toggle('active', enabledGroups.has(g));
       btn.classList.toggle('recommended', recommendedGroups.has(g));
@@ -89,16 +110,22 @@ export function createIntervalMathMode() {
 
   function getRecommendationResult() {
     const allGroups = DISTANCE_GROUPS.map((_, i) => i);
-    return computeRecommendations(engine.selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    return computeRecommendations(
+      engine.selector,
+      allGroups,
+      getItemIdsForGroup,
+      DEFAULT_CONFIG,
+      recsOptions,
+    );
   }
 
-  function updateRecommendations(selector) {
+  function updateRecommendations(_selector) {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
-  function applyRecommendations(selector) {
+  function applyRecommendations(_selector) {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
@@ -123,13 +150,16 @@ export function createIntervalMathMode() {
 
   function switchTab(tabName) {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
-    container.querySelectorAll('.tab-content').forEach(el => {
-      el.classList.toggle('active',
-        tabName === 'practice' ? el.classList.contains('tab-practice')
-                               : el.classList.contains('tab-progress'));
+    container.querySelectorAll('.tab-content').forEach((el) => {
+      el.classList.toggle(
+        'active',
+        tabName === 'practice'
+          ? el.classList.contains('tab-practice')
+          : el.classList.contains('tab-progress'),
+      );
     });
     if (tabName === 'progress') {
       statsControls.show(statsControls.mode || 'retention');
@@ -148,22 +178,25 @@ export function createIntervalMathMode() {
   // --- Practice summary ---
 
   function renderPracticeSummary() {
-    var statusLabel = container.querySelector('.practice-status-label');
-    var statusDetail = container.querySelector('.practice-status-detail');
-    var recText = container.querySelector('.practice-rec-text');
-    var recBtn = container.querySelector('.practice-rec-btn');
+    const statusLabel = container.querySelector('.practice-status-label');
+    const statusDetail = container.querySelector('.practice-status-detail');
+    const recText = container.querySelector('.practice-rec-text');
+    const recBtn = container.querySelector('.practice-rec-btn');
     if (!statusLabel) return;
 
-    var items = mode.getEnabledItems();
-    var threshold = engine.selector.getConfig().automaticityThreshold;
-    var fluent = 0, seen = 0;
-    for (var i = 0; i < items.length; i++) {
-      var auto = engine.selector.getAutomaticity(items[i]);
-      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    const items = mode.getEnabledItems();
+    const threshold = engine.selector.getConfig().automaticityThreshold;
+    let fluent = 0, seen = 0;
+    for (let i = 0; i < items.length; i++) {
+      const auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) {
+        seen++;
+        if (auto > threshold) fluent++;
+      }
     }
-    var allFluent = 0;
-    for (var j = 0; j < ALL_ITEMS.length; j++) {
-      var a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
+    let allFluent = 0;
+    for (let j = 0; j < ALL_ITEMS.length; j++) {
+      const a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
       if (a2 !== null && a2 > threshold) allFluent++;
     }
 
@@ -171,28 +204,41 @@ export function createIntervalMathMode() {
       statusLabel.textContent = 'Ready to start';
       statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
     } else {
-      var pct = ALL_ITEMS.length > 0 ? Math.round((allFluent / ALL_ITEMS.length) * 100) : 0;
-      var label;
+      const pct = ALL_ITEMS.length > 0
+        ? Math.round((allFluent / ALL_ITEMS.length) * 100)
+        : 0;
+      let label;
       if (pct >= 80) label = 'Strong';
       else if (pct >= 50) label = 'Solid';
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length +
+        ' items fluent';
     }
 
-    var result = getRecommendationResult();
+    const result = getRecommendationResult();
     if (result.recommended.size > 0) {
-      var parts = [];
+      const parts = [];
       if (result.consolidateIndices.length > 0) {
-        var cNames = result.consolidateIndices.sort(function(a, b) { return a - b; })
-          .map(function(g) { return DISTANCE_GROUPS[g].label; });
-        parts.push('solidify ' + cNames.join(', ')
-          + ' \u2014 ' + result.consolidateDueCount + ' slow item' + (result.consolidateDueCount !== 1 ? 's' : ''));
+        const cNames = result.consolidateIndices.sort(function (a, b) {
+          return a - b;
+        })
+          .map(function (g) {
+            return DISTANCE_GROUPS[g].label;
+          });
+        parts.push(
+          'solidify ' + cNames.join(', ') +
+            ' \u2014 ' + result.consolidateDueCount + ' slow item' +
+            (result.consolidateDueCount !== 1 ? 's' : ''),
+        );
       }
       if (result.expandIndex !== null) {
-        parts.push('start ' + DISTANCE_GROUPS[result.expandIndex].label
-          + ' \u2014 ' + result.expandNewCount + ' new item' + (result.expandNewCount !== 1 ? 's' : ''));
+        parts.push(
+          'start ' + DISTANCE_GROUPS[result.expandIndex].label +
+            ' \u2014 ' + result.expandNewCount + ' new item' +
+            (result.expandNewCount !== 1 ? 's' : ''),
+        );
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
       recBtn.classList.remove('hidden');
@@ -200,13 +246,12 @@ export function createIntervalMathMode() {
       recText.textContent = '';
       recBtn.classList.add('hidden');
     }
-
   }
 
   function renderSessionSummary() {
-    var el = container.querySelector('.session-summary-text');
+    const el = container.querySelector('.session-summary-text');
     if (!el) return;
-    var items = mode.getEnabledItems();
+    const items = mode.getEnabledItems();
     el.textContent = items.length + ' items \u00B7 60s';
   }
 
@@ -215,14 +260,22 @@ export function createIntervalMathMode() {
   let currentItem = null;
 
   const statsControls = createStatsControls(container, (mode, el) => {
-    const colLabels = MATH_INTERVALS.map(i => i.abbrev);
+    const colLabels = MATH_INTERVALS.map((i) => i.abbrev);
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
     el.appendChild(gridDiv);
-    renderStatsGrid(engine.selector, colLabels, (noteName, colIdx) => {
-      const abbrev = MATH_INTERVALS[colIdx].abbrev;
-      return [noteName + '+' + abbrev, noteName + '-' + abbrev];
-    }, mode, gridDiv, undefined, engine.baseline);
+    renderStatsGrid(
+      engine.selector,
+      colLabels,
+      (noteName, colIdx) => {
+        const abbrev = MATH_INTERVALS[colIdx].abbrev;
+        return [noteName + '+' + abbrev, noteName + '-' + abbrev];
+      },
+      mode,
+      gridDiv,
+      undefined,
+      engine.baseline,
+    );
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
     el.appendChild(legendDiv);
@@ -246,7 +299,7 @@ export function createIntervalMathMode() {
     getPracticingLabel() {
       if (enabledGroups.size === DISTANCE_GROUPS.length) return 'all intervals';
       const labels = [...enabledGroups].sort((a, b) => a - b)
-        .map(g => DISTANCE_GROUPS[g].label);
+        .map((g) => DISTANCE_GROUPS[g].label);
       return labels.join(', ') + ' intervals';
     },
 
@@ -254,17 +307,32 @@ export function createIntervalMathMode() {
       currentItem = parseItem(itemId);
       currentItem.useFlats = currentItem.op === '-'; // sharps ascending, flats descending
       const prompt = container.querySelector('.quiz-prompt');
-      const noteName = displayNote(pickAccidentalName(currentItem.note.displayName, currentItem.useFlats));
-      prompt.textContent = noteName + ' ' + currentItem.op + ' ' + currentItem.interval.abbrev;
-      container.querySelectorAll('.answer-btn-note').forEach(btn => {
-        const note = NOTES.find(n => n.name === btn.dataset.note);
-        if (note) btn.textContent = displayNote(pickAccidentalName(note.displayName, currentItem.useFlats));
+      const noteName = displayNote(
+        pickAccidentalName(currentItem.note.displayName, currentItem.useFlats),
+      );
+      prompt.textContent = noteName + ' ' + currentItem.op + ' ' +
+        currentItem.interval.abbrev;
+      container.querySelectorAll('.answer-btn-note').forEach((btn) => {
+        const note = NOTES.find((n) => n.name === btn.dataset.note);
+        if (note) {
+          btn.textContent = displayNote(
+            pickAccidentalName(note.displayName, currentItem.useFlats),
+          );
+        }
       });
     },
 
-    checkAnswer(itemId, input) {
+    checkAnswer(_itemId, input) {
       const correct = noteMatchesInput(currentItem.answer, input);
-      return { correct, correctAnswer: displayNote(pickAccidentalName(currentItem.answer.displayName, currentItem.useFlats)) };
+      return {
+        correct,
+        correctAnswer: displayNote(
+          pickAccidentalName(
+            currentItem.answer.displayName,
+            currentItem.useFlats,
+          ),
+        ),
+      };
     },
 
     onStart() {
@@ -281,7 +349,7 @@ export function createIntervalMathMode() {
       refreshUI();
     },
 
-    handleKey(e, { submitAnswer }) {
+    handleKey(e, { submitAnswer: _submitAnswer }) {
       return noteKeyHandler.handleKey(e);
     },
 
@@ -300,17 +368,17 @@ export function createIntervalMathMode() {
 
   const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
-    () => true
+    () => true,
   );
 
   function init() {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
     // Set section heading
-    var toggleLabel = container.querySelector('.toggle-group-label');
+    const toggleLabel = container.querySelector('.toggle-group-label');
     if (toggleLabel) toggleLabel.textContent = 'Intervals';
 
     // Generate distance group toggle buttons
@@ -327,17 +395,20 @@ export function createIntervalMathMode() {
     loadEnabledGroups();
 
     // Note answer buttons
-    container.querySelectorAll('.answer-btn-note').forEach(btn => {
+    container.querySelectorAll('.answer-btn-note').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
         engine.submitAnswer(btn.dataset.note);
       });
     });
 
-    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.start-btn').addEventListener(
+      'click',
+      () => engine.start(),
+    );
 
     // Use recommendation button
-    var recBtn = container.querySelector('.practice-rec-btn');
+    const recBtn = container.querySelector('.practice-rec-btn');
     if (recBtn) {
       recBtn.addEventListener('click', () => {
         applyRecommendations(engine.selector);
@@ -354,7 +425,11 @@ export function createIntervalMathMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); },
+    activate() {
+      engine.attach();
+      refreshNoteButtonLabels(container);
+      refreshUI();
+    },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

@@ -1,12 +1,12 @@
 # Fix: Tap-anywhere doesn't work below hint text
 
-**Date:** 2026-02-10
-**Status:** In progress
+**Date:** 2026-02-10 **Status:** In progress
 
 ## Problem
 
 After answering a question, the "Tap anywhere or press Space for next" hint
-appears. Tapping on disabled buttons now works (previous fix: `pointer-events:
+appears. Tapping on disabled buttons now works (previous fix:
+`pointer-events:
 none`), but tapping below the hint text does nothing.
 
 **Root cause:** The click handler is attached to `.mode-screen`, which only
@@ -24,6 +24,7 @@ screen (including below the content) are captured by the click handler.
    fill all remaining space below the top bar.
 
 This is safe because:
+
 - Hidden mode-screens have `display: none` (set inline by navigation.js), so
   they don't participate in flex layout.
 - The single visible mode-screen gets all remaining space.

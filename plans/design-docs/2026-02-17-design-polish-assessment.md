@@ -1,12 +1,12 @@
 # Design Polish Assessment
 
-**Date:** 2026-02-17
-**Status:** Assessment / prioritized recommendations
-**Context:** The visual design overhaul (2026-02-14 through 2026-02-16) established
-a solid design system — CSS custom properties, spacing/typography tokens, warm
-neutral palette, sage brand color, accessible heatmap, phase-driven visibility.
-This document assesses where we are now and prioritizes the next wave of polish
-to move from "clean and functional" toward "distinctive and polished."
+**Date:** 2026-02-17 **Status:** Assessment / prioritized recommendations
+**Context:** The visual design overhaul (2026-02-14 through 2026-02-16)
+established a solid design system — CSS custom properties, spacing/typography
+tokens, warm neutral palette, sage brand color, accessible heatmap, phase-driven
+visibility. This document assesses where we are now and prioritizes the next
+wave of polish to move from "clean and functional" toward "distinctive and
+polished."
 
 ---
 
@@ -43,12 +43,12 @@ with a green button**. Specific symptoms:
 - **No visual personality.** System fonts, flat surfaces, no icons, no
   animations. Could be any web app. The vision calls for "warm practice space"
   but the implementation delivers "neutral utility."
-- **The quiz loop feels flat.** Users spend 90%+ of their time in the
-  question → answer → feedback cycle, and each of those moments is visually
-  minimal: plain text prompt, white buttons, colored text feedback.
+- **The quiz loop feels flat.** Users spend 90%+ of their time in the question →
+  answer → feedback cycle, and each of those moments is visually minimal: plain
+  text prompt, white buttons, colored text feedback.
 - **Home screen is a text list.** First impression is plain white cards with
-  text. No progress indicators, no color coding, no visual hierarchy beyond
-  font weight.
+  text. No progress indicators, no color coding, no visual hierarchy beyond font
+  weight.
 - **State transitions are instant.** Phase changes (idle → active → round
   complete) are show/hide with no animation, making the app feel static.
 
@@ -60,13 +60,14 @@ with a green button**. Specific symptoms:
 
 #### 1. Answer button treatment during quiz
 
-**Why:** This is the single highest-leverage surface — users look at and interact
-with answer buttons hundreds of times per session.
+**Why:** This is the single highest-leverage surface — users look at and
+interact with answer buttons hundreds of times per session.
 
 **Current:** White background (`#fff`), `2px solid` gray border, gray hover.
 Functional but visually identical to a form input.
 
 **Options to explore:**
+
 - Subtle colored background tint (very light sage, or warm cream) instead of
   pure white
 - Soft shadow or inset border that makes buttons feel "pressable" / tactile
@@ -81,16 +82,17 @@ Functional but visually identical to a form input.
 #### 2. Feedback moment
 
 **Why:** Correct/incorrect is the emotional peak of each interaction. Currently
-it's just colored text (`✓ Correct!` in green, `✗ Wrong` in red at 1.5rem).
-This is where users feel either satisfaction or the sting of getting it wrong.
+it's just colored text (`✓ Correct!` in green, `✗ Wrong` in red at 1.5rem). This
+is where users feel either satisfaction or the sting of getting it wrong.
 
 **Options to explore:**
+
 - Brief background wash on the quiz area (light green for correct, light red for
   incorrect) that fades over ~300ms
-- The correct answer button highlights green so users always see which button was
-  right (especially useful on wrong answers)
-- Feedback text could be bolder / larger — it currently competes with the
-  quiz prompt (`2rem`) at only `1.5rem`
+- The correct answer button highlights green so users always see which button
+  was right (especially useful on wrong answers)
+- Feedback text could be bolder / larger — it currently competes with the quiz
+  prompt (`2rem`) at only `1.5rem`
 - Wrong-answer buttons could briefly flash their border red
 
 **Constraint:** Must feel instant, not animated. Users answer every 1–3 seconds.
@@ -101,6 +103,7 @@ This is where users feel either satisfaction or the sting of getting it wrong.
 plain list of white cards with text.
 
 **Options to explore:**
+
 - Colored left-border accent on each mode card (could reflect progress via
   heatmap colors, or use group-specific hues)
 - Tiny progress indicator per mode (colored dot, mini bar, or fraction like
@@ -119,12 +122,13 @@ mode within 1-2 seconds.
 toggles, and the start CTA all in one undifferentiated gray box.
 
 **Options to explore:**
+
 - Subtle section dividers or spacing zones within the card (status area →
   recommendation → scope → CTA)
 - Give the recommendation area a distinct visual treatment (light amber/gold
   strip, since recommendations already use orange elsewhere)
-- Status area could use color-coded indicators (mastered items in sage,
-  learning items in a warm amber)
+- Status area could use color-coded indicators (mastered items in sage, learning
+  items in a warm amber)
 - The start button already has brand treatment but the card could do more to
   draw the eye toward it
 
@@ -137,6 +141,7 @@ satisfaction or motivation. Currently centered text with three numbers and two
 buttons.
 
 **Options to explore:**
+
 - Stat numbers colored based on performance (sage/green for good, neutral for
   average)
 - "Keep Going" CTA could match the Start button treatment (shadow, brand color)
@@ -151,17 +156,19 @@ buttons.
 but nearly invisible.
 
 **Options to explore:**
+
 - Slightly taller (6–8px) with rounded ends
-- More gradual color transition: sage → amber → red (not just sage → red at
-  the 10-second mark)
+- More gradual color transition: sage → amber → red (not just sage → red at the
+  10-second mark)
 - Subtle pulsing or glow effect in the final seconds
 
 #### 7. Progress tab stats
 
-**Why:** The heatmap grids are the primary way users see their mastery. Currently
-bare colored cells in a table.
+**Why:** The heatmap grids are the primary way users see their mastery.
+Currently bare colored cells in a table.
 
 **Options to explore:**
+
 - Rounded corners on stats cells (they have `border-radius: 4px` but the table
   border-collapse may override this)
 - Summary indicator above the grid ("47/78 mastered" or a mini progress bar)
@@ -174,6 +181,7 @@ bare colored cells in a table.
 **Why:** Currently just a `←` arrow and text title. Functional but generic.
 
 **Options to explore:**
+
 - Subtle brand accent on the mode title (colored underline, background tint)
 - One-line status visible in the header area ("3/6 strings mastered")
 
@@ -185,6 +193,7 @@ bare colored cells in a table.
 warm tint could add depth.
 
 **Options to explore:**
+
 - Very subtle vertical gradient (white → barely-warm at the bottom)
 - During active quiz phase, slightly more contrast between the quiz card
   background and the surrounding area
@@ -195,16 +204,18 @@ warm tint could add depth.
 instant show/hide. Makes the app feel static and mechanical.
 
 **Options to explore:**
+
 - 100–150ms fade for phase transitions
 - Quiz area could slide/fade in when a round starts
 - Must respect `prefers-reduced-motion`
 
 #### 11. Heading typography
 
-**Why:** System font stack is practical but generic. A single distinctive heading
-font would immediately separate the app from "default web app."
+**Why:** System font stack is practical but generic. A single distinctive
+heading font would immediately separate the app from "default web app."
 
 **Options to explore:**
+
 - Import one font for headings only (quiz prompt, home title, mode title)
 - Keep system fonts for body/buttons (performance + familiarity)
 - This is arguably the single easiest way to add distinctive personality
@@ -215,6 +226,7 @@ font would immediately separate the app from "default web app."
 **Why:** Works fine but feels basic compared to the rest of the app.
 
 **Options to explore:**
+
 - Better visual hierarchy between setting groups
 - Active toggle state could feel more "switch-like"
 
@@ -225,7 +237,7 @@ font would immediately separate the app from "default web app."
 If picking 2–3 items to do first, I'd recommend:
 
 1. **Answer buttons + feedback treatment** (#1 + #2) — core loop, highest
-   time-spent surface, most impactful on how the app *feels*
+   time-spent surface, most impactful on how the app _feels_
 2. **Home screen personality** (#3) — first impression, sets the tone
 3. **Heading typography** (#11) — highest ratio of visual impact to
    implementation effort

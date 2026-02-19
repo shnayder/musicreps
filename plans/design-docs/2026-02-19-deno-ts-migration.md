@@ -1,8 +1,7 @@
 # Migration to All-Deno, All-TypeScript
 
-**Date:** 2026-02-19
-**Status:** Proposed
-**Depends on:** [Linting strategy review](2026-02-19-linting-strategy.md)
+**Date:** 2026-02-19 **Status:** Proposed **Depends on:**
+[Linting strategy review](2026-02-19-linting-strategy.md)
 
 ## Goal
 
@@ -25,8 +24,8 @@ End state: `deno task build`, `deno task test`, `deno lint`, `deno fmt`,
 
 ### Phase 1: `deno.json` + lint + format
 
-**What:** Establish Deno tooling alongside the existing Node build path.
-Nothing breaks; this is purely additive.
+**What:** Establish Deno tooling alongside the existing Node build path. Nothing
+breaks; this is purely additive.
 
 **Steps:**
 
@@ -37,21 +36,21 @@ Nothing breaks; this is purely additive.
    - `tasks`: `"lint": "deno lint"`, `"fmt": "deno fmt"`
    - `exclude`: `["docs/", "node_modules/"]`
 2. Set up Claude web environment for Deno:
-   - SessionStart hook or `.claude/settings.json` to `npm install -g deno`
-     and `export DENO_TLS_CA_STORE=system`
+   - SessionStart hook or `.claude/settings.json` to `npm install -g deno` and
+     `export DENO_TLS_CA_STORE=system`
 3. Run `deno lint` — fix all violations:
    - Unused param in `engineStop(state)` → `engineStop(_state)`
    - Empty catch blocks in `music-data.js` → add `// expected` comments
    - Any `var` → `const`/`let`
    - Any `==` → `===` (audit the `== null` cases)
 4. Run `deno fmt --write` across all source files
-   - This will be a large whitespace-only diff — land it as a single commit
-     with no other changes so git blame stays useful (`git blame --ignore-rev`)
-5. Add `deno lint` as a CI step (additive — runs alongside the existing
-   Node build, doesn't replace it)
+   - This will be a large whitespace-only diff — land it as a single commit with
+     no other changes so git blame stays useful (`git blame --ignore-rev`)
+5. Add `deno lint` as a CI step (additive — runs alongside the existing Node
+   build, doesn't replace it)
 
-**Outcome:** Linting enforced, code formatted, Deno tooling works. Zero
-behavior changes. Node build path still works.
+**Outcome:** Linting enforced, code formatted, Deno tooling works. Zero behavior
+changes. Node build path still works.
 
 **Risk:** Low. Lint fixes are minor. Formatting is mechanical.
 
@@ -69,16 +68,16 @@ yet — just the file extension change so TypeScript tooling can see them.
 3. Update both esbuild entry points:
    - `build.ts`: `entryPoints: [join(__dirname, "src/app.ts")]`
    - `main.ts`: `resolve("./src/app.ts")`
-4. Update import paths in all 8 test files (e.g.,
-   `from "./adaptive.js"` → `from "./adaptive.ts"`)
+4. Update import paths in all 8 test files (e.g., `from "./adaptive.js"` →
+   `from "./adaptive.ts"`)
 5. Update CLAUDE.md file references
 6. Update `guides/architecture.md` module list
 7. Run `deno lint` — verify clean
 8. Run existing tests — verify nothing broke
 9. Run build — verify output unchanged
 
-**Outcome:** All source files are `.ts`. esbuild handles `.ts` natively —
-no behavior change. Both Node and Deno build paths still work.
+**Outcome:** All source files are `.ts`. esbuild handles `.ts` natively — no
+behavior change. Both Node and Deno build paths still work.
 
 **Risk:** Low. Mechanical rename. esbuild bundles `.ts` identically to `.js`.
 The diff is large but content-free — `git diff --diff-filter=R` shows pure
@@ -88,9 +87,8 @@ renames. Import path updates are find-and-replace.
 
 ### Phase 3: Consolidate build on Deno
 
-**What:** Merge the Node build script into the Deno build script, switch CI
-to Deno, drop Node-only dependencies. After this phase, there is one build
-path.
+**What:** Merge the Node build script into the Deno build script, switch CI to
+Deno, drop Node-only dependencies. After this phase, there is one build path.
 
 **Steps:**
 
@@ -110,8 +108,8 @@ path.
 4. Switch CI workflow (`deploy-preview.yml`):
    - Replace `actions/setup-node@v4` with `denoland/setup-deno@v2`
    - Replace `npm install` + `npx tsx build.ts` with `deno task build`
-   - Add `DENO_TLS_CA_STORE: system` to env (if CI needs npm registry
-     access; may not be needed on GitHub Actions)
+   - Add `DENO_TLS_CA_STORE: system` to env (if CI needs npm registry access;
+     may not be needed on GitHub Actions)
 5. Switch test runner in CLAUDE.md: `deno task test` replaces
    `npx tsx --test src/*_test.ts`
 6. Delete `build.ts`
@@ -123,15 +121,14 @@ path.
 **Outcome:** Single build path. `package.json` has 2 devDependencies (down
 from 4) plus Capacitor. `build.ts` is gone.
 
-**Risk:** Medium. The moments generation port is the largest piece of work.
-CI change needs careful testing. Rollback is straightforward (revert the CI
-change and restore `build.ts`).
+**Risk:** Medium. The moments generation port is the largest piece of work. CI
+change needs careful testing. Rollback is straightforward (revert the CI change
+and restore `build.ts`).
 
-**Note on esbuild:** `main.ts` currently shells out to `npx esbuild`. This
-still requires esbuild in `node_modules`. A future follow-up could switch to
-Deno's npm specifier (`import * as esbuild from "npm:esbuild"`) to use
-esbuild's JS API directly, eliminating the subprocess. Not blocking for this
-phase.
+**Note on esbuild:** `main.ts` currently shells out to `npx esbuild`. This still
+requires esbuild in `node_modules`. A future follow-up could switch to Deno's
+npm specifier (`import * as esbuild from "npm:esbuild"`) to use esbuild's JS API
+directly, eliminating the subprocess. Not blocking for this phase.
 
 ---
 
@@ -140,9 +137,8 @@ phase.
 **What:** Add TypeScript type annotations to all source files. Enable
 `deno check` in CI to catch type errors at build time.
 
-This is the largest phase by volume but can be done incrementally — one file
-or module group per PR. The app works correctly at every step; types are
-additive.
+This is the largest phase by volume but can be done incrementally — one file or
+module group per PR. The app works correctly at every step; types are additive.
 
 **Order** (pure/foundational → dependent → UI):
 
@@ -152,8 +148,8 @@ additive.
    - `AdaptiveConfig`, `ItemStats`
    - `Recommendation`, `StringRecommendation`
 2. **Pure data** — `music-data.ts`: note/interval types, function signatures
-3. **Pure state** — `quiz-engine-state.ts`, `quiz-fretboard-state.ts`:
-   state transition function signatures, return types
+3. **Pure state** — `quiz-engine-state.ts`, `quiz-fretboard-state.ts`: state
+   transition function signatures, return types
 4. **Algorithms** — `adaptive.ts`, `recommendations.ts`, `stats-display.ts`:
    selector, EWMA, recall model, speed score
 5. **Shared engine** — `quiz-engine.ts`: key handlers, engine factory
@@ -163,11 +159,11 @@ additive.
 8. **Entry point** — `app.ts`: mostly already typed by inference from imports
 9. **Build-time files** — `build-template.ts`, `html-helpers.ts`,
    `fretboard.ts`: already `.ts`, may need tightening
-10. **Tests** — add type annotations to test helpers; fix any test type
-    errors revealed by strict checking
+10. **Tests** — add type annotations to test helpers; fix any test type errors
+    revealed by strict checking
 
-**After each group:** run `deno check` on the annotated files to verify.
-Once all files pass, add `deno check` to CI and to the `build` task.
+**After each group:** run `deno check` on the annotated files to verify. Once
+all files pass, add `deno check` to CI and to the `build` task.
 
 **Typing strategy for DOM code:**
 
@@ -192,15 +188,15 @@ function init(): Elements {
 }
 ```
 
-Non-null assertions (`!`) are acceptable here — the HTML is generated at
-build time from `html-helpers.ts`, so these elements are guaranteed to exist.
+Non-null assertions (`!`) are acceptable here — the HTML is generated at build
+time from `html-helpers.ts`, so these elements are guaranteed to exist.
 
-**Outcome:** Fully typed codebase. `deno check` in CI catches type
-mismatches, wrong argument counts, misspelled properties — the class of
-bug LLMs produce most often.
+**Outcome:** Fully typed codebase. `deno check` in CI catches type mismatches,
+wrong argument counts, misspelled properties — the class of bug LLMs produce
+most often.
 
-**Risk:** Low per-file, but high total volume (~20 files). Each file can
-land independently. No behavior changes.
+**Risk:** Low per-file, but high total volume (~20 files). Each file can land
+independently. No behavior changes.
 
 ---
 
@@ -215,6 +211,7 @@ package.json       # esbuild + playwright + capacitor only
 ```
 
 Commands:
+
 ```bash
 deno task build    # Build to docs/
 deno task dev      # Dev server on :8001

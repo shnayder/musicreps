@@ -2,12 +2,12 @@
 // Pure functions + factory, same pattern as adaptive.js.
 
 export const DEFAULT_DEADLINE_CONFIG = {
-  decreaseFactor: 0.85,       // multiply deadline after correct answer (staircase)
-  increaseFactor: 1.4,        // multiply deadline after incorrect/timeout
-  minDeadlineMargin: 1.3,     // multiply minTime by this for deadline floor
-  ewmaMultiplier: 2.0,        // cold start: ewma * this for items with history
-  headroomMultiplier: 1.5,    // response-time anchored: responseTime * this
-  maxDropFactor: 0.5,         // max single-step decrease (never drop below this × current)
+  decreaseFactor: 0.85, // multiply deadline after correct answer (staircase)
+  increaseFactor: 1.4, // multiply deadline after incorrect/timeout
+  minDeadlineMargin: 1.3, // multiply minTime by this for deadline floor
+  ewmaMultiplier: 2.0, // cold start: ewma * this for items with history
+  headroomMultiplier: 1.5, // response-time anchored: responseTime * this
+  maxDropFactor: 0.5, // max single-step decrease (never drop below this × current)
 };
 
 /**
@@ -20,7 +20,9 @@ export function computeInitialDeadline(ewma, adaptiveCfg, dlCfg) {
   const minDeadline = Math.round(adaptiveCfg.minTime * dlCfg.minDeadlineMargin);
   const maxDeadline = adaptiveCfg.maxResponseTime;
   if (ewma != null) {
-    return Math.round(Math.max(minDeadline, Math.min(maxDeadline, ewma * dlCfg.ewmaMultiplier)));
+    return Math.round(
+      Math.max(minDeadline, Math.min(maxDeadline, ewma * dlCfg.ewmaMultiplier)),
+    );
   }
   return maxDeadline;
 }
@@ -38,7 +40,13 @@ export function computeInitialDeadline(ewma, adaptiveCfg, dlCfg) {
  * @param {object} dlCfg
  * @param {number|null} [responseTime] - actual response time in ms (correct answers only)
  */
-export function adjustDeadline(currentDeadline, correct, adaptiveCfg, dlCfg, responseTime) {
+export function adjustDeadline(
+  currentDeadline,
+  correct,
+  adaptiveCfg,
+  dlCfg,
+  responseTime,
+) {
   const minDeadline = Math.round(adaptiveCfg.minTime * dlCfg.minDeadlineMargin);
   const maxDeadline = adaptiveCfg.maxResponseTime;
 
@@ -67,7 +75,11 @@ export function adjustDeadline(currentDeadline, correct, adaptiveCfg, dlCfg, res
  * @param {object} adaptiveCfg - Adaptive selector config (for minTime, maxResponseTime)
  * @param {object} [dlCfg] - Deadline-specific config
  */
-export function createDeadlineTracker(storage, adaptiveCfg, dlCfg = DEFAULT_DEADLINE_CONFIG) {
+export function createDeadlineTracker(
+  storage,
+  adaptiveCfg,
+  dlCfg = DEFAULT_DEADLINE_CONFIG,
+) {
   function scaledAdaptiveCfg(responseCount) {
     if (responseCount <= 1) return adaptiveCfg;
     return {
@@ -88,7 +100,11 @@ export function createDeadlineTracker(storage, adaptiveCfg, dlCfg = DEFAULT_DEAD
   function getDeadline(itemId, ewma, responseCount = 1) {
     const stored = storage.getDeadline(itemId);
     if (stored != null && stored > 0) return stored;
-    const initial = computeInitialDeadline(ewma, scaledAdaptiveCfg(responseCount), dlCfg);
+    const initial = computeInitialDeadline(
+      ewma,
+      scaledAdaptiveCfg(responseCount),
+      dlCfg,
+    );
     storage.saveDeadline(itemId, initial);
     return initial;
   }
@@ -101,10 +117,21 @@ export function createDeadlineTracker(storage, adaptiveCfg, dlCfg = DEFAULT_DEAD
    * @param {number|null} [responseTime] - actual response time in ms
    * @returns {number} the new deadline
    */
-  function recordOutcome(itemId, correct, responseCount = 1, responseTime = null) {
+  function recordOutcome(
+    itemId,
+    correct,
+    responseCount = 1,
+    responseTime = null,
+  ) {
     const current = storage.getDeadline(itemId);
     if (current == null) return; // shouldn't happen — getDeadline was called first
-    const newDeadline = adjustDeadline(current, correct, scaledAdaptiveCfg(responseCount), dlCfg, responseTime);
+    const newDeadline = adjustDeadline(
+      current,
+      correct,
+      scaledAdaptiveCfg(responseCount),
+      dlCfg,
+      responseTime,
+    );
     storage.saveDeadline(itemId, newDeadline);
     return newDeadline;
   }

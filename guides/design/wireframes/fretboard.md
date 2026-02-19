@@ -1,7 +1,7 @@
 # Fretboard Mode — Information Architecture
 
-Wireframe-level IA description for guitar and ukulele fretboard modes.
-Applies to both instruments with minor differences (string count, tuning).
+Wireframe-level IA description for guitar and ukulele fretboard modes. Applies
+to both instruments with minor differences (string count, tuning).
 
 ---
 
@@ -42,8 +42,7 @@ PracticeSummarySection
       └── string-level mastery chips (colored by avg automaticity)
 ```
 
-No fretboard map here — this tab is about deciding and starting, not
-inspecting.
+No fretboard map here — this tab is about deciding and starting, not inspecting.
 
 ### 2. Practice Scope
 
@@ -95,9 +94,9 @@ FretboardMapSection
  └── Legend (heatmap color scale)
 ```
 
-The progress tab has its own fretboard SVG (heatmap view), and the quiz area
-has a separate SVG instance (question highlight). They are independent DOM
-elements — no sharing or special placement required.
+The progress tab has its own fretboard SVG (heatmap view), and the quiz area has
+a separate SVG instance (question highlight). They are independent DOM elements
+— no sharing or special placement required.
 
 ### 3. Future Enhancements
 
@@ -112,13 +111,13 @@ elements — no sharing or special placement required.
 
 ## Phase Visibility Matrix
 
-| Element | Idle (Practice) | Idle (Progress) | Active | Calibration | Round Complete |
-|---------|:-:|:-:|:-:|:-:|:-:|
-| Tab bar | ✓ | ✓ | — | — | — |
-| Practice tab content | ✓ | — | — | — | — |
-| Progress tab content (incl. heatmap SVG) | — | ✓ | — | — | — |
-| Quiz session | — | — | ✓ | ✓ | ✓ |
-| Quiz area (incl. fretboard SVG) | — | — | ✓ | ✓ | ✓ |
+| Element                                  | Idle (Practice) | Idle (Progress) | Active | Calibration | Round Complete |
+| ---------------------------------------- | :-------------: | :-------------: | :----: | :---------: | :------------: |
+| Tab bar                                  |        ✓        |        ✓        |   —    |      —      |       —        |
+| Practice tab content                     |        ✓        |        —        |   —    |      —      |       —        |
+| Progress tab content (incl. heatmap SVG) |        —        |        ✓        |   —    |      —      |       —        |
+| Quiz session                             |        —        |        —        |   ✓    |      ✓      |       ✓        |
+| Quiz area (incl. fretboard SVG)          |        —        |        —        |   ✓    |      ✓      |       ✓        |
 
 ---
 
@@ -130,6 +129,6 @@ elements — no sharing or special placement required.
   inspection is secondary — available one tap away but not the landing state.
 - **Collapsed advanced section:** Recalibration is infrequent. Hiding it behind
   `<details>` reduces visual noise without removing access.
-- **No fretboard on Practice tab:** Keeps the practice tab focused on
-  "configure and start." The full map is one tab away for users who want to
-  inspect before practicing.
+- **No fretboard on Practice tab:** Keeps the practice tab focused on "configure
+  and start." The full map is one tab away for users who want to inspect before
+  practicing.

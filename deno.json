@@ -1,0 +1,23 @@
+{
+  "lint": {
+    "rules": {
+      "tags": ["recommended"],
+      "exclude": [
+        "no-window",
+        "no-explicit-any",
+        "no-node-globals",
+        "no-process-global"
+      ]
+    },
+    "exclude": ["docs/", "node_modules/", "scripts/"]
+  },
+  "fmt": {
+    "singleQuote": true,
+    "exclude": ["docs/", "node_modules/"]
+  },
+  "tasks": {
+    "lint": "deno lint",
+    "fmt": "deno fmt --check",
+    "fmt:fix": "deno fmt"
+  }
+}

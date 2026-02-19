@@ -11,8 +11,8 @@ architecture issues. These fall into three categories:
 2. **Wrong content for the state** — quiz-configuration controls visible during
    active quiz, redundant stop mechanisms, quiz area card boundary splits a
    logical group.
-3. **Weak stats presentation** — no aggregate summary, stats scope doesn't
-   match quiz config, grid axes unlabeled, legends detached from heatmaps.
+3. **Weak stats presentation** — no aggregate summary, stats scope doesn't match
+   quiz config, grid axes unlabeled, legends detached from heatmaps.
 
 The show/hide architecture historically mixed per-element JS `style.display`
 toggles, CSS class cascades, and inline `style="display: none"`. Several rounds
@@ -22,6 +22,7 @@ tracks what's been completed and what remains.
 ## Current Status (2026-02-16)
 
 ### Completed
+
 - **Phase 1 (Labels):** String toggles have "Strings" label. Group toggles have
   "Groups" label. Progress bar shows "X / Y fluent". Session stats show answer
   count with context. Stop button removed (only x close + Escape remain).
@@ -32,18 +33,22 @@ tracks what's been completed and what remains.
 - **Phase 3 (DOM grouping):** Template restructured into `stats-section`,
   `quiz-config`, `quiz-session` groups. `beforeQuizArea` slot exists.
   `modeScreen()` scaffold matches target structure.
-- **Phase 4 (partial):** Phase classes on container (`phase-idle`, `phase-active`,
-  `phase-calibration`, `phase-round-complete`). CSS phase rules exist for section
-  visibility. `showStartBtn`/`showStopBtn`/`showHeatmapBtn`/`showStatsControls`
-  state flags removed. Calibration sub-phase classes work.
+- **Phase 4 (partial):** Phase classes on container (`phase-idle`,
+  `phase-active`, `phase-calibration`, `phase-round-complete`). CSS phase rules
+  exist for section visibility.
+  `showStartBtn`/`showStopBtn`/`showHeatmapBtn`/`showStatsControls` state flags
+  removed. Calibration sub-phase classes work.
 
 ### Remaining Work
 
 **Phase 3 remnant — navigation class-based mode switching:**
+
 - `navigation.js` lines 43, 49, 98 use inline `style.display` for mode-screen
-  visibility. This blocks CSS phase rules from working on initially-hidden screens.
+  visibility. This blocks CSS phase rules from working on initially-hidden
+  screens.
 
 **Phase 4 remnants — inline `style.display` elimination:**
+
 - `html-helpers.ts:212` — mastery-message `style="display: none;"`
 - `html-helpers.ts:216` — recalibrate-btn `style="display: none;"`
 - `html-helpers.ts:236` — round-complete `style="display: none;"`
@@ -57,6 +62,7 @@ tracks what's been completed and what remains.
   inline style conflicts)
 
 **Phase 4 remnant — render() decomposition:**
+
 - 125-line `render()` in `quiz-engine.js:684-809` handles phase management,
   feedback, progress, calibration, and round-complete in one block.
 
@@ -67,6 +73,7 @@ tracks what's been completed and what remains.
 ## Identified Issues
 
 ### Mid-quiz state (all modes)
+
 1. ~~Settings row visible mid-quiz~~ FIXED (phase CSS hides `.quiz-config`)
 2. ~~Redundant Stop/x buttons~~ FIXED (Stop button removed)
 3. "Practicing" header is low-information
@@ -77,17 +84,20 @@ tracks what's been completed and what remains.
 8. Countdown bar has low visual weight for a time-critical element
 
 ### Idle/stats state (fretboard)
+
 9. ~~String toggles unlabeled~~ FIXED ("Strings" label added)
 10. No aggregate progress summary
 11. Heatmap shows all 78 positions regardless of enabled strings
 
 ### Idle/stats state (diatonic chords / grid modes)
+
 12. 12x7 grid has no axis labels
 13. Grey "no data" cells overwhelm actual progress when few groups enabled
 14. ~~Group toggles unlabeled~~ FIXED ("Groups" label added)
 15. Recall/Speed toggle not clearly grouped with stats display
 
 ### Cross-cutting
+
 16. No clear visual boundary between "progress" and "quiz configuration"
 17. Recall/Speed toggle always visible in idle (no dismiss option)
 
@@ -98,12 +108,13 @@ tracks what's been completed and what remains.
 **Goal:** Replace the last source of inline `style.display` outside the engine.
 
 **Changes:**
+
 - Add CSS rule: `.mode-screen { display: none; }` /
   `.mode-screen.mode-active { display: block; }`
 - `navigation.js switchTo()`: toggle `.mode-active` class instead of
   `style.display`
-- `navigation.js init()`: remove the `forEach` that sets `style.display = 'none'`
-  on all mode screens (CSS handles it)
+- `navigation.js init()`: remove the `forEach` that sets
+  `style.display = 'none'` on all mode screens (CSS handles it)
 - `app.js`: replace `style.display !== 'none'` checks with `.mode-active` class
   check
 
@@ -112,6 +123,7 @@ tracks what's been completed and what remains.
 **Risk:** Low. Behavioral no-op — just changes the mechanism.
 
 **Test plan:**
+
 - `npx tsx --test src/*_test.ts`
 - Manual: switch between all 10 modes via hamburger menu
 - Verify last-used mode persists across page reload
@@ -124,16 +136,17 @@ tracks what's been completed and what remains.
 
 **4R-a: Template inline styles -> CSS rules**
 
-Remove `style="display: none;"` from three elements in `html-helpers.ts` and
-add CSS rules:
+Remove `style="display: none;"` from three elements in `html-helpers.ts` and add
+CSS rules:
 
-| Element | Current | New CSS rule |
-|---------|---------|-------------|
-| `.mastery-message` | `style="display: none;"` + JS toggle | `.mastery-message { display: none; }` / `.mastery-message.mastery-visible { display: block; }` |
+| Element            | Current                              | New CSS rule                                                                                             |
+| ------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `.mastery-message` | `style="display: none;"` + JS toggle | `.mastery-message { display: none; }` / `.mastery-message.mastery-visible { display: block; }`           |
 | `.recalibrate-btn` | `style="display: none;"` + JS toggle | `.recalibrate-btn { display: none; }` / `.phase-idle .recalibrate-btn.has-baseline { display: inline; }` |
-| `.round-complete` | `style="display: none;"` + JS toggle | `.round-complete { display: none; }` / `.phase-round-complete .round-complete { display: block; }` |
+| `.round-complete`  | `style="display: none;"` + JS toggle | `.round-complete { display: none; }` / `.phase-round-complete .round-complete { display: block; }`       |
 
 Engine `render()` changes:
+
 - mastery-message: `classList.toggle('mastery-visible', state.showMastery)`
   instead of `style.display`
 - recalibrate-btn: `classList.toggle('has-baseline', !!motorBaseline)` once at
@@ -145,6 +158,7 @@ Engine `render()` changes:
 
 `createStatsControls` uses `style.display` to show/hide the stats container.
 Replace with `classList.toggle('stats-hidden')`:
+
 - `show()`: remove `stats-hidden` class, render content
 - `hide()`: add `stats-hidden` class, clear content
 - CSS: `.stats-container.stats-hidden { display: none; }`
@@ -154,8 +168,9 @@ Update `app.js` to check for `.stats-hidden` class instead of
 
 **4R-c: Speed Tap fretboard-wrapper -> CSS class**
 
-Speed Tap toggles fretboard-wrapper visibility via `style.display`. Replace
-with `classList.toggle('fretboard-hidden')`:
+Speed Tap toggles fretboard-wrapper visibility via `style.display`. Replace with
+`classList.toggle('fretboard-hidden')`:
+
 - `onStart()`: remove `fretboard-hidden`
 - `onStop()` + `init()`: add `fretboard-hidden`
 - CSS: `.fretboard-wrapper.fretboard-hidden { display: none; }`
@@ -173,6 +188,7 @@ verify calibration still works correctly.
 sub-step.
 
 **Test plan:**
+
 - `npx tsx --test src/*_test.ts` after each sub-step
 - Manual: all 10 modes x idle/active/calibration/round-complete states
 - Verify mastery message appears when all items mastered
@@ -186,6 +202,7 @@ sub-step.
 **Goal:** Break the 125-line `render()` into named helpers for readability.
 
 **Proposed decomposition:**
+
 ```
 render()
   renderPhaseClass(state, container)     // lines 695-701
@@ -208,6 +225,7 @@ the `els` object (closure variable). No new abstractions — just named chunks.
 **Risk:** Low. Pure refactor — no behavioral change.
 
 **Test plan:**
+
 - `npx tsx --test src/*_test.ts`
 - Manual: quick smoke test of 2-3 modes across all states
 
@@ -216,6 +234,7 @@ the `els` object (closure variable). No new abstractions — just named chunks.
 **Goal:** Tune each state's layout now that visibility is fully CSS-controlled.
 
 **Quiz state:**
+
 - Content order: question -> countdown -> answers -> feedback
 - Quiz area card boundary: extend to include quiz-session elements, or remove
   card treatment entirely and use spacing/dividers
@@ -223,6 +242,7 @@ the `els` object (closure variable). No new abstractions — just named chunks.
 - Center note buttons in quiz area
 
 **Idle state:**
+
 - Stats section at top (heatmap/grid)
 - Quiz config below (toggles + start)
 - Clean visual separation between sections
@@ -233,6 +253,7 @@ the `els` object (closure variable). No new abstractions — just named chunks.
 **Risk:** Low-medium. Mostly CSS. Visual verification needed.
 
 **Test plan:**
+
 - Visual verification: all 10 modes x idle + quiz states
 - Mobile viewport (375px): verify no horizontal overflow, touch targets >= 44px
 - Desktop: verify hover states work
@@ -242,6 +263,7 @@ the `els` object (closure variable). No new abstractions — just named chunks.
 **Goal:** Make stats displays more useful and less noisy.
 
 **Changes:**
+
 - **Aggregate summary:** "X / Y fluent" text above heatmap/grid in idle state.
   Computed from `computeProgress()`. Show in stats-section, update on toggle/
   config change.
@@ -258,6 +280,7 @@ the `els` object (closure variable). No new abstractions — just named chunks.
 **Risk:** Low-medium. Stats rendering is self-contained.
 
 **Test plan:**
+
 - Manual: verify aggregate summary updates when toggling groups
 - Verify grid axis labels present for all grid modes
 - Verify dimming matches enabled groups
@@ -280,18 +303,18 @@ after 3R.
 
 ## Files Modified (remaining phases)
 
-| File | Phases | Changes |
-|------|--------|---------|
-| `src/navigation.js` | 3R | Class-based mode switching |
-| `src/app.js` | 3R, 4R | Class check instead of style.display |
-| `src/styles.css` | 3R, 4R, 5 | Mode-screen rules, element visibility rules, layout |
-| `src/html-helpers.ts` | 4R | Remove inline display:none from 3 elements |
-| `src/quiz-engine.js` | 4R, 4R-e | classList toggles, render decomposition |
-| `src/stats-display.js` | 4R, 6 | classList toggle, grid labels, summary |
-| `src/quiz-speed-tap.js` | 4R | classList toggle for fretboard-wrapper |
-| `src/stats-display.js` | 6 | Grid axis labels, summary, scoping |
-| `build.ts` | 4R | Mirror html-helpers changes (version bump) |
-| `main.ts` | 4R | Mirror html-helpers changes (version bump) |
+| File                    | Phases    | Changes                                             |
+| ----------------------- | --------- | --------------------------------------------------- |
+| `src/navigation.js`     | 3R        | Class-based mode switching                          |
+| `src/app.js`            | 3R, 4R    | Class check instead of style.display                |
+| `src/styles.css`        | 3R, 4R, 5 | Mode-screen rules, element visibility rules, layout |
+| `src/html-helpers.ts`   | 4R        | Remove inline display:none from 3 elements          |
+| `src/quiz-engine.js`    | 4R, 4R-e  | classList toggles, render decomposition             |
+| `src/stats-display.js`  | 4R, 6     | classList toggle, grid labels, summary              |
+| `src/quiz-speed-tap.js` | 4R        | classList toggle for fretboard-wrapper              |
+| `src/stats-display.js`  | 6         | Grid axis labels, summary, scoping                  |
+| `build.ts`              | 4R        | Mirror html-helpers changes (version bump)          |
+| `main.ts`               | 4R        | Mirror html-helpers changes (version bump)          |
 
 ## Testing
 

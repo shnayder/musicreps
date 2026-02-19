@@ -11,16 +11,16 @@ export const DEFAULT_CONFIG = {
   maxStoredTimes: 10,
   maxResponseTime: 9000,
   // Forgetting model
-  initialStability: 4,       // hours — half-life after first correct answer
-  maxStability: 336,         // hours (14 days) — stability ceiling
-  stabilityGrowthBase: 2.0,  // multiplier on each correct answer
-  stabilityDecayOnWrong: 0.3,// multiplier on wrong answer
-  recallThreshold: 0.5,      // P(recall) below this = "due"
-  expansionThreshold: 0.7,   // fraction of seen items that must be retained before suggesting new strings
-  speedBonusMax: 1.5,        // fast answers grow stability up to this extra factor
+  initialStability: 4, // hours — half-life after first correct answer
+  maxStability: 336, // hours (14 days) — stability ceiling
+  stabilityGrowthBase: 2.0, // multiplier on each correct answer
+  stabilityDecayOnWrong: 0.3, // multiplier on wrong answer
+  recallThreshold: 0.5, // P(recall) below this = "due"
+  expansionThreshold: 0.7, // fraction of seen items that must be retained before suggesting new strings
+  speedBonusMax: 1.5, // fast answers grow stability up to this extra factor
   selfCorrectionThreshold: 1500, // ms — response time below this triggers self-correction
-  automaticityTarget: 3000,      // ms — response time at which speedScore ≈ 0.5
-  automaticityThreshold: 0.8,    // automaticity above this = "automatic" (matches stats heatmap)
+  automaticityTarget: 3000, // ms — response time at which speedScore ≈ 0.5
+  automaticityThreshold: 0.8, // automaticity above this = "automatic" (matches stats heatmap)
 };
 
 // ---------------------------------------------------------------------------
@@ -89,13 +89,21 @@ export function computeAutomaticityForDisplay(recall, speedScore, hasSeen) {
  * - Self-correction: if fast answer after long gap, back-calculate
  *   that true stability must be at least elapsedHours * 1.5.
  */
-export function updateStability(oldStability, responseTimeMs, elapsedHours, cfg) {
+export function updateStability(
+  oldStability,
+  responseTimeMs,
+  elapsedHours,
+  cfg,
+) {
   if (oldStability == null) {
     return cfg.initialStability;
   }
   // Speed factor: fast answers grow stability more (0.5 to speedBonusMax)
   const range = cfg.maxResponseTime - cfg.minTime;
-  const clamped = Math.max(cfg.minTime, Math.min(responseTimeMs, cfg.maxResponseTime));
+  const clamped = Math.max(
+    cfg.minTime,
+    Math.min(responseTimeMs, cfg.maxResponseTime),
+  );
   const t = range > 0 ? (cfg.maxResponseTime - clamped) / range : 0.5;
   const speedFactor = 0.5 + t * (cfg.speedBonusMax - 0.5);
 
@@ -115,7 +123,10 @@ export function updateStability(oldStability, responseTimeMs, elapsedHours, cfg)
  */
 export function computeStabilityAfterWrong(oldStability, cfg) {
   if (oldStability == null) return cfg.initialStability;
-  return Math.max(cfg.initialStability, oldStability * cfg.stabilityDecayOnWrong);
+  return Math.max(
+    cfg.initialStability,
+    oldStability * cfg.stabilityDecayOnWrong,
+  );
 }
 
 /**
@@ -168,7 +179,9 @@ export function deriveScaledConfig(motorBaseline, baseCfg = DEFAULT_CONFIG) {
     ...baseCfg,
     minTime: Math.round(baseCfg.minTime * scale),
     automaticityTarget: Math.round(baseCfg.automaticityTarget * scale),
-    selfCorrectionThreshold: Math.round(baseCfg.selfCorrectionThreshold * scale),
+    selfCorrectionThreshold: Math.round(
+      baseCfg.selfCorrectionThreshold * scale,
+    ),
     maxResponseTime: Math.round(baseCfg.maxResponseTime * scale),
   };
 }
@@ -226,7 +239,10 @@ export function createAdaptiveSelector(
           -cfg.maxStoredTimes,
         );
         const newStability = updateStability(
-          existing.stability ?? null, clamped, elapsedHours, itemCfg,
+          existing.stability ?? null,
+          clamped,
+          elapsedHours,
+          itemCfg,
         );
         storage.saveStats(itemId, {
           recentTimes: newTimes,
@@ -250,7 +266,8 @@ export function createAdaptiveSelector(
       // Wrong answer: reduce stability, update lastSeen, don't touch EWMA
       if (existing) {
         const newStability = computeStabilityAfterWrong(
-          existing.stability ?? null, cfg,
+          existing.stability ?? null,
+          cfg,
         );
         storage.saveStats(itemId, {
           ...existing,
@@ -281,7 +298,7 @@ export function createAdaptiveSelector(
 
   function selectNext(validItems) {
     if (validItems.length === 0) {
-      throw new Error("validItems cannot be empty");
+      throw new Error('validItems cannot be empty');
     }
     if (validItems.length === 1) {
       storage.setLastSelected(validItems[0]);
@@ -290,7 +307,7 @@ export function createAdaptiveSelector(
 
     const lastSelected = storage.getLastSelected();
     const weights = validItems.map((id) =>
-      id === lastSelected ? 0 : getWeight(id),
+      id === lastSelected ? 0 : getWeight(id)
     );
 
     const selected = selectWeighted(validItems, weights, randomFn());
@@ -341,9 +358,17 @@ export function createAdaptiveSelector(
           masteredCount++;
         }
       }
-      return { string: s, dueCount, unseenCount, masteredCount, totalCount: items.length };
+      return {
+        string: s,
+        dueCount,
+        unseenCount,
+        masteredCount,
+        totalCount: items.length,
+      };
     });
-    results.sort((a, b) => (b.dueCount + b.unseenCount) - (a.dueCount + a.unseenCount));
+    results.sort((a, b) =>
+      (b.dueCount + b.unseenCount) - (a.dueCount + a.unseenCount)
+    );
     return results;
   }
 
@@ -384,7 +409,9 @@ export function createAdaptiveSelector(
     let hasDueItem = false;
     for (const id of items) {
       const stats = storage.getStats(id);
-      if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) return false;
+      if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) {
+        return false;
+      }
       const rc = getResponseCount(id);
       const speed = computeSpeedScore(stats.ewma, cfg, rc);
       if (speed == null || speed < 0.5) return false;
@@ -402,7 +429,20 @@ export function createAdaptiveSelector(
     return cfg;
   }
 
-  return { recordResponse, selectNext, getStats, getWeight, getRecall, getAutomaticity, getStringRecommendations, checkAllMastered, checkAllAutomatic, checkNeedsReview, updateConfig, getConfig };
+  return {
+    recordResponse,
+    selectNext,
+    getStats,
+    getWeight,
+    getRecall,
+    getAutomaticity,
+    getStringRecommendations,
+    checkAllMastered,
+    checkAllAutomatic,
+    checkNeedsReview,
+    updateConfig,
+    getConfig,
+  };
 }
 
 // ---------------------------------------------------------------------------

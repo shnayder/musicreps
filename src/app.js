@@ -1,7 +1,10 @@
 // App initialization: registers quiz modes and starts navigation.
 // Entry point — esbuild bundles all imports into a single IIFE.
 
-import { createGuitarFretboardMode, createUkuleleFretboardMode } from './quiz-fretboard.js';
+import {
+  createGuitarFretboardMode,
+  createUkuleleFretboardMode,
+} from './quiz-fretboard.js';
 import { createSpeedTapMode } from './quiz-speed-tap.js';
 import { createNoteSemitonesMode } from './quiz-note-semitones.js';
 import { createIntervalSemitonesMode } from './quiz-interval-semitones.js';
@@ -120,27 +123,29 @@ nav.init();
 
 // Re-render stats on visible mode screens after notation change
 function refreshVisibleStats() {
-  document.querySelectorAll('.mode-screen.mode-active').forEach(function(el) {
-    var activeToggle = el.querySelector('.stats-toggle-btn.active');
+  document.querySelectorAll('.mode-screen.mode-active').forEach(function (el) {
+    const activeToggle = el.querySelector('.stats-toggle-btn.active');
     if (activeToggle) activeToggle.click();
   });
 }
 
 // Settings modal
-var settings = createSettingsModal({
-  onNotationChange: function() {
-    document.querySelectorAll('.mode-screen.mode-active').forEach(function(el) {
-      refreshNoteButtonLabels(el);
-      refreshVisibleStats();
-    });
+const settings = createSettingsModal({
+  onNotationChange: function () {
+    document.querySelectorAll('.mode-screen.mode-active').forEach(
+      function (el) {
+        refreshNoteButtonLabels(el);
+        refreshVisibleStats();
+      },
+    );
     guitar.onNotationChange();
     ukulele.onNotationChange();
-  }
+  },
 });
 
-var settingsBtn = document.querySelector('.home-settings-btn');
+const settingsBtn = document.querySelector('.home-settings-btn');
 if (settingsBtn) {
-  settingsBtn.addEventListener('click', function() {
+  settingsBtn.addEventListener('click', function () {
     settings.open();
   });
 }

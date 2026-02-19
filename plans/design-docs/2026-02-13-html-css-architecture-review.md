@@ -1,7 +1,6 @@
 # HTML + CSS Architecture Review
 
-**Date:** 2026-02-13
-**Status:** Partially implemented — 4 of 7 issues resolved
+**Date:** 2026-02-13 **Status:** Partially implemented — 4 of 7 issues resolved
 
 ## Overall Assessment
 
@@ -9,8 +8,8 @@ The current setup is reasonable for what it is — a ~765-line CSS file driving 
 quiz modes with a consistent visual language. The JS-side architecture
 (state+render, mode plugins, container scoping) is significantly ahead of the
 HTML/CSS in terms of design discipline. The CSS works, but it's at the point
-where adding the next few features will compound maintenance friction rather than
-being free.
+where adding the next few features will compound maintenance friction rather
+than being free.
 
 **Verdict:** Sound but beginning to strain. At the inflection point — the next
 2-3 features will start exposing these seams.
@@ -34,11 +33,11 @@ mechanism to verify sync.
 **Severity:** High — already a tax on every feature.
 
 **Resolution:** Created `src/html-helpers.ts` with shared build-time helpers
-(`modeScreen()`, `noteAnswerButtons()`, `numberButtons()`, `intervalAnswerButtons()`,
-`keysigAnswerButtons()`, `degreeAnswerButtons()`, `numeralAnswerButtons()`,
-`countdownAndPrompt()`, `feedbackBlock()`). Both `main.ts` and `build.ts` now
-import and call the same functions. Template drift is structurally impossible.
-`main.ts` reduced from ~770 to ~345 lines.
+(`modeScreen()`, `noteAnswerButtons()`, `numberButtons()`,
+`intervalAnswerButtons()`, `keysigAnswerButtons()`, `degreeAnswerButtons()`,
+`numeralAnswerButtons()`, `countdownAndPrompt()`, `feedbackBlock()`). Both
+`main.ts` and `build.ts` now import and call the same functions. Template drift
+is structurally impossible. `main.ts` reduced from ~770 to ~345 lines.
 
 ### 2. ~~Per-mode HTML boilerplate: \~25 lines × 10 modes~~ RESOLVED
 
@@ -94,10 +93,10 @@ accident rather than design.
 }
 ```
 
-All CSS rules reference `var(--color-*)`. JS reads colors via
-`getComputedStyle` with hardcoded fallbacks for Node.js test environments.
-Created `guides/design/colors.html` as a live color reference page that reads
-the actual CSS variables at page load.
+All CSS rules reference `var(--color-*)`. JS reads colors via `getComputedStyle`
+with hardcoded fallbacks for Node.js test environments. Created
+`guides/design/colors.html` as a live color reference page that reads the actual
+CSS variables at page load.
 
 ### 4. Inline `style="display: none"` as the visibility mechanism
 
@@ -115,6 +114,7 @@ recurring papercut when adding new UI elements.
 ### 5. ~~Heatmap color scale duplicated 3-4 times~~ RESOLVED
 
 The 5-level HSL scale appeared in:
+
 1. `stats-display.js` getAutomaticityColor() function
 2. `stats-display.js` retention legend HTML
 3. `stats-display.js` speed legend HTML
@@ -138,8 +138,8 @@ that parallel but don't use quiz-engine's renderState().
 
 ### 7. No spacing scale
 
-Gap values in active use: 2px, 0.2rem, 0.25rem, 0.3rem, 0.4rem, 0.5rem,
-0.75rem, 1rem, 1.5rem. Some are intentional; others look like drift.
+Gap values in active use: 2px, 0.2rem, 0.25rem, 0.3rem, 0.4rem, 0.5rem, 0.75rem,
+1rem, 1.5rem. Some are intentional; others look like drift.
 
 **Severity:** Low. **Status: Open.**
 
@@ -152,11 +152,11 @@ Gap values in active use: 2px, 0.2rem, 0.25rem, 0.3rem, 0.4rem, 0.5rem,
 **1. ~~Extract the shared mode scaffold into a build-time helper.~~** DONE.
 `src/html-helpers.ts` provides `modeScreen()` and reusable button block helpers.
 
-**2. ~~Introduce CSS custom properties for the core palette.~~** DONE.
-30+ variables in `:root`, all CSS rules updated, JS reads via `getComputedStyle`.
+**2. ~~Introduce CSS custom properties for the core palette.~~** DONE. 30+
+variables in `:root`, all CSS rules updated, JS reads via `getComputedStyle`.
 
-**3. ~~Consolidate the heatmap color scale.~~** DONE.
-Single `heatmapColors()` source of truth, shared `buildStatsLegend()`.
+**3. ~~Consolidate the heatmap color scale.~~** DONE. Single `heatmapColors()`
+source of truth, shared `buildStatsLegend()`.
 
 ### Do when convenient (medium leverage)
 
@@ -179,9 +179,9 @@ a genuinely new UI pattern is added (settings panel, user accounts, etc.).
 
 ## New artifacts created
 
-| File | Purpose |
-|------|---------|
-| `src/html-helpers.ts` | Build-time HTML scaffold and button block helpers |
+| File                        | Purpose                                           |
+| --------------------------- | ------------------------------------------------- |
+| `src/html-helpers.ts`       | Build-time HTML scaffold and button block helpers |
 | `guides/design/colors.html` | Live color system reference (reads CSS variables) |
 
 ---

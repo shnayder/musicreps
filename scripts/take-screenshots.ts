@@ -2,7 +2,7 @@
 // Usage: npx tsx scripts/take-screenshots.ts
 
 import { chromium } from 'playwright';
-import { spawn, ChildProcess } from 'child_process';
+import { ChildProcess, spawn } from 'child_process';
 import { mkdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -30,13 +30,17 @@ const MODE_IDS = [
 ] as const;
 
 // Modes that use QuizEngine and need motorBaseline seeded (all except speedTap)
-const ENGINE_MODES = MODE_IDS.filter(id => id !== 'speedTap');
+const ENGINE_MODES = MODE_IDS.filter((id) => id !== 'speedTap');
 
 function startServer(): ChildProcess {
-  const proc = spawn('deno', ['run', '--allow-net', '--allow-read', 'main.ts'], {
-    cwd: path.resolve(__dirname, '..'),
-    stdio: 'pipe',
-  });
+  const proc = spawn(
+    'deno',
+    ['run', '--allow-net', '--allow-read', 'main.ts'],
+    {
+      cwd: path.resolve(__dirname, '..'),
+      stdio: 'pipe',
+    },
+  );
   proc.stderr?.on('data', (d: Buffer) => {
     const msg = d.toString();
     // Only show errors, not routine "Listening on" messages
@@ -52,7 +56,7 @@ async function waitForServer(timeoutMs = 10_000): Promise<void> {
       const res = await fetch(URL);
       if (res.ok) return;
     } catch { /* server not ready yet */ }
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise((r) => setTimeout(r, 200));
   }
   throw new Error(`Server did not start within ${timeoutMs}ms`);
 }
@@ -80,7 +84,10 @@ async function main() {
 
     // Seed motorBaseline for all engine-based modes to skip calibration
     for (const ns of ENGINE_MODES) {
-      await page.evaluate((key) => localStorage.setItem(key, '500'), `motorBaseline_${ns}`);
+      await page.evaluate(
+        (key) => localStorage.setItem(key, '500'),
+        `motorBaseline_${ns}`,
+      );
     }
     // Speed tap doesn't need motorBaseline but does need its own init handled
 
@@ -120,7 +127,9 @@ async function main() {
       await page.click(`${modeContainer} .start-btn`);
 
       // Wait for quiz to become active
-      await page.waitForSelector(`${modeContainer} .quiz-area.active`, { timeout: 5000 });
+      await page.waitForSelector(`${modeContainer} .quiz-area.active`, {
+        timeout: 5000,
+      });
       await page.waitForTimeout(500); // let first question render
 
       // Quiz screenshot
@@ -143,7 +152,9 @@ async function main() {
     console.log('Design moments: feedback states');
     await switchToMode(feedbackMode);
     await page.click(`${feedbackContainer} .start-btn`);
-    await page.waitForSelector(`${feedbackContainer} .quiz-area.active`, { timeout: 5000 });
+    await page.waitForSelector(`${feedbackContainer} .quiz-area.active`, {
+      timeout: 5000,
+    });
     await page.waitForTimeout(500);
 
     // Correct feedback: try each answer button until we get "correct" feedback
@@ -171,7 +182,9 @@ async function main() {
     await page.waitForTimeout(300);
     // Get the correct answer text so we can avoid it
     const wrongCapture = await page.evaluate((container: string) => {
-      const buttons = document.querySelectorAll(`${container} .answer-btn:not([disabled])`);
+      const buttons = document.querySelectorAll(
+        `${container} .answer-btn:not([disabled])`,
+      );
       // Click the first available button — likely wrong for most questions
       if (buttons.length > 0) {
         (buttons[0] as HTMLElement).click();
@@ -182,7 +195,9 @@ async function main() {
     if (wrongCapture) {
       await page.waitForTimeout(200);
       // Check if it was actually wrong; if correct, try next question
-      const wrongFeedback = await page.$(`${feedbackContainer} .feedback .incorrect`);
+      const wrongFeedback = await page.$(
+        `${feedbackContainer} .feedback .incorrect`,
+      );
       if (wrongFeedback) {
         await capture('design-wrong-feedback');
         designCaptures++;
@@ -191,11 +206,15 @@ async function main() {
         await page.keyboard.press('Space');
         await page.waitForTimeout(300);
         await page.evaluate((container: string) => {
-          const buttons = document.querySelectorAll(`${container} .answer-btn:not([disabled])`);
+          const buttons = document.querySelectorAll(
+            `${container} .answer-btn:not([disabled])`,
+          );
           if (buttons.length > 0) (buttons[0] as HTMLElement).click();
         }, feedbackContainer);
         await page.waitForTimeout(200);
-        const retryWrong = await page.$(`${feedbackContainer} .feedback .incorrect`);
+        const retryWrong = await page.$(
+          `${feedbackContainer} .feedback .incorrect`,
+        );
         if (retryWrong) {
           await capture('design-wrong-feedback');
           designCaptures++;
@@ -213,7 +232,9 @@ async function main() {
     console.log('Design moments: round-complete');
     await switchToMode(feedbackMode);
     await page.click(`${feedbackContainer} .start-btn`);
-    await page.waitForSelector(`${feedbackContainer} .quiz-area.active`, { timeout: 5000 });
+    await page.waitForSelector(`${feedbackContainer} .quiz-area.active`, {
+      timeout: 5000,
+    });
     await page.waitForTimeout(300);
 
     // Answer a few questions to accumulate stats before the round ends
@@ -237,7 +258,7 @@ async function main() {
     await page.waitForTimeout(300);
     const roundComplete = await page.waitForSelector(
       `${feedbackContainer} .round-complete`,
-      { state: 'visible', timeout: 5_000 }
+      { state: 'visible', timeout: 5_000 },
     ).catch(() => null);
     if (roundComplete) {
       await page.waitForTimeout(300);
@@ -263,13 +284,17 @@ async function main() {
     await capture('menu');
 
     await browser.close();
-    console.log(`\nDone! ${MODE_IDS.length * 2 + 1 + designCaptures} screenshots in ${OUT_DIR}`);
+    console.log(
+      `\nDone! ${
+        MODE_IDS.length * 2 + 1 + designCaptures
+      } screenshots in ${OUT_DIR}`,
+    );
   } finally {
     server.kill();
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   process.exit(1);
 });

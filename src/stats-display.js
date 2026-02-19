@@ -1,15 +1,17 @@
 // Stats display helpers: shared color functions, table rendering for lookup
 // modes, and heatmap grid rendering for math modes.
 
-import { NOTES, displayNote } from './music-data.js';
+import { displayNote, NOTES } from './music-data.js';
 
 // --- Heatmap color scale (read from CSS custom properties) ---
 
-var _heatmapColors = null;
+let _heatmapColors = null;
 
 function cssVar(name) {
   try {
-    var val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const val = getComputedStyle(document.documentElement).getPropertyValue(
+      name,
+    ).trim();
     if (val) return val;
   } catch (_) { /* Node.js / test environment — fall through to default */ }
   return '';
@@ -18,7 +20,7 @@ function cssVar(name) {
 function heatmapColors() {
   if (!_heatmapColors) {
     _heatmapColors = {
-      none:  cssVar('--heatmap-none')  || 'hsl(30, 4%, 85%)',
+      none: cssVar('--heatmap-none') || 'hsl(30, 4%, 85%)',
       level: [
         cssVar('--heatmap-1') || 'hsl(12, 48%, 65%)',
         cssVar('--heatmap-2') || 'hsl(30, 48%, 58%)',
@@ -36,12 +38,12 @@ function heatmapColors() {
  * Parses lightness from hsl() strings; dark backgrounds (L <= 50%) get white.
  */
 export function heatmapNeedsLightText(color) {
-  var m = color && color.match(/,\s*(\d+)%\s*\)/);
+  const m = color && color.match(/,\s*(\d+)%\s*\)/);
   return m ? parseInt(m[1], 10) <= 50 : false;
 }
 
 // Labels for the retention legend (index matches heatmapColors().level)
-var RETENTION_LABELS = [
+const RETENTION_LABELS = [
   'Needs work (&lt;20%)',
   'Fading (&gt;20%)',
   'Getting there (&gt;40%)',
@@ -50,7 +52,7 @@ var RETENTION_LABELS = [
 ];
 
 export function getAutomaticityColor(auto) {
-  var c = heatmapColors();
+  const c = heatmapColors();
   if (auto === null) return c.none;
   if (auto > 0.8) return c.level[4];
   if (auto > 0.6) return c.level[3];
@@ -60,9 +62,9 @@ export function getAutomaticityColor(auto) {
 }
 
 export function getSpeedHeatmapColor(ms, baseline) {
-  var c = heatmapColors();
+  const c = heatmapColors();
   if (ms === null) return c.none;
-  var b = baseline || 1000;
+  const b = baseline || 1000;
   if (ms < b * 1.5) return c.level[4];
   if (ms < b * 3.0) return c.level[3];
   if (ms < b * 4.5) return c.level[2];
@@ -74,7 +76,7 @@ export function getStatsCellColor(selector, itemId, statsMode, baseline) {
   if (statsMode === 'retention') {
     return getAutomaticityColor(selector.getAutomaticity(itemId));
   }
-  var stats = selector.getStats(itemId);
+  const stats = selector.getStats(itemId);
   return getSpeedHeatmapColor(stats ? stats.ewma : null, baseline);
 }
 
@@ -83,20 +85,33 @@ export function getStatsCellColor(selector, itemId, statsMode, baseline) {
  * Only items that have data contribute to the average.
  * Returns grey when no items have data.
  */
-export function getStatsCellColorMerged(selector, itemIds, statsMode, baseline) {
-  if (typeof itemIds === 'string') return getStatsCellColor(selector, itemIds, statsMode, baseline);
+export function getStatsCellColorMerged(
+  selector,
+  itemIds,
+  statsMode,
+  baseline,
+) {
+  if (typeof itemIds === 'string') {
+    return getStatsCellColor(selector, itemIds, statsMode, baseline);
+  }
   if (statsMode === 'retention') {
-    var sum = 0, count = 0;
-    for (var i = 0; i < itemIds.length; i++) {
-      var a = selector.getAutomaticity(itemIds[i]);
-      if (a !== null) { sum += a; count++; }
+    let sum = 0, count = 0;
+    for (let i = 0; i < itemIds.length; i++) {
+      const a = selector.getAutomaticity(itemIds[i]);
+      if (a !== null) {
+        sum += a;
+        count++;
+      }
     }
     return getAutomaticityColor(count > 0 ? sum / count : null);
   }
-  var sum2 = 0, count2 = 0;
-  for (var j = 0; j < itemIds.length; j++) {
-    var stats = selector.getStats(itemIds[j]);
-    if (stats && stats.ewma != null) { sum2 += stats.ewma; count2++; }
+  let sum2 = 0, count2 = 0;
+  for (let j = 0; j < itemIds.length; j++) {
+    const stats = selector.getStats(itemIds[j]);
+    if (stats && stats.ewma != null) {
+      sum2 += stats.ewma;
+      count2++;
+    }
   }
   return getSpeedHeatmapColor(count2 > 0 ? sum2 / count2 : null, baseline);
 }
@@ -112,17 +127,38 @@ export function getStatsCellColorMerged(selector, itemIds, statsMode, baseline) 
  * @param {Element}  containerEl
  * @param {number}   [baseline] - motor baseline in ms (optional)
  */
-export function renderStatsTable(selector, rows, fwdHeader, revHeader, statsMode, containerEl, baseline) {
-  if (!rows || rows.length === 0) { containerEl.innerHTML = ''; return; }
-  var html = '<table class="stats-table"><thead><tr>';
+export function renderStatsTable(
+  selector,
+  rows,
+  fwdHeader,
+  revHeader,
+  statsMode,
+  containerEl,
+  baseline,
+) {
+  if (!rows || rows.length === 0) {
+    containerEl.innerHTML = '';
+    return;
+  }
+  let html = '<table class="stats-table"><thead><tr>';
   html += '<th>' + rows[0]._colHeader + '</th><th>#</th>';
   html += '<th>' + fwdHeader + '</th><th>' + revHeader + '</th>';
   html += '</tr></thead><tbody>';
 
-  for (var i = 0; i < rows.length; i++) {
-    var row = rows[i];
-    var fwdColor = getStatsCellColor(selector, row.fwdItemId, statsMode, baseline);
-    var revColor = getStatsCellColor(selector, row.revItemId, statsMode, baseline);
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const fwdColor = getStatsCellColor(
+      selector,
+      row.fwdItemId,
+      statsMode,
+      baseline,
+    );
+    const revColor = getStatsCellColor(
+      selector,
+      row.revItemId,
+      statsMode,
+      baseline,
+    );
     html += '<tr>';
     html += '<td>' + row.label + '</td>';
     html += '<td>' + row.sublabel + '</td>';
@@ -146,20 +182,29 @@ export function renderStatsTable(selector, rows, fwdHeader, revHeader, statsMode
  * @param {Array}    [notes]     - optional notes array (defaults to global NOTES)
  * @param {number}   [baseline]  - motor baseline in ms (optional)
  */
-export function renderStatsGrid(selector, colLabels, getItemId, statsMode, containerEl, notes, baseline) {
-  var noteList = notes || NOTES;
-  var html = '<table class="stats-grid"><thead><tr><th></th>';
-  for (var c = 0; c < colLabels.length; c++) {
+export function renderStatsGrid(
+  selector,
+  colLabels,
+  getItemId,
+  statsMode,
+  containerEl,
+  notes,
+  baseline,
+) {
+  const noteList = notes || NOTES;
+  let html = '<table class="stats-grid"><thead><tr><th></th>';
+  for (let c = 0; c < colLabels.length; c++) {
     html += '<th>' + colLabels[c] + '</th>';
   }
   html += '</tr></thead><tbody>';
 
-  for (var n = 0; n < noteList.length; n++) {
-    var note = noteList[n];
-    html += '<tr><td class="stats-grid-row-label">' + displayNote(note.name || note.displayName) + '</td>';
-    for (var i = 0; i < colLabels.length; i++) {
-      var itemId = getItemId(note.name, i);
-      var color = Array.isArray(itemId)
+  for (let n = 0; n < noteList.length; n++) {
+    const note = noteList[n];
+    html += '<tr><td class="stats-grid-row-label">' +
+      displayNote(note.name || note.displayName) + '</td>';
+    for (let i = 0; i < colLabels.length; i++) {
+      const itemId = getItemId(note.name, i);
+      const color = Array.isArray(itemId)
         ? getStatsCellColorMerged(selector, itemId, statsMode, baseline)
         : getStatsCellColor(selector, itemId, statsMode, baseline);
       html += '<td class="stats-cell" style="background:' + color + '"></td>';
@@ -180,15 +225,15 @@ export function renderStatsGrid(selector, colLabels, getItemId, statsMode, conta
  * @returns {{ show(mode), hide(), mode }}
  */
 export function createStatsControls(container, renderFn) {
-  var statsMode = null;
-  var statsContainer = container.querySelector('.stats-container');
+  let statsMode = null;
+  const statsContainer = container.querySelector('.stats-container');
 
   function show(mode) {
     statsMode = mode;
     statsContainer.innerHTML = '';
     renderFn(mode, statsContainer);
     statsContainer.classList.remove('stats-hidden');
-    container.querySelectorAll('.stats-toggle-btn').forEach(function(b) {
+    container.querySelectorAll('.stats-toggle-btn').forEach(function (b) {
       b.classList.toggle('active', b.dataset.mode === mode);
     });
   }
@@ -200,19 +245,23 @@ export function createStatsControls(container, renderFn) {
   }
 
   // Wire toggle buttons
-  container.querySelectorAll('.stats-toggle-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { show(btn.dataset.mode); });
+  container.querySelectorAll('.stats-toggle-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      show(btn.dataset.mode);
+    });
   });
 
   return {
     show: show,
     hide: hide,
-    get mode() { return statsMode; },
+    get mode() {
+      return statsMode;
+    },
   };
 }
 
 function formatThreshold(ms) {
-  var s = ms / 1000;
+  const s = ms / 1000;
   return s % 1 === 0 ? s + 's' : s.toFixed(1) + 's';
 }
 
@@ -220,27 +269,28 @@ function formatThreshold(ms) {
  * Build a legend item HTML for a single heatmap level.
  */
 function legendItem(color, label) {
-  return '<div class="legend-item"><div class="legend-swatch" style="background:' + color + '"></div>' + label + '</div>';
+  return '<div class="legend-item"><div class="legend-swatch" style="background:' +
+    color + '"></div>' + label + '</div>';
 }
 
 /**
  * Build a shared legend HTML string.
  */
 export function buildStatsLegend(statsMode, baseline) {
-  var c = heatmapColors();
-  var html = '<div class="heatmap-legend active">';
+  const c = heatmapColors();
+  let html = '<div class="heatmap-legend active">';
   html += legendItem(c.none, 'No data');
 
   if (statsMode === 'retention') {
-    for (var i = c.level.length - 1; i >= 0; i--) {
+    for (let i = c.level.length - 1; i >= 0; i--) {
       html += legendItem(c.level[i], RETENTION_LABELS[i]);
     }
   } else {
-    var b = baseline || 1000;
-    var t1 = formatThreshold(b * 1.5);
-    var t2 = formatThreshold(b * 3);
-    var t3 = formatThreshold(b * 4.5);
-    var t4 = formatThreshold(b * 6);
+    const b = baseline || 1000;
+    const t1 = formatThreshold(b * 1.5);
+    const t2 = formatThreshold(b * 3);
+    const t3 = formatThreshold(b * 4.5);
+    const t4 = formatThreshold(b * 6);
     html += legendItem(c.level[4], '&lt; ' + t1);
     html += legendItem(c.level[3], t1 + '\u2013' + t2);
     html += legendItem(c.level[2], t2 + '\u2013' + t3);

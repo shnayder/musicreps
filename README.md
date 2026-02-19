@@ -1,6 +1,7 @@
 # Music Reps
 
-Interactive music theory drill app — fretboard notes, intervals, key signatures, and more.
+Interactive music theory drill app — fretboard notes, intervals, key signatures,
+and more.
 
 **[Try it live](https://shnayder.github.io/musicreps/)**
 

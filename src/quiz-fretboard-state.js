@@ -29,7 +29,7 @@ export function toggleFretboardString(enabledStrings, string) {
  *           fretCount?: number, noteMatchesInput: function }} musicData
  */
 export function createFretboardHelpers(musicData) {
-  const noteNames = musicData.notes.map(n => n.name);
+  const noteNames = musicData.notes.map((n) => n.name);
   const fretCount = musicData.fretCount || 13;
 
   /**
@@ -64,7 +64,7 @@ export function createFretboardHelpers(musicData) {
    * @returns {{ correct: boolean, correctAnswer: string }}
    */
   function checkFretboardAnswer(currentNote, input) {
-    const note = musicData.notes.find(n => n.name === currentNote);
+    const note = musicData.notes.find((n) => n.name === currentNote);
     const correct = !!(note && musicData.noteMatchesInput(note, input));
     return { correct, correctAnswer: displayNote(currentNote) };
   }

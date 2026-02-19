@@ -13,8 +13,8 @@ npx tsx --test src/*_test.ts                                    # Run tests
 ```
 
 **Always bump the version** (`VERSION` in `src/build-template.ts`) with every
-change — even tiny fixes. Bump by 1 for normal changes (v3.13 → v3.14 →
-v3.15). Bump the major version for large overhauls (v3.x → v4.0).
+change — even tiny fixes. Bump by 1 for normal changes (v3.13 → v3.14 → v3.15).
+Bump the major version for large overhauls (v3.x → v4.0).
 
 **The HTML template lives in `src/build-template.ts`** — the single source of
 truth for the page structure and version number. `main.ts` and `build.ts` only
@@ -60,18 +60,18 @@ docs/                    # Built output for GitHub Pages
 
 ## Architecture
 
-Single-page vanilla JS app. Source files are ES modules bundled by esbuild
-into a single IIFE `<script>` at build time — no framework. Key patterns:
+Single-page vanilla JS app. Source files are ES modules bundled by esbuild into
+a single IIFE `<script>` at build time — no framework. Key patterns:
 
 - **State + Render** — pure state transitions in `*-state.js` files, thin
   declarative `render()` in main files. Eliminates ordering and stale-UI bugs.
-- **Mode Plugin Interface** — each mode is a `createXxxMode()` factory
-  providing `getEnabledItems`, `presentQuestion`, `checkAnswer`, `handleKey`,
+- **Mode Plugin Interface** — each mode is a `createXxxMode()` factory providing
+  `getEnabledItems`, `presentQuestion`, `checkAnswer`, `handleKey`,
   `onStart`/`onStop`, plus `init`/`activate`/`deactivate` lifecycle hooks.
 - **QuizEngine** — shared lifecycle (adaptive selection, 60-second round timer,
   feedback, keyboard/tap). Each mode gets its own engine instance.
-- **Factory Pattern** — `createFretboardHelpers(musicData)` injects
-  dependencies for testability and multi-instrument reuse.
+- **Factory Pattern** — `createFretboardHelpers(musicData)` injects dependencies
+  for testability and multi-instrument reuse.
 - **Adaptive Selector** — weighted random selection (unseen boost + EWMA).
   Injected storage for testability. Per-item forgetting model with half-life
   spaced repetition.
@@ -90,18 +90,18 @@ graph, algorithm details, and step-by-step "adding a new quiz mode" checklist.
 
 ## Quiz Modes
 
-| Mode | Items | Answer type | Item ID format |
-|------|-------|-------------|----------------|
-| Guitar Fretboard | 78 (6 strings x 13 frets) | Note name | `0-5` (string-fret) |
-| Ukulele Fretboard | 52 (4 strings x 13 frets) | Note name | `0-3` (string-fret) |
-| Note ↔ Semitones | 24 (12 notes x 2 dirs) | Note or number 0-11 | `C:fwd`, `C:rev` |
-| Interval ↔ Semitones | 24 (12 intervals x 2 dirs) | Interval or number 1-12 | `m2:fwd`, `m2:rev` |
-| Semitone Math | 264 (12 notes x 11 x 2 dirs) | Note name | `C+3`, `C-3` |
-| Interval Math | 264 (12 notes x 11 x 2 dirs) | Note name | `C+m3`, `C-P4` |
-| Key Signatures | 24 (12 keys x 2 dirs) | Sig label or note | `D:fwd`, `D:rev` |
-| Scale Degrees | 168 (12 keys x 7 degrees x 2 dirs) | Note or degree | `D:5:fwd`, `D:A:rev` |
-| Diatonic Chords | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral | `Bb:IV:fwd`, `C:D:rev` |
-| Chord Spelling | ~132 (12 roots x chord types) | Sequential notes | `C:major`, `F#:dim` |
+| Mode                 | Items                              | Answer type             | Item ID format         |
+| -------------------- | ---------------------------------- | ----------------------- | ---------------------- |
+| Guitar Fretboard     | 78 (6 strings x 13 frets)          | Note name               | `0-5` (string-fret)    |
+| Ukulele Fretboard    | 52 (4 strings x 13 frets)          | Note name               | `0-3` (string-fret)    |
+| Note ↔ Semitones     | 24 (12 notes x 2 dirs)             | Note or number 0-11     | `C:fwd`, `C:rev`       |
+| Interval ↔ Semitones | 24 (12 intervals x 2 dirs)         | Interval or number 1-12 | `m2:fwd`, `m2:rev`     |
+| Semitone Math        | 264 (12 notes x 11 x 2 dirs)       | Note name               | `C+3`, `C-3`           |
+| Interval Math        | 264 (12 notes x 11 x 2 dirs)       | Note name               | `C+m3`, `C-P4`         |
+| Key Signatures       | 24 (12 keys x 2 dirs)              | Sig label or note       | `D:fwd`, `D:rev`       |
+| Scale Degrees        | 168 (12 keys x 7 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `D:A:rev`   |
+| Diatonic Chords      | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral         | `Bb:IV:fwd`, `C:D:rev` |
+| Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`    |
 
 Bidirectional modes track each direction as a separate item.
 
@@ -109,7 +109,8 @@ Bidirectional modes track each direction as a separate item.
 
 - `C D E F G A B` — natural note (letter mode)
 - `do re mi fa so la si` — natural note (solfège mode, case-insensitive)
-- Letter/syllable + `#` / `b` — sharp/flat (`s` also works for sharp in letter mode)
+- Letter/syllable + `#` / `b` — sharp/flat (`s` also works for sharp in letter
+  mode)
 - `0-9` — number (semitone modes)
 - `Space` / `Enter` — next question
 - `Escape` — stop quiz / return to home screen
@@ -118,35 +119,35 @@ Bidirectional modes track each direction as a separate item.
 
 **Aspirational** — where the product is headed:
 
-| Guide | Contents |
-|-------|----------|
+| Guide                         | Contents                                                 |
+| ----------------------------- | -------------------------------------------------------- |
 | [vision.md](guides/vision.md) | Who it's for, what we're building, tone, skill lifecycle |
 
 **Enduring** — design values that should outlast any implementation:
 
-| Guide | Contents |
-|-------|----------|
-| [design-principles.md](guides/design-principles.md) | Product, visual, and UX design principles |
-| [layout-and-ia.md](guides/design/layout-and-ia.md) | Screen structure principles: states, hierarchy, grouping, labels |
-| [process-principles.md](guides/process-principles.md) | Development process values and improvement goals |
+| Guide                                                 | Contents                                                         |
+| ----------------------------------------------------- | ---------------------------------------------------------------- |
+| [design-principles.md](guides/design-principles.md)   | Product, visual, and UX design principles                        |
+| [layout-and-ia.md](guides/design/layout-and-ia.md)    | Screen structure principles: states, hierarchy, grouping, labels |
+| [process-principles.md](guides/process-principles.md) | Development process values and improvement goals                 |
 
 **Current reference** — how things work today:
 
-| Guide | Contents |
-|-------|----------|
-| [architecture.md](guides/architecture.md) | Module graph, build system, patterns, algorithms, DOM layout, adding new modes |
-| [visual-design.md](guides/design/visual-design.md) | Color system, typography, spacing, component patterns |
-| [coding-style.md](guides/coding-style.md) | Naming, file structure, DOM rules, testing patterns |
-| [accidental-conventions.md](guides/accidental-conventions.md) | Sharp/flat naming rules by mode, rule priority |
-| [terminology.md](guides/terminology.md) | User-facing terms and their internal equivalents |
+| Guide                                                         | Contents                                                                       |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [architecture.md](guides/architecture.md)                     | Module graph, build system, patterns, algorithms, DOM layout, adding new modes |
+| [visual-design.md](guides/design/visual-design.md)            | Color system, typography, spacing, component patterns                          |
+| [coding-style.md](guides/coding-style.md)                     | Naming, file structure, DOM rules, testing patterns                            |
+| [accidental-conventions.md](guides/accidental-conventions.md) | Sharp/flat naming rules by mode, rule priority                                 |
+| [terminology.md](guides/terminology.md)                       | User-facing terms and their internal equivalents                               |
 
 **Process** — how to work on the codebase:
 
-| Guide | Contents |
-|-------|----------|
-| [development.md](guides/development.md) | Commands, testing, versioning, branching, deployment, GitHub API |
-| [feature-process.md](guides/feature-process.md) | When/how to write plans, design spec + implementation plan templates |
-| [tech-debt-tracker.md](plans/exec-plans/tech-debt-tracker.md) | Technical debt tracking |
+| Guide                                                         | Contents                                                             |
+| ------------------------------------------------------------- | -------------------------------------------------------------------- |
+| [development.md](guides/development.md)                       | Commands, testing, versioning, branching, deployment, GitHub API     |
+| [feature-process.md](guides/feature-process.md)               | When/how to write plans, design spec + implementation plan templates |
+| [tech-debt-tracker.md](plans/exec-plans/tech-debt-tracker.md) | Technical debt tracking                                              |
 
 The review checklist (`.claude/commands/review-checklist.md`) verifies these
 conventions — use `/review` to run it.
@@ -156,12 +157,12 @@ conventions — use `/review` to run it.
 Four parallel worktrees with long-lived branches. Single user — separation is
 about focus, not access control. Regular rebase from main keeps them in sync.
 
-| Workstream | Branch | Focus |
-|------------|--------|-------|
-| Product | workstream/product | Specs, vision, backlog, feedback (docs only) |
-| Design | workstream/design | HTML/CSS layers, visual design, component patterns |
-| Engineering | workstream/engineering | JS behavior, state, algorithms, build system |
-| Process | workstream/process | CI, Claude tooling, review commands, process docs |
+| Workstream  | Branch                 | Focus                                              |
+| ----------- | ---------------------- | -------------------------------------------------- |
+| Product     | workstream/product     | Specs, vision, backlog, feedback (docs only)       |
+| Design      | workstream/design      | HTML/CSS layers, visual design, component patterns |
+| Engineering | workstream/engineering | JS behavior, state, algorithms, build system       |
+| Process     | workstream/process     | CI, Claude tooling, review commands, process docs  |
 
 **Overlap zones** — `main.ts`/`build.ts` and quiz render functions are touched
 by both design and engineering. Rebase often; keep HTML/CSS and JS behavior
@@ -175,12 +176,14 @@ cleanly separated.
 ## GitHub API Access
 
 `gh` CLI is not authenticated in the web environment. Use `curl` through the
-egress proxy instead — see [development.md](guides/development.md#github-api-access-web-environment)
-for the pattern.
+egress proxy instead — see
+[development.md](guides/development.md#github-api-access-web-environment) for
+the pattern.
 
 ## PR Requirements
 
 All PRs that change code (not just docs/plans) follow this sequence:
+
 1. Run `/review` until approved — don't wait for the user to ask.
 2. Push the branch.
 3. Create a PR with `gh pr create` (summary + test plan).

@@ -2,14 +2,15 @@
 
 ## Context
 
-The app has 10 quiz modes with various UI states (idle, active quiz, menu). During
-development, there's no quick way to visually verify what the app looks like across
-all modes. This adds a simple Playwright script that auto-captures screenshots of
-every mode for design feedback and sanity checks.
+The app has 10 quiz modes with various UI states (idle, active quiz, menu).
+During development, there's no quick way to visually verify what the app looks
+like across all modes. This adds a simple Playwright script that auto-captures
+screenshots of every mode for design feedback and sanity checks.
 
 ## Approach
 
 A single TypeScript script (`scripts/take-screenshots.ts`) that:
+
 1. Spawns the Deno dev server as a child process
 2. Launches headless Chromium via Playwright
 3. Seeds localStorage to bypass motor calibration screens
@@ -17,18 +18,18 @@ A single TypeScript script (`scripts/take-screenshots.ts`) that:
 5. Captures one hamburger menu screenshot
 6. Kills the server and exits
 
-**Viewport**: 402x873 @ 3x (iPhone 17 Pro)
-**Output**: `screenshots/` directory (gitignored), 21 PNGs total
+**Viewport**: 402x873 @ 3x (iPhone 17 Pro) **Output**: `screenshots/` directory
+(gitignored), 21 PNGs total
 
 ## Files to create/modify
 
-| File | Action | Notes |
-|------|--------|-------|
-| `plans/2026-02-11-playwright-screenshots.md` | Create | This plan |
-| `package.json` | Create | Minimal: `playwright` + `tsx` devDependencies |
-| `.gitignore` | Create | `node_modules/`, `screenshots/` |
-| `scripts/take-screenshots.ts` | Create | Main script |
-| `CLAUDE.md` | Edit | Add Screenshots section |
+| File                                         | Action | Notes                                         |
+| -------------------------------------------- | ------ | --------------------------------------------- |
+| `plans/2026-02-11-playwright-screenshots.md` | Create | This plan                                     |
+| `package.json`                               | Create | Minimal: `playwright` + `tsx` devDependencies |
+| `.gitignore`                                 | Create | `node_modules/`, `screenshots/`               |
+| `scripts/take-screenshots.ts`                | Create | Main script                                   |
+| `CLAUDE.md`                                  | Edit   | Add Screenshots section                       |
 
 ## Script design
 
@@ -36,8 +37,10 @@ A single TypeScript script (`scripts/take-screenshots.ts`) that:
   (speedTap excluded — has its own lifecycle)
 - After seeding localStorage, reloads page so app initializes with the data
 - Navigates to each mode via hamburger menu clicks
-- Captures idle screenshot, then clicks Start, waits for quiz UI, captures quiz screenshot
-- Speed Tap: detects `.speed-tap-prompt` visibility instead of `.quiz-area.active`
+- Captures idle screenshot, then clicks Start, waits for quiz UI, captures quiz
+  screenshot
+- Speed Tap: detects `.speed-tap-prompt` visibility instead of
+  `.quiz-area.active`
 - Uses `page.keyboard.press('Escape')` to stop quiz between captures
 - Screenshot naming: `{modeId}-idle.png`, `{modeId}-quiz.png`, `menu.png`
 

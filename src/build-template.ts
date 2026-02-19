@@ -3,25 +3,25 @@
 // to eliminate duplication between build scripts.
 
 import {
-  pianoNoteButtons,
-  noteAnswerButtons,
-  numberButtons,
+  degreeAnswerButtons,
+  fretboardIdleHTML,
+  fretboardSVG,
   intervalAnswerButtons,
   keysigAnswerButtons,
-  degreeAnswerButtons,
-  numeralAnswerButtons,
   modeScreen,
-  fretboardSVG,
-  tabbedIdleHTML,
-  fretboardIdleHTML,
+  noteAnswerButtons,
   notesToggleHTML,
-} from "./html-helpers.ts";
+  numberButtons,
+  numeralAnswerButtons,
+  pianoNoteButtons,
+  tabbedIdleHTML,
+} from './html-helpers.ts';
 
 // ---------------------------------------------------------------------------
 // Version — single source of truth
 // ---------------------------------------------------------------------------
 
-export const VERSION = "v6.9";
+export const VERSION = 'v6.10';
 
 // ---------------------------------------------------------------------------
 // Shared HTML fragments
@@ -97,93 +97,145 @@ export const HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
 function modeScreens(): string {
   return `
   <!-- Guitar Fretboard mode -->
-${modeScreen("fretboard", {
-  modeName: 'Guitar Fretboard',
-  idleHTML: fretboardIdleHTML({ stringNames: ['e', 'B', 'G', 'D', 'A', 'E'], defaultString: 5, id: 'fretboard', fretboardSVG: fretboardSVG({ stringCount: 6, fretCount: 13, fretMarkers: [3, 5, 7, 9, 12] }) }),
-  quizAreaContent: `${fretboardSVG({ stringCount: 6, fretCount: 13, fretMarkers: [3, 5, 7, 9, 12] })}
+${
+    modeScreen('fretboard', {
+      modeName: 'Guitar Fretboard',
+      idleHTML: fretboardIdleHTML({
+        stringNames: ['e', 'B', 'G', 'D', 'A', 'E'],
+        defaultString: 5,
+        id: 'fretboard',
+        fretboardSVG: fretboardSVG({
+          stringCount: 6,
+          fretCount: 13,
+          fretMarkers: [3, 5, 7, 9, 12],
+        }),
+      }),
+      quizAreaContent: `${
+        fretboardSVG({
+          stringCount: 6,
+          fretCount: 13,
+          fretMarkers: [3, 5, 7, 9, 12],
+        })
+      }
       ${pianoNoteButtons()}`,
-})}
+    })
+  }
 
   <!-- Ukulele Fretboard mode -->
-${modeScreen("ukulele", {
-  modeName: 'Ukulele Fretboard',
-  idleHTML: fretboardIdleHTML({ stringNames: ['A', 'E', 'C', 'G'], defaultString: 2, id: 'ukulele', fretboardSVG: fretboardSVG({ stringCount: 4, fretCount: 13, fretMarkers: [3, 5, 7, 10, 12] }) }),
-  quizAreaContent: `${fretboardSVG({ stringCount: 4, fretCount: 13, fretMarkers: [3, 5, 7, 10, 12] })}
+${
+    modeScreen('ukulele', {
+      modeName: 'Ukulele Fretboard',
+      idleHTML: fretboardIdleHTML({
+        stringNames: ['A', 'E', 'C', 'G'],
+        defaultString: 2,
+        id: 'ukulele',
+        fretboardSVG: fretboardSVG({
+          stringCount: 4,
+          fretCount: 13,
+          fretMarkers: [3, 5, 7, 10, 12],
+        }),
+      }),
+      quizAreaContent: `${
+        fretboardSVG({
+          stringCount: 4,
+          fretCount: 13,
+          fretMarkers: [3, 5, 7, 10, 12],
+        })
+      }
       ${pianoNoteButtons()}`,
-})}
+    })
+  }
 
   <!-- Speed Tap mode -->
-${modeScreen("speedTap", {
-  modeName: 'Speed Tap',
-  idleHTML: tabbedIdleHTML({ practiceScope: notesToggleHTML() }),
-  quizAreaContent: `<div class="speed-tap-status">
+${
+    modeScreen('speedTap', {
+      modeName: 'Speed Tap',
+      idleHTML: tabbedIdleHTML({ practiceScope: notesToggleHTML() }),
+      quizAreaContent: `<div class="speed-tap-status">
         <span class="speed-tap-progress"></span>
       </div>
       ${fretboardSVG()}
       ${noteAnswerButtons({ hidden: true })}`,
-})}
+    })
+  }
 
   <!-- Note Semitones mode -->
-${modeScreen("noteSemitones", {
-  modeName: 'Note \u2194 Semitones',
-  idleHTML: tabbedIdleHTML({}),
-  quizAreaContent: `${noteAnswerButtons()}
+${
+    modeScreen('noteSemitones', {
+      modeName: 'Note \u2194 Semitones',
+      idleHTML: tabbedIdleHTML({}),
+      quizAreaContent: `${noteAnswerButtons()}
       ${numberButtons(0, 11)}`,
-})}
+    })
+  }
 
   <!-- Interval Semitones mode -->
-${modeScreen("intervalSemitones", {
-  modeName: 'Interval \u2194 Semitones',
-  idleHTML: tabbedIdleHTML({}),
-  quizAreaContent: `${intervalAnswerButtons()}
+${
+    modeScreen('intervalSemitones', {
+      modeName: 'Interval \u2194 Semitones',
+      idleHTML: tabbedIdleHTML({}),
+      quizAreaContent: `${intervalAnswerButtons()}
       ${numberButtons(1, 12)}`,
-})}
+    })
+  }
 
   <!-- Semitone Math mode -->
-${modeScreen("semitoneMath", {
-  modeName: 'Semitone Math',
-  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-  quizAreaContent: `${noteAnswerButtons()}`,
-})}
+${
+    modeScreen('semitoneMath', {
+      modeName: 'Semitone Math',
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `${noteAnswerButtons()}`,
+    })
+  }
 
   <!-- Interval Math mode -->
-${modeScreen("intervalMath", {
-  modeName: 'Interval Math',
-  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-  quizAreaContent: `${noteAnswerButtons()}`,
-})}
+${
+    modeScreen('intervalMath', {
+      modeName: 'Interval Math',
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `${noteAnswerButtons()}`,
+    })
+  }
 
   <!-- Key Signatures mode -->
-${modeScreen("keySignatures", {
-  modeName: 'Key Signatures',
-  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-  quizAreaContent: `${keysigAnswerButtons()}
+${
+    modeScreen('keySignatures', {
+      modeName: 'Key Signatures',
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `${keysigAnswerButtons()}
       ${noteAnswerButtons({ hidden: true })}`,
-})}
+    })
+  }
 
   <!-- Scale Degrees mode -->
-${modeScreen("scaleDegrees", {
-  modeName: 'Scale Degrees',
-  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-  quizAreaContent: `${noteAnswerButtons()}
+${
+    modeScreen('scaleDegrees', {
+      modeName: 'Scale Degrees',
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `${noteAnswerButtons()}
       ${degreeAnswerButtons({ hidden: true })}`,
-})}
+    })
+  }
 
   <!-- Diatonic Chords mode -->
-${modeScreen("diatonicChords", {
-  modeName: 'Diatonic Chords',
-  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-  quizAreaContent: `${noteAnswerButtons()}
+${
+    modeScreen('diatonicChords', {
+      modeName: 'Diatonic Chords',
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `${noteAnswerButtons()}
       ${numeralAnswerButtons({ hidden: true })}`,
-})}
+    })
+  }
 
   <!-- Chord Spelling mode -->
-${modeScreen("chordSpelling", {
-  modeName: 'Chord Spelling',
-  idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-  quizAreaContent: `<div class="chord-slots"></div>
+${
+    modeScreen('chordSpelling', {
+      modeName: 'Chord Spelling',
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `<div class="chord-slots"></div>
       ${noteAnswerButtons()}`,
-})}`;
+    })
+  }`;
 }
 
 // ---------------------------------------------------------------------------
@@ -226,7 +278,8 @@ ${js}
 // Service worker
 // ---------------------------------------------------------------------------
 
-export const SERVICE_WORKER = `// Network-first service worker: always fetch latest, fall back to cache offline
+export const SERVICE_WORKER =
+  `// Network-first service worker: always fetch latest, fall back to cache offline
 const CACHE = 'fretboard-v1';
 
 self.addEventListener('fetch', (event) => {

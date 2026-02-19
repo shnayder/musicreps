@@ -13,17 +13,23 @@ How to plan, design, implement, and document changes.
 
 ### Design spec
 
-Write when there are **open design questions** about what to build. Typical
-for new quiz modes, new UX patterns, or features where the question format,
-item structure, or interaction model needs to be worked out.
+Write when there are **open design questions** about what to build. Typical for
+new quiz modes, new UX patterns, or features where the question format, item
+structure, or interaction model needs to be worked out.
 
 Example: `plans/product-specs/completed/2026-02-11-new-quiz-modes-spec.md` —
 designed question formats, item ID schemes, grouping, and answer input for 4 new
 modes.
 
-When reviewing specs, focus on requirements, goals, scope, phasing. Do not bring up code-level concerns unless they have significant impact on scope, performance, etc. It is expected that new code will be necessary -- no need to bring it up at this stage.
+When reviewing specs, focus on requirements, goals, scope, phasing. Do not bring
+up code-level concerns unless they have significant impact on scope,
+performance, etc. It is expected that new code will be necessary -- no need to
+bring it up at this stage.
 
-Principle: don't future-proof in most cases. There'll be time enough to refactor and add additional abstractions, info, etc when we want to actually use it. e.g. when tracking # of items done in a quiz, don't need to persist it until we actually plan to display the persisted value somewhere. 
+Principle: don't future-proof in most cases. There'll be time enough to refactor
+and add additional abstractions, info, etc when we want to actually use it. e.g.
+when tracking # of items done in a quiz, don't need to persist it until we
+actually plan to display the persisted value somewhere.
 
 ### Implementation plan
 
@@ -35,8 +41,8 @@ refactoring plan with code samples for each extraction step.
 
 ### Bug fix plan
 
-Write for **non-trivial bugs** affecting multiple files or shared systems.
-Skip for obvious single-file fixes.
+Write for **non-trivial bugs** affecting multiple files or shared systems. Skip
+for obvious single-file fixes.
 
 Example: `plans/exec-plans/completed/2026-02-12-fix-chord-spelling-bugs.md` —
 diagnosed 3 related enharmonic bugs, documented root causes, and planned fixes.
@@ -46,7 +52,8 @@ diagnosed 3 related enharmonic bugs, documented root causes, and planned fixes.
 - small, straightfoward tweaks to existing features.
 - bug fixes
 - version bumps
-- Significant technical improvements should get a spec, even if they're not user-facing. 
+- Significant technical improvements should get a spec, even if they're not
+  user-facing.
 
 ### Skip the plan
 
@@ -70,8 +77,8 @@ Use the date you start the work. Use kebab-case for the description.
 ## Plan Lifecycle
 
 1. **Create** the spec and/or plan on the feature branch BEFORE starting
-   implementation. Place in the appropriate subdirectory (`product-specs/active/`,
-   `design-docs/`, or `exec-plans/active/`).
+   implementation. Place in the appropriate subdirectory
+   (`product-specs/active/`, `design-docs/`, or `exec-plans/active/`).
 2. **Commit** the spec and plan as the first commit on the branch.
 3. **Implement** the feature, referring to the plan.
 4. **Update** the plan: add an "Implementation Notes" section documenting
@@ -86,26 +93,26 @@ Use the date you start the work. Use kebab-case for the description.
 Before considering a spec ready for review, verify:
 
 - [ ] **Links to source documents.** If the spec implements part of a larger
-  design doc, exploration, or backlog item, link to it in the Overview so
-  readers can find the original context.
-- [ ] **Stays at product level.** No state shapes, function signatures,
-  storage keys, or DOM structure. Those belong in the implementation plan.
+      design doc, exploration, or backlog item, link to it in the Overview so
+      readers can find the original context.
+- [ ] **Stays at product level.** No state shapes, function signatures, storage
+      keys, or DOM structure. Those belong in the implementation plan.
 - [ ] **Consistent with design principles.** Check
-  [design-principles.md](design-principles.md) — especially "fewer options"
-  (can the system adapt instead of adding a toggle?) and "short-session
-  friendly" (does state need to persist?).
+      [design-principles.md](design-principles.md) — especially "fewer options"
+      (can the system adapt instead of adding a toggle?) and "short-session
+      friendly" (does state need to persist?).
 - [ ] **Single user-facing metric where possible.** Avoid exposing internal
-  distinctions (speed vs accuracy, timeout vs wrong) unless they're genuinely
-  useful to the user.
+      distinctions (speed vs accuracy, timeout vs wrong) unless they're
+      genuinely useful to the user.
 - [ ] **Screen states described.** For UI features, describe what each screen
-  state looks like (idle, quizzing, etc.) and the content priority order. See
-  [layout-and-ia.md](design/layout-and-ia.md).
+      state looks like (idle, quizzing, etc.) and the content priority order.
+      See [layout-and-ia.md](design/layout-and-ia.md).
 - [ ] **Labels and grouping specified.** New toggles, indicators, or data
-  displays have labels. Related controls are grouped. No unlabeled elements.
+      displays have labels. Related controls are grouped. No unlabeled elements.
 - [ ] **Scope is clear.** Goals and non-goals are explicit. No feature creep
-  disguised as "cross-cutting notes."
-- [ ] **Decisions are resolved.** Each decision states the chosen option and
-  the rationale. No "TBD" or "we could do X or Y."
+      disguised as "cross-cutting notes."
+- [ ] **Decisions are resolved.** Each decision states the chosen option and the
+      rationale. No "TBD" or "we could do X or Y."
 
 ## Architectural Review (Before Implementing)
 
@@ -118,23 +125,24 @@ Before writing code, verify that your design:
 - **Extends shared abstractions** when that's cleaner than working around them.
   If adding a new state phase to the engine, add it to `quiz-engine-state.js`.
 - **Follows build system conventions**: proper ES module `import`/`export`,
-  entry point is `src/app.js`. See [architecture.md](architecture.md#build-system).
+  entry point is `src/app.js`. See
+  [architecture.md](architecture.md#build-system).
 - **Reuses shared helpers**: `computeRecommendations()` for progression,
   `createStatsControls()` for stats display, `createNoteKeyHandler()` for
   keyboard input, `deriveScaledConfig()` for timing thresholds.
-- **Follows layout/IA principles**: content ordered by interaction priority
-  per screen state, controls grouped and labeled, no redundant affordances.
-  See [layout-and-ia.md](design/layout-and-ia.md).
-- **Consistency over accommodation**: if a mode behaves differently, ask
-  "should it?" before "how do we support that?" Change the outlier to match
-  the standard rather than adding per-mode flags or overrides. See
+- **Follows layout/IA principles**: content ordered by interaction priority per
+  screen state, controls grouped and labeled, no redundant affordances. See
+  [layout-and-ia.md](design/layout-and-ia.md).
+- **Consistency over accommodation**: if a mode behaves differently, ask "should
+  it?" before "how do we support that?" Change the outlier to match the standard
+  rather than adding per-mode flags or overrides. See
   [architecture.md](architecture.md).
 
 ## Templates
 
 ### Design Spec
 
-````markdown
+```markdown
 # {Feature Name} — Design Spec
 
 ## Overview
@@ -160,8 +168,8 @@ What knowledge or skill is being drilled.
 ### Grouping and sequencing
 
 | Group | Contents | Rationale | Items |
-|-------|----------|-----------|-------|
-| 0 | ... | ... | ... |
+| ----- | -------- | --------- | ----- |
+| 0     | ...      | ...       | ...   |
 
 ### Answer input
 
@@ -175,11 +183,11 @@ Enharmonic handling, adaptive system integration, shared infrastructure reuse.
 ## Resolved decisions
 
 - **Decision**: chosen option — rationale
-````
+```
 
 ### Implementation Plan
 
-````markdown
+```markdown
 # {Feature Name}
 
 ## Problem / Context
@@ -189,6 +197,7 @@ What motivates this change. What's broken, missing, or being improved.
 ## Design
 
 Technical approach:
+
 - Data structures and state shape
 - Key functions and signatures
 - UI changes (HTML/CSS)
@@ -202,10 +211,10 @@ Technical approach:
 
 ## Files Modified
 
-| File | Changes |
-|------|---------|
-| `src/...` | Description |
-| `main.ts` | Template + file reads |
+| File       | Changes               |
+| ---------- | --------------------- |
+| `src/...`  | Description           |
+| `main.ts`  | Template + file reads |
 | `build.ts` | Template + file reads |
 
 ## Testing
@@ -226,11 +235,11 @@ Summary of actual implementation.
 ### Deviations from plan
 
 What changed and why.
-````
+```
 
 ### Bug Fix
 
-````markdown
+```markdown
 # Fix: {Short Description}
 
 ## Bug: {Title}
@@ -249,7 +258,7 @@ What changed and why.
 ## Implementation Notes (added after completion)
 
 What differed from plan, if anything.
-````
+```
 
 ## Updating Existing Plans
 
@@ -259,6 +268,7 @@ planned), captures lessons learned, and helps future agents understand the
 history of design decisions.
 
 Include:
+
 - **What was done**: brief summary of actual changes
 - **Deviations from plan**: what changed and why
 - **Test counts**: how many tests were added
@@ -266,21 +276,20 @@ Include:
 
 ## Updating guides
 
-When a change introduces a convention, pattern, or rule that future
-development must follow, update the relevant guide(s) so the knowledge
-isn't lost. Examples:
+When a change introduces a convention, pattern, or rule that future development
+must follow, update the relevant guide(s) so the knowledge isn't lost. Examples:
 
 - New accidental naming rule → update `accidental-conventions.md` mode table
 - New shared utility or pattern → update `architecture.md`
 - New build step or workflow → update `development.md`
 - New quiz mode → update the "Adding a New Quiz Mode" checklist
 
-The test is: **if someone adding a new mode or feature would need to know
-this to get it right, it belongs in a guide.** Don't rely on code comments
-alone for cross-cutting concerns — they're too easy to miss.
+The test is: **if someone adding a new mode or feature would need to know this
+to get it right, it belongs in a guide.** Don't rely on code comments alone for
+cross-cutting concerns — they're too easy to miss.
 
-Also update `CLAUDE.md` if the change affects the top-level overview
-(new guide, new mode, changed commands).
+Also update `CLAUDE.md` if the change affects the top-level overview (new guide,
+new mode, changed commands).
 
 ## Updating tech-debt-tracker
 
@@ -295,12 +304,12 @@ Also update `CLAUDE.md` if the change affects the top-level overview
 Each workstream backlog (`backlogs/*.md`) uses lightweight inline tags:
 
 - **Priority**: `[P1]` soon, `[P2]` when I can, `[--]` unprioritized/someday.
-- **Categories**: 
-   - kind: `#bug`, `#polish`, `#feature`, `#tooling`
-   - sizes: `#XL` (break down), `#L/#M/#S/#XS`
-   - workflow status: `#clarify`, `
-   - plus other backlog-specific tags. Keep the sets small.
- 
+- **Categories**:
+  - kind: `#bug`, `#polish`, `#feature`, `#tooling`
+  - sizes: `#XL` (break down), `#L/#M/#S/#XS`
+  - workflow status: `#clarify`, `
+  - plus other backlog-specific tags. Keep the sets small.
+
 - **Format**: `- [P1] Description of item #tag1 #tag2`
 
 Priorities reflect the backlog's own prioritization principles, not urgency.

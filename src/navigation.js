@@ -51,16 +51,16 @@ export function createNavigation() {
   function init() {
     // Home screen mode buttons
     if (homeScreen) {
-      homeScreen.querySelectorAll('.home-mode-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+      homeScreen.querySelectorAll('.home-mode-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
           switchTo(btn.dataset.mode);
         });
       });
     }
 
     // Mode back buttons (one per mode screen)
-    document.querySelectorAll('.mode-back-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
+    document.querySelectorAll('.mode-back-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
         navigateHome();
       });
     });
@@ -69,12 +69,12 @@ export function createNavigation() {
     // During active quiz/calibration the container has phase-active,
     // phase-calibration, or phase-round-complete — we only act on phase-idle
     // so the quiz engine handles Escape independently in other phases.
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape' || !currentModeId) return;
       // Don't interfere with open modals (e.g. settings)
       if (document.querySelector('.settings-overlay.open')) return;
       // Only navigate home when the quiz is idle (not running/calibrating)
-      var modeScreen = document.getElementById('mode-' + currentModeId);
+      const modeScreen = document.getElementById('mode-' + currentModeId);
       if (modeScreen && !modeScreen.classList.contains('phase-idle')) return;
       navigateHome();
     });

@@ -3,8 +3,8 @@
 ## Problem
 
 The speed tap stats table is too wide on mobile when accidentals are included
-(12 columns). Also, the stats should always show all 12 notes regardless of
-the "naturals only" quiz setting.
+(12 columns). Also, the stats should always show all 12 notes regardless of the
+"naturals only" quiz setting.
 
 ## Changes
 

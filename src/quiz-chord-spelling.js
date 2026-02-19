@@ -2,10 +2,26 @@
 // "Cm7" -> user enters C, Eb, G, Bb in sequence.
 // ~132 items: 12 roots x chord types, grouped by chord type.
 
-import { CHORD_TYPES, CHORD_ROOTS, getChordTones, chordDisplayName, spelledNoteMatchesInput, spelledNoteMatchesSemitone, displayNote } from './music-data.js';
+import {
+  CHORD_ROOTS,
+  CHORD_TYPES,
+  displayNote,
+  getChordTones,
+  spelledNoteMatchesInput,
+  spelledNoteMatchesSemitone,
+} from './music-data.js';
 import { DEFAULT_CONFIG } from './adaptive.js';
-import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
-import { renderStatsGrid, buildStatsLegend, createStatsControls } from './stats-display.js';
+import {
+  createAdaptiveKeyHandler,
+  createQuizEngine,
+  pickCalibrationButton,
+  refreshNoteButtonLabels,
+} from './quiz-engine.js';
+import {
+  buildStatsLegend,
+  createStatsControls,
+  renderStatsGrid,
+} from './stats-display.js';
 import { computeRecommendations } from './recommendations.js';
 
 export function createChordSpellingMode() {
@@ -19,8 +35,8 @@ export function createChordSpellingMode() {
     if (ct.group > maxGroup) maxGroup = ct.group;
   }
   for (let g = 0; g <= maxGroup; g++) {
-    const types = CHORD_TYPES.filter(t => t.group === g);
-    const label = types.map(t => t.symbol || 'maj').join(', ');
+    const types = CHORD_TYPES.filter((t) => t.group === g);
+    const label = types.map((t) => t.symbol || 'maj').join(', ');
     SPELLING_GROUPS.push({ types, label });
   }
 
@@ -39,7 +55,7 @@ export function createChordSpellingMode() {
     const colonIdx = itemId.indexOf(':');
     const rootName = itemId.substring(0, colonIdx);
     const typeName = itemId.substring(colonIdx + 1);
-    const chordType = CHORD_TYPES.find(t => t.name === typeName);
+    const chordType = CHORD_TYPES.find((t) => t.name === typeName);
     const tones = getChordTones(rootName, chordType);
     return { rootName, chordType, tones };
   }
@@ -60,7 +76,9 @@ export function createChordSpellingMode() {
   function loadEnabledGroups() {
     const saved = localStorage.getItem(GROUPS_KEY);
     if (saved) {
-      try { enabledGroups = new Set(JSON.parse(saved)); } catch {}
+      try {
+        enabledGroups = new Set(JSON.parse(saved));
+      } catch { /* expected */ }
     }
     updateGroupToggles();
   }
@@ -70,7 +88,7 @@ export function createChordSpellingMode() {
   }
 
   function updateGroupToggles() {
-    container.querySelectorAll('.distance-toggle').forEach(btn => {
+    container.querySelectorAll('.distance-toggle').forEach((btn) => {
       const g = parseInt(btn.dataset.group);
       btn.classList.toggle('active', enabledGroups.has(g));
       btn.classList.toggle('recommended', recommendedGroups.has(g));
@@ -81,16 +99,22 @@ export function createChordSpellingMode() {
 
   function getRecommendationResult() {
     const allGroups = SPELLING_GROUPS.map((_, i) => i);
-    return computeRecommendations(engine.selector, allGroups, getItemIdsForGroup, DEFAULT_CONFIG, recsOptions);
+    return computeRecommendations(
+      engine.selector,
+      allGroups,
+      getItemIdsForGroup,
+      DEFAULT_CONFIG,
+      recsOptions,
+    );
   }
 
-  function updateRecommendations(selector) {
+  function updateRecommendations(_selector) {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     updateGroupToggles();
   }
 
-  function applyRecommendations(selector) {
+  function applyRecommendations(_selector) {
     const result = getRecommendationResult();
     recommendedGroups = result.recommended;
     if (result.enabled) {
@@ -115,13 +139,16 @@ export function createChordSpellingMode() {
 
   function switchTab(tabName) {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
-    container.querySelectorAll('.tab-content').forEach(el => {
-      el.classList.toggle('active',
-        tabName === 'practice' ? el.classList.contains('tab-practice')
-                               : el.classList.contains('tab-progress'));
+    container.querySelectorAll('.tab-content').forEach((el) => {
+      el.classList.toggle(
+        'active',
+        tabName === 'practice'
+          ? el.classList.contains('tab-practice')
+          : el.classList.contains('tab-progress'),
+      );
     });
     if (tabName === 'progress') {
       statsControls.show(statsControls.mode || 'retention');
@@ -140,22 +167,25 @@ export function createChordSpellingMode() {
   // --- Practice summary ---
 
   function renderPracticeSummary() {
-    var statusLabel = container.querySelector('.practice-status-label');
-    var statusDetail = container.querySelector('.practice-status-detail');
-    var recText = container.querySelector('.practice-rec-text');
-    var recBtn = container.querySelector('.practice-rec-btn');
+    const statusLabel = container.querySelector('.practice-status-label');
+    const statusDetail = container.querySelector('.practice-status-detail');
+    const recText = container.querySelector('.practice-rec-text');
+    const recBtn = container.querySelector('.practice-rec-btn');
     if (!statusLabel) return;
 
-    var items = mode.getEnabledItems();
-    var threshold = engine.selector.getConfig().automaticityThreshold;
-    var fluent = 0, seen = 0;
-    for (var i = 0; i < items.length; i++) {
-      var auto = engine.selector.getAutomaticity(items[i]);
-      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    const items = mode.getEnabledItems();
+    const threshold = engine.selector.getConfig().automaticityThreshold;
+    let fluent = 0, seen = 0;
+    for (let i = 0; i < items.length; i++) {
+      const auto = engine.selector.getAutomaticity(items[i]);
+      if (auto !== null) {
+        seen++;
+        if (auto > threshold) fluent++;
+      }
     }
-    var allFluent = 0;
-    for (var j = 0; j < ALL_ITEMS.length; j++) {
-      var a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
+    let allFluent = 0;
+    for (let j = 0; j < ALL_ITEMS.length; j++) {
+      const a2 = engine.selector.getAutomaticity(ALL_ITEMS[j]);
       if (a2 !== null && a2 > threshold) allFluent++;
     }
 
@@ -163,28 +193,41 @@ export function createChordSpellingMode() {
       statusLabel.textContent = 'Ready to start';
       statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
     } else {
-      var pct = ALL_ITEMS.length > 0 ? Math.round((allFluent / ALL_ITEMS.length) * 100) : 0;
-      var label;
+      const pct = ALL_ITEMS.length > 0
+        ? Math.round((allFluent / ALL_ITEMS.length) * 100)
+        : 0;
+      let label;
       if (pct >= 80) label = 'Strong';
       else if (pct >= 50) label = 'Solid';
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+      statusDetail.textContent = allFluent + ' of ' + ALL_ITEMS.length +
+        ' items fluent';
     }
 
-    var result = getRecommendationResult();
+    const result = getRecommendationResult();
     if (result.recommended.size > 0) {
-      var parts = [];
+      const parts = [];
       if (result.consolidateIndices.length > 0) {
-        var cNames = result.consolidateIndices.sort(function(a, b) { return a - b; })
-          .map(function(g) { return SPELLING_GROUPS[g].label; });
-        parts.push('solidify ' + cNames.join(', ')
-          + ' \u2014 ' + result.consolidateDueCount + ' slow item' + (result.consolidateDueCount !== 1 ? 's' : ''));
+        const cNames = result.consolidateIndices.sort(function (a, b) {
+          return a - b;
+        })
+          .map(function (g) {
+            return SPELLING_GROUPS[g].label;
+          });
+        parts.push(
+          'solidify ' + cNames.join(', ') +
+            ' \u2014 ' + result.consolidateDueCount + ' slow item' +
+            (result.consolidateDueCount !== 1 ? 's' : ''),
+        );
       }
       if (result.expandIndex !== null) {
-        parts.push('start ' + SPELLING_GROUPS[result.expandIndex].label
-          + ' \u2014 ' + result.expandNewCount + ' new item' + (result.expandNewCount !== 1 ? 's' : ''));
+        parts.push(
+          'start ' + SPELLING_GROUPS[result.expandIndex].label +
+            ' \u2014 ' + result.expandNewCount + ' new item' +
+            (result.expandNewCount !== 1 ? 's' : ''),
+        );
       }
       recText.textContent = 'Suggestion: ' + parts.join('\n');
       recBtn.classList.remove('hidden');
@@ -192,13 +235,12 @@ export function createChordSpellingMode() {
       recText.textContent = '';
       recBtn.classList.add('hidden');
     }
-
   }
 
   function renderSessionSummary() {
-    var el = container.querySelector('.session-summary-text');
+    const el = container.querySelector('.session-summary-text');
     if (!el) return;
-    var items = mode.getEnabledItems();
+    const items = mode.getEnabledItems();
     el.textContent = items.length + ' items \u00B7 60s';
   }
 
@@ -209,7 +251,10 @@ export function createChordSpellingMode() {
 
   function renderSlots() {
     const slotsDiv = container.querySelector('.chord-slots');
-    if (!currentItem) { slotsDiv.innerHTML = ''; return; }
+    if (!currentItem) {
+      slotsDiv.innerHTML = '';
+      return;
+    }
     let html = '';
     for (let i = 0; i < currentItem.tones.length; i++) {
       let cls = 'chord-slot';
@@ -241,7 +286,7 @@ export function createChordSpellingMode() {
     renderSlots();
 
     if (enteredTones.length === currentItem.tones.length) {
-      const allCorrect = enteredTones.every(t => t.correct);
+      const allCorrect = enteredTones.every((t) => t.correct);
       engine.submitAnswer(allCorrect ? '__correct__' : '__wrong__');
     }
   }
@@ -249,14 +294,22 @@ export function createChordSpellingMode() {
   // --- Stats ---
 
   const statsControls = createStatsControls(container, (mode, el) => {
-    const colLabels = CHORD_TYPES.map(t => t.symbol || 'maj');
+    const colLabels = CHORD_TYPES.map((t) => t.symbol || 'maj');
     const gridDiv = document.createElement('div');
     gridDiv.className = 'stats-grid-wrapper';
     el.appendChild(gridDiv);
-    const rootNotes = CHORD_ROOTS.map(r => ({ name: r, displayName: r }));
-    renderStatsGrid(engine.selector, colLabels, (rootName, colIdx) => {
-      return rootName + ':' + CHORD_TYPES[colIdx].name;
-    }, mode, gridDiv, rootNotes, engine.baseline);
+    const rootNotes = CHORD_ROOTS.map((r) => ({ name: r, displayName: r }));
+    renderStatsGrid(
+      engine.selector,
+      colLabels,
+      (rootName, colIdx) => {
+        return rootName + ':' + CHORD_TYPES[colIdx].name;
+      },
+      mode,
+      gridDiv,
+      rootNotes,
+      engine.baseline,
+    );
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
     el.appendChild(legendDiv);
@@ -278,9 +331,11 @@ export function createChordSpellingMode() {
     },
 
     getPracticingLabel() {
-      if (enabledGroups.size === SPELLING_GROUPS.length) return 'all chord types';
+      if (enabledGroups.size === SPELLING_GROUPS.length) {
+        return 'all chord types';
+      }
       const labels = [...enabledGroups].sort((a, b) => a - b)
-        .map(g => SPELLING_GROUPS[g].label);
+        .map((g) => SPELLING_GROUPS[g].label);
       return labels.join(', ') + ' chords';
     },
 
@@ -293,11 +348,12 @@ export function createChordSpellingMode() {
       currentItem = parseItem(itemId);
       enteredTones = [];
       const prompt = container.querySelector('.quiz-prompt');
-      prompt.textContent = displayNote(currentItem.rootName) + currentItem.chordType.symbol;
+      prompt.textContent = displayNote(currentItem.rootName) +
+        currentItem.chordType.symbol;
       renderSlots();
     },
 
-    checkAnswer(itemId, input) {
+    checkAnswer(_itemId, input) {
       const allCorrect = input === '__correct__';
       const correctAnswer = currentItem.tones.map(displayNote).join(' ');
       return { correct: allCorrect, correctAnswer };
@@ -320,7 +376,7 @@ export function createChordSpellingMode() {
       refreshUI();
     },
 
-    handleKey(e, ctx) {
+    handleKey(e, _ctx) {
       return noteKeyHandler.handleKey(e);
     },
 
@@ -338,29 +394,30 @@ export function createChordSpellingMode() {
         targets.push(btn);
         prev = btn;
       }
-      const labels = targets.map(b => b.textContent);
+      const labels = targets.map((b) => b.textContent);
       return { prompt: 'Press ' + labels.join(' '), targetButtons: targets };
     },
 
-    calibrationIntroHint: "We\u2019ll measure your response speed to set personalized targets. Press the notes shown in the prompt, in order \u2014 10 rounds total.",
+    calibrationIntroHint:
+      'We\u2019ll measure your response speed to set personalized targets. Press the notes shown in the prompt, in order \u2014 10 rounds total.',
   };
 
   const engine = createQuizEngine(mode, container);
   engine.storage.preload(ALL_ITEMS);
 
   const noteKeyHandler = createAdaptiveKeyHandler(
-    input => submitTone(input),
-    () => true
+    (input) => submitTone(input),
+    () => true,
   );
 
   function init() {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
     // Set section heading
-    var toggleLabel = container.querySelector('.toggle-group-label');
+    const toggleLabel = container.querySelector('.toggle-group-label');
     if (toggleLabel) toggleLabel.textContent = 'Chord types';
 
     const togglesDiv = container.querySelector('.distance-toggles');
@@ -375,7 +432,7 @@ export function createChordSpellingMode() {
 
     loadEnabledGroups();
 
-    container.querySelectorAll('.answer-btn-note').forEach(btn => {
+    container.querySelectorAll('.answer-btn-note').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
         let input = btn.dataset.note;
@@ -391,10 +448,13 @@ export function createChordSpellingMode() {
       });
     });
 
-    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.start-btn').addEventListener(
+      'click',
+      () => engine.start(),
+    );
 
     // Use recommendation button
-    var recBtn = container.querySelector('.practice-rec-btn');
+    const recBtn = container.querySelector('.practice-rec-btn');
     if (recBtn) {
       recBtn.addEventListener('click', () => {
         applyRecommendations(engine.selector);
@@ -411,7 +471,11 @@ export function createChordSpellingMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshNoteButtonLabels(container); refreshUI(); },
+    activate() {
+      engine.attach();
+      refreshNoteButtonLabels(container);
+      refreshUI();
+    },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

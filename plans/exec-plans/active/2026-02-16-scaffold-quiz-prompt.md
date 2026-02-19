@@ -14,6 +14,7 @@ enforces it.
 ## Current state
 
 Every mode's `quizAreaContent` follows the same pattern:
+
 ```
 quizPrompt() or countdownAndPrompt()   ← always present, always first
 [mode-specific buttons/content]
@@ -23,6 +24,7 @@ feedbackBlock()                         ← always present, always last
 `countdownAndPrompt()` is a deprecated alias for `quizPrompt()`.
 
 The resulting DOM inside `.quiz-area` is always:
+
 ```
 .practicing-label        ← scaffold
 .quiz-prompt             ← from quizAreaContent (should be scaffold)
@@ -61,11 +63,11 @@ mode-specific elements:
 quizAreaContent: `${countdownAndPrompt()}
     ${noteAnswerButtons()}
     ${numberButtons(0, 11)}
-    ${feedbackBlock()}`
+    ${feedbackBlock()}`;
 
 // After:
 quizAreaContent: `${noteAnswerButtons()}
-    ${numberButtons(0, 11)}`
+    ${numberButtons(0, 11)}`;
 ```
 
 ## Steps
@@ -88,27 +90,28 @@ scaffold:
 
 ### 2. Remove from all mode templates
 
-In both `main.ts` and `build.ts`, remove `quizPrompt()` /
-`countdownAndPrompt()` and `feedbackBlock()` from every mode's
-`quizAreaContent`. All 10 modes affected:
+In both `main.ts` and `build.ts`, remove `quizPrompt()` / `countdownAndPrompt()`
+and `feedbackBlock()` from every mode's `quizAreaContent`. All 10 modes
+affected:
 
-| Mode | Remove from quizAreaContent |
-|------|---------------------------|
-| Guitar Fretboard | `quizPrompt()`, `feedbackBlock()` |
-| Ukulele Fretboard | `quizPrompt()`, `feedbackBlock()` |
-| Speed Tap | `countdownAndPrompt()`, `feedbackBlock()` |
-| Note Semitones | `countdownAndPrompt()`, `feedbackBlock()` |
+| Mode               | Remove from quizAreaContent               |
+| ------------------ | ----------------------------------------- |
+| Guitar Fretboard   | `quizPrompt()`, `feedbackBlock()`         |
+| Ukulele Fretboard  | `quizPrompt()`, `feedbackBlock()`         |
+| Speed Tap          | `countdownAndPrompt()`, `feedbackBlock()` |
+| Note Semitones     | `countdownAndPrompt()`, `feedbackBlock()` |
 | Interval Semitones | `countdownAndPrompt()`, `feedbackBlock()` |
-| Semitone Math | `countdownAndPrompt()`, `feedbackBlock()` |
-| Interval Math | `countdownAndPrompt()`, `feedbackBlock()` |
-| Key Signatures | `countdownAndPrompt()`, `feedbackBlock()` |
-| Scale Degrees | `countdownAndPrompt()`, `feedbackBlock()` |
-| Diatonic Chords | `countdownAndPrompt()`, `feedbackBlock()` |
-| Chord Spelling | `countdownAndPrompt()`, `feedbackBlock()` |
+| Semitone Math      | `countdownAndPrompt()`, `feedbackBlock()` |
+| Interval Math      | `countdownAndPrompt()`, `feedbackBlock()` |
+| Key Signatures     | `countdownAndPrompt()`, `feedbackBlock()` |
+| Scale Degrees      | `countdownAndPrompt()`, `feedbackBlock()` |
+| Diatonic Chords    | `countdownAndPrompt()`, `feedbackBlock()` |
+| Chord Spelling     | `countdownAndPrompt()`, `feedbackBlock()` |
 
 ### 3. Remove unused exports
 
 In `src/html-helpers.ts`:
+
 - Remove `quizPrompt()` export (now inlined in scaffold)
 - Remove `countdownAndPrompt()` export (deprecated alias, no longer used)
 - Remove `feedbackBlock()` export (now inlined in scaffold)
@@ -135,9 +138,9 @@ elements; they just move from per-mode templates to the shared scaffold.
 
 ## Files modified
 
-| File | Change |
-|------|--------|
-| `src/html-helpers.ts` | Add to scaffold, remove 3 exports |
-| `main.ts` | Remove from 10 mode templates, remove imports |
-| `build.ts` | Same as main.ts |
-| `docs/index.html` | Rebuilt output |
+| File                  | Change                                        |
+| --------------------- | --------------------------------------------- |
+| `src/html-helpers.ts` | Add to scaffold, remove 3 exports             |
+| `main.ts`             | Remove from 10 mode templates, remove imports |
+| `build.ts`            | Same as main.ts                               |
+| `docs/index.html`     | Rebuilt output                                |

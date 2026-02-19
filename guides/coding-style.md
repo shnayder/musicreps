@@ -6,13 +6,13 @@ rules — this guide explains them.
 
 ## File Naming
 
-| Pattern | Example | When |
-|---------|---------|------|
-| `src/quiz-{mode}.js` | `quiz-fretboard.js` | Quiz mode implementation |
-| `src/{module}-state.js` | `quiz-engine-state.js` | Pure state/logic (no DOM) |
-| `src/{module}.js` | `adaptive.js`, `navigation.js` | Shared modules |
-| `src/{module}_test.ts` | `adaptive_test.ts` | Test file (underscore, TypeScript) |
-| `plans/YYYY-MM-DD-{description}.md` | `2026-02-10-add-quiz-stats.md` | Plans |
+| Pattern                             | Example                        | When                               |
+| ----------------------------------- | ------------------------------ | ---------------------------------- |
+| `src/quiz-{mode}.js`                | `quiz-fretboard.js`            | Quiz mode implementation           |
+| `src/{module}-state.js`             | `quiz-engine-state.js`         | Pure state/logic (no DOM)          |
+| `src/{module}.js`                   | `adaptive.js`, `navigation.js` | Shared modules                     |
+| `src/{module}_test.ts`              | `adaptive_test.ts`             | Test file (underscore, TypeScript) |
+| `plans/YYYY-MM-DD-{description}.md` | `2026-02-10-add-quiz-stats.md` | Plans                              |
 
 ## Module Patterns
 
@@ -26,15 +26,15 @@ modules directly via `node:test` + `tsx`.
 
 ## Naming Conventions
 
-| Category | Convention | Examples |
-|----------|-----------|----------|
-| Factory functions | `createXxx()` | `createQuizEngine()`, `createFretboardHelpers()`, `createNavigation()` |
-| State transitions | `engineXxx()` / `fretboardXxx()` | `engineStart()`, `engineStop()`, `engineNextQuestion()` |
-| Constants | `UPPER_SNAKE_CASE` | `NOTES`, `INTERVALS`, `ALL_ITEMS`, `KEY_GROUPS` |
-| Config objects | `UPPER_SNAKE_CASE` | `DEFAULT_CONFIG`, `SPEED_TAP_BASE_CONFIG` |
-| Local state | `camelCase` | `enabledGroups`, `currentItem`, `recommendedGroups` |
-| localStorage keys | `namespace_keyName` | `semitoneMath_enabledGroups`, `motorBaseline_button` |
-| Mode IDs | `camelCase` | `fretboard`, `semitoneMath`, `keySignatures` |
+| Category          | Convention                       | Examples                                                               |
+| ----------------- | -------------------------------- | ---------------------------------------------------------------------- |
+| Factory functions | `createXxx()`                    | `createQuizEngine()`, `createFretboardHelpers()`, `createNavigation()` |
+| State transitions | `engineXxx()` / `fretboardXxx()` | `engineStart()`, `engineStop()`, `engineNextQuestion()`                |
+| Constants         | `UPPER_SNAKE_CASE`               | `NOTES`, `INTERVALS`, `ALL_ITEMS`, `KEY_GROUPS`                        |
+| Config objects    | `UPPER_SNAKE_CASE`               | `DEFAULT_CONFIG`, `SPEED_TAP_BASE_CONFIG`                              |
+| Local state       | `camelCase`                      | `enabledGroups`, `currentItem`, `recommendedGroups`                    |
+| localStorage keys | `namespace_keyName`              | `semitoneMath_enabledGroups`, `motorBaseline_button`                   |
+| Mode IDs          | `camelCase`                      | `fretboard`, `semitoneMath`, `keySignatures`                           |
 
 ## Dead Code
 
@@ -44,6 +44,7 @@ later". Dead code misleads readers into thinking it matters, and git history
 preserves anything you might need to recover.
 
 **What counts as dead code:**
+
 - Unused function parameters (remove from signature and all callsites)
 - Unreachable branches or conditions
 - Commented-out code blocks
@@ -51,6 +52,7 @@ preserves anything you might need to recover.
 - Imports that nothing uses
 
 **Not dead code:**
+
 - Optional interface methods that callers check for (`mode.onStart?.()`)
 - Parameters required by a callback contract even if one implementation ignores
   them (e.g., event handler `(e)` where `e` isn't used)
@@ -72,7 +74,8 @@ preserves anything you might need to recover.
    `.mode-screen` container.
 
 5. **Toggle CSS classes for state** — `.active`, `.recommended`, `.correct`,
-   `.incorrect`, `.calibrating`. Use `classList.toggle()` or `classList.add/remove()`.
+   `.incorrect`, `.calibrating`. Use `classList.toggle()` or
+   `classList.add/remove()`.
 
 ## State Management
 
@@ -87,13 +90,14 @@ preserves anything you might need to recover.
 
 - `try/catch` around `JSON.parse` of localStorage (user data may be corrupted).
   Fall back to defaults silently.
-- Defensive null checks on DOM elements: `if (els.foo) els.foo.textContent = ...`
+- Defensive null checks on DOM elements:
+  `if (els.foo) els.foo.textContent = ...`
 - No `throw` — the app should degrade gracefully, not crash.
 
 ## Comments
 
-- **File headers**: purpose and key constraints. See
-  `quiz-engine-state.js` for the gold standard:
+- **File headers**: purpose and key constraints. See `quiz-engine-state.js` for
+  the gold standard:
   ```
   // Pure state transitions for the quiz engine.
   // No DOM, no timers, no side effects — just data in, data out.

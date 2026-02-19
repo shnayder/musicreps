@@ -24,6 +24,14 @@ jobs:
       - name: Checkout feature branch
         uses: actions/checkout@v4
 
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Lint
+        run: deno lint
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:

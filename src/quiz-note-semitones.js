@@ -2,9 +2,23 @@
 // Forward: "C# = ?" -> 1, Reverse: "3 = ?" -> D#/Eb
 // 24 items total (12 notes x 2 directions).
 
-import { NOTES, noteMatchesInput, displayNote, pickRandomAccidental } from './music-data.js';
-import { createQuizEngine, createAdaptiveKeyHandler, refreshNoteButtonLabels, pickCalibrationButton } from './quiz-engine.js';
-import { renderStatsTable, buildStatsLegend, createStatsControls } from './stats-display.js';
+import {
+  displayNote,
+  noteMatchesInput,
+  NOTES,
+  pickRandomAccidental,
+} from './music-data.js';
+import {
+  createAdaptiveKeyHandler,
+  createQuizEngine,
+  pickCalibrationButton,
+  refreshNoteButtonLabels,
+} from './quiz-engine.js';
+import {
+  buildStatsLegend,
+  createStatsControls,
+  renderStatsTable,
+} from './stats-display.js';
 
 export function createNoteSemitonesMode() {
   const container = document.getElementById('mode-noteSemitones');
@@ -18,7 +32,7 @@ export function createNoteSemitonesMode() {
 
   function parseItem(itemId) {
     const [noteName, dir] = itemId.split(':');
-    const note = NOTES.find(n => n.name === noteName);
+    const note = NOTES.find((n) => n.name === noteName);
     return { note, dir };
   }
 
@@ -30,13 +44,16 @@ export function createNoteSemitonesMode() {
 
   function switchTab(tabName) {
     activeTab = tabName;
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
-    container.querySelectorAll('.tab-content').forEach(el => {
-      el.classList.toggle('active',
-        tabName === 'practice' ? el.classList.contains('tab-practice')
-                               : el.classList.contains('tab-progress'));
+    container.querySelectorAll('.tab-content').forEach((el) => {
+      el.classList.toggle(
+        'active',
+        tabName === 'practice'
+          ? el.classList.contains('tab-practice')
+          : el.classList.contains('tab-progress'),
+      );
     });
     if (tabName === 'progress') {
       statsControls.show(statsControls.mode || 'retention');
@@ -48,31 +65,37 @@ export function createNoteSemitonesMode() {
   // --- Practice summary ---
 
   function renderPracticeSummary() {
-    var statusLabel = container.querySelector('.practice-status-label');
-    var statusDetail = container.querySelector('.practice-status-detail');
-    var recText = container.querySelector('.practice-rec-text');
-    var recBtn = container.querySelector('.practice-rec-btn');
+    const statusLabel = container.querySelector('.practice-status-label');
+    const statusDetail = container.querySelector('.practice-status-detail');
+    const recText = container.querySelector('.practice-rec-text');
+    const recBtn = container.querySelector('.practice-rec-btn');
     if (!statusLabel) return;
 
-    var threshold = engine.selector.getConfig().automaticityThreshold;
-    var fluent = 0, seen = 0;
-    for (var i = 0; i < ALL_ITEMS.length; i++) {
-      var auto = engine.selector.getAutomaticity(ALL_ITEMS[i]);
-      if (auto !== null) { seen++; if (auto > threshold) fluent++; }
+    const threshold = engine.selector.getConfig().automaticityThreshold;
+    let fluent = 0, seen = 0;
+    for (let i = 0; i < ALL_ITEMS.length; i++) {
+      const auto = engine.selector.getAutomaticity(ALL_ITEMS[i]);
+      if (auto !== null) {
+        seen++;
+        if (auto > threshold) fluent++;
+      }
     }
 
     if (seen === 0) {
       statusLabel.textContent = 'Ready to start';
       statusDetail.textContent = ALL_ITEMS.length + ' items to learn';
     } else {
-      var pct = ALL_ITEMS.length > 0 ? Math.round((fluent / ALL_ITEMS.length) * 100) : 0;
-      var label;
+      const pct = ALL_ITEMS.length > 0
+        ? Math.round((fluent / ALL_ITEMS.length) * 100)
+        : 0;
+      let label;
       if (pct >= 80) label = 'Strong';
       else if (pct >= 50) label = 'Solid';
       else if (pct >= 20) label = 'Building';
       else label = 'Getting started';
       statusLabel.textContent = 'Overall: ' + label;
-      statusDetail.textContent = fluent + ' of ' + ALL_ITEMS.length + ' items fluent';
+      statusDetail.textContent = fluent + ' of ' + ALL_ITEMS.length +
+        ' items fluent';
     }
 
     // No groups, so no recommendation
@@ -81,14 +104,14 @@ export function createNoteSemitonesMode() {
   }
 
   function renderSessionSummary() {
-    var el = container.querySelector('.session-summary-text');
+    const el = container.querySelector('.session-summary-text');
     if (!el) return;
     el.textContent = ALL_ITEMS.length + ' items \u00B7 60s';
   }
 
   // Build row definitions for the stats table
   function getTableRows() {
-    return NOTES.map(note => ({
+    return NOTES.map((note) => ({
       label: displayNote(note.name),
       sublabel: String(note.num),
       _colHeader: 'Note',
@@ -97,10 +120,18 @@ export function createNoteSemitonesMode() {
     }));
   }
 
-  const statsControls = createStatsControls(container, function(mode, el) {
+  const statsControls = createStatsControls(container, function (mode, el) {
     const tableDiv = document.createElement('div');
     el.appendChild(tableDiv);
-    renderStatsTable(engine.selector, getTableRows(), 'N\u2192#', '#\u2192N', mode, tableDiv, engine.baseline);
+    renderStatsTable(
+      engine.selector,
+      getTableRows(),
+      'N\u2192#',
+      '#\u2192N',
+      mode,
+      tableDiv,
+      engine.baseline,
+    );
     const legendDiv = document.createElement('div');
     legendDiv.innerHTML = buildStatsLegend(mode, engine.baseline);
     el.appendChild(legendDiv);
@@ -121,7 +152,9 @@ export function createNoteSemitonesMode() {
       const noteButtons = container.querySelector('.answer-buttons-notes');
       const numButtons = container.querySelector('.answer-buttons-numbers');
 
-      currentAccidentalChoice = pickRandomAccidental(currentItem.note.displayName);
+      currentAccidentalChoice = pickRandomAccidental(
+        currentItem.note.displayName,
+      );
       if (currentItem.dir === 'fwd') {
         // Show note, answer is number 0-11
         prompt.textContent = displayNote(currentAccidentalChoice);
@@ -135,7 +168,7 @@ export function createNoteSemitonesMode() {
       }
     },
 
-    checkAnswer(itemId, input) {
+    checkAnswer(_itemId, input) {
       if (currentItem.dir === 'fwd') {
         const correct = parseInt(input, 10) === currentItem.note.num;
         return { correct, correctAnswer: String(currentItem.note.num) };
@@ -219,17 +252,17 @@ export function createNoteSemitonesMode() {
 
   const noteKeyHandler = createAdaptiveKeyHandler(
     (input) => engine.submitAnswer(input),
-    () => true
+    () => true,
   );
 
   function init() {
     // Tab switching
-    container.querySelectorAll('.mode-tab').forEach(btn => {
+    container.querySelectorAll('.mode-tab').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
     // Note answer buttons
-    container.querySelectorAll('.answer-btn-note').forEach(btn => {
+    container.querySelectorAll('.answer-btn-note').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
         engine.submitAnswer(btn.dataset.note);
@@ -237,7 +270,7 @@ export function createNoteSemitonesMode() {
     });
 
     // Number answer buttons
-    container.querySelectorAll('.answer-btn-num').forEach(btn => {
+    container.querySelectorAll('.answer-btn-num').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!engine.isActive || engine.isAnswered) return;
         engine.submitAnswer(btn.dataset.num);
@@ -245,7 +278,10 @@ export function createNoteSemitonesMode() {
     });
 
     // Start/stop
-    container.querySelector('.start-btn').addEventListener('click', () => engine.start());
+    container.querySelector('.start-btn').addEventListener(
+      'click',
+      () => engine.start(),
+    );
 
     renderPracticeSummary();
     renderSessionSummary();
@@ -255,7 +291,12 @@ export function createNoteSemitonesMode() {
     mode,
     engine,
     init,
-    activate() { engine.attach(); refreshNoteButtonLabels(container); engine.updateIdleMessage(); renderPracticeSummary(); },
+    activate() {
+      engine.attach();
+      refreshNoteButtonLabels(container);
+      engine.updateIdleMessage();
+      renderPracticeSummary();
+    },
     deactivate() {
       if (engine.isRunning) engine.stop();
       engine.detach();

@@ -8,18 +8,20 @@ modes exist and what's currently displayed.
 
 ## Solution
 
-Replace the single button with a segmented toggle (two labels side by side,
-the active one highlighted). Both labels ("Recall" / "Speed") are always
-visible so the user immediately understands the options and current state.
+Replace the single button with a segmented toggle (two labels side by side, the
+active one highlighted). Both labels ("Recall" / "Speed") are always visible so
+the user immediately understands the options and current state.
 
 ## HTML Change
 
 Replace every instance of:
+
 ```html
 <button class="heatmap-btn">Show Recall</button>
 ```
 
 With:
+
 ```html
 <div class="stats-toggle">
   <button class="stats-toggle-btn active" data-mode="retention">Recall</button>
@@ -41,26 +43,28 @@ Each quiz mode's `showStats(mode)` / `showHeatmapView(mode)` currently sets
 `btn.textContent = ...`. Change to:
 
 ```js
-container.querySelectorAll('.stats-toggle-btn').forEach(b => {
+container.querySelectorAll('.stats-toggle-btn').forEach((b) => {
   b.classList.toggle('active', b.dataset.mode === mode);
 });
 ```
 
 Each mode's `init()` currently does:
+
 ```js
 container.querySelector('.heatmap-btn').addEventListener('click', toggleStats);
 ```
 
 Change to register click on both toggle buttons:
+
 ```js
-container.querySelectorAll('.stats-toggle-btn').forEach(btn => {
+container.querySelectorAll('.stats-toggle-btn').forEach((btn) => {
   btn.addEventListener('click', () => showStats(btn.dataset.mode));
 });
 ```
 
 This simplifies things: no more `toggleStats()` function needed since the button
-knows its target mode. But we keep it for the fretboard mode's slightly different
-`showHeatmapView` pattern.
+knows its target mode. But we keep it for the fretboard mode's slightly
+different `showHeatmapView` pattern.
 
 ## Files Modified
 
@@ -84,10 +88,12 @@ duplicated across all 10 quiz modes (~15 lines each). Extracted into
 `createStatsControls(container, renderFn)` in `stats-display.js`.
 
 The helper manages:
+
 - `statsMode` state internally
 - Toggle button active-class switching
 - Click handler wiring on `.stats-toggle-btn` elements
-- `show(mode)`: clears container, calls renderFn, shows container, updates toggle
+- `show(mode)`: clears container, calls renderFn, shows container, updates
+  toggle
 - `hide()`: clears and hides container
 - `mode` getter for external checks (fretboard/speed-tap use it)
 

@@ -5,8 +5,8 @@
 Currently, calibration starts immediately when a user first hits "Start" on a
 quiz mode — the buttons just start highlighting green with a brief "Quick
 warm-up!" message. There's no explanation of what's happening or why, and no
-summary of results afterward. The user goes straight into quiz questions with
-no understanding of how their measured baseline maps to the thresholds.
+summary of results afterward. The user goes straight into quiz questions with no
+understanding of how their measured baseline maps to the thresholds.
 
 ## Goal
 
@@ -43,13 +43,13 @@ After the 10 trials complete:
   - Measured motor baseline (e.g., "Your baseline response time: 620ms")
   - Threshold table in plain language, using the actual computed values:
 
-    | Speed | Time | Meaning |
-    |-------|------|---------|
-    | Automatic | < {1.5× baseline} | Fully memorized — instant recall |
-    | Good | < {3.0× baseline} | Solid recall, minor hesitation |
-    | Developing | < {4.5× baseline} | Working on it — needs practice |
-    | Slow | < {6.0× baseline} | Significant hesitation |
-    | Very slow | > {6.0× baseline} | Not yet learned |
+    | Speed      | Time              | Meaning                          |
+    | ---------- | ----------------- | -------------------------------- |
+    | Automatic  | < {1.5× baseline} | Fully memorized — instant recall |
+    | Good       | < {3.0× baseline} | Solid recall, minor hesitation   |
+    | Developing | < {4.5× baseline} | Working on it — needs practice   |
+    | Slow       | < {6.0× baseline} | Significant hesitation           |
+    | Very slow  | > {6.0× baseline} | Not yet learned                  |
 
   - These thresholds match the heatmap color bands from CLAUDE.md
   - A **"Done"** button to dismiss the results
@@ -63,13 +63,13 @@ standalone step — the user then starts the quiz manually whenever they're read
 
 This means `start()` no longer needs to chain calibration into question flow.
 Instead, when a mode is opened without a baseline, the calibration intro screen
-is shown in place of the normal idle state. Once calibration is done, the
-normal idle state appears.
+is shown in place of the normal idle state. Once calibration is done, the normal
+idle state appears.
 
 ### Recalibration Flow
 
-The existing "Recalibrate" button (shown in idle state) follows the same
-flow: show intro → run trials → show results → return to idle.
+The existing "Recalibrate" button (shown in idle state) follows the same flow:
+show intro → run trials → show results → return to idle.
 
 ### Implementation Approach
 
@@ -85,22 +85,22 @@ not individual quiz modes.
    the results screen with computed thresholds, calls `onContinue` when user
    clicks the continue button.
 
-3. **Modify `startCalibration()`** — no longer takes `onComplete` callback.
-   Full flow is self-contained:
+3. **Modify `startCalibration()`** — no longer takes `onComplete` callback. Full
+   flow is self-contained:
    - Show intro screen
    - On "Start" click → run existing `runCalibration()` trials
    - On completion → call `applyBaseline(median)` → show results screen
    - On "Done" click → call `render()` to show normal idle state
 
-4. **Modify `start()` / mode initialization** — when a mode is opened without
-   a baseline, show the calibration intro screen instead of the normal idle
-   state. `start()` itself only runs the quiz (never calibration).
+4. **Modify `start()` / mode initialization** — when a mode is opened without a
+   baseline, show the calibration intro screen instead of the normal idle state.
+   `start()` itself only runs the quiz (never calibration).
 
 5. **Modify `recalibrate()`** — calls the same `startCalibration()` flow.
 
 6. **CSS** — minimal styling for the calibration screens. Reuse existing
-   `.feedback` / `.hint` styling where possible, add a styled info card for
-   the results table.
+   `.feedback` / `.hint` styling where possible, add a styled info card for the
+   results table.
 
 #### DOM Strategy
 
@@ -110,6 +110,7 @@ elements needed. The screens replace the content temporarily, then restore
 normal quiz UI when done.
 
 Specifically:
+
 - Use `els.feedback` for headings
 - Use `els.hint` for explanatory text
 - Repurpose the answer button area for the Start/Continue buttons
@@ -130,10 +131,12 @@ Bump from v3.1 → v3.2.
 
 ## Testing
 
-- Add tests for the threshold-description helper function (pure logic: given
-  a baseline, produce the right labels and time values)
-- Manual testing of the full flow: open mode → intro → trials → results → idle → start quiz
-- Manual testing of recalibrate flow: idle → recalibrate → intro → trials → results → idle
+- Add tests for the threshold-description helper function (pure logic: given a
+  baseline, produce the right labels and time values)
+- Manual testing of the full flow: open mode → intro → trials → results → idle →
+  start quiz
+- Manual testing of recalibrate flow: idle → recalibrate → intro → trials →
+  results → idle
 
 ## Implementation Notes (post-implementation)
 
@@ -158,6 +161,7 @@ machine (`quiz-engine-state.js`). This eliminated:
 - `|| calibrating` in `isActive` — just `state.phase !== 'idle'`
 
 Key functions:
+
 - `engineCalibrationIntro(state)` — pure state transition
 - `engineCalibrating(state)` — pure state transition
 - `engineCalibrationResults(state, baseline)` — pure state transition

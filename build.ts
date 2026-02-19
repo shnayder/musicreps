@@ -5,44 +5,44 @@
 // Also generates the moments design reference page (guides/design/moments.html)
 // and copies design pages to docs/design/.
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import * as esbuild from "esbuild";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import * as esbuild from 'esbuild';
 
 import {
   assembleHTML,
-  SERVICE_WORKER,
   DISTANCE_TOGGLES,
   HOME_SCREEN_HTML,
-} from "./src/build-template.ts";
+  SERVICE_WORKER,
+} from './src/build-template.ts';
 
 import {
-  pianoNoteButtons,
+  fretboardIdleHTML,
+  fretboardSVG,
+  modeScreen,
   noteAnswerButtons,
   numberButtons,
-  modeScreen,
-  fretboardSVG,
+  pianoNoteButtons,
   tabbedIdleHTML,
-  fretboardIdleHTML,
-} from "./src/html-helpers.ts";
+} from './src/html-helpers.ts';
 
 // ---------------------------------------------------------------------------
 // File reading
 // ---------------------------------------------------------------------------
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const read = (rel: string) => readFileSync(join(__dirname, rel), "utf-8");
+const read = (rel: string) => readFileSync(join(__dirname, rel), 'utf-8');
 
 // ---------------------------------------------------------------------------
 // Bundle JS with esbuild
 // ---------------------------------------------------------------------------
 
-const css = read("src/styles.css");
+const css = read('src/styles.css');
 const result = esbuild.buildSync({
-  entryPoints: [join(__dirname, "src/app.js")],
+  entryPoints: [join(__dirname, 'src/app.js')],
   bundle: true,
-  format: "iife",
+  format: 'iife',
   write: false,
 });
 const js = result.outputFiles[0].text;
@@ -75,7 +75,7 @@ interface MomentOverrides {
   practiceRecText?: string;
   sessionSummary?: string;
   showMastery?: boolean;
-  highlightNotes?: Array<{s: number; f: number; fill: string}>;
+  highlightNotes?: Array<{ s: number; f: number; fill: string }>;
   chordSlotsHtml?: string;
   hideAccidentals?: boolean;
   toggleState?: { active: number[]; recommended?: number };
@@ -85,23 +85,34 @@ interface MomentOverrides {
 }
 
 /** Replace `target` with `replacement` in `html`, throwing if target is absent. */
-function replaceOrThrow(html: string, target: string | RegExp, replacement: string | ((...args: string[]) => string)): string {
+function replaceOrThrow(
+  html: string,
+  target: string | RegExp,
+  replacement: string | ((...args: string[]) => string),
+): string {
   if (typeof target === 'string') {
     if (!html.includes(target)) {
-      throw new Error(`prepareMoment: target not found: ${target.slice(0, 80)}`);
+      throw new Error(
+        `prepareMoment: target not found: ${target.slice(0, 80)}`,
+      );
     }
     return html.replace(target, replacement as string);
   }
   // RegExp target
   if (!target.test(html)) {
-    throw new Error(`prepareMoment: regex not matched: ${target.source.slice(0, 80)}`);
+    throw new Error(
+      `prepareMoment: regex not matched: ${target.source.slice(0, 80)}`,
+    );
   }
   return html.replace(target, replacement as (...args: string[]) => string);
 }
 
 function prepareMoment(source: string, o: MomentOverrides): string {
   let h = source;
-  const r = (target: string | RegExp, replacement: string | ((...args: string[]) => string)) => {
+  const r = (
+    target: string | RegExp,
+    replacement: string | ((...args: string[]) => string),
+  ) => {
     h = replaceOrThrow(h, target, replacement);
   };
 
@@ -110,96 +121,136 @@ function prepareMoment(source: string, o: MomentOverrides): string {
   if (o.quizAreaActive) r('class="quiz-area"', 'class="quiz-area active"');
 
   // Quiz content
-  if (o.quizPrompt) r(
-    '<div class="quiz-prompt"></div>',
-    `<div class="quiz-prompt">${o.quizPrompt}</div>`,
-  );
-  if (o.feedbackHtml) r(
-    '<div class="feedback"></div>',
-    `<div class="feedback">${o.feedbackHtml}</div>`,
-  );
-  if (o.timeDisplay) r(
-    '<div class="time-display"></div>',
-    `<div class="time-display">${o.timeDisplay}</div>`,
-  );
-  if (o.hint) r(
-    '<div class="hint"></div>',
-    `<div class="hint">${o.hint}</div>`,
-  );
+  if (o.quizPrompt) {
+    r(
+      '<div class="quiz-prompt"></div>',
+      `<div class="quiz-prompt">${o.quizPrompt}</div>`,
+    );
+  }
+  if (o.feedbackHtml) {
+    r(
+      '<div class="feedback"></div>',
+      `<div class="feedback">${o.feedbackHtml}</div>`,
+    );
+  }
+  if (o.timeDisplay) {
+    r(
+      '<div class="time-display"></div>',
+      `<div class="time-display">${o.timeDisplay}</div>`,
+    );
+  }
+  if (o.hint) {
+    r(
+      '<div class="hint"></div>',
+      `<div class="hint">${o.hint}</div>`,
+    );
+  }
 
   // Countdown
-  if (o.countdown !== undefined) r(
-    '<div class="quiz-countdown-fill"></div>',
-    `<div class="quiz-countdown-fill" style="width: ${o.countdown}%;"></div>`,
-  );
-  if (o.countdownWarning) r(
-    'class="quiz-countdown-bar"',
-    'class="quiz-countdown-bar round-timer-warning"',
-  );
+  if (o.countdown !== undefined) {
+    r(
+      '<div class="quiz-countdown-fill"></div>',
+      `<div class="quiz-countdown-fill" style="width: ${o.countdown}%;"></div>`,
+    );
+  }
+  if (o.countdownWarning) {
+    r(
+      'class="quiz-countdown-bar"',
+      'class="quiz-countdown-bar round-timer-warning"',
+    );
+  }
 
   // Session info
-  if (o.infoContext) r(
-    '<span class="quiz-info-context"></span>',
-    `<span class="quiz-info-context">${o.infoContext}</span>`,
-  );
-  if (o.infoTime) r(
-    '<span class="quiz-info-time"></span>',
-    `<span class="quiz-info-time">${o.infoTime}</span>`,
-  );
-  if (o.infoCount) r(
-    '<span class="quiz-info-count"></span>',
-    `<span class="quiz-info-count">${o.infoCount}</span>`,
-  );
+  if (o.infoContext) {
+    r(
+      '<span class="quiz-info-context"></span>',
+      `<span class="quiz-info-context">${o.infoContext}</span>`,
+    );
+  }
+  if (o.infoTime) {
+    r(
+      '<span class="quiz-info-time"></span>',
+      `<span class="quiz-info-time">${o.infoTime}</span>`,
+    );
+  }
+  if (o.infoCount) {
+    r(
+      '<span class="quiz-info-count"></span>',
+      `<span class="quiz-info-count">${o.infoCount}</span>`,
+    );
+  }
 
   // Progress bar
-  if (o.progressPercent !== undefined) r(
-    'style="width: 0%"',
-    `style="width: ${o.progressPercent}%"`,
-  );
-  if (o.progressText) r(
-    '<div class="progress-text">0 / 0 fluent</div>',
-    `<div class="progress-text">${o.progressText}</div>`,
-  );
+  if (o.progressPercent !== undefined) {
+    r(
+      'style="width: 0%"',
+      `style="width: ${o.progressPercent}%"`,
+    );
+  }
+  if (o.progressText) {
+    r(
+      '<div class="progress-text">0 / 0 fluent</div>',
+      `<div class="progress-text">${o.progressText}</div>`,
+    );
+  }
 
   // Round complete
-  if (o.roundContext) r(
-    '<div class="round-complete-context"></div>',
-    `<div class="round-complete-context">${o.roundContext}</div>`,
-  );
-  if (o.roundHeading) r(
-    '<div class="round-complete-heading"></div>',
-    `<div class="round-complete-heading">${o.roundHeading}</div>`,
-  );
-  if (o.roundCorrect) r(
-    '<div class="round-stat-line round-stat-correct"></div>',
-    `<div class="round-stat-line round-stat-correct">${o.roundCorrect}</div>`,
-  );
-  if (o.roundMedian) r(
-    '<div class="round-stat-line round-stat-median"></div>',
-    `<div class="round-stat-line round-stat-median">${o.roundMedian}</div>`,
-  );
+  if (o.roundContext) {
+    r(
+      '<div class="round-complete-context"></div>',
+      `<div class="round-complete-context">${o.roundContext}</div>`,
+    );
+  }
+  if (o.roundHeading) {
+    r(
+      '<div class="round-complete-heading"></div>',
+      `<div class="round-complete-heading">${o.roundHeading}</div>`,
+    );
+  }
+  if (o.roundCorrect) {
+    r(
+      '<div class="round-stat-line round-stat-correct"></div>',
+      `<div class="round-stat-line round-stat-correct">${o.roundCorrect}</div>`,
+    );
+  }
+  if (o.roundMedian) {
+    r(
+      '<div class="round-stat-line round-stat-median"></div>',
+      `<div class="round-stat-line round-stat-median">${o.roundMedian}</div>`,
+    );
+  }
 
   // Practice card
-  if (o.practiceStatusLabel) r(
-    '<span class="practice-status-label"></span>',
-    `<span class="practice-status-label">${o.practiceStatusLabel}</span>`,
-  );
-  if (o.practiceStatusDetail) r(
-    '<span class="practice-status-detail"></span>',
-    `<span class="practice-status-detail">${o.practiceStatusDetail}</span>`,
-  );
-  if (o.practiceRecText) r(
-    '<span class="practice-rec-text"></span>',
-    `<span class="practice-rec-text">${o.practiceRecText}</span>`,
-  );
-  if (o.sessionSummary) r(
-    '<div class="session-summary-text"></div>',
-    `<div class="session-summary-text">${o.sessionSummary}</div>`,
-  );
-  if (o.showMastery) r(
-    'class="mastery-message"',
-    'class="mastery-message mastery-visible"',
-  );
+  if (o.practiceStatusLabel) {
+    r(
+      '<span class="practice-status-label"></span>',
+      `<span class="practice-status-label">${o.practiceStatusLabel}</span>`,
+    );
+  }
+  if (o.practiceStatusDetail) {
+    r(
+      '<span class="practice-status-detail"></span>',
+      `<span class="practice-status-detail">${o.practiceStatusDetail}</span>`,
+    );
+  }
+  if (o.practiceRecText) {
+    r(
+      '<span class="practice-rec-text"></span>',
+      `<span class="practice-rec-text">${o.practiceRecText}</span>`,
+    );
+  }
+  if (o.sessionSummary) {
+    r(
+      '<div class="session-summary-text"></div>',
+      `<div class="session-summary-text">${o.sessionSummary}</div>`,
+    );
+  }
+  if (o.showMastery) {
+    r(
+      'class="mastery-message"',
+      'class="mastery-message mastery-visible"',
+    );
+  }
 
   // Fretboard note highlighting (circle-based design)
   if (o.highlightNotes) {
@@ -212,16 +263,20 @@ function prepareMoment(source: string, o: MomentOverrides): string {
   }
 
   // Chord slots
-  if (o.chordSlotsHtml) r(
-    '<div class="chord-slots"></div>',
-    `<div class="chord-slots">${o.chordSlotsHtml}</div>`,
-  );
+  if (o.chordSlotsHtml) {
+    r(
+      '<div class="chord-slots"></div>',
+      `<div class="chord-slots">${o.chordSlotsHtml}</div>`,
+    );
+  }
 
   // Hide accidentals (naturals-only mode)
-  if (o.hideAccidentals) r(
-    'class="note-row-accidentals"',
-    'class="note-row-accidentals" style="display: none;"',
-  );
+  if (o.hideAccidentals) {
+    r(
+      'class="note-row-accidentals"',
+      'class="note-row-accidentals" style="display: none;"',
+    );
+  }
 
   // String toggle state
   if (o.toggleState) {
@@ -237,33 +292,54 @@ function prepareMoment(source: string, o: MomentOverrides): string {
       const ri = o.toggleState.recommended;
       r(
         new RegExp(`class="string-toggle( active)?" data-string="${ri}"`),
-        (_, act) => `class="string-toggle${act || ''} recommended" data-string="${ri}"`,
+        (_, act) =>
+          `class="string-toggle${act || ''} recommended" data-string="${ri}"`,
       );
     }
   }
 
   // Progress tab active
   if (o.progressTabActive) {
-    r('class="mode-tab active" data-tab="practice"', 'class="mode-tab" data-tab="practice"');
-    r('class="mode-tab" data-tab="progress"', 'class="mode-tab active" data-tab="progress"');
-    r('class="tab-content tab-practice active"', 'class="tab-content tab-practice"');
-    r('class="tab-content tab-progress"', 'class="tab-content tab-progress" style="display:block;"');
+    r(
+      'class="mode-tab active" data-tab="practice"',
+      'class="mode-tab" data-tab="practice"',
+    );
+    r(
+      'class="mode-tab" data-tab="progress"',
+      'class="mode-tab active" data-tab="progress"',
+    );
+    r(
+      'class="tab-content tab-practice active"',
+      'class="tab-content tab-practice"',
+    );
+    r(
+      'class="tab-content tab-progress"',
+      'class="tab-content tab-progress" style="display:block;"',
+    );
   }
 
   // Stats injection
-  if (o.statsHtml) r(
-    '<div class="stats-container"></div>',
-    `<div class="stats-container">${o.statsHtml}</div>`,
-  );
-  if (o.statsText) r(
-    '<span class="stats"></span>',
-    `<span class="stats">${o.statsText}</span>`,
-  );
+  if (o.statsHtml) {
+    r(
+      '<div class="stats-container"></div>',
+      `<div class="stats-container">${o.statsHtml}</div>`,
+    );
+  }
+  if (o.statsText) {
+    r(
+      '<span class="stats"></span>',
+      `<span class="stats">${o.statsText}</span>`,
+    );
+  }
 
   return h;
 }
 
-function momentFrame(label: string, bodyHtml: string, annotation: string): string {
+function momentFrame(
+  label: string,
+  bodyHtml: string,
+  annotation: string,
+): string {
   return `  <div class="moment-frame">
     <div class="moment-label">${label}</div>
     <div class="moment-body">
@@ -275,34 +351,54 @@ ${bodyHtml}
 
 function buildMoments(): void {
   // --- Mode screen generators (fresh copy per moment) ---
-  const fbScreen = () => modeScreen("fretboard", {
-    modeName: 'Guitar Fretboard',
-    idleHTML: fretboardIdleHTML({ stringNames: ['e', 'B', 'G', 'D', 'A', 'E'], defaultString: 5, id: 'fretboard', fretboardSVG: fretboardSVG({ stringCount: 6, fretCount: 13, fretMarkers: [3, 5, 7, 9, 12] }) }),
-    quizAreaContent: `${fretboardSVG({ stringCount: 6, fretCount: 13, fretMarkers: [3, 5, 7, 9, 12] })}
+  const fbScreen = () =>
+    modeScreen('fretboard', {
+      modeName: 'Guitar Fretboard',
+      idleHTML: fretboardIdleHTML({
+        stringNames: ['e', 'B', 'G', 'D', 'A', 'E'],
+        defaultString: 5,
+        id: 'fretboard',
+        fretboardSVG: fretboardSVG({
+          stringCount: 6,
+          fretCount: 13,
+          fretMarkers: [3, 5, 7, 9, 12],
+        }),
+      }),
+      quizAreaContent: `${
+        fretboardSVG({
+          stringCount: 6,
+          fretCount: 13,
+          fretMarkers: [3, 5, 7, 9, 12],
+        })
+      }
       ${pianoNoteButtons()}`,
-  });
-  const smScreen = () => modeScreen("semitoneMath", {
-    modeName: 'Semitone Math',
-    idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-    quizAreaContent: `${noteAnswerButtons()}`,
-  });
-  const imScreen = () => modeScreen("intervalMath", {
-    modeName: 'Interval Math',
-    idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-    quizAreaContent: `${noteAnswerButtons()}`,
-  });
-  const csScreen = () => modeScreen("chordSpelling", {
-    modeName: 'Chord Spelling',
-    idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-    quizAreaContent: `<div class="chord-slots"></div>
+    });
+  const smScreen = () =>
+    modeScreen('semitoneMath', {
+      modeName: 'Semitone Math',
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `${noteAnswerButtons()}`,
+    });
+  const imScreen = () =>
+    modeScreen('intervalMath', {
+      modeName: 'Interval Math',
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `${noteAnswerButtons()}`,
+    });
+  const csScreen = () =>
+    modeScreen('chordSpelling', {
+      modeName: 'Chord Spelling',
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `<div class="chord-slots"></div>
       ${noteAnswerButtons()}`,
-  });
-  const nsScreen = () => modeScreen("noteSemitones", {
-    modeName: 'Note \u2194 Semitones',
-    idleHTML: tabbedIdleHTML({}),
-    quizAreaContent: `${noteAnswerButtons()}
+    });
+  const nsScreen = () =>
+    modeScreen('noteSemitones', {
+      modeName: 'Note \u2194 Semitones',
+      idleHTML: tabbedIdleHTML({}),
+      quizAreaContent: `${noteAnswerButtons()}
       ${numberButtons(0, 11)}`,
-  });
+    });
 
   // --- Moment 1: Awaiting answer (fretboard, active) ---
   const m1 = momentFrame(
@@ -330,7 +426,8 @@ function buildMoments(): void {
       phase: 'active',
       quizAreaActive: true,
       quizPrompt: 'C + 3 = ?',
-      feedbackHtml: '<span class="correct" style="font-weight:600;">Correct!</span>',
+      feedbackHtml:
+        '<span class="correct" style="font-weight:600;">Correct!</span>',
       timeDisplay: '0.82s',
       hint: 'Press Space for next question',
       countdown: 55,
@@ -350,7 +447,8 @@ function buildMoments(): void {
       phase: 'active',
       quizAreaActive: true,
       quizPrompt: 'G + M3 = ?',
-      feedbackHtml: '<span class="incorrect" style="font-weight:600;">Wrong &mdash; it was B</span>',
+      feedbackHtml:
+        '<span class="incorrect" style="font-weight:600;">Wrong &mdash; it was B</span>',
       timeDisplay: '1.34s',
       hint: 'Press Space for next question',
       countdown: 38,
@@ -423,7 +521,8 @@ function buildMoments(): void {
     prepareMoment(fbScreen(), {
       practiceStatusLabel: 'Consolidating',
       practiceStatusDetail: 'Master current strings before adding more',
-      practiceRecText: 'Suggestion: solidify e, B strings \u2014 8 slow items\nstart G string \u2014 13 new items',
+      practiceRecText:
+        'Suggestion: solidify e, B strings \u2014 8 slow items\nstart G string \u2014 13 new items',
       sessionSummary: '26 items across 2 strings',
       toggleState: { active: [0, 1], recommended: 3 },
     }),
@@ -704,7 +803,7 @@ ${m11}
 </body>
 </html>`;
 
-  writeFileSync(join(__dirname, "guides/design/moments.html"), momentsPage);
+  writeFileSync(join(__dirname, 'guides/design/moments.html'), momentsPage);
 }
 
 buildMoments();
@@ -713,20 +812,20 @@ buildMoments();
 // Write output files
 // ---------------------------------------------------------------------------
 
-mkdirSync(join(__dirname, "docs"), { recursive: true });
-writeFileSync(join(__dirname, "docs/index.html"), html);
-writeFileSync(join(__dirname, "docs/sw.js"), SERVICE_WORKER);
+mkdirSync(join(__dirname, 'docs'), { recursive: true });
+writeFileSync(join(__dirname, 'docs/index.html'), html);
+writeFileSync(join(__dirname, 'docs/sw.js'), SERVICE_WORKER);
 
 // Copy design reference pages to docs/design/ so they're accessible from deploys.
 // Rewrite the stylesheet path from ../../src/styles.css to styles.css (co-located copy).
-const designSrc = join(__dirname, "guides/design");
-const designDst = join(__dirname, "docs/design");
+const designSrc = join(__dirname, 'guides/design');
+const designDst = join(__dirname, 'docs/design');
 mkdirSync(designDst, { recursive: true });
-writeFileSync(join(designDst, "styles.css"), css);
-for (const file of readdirSync(designSrc).filter(f => f.endsWith(".html"))) {
-  const content = readFileSync(join(designSrc, file), "utf-8")
+writeFileSync(join(designDst, 'styles.css'), css);
+for (const file of readdirSync(designSrc).filter((f) => f.endsWith('.html'))) {
+  const content = readFileSync(join(designSrc, file), 'utf-8')
     .replace('href="../../src/styles.css"', 'href="styles.css"');
   writeFileSync(join(designDst, file), content);
 }
 
-console.log("Built to docs/index.html + docs/sw.js + docs/design/");
+console.log('Built to docs/index.html + docs/sw.js + docs/design/');

@@ -1,11 +1,12 @@
 # Music Reps — Review Checklist
 
-Use this checklist when reviewing changes. Evaluate every item as Pass, Fail,
-or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
+Use this checklist when reviewing changes. Evaluate every item as Pass, Fail, or
+N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 
 ---
 
 ## Build system consistency
+
 <!-- Full explanation: guides/architecture.md § Build System -->
 
 - [ ] New source files use proper ES module `import`/`export` statements
@@ -15,6 +16,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 - [ ] If HTML template changed: updated in `src/build-template.ts`
 
 ## Architecture patterns
+
 <!-- Full explanation: guides/architecture.md § Key Patterns -->
 
 - [ ] Pure functions separated from DOM — logic in `*-state.js`, DOM interaction
@@ -24,7 +26,8 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 - [ ] State transitions are immutable: `{ ...state, field: newValue }`, not
       `state.field = newValue`
 - [ ] Quiz mode interface respected: `getEnabledItems()`, `presentQuestion()`,
-      `checkAnswer()`, `handleKey()`, plus `onStart`/`onStop`/`onActivate`/`onDeactivate` hooks
+      `checkAnswer()`, `handleKey()`, plus
+      `onStart`/`onStop`/`onActivate`/`onDeactivate` hooks
 - [ ] New behavior integrates with existing abstractions (state machine phases,
       declarative `render()`) rather than introducing parallel mechanisms
       (shadow booleans, imperative DOM overrides)
@@ -32,6 +35,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       abstractions or unused configurability
 
 ## Adaptive learning system
+
 <!-- Full explanation: guides/architecture.md § Algorithms -->
 
 - [ ] Timing config changes preserve ratio-to-baseline scaling via
@@ -44,10 +48,11 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       stability growth/decay factors, floor at `initialStability`
 - [ ] Self-correction logic intact: fast answer after long gap boosts stability
       to at least `elapsedHours * 1.5`
-- [ ] `unseenBoost` weighting: unseen items get fixed boost, no extra
-      low-sample multiplier (that was a bug — see commit history)
+- [ ] `unseenBoost` weighting: unseen items get fixed boost, no extra low-sample
+      multiplier (that was a bug — see commit history)
 
 ## Recommendation algorithm
+
 <!-- Full explanation: guides/architecture.md § Consolidate Before Expanding -->
 
 - [ ] Consolidate-before-expanding pattern preserved: expansion to new
@@ -59,12 +64,13 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       shape: `{ dueCount, unseenCount, masteredCount, totalCount }`
 
 ## Test coverage
+
 <!-- Full explanation: guides/development.md § Testing, guides/coding-style.md § Testing Patterns -->
 
 - [ ] Every new module with pure logic has a corresponding `_test.ts` file
 - [ ] Tests use Node test runner (`node:test`) and `node:assert/strict`
-- [ ] Dependencies injected in tests: storage (Map), RNG (seeded/fixed),
-      dates (injected timestamps) — no global state pollution
+- [ ] Dependencies injected in tests: storage (Map), RNG (seeded/fixed), dates
+      (injected timestamps) — no global state pollution
 - [ ] Edge cases covered: empty arrays, null/undefined inputs, boundary values,
       single-element collections
 - [ ] Tests actually run: `npx tsx --test src/*_test.ts` passes
@@ -81,10 +87,11 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 - [ ] `handleKey()` returns `true` if key was handled, `false` otherwise
 - [ ] Keyboard state reset in `onStart()`, `onStop()`, `onDeactivate()`
 - [ ] Calibration matches mode interaction: modes with button-based answers
-      define `getCalibrationTrialConfig()` (search prompt, no highlight);
-      only speed tap uses the highlight fallback
+      define `getCalibrationTrialConfig()` (search prompt, no highlight); only
+      speed tap uses the highlight fallback
 
 ## Code quality
+
 <!-- Full explanation: guides/coding-style.md -->
 
 - [ ] No DOM manipulation in pure modules (`adaptive.js`, `music-data.js`,
@@ -99,6 +106,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       comments — just delete it)
 
 ## Layout & information architecture
+
 <!-- Full explanation: guides/design/layout-and-ia.md -->
 
 - [ ] Each screen state (idle, quizzing, calibrating) has a distinct layout —
@@ -108,10 +116,10 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       stats → config → actions)
 - [ ] Related controls are visually grouped (e.g., all "what to practice"
       settings together) with labels or headings
-- [ ] All toggles, progress indicators, and data displays have text labels —
-      no bare numbers or unlabeled button groups
-- [ ] No redundant affordances for the same action (e.g., two different
-      "stop quiz" controls)
+- [ ] All toggles, progress indicators, and data displays have text labels — no
+      bare numbers or unlabeled button groups
+- [ ] No redundant affordances for the same action (e.g., two different "stop
+      quiz" controls)
 - [ ] Quiz-configuration settings hidden during active quiz unless needed
       mid-quiz
 - [ ] Visual containers (cards, sections) align with logical groupings — no
@@ -125,6 +133,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       distinguishes enabled vs. disabled items
 
 ## Visual design consistency
+
 <!-- Full explanation: guides/design/visual-design.md -->
 
 - [ ] No new hard-coded colors — all via `var(--color-*)` or `var(--heatmap-*)`
@@ -139,6 +148,7 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 - [ ] Heatmap uses `--heatmap-*` scale, not hardcoded HSL
 
 ## Documentation & infrastructure
+
 <!-- Full explanation: guides/feature-process.md, guides/development.md § Deployment -->
 
 - [ ] Implementation plan exists in `plans/exec-plans/` for non-trivial changes
@@ -148,5 +158,6 @@ or N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       CLAUDE.md "Quiz Modes" table
 - [ ] If build output changed (new files in `docs/`): `docs/` file list in
       `guides/development.md` § Deployment updated
-- [ ] If new tech debt introduced: added to `plans/exec-plans/tech-debt-tracker.md`
+- [ ] If new tech debt introduced: added to
+      `plans/exec-plans/tech-debt-tracker.md`
 - [ ] If existing tech debt fixed: moved to "Fixed" section in tracker

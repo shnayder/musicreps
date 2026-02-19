@@ -75,18 +75,19 @@ Uses the standard `createAdaptiveSelector` + `createLocalStorageAdapter`:
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `src/quiz-speed-tap.js` | New — mode implementation (~230 lines) |
-| `src/app.js` | Register `createSpeedTapMode()` |
-| `main.ts` | HTML template: mode screen, nav drawer button, JS concat |
-| `build.ts` | Mirror template changes |
-| `src/styles.css` | `.speed-tap-prompt`, `.speed-tap-status`, `.speed-tap-progress`, `.speed-tap-timer` |
-| Version | v1.5 → v1.6 |
+| File                    | Change                                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| `src/quiz-speed-tap.js` | New — mode implementation (~230 lines)                                              |
+| `src/app.js`            | Register `createSpeedTapMode()`                                                     |
+| `main.ts`               | HTML template: mode screen, nav drawer button, JS concat                            |
+| `build.ts`              | Mirror template changes                                                             |
+| `src/styles.css`        | `.speed-tap-prompt`, `.speed-tap-status`, `.speed-tap-progress`, `.speed-tap-timer` |
+| Version                 | v1.5 → v1.6                                                                         |
 
 ## What It Reuses
 
-- `createAdaptiveSelector` / `createLocalStorageAdapter` — item selection + memory
+- `createAdaptiveSelector` / `createLocalStorageAdapter` — item selection +
+  memory
 - `NOTES`, `NATURAL_NOTES`, `STRING_OFFSETS` — music data
 - SVG circle `data-string`/`data-fret` attributes — tap targets
 - Navigation registration pattern — `init`/`activate`/`deactivate`

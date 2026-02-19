@@ -7,7 +7,7 @@ highlights green, and the user taps it as fast as possible. This captures
 physical response time but not the visual search component that's present in
 real quiz questions — finding the right button among many.
 
-The improved speed test tells the user *which answer to give*, so they still
+The improved speed test tells the user _which answer to give_, so they still
 don't need domain knowledge, but they do need to locate and press the correct
 button. This makes the baseline a better proxy for the minimum achievable
 response time on actual quiz questions.
@@ -21,21 +21,21 @@ calibration provider.
 
 ## New behavior
 
-Instead of highlighting the target button, the speed test **tells the user
-what to press** via a text prompt, and the user must find and press the correct
-button themselves. The button is NOT highlighted — the user must visually
-search the button layout.
+Instead of highlighting the target button, the speed test **tells the user what
+to press** via a text prompt, and the user must find and press the correct
+button themselves. The button is NOT highlighted — the user must visually search
+the button layout.
 
 ### Per-mode prompt format
 
 The prompt appears in the feedback area (where "Speed check!" currently shows).
 
-| Mode category | Prompt example | What user does |
-|---|---|---|
-| Note selection (fretboard, semitone math, interval math, key sigs, scale degrees, diatonic chords) | "Press **F#**" | Find and tap the F# button |
-| Interval selection (interval↔semitones) | "Press **P5**" | Find and tap the P5 button |
-| Chord spelling | "Press **C G E**" | Press C, then G, then E sequentially |
-| Speed tap | "Press the highlighted note" | Same as current (button highlights green) |
+| Mode category                                                                                      | Prompt example               | What user does                            |
+| -------------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------- |
+| Note selection (fretboard, semitone math, interval math, key sigs, scale degrees, diatonic chords) | "Press **F#**"               | Find and tap the F# button                |
+| Interval selection (interval↔semitones)                                                            | "Press **P5**"               | Find and tap the P5 button                |
+| Chord spelling                                                                                     | "Press **C G E**"            | Press C, then G, then E sequentially      |
+| Speed tap                                                                                          | "Press the highlighted note" | Same as current (button highlights green) |
 
 Note: note↔semitones calibration uses note buttons (not number buttons), so it
 falls into the "note selection" category above. This matches the current
@@ -69,7 +69,8 @@ spellings.
 
 When the calibration buttons include sharps/flats (not just naturals), prompts
 should include accidentals some of the time. This ensures the baseline captures
-the cost of finding accidental buttons, which matters for actual quiz performance.
+the cost of finding accidental buttons, which matters for actual quiz
+performance.
 
 Roughly 30–40% of prompts should use accidentals when the mode includes them.
 
@@ -146,4 +147,5 @@ ignored.
   with calibration).
 
 - **Accidental frequency ~30–40%** — enough to capture the search cost without
-  making calibration feel unrepresentative for modes that rarely use accidentals.
+  making calibration feel unrepresentative for modes that rarely use
+  accidentals.
