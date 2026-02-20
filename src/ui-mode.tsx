@@ -393,6 +393,19 @@ export function ModeView({
       id={`mode-${def.id}`}
       onClick={handleTapAdvance}
     >
+      {/* --- Top bar: back arrow + mode name --- */}
+      <div class='mode-top-bar'>
+        <button
+          type='button'
+          class='mode-back-btn'
+          aria-label='Back to home'
+          onClick={onHome}
+        >
+          {'\u2190'}
+        </button>
+        <h1 class='mode-title'>{def.name}</h1>
+      </div>
+
       {/* --- Idle: tabs + content --- */}
       {state.phase === 'idle' && (
         <>
@@ -442,6 +455,7 @@ export function ModeView({
                       def={def}
                       scope={scope}
                       setScope={setScope}
+                      recommended={recommendation?.recommended ?? null}
                     />
                     {state.showMastery && (
                       <div class='mastery-message mastery-visible'>
@@ -633,10 +647,12 @@ function ScopeControls({
   def,
   scope,
   setScope,
+  recommended,
 }: {
   def: ModeDefinition;
   scope: ScopeState;
   setScope: (s: ScopeState) => void;
+  recommended: Set<number> | null;
 }) {
   const spec = def.scopeSpec;
 
@@ -646,28 +662,31 @@ function ScopeControls({
       <div class='toggle-group'>
         <span class='toggle-group-label'>Strings</span>
         <div class='string-toggles'>
-          {inst.stringNames.map((name, i) => (
-            <button
-              type='button'
-              key={i}
-              class={`string-toggle${
-                scope.enabledStrings.has(i) ? ' active' : ''
-              }`}
-              data-string={i}
-              data-string-note={name}
-              onClick={() => {
-                const next = new Set(scope.enabledStrings);
-                if (next.has(i)) {
-                  if (next.size > 1) next.delete(i);
-                } else {
-                  next.add(i);
-                }
-                setScope({ ...scope, enabledStrings: next });
-              }}
-            >
-              {name}
-            </button>
-          ))}
+          {inst.stringNames.map((name, i) => {
+            let cls = 'string-toggle';
+            if (scope.enabledStrings.has(i)) cls += ' active';
+            if (recommended && recommended.has(i)) cls += ' recommended';
+            return (
+              <button
+                type='button'
+                key={i}
+                class={cls}
+                data-string={i}
+                data-string-note={name}
+                onClick={() => {
+                  const next = new Set(scope.enabledStrings);
+                  if (next.has(i)) {
+                    if (next.size > 1) next.delete(i);
+                  } else {
+                    next.add(i);
+                  }
+                  setScope({ ...scope, enabledStrings: next });
+                }}
+              >
+                {name}
+              </button>
+            );
+          })}
         </div>
       </div>
     );
@@ -680,27 +699,30 @@ function ScopeControls({
           {spec.label || 'Groups'}
         </span>
         <div class='distance-toggles'>
-          {spec.groups.map((g) => (
-            <button
-              type='button'
-              key={g.index}
-              class={`distance-toggle${
-                scope.enabledGroups.has(g.index) ? ' active' : ''
-              }`}
-              data-group={g.index}
-              onClick={() => {
-                const next = new Set(scope.enabledGroups);
-                if (next.has(g.index)) {
-                  if (next.size > 1) next.delete(g.index);
-                } else {
-                  next.add(g.index);
-                }
-                setScope({ ...scope, enabledGroups: next });
-              }}
-            >
-              {g.label}
-            </button>
-          ))}
+          {spec.groups.map((g) => {
+            let cls = 'distance-toggle';
+            if (scope.enabledGroups.has(g.index)) cls += ' active';
+            if (recommended && recommended.has(g.index)) cls += ' recommended';
+            return (
+              <button
+                type='button'
+                key={g.index}
+                class={cls}
+                data-group={g.index}
+                onClick={() => {
+                  const next = new Set(scope.enabledGroups);
+                  if (next.has(g.index)) {
+                    if (next.size > 1) next.delete(g.index);
+                  } else {
+                    next.add(g.index);
+                  }
+                  setScope({ ...scope, enabledGroups: next });
+                }}
+              >
+                {g.label}
+              </button>
+            );
+          })}
         </div>
       </div>
     );

@@ -3696,6 +3696,19 @@ button {
         id: `mode-${def.id}`,
         onClick: handleTapAdvance,
         children: [
+          /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: [
+            /* @__PURE__ */ u3(
+              "button",
+              {
+                type: "button",
+                class: "mode-back-btn",
+                "aria-label": "Back to home",
+                onClick: onHome,
+                children: "\u2190"
+              }
+            ),
+            /* @__PURE__ */ u3("h1", { class: "mode-title", children: def.name })
+          ] }),
           state.phase === "idle" && /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3("div", { class: "mode-tabs", children: [
               /* @__PURE__ */ u3(
@@ -3751,7 +3764,8 @@ button {
                     {
                       def,
                       scope,
-                      setScope
+                      setScope,
+                      recommended: recommendation?.recommended ?? null
                     }
                   ),
                   state.showMastery && /* @__PURE__ */ u3("div", { class: "mastery-message mastery-visible", children: state.masteryText })
@@ -3911,57 +3925,68 @@ button {
   function ScopeControls({
     def,
     scope,
-    setScope
+    setScope,
+    recommended
   }) {
     const spec = def.scopeSpec;
     if (spec.kind === "fretboard" && scope.kind === "fretboard") {
       const inst = spec.instrument;
       return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
         /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Strings" }),
-        /* @__PURE__ */ u3("div", { class: "string-toggles", children: inst.stringNames.map((name, i3) => /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            class: `string-toggle${scope.enabledStrings.has(i3) ? " active" : ""}`,
-            "data-string": i3,
-            "data-string-note": name,
-            onClick: () => {
-              const next = new Set(scope.enabledStrings);
-              if (next.has(i3)) {
-                if (next.size > 1) next.delete(i3);
-              } else {
-                next.add(i3);
-              }
-              setScope({ ...scope, enabledStrings: next });
+        /* @__PURE__ */ u3("div", { class: "string-toggles", children: inst.stringNames.map((name, i3) => {
+          let cls = "string-toggle";
+          if (scope.enabledStrings.has(i3)) cls += " active";
+          if (recommended && recommended.has(i3)) cls += " recommended";
+          return /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              class: cls,
+              "data-string": i3,
+              "data-string-note": name,
+              onClick: () => {
+                const next = new Set(scope.enabledStrings);
+                if (next.has(i3)) {
+                  if (next.size > 1) next.delete(i3);
+                } else {
+                  next.add(i3);
+                }
+                setScope({ ...scope, enabledStrings: next });
+              },
+              children: name
             },
-            children: name
-          },
-          i3
-        )) })
+            i3
+          );
+        }) })
       ] });
     }
     if (spec.kind === "groups" && scope.kind === "groups") {
       return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
         /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: spec.label || "Groups" }),
-        /* @__PURE__ */ u3("div", { class: "distance-toggles", children: spec.groups.map((g2) => /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            class: `distance-toggle${scope.enabledGroups.has(g2.index) ? " active" : ""}`,
-            "data-group": g2.index,
-            onClick: () => {
-              const next = new Set(scope.enabledGroups);
-              if (next.has(g2.index)) {
-                if (next.size > 1) next.delete(g2.index);
-              } else {
-                next.add(g2.index);
-              }
-              setScope({ ...scope, enabledGroups: next });
+        /* @__PURE__ */ u3("div", { class: "distance-toggles", children: spec.groups.map((g2) => {
+          let cls = "distance-toggle";
+          if (scope.enabledGroups.has(g2.index)) cls += " active";
+          if (recommended && recommended.has(g2.index)) cls += " recommended";
+          return /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              class: cls,
+              "data-group": g2.index,
+              onClick: () => {
+                const next = new Set(scope.enabledGroups);
+                if (next.has(g2.index)) {
+                  if (next.size > 1) next.delete(g2.index);
+                } else {
+                  next.add(g2.index);
+                }
+                setScope({ ...scope, enabledGroups: next });
+              },
+              children: g2.label
             },
-            children: g2.label
-          },
-          g2.index
-        )) })
+            g2.index
+          );
+        }) })
       ] });
     }
     return null;
@@ -4850,7 +4875,7 @@ button {
   }
 
   // src/build-template.ts
-  var VERSION = "v6.22";
+  var VERSION = "v6.23";
   var HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     <div class="home-header">
       <h1 class="home-title">Music Reps</h1>
