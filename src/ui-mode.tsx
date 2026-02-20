@@ -268,7 +268,7 @@ export function ModeView({
 
   return (
     <div
-      class={`mode-screen ${phaseClass}`}
+      class={`mode-screen mode-active ${phaseClass}`}
       id={`mode-${def.id}`}
       onClick={handleTapAdvance}
     >

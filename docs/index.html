@@ -3344,7 +3344,7 @@ button {
     return /* @__PURE__ */ u3(
       "div",
       {
-        class: `mode-screen ${phaseClass}`,
+        class: `mode-screen mode-active ${phaseClass}`,
         id: `mode-${def.id}`,
         onClick: handleTapAdvance,
         children: [
@@ -4447,7 +4447,7 @@ button {
   }
 
   // src/build-template.ts
-  var VERSION = "v6.19";
+  var VERSION = "v6.20";
   var HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     <div class="home-header">
       <h1 class="home-title">Music Reps</h1>
