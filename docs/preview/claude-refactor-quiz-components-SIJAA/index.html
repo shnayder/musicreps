@@ -3021,7 +3021,7 @@ button {
       },
       [useFlats]
     );
-    return /* @__PURE__ */ u3("div", { class: "answer-buttons answer-buttons-notes", children: [
+    return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
       /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: naturals.map((n2) => /* @__PURE__ */ u3(
         "button",
         {
@@ -3397,7 +3397,7 @@ button {
           ] }),
           state.phase === "active" && /* @__PURE__ */ u3("div", { class: "quiz-session", children: [
             /* @__PURE__ */ u3(CountdownBar, { pct: countdown.pct, warning: countdown.warning }),
-            /* @__PURE__ */ u3("div", { class: "quiz-info", children: [
+            /* @__PURE__ */ u3("div", { class: "quiz-session-info", children: [
               /* @__PURE__ */ u3("span", { class: "quiz-info-context", children: practicingLabel }),
               /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: countdown.time }),
               /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: [
@@ -4447,7 +4447,7 @@ button {
   }
 
   // src/build-template.ts
-  var VERSION = "v6.20";
+  var VERSION = "v6.21";
   var HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     <div class="home-header">
       <h1 class="home-title">Music Reps</h1>
