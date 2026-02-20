@@ -3622,6 +3622,7 @@ button {
         return def.prompt.getText(question);
       }
       const q3 = question;
+      if (q3.promptText) return q3.promptText;
       if (q3.questionText) return q3.questionText;
       const fq = question;
       if (fq.currentString !== void 0) return "What note is this?";
@@ -4875,7 +4876,7 @@ button {
   }
 
   // src/build-template.ts
-  var VERSION = "v6.23";
+  var VERSION = "v6.24";
   var HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     <div class="home-header">
       <h1 class="home-title">Music Reps</h1>
