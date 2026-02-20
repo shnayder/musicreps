@@ -3145,6 +3145,275 @@ button {
     ] });
   }
 
+  // src/recommendations.ts
+  function computeRecommendations(selector, allIndices, getItemIds, config, options) {
+    const sortUnstarted = options && options.sortUnstarted;
+    const recs = selector.getStringRecommendations(allIndices, getItemIds);
+    const started = recs.filter((r3) => r3.unseenCount < r3.totalCount);
+    const unstarted = recs.filter((r3) => r3.unseenCount === r3.totalCount);
+    if (started.length === 0) {
+      if (unstarted.length > 0) {
+        const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
+        const first = sorted[0];
+        return {
+          recommended: /* @__PURE__ */ new Set([first.string]),
+          enabled: /* @__PURE__ */ new Set([first.string]),
+          consolidateIndices: [],
+          consolidateDueCount: 0,
+          expandIndex: first.string,
+          expandNewCount: first.totalCount
+        };
+      }
+      return {
+        recommended: /* @__PURE__ */ new Set(),
+        enabled: null,
+        consolidateIndices: [],
+        consolidateDueCount: 0,
+        expandIndex: null,
+        expandNewCount: 0
+      };
+    }
+    const totalSeen = started.reduce(
+      (sum, r3) => sum + (r3.masteredCount + r3.dueCount),
+      0
+    );
+    const totalMastered = started.reduce((sum, r3) => sum + r3.masteredCount, 0);
+    const consolidatedRatio = totalSeen > 0 ? totalMastered / totalSeen : 0;
+    const startedByWork = [...started].sort(
+      (a3, b) => b.dueCount + b.unseenCount - (a3.dueCount + a3.unseenCount)
+    );
+    const workCounts = startedByWork.map((r3) => r3.dueCount + r3.unseenCount);
+    const medianWork = workCounts[Math.floor(workCounts.length / 2)];
+    const recommended = /* @__PURE__ */ new Set();
+    const enabled = /* @__PURE__ */ new Set();
+    const consolidateIndices = [];
+    let consolidateDueCount = 0;
+    for (const r3 of startedByWork) {
+      if (r3.dueCount + r3.unseenCount > medianWork) {
+        recommended.add(r3.string);
+        enabled.add(r3.string);
+        consolidateIndices.push(r3.string);
+        consolidateDueCount += r3.dueCount + r3.unseenCount;
+      }
+    }
+    if (enabled.size === 0) {
+      const r3 = startedByWork[0];
+      recommended.add(r3.string);
+      enabled.add(r3.string);
+      consolidateIndices.push(r3.string);
+      consolidateDueCount += r3.dueCount + r3.unseenCount;
+    }
+    let expandIndex = null;
+    let expandNewCount = 0;
+    if (consolidatedRatio >= config.expansionThreshold && unstarted.length > 0) {
+      const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
+      expandIndex = sorted[0].string;
+      expandNewCount = sorted[0].totalCount;
+      recommended.add(expandIndex);
+      enabled.add(expandIndex);
+    }
+    return {
+      recommended,
+      enabled,
+      consolidateIndices,
+      consolidateDueCount,
+      expandIndex,
+      expandNewCount
+    };
+  }
+
+  // src/mode-ui-state.ts
+  function buildRecommendationText(result, getGroupLabel, extraParts) {
+    if (result.recommended.size === 0) return "";
+    const parts = [];
+    if (result.consolidateIndices.length > 0) {
+      const labels = result.consolidateIndices.slice().sort((a3, b) => a3 - b).map(getGroupLabel);
+      parts.push(
+        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
+      );
+    }
+    if (result.expandIndex !== null) {
+      parts.push(
+        "start " + getGroupLabel(result.expandIndex) + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
+      );
+    }
+    if (extraParts) {
+      for (let i3 = 0; i3 < extraParts.length; i3++) {
+        parts.push(extraParts[i3]);
+      }
+    }
+    return parts.length > 0 ? "Suggestion: " + parts.join(", ") : "";
+  }
+
+  // src/stats-display.ts
+  var _heatmapColors = null;
+  function cssVar(name) {
+    try {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(
+        name
+      ).trim();
+      if (val) return val;
+    } catch (_2) {
+    }
+    return "";
+  }
+  function heatmapColors() {
+    if (!_heatmapColors) {
+      _heatmapColors = {
+        none: cssVar("--heatmap-none") || "hsl(30, 4%, 85%)",
+        level: [
+          cssVar("--heatmap-1") || "hsl(12, 48%, 65%)",
+          cssVar("--heatmap-2") || "hsl(30, 48%, 58%)",
+          cssVar("--heatmap-3") || "hsl(50, 40%, 50%)",
+          cssVar("--heatmap-4") || "hsl(72, 38%, 42%)",
+          cssVar("--heatmap-5") || "hsl(90, 45%, 35%)"
+        ]
+      };
+    }
+    return _heatmapColors;
+  }
+  var RETENTION_LABELS = [
+    "Needs work (&lt;20%)",
+    "Fading (&gt;20%)",
+    "Getting there (&gt;40%)",
+    "Solid (&gt;60%)",
+    "Automatic (&gt;80%)"
+  ];
+  function getAutomaticityColor(auto) {
+    const c3 = heatmapColors();
+    if (auto === null) return c3.none;
+    if (auto > 0.8) return c3.level[4];
+    if (auto > 0.6) return c3.level[3];
+    if (auto > 0.4) return c3.level[2];
+    if (auto > 0.2) return c3.level[1];
+    return c3.level[0];
+  }
+  function getSpeedHeatmapColor(ms, baseline) {
+    const c3 = heatmapColors();
+    if (ms === null) return c3.none;
+    const b = baseline || 1e3;
+    if (ms < b * 1.5) return c3.level[4];
+    if (ms < b * 3) return c3.level[3];
+    if (ms < b * 4.5) return c3.level[2];
+    if (ms < b * 6) return c3.level[1];
+    return c3.level[0];
+  }
+  function getStatsCellColor(selector, itemId, statsMode, baseline) {
+    if (statsMode === "retention") {
+      return getAutomaticityColor(selector.getAutomaticity(itemId));
+    }
+    const stats = selector.getStats(itemId);
+    return getSpeedHeatmapColor(stats ? stats.ewma : null, baseline);
+  }
+  function getStatsCellColorMerged(selector, itemIds, statsMode, baseline) {
+    if (typeof itemIds === "string") {
+      return getStatsCellColor(selector, itemIds, statsMode, baseline);
+    }
+    if (statsMode === "retention") {
+      let sum = 0, count = 0;
+      for (let i3 = 0; i3 < itemIds.length; i3++) {
+        const a3 = selector.getAutomaticity(itemIds[i3]);
+        if (a3 !== null) {
+          sum += a3;
+          count++;
+        }
+      }
+      return getAutomaticityColor(count > 0 ? sum / count : null);
+    }
+    let sum2 = 0, count2 = 0;
+    for (let j3 = 0; j3 < itemIds.length; j3++) {
+      const stats = selector.getStats(itemIds[j3]);
+      if (stats && stats.ewma != null) {
+        sum2 += stats.ewma;
+        count2++;
+      }
+    }
+    return getSpeedHeatmapColor(count2 > 0 ? sum2 / count2 : null, baseline);
+  }
+  function renderStatsTable(selector, rows, fwdHeader, revHeader, statsMode, containerEl, baseline) {
+    if (!rows || rows.length === 0) {
+      containerEl.innerHTML = "";
+      return;
+    }
+    let html = '<table class="stats-table"><thead><tr>';
+    html += "<th>" + rows[0]._colHeader + "</th><th>#</th>";
+    html += "<th>" + fwdHeader + "</th><th>" + revHeader + "</th>";
+    html += "</tr></thead><tbody>";
+    for (let i3 = 0; i3 < rows.length; i3++) {
+      const row = rows[i3];
+      const fwdColor = getStatsCellColor(
+        selector,
+        row.fwdItemId,
+        statsMode,
+        baseline
+      );
+      const revColor = getStatsCellColor(
+        selector,
+        row.revItemId,
+        statsMode,
+        baseline
+      );
+      html += "<tr>";
+      html += "<td>" + row.label + "</td>";
+      html += "<td>" + row.sublabel + "</td>";
+      html += '<td class="stats-cell" style="background:' + fwdColor + '"></td>';
+      html += '<td class="stats-cell" style="background:' + revColor + '"></td>';
+      html += "</tr>";
+    }
+    html += "</tbody></table>";
+    containerEl.innerHTML = html;
+  }
+  function renderStatsGrid(selector, colLabels, getItemId, statsMode, containerEl, notes, baseline) {
+    const noteList = notes || NOTES;
+    let html = '<table class="stats-grid"><thead><tr><th></th>';
+    for (let c3 = 0; c3 < colLabels.length; c3++) {
+      html += "<th>" + colLabels[c3] + "</th>";
+    }
+    html += "</tr></thead><tbody>";
+    for (let n2 = 0; n2 < noteList.length; n2++) {
+      const note = noteList[n2];
+      html += '<tr><td class="stats-grid-row-label">' + displayNote(note.name || note.displayName) + "</td>";
+      for (let i3 = 0; i3 < colLabels.length; i3++) {
+        const itemId = getItemId(note.name, i3);
+        const color = Array.isArray(itemId) ? getStatsCellColorMerged(selector, itemId, statsMode, baseline) : getStatsCellColor(selector, itemId, statsMode, baseline);
+        html += '<td class="stats-cell" style="background:' + color + '"></td>';
+      }
+      html += "</tr>";
+    }
+    html += "</tbody></table>";
+    containerEl.innerHTML = html;
+  }
+  function formatThreshold(ms) {
+    const s3 = ms / 1e3;
+    return s3 % 1 === 0 ? s3 + "s" : s3.toFixed(1) + "s";
+  }
+  function legendItem(color, label) {
+    return '<div class="legend-item"><div class="legend-swatch" style="background:' + color + '"></div>' + label + "</div>";
+  }
+  function buildStatsLegend(statsMode, baseline) {
+    const c3 = heatmapColors();
+    let html = '<div class="heatmap-legend active">';
+    html += legendItem(c3.none, "No data");
+    if (statsMode === "retention") {
+      for (let i3 = c3.level.length - 1; i3 >= 0; i3--) {
+        html += legendItem(c3.level[i3], RETENTION_LABELS[i3]);
+      }
+    } else {
+      const b = baseline || 1e3;
+      const t1 = formatThreshold(b * 1.5);
+      const t22 = formatThreshold(b * 3);
+      const t3 = formatThreshold(b * 4.5);
+      const t4 = formatThreshold(b * 6);
+      html += legendItem(c3.level[4], "&lt; " + t1);
+      html += legendItem(c3.level[3], t1 + "\u2013" + t22);
+      html += legendItem(c3.level[2], t22 + "\u2013" + t3);
+      html += legendItem(c3.level[1], t3 + "\u2013" + t4);
+      html += legendItem(c3.level[0], "&ge; " + t4);
+    }
+    html += "</div>";
+    return html;
+  }
+
   // src/ui-mode.tsx
   function loadScope(def) {
     const spec = def.scopeSpec;
@@ -3211,6 +3480,58 @@ button {
     if (spec.kind === "note-filter" && scope.kind === "note-filter") {
       localStorage.setItem(spec.storageKey, scope.noteFilter);
     }
+  }
+  function getRecommendationResult(def, selector) {
+    const spec = def.scopeSpec;
+    if (spec.kind === "groups") {
+      const allIndices = spec.groups.map((g2) => g2.index);
+      return computeRecommendations(
+        selector,
+        allIndices,
+        (index) => spec.groups[index].itemIds,
+        DEFAULT_CONFIG,
+        spec.sortUnstarted ? { sortUnstarted: spec.sortUnstarted } : void 0
+      );
+    }
+    if (spec.kind === "fretboard") {
+      const inst = spec.instrument;
+      const allStrings = Array.from(
+        { length: inst.stringCount },
+        (_2, i3) => i3
+      );
+      return computeRecommendations(
+        selector,
+        allStrings,
+        (s3) => {
+          const prefix = s3 + "-";
+          return def.allItemIds.filter((id) => id.startsWith(prefix));
+        },
+        DEFAULT_CONFIG,
+        { sortUnstarted: (a3, b) => b.string - a3.string }
+      );
+    }
+    return null;
+  }
+  function getRecommendationText(def, result, selector) {
+    if (!result || result.recommended.size === 0) return "";
+    const spec = def.scopeSpec;
+    const extras = def.getRecommendationContext?.(result, selector)?.extraParts ?? [];
+    if (spec.kind === "groups") {
+      return buildRecommendationText(
+        result,
+        (index) => spec.groups[index].label,
+        extras
+      );
+    }
+    if (spec.kind === "fretboard") {
+      const inst = spec.instrument;
+      return buildRecommendationText(
+        result,
+        (s3) => displayNote(inst.stringNames[s3]) + " string",
+        extras
+      );
+    }
+    return "";
   }
   function ModeView({
     def,
@@ -3332,6 +3653,33 @@ button {
       fretCount: def.scopeSpec.instrument.fretCount,
       markers: def.scopeSpec.instrument.fretMarkers
     } : null;
+    const recommendation = T2(
+      () => getRecommendationResult(def, engine.selector),
+      [def, engine.selector, state.phase]
+    );
+    const recommendationText = T2(
+      () => getRecommendationText(def, recommendation, engine.selector),
+      [def, recommendation, engine.selector]
+    );
+    const applyRecommendation = q2(() => {
+      if (!recommendation || recommendation.recommended.size === 0) return;
+      if (!recommendation.enabled) return;
+      if (scope.kind === "groups") {
+        setScope({ kind: "groups", enabledGroups: recommendation.enabled });
+      } else if (scope.kind === "fretboard") {
+        let noteFilter = scope.noteFilter;
+        const ctx = def.getRecommendationContext?.(
+          recommendation,
+          engine.selector
+        );
+        if (ctx?.noteFilter) noteFilter = ctx.noteFilter;
+        setScope({
+          kind: "fretboard",
+          enabledStrings: recommendation.enabled,
+          noteFilter
+        });
+      }
+    }, [recommendation, scope, def, engine.selector]);
     y2(() => {
       function handleEscape(e3) {
         if (e3.key === "Escape" && state.phase === "idle") {
@@ -3372,26 +3720,64 @@ button {
               )
             ] }),
             activeTab === "practice" && /* @__PURE__ */ u3("div", { class: "tab-content tab-practice active", children: [
-              /* @__PURE__ */ u3("div", { class: "mode-name", children: def.name }),
-              /* @__PURE__ */ u3(ScopeControls, { def, scope, setScope }),
-              /* @__PURE__ */ u3(
-                PracticeSummary,
-                {
-                  def,
-                  scope,
-                  selector: engine.selector
-                }
-              ),
-              /* @__PURE__ */ u3("div", { class: "session-summary-text", children: sessionSummary }),
-              state.showMastery && /* @__PURE__ */ u3("div", { class: "mastery-message mastery-visible", children: state.masteryText }),
-              /* @__PURE__ */ u3("button", { type: "button", class: "start-btn", onClick: engine.start, children: "Start Quiz" }),
+              /* @__PURE__ */ u3("div", { class: "practice-card", children: [
+                /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-status", children: [
+                  /* @__PURE__ */ u3(
+                    PracticeSummary,
+                    {
+                      def,
+                      scope,
+                      selector: engine.selector
+                    }
+                  ),
+                  def.scopeSpec.kind === "none" && /* @__PURE__ */ u3(
+                    RecommendationBlock,
+                    {
+                      text: recommendationText,
+                      onApply: applyRecommendation
+                    }
+                  )
+                ] }),
+                def.scopeSpec.kind !== "none" && /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-scope", children: [
+                  /* @__PURE__ */ u3(
+                    RecommendationBlock,
+                    {
+                      text: recommendationText,
+                      onApply: applyRecommendation
+                    }
+                  ),
+                  /* @__PURE__ */ u3(
+                    ScopeControls,
+                    {
+                      def,
+                      scope,
+                      setScope
+                    }
+                  ),
+                  state.showMastery && /* @__PURE__ */ u3("div", { class: "mastery-message mastery-visible", children: state.masteryText })
+                ] }),
+                /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-action", children: [
+                  /* @__PURE__ */ u3("div", { class: "session-summary-text", children: sessionSummary }),
+                  /* @__PURE__ */ u3(
+                    "button",
+                    {
+                      type: "button",
+                      class: "start-btn",
+                      onClick: engine.start,
+                      children: "Start Quiz"
+                    }
+                  )
+                ] })
+              ] }),
               /* @__PURE__ */ u3(BaselineInfo, { baseline: engine.baseline })
             ] }),
-            activeTab === "progress" && /* @__PURE__ */ u3("div", { class: "tab-content tab-progress", style: { display: "block" }, children: /* @__PURE__ */ u3(
+            activeTab === "progress" && /* @__PURE__ */ u3("div", { class: "tab-content tab-progress active", children: /* @__PURE__ */ u3(
               StatsView,
               {
                 def,
-                selector: engine.selector
+                selector: engine.selector,
+                baseline: engine.baseline,
+                fretboardConfig
               }
             ) })
           ] }),
@@ -3580,6 +3966,16 @@ button {
     }
     return null;
   }
+  function RecommendationBlock({
+    text,
+    onApply
+  }) {
+    if (!text) return null;
+    return /* @__PURE__ */ u3("div", { class: "practice-recommendation", children: [
+      /* @__PURE__ */ u3("span", { class: "practice-rec-text", children: text }),
+      /* @__PURE__ */ u3("button", { type: "button", class: "practice-rec-btn", onClick: onApply, children: "Use suggestion" })
+    ] });
+  }
   function PracticeSummary({
     def,
     scope,
@@ -3600,10 +3996,10 @@ button {
     const remaining = total - mastered;
     const statusLabel = total === 0 ? "No items" : mastered === total ? "All mastered" : seen === 0 ? "Getting started" : "Practicing";
     const statusDetail = total === 0 ? "Select some items to practice" : mastered === total ? "All " + total + " items fluent" : mastered + " / " + total + " fluent \xB7 " + remaining + " to go";
-    return /* @__PURE__ */ u3("div", { class: "practice-card", children: /* @__PURE__ */ u3("div", { class: "practice-status", children: [
+    return /* @__PURE__ */ u3("div", { class: "practice-status", children: [
       /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel }),
       /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail })
-    ] }) });
+    ] });
   }
   function BaselineInfo({ baseline }) {
     if (baseline) {
@@ -3618,42 +4014,133 @@ button {
   }
   function StatsView({
     def,
-    selector
+    selector,
+    baseline,
+    fretboardConfig
   }) {
     const [statsMode, setStatsMode] = d2(
       "retention"
     );
-    return /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-      /* @__PURE__ */ u3("div", { class: "stats-controls", children: [
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            class: `stats-toggle-btn${statsMode === "retention" ? " active" : ""}`,
-            onClick: () => setStatsMode("retention"),
-            children: "Recall"
+    const statsContainerRef = A2(null);
+    const statsHighlights = T2(() => {
+      if (!fretboardConfig) return null;
+      const map = /* @__PURE__ */ new Map();
+      for (let s3 = 0; s3 < fretboardConfig.stringCount; s3++) {
+        for (let f4 = 0; f4 < fretboardConfig.fretCount; f4++) {
+          const itemId = s3 + "-" + f4;
+          if (statsMode === "retention") {
+            map.set(
+              `${s3}-${f4}`,
+              getAutomaticityColor(selector.getAutomaticity(itemId))
+            );
+          } else {
+            const stats = selector.getStats(itemId);
+            map.set(
+              `${s3}-${f4}`,
+              getSpeedHeatmapColor(
+                stats ? stats.ewma : null,
+                baseline ?? void 0
+              )
+            );
           }
-        ),
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            class: `stats-toggle-btn${statsMode === "speed" ? " active" : ""}`,
-            onClick: () => setStatsMode("speed"),
-            children: "Speed"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ u3("span", { class: "stats", children: (() => {
-        const items = def.allItemIds;
-        const threshold = 0.8;
-        let fluent = 0;
-        for (const id of items) {
-          const a3 = selector.getAutomaticity(id);
-          if (a3 !== null && a3 > threshold) fluent++;
         }
-        return fluent + " / " + items.length + " items fluent";
-      })() })
+      }
+      return map;
+    }, [fretboardConfig, statsMode, selector, baseline]);
+    y2(() => {
+      if (fretboardConfig || !statsContainerRef.current) return;
+      const el = statsContainerRef.current;
+      el.innerHTML = "";
+      const statsSpec = def.stats;
+      if (statsSpec.kind === "table") {
+        const tableDiv = document.createElement("div");
+        el.appendChild(tableDiv);
+        renderStatsTable(
+          selector,
+          statsSpec.getRows(),
+          statsSpec.fwdHeader,
+          statsSpec.revHeader,
+          statsMode,
+          tableDiv,
+          baseline ?? void 0
+        );
+      } else if (statsSpec.kind === "grid") {
+        const gridDiv = document.createElement("div");
+        gridDiv.className = "stats-grid-wrapper";
+        el.appendChild(gridDiv);
+        renderStatsGrid(
+          selector,
+          statsSpec.colLabels,
+          statsSpec.getItemId,
+          statsMode,
+          gridDiv,
+          statsSpec.notes,
+          baseline ?? void 0
+        );
+      }
+      const legendDiv = document.createElement("div");
+      legendDiv.innerHTML = buildStatsLegend(
+        statsMode,
+        baseline ?? void 0
+      );
+      el.appendChild(legendDiv);
+    }, [def, selector, statsMode, baseline, fretboardConfig]);
+    const fluentText = T2(() => {
+      const items = def.allItemIds;
+      const threshold = selector.getConfig().automaticityThreshold;
+      let fluent = 0;
+      for (const id of items) {
+        const a3 = selector.getAutomaticity(id);
+        if (a3 !== null && a3 > threshold) fluent++;
+      }
+      return fluent + " / " + items.length + " items fluent";
+    }, [def, selector]);
+    return /* @__PURE__ */ u3(k, { children: [
+      fretboardConfig && statsHighlights && /* @__PURE__ */ u3(
+        FretboardSVG,
+        {
+          stringCount: fretboardConfig.stringCount,
+          fretCount: fretboardConfig.fretCount,
+          markers: fretboardConfig.markers,
+          highlights: statsHighlights
+        }
+      ),
+      /* @__PURE__ */ u3(BaselineInfo, { baseline }),
+      /* @__PURE__ */ u3("div", { class: "stats-controls", children: [
+        /* @__PURE__ */ u3("div", { class: "stats-toggle", children: [
+          /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              class: `stats-toggle-btn${statsMode === "retention" ? " active" : ""}`,
+              "data-mode": "retention",
+              onClick: () => setStatsMode("retention"),
+              children: "Recall"
+            }
+          ),
+          /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              class: `stats-toggle-btn${statsMode === "speed" ? " active" : ""}`,
+              "data-mode": "speed",
+              onClick: () => setStatsMode("speed"),
+              children: "Speed"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ u3("span", { class: "stats", children: fluentText })
+      ] }),
+      fretboardConfig && /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "stats-container",
+          dangerouslySetInnerHTML: {
+            __html: buildStatsLegend(statsMode, baseline ?? void 0)
+          }
+        }
+      ),
+      !fretboardConfig && /* @__PURE__ */ u3("div", { class: "stats-container", ref: statsContainerRef })
     ] });
   }
 
@@ -3824,90 +4311,6 @@ button {
         if (stringNote) btn.textContent = displayNote(stringNote);
       }
     );
-  }
-
-  // src/stats-display.ts
-  var _heatmapColors = null;
-  function cssVar(name) {
-    try {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(
-        name
-      ).trim();
-      if (val) return val;
-    } catch (_2) {
-    }
-    return "";
-  }
-  function heatmapColors() {
-    if (!_heatmapColors) {
-      _heatmapColors = {
-        none: cssVar("--heatmap-none") || "hsl(30, 4%, 85%)",
-        level: [
-          cssVar("--heatmap-1") || "hsl(12, 48%, 65%)",
-          cssVar("--heatmap-2") || "hsl(30, 48%, 58%)",
-          cssVar("--heatmap-3") || "hsl(50, 40%, 50%)",
-          cssVar("--heatmap-4") || "hsl(72, 38%, 42%)",
-          cssVar("--heatmap-5") || "hsl(90, 45%, 35%)"
-        ]
-      };
-    }
-    return _heatmapColors;
-  }
-  var RETENTION_LABELS = [
-    "Needs work (&lt;20%)",
-    "Fading (&gt;20%)",
-    "Getting there (&gt;40%)",
-    "Solid (&gt;60%)",
-    "Automatic (&gt;80%)"
-  ];
-  function getAutomaticityColor(auto) {
-    const c3 = heatmapColors();
-    if (auto === null) return c3.none;
-    if (auto > 0.8) return c3.level[4];
-    if (auto > 0.6) return c3.level[3];
-    if (auto > 0.4) return c3.level[2];
-    if (auto > 0.2) return c3.level[1];
-    return c3.level[0];
-  }
-  function getSpeedHeatmapColor(ms, baseline) {
-    const c3 = heatmapColors();
-    if (ms === null) return c3.none;
-    const b = baseline || 1e3;
-    if (ms < b * 1.5) return c3.level[4];
-    if (ms < b * 3) return c3.level[3];
-    if (ms < b * 4.5) return c3.level[2];
-    if (ms < b * 6) return c3.level[1];
-    return c3.level[0];
-  }
-  function formatThreshold(ms) {
-    const s3 = ms / 1e3;
-    return s3 % 1 === 0 ? s3 + "s" : s3.toFixed(1) + "s";
-  }
-  function legendItem(color, label) {
-    return '<div class="legend-item"><div class="legend-swatch" style="background:' + color + '"></div>' + label + "</div>";
-  }
-  function buildStatsLegend(statsMode, baseline) {
-    const c3 = heatmapColors();
-    let html = '<div class="heatmap-legend active">';
-    html += legendItem(c3.none, "No data");
-    if (statsMode === "retention") {
-      for (let i3 = c3.level.length - 1; i3 >= 0; i3--) {
-        html += legendItem(c3.level[i3], RETENTION_LABELS[i3]);
-      }
-    } else {
-      const b = baseline || 1e3;
-      const t1 = formatThreshold(b * 1.5);
-      const t22 = formatThreshold(b * 3);
-      const t3 = formatThreshold(b * 4.5);
-      const t4 = formatThreshold(b * 6);
-      html += legendItem(c3.level[4], "&lt; " + t1);
-      html += legendItem(c3.level[3], t1 + "\u2013" + t22);
-      html += legendItem(c3.level[2], t22 + "\u2013" + t3);
-      html += legendItem(c3.level[1], t3 + "\u2013" + t4);
-      html += legendItem(c3.level[0], "&ge; " + t4);
-    }
-    html += "</div>";
-    return html;
   }
 
   // src/quiz-fretboard-state.ts
@@ -4447,7 +4850,7 @@ button {
   }
 
   // src/build-template.ts
-  var VERSION = "v6.21";
+  var VERSION = "v6.22";
   var HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     <div class="home-header">
       <h1 class="home-title">Music Reps</h1>
