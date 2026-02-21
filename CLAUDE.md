@@ -33,23 +33,35 @@ to `modeScreen()` in `src/html-helpers.ts`.
 ```
 main.ts                  # Build + dev server + moments generation (Deno)
 src/
-  build-template.ts      # Shared template, version (TS)
-  html-helpers.ts        # Build-time HTML: mode scaffold, button blocks (TS)
-  fretboard.ts           # Build-time SVG: fret/string/note generation (TS)
-  adaptive.ts            # Adaptive question selector (ES module)
-  music-data.ts          # Shared music theory data (ES module)
-  quiz-engine-state.ts   # Pure engine state transitions (ES module)
-  quiz-engine.ts         # Shared quiz lifecycle (ES module)
-  stats-display.ts       # Stats color functions, rendering (ES module)
-  recommendations.ts     # Consolidate-before-expanding algorithm (ES module)
-  quiz-fretboard-state.ts  # Pure fretboard helpers (ES module)
-  quiz-fretboard.ts      # Fretboard mode
-  quiz-speed-tap.ts      # Speed Tap mode
-  quiz-note-semitones.ts .. quiz-chord-spelling.ts  # 8 more quiz modes
+  app.ts                 # Entry point: registers Preact modes, starts navigation
+  build-template.ts      # HTML template, version number (build-time)
+  html-helpers.ts        # Build-time HTML: mode scaffold, fretboard SVG
+  fretboard.ts           # Build-time SVG: fret/string/note generation
+  adaptive.ts            # Adaptive question selector
+  music-data.ts          # Shared music theory data
+  quiz-engine-state.ts   # Pure engine state transitions
+  quiz-engine.ts         # Keyboard handlers, calibration utilities
+  stats-display.ts       # Heatmap color functions, legend builder
+  recommendations.ts     # Consolidate-before-expanding algorithm
+  quiz-fretboard-state.ts  # Pure fretboard helpers (factory pattern)
+  mode-ui-state.ts       # Pure practice summary computation
   navigation.ts          # Hamburger menu, mode switching
-  app.ts                 # Init: registers all modes (loaded last)
+  settings.ts            # Settings modal
+  types.ts               # Shared type definitions
   styles.css             # Inlined CSS
   *_test.ts              # Tests (node:test)
+  ui/
+    mode-screen.tsx       # Structural layout components (ModeScreen, QuizArea, etc.)
+    buttons.tsx           # Answer button components (NoteButtons, NumberButtons, etc.)
+    scope.tsx             # Scope control components (GroupToggles, NoteFilter, etc.)
+    stats.tsx             # Stats table/grid/legend components
+    modes/
+      note-semitones-mode.tsx .. speed-tap-mode.tsx  # 11 Preact mode components
+  hooks/
+    use-quiz-engine.ts    # Quiz engine lifecycle hook
+    use-scope-state.ts    # Scope persistence hook
+    use-learner-model.ts  # Adaptive selector + storage hook
+    use-key-handler.ts    # Keyboard event hook
 scripts/take-screenshots.ts  # Playwright screenshots
 guides/                  # Detailed developer guides (see below)
 plans/                   # Design docs, product specs, execution plans
@@ -66,18 +78,21 @@ docs/                    # Built output for GitHub Pages
 
 ## Architecture
 
-Single-page vanilla JS app. Source files are ES modules bundled by esbuild into
-a single IIFE `<script>` at build time — no framework. Key patterns:
+Single-page app using Preact for UI components. Source files are ES modules
+bundled by esbuild (with automatic JSX transform) into a single IIFE `<script>`
+at build time. Key patterns:
 
-- **State + Render** — pure state transitions in `*-state.ts` files, thin
-  declarative `render()` in main files. Eliminates ordering and stale-UI bugs.
-- **Mode Plugin Interface** — each mode is a `createXxxMode()` factory providing
-  `getEnabledItems`, `presentQuestion`, `checkAnswer`, `handleKey`,
-  `onStart`/`onStop`, plus `init`/`activate`/`deactivate` lifecycle hooks.
-- **QuizEngine** — shared lifecycle (adaptive selection, 60-second round timer,
-  feedback, keyboard/tap). Each mode gets its own engine instance.
-- **Factory Pattern** — `createFretboardHelpers(musicData)` injects dependencies
-  for testability and multi-instrument reuse.
+- **Preact Mode Components** — each quiz mode is a single `.tsx` file (~100-300
+  lines) composing shared UI components with mode-specific logic. Registered
+  with navigation via `{ init, activate, deactivate }` interface.
+- **Shared Hooks** — `useQuizEngine` (engine lifecycle), `useScopeState` (scope
+  persistence), `useLearnerModel` (adaptive selector + storage),
+  `useKeyHandler` (keyboard events). Each mode composes these hooks.
+- **Shared UI Components** — `ModeScreen`, `QuizArea`, `PracticeCard`,
+  `StatsTable`/`StatsGrid`, `NoteButtons`, `GroupToggles`, etc. Emit the same
+  CSS class names as the build-time HTML for style parity.
+- **Pure State Transitions** — `quiz-engine-state.ts` contains pure functions
+  for engine state. The `useQuizEngine` hook wraps them with Preact reactivity.
 - **Adaptive Selector** — weighted random selection (unseen boost + EWMA).
   Injected storage for testability. Per-item forgetting model with half-life
   spaced repetition.

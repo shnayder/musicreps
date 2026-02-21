@@ -7,10 +7,11 @@ product is headed, see [vision.md](vision.md).
 
 ## System Overview
 
-Single-page vanilla JS app — no framework, minimal tooling. Source files are
-standard ES modules with `import`/`export` statements. esbuild bundles them into
-a single IIFE `<script>` block inside one HTML file at build time. No globals
-leak into the browser scope.
+Single-page app using Preact for UI components. Source files are standard ES
+modules (`.ts` and `.tsx`) with `import`/`export` statements. esbuild bundles
+them with automatic JSX transform (`--jsx=automatic --jsx-import-source=preact`)
+into a single IIFE `<script>` block inside one HTML file at build time. No
+globals leak into the browser scope.
 
 ## Module Dependency Graph
 
@@ -18,29 +19,49 @@ All source files use standard ES module `import`/`export`. esbuild resolves the
 dependency graph from the entry point (`src/app.ts`):
 
 ```
-adaptive.ts              ← Config, selector factory, forgetting model
-music-data.ts            ← NOTES, INTERVALS, helpers
-quiz-engine-state.ts     ← Pure state transitions (idle/active/calibration)
-quiz-engine.ts           ← Engine factory, keyboard handler, calibration
-  imports: quiz-engine-state, adaptive, music-data
-stats-display.ts         ← Color functions, table/grid rendering
-  imports: music-data
-recommendations.ts       ← Consolidate-before-expanding algorithm
-quiz-fretboard-state.ts  ← Pure fretboard helpers (factory pattern)
-  imports: music-data
-quiz-fretboard.ts        ← Fretboard quiz mode
-  imports: music-data, adaptive, quiz-engine, stats-display, recommendations, quiz-fretboard-state
-quiz-speed-tap.ts .. quiz-chord-spelling.ts  ← 9 more quiz modes
-  imports: music-data, quiz-engine, stats-display, + mode-specific deps
-navigation.ts            ← Home screen, mode switching
-settings.ts              ← Settings modal
-  imports: music-data
-app.ts                   ← Entry point: imports all modes, registers, starts
+Foundation layer:
+  adaptive.ts              ← Config, selector factory, forgetting model
+  music-data.ts            ← NOTES, INTERVALS, helpers
+  types.ts                 ← Shared type definitions (zero runtime)
+
+Engine layer:
+  quiz-engine-state.ts     ← Pure engine state transitions (idle/active/round-complete)
+  quiz-engine.ts           ← Keyboard handlers, calibration utilities
+    imports: music-data
+
+Display layer:
+  stats-display.ts         ← Heatmap color functions, legend builder
+  recommendations.ts       ← Consolidate-before-expanding algorithm
+  mode-ui-state.ts         ← Practice summary computation
+  quiz-fretboard-state.ts  ← Pure fretboard helpers (factory pattern)
+    imports: music-data
+
+Hooks layer:
+  hooks/use-quiz-engine.ts   ← Quiz engine lifecycle (wraps quiz-engine-state)
+    imports: quiz-engine-state, adaptive
+  hooks/use-scope-state.ts   ← Scope persistence (localStorage)
+  hooks/use-learner-model.ts ← Adaptive selector + storage
+    imports: adaptive
+  hooks/use-key-handler.ts   ← Keyboard event attachment
+
+UI layer:
+  ui/mode-screen.tsx         ← Structural components (ModeScreen, QuizArea, etc.)
+  ui/buttons.tsx             ← Answer button components
+  ui/scope.tsx               ← Scope control components (toggles, filters)
+  ui/stats.tsx               ← Stats table/grid/legend components
+    imports: stats-display
+  ui/modes/*.tsx             ← 11 Preact mode components
+    imports: hooks, ui components, music-data, recommendations, mode-ui-state
+
+App layer:
+  navigation.ts            ← Home screen, mode switching
+  settings.ts              ← Settings modal
+  app.ts                   ← Entry point: registers Preact modes, starts navigation
 ```
 
-**Layers**: Foundation modules (adaptive, music-data) → Engine (state + engine)
-→ Shared display (stats, recommendations) → Mode-specific state → Mode
-implementations → Navigation → App init.
+**Layers**: Foundation (adaptive, music-data) → Engine (state transitions) →
+Display (stats, recommendations) → Hooks (Preact wrappers) → UI (components) →
+App init.
 
 ## Build System
 
@@ -96,26 +117,14 @@ The existing copy logic handles `docs/design/moments.html` automatically.
 
 ## Key Patterns
 
-### State + Render
+### Pure State + Preact Reactivity
 
-The central architectural pattern. Separates pure logic from DOM interaction:
-
-```
-state = pureTransition(state, event)   // testable, no DOM
-render(state, domElements)             // thin, declarative, idempotent
-```
-
-**Why it exists**: Imperative DOM manipulation leads to ordering bugs ("called
-hideX() after showY(), should have been before") and stale UI ("changed the
-enabled set but didn't update the mastery message"). With State + Render, the
-render function reads the full state and sets every DOM property independently.
-There's no sequence to get wrong.
-
-**How it works in practice**:
+Pure state transitions remain the foundation. The `useQuizEngine` hook wraps
+them with Preact's `useState`/`useEffect` for reactive rendering:
 
 Pure state module (`quiz-engine-state.ts`):
 
-```javascript
+```typescript
 export function engineNextQuestion(state, nextItemId, nowMs) {
   return {
     ...state,
@@ -129,77 +138,88 @@ export function engineNextQuestion(state, nextItemId, nowMs) {
 }
 ```
 
-Thin render function (in `quiz-engine.ts`):
+Preact mode component (uses the hook which calls the pure transitions):
 
-```javascript
-function render() {
-  els.startBtn.style.display = state.showStartBtn ? 'inline' : 'none';
-  els.feedback.textContent = state.feedbackText;
-  els.feedback.className = state.feedbackClass;
-  // ... one line per DOM element
-}
+```tsx
+const engine = useQuizEngine(engineConfig, learner.selector);
+// engine.state.phase, engine.state.feedbackText, etc. are reactive
+// engine.start(), engine.submitAnswer(), etc. trigger state transitions
 ```
 
-**Files using this pattern**:
+**Files using the pure state pattern**:
 
-- `quiz-engine-state.ts` → `quiz-engine.ts`: 8 state transitions covering idle,
-  active, and calibration phases
-- `quiz-fretboard-state.ts` → `quiz-fretboard.ts`: pure helpers for note lookup,
-  answer checking, item enumeration
+- `quiz-engine-state.ts`: 8+ state transitions covering idle, active, and
+  round-complete phases — consumed by `useQuizEngine` hook
+- `quiz-fretboard-state.ts`: pure helpers for note lookup, answer checking,
+  item enumeration — consumed by fretboard mode component
 
 **When to use it**: Any logic that affects UI state and could benefit from
 testability. Pure state modules get the `*-state.ts` suffix.
 
-### Mode Plugin Interface
+### Preact Mode Components
 
-Every quiz mode follows the same factory pattern:
+Each quiz mode is a single `.tsx` component that composes shared hooks and UI
+components. A typical mode is 100-300 lines:
 
-```javascript
-function createXxxMode() {
-  // 1. Closure state
-  let enabledItems = new Set([...]);
-  let currentItem = null;
+```tsx
+export function SemitoneMathMode({ container, navigateHome, onMount }) {
+  // 1. Scope state (persisted toggles)
+  const scope = useScopeState(scopeSpec);
 
-  // 2. Mode interface (passed to QuizEngine)
-  const mode = {
-    id: 'xxx',
-    name: 'Mode Title',
-    storageNamespace: 'xxx',
-    getEnabledItems() { return [...]; },
-    presentQuestion(itemId) { /* render question */ },
-    checkAnswer(itemId, input) { return { correct, correctAnswer }; },
-    handleKey(e) { return false; /* true if handled */ },
-    onStart() { /* setup */ },
-    onStop() { /* cleanup */ },
-  };
+  // 2. Learner model (adaptive selector + storage)
+  const learner = useLearnerModel(NAMESPACE, allItemIds);
 
-  // 3. Lifecycle hooks (passed to Navigation)
-  return {
-    init() { /* one-time: DOM queries, engine creation, event listeners */ },
-    activate() { /* mode becomes visible: refresh stats/recommendations */ },
-    deactivate() { /* mode hidden: stop quiz if running */ },
-  };
+  // 3. Engine config (pure mode logic)
+  const engineConfig = useMemo(() => ({
+    storageNamespace: NAMESPACE,
+    allItemIds,
+    getEnabledItems: () => getEnabled(scope.state),
+    getQuestion: (id) => parseItemId(id),
+    checkAnswer: (id, input) => check(id, input),
+    // ...
+  }), [scope.state]);
+
+  // 4. Quiz engine (lifecycle, timer, state)
+  const engine = useQuizEngine(engineConfig, learner.selector);
+
+  // 5. Render: compose shared UI components
+  return (
+    <ModeScreen phase={engine.state.phase} container={container}>
+      <PracticeCard summary={summary} ... />
+      <QuizArea prompt={question.text} engine={engine}>
+        <NoteButtons onAnswer={engine.submitAnswer} />
+      </QuizArea>
+    </ModeScreen>
+  );
 }
 ```
 
 **Registration** (in `app.ts`):
 
-```javascript
-const xxx = createXxxMode();
-nav.registerMode('xxx', {
-  name: 'Mode Title',
-  init: xxx.init,
-  activate: xxx.activate,
-  deactivate: xxx.deactivate,
-});
+```typescript
+function registerPreactMode(id: string, name: string, Component: any) {
+  let handle: ModeHandle | null = null;
+  const container = document.getElementById('mode-' + id)!;
+  nav.registerMode(id, {
+    name,
+    init() { render(h(Component, { container, navigateHome, onMount }), container); },
+    activate() { handle?.activate(); },
+    deactivate() { handle?.deactivate(); },
+  });
+}
 ```
+
+The `onMount` callback provides a `ModeHandle` with `activate()`/`deactivate()`
+methods so navigation can signal visibility changes. The Preact component owns
+all DOM rendering — navigation just manages which mode-screen is visible.
 
 ### Factory Pattern for Multi-Instrument Reuse
 
-`createFretboardHelpers(musicData)` accepts instrument-specific parameters
-(string offsets, fret count) to support multiple instruments with shared logic:
+`createFretboardHelpers(musicData)` in `quiz-fretboard-state.ts` accepts
+instrument-specific parameters (string offsets, fret count) to support multiple
+instruments with shared logic:
 
-```javascript
+```typescript
 export function createFretboardHelpers(musicData) {
   const { notes, naturalNotes, stringOffsets, fretCount, noteMatchesInput } = musicData;
   return {
@@ -210,16 +230,11 @@ export function createFretboardHelpers(musicData) {
 }
 ```
 
-Guitar:
-`createFretboardHelpers({ ..., stringOffsets: GUITAR.stringOffsets, fretCount: GUITAR.fretCount })`
-Ukulele:
-`createFretboardHelpers({ ..., stringOffsets: UKULELE.stringOffsets, fretCount: UKULELE.fretCount })`
-
 #### Instrument Configs
 
 Fretted instrument modes are driven by config objects in `music-data.ts`:
 
-```javascript
+```typescript
 const GUITAR = {
   id: 'fretboard',
   name: 'Guitar Fretboard',
@@ -233,25 +248,24 @@ const GUITAR = {
 };
 ```
 
-`createFrettedInstrumentMode(instrument)` in `quiz-fretboard.ts` is the shared
-factory — thin wrappers like `createGuitarFretboardMode()` and
-`createUkuleleFretboardMode()` just pass the config. To add a new fretted
-instrument, define a config object and a one-line wrapper.
+A single `FretboardMode` Preact component in `src/ui/modes/fretboard-mode.tsx`
+is parameterized by `Instrument`. In `app.ts`, `registerFretboardMode()` passes
+the instrument config as a prop. To add a new fretted instrument, define a
+config object and register it with a one-line call.
 
 ### Stats Display Pattern
 
-`createStatsControls(container, renderFn)` manages the Recall/Speed toggle and
-wires up the stats display. Each mode provides only its render callback. This
-avoids duplicating toggle logic across 10 modes.
+Preact `StatsTable` and `StatsGrid` components in `src/ui/stats.tsx` render
+stats visualizations. Each mode passes rows/columns and the adaptive selector.
+The `StatsToggle` component manages the Recall/Speed toggle.
 
-Related helpers:
+Color helpers in `stats-display.ts` (pure functions, no DOM):
 
 - `getAutomaticityColor(auto)` — automaticity-based heatmap color
 - `getSpeedHeatmapColor(ms, baseline)` — speed-based heatmap color
 - `getStatsCellColor(selector, itemId, statsMode, baseline)` — unified cell
   coloring
-- `renderStatsTable()` — for lookup modes (tables)
-- `buildStatsLegend()` — color scale legend
+- `buildStatsLegend()` — color scale legend HTML string
 
 ### Consolidate Before Expanding
 
@@ -315,7 +329,7 @@ All timing thresholds scale proportionally:
 | Heatmap orange          | < 6.0x            |
 
 Key functions: `deriveScaledConfig()`, `computeMedian()` in `adaptive.ts`;
-`runCalibration()` in `quiz-engine.ts`; `engine.baseline` property.
+`getCalibrationThresholds()`, `pickCalibrationButton()` in `quiz-engine.ts`.
 
 #### Response-count scaling (planned)
 
@@ -435,19 +449,19 @@ applies and document the choice in `accidental-conventions.md`.
 
 ## Universal Mode Layout
 
-All 11 quiz modes share the same DOM structure, generated by `modeScreen()` in
-`html-helpers.ts`. Each mode has three top-level sections: a mode top bar (back
-button + title), idle content (tabs), and quiz content (session + quiz area).
-Phase classes on the mode container control which section is visible. The mode
-top bar is hidden during active quiz, calibration, and round-complete phases.
+All 11 quiz modes share the same DOM structure. Build-time HTML (generated by
+`modeScreen()` in `html-helpers.ts`) provides the initial scaffold. At runtime,
+Preact components render into the mode-screen container, producing the same
+CSS class names for style parity. Phase classes on the mode container control
+which section is visible.
 
 For the design principles behind this layout, see
 [layout-and-ia.md](design/layout-and-ia.md).
 
 ### Idle phase: Practice/Progress tabs
 
-Every mode uses `tabbedIdleHTML()` (or `fretboardIdleHTML()` which wraps it) to
-generate a two-tab idle layout:
+Every mode renders a two-tab idle layout via Preact components (`PracticeCard`,
+`StatsTable`/`StatsGrid`, `GroupToggles`, etc.):
 
 ```
 .mode-tabs
@@ -482,24 +496,21 @@ generate a two-tab idle layout:
 
 ### Mode categories
 
-**Fretboard modes** (Guitar, Ukulele): Use `fretboardIdleHTML()` which adds
-string toggles + notes toggle (natural / sharps & flats / all) to
-`practiceScope`, and a fretboard SVG to `progressContent` for the heatmap
-overlay.
+**Fretboard modes** (Guitar, Ukulele): Single `FretboardMode` component
+parameterized by `Instrument`. Uses `StringToggles` + `NoteFilter` for scope,
+fretboard SVG heatmap in Progress tab.
 
 **Group modes** (Semitone Math, Interval Math, Key Signatures, Scale Degrees,
-Diatonic Chords, Chord Spelling): Pass `DISTANCE_TOGGLES` as `practiceScope`.
-Each mode generates its own group toggle buttons at init time and uses
-`computeRecommendations()` for recommendations.
+Diatonic Chords, Chord Spelling): Use `GroupToggles` component for scope.
+Each mode uses `computeRecommendations()` for progressive unlocking.
 
-**Simple modes** (Note Semitones, Interval Semitones): No `practiceScope` — all
-items always enabled. When `practiceScope` is empty, the recommendation and
-mastery elements fold into the status zone (no separate scope zone is emitted),
-avoiding double dividers.
+**Simple modes** (Note Semitones, Interval Semitones): No scope controls — all
+items always enabled. Recommendation and mastery elements fold into the status
+zone (no separate scope zone), avoiding double dividers.
 
-**Speed Tap**: Passes a notes toggle (natural / sharps & flats / all) as
-`practiceScope`. The fretboard lives in the quiz area (not in idle) and is
-hidden/shown via `.fretboard-hidden` during start/stop.
+**Speed Tap**: Uses `NoteFilter` for scope. The fretboard lives in the quiz
+area (not in idle) and is hidden/shown via `.fretboard-hidden` during
+start/stop.
 
 ### Quiz phase
 
@@ -541,9 +552,11 @@ CSS phase classes on `.mode-screen` control what's visible:
 
 ## Adding a New Quiz Mode
 
-**Reuse shared infrastructure.** Adaptive selector, `computeRecommendations()`,
-`createStatsControls()`, `createNoteKeyHandler()`. A new mode should feel like a
-natural extension, not a separate app.
+**Reuse shared infrastructure.** Shared hooks (`useQuizEngine`,
+`useScopeState`, `useLearnerModel`), shared components (`ModeScreen`,
+`PracticeCard`, `NoteButtons`, `StatsTable`), `computeRecommendations()`,
+`createAdaptiveKeyHandler()`. A new mode should feel like a natural extension,
+not a separate app.
 
 **Consistency over accommodation.** When a mode behaves differently, ask "should
 it?" not "how do we support that?" Change the outlier to match the standard
@@ -551,18 +564,19 @@ rather than adding complexity. Per-mode flags are a code smell.
 
 Step-by-step checklist:
 
-1. **Create** `src/quiz-{mode}.ts` following the `createXxxMode()` pattern with
-   proper `import`/`export` statements
-2. **Define** item ID format and `ALL_ITEMS` list
-3. **Implement** mode object: `getEnabledItems`, `presentQuestion`,
-   `checkAnswer`, `handleKey`, `onStart`, `onStop`
+1. **Create** `src/ui/modes/{mode}-mode.tsx` — a Preact component composing
+   shared hooks and UI components (~100-300 lines)
+2. **Define** item ID format, `allItemIds`, and pure logic functions
+   (`getQuestion`, `checkAnswer`, `getEnabledItems`)
+3. **Compose hooks**: `useScopeState` (if scope controls needed),
+   `useLearnerModel`, `useQuizEngine`
 4. **Groups** (if applicable): use `computeRecommendations()` from
    `recommendations.ts` for progressive unlocking
-5. **Stats**: add `createStatsControls()` with a render callback
-6. **HTML**: add mode screen call in `modeScreens()` in `src/build-template.ts`,
-   and nav button in `HOME_SCREEN_HTML`
-7. **Register** mode in `app.ts` (import the create function + register)
-8. **Tests**: create `src/quiz-{mode}_test.ts` if pure logic was extracted
+5. **Stats**: use `StatsTable` or `StatsGrid` component from `src/ui/stats.tsx`
+6. **HTML**: add mode screen in `modeScreens()` in `src/build-template.ts`
+   (container div), and nav button in `HOME_SCREEN_HTML`
+7. **Register** mode in `app.ts` with `registerPreactMode()`
+8. **Tests**: create `src/{mode}_test.ts` if pure logic was extracted
 9. **Accidentals**: determine which naming convention applies (see
    [accidental-conventions.md](accidental-conventions.md)) and update that
    guide's mode table

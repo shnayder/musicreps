@@ -6,35 +6,44 @@ rules — this guide explains them.
 
 ## File Naming
 
-| Pattern                             | Example                        | When                               |
-| ----------------------------------- | ------------------------------ | ---------------------------------- |
-| `src/quiz-{mode}.ts`                | `quiz-fretboard.ts`            | Quiz mode implementation           |
-| `src/{module}-state.ts`             | `quiz-engine-state.ts`         | Pure state/logic (no DOM)          |
-| `src/{module}.ts`                   | `adaptive.ts`, `navigation.ts` | Shared modules                     |
-| `src/{module}_test.ts`              | `adaptive_test.ts`             | Test file (underscore, TypeScript) |
-| `plans/YYYY-MM-DD-{description}.md` | `2026-02-10-add-quiz-stats.md` | Plans                              |
+| Pattern                             | Example                        | When                                  |
+| ----------------------------------- | ------------------------------ | ------------------------------------- |
+| `src/ui/modes/{mode}-mode.tsx`      | `semitone-math-mode.tsx`       | Preact mode component                 |
+| `src/ui/{component}.tsx`            | `buttons.tsx`, `stats.tsx`     | Shared Preact UI components           |
+| `src/hooks/use-{hook}.ts`          | `use-quiz-engine.ts`           | Preact hooks                          |
+| `src/{module}-state.ts`             | `quiz-engine-state.ts`         | Pure state/logic (no DOM)             |
+| `src/{module}.ts`                   | `adaptive.ts`, `navigation.ts` | Shared modules                       |
+| `src/{module}_test.ts`              | `adaptive_test.ts`             | Test file (underscore, TypeScript)    |
+| `plans/YYYY-MM-DD-{description}.md` | `2026-02-10-add-quiz-stats.md` | Plans                                |
 
 ## Module Patterns
 
-All source files are standard ES modules with `import`/`export` statements.
-esbuild bundles them into a single IIFE at build time. Tests import the same
-modules directly via `node:test` + `tsx`.
+All source files are standard ES modules (`.ts` and `.tsx`) with
+`import`/`export` statements. esbuild bundles them with automatic JSX transform
+into a single IIFE at build time. Tests import the same modules directly via
+`node:test`.
 
 - Use `export` on any function or constant that other files need
 - Use `import { ... } from './module.ts'` for dependencies
-- Entry point is `src/app.ts` — it imports all modes and wires them up
+- Entry point is `src/app.ts` — it imports all Preact mode components and
+  registers them with navigation
+- `.tsx` files use Preact JSX (automatic transform via `jsxImportSource`)
+- Pure logic stays in `.ts` files; `.tsx` is only for files that return JSX
 
 ## Naming Conventions
 
-| Category          | Convention                       | Examples                                                               |
-| ----------------- | -------------------------------- | ---------------------------------------------------------------------- |
-| Factory functions | `createXxx()`                    | `createQuizEngine()`, `createFretboardHelpers()`, `createNavigation()` |
-| State transitions | `engineXxx()` / `fretboardXxx()` | `engineStart()`, `engineStop()`, `engineNextQuestion()`                |
-| Constants         | `UPPER_SNAKE_CASE`               | `NOTES`, `INTERVALS`, `ALL_ITEMS`, `KEY_GROUPS`                        |
-| Config objects    | `UPPER_SNAKE_CASE`               | `DEFAULT_CONFIG`, `SPEED_TAP_BASE_CONFIG`                              |
-| Local state       | `camelCase`                      | `enabledGroups`, `currentItem`, `recommendedGroups`                    |
-| localStorage keys | `namespace_keyName`              | `semitoneMath_enabledGroups`, `motorBaseline_button`                   |
-| Mode IDs          | `camelCase`                      | `fretboard`, `semitoneMath`, `keySignatures`                           |
+| Category           | Convention                       | Examples                                                             |
+| ------------------ | -------------------------------- | -------------------------------------------------------------------- |
+| Mode components    | `XxxMode`                        | `SemitoneMathMode`, `FretboardMode`, `SpeedTapMode`                  |
+| UI components      | `PascalCase`                     | `NoteButtons`, `GroupToggles`, `StatsTable`, `ModeScreen`            |
+| Hooks              | `useXxx`                         | `useQuizEngine`, `useScopeState`, `useLearnerModel`                  |
+| Factory functions  | `createXxx()`                    | `createFretboardHelpers()`, `createNavigation()`                     |
+| State transitions  | `engineXxx()` / `fretboardXxx()` | `engineStart()`, `engineStop()`, `engineNextQuestion()`              |
+| Constants          | `UPPER_SNAKE_CASE`               | `NOTES`, `INTERVALS`, `ALL_ITEMS`, `KEY_GROUPS`                      |
+| Config objects     | `UPPER_SNAKE_CASE`               | `DEFAULT_CONFIG`, `SPEED_TAP_BASE_CONFIG`                            |
+| Local state        | `camelCase`                      | `enabledGroups`, `currentItem`, `recommendedGroups`                  |
+| localStorage keys  | `namespace_keyName`              | `semitoneMath_enabledGroups`, `motorBaseline_button`                 |
+| Mode IDs           | `camelCase`                      | `fretboard`, `semitoneMath`, `keySignatures`                         |
 
 ## Dead Code
 
@@ -59,39 +68,39 @@ preserves anything you might need to recover.
 
 ## DOM Interaction Rules
 
-1. **Cache DOM queries in `init()`** — store in closure variables or an `els`
-   object. Never query the DOM in hot paths (presentQuestion, checkAnswer).
+1. **Preact owns the DOM.** Mode components render via JSX. Avoid direct DOM
+   manipulation except for imperative escape hatches (fretboard SVG
+   highlighting, hover cards) — use `useEffect` with refs for those.
 
-2. **Prefer declarative `render(state)`** over imperative DOM manipulation.
-   State changes should flow through: mutate state → call render() → DOM
-   updates. This eliminates ordering bugs and stale UI.
+2. **Use `dangerouslySetInnerHTML` sparingly.** Only for build-time generated
+   HTML (fretboard SVG, stats legends). Add `// deno-lint-ignore react-no-danger`
+   comment.
 
 3. **Use data attributes for button identity** — `data-note="C"`,
    `data-mode="fretboard"`, `data-group="0"`. Not positional logic.
 
-4. **Container-scoped queries** — `container.querySelector('.feedback')`, not
-   `document.querySelector('.feedback')`. Each mode operates within its own
-   `.mode-screen` container.
+4. **Phase classes via `useEffect`.** Phase transitions (`phase-idle`,
+   `phase-active`, `phase-round-complete`) are set imperatively on the
+   container element via `useEffect` keyed on engine phase.
 
 5. **Toggle CSS classes for state** — `.active`, `.recommended`, `.correct`,
-   `.incorrect`, `.calibrating`. Use `classList.toggle()` or
-   `classList.add/remove()`.
+   `.incorrect`. Compute class strings from props/state in JSX.
 
 ## State Management
 
-- **Immutable transitions**: state functions return new objects via
-  `{ ...state, field: newValue }`. Never mutate state in place.
-- **Closure variables** for mode-local state (`currentItem`, `enabledStrings`).
-  These live inside `createXxxMode()` closures.
-- **localStorage for persistence**: loaded in `init()`, saved on change. Always
-  namespace keys to the mode.
+- **Immutable transitions**: pure state functions in `*-state.ts` files return
+  new objects via `{ ...state, field: newValue }`. Never mutate state in place.
+- **Preact hooks for reactivity**: mode-local state lives in `useState`,
+  `useRef`, and `useMemo` calls within mode components and shared hooks.
+  `useQuizEngine` wraps engine state transitions; `useScopeState` wraps
+  scope persistence; `useLearnerModel` wraps the adaptive selector.
+- **localStorage for persistence**: loaded by hooks on mount, saved on change.
+  Always namespace keys to the mode.
 
 ## Error Handling
 
 - `try/catch` around `JSON.parse` of localStorage (user data may be corrupted).
   Fall back to defaults silently.
-- Defensive null checks on DOM elements:
-  `if (els.foo) els.foo.textContent = ...`
 - No `throw` — the app should degrade gracefully, not crash.
 
 ## Comments
@@ -125,8 +134,9 @@ preserves anything you might need to recover.
    `src/types.ts`. A type used in only one file stays inline.
 
 5. **Non-null assertions (`!`) for build-time DOM.** Elements generated by
-   `html-helpers.ts` are known to exist. Use `!` after `getElementById`, not a
-   runtime `if` check.
+   `html-helpers.ts` or the build template are known to exist. Use `!` after
+   `getElementById` for those. Inside Preact components, use `useRef<T>(null)`
+   and check `ref.current` before use.
 
 6. **`querySelectorAll<T>` for typed iteration.** Prefer
    `querySelectorAll<HTMLButtonElement>('.btn')` over casting inside callbacks.
@@ -146,7 +156,9 @@ preserves anything you might need to recover.
 
 - Import directly from ES module source files
 - Inject dependencies: `Map` for storage, imported music data, seeded RNG
-- Test pure logic only — render functions tested visually
+- Test pure logic in `*-state.ts` files — data in, data out
+- Render-to-string tests for Preact components: render with fixture data,
+  assert on HTML structure and content via `preact-render-to-string`
 - Each test creates its own selector/helpers (no shared mutable state)
 - Edge cases: empty arrays, null/undefined, boundary values, single-element
 
@@ -156,4 +168,5 @@ preserves anything you might need to recover.
 - **Functional classes**: `.active`, `.recommended`, `.correct`, `.incorrect`
 - **Mobile-first responsive**: base styles for mobile, media queries for larger
 - **HSL for computed colors**: heatmap colors use `hsl()` for smooth gradients
-- **No inline styles** except `display` toggling in render functions
+- **No inline styles** — use CSS classes. Visibility controlled by conditional
+  rendering (`{show && <Component />}`) or CSS class toggling in JSX
