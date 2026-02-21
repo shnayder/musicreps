@@ -1948,6 +1948,185 @@ button {
     return out + acc;
   }
 
+  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  var f2 = 0;
+  function u2(e2, t2, n2, o2, i2, u3) {
+    t2 || (t2 = {});
+    var a2, c2, p2 = t2;
+    if ("ref" in p2) for (c2 in p2 = {}, t2) "ref" == c2 ? a2 = t2[c2] : p2[c2] = t2[c2];
+    var l2 = { type: e2, props: p2, key: n2, ref: a2, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --f2, __i: -1, __u: 0, __source: i2, __self: u3 };
+    if ("function" == typeof e2 && (a2 = e2.defaultProps)) for (c2 in a2) void 0 === p2[c2] && (p2[c2] = a2[c2]);
+    return l.vnode && l.vnode(l2), l2;
+  }
+
+  // src/ui/buttons.tsx
+  var ALL_NOTES = [
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B"
+  ];
+  var ACCIDENTALS = ["C#", "D#", "F#", "G#", "A#"];
+  var NATURALS = ["C", "D", "E", "F", "G", "A", "B"];
+  var INTERVALS = [
+    "m2",
+    "M2",
+    "m3",
+    "M3",
+    "P4",
+    "TT",
+    "P5",
+    "m6",
+    "M6",
+    "m7",
+    "M7",
+    "P8"
+  ];
+  var KEYSIGS = [
+    "0",
+    "1#",
+    "2#",
+    "3#",
+    "4#",
+    "5#",
+    "6#",
+    "7#",
+    "1b",
+    "2b",
+    "3b",
+    "4b",
+    "5b",
+    "6b",
+    "7b"
+  ];
+  var DEGREES = [
+    ["1", "1st"],
+    ["2", "2nd"],
+    ["3", "3rd"],
+    ["4", "4th"],
+    ["5", "5th"],
+    ["6", "6th"],
+    ["7", "7th"]
+  ];
+  var NUMERALS = ["I", "ii", "iii", "IV", "V", "vi", "vii\xB0"];
+  function NoteButtons({ onAnswer, hidden }) {
+    const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "");
+    return /* @__PURE__ */ u2("div", { class: cls, children: ALL_NOTES.map((n2) => /* @__PURE__ */ u2(
+      "button",
+      {
+        type: "button",
+        class: "answer-btn answer-btn-note",
+        "data-note": n2,
+        onClick: onAnswer ? () => onAnswer(n2) : void 0,
+        children: displayNote(n2)
+      },
+      n2
+    )) });
+  }
+  function PianoNoteButtons({ onAnswer }) {
+    return /* @__PURE__ */ u2("div", { class: "note-buttons", children: [
+      /* @__PURE__ */ u2("div", { class: "note-row-accidentals", children: ACCIDENTALS.map((n2) => /* @__PURE__ */ u2(
+        "button",
+        {
+          type: "button",
+          class: "note-btn accidental",
+          "data-note": n2,
+          onClick: onAnswer ? () => onAnswer(n2) : void 0,
+          children: displayNote(n2)
+        },
+        n2
+      )) }),
+      /* @__PURE__ */ u2("div", { class: "note-row-naturals", children: NATURALS.map((n2) => /* @__PURE__ */ u2(
+        "button",
+        {
+          type: "button",
+          class: "note-btn",
+          "data-note": n2,
+          onClick: onAnswer ? () => onAnswer(n2) : void 0,
+          children: displayNote(n2)
+        },
+        n2
+      )) })
+    ] });
+  }
+  function NumberButtons({ start, end, onAnswer }) {
+    const nums = [];
+    for (let i2 = start; i2 <= end; i2++) nums.push(i2);
+    return /* @__PURE__ */ u2("div", { class: "answer-buttons answer-buttons-numbers", children: nums.map((i2) => /* @__PURE__ */ u2(
+      "button",
+      {
+        type: "button",
+        class: "answer-btn answer-btn-num",
+        "data-num": String(i2),
+        onClick: onAnswer ? () => onAnswer(i2) : void 0,
+        children: i2
+      },
+      i2
+    )) });
+  }
+  function IntervalButtons({ onAnswer }) {
+    return /* @__PURE__ */ u2("div", { class: "answer-buttons answer-buttons-intervals", children: INTERVALS.map((iv) => /* @__PURE__ */ u2(
+      "button",
+      {
+        type: "button",
+        class: "answer-btn answer-btn-interval",
+        "data-interval": iv,
+        onClick: onAnswer ? () => onAnswer(iv) : void 0,
+        children: iv
+      },
+      iv
+    )) });
+  }
+  function KeysigButtons({ onAnswer }) {
+    return /* @__PURE__ */ u2("div", { class: "answer-buttons answer-buttons-keysig", children: KEYSIGS.map((s2) => /* @__PURE__ */ u2(
+      "button",
+      {
+        type: "button",
+        class: "answer-btn answer-btn-keysig",
+        "data-sig": s2,
+        onClick: onAnswer ? () => onAnswer(s2) : void 0,
+        children: s2
+      },
+      s2
+    )) });
+  }
+  function DegreeButtons({ onAnswer, hidden }) {
+    const cls = "answer-buttons answer-buttons-degrees" + (hidden ? " answer-group-hidden" : "");
+    return /* @__PURE__ */ u2("div", { class: cls, children: DEGREES.map(([val, label]) => /* @__PURE__ */ u2(
+      "button",
+      {
+        type: "button",
+        class: "answer-btn answer-btn-degree",
+        "data-degree": val,
+        onClick: onAnswer ? () => onAnswer(val) : void 0,
+        children: label
+      },
+      val
+    )) });
+  }
+  function NumeralButtons({ onAnswer, hidden }) {
+    const cls = "answer-buttons answer-buttons-numerals" + (hidden ? " answer-group-hidden" : "");
+    return /* @__PURE__ */ u2("div", { class: cls, children: NUMERALS.map((n2) => /* @__PURE__ */ u2(
+      "button",
+      {
+        type: "button",
+        class: "answer-btn answer-btn-numeral",
+        "data-numeral": n2,
+        onClick: onAnswer ? () => onAnswer(n2) : void 0,
+        children: n2
+      },
+      n2
+    )) });
+  }
+
   // src/stats-display.ts
   var _heatmapColors = null;
   function cssVar(name) {
@@ -1979,6 +2158,13 @@ button {
     const m2 = color && color.match(/,\s*(\d+)%\s*\)/);
     return m2 ? parseInt(m2[1], 10) <= 50 : false;
   }
+  var RETENTION_LABELS = [
+    "Needs work (&lt;20%)",
+    "Fading (&gt;20%)",
+    "Getting there (&gt;40%)",
+    "Solid (&gt;60%)",
+    "Automatic (&gt;80%)"
+  ];
   function getAutomaticityColor(auto) {
     const c2 = heatmapColors();
     if (auto === null) return c2.none;
@@ -1988,126 +2174,140 @@ button {
     if (auto > 0.2) return c2.level[1];
     return c2.level[0];
   }
-
-  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
-  var f2 = 0;
-  function u2(e2, t2, n2, o2, i2, u3) {
-    t2 || (t2 = {});
-    var a2, c2, p2 = t2;
-    if ("ref" in p2) for (c2 in p2 = {}, t2) "ref" == c2 ? a2 = t2[c2] : p2[c2] = t2[c2];
-    var l2 = { type: e2, props: p2, key: n2, ref: a2, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --f2, __i: -1, __u: 0, __source: i2, __self: u3 };
-    if ("function" == typeof e2 && (a2 = e2.defaultProps)) for (c2 in a2) void 0 === p2[c2] && (p2[c2] = a2[c2]);
-    return l.vnode && l.vnode(l2), l2;
+  function getSpeedHeatmapColor(ms, baseline) {
+    const c2 = heatmapColors();
+    if (ms === null) return c2.none;
+    const b = baseline || 1e3;
+    if (ms < b * 1.5) return c2.level[4];
+    if (ms < b * 3) return c2.level[3];
+    if (ms < b * 4.5) return c2.level[2];
+    if (ms < b * 6) return c2.level[1];
+    return c2.level[0];
   }
-
-  // src/ui/preview.tsx
-  function Section({ title, children }) {
-    return /* @__PURE__ */ u2("section", { class: "preview-section", children: [
-      /* @__PURE__ */ u2("h3", { children: title }),
-      /* @__PURE__ */ u2("div", { class: "preview-frame", children })
-    ] });
-  }
-  var ALL_NOTES = [
-    "C",
-    "C#",
-    "D",
-    "D#",
-    "E",
-    "F",
-    "F#",
-    "G",
-    "G#",
-    "A",
-    "A#",
-    "B"
-  ];
-  var ACCIDENTALS = ["C#", "D#", "F#", "G#", "A#"];
-  var NATURALS = ["C", "D", "E", "F", "G", "A", "B"];
-  var INTERVALS = [
-    "m2",
-    "M2",
-    "m3",
-    "M3",
-    "P4",
-    "TT",
-    "P5",
-    "m6",
-    "M6",
-    "m7",
-    "M7",
-    "P8"
-  ];
-  function NoteButtonsDemo() {
-    return /* @__PURE__ */ u2("div", { class: "answer-buttons answer-buttons-notes", children: ALL_NOTES.map((n2) => /* @__PURE__ */ u2(
-      "button",
-      {
-        type: "button",
-        class: "answer-btn answer-btn-note",
-        "data-note": n2,
-        children: displayNote(n2)
-      },
-      n2
-    )) });
-  }
-  function PianoButtonsDemo() {
-    return /* @__PURE__ */ u2("div", { class: "note-buttons", children: [
-      /* @__PURE__ */ u2("div", { class: "note-row-accidentals", children: ACCIDENTALS.map((n2) => /* @__PURE__ */ u2(
-        "button",
-        {
-          type: "button",
-          class: "note-btn accidental",
-          "data-note": n2,
-          children: displayNote(n2)
-        },
-        n2
-      )) }),
-      /* @__PURE__ */ u2("div", { class: "note-row-naturals", children: NATURALS.map((n2) => /* @__PURE__ */ u2("button", { type: "button", class: "note-btn", "data-note": n2, children: displayNote(n2) }, n2)) })
-    ] });
-  }
-  function IntervalButtonsDemo() {
-    return /* @__PURE__ */ u2("div", { class: "answer-buttons answer-buttons-intervals", children: INTERVALS.map((i2) => /* @__PURE__ */ u2(
-      "button",
-      {
-        type: "button",
-        class: "answer-btn answer-btn-interval",
-        "data-interval": i2,
-        children: i2
-      },
-      i2
-    )) });
-  }
-  function NumberButtonsDemo() {
-    return /* @__PURE__ */ u2("div", { class: "answer-buttons answer-buttons-numbers", children: Array.from(
-      { length: 12 },
-      (_2, i2) => /* @__PURE__ */ u2(
-        "button",
-        {
-          type: "button",
-          class: "answer-btn answer-btn-num",
-          "data-num": String(i2),
-          children: i2
-        },
-        i2
-      )
-    ) });
-  }
-  function StatsGridDemo() {
-    const cols = ["+1", "+2", "+3", "+4", "+5", "+6"];
-    function mockAuto(noteIdx, colIdx) {
-      if (noteIdx >= 5) return null;
-      if (noteIdx === 4 && colIdx > 1) return null;
-      return Math.max(0, Math.min(1, 0.95 - noteIdx * 0.12 - colIdx * 0.15));
+  function getStatsCellColor(selector, itemId, statsMode, baseline) {
+    if (statsMode === "retention") {
+      return getAutomaticityColor(selector.getAutomaticity(itemId));
     }
+    const stats = selector.getStats(itemId);
+    return getSpeedHeatmapColor(stats ? stats.ewma : null, baseline);
+  }
+  function getStatsCellColorMerged(selector, itemIds, statsMode, baseline) {
+    if (typeof itemIds === "string") {
+      return getStatsCellColor(selector, itemIds, statsMode, baseline);
+    }
+    if (statsMode === "retention") {
+      let sum = 0, count = 0;
+      for (let i2 = 0; i2 < itemIds.length; i2++) {
+        const a2 = selector.getAutomaticity(itemIds[i2]);
+        if (a2 !== null) {
+          sum += a2;
+          count++;
+        }
+      }
+      return getAutomaticityColor(count > 0 ? sum / count : null);
+    }
+    let sum2 = 0, count2 = 0;
+    for (let j2 = 0; j2 < itemIds.length; j2++) {
+      const stats = selector.getStats(itemIds[j2]);
+      if (stats && stats.ewma != null) {
+        sum2 += stats.ewma;
+        count2++;
+      }
+    }
+    return getSpeedHeatmapColor(count2 > 0 ? sum2 / count2 : null, baseline);
+  }
+  function formatThreshold(ms) {
+    const s2 = ms / 1e3;
+    return s2 % 1 === 0 ? s2 + "s" : s2.toFixed(1) + "s";
+  }
+  function legendItem(color, label) {
+    return '<div class="legend-item"><div class="legend-swatch" style="background:' + color + '"></div>' + label + "</div>";
+  }
+  function buildStatsLegend(statsMode, baseline) {
+    const c2 = heatmapColors();
+    let html = '<div class="heatmap-legend active">';
+    html += legendItem(c2.none, "No data");
+    if (statsMode === "retention") {
+      for (let i2 = c2.level.length - 1; i2 >= 0; i2--) {
+        html += legendItem(c2.level[i2], RETENTION_LABELS[i2]);
+      }
+    } else {
+      const b = baseline || 1e3;
+      const t1 = formatThreshold(b * 1.5);
+      const t2 = formatThreshold(b * 3);
+      const t3 = formatThreshold(b * 4.5);
+      const t4 = formatThreshold(b * 6);
+      html += legendItem(c2.level[4], "&lt; " + t1);
+      html += legendItem(c2.level[3], t1 + "\u2013" + t2);
+      html += legendItem(c2.level[2], t2 + "\u2013" + t3);
+      html += legendItem(c2.level[1], t3 + "\u2013" + t4);
+      html += legendItem(c2.level[0], "&ge; " + t4);
+    }
+    html += "</div>";
+    return html;
+  }
+
+  // src/ui/stats.tsx
+  function StatsTable({ selector, rows, fwdHeader, revHeader, statsMode, baseline }) {
+    if (!rows || rows.length === 0) return null;
+    return /* @__PURE__ */ u2("table", { class: "stats-table", children: [
+      /* @__PURE__ */ u2("thead", { children: /* @__PURE__ */ u2("tr", { children: [
+        /* @__PURE__ */ u2("th", { children: rows[0]._colHeader }),
+        /* @__PURE__ */ u2("th", { children: "#" }),
+        /* @__PURE__ */ u2("th", { children: fwdHeader }),
+        /* @__PURE__ */ u2("th", { children: revHeader })
+      ] }) }),
+      /* @__PURE__ */ u2("tbody", { children: rows.map((row) => {
+        const fwdColor = getStatsCellColor(
+          selector,
+          row.fwdItemId,
+          statsMode,
+          baseline
+        );
+        const revColor = getStatsCellColor(
+          selector,
+          row.revItemId,
+          statsMode,
+          baseline
+        );
+        return /* @__PURE__ */ u2("tr", { children: [
+          /* @__PURE__ */ u2("td", { children: row.label }),
+          /* @__PURE__ */ u2("td", { children: row.sublabel }),
+          /* @__PURE__ */ u2(
+            "td",
+            {
+              class: "stats-cell",
+              style: { background: fwdColor }
+            }
+          ),
+          /* @__PURE__ */ u2(
+            "td",
+            {
+              class: "stats-cell",
+              style: { background: revColor }
+            }
+          )
+        ] }, row.fwdItemId);
+      }) })
+    ] });
+  }
+  function StatsGrid({ selector, colLabels, getItemId, statsMode, notes, baseline }) {
+    const noteList = notes || NOTES;
     return /* @__PURE__ */ u2("table", { class: "stats-grid", children: [
       /* @__PURE__ */ u2("thead", { children: /* @__PURE__ */ u2("tr", { children: [
         /* @__PURE__ */ u2("th", {}),
-        cols.map((c2) => /* @__PURE__ */ u2("th", { children: c2 }, c2))
+        colLabels.map((c2) => /* @__PURE__ */ u2("th", { children: c2 }, c2))
       ] }) }),
-      /* @__PURE__ */ u2("tbody", { children: NOTES.map((note, ni) => /* @__PURE__ */ u2("tr", { children: [
-        /* @__PURE__ */ u2("td", { class: "stats-grid-row-label", children: displayNote(note.name) }),
-        cols.map((_2, ci) => {
-          const auto = mockAuto(ni, ci);
-          const color = getAutomaticityColor(auto);
+      /* @__PURE__ */ u2("tbody", { children: noteList.map((note) => /* @__PURE__ */ u2("tr", { children: [
+        /* @__PURE__ */ u2("td", { class: "stats-grid-row-label", children: displayNote(note.name || note.displayName) }),
+        colLabels.map((_2, i2) => {
+          const itemId = getItemId(note.name, i2);
+          const color = Array.isArray(itemId) ? getStatsCellColorMerged(
+            selector,
+            itemId,
+            statsMode,
+            baseline
+          ) : getStatsCellColor(selector, itemId, statsMode, baseline);
           const light = heatmapNeedsLightText(color);
           return /* @__PURE__ */ u2(
             "td",
@@ -2118,21 +2318,270 @@ button {
                 color: light ? "white" : void 0
               }
             },
-            ci
+            i2
           );
         })
       ] }, note.name)) })
     ] });
   }
+  function StatsLegend({ statsMode, baseline }) {
+    const html = buildStatsLegend(statsMode, baseline);
+    return /* @__PURE__ */ u2("div", { dangerouslySetInnerHTML: { __html: html } });
+  }
+  function StatsToggle({ active, onToggle }) {
+    return /* @__PURE__ */ u2("div", { class: "stats-toggle", children: [
+      /* @__PURE__ */ u2(
+        "button",
+        {
+          type: "button",
+          class: "stats-toggle-btn" + (active === "retention" ? " active" : ""),
+          "data-mode": "retention",
+          onClick: () => onToggle("retention"),
+          children: "Recall"
+        }
+      ),
+      /* @__PURE__ */ u2(
+        "button",
+        {
+          type: "button",
+          class: "stats-toggle-btn" + (active === "speed" ? " active" : ""),
+          "data-mode": "speed",
+          onClick: () => onToggle("speed"),
+          children: "Speed"
+        }
+      )
+    ] });
+  }
+
+  // src/ui/scope.tsx
+  function GroupToggles({ labels, active, recommended, onToggle }) {
+    return /* @__PURE__ */ u2("div", { class: "toggle-group", children: [
+      /* @__PURE__ */ u2("span", { class: "toggle-group-label", children: "Groups" }),
+      /* @__PURE__ */ u2("div", { class: "distance-toggles", children: labels.map((label, i2) => {
+        let cls = "distance-toggle";
+        if (active.has(i2)) cls += " active";
+        if (recommended === i2) cls += " recommended";
+        return /* @__PURE__ */ u2(
+          "button",
+          {
+            type: "button",
+            class: cls,
+            "data-group": String(i2),
+            onClick: () => onToggle(i2),
+            children: label
+          },
+          i2
+        );
+      }) })
+    ] });
+  }
+  function StringToggles({ stringNames, active, recommended, onToggle }) {
+    return /* @__PURE__ */ u2("div", { class: "toggle-group", children: [
+      /* @__PURE__ */ u2("span", { class: "toggle-group-label", children: "Strings" }),
+      /* @__PURE__ */ u2("div", { class: "string-toggles", children: stringNames.map((name, i2) => {
+        let cls = "string-toggle";
+        if (active.has(i2)) cls += " active";
+        if (recommended === i2) cls += " recommended";
+        return /* @__PURE__ */ u2(
+          "button",
+          {
+            type: "button",
+            class: cls,
+            "data-string": String(i2),
+            "data-string-note": name,
+            onClick: () => onToggle(i2),
+            children: name
+          },
+          i2
+        );
+      }) })
+    ] });
+  }
+  function NoteFilter({ mode, onChange }) {
+    return /* @__PURE__ */ u2("div", { class: "toggle-group", children: [
+      /* @__PURE__ */ u2("span", { class: "toggle-group-label", children: "Notes" }),
+      /* @__PURE__ */ u2("div", { class: "notes-toggles", children: [
+        /* @__PURE__ */ u2(
+          "button",
+          {
+            type: "button",
+            class: "notes-toggle" + (mode === "natural" ? " active" : ""),
+            "data-notes": "natural",
+            onClick: () => onChange("natural"),
+            children: "natural"
+          }
+        ),
+        /* @__PURE__ */ u2(
+          "button",
+          {
+            type: "button",
+            class: "notes-toggle" + (mode === "sharps-flats" ? " active" : ""),
+            "data-notes": "sharps-flats",
+            onClick: () => onChange("sharps-flats"),
+            children: "sharps & flats"
+          }
+        )
+      ] })
+    ] });
+  }
+  function NotesToggles({ notes, active, onToggle }) {
+    return /* @__PURE__ */ u2("div", { class: "toggle-group", children: [
+      /* @__PURE__ */ u2("span", { class: "toggle-group-label", children: "Notes" }),
+      /* @__PURE__ */ u2("div", { class: "notes-toggles", children: notes.map((n2) => /* @__PURE__ */ u2(
+        "button",
+        {
+          type: "button",
+          class: "notes-toggle" + (active.has(n2) ? " active" : ""),
+          "data-note": n2,
+          onClick: () => onToggle(n2),
+          children: displayNote(n2)
+        },
+        n2
+      )) })
+    ] });
+  }
+
+  // src/ui/quiz-ui.tsx
+  function TextPrompt({ text }) {
+    return /* @__PURE__ */ u2("div", { class: "quiz-prompt", children: text });
+  }
+  function FeedbackDisplay({ text, className, time, hint }) {
+    return /* @__PURE__ */ u2(k, { children: [
+      /* @__PURE__ */ u2("div", { class: className, children: text }),
+      time ? /* @__PURE__ */ u2("div", { class: "time-display", children: time }) : null,
+      hint ? /* @__PURE__ */ u2("div", { class: "hint", children: hint }) : null
+    ] });
+  }
+  function CountdownBar({ pct, warning, lastQuestion }) {
+    let cls = "quiz-countdown-bar";
+    if (warning) cls += " round-timer-warning";
+    if (lastQuestion) cls += " last-question";
+    return /* @__PURE__ */ u2("div", { class: cls, children: /* @__PURE__ */ u2("div", { class: "quiz-countdown-fill", style: { width: `${pct}%` } }) });
+  }
+
+  // src/ui/preview.tsx
+  function Section({ title, children }) {
+    return /* @__PURE__ */ u2("section", { class: "preview-section", children: [
+      /* @__PURE__ */ u2("h3", { children: title }),
+      /* @__PURE__ */ u2("div", { class: "preview-frame", children })
+    ] });
+  }
+  function mockSelector() {
+    function mockAuto(noteIdx, colIdx) {
+      if (noteIdx >= 5) return null;
+      if (noteIdx === 4 && colIdx > 1) return null;
+      return Math.max(0, Math.min(1, 0.95 - noteIdx * 0.12 - colIdx * 0.15));
+    }
+    const lookup = {};
+    NOTES.forEach((note, ni) => {
+      for (let ci = 0; ci < 6; ci++) {
+        lookup[`${note.name}+${ci + 1}`] = mockAuto(ni, ci);
+        lookup[`${note.name}:fwd`] = mockAuto(ni, 0);
+        lookup[`${note.name}:rev`] = mockAuto(ni, 2);
+      }
+    });
+    return {
+      getAutomaticity(id) {
+        return lookup[id] ?? null;
+      },
+      getStats(_id) {
+        return null;
+      }
+    };
+  }
   function PreviewApp() {
+    const sel = mockSelector();
     return /* @__PURE__ */ u2("div", { children: [
       /* @__PURE__ */ u2("h2", { children: "Answer Buttons" }),
-      /* @__PURE__ */ u2(Section, { title: "Note Buttons (Grid)", children: /* @__PURE__ */ u2(NoteButtonsDemo, {}) }),
-      /* @__PURE__ */ u2(Section, { title: "Piano Note Buttons", children: /* @__PURE__ */ u2(PianoButtonsDemo, {}) }),
-      /* @__PURE__ */ u2(Section, { title: "Interval Buttons", children: /* @__PURE__ */ u2(IntervalButtonsDemo, {}) }),
-      /* @__PURE__ */ u2(Section, { title: "Number Buttons (0\u201311)", children: /* @__PURE__ */ u2(NumberButtonsDemo, {}) }),
+      /* @__PURE__ */ u2(Section, { title: "Note Buttons (Grid)", children: /* @__PURE__ */ u2(NoteButtons, {}) }),
+      /* @__PURE__ */ u2(Section, { title: "Piano Note Buttons", children: /* @__PURE__ */ u2(PianoNoteButtons, {}) }),
+      /* @__PURE__ */ u2(Section, { title: "Interval Buttons", children: /* @__PURE__ */ u2(IntervalButtons, {}) }),
+      /* @__PURE__ */ u2(Section, { title: "Number Buttons (0\u201311)", children: /* @__PURE__ */ u2(NumberButtons, { start: 0, end: 11 }) }),
+      /* @__PURE__ */ u2(Section, { title: "Key Signature Buttons", children: /* @__PURE__ */ u2(KeysigButtons, {}) }),
+      /* @__PURE__ */ u2(Section, { title: "Degree Buttons", children: /* @__PURE__ */ u2(DegreeButtons, {}) }),
+      /* @__PURE__ */ u2(Section, { title: "Numeral Buttons", children: /* @__PURE__ */ u2(NumeralButtons, {}) }),
       /* @__PURE__ */ u2("h2", { children: "Stats" }),
-      /* @__PURE__ */ u2(Section, { title: "Recall Heatmap (stats-grid)", children: /* @__PURE__ */ u2(StatsGridDemo, {}) })
+      /* @__PURE__ */ u2(Section, { title: "Recall Heatmap (StatsGrid)", children: /* @__PURE__ */ u2(
+        StatsGrid,
+        {
+          selector: sel,
+          colLabels: ["+1", "+2", "+3", "+4", "+5", "+6"],
+          getItemId: (name, ci) => `${name}+${ci + 1}`,
+          statsMode: "retention"
+        }
+      ) }),
+      /* @__PURE__ */ u2(Section, { title: "Bidirectional Table (StatsTable)", children: /* @__PURE__ */ u2(
+        StatsTable,
+        {
+          selector: sel,
+          rows: NOTES.slice(0, 6).map((n2) => ({
+            label: n2.displayName,
+            sublabel: "",
+            _colHeader: "Note",
+            fwdItemId: `${n2.name}:fwd`,
+            revItemId: `${n2.name}:rev`
+          })),
+          fwdHeader: "\u2192 Semi",
+          revHeader: "\u2192 Note",
+          statsMode: "retention"
+        }
+      ) }),
+      /* @__PURE__ */ u2(Section, { title: "Stats Legend", children: /* @__PURE__ */ u2(StatsLegend, { statsMode: "retention" }) }),
+      /* @__PURE__ */ u2(Section, { title: "Stats Toggle", children: /* @__PURE__ */ u2(StatsToggle, { active: "retention", onToggle: () => {
+      } }) }),
+      /* @__PURE__ */ u2("h2", { children: "Scope Controls" }),
+      /* @__PURE__ */ u2(Section, { title: "Group Toggles", children: /* @__PURE__ */ u2(
+        GroupToggles,
+        {
+          labels: ["+1 to +3", "+4 to +6", "+7 to +9", "+10 to +11"],
+          active: /* @__PURE__ */ new Set([0, 1]),
+          recommended: 2,
+          onToggle: () => {
+          }
+        }
+      ) }),
+      /* @__PURE__ */ u2(Section, { title: "String Toggles", children: /* @__PURE__ */ u2(
+        StringToggles,
+        {
+          stringNames: ["E", "A", "D", "G", "B", "e"],
+          active: /* @__PURE__ */ new Set([0, 1, 2]),
+          recommended: 3,
+          onToggle: () => {
+          }
+        }
+      ) }),
+      /* @__PURE__ */ u2(Section, { title: "Note Filter", children: /* @__PURE__ */ u2(NoteFilter, { mode: "natural", onChange: () => {
+      } }) }),
+      /* @__PURE__ */ u2(Section, { title: "Notes Toggles", children: /* @__PURE__ */ u2(
+        NotesToggles,
+        {
+          notes: ["C", "D", "E", "F", "G", "A", "B"],
+          active: /* @__PURE__ */ new Set(["C", "D", "E", "F", "G"]),
+          onToggle: () => {
+          }
+        }
+      ) }),
+      /* @__PURE__ */ u2("h2", { children: "Quiz UI" }),
+      /* @__PURE__ */ u2(Section, { title: "Text Prompt", children: /* @__PURE__ */ u2(TextPrompt, { text: "C + 5 semitones = ?" }) }),
+      /* @__PURE__ */ u2(Section, { title: "Feedback \u2014 Correct", children: /* @__PURE__ */ u2(
+        FeedbackDisplay,
+        {
+          text: "Correct!",
+          className: "feedback correct",
+          time: "0.82s"
+        }
+      ) }),
+      /* @__PURE__ */ u2(Section, { title: "Feedback \u2014 Incorrect", children: /* @__PURE__ */ u2(
+        FeedbackDisplay,
+        {
+          text: "F \u2014 correct answer: E",
+          className: "feedback incorrect",
+          hint: "C \u2192 E is a major third (4 semitones)"
+        }
+      ) }),
+      /* @__PURE__ */ u2(Section, { title: "Countdown Bar (75%)", children: /* @__PURE__ */ u2(CountdownBar, { pct: 75 }) }),
+      /* @__PURE__ */ u2(Section, { title: "Countdown Bar \u2014 Warning (15%)", children: /* @__PURE__ */ u2(CountdownBar, { pct: 15, warning: true }) }),
+      /* @__PURE__ */ u2(Section, { title: "Countdown Bar \u2014 Last Question", children: /* @__PURE__ */ u2(CountdownBar, { pct: 50, lastQuestion: true }) })
     ] });
   }
   var root = document.getElementById("preview-root");
