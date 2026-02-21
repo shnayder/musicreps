@@ -3,11 +3,26 @@
 
 import type { ComponentChildren } from 'preact';
 import { render } from 'preact';
-import { displayNote, NOTES } from '../music-data.ts';
+import { NOTES } from '../music-data.ts';
+
 import {
-  getAutomaticityColor,
-  heatmapNeedsLightText,
-} from '../stats-display.ts';
+  DegreeButtons,
+  IntervalButtons,
+  KeysigButtons,
+  NoteButtons,
+  NumberButtons,
+  NumeralButtons,
+  PianoNoteButtons,
+} from './buttons.tsx';
+import type { StatsSelector } from './stats.tsx';
+import { StatsGrid, StatsLegend, StatsTable, StatsToggle } from './stats.tsx';
+import {
+  GroupToggles,
+  NoteFilter,
+  NotesToggles,
+  StringToggles,
+} from './scope.tsx';
+import { CountdownBar, FeedbackDisplay, TextPrompt } from './quiz-ui.tsx';
 
 // ---------------------------------------------------------------------------
 // Preview scaffold
@@ -25,127 +40,10 @@ function Section(
 }
 
 // ---------------------------------------------------------------------------
-// Button demos — inline until Phase 2 components replace them
+// Mock stats selector for StatsGrid / StatsTable demos
 // ---------------------------------------------------------------------------
 
-const ALL_NOTES = [
-  'C',
-  'C#',
-  'D',
-  'D#',
-  'E',
-  'F',
-  'F#',
-  'G',
-  'G#',
-  'A',
-  'A#',
-  'B',
-];
-const ACCIDENTALS = ['C#', 'D#', 'F#', 'G#', 'A#'];
-const NATURALS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-const INTERVALS = [
-  'm2',
-  'M2',
-  'm3',
-  'M3',
-  'P4',
-  'TT',
-  'P5',
-  'm6',
-  'M6',
-  'm7',
-  'M7',
-  'P8',
-];
-
-function NoteButtonsDemo() {
-  return (
-    <div class='answer-buttons answer-buttons-notes'>
-      {ALL_NOTES.map((n) => (
-        <button
-          type='button'
-          key={n}
-          class='answer-btn answer-btn-note'
-          data-note={n}
-        >
-          {displayNote(n)}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function PianoButtonsDemo() {
-  return (
-    <div class='note-buttons'>
-      <div class='note-row-accidentals'>
-        {ACCIDENTALS.map((n) => (
-          <button
-            type='button'
-            key={n}
-            class='note-btn accidental'
-            data-note={n}
-          >
-            {displayNote(n)}
-          </button>
-        ))}
-      </div>
-      <div class='note-row-naturals'>
-        {NATURALS.map((n) => (
-          <button type='button' key={n} class='note-btn' data-note={n}>
-            {displayNote(n)}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function IntervalButtonsDemo() {
-  return (
-    <div class='answer-buttons answer-buttons-intervals'>
-      {INTERVALS.map((i) => (
-        <button
-          type='button'
-          key={i}
-          class='answer-btn answer-btn-interval'
-          data-interval={i}
-        >
-          {i}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function NumberButtonsDemo() {
-  return (
-    <div class='answer-buttons answer-buttons-numbers'>
-      {Array.from(
-        { length: 12 },
-        (_, i) => (
-          <button
-            type='button'
-            key={i}
-            class='answer-btn answer-btn-num'
-            data-num={String(i)}
-          >
-            {i}
-          </button>
-        ),
-      )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Stats grid demo — recall heatmap with deterministic mock data
-// ---------------------------------------------------------------------------
-
-function StatsGridDemo() {
-  const cols = ['+1', '+2', '+3', '+4', '+5', '+6'];
-
+function mockSelector(): StatsSelector {
   // Deterministic mock: notes earlier in chromatic scale have higher mastery,
   // mastery decreases with distance, later notes are unseen.
   function mockAuto(noteIdx: number, colIdx: number): number | null {
@@ -154,38 +52,24 @@ function StatsGridDemo() {
     return Math.max(0, Math.min(1, 0.95 - noteIdx * 0.12 - colIdx * 0.15));
   }
 
-  return (
-    <table class='stats-grid'>
-      <thead>
-        <tr>
-          <th></th>
-          {cols.map((c) => <th key={c}>{c}</th>)}
-        </tr>
-      </thead>
-      <tbody>
-        {NOTES.map((note, ni) => (
-          <tr key={note.name}>
-            <td class='stats-grid-row-label'>{displayNote(note.name)}</td>
-            {cols.map((_, ci) => {
-              const auto = mockAuto(ni, ci);
-              const color = getAutomaticityColor(auto);
-              const light = heatmapNeedsLightText(color);
-              return (
-                <td
-                  key={ci}
-                  class='stats-cell'
-                  style={{
-                    background: color,
-                    color: light ? 'white' : undefined,
-                  }}
-                />
-              );
-            })}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+  const lookup: Record<string, number | null> = {};
+  NOTES.forEach((note, ni) => {
+    for (let ci = 0; ci < 6; ci++) {
+      lookup[`${note.name}+${ci + 1}`] = mockAuto(ni, ci);
+      // Bidirectional entries for table demo
+      lookup[`${note.name}:fwd`] = mockAuto(ni, 0);
+      lookup[`${note.name}:rev`] = mockAuto(ni, 2);
+    }
+  });
+
+  return {
+    getAutomaticity(id: string) {
+      return lookup[id] ?? null;
+    },
+    getStats(_id: string) {
+      return null;
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -193,25 +77,118 @@ function StatsGridDemo() {
 // ---------------------------------------------------------------------------
 
 function PreviewApp() {
+  const sel = mockSelector();
+
   return (
     <div>
       <h2>Answer Buttons</h2>
       <Section title='Note Buttons (Grid)'>
-        <NoteButtonsDemo />
+        <NoteButtons />
       </Section>
       <Section title='Piano Note Buttons'>
-        <PianoButtonsDemo />
+        <PianoNoteButtons />
       </Section>
       <Section title='Interval Buttons'>
-        <IntervalButtonsDemo />
+        <IntervalButtons />
       </Section>
       <Section title='Number Buttons (0–11)'>
-        <NumberButtonsDemo />
+        <NumberButtons start={0} end={11} />
+      </Section>
+      <Section title='Key Signature Buttons'>
+        <KeysigButtons />
+      </Section>
+      <Section title='Degree Buttons'>
+        <DegreeButtons />
+      </Section>
+      <Section title='Numeral Buttons'>
+        <NumeralButtons />
       </Section>
 
       <h2>Stats</h2>
-      <Section title='Recall Heatmap (stats-grid)'>
-        <StatsGridDemo />
+      <Section title='Recall Heatmap (StatsGrid)'>
+        <StatsGrid
+          selector={sel}
+          colLabels={['+1', '+2', '+3', '+4', '+5', '+6']}
+          getItemId={(name, ci) => `${name}+${ci + 1}`}
+          statsMode='retention'
+        />
+      </Section>
+      <Section title='Bidirectional Table (StatsTable)'>
+        <StatsTable
+          selector={sel}
+          rows={NOTES.slice(0, 6).map((n) => ({
+            label: n.displayName,
+            sublabel: '',
+            _colHeader: 'Note',
+            fwdItemId: `${n.name}:fwd`,
+            revItemId: `${n.name}:rev`,
+          }))}
+          fwdHeader='→ Semi'
+          revHeader='→ Note'
+          statsMode='retention'
+        />
+      </Section>
+      <Section title='Stats Legend'>
+        <StatsLegend statsMode='retention' />
+      </Section>
+      <Section title='Stats Toggle'>
+        <StatsToggle active='retention' onToggle={() => {}} />
+      </Section>
+
+      <h2>Scope Controls</h2>
+      <Section title='Group Toggles'>
+        <GroupToggles
+          labels={['+1 to +3', '+4 to +6', '+7 to +9', '+10 to +11']}
+          active={new Set([0, 1])}
+          recommended={2}
+          onToggle={() => {}}
+        />
+      </Section>
+      <Section title='String Toggles'>
+        <StringToggles
+          stringNames={['E', 'A', 'D', 'G', 'B', 'e']}
+          active={new Set([0, 1, 2])}
+          recommended={3}
+          onToggle={() => {}}
+        />
+      </Section>
+      <Section title='Note Filter'>
+        <NoteFilter mode='natural' onChange={() => {}} />
+      </Section>
+      <Section title='Notes Toggles'>
+        <NotesToggles
+          notes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
+          active={new Set(['C', 'D', 'E', 'F', 'G'])}
+          onToggle={() => {}}
+        />
+      </Section>
+
+      <h2>Quiz UI</h2>
+      <Section title='Text Prompt'>
+        <TextPrompt text='C + 5 semitones = ?' />
+      </Section>
+      <Section title='Feedback — Correct'>
+        <FeedbackDisplay
+          text='Correct!'
+          className='feedback correct'
+          time='0.82s'
+        />
+      </Section>
+      <Section title='Feedback — Incorrect'>
+        <FeedbackDisplay
+          text='F — correct answer: E'
+          className='feedback incorrect'
+          hint='C → E is a major third (4 semitones)'
+        />
+      </Section>
+      <Section title='Countdown Bar (75%)'>
+        <CountdownBar pct={75} />
+      </Section>
+      <Section title='Countdown Bar — Warning (15%)'>
+        <CountdownBar pct={15} warning />
+      </Section>
+      <Section title='Countdown Bar — Last Question'>
+        <CountdownBar pct={50} lastQuestion />
       </Section>
     </div>
   );
