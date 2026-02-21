@@ -86,8 +86,8 @@ at build time. Key patterns:
   lines) composing shared UI components with mode-specific logic. Registered
   with navigation via `{ init, activate, deactivate }` interface.
 - **Shared Hooks** — `useQuizEngine` (engine lifecycle), `useScopeState` (scope
-  persistence), `useLearnerModel` (adaptive selector + storage),
-  `useKeyHandler` (keyboard events). Each mode composes these hooks.
+  persistence), `useLearnerModel` (adaptive selector + storage), `useKeyHandler`
+  (keyboard events). Each mode composes these hooks.
 - **Shared UI Components** — `ModeScreen`, `QuizArea`, `PracticeCard`,
   `StatsTable`/`StatsGrid`, `NoteButtons`, `GroupToggles`, etc. Emit the same
   CSS class names as the build-time HTML for style parity.

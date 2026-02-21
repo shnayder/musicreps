@@ -6,15 +6,15 @@ rules — this guide explains them.
 
 ## File Naming
 
-| Pattern                             | Example                        | When                                  |
-| ----------------------------------- | ------------------------------ | ------------------------------------- |
-| `src/ui/modes/{mode}-mode.tsx`      | `semitone-math-mode.tsx`       | Preact mode component                 |
-| `src/ui/{component}.tsx`            | `buttons.tsx`, `stats.tsx`     | Shared Preact UI components           |
-| `src/hooks/use-{hook}.ts`          | `use-quiz-engine.ts`           | Preact hooks                          |
-| `src/{module}-state.ts`             | `quiz-engine-state.ts`         | Pure state/logic (no DOM)             |
-| `src/{module}.ts`                   | `adaptive.ts`, `navigation.ts` | Shared modules                       |
-| `src/{module}_test.ts`              | `adaptive_test.ts`             | Test file (underscore, TypeScript)    |
-| `plans/YYYY-MM-DD-{description}.md` | `2026-02-10-add-quiz-stats.md` | Plans                                |
+| Pattern                             | Example                        | When                               |
+| ----------------------------------- | ------------------------------ | ---------------------------------- |
+| `src/ui/modes/{mode}-mode.tsx`      | `semitone-math-mode.tsx`       | Preact mode component              |
+| `src/ui/{component}.tsx`            | `buttons.tsx`, `stats.tsx`     | Shared Preact UI components        |
+| `src/hooks/use-{hook}.ts`           | `use-quiz-engine.ts`           | Preact hooks                       |
+| `src/{module}-state.ts`             | `quiz-engine-state.ts`         | Pure state/logic (no DOM)          |
+| `src/{module}.ts`                   | `adaptive.ts`, `navigation.ts` | Shared modules                     |
+| `src/{module}_test.ts`              | `adaptive_test.ts`             | Test file (underscore, TypeScript) |
+| `plans/YYYY-MM-DD-{description}.md` | `2026-02-10-add-quiz-stats.md` | Plans                              |
 
 ## Module Patterns
 
@@ -32,18 +32,18 @@ into a single IIFE at build time. Tests import the same modules directly via
 
 ## Naming Conventions
 
-| Category           | Convention                       | Examples                                                             |
-| ------------------ | -------------------------------- | -------------------------------------------------------------------- |
-| Mode components    | `XxxMode`                        | `SemitoneMathMode`, `FretboardMode`, `SpeedTapMode`                  |
-| UI components      | `PascalCase`                     | `NoteButtons`, `GroupToggles`, `StatsTable`, `ModeScreen`            |
-| Hooks              | `useXxx`                         | `useQuizEngine`, `useScopeState`, `useLearnerModel`                  |
-| Factory functions  | `createXxx()`                    | `createFretboardHelpers()`, `createNavigation()`                     |
-| State transitions  | `engineXxx()` / `fretboardXxx()` | `engineStart()`, `engineStop()`, `engineNextQuestion()`              |
-| Constants          | `UPPER_SNAKE_CASE`               | `NOTES`, `INTERVALS`, `ALL_ITEMS`, `KEY_GROUPS`                      |
-| Config objects     | `UPPER_SNAKE_CASE`               | `DEFAULT_CONFIG`, `SPEED_TAP_BASE_CONFIG`                            |
-| Local state        | `camelCase`                      | `enabledGroups`, `currentItem`, `recommendedGroups`                  |
-| localStorage keys  | `namespace_keyName`              | `semitoneMath_enabledGroups`, `motorBaseline_button`                 |
-| Mode IDs           | `camelCase`                      | `fretboard`, `semitoneMath`, `keySignatures`                         |
+| Category          | Convention                       | Examples                                                  |
+| ----------------- | -------------------------------- | --------------------------------------------------------- |
+| Mode components   | `XxxMode`                        | `SemitoneMathMode`, `FretboardMode`, `SpeedTapMode`       |
+| UI components     | `PascalCase`                     | `NoteButtons`, `GroupToggles`, `StatsTable`, `ModeScreen` |
+| Hooks             | `useXxx`                         | `useQuizEngine`, `useScopeState`, `useLearnerModel`       |
+| Factory functions | `createXxx()`                    | `createFretboardHelpers()`, `createNavigation()`          |
+| State transitions | `engineXxx()` / `fretboardXxx()` | `engineStart()`, `engineStop()`, `engineNextQuestion()`   |
+| Constants         | `UPPER_SNAKE_CASE`               | `NOTES`, `INTERVALS`, `ALL_ITEMS`, `KEY_GROUPS`           |
+| Config objects    | `UPPER_SNAKE_CASE`               | `DEFAULT_CONFIG`, `SPEED_TAP_BASE_CONFIG`                 |
+| Local state       | `camelCase`                      | `enabledGroups`, `currentItem`, `recommendedGroups`       |
+| localStorage keys | `namespace_keyName`              | `semitoneMath_enabledGroups`, `motorBaseline_button`      |
+| Mode IDs          | `camelCase`                      | `fretboard`, `semitoneMath`, `keySignatures`              |
 
 ## Dead Code
 
@@ -73,15 +73,15 @@ preserves anything you might need to recover.
    highlighting, hover cards) — use `useEffect` with refs for those.
 
 2. **Use `dangerouslySetInnerHTML` sparingly.** Only for build-time generated
-   HTML (fretboard SVG, stats legends). Add `// deno-lint-ignore react-no-danger`
-   comment.
+   HTML (fretboard SVG, stats legends). Add
+   `// deno-lint-ignore react-no-danger` comment.
 
 3. **Use data attributes for button identity** — `data-note="C"`,
    `data-mode="fretboard"`, `data-group="0"`. Not positional logic.
 
 4. **Phase classes via `useEffect`.** Phase transitions (`phase-idle`,
-   `phase-active`, `phase-round-complete`) are set imperatively on the
-   container element via `useEffect` keyed on engine phase.
+   `phase-active`, `phase-round-complete`) are set imperatively on the container
+   element via `useEffect` keyed on engine phase.
 
 5. **Toggle CSS classes for state** — `.active`, `.recommended`, `.correct`,
    `.incorrect`. Compute class strings from props/state in JSX.
@@ -92,8 +92,8 @@ preserves anything you might need to recover.
   new objects via `{ ...state, field: newValue }`. Never mutate state in place.
 - **Preact hooks for reactivity**: mode-local state lives in `useState`,
   `useRef`, and `useMemo` calls within mode components and shared hooks.
-  `useQuizEngine` wraps engine state transitions; `useScopeState` wraps
-  scope persistence; `useLearnerModel` wraps the adaptive selector.
+  `useQuizEngine` wraps engine state transitions; `useScopeState` wraps scope
+  persistence; `useLearnerModel` wraps the adaptive selector.
 - **localStorage for persistence**: loaded by hooks on mount, saved on change.
   Always namespace keys to the mode.
 
@@ -157,8 +157,8 @@ preserves anything you might need to recover.
 - Import directly from ES module source files
 - Inject dependencies: `Map` for storage, imported music data, seeded RNG
 - Test pure logic in `*-state.ts` files — data in, data out
-- Render-to-string tests for Preact components: render with fixture data,
-  assert on HTML structure and content via `preact-render-to-string`
+- Render-to-string tests for Preact components: render with fixture data, assert
+  on HTML structure and content via `preact-render-to-string`
 - Each test creates its own selector/helpers (no shared mutable state)
 - Edge cases: empty arrays, null/undefined, boundary values, single-element
 
