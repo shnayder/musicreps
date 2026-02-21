@@ -26,6 +26,7 @@ if [ "$MODE" = "production" ]; then
 elif [ "$MODE" = "preview" ]; then
   mkdir -p /tmp/preview-build
   cp -r docs/* /tmp/preview-build/
+  rm -rf /tmp/preview-build/preview
 fi
 
 # --- Git setup ---
@@ -40,6 +41,7 @@ if [ "$MODE" = "cleanup" ]; then
   fi
   git checkout -- . 2>/dev/null || true
   git checkout -B gh-pages origin/gh-pages
+  git clean -fd
 
   if [ ! -d "preview/${SAFE_NAME}" ]; then
     echo "No preview directory found for ${SAFE_NAME}, skipping."
@@ -51,9 +53,11 @@ else
   git checkout -- . 2>/dev/null || true
   if git fetch origin gh-pages 2>/dev/null; then
     git checkout -B gh-pages origin/gh-pages
+    git clean -fd
   else
     git checkout --orphan gh-pages
     git rm -rf .
+    git clean -fd
   fi
 
   if [ "$MODE" = "production" ]; then
