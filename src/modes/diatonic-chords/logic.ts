@@ -20,7 +20,7 @@ import {
 export const CHORD_GROUPS = [
   { degrees: [1, 4, 5], label: 'I,IV,V' },
   { degrees: [2, 6], label: 'ii,vi' },
-  { degrees: [3, 7], label: 'iii,vii\u00B0' },
+  { degrees: [3, 7], label: 'iii,vii\u00B0' }, // \u00B0 = ° (degree sign)
 ];
 
 /**

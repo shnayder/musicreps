@@ -530,6 +530,7 @@ try {
 export function displayNote(name: string) {
   if (!name) return name;
   const letter = name[0].toUpperCase();
+  // \u266F = ♯ (sharp), \u266D = ♭ (flat)
   const acc = name.slice(1).replace(/#/g, '\u266F').replace(/b/g, '\u266D');
   if (!_useSolfege) {
     return name[0] + acc;

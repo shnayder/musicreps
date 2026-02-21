@@ -370,8 +370,8 @@ export function KeySignaturesMode(
               <StatsTable
                 selector={statsSel}
                 rows={getStatsRows()}
-                fwdHeader='Key\u2192Sig'
-                revHeader='Sig\u2192Key'
+                fwdHeader='Key→Sig'
+                revHeader='Sig→Key'
                 statsMode={statsMode}
                 baseline={learner.motorBaseline ?? undefined}
               />

@@ -212,7 +212,7 @@ export function IntervalSemitonesMode(
   // --- Render ---
   return (
     <>
-      <ModeTopBar title='Interval \u2194 Semitones' onBack={navigateHome} />
+      <ModeTopBar title='Interval ↔ Semitones' onBack={navigateHome} />
       <TabbedIdle
         activeTab={activeTab}
         onTabSwitch={setActiveTab}
@@ -235,8 +235,8 @@ export function IntervalSemitonesMode(
               <StatsTable
                 selector={statsSel}
                 rows={getStatsRows()}
-                fwdHeader='I\u2192#'
-                revHeader='#\u2192I'
+                fwdHeader='I→#'
+                revHeader='#→I'
                 statsMode={statsMode}
                 baseline={learner.motorBaseline ?? undefined}
               />

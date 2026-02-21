@@ -15,6 +15,7 @@ import {
 // ---------------------------------------------------------------------------
 
 /** Key groups for scope selection, ordered by difficulty. */
+// Labels use: \u266D = ♭ (flat), \u266F = ♯ (sharp)
 export const KEY_GROUPS = [
   { keys: ['C', 'G', 'F'], label: 'C G F' },
   { keys: ['D', 'Bb'], label: 'D B\u266D' },

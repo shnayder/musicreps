@@ -59,7 +59,7 @@ const DEGREES: [string, string][] = [
   ['6', '6th'],
   ['7', '7th'],
 ];
-const NUMERALS = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii\u00B0'];
+const NUMERALS = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii\u00B0']; // \u00B0 = °
 
 // ---------------------------------------------------------------------------
 // Note answer buttons (12-note grid)

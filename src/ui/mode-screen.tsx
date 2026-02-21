@@ -43,7 +43,7 @@ export function ModeTopBar(
         aria-label='Back to home'
         onClick={onBack}
       >
-        {'\u2190'}
+        {'\u2190' /* ← back arrow */}
       </button>
       <h1 class='mode-title'>{title}</h1>
     </div>
@@ -263,7 +263,7 @@ export function QuizSession(
         aria-label='Stop quiz'
         onClick={onClose}
       >
-        {'\u00D7'}
+        {'\u00D7' /* × close button */}
       </button>
       <div class='progress-bar'>
         <div class='progress-fill' style={{ width: `${pct}%` }} />

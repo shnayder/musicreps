@@ -226,7 +226,7 @@ export function NoteSemitonesMode(
   // --- Render ---
   return (
     <>
-      <ModeTopBar title='Note \u2194 Semitones' onBack={navigateHome} />
+      <ModeTopBar title='Note ↔ Semitones' onBack={navigateHome} />
       <TabbedIdle
         activeTab={activeTab}
         onTabSwitch={setActiveTab}
@@ -249,8 +249,8 @@ export function NoteSemitonesMode(
               <StatsTable
                 selector={statsSel}
                 rows={getStatsRows()}
-                fwdHeader='N\u2192#'
-                revHeader='#\u2192N'
+                fwdHeader='N→#'
+                revHeader='#→N'
                 statsMode={statsMode}
                 baseline={learner.motorBaseline ?? undefined}
               />

@@ -899,23 +899,25 @@ button {
   margin: 0 calc(-1 * var(--space-5));
   padding: 0 var(--space-5);
 }
-.phase-active .quiz-area.active {
-  border: 1px solid var(--color-border-lighter);
-  padding: var(--space-3) var(--space-3);
-}
-
 /* --- Quiz area (subtle card containment) --- */
+/* Phase-driven visibility: shown during active, round-complete, calibration */
 .quiz-area {
   display: none;
   text-align: center;
   margin: var(--space-5) 0;
   border: 2px solid transparent;
 }
-.quiz-area.active {
+.phase-active .quiz-area,
+.phase-round-complete .quiz-area,
+.phase-calibration .quiz-area {
   display: block;
   background: var(--color-surface);
   border-radius: 12px;
   padding: var(--space-5);
+}
+.phase-active .quiz-area {
+  border: 1px solid var(--color-border-lighter);
+  padding: var(--space-3) var(--space-3);
 }
 /* --- Round complete --- */
 .round-complete {
@@ -1633,7 +1635,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v8.4</span>
+      <span class="version">v8.5</span>
     </div>
   </div>
 
@@ -6199,7 +6201,7 @@ button {
       statsMode
     );
     return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(ModeTopBar, { title: "Note \\u2194 Semitones", onBack: navigateHome }),
+      /* @__PURE__ */ u3(ModeTopBar, { title: "Note \u2194 Semitones", onBack: navigateHome }),
       /* @__PURE__ */ u3(
         TabbedIdle,
         {
@@ -6223,8 +6225,8 @@ button {
               {
                 selector: statsSel,
                 rows: getStatsRows(),
-                fwdHeader: "N\\u2192#",
-                revHeader: "#\\u2192N",
+                fwdHeader: "N\u2192#",
+                revHeader: "#\u2192N",
                 statsMode,
                 baseline: learner.motorBaseline ?? void 0
               }
@@ -6434,7 +6436,7 @@ button {
       statsMode
     );
     return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(ModeTopBar, { title: "Interval \\u2194 Semitones", onBack: navigateHome }),
+      /* @__PURE__ */ u3(ModeTopBar, { title: "Interval \u2194 Semitones", onBack: navigateHome }),
       /* @__PURE__ */ u3(
         TabbedIdle,
         {
@@ -6458,8 +6460,8 @@ button {
               {
                 selector: statsSel,
                 rows: getStatsRows2(),
-                fwdHeader: "I\\u2192#",
-                revHeader: "#\\u2192I",
+                fwdHeader: "I\u2192#",
+                revHeader: "#\u2192I",
                 statsMode,
                 baseline: learner.motorBaseline ?? void 0
               }
@@ -7709,8 +7711,8 @@ button {
               {
                 selector: statsSel,
                 rows: getStatsRows3(),
-                fwdHeader: "Key\\u2192Sig",
-                revHeader: "Sig\\u2192Key",
+                fwdHeader: "Key\u2192Sig",
+                revHeader: "Sig\u2192Key",
                 statsMode,
                 baseline: learner.motorBaseline ?? void 0
               }
@@ -8074,6 +8076,7 @@ button {
     { degrees: [1, 4, 5], label: "I,IV,V" },
     { degrees: [2, 6], label: "ii,vi" },
     { degrees: [3, 7], label: "iii,vii\xB0" }
+    // \u00B0 = ° (degree sign)
   ];
   function getItemIdsForGroup5(groupIndex) {
     const degrees = CHORD_GROUPS[groupIndex].degrees;

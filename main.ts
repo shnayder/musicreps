@@ -61,7 +61,6 @@ async function buildHTML(): Promise<string> {
 
 interface MomentOverrides {
   phase?: 'active' | 'round-complete';
-  quizAreaActive?: boolean;
   quizPrompt?: string;
   feedbackHtml?: string;
   timeDisplay?: string;
@@ -124,8 +123,8 @@ function prepareMoment(source: string, o: MomentOverrides): string {
   };
 
   // Phase + visibility
+  // quiz-area visibility is now phase-driven in CSS (no .active class needed)
   if (o.phase) r('phase-idle', `phase-${o.phase}`);
-  if (o.quizAreaActive) r('class="quiz-area"', 'class="quiz-area active"');
 
   // Quiz content
   if (o.quizPrompt) {
@@ -412,7 +411,7 @@ function buildMoments(): string {
     'Fretboard mode &mdash; awaiting answer',
     prepareMoment(fbScreen(), {
       phase: 'active',
-      quizAreaActive: true,
+
       quizPrompt: 'What note is this?',
       highlightNotes: [{ s: 5, f: 3, fill: 'hsl(50, 100%, 50%)' }],
       hideAccidentals: true,
@@ -431,7 +430,7 @@ function buildMoments(): string {
     'Semitone Math &mdash; correct answer',
     prepareMoment(smScreen(), {
       phase: 'active',
-      quizAreaActive: true,
+
       quizPrompt: 'C + 3 = ?',
       feedbackHtml:
         '<span class="correct" style="font-weight:600;">Correct!</span>',
@@ -452,7 +451,7 @@ function buildMoments(): string {
     'Interval Math &mdash; wrong answer',
     prepareMoment(imScreen(), {
       phase: 'active',
-      quizAreaActive: true,
+
       quizPrompt: 'G + M3 = ?',
       feedbackHtml:
         '<span class="incorrect" style="font-weight:600;">Wrong &mdash; it was B</span>',
@@ -473,7 +472,7 @@ function buildMoments(): string {
     'Chord Spelling &mdash; mid-answer (2 of 4 filled)',
     prepareMoment(csScreen(), {
       phase: 'active',
-      quizAreaActive: true,
+
       quizPrompt: 'Spell: D major',
       chordSlotsHtml: `
             <span class="chord-slot correct">D</span>
@@ -495,7 +494,7 @@ function buildMoments(): string {
     'Round complete &mdash; good round',
     prepareMoment(fbScreen(), {
       phase: 'round-complete',
-      quizAreaActive: true,
+
       countdown: 0,
       infoTime: '0:00',
       roundContext: 'e, B strings &middot; 12 / 18 fluent',
@@ -511,7 +510,7 @@ function buildMoments(): string {
     'Round complete &mdash; rough round',
     prepareMoment(fbScreen(), {
       phase: 'round-complete',
-      quizAreaActive: true,
+
       countdown: 0,
       infoTime: '0:00',
       roundContext: 'all strings &middot; 3 / 24 fluent',
