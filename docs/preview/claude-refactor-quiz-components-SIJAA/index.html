@@ -1576,7 +1576,1792 @@ button {
   </style>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+  <div class="home-screen" id="home-screen">
+    <div class="home-header">
+      <h1 class="home-title">Music Reps</h1>
+    </div>
+    <div class="home-modes">
+      <div class="home-group-label">Fretboard</div>
+      <button data-mode="fretboard" class="home-mode-btn">
+        <span class="home-mode-name">Guitar Fretboard</span>
+        <span class="home-mode-desc">Name notes on the guitar neck</span>
+      </button>
+      <button data-mode="ukulele" class="home-mode-btn">
+        <span class="home-mode-name">Ukulele Fretboard</span>
+        <span class="home-mode-desc">Name notes on the ukulele</span>
+      </button>
+      <button data-mode="speedTap" class="home-mode-btn">
+        <span class="home-mode-name">Speed Tap</span>
+        <span class="home-mode-desc">Find all positions of a note</span>
+      </button>
+      <div class="home-group-label">Theory Lookup</div>
+      <button data-mode="noteSemitones" class="home-mode-btn">
+        <span class="home-mode-name">Note ↔ Semitones</span>
+        <span class="home-mode-desc">Convert between notes and semitone numbers</span>
+      </button>
+      <button data-mode="intervalSemitones" class="home-mode-btn">
+        <span class="home-mode-name">Interval ↔ Semitones</span>
+        <span class="home-mode-desc">Convert between intervals and semitone counts</span>
+      </button>
+      <div class="home-group-label">Calculation</div>
+      <button data-mode="semitoneMath" class="home-mode-btn">
+        <span class="home-mode-name">Semitone Math</span>
+        <span class="home-mode-desc">Add or subtract semitones from a note</span>
+      </button>
+      <button data-mode="intervalMath" class="home-mode-btn">
+        <span class="home-mode-name">Interval Math</span>
+        <span class="home-mode-desc">Apply intervals up or down from a note</span>
+      </button>
+      <div class="home-group-label">Keys &amp; Chords</div>
+      <button data-mode="keySignatures" class="home-mode-btn">
+        <span class="home-mode-name">Key Signatures</span>
+        <span class="home-mode-desc">Match keys to their sharps and flats</span>
+      </button>
+      <button data-mode="scaleDegrees" class="home-mode-btn">
+        <span class="home-mode-name">Scale Degrees</span>
+        <span class="home-mode-desc">Name notes by scale degree in any key</span>
+      </button>
+      <button data-mode="diatonicChords" class="home-mode-btn">
+        <span class="home-mode-name">Diatonic Chords</span>
+        <span class="home-mode-desc">Identify chords built on each scale degree</span>
+      </button>
+      <button data-mode="chordSpelling" class="home-mode-btn">
+        <span class="home-mode-name">Chord Spelling</span>
+        <span class="home-mode-desc">Spell out the notes in any chord</span>
+      </button>
+    </div>
+    <div class="home-footer">
+      <button class="home-settings-btn" type="button">Settings</button>
+      <span class="version">v7.1</span>
+    </div>
+  </div>
+
+  <!-- Guitar Fretboard mode -->
+  <div class="mode-screen phase-idle" id="mode-fretboard">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Guitar Fretboard</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+        </div>
+        <div class="practice-zone practice-zone-scope">
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group">
+          <span class="toggle-group-label">Strings</span>
+          <div class="string-toggles">
+            <button class="string-toggle" data-string="0" data-string-note="e">e</button>
+            <button class="string-toggle" data-string="1" data-string-note="B">B</button>
+            <button class="string-toggle" data-string="2" data-string-note="G">G</button>
+            <button class="string-toggle" data-string="3" data-string-note="D">D</button>
+            <button class="string-toggle" data-string="4" data-string-note="A">A</button>
+            <button class="string-toggle active" data-string="5" data-string-note="E">E</button>
+          </div>
+        </div>
+          <div class="toggle-group">
+            <span class="toggle-group-label">Notes</span>
+            <div class="notes-toggles">
+              <button class="notes-toggle active" data-notes="natural">natural</button>
+              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
+            </div>
+          </div>
+        </div>
+      </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      <div class="fretboard-wrapper">
+      <div class="fretboard-container">
+        <svg class="fretboard" viewBox="0 0 600 226">
+          <!-- Fret marker dots (inlays) -->
+          <circle class="fb-marker" cx="210" cy="113" r="4"/>
+      <circle class="fb-marker" cx="312" cy="113" r="4"/>
+      <circle class="fb-marker" cx="402" cy="113" r="4"/>
+      <circle class="fb-marker" cx="481.5" cy="113" r="4"/>
+      <circle class="fb-marker" cx="584" cy="75" r="4"/><circle class="fb-marker" cx="584" cy="151" r="4"/>
+          <!-- Nut (wide bar at fret 0) -->
+          <rect class="fb-nut" x="63" y="0" width="4" height="226" rx="1"/>
+          <!-- Frets (vertical lines) -->
+          <line class="fb-fret" x1="126" y1="0" x2="126" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="183" y1="0" x2="183" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="237" y1="0" x2="237" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="288" y1="0" x2="288" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="336" y1="0" x2="336" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="381" y1="0" x2="381" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="423" y1="0" x2="423" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="463" y1="0" x2="463" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="500" y1="0" x2="500" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="535" y1="0" x2="535" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="568" y1="0" x2="568" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="600" y1="0" x2="600" y2="226" stroke-width="1"/>
+          <!-- Strings (horizontal lines) -->
+          <line class="fb-string" x1="0" y1="18" x2="600" y2="18" stroke-width="1"/>
+      <line class="fb-string" x1="0" y1="56" x2="600" y2="56" stroke-width="1.4"/>
+      <line class="fb-string" x1="0" y1="94" x2="600" y2="94" stroke-width="1.8"/>
+      <line class="fb-string" x1="0" y1="132" x2="600" y2="132" stroke-width="2.2"/>
+      <line class="fb-string" x1="0" y1="170" x2="600" y2="170" stroke-width="2.6"/>
+      <line class="fb-string" x1="0" y1="208" x2="600" y2="208" stroke-width="3"/>
+          <!-- Position circles -->
+          <circle class="fb-pos" data-string="0" data-fret="0" cx="32.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="1" cx="95.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="2" cx="154.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="3" cx="210" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="4" cx="262.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="5" cx="312" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="6" cx="358.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="7" cx="402" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="8" cx="443" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="9" cx="481.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="10" cx="517.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="11" cx="551.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="12" cx="584" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="0" cx="32.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="1" cx="95.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="2" cx="154.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="3" cx="210" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="4" cx="262.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="5" cx="312" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="6" cx="358.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="7" cx="402" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="8" cx="443" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="9" cx="481.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="10" cx="517.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="11" cx="551.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="12" cx="584" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="0" cx="32.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="1" cx="95.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="2" cx="154.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="3" cx="210" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="4" cx="262.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="5" cx="312" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="6" cx="358.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="7" cx="402" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="8" cx="443" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="9" cx="481.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="10" cx="517.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="11" cx="551.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="12" cx="584" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="0" cx="32.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="1" cx="95.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="2" cx="154.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="3" cx="210" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="4" cx="262.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="5" cx="312" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="6" cx="358.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="7" cx="402" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="8" cx="443" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="9" cx="481.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="10" cx="517.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="11" cx="551.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="12" cx="584" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="0" cx="32.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="1" cx="95.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="2" cx="154.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="3" cx="210" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="4" cx="262.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="5" cx="312" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="6" cx="358.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="7" cx="402" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="8" cx="443" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="9" cx="481.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="10" cx="517.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="11" cx="551.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="12" cx="584" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="0" cx="32.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="1" cx="95.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="2" cx="154.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="3" cx="210" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="4" cx="262.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="5" cx="312" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="6" cx="358.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="7" cx="402" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="8" cx="443" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="9" cx="481.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="10" cx="517.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="11" cx="551.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="12" cx="584" cy="208" r="10"/>
+        </svg>
+        <div class="hover-card"><div class="hc-inner">
+          <div class="hc-note"></div>
+          <div class="hc-string-fret"></div>
+          <div class="hc-detail"></div>
+          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
+        </div></div>
+      </div>
+    </div>
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="fretboard-wrapper">
+      <div class="fretboard-container">
+        <svg class="fretboard" viewBox="0 0 600 226">
+          <!-- Fret marker dots (inlays) -->
+          <circle class="fb-marker" cx="210" cy="113" r="4"/>
+      <circle class="fb-marker" cx="312" cy="113" r="4"/>
+      <circle class="fb-marker" cx="402" cy="113" r="4"/>
+      <circle class="fb-marker" cx="481.5" cy="113" r="4"/>
+      <circle class="fb-marker" cx="584" cy="75" r="4"/><circle class="fb-marker" cx="584" cy="151" r="4"/>
+          <!-- Nut (wide bar at fret 0) -->
+          <rect class="fb-nut" x="63" y="0" width="4" height="226" rx="1"/>
+          <!-- Frets (vertical lines) -->
+          <line class="fb-fret" x1="126" y1="0" x2="126" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="183" y1="0" x2="183" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="237" y1="0" x2="237" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="288" y1="0" x2="288" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="336" y1="0" x2="336" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="381" y1="0" x2="381" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="423" y1="0" x2="423" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="463" y1="0" x2="463" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="500" y1="0" x2="500" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="535" y1="0" x2="535" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="568" y1="0" x2="568" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="600" y1="0" x2="600" y2="226" stroke-width="1"/>
+          <!-- Strings (horizontal lines) -->
+          <line class="fb-string" x1="0" y1="18" x2="600" y2="18" stroke-width="1"/>
+      <line class="fb-string" x1="0" y1="56" x2="600" y2="56" stroke-width="1.4"/>
+      <line class="fb-string" x1="0" y1="94" x2="600" y2="94" stroke-width="1.8"/>
+      <line class="fb-string" x1="0" y1="132" x2="600" y2="132" stroke-width="2.2"/>
+      <line class="fb-string" x1="0" y1="170" x2="600" y2="170" stroke-width="2.6"/>
+      <line class="fb-string" x1="0" y1="208" x2="600" y2="208" stroke-width="3"/>
+          <!-- Position circles -->
+          <circle class="fb-pos" data-string="0" data-fret="0" cx="32.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="1" cx="95.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="2" cx="154.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="3" cx="210" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="4" cx="262.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="5" cx="312" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="6" cx="358.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="7" cx="402" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="8" cx="443" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="9" cx="481.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="10" cx="517.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="11" cx="551.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="12" cx="584" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="0" cx="32.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="1" cx="95.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="2" cx="154.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="3" cx="210" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="4" cx="262.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="5" cx="312" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="6" cx="358.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="7" cx="402" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="8" cx="443" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="9" cx="481.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="10" cx="517.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="11" cx="551.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="12" cx="584" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="0" cx="32.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="1" cx="95.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="2" cx="154.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="3" cx="210" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="4" cx="262.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="5" cx="312" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="6" cx="358.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="7" cx="402" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="8" cx="443" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="9" cx="481.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="10" cx="517.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="11" cx="551.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="12" cx="584" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="0" cx="32.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="1" cx="95.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="2" cx="154.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="3" cx="210" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="4" cx="262.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="5" cx="312" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="6" cx="358.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="7" cx="402" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="8" cx="443" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="9" cx="481.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="10" cx="517.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="11" cx="551.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="12" cx="584" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="0" cx="32.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="1" cx="95.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="2" cx="154.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="3" cx="210" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="4" cx="262.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="5" cx="312" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="6" cx="358.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="7" cx="402" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="8" cx="443" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="9" cx="481.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="10" cx="517.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="11" cx="551.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="12" cx="584" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="0" cx="32.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="1" cx="95.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="2" cx="154.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="3" cx="210" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="4" cx="262.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="5" cx="312" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="6" cx="358.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="7" cx="402" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="8" cx="443" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="9" cx="481.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="10" cx="517.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="11" cx="551.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="12" cx="584" cy="208" r="10"/>
+        </svg>
+        <div class="hover-card"><div class="hc-inner">
+          <div class="hc-note"></div>
+          <div class="hc-string-fret"></div>
+          <div class="hc-detail"></div>
+          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
+        </div></div>
+      </div>
+    </div>
+      <div class="note-buttons">
+        <div class="note-row-accidentals">
+          <button class="note-btn accidental" data-note="C#">C#</button>
+          <button class="note-btn accidental" data-note="D#">D#</button>
+          <button class="note-btn accidental" data-note="F#">F#</button>
+          <button class="note-btn accidental" data-note="G#">G#</button>
+          <button class="note-btn accidental" data-note="A#">A#</button>
+        </div>
+        <div class="note-row-naturals">
+          <button class="note-btn" data-note="C">C</button>
+          <button class="note-btn" data-note="D">D</button>
+          <button class="note-btn" data-note="E">E</button>
+          <button class="note-btn" data-note="F">F</button>
+          <button class="note-btn" data-note="G">G</button>
+          <button class="note-btn" data-note="A">A</button>
+          <button class="note-btn" data-note="B">B</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ukulele Fretboard mode -->
+  <div class="mode-screen phase-idle" id="mode-ukulele">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Ukulele Fretboard</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+        </div>
+        <div class="practice-zone practice-zone-scope">
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group">
+          <span class="toggle-group-label">Strings</span>
+          <div class="string-toggles">
+            <button class="string-toggle" data-string="0" data-string-note="A">A</button>
+            <button class="string-toggle" data-string="1" data-string-note="E">E</button>
+            <button class="string-toggle active" data-string="2" data-string-note="C">C</button>
+            <button class="string-toggle" data-string="3" data-string-note="G">G</button>
+          </div>
+        </div>
+          <div class="toggle-group">
+            <span class="toggle-group-label">Notes</span>
+            <div class="notes-toggles">
+              <button class="notes-toggle active" data-notes="natural">natural</button>
+              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
+            </div>
+          </div>
+        </div>
+      </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      <div class="fretboard-wrapper">
+      <div class="fretboard-container">
+        <svg class="fretboard" viewBox="0 0 600 150">
+          <!-- Fret marker dots (inlays) -->
+          <circle class="fb-marker" cx="210" cy="75" r="4"/>
+      <circle class="fb-marker" cx="312" cy="75" r="4"/>
+      <circle class="fb-marker" cx="402" cy="75" r="4"/>
+      <circle class="fb-marker" cx="517.5" cy="75" r="4"/>
+      <circle class="fb-marker" cx="584" cy="56" r="4"/><circle class="fb-marker" cx="584" cy="94" r="4"/>
+          <!-- Nut (wide bar at fret 0) -->
+          <rect class="fb-nut" x="63" y="0" width="4" height="150" rx="1"/>
+          <!-- Frets (vertical lines) -->
+          <line class="fb-fret" x1="126" y1="0" x2="126" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="183" y1="0" x2="183" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="237" y1="0" x2="237" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="288" y1="0" x2="288" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="336" y1="0" x2="336" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="381" y1="0" x2="381" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="423" y1="0" x2="423" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="463" y1="0" x2="463" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="500" y1="0" x2="500" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="535" y1="0" x2="535" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="568" y1="0" x2="568" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="600" y1="0" x2="600" y2="150" stroke-width="1"/>
+          <!-- Strings (horizontal lines) -->
+          <line class="fb-string" x1="0" y1="18" x2="600" y2="18" stroke-width="1"/>
+      <line class="fb-string" x1="0" y1="56" x2="600" y2="56" stroke-width="1.4"/>
+      <line class="fb-string" x1="0" y1="94" x2="600" y2="94" stroke-width="1.8"/>
+      <line class="fb-string" x1="0" y1="132" x2="600" y2="132" stroke-width="2.2"/>
+          <!-- Position circles -->
+          <circle class="fb-pos" data-string="0" data-fret="0" cx="32.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="1" cx="95.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="2" cx="154.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="3" cx="210" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="4" cx="262.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="5" cx="312" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="6" cx="358.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="7" cx="402" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="8" cx="443" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="9" cx="481.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="10" cx="517.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="11" cx="551.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="12" cx="584" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="0" cx="32.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="1" cx="95.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="2" cx="154.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="3" cx="210" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="4" cx="262.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="5" cx="312" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="6" cx="358.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="7" cx="402" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="8" cx="443" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="9" cx="481.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="10" cx="517.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="11" cx="551.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="12" cx="584" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="0" cx="32.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="1" cx="95.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="2" cx="154.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="3" cx="210" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="4" cx="262.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="5" cx="312" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="6" cx="358.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="7" cx="402" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="8" cx="443" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="9" cx="481.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="10" cx="517.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="11" cx="551.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="12" cx="584" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="0" cx="32.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="1" cx="95.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="2" cx="154.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="3" cx="210" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="4" cx="262.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="5" cx="312" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="6" cx="358.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="7" cx="402" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="8" cx="443" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="9" cx="481.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="10" cx="517.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="11" cx="551.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="12" cx="584" cy="132" r="10"/>
+        </svg>
+        <div class="hover-card"><div class="hc-inner">
+          <div class="hc-note"></div>
+          <div class="hc-string-fret"></div>
+          <div class="hc-detail"></div>
+          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
+        </div></div>
+      </div>
+    </div>
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="fretboard-wrapper">
+      <div class="fretboard-container">
+        <svg class="fretboard" viewBox="0 0 600 150">
+          <!-- Fret marker dots (inlays) -->
+          <circle class="fb-marker" cx="210" cy="75" r="4"/>
+      <circle class="fb-marker" cx="312" cy="75" r="4"/>
+      <circle class="fb-marker" cx="402" cy="75" r="4"/>
+      <circle class="fb-marker" cx="517.5" cy="75" r="4"/>
+      <circle class="fb-marker" cx="584" cy="56" r="4"/><circle class="fb-marker" cx="584" cy="94" r="4"/>
+          <!-- Nut (wide bar at fret 0) -->
+          <rect class="fb-nut" x="63" y="0" width="4" height="150" rx="1"/>
+          <!-- Frets (vertical lines) -->
+          <line class="fb-fret" x1="126" y1="0" x2="126" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="183" y1="0" x2="183" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="237" y1="0" x2="237" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="288" y1="0" x2="288" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="336" y1="0" x2="336" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="381" y1="0" x2="381" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="423" y1="0" x2="423" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="463" y1="0" x2="463" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="500" y1="0" x2="500" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="535" y1="0" x2="535" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="568" y1="0" x2="568" y2="150" stroke-width="1"/>
+      <line class="fb-fret" x1="600" y1="0" x2="600" y2="150" stroke-width="1"/>
+          <!-- Strings (horizontal lines) -->
+          <line class="fb-string" x1="0" y1="18" x2="600" y2="18" stroke-width="1"/>
+      <line class="fb-string" x1="0" y1="56" x2="600" y2="56" stroke-width="1.4"/>
+      <line class="fb-string" x1="0" y1="94" x2="600" y2="94" stroke-width="1.8"/>
+      <line class="fb-string" x1="0" y1="132" x2="600" y2="132" stroke-width="2.2"/>
+          <!-- Position circles -->
+          <circle class="fb-pos" data-string="0" data-fret="0" cx="32.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="1" cx="95.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="2" cx="154.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="3" cx="210" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="4" cx="262.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="5" cx="312" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="6" cx="358.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="7" cx="402" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="8" cx="443" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="9" cx="481.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="10" cx="517.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="11" cx="551.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="12" cx="584" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="0" cx="32.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="1" cx="95.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="2" cx="154.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="3" cx="210" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="4" cx="262.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="5" cx="312" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="6" cx="358.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="7" cx="402" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="8" cx="443" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="9" cx="481.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="10" cx="517.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="11" cx="551.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="12" cx="584" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="0" cx="32.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="1" cx="95.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="2" cx="154.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="3" cx="210" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="4" cx="262.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="5" cx="312" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="6" cx="358.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="7" cx="402" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="8" cx="443" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="9" cx="481.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="10" cx="517.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="11" cx="551.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="12" cx="584" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="0" cx="32.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="1" cx="95.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="2" cx="154.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="3" cx="210" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="4" cx="262.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="5" cx="312" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="6" cx="358.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="7" cx="402" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="8" cx="443" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="9" cx="481.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="10" cx="517.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="11" cx="551.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="12" cx="584" cy="132" r="10"/>
+        </svg>
+        <div class="hover-card"><div class="hc-inner">
+          <div class="hc-note"></div>
+          <div class="hc-string-fret"></div>
+          <div class="hc-detail"></div>
+          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
+        </div></div>
+      </div>
+    </div>
+      <div class="note-buttons">
+        <div class="note-row-accidentals">
+          <button class="note-btn accidental" data-note="C#">C#</button>
+          <button class="note-btn accidental" data-note="D#">D#</button>
+          <button class="note-btn accidental" data-note="F#">F#</button>
+          <button class="note-btn accidental" data-note="G#">G#</button>
+          <button class="note-btn accidental" data-note="A#">A#</button>
+        </div>
+        <div class="note-row-naturals">
+          <button class="note-btn" data-note="C">C</button>
+          <button class="note-btn" data-note="D">D</button>
+          <button class="note-btn" data-note="E">E</button>
+          <button class="note-btn" data-note="F">F</button>
+          <button class="note-btn" data-note="G">G</button>
+          <button class="note-btn" data-note="A">A</button>
+          <button class="note-btn" data-note="B">B</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Speed Tap mode -->
+  <div class="mode-screen phase-idle" id="mode-speedTap">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Speed Tap</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+        </div>
+        <div class="practice-zone practice-zone-scope">
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group">
+            <span class="toggle-group-label">Notes</span>
+            <div class="notes-toggles">
+              <button class="notes-toggle active" data-notes="natural">natural</button>
+              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
+            </div>
+          </div>
+        </div>
+      </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="speed-tap-status">
+        <span class="speed-tap-progress"></span>
+      </div>
+      <div class="fretboard-wrapper">
+      <div class="fretboard-container">
+        <svg class="fretboard" viewBox="0 0 600 226">
+          <!-- Fret marker dots (inlays) -->
+          <circle class="fb-marker" cx="210" cy="113" r="4"/>
+      <circle class="fb-marker" cx="312" cy="113" r="4"/>
+      <circle class="fb-marker" cx="402" cy="113" r="4"/>
+      <circle class="fb-marker" cx="481.5" cy="113" r="4"/>
+      <circle class="fb-marker" cx="584" cy="75" r="4"/><circle class="fb-marker" cx="584" cy="151" r="4"/>
+          <!-- Nut (wide bar at fret 0) -->
+          <rect class="fb-nut" x="63" y="0" width="4" height="226" rx="1"/>
+          <!-- Frets (vertical lines) -->
+          <line class="fb-fret" x1="126" y1="0" x2="126" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="183" y1="0" x2="183" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="237" y1="0" x2="237" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="288" y1="0" x2="288" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="336" y1="0" x2="336" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="381" y1="0" x2="381" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="423" y1="0" x2="423" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="463" y1="0" x2="463" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="500" y1="0" x2="500" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="535" y1="0" x2="535" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="568" y1="0" x2="568" y2="226" stroke-width="1"/>
+      <line class="fb-fret" x1="600" y1="0" x2="600" y2="226" stroke-width="1"/>
+          <!-- Strings (horizontal lines) -->
+          <line class="fb-string" x1="0" y1="18" x2="600" y2="18" stroke-width="1"/>
+      <line class="fb-string" x1="0" y1="56" x2="600" y2="56" stroke-width="1.4"/>
+      <line class="fb-string" x1="0" y1="94" x2="600" y2="94" stroke-width="1.8"/>
+      <line class="fb-string" x1="0" y1="132" x2="600" y2="132" stroke-width="2.2"/>
+      <line class="fb-string" x1="0" y1="170" x2="600" y2="170" stroke-width="2.6"/>
+      <line class="fb-string" x1="0" y1="208" x2="600" y2="208" stroke-width="3"/>
+          <!-- Position circles -->
+          <circle class="fb-pos" data-string="0" data-fret="0" cx="32.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="1" cx="95.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="2" cx="154.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="3" cx="210" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="4" cx="262.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="5" cx="312" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="6" cx="358.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="7" cx="402" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="8" cx="443" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="9" cx="481.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="10" cx="517.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="11" cx="551.5" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="0" data-fret="12" cx="584" cy="18" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="0" cx="32.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="1" cx="95.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="2" cx="154.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="3" cx="210" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="4" cx="262.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="5" cx="312" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="6" cx="358.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="7" cx="402" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="8" cx="443" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="9" cx="481.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="10" cx="517.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="11" cx="551.5" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="1" data-fret="12" cx="584" cy="56" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="0" cx="32.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="1" cx="95.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="2" cx="154.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="3" cx="210" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="4" cx="262.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="5" cx="312" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="6" cx="358.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="7" cx="402" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="8" cx="443" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="9" cx="481.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="10" cx="517.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="11" cx="551.5" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="2" data-fret="12" cx="584" cy="94" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="0" cx="32.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="1" cx="95.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="2" cx="154.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="3" cx="210" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="4" cx="262.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="5" cx="312" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="6" cx="358.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="7" cx="402" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="8" cx="443" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="9" cx="481.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="10" cx="517.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="11" cx="551.5" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="3" data-fret="12" cx="584" cy="132" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="0" cx="32.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="1" cx="95.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="2" cx="154.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="3" cx="210" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="4" cx="262.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="5" cx="312" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="6" cx="358.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="7" cx="402" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="8" cx="443" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="9" cx="481.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="10" cx="517.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="11" cx="551.5" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="4" data-fret="12" cx="584" cy="170" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="0" cx="32.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="1" cx="95.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="2" cx="154.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="3" cx="210" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="4" cx="262.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="5" cx="312" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="6" cx="358.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="7" cx="402" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="8" cx="443" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="9" cx="481.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="10" cx="517.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="11" cx="551.5" cy="208" r="10"/>
+      <circle class="fb-pos" data-string="5" data-fret="12" cx="584" cy="208" r="10"/>
+        </svg>
+        <div class="hover-card"><div class="hc-inner">
+          <div class="hc-note"></div>
+          <div class="hc-string-fret"></div>
+          <div class="hc-detail"></div>
+          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
+        </div></div>
+      </div>
+    </div>
+      <div class="answer-buttons answer-buttons-notes answer-group-hidden">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Note Semitones mode -->
+  <div class="mode-screen phase-idle" id="mode-noteSemitones">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Note ↔ Semitones</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="answer-buttons answer-buttons-numbers">
+        <button class="answer-btn answer-btn-num" data-num="0">0</button>
+        <button class="answer-btn answer-btn-num" data-num="1">1</button>
+        <button class="answer-btn answer-btn-num" data-num="2">2</button>
+        <button class="answer-btn answer-btn-num" data-num="3">3</button>
+        <button class="answer-btn answer-btn-num" data-num="4">4</button>
+        <button class="answer-btn answer-btn-num" data-num="5">5</button>
+        <button class="answer-btn answer-btn-num" data-num="6">6</button>
+        <button class="answer-btn answer-btn-num" data-num="7">7</button>
+        <button class="answer-btn answer-btn-num" data-num="8">8</button>
+        <button class="answer-btn answer-btn-num" data-num="9">9</button>
+        <button class="answer-btn answer-btn-num" data-num="10">10</button>
+        <button class="answer-btn answer-btn-num" data-num="11">11</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interval Semitones mode -->
+  <div class="mode-screen phase-idle" id="mode-intervalSemitones">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Interval ↔ Semitones</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="answer-buttons answer-buttons-intervals">
+        <button class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M2">M2</button>
+        <button class="answer-btn answer-btn-interval" data-interval="m3">m3</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M3">M3</button>
+        <button class="answer-btn answer-btn-interval" data-interval="P4">P4</button>
+        <button class="answer-btn answer-btn-interval" data-interval="TT">TT</button>
+        <button class="answer-btn answer-btn-interval" data-interval="P5">P5</button>
+        <button class="answer-btn answer-btn-interval" data-interval="m6">m6</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M6">M6</button>
+        <button class="answer-btn answer-btn-interval" data-interval="m7">m7</button>
+        <button class="answer-btn answer-btn-interval" data-interval="M7">M7</button>
+        <button class="answer-btn answer-btn-interval" data-interval="P8">P8</button>
+      </div>
+      <div class="answer-buttons answer-buttons-numbers">
+        <button class="answer-btn answer-btn-num" data-num="1">1</button>
+        <button class="answer-btn answer-btn-num" data-num="2">2</button>
+        <button class="answer-btn answer-btn-num" data-num="3">3</button>
+        <button class="answer-btn answer-btn-num" data-num="4">4</button>
+        <button class="answer-btn answer-btn-num" data-num="5">5</button>
+        <button class="answer-btn answer-btn-num" data-num="6">6</button>
+        <button class="answer-btn answer-btn-num" data-num="7">7</button>
+        <button class="answer-btn answer-btn-num" data-num="8">8</button>
+        <button class="answer-btn answer-btn-num" data-num="9">9</button>
+        <button class="answer-btn answer-btn-num" data-num="10">10</button>
+        <button class="answer-btn answer-btn-num" data-num="11">11</button>
+        <button class="answer-btn answer-btn-num" data-num="12">12</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Semitone Math mode -->
+  <div class="mode-screen phase-idle" id="mode-semitoneMath">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Semitone Math</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+        </div>
+        <div class="practice-zone practice-zone-scope">
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interval Math mode -->
+  <div class="mode-screen phase-idle" id="mode-intervalMath">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Interval Math</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+        </div>
+        <div class="practice-zone practice-zone-scope">
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Signatures mode -->
+  <div class="mode-screen phase-idle" id="mode-keySignatures">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Key Signatures</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+        </div>
+        <div class="practice-zone practice-zone-scope">
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="answer-buttons answer-buttons-keysig">
+        <button class="answer-btn answer-btn-keysig" data-sig="0">0</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="1#">1#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="2#">2#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="3#">3#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="4#">4#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="5#">5#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="6#">6#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="7#">7#</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="1b">1b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="2b">2b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="3b">3b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="4b">4b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="5b">5b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="6b">6b</button>
+        <button class="answer-btn answer-btn-keysig" data-sig="7b">7b</button>
+      </div>
+      <div class="answer-buttons answer-buttons-notes answer-group-hidden">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scale Degrees mode -->
+  <div class="mode-screen phase-idle" id="mode-scaleDegrees">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Scale Degrees</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+        </div>
+        <div class="practice-zone practice-zone-scope">
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="answer-buttons answer-buttons-degrees answer-group-hidden">
+        <button class="answer-btn answer-btn-degree" data-degree="1">1st</button>
+        <button class="answer-btn answer-btn-degree" data-degree="2">2nd</button>
+        <button class="answer-btn answer-btn-degree" data-degree="3">3rd</button>
+        <button class="answer-btn answer-btn-degree" data-degree="4">4th</button>
+        <button class="answer-btn answer-btn-degree" data-degree="5">5th</button>
+        <button class="answer-btn answer-btn-degree" data-degree="6">6th</button>
+        <button class="answer-btn answer-btn-degree" data-degree="7">7th</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diatonic Chords mode -->
+  <div class="mode-screen phase-idle" id="mode-diatonicChords">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Diatonic Chords</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+        </div>
+        <div class="practice-zone practice-zone-scope">
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="answer-buttons answer-buttons-numerals answer-group-hidden">
+        <button class="answer-btn answer-btn-numeral" data-numeral="I">I</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="ii">ii</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="iii">iii</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="IV">IV</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="V">V</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="vi">vi</button>
+        <button class="answer-btn answer-btn-numeral" data-numeral="vii°">vii°</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chord Spelling mode -->
+  <div class="mode-screen phase-idle" id="mode-chordSpelling">
+    <div class="mode-top-bar">
+      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <h1 class="mode-title">Chord Spelling</h1>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="practice">Practice</button>
+      <button class="mode-tab" data-tab="progress">Progress</button>
+    </div>
+    <div class="tab-content tab-practice active">
+      <div class="practice-card">
+        <div class="practice-zone practice-zone-status">
+          <div class="practice-status">
+            <span class="practice-status-label"></span>
+            <span class="practice-status-detail"></span>
+          </div>
+        </div>
+        <div class="practice-zone practice-zone-scope">
+          <div class="practice-recommendation">
+            <span class="practice-rec-text"></span>
+            <button class="practice-rec-btn">Use suggestion</button>
+          </div>
+      <div class="practice-scope">
+        <div class="settings-row">
+          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+        </div>
+      </div>
+          <div class="mastery-message">Looks like you've got this!</div>
+        </div>
+        <div class="practice-zone practice-zone-action">
+          <div class="session-summary-text"></div>
+          <button class="start-btn">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content tab-progress">
+      
+      <div class="baseline-info"></div>
+      <div class="stats-controls">
+        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <span class="stats"></span>
+      </div>
+      <div class="stats-container"></div>
+    </div>
+    <div class="quiz-session">
+      <div class="quiz-countdown-row">
+        <div class="quiz-countdown-bar">
+          <div class="quiz-countdown-fill"></div>
+        </div>
+        <span class="quiz-info-time"></span>
+      </div>
+      <div class="quiz-session-info">
+        <span class="quiz-info-context"></span>
+        <span class="quiz-info-count"></span>
+      </div>
+      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-text">0 / 0 fluent</div>
+      </div>
+    </div>
+    <div class="quiz-area">
+      <div class="quiz-prompt-row">
+        <div class="quiz-prompt"></div>
+        <div class="quiz-last-question"></div>
+      </div>
+      <div class="chord-slots"></div>
+      <div class="answer-buttons answer-buttons-notes">
+        <button class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+      </div>
+      <div class="feedback"></div>
+      <div class="time-display"></div>
+      <div class="hint"></div>
+      <div class="round-complete">
+        <div class="round-complete-context"></div>
+        <div class="round-complete-heading"></div>
+        <div class="round-complete-stats">
+          <div class="round-stat-line round-stat-correct"></div>
+          <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-actions">
+          <button class="round-complete-continue">Keep Going</button>
+          <button class="round-complete-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
 
   <script>
 (() => {
