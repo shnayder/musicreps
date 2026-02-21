@@ -712,6 +712,7 @@
         "npm:@types/node@^25.3.0",
         "npm:esbuild@~0.27.3",
         "npm:playwright@^1.52.0",
+        "npm:preact-render-to-string@^6.6.6",
         "npm:preact@^10.28.4"
       ]
     }

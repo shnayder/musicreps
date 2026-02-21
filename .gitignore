@@ -2,6 +2,7 @@
 .vscode/
 node_modules/
 screenshots/
+guides/design/screenshot-review.html
 
 # iOS (Capacitor) — generated/copied at build time
 ios/App/App/public/

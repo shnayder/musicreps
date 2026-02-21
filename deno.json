@@ -19,6 +19,8 @@
       "node_modules/",
       "scripts/",
       "guides/design/moments.html",
+      "guides/design/components-preview.html",
+      "guides/design/screenshot-review.html",
       "plans/generated/"
     ]
   },
@@ -28,6 +30,8 @@
       "docs/",
       "node_modules/",
       "guides/design/moments.html",
+      "guides/design/components-preview.html",
+      "guides/design/screenshot-review.html",
       "plans/generated/"
     ]
   },
@@ -39,6 +43,9 @@
     "fmt": "deno fmt --check",
     "fmt:fix": "deno fmt",
     "check": "deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null)",
-    "ok": "deno lint && deno fmt --check && deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null) && deno test --no-check --allow-read && deno run --allow-read --allow-write --allow-run main.ts --build"
+    "ok": "deno lint && deno fmt --check && deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null) && deno test --no-check --allow-read && deno run --allow-read --allow-write --allow-run main.ts --build",
+    "screenshots": "npx tsx scripts/take-screenshots.ts",
+    "screenshots:baseline": "npx tsx scripts/take-screenshots.ts --dir screenshots/baseline",
+    "screenshots:review": "npx tsx scripts/build-screenshot-review.ts"
   }
 }

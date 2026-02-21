@@ -11,7 +11,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = 8001;
 const URL = `http://localhost:${PORT}`;
-const OUT_DIR = path.resolve(__dirname, '..', 'screenshots');
+
+// Accept --dir <path> to override the default output directory.
+const dirIdx = process.argv.indexOf('--dir');
+const OUT_DIR = dirIdx >= 0 && process.argv[dirIdx + 1]
+  ? path.resolve(process.argv[dirIdx + 1])
+  : path.resolve(__dirname, '..', 'screenshots');
 const VIEWPORT = { width: 402, height: 873 };
 const DEVICE_SCALE_FACTOR = 3;
 

@@ -23,8 +23,8 @@ function resolve(rel: string): string {
   return new URL(rel, import.meta.url).pathname;
 }
 
-async function bundleJS(): Promise<string> {
-  const entryPoint = resolve('./src/app.ts');
+async function bundleJS(entry = './src/app.ts'): Promise<string> {
+  const entryPoint = resolve(entry);
   const cmd = new Deno.Command('npx', {
     args: [
       'esbuild',
@@ -812,6 +812,77 @@ ${m11}
 }
 
 // ---------------------------------------------------------------------------
+// Component preview page (Preact)
+// ---------------------------------------------------------------------------
+
+function assemblePreviewHTML(css: string, previewJs: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Component Preview &mdash; Music Reps</title>
+  <link rel="stylesheet" href="../../src/styles.css">
+  <style>
+    ${css}
+  </style>
+  <style>
+    /* Preview page overrides */
+    body {
+      display: block;
+      max-width: 720px;
+      padding: 2rem 1rem;
+      min-height: auto;
+      color: var(--color-text);
+      line-height: 1.5;
+    }
+    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    .subtitle { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .page-nav { display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.8rem; }
+    .page-nav a { color: var(--color-brand-dark); text-decoration: none; }
+    .page-nav a:hover { text-decoration: underline; }
+    h2 {
+      font-size: 1.1rem;
+      margin: 2.5rem 0 0.75rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--color-border-lighter);
+    }
+    .preview-section { margin-bottom: 1.5rem; }
+    .preview-section h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-text-light);
+      margin: 0 0 0.5rem;
+    }
+    .preview-frame {
+      max-width: 402px;
+      border: 1px solid var(--color-border-light);
+      border-radius: 8px;
+      padding: var(--space-4);
+      background: var(--color-bg);
+    }
+  </style>
+</head>
+<body>
+  <h1>Component Preview</h1>
+  <div class="subtitle">
+    Preact components rendered with mock data &mdash; edit
+    <code>src/ui/preview.tsx</code>, rebuild or refresh <code>/preview</code>.
+  </div>
+  <div class="page-nav">
+    <a href="moments.html">Moments &rarr;</a>
+    <a href="components.html">Design System &rarr;</a>
+    <a href="colors.html">Colors &rarr;</a>
+  </div>
+  <div id="preview-root"></div>
+  <script>
+${previewJs}
+  </script>
+</body>
+</html>`;
+}
+
+// ---------------------------------------------------------------------------
 // Design page copying
 // ---------------------------------------------------------------------------
 
@@ -857,17 +928,32 @@ if (import.meta.main) {
       momentsHtml,
     );
 
+    // Component preview page (Preact)
+    const previewJs = await bundleJS('./src/ui/preview.tsx');
+    const previewHtml = assemblePreviewHTML(css, previewJs);
+    await Deno.writeTextFile(
+      resolve('./guides/design/components-preview.html'),
+      previewHtml,
+    );
+
     // Design pages → docs/design/
     await copyDesignPages(css);
 
     console.log('Built to docs/index.html + docs/sw.js + docs/design/');
   } else {
     const html = await buildHTML();
-    Deno.serve({ port: 8001 }, (req) => {
+    Deno.serve({ port: 8001 }, async (req) => {
       const url = new URL(req.url);
       if (url.pathname === '/sw.js') {
         return new Response(SERVICE_WORKER, {
           headers: { 'content-type': 'application/javascript' },
+        });
+      }
+      if (url.pathname === '/preview') {
+        const css = await Deno.readTextFile(resolve('./src/styles.css'));
+        const pJs = await bundleJS('./src/ui/preview.tsx');
+        return new Response(assemblePreviewHTML(css, pJs), {
+          headers: { 'content-type': 'text/html' },
         });
       }
       return new Response(html, {

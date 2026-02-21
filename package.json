@@ -3,7 +3,8 @@
   "devDependencies": {
     "@types/node": "^25.3.0",
     "esbuild": "^0.27.3",
-    "playwright": "^1.52.0"
+    "playwright": "^1.52.0",
+    "preact-render-to-string": "^6.6.6"
   },
   "dependencies": {
     "@capacitor/cli": "^8.1.0",
