@@ -67,11 +67,10 @@ jobs:
           # Switch to gh-pages (or create it)
           git checkout -- .
           if git fetch origin gh-pages 2>/dev/null; then
-            git checkout gh-pages
+            git checkout -B gh-pages origin/gh-pages
           else
             git checkout --orphan gh-pages
             git rm -rf .
-            touch .nojekyll
           fi
 
           mkdir -p "preview/${SAFE_NAME}"
@@ -100,6 +99,7 @@ jobs:
           echo "</ul></body></html>" >> index.html
           cd ..
 
+          touch .nojekyll
           git add preview/ .nojekyll
           git commit -m "Preview: ${GITHUB_REF_NAME}" || exit 0
           git push origin gh-pages

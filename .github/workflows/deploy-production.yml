@@ -58,19 +58,20 @@ jobs:
 
           # Switch to gh-pages (or create it)
           if git fetch origin gh-pages 2>/dev/null; then
-            git checkout gh-pages
+            git checkout -B gh-pages origin/gh-pages
           else
             git checkout --orphan gh-pages
             git rm -rf .
-            touch .nojekyll
           fi
 
-          # Copy production build to root (preserves preview/ directory)
+          # Copy production build to gh-pages root
+          touch .nojekyll
+          rm -rf design
           cp /tmp/build/index.html .
           [ -d /tmp/build/design ] && cp -r /tmp/build/design .
 
           git add index.html .nojekyll
-          [ -d design ] && git add design/
+          git add -A design 2>/dev/null || true
 
           if git diff --cached --quiet; then
             echo "No changes to deploy."

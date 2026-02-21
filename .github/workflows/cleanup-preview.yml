@@ -19,12 +19,23 @@ jobs:
       (github.event_name == 'delete' && startsWith(github.event.ref, 'claude/')) ||
       (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'claude/'))
     steps:
+      - name: Check if gh-pages exists
+        id: check-branch
+        run: |
+          if git ls-remote --exit-code --heads https://github.com/${{ github.repository }} gh-pages >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout gh-pages
+        if: steps.check-branch.outputs.exists == 'true'
         uses: actions/checkout@v4
         with:
           ref: gh-pages
 
       - name: Remove preview directory
+        if: steps.check-branch.outputs.exists == 'true'
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BRANCH="${{ github.event.pull_request.head.ref }}"
@@ -50,6 +61,11 @@ jobs:
                 [ "$dir" = "*/" ] && continue
                 name="${dir%/}"
                 echo "<li><a href=\"${name}/\">${name}</a></li>" >> index.html
+                # Add design page links if they exist in the preview
+                if [ -d "${name}/design" ]; then
+                  echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/components.html\">${name} — Design System</a></li>" >> index.html
+                  echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/colors.html\">${name} — Color System</a></li>" >> index.html
+                fi
               done
               echo "</ul></body></html>" >> index.html
               cd ..
