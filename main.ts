@@ -30,6 +30,8 @@ async function bundleJS(): Promise<string> {
       'esbuild',
       '--bundle',
       '--format=iife',
+      '--jsx=automatic',
+      '--jsx-import-source=preact',
       entryPoint,
     ],
     stdout: 'piped',
