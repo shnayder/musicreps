@@ -73,6 +73,7 @@ jobs:
             git rm -rf .
           fi
 
+          rm -rf "preview/${SAFE_NAME}"
           mkdir -p "preview/${SAFE_NAME}"
           cp -r /tmp/preview-build/* "preview/${SAFE_NAME}/"
 
@@ -100,7 +101,7 @@ jobs:
           cd ..
 
           touch .nojekyll
-          git add preview/ .nojekyll
+          git add -A preview/ .nojekyll
           git commit -m "Preview: ${GITHUB_REF_NAME}" || exit 0
           git push origin gh-pages
 

@@ -48,10 +48,10 @@ jobs:
 
       - name: Deploy to gh-pages
         run: |
-          # Save build output
+          # Save build output (everything except preview/)
           mkdir -p /tmp/build
-          cp docs/index.html /tmp/build/
-          [ -d docs/design ] && cp -r docs/design /tmp/build/
+          cp -r docs/* /tmp/build/
+          rm -rf /tmp/build/preview
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -64,14 +64,13 @@ jobs:
             git rm -rf .
           fi
 
-          # Copy production build to gh-pages root
+          # Sync production build to gh-pages root (preserves preview/)
           touch .nojekyll
-          rm -rf design
-          cp /tmp/build/index.html .
-          [ -d /tmp/build/design ] && cp -r /tmp/build/design .
+          # Remove old production files to catch deletions/renames
+          find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name '.nojekyll' ! -name 'preview' -exec rm -rf {} +
+          cp -r /tmp/build/* .
 
-          git add index.html .nojekyll
-          git add -A design 2>/dev/null || true
+          git add -A --ignore-errors -- . ':!preview'
 
           if git diff --cached --quiet; then
             echo "No changes to deploy."
