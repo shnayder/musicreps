@@ -52,58 +52,8 @@ jobs:
       - name: Build
         run: deno task build
 
-      - name: Stash build output
-        run: |
-          mkdir -p /tmp/preview-build
-          cp -r docs/* /tmp/preview-build/ 2>/dev/null || true
-
-      - name: Deploy to preview directory on gh-pages
-        run: |
-          SAFE_NAME=$(echo "${GITHUB_REF_NAME}" | sed 's/[^a-zA-Z0-9-]/-/g')
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Switch to gh-pages (or create it)
-          git checkout -- .
-          if git fetch origin gh-pages 2>/dev/null; then
-            git checkout -B gh-pages origin/gh-pages
-          else
-            git checkout --orphan gh-pages
-            git rm -rf .
-          fi
-
-          rm -rf "preview/${SAFE_NAME}"
-          mkdir -p "preview/${SAFE_NAME}"
-          cp -r /tmp/preview-build/* "preview/${SAFE_NAME}/"
-
-          # Generate preview index page listing all preview subdirectories
-          cd preview
-          cat > index.html << 'INDEXEOF'
-          <!DOCTYPE html>
-          <html><head><meta charset="utf-8"><title>Preview Builds</title>
-          <style>body{font-family:system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1rem}
-          a{display:block;padding:.5rem 0;font-size:1.1rem}
-          h2{font-size:1rem;margin-top:1.5rem;color:#666}</style></head>
-          <body><h1>Preview Builds</h1><ul>
-          INDEXEOF
-          for dir in */; do
-            [ "$dir" = "*/" ] && continue
-            name="${dir%/}"
-            echo "<li><a href=\"${name}/\">${name}</a></li>" >> index.html
-            # Add design page links if they exist in the preview
-            if [ -d "${name}/design" ]; then
-              echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/components.html\">${name} — Design System</a></li>" >> index.html
-              echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/colors.html\">${name} — Color System</a></li>" >> index.html
-            fi
-          done
-          echo "</ul></body></html>" >> index.html
-          cd ..
-
-          touch .nojekyll
-          git add -A preview/ .nojekyll
-          git commit -m "Preview: ${GITHUB_REF_NAME}" || exit 0
-          git push origin gh-pages
+      - name: Deploy preview
+        run: bash scripts/deploy-gh-pages.sh preview "${{ github.ref_name }}"
 
       - name: Comment preview URL on PR
         uses: actions/github-script@v7

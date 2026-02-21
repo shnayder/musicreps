@@ -19,67 +19,16 @@ jobs:
       (github.event_name == 'delete' && startsWith(github.event.ref, 'claude/')) ||
       (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'claude/'))
     steps:
-      - name: Check if gh-pages exists
-        id: check-branch
-        run: |
-          if git ls-remote --exit-code --heads https://github.com/${{ github.repository }} gh-pages >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout gh-pages
-        if: steps.check-branch.outputs.exists == 'true'
+      - name: Checkout (for deploy script)
         uses: actions/checkout@v4
         with:
-          ref: gh-pages
+          ref: main
 
-      - name: Remove preview directory
-        if: steps.check-branch.outputs.exists == 'true'
+      - name: Cleanup preview
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BRANCH="${{ github.event.pull_request.head.ref }}"
           else
             BRANCH="${{ github.event.ref }}"
           fi
-          SAFE_NAME=$(echo "${BRANCH}" | sed 's/[^a-zA-Z0-9-]/-/g')
-
-          if [ -d "preview/${SAFE_NAME}" ]; then
-            rm -rf "preview/${SAFE_NAME}"
-
-            # Regenerate or remove preview index
-            if ls preview/*/index.html 1>/dev/null 2>&1; then
-              cd preview
-              cat > index.html << 'INDEXEOF'
-              <!DOCTYPE html>
-              <html><head><meta charset="utf-8"><title>Preview Builds</title>
-              <style>body{font-family:system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1rem}
-              a{display:block;padding:.5rem 0;font-size:1.1rem}</style></head>
-              <body><h1>Preview Builds</h1><ul>
-          INDEXEOF
-              for dir in */; do
-                [ "$dir" = "*/" ] && continue
-                name="${dir%/}"
-                echo "<li><a href=\"${name}/\">${name}</a></li>" >> index.html
-                # Add design page links if they exist in the preview
-                if [ -d "${name}/design" ]; then
-                  echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/components.html\">${name} — Design System</a></li>" >> index.html
-                  echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/colors.html\">${name} — Color System</a></li>" >> index.html
-                fi
-              done
-              echo "</ul></body></html>" >> index.html
-              cd ..
-            else
-              # No previews left — remove the whole directory
-              rm -rf preview
-            fi
-
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            [ -f .nojekyll ] || touch .nojekyll
-            git add -A preview .nojekyll
-            git commit -m "Cleanup preview: ${BRANCH}"
-            git push origin gh-pages
-          else
-            echo "No preview directory found for ${SAFE_NAME}, skipping."
-          fi
+          bash scripts/deploy-gh-pages.sh cleanup "$BRANCH"

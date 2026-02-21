@@ -47,35 +47,4 @@ jobs:
         run: deno task build
 
       - name: Deploy to gh-pages
-        run: |
-          # Save build output (everything except preview/)
-          mkdir -p /tmp/build
-          cp -r docs/* /tmp/build/
-          rm -rf /tmp/build/preview
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Switch to gh-pages (or create it)
-          if git fetch origin gh-pages 2>/dev/null; then
-            git checkout -B gh-pages origin/gh-pages
-          else
-            git checkout --orphan gh-pages
-            git rm -rf .
-          fi
-
-          # Sync production build to gh-pages root (preserves preview/)
-          touch .nojekyll
-          # Remove old production files to catch deletions/renames
-          find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name '.nojekyll' ! -name 'preview' -exec rm -rf {} +
-          cp -r /tmp/build/* .
-
-          git add -A --ignore-errors -- . ':!preview'
-
-          if git diff --cached --quiet; then
-            echo "No changes to deploy."
-          else
-            VERSION=$(grep -o 'v[0-9]\+\.[0-9]\+' index.html | head -1)
-            git commit -m "Build production: ${VERSION}"
-            git push origin gh-pages
-          fi
+        run: bash scripts/deploy-gh-pages.sh production
