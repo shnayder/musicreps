@@ -9,8 +9,6 @@ declare global {
 
 import { h, render } from 'preact';
 import { GUITAR, UKULELE } from './music-data.ts';
-import { createModeController } from './mode-controller.ts';
-import { speedTapDefinition } from './modes/speed-tap.ts';
 import { createNavigation } from './navigation.ts';
 import { createSettingsModal } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
@@ -24,25 +22,9 @@ import { ScaleDegreesMode } from './ui/modes/scale-degrees-mode.tsx';
 import { DiatonicChordsMode } from './ui/modes/diatonic-chords-mode.tsx';
 import { ChordSpellingMode } from './ui/modes/chord-spelling-mode.tsx';
 import { FretboardMode } from './ui/modes/fretboard-mode.tsx';
+import { SpeedTapMode } from './ui/modes/speed-tap-mode.tsx';
 
 const nav = createNavigation();
-
-// --- All mode controllers ---
-
-// --- ModeController-based modes ---
-
-const allControllers = [
-  { id: 'speedTap', name: 'Speed Tap', def: speedTapDefinition() },
-].map(({ id, name, def }) => {
-  const ctrl = createModeController(def);
-  nav.registerMode(id, {
-    name,
-    init: ctrl.init,
-    activate: ctrl.activate,
-    deactivate: ctrl.deactivate,
-  });
-  return ctrl;
-});
 
 // --- Preact-based modes ---
 
@@ -120,6 +102,7 @@ registerPreactMode('keySignatures', 'Key Signatures', KeySignaturesMode);
 registerPreactMode('scaleDegrees', 'Scale Degrees', ScaleDegreesMode);
 registerPreactMode('diatonicChords', 'Diatonic Chords', DiatonicChordsMode);
 registerPreactMode('chordSpelling', 'Chord Spelling', ChordSpellingMode);
+registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);
 
 nav.init();
 
@@ -133,9 +116,6 @@ const settings = createSettingsModal({
         if (activeToggle) (activeToggle as HTMLElement).click();
       },
     );
-    for (const ctrl of allControllers) {
-      ctrl.onNotationChange?.();
-    }
   },
 });
 
