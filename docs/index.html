@@ -1633,7 +1633,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v7.9</span>
+      <span class="version">v7.10</span>
     </div>
   </div>
 
@@ -6820,17 +6820,17 @@ button {
       { length: instrument.stringCount },
       (_3, i3) => i3
     );
-    const ALL_ITEMS8 = [];
+    const ALL_ITEMS9 = [];
     for (const s3 of allStrings) {
       for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-        ALL_ITEMS8.push(s3 + "-" + f4);
+        ALL_ITEMS9.push(s3 + "-" + f4);
       }
     }
     return {
       id: instrument.id,
       name: instrument.name,
       storageNamespace: instrument.storageNamespace,
-      allItemIds: ALL_ITEMS8,
+      allItemIds: ALL_ITEMS9,
       getEnabledItems(scope) {
         if (scope.kind !== "fretboard") {
           return fb.getFretboardEnabledItems(
@@ -7004,7 +7004,7 @@ button {
   var FB_TAP_NEUTRAL = "hsl(30, 4%, 90%)";
   var FB_TAP_CORRECT = "hsl(90, 45%, 35%)";
   function speedTapDefinition() {
-    const ALL_ITEMS8 = NOTES.map((n2) => n2.name);
+    const ALL_ITEMS9 = NOTES.map((n2) => n2.name);
     let currentNote = null;
     let targetPositions = [];
     let foundPositions = /* @__PURE__ */ new Set();
@@ -7021,7 +7021,7 @@ button {
       id: "speedTap",
       name: "Speed Tap",
       storageNamespace: "speedTap",
-      allItemIds: ALL_ITEMS8,
+      allItemIds: ALL_ITEMS9,
       getEnabledItems(scope) {
         const filter = scope.kind === "note-filter" ? scope.noteFilter : "natural";
         if (filter === "natural") return NATURAL_NOTES.slice();
@@ -7183,201 +7183,6 @@ button {
         }
       }
     };
-  }
-
-  // src/modes/chord-spelling.ts
-  function buildGroups() {
-    let maxGroup = 0;
-    for (const ct of CHORD_TYPES) {
-      if (ct.group > maxGroup) maxGroup = ct.group;
-    }
-    const result = [];
-    for (let g2 = 0; g2 <= maxGroup; g2++) {
-      const types = CHORD_TYPES.filter((t3) => t3.group === g2);
-      const label = types.map((t3) => t3.symbol || "maj").join(", ");
-      result.push({ types, label });
-    }
-    return result;
-  }
-  var SPELLING_GROUPS = buildGroups();
-  function getItemIdsForGroup(groupIndex) {
-    const types = SPELLING_GROUPS[groupIndex].types;
-    const items = [];
-    for (const root of CHORD_ROOTS) {
-      for (const type of types) {
-        items.push(root + ":" + type.name);
-      }
-    }
-    return items;
-  }
-  function chordSpellingDefinition() {
-    const ALL_ITEMS8 = [];
-    for (const root of CHORD_ROOTS) {
-      for (const type of CHORD_TYPES) {
-        ALL_ITEMS8.push(root + ":" + type.name);
-      }
-    }
-    const groups = SPELLING_GROUPS.map((g2, i3) => ({
-      index: i3,
-      label: g2.label,
-      itemIds: getItemIdsForGroup(i3)
-    }));
-    return {
-      id: "chordSpelling",
-      name: "Chord Spelling",
-      storageNamespace: "chordSpelling",
-      allItemIds: ALL_ITEMS8,
-      getEnabledItems(scope) {
-        if (scope.kind !== "groups") return ALL_ITEMS8;
-        const items = [];
-        for (const g2 of scope.enabledGroups) {
-          items.push(...getItemIdsForGroup(g2));
-        }
-        return items;
-      },
-      getExpectedResponseCount(itemId) {
-        return parseItem(itemId).tones.length;
-      },
-      scopeSpec: {
-        kind: "groups",
-        groups,
-        defaultEnabled: [0],
-        storageKey: "chordSpelling_enabledGroups",
-        label: "Chord types",
-        sortUnstarted: (a3, b) => a3.string - b.string
-      },
-      getQuestion(itemId) {
-        return parseItem(itemId);
-      },
-      checkAnswer(_itemId, input) {
-        const allCorrect = input === "__correct__";
-        const item = parseItem(_itemId);
-        const correctAnswer = item.tones.map(displayNote).join(" ");
-        return { correct: allCorrect, correctAnswer };
-      },
-      prompt: {
-        kind: "text",
-        getText(q3) {
-          return displayNote(q3.rootName) + q3.chordType.symbol;
-        }
-      },
-      response: {
-        kind: "sequential",
-        answerButtonsHTML: "",
-        createKeyHandler(submitAnswer, _getScope) {
-          return createAdaptiveKeyHandler(submitAnswer, () => true);
-        },
-        initSequentialState(itemId) {
-          const item = parseItem(itemId);
-          return {
-            expectedCount: item.tones.length,
-            entries: []
-          };
-        },
-        handleInput(itemId, input, state) {
-          const item = parseItem(itemId);
-          const idx = state.entries.length;
-          if (idx >= item.tones.length) {
-            const allCorrect = state.entries.every((e3) => e3.correct);
-            return {
-              status: "complete",
-              correct: allCorrect,
-              correctAnswer: item.tones.map(displayNote).join(" ")
-            };
-          }
-          const expected = item.tones[idx];
-          if (spelledNoteMatchesSemitone(expected, input)) {
-            input = expected;
-          }
-          const isCorrect = spelledNoteMatchesInput(expected, input);
-          const entries = [
-            ...state.entries,
-            {
-              input,
-              display: isCorrect ? displayNote(expected) : displayNote(input),
-              correct: isCorrect
-            }
-          ];
-          const newState = {
-            expectedCount: item.tones.length,
-            entries
-          };
-          if (entries.length === item.tones.length) {
-            const allCorrect = entries.every((e3) => e3.correct);
-            return {
-              status: "complete",
-              correct: allCorrect,
-              correctAnswer: item.tones.map(displayNote).join(" ")
-            };
-          }
-          return { status: "continue", state: newState };
-        },
-        renderProgress(state, els) {
-          const slotsDiv = els.container.querySelector(".chord-slots");
-          if (!slotsDiv) return;
-          let html = "";
-          for (let i3 = 0; i3 < state.expectedCount; i3++) {
-            let cls = "chord-slot";
-            let content = "_";
-            if (i3 < state.entries.length) {
-              content = state.entries[i3].display;
-              cls += state.entries[i3].correct ? " correct" : " wrong";
-            } else if (i3 === state.entries.length) {
-              cls += " active";
-            }
-            html += '<span class="' + cls + '">' + content + "</span>";
-          }
-          slotsDiv.innerHTML = html;
-        }
-      },
-      stats: {
-        kind: "grid",
-        colLabels: CHORD_TYPES.map((t3) => t3.symbol || "maj"),
-        notes: CHORD_ROOTS.map((r3) => ({ name: r3, displayName: r3 })),
-        getItemId(rootName, colIdx) {
-          return rootName + ":" + CHORD_TYPES[colIdx].name;
-        }
-      },
-      getPracticingLabel(scope) {
-        if (scope.kind !== "groups") return "all chord types";
-        if (scope.enabledGroups.size === SPELLING_GROUPS.length) {
-          return "all chord types";
-        }
-        const labels = [...scope.enabledGroups].sort((a3, b) => a3 - b).map((g2) => SPELLING_GROUPS[g2].label);
-        return labels.join(", ") + " chords";
-      },
-      getSessionSummary(scope) {
-        const count = this.getEnabledItems(scope).length;
-        return count + " items \xB7 60s";
-      },
-      calibrationProvider: "button",
-      calibrationSpec: {
-        introHint: "We\u2019ll measure your response speed to set personalized targets. Press the notes shown in the prompt, in order \u2014 10 rounds total.",
-        getButtons(container) {
-          return Array.from(container.querySelectorAll(".answer-btn-note"));
-        },
-        getTrialConfig(buttons, prevBtn) {
-          const count = 2 + Math.floor(Math.random() * 3);
-          const targets = [];
-          let prev = prevBtn;
-          for (let i3 = 0; i3 < count; i3++) {
-            const btn = pickCalibrationButton(buttons, prev);
-            targets.push(btn);
-            prev = btn;
-          }
-          const labels = targets.map((b) => b.textContent);
-          return { prompt: "Press " + labels.join(" "), targetButtons: targets };
-        }
-      }
-    };
-  }
-  function parseItem(itemId) {
-    const colonIdx = itemId.indexOf(":");
-    const rootName = itemId.substring(0, colonIdx);
-    const typeName = itemId.substring(colonIdx + 1);
-    const chordType = CHORD_TYPES.find((t3) => t3.name === typeName);
-    const tones = getChordTones(rootName, chordType);
-    return { rootName, chordType, tones };
   }
 
   // src/navigation.ts
@@ -9132,7 +8937,7 @@ button {
     { distances: [9, 10], label: "\xB19\u201310" },
     { distances: [11], label: "\xB111" }
   ];
-  function getItemIdsForGroup2(groupIndex) {
+  function getItemIdsForGroup(groupIndex) {
     const distances = DISTANCE_GROUPS[groupIndex].distances;
     const items = [];
     for (const note of NOTES) {
@@ -9191,7 +8996,7 @@ button {
       groups: DISTANCE_GROUPS.map((g2, i3) => ({
         index: i3,
         label: g2.label,
-        itemIds: getItemIdsForGroup2(i3)
+        itemIds: getItemIdsForGroup(i3)
       })),
       defaultEnabled: [0],
       storageKey: "semitoneMath_enabledGroups",
@@ -9203,7 +9008,7 @@ button {
     const enabledItems = T2(() => {
       const items = [];
       for (const g2 of enabledGroups) {
-        items.push(...getItemIdsForGroup2(g2));
+        items.push(...getItemIdsForGroup(g2));
       }
       return items;
     }, [enabledGroups]);
@@ -9222,7 +9027,7 @@ button {
       return computeRecommendations(
         learner.selector,
         ALL_GROUP_INDICES,
-        getItemIdsForGroup2,
+        getItemIdsForGroup,
         { expansionThreshold: 0.7 },
         { sortUnstarted: (a3, b) => a3.string - b.string }
       );
@@ -9251,7 +9056,7 @@ button {
         const items = [];
         const groups = scope.kind === "groups" ? scope.enabledGroups : /* @__PURE__ */ new Set([0]);
         for (const g2 of groups) {
-          items.push(...getItemIdsForGroup2(g2));
+          items.push(...getItemIdsForGroup(g2));
         }
         return items;
       },
@@ -9466,7 +9271,7 @@ button {
     { distances: [9, 10], label: "M6 m7" },
     { distances: [11], label: "M7" }
   ];
-  function getItemIdsForGroup3(groupIndex) {
+  function getItemIdsForGroup2(groupIndex) {
     const distances = DISTANCE_GROUPS2[groupIndex].distances;
     const intervals = MATH_INTERVALS.filter((i3) => distances.includes(i3.num));
     const items = [];
@@ -9527,7 +9332,7 @@ button {
       groups: DISTANCE_GROUPS2.map((g2, i3) => ({
         index: i3,
         label: g2.label,
-        itemIds: getItemIdsForGroup3(i3)
+        itemIds: getItemIdsForGroup2(i3)
       })),
       defaultEnabled: [0],
       storageKey: "intervalMath_enabledGroups",
@@ -9539,7 +9344,7 @@ button {
     const enabledItems = T2(() => {
       const items = [];
       for (const g2 of enabledGroups) {
-        items.push(...getItemIdsForGroup3(g2));
+        items.push(...getItemIdsForGroup2(g2));
       }
       return items;
     }, [enabledGroups]);
@@ -9558,7 +9363,7 @@ button {
       return computeRecommendations(
         learner.selector,
         ALL_GROUP_INDICES2,
-        getItemIdsForGroup3,
+        getItemIdsForGroup2,
         { expansionThreshold: 0.7 },
         { sortUnstarted: (a3, b) => a3.string - b.string }
       );
@@ -9587,7 +9392,7 @@ button {
         const items = [];
         const groups = scope.kind === "groups" ? scope.enabledGroups : /* @__PURE__ */ new Set([0]);
         for (const g2 of groups) {
-          items.push(...getItemIdsForGroup3(g2));
+          items.push(...getItemIdsForGroup2(g2));
         }
         return items;
       },
@@ -9800,7 +9605,7 @@ button {
     { keys: ["E", "Ab"], label: "E A\u266D" },
     { keys: ["B", "Db", "F#"], label: "B D\u266D F\u266F" }
   ];
-  function getItemIdsForGroup4(groupIndex) {
+  function getItemIdsForGroup3(groupIndex) {
     const roots = KEY_GROUPS[groupIndex].keys;
     const items = [];
     for (const root of roots) {
@@ -9848,7 +9653,7 @@ button {
       groups: KEY_GROUPS.map((g2, i3) => ({
         index: i3,
         label: g2.label,
-        itemIds: getItemIdsForGroup4(i3)
+        itemIds: getItemIdsForGroup3(i3)
       })),
       defaultEnabled: [0, 1],
       storageKey: "keySignatures_enabledGroups",
@@ -9860,7 +9665,7 @@ button {
     const enabledItems = T2(() => {
       const items = [];
       for (const g2 of enabledGroups) {
-        items.push(...getItemIdsForGroup4(g2));
+        items.push(...getItemIdsForGroup3(g2));
       }
       return items;
     }, [enabledGroups]);
@@ -9883,7 +9688,7 @@ button {
       return computeRecommendations(
         learner.selector,
         ALL_GROUP_INDICES3,
-        getItemIdsForGroup4,
+        getItemIdsForGroup3,
         { expansionThreshold: 0.7 },
         { sortUnstarted: (a3, b) => a3.string - b.string }
       );
@@ -9912,7 +9717,7 @@ button {
         const items = [];
         const groups = scope.kind === "groups" ? scope.enabledGroups : /* @__PURE__ */ new Set([0, 1]);
         for (const g2 of groups) {
-          items.push(...getItemIdsForGroup4(g2));
+          items.push(...getItemIdsForGroup3(g2));
         }
         return items;
       },
@@ -10171,7 +9976,7 @@ button {
     { degrees: [3, 7], label: "3rd,7th" },
     { degrees: [2, 6], label: "2nd,6th" }
   ];
-  function getItemIdsForGroup5(groupIndex) {
+  function getItemIdsForGroup4(groupIndex) {
     const degrees = DEGREE_GROUPS[groupIndex].degrees;
     const items = [];
     for (const key of MAJOR_KEYS) {
@@ -10223,7 +10028,7 @@ button {
       groups: DEGREE_GROUPS.map((g2, i3) => ({
         index: i3,
         label: g2.label,
-        itemIds: getItemIdsForGroup5(i3)
+        itemIds: getItemIdsForGroup4(i3)
       })),
       defaultEnabled: [0],
       storageKey: "scaleDegrees_enabledGroups",
@@ -10235,7 +10040,7 @@ button {
     const enabledItems = T2(() => {
       const items = [];
       for (const g2 of enabledGroups) {
-        items.push(...getItemIdsForGroup5(g2));
+        items.push(...getItemIdsForGroup4(g2));
       }
       return items;
     }, [enabledGroups]);
@@ -10254,7 +10059,7 @@ button {
       return computeRecommendations(
         learner.selector,
         ALL_GROUP_INDICES4,
-        getItemIdsForGroup5,
+        getItemIdsForGroup4,
         { expansionThreshold: 0.7 },
         { sortUnstarted: (a3, b) => a3.string - b.string }
       );
@@ -10283,7 +10088,7 @@ button {
         const items = [];
         const groups = scope.kind === "groups" ? scope.enabledGroups : /* @__PURE__ */ new Set([0]);
         for (const g2 of groups) {
-          items.push(...getItemIdsForGroup5(g2));
+          items.push(...getItemIdsForGroup4(g2));
         }
         return items;
       },
@@ -10503,7 +10308,7 @@ button {
     { degrees: [2, 6], label: "ii,vi" },
     { degrees: [3, 7], label: "iii,vii\xB0" }
   ];
-  function getItemIdsForGroup6(groupIndex) {
+  function getItemIdsForGroup5(groupIndex) {
     const degrees = CHORD_GROUPS[groupIndex].degrees;
     const items = [];
     for (const key of MAJOR_KEYS) {
@@ -10557,7 +10362,7 @@ button {
       groups: CHORD_GROUPS.map((g2, i3) => ({
         index: i3,
         label: g2.label,
-        itemIds: getItemIdsForGroup6(i3)
+        itemIds: getItemIdsForGroup5(i3)
       })),
       defaultEnabled: [0],
       storageKey: "diatonicChords_enabledGroups",
@@ -10569,7 +10374,7 @@ button {
     const enabledItems = T2(() => {
       const items = [];
       for (const g2 of enabledGroups) {
-        items.push(...getItemIdsForGroup6(g2));
+        items.push(...getItemIdsForGroup5(g2));
       }
       return items;
     }, [enabledGroups]);
@@ -10588,7 +10393,7 @@ button {
       return computeRecommendations(
         learner.selector,
         ALL_GROUP_INDICES5,
-        getItemIdsForGroup6,
+        getItemIdsForGroup5,
         { expansionThreshold: 0.7 },
         { sortUnstarted: (a3, b) => a3.string - b.string }
       );
@@ -10617,7 +10422,7 @@ button {
         const items = [];
         const groups = scope.kind === "groups" ? scope.enabledGroups : /* @__PURE__ */ new Set([0]);
         for (const g2 of groups) {
-          items.push(...getItemIdsForGroup6(g2));
+          items.push(...getItemIdsForGroup5(g2));
         }
         return items;
       },
@@ -10837,6 +10642,406 @@ button {
     ] });
   }
 
+  // src/ui/modes/chord-spelling-mode.tsx
+  function buildGroups() {
+    let maxGroup = 0;
+    for (const ct of CHORD_TYPES) {
+      if (ct.group > maxGroup) maxGroup = ct.group;
+    }
+    const result = [];
+    for (let g2 = 0; g2 <= maxGroup; g2++) {
+      const types = CHORD_TYPES.filter((t3) => t3.group === g2);
+      const label = types.map((t3) => t3.symbol || "maj").join(", ");
+      result.push({ types, label });
+    }
+    return result;
+  }
+  var SPELLING_GROUPS = buildGroups();
+  function getItemIdsForGroup6(groupIndex) {
+    const types = SPELLING_GROUPS[groupIndex].types;
+    const items = [];
+    for (const root of CHORD_ROOTS) {
+      for (const type of types) {
+        items.push(root + ":" + type.name);
+      }
+    }
+    return items;
+  }
+  var ALL_ITEMS8 = [];
+  for (const root of CHORD_ROOTS) {
+    for (const type of CHORD_TYPES) {
+      ALL_ITEMS8.push(root + ":" + type.name);
+    }
+  }
+  var ALL_GROUP_INDICES6 = SPELLING_GROUPS.map((_3, i3) => i3);
+  var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
+    name: r3,
+    displayName: r3
+  }));
+  var GRID_COL_LABELS3 = CHORD_TYPES.map((t3) => t3.symbol || "maj");
+  function parseItem(itemId) {
+    const colonIdx = itemId.indexOf(":");
+    const rootName = itemId.substring(0, colonIdx);
+    const typeName = itemId.substring(colonIdx + 1);
+    const chordType = CHORD_TYPES.find((t3) => t3.name === typeName);
+    const tones = getChordTones(rootName, chordType);
+    return { rootName, chordType, tones };
+  }
+  function initSequentialState(itemId) {
+    const item = parseItem(itemId);
+    return { expectedCount: item.tones.length, entries: [] };
+  }
+  function handleInput(itemId, input, state) {
+    const item = parseItem(itemId);
+    const idx = state.entries.length;
+    if (idx >= item.tones.length) {
+      const allCorrect = state.entries.every((e3) => e3.correct);
+      return {
+        status: "complete",
+        correct: allCorrect,
+        correctAnswer: item.tones.map(displayNote).join(" ")
+      };
+    }
+    const expected = item.tones[idx];
+    if (spelledNoteMatchesSemitone(expected, input)) {
+      input = expected;
+    }
+    const isCorrect = spelledNoteMatchesInput(expected, input);
+    const entries = [
+      ...state.entries,
+      {
+        input,
+        display: isCorrect ? displayNote(expected) : displayNote(input),
+        correct: isCorrect
+      }
+    ];
+    const newState = {
+      expectedCount: item.tones.length,
+      entries
+    };
+    if (entries.length === item.tones.length) {
+      const allCorrect = entries.every((e3) => e3.correct);
+      return {
+        status: "complete",
+        correct: allCorrect,
+        correctAnswer: item.tones.map(displayNote).join(" ")
+      };
+    }
+    return { status: "continue", state: newState };
+  }
+  function checkAnswer8(itemId, input) {
+    const allCorrect = input === "__correct__";
+    const item = parseItem(itemId);
+    const correctAnswer = item.tones.map(displayNote).join(" ");
+    return { correct: allCorrect, correctAnswer };
+  }
+  function getGridItemId5(rootName, colIdx) {
+    return rootName + ":" + CHORD_TYPES[colIdx].name;
+  }
+  function ChordSlots({ state }) {
+    if (!state) return /* @__PURE__ */ u3("div", { class: "chord-slots" });
+    return /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: state.expectedCount }, (_3, i3) => {
+      let cls = "chord-slot";
+      let content = "_";
+      if (i3 < state.entries.length) {
+        content = state.entries[i3].display;
+        cls += state.entries[i3].correct ? " correct" : " wrong";
+      } else if (i3 === state.entries.length) {
+        cls += " active";
+      }
+      return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
+    }) });
+  }
+  function ChordSpellingMode({ container, navigateHome, onMount }) {
+    const [scope, scopeActions] = useScopeState({
+      kind: "groups",
+      groups: SPELLING_GROUPS.map((g2, i3) => ({
+        index: i3,
+        label: g2.label,
+        itemIds: getItemIdsForGroup6(i3)
+      })),
+      defaultEnabled: [0],
+      storageKey: "chordSpelling_enabledGroups",
+      label: "Chord types",
+      sortUnstarted: (a3, b) => a3.string - b.string
+    });
+    const enabledGroups = scope.kind === "groups" ? scope.enabledGroups : /* @__PURE__ */ new Set([0]);
+    const learner = useLearnerModel("chordSpelling", ALL_ITEMS8);
+    const enabledItems = T2(() => {
+      const items = [];
+      for (const g2 of enabledGroups) {
+        items.push(...getItemIdsForGroup6(g2));
+      }
+      return items;
+    }, [enabledGroups]);
+    const [seqState, setSeqState] = d2(null);
+    const seqStateRef = A2(null);
+    const [currentQ, setCurrentQ] = d2(null);
+    const currentItemRef = A2(null);
+    const engineSubmitRef = A2(() => {
+    });
+    const handleSeqInputRef = A2(() => {
+    });
+    const noteHandler = T2(
+      () => createAdaptiveKeyHandler(
+        (note) => handleSeqInputRef.current(note),
+        () => true
+      ),
+      []
+    );
+    const recommendation = T2(() => {
+      return computeRecommendations(
+        learner.selector,
+        ALL_GROUP_INDICES6,
+        getItemIdsForGroup6,
+        { expansionThreshold: 0.7 },
+        { sortUnstarted: (a3, b) => a3.string - b.string }
+      );
+    }, [learner.selector]);
+    const recommendationText = T2(() => {
+      return buildRecommendationText(
+        recommendation,
+        (i3) => SPELLING_GROUPS[i3].label
+      );
+    }, [recommendation]);
+    const applyRecommendation = q2(() => {
+      if (recommendation.enabled) {
+        scopeActions.setScope({
+          kind: "groups",
+          enabledGroups: recommendation.enabled
+        });
+      }
+    }, [recommendation, scopeActions]);
+    const practicingLabel = T2(() => {
+      if (enabledGroups.size === SPELLING_GROUPS.length) return "all chord types";
+      const labels = [...enabledGroups].sort((a3, b) => a3 - b).map((g2) => SPELLING_GROUPS[g2].label);
+      return labels.join(", ") + " chords";
+    }, [enabledGroups]);
+    const handleSequentialInput = q2((input) => {
+      const itemId = currentItemRef.current;
+      const state = seqStateRef.current;
+      if (!itemId || !state) return;
+      const result = handleInput(itemId, input, state);
+      if (result.status === "continue") {
+        seqStateRef.current = result.state;
+        setSeqState(result.state);
+      } else {
+        engineSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
+      }
+    }, []);
+    handleSeqInputRef.current = handleSequentialInput;
+    const engineConfig = T2(() => ({
+      getEnabledItems: () => {
+        const items = [];
+        const groups = scope.kind === "groups" ? scope.enabledGroups : /* @__PURE__ */ new Set([0]);
+        for (const g2 of groups) {
+          items.push(...getItemIdsForGroup6(g2));
+        }
+        return items;
+      },
+      checkAnswer: (itemId, input) => {
+        return checkAnswer8(itemId, input);
+      },
+      onPresent: (itemId) => {
+        const q3 = parseItem(itemId);
+        currentItemRef.current = itemId;
+        setCurrentQ(q3);
+        const newSeqState = initSequentialState(itemId);
+        seqStateRef.current = newSeqState;
+        setSeqState(newSeqState);
+      },
+      handleKey: (e3, _ctx) => {
+        return noteHandler.handleKey(e3);
+      },
+      onStart: () => noteHandler.reset(),
+      onStop: () => {
+        noteHandler.reset();
+        seqStateRef.current = null;
+        setSeqState(null);
+      },
+      getPracticingLabel: () => {
+        const groups = scope.kind === "groups" ? scope.enabledGroups : /* @__PURE__ */ new Set([0]);
+        if (groups.size === SPELLING_GROUPS.length) return "all chord types";
+        const labels = [...groups].sort((a3, b) => a3 - b).map((g2) => SPELLING_GROUPS[g2].label);
+        return labels.join(", ") + " chords";
+      }
+    }), [scope, noteHandler]);
+    const engine = useQuizEngine(engineConfig, learner.selector);
+    engineSubmitRef.current = engine.submitAnswer;
+    y2(() => {
+      const phase = engine.state.phase;
+      const cls = phase === "idle" ? "phase-idle" : phase === "round-complete" ? "phase-round-complete" : "phase-active";
+      container.classList.remove(
+        "phase-idle",
+        "phase-active",
+        "phase-round-complete"
+      );
+      container.classList.add(cls);
+    }, [engine.state.phase, container]);
+    const [activeTab, setActiveTab] = d2(
+      "practice"
+    );
+    const [statsMode, setStatsMode] = d2("retention");
+    const sessionSummary = enabledItems.length + " items \xB7 60s";
+    const summary = T2(
+      () => computePracticeSummary({
+        allItemIds: ALL_ITEMS8,
+        selector: learner.selector,
+        itemNoun: "items",
+        recommendation,
+        recommendationText,
+        sessionSummary,
+        masteryText: engine.state.masteryText,
+        showMastery: engine.state.showMastery
+      }),
+      [
+        learner.selector,
+        recommendation,
+        recommendationText,
+        sessionSummary,
+        engine.state.masteryText,
+        engine.state.showMastery,
+        engine.state.phase
+      ]
+    );
+    _2(() => {
+      onMount({
+        activate() {
+          learner.syncBaseline();
+          engine.updateIdleMessage();
+        },
+        deactivate() {
+          if (engine.state.phase !== "idle") engine.stop();
+          noteHandler.reset();
+        }
+      });
+    }, [engine, learner, noteHandler]);
+    const promptText = currentQ ? displayNote(currentQ.rootName) + currentQ.chordType.symbol : "";
+    const handleNoteAnswer = q2(
+      (note) => handleSequentialInput(note),
+      [handleSequentialInput]
+    );
+    const roundContext = T2(() => {
+      const s3 = engine.state;
+      return practicingLabel + " \xB7 " + s3.masteredCount + " / " + s3.totalEnabledCount + " fluent";
+    }, [
+      engine.state.masteredCount,
+      engine.state.totalEnabledCount,
+      practicingLabel
+    ]);
+    const roundCorrect = T2(() => {
+      const s3 = engine.state;
+      const dur = Math.round((s3.roundDurationMs || 0) / 1e3);
+      return s3.roundCorrect + " / " + s3.roundAnswered + " correct \xB7 " + dur + "s";
+    }, [
+      engine.state.roundCorrect,
+      engine.state.roundAnswered,
+      engine.state.roundDurationMs
+    ]);
+    const roundMedian = T2(() => {
+      const times = engine.state.roundResponseTimes;
+      const median = computeMedian(times);
+      return median !== null ? (median / 1e3).toFixed(1) + "s median response time" : "";
+    }, [engine.state.roundResponseTimes]);
+    const statsSelector = T2(() => ({
+      getAutomaticity: (id) => learner.selector.getAutomaticity(id),
+      getStats: (id) => learner.selector.getStats(id)
+    }), [learner.selector, engine.state.phase, statsMode]);
+    const baselineText = learner.motorBaseline ? "Response time baseline: " + (learner.motorBaseline / 1e3).toFixed(1) + "s" : "Response time baseline: 1s (default)";
+    const answerCount = engine.state.roundAnswered;
+    const countText = answerCount + (answerCount === 1 ? " answer" : " answers");
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3(ModeTopBar, { title: "Chord Spelling", onBack: navigateHome }),
+      /* @__PURE__ */ u3(
+        TabbedIdle,
+        {
+          activeTab,
+          onTabSwitch: setActiveTab,
+          practiceContent: /* @__PURE__ */ u3(
+            PracticeCard,
+            {
+              statusLabel: summary.statusLabel,
+              statusDetail: summary.statusDetail,
+              recommendation: summary.recommendationText || void 0,
+              mastery: summary.showMastery ? summary.masteryText : void 0,
+              sessionSummary,
+              onStart: engine.start,
+              onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
+              scope: /* @__PURE__ */ u3(
+                GroupToggles,
+                {
+                  labels: SPELLING_GROUPS.map((g2) => g2.label),
+                  active: enabledGroups,
+                  recommended: recommendation.expandIndex ?? void 0,
+                  onToggle: scopeActions.toggleGroup
+                }
+              )
+            }
+          ),
+          progressContent: /* @__PURE__ */ u3("div", { children: [
+            /* @__PURE__ */ u3("div", { class: "baseline-info", children: baselineText }),
+            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
+              StatsGrid,
+              {
+                selector: statsSelector,
+                colLabels: GRID_COL_LABELS3,
+                getItemId: getGridItemId5,
+                statsMode,
+                notes: GRID_NOTES3,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ) })
+          ] })
+        }
+      ),
+      /* @__PURE__ */ u3(
+        QuizSession,
+        {
+          timeLeft: engine.timerText,
+          context: practicingLabel,
+          count: countText,
+          fluent: engine.state.masteredCount,
+          total: engine.state.totalEnabledCount,
+          isWarning: engine.timerWarning,
+          isLastQuestion: engine.timerLastQuestion,
+          onClose: engine.stop
+        }
+      ),
+      /* @__PURE__ */ u3(
+        QuizArea,
+        {
+          prompt: promptText,
+          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+          children: [
+            /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
+            /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer }),
+            /* @__PURE__ */ u3(
+              FeedbackDisplay,
+              {
+                text: engine.state.feedbackText,
+                className: engine.state.feedbackClass,
+                time: engine.state.timeDisplayText || void 0,
+                hint: engine.state.hintText || void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              RoundComplete,
+              {
+                context: roundContext,
+                heading: "Round complete",
+                correct: roundCorrect,
+                median: roundMedian,
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
+              }
+            )
+          ]
+        }
+      )
+    ] });
+  }
+
   // src/app.ts
   var nav = createNavigation();
   var allControllers = [
@@ -10850,12 +11055,7 @@ button {
       name: "Ukulele Fretboard",
       def: fretboardDefinition(UKULELE)
     },
-    { id: "speedTap", name: "Speed Tap", def: speedTapDefinition() },
-    {
-      id: "chordSpelling",
-      name: "Chord Spelling",
-      def: chordSpellingDefinition()
-    }
+    { id: "speedTap", name: "Speed Tap", def: speedTapDefinition() }
   ].map(({ id, name, def }) => {
     const ctrl = createModeController(def);
     nav.registerMode(id, {
@@ -10902,6 +11102,7 @@ button {
   registerPreactMode("keySignatures", "Key Signatures", KeySignaturesMode);
   registerPreactMode("scaleDegrees", "Scale Degrees", ScaleDegreesMode);
   registerPreactMode("diatonicChords", "Diatonic Chords", DiatonicChordsMode);
+  registerPreactMode("chordSpelling", "Chord Spelling", ChordSpellingMode);
   nav.init();
   var settings = createSettingsModal({
     onNotationChange() {
