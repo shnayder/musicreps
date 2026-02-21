@@ -84,27 +84,42 @@ export function StringToggles(
 
 export function NoteFilter(
   { mode, onChange }: {
-    mode: 'natural' | 'sharps-flats';
+    mode: 'natural' | 'sharps-flats' | 'all';
     onChange: (mode: string) => void;
   },
 ) {
+  const naturalActive = mode === 'natural' || mode === 'all';
+  const accActive = mode === 'sharps-flats' || mode === 'all';
+
+  function toggle(which: 'natural' | 'sharps-flats') {
+    if (which === 'natural') {
+      if (naturalActive && accActive) onChange('sharps-flats');
+      else if (!naturalActive) onChange(accActive ? 'all' : 'natural');
+      // else: only natural active, can't deselect both — no-op
+    } else {
+      if (accActive && naturalActive) onChange('natural');
+      else if (!accActive) onChange(naturalActive ? 'all' : 'sharps-flats');
+      // else: only acc active, can't deselect both — no-op
+    }
+  }
+
   return (
     <div class='toggle-group'>
       <span class='toggle-group-label'>Notes</span>
       <div class='notes-toggles'>
         <button
           type='button'
-          class={'notes-toggle' + (mode === 'natural' ? ' active' : '')}
+          class={'notes-toggle' + (naturalActive ? ' active' : '')}
           data-notes='natural'
-          onClick={() => onChange('natural')}
+          onClick={() => toggle('natural')}
         >
           natural
         </button>
         <button
           type='button'
-          class={'notes-toggle' + (mode === 'sharps-flats' ? ' active' : '')}
+          class={'notes-toggle' + (accActive ? ' active' : '')}
           data-notes='sharps-flats'
-          onClick={() => onChange('sharps-flats')}
+          onClick={() => toggle('sharps-flats')}
         >
           sharps &amp; flats
         </button>

@@ -2045,13 +2045,13 @@ button {
       );
     }) });
   }
-  function PianoNoteButtons({ onAnswer }) {
+  function PianoNoteButtons({ onAnswer, hideAccidentals }) {
     return /* @__PURE__ */ u2("div", { class: "note-buttons", children: [
       /* @__PURE__ */ u2("div", { class: "note-row-accidentals", children: ACCIDENTALS.map((n2) => /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
-          class: "note-btn accidental",
+          class: "note-btn accidental" + (hideAccidentals ? " hidden" : ""),
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: displayNote(n2)
@@ -2415,6 +2415,17 @@ button {
     ] });
   }
   function NoteFilter({ mode, onChange }) {
+    const naturalActive = mode === "natural" || mode === "all";
+    const accActive = mode === "sharps-flats" || mode === "all";
+    function toggle(which) {
+      if (which === "natural") {
+        if (naturalActive && accActive) onChange("sharps-flats");
+        else if (!naturalActive) onChange(accActive ? "all" : "natural");
+      } else {
+        if (accActive && naturalActive) onChange("natural");
+        else if (!accActive) onChange(naturalActive ? "all" : "sharps-flats");
+      }
+    }
     return /* @__PURE__ */ u2("div", { class: "toggle-group", children: [
       /* @__PURE__ */ u2("span", { class: "toggle-group-label", children: "Notes" }),
       /* @__PURE__ */ u2("div", { class: "notes-toggles", children: [
@@ -2422,9 +2433,9 @@ button {
           "button",
           {
             type: "button",
-            class: "notes-toggle" + (mode === "natural" ? " active" : ""),
+            class: "notes-toggle" + (naturalActive ? " active" : ""),
             "data-notes": "natural",
-            onClick: () => onChange("natural"),
+            onClick: () => toggle("natural"),
             children: "natural"
           }
         ),
@@ -2432,9 +2443,9 @@ button {
           "button",
           {
             type: "button",
-            class: "notes-toggle" + (mode === "sharps-flats" ? " active" : ""),
+            class: "notes-toggle" + (accActive ? " active" : ""),
             "data-notes": "sharps-flats",
-            onClick: () => onChange("sharps-flats"),
+            onClick: () => toggle("sharps-flats"),
             children: "sharps & flats"
           }
         )

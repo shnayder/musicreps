@@ -10,7 +10,6 @@ declare global {
 import { h, render } from 'preact';
 import { GUITAR, UKULELE } from './music-data.ts';
 import { createModeController } from './mode-controller.ts';
-import { fretboardDefinition } from './modes/fretboard.ts';
 import { speedTapDefinition } from './modes/speed-tap.ts';
 import { createNavigation } from './navigation.ts';
 import { createSettingsModal } from './settings.ts';
@@ -24,6 +23,7 @@ import { KeySignaturesMode } from './ui/modes/key-signatures-mode.tsx';
 import { ScaleDegreesMode } from './ui/modes/scale-degrees-mode.tsx';
 import { DiatonicChordsMode } from './ui/modes/diatonic-chords-mode.tsx';
 import { ChordSpellingMode } from './ui/modes/chord-spelling-mode.tsx';
+import { FretboardMode } from './ui/modes/fretboard-mode.tsx';
 
 const nav = createNavigation();
 
@@ -32,16 +32,6 @@ const nav = createNavigation();
 // --- ModeController-based modes ---
 
 const allControllers = [
-  {
-    id: 'fretboard',
-    name: 'Guitar Fretboard',
-    def: fretboardDefinition(GUITAR),
-  },
-  {
-    id: 'ukulele',
-    name: 'Ukulele Fretboard',
-    def: fretboardDefinition(UKULELE),
-  },
   { id: 'speedTap', name: 'Speed Tap', def: speedTapDefinition() },
 ].map(({ id, name, def }) => {
   const ctrl = createModeController(def);
@@ -82,6 +72,41 @@ function registerPreactMode(id: string, name: string, Component: any) {
     },
   });
 }
+
+// Fretboard modes need extra instrument prop
+function registerFretboardMode(
+  id: string,
+  name: string,
+  instrument: typeof GUITAR,
+) {
+  let handle: ModeHandle | null = null;
+  const cont = document.getElementById('mode-' + id)!;
+  nav.registerMode(id, {
+    name,
+    init() {
+      render(
+        h(FretboardMode, {
+          instrument,
+          container: cont,
+          navigateHome: () => nav.navigateHome(),
+          onMount: (h: ModeHandle) => {
+            handle = h;
+          },
+        }),
+        cont,
+      );
+    },
+    activate() {
+      handle?.activate();
+    },
+    deactivate() {
+      handle?.deactivate();
+    },
+  });
+}
+
+registerFretboardMode('fretboard', 'Guitar Fretboard', GUITAR);
+registerFretboardMode('ukulele', 'Ukulele Fretboard', UKULELE);
 
 registerPreactMode('noteSemitones', 'Note \u2194 Semitones', NoteSemitonesMode);
 registerPreactMode(

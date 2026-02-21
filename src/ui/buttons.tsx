@@ -108,7 +108,10 @@ export function NoteButtons(
 // ---------------------------------------------------------------------------
 
 export function PianoNoteButtons(
-  { onAnswer }: { onAnswer?: (note: string) => void },
+  { onAnswer, hideAccidentals }: {
+    onAnswer?: (note: string) => void;
+    hideAccidentals?: boolean;
+  },
 ) {
   return (
     <div class='note-buttons'>
@@ -117,7 +120,7 @@ export function PianoNoteButtons(
           <button
             type='button'
             key={n}
-            class='note-btn accidental'
+            class={'note-btn accidental' + (hideAccidentals ? ' hidden' : '')}
             data-note={n}
             onClick={onAnswer ? () => onAnswer(n) : undefined}
           >

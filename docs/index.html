@@ -1633,7 +1633,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v7.10</span>
+      <span class="version">v7.11</span>
     </div>
   </div>
 
@@ -6724,255 +6724,6 @@ button {
     });
   }
 
-  // src/quiz-fretboard-state.ts
-  function createFretboardHelpers(musicData) {
-    const noteNames2 = musicData.notes.map((n2) => n2.name);
-    const fretCount = musicData.fretCount || 13;
-    function getNoteAtPosition2(string, fret) {
-      const offset = musicData.stringOffsets[string];
-      return noteNames2[(offset + fret) % 12];
-    }
-    function parseFretboardItem(itemId) {
-      const [s3, f4] = itemId.split("-").map(Number);
-      return {
-        currentString: s3,
-        currentFret: f4,
-        currentNote: getNoteAtPosition2(s3, f4)
-      };
-    }
-    function checkFretboardAnswer(currentNote, input) {
-      const note = musicData.notes.find((n2) => n2.name === currentNote);
-      const correct = !!(note && musicData.noteMatchesInput(note, input));
-      return { correct, correctAnswer: displayNote(currentNote) };
-    }
-    function notePassesFilter(note, noteFilter) {
-      if (noteFilter === "all") return true;
-      const isNatural = musicData.naturalNotes.includes(note);
-      return noteFilter === "natural" ? isNatural : !isNatural;
-    }
-    function getFretboardEnabledItems(enabledStrings, noteFilter) {
-      const items = [];
-      for (const s3 of enabledStrings) {
-        for (let f4 = 0; f4 < fretCount; f4++) {
-          const note = getNoteAtPosition2(s3, f4);
-          if (notePassesFilter(note, noteFilter)) {
-            items.push(s3 + "-" + f4);
-          }
-        }
-      }
-      return items;
-    }
-    function getItemIdsForString(string, noteFilter) {
-      const items = [];
-      for (let f4 = 0; f4 < fretCount; f4++) {
-        const note = getNoteAtPosition2(string, f4);
-        if (notePassesFilter(note, noteFilter)) {
-          items.push(string + "-" + f4);
-        }
-      }
-      return items;
-    }
-    return {
-      fretCount,
-      getNoteAtPosition: getNoteAtPosition2,
-      parseFretboardItem,
-      checkFretboardAnswer,
-      getFretboardEnabledItems,
-      getItemIdsForString
-    };
-  }
-  function computeNotePrioritization(naturalStats, threshold) {
-    let totalSeen = 0;
-    let totalMastered = 0;
-    for (const r3 of naturalStats) {
-      totalSeen += r3.masteredCount + r3.dueCount;
-      totalMastered += r3.masteredCount;
-    }
-    const ratio = totalSeen > 0 ? totalMastered / totalSeen : 0;
-    if (totalSeen === 0 || ratio < threshold) {
-      return { suggestedFilter: "natural", naturalMasteryRatio: ratio };
-    }
-    return { suggestedFilter: "all", naturalMasteryRatio: ratio };
-  }
-
-  // src/modes/fretboard.ts
-  var FB_QUIZ_HL = "hsl(50, 100%, 50%)";
-  function setCircleFill(root, string, fret, color) {
-    const circle = root.querySelector(
-      'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
-    );
-    if (circle) circle.style.fill = color;
-  }
-  function clearAll(root) {
-    root.querySelectorAll(".fb-pos").forEach((c3) => {
-      c3.style.fill = "";
-    });
-  }
-  function fretboardDefinition(instrument) {
-    const fb = createFretboardHelpers({
-      notes: NOTES,
-      naturalNotes: NATURAL_NOTES,
-      stringOffsets: instrument.stringOffsets,
-      fretCount: instrument.fretCount,
-      noteMatchesInput
-    });
-    const allStrings = Array.from(
-      { length: instrument.stringCount },
-      (_3, i3) => i3
-    );
-    const ALL_ITEMS9 = [];
-    for (const s3 of allStrings) {
-      for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-        ALL_ITEMS9.push(s3 + "-" + f4);
-      }
-    }
-    return {
-      id: instrument.id,
-      name: instrument.name,
-      storageNamespace: instrument.storageNamespace,
-      allItemIds: ALL_ITEMS9,
-      getEnabledItems(scope) {
-        if (scope.kind !== "fretboard") {
-          return fb.getFretboardEnabledItems(
-            new Set(allStrings),
-            "natural"
-          );
-        }
-        return fb.getFretboardEnabledItems(
-          scope.enabledStrings,
-          scope.noteFilter
-        );
-      },
-      scopeSpec: {
-        kind: "fretboard",
-        instrument
-      },
-      getQuestion(itemId) {
-        return fb.parseFretboardItem(itemId);
-      },
-      checkAnswer(_itemId, input) {
-        const q3 = fb.parseFretboardItem(_itemId);
-        return fb.checkFretboardAnswer(q3.currentNote, input);
-      },
-      prompt: {
-        kind: "custom",
-        render(q3, els) {
-          if (els.fretboardWrapper) {
-            clearAll(els.fretboardWrapper);
-            setCircleFill(
-              els.fretboardWrapper,
-              q3.currentString,
-              q3.currentFret,
-              FB_QUIZ_HL
-            );
-          }
-          els.promptEl.textContent = "Name this note.";
-        },
-        clear(els) {
-          if (els.fretboardWrapper) {
-            clearAll(els.fretboardWrapper);
-          }
-        },
-        onAnswer(q3, result, els) {
-          if (els.fretboardWrapper) {
-            const color = result.correct ? "var(--color-success)" : "var(--color-error)";
-            setCircleFill(
-              els.fretboardWrapper,
-              q3.currentString,
-              q3.currentFret,
-              color
-            );
-          }
-        }
-      },
-      response: {
-        kind: "buttons",
-        answerButtonsHTML: "",
-        // already in build-template
-        createKeyHandler(submitAnswer, getScope) {
-          return createAdaptiveKeyHandler(submitAnswer, () => {
-            const scope = getScope();
-            return scope.kind === "fretboard" && scope.noteFilter !== "natural";
-          });
-        },
-        getButtonAnswer(btn) {
-          return btn.dataset.note ?? null;
-        }
-      },
-      stats: {
-        kind: "custom",
-        render(statsMode, statsEl, selector, baseline, modeContainer) {
-          statsEl.innerHTML = buildStatsLegend(
-            statsMode,
-            baseline ?? void 0
-          );
-          const progressFb = modeContainer.querySelector(
-            ".tab-progress .fretboard-wrapper"
-          );
-          if (!progressFb) return;
-          for (const s3 of allStrings) {
-            for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-              const itemId = s3 + "-" + f4;
-              if (statsMode === "retention") {
-                const auto = selector.getAutomaticity(itemId);
-                setCircleFill(progressFb, s3, f4, getAutomaticityColor(auto));
-              } else {
-                const stats = selector.getStats(itemId);
-                const ewma = stats ? stats.ewma : null;
-                setCircleFill(
-                  progressFb,
-                  s3,
-                  f4,
-                  getSpeedHeatmapColor(ewma, baseline ?? void 0)
-                );
-              }
-            }
-          }
-        }
-      },
-      getPracticingLabel(scope) {
-        if (scope.kind !== "fretboard") return "all strings";
-        const parts = [];
-        if (scope.enabledStrings.size < instrument.stringCount) {
-          const names = Array.from(scope.enabledStrings).sort((a3, b) => b - a3).map((s3) => displayNote(instrument.stringNames[s3]));
-          parts.push(
-            names.join(", ") + " string" + (names.length === 1 ? "" : "s")
-          );
-        } else {
-          parts.push("all strings");
-        }
-        const noteLabel = noteFilterLabel(scope.noteFilter);
-        if (scope.noteFilter !== "all") parts.push(noteLabel);
-        return parts.join(", ");
-      },
-      getSessionSummary(scope) {
-        if (scope.kind !== "fretboard") {
-          return "1 string \xB7 natural notes \xB7 60s";
-        }
-        const count = scope.enabledStrings.size;
-        return count + " string" + (count !== 1 ? "s" : "") + " \xB7 " + noteFilterLabel(scope.noteFilter) + " \xB7 60s";
-      },
-      getRecommendationContext(rec, selector) {
-        const naturalStats = selector.getStringRecommendations(
-          [...rec.recommended],
-          (s3) => fb.getItemIdsForString(s3, "natural")
-        );
-        const pri = computeNotePrioritization(
-          naturalStats,
-          DEFAULT_CONFIG.expansionThreshold
-        );
-        const extraParts = pri.suggestedFilter === "natural" ? ["naturals first"] : ["add sharps & flats"];
-        const noteFilter = pri.suggestedFilter === "natural" ? "natural" : "all";
-        return { extraParts, noteFilter };
-      }
-    };
-  }
-  function noteFilterLabel(filter) {
-    if (filter === "natural") return "natural notes";
-    if (filter === "sharps-flats") return "sharps and flats";
-    return "all notes";
-  }
-
   // src/modes/speed-tap.ts
   var noteNames = NOTES.map((n2) => n2.name);
   function getNoteAtPosition(string, fret) {
@@ -6990,7 +6741,7 @@ button {
     }
     return positions;
   }
-  function setCircleFill2(container, string, fret, color) {
+  function setCircleFill(container, string, fret, color) {
     const circle = container.querySelector(
       'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
     );
@@ -7083,7 +6834,7 @@ button {
             for (const pos of targetPositions) {
               const key = pos.string + "-" + pos.fret;
               if (!foundPositions.has(key)) {
-                setCircleFill2(els.container, pos.string, pos.fret, colorError);
+                setCircleFill(els.container, pos.string, pos.fret, colorError);
               }
             }
           }
@@ -7105,7 +6856,7 @@ button {
           const container = el.closest(".mode-screen");
           if (tappedNote === currentNote) {
             foundPositions.add(key);
-            setCircleFill2(container, s3, f4, FB_TAP_CORRECT);
+            setCircleFill(container, s3, f4, FB_TAP_CORRECT);
             const progressEl = container.querySelector(".speed-tap-progress");
             if (progressEl) {
               progressEl.textContent = foundPositions.size + " / " + targetPositions.length;
@@ -7116,11 +6867,11 @@ button {
             }
             return null;
           } else {
-            setCircleFill2(container, s3, f4, colorError);
+            setCircleFill(container, s3, f4, colorError);
             const timeout = setTimeout(() => {
               wrongFlashTimeouts.delete(timeout);
               if (!foundPositions.has(key)) {
-                setCircleFill2(container, s3, f4, FB_TAP_NEUTRAL);
+                setCircleFill(container, s3, f4, FB_TAP_NEUTRAL);
               }
             }, 800);
             wrongFlashTimeouts.add(timeout);
@@ -7798,6 +7549,8 @@ button {
     "A#",
     "B"
   ];
+  var ACCIDENTALS = ["C#", "D#", "F#", "G#", "A#"];
+  var NATURALS = ["C", "D", "E", "F", "G", "A", "B"];
   var INTERVALS2 = [
     "m2",
     "M2",
@@ -7861,6 +7614,32 @@ button {
         n2
       );
     }) });
+  }
+  function PianoNoteButtons({ onAnswer, hideAccidentals }) {
+    return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
+      /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTALS.map((n2) => /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          class: "note-btn accidental" + (hideAccidentals ? " hidden" : ""),
+          "data-note": n2,
+          onClick: onAnswer ? () => onAnswer(n2) : void 0,
+          children: displayNote(n2)
+        },
+        n2
+      )) }),
+      /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: NATURALS.map((n2) => /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          class: "note-btn",
+          "data-note": n2,
+          onClick: onAnswer ? () => onAnswer(n2) : void 0,
+          children: displayNote(n2)
+        },
+        n2
+      )) })
+    ] });
   }
   function NumberButtons({ start, end, onAnswer, hidden }) {
     const nums = [];
@@ -8925,6 +8704,66 @@ button {
           i3
         );
       }) })
+    ] });
+  }
+  function StringToggles({ stringNames, active, recommended, onToggle }) {
+    return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
+      /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Strings" }),
+      /* @__PURE__ */ u3("div", { class: "string-toggles", children: stringNames.map((name, i3) => {
+        let cls = "string-toggle";
+        if (active.has(i3)) cls += " active";
+        if (recommended === i3) cls += " recommended";
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            class: cls,
+            "data-string": String(i3),
+            "data-string-note": name,
+            onClick: () => onToggle(i3),
+            children: name
+          },
+          i3
+        );
+      }) })
+    ] });
+  }
+  function NoteFilter({ mode, onChange }) {
+    const naturalActive = mode === "natural" || mode === "all";
+    const accActive = mode === "sharps-flats" || mode === "all";
+    function toggle(which) {
+      if (which === "natural") {
+        if (naturalActive && accActive) onChange("sharps-flats");
+        else if (!naturalActive) onChange(accActive ? "all" : "natural");
+      } else {
+        if (accActive && naturalActive) onChange("natural");
+        else if (!accActive) onChange(naturalActive ? "all" : "sharps-flats");
+      }
+    }
+    return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
+      /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Notes" }),
+      /* @__PURE__ */ u3("div", { class: "notes-toggles", children: [
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            class: "notes-toggle" + (naturalActive ? " active" : ""),
+            "data-notes": "natural",
+            onClick: () => toggle("natural"),
+            children: "natural"
+          }
+        ),
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            class: "notes-toggle" + (accActive ? " active" : ""),
+            "data-notes": "sharps-flats",
+            onClick: () => toggle("sharps-flats"),
+            children: "sharps & flats"
+          }
+        )
+      ] })
     ] });
   }
 
@@ -11042,19 +10881,684 @@ button {
     ] });
   }
 
+  // src/quiz-fretboard-state.ts
+  function createFretboardHelpers(musicData) {
+    const noteNames2 = musicData.notes.map((n2) => n2.name);
+    const fretCount = musicData.fretCount || 13;
+    function getNoteAtPosition2(string, fret) {
+      const offset = musicData.stringOffsets[string];
+      return noteNames2[(offset + fret) % 12];
+    }
+    function parseFretboardItem(itemId) {
+      const [s3, f4] = itemId.split("-").map(Number);
+      return {
+        currentString: s3,
+        currentFret: f4,
+        currentNote: getNoteAtPosition2(s3, f4)
+      };
+    }
+    function checkFretboardAnswer(currentNote, input) {
+      const note = musicData.notes.find((n2) => n2.name === currentNote);
+      const correct = !!(note && musicData.noteMatchesInput(note, input));
+      return { correct, correctAnswer: displayNote(currentNote) };
+    }
+    function notePassesFilter(note, noteFilter) {
+      if (noteFilter === "all") return true;
+      const isNatural = musicData.naturalNotes.includes(note);
+      return noteFilter === "natural" ? isNatural : !isNatural;
+    }
+    function getFretboardEnabledItems(enabledStrings, noteFilter) {
+      const items = [];
+      for (const s3 of enabledStrings) {
+        for (let f4 = 0; f4 < fretCount; f4++) {
+          const note = getNoteAtPosition2(s3, f4);
+          if (notePassesFilter(note, noteFilter)) {
+            items.push(s3 + "-" + f4);
+          }
+        }
+      }
+      return items;
+    }
+    function getItemIdsForString(string, noteFilter) {
+      const items = [];
+      for (let f4 = 0; f4 < fretCount; f4++) {
+        const note = getNoteAtPosition2(string, f4);
+        if (notePassesFilter(note, noteFilter)) {
+          items.push(string + "-" + f4);
+        }
+      }
+      return items;
+    }
+    return {
+      fretCount,
+      getNoteAtPosition: getNoteAtPosition2,
+      parseFretboardItem,
+      checkFretboardAnswer,
+      getFretboardEnabledItems,
+      getItemIdsForString
+    };
+  }
+  function computeNotePrioritization(naturalStats, threshold) {
+    let totalSeen = 0;
+    let totalMastered = 0;
+    for (const r3 of naturalStats) {
+      totalSeen += r3.masteredCount + r3.dueCount;
+      totalMastered += r3.masteredCount;
+    }
+    const ratio = totalSeen > 0 ? totalMastered / totalSeen : 0;
+    if (totalSeen === 0 || ratio < threshold) {
+      return { suggestedFilter: "natural", naturalMasteryRatio: ratio };
+    }
+    return { suggestedFilter: "all", naturalMasteryRatio: ratio };
+  }
+
+  // src/fretboard.ts
+  var fretPositions = [
+    0,
+    65,
+    126,
+    183,
+    237,
+    288,
+    336,
+    381,
+    423,
+    463,
+    500,
+    535,
+    568,
+    600
+  ];
+  var MAX_FRET_COUNT = fretPositions.length - 1;
+  var PAD_Y = 18;
+  var STRING_GAP = 38;
+  function stringY(stringIndex) {
+    return PAD_Y + stringIndex * STRING_GAP;
+  }
+  function noteX(fret) {
+    return fret === 0 ? (fretPositions[0] + fretPositions[1]) / 2 : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
+  }
+  function svgHeight(stringCount) {
+    return (stringCount - 1) * STRING_GAP + PAD_Y * 2;
+  }
+  function fretLines(height) {
+    return fretPositions.slice(2).map(
+      (x2) => `<line class="fb-fret" x1="${x2}" y1="0" x2="${x2}" y2="${height}" stroke-width="1"/>`
+    ).join("\n      ");
+  }
+  function stringLines(stringCount = 6) {
+    return Array.from({ length: stringCount }, (_3, i3) => {
+      const thickness = 1 + i3 * 0.4;
+      return `<line class="fb-string" x1="0" y1="${stringY(i3)}" x2="600" y2="${stringY(i3)}" stroke-width="${thickness}"/>`;
+    }).join("\n      ");
+  }
+  function fretMarkerDots(stringCount = 6, markers = [3, 5, 7, 9, 12], fretCount = 13) {
+    const h3 = svgHeight(stringCount);
+    return markers.filter((fret) => fret < fretCount).map((fret) => {
+      const cx = noteX(fret);
+      if (fret === 12) {
+        let y1, y22;
+        if (stringCount <= 4) {
+          y1 = stringY(1);
+          y22 = stringY(stringCount - 2);
+        } else {
+          y1 = (stringY(1) + stringY(2)) / 2;
+          y22 = (stringY(stringCount - 3) + stringY(stringCount - 2)) / 2;
+        }
+        return `<circle class="fb-marker" cx="${cx}" cy="${y1}" r="4"/><circle class="fb-marker" cx="${cx}" cy="${y22}" r="4"/>`;
+      }
+      return `<circle class="fb-marker" cx="${cx}" cy="${h3 / 2}" r="4"/>`;
+    }).join("\n      ");
+  }
+  function positionCircles(stringCount = 6, fretCount = 13) {
+    if (fretCount > MAX_FRET_COUNT) {
+      throw new Error(
+        `fretCount ${fretCount} exceeds max ${MAX_FRET_COUNT} (fretPositions has ${fretPositions.length} entries)`
+      );
+    }
+    return Array.from(
+      { length: stringCount },
+      (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
+        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${noteX(fret)}" cy="${stringY(string)}" r="10"/>`;
+      }).join("\n      ")
+    ).join("\n      ");
+  }
+
+  // src/html-helpers.ts
+  function fretboardSVG(config = {}) {
+    const sc = config.stringCount ?? 6;
+    const fc = config.fretCount ?? 13;
+    const h3 = svgHeight(sc);
+    const markers = config.fretMarkers ?? [3, 5, 7, 9, 12];
+    const idAttr = config.id ? ` id="${config.id}"` : "";
+    return `<div class="fretboard-wrapper">
+      <div class="fretboard-container">
+        <svg class="fretboard"${idAttr} viewBox="0 0 600 ${h3}">
+          <!-- Fret marker dots (inlays) -->
+          ${fretMarkerDots(sc, markers, fc)}
+          <!-- Nut (wide bar at fret 0) -->
+          <rect class="fb-nut" x="${fretPositions[1] - 2}" y="0" width="4" height="${h3}" rx="1"/>
+          <!-- Frets (vertical lines) -->
+          ${fretLines(h3)}
+          <!-- Strings (horizontal lines) -->
+          ${stringLines(sc)}
+          <!-- Position circles -->
+          ${positionCircles(sc, fc)}
+        </svg>
+        <div class="hover-card"><div class="hc-inner">
+          <div class="hc-note"></div>
+          <div class="hc-string-fret"></div>
+          <div class="hc-detail"></div>
+          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
+        </div></div>
+      </div>
+    </div>`;
+  }
+
+  // src/ui/modes/fretboard-mode.tsx
+  var FB_QUIZ_HL = "hsl(50, 100%, 50%)";
+  function setCircleFill2(root, string, fret, color) {
+    const circle = root.querySelector(
+      'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
+    );
+    if (circle) circle.style.fill = color;
+  }
+  function clearAll(root) {
+    root.querySelectorAll(".fb-pos").forEach((c3) => {
+      c3.style.fill = "";
+    });
+  }
+  function setupHoverCard2(wrapper, instrument, fb, selector) {
+    const card = wrapper.querySelector(".hover-card");
+    if (!card) return () => {
+    };
+    const svg = wrapper.querySelector("svg");
+    if (!svg) return () => {
+    };
+    function onOver(e3) {
+      const el = e3.target.closest(".fb-pos");
+      if (!el || !card) return;
+      const s3 = parseInt(el.getAttribute("data-string"));
+      const f4 = parseInt(el.getAttribute("data-fret"));
+      const itemId = s3 + "-" + f4;
+      const q3 = fb.parseFretboardItem(itemId);
+      const auto = selector.getAutomaticity(itemId);
+      const noteEl = card.querySelector(".hc-note");
+      if (noteEl) noteEl.textContent = displayNote(q3.currentNote);
+      const sfEl = card.querySelector(".hc-string-fret");
+      if (sfEl) {
+        sfEl.textContent = displayNote(instrument.stringNames[s3]) + " string, fret " + f4;
+      }
+      const detailEl = card.querySelector(".hc-detail");
+      const barFill = card.querySelector(".hc-bar-fill");
+      if (auto !== null) {
+        const pct = Math.round(auto * 100);
+        let label;
+        if (auto > 0.8) label = "Automatic";
+        else if (auto > 0.6) label = "Solid";
+        else if (auto > 0.4) label = "Getting there";
+        else if (auto > 0.2) label = "Fading";
+        else label = "Needs work";
+        if (detailEl) detailEl.textContent = label + " \xB7 " + pct + "%";
+        if (barFill) {
+          barFill.style.width = pct + "%";
+          barFill.style.background = getAutomaticityColor(auto);
+        }
+      } else {
+        if (detailEl) detailEl.textContent = "Not seen yet";
+        if (barFill) {
+          barFill.style.width = "0%";
+          barFill.style.background = "";
+        }
+      }
+      const containerRect = wrapper.querySelector(
+        ".fretboard-container"
+      ).getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const cx = elRect.left + elRect.width / 2 - containerRect.left;
+      const cy = elRect.top - containerRect.top;
+      if (cy < 50) {
+        card.style.left = cx + "px";
+        card.style.top = cy + elRect.height + 6 + "px";
+        card.style.transform = "translate(-50%, 0)";
+      } else {
+        card.style.left = cx + "px";
+        card.style.top = cy - 6 + "px";
+        card.style.transform = "translate(-50%, -100%)";
+      }
+      card.classList.add("visible");
+    }
+    function onOut(e3) {
+      const el = e3.target.closest(".fb-pos");
+      if (el && card) card.classList.remove("visible");
+    }
+    svg.addEventListener("mouseover", onOver);
+    svg.addEventListener("mouseout", onOut);
+    return () => {
+      svg.removeEventListener("mouseover", onOver);
+      svg.removeEventListener("mouseout", onOut);
+    };
+  }
+  function FretboardMode({ instrument, container, navigateHome, onMount }) {
+    const fb = T2(
+      () => createFretboardHelpers({
+        notes: NOTES,
+        naturalNotes: NATURAL_NOTES,
+        stringOffsets: instrument.stringOffsets,
+        fretCount: instrument.fretCount,
+        noteMatchesInput
+      }),
+      [instrument]
+    );
+    const allStrings = T2(
+      () => Array.from({ length: instrument.stringCount }, (_3, i3) => i3),
+      [instrument]
+    );
+    const ALL_ITEMS9 = T2(() => {
+      const items = [];
+      for (const s3 of allStrings) {
+        for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+          items.push(s3 + "-" + f4);
+        }
+      }
+      return items;
+    }, [allStrings, instrument]);
+    const [scope, scopeActions] = useScopeState({
+      kind: "fretboard",
+      instrument
+    });
+    const enabledStrings = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
+    const noteFilter = scope.kind === "fretboard" ? scope.noteFilter : "natural";
+    const learner = useLearnerModel(instrument.storageNamespace, ALL_ITEMS9);
+    const [currentQ, setCurrentQ] = d2(null);
+    const currentQRef = A2(null);
+    const engineSubmitRef = A2(() => {
+    });
+    const noteFilterRef = A2(noteFilter);
+    noteFilterRef.current = noteFilter;
+    const noteHandler = T2(
+      () => createAdaptiveKeyHandler(
+        (note) => engineSubmitRef.current(note),
+        () => noteFilterRef.current !== "natural"
+      ),
+      []
+    );
+    const quizFbRef = A2(null);
+    const progressFbRef = A2(null);
+    const svgHTML = T2(
+      () => fretboardSVG({
+        stringCount: instrument.stringCount,
+        fretCount: instrument.fretCount,
+        fretMarkers: instrument.fretMarkers
+      }),
+      [instrument]
+    );
+    const recommendation = T2(() => {
+      return computeRecommendations(
+        learner.selector,
+        allStrings,
+        (s3) => {
+          const prefix = s3 + "-";
+          return ALL_ITEMS9.filter((id) => id.startsWith(prefix));
+        },
+        DEFAULT_CONFIG,
+        { sortUnstarted: (a3, b) => b.string - a3.string }
+      );
+    }, [learner.selector, allStrings, ALL_ITEMS9]);
+    const recommendationText = T2(() => {
+      if (!recommendation || recommendation.recommended.size === 0) return "";
+      const naturalStats = learner.selector.getStringRecommendations(
+        [...recommendation.recommended],
+        (s3) => fb.getItemIdsForString(s3, "natural")
+      );
+      const pri = computeNotePrioritization(
+        naturalStats,
+        DEFAULT_CONFIG.expansionThreshold
+      );
+      const extraParts = pri.suggestedFilter === "natural" ? ["naturals first"] : ["add sharps & flats"];
+      return buildRecommendationText(
+        recommendation,
+        (s3) => displayNote(instrument.stringNames[s3]) + " string",
+        extraParts
+      );
+    }, [recommendation, learner.selector, fb, instrument]);
+    const applyRecommendation = q2(() => {
+      if (!recommendation || !recommendation.enabled) return;
+      const naturalStats = learner.selector.getStringRecommendations(
+        [...recommendation.recommended],
+        (s3) => fb.getItemIdsForString(s3, "natural")
+      );
+      const pri = computeNotePrioritization(
+        naturalStats,
+        DEFAULT_CONFIG.expansionThreshold
+      );
+      const newNoteFilter = pri.suggestedFilter === "natural" ? "natural" : "all";
+      scopeActions.setScope({
+        kind: "fretboard",
+        enabledStrings: recommendation.enabled,
+        noteFilter: newNoteFilter
+      });
+    }, [recommendation, learner.selector, fb, scopeActions]);
+    const practicingLabel = T2(() => {
+      const parts = [];
+      if (enabledStrings.size < instrument.stringCount) {
+        const names = Array.from(enabledStrings).sort((a3, b) => b - a3).map((s3) => displayNote(instrument.stringNames[s3]));
+        parts.push(
+          names.join(", ") + " string" + (names.length === 1 ? "" : "s")
+        );
+      } else {
+        parts.push("all strings");
+      }
+      if (noteFilter === "natural") parts.push("natural notes");
+      else if (noteFilter === "sharps-flats") parts.push("sharps and flats");
+      return parts.join(", ");
+    }, [enabledStrings, noteFilter, instrument]);
+    const sessionSummary = T2(() => {
+      const count = enabledStrings.size;
+      let filterLabel = "all notes";
+      if (noteFilter === "natural") filterLabel = "natural notes";
+      else if (noteFilter === "sharps-flats") filterLabel = "sharps and flats";
+      return count + " string" + (count !== 1 ? "s" : "") + " \xB7 " + filterLabel + " \xB7 60s";
+    }, [enabledStrings, noteFilter]);
+    const engineConfig = T2(() => ({
+      getEnabledItems: () => {
+        const s3 = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
+        const nf = scope.kind === "fretboard" ? scope.noteFilter : "natural";
+        return fb.getFretboardEnabledItems(s3, nf);
+      },
+      checkAnswer: (itemId, input) => {
+        const q3 = fb.parseFretboardItem(itemId);
+        return fb.checkFretboardAnswer(q3.currentNote, input);
+      },
+      onPresent: (itemId) => {
+        const q3 = fb.parseFretboardItem(itemId);
+        currentQRef.current = q3;
+        setCurrentQ(q3);
+        if (quizFbRef.current) {
+          clearAll(quizFbRef.current);
+          setCircleFill2(
+            quizFbRef.current,
+            q3.currentString,
+            q3.currentFret,
+            FB_QUIZ_HL
+          );
+        }
+      },
+      onAnswer: (itemId, result) => {
+        if (quizFbRef.current) {
+          const q3 = fb.parseFretboardItem(itemId);
+          const color = result.correct ? "var(--color-success)" : "var(--color-error)";
+          setCircleFill2(
+            quizFbRef.current,
+            q3.currentString,
+            q3.currentFret,
+            color
+          );
+        }
+      },
+      handleKey: (e3, _ctx) => {
+        return noteHandler.handleKey(e3);
+      },
+      onStart: () => noteHandler.reset(),
+      onStop: () => {
+        noteHandler.reset();
+        if (quizFbRef.current) clearAll(quizFbRef.current);
+      },
+      getPracticingLabel: () => {
+        const s3 = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
+        const nf = scope.kind === "fretboard" ? scope.noteFilter : "natural";
+        const parts = [];
+        if (s3.size < instrument.stringCount) {
+          const names = Array.from(s3).sort((a3, b) => b - a3).map((i3) => displayNote(instrument.stringNames[i3]));
+          parts.push(
+            names.join(", ") + " string" + (names.length === 1 ? "" : "s")
+          );
+        } else {
+          parts.push("all strings");
+        }
+        if (nf === "natural") parts.push("natural notes");
+        else if (nf === "sharps-flats") parts.push("sharps and flats");
+        return parts.join(", ");
+      }
+    }), [scope, noteHandler, fb, instrument]);
+    const engine = useQuizEngine(engineConfig, learner.selector);
+    engineSubmitRef.current = engine.submitAnswer;
+    y2(() => {
+      const phase = engine.state.phase;
+      const cls = phase === "idle" ? "phase-idle" : phase === "round-complete" ? "phase-round-complete" : "phase-active";
+      container.classList.remove(
+        "phase-idle",
+        "phase-active",
+        "phase-round-complete"
+      );
+      container.classList.add(cls);
+    }, [engine.state.phase, container]);
+    const [activeTab, setActiveTab] = d2(
+      "practice"
+    );
+    const [statsMode, setStatsMode] = d2("retention");
+    const summary = T2(
+      () => computePracticeSummary({
+        allItemIds: ALL_ITEMS9,
+        selector: learner.selector,
+        itemNoun: "positions",
+        recommendation,
+        recommendationText,
+        sessionSummary,
+        masteryText: engine.state.masteryText,
+        showMastery: engine.state.showMastery
+      }),
+      [
+        learner.selector,
+        recommendation,
+        recommendationText,
+        sessionSummary,
+        engine.state.masteryText,
+        engine.state.showMastery,
+        engine.state.phase,
+        ALL_ITEMS9
+      ]
+    );
+    y2(() => {
+      const wrapper = progressFbRef.current;
+      if (!wrapper) return;
+      for (const s3 of allStrings) {
+        for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+          const itemId = s3 + "-" + f4;
+          if (statsMode === "retention") {
+            const auto = learner.selector.getAutomaticity(itemId);
+            setCircleFill2(wrapper, s3, f4, getAutomaticityColor(auto));
+          } else {
+            const stats = learner.selector.getStats(itemId);
+            const ewma = stats ? stats.ewma : null;
+            setCircleFill2(
+              wrapper,
+              s3,
+              f4,
+              getSpeedHeatmapColor(ewma, learner.motorBaseline ?? void 0)
+            );
+          }
+        }
+      }
+    }, [
+      learner.selector,
+      statsMode,
+      engine.state.phase,
+      allStrings,
+      instrument,
+      learner.motorBaseline
+    ]);
+    y2(() => {
+      const wrapper = progressFbRef.current;
+      if (!wrapper) return;
+      return setupHoverCard2(wrapper, instrument, fb, learner.selector);
+    }, [instrument, fb, learner.selector]);
+    const legendHTML = T2(
+      () => buildStatsLegend(statsMode, learner.motorBaseline ?? void 0),
+      [statsMode, learner.motorBaseline]
+    );
+    _2(() => {
+      onMount({
+        activate() {
+          learner.syncBaseline();
+          engine.updateIdleMessage();
+        },
+        deactivate() {
+          if (engine.state.phase !== "idle") engine.stop();
+          noteHandler.reset();
+        }
+      });
+    }, [engine, learner, noteHandler]);
+    const promptText = currentQ ? "Name this note." : "";
+    const handleNoteAnswer = q2(
+      (note) => engine.submitAnswer(note),
+      [engine.submitAnswer]
+    );
+    const roundContext = T2(() => {
+      const s3 = engine.state;
+      return practicingLabel + " \xB7 " + s3.masteredCount + " / " + s3.totalEnabledCount + " fluent";
+    }, [
+      engine.state.masteredCount,
+      engine.state.totalEnabledCount,
+      practicingLabel
+    ]);
+    const roundCorrect = T2(() => {
+      const s3 = engine.state;
+      const dur = Math.round((s3.roundDurationMs || 0) / 1e3);
+      return s3.roundCorrect + " / " + s3.roundAnswered + " correct \xB7 " + dur + "s";
+    }, [
+      engine.state.roundCorrect,
+      engine.state.roundAnswered,
+      engine.state.roundDurationMs
+    ]);
+    const roundMedian = T2(() => {
+      const times = engine.state.roundResponseTimes;
+      const median = computeMedian(times);
+      return median !== null ? (median / 1e3).toFixed(1) + "s median response time" : "";
+    }, [engine.state.roundResponseTimes]);
+    const baselineText = learner.motorBaseline ? "Response time baseline: " + (learner.motorBaseline / 1e3).toFixed(1) + "s" : "Response time baseline: 1s (default)";
+    const answerCount = engine.state.roundAnswered;
+    const countText = answerCount + (answerCount === 1 ? " answer" : " answers");
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3(ModeTopBar, { title: instrument.name, onBack: navigateHome }),
+      /* @__PURE__ */ u3(
+        TabbedIdle,
+        {
+          activeTab,
+          onTabSwitch: setActiveTab,
+          practiceContent: /* @__PURE__ */ u3(
+            PracticeCard,
+            {
+              statusLabel: summary.statusLabel,
+              statusDetail: summary.statusDetail,
+              recommendation: summary.recommendationText || void 0,
+              mastery: summary.showMastery ? summary.masteryText : void 0,
+              sessionSummary,
+              onStart: engine.start,
+              onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
+              scope: /* @__PURE__ */ u3(k, { children: [
+                /* @__PURE__ */ u3(
+                  StringToggles,
+                  {
+                    stringNames: instrument.stringNames,
+                    active: enabledStrings,
+                    recommended: recommendation.expandIndex ?? void 0,
+                    onToggle: scopeActions.toggleString
+                  }
+                ),
+                /* @__PURE__ */ u3(
+                  NoteFilter,
+                  {
+                    mode: noteFilter,
+                    onChange: (f4) => scopeActions.setNoteFilter(f4)
+                  }
+                )
+              ] })
+            }
+          ),
+          progressContent: /* @__PURE__ */ u3("div", { children: [
+            /* @__PURE__ */ u3("div", { class: "baseline-info", children: baselineText }),
+            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
+              /* @__PURE__ */ u3(
+                "div",
+                {
+                  ref: progressFbRef,
+                  dangerouslySetInnerHTML: { __html: svgHTML }
+                }
+              ),
+              /* @__PURE__ */ u3(
+                "div",
+                {
+                  dangerouslySetInnerHTML: { __html: legendHTML }
+                }
+              )
+            ] })
+          ] })
+        }
+      ),
+      /* @__PURE__ */ u3(
+        QuizSession,
+        {
+          timeLeft: engine.timerText,
+          context: practicingLabel,
+          count: countText,
+          fluent: engine.state.masteredCount,
+          total: engine.state.totalEnabledCount,
+          isWarning: engine.timerWarning,
+          isLastQuestion: engine.timerLastQuestion,
+          onClose: engine.stop
+        }
+      ),
+      /* @__PURE__ */ u3(
+        QuizArea,
+        {
+          prompt: promptText,
+          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+          children: [
+            /* @__PURE__ */ u3(
+              "div",
+              {
+                ref: quizFbRef,
+                dangerouslySetInnerHTML: { __html: svgHTML }
+              }
+            ),
+            /* @__PURE__ */ u3(
+              PianoNoteButtons,
+              {
+                onAnswer: handleNoteAnswer,
+                hideAccidentals: noteFilter === "natural"
+              }
+            ),
+            /* @__PURE__ */ u3(
+              FeedbackDisplay,
+              {
+                text: engine.state.feedbackText,
+                className: engine.state.feedbackClass,
+                time: engine.state.timeDisplayText || void 0,
+                hint: engine.state.hintText || void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              RoundComplete,
+              {
+                context: roundContext,
+                heading: "Round complete",
+                correct: roundCorrect,
+                median: roundMedian,
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
+              }
+            )
+          ]
+        }
+      )
+    ] });
+  }
+
   // src/app.ts
   var nav = createNavigation();
   var allControllers = [
-    {
-      id: "fretboard",
-      name: "Guitar Fretboard",
-      def: fretboardDefinition(GUITAR)
-    },
-    {
-      id: "ukulele",
-      name: "Ukulele Fretboard",
-      def: fretboardDefinition(UKULELE)
-    },
     { id: "speedTap", name: "Speed Tap", def: speedTapDefinition() }
   ].map(({ id, name, def }) => {
     const ctrl = createModeController(def);
@@ -11091,6 +11595,34 @@ button {
       }
     });
   }
+  function registerFretboardMode(id, name, instrument) {
+    let handle = null;
+    const cont = document.getElementById("mode-" + id);
+    nav.registerMode(id, {
+      name,
+      init() {
+        J(
+          _(FretboardMode, {
+            instrument,
+            container: cont,
+            navigateHome: () => nav.navigateHome(),
+            onMount: (h3) => {
+              handle = h3;
+            }
+          }),
+          cont
+        );
+      },
+      activate() {
+        handle?.activate();
+      },
+      deactivate() {
+        handle?.deactivate();
+      }
+    });
+  }
+  registerFretboardMode("fretboard", "Guitar Fretboard", GUITAR);
+  registerFretboardMode("ukulele", "Ukulele Fretboard", UKULELE);
   registerPreactMode("noteSemitones", "Note \u2194 Semitones", NoteSemitonesMode);
   registerPreactMode(
     "intervalSemitones",
