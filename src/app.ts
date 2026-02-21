@@ -12,7 +12,6 @@ import { GUITAR, UKULELE } from './music-data.ts';
 import { createModeController } from './mode-controller.ts';
 import { fretboardDefinition } from './modes/fretboard.ts';
 import { speedTapDefinition } from './modes/speed-tap.ts';
-import { chordSpellingDefinition } from './modes/chord-spelling.ts';
 import { createNavigation } from './navigation.ts';
 import { createSettingsModal } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
@@ -24,6 +23,7 @@ import { IntervalMathMode } from './ui/modes/interval-math-mode.tsx';
 import { KeySignaturesMode } from './ui/modes/key-signatures-mode.tsx';
 import { ScaleDegreesMode } from './ui/modes/scale-degrees-mode.tsx';
 import { DiatonicChordsMode } from './ui/modes/diatonic-chords-mode.tsx';
+import { ChordSpellingMode } from './ui/modes/chord-spelling-mode.tsx';
 
 const nav = createNavigation();
 
@@ -43,11 +43,6 @@ const allControllers = [
     def: fretboardDefinition(UKULELE),
   },
   { id: 'speedTap', name: 'Speed Tap', def: speedTapDefinition() },
-  {
-    id: 'chordSpelling',
-    name: 'Chord Spelling',
-    def: chordSpellingDefinition(),
-  },
 ].map(({ id, name, def }) => {
   const ctrl = createModeController(def);
   nav.registerMode(id, {
@@ -99,6 +94,7 @@ registerPreactMode('intervalMath', 'Interval Math', IntervalMathMode);
 registerPreactMode('keySignatures', 'Key Signatures', KeySignaturesMode);
 registerPreactMode('scaleDegrees', 'Scale Degrees', ScaleDegreesMode);
 registerPreactMode('diatonicChords', 'Diatonic Chords', DiatonicChordsMode);
+registerPreactMode('chordSpelling', 'Chord Spelling', ChordSpellingMode);
 
 nav.init();
 
