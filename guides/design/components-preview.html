@@ -113,14 +113,13 @@ body {
 .home-screen {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
   padding: var(--space-5);
 }
 .home-screen.hidden {
   display: none;
 }
 .home-header {
-  text-align: center;
+  text-align: left;
   padding: var(--space-6) 0 var(--space-4);
 }
 .home-title {
@@ -136,7 +135,7 @@ body {
   width: 32px;
   height: 3px;
   background: var(--color-brand);
-  margin: var(--space-3) auto 0;
+  margin: var(--space-3) 0 0;
   border-radius: 2px;
 }
 .home-modes {
@@ -556,12 +555,15 @@ body {
 .baseline-info {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  text-align: center;
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-3);
+  padding: var(--space-4) 0;
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--color-border-lighter);
 }
 .baseline-info:empty {
   display: none;
+}
+.baseline-text {
+  margin-bottom: var(--space-3);
 }
 .baseline-default-tag {
   font-style: italic;
@@ -577,7 +579,6 @@ body {
   color: var(--color-text-muted);
   cursor: pointer;
   margin: 0;
-  margin-left: var(--space-2);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .baseline-rerun-btn:hover {
@@ -590,7 +591,7 @@ body {
 
 /* --- Progress tab stats controls (within tab) --- */
 .tab-content .stats-controls {
-  text-align: center;
+  text-align: left;
   margin: var(--space-3) 0;
   padding-bottom: var(--space-2);
 }
@@ -929,7 +930,7 @@ button {
 .phase-active,
 .phase-round-complete,
 .phase-calibration {
-  background: var(--color-surface);
+  background: var(--color-bg);
   margin: 0 calc(-1 * var(--space-5));
   padding: 0 var(--space-5);
 }
@@ -945,23 +946,17 @@ button {
 .phase-round-complete .quiz-area,
 .phase-calibration .quiz-area {
   display: block;
-  background: var(--color-surface);
+  background: var(--color-bg);
   border-radius: 12px;
   padding: var(--space-5);
 }
 .phase-active .quiz-area {
-  border: 1px solid var(--color-border-lighter);
   padding: var(--space-3) var(--space-3);
 }
 /* --- Round complete --- */
 .round-complete {
   text-align: center;
   padding: var(--space-6) 0;
-}
-.round-complete-context {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-4);
 }
 .round-complete-heading {
   font-size: var(--text-xl);
@@ -971,6 +966,21 @@ button {
 }
 .round-complete-stats {
   margin: var(--space-3) 0 var(--space-5);
+}
+.round-complete-overall {
+  margin-bottom: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-lighter);
+}
+.round-complete-overall-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+.round-complete-context {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 .round-stat-line {
   font-size: var(--text-base);
@@ -1147,6 +1157,8 @@ button {
   font-size: var(--text-sm);
   color: var(--color-recommended);
   font-weight: 500;
+  text-align: center;
+  margin-bottom: var(--space-2);
 }
 .quiz-last-question:empty {
   display: none;
@@ -1309,7 +1321,7 @@ button {
   color: var(--color-success);
 }
 .incorrect {
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 .time-display {
   color: var(--color-text-muted);
@@ -1330,9 +1342,8 @@ button {
 /* --- Heatmap legends --- */
 .heatmap-legend {
   display: none;
-  justify-content: center;
+  flex-direction: column;
   gap: var(--space-3);
-  flex-wrap: wrap;
   margin: var(--space-4) 0;
 }
 .heatmap-legend.active {
@@ -1453,7 +1464,7 @@ button {
 
 /* --- Stats controls (toggle above chart) --- */
 .stats-controls {
-  text-align: center;
+  text-align: left;
   margin: var(--space-3) 0;
   padding-bottom: var(--space-2);
 }
@@ -1725,7 +1736,7 @@ button {
   <div id="preview-root"></div>
   <script>
 (() => {
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/dist/preact.module.js
+  // node_modules/preact/dist/preact.module.js
   var n;
   var l;
   var u;
@@ -1976,7 +1987,7 @@ button {
     return n2.__v.__b - l3.__v.__b;
   }, I.__r = 0, f = /(PointerCapture)$|Capture$/i, c = 0, s = O(false), a = O(true), h = 0;
 
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/hooks/dist/hooks.module.js
+  // node_modules/preact/hooks/dist/hooks.module.js
   var t2;
   var r2;
   var u2;
@@ -2304,7 +2315,7 @@ button {
     </div>`;
   }
 
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
   var f3 = 0;
   function u3(e3, t3, n2, o3, i3, u4) {
     t3 || (t3 = {});
@@ -2998,21 +3009,22 @@ button {
   }
   function QuizArea({ prompt, lastQuestion, children }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }),
-        /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" })
-      ] }),
+      /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" }),
+      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }) }),
       children
     ] });
   }
   function RoundComplete({ context, heading, correct, median, onContinue, onStop }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
-      /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context || "" }),
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: [
         /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }),
         /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-median", children: median || "" })
       ] }),
+      context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
+        /* @__PURE__ */ u3("div", { class: "round-complete-overall-label", children: "Overall" }),
+        /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
+      ] }) : null,
       /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
         /* @__PURE__ */ u3(
           "button",
@@ -3155,7 +3167,7 @@ button {
         }
       ) }),
       /* @__PURE__ */ u3("h2", { children: "Quiz UI" }),
-      /* @__PURE__ */ u3(Section, { title: "Text Prompt", children: /* @__PURE__ */ u3(TextPrompt, { text: "C + 5 semitones = ?" }) }),
+      /* @__PURE__ */ u3(Section, { title: "Text Prompt", children: /* @__PURE__ */ u3(TextPrompt, { text: "C + 5" }) }),
       /* @__PURE__ */ u3(Section, { title: "Feedback \u2014 Correct", children: /* @__PURE__ */ u3(
         FeedbackDisplay,
         {
@@ -3198,7 +3210,7 @@ button {
           isWarning: false
         }
       ) }),
-      /* @__PURE__ */ u3(Section, { title: "QuizArea", children: /* @__PURE__ */ u3(QuizArea, { prompt: "C + 5 = ?", lastQuestion: "", children: [
+      /* @__PURE__ */ u3(Section, { title: "QuizArea", children: /* @__PURE__ */ u3(QuizArea, { prompt: "C + 5", lastQuestion: "", children: [
         /* @__PURE__ */ u3(NoteButtons, {}),
         /* @__PURE__ */ u3(FeedbackDisplay, { text: "", className: "feedback" })
       ] }) }),
