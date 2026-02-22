@@ -9819,18 +9819,7 @@ button {
         wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
       };
     }, []);
-    _2(() => {
-      onMount({
-        activate() {
-          learner.syncBaseline();
-          engine.updateIdleMessage();
-        },
-        deactivate() {
-          if (engine.state.phase !== "idle") engine.stop();
-          setCalibrating(false);
-        }
-      });
-    }, [engine, learner]);
+    useModeLifecycle(onMount, engine, learner, setCalibrating);
     const statsHTML = T2(() => {
       let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
       for (let i3 = 0; i3 < NOTES.length; i3++) {
