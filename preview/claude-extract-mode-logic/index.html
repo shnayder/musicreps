@@ -1635,7 +1635,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v8.5</span>
+      <span class="version">v8.7</span>
     </div>
   </div>
 
@@ -4306,6 +4306,49 @@ button {
       }
     );
   }
+  function getCalibrationThresholds(baseline) {
+    return [
+      {
+        label: "Automatic",
+        maxMs: Math.round(baseline * 1.5),
+        meaning: "Fully memorized \u2014 instant recall"
+      },
+      {
+        label: "Good",
+        maxMs: Math.round(baseline * 3),
+        meaning: "Solid recall, minor hesitation"
+      },
+      {
+        label: "Developing",
+        maxMs: Math.round(baseline * 4.5),
+        meaning: "Working on it \u2014 needs practice"
+      },
+      {
+        label: "Slow",
+        maxMs: Math.round(baseline * 6),
+        meaning: "Significant hesitation"
+      },
+      { label: "Very slow", maxMs: null, meaning: "Not yet learned" }
+    ];
+  }
+  function pickCalibrationButton(buttons, prevBtn, rng) {
+    const rand = rng || Math.random;
+    const sharpBtns = buttons.filter((b) => {
+      const note = b.dataset.note;
+      return note && note.includes("#");
+    });
+    const naturalBtns = buttons.filter((b) => {
+      const note = b.dataset.note;
+      return note && !note.includes("#");
+    });
+    const useSharp = sharpBtns.length > 0 && rand() < 0.35;
+    const pool = useSharp ? sharpBtns : naturalBtns.length > 0 ? naturalBtns : buttons;
+    let btn;
+    do {
+      btn = pool[Math.floor(rand() * pool.length)];
+    } while (btn === prevBtn && pool.length > 1);
+    return btn;
+  }
 
   // node_modules/preact/hooks/dist/hooks.module.js
   var t2;
@@ -5365,10 +5408,15 @@ button {
   }
 
   // src/hooks/use-phase-class.ts
-  var PHASE_CLASSES = ["phase-idle", "phase-active", "phase-round-complete"];
+  var PHASE_CLASSES = [
+    "phase-idle",
+    "phase-active",
+    "phase-round-complete",
+    "phase-calibration"
+  ];
   function usePhaseClass(container, phase) {
     y2(() => {
-      const cls = phase === "idle" ? "phase-idle" : phase === "round-complete" ? "phase-round-complete" : "phase-active";
+      const cls = phase === "idle" ? "phase-idle" : phase === "round-complete" ? "phase-round-complete" : phase === "calibration" ? "phase-calibration" : "phase-active";
       container.classList.remove(...PHASE_CLASSES);
       container.classList.add(cls);
     }, [phase, container]);
@@ -5381,7 +5429,7 @@ button {
       getStats: (id) => selector.getStats(id)
     }), [selector, enginePhase, statsMode]);
   }
-  function useRoundSummary(engine, learner, practicingLabel) {
+  function useRoundSummary(engine, practicingLabel) {
     const roundContext = T2(() => {
       const s3 = engine.state;
       const fluency = s3.masteredCount + " / " + s3.totalEnabledCount + " fluent";
@@ -5405,10 +5453,9 @@ button {
       const median = computeMedian(times);
       return median !== null ? (median / 1e3).toFixed(1) + "s median response time" : "";
     }, [engine.state.roundResponseTimes]);
-    const baselineText = learner.motorBaseline ? "Response time baseline: " + (learner.motorBaseline / 1e3).toFixed(1) + "s" : "Response time baseline: 1s (default)";
     const answerCount = engine.state.roundAnswered;
     const countText = answerCount + (answerCount === 1 ? " answer" : " answers");
-    return { roundContext, roundCorrect, roundMedian, baselineText, countText };
+    return { roundContext, roundCorrect, roundMedian, countText };
   }
 
   // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
@@ -5480,8 +5527,8 @@ button {
     ["7", "7th"]
   ];
   var NUMERALS = ["I", "ii", "iii", "IV", "V", "vi", "vii\xB0"];
-  function NoteButtons({ onAnswer, hidden, useFlats }) {
-    const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "");
+  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive }) {
+    const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: ALL_NOTES.map((n2) => {
       let label;
       if (useFlats !== void 0) {
@@ -5710,6 +5757,7 @@ button {
   }
   function QuizSession({
     timeLeft,
+    timerPct,
     context,
     count,
     fluent,
@@ -5725,7 +5773,13 @@ button {
           "div",
           {
             class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
-            children: /* @__PURE__ */ u3("div", { class: "quiz-countdown-fill" })
+            children: /* @__PURE__ */ u3(
+              "div",
+              {
+                class: "quiz-countdown-fill",
+                style: { width: `${timerPct ?? 100}%` }
+              }
+            )
           }
         ),
         /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" })
@@ -6016,6 +6070,196 @@ button {
     ] });
   }
 
+  // src/ui/speed-check.tsx
+  var BUTTON_PROVIDER = {
+    key: "button",
+    introText: "Tap the highlighted button as quickly as you can. This measures your base response time so the app can set accurate timing thresholds.",
+    trialText: "Tap the green button!"
+  };
+  var TOTAL_TRIALS = 10;
+  var WARMUP_TRIALS = 2;
+  var PAUSE_MS = 400;
+  function BaselineInfo({ baseline, onRun }) {
+    if (baseline) {
+      return /* @__PURE__ */ u3("div", { class: "baseline-info", children: [
+        "Response time baseline: ",
+        (baseline / 1e3).toFixed(1),
+        "s",
+        " ",
+        /* @__PURE__ */ u3("button", { type: "button", class: "baseline-rerun-btn", onClick: onRun, children: "Rerun speed check" })
+      ] });
+    }
+    return /* @__PURE__ */ u3("div", { class: "baseline-info", children: [
+      "Response time baseline: 1s",
+      " ",
+      /* @__PURE__ */ u3("span", { class: "baseline-default-tag", children: "(default)" }),
+      " ",
+      /* @__PURE__ */ u3("button", { type: "button", class: "baseline-rerun-btn", onClick: onRun, children: "Run speed check" })
+    ] });
+  }
+  function SpeedCheck({ provider, onComplete, onCancel }) {
+    const [phase, setPhase] = d2("intro");
+    const [baseline, setBaseline] = d2(0);
+    const [trialProgress, setTrialProgress] = d2("");
+    const buttonsRef = A2(null);
+    const trialRef = A2({
+      active: false,
+      trialIndex: 0,
+      startTime: 0,
+      times: [],
+      prevBtn: null,
+      targetNote: null,
+      trialTimeout: null
+    });
+    y2(() => {
+      return () => {
+        trialRef.current.active = false;
+        if (trialRef.current.trialTimeout) {
+          clearTimeout(trialRef.current.trialTimeout);
+        }
+      };
+    }, []);
+    const presentNextTrial = q2(() => {
+      const state = trialRef.current;
+      if (!state.active || !buttonsRef.current) return;
+      const buttons = Array.from(
+        buttonsRef.current.querySelectorAll(".answer-btn-note")
+      );
+      if (buttons.length === 0) return;
+      for (const el of buttonsRef.current.querySelectorAll(".calibration-target")) {
+        el.classList.remove("calibration-target");
+      }
+      const btn = pickCalibrationButton(buttons, state.prevBtn);
+      btn.classList.add("calibration-target");
+      state.prevBtn = btn;
+      state.targetNote = btn.dataset.note || null;
+      state.startTime = performance.now();
+      setTrialProgress(state.trialIndex + 1 + " / " + TOTAL_TRIALS);
+    }, []);
+    const handleTrialResponse = q2((note) => {
+      const state = trialRef.current;
+      if (!state.active || !state.targetNote) return;
+      if (note !== state.targetNote) return;
+      const elapsed = performance.now() - state.startTime;
+      if (state.trialIndex >= WARMUP_TRIALS) {
+        state.times.push(elapsed);
+      }
+      state.trialIndex++;
+      state.targetNote = null;
+      if (buttonsRef.current) {
+        for (const el of buttonsRef.current.querySelectorAll(".calibration-target")) {
+          el.classList.remove("calibration-target");
+        }
+      }
+      if (state.trialIndex >= TOTAL_TRIALS) {
+        state.active = false;
+        const median = computeMedian(state.times) ?? 500;
+        setBaseline(Math.round(median));
+        setPhase("results");
+      } else {
+        state.trialTimeout = setTimeout(
+          () => presentNextTrial(),
+          PAUSE_MS
+        );
+      }
+    }, [presentNextTrial]);
+    y2(() => {
+      function onKeyDown(e3) {
+        if (e3.key === "Escape") {
+          e3.preventDefault();
+          trialRef.current.active = false;
+          if (trialRef.current.trialTimeout) {
+            clearTimeout(trialRef.current.trialTimeout);
+          }
+          onCancel();
+          return;
+        }
+        if (phase !== "running") return;
+        const state = trialRef.current;
+        if (!state.active || !state.targetNote) return;
+        const key = e3.key.toUpperCase();
+        if (key === state.targetNote[0]) {
+          e3.preventDefault();
+          handleTrialResponse(state.targetNote);
+        }
+      }
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
+    }, [phase, handleTrialResponse, onCancel]);
+    y2(() => {
+      if (phase !== "running") return;
+      const state = trialRef.current;
+      state.active = true;
+      state.trialIndex = 0;
+      state.startTime = 0;
+      state.times = [];
+      state.prevBtn = null;
+      state.targetNote = null;
+      const timeout = setTimeout(() => presentNextTrial(), 300);
+      return () => {
+        clearTimeout(timeout);
+        state.active = false;
+        if (state.trialTimeout) clearTimeout(state.trialTimeout);
+      };
+    }, [phase, presentNextTrial]);
+    if (phase === "intro") {
+      return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
+        /* @__PURE__ */ u3("p", { children: provider.introText }),
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            class: "calibration-action-btn",
+            onClick: () => setPhase("running"),
+            children: "Start"
+          }
+        )
+      ] });
+    }
+    if (phase === "running") {
+      return /* @__PURE__ */ u3("div", { children: [
+        /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: provider.trialText }),
+        /* @__PURE__ */ u3("div", { ref: buttonsRef, children: /* @__PURE__ */ u3(
+          NoteButtons,
+          {
+            onAnswer: handleTrialResponse,
+            calibrationActive: true
+          }
+        ) }),
+        /* @__PURE__ */ u3("div", { class: "calibration-progress", children: trialProgress })
+      ] });
+    }
+    const thresholds = getCalibrationThresholds(baseline);
+    return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
+      /* @__PURE__ */ u3("div", { class: "calibration-baseline", children: [
+        "Your baseline: ",
+        (baseline / 1e3).toFixed(2),
+        "s"
+      ] }),
+      /* @__PURE__ */ u3("table", { class: "calibration-thresholds", children: [
+        /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
+          /* @__PURE__ */ u3("th", { children: "Level" }),
+          /* @__PURE__ */ u3("th", { children: "Max time" }),
+          /* @__PURE__ */ u3("th", { children: "Meaning" })
+        ] }) }),
+        /* @__PURE__ */ u3("tbody", { children: thresholds.map((t3) => /* @__PURE__ */ u3("tr", { children: [
+          /* @__PURE__ */ u3("td", { children: t3.label }),
+          /* @__PURE__ */ u3("td", { children: t3.maxMs !== null ? (t3.maxMs / 1e3).toFixed(1) + "s" : "\u2014" }),
+          /* @__PURE__ */ u3("td", { children: t3.meaning })
+        ] }, t3.label)) })
+      ] }),
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          class: "calibration-action-btn",
+          onClick: () => onComplete(baseline),
+          children: "Done"
+        }
+      )
+    ] });
+  }
+
   // src/mode-utils.ts
   function buildBidirectionalIds(keys) {
     const ids = [];
@@ -6149,8 +6393,9 @@ button {
     }), [noteHandler]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
-    usePhaseClass(container, engine.state.phase);
-    const round = useRoundSummary(engine, learner, "all items");
+    const [calibrating, setCalibrating] = d2(false);
+    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    const round = useRoundSummary(engine, "all items");
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -6182,6 +6427,7 @@ button {
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
           noteHandler.reset();
+          setCalibrating(false);
         }
       });
     }, [engine, learner, noteHandler]);
@@ -6218,7 +6464,13 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "baseline-info", children: round.baselineText }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsTable,
@@ -6238,6 +6490,7 @@ button {
         QuizSession,
         {
           timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
           context: "all items",
           count: round.countText,
           fluent: engine.state.masteredCount,
@@ -6250,10 +6503,26 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: promptText,
-          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-          children: [
-            /* @__PURE__ */ u3(NoteButtons, { hidden: dir === "fwd", onAnswer: handleNoteAnswer }),
+          prompt: calibrating ? "" : promptText,
+          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: calibrating ? /* @__PURE__ */ u3(
+            SpeedCheck,
+            {
+              provider: BUTTON_PROVIDER,
+              onComplete: (baseline) => {
+                learner.applyBaseline(baseline);
+                setCalibrating(false);
+              },
+              onCancel: () => setCalibrating(false)
+            }
+          ) : /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                hidden: dir === "fwd",
+                onAnswer: handleNoteAnswer
+              }
+            ),
             /* @__PURE__ */ u3(
               NumberButtons,
               {
@@ -6283,7 +6552,7 @@ button {
                 onStop: engine.stop
               }
             )
-          ]
+          ] })
         }
       )
     ] });
@@ -6385,7 +6654,8 @@ button {
       getPracticingLabel: () => "all items"
     }), []);
     const engine = useQuizEngine(engineConfig, learner.selector);
-    usePhaseClass(container, engine.state.phase);
+    const [calibrating, setCalibrating] = d2(false);
+    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -6416,6 +6686,7 @@ button {
         },
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
+          setCalibrating(false);
         }
       });
     }, [engine, learner]);
@@ -6429,7 +6700,7 @@ button {
       (num) => engine.submitAnswer(String(num)),
       [engine.submitAnswer]
     );
-    const round = useRoundSummary(engine, learner, "all items");
+    const round = useRoundSummary(engine, "all items");
     const statsSel = useStatsSelector(
       learner.selector,
       engine.state.phase,
@@ -6453,7 +6724,13 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "baseline-info", children: round.baselineText }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsTable,
@@ -6473,6 +6750,7 @@ button {
         QuizSession,
         {
           timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
           context: "all items",
           count: round.countText,
           fluent: engine.state.masteredCount,
@@ -6485,9 +6763,19 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: promptText,
-          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-          children: [
+          prompt: calibrating ? "" : promptText,
+          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: calibrating ? /* @__PURE__ */ u3(
+            SpeedCheck,
+            {
+              provider: BUTTON_PROVIDER,
+              onComplete: (baseline) => {
+                learner.applyBaseline(baseline);
+                setCalibrating(false);
+              },
+              onCancel: () => setCalibrating(false)
+            }
+          ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
               IntervalButtons,
               {
@@ -6524,7 +6812,7 @@ button {
                 onStop: engine.stop
               }
             )
-          ]
+          ] })
         }
       )
     ] });
@@ -6982,7 +7270,8 @@ button {
     }), [scope, noteHandler]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
-    usePhaseClass(container, engine.state.phase);
+    const [calibrating, setCalibrating] = d2(false);
+    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -7018,6 +7307,7 @@ button {
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
           noteHandler.reset();
+          setCalibrating(false);
         }
       });
     }, [engine, learner, noteHandler]);
@@ -7027,7 +7317,7 @@ button {
       (note) => engine.submitAnswer(note),
       [engine.submitAnswer]
     );
-    const round = useRoundSummary(engine, learner, practicingLabel);
+    const round = useRoundSummary(engine, practicingLabel);
     const statsSel = useStatsSelector(
       learner.selector,
       engine.state.phase,
@@ -7062,7 +7352,13 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "baseline-info", children: round.baselineText }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsGrid,
@@ -7081,6 +7377,7 @@ button {
         QuizSession,
         {
           timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
           context: practicingLabel,
           count: round.countText,
           fluent: engine.state.masteredCount,
@@ -7093,9 +7390,19 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: promptText,
-          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-          children: [
+          prompt: calibrating ? "" : promptText,
+          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: calibrating ? /* @__PURE__ */ u3(
+            SpeedCheck,
+            {
+              provider: BUTTON_PROVIDER,
+              onComplete: (baseline) => {
+                learner.applyBaseline(baseline);
+                setCalibrating(false);
+              },
+              onCancel: () => setCalibrating(false)
+            }
+          ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer, useFlats }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
@@ -7117,7 +7424,7 @@ button {
                 onStop: engine.stop
               }
             )
-          ]
+          ] })
         }
       )
     ] });
@@ -7286,8 +7593,9 @@ button {
     }), [scope, noteHandler]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
-    usePhaseClass(container, engine.state.phase);
-    const round = useRoundSummary(engine, learner, practicingLabel);
+    const [calibrating, setCalibrating] = d2(false);
+    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    const round = useRoundSummary(engine, practicingLabel);
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -7323,6 +7631,7 @@ button {
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
           noteHandler.reset();
+          setCalibrating(false);
         }
       });
     }, [engine, learner, noteHandler]);
@@ -7366,7 +7675,13 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "baseline-info", children: round.baselineText }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsGrid,
@@ -7385,6 +7700,7 @@ button {
         QuizSession,
         {
           timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
           context: practicingLabel,
           count: round.countText,
           fluent: engine.state.masteredCount,
@@ -7397,9 +7713,19 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: promptText,
-          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-          children: [
+          prompt: calibrating ? "" : promptText,
+          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: calibrating ? /* @__PURE__ */ u3(
+            SpeedCheck,
+            {
+              provider: BUTTON_PROVIDER,
+              onComplete: (baseline) => {
+                learner.applyBaseline(baseline);
+                setCalibrating(false);
+              },
+              onCancel: () => setCalibrating(false)
+            }
+          ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer, useFlats }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
@@ -7421,7 +7747,7 @@ button {
                 onStop: engine.stop
               }
             )
-          ]
+          ] })
         }
       )
     ] });
@@ -7616,12 +7942,13 @@ button {
     }), [scope, noteHandler]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
-    usePhaseClass(container, engine.state.phase);
+    const [calibrating, setCalibrating] = d2(false);
+    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
     const [statsMode, setStatsMode] = d2("retention");
-    const round = useRoundSummary(engine, learner, practicingLabel);
+    const round = useRoundSummary(engine, practicingLabel);
     const statsSel = useStatsSelector(
       learner.selector,
       engine.state.phase,
@@ -7662,6 +7989,7 @@ button {
             clearTimeout(pendingSigTimeoutRef.current);
           }
           pendingSigDigitRef.current = null;
+          setCalibrating(false);
         }
       });
     }, [engine, learner, noteHandler]);
@@ -7704,7 +8032,13 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "baseline-info", children: round.baselineText }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsTable,
@@ -7724,6 +8058,7 @@ button {
         QuizSession,
         {
           timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
           context: practicingLabel,
           count: round.countText,
           fluent: engine.state.masteredCount,
@@ -7736,11 +8071,33 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: promptText,
-          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-          children: [
-            /* @__PURE__ */ u3(KeysigButtons, { hidden: dir === "rev", onAnswer: handleSigAnswer }),
-            /* @__PURE__ */ u3(NoteButtons, { hidden: dir === "fwd", onAnswer: handleNoteAnswer }),
+          prompt: calibrating ? "" : promptText,
+          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: calibrating ? /* @__PURE__ */ u3(
+            SpeedCheck,
+            {
+              provider: BUTTON_PROVIDER,
+              onComplete: (baseline) => {
+                learner.applyBaseline(baseline);
+                setCalibrating(false);
+              },
+              onCancel: () => setCalibrating(false)
+            }
+          ) : /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(
+              KeysigButtons,
+              {
+                hidden: dir === "rev",
+                onAnswer: handleSigAnswer
+              }
+            ),
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                hidden: dir === "fwd",
+                onAnswer: handleNoteAnswer
+              }
+            ),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -7761,7 +8118,7 @@ button {
                 onStop: engine.stop
               }
             )
-          ]
+          ] })
         }
       )
     ] });
@@ -7924,7 +8281,8 @@ button {
     }), [scope, noteHandler]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
-    usePhaseClass(container, engine.state.phase);
+    const [calibrating, setCalibrating] = d2(false);
+    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -7960,6 +8318,7 @@ button {
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
           noteHandler.reset();
+          setCalibrating(false);
         }
       });
     }, [engine, learner, noteHandler]);
@@ -7973,7 +8332,7 @@ button {
       (degree) => engine.submitAnswer(degree),
       [engine.submitAnswer]
     );
-    const round = useRoundSummary(engine, learner, practicingLabel);
+    const round = useRoundSummary(engine, practicingLabel);
     const statsSel = useStatsSelector(
       learner.selector,
       engine.state.phase,
@@ -8008,7 +8367,13 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "baseline-info", children: round.baselineText }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsGrid,
@@ -8028,6 +8393,7 @@ button {
         QuizSession,
         {
           timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
           context: practicingLabel,
           count: round.countText,
           fluent: engine.state.masteredCount,
@@ -8040,11 +8406,33 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: promptText,
-          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-          children: [
-            /* @__PURE__ */ u3(NoteButtons, { hidden: dir === "rev", onAnswer: handleNoteAnswer }),
-            /* @__PURE__ */ u3(DegreeButtons, { hidden: dir === "fwd", onAnswer: handleDegreeAnswer }),
+          prompt: calibrating ? "" : promptText,
+          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: calibrating ? /* @__PURE__ */ u3(
+            SpeedCheck,
+            {
+              provider: BUTTON_PROVIDER,
+              onComplete: (baseline) => {
+                learner.applyBaseline(baseline);
+                setCalibrating(false);
+              },
+              onCancel: () => setCalibrating(false)
+            }
+          ) : /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                hidden: dir === "rev",
+                onAnswer: handleNoteAnswer
+              }
+            ),
+            /* @__PURE__ */ u3(
+              DegreeButtons,
+              {
+                hidden: dir === "fwd",
+                onAnswer: handleDegreeAnswer
+              }
+            ),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8065,7 +8453,7 @@ button {
                 onStop: engine.stop
               }
             )
-          ]
+          ] })
         }
       )
     ] });
@@ -8229,7 +8617,8 @@ button {
     }), [scope, noteHandler]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
-    usePhaseClass(container, engine.state.phase);
+    const [calibrating, setCalibrating] = d2(false);
+    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -8265,6 +8654,7 @@ button {
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
           noteHandler.reset();
+          setCalibrating(false);
         }
       });
     }, [engine, learner, noteHandler]);
@@ -8278,7 +8668,7 @@ button {
       (numeral) => engine.submitAnswer(numeral),
       [engine.submitAnswer]
     );
-    const round = useRoundSummary(engine, learner, practicingLabel);
+    const round = useRoundSummary(engine, practicingLabel);
     const statsSel = useStatsSelector(
       learner.selector,
       engine.state.phase,
@@ -8313,7 +8703,13 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "baseline-info", children: round.baselineText }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsGrid,
@@ -8333,6 +8729,7 @@ button {
         QuizSession,
         {
           timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
           context: practicingLabel,
           count: round.countText,
           fluent: engine.state.masteredCount,
@@ -8345,10 +8742,26 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: promptText,
-          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-          children: [
-            /* @__PURE__ */ u3(NoteButtons, { hidden: dir === "rev", onAnswer: handleNoteAnswer }),
+          prompt: calibrating ? "" : promptText,
+          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: calibrating ? /* @__PURE__ */ u3(
+            SpeedCheck,
+            {
+              provider: BUTTON_PROVIDER,
+              onComplete: (baseline) => {
+                learner.applyBaseline(baseline);
+                setCalibrating(false);
+              },
+              onCancel: () => setCalibrating(false)
+            }
+          ) : /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                hidden: dir === "rev",
+                onAnswer: handleNoteAnswer
+              }
+            ),
             /* @__PURE__ */ u3(
               NumeralButtons,
               {
@@ -8376,7 +8789,7 @@ button {
                 onStop: engine.stop
               }
             )
-          ]
+          ] })
         }
       )
     ] });
@@ -8610,7 +9023,8 @@ button {
     }), [scope, noteHandler]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
-    usePhaseClass(container, engine.state.phase);
+    const [calibrating, setCalibrating] = d2(false);
+    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -8646,6 +9060,7 @@ button {
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
           noteHandler.reset();
+          setCalibrating(false);
         }
       });
     }, [engine, learner, noteHandler]);
@@ -8654,7 +9069,7 @@ button {
       (note) => handleSequentialInput(note),
       [handleSequentialInput]
     );
-    const round = useRoundSummary(engine, learner, practicingLabel);
+    const round = useRoundSummary(engine, practicingLabel);
     const statsSel = useStatsSelector(
       learner.selector,
       engine.state.phase,
@@ -8689,7 +9104,13 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "baseline-info", children: round.baselineText }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsGrid,
@@ -8709,6 +9130,7 @@ button {
         QuizSession,
         {
           timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
           context: practicingLabel,
           count: round.countText,
           fluent: engine.state.masteredCount,
@@ -8721,9 +9143,19 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: promptText,
-          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-          children: [
+          prompt: calibrating ? "" : promptText,
+          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: calibrating ? /* @__PURE__ */ u3(
+            SpeedCheck,
+            {
+              provider: BUTTON_PROVIDER,
+              onComplete: (baseline) => {
+                learner.applyBaseline(baseline);
+                setCalibrating(false);
+              },
+              onCancel: () => setCalibrating(false)
+            }
+          ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
             /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer }),
             /* @__PURE__ */ u3(
@@ -8746,7 +9178,7 @@ button {
                 onStop: engine.stop
               }
             )
-          ]
+          ] })
         }
       )
     ] });
@@ -9194,8 +9626,9 @@ button {
     }), [scope, noteHandler, fb, instrument]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
-    usePhaseClass(container, engine.state.phase);
-    const round = useRoundSummary(engine, learner, practicingLabel);
+    const [calibrating, setCalibrating] = d2(false);
+    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    const round = useRoundSummary(engine, practicingLabel);
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -9269,6 +9702,7 @@ button {
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
           noteHandler.reset();
+          setCalibrating(false);
         }
       });
     }, [engine, learner, noteHandler]);
@@ -9315,7 +9749,13 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "baseline-info", children: round.baselineText }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: [
               /* @__PURE__ */ u3(
@@ -9339,6 +9779,7 @@ button {
         QuizSession,
         {
           timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
           context: practicingLabel,
           count: round.countText,
           fluent: engine.state.masteredCount,
@@ -9351,9 +9792,19 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: promptText,
-          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-          children: [
+          prompt: calibrating ? "" : promptText,
+          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: calibrating ? /* @__PURE__ */ u3(
+            SpeedCheck,
+            {
+              provider: BUTTON_PROVIDER,
+              onComplete: (baseline) => {
+                learner.applyBaseline(baseline);
+                setCalibrating(false);
+              },
+              onCancel: () => setCalibrating(false)
+            }
+          ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
               "div",
               {
@@ -9388,7 +9839,7 @@ button {
                 onStop: engine.stop
               }
             )
-          ]
+          ] })
         }
       )
     ] });
@@ -9573,13 +10024,14 @@ button {
     }), [scope]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
-    usePhaseClass(container, engine.state.phase);
+    const [calibrating, setCalibrating] = d2(false);
+    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
     const practicingLabel = T2(() => {
       if (noteFilter === "all") return "all notes";
       if (noteFilter === "sharps-flats") return "sharps & flats";
       return "natural notes";
     }, [noteFilter]);
-    const round = useRoundSummary(engine, learner, practicingLabel);
+    const round = useRoundSummary(engine, practicingLabel);
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -9621,6 +10073,7 @@ button {
         },
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
+          setCalibrating(false);
         }
       });
     }, [engine, learner]);
@@ -9671,7 +10124,13 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "baseline-info", children: round.baselineText }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3(
               "div",
@@ -9687,6 +10146,7 @@ button {
         QuizSession,
         {
           timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
           context: practicingLabel,
           count: round.countText,
           fluent: engine.state.masteredCount,
@@ -9699,9 +10159,19 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: promptText,
-          lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-          children: [
+          prompt: calibrating ? "" : promptText,
+          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: calibrating ? /* @__PURE__ */ u3(
+            SpeedCheck,
+            {
+              provider: BUTTON_PROVIDER,
+              onComplete: (baseline) => {
+                learner.applyBaseline(baseline);
+                setCalibrating(false);
+              },
+              onCancel: () => setCalibrating(false)
+            }
+          ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3("div", { class: "speed-tap-status", children: /* @__PURE__ */ u3("span", { class: "speed-tap-progress", children: progressText }) }),
             /* @__PURE__ */ u3(
               "div",
@@ -9732,7 +10202,7 @@ button {
                 onStop: engine.stop
               }
             )
-          ]
+          ] })
         }
       )
     ] });

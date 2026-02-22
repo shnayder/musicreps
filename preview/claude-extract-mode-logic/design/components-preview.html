@@ -2024,8 +2024,8 @@ button {
     ["7", "7th"]
   ];
   var NUMERALS = ["I", "ii", "iii", "IV", "V", "vi", "vii\xB0"];
-  function NoteButtons({ onAnswer, hidden, useFlats }) {
-    const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "");
+  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive }) {
+    const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
     return /* @__PURE__ */ u2("div", { class: cls, children: ALL_NOTES.map((n2) => {
       let label;
       if (useFlats !== void 0) {
@@ -2606,6 +2606,7 @@ button {
   }
   function QuizSession({
     timeLeft,
+    timerPct,
     context,
     count,
     fluent,
@@ -2621,7 +2622,13 @@ button {
           "div",
           {
             class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
-            children: /* @__PURE__ */ u2("div", { class: "quiz-countdown-fill" })
+            children: /* @__PURE__ */ u2(
+              "div",
+              {
+                class: "quiz-countdown-fill",
+                style: { width: `${timerPct ?? 100}%` }
+              }
+            )
           }
         ),
         /* @__PURE__ */ u2("span", { class: "quiz-info-time", children: timeLeft || "" })
