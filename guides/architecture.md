@@ -22,6 +22,7 @@ dependency graph from the entry point (`src/app.ts`):
 Foundation layer:
   adaptive.ts              ← Config, selector factory, forgetting model
   music-data.ts            ← NOTES, INTERVALS, helpers
+  recommendations.ts       ← Consolidate-before-expanding algorithm
   types.ts                 ← Shared type definitions (zero runtime)
 
 Engine layer:
@@ -31,7 +32,6 @@ Engine layer:
 
 Display layer:
   stats-display.ts         ← Heatmap color functions, legend builder
-  recommendations.ts       ← Consolidate-before-expanding algorithm
   mode-ui-state.ts         ← Practice summary computation
   quiz-fretboard-state.ts  ← Pure fretboard helpers (factory pattern)
     imports: music-data
@@ -71,9 +71,10 @@ App layer:
   app.ts                   ← Entry point: registers Preact modes, starts navigation
 ```
 
-**Layers**: Foundation (adaptive, music-data) → Engine (state transitions) →
-Display (stats, recommendations) → Mode Logic (pure per-mode functions) → Hooks
-(Preact wrappers) → UI (components + mode compositions) → App init.
+**Layers**: Foundation (adaptive, music-data, recommendations) → Engine (state
+transitions) → Display (stats, practice summaries) → Mode Logic (pure per-mode
+functions) → Hooks (Preact wrappers) → UI (components + mode compositions) →
+App init.
 
 **Enforced by tests.** `src/architecture_test.ts` uses `deno info --json` to
 build the real import graph, then asserts layer boundaries: no cycles, no
@@ -238,7 +239,7 @@ export function SemitoneMathMode({ container, navigateHome, onMount }) {
 - `useModeLifecycle` — registers the activate/deactivate handle with navigation.
   Activate syncs the motor baseline and updates the idle message; deactivate
   stops the engine, runs mode-specific cleanup, and clears calibration. Used by
-  all 9 quiz modes.
+  all quiz mode components.
 
 **Registration** (in `app.ts`):
 
