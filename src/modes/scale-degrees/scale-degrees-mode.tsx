@@ -2,27 +2,18 @@
 // Forward: "5th of D major?" -> A, Reverse: "In D major, A is the ?" -> 5th.
 // 168 items (12 keys x 7 degrees x 2 dirs), grouped by degree.
 
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/hooks';
-import type { RecommendationResult } from '../../types.ts';
+import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
+import type { ModeHandle } from '../../types.ts';
 import { displayNote } from '../../music-data.ts';
 import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
-import { computeRecommendations } from '../../recommendations.ts';
-import {
-  buildRecommendationText,
-  computePracticeSummary,
-} from '../../mode-ui-state.ts';
+import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
-import { useScopeState } from '../../hooks/use-scope-state.ts';
+import { useGroupScope } from '../../hooks/use-group-scope.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
 import { usePhaseClass } from '../../hooks/use-phase-class.ts';
+import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import {
   useRoundSummary,
   useStatsSelector,
@@ -60,15 +51,6 @@ import {
 } from './logic.ts';
 
 // ---------------------------------------------------------------------------
-// Mode handle
-// ---------------------------------------------------------------------------
-
-export type ModeHandle = {
-  activate(): void;
-  deactivate(): void;
-};
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -79,33 +61,36 @@ export function ScaleDegreesMode(
     onMount: (handle: ModeHandle) => void;
   },
 ) {
-  // --- Scope ---
-  const [scope, scopeActions] = useScopeState({
-    kind: 'groups',
-    groups: DEGREE_GROUPS.map((g, i) => ({
-      index: i,
-      label: g.label,
-      itemIds: getItemIdsForGroup(i),
-    })),
-    defaultEnabled: [0],
-    storageKey: 'scaleDegrees_enabledGroups',
-    label: 'Degrees',
-    sortUnstarted: (a, b) => a.string - b.string,
-  });
-
-  const enabledGroups = scope.kind === 'groups'
-    ? scope.enabledGroups
-    : new Set([0]);
-
+  // --- Core hooks ---
   const learner = useLearnerModel('scaleDegrees', ALL_ITEMS);
 
-  const enabledItems = useMemo(() => {
-    const items: string[] = [];
-    for (const g of enabledGroups) {
-      items.push(...getItemIdsForGroup(g));
-    }
-    return items;
-  }, [enabledGroups]);
+  // --- Scope + recommendations ---
+  const {
+    scopeActions,
+    enabledGroups,
+    enabledItems,
+    practicingLabel,
+    recommendation,
+    recommendationText,
+    applyRecommendation,
+    getEnabledItems,
+    getPracticingLabel,
+  } = useGroupScope({
+    groups: DEGREE_GROUPS,
+    getItemIdsForGroup,
+    allGroupIndices: ALL_GROUP_INDICES,
+    storageKey: 'scaleDegrees_enabledGroups',
+    scopeLabel: 'Degrees',
+    defaultEnabled: [0],
+    selector: learner.selector,
+    formatLabel: (groups) => {
+      if (groups.size === DEGREE_GROUPS.length) return 'all degrees';
+      const degrees = [...groups].sort((a, b) => a - b)
+        .flatMap((g) => DEGREE_GROUPS[g].degrees)
+        .sort((a, b) => a - b);
+      return degrees.map((d) => DEGREE_LABELS[d - 1]).join(', ') + ' degrees';
+    },
+  });
 
   // --- Question state ---
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
@@ -122,54 +107,10 @@ export function ScaleDegreesMode(
     [],
   );
 
-  // --- Recommendations ---
-  const recommendation = useMemo((): RecommendationResult => {
-    return computeRecommendations(
-      learner.selector,
-      ALL_GROUP_INDICES,
-      getItemIdsForGroup,
-      { expansionThreshold: 0.7 },
-      { sortUnstarted: (a, b) => a.string - b.string },
-    );
-  }, [learner.selector]);
-
-  const recommendationText = useMemo(() => {
-    return buildRecommendationText(
-      recommendation,
-      (i: number) => DEGREE_GROUPS[i].label,
-    );
-  }, [recommendation]);
-
-  const applyRecommendation = useCallback(() => {
-    if (recommendation.enabled) {
-      scopeActions.setScope({
-        kind: 'groups',
-        enabledGroups: recommendation.enabled,
-      });
-    }
-  }, [recommendation, scopeActions]);
-
-  // --- Practicing label ---
-  const practicingLabel = useMemo(() => {
-    if (enabledGroups.size === DEGREE_GROUPS.length) return 'all degrees';
-    const degrees = [...enabledGroups].sort((a, b) => a - b)
-      .flatMap((g) => DEGREE_GROUPS[g].degrees)
-      .sort((a, b) => a - b);
-    return degrees.map((d) => DEGREE_LABELS[d - 1]).join(', ') + ' degrees';
-  }, [enabledGroups]);
-
   // --- Engine config ---
   const engineConfig = useMemo((): QuizEngineConfig => ({
-    getEnabledItems: () => {
-      const items: string[] = [];
-      const groups = scope.kind === 'groups'
-        ? scope.enabledGroups
-        : new Set([0]);
-      for (const g of groups) {
-        items.push(...getItemIdsForGroup(g));
-      }
-      return items;
-    },
+    getEnabledItems,
+    getPracticingLabel,
 
     checkAnswer: (_itemId: string, input: string) => {
       return checkAnswer(currentQRef.current!, input);
@@ -200,18 +141,7 @@ export function ScaleDegreesMode(
 
     onStart: () => noteHandler.reset(),
     onStop: () => noteHandler.reset(),
-
-    getPracticingLabel: () => {
-      const groups = scope.kind === 'groups'
-        ? scope.enabledGroups
-        : new Set([0]);
-      if (groups.size === DEGREE_GROUPS.length) return 'all degrees';
-      const degrees = [...groups].sort((a, b) => a - b)
-        .flatMap((g) => DEGREE_GROUPS[g].degrees)
-        .sort((a, b) => a - b);
-      return degrees.map((d) => DEGREE_LABELS[d - 1]).join(', ') + ' degrees';
-    },
-  }), [scope, noteHandler]);
+  }), [noteHandler, getEnabledItems, getPracticingLabel]);
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
@@ -251,19 +181,11 @@ export function ScaleDegreesMode(
     ],
   );
 
-  useLayoutEffect(() => {
-    onMount({
-      activate() {
-        learner.syncBaseline();
-        engine.updateIdleMessage();
-      },
-      deactivate() {
-        if (engine.state.phase !== 'idle') engine.stop();
-        noteHandler.reset();
-        setCalibrating(false);
-      },
-    });
-  }, [engine, learner, noteHandler]);
+  // --- Navigation handle ---
+  const deactivateCleanup = useCallback(() => noteHandler.reset(), [
+    noteHandler,
+  ]);
+  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
 
   // --- Derived state ---
   const dir = currentQ?.dir ?? 'fwd';

@@ -3,27 +3,18 @@
 // ~132 items: 12 roots x chord types, grouped by chord type.
 // Sequential response: each note entered separately, final result is pass/fail.
 
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/hooks';
-import type { RecommendationResult, SequentialState } from '../../types.ts';
+import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
+import type { ModeHandle, SequentialState } from '../../types.ts';
 import { displayNote } from '../../music-data.ts';
 import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
-import { computeRecommendations } from '../../recommendations.ts';
-import {
-  buildRecommendationText,
-  computePracticeSummary,
-} from '../../mode-ui-state.ts';
+import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
-import { useScopeState } from '../../hooks/use-scope-state.ts';
+import { useGroupScope } from '../../hooks/use-group-scope.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
 import { usePhaseClass } from '../../hooks/use-phase-class.ts';
+import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import {
   useRoundSummary,
   useStatsSelector,
@@ -86,15 +77,6 @@ function ChordSlots({ state }: { state: SequentialState | null }) {
 }
 
 // ---------------------------------------------------------------------------
-// Mode handle
-// ---------------------------------------------------------------------------
-
-export type ModeHandle = {
-  activate(): void;
-  deactivate(): void;
-};
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -105,32 +87,35 @@ export function ChordSpellingMode(
     onMount: (handle: ModeHandle) => void;
   },
 ) {
-  const [scope, scopeActions] = useScopeState({
-    kind: 'groups',
-    groups: SPELLING_GROUPS.map((g, i) => ({
-      index: i,
-      label: g.label,
-      itemIds: getItemIdsForGroup(i),
-    })),
-    defaultEnabled: [0],
-    storageKey: 'chordSpelling_enabledGroups',
-    label: 'Chord types',
-    sortUnstarted: (a, b) => a.string - b.string,
-  });
-
-  const enabledGroups = scope.kind === 'groups'
-    ? scope.enabledGroups
-    : new Set([0]);
-
+  // --- Core hooks ---
   const learner = useLearnerModel('chordSpelling', ALL_ITEMS);
 
-  const enabledItems = useMemo(() => {
-    const items: string[] = [];
-    for (const g of enabledGroups) {
-      items.push(...getItemIdsForGroup(g));
-    }
-    return items;
-  }, [enabledGroups]);
+  // --- Scope + recommendations ---
+  const {
+    scopeActions,
+    enabledGroups,
+    enabledItems,
+    practicingLabel,
+    recommendation,
+    recommendationText,
+    applyRecommendation,
+    getEnabledItems,
+    getPracticingLabel,
+  } = useGroupScope({
+    groups: SPELLING_GROUPS,
+    getItemIdsForGroup,
+    allGroupIndices: ALL_GROUP_INDICES,
+    storageKey: 'chordSpelling_enabledGroups',
+    scopeLabel: 'Chord types',
+    defaultEnabled: [0],
+    selector: learner.selector,
+    formatLabel: (groups) => {
+      if (groups.size === SPELLING_GROUPS.length) return 'all chord types';
+      const labels = [...groups].sort((a, b) => a - b)
+        .map((g) => SPELLING_GROUPS[g].label);
+      return labels.join(', ') + ' chords';
+    },
+  });
 
   // --- Sequential state ---
   const [seqState, setSeqState] = useState<SequentialState | null>(null);
@@ -155,39 +140,6 @@ export function ChordSpellingMode(
     [],
   );
 
-  const recommendation = useMemo((): RecommendationResult => {
-    return computeRecommendations(
-      learner.selector,
-      ALL_GROUP_INDICES,
-      getItemIdsForGroup,
-      { expansionThreshold: 0.7 },
-      { sortUnstarted: (a, b) => a.string - b.string },
-    );
-  }, [learner.selector]);
-
-  const recommendationText = useMemo(() => {
-    return buildRecommendationText(
-      recommendation,
-      (i: number) => SPELLING_GROUPS[i].label,
-    );
-  }, [recommendation]);
-
-  const applyRecommendation = useCallback(() => {
-    if (recommendation.enabled) {
-      scopeActions.setScope({
-        kind: 'groups',
-        enabledGroups: recommendation.enabled,
-      });
-    }
-  }, [recommendation, scopeActions]);
-
-  const practicingLabel = useMemo(() => {
-    if (enabledGroups.size === SPELLING_GROUPS.length) return 'all chord types';
-    const labels = [...enabledGroups].sort((a, b) => a - b)
-      .map((g) => SPELLING_GROUPS[g].label);
-    return labels.join(', ') + ' chords';
-  }, [enabledGroups]);
-
   // --- Sequential input handler ---
   const handleSequentialInput = useCallback((input: string) => {
     const itemId = currentItemRef.current;
@@ -208,16 +160,8 @@ export function ChordSpellingMode(
 
   // --- Engine config ---
   const engineConfig = useMemo((): QuizEngineConfig => ({
-    getEnabledItems: () => {
-      const items: string[] = [];
-      const groups = scope.kind === 'groups'
-        ? scope.enabledGroups
-        : new Set([0]);
-      for (const g of groups) {
-        items.push(...getItemIdsForGroup(g));
-      }
-      return items;
-    },
+    getEnabledItems,
+    getPracticingLabel,
 
     checkAnswer: (itemId: string, input: string) => {
       return checkAnswer(itemId, input);
@@ -245,17 +189,7 @@ export function ChordSpellingMode(
       seqStateRef.current = null;
       setSeqState(null);
     },
-
-    getPracticingLabel: () => {
-      const groups = scope.kind === 'groups'
-        ? scope.enabledGroups
-        : new Set([0]);
-      if (groups.size === SPELLING_GROUPS.length) return 'all chord types';
-      const labels = [...groups].sort((a, b) => a - b)
-        .map((g) => SPELLING_GROUPS[g].label);
-      return labels.join(', ') + ' chords';
-    },
-  }), [scope, noteHandler]);
+  }), [noteHandler, getEnabledItems, getPracticingLabel]);
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
@@ -297,19 +231,10 @@ export function ChordSpellingMode(
   );
 
   // --- Navigation handle ---
-  useLayoutEffect(() => {
-    onMount({
-      activate() {
-        learner.syncBaseline();
-        engine.updateIdleMessage();
-      },
-      deactivate() {
-        if (engine.state.phase !== 'idle') engine.stop();
-        noteHandler.reset();
-        setCalibrating(false);
-      },
-    });
-  }, [engine, learner, noteHandler]);
+  const deactivateCleanup = useCallback(() => noteHandler.reset(), [
+    noteHandler,
+  ]);
+  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
 
   // --- Derived state ---
   const promptText = currentQ

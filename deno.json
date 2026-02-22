@@ -29,10 +29,9 @@
     "exclude": [
       "docs/",
       "node_modules/",
-      "guides/design/moments.html",
-      "guides/design/components-preview.html",
-      "guides/design/screenshot-review.html",
-      "plans/generated/"
+      "guides/",
+      "plans/",
+      "backlogs/"
     ]
   },
   "tasks": {

@@ -27,6 +27,8 @@ export const NOTES: Note[] = [
 ];
 
 export const NATURAL_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+export const NOTE_NAMES = NOTES.map((n) => n.name);
+export const ACCIDENTAL_NAMES = NOTE_NAMES.filter((n) => n.includes('#'));
 
 export const INTERVALS: Interval[] = [
   { name: 'minor 2nd', num: 1, abbrev: 'm2' },
@@ -42,6 +44,7 @@ export const INTERVALS: Interval[] = [
   { name: 'Major 7th', num: 11, abbrev: 'M7' },
   { name: 'Octave', num: 12, abbrev: 'P8' },
 ];
+export const INTERVAL_ABBREVS = INTERVALS.map((i) => i.abbrev);
 
 /** Look up a note by its semitone number (0–11). */
 export function noteByNum(num: number) {
@@ -263,6 +266,26 @@ export function keySignatureLabel(key: MajorKey) {
   return key.accidentalCount + 'b';
 }
 
+/** All 15 key-signature labels (0 through 7 sharps/flats). Includes
+ *  enharmonic signatures (7#, 6b, 7b) not in MAJOR_KEYS. */
+export const KEYSIG_LABELS = [
+  '0',
+  '1#',
+  '2#',
+  '3#',
+  '4#',
+  '5#',
+  '6#',
+  '7#',
+  '1b',
+  '2b',
+  '3b',
+  '4b',
+  '5b',
+  '6b',
+  '7b',
+];
+
 /** Find a key by its signature label (e.g., '2#' -> D major). */
 export function keyBySignatureLabel(label: string) {
   return MAJOR_KEYS.find((k) => keySignatureLabel(k) === label) || null;
@@ -288,6 +311,15 @@ export const DIATONIC_CHORDS: DiatonicChord[] = [
 ];
 
 export const ROMAN_NUMERALS = DIATONIC_CHORDS.map((c) => c.numeral);
+export const DEGREE_LABELS: [string, string][] = [
+  ['1', '1st'],
+  ['2', '2nd'],
+  ['3', '3rd'],
+  ['4', '4th'],
+  ['5', '5th'],
+  ['6', '6th'],
+  ['7', '7th'],
+];
 
 // ---------------------------------------------------------------------------
 // Chord types and spelling

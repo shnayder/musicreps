@@ -107,6 +107,26 @@ Always start from the latest `main` branch unless told otherwise. Fetch and
 merge/rebase from `origin/main` after the feature design is finalized, before
 beginning implementation.
 
+**Always set up remote tracking** when creating a new branch. This prevents
+accidentally pushing to `origin/main` instead of the feature branch:
+
+```bash
+# Create and push with tracking in one step
+git checkout -b my-branch
+git push -u origin my-branch
+
+# Or push with tracking later (before any other push)
+git push -u origin HEAD
+```
+
+The `-u` flag sets the upstream, so subsequent `git push` goes to the right
+remote branch. Never run bare `git push` on a branch that doesn't track a remote
+yet — it may default to pushing to `origin/main`.
+
+**Recommended git config:** `git config --global push.default simple` ensures
+`git push` refuses if the local and remote branch names don't match — an extra
+safeguard against accidentally pushing to `main`.
+
 ## Deployment
 
 Build output goes to `docs/` (GitHub Pages source directory):

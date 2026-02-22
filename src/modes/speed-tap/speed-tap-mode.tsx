@@ -5,12 +5,11 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'preact/hooks';
-import type { NoteFilter as NoteFilterType } from '../../types.ts';
+import type { ModeHandle, NoteFilter as NoteFilterType } from '../../types.ts';
 import { displayNote, NOTES, pickRandomAccidental } from '../../music-data.ts';
 import {
   buildStatsLegend,
@@ -21,6 +20,7 @@ import { fretboardSVG } from '../../html-helpers.ts';
 import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
+import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import { useScopeState } from '../../hooks/use-scope-state.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
@@ -76,15 +76,6 @@ function clearAllCircles(root: HTMLElement): void {
     c.style.fill = '';
   });
 }
-
-// ---------------------------------------------------------------------------
-// Mode handle
-// ---------------------------------------------------------------------------
-
-export type ModeHandle = {
-  activate(): void;
-  deactivate(): void;
-};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -328,18 +319,7 @@ export function SpeedTapMode(
   }, []);
 
   // --- Navigation handle ---
-  useLayoutEffect(() => {
-    onMount({
-      activate() {
-        learner.syncBaseline();
-        engine.updateIdleMessage();
-      },
-      deactivate() {
-        if (engine.state.phase !== 'idle') engine.stop();
-        setCalibrating(false);
-      },
-    });
-  }, [engine, learner]);
+  useModeLifecycle(onMount, engine, learner, setCalibrating);
 
   // --- Stats rendering (custom — uses automaticity/speed heatmap, no StatsTable) ---
   const statsHTML = useMemo(() => {

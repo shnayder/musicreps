@@ -109,6 +109,7 @@ const FOUNDATION = new Set([
   'src/music-data.ts',
   'src/adaptive.ts',
   'src/deadline.ts',
+  'src/recommendations.ts',
 ]);
 
 const ENGINE = new Set([
@@ -118,7 +119,6 @@ const ENGINE = new Set([
 
 const DISPLAY = new Set([
   'src/stats-display.ts',
-  'src/recommendations.ts',
   'src/mode-ui-state.ts',
   'src/quiz-fretboard-state.ts',
 ]);

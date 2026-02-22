@@ -5,13 +5,13 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'preact/hooks';
 import type {
   Instrument,
+  ModeHandle,
   NoteFilter as NoteFilterType,
   RecommendationResult,
 } from '../../types.ts';
@@ -44,6 +44,7 @@ import { useScopeState } from '../../hooks/use-scope-state.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
 import { usePhaseClass } from '../../hooks/use-phase-class.ts';
+import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import { useRoundSummary } from '../../hooks/use-round-summary.ts';
 
 import { PianoNoteButtons } from '../../ui/buttons.tsx';
@@ -178,15 +179,6 @@ function setupHoverCard(
     svg.removeEventListener('mouseout', onOut);
   };
 }
-
-// ---------------------------------------------------------------------------
-// Mode handle
-// ---------------------------------------------------------------------------
-
-export type ModeHandle = {
-  activate(): void;
-  deactivate(): void;
-};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -528,19 +520,10 @@ export function FretboardMode(
   );
 
   // --- Navigation handle ---
-  useLayoutEffect(() => {
-    onMount({
-      activate() {
-        learner.syncBaseline();
-        engine.updateIdleMessage();
-      },
-      deactivate() {
-        if (engine.state.phase !== 'idle') engine.stop();
-        noteHandler.reset();
-        setCalibrating(false);
-      },
-    });
-  }, [engine, learner, noteHandler]);
+  const deactivateCleanup = useCallback(() => noteHandler.reset(), [
+    noteHandler,
+  ]);
+  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
 
   // --- Derived state ---
   const promptText = currentQ ? 'Name this note.' : '';

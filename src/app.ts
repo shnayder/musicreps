@@ -12,7 +12,7 @@ import { GUITAR, UKULELE } from './music-data.ts';
 import { createNavigation } from './navigation.ts';
 import { createSettingsModal } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
-import type { ModeHandle } from './modes/note-semitones/note-semitones-mode.tsx';
+import type { ModeHandle } from './types.ts';
 import { NoteSemitonesMode } from './modes/note-semitones/note-semitones-mode.tsx';
 import { IntervalSemitonesMode } from './modes/interval-semitones/interval-semitones-mode.tsx';
 import { SemitoneMathMode } from './modes/semitone-math/semitone-math-mode.tsx';

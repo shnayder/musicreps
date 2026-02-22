@@ -2,26 +2,17 @@
 // "C + m3 = ?" -> D#/Eb.  Nearly identical to Semitone Math but with
 // interval abbreviations instead of semitone counts.
 
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/hooks';
-import type { RecommendationResult } from '../../types.ts';
+import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
+import type { ModeHandle } from '../../types.ts';
 import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
-import { computeRecommendations } from '../../recommendations.ts';
-import {
-  buildRecommendationText,
-  computePracticeSummary,
-} from '../../mode-ui-state.ts';
+import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
-import { useScopeState } from '../../hooks/use-scope-state.ts';
+import { useGroupScope } from '../../hooks/use-group-scope.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
 import { usePhaseClass } from '../../hooks/use-phase-class.ts';
+import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import {
   useRoundSummary,
   useStatsSelector,
@@ -58,15 +49,6 @@ import {
 } from './logic.ts';
 
 // ---------------------------------------------------------------------------
-// Mode handle for navigation integration
-// ---------------------------------------------------------------------------
-
-export type ModeHandle = {
-  activate(): void;
-  deactivate(): void;
-};
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -77,35 +59,35 @@ export function IntervalMathMode(
     onMount: (handle: ModeHandle) => void;
   },
 ) {
-  // --- Scope ---
-  const [scope, scopeActions] = useScopeState({
-    kind: 'groups',
-    groups: DISTANCE_GROUPS.map((g, i) => ({
-      index: i,
-      label: g.label,
-      itemIds: getItemIdsForGroup(i),
-    })),
-    defaultEnabled: [0],
-    storageKey: 'intervalMath_enabledGroups',
-    label: 'Intervals',
-    sortUnstarted: (a, b) => a.string - b.string,
-  });
-
-  const enabledGroups = scope.kind === 'groups'
-    ? scope.enabledGroups
-    : new Set([0]);
-
   // --- Core hooks ---
   const learner = useLearnerModel('intervalMath', ALL_ITEMS);
 
-  // --- Enabled items (derived from scope) ---
-  const enabledItems = useMemo(() => {
-    const items: string[] = [];
-    for (const g of enabledGroups) {
-      items.push(...getItemIdsForGroup(g));
-    }
-    return items;
-  }, [enabledGroups]);
+  // --- Scope + recommendations ---
+  const {
+    scopeActions,
+    enabledGroups,
+    enabledItems,
+    practicingLabel,
+    recommendation,
+    recommendationText,
+    applyRecommendation,
+    getEnabledItems,
+    getPracticingLabel,
+  } = useGroupScope({
+    groups: DISTANCE_GROUPS,
+    getItemIdsForGroup,
+    allGroupIndices: ALL_GROUP_INDICES,
+    storageKey: 'intervalMath_enabledGroups',
+    scopeLabel: 'Intervals',
+    defaultEnabled: [0],
+    selector: learner.selector,
+    formatLabel: (groups) => {
+      if (groups.size === DISTANCE_GROUPS.length) return 'all intervals';
+      const labels = [...groups].sort((a, b) => a - b)
+        .map((g) => DISTANCE_GROUPS[g].label);
+      return labels.join(', ') + ' intervals';
+    },
+  });
 
   // --- Question state ---
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
@@ -122,53 +104,10 @@ export function IntervalMathMode(
     [],
   );
 
-  // --- Recommendations ---
-  const recommendation = useMemo((): RecommendationResult => {
-    return computeRecommendations(
-      learner.selector,
-      ALL_GROUP_INDICES,
-      getItemIdsForGroup,
-      { expansionThreshold: 0.7 },
-      { sortUnstarted: (a, b) => a.string - b.string },
-    );
-  }, [learner.selector]);
-
-  const recommendationText = useMemo(() => {
-    return buildRecommendationText(
-      recommendation,
-      (i: number) => DISTANCE_GROUPS[i].label,
-    );
-  }, [recommendation]);
-
-  const applyRecommendation = useCallback(() => {
-    if (recommendation.enabled) {
-      scopeActions.setScope({
-        kind: 'groups',
-        enabledGroups: recommendation.enabled,
-      });
-    }
-  }, [recommendation, scopeActions]);
-
-  // --- Practicing label ---
-  const practicingLabel = useMemo(() => {
-    if (enabledGroups.size === DISTANCE_GROUPS.length) return 'all intervals';
-    const labels = [...enabledGroups].sort((a, b) => a - b)
-      .map((g) => DISTANCE_GROUPS[g].label);
-    return labels.join(', ') + ' intervals';
-  }, [enabledGroups]);
-
   // --- Engine config ---
   const engineConfig = useMemo((): QuizEngineConfig => ({
-    getEnabledItems: () => {
-      const items: string[] = [];
-      const groups = scope.kind === 'groups'
-        ? scope.enabledGroups
-        : new Set([0]);
-      for (const g of groups) {
-        items.push(...getItemIdsForGroup(g));
-      }
-      return items;
-    },
+    getEnabledItems,
+    getPracticingLabel,
 
     checkAnswer: (_itemId: string, input: string) => {
       const q = currentQRef.current!;
@@ -188,24 +127,9 @@ export function IntervalMathMode(
       return noteHandler.handleKey(e);
     },
 
-    onStart: () => {
-      noteHandler.reset();
-    },
-
-    onStop: () => {
-      noteHandler.reset();
-    },
-
-    getPracticingLabel: () => {
-      const groups = scope.kind === 'groups'
-        ? scope.enabledGroups
-        : new Set([0]);
-      if (groups.size === DISTANCE_GROUPS.length) return 'all intervals';
-      const labels = [...groups].sort((a, b) => a - b)
-        .map((g) => DISTANCE_GROUPS[g].label);
-      return labels.join(', ') + ' intervals';
-    },
-  }), [scope, noteHandler]);
+    onStart: () => noteHandler.reset(),
+    onStop: () => noteHandler.reset(),
+  }), [noteHandler, getEnabledItems, getPracticingLabel]);
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
@@ -249,19 +173,10 @@ export function IntervalMathMode(
   );
 
   // --- Navigation handle ---
-  useLayoutEffect(() => {
-    onMount({
-      activate() {
-        learner.syncBaseline();
-        engine.updateIdleMessage();
-      },
-      deactivate() {
-        if (engine.state.phase !== 'idle') engine.stop();
-        noteHandler.reset();
-        setCalibrating(false);
-      },
-    });
-  }, [engine, learner, noteHandler]);
+  const deactivateCleanup = useCallback(() => noteHandler.reset(), [
+    noteHandler,
+  ]);
+  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
 
   // --- Derived state ---
   const promptText = currentQ?.promptText ?? '';
