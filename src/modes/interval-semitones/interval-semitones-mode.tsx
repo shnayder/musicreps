@@ -217,10 +217,6 @@ export function IntervalSemitonesMode(
         }
         progressContent={
           <div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
-            />
             <div class='stats-controls'>
               <StatsToggle active={statsMode} onToggle={setStatsMode} />
             </div>
@@ -234,6 +230,10 @@ export function IntervalSemitonesMode(
                 baseline={learner.motorBaseline ?? undefined}
               />
             </div>
+            <BaselineInfo
+              baseline={learner.motorBaseline}
+              onRun={() => setCalibrating(true)}
+            />
           </div>
         }
       />

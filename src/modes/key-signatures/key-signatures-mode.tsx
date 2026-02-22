@@ -292,10 +292,6 @@ export function KeySignaturesMode(
         }
         progressContent={
           <div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
-            />
             <div class='stats-controls'>
               <StatsToggle active={statsMode} onToggle={setStatsMode} />
             </div>
@@ -309,6 +305,10 @@ export function KeySignaturesMode(
                 baseline={learner.motorBaseline ?? undefined}
               />
             </div>
+            <BaselineInfo
+              baseline={learner.motorBaseline}
+              onRun={() => setCalibrating(true)}
+            />
           </div>
         }
       />

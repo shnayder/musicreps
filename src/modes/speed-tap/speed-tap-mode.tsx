@@ -371,10 +371,6 @@ export function SpeedTapMode(
         }
         progressContent={
           <div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
-            />
             <div class='stats-controls'>
               <StatsToggle active={statsMode} onToggle={setStatsMode} />
             </div>
@@ -382,6 +378,10 @@ export function SpeedTapMode(
               class='stats-container'
               // deno-lint-ignore react-no-danger
               dangerouslySetInnerHTML={{ __html: statsHTML }}
+            />
+            <BaselineInfo
+              baseline={learner.motorBaseline}
+              onRun={() => setCalibrating(true)}
             />
           </div>
         }

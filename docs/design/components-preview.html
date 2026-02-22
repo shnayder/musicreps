@@ -555,12 +555,15 @@ body {
 .baseline-info {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  text-align: center;
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-3);
+  padding: var(--space-4) 0;
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--color-border-lighter);
 }
 .baseline-info:empty {
   display: none;
+}
+.baseline-text {
+  margin-bottom: var(--space-3);
 }
 .baseline-default-tag {
   font-style: italic;
@@ -576,7 +579,6 @@ body {
   color: var(--color-text-muted);
   cursor: pointer;
   margin: 0;
-  margin-left: var(--space-2);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .baseline-rerun-btn:hover {
@@ -589,7 +591,7 @@ body {
 
 /* --- Progress tab stats controls (within tab) --- */
 .tab-content .stats-controls {
-  text-align: center;
+  text-align: left;
   margin: var(--space-3) 0;
   padding-bottom: var(--space-2);
 }
@@ -1330,9 +1332,8 @@ button {
 /* --- Heatmap legends --- */
 .heatmap-legend {
   display: none;
-  justify-content: center;
+  flex-direction: column;
   gap: var(--space-3);
-  flex-wrap: wrap;
   margin: var(--space-4) 0;
 }
 .heatmap-legend.active {
@@ -1453,7 +1454,7 @@ button {
 
 /* --- Stats controls (toggle above chart) --- */
 .stats-controls {
-  text-align: center;
+  text-align: left;
   margin: var(--space-3) 0;
   padding-bottom: var(--space-2);
 }

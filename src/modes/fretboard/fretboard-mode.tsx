@@ -564,10 +564,6 @@ export function FretboardMode(
         }
         progressContent={
           <div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
-            />
             <div class='stats-controls'>
               <StatsToggle active={statsMode} onToggle={setStatsMode} />
             </div>
@@ -582,6 +578,10 @@ export function FretboardMode(
                 dangerouslySetInnerHTML={{ __html: legendHTML }}
               />
             </div>
+            <BaselineInfo
+              baseline={learner.motorBaseline}
+              onRun={() => setCalibrating(true)}
+            />
           </div>
         }
       />
