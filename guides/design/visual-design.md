@@ -6,19 +6,33 @@ in `src/styles.css` `:root`.
 
 ### Design reference pages
 
-Live HTML pages for visual iteration. Hand-written pages (`colors.html`,
-`components.html`) link directly to `src/styles.css` — just edit and refresh.
-`moments.html` is build-generated, so run `deno task build` after edits.
+Live HTML pages for visual iteration. Build-generated pages use the same Preact
+components and HTML helpers as production — rebuild (`deno task build`) or
+refresh the dev server after edits. Hand-written pages link directly to
+`src/styles.css` so CSS changes are visible on refresh with no rebuild.
 
-| Page                               | Contents                                       | Source                                  |
-| ---------------------------------- | ---------------------------------------------- | --------------------------------------- |
-| [colors.html](colors.html)         | Color swatches, heatmap scale, semantic tokens | Hand-written                            |
-| [components.html](components.html) | Isolated component specimens                   | Hand-written                            |
-| [moments.html](moments.html)       | Assembled screen layouts at 402px (all phases) | **Build-generated** (`deno task build`) |
+| Page                                               | Contents                                       | Source                                                 |
+| -------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------ |
+| [components-preview.html](components-preview.html) | Preact UI components with mock data            | **Build-generated** from `src/ui/preview.tsx`          |
+| [moments.html](moments.html)                       | Assembled screen layouts at 402px (all phases) | **Build-generated** by `buildMoments()` in `main.ts`  |
+| [colors.html](colors.html)                         | Color swatches, heatmap scale, semantic tokens | Hand-written                                           |
+| [components.html](components.html)                 | Design tokens, layout patterns, variant A/B    | Hand-written                                           |
 
-`moments.html` uses the same `modeScreen()`, `fretboardSVG()`, and button
-helpers as the production app, so it never drifts from reality. To add or change
-a moment, edit `buildMoments()` in `main.ts`.
+**Component preview** (`components-preview.html`) is the primary tool for
+iterating on component design. It renders real Preact components (`NoteButtons`,
+`PracticeCard`, `StatsGrid`, `RoundComplete`, etc.) with fixture data, so
+changes to `src/ui/*.tsx` are immediately visible after a rebuild. Available at
+`localhost:8001/preview` during dev.
+
+**Moments** (`moments.html`) shows assembled screen states (quiz active,
+feedback, round complete, idle tabs) using the same `modeScreen()` and button
+helpers as production. To add or change a moment, edit `buildMoments()` in
+`main.ts`.
+
+**Components** (`components.html`) covers design system primitives that aren't
+Preact components: CSS custom property swatches, spacing/typography scales,
+grid patterns, touch-target sizing, and variant comparison panels for A/B
+iteration. It overlaps with `colors.html` on token visualization.
 
 For visual design principles (drill-first aesthetic, warmth, feedback clarity,
 information density, mobile-primary), see
@@ -28,6 +42,17 @@ principles, see [layout-and-ia.md](layout-and-ia.md).
 ---
 
 ## Color System
+
+### Palette Model
+
+Three colors carry all the meaning:
+
+- **Green** — actions, correctness, brand identity
+- **Gold** — attention, recommendations, achievements
+- **Red** — errors only
+
+Everything else is warm neutral chrome. This simplicity is intentional: during a
+drill, the user should never have to decode what a color means.
 
 ### Color Design Principles
 
@@ -45,49 +70,53 @@ the palette or adding new color tokens:
 3. **Monotonically decreasing lightness** — heatmap levels go from L=68% down to
    L=33%. This ensures the scale reads correctly in grayscale and for users with
    color vision deficiencies. Text switches to white for L ≤ 50%.
-4. **Sage brand is earthy, not neon** — the brand color sits at moderate
-   saturation (35%) and lightness (45%), evoking a natural, focused practice
-   space rather than a flashy game.
-5. **Semantic colors are sacrosanct** — green = correct, red = wrong, blue =
-   focus. These never change and are never used for decorative or brand
-   purposes. Brand color is never used for correct/wrong feedback.
+4. **Green is the one active color** — brand, success, focus, and active toggles
+   all share the same deep green (`#2e7d32`). This avoids a rainbow of competing
+   hues during drills and reinforces a single "go/correct/active" signal.
+5. **Gold for attention, red for errors** — gold draws the eye to
+   recommendations and highlights without implying right/wrong. Red is reserved
+   strictly for incorrect answers and expired countdowns.
 6. **Warm neutral chrome** — text, surfaces, and borders use warm-shifted grays
    (`hsl(30, …)`) to avoid a sterile wireframe feel.
 
-### Brand
+### Brand / Success (Green)
 
-Sage green — natural, earthy feel. Distinct from feedback colors, works on light
-and dark backgrounds.
+Deep green — unified brand and success color. CTAs, correct feedback, active
+toggles, and focus states all share this hue.
 
-| Token                | Value               | Usage                                               |
-| -------------------- | ------------------- | --------------------------------------------------- |
-| `--color-brand`      | `hsl(90, 35%, 45%)` | Start Quiz CTA, active stats toggle, focus outlines |
-| `--color-brand-dark` | `hsl(90, 35%, 35%)` | CTA hover, nav active text                          |
-| `--color-brand-bg`   | `hsl(90, 25%, 94%)` | Nav active item background                          |
+| Token                   | Value     | Usage                                      |
+| ----------------------- | --------- | ------------------------------------------ |
+| `--color-brand`         | `#2e7d32` | CTA, correct feedback, active toggles      |
+| `--color-brand-dark`    | `#1b5e20` | CTA hover, nav active text, pressed state  |
+| `--color-brand-bg`      | `#e8f5e9` | Success/brand background                   |
+| `--color-success`       | `#2e7d32` | Alias — same as brand                      |
+| `--color-success-dark`  | `#1b5e20` | Alias — same as brand-dark                 |
+| `--color-success-bg`    | `#e8f5e9` | Alias — same as brand-bg                   |
+| `--color-success-text`  | `#1b5e20` | Text on success/brand backgrounds          |
+| `--color-focus`         | `#2e7d32` | Active chord-slot border (green, not blue) |
+| `--color-focus-bg`      | `#e8f5e9` | Active chord-slot background               |
+| `--color-toggle-active` | `#2e7d32` | Active string/distance toggle              |
 
-**Rules:**
+### Gold (Attention)
 
-- Brand color for CTAs and identity elements only
-- Never use brand color for correct/wrong feedback (use
-  `--color-success`/`--color-error`)
+Gold draws the eye to recommendations and the current question without implying
+right/wrong.
 
-### Semantic Colors
+| Token                        | Value               | Usage                      |
+| ---------------------------- | ------------------- | -------------------------- |
+| `--color-highlight`          | `#EAB308`           | Current fretboard question |
+| `--color-recommended`        | `#D4A017`           | Recommendation badges      |
+| `--color-toggle-recommended` | `hsl(44, 80%, 46%)` | Recommended toggle glow    |
 
-These are unchanged from the original design:
+### Error (Red)
 
-| Token                  | Value     | Usage                                   |
-| ---------------------- | --------- | --------------------------------------- |
-| `--color-success`      | `#4CAF50` | Active toggles, progress bar, countdown |
-| `--color-success-dark` | `#388E3C` | Calibration target border               |
-| `--color-success-bg`   | `#e8f5e9` | Mastery message background              |
-| `--color-success-text` | `#2e7d32` | Text on success backgrounds             |
-| `--color-error`        | `#f44336` | Incorrect answer, expired countdown     |
-| `--color-error-bg`     | `#ffebee` | Wrong chord-slot background             |
-| `--color-error-text`   | `#c62828` | Text on error backgrounds               |
-| `--color-focus`        | `#2196F3` | Active chord-slot border                |
-| `--color-focus-bg`     | `#e3f2fd` | Active chord-slot background            |
-| `--color-recommended`  | `#FF9800` | Orange glow on suggested toggles        |
-| `--color-highlight`    | `#FFD700` | Current fretboard question (SVG)        |
+Red is reserved strictly for incorrect answers and expired countdowns.
+
+| Token                | Value     | Usage                               |
+| -------------------- | --------- | ----------------------------------- |
+| `--color-error`      | `#f44336` | Incorrect answer, expired countdown |
+| `--color-error-bg`   | `#ffebee` | Wrong chord-slot background         |
+| `--color-error-text` | `#c62828` | Text on error backgrounds           |
 
 ### Text (Warm Neutrals)
 
@@ -118,20 +147,20 @@ Subtle warmth instead of pure grays — shifted `hsl(30, …)` for cohesion.
 | `--color-border-light`   | `hsl(30, 5%, 80%)` | Table borders, toggle separator    |
 | `--color-border-lighter` | `hsl(30, 5%, 86%)` | Section dividers                   |
 
-### Heatmap (Warm to Sage)
+### Heatmap (Gold to Green)
 
-Warm-to-cool sequential scale matching the fretboard circle palette.
+Gold-to-green sequential scale: gold = "needs attention", green = "mastered".
 Monotonically decreasing lightness ensures grayscale readability. Text switches
 to white on levels 3–5 (L ≤ 50%) via `heatmapNeedsLightText()`.
 
-| Token            | Value               | Meaning              |
-| ---------------- | ------------------- | -------------------- |
+| Token            | Value                | Meaning              |
+| ---------------- | -------------------- | -------------------- |
 | `--heatmap-none` | `hsl(30, 4%, 85%)`  | No data (unseen)     |
-| `--heatmap-1`    | `hsl(12, 48%, 65%)` | Needs work (<20%)    |
-| `--heatmap-2`    | `hsl(30, 48%, 58%)` | Fading (>20%)        |
-| `--heatmap-3`    | `hsl(50, 40%, 50%)` | Getting there (>40%) |
-| `--heatmap-4`    | `hsl(72, 38%, 42%)` | Solid (>60%)         |
-| `--heatmap-5`    | `hsl(90, 45%, 35%)` | Automatic (>80%)     |
+| `--heatmap-1`    | `hsl(44, 65%, 58%)` | Needs work (<20%)    |
+| `--heatmap-2`    | `hsl(54, 45%, 52%)` | Fading (>20%)        |
+| `--heatmap-3`    | `hsl(68, 30%, 46%)` | Getting there (>40%) |
+| `--heatmap-4`    | `hsl(90, 38%, 38%)` | Solid (>60%)         |
+| `--heatmap-5`    | `hsl(122, 46%, 33%)`| Automatic (>80%)     |
 
 ### Fretboard SVG
 
@@ -142,7 +171,7 @@ fill color. No text inside circles; hover card shows note details.
 | -------------------------- | -------------------- | ------------------------------------- |
 | `.fb-pos` (default)        | `hsl(30, 5%, 90%)`   | Dormant position circles              |
 | `.fb-pos` (quiz highlight) | `hsl(50, 100%, 50%)` | Active question — vivid yellow        |
-| `.fb-pos` (tap correct)    | `hsl(90, 45%, 35%)`  | Found position — sage green           |
+| `.fb-pos` (tap correct)    | `hsl(122, 46%, 33%)` | Found position — matches heatmap-5    |
 | `.fb-string`               | `hsl(30, 8%, 72%)`   | String lines                          |
 | `.fb-fret`                 | `hsl(30, 5%, 82%)`   | Fret lines                            |
 | `.fb-nut`                  | `hsl(30, 8%, 48%)`   | Nut bar at fret 0                     |
@@ -169,6 +198,17 @@ numbers — dropped for legibility at mobile sizes.
 
 Font weights: 400 (normal), 500 (medium — buttons/labels), 600 (semibold —
 headings, CTA).
+
+### Font Families
+
+| Token            | Value                                    | Usage      |
+| ---------------- | ---------------------------------------- | ---------- |
+| `--font-display` | `'DM Serif Display', Georgia, serif`     | Home title |
+| *(body)*         | `system-ui, -apple-system, sans-serif`   | Everything else |
+
+DM Serif Display is embedded as a base64 `@font-face` at build time
+(`main.ts` reads `src/DMSerifDisplay-latin.woff2`). Latin subset only, ~24KB
+woff2. No external font requests — fully offline-compatible.
 
 ---
 
@@ -220,14 +260,24 @@ for touch targets. Transition and hover states.
 
 ### Stats Toggle (Recall / Speed)
 
-Uses `--color-brand` for active state instead of `--color-success`, providing
-visual distinction from content toggles.
+Uses `--color-brand` for active state (same green as all active elements).
 
 ### Home Screen
 
-Full-screen mode selector. Mode buttons are cards with name + description,
-grouped by category with uppercase labels. Settings button and version in
-footer.
+Full-screen mode selector. Title uses `--font-display` (DM Serif Display) with
+a 32×3px green accent bar beneath it (`.home-title::after`).
+
+Mode cards have a 3px green (`--color-brand`) left border, 10px radius, 1px
+`--color-border-lighter` border, and a right-facing chevron (`::after`
+pseudo-element). Card title is `--text-base` semibold; description is
+`--text-sm` muted.
+
+Section labels use `--text-sm`, bold, `--color-text-muted`, Title Case (no
+`text-transform`). A thin horizontal rule extends from the label text to the
+right edge via `::after` with `flex: 1`. Groups are spaced 2rem apart.
+
+Footer: "Settings" as a text link (`.text-link`), version right-aligned,
+separated by 1px `--color-border-lighter` rule.
 
 Groups:
 
@@ -236,6 +286,19 @@ Groups:
 - **Calculation:** Semitone Math, Interval Math
 - **Keys & Chords:** Key Signatures, Scale Degrees, Diatonic Chords, Chord
   Spelling
+
+### Text Link
+
+Reusable `.text-link` class for inline link-styled interactive elements. Muted
+color, no border/background, underline on hover. 44px min-height for touch
+targets.
+
+```css
+color: var(--color-text-muted);
+font-size: var(--text-sm);
+text-decoration: none;
+/* underline on hover, color darkens to --color-text */
+```
 
 ### Mode Top Bar
 
@@ -249,7 +312,7 @@ Start Quiz CTA. Uses `--color-surface` background, 8px radius.
 
 ### Quiz Session Info
 
-During active quiz: full-width countdown bar (4px, depletes over 60s, turns red
+During active quiz: full-width countdown bar (4px, depletes over 60s, turns gold
 in last 10s) + single compact info row (context, time, count, × close).
 
 ### Quiz Area
@@ -262,6 +325,76 @@ padding during active state.
 
 Three stats in a row: correct (x/y), median time, fluent (x/y). Round number in
 heading.
+
+---
+
+## Layout Patterns
+
+### Vertical centering for quiz content
+
+Quiz content should center vertically in the available viewport height to
+prevent top-stacking on larger screens. The quiz area container uses flex
+column with `justify-content: center` and a min-height.
+
+```css
+.quiz-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100dvh - <header-height>);
+}
+```
+
+**Rationale:** On phones the content fills naturally, but on tablets and
+desktop the quiz prompt and buttons stack at the top with large empty space
+below. Centering creates balanced whitespace above and below. The countdown
+bar and session info stay pinned at the top as flex-shrink: 0 chrome.
+
+### Stat card surface
+
+Round-complete stats and similar summary blocks should live inside a card
+surface to provide visual containment. Reuses existing tokens.
+
+```css
+background: var(--color-bg);
+border: 1px solid var(--color-border-lighter);
+border-radius: 12px;
+padding: var(--space-5);
+max-width: 360px;
+margin: 0 auto;
+```
+
+**Rationale:** Floating stats on the surface background feel unfinished.
+The card uses the same 12px radius as `.quiz-area.active` and the same
+`--color-border-lighter` border for consistency.
+
+### Two-row answer layout
+
+Modes with 12 answers that map to the chromatic scale use a two-row layout:
+top row for "accidental" items (5 buttons), bottom row for "natural" items
+(7 buttons). The 14-column grid from `.note-buttons` is the reference
+implementation; interval mode follows the same shell.
+
+```css
+.two-row-answers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.two-row-top,
+.two-row-bottom {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  column-gap: 2px;
+}
+/* Bottom: 7 buttons each spanning 2 of 14 sub-columns */
+/* Top: 5 buttons at piano black-key offsets */
+```
+
+**Rationale:** The piano mental model is already established by the note
+buttons. Intervals map 1:1 to semitones, so the same spatial layout
+reinforces the semitone-to-interval association. The gap between P4 and P5
+(no top-row button) mirrors the E-F piano gap.
 
 ---
 

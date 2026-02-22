@@ -328,6 +328,78 @@
         font-size: var(--text-2xl);
         font-weight: 700;
       }
+
+      /* --- Phase 3: Quality rows — 4-col grid, one row per quality --- */
+      .interval-quality-rows {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-2);
+      }
+      .interval-quality-rows .interval-row-label {
+        grid-column: 1 / -1;
+        font-size: var(--text-xs);
+        color: var(--color-text-light);
+        font-weight: 500;
+        margin-top: var(--space-1);
+      }
+      .interval-quality-rows .interval-row-label:first-child {
+        margin-top: 0;
+      }
+
+      /* Phase 3: Round-complete card variants */
+      .rc-card {
+        background: var(--color-bg);
+        border: 1px solid var(--color-border-lighter);
+        border-radius: 12px;
+        padding: var(--space-5);
+        max-width: 360px;
+        margin: 0 auto;
+      }
+      .rc-card-brand {
+        background: var(--color-brand-bg);
+        border: 1px solid var(--color-border-lighter);
+        border-radius: 12px;
+        padding: var(--space-5);
+        max-width: 360px;
+        margin: 0 auto;
+      }
+
+      /* Phase 3: Quiz layout simulation containers */
+      .quiz-sim {
+        height: 580px;
+        border: 1px solid var(--color-border-light);
+        border-radius: 12px;
+        background: var(--color-surface);
+        overflow: hidden;
+        padding: var(--space-3);
+        text-align: center;
+      }
+      .quiz-sim-centered {
+        display: flex;
+        flex-direction: column;
+      }
+      .quiz-sim-centered .quiz-sim-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .quiz-sim-spaced {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: var(--space-5) var(--space-3);
+      }
+
+      /* Phase 3: Stack variant panels vertically when content needs width */
+      .variant-row-stacked {
+        flex-direction: column;
+      }
+      .variant-row-stacked .variant-panel {
+        flex: 0 0 auto;
+        width: 375px;
+        max-width: 100%;
+      }
     </style>
   </head>
   <body>
@@ -1542,6 +1614,463 @@
           >
             <span class="incorrect" style="font-weight: 700"
             >Wrong &mdash; it was C</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <h2>Phase 3 &mdash; Layout</h2>
+    <p>
+      Layout and sizing exploration for quiz polish Phase 3. Variant CSS is
+      scoped to this page &mdash; promote the winner to
+      <code>styles.css</code>.
+    </p>
+
+    <h3>A. Interval Button Layout (#15)</h3>
+    <p>
+      Current flat 3-col grid vs. piano-style 2-row layouts. The note-button
+      piano layout works well &mdash; how should intervals map onto that
+      spatial structure?
+    </p>
+    <div class="variant-row variant-row-stacked">
+      <div class="variant-panel">
+        <div class="variant-panel-label">Current (3-col &times; 4-row)</div>
+        <div class="variant-panel-body">
+          <div
+            class="answer-buttons answer-buttons-intervals"
+            style="margin: 0"
+          >
+            <button class="answer-btn">m2</button>
+            <button class="answer-btn">M2</button>
+            <button class="answer-btn">m3</button>
+            <button class="answer-btn">M3</button>
+            <button class="answer-btn">P4</button>
+            <button class="answer-btn">TT</button>
+            <button class="answer-btn">P5</button>
+            <button class="answer-btn">m6</button>
+            <button class="answer-btn">M6</button>
+            <button class="answer-btn">m7</button>
+            <button class="answer-btn">M7</button>
+            <button class="answer-btn">P8</button>
+          </div>
+        </div>
+      </div>
+      <div class="variant-panel">
+        <div class="variant-panel-label">Quality rows (4-col grid)</div>
+        <div class="variant-panel-body">
+          <div class="interval-quality-rows">
+            <span class="interval-row-label">minor</span>
+            <button class="answer-btn">m2</button>
+            <button class="answer-btn">m3</button>
+            <button class="answer-btn">m6</button>
+            <button class="answer-btn">m7</button>
+            <span class="interval-row-label">major &amp; perfect</span>
+            <button class="answer-btn">M2</button>
+            <button class="answer-btn">M3</button>
+            <button class="answer-btn">M6</button>
+            <button class="answer-btn">M7</button>
+            <button class="answer-btn">P4</button>
+            <button class="answer-btn">P5</button>
+            <button class="answer-btn">P8</button>
+            <button class="answer-btn">TT</button>
+          </div>
+          <div class="anno-block">
+            4-col grid, labeled rows by quality<br />
+            extensible: P1 and compound intervals add to existing rows
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>B. Round-Complete Card (#14)</h3>
+    <p>
+      Stats and actions at end of round. Currently text floats on the surface
+      background with no visual containment.
+    </p>
+    <div class="variant-row variant-row-stacked">
+      <div class="variant-panel">
+        <div class="variant-panel-label">Current (floating text)</div>
+        <div
+          class="variant-panel-body"
+          style="background: var(--color-surface)"
+        >
+          <div
+            style="
+              text-align: center;
+              padding: var(--space-5) 0;
+              width: 100%;
+            "
+          >
+            <div
+              style="
+                font-size: var(--text-sm);
+                color: var(--color-text-muted);
+                margin-bottom: var(--space-4);
+              "
+            >
+              e, B strings &middot; 5 / 78 fluent
+            </div>
+            <div
+              style="
+                font-size: var(--text-xl);
+                font-weight: 700;
+                margin-bottom: var(--space-3);
+              "
+            >
+              Round 1 complete
+            </div>
+            <div style="margin: var(--space-3) 0 var(--space-5)">
+              <div style="font-size: var(--text-base); line-height: 1.6">
+                8 / 9 correct in 63s
+              </div>
+              <div style="font-size: var(--text-base); line-height: 1.6">
+                1.2s median response
+              </div>
+            </div>
+            <div class="round-complete-actions">
+              <button class="round-complete-continue" style="margin: 0">
+                Keep Going
+              </button>
+              <button class="round-complete-stop" style="margin: 0">
+                Stop
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="variant-panel">
+        <div class="variant-panel-label">Card (white bg, border)</div>
+        <div
+          class="variant-panel-body"
+          style="background: var(--color-surface)"
+        >
+          <div class="rc-card" style="text-align: center; width: 100%">
+            <div
+              style="
+                font-size: var(--text-sm);
+                color: var(--color-text-muted);
+                margin-bottom: var(--space-4);
+              "
+            >
+              e, B strings &middot; 5 / 78 fluent
+            </div>
+            <div
+              style="
+                font-size: var(--text-xl);
+                font-weight: 700;
+                margin-bottom: var(--space-3);
+              "
+            >
+              Round 1 complete
+            </div>
+            <div style="margin: var(--space-3) 0 var(--space-5)">
+              <div style="font-size: var(--text-base); line-height: 1.6">
+                8 / 9 correct in 63s
+              </div>
+              <div style="font-size: var(--text-base); line-height: 1.6">
+                1.2s median response
+              </div>
+            </div>
+            <div class="round-complete-actions">
+              <button class="round-complete-continue" style="margin: 0">
+                Keep Going
+              </button>
+              <button class="round-complete-stop" style="margin: 0">
+                Stop
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="variant-panel">
+        <div class="variant-panel-label">Card + brand tint</div>
+        <div
+          class="variant-panel-body"
+          style="background: var(--color-surface)"
+        >
+          <div class="rc-card-brand" style="text-align: center; width: 100%">
+            <div
+              style="
+                font-size: var(--text-sm);
+                color: var(--color-text-muted);
+                margin-bottom: var(--space-4);
+              "
+            >
+              e, B strings &middot; 5 / 78 fluent
+            </div>
+            <div
+              style="
+                font-size: var(--text-xl);
+                font-weight: 700;
+                margin-bottom: var(--space-3);
+              "
+            >
+              Round 1 complete
+            </div>
+            <div style="margin: var(--space-3) 0 var(--space-5)">
+              <div style="font-size: var(--text-base); line-height: 1.6">
+                8 / 9 correct in 63s
+              </div>
+              <div style="font-size: var(--text-base); line-height: 1.6">
+                1.2s median response
+              </div>
+            </div>
+            <div class="round-complete-actions">
+              <button class="round-complete-continue" style="margin: 0">
+                Keep Going
+              </button>
+              <button class="round-complete-stop" style="margin: 0">
+                Stop
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>C. Quiz Active Layout (#12, #20)</h3>
+    <p>
+      Simulated active quiz phase in a 580px container. Shows how content
+      distributes vertically &mdash; &ldquo;empty space below the fold&rdquo;
+      becomes visible.
+    </p>
+    <div class="variant-row">
+      <div class="variant-panel" style="min-width: 220px">
+        <div class="variant-panel-label">Current (top-stacked)</div>
+        <div class="variant-panel-body" style="padding: 0">
+          <div class="quiz-sim">
+            <div style="margin-bottom: var(--space-3)">
+              <div
+                style="
+                  height: 4px;
+                  background: var(--color-surface-alt);
+                  border-radius: 2px;
+                  margin-bottom: var(--space-2);
+                "
+              >
+                <div
+                  style="
+                    width: 65%;
+                    height: 100%;
+                    background: var(--color-brand);
+                    border-radius: 2px;
+                  "
+                ></div>
+              </div>
+              <div
+                style="
+                  font-size: var(--text-xs);
+                  color: var(--color-text-muted);
+                "
+              >
+                0:39 &middot; 8 answers
+              </div>
+            </div>
+            <div
+              style="
+                font-size: var(--text-2xl);
+                font-weight: 600;
+                margin: var(--space-5) 0;
+              "
+            >
+              C + m3 = ?
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.4rem;
+                max-width: 200px;
+                margin: var(--space-3) auto;
+              "
+            >
+              <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">C</button>
+              <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">D#</button>
+              <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">E</button>
+              <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">F</button>
+              <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">G</button>
+              <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">A</button>
+            </div>
+            <div
+              style="
+                font-size: var(--text-xl);
+                font-weight: 600;
+                color: var(--color-success);
+                margin: var(--space-5) 0;
+              "
+            >
+              Correct!
+            </div>
+            <div
+              style="font-size: var(--text-sm); color: var(--color-text-muted)"
+            >
+              0.8s
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="variant-panel" style="min-width: 220px">
+        <div class="variant-panel-label">
+          Centered (justify-content: center)
+        </div>
+        <div class="variant-panel-body" style="padding: 0">
+          <div class="quiz-sim quiz-sim-centered">
+            <div style="flex: 0 0 auto; margin-bottom: var(--space-3)">
+              <div
+                style="
+                  height: 4px;
+                  background: var(--color-surface-alt);
+                  border-radius: 2px;
+                  margin-bottom: var(--space-2);
+                "
+              >
+                <div
+                  style="
+                    width: 65%;
+                    height: 100%;
+                    background: var(--color-brand);
+                    border-radius: 2px;
+                  "
+                ></div>
+              </div>
+              <div
+                style="
+                  font-size: var(--text-xs);
+                  color: var(--color-text-muted);
+                "
+              >
+                0:39 &middot; 8 answers
+              </div>
+            </div>
+            <div class="quiz-sim-content">
+              <div>
+                <div
+                  style="
+                    font-size: var(--text-2xl);
+                    font-weight: 600;
+                    margin-bottom: var(--space-5);
+                  "
+                >
+                  C + m3 = ?
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 0.4rem;
+                    max-width: 200px;
+                    margin: var(--space-3) auto;
+                  "
+                >
+                  <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">C</button>
+                  <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">D#</button>
+                  <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">E</button>
+                  <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">F</button>
+                  <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">G</button>
+                  <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">A</button>
+                </div>
+                <div
+                  style="
+                    font-size: var(--text-xl);
+                    font-weight: 600;
+                    color: var(--color-success);
+                    margin: var(--space-5) 0;
+                  "
+                >
+                  Correct!
+                </div>
+                <div
+                  style="
+                    font-size: var(--text-sm);
+                    color: var(--color-text-muted);
+                  "
+                >
+                  0.8s
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="variant-panel" style="min-width: 220px">
+        <div class="variant-panel-label">Spaced zones</div>
+        <div class="variant-panel-body" style="padding: 0">
+          <div class="quiz-sim quiz-sim-spaced">
+            <div>
+              <div
+                style="
+                  height: 4px;
+                  background: var(--color-surface-alt);
+                  border-radius: 2px;
+                  margin-bottom: var(--space-2);
+                "
+              >
+                <div
+                  style="
+                    width: 65%;
+                    height: 100%;
+                    background: var(--color-brand);
+                    border-radius: 2px;
+                  "
+                ></div>
+              </div>
+              <div
+                style="
+                  font-size: var(--text-xs);
+                  color: var(--color-text-muted);
+                "
+              >
+                0:39 &middot; 8 answers
+              </div>
+            </div>
+            <div>
+              <div
+                style="
+                  font-size: var(--text-2xl);
+                  font-weight: 600;
+                  margin-bottom: var(--space-3);
+                "
+              >
+                C + m3 = ?
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(3, 1fr);
+                  gap: 0.4rem;
+                  max-width: 200px;
+                  margin: var(--space-3) auto;
+                "
+              >
+                <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">C</button>
+                <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">D#</button>
+                <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">E</button>
+                <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">F</button>
+                <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">G</button>
+                <button class="answer-btn" style="height: 40px; font-size: var(--text-sm)">A</button>
+              </div>
+            </div>
+            <div>
+              <div
+                style="
+                  font-size: var(--text-xl);
+                  font-weight: 600;
+                  color: var(--color-success);
+                  margin-bottom: var(--space-3);
+                "
+              >
+                Correct!
+              </div>
+              <div
+                style="
+                  font-size: var(--text-sm);
+                  color: var(--color-text-muted);
+                "
+              >
+                0.8s
+              </div>
+            </div>
           </div>
         </div>
       </div>

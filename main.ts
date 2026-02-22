@@ -46,13 +46,33 @@ async function bundleJS(entry = './src/app.ts'): Promise<string> {
 }
 
 // ---------------------------------------------------------------------------
+// Font embedding — base64-encode woff2 for offline-compatible @font-face
+// ---------------------------------------------------------------------------
+
+async function fontFaceCSS(): Promise<string> {
+  const fontPath = resolve('./src/DMSerifDisplay-latin.woff2');
+  const fontBytes = await Deno.readFile(fontPath);
+  const b64 = btoa(String.fromCharCode(...fontBytes));
+  return `@font-face {
+  font-family: 'DM Serif Display';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(data:font/woff2;base64,${b64}) format('woff2');
+}`;
+}
+
+// ---------------------------------------------------------------------------
 // HTML assembly
 // ---------------------------------------------------------------------------
 
 async function buildHTML(): Promise<string> {
-  const css = await Deno.readTextFile(resolve('./src/styles.css'));
-  const js = await bundleJS();
-  return assembleHTML(css, js);
+  const [rawCss, fontCss, js] = await Promise.all([
+    Deno.readTextFile(resolve('./src/styles.css')),
+    fontFaceCSS(),
+    bundleJS(),
+  ]);
+  return assembleHTML(fontCss + '\n' + rawCss, js);
 }
 
 // ---------------------------------------------------------------------------
@@ -259,12 +279,16 @@ function prepareMoment(source: string, o: MomentOverrides): string {
   }
 
   // Fretboard note highlighting (circle-based design)
+  // Global flag: fbScreen() contains two fretboard SVGs (idle + quiz-area),
+  // so we color matching circles in both — whichever is visible wins.
   if (o.highlightNotes) {
     for (const n of o.highlightNotes) {
       const circleRe = new RegExp(
         `(<circle\\s+class="fb-pos"\\s+data-string="${n.s}"\\s+data-fret="${n.f}"\\s+cx="[^"]*"\\s+cy="[^"]*"\\s+)r="10"`,
+        'g',
       );
-      r(circleRe, `$1r="10" style="fill: ${n.fill}"`);
+      // Global replace — bypass replaceOrThrow (which uses test() then replace())
+      h = h.replace(circleRe, `$1r="10" style="fill: ${n.fill}"`);
     }
   }
 
@@ -599,8 +623,50 @@ function buildMoments(): string {
     'phase-idle &middot; progress tab active &middot; heatmap + legend + stats toggle',
   );
 
-  // --- Moment 11: Countdown bar states (isolated) ---
-  const m11 = momentFrame(
+  // --- Moment 11: Fretboard progress heatmap ---
+  const m11fb = momentFrame(
+    'Progress tab &mdash; fretboard heatmap',
+    prepareMoment(fbScreen(), {
+      progressTabActive: true,
+      highlightNotes: [
+        // String E (5) — mostly solid/automatic
+        { s: 5, f: 0, fill: 'hsl(122, 46%, 33%)' },
+        { s: 5, f: 1, fill: 'hsl(90, 38%, 38%)' },
+        { s: 5, f: 2, fill: 'hsl(122, 46%, 33%)' },
+        { s: 5, f: 3, fill: 'hsl(90, 38%, 38%)' },
+        { s: 5, f: 5, fill: 'hsl(122, 46%, 33%)' },
+        { s: 5, f: 7, fill: 'hsl(68, 30%, 46%)' },
+        { s: 5, f: 8, fill: 'hsl(90, 38%, 38%)' },
+        { s: 5, f: 9, fill: 'hsl(122, 46%, 33%)' },
+        { s: 5, f: 10, fill: 'hsl(68, 30%, 46%)' },
+        { s: 5, f: 12, fill: 'hsl(90, 38%, 38%)' },
+        // String A (4) — mixed
+        { s: 4, f: 0, fill: 'hsl(90, 38%, 38%)' },
+        { s: 4, f: 2, fill: 'hsl(68, 30%, 46%)' },
+        { s: 4, f: 3, fill: 'hsl(122, 46%, 33%)' },
+        { s: 4, f: 5, fill: 'hsl(54, 45%, 52%)' },
+        { s: 4, f: 7, fill: 'hsl(68, 30%, 46%)' },
+        { s: 4, f: 8, fill: 'hsl(44, 65%, 58%)' },
+        { s: 4, f: 9, fill: 'hsl(54, 45%, 52%)' },
+        { s: 4, f: 10, fill: 'hsl(90, 38%, 38%)' },
+        { s: 4, f: 12, fill: 'hsl(68, 30%, 46%)' },
+        // String D (3) — needs work / fading
+        { s: 3, f: 0, fill: 'hsl(68, 30%, 46%)' },
+        { s: 3, f: 2, fill: 'hsl(44, 65%, 58%)' },
+        { s: 3, f: 3, fill: 'hsl(54, 45%, 52%)' },
+        { s: 3, f: 5, fill: 'hsl(44, 65%, 58%)' },
+        { s: 3, f: 7, fill: 'hsl(54, 45%, 52%)' },
+        { s: 3, f: 8, fill: 'hsl(44, 65%, 58%)' },
+        { s: 3, f: 10, fill: 'hsl(68, 30%, 46%)' },
+        { s: 3, f: 12, fill: 'hsl(44, 65%, 58%)' },
+      ],
+      statsText: '24 / 78 items fluent',
+    }),
+    'phase-idle &middot; progress tab &middot; fretboard circles colored by heatmap mastery',
+  );
+
+  // --- Moment 12: Countdown bar states (isolated) ---
+  const m12 = momentFrame(
     'Countdown bar &mdash; fill levels + warning',
     `      <div class="countdown-demo">
         <div class="countdown-demo-label">100% &mdash; round start</div>
@@ -802,9 +868,13 @@ ${m9}
   <p>Progress tab with stats toggle and heatmap table.</p>
 ${m10}
 
-  <h2>10. Countdown Bar States</h2>
+  <h2>10. Progress Tab + Fretboard Heatmap</h2>
+  <p>Fretboard mode progress tab with circles colored by mastery level.</p>
+${m11fb}
+
+  <h2>11. Countdown Bar States</h2>
   <p>Isolated countdown bar at different fill levels, including warning state.</p>
-${m11}
+${m12}
 
 </body>
 </html>`;
@@ -913,8 +983,12 @@ export { buildHTML, SERVICE_WORKER as sw };
 
 if (import.meta.main) {
   if (Deno.args.includes('--build')) {
-    const css = await Deno.readTextFile(resolve('./src/styles.css'));
-    const js = await bundleJS();
+    const [rawCss, fontCss, js] = await Promise.all([
+      Deno.readTextFile(resolve('./src/styles.css')),
+      fontFaceCSS(),
+      bundleJS(),
+    ]);
+    const css = fontCss + '\n' + rawCss;
     const html = assembleHTML(css, js);
     await Deno.mkdir('docs', { recursive: true });
     await Deno.writeTextFile('docs/index.html', html);

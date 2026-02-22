@@ -8,13 +8,13 @@ import {
   getStatsCellColorMerged,
 } from './stats-display.ts';
 
-// Heatmap palette (matches fallback values in stats-display.js)
+// Heatmap palette (matches fallback values in stats-display.ts)
 const NONE = 'hsl(30, 4%, 85%)';
-const L1 = 'hsl(12, 48%, 65%)';
-const L2 = 'hsl(30, 48%, 58%)';
-const L3 = 'hsl(50, 40%, 50%)';
-const L4 = 'hsl(72, 38%, 42%)';
-const L5 = 'hsl(90, 45%, 35%)';
+const L1 = 'hsl(44, 65%, 58%)';
+const L2 = 'hsl(54, 45%, 52%)';
+const L3 = 'hsl(68, 30%, 46%)';
+const L4 = 'hsl(90, 38%, 38%)';
+const L5 = 'hsl(122, 46%, 33%)';
 
 // ---------------------------------------------------------------------------
 // getAutomaticityColor
@@ -25,11 +25,11 @@ describe('getAutomaticityColor', () => {
     assert.equal(getAutomaticityColor(null), NONE);
   });
 
-  it('returns sage for high automaticity (>0.8)', () => {
+  it('returns green for high automaticity (>0.8)', () => {
     assert.equal(getAutomaticityColor(0.9), L5);
   });
 
-  it('returns olive-sage for 0.6-0.8', () => {
+  it('returns olive-green for 0.6-0.8', () => {
     assert.equal(getAutomaticityColor(0.7), L4);
   });
 
@@ -37,15 +37,15 @@ describe('getAutomaticityColor', () => {
     assert.equal(getAutomaticityColor(0.5), L3);
   });
 
-  it('returns amber for 0.2-0.4', () => {
+  it('returns warm olive for 0.2-0.4', () => {
     assert.equal(getAutomaticityColor(0.3), L2);
   });
 
-  it('returns terracotta for low automaticity (<=0.2)', () => {
+  it('returns gold for low automaticity (<=0.2)', () => {
     assert.equal(getAutomaticityColor(0.1), L1);
   });
 
-  it('returns terracotta for zero', () => {
+  it('returns gold for zero', () => {
     assert.equal(getAutomaticityColor(0), L1);
   });
 });
@@ -59,11 +59,11 @@ describe('getSpeedHeatmapColor', () => {
     assert.equal(getSpeedHeatmapColor(null, null), NONE);
   });
 
-  it('returns sage for fast (<1500ms) with default baseline', () => {
+  it('returns green for fast (<1500ms) with default baseline', () => {
     assert.equal(getSpeedHeatmapColor(1000, null), L5);
   });
 
-  it('returns olive-sage for 1500-3000ms with default baseline', () => {
+  it('returns olive-green for 1500-3000ms with default baseline', () => {
     assert.equal(getSpeedHeatmapColor(2000, null), L4);
   });
 
@@ -71,31 +71,31 @@ describe('getSpeedHeatmapColor', () => {
     assert.equal(getSpeedHeatmapColor(4000, null), L3);
   });
 
-  it('returns amber for 4500-6000ms with default baseline', () => {
+  it('returns warm olive for 4500-6000ms with default baseline', () => {
     assert.equal(getSpeedHeatmapColor(5000, null), L2);
   });
 
-  it('returns terracotta for slow (>=6000ms) with default baseline', () => {
+  it('returns gold for slow (>=6000ms) with default baseline', () => {
     assert.equal(getSpeedHeatmapColor(7000, null), L1);
   });
 
   it('scales thresholds with baseline=1500 (mobile user)', () => {
-    // sage: < 1500*1.5 = 2250ms
+    // green: < 1500*1.5 = 2250ms
     assert.equal(getSpeedHeatmapColor(2000, 1500), L5);
-    // olive-sage: 2250-4500ms
+    // olive-green: 2250-4500ms
     assert.equal(getSpeedHeatmapColor(3000, 1500), L4);
     // olive: 4500-6750ms
     assert.equal(getSpeedHeatmapColor(5000, 1500), L3);
-    // amber: 6750-9000ms
+    // warm olive: 6750-9000ms
     assert.equal(getSpeedHeatmapColor(8000, 1500), L2);
-    // terracotta: >= 9000ms
+    // gold: >= 9000ms
     assert.equal(getSpeedHeatmapColor(10000, 1500), L1);
   });
 
   it('scales thresholds with baseline=700 (fast keyboard user)', () => {
-    // sage: < 700*1.5 = 1050ms
+    // green: < 700*1.5 = 1050ms
     assert.equal(getSpeedHeatmapColor(900, 700), L5);
-    // 1200ms is above amber threshold with baseline 700
+    // olive-green for moderate speed with baseline 700
     assert.equal(getSpeedHeatmapColor(1200, 700), L4);
   });
 });

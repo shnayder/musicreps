@@ -1,5 +1,5 @@
 // Navigation: home screen and mode switching.
-// Persists last-used mode in localStorage.
+// Persists last-used mode in localStorage (for future "Resume" feature).
 
 type ModeController = {
   init(): void;
@@ -100,13 +100,8 @@ export function createNavigation(): {
       modes[id].init();
     }
 
-    // Switch to last-used mode or show home screen
-    const lastMode: string | null = localStorage.getItem(LAST_MODE_KEY);
-    if (lastMode && modes[lastMode]) {
-      switchTo(lastMode);
-    } else {
-      navigateHome();
-    }
+    // Always start on home screen
+    navigateHome();
   }
 
   return { registerMode, switchTo, navigateHome, init };

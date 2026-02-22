@@ -57,7 +57,7 @@ import {
 // ---------------------------------------------------------------------------
 
 const FB_TAP_NEUTRAL = 'hsl(30, 4%, 90%)';
-const FB_TAP_CORRECT = 'hsl(90, 45%, 35%)';
+const FB_TAP_CORRECT = 'hsl(122, 46%, 33%)';
 
 function setCircleFill(
   root: HTMLElement,

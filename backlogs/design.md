@@ -53,6 +53,8 @@ Owner: design workstream Branch: workstream/design
 - speed tap, fretboard, chord spelling
   - are our stats adjusted by incorrect answers? how?
 
+- speed check shows timeout bar from practice mode. Code smell again. #bug
+- global keyboard nav
 - semitone quiz
 
 - perhaps give "last question" mode a timeout. Say 30s.
