@@ -1146,6 +1146,8 @@ button {
   font-size: var(--text-sm);
   color: var(--color-recommended);
   font-weight: 500;
+  text-align: center;
+  margin-bottom: var(--space-2);
 }
 .quiz-last-question:empty {
   display: none;
@@ -2997,10 +2999,8 @@ button {
   }
   function QuizArea({ prompt, lastQuestion, children }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }),
-        /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" })
-      ] }),
+      /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" }),
+      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }) }),
       children
     ] });
   }
@@ -3154,7 +3154,7 @@ button {
         }
       ) }),
       /* @__PURE__ */ u3("h2", { children: "Quiz UI" }),
-      /* @__PURE__ */ u3(Section, { title: "Text Prompt", children: /* @__PURE__ */ u3(TextPrompt, { text: "C + 5 semitones = ?" }) }),
+      /* @__PURE__ */ u3(Section, { title: "Text Prompt", children: /* @__PURE__ */ u3(TextPrompt, { text: "C + 5" }) }),
       /* @__PURE__ */ u3(Section, { title: "Feedback \u2014 Correct", children: /* @__PURE__ */ u3(
         FeedbackDisplay,
         {
@@ -3197,7 +3197,7 @@ button {
           isWarning: false
         }
       ) }),
-      /* @__PURE__ */ u3(Section, { title: "QuizArea", children: /* @__PURE__ */ u3(QuizArea, { prompt: "C + 5 = ?", lastQuestion: "", children: [
+      /* @__PURE__ */ u3(Section, { title: "QuizArea", children: /* @__PURE__ */ u3(QuizArea, { prompt: "C + 5", lastQuestion: "", children: [
         /* @__PURE__ */ u3(NoteButtons, {}),
         /* @__PURE__ */ u3(FeedbackDisplay, { text: "", className: "feedback" })
       ] }) }),

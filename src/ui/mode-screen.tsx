@@ -353,9 +353,9 @@ export function QuizArea(
 ) {
   return (
     <div class='quiz-area'>
+      <div class='quiz-last-question'>{lastQuestion || ''}</div>
       <div class='quiz-prompt-row'>
         <div class='quiz-prompt'>{prompt || ''}</div>
-        <div class='quiz-last-question'>{lastQuestion || ''}</div>
       </div>
       {children}
     </div>

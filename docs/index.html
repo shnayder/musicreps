@@ -1149,6 +1149,8 @@ button {
   font-size: var(--text-sm);
   color: var(--color-recommended);
   font-weight: 500;
+  text-align: center;
+  margin-bottom: var(--space-2);
 }
 .quiz-last-question:empty {
   display: none;
@@ -1938,9 +1940,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
@@ -2266,9 +2268,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
@@ -2467,9 +2469,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="speed-tap-status">
         <span class="speed-tap-progress"></span>
@@ -2679,9 +2681,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -2783,9 +2785,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-intervals">
         <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
@@ -2897,9 +2899,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -2997,9 +2999,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -3097,9 +3099,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-keysig">
         <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="0">0</button>
@@ -3214,9 +3216,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -3323,9 +3325,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -3432,9 +3434,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="chord-slots"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -5983,10 +5985,8 @@ button {
   }
   function QuizArea({ prompt, lastQuestion, children }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }),
-        /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" })
-      ] }),
+      /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" }),
+      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }) }),
       children
     ] });
   }
@@ -9680,7 +9680,7 @@ button {
       noteHandler
     ]);
     useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
-    const promptText = currentQ ? "Name this note." : "";
+    const promptText = currentQ ? "Name this note" : "";
     const handleNoteAnswer = q2(
       (note) => engine.submitAnswer(note),
       [engine.submitAnswer]

@@ -203,7 +203,7 @@ function PreviewApp() {
 
       <h2>Quiz UI</h2>
       <Section title='Text Prompt'>
-        <TextPrompt text='C + 5 semitones = ?' />
+        <TextPrompt text='C + 5' />
       </Section>
       <Section title='Feedback — Correct'>
         <FeedbackDisplay
@@ -256,7 +256,7 @@ function PreviewApp() {
         />
       </Section>
       <Section title='QuizArea'>
-        <QuizArea prompt='C + 5 = ?' lastQuestion=''>
+        <QuizArea prompt='C + 5' lastQuestion=''>
           <NoteButtons />
           <FeedbackDisplay text='' className='feedback' />
         </QuizArea>

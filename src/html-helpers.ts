@@ -340,9 +340,9 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       ${opts.quizAreaContent}
       <div class="feedback"></div>

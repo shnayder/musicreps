@@ -522,7 +522,7 @@ export function FretboardMode(
   useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
 
   // --- Derived state ---
-  const promptText = currentQ ? 'Name this note.' : '';
+  const promptText = currentQ ? 'Name this note' : '';
 
   const handleNoteAnswer = useCallback(
     (note: string) => engine.submitAnswer(note),
