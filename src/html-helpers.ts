@@ -349,11 +349,14 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>

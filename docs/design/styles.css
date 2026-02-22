@@ -950,11 +950,6 @@ button {
   text-align: center;
   padding: var(--space-6) 0;
 }
-.round-complete-context {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-4);
-}
 .round-complete-heading {
   font-size: var(--text-xl);
   font-weight: 700;
@@ -963,6 +958,21 @@ button {
 }
 .round-complete-stats {
   margin: var(--space-3) 0 var(--space-5);
+}
+.round-complete-overall {
+  margin-bottom: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-lighter);
+}
+.round-complete-overall-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+.round-complete-context {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 .round-stat-line {
   font-size: var(--text-base);

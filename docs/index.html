@@ -960,11 +960,6 @@ button {
   text-align: center;
   padding: var(--space-6) 0;
 }
-.round-complete-context {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-4);
-}
 .round-complete-heading {
   font-size: var(--text-xl);
   font-weight: 700;
@@ -973,6 +968,21 @@ button {
 }
 .round-complete-stats {
   margin: var(--space-3) 0 var(--space-5);
+}
+.round-complete-overall {
+  margin-bottom: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-lighter);
+}
+.round-complete-overall-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+.round-complete-context {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 .round-stat-line {
   font-size: var(--text-base);
@@ -1673,7 +1683,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">v8.14</span>
+      <span class="version">v8.15</span>
     </div>
   </div>
 
@@ -2021,11 +2031,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -2321,11 +2334,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -2549,11 +2565,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -2653,11 +2672,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -2757,11 +2779,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -2857,11 +2882,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -2957,11 +2985,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -3074,11 +3105,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -3183,11 +3217,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -3292,11 +3329,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -3393,11 +3433,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button class="round-complete-continue">Keep Going</button>
@@ -5834,12 +5877,15 @@ button {
   }
   function RoundComplete({ context, heading, correct, median, onContinue, onStop }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
-      /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context || "" }),
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: [
         /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }),
         /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-median", children: median || "" })
       ] }),
+      context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
+        /* @__PURE__ */ u3("div", { class: "round-complete-overall-label", children: "Overall" }),
+        /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
+      ] }) : null,
       /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
         /* @__PURE__ */ u3(
           "button",
