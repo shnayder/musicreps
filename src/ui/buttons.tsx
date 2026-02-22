@@ -46,6 +46,7 @@ export function NoteButtons(
         return (
           <button
             type='button'
+            tabIndex={0}
             key={n}
             class='answer-btn answer-btn-note'
             data-note={n}
@@ -75,6 +76,7 @@ export function PianoNoteButtons(
         {ACCIDENTAL_NAMES.map((n) => (
           <button
             type='button'
+            tabIndex={0}
             key={n}
             class={'note-btn accidental' + (hideAccidentals ? ' hidden' : '')}
             data-note={n}
@@ -88,6 +90,7 @@ export function PianoNoteButtons(
         {NATURAL_NOTES.map((n) => (
           <button
             type='button'
+            tabIndex={0}
             key={n}
             class='note-btn'
             data-note={n}
@@ -122,6 +125,7 @@ export function NumberButtons(
       {nums.map((i) => (
         <button
           type='button'
+          tabIndex={0}
           key={i}
           class='answer-btn answer-btn-num'
           data-num={String(i)}
@@ -151,6 +155,7 @@ export function IntervalButtons(
       {INTERVAL_ABBREVS.map((iv) => (
         <button
           type='button'
+          tabIndex={0}
           key={iv}
           class='answer-btn answer-btn-interval'
           data-interval={iv}
@@ -177,6 +182,7 @@ export function KeysigButtons(
       {KEYSIG_LABELS.map((s) => (
         <button
           type='button'
+          tabIndex={0}
           key={s}
           class='answer-btn answer-btn-keysig'
           data-sig={s}
@@ -206,6 +212,7 @@ export function DegreeButtons(
       {DEGREE_LABELS.map(([val, label]) => (
         <button
           type='button'
+          tabIndex={0}
           key={val}
           class='answer-btn answer-btn-degree'
           data-degree={val}
@@ -235,6 +242,7 @@ export function NumeralButtons(
       {ROMAN_NUMERALS.map((n) => (
         <button
           type='button'
+          tabIndex={0}
           key={n}
           class='answer-btn answer-btn-numeral'
           data-numeral={n}

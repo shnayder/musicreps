@@ -40,6 +40,7 @@ export function ModeTopBar(
     <div class='mode-top-bar'>
       <button
         type='button'
+        tabIndex={0}
         class='mode-back-btn'
         aria-label='Back to home'
         onClick={onBack}
@@ -168,6 +169,7 @@ export function PracticeCard(
           ? (
             <button
               type='button'
+              tabIndex={0}
               class='practice-rec-btn'
               onClick={onApplyRecommendation}
             >
@@ -229,7 +231,12 @@ export function Recommendation(
       <span class='practice-rec-text'>{text}</span>
       {onApply
         ? (
-          <button type='button' class='practice-rec-btn' onClick={onApply}>
+          <button
+            type='button'
+            tabIndex={0}
+            class='practice-rec-btn'
+            onClick={onApply}
+          >
             Use suggestion
           </button>
         )
@@ -248,7 +255,7 @@ export function StartButton(
   return (
     <>
       {summary ? <div class='session-summary-text'>{summary}</div> : null}
-      <button type='button' class='start-btn' onClick={onStart}>
+      <button type='button' tabIndex={0} class='start-btn' onClick={onStart}>
         Start Quiz
       </button>
     </>
@@ -301,6 +308,7 @@ export function QuizSession(
       <SessionInfo context={context} count={count} />
       <button
         type='button'
+        tabIndex={0}
         class='quiz-header-close'
         aria-label='Stop quiz'
         onClick={onClose}
@@ -379,12 +387,18 @@ export function RoundComplete(
       <div class='round-complete-actions'>
         <button
           type='button'
+          tabIndex={0}
           class='round-complete-continue'
           onClick={onContinue}
         >
           Keep Going
         </button>
-        <button type='button' class='round-complete-stop' onClick={onStop}>
+        <button
+          type='button'
+          tabIndex={0}
+          class='round-complete-stop'
+          onClick={onStop}
+        >
           Stop
         </button>
       </div>

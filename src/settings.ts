@@ -24,14 +24,14 @@ export function createSettingsModal(
   modal.setAttribute('aria-label', 'Settings');
   modal.innerHTML = '<div class="settings-header">' +
     '<span class="settings-title">Settings</span>' +
-    '<button class="settings-close-btn" aria-label="Close">\u00D7</button>' +
+    '<button tabindex="0" class="settings-close-btn" aria-label="Close">\u00D7</button>' +
     '</div>' +
     '<div class="settings-body">' +
     '<div class="settings-field">' +
     '<div class="settings-label">Note names</div>' +
     '<div class="settings-toggle-group">' +
-    '<button class="settings-toggle-btn" data-notation="letter">A B C</button>' +
-    '<button class="settings-toggle-btn" data-notation="solfege">Do Re Mi</button>' +
+    '<button tabindex="0" class="settings-toggle-btn" data-notation="letter">A B C</button>' +
+    '<button tabindex="0" class="settings-toggle-btn" data-notation="solfege">Do Re Mi</button>' +
     '</div>' +
     '</div>' +
     '</div>';

@@ -21,7 +21,7 @@ import {
 // Version — single source of truth
 // ---------------------------------------------------------------------------
 
-export const VERSION = 'v8.11';
+export const VERSION = 'v8.12';
 
 // ---------------------------------------------------------------------------
 // Shared HTML fragments
@@ -36,50 +36,50 @@ export const HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     </div>
     <div class="home-modes">
       <div class="home-group-label">Fretboard</div>
-      <button data-mode="fretboard" class="home-mode-btn">
+      <button tabindex="0" data-mode="fretboard" class="home-mode-btn">
         <span class="home-mode-name">Guitar Fretboard</span>
         <span class="home-mode-desc">Name notes on the guitar neck</span>
       </button>
-      <button data-mode="ukulele" class="home-mode-btn">
+      <button tabindex="0" data-mode="ukulele" class="home-mode-btn">
         <span class="home-mode-name">Ukulele Fretboard</span>
         <span class="home-mode-desc">Name notes on the ukulele</span>
       </button>
-      <button data-mode="speedTap" class="home-mode-btn">
+      <button tabindex="0" data-mode="speedTap" class="home-mode-btn">
         <span class="home-mode-name">Speed Tap</span>
         <span class="home-mode-desc">Find all positions of a note</span>
       </button>
       <div class="home-group-label">Theory Lookup</div>
-      <button data-mode="noteSemitones" class="home-mode-btn">
+      <button tabindex="0" data-mode="noteSemitones" class="home-mode-btn">
         <span class="home-mode-name">Note \u2194 Semitones</span>
         <span class="home-mode-desc">Convert between notes and semitone numbers</span>
       </button>
-      <button data-mode="intervalSemitones" class="home-mode-btn">
+      <button tabindex="0" data-mode="intervalSemitones" class="home-mode-btn">
         <span class="home-mode-name">Interval \u2194 Semitones</span>
         <span class="home-mode-desc">Convert between intervals and semitone counts</span>
       </button>
       <div class="home-group-label">Calculation</div>
-      <button data-mode="semitoneMath" class="home-mode-btn">
+      <button tabindex="0" data-mode="semitoneMath" class="home-mode-btn">
         <span class="home-mode-name">Semitone Math</span>
         <span class="home-mode-desc">Add or subtract semitones from a note</span>
       </button>
-      <button data-mode="intervalMath" class="home-mode-btn">
+      <button tabindex="0" data-mode="intervalMath" class="home-mode-btn">
         <span class="home-mode-name">Interval Math</span>
         <span class="home-mode-desc">Apply intervals up or down from a note</span>
       </button>
       <div class="home-group-label">Keys &amp; Chords</div>
-      <button data-mode="keySignatures" class="home-mode-btn">
+      <button tabindex="0" data-mode="keySignatures" class="home-mode-btn">
         <span class="home-mode-name">Key Signatures</span>
         <span class="home-mode-desc">Match keys to their sharps and flats</span>
       </button>
-      <button data-mode="scaleDegrees" class="home-mode-btn">
+      <button tabindex="0" data-mode="scaleDegrees" class="home-mode-btn">
         <span class="home-mode-name">Scale Degrees</span>
         <span class="home-mode-desc">Name notes by scale degree in any key</span>
       </button>
-      <button data-mode="diatonicChords" class="home-mode-btn">
+      <button tabindex="0" data-mode="diatonicChords" class="home-mode-btn">
         <span class="home-mode-name">Diatonic Chords</span>
         <span class="home-mode-desc">Identify chords built on each scale degree</span>
       </button>
-      <button data-mode="chordSpelling" class="home-mode-btn">
+      <button tabindex="0" data-mode="chordSpelling" class="home-mode-btn">
         <span class="home-mode-name">Chord Spelling</span>
         <span class="home-mode-desc">Spell out the notes in any chord</span>
       </button>
