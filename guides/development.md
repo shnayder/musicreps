@@ -51,11 +51,34 @@ graph automatically from the entry point (`src/app.ts`).
 ### Infrastructure
 
 - Framework: `node:test` (`describe`, `it`, `assert`)
-- Runner: `deno task test` (or `deno test --no-check --allow-read`)
+- Runner: `deno task test` (or
+  `deno test --no-check --allow-read --allow-run=deno`)
 - Dependency injection: `Map` for storage, imported music data, seeded RNG
 - No global state pollution — each test creates its own selector/helpers
 
 Write tests as you go, not just at the end.
+
+### Architecture test
+
+`src/architecture_test.ts` enforces the layer boundaries documented in
+[architecture.md](architecture.md#module-dependency-graph). It shells out to
+`deno info --json src/app.ts` to get the real import graph (resolved by Deno's
+module resolver — no regex parsing), then asserts:
+
+- No circular dependencies
+- No cross-mode imports (`src/modes/a/` → `src/modes/b/`)
+- Foundation only imports foundation
+- Engine only imports foundation + engine
+- Display only imports foundation + display
+- Hooks and UI don't import from modes or app
+- `quiz-engine-state.ts` has no deps beyond `types.ts`
+- Every file is classified into a known layer
+
+The test requires `--allow-run=deno` (already in `deno task test` and
+`deno task ok`). If you add a new source file outside `src/modes/`, add it to
+the correct layer set in the test (`FOUNDATION`, `ENGINE`, `DISPLAY`, `APP`,
+`BUILD_TIME`, or `TOOL`). Files under `src/modes/`, `src/hooks/`, and `src/ui/`
+are classified by path automatically.
 
 ## Versioning
 
