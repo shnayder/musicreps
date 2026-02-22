@@ -1635,7 +1635,7 @@ button {
     </div>
     <div class="home-footer">
       <button class="home-settings-btn" type="button">Settings</button>
-      <span class="version">v8.9</span>
+      <span class="version">v8.10</span>
     </div>
   </div>
 
@@ -5465,7 +5465,7 @@ button {
           setCalibrating(false);
         }
       });
-    }, [engine, learner, onDeactivate]);
+    }, [onMount, engine, learner, setCalibrating, onDeactivate]);
   }
 
   // src/hooks/use-round-summary.ts
@@ -7016,10 +7016,10 @@ button {
         items.push(...spec.getItemIdsForGroup(g2));
       }
       return items;
-    }, [enabledGroups]);
+    }, [enabledGroups, spec.getItemIdsForGroup]);
     const practicingLabel = T2(
       () => spec.formatLabel(enabledGroups),
-      [enabledGroups]
+      [enabledGroups, spec.formatLabel]
     );
     const recommendation = T2(() => {
       return computeRecommendations(
@@ -7029,7 +7029,7 @@ button {
         { expansionThreshold: 0.7 },
         { sortUnstarted: (a3, b) => a3.string - b.string }
       );
-    }, [spec.selector]);
+    }, [spec.selector, spec.allGroupIndices, spec.getItemIdsForGroup]);
     const recommendationText = T2(() => {
       return buildRecommendationText(
         recommendation,
