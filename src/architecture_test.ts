@@ -2,68 +2,56 @@ import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 
 // ---------------------------------------------------------------------------
-// Helpers: parse the import graph from source files
+// Build the dependency graph via `deno info --json`
 // ---------------------------------------------------------------------------
 
-/** Resolve a relative import specifier against a source file path. */
-function resolveImport(fromFile: string, specifier: string): string | null {
-  if (!specifier.startsWith('.')) return null; // skip bare specifiers (preact, node:*)
-  const fromDir = fromFile.replace(/\/[^/]+$/, '');
-  const parts = [...fromDir.split('/'), ...specifier.split('/')];
-  const resolved: string[] = [];
-  for (const p of parts) {
-    if (p === '..') resolved.pop();
-    else if (p !== '.') resolved.push(p);
-  }
-  return resolved.join('/');
-}
-
-/** Extract local src/ import targets from a source file's text. */
-function parseImports(filePath: string, source: string): string[] {
-  const deps: string[] = [];
-  // Match: import ... from '...' and import '...' and export ... from '...'
-  const re = /(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?['"]([^'"]+)['"]/g;
-  let m;
-  while ((m = re.exec(source)) !== null) {
-    const resolved = resolveImport(filePath, m[1]);
-    if (resolved && resolved.startsWith('src/')) deps.push(resolved);
-  }
-  return [...new Set(deps)];
-}
-
-/** Recursively collect all .ts/.tsx files under a directory. */
-function walkSync(dir: string): string[] {
-  const results: string[] = [];
-  for (const entry of Deno.readDirSync(dir)) {
-    const path = `${dir}/${entry.name}`;
-    if (entry.isDirectory) {
-      results.push(...walkSync(path));
-    } else if (
-      /\.(ts|tsx)$/.test(entry.name) && !entry.name.endsWith('_test.ts')
-    ) {
-      results.push(path);
-    }
-  }
-  return results;
-}
-
-// ---------------------------------------------------------------------------
-// Build the dependency graph once, share across tests
-// ---------------------------------------------------------------------------
+const PROJECT_ROOT = new URL('..', import.meta.url).pathname.replace(
+  /\/$/,
+  '',
+);
+const FILE_PREFIX = `file://${PROJECT_ROOT}/`;
 
 interface DepGraph {
   edges: Map<string, string[]>; // file -> [dependency files]
 }
 
 function buildGraph(): DepGraph {
-  const edges = new Map<string, string[]>();
-  const files = walkSync('src');
-  for (const absPath of files) {
-    const relPath = absPath; // already relative (src/...)
-    const source = Deno.readTextFileSync(absPath);
-    const deps = parseImports(relPath, source);
-    edges.set(relPath, deps);
+  const result = new Deno.Command('deno', {
+    args: ['info', '--json', 'src/app.ts'],
+    cwd: PROJECT_ROOT,
+    stdout: 'piped',
+    stderr: 'piped',
+  }).outputSync();
+
+  if (!result.success) {
+    const stderr = new TextDecoder().decode(result.stderr);
+    throw new Error(`deno info failed: ${stderr}`);
   }
+
+  const data = JSON.parse(new TextDecoder().decode(result.stdout));
+  const edges = new Map<string, string[]>();
+
+  for (const mod of data.modules) {
+    const spec: string = mod.specifier;
+    if (!spec.startsWith(FILE_PREFIX + 'src/')) continue;
+    const src = spec.slice(FILE_PREFIX.length);
+    const deps: string[] = [];
+
+    for (const d of mod.dependencies ?? []) {
+      for (const key of ['code', 'type']) {
+        const val = d[key];
+        if (
+          val && typeof val === 'object' && 'specifier' in val &&
+          val.specifier.startsWith(FILE_PREFIX + 'src/')
+        ) {
+          deps.push(val.specifier.slice(FILE_PREFIX.length));
+        }
+      }
+    }
+
+    edges.set(src, [...new Set(deps)]);
+  }
+
   return { edges };
 }
 
@@ -139,7 +127,6 @@ const BUILD_TIME = new Set([
   'src/build-template.ts',
   'src/html-helpers.ts',
   'src/fretboard.ts',
-  'src/styles.css',
 ]);
 
 const APP = new Set([
@@ -309,6 +296,24 @@ describe('Architecture', () => {
     );
   });
 
+  it('display layer only imports from foundation + display', () => {
+    const allowed = new Set([...FOUNDATION, ...DISPLAY]);
+    const violations: string[] = [];
+    for (const [file, deps] of graph.edges) {
+      if (!DISPLAY.has(file)) continue;
+      for (const dep of deps) {
+        if (!allowed.has(dep)) {
+          violations.push(`${file} → ${dep}`);
+        }
+      }
+    }
+    assert.deepEqual(
+      violations,
+      [],
+      formatViolations('display → outside foundation+display', violations),
+    );
+  });
+
   it('quiz-engine-state.ts has no dependencies beyond types.ts', () => {
     const deps = graph.edges.get('src/quiz-engine-state.ts') ?? [];
     const nonTypes = deps.filter((d) => d !== 'src/types.ts');
@@ -324,7 +329,9 @@ describe('Architecture', () => {
     for (const file of graph.edges.keys()) {
       const layer = classifyLayer(file);
       // classifyLayer falls back to 'app' — check it's intentional
-      if (layer === 'app' && !APP.has(file) && !file.startsWith('src/modes/')) {
+      if (
+        layer === 'app' && !APP.has(file) && !file.startsWith('src/modes/')
+      ) {
         unclassified.push(file);
       }
     }
