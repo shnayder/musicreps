@@ -931,7 +931,7 @@ button {
 .phase-active,
 .phase-round-complete,
 .phase-calibration {
-  background: var(--color-surface);
+  background: var(--color-bg);
   margin: 0 calc(-1 * var(--space-5));
   padding: 0 var(--space-5);
 }
@@ -947,12 +947,11 @@ button {
 .phase-round-complete .quiz-area,
 .phase-calibration .quiz-area {
   display: block;
-  background: var(--color-surface);
+  background: var(--color-bg);
   border-radius: 12px;
   padding: var(--space-5);
 }
 .phase-active .quiz-area {
-  border: 1px solid var(--color-border-lighter);
   padding: var(--space-3) var(--space-3);
 }
 /* --- Round complete --- */
@@ -1313,7 +1312,7 @@ button {
   color: var(--color-success);
 }
 .incorrect {
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 .time-display {
   color: var(--color-text-muted);
@@ -1737,7 +1736,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">v8.12</span>
+      <span class="version">v8.13</span>
     </div>
   </div>
 
