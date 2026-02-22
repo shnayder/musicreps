@@ -71,6 +71,14 @@ App layer:
 Display (stats, recommendations) → Mode Logic (pure per-mode functions) → Hooks
 (Preact wrappers) → UI (components + mode compositions) → App init.
 
+**Enforced by tests.** `src/architecture_test.ts` uses `deno info --json` to
+build the real import graph, then asserts layer boundaries: no cycles, no
+cross-mode imports, foundation only imports foundation, engine only imports
+foundation + engine, display only imports foundation + display, hooks/UI don't
+import from modes or app. Every source file must be classified into a layer —
+adding a new file without classifying it fails the test. See
+[development.md](development.md#architecture-test) for details.
+
 ## Build System
 
 ### esbuild Bundling
@@ -103,6 +111,9 @@ Key exports:
 
 1. Create `src/new-file.ts` with proper `import`/`export` statements
 2. Import it from the file(s) that need it — esbuild handles the rest
+3. Add it to the correct layer set in `src/architecture_test.ts` (e.g.
+   `FOUNDATION`, `ENGINE`, `DISPLAY`, `APP`, `TOOL`, or `BUILD_TIME`) — the test
+   will fail if the file isn't classified
 
 ### Moments Page Generation
 
@@ -592,9 +603,12 @@ Step-by-step checklist:
    (container div), and nav button in `HOME_SCREEN_HTML`
 8. **Register** mode in `app.ts` with `registerPreactMode()`
 9. **Tests**: create `src/modes/{name}/logic_test.ts` for the pure logic
-10. **Accidentals**: determine which naming convention applies (see
+10. **Architecture test**: new `logic.ts` and `{name}-mode.tsx` files are
+    auto-classified by path (`src/modes/` prefix), so no update needed unless
+    you add shared files outside `src/modes/`
+11. **Accidentals**: determine which naming convention applies (see
     [accidental-conventions.md](accidental-conventions.md)) and update that
     guide's mode table
-11. **CLAUDE.md**: update quiz modes table with item count, answer type, and ID
+12. **CLAUDE.md**: update quiz modes table with item count, answer type, and ID
     format
-12. **Version**: bump `VERSION` in `src/build-template.ts`
+13. **Version**: bump `VERSION` in `src/build-template.ts`

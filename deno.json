@@ -38,12 +38,12 @@
   "tasks": {
     "build": "deno run --allow-read --allow-write --allow-run main.ts --build",
     "dev": "deno run --allow-net --allow-read --allow-run main.ts",
-    "test": "deno test --no-check --allow-read",
+    "test": "deno test --no-check --allow-read --allow-run=deno",
     "lint": "deno lint",
     "fmt": "deno fmt --check",
     "fmt:fix": "deno fmt",
     "check": "deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null)",
-    "ok": "deno lint && deno fmt --check && deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null) && deno test --no-check --allow-read && deno run --allow-read --allow-write --allow-run main.ts --build",
+    "ok": "deno lint && deno fmt --check && deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null) && deno test --no-check --allow-read --allow-run=deno && deno run --allow-read --allow-write --allow-run main.ts --build",
     "screenshots": "npx tsx scripts/take-screenshots.ts",
     "screenshots:baseline": "npx tsx scripts/take-screenshots.ts --dir screenshots/baseline",
     "screenshots:review": "npx tsx scripts/build-screenshot-review.ts"

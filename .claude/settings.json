@@ -7,6 +7,10 @@
           {
             "type": "command",
             "command": "command -v deno || npm install -g deno"
+          },
+          {
+            "type": "command",
+            "command": "if [ \"$IS_SANDBOX\" = \"yes\" ]; then npm install; fi"
           }
         ]
       }
