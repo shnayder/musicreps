@@ -16,8 +16,8 @@ egress proxy's TLS certificate isn't in Deno's trust store (`UnknownIssuer`
 error on `deno install`). Workaround: use `npm install` instead — npm routes
 through the proxy correctly via `npm_config_proxy`.
 
-A session-start hook in `.claude/settings.json` handles this automatically:
-it runs `npm install` when `IS_SANDBOX=yes`. If you see
+A session-start hook in `.claude/settings.json` handles this automatically: it
+runs `npm install` when `IS_SANDBOX=yes`. If you see
 `Could not resolve "preact-render-to-string"` errors, run `npm install`
 manually.
 
