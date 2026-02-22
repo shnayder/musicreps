@@ -108,12 +108,12 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
       items.push(...spec.getItemIdsForGroup(g));
     }
     return items;
-  }, [enabledGroups]);
+  }, [enabledGroups, spec.getItemIdsForGroup]);
 
   // --- Practicing label ---
   const practicingLabel = useMemo(
     () => spec.formatLabel(enabledGroups),
-    [enabledGroups],
+    [enabledGroups, spec.formatLabel],
   );
 
   // --- Recommendations ---
@@ -125,7 +125,7 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
       { expansionThreshold: 0.7 },
       { sortUnstarted: (a, b) => a.string - b.string },
     );
-  }, [spec.selector]);
+  }, [spec.selector, spec.allGroupIndices, spec.getItemIdsForGroup]);
 
   const recommendationText = useMemo(() => {
     return buildRecommendationText(

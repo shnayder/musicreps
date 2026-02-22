@@ -43,5 +43,5 @@ export function useModeLifecycle(
         setCalibrating(false);
       },
     });
-  }, [engine, learner, onDeactivate]);
+  }, [onMount, engine, learner, setCalibrating, onDeactivate]);
 }
