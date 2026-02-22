@@ -1548,6 +1548,69 @@ button {
   outline-offset: -2px;
 }
 
+/* Toggle buttons — inset outline, white on active (green) background */
+.string-toggle:focus-visible,
+.distance-toggle:focus-visible,
+.notes-toggle:focus-visible {
+  outline-offset: -2px;
+}
+.string-toggle.active:focus-visible,
+.distance-toggle.active:focus-visible,
+.notes-toggle.active:focus-visible {
+  outline-color: white;
+}
+
+/* Tab buttons */
+.mode-tab:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Answer buttons */
+.answer-btn:focus-visible,
+.note-btn:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Round-complete buttons */
+.round-complete-continue:focus-visible {
+  outline-color: white;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
+}
+.round-complete-stop:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Back button, close buttons */
+.mode-back-btn:focus-visible,
+.quiz-header-close:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Stats toggle */
+.stats-toggle-btn:focus-visible {
+  outline-offset: -2px;
+}
+.stats-toggle-btn.active:focus-visible {
+  outline-color: white;
+}
+
+/* Settings modal */
+.settings-close-btn:focus-visible {
+  outline-offset: 2px;
+}
+.settings-toggle-btn:focus-visible {
+  outline-offset: -2px;
+}
+.settings-toggle-btn.active:focus-visible {
+  outline-color: white;
+}
+
+/* Baseline, recommendation buttons */
+.baseline-rerun-btn:focus-visible,
+.practice-rec-btn:focus-visible {
+  outline-offset: 2px;
+}
+
 /* --- Reduced motion --- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

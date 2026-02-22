@@ -3,6 +3,7 @@
 // mode screen layouts with phase management, tabs, and quiz sessions.
 
 import type { ComponentChildren } from 'preact';
+import { useMemo } from 'preact/hooks';
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -39,6 +40,7 @@ export function ModeTopBar(
     <div class='mode-top-bar'>
       <button
         type='button'
+        tabIndex={0}
         class='mode-back-btn'
         aria-label='Back to home'
         onClick={onBack}
@@ -51,8 +53,16 @@ export function ModeTopBar(
 }
 
 // ---------------------------------------------------------------------------
-// TabbedIdle — practice/progress tab switching
+// TabbedIdle — practice/progress tab switching (WAI-ARIA Tabs pattern)
 // ---------------------------------------------------------------------------
+
+let tabbedIdCounter = 0;
+
+const TABS = ['practice', 'progress'] as const;
+const TAB_LABELS: Record<string, string> = {
+  practice: 'Practice',
+  progress: 'Progress',
+};
 
 export function TabbedIdle(
   { activeTab, onTabSwitch, practiceContent, progressContent }: {
@@ -62,33 +72,60 @@ export function TabbedIdle(
     progressContent: ComponentChildren;
   },
 ) {
+  const prefix = useMemo(() => 'tabs-' + tabbedIdCounter++, []);
+
+  function handleTabKeyDown(
+    e: KeyboardEvent,
+    current: 'practice' | 'progress',
+  ) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = current === 'practice' ? 'progress' : 'practice';
+      onTabSwitch(next);
+      requestAnimationFrame(() => {
+        const container = (e.currentTarget as HTMLElement).parentElement;
+        const nextBtn = container?.querySelector(
+          '[data-tab="' + next + '"]',
+        ) as HTMLElement | null;
+        nextBtn?.focus();
+      });
+    }
+  }
+
   return (
     <>
-      <div class='mode-tabs'>
-        <button
-          type='button'
-          class={'mode-tab' + (activeTab === 'practice' ? ' active' : '')}
-          data-tab='practice'
-          onClick={() => onTabSwitch('practice')}
-        >
-          Practice
-        </button>
-        <button
-          type='button'
-          class={'mode-tab' + (activeTab === 'progress' ? ' active' : '')}
-          data-tab='progress'
-          onClick={() => onTabSwitch('progress')}
-        >
-          Progress
-        </button>
+      <div class='mode-tabs' role='tablist'>
+        {TABS.map((tab) => (
+          <button
+            type='button'
+            key={tab}
+            id={prefix + '-tab-' + tab}
+            role='tab'
+            aria-selected={activeTab === tab}
+            aria-controls={prefix + '-panel-' + tab}
+            tabIndex={activeTab === tab ? 0 : -1}
+            class={'mode-tab' + (activeTab === tab ? ' active' : '')}
+            data-tab={tab}
+            onClick={() => onTabSwitch(tab)}
+            onKeyDown={(e) => handleTabKeyDown(e, tab)}
+          >
+            {TAB_LABELS[tab]}
+          </button>
+        ))}
       </div>
       <div
+        id={prefix + '-panel-practice'}
+        role='tabpanel'
+        aria-labelledby={prefix + '-tab-practice'}
         class={'tab-content tab-practice' +
           (activeTab === 'practice' ? ' active' : '')}
       >
         {practiceContent}
       </div>
       <div
+        id={prefix + '-panel-progress'}
+        role='tabpanel'
+        aria-labelledby={prefix + '-tab-progress'}
         class={'tab-content tab-progress' +
           (activeTab === 'progress' ? ' active' : '')}
       >
@@ -131,6 +168,7 @@ export function PracticeCard(
           ? (
             <button
               type='button'
+              tabIndex={0}
               class='practice-rec-btn'
               onClick={onApplyRecommendation}
             >
@@ -192,7 +230,12 @@ export function Recommendation(
       <span class='practice-rec-text'>{text}</span>
       {onApply
         ? (
-          <button type='button' class='practice-rec-btn' onClick={onApply}>
+          <button
+            type='button'
+            tabIndex={0}
+            class='practice-rec-btn'
+            onClick={onApply}
+          >
             Use suggestion
           </button>
         )
@@ -211,7 +254,7 @@ export function StartButton(
   return (
     <>
       {summary ? <div class='session-summary-text'>{summary}</div> : null}
-      <button type='button' class='start-btn' onClick={onStart}>
+      <button type='button' tabIndex={0} class='start-btn' onClick={onStart}>
         Start Quiz
       </button>
     </>
@@ -264,6 +307,7 @@ export function QuizSession(
       <SessionInfo context={context} count={count} />
       <button
         type='button'
+        tabIndex={0}
         class='quiz-header-close'
         aria-label='Stop quiz'
         onClick={onClose}
@@ -342,12 +386,18 @@ export function RoundComplete(
       <div class='round-complete-actions'>
         <button
           type='button'
+          tabIndex={0}
           class='round-complete-continue'
           onClick={onContinue}
         >
           Keep Going
         </button>
-        <button type='button' class='round-complete-stop' onClick={onStop}>
+        <button
+          type='button'
+          tabIndex={0}
+          class='round-complete-stop'
+          onClick={onStop}
+        >
           Stop
         </button>
       </div>

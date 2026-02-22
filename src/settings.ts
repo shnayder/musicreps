@@ -19,16 +19,19 @@ export function createSettingsModal(
 
   const modal: HTMLDivElement = document.createElement('div');
   modal.className = 'settings-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-label', 'Settings');
   modal.innerHTML = '<div class="settings-header">' +
     '<span class="settings-title">Settings</span>' +
-    '<button class="settings-close-btn" aria-label="Close">\u00D7</button>' +
+    '<button tabindex="0" class="settings-close-btn" aria-label="Close">\u00D7</button>' +
     '</div>' +
     '<div class="settings-body">' +
     '<div class="settings-field">' +
     '<div class="settings-label">Note names</div>' +
     '<div class="settings-toggle-group">' +
-    '<button class="settings-toggle-btn" data-notation="letter">A B C</button>' +
-    '<button class="settings-toggle-btn" data-notation="solfege">Do Re Mi</button>' +
+    '<button tabindex="0" class="settings-toggle-btn" data-notation="letter">A B C</button>' +
+    '<button tabindex="0" class="settings-toggle-btn" data-notation="solfege">Do Re Mi</button>' +
     '</div>' +
     '</div>' +
     '</div>';
@@ -45,11 +48,38 @@ export function createSettingsModal(
 
   // --- State ---
 
+  let previousFocus: HTMLElement | null = null;
+
   function updateToggleState(): void {
     const current: string = getUseSolfege() ? 'solfege' : 'letter';
     toggleBtns.forEach(function (btn: HTMLElement): void {
       btn.classList.toggle('active', btn.dataset.notation === current);
+      btn.setAttribute(
+        'aria-pressed',
+        String(btn.dataset.notation === current),
+      );
     });
+  }
+
+  // --- Focus trap ---
+
+  function trapFocus(e: KeyboardEvent): void {
+    if (e.key !== 'Tab') return;
+    const focusable = modal.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   }
 
   // --- Open / Close ---
@@ -57,10 +87,18 @@ export function createSettingsModal(
   function open(): void {
     updateToggleState();
     overlay.classList.add('open');
+    previousFocus = document.activeElement as HTMLElement | null;
+    (closeBtn as HTMLElement).focus();
+    modal.addEventListener('keydown', trapFocus);
   }
 
   function close(): void {
+    modal.removeEventListener('keydown', trapFocus);
     overlay.classList.remove('open');
+    if (previousFocus) {
+      previousFocus.focus();
+      previousFocus = null;
+    }
   }
 
   // --- Event handlers ---

@@ -26,8 +26,10 @@ export function GroupToggles(
           return (
             <button
               type='button'
+              tabIndex={0}
               key={i}
               class={cls}
+              aria-pressed={active.has(i)}
               data-group={String(i)}
               onClick={() => onToggle(i)}
             >
@@ -63,8 +65,10 @@ export function StringToggles(
           return (
             <button
               type='button'
+              tabIndex={0}
               key={i}
               class={cls}
+              aria-pressed={active.has(i)}
               data-string={String(i)}
               data-string-note={name}
               onClick={() => onToggle(i)}
@@ -109,7 +113,9 @@ export function NoteFilter(
       <div class='notes-toggles'>
         <button
           type='button'
+          tabIndex={0}
           class={'notes-toggle' + (naturalActive ? ' active' : '')}
+          aria-pressed={naturalActive}
           data-notes='natural'
           onClick={() => toggle('natural')}
         >
@@ -117,7 +123,9 @@ export function NoteFilter(
         </button>
         <button
           type='button'
+          tabIndex={0}
           class={'notes-toggle' + (accActive ? ' active' : '')}
+          aria-pressed={accActive}
           data-notes='sharps-flats'
           onClick={() => toggle('sharps-flats')}
         >
@@ -146,8 +154,10 @@ export function NotesToggles(
         {notes.map((n) => (
           <button
             type='button'
+            tabIndex={0}
             key={n}
             class={'notes-toggle' + (active.has(n) ? ' active' : '')}
+            aria-pressed={active.has(n)}
             data-note={n}
             onClick={() => onToggle(n)}
           >

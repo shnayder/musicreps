@@ -11,7 +11,10 @@ import { useLearnerModel } from '../../hooks/use-learner-model.ts';
 import { useGroupScope } from '../../hooks/use-group-scope.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
-import { usePhaseClass } from '../../hooks/use-phase-class.ts';
+import {
+  PHASE_FOCUS_TARGETS,
+  usePhaseClass,
+} from '../../hooks/use-phase-class.ts';
 import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import {
   useRoundSummary,
@@ -138,7 +141,11 @@ export function SemitoneMathMode(
   const [calibrating, setCalibrating] = useState(false);
 
   // --- Phase class sync (calibration overrides engine phase) ---
-  usePhaseClass(container, calibrating ? 'calibration' : engine.state.phase);
+  usePhaseClass(
+    container,
+    calibrating ? 'calibration' : engine.state.phase,
+    PHASE_FOCUS_TARGETS,
+  );
 
   // --- Tab state ---
   const [activeTab, setActiveTab] = useState<'practice' | 'progress'>(

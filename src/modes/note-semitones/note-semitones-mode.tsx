@@ -10,7 +10,10 @@ import { computePracticeSummary } from '../../mode-ui-state.ts';
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
-import { usePhaseClass } from '../../hooks/use-phase-class.ts';
+import {
+  PHASE_FOCUS_TARGETS,
+  usePhaseClass,
+} from '../../hooks/use-phase-class.ts';
 import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import {
   useRoundSummary,
@@ -149,7 +152,11 @@ export function NoteSemitonesMode(
   const [calibrating, setCalibrating] = useState(false);
 
   // --- Shared hooks ---
-  usePhaseClass(container, calibrating ? 'calibration' : engine.state.phase);
+  usePhaseClass(
+    container,
+    calibrating ? 'calibration' : engine.state.phase,
+    PHASE_FOCUS_TARGETS,
+  );
   const round = useRoundSummary(engine, 'all items');
 
   // --- Tab state ---

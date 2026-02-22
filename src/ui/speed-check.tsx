@@ -60,7 +60,12 @@ export function BaselineInfo(
     return (
       <div class='baseline-info'>
         Response time baseline: {(baseline / 1000).toFixed(1)}s{' '}
-        <button type='button' class='baseline-rerun-btn' onClick={onRun}>
+        <button
+          type='button'
+          tabIndex={0}
+          class='baseline-rerun-btn'
+          onClick={onRun}
+        >
           Rerun speed check
         </button>
       </div>
@@ -70,7 +75,12 @@ export function BaselineInfo(
     <div class='baseline-info'>
       Response time baseline: 1s{' '}
       <span class='baseline-default-tag'>(default)</span>{' '}
-      <button type='button' class='baseline-rerun-btn' onClick={onRun}>
+      <button
+        type='button'
+        tabIndex={0}
+        class='baseline-rerun-btn'
+        onClick={onRun}
+      >
         Run speed check
       </button>
     </div>
@@ -249,6 +259,7 @@ export function SpeedCheck(
         <p>{provider.introText}</p>
         <button
           type='button'
+          tabIndex={0}
           class='calibration-action-btn'
           onClick={() => setPhase('running')}
         >
@@ -307,6 +318,7 @@ export function SpeedCheck(
       </table>
       <button
         type='button'
+        tabIndex={0}
         class='calibration-action-btn'
         onClick={() => onComplete(baseline)}
       >

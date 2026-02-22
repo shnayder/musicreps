@@ -18,20 +18,20 @@ import {
 export function pianoNoteButtons(): string {
   return `<div class="note-buttons">
         <div class="note-row-accidentals">
-          <button class="note-btn accidental" data-note="C#">C#</button>
-          <button class="note-btn accidental" data-note="D#">D#</button>
-          <button class="note-btn accidental" data-note="F#">F#</button>
-          <button class="note-btn accidental" data-note="G#">G#</button>
-          <button class="note-btn accidental" data-note="A#">A#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="C#">C#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="D#">D#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="F#">F#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="G#">G#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="A#">A#</button>
         </div>
         <div class="note-row-naturals">
-          <button class="note-btn" data-note="C">C</button>
-          <button class="note-btn" data-note="D">D</button>
-          <button class="note-btn" data-note="E">E</button>
-          <button class="note-btn" data-note="F">F</button>
-          <button class="note-btn" data-note="G">G</button>
-          <button class="note-btn" data-note="A">A</button>
-          <button class="note-btn" data-note="B">B</button>
+          <button tabindex="0" class="note-btn" data-note="C">C</button>
+          <button tabindex="0" class="note-btn" data-note="D">D</button>
+          <button tabindex="0" class="note-btn" data-note="E">E</button>
+          <button tabindex="0" class="note-btn" data-note="F">F</button>
+          <button tabindex="0" class="note-btn" data-note="G">G</button>
+          <button tabindex="0" class="note-btn" data-note="A">A</button>
+          <button tabindex="0" class="note-btn" data-note="B">B</button>
         </div>
       </div>`;
 }
@@ -55,7 +55,7 @@ export function noteAnswerButtons(opts?: { hidden?: boolean }): string {
   const cls = opts?.hidden ? ' answer-group-hidden' : '';
   return `<div class="answer-buttons answer-buttons-notes${cls}">\n` +
     notes.map(([val, label]) =>
-      `        <button class="answer-btn answer-btn-note" data-note="${val}">${label}</button>`
+      `        <button tabindex="0" class="answer-btn answer-btn-note" data-note="${val}">${label}</button>`
     ).join('\n') + '\n      </div>';
 }
 
@@ -64,7 +64,7 @@ export function numberButtons(start: number, end: number): string {
   const btns = [];
   for (let i = start; i <= end; i++) {
     btns.push(
-      `        <button class="answer-btn answer-btn-num" data-num="${i}">${i}</button>`,
+      `        <button tabindex="0" class="answer-btn answer-btn-num" data-num="${i}">${i}</button>`,
     );
   }
   return `<div class="answer-buttons answer-buttons-numbers">\n` +
@@ -89,7 +89,7 @@ export function intervalAnswerButtons(): string {
   ];
   return `<div class="answer-buttons answer-buttons-intervals">\n` +
     intervals.map((i) =>
-      `        <button class="answer-btn answer-btn-interval" data-interval="${i}">${i}</button>`
+      `        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="${i}">${i}</button>`
     ).join('\n') + '\n      </div>';
 }
 
@@ -114,7 +114,7 @@ export function keysigAnswerButtons(): string {
   ];
   return `<div class="answer-buttons answer-buttons-keysig">\n` +
     sigs.map((s) =>
-      `        <button class="answer-btn answer-btn-keysig" data-sig="${s}">${s}</button>`
+      `        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="${s}">${s}</button>`
     ).join('\n') + '\n      </div>';
 }
 
@@ -132,7 +132,7 @@ export function degreeAnswerButtons(opts?: { hidden?: boolean }): string {
   const cls = opts?.hidden ? ' answer-group-hidden' : '';
   return `<div class="answer-buttons answer-buttons-degrees${cls}">\n` +
     degrees.map(([val, label]) =>
-      `        <button class="answer-btn answer-btn-degree" data-degree="${val}">${label}</button>`
+      `        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="${val}">${label}</button>`
     ).join('\n') + '\n      </div>';
 }
 
@@ -142,7 +142,7 @@ export function numeralAnswerButtons(opts?: { hidden?: boolean }): string {
   const cls = opts?.hidden ? ' answer-group-hidden' : '';
   return `<div class="answer-buttons answer-buttons-numerals${cls}">\n` +
     numerals.map((n) =>
-      `        <button class="answer-btn answer-btn-numeral" data-numeral="${n}">${n}</button>`
+      `        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="${n}">${n}</button>`
     ).join('\n') + '\n      </div>';
 }
 
@@ -200,7 +200,7 @@ export function stringToggles(
           <div class="string-toggles">
 ${
     stringNames.map((name, i) =>
-      `            <button class="string-toggle${
+      `            <button tabindex="0" class="string-toggle${
         i === defaultString ? ' active' : ''
       }" data-string="${i}" data-string-note="${name}">${name}</button>`
     ).join('\n')
@@ -227,7 +227,7 @@ export function tabbedIdleHTML(config: {
   // to avoid an empty scope zone with double dividers.
   const recBlock = `<div class="practice-recommendation">
             <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
+            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>`;
   const masteryBlock =
     `<div class="mastery-message">Looks like you've got this!</div>`;
@@ -251,7 +251,7 @@ export function tabbedIdleHTML(config: {
         </div>${scopeZone}
         <div class="practice-zone practice-zone-action">
           <div class="session-summary-text"></div>
-          <button class="start-btn">Start Quiz</button>
+          <button tabindex="0" class="start-btn">Start Quiz</button>
         </div>
       </div>
     </div>
@@ -259,7 +259,7 @@ export function tabbedIdleHTML(config: {
       ${config.progressContent || ''}
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -271,8 +271,8 @@ export function notesToggleHTML(): string {
   return `<div class="toggle-group">
             <span class="toggle-group-label">Notes</span>
             <div class="notes-toggles">
-              <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
+              <button tabindex="0" class="notes-toggle active" data-notes="natural">natural</button>
+              <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
             </div>
           </div>`;
 }
@@ -316,7 +316,7 @@ interface ModeScreenOptions {
 export function modeScreen(id: string, opts: ModeScreenOptions): string {
   return `  <div class="mode-screen phase-idle" id="mode-${id}">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">\u2190</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">\u2190</button>
       <h1 class="mode-title">${opts.modeName}</h1>
     </div>
     ${opts.idleHTML}
@@ -331,7 +331,7 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -354,8 +354,8 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>

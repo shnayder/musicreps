@@ -1556,6 +1556,69 @@ button {
   outline-offset: -2px;
 }
 
+/* Toggle buttons — inset outline, white on active (green) background */
+.string-toggle:focus-visible,
+.distance-toggle:focus-visible,
+.notes-toggle:focus-visible {
+  outline-offset: -2px;
+}
+.string-toggle.active:focus-visible,
+.distance-toggle.active:focus-visible,
+.notes-toggle.active:focus-visible {
+  outline-color: white;
+}
+
+/* Tab buttons */
+.mode-tab:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Answer buttons */
+.answer-btn:focus-visible,
+.note-btn:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Round-complete buttons */
+.round-complete-continue:focus-visible {
+  outline-color: white;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
+}
+.round-complete-stop:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Back button, close buttons */
+.mode-back-btn:focus-visible,
+.quiz-header-close:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Stats toggle */
+.stats-toggle-btn:focus-visible {
+  outline-offset: -2px;
+}
+.stats-toggle-btn.active:focus-visible {
+  outline-color: white;
+}
+
+/* Settings modal */
+.settings-close-btn:focus-visible {
+  outline-offset: 2px;
+}
+.settings-toggle-btn:focus-visible {
+  outline-offset: -2px;
+}
+.settings-toggle-btn.active:focus-visible {
+  outline-color: white;
+}
+
+/* Baseline, recommendation buttons */
+.baseline-rerun-btn:focus-visible,
+.practice-rec-btn:focus-visible {
+  outline-offset: 2px;
+}
+
 /* --- Reduced motion --- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -1661,7 +1724,7 @@ button {
   <div id="preview-root"></div>
   <script>
 (() => {
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/dist/preact.module.js
+  // node_modules/preact/dist/preact.module.js
   var n;
   var l;
   var u;
@@ -1912,7 +1975,7 @@ button {
     return n2.__v.__b - l3.__v.__b;
   }, I.__r = 0, f = /(PointerCapture)$|Capture$/i, c = 0, s = O(false), a = O(true), h = 0;
 
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/hooks/dist/hooks.module.js
+  // node_modules/preact/hooks/dist/hooks.module.js
   var t2;
   var r2;
   var u2;
@@ -2240,7 +2303,7 @@ button {
     </div>`;
   }
 
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
   var f3 = 0;
   function u3(e3, t3, n2, o3, i3, u4) {
     t3 || (t3 = {});
@@ -2266,6 +2329,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "answer-btn answer-btn-note",
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
@@ -2281,6 +2345,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "note-btn accidental" + (hideAccidentals ? " hidden" : ""),
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
@@ -2292,6 +2357,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "note-btn",
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
@@ -2309,6 +2375,7 @@ button {
       "button",
       {
         type: "button",
+        tabIndex: 0,
         class: "answer-btn answer-btn-num",
         "data-num": String(i3),
         onClick: onAnswer ? () => onAnswer(i3) : void 0,
@@ -2323,6 +2390,7 @@ button {
       "button",
       {
         type: "button",
+        tabIndex: 0,
         class: "answer-btn answer-btn-interval",
         "data-interval": iv,
         onClick: onAnswer ? () => onAnswer(iv) : void 0,
@@ -2337,6 +2405,7 @@ button {
       "button",
       {
         type: "button",
+        tabIndex: 0,
         class: "answer-btn answer-btn-keysig",
         "data-sig": s3,
         onClick: onAnswer ? () => onAnswer(s3) : void 0,
@@ -2351,6 +2420,7 @@ button {
       "button",
       {
         type: "button",
+        tabIndex: 0,
         class: "answer-btn answer-btn-degree",
         "data-degree": val,
         onClick: onAnswer ? () => onAnswer(val) : void 0,
@@ -2365,6 +2435,7 @@ button {
       "button",
       {
         type: "button",
+        tabIndex: 0,
         class: "answer-btn answer-btn-numeral",
         "data-numeral": n2,
         onClick: onAnswer ? () => onAnswer(n2) : void 0,
@@ -2581,7 +2652,9 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "stats-toggle-btn" + (active === "retention" ? " active" : ""),
+          "aria-pressed": active === "retention",
           "data-mode": "retention",
           onClick: () => onToggle("retention"),
           children: "Recall"
@@ -2591,7 +2664,9 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "stats-toggle-btn" + (active === "speed" ? " active" : ""),
+          "aria-pressed": active === "speed",
           "data-mode": "speed",
           onClick: () => onToggle("speed"),
           children: "Speed"
@@ -2612,7 +2687,9 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: cls,
+            "aria-pressed": active.has(i3),
             "data-group": String(i3),
             onClick: () => onToggle(i3),
             children: label
@@ -2633,7 +2710,9 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: cls,
+            "aria-pressed": active.has(i3),
             "data-string": String(i3),
             "data-string-note": name,
             onClick: () => onToggle(i3),
@@ -2663,7 +2742,9 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: "notes-toggle" + (naturalActive ? " active" : ""),
+            "aria-pressed": naturalActive,
             "data-notes": "natural",
             onClick: () => toggle("natural"),
             children: "natural"
@@ -2673,7 +2754,9 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: "notes-toggle" + (accActive ? " active" : ""),
+            "aria-pressed": accActive,
             "data-notes": "sharps-flats",
             onClick: () => toggle("sharps-flats"),
             children: "sharps & flats"
@@ -2689,7 +2772,9 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "notes-toggle" + (active.has(n2) ? " active" : ""),
+          "aria-pressed": active.has(n2),
           "data-note": n2,
           onClick: () => onToggle(n2),
           children: displayNote(n2)
@@ -2727,6 +2812,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "mode-back-btn",
           "aria-label": "Back to home",
           onClick: onBack,
@@ -2736,33 +2822,52 @@ button {
       /* @__PURE__ */ u3("h1", { class: "mode-title", children: title })
     ] });
   }
+  var tabbedIdCounter = 0;
+  var TABS = ["practice", "progress"];
+  var TAB_LABELS = {
+    practice: "Practice",
+    progress: "Progress"
+  };
   function TabbedIdle({ activeTab, onTabSwitch, practiceContent, progressContent }) {
+    const prefix = T2(() => "tabs-" + tabbedIdCounter++, []);
+    function handleTabKeyDown(e3, current) {
+      if (e3.key === "ArrowLeft" || e3.key === "ArrowRight") {
+        e3.preventDefault();
+        const next = current === "practice" ? "progress" : "practice";
+        onTabSwitch(next);
+        requestAnimationFrame(() => {
+          const container = e3.currentTarget.parentElement;
+          const nextBtn = container?.querySelector(
+            '[data-tab="' + next + '"]'
+          );
+          nextBtn?.focus();
+        });
+      }
+    }
     return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: "mode-tabs", children: [
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            class: "mode-tab" + (activeTab === "practice" ? " active" : ""),
-            "data-tab": "practice",
-            onClick: () => onTabSwitch("practice"),
-            children: "Practice"
-          }
-        ),
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            class: "mode-tab" + (activeTab === "progress" ? " active" : ""),
-            "data-tab": "progress",
-            onClick: () => onTabSwitch("progress"),
-            children: "Progress"
-          }
-        )
-      ] }),
+      /* @__PURE__ */ u3("div", { class: "mode-tabs", role: "tablist", children: TABS.map((tab) => /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          id: prefix + "-tab-" + tab,
+          role: "tab",
+          "aria-selected": activeTab === tab,
+          "aria-controls": prefix + "-panel-" + tab,
+          tabIndex: activeTab === tab ? 0 : -1,
+          class: "mode-tab" + (activeTab === tab ? " active" : ""),
+          "data-tab": tab,
+          onClick: () => onTabSwitch(tab),
+          onKeyDown: (e3) => handleTabKeyDown(e3, tab),
+          children: TAB_LABELS[tab]
+        },
+        tab
+      )) }),
       /* @__PURE__ */ u3(
         "div",
         {
+          id: prefix + "-panel-practice",
+          role: "tabpanel",
+          "aria-labelledby": prefix + "-tab-practice",
           class: "tab-content tab-practice" + (activeTab === "practice" ? " active" : ""),
           children: practiceContent
         }
@@ -2770,6 +2875,9 @@ button {
       /* @__PURE__ */ u3(
         "div",
         {
+          id: prefix + "-panel-progress",
+          role: "tabpanel",
+          "aria-labelledby": prefix + "-tab-progress",
           class: "tab-content tab-progress" + (activeTab === "progress" ? " active" : ""),
           children: progressContent
         }
@@ -2792,6 +2900,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "practice-rec-btn",
           onClick: onApplyRecommendation,
           children: "Use suggestion"
@@ -2823,13 +2932,22 @@ button {
   function Recommendation({ text, onApply }) {
     return /* @__PURE__ */ u3("div", { class: "practice-recommendation", children: [
       /* @__PURE__ */ u3("span", { class: "practice-rec-text", children: text }),
-      onApply ? /* @__PURE__ */ u3("button", { type: "button", class: "practice-rec-btn", onClick: onApply, children: "Use suggestion" }) : null
+      onApply ? /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "practice-rec-btn",
+          onClick: onApply,
+          children: "Use suggestion"
+        }
+      ) : null
     ] });
   }
   function StartButton({ summary, onStart }) {
     return /* @__PURE__ */ u3(k, { children: [
       summary ? /* @__PURE__ */ u3("div", { class: "session-summary-text", children: summary }) : null,
-      /* @__PURE__ */ u3("button", { type: "button", class: "start-btn", onClick: onStart, children: "Start Quiz" })
+      /* @__PURE__ */ u3("button", { type: "button", tabIndex: 0, class: "start-btn", onClick: onStart, children: "Start Quiz" })
     ] });
   }
   function QuizSession({
@@ -2866,6 +2984,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "quiz-header-close",
           "aria-label": "Stop quiz",
           onClick: onClose,
@@ -2906,12 +3025,22 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: "round-complete-continue",
             onClick: onContinue,
             children: "Keep Going"
           }
         ),
-        /* @__PURE__ */ u3("button", { type: "button", class: "round-complete-stop", onClick: onStop, children: "Stop" })
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "round-complete-stop",
+            onClick: onStop,
+            children: "Stop"
+          }
+        )
       ] })
     ] });
   }
