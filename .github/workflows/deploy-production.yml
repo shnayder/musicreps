@@ -41,7 +41,7 @@ jobs:
         run: deno check src/**/*.ts
 
       - name: Test
-        run: deno test --no-check --allow-read
+        run: deno test --no-check --allow-read --allow-run=deno
 
       - name: Build
         run: deno task build
