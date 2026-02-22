@@ -3,6 +3,7 @@
 // mode screen layouts with phase management, tabs, and quiz sessions.
 
 import type { ComponentChildren } from 'preact';
+import { useRef } from 'preact/hooks';
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -51,8 +52,16 @@ export function ModeTopBar(
 }
 
 // ---------------------------------------------------------------------------
-// TabbedIdle — practice/progress tab switching
+// TabbedIdle — practice/progress tab switching (WAI-ARIA Tabs pattern)
 // ---------------------------------------------------------------------------
+
+let tabbedIdCounter = 0;
+
+const TABS = ['practice', 'progress'] as const;
+const TAB_LABELS: Record<string, string> = {
+  practice: 'Practice',
+  progress: 'Progress',
+};
 
 export function TabbedIdle(
   { activeTab, onTabSwitch, practiceContent, progressContent }: {
@@ -62,33 +71,58 @@ export function TabbedIdle(
     progressContent: ComponentChildren;
   },
 ) {
+  const idRef = useRef('tabs-' + tabbedIdCounter++);
+  const prefix = idRef.current;
+
+  function handleTabKeyDown(
+    e: KeyboardEvent,
+    current: 'practice' | 'progress',
+  ) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = current === 'practice' ? 'progress' : 'practice';
+      onTabSwitch(next);
+      requestAnimationFrame(() => {
+        const container = (e.target as HTMLElement).parentElement;
+        const nextBtn = container?.querySelector(
+          '[data-tab="' + next + '"]',
+        ) as HTMLElement | null;
+        nextBtn?.focus();
+      });
+    }
+  }
+
   return (
     <>
-      <div class='mode-tabs'>
-        <button
-          type='button'
-          class={'mode-tab' + (activeTab === 'practice' ? ' active' : '')}
-          data-tab='practice'
-          onClick={() => onTabSwitch('practice')}
-        >
-          Practice
-        </button>
-        <button
-          type='button'
-          class={'mode-tab' + (activeTab === 'progress' ? ' active' : '')}
-          data-tab='progress'
-          onClick={() => onTabSwitch('progress')}
-        >
-          Progress
-        </button>
+      <div class='mode-tabs' role='tablist'>
+        {TABS.map((tab) => (
+          <button
+            type='button'
+            key={tab}
+            role='tab'
+            aria-selected={activeTab === tab}
+            aria-controls={prefix + '-panel-' + tab}
+            tabIndex={activeTab === tab ? 0 : -1}
+            class={'mode-tab' + (activeTab === tab ? ' active' : '')}
+            data-tab={tab}
+            onClick={() => onTabSwitch(tab)}
+            onKeyDown={(e) => handleTabKeyDown(e, tab)}
+          >
+            {TAB_LABELS[tab]}
+          </button>
+        ))}
       </div>
       <div
+        id={prefix + '-panel-practice'}
+        role='tabpanel'
         class={'tab-content tab-practice' +
           (activeTab === 'practice' ? ' active' : '')}
       >
         {practiceContent}
       </div>
       <div
+        id={prefix + '-panel-progress'}
+        role='tabpanel'
         class={'tab-content tab-progress' +
           (activeTab === 'progress' ? ' active' : '')}
       >

@@ -170,6 +170,7 @@ export function StatsToggle(
         type='button'
         class={'stats-toggle-btn' +
           (active === 'retention' ? ' active' : '')}
+        aria-pressed={active === 'retention'}
         data-mode='retention'
         onClick={() => onToggle('retention')}
       >
@@ -178,6 +179,7 @@ export function StatsToggle(
       <button
         type='button'
         class={'stats-toggle-btn' + (active === 'speed' ? ' active' : '')}
+        aria-pressed={active === 'speed'}
         data-mode='speed'
         onClick={() => onToggle('speed')}
       >

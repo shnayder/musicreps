@@ -24,7 +24,10 @@ import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import { useScopeState } from '../../hooks/use-scope-state.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
-import { usePhaseClass } from '../../hooks/use-phase-class.ts';
+import {
+  PHASE_FOCUS_TARGETS,
+  usePhaseClass,
+} from '../../hooks/use-phase-class.ts';
 import { useRoundSummary } from '../../hooks/use-round-summary.ts';
 
 import { NoteButtons } from '../../ui/buttons.tsx';
@@ -266,7 +269,11 @@ export function SpeedTapMode(
   const [calibrating, setCalibrating] = useState(false);
 
   // --- Phase class sync ---
-  usePhaseClass(container, calibrating ? 'calibration' : engine.state.phase);
+  usePhaseClass(
+    container,
+    calibrating ? 'calibration' : engine.state.phase,
+    PHASE_FOCUS_TARGETS,
+  );
 
   // --- Round summary (context, correct, median, baseline, count) ---
   const practicingLabel = useMemo(() => {

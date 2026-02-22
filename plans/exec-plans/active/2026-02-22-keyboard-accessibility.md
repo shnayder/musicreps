@@ -398,7 +398,10 @@ state → press Enter → verify `aria-pressed` updates.
 
 ---
 
-## Chunk 6: Fretboard Hover Cards for Keyboard Users
+## Chunk 6: Fretboard Hover Cards for Keyboard Users (DEFERRED)
+
+**Status**: Deferred — the fretboard hover cards are informational-only and
+lower priority. Implement later if keyboard users request it.
 
 **Goal**: Make fretboard progress heatmap hover cards accessible via keyboard
 focus on SVG position circles.

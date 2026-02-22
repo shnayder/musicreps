@@ -25,6 +25,8 @@ export function createNavigation(): {
   }
 
   function navigateHome(): void {
+    const previousModeId = currentModeId;
+
     // Stop quiz if active in current mode
     if (currentModeId && modes[currentModeId]) {
       modes[currentModeId].deactivate();
@@ -35,6 +37,16 @@ export function createNavigation(): {
 
     // Show home screen
     if (homeScreen) homeScreen.classList.remove('hidden');
+
+    // Focus the mode button the user came from
+    requestAnimationFrame(() => {
+      if (previousModeId && homeScreen) {
+        const btn = homeScreen.querySelector(
+          '.home-mode-btn[data-mode="' + previousModeId + '"]',
+        ) as HTMLElement | null;
+        if (btn) btn.focus();
+      }
+    });
   }
 
   function switchTo(modeId: string): void {
@@ -55,6 +67,16 @@ export function createNavigation(): {
     const newScreen = document.getElementById('mode-' + modeId);
     if (newScreen) newScreen.classList.add('mode-active');
     modes[modeId].activate();
+
+    // Focus the start button
+    requestAnimationFrame(() => {
+      if (newScreen) {
+        const target = newScreen.querySelector('.start-btn') as
+          | HTMLElement
+          | null;
+        if (target) target.focus();
+      }
+    });
 
     // Persist
     localStorage.setItem(LAST_MODE_KEY, modeId);

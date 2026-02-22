@@ -19,6 +19,9 @@ export function createSettingsModal(
 
   const modal: HTMLDivElement = document.createElement('div');
   modal.className = 'settings-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-label', 'Settings');
   modal.innerHTML = '<div class="settings-header">' +
     '<span class="settings-title">Settings</span>' +
     '<button class="settings-close-btn" aria-label="Close">\u00D7</button>' +
@@ -45,11 +48,38 @@ export function createSettingsModal(
 
   // --- State ---
 
+  let previousFocus: HTMLElement | null = null;
+
   function updateToggleState(): void {
     const current: string = getUseSolfege() ? 'solfege' : 'letter';
     toggleBtns.forEach(function (btn: HTMLElement): void {
       btn.classList.toggle('active', btn.dataset.notation === current);
+      btn.setAttribute(
+        'aria-pressed',
+        String(btn.dataset.notation === current),
+      );
     });
+  }
+
+  // --- Focus trap ---
+
+  function trapFocus(e: KeyboardEvent): void {
+    if (e.key !== 'Tab') return;
+    const focusable = modal.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   }
 
   // --- Open / Close ---
@@ -57,10 +87,18 @@ export function createSettingsModal(
   function open(): void {
     updateToggleState();
     overlay.classList.add('open');
+    previousFocus = document.activeElement as HTMLElement | null;
+    (closeBtn as HTMLElement).focus();
+    modal.addEventListener('keydown', trapFocus);
   }
 
   function close(): void {
+    modal.removeEventListener('keydown', trapFocus);
     overlay.classList.remove('open');
+    if (previousFocus) {
+      previousFocus.focus();
+      previousFocus = null;
+    }
   }
 
   // --- Event handlers ---
