@@ -2829,15 +2829,14 @@ button {
     progress: "Progress"
   };
   function TabbedIdle({ activeTab, onTabSwitch, practiceContent, progressContent }) {
-    const idRef = A2("tabs-" + tabbedIdCounter++);
-    const prefix = idRef.current;
+    const prefix = T2(() => "tabs-" + tabbedIdCounter++, []);
     function handleTabKeyDown(e3, current) {
       if (e3.key === "ArrowLeft" || e3.key === "ArrowRight") {
         e3.preventDefault();
         const next = current === "practice" ? "progress" : "practice";
         onTabSwitch(next);
         requestAnimationFrame(() => {
-          const container = e3.target.parentElement;
+          const container = e3.currentTarget.parentElement;
           const nextBtn = container?.querySelector(
             '[data-tab="' + next + '"]'
           );

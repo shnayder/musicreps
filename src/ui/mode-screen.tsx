@@ -3,7 +3,7 @@
 // mode screen layouts with phase management, tabs, and quiz sessions.
 
 import type { ComponentChildren } from 'preact';
-import { useRef } from 'preact/hooks';
+import { useMemo } from 'preact/hooks';
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -72,8 +72,7 @@ export function TabbedIdle(
     progressContent: ComponentChildren;
   },
 ) {
-  const idRef = useRef('tabs-' + tabbedIdCounter++);
-  const prefix = idRef.current;
+  const prefix = useMemo(() => 'tabs-' + tabbedIdCounter++, []);
 
   function handleTabKeyDown(
     e: KeyboardEvent,
@@ -84,7 +83,7 @@ export function TabbedIdle(
       const next = current === 'practice' ? 'progress' : 'practice';
       onTabSwitch(next);
       requestAnimationFrame(() => {
-        const container = (e.target as HTMLElement).parentElement;
+        const container = (e.currentTarget as HTMLElement).parentElement;
         const nextBtn = container?.querySelector(
           '[data-tab="' + next + '"]',
         ) as HTMLElement | null;
