@@ -65,6 +65,8 @@ src/
     use-quiz-engine.ts    # Quiz engine lifecycle hook
     use-scope-state.ts    # Scope persistence hook
     use-learner-model.ts  # Adaptive selector + storage hook
+    use-group-scope.ts    # Group-based scope + recommendations (6 modes)
+    use-mode-lifecycle.ts # Navigation activate/deactivate registration
     use-key-handler.ts    # Keyboard event hook
     use-phase-class.ts    # Phase-to-CSS-class sync hook
     use-round-summary.ts  # Round-complete derived state hook
@@ -91,8 +93,10 @@ at build time. Key patterns:
 - **Preact Mode Components** — each quiz mode is a single `.tsx` file (~100-300
   lines) composing shared UI components with mode-specific logic. Registered
   with navigation via `{ init, activate, deactivate }` interface.
-- **Shared Hooks** — `useQuizEngine` (engine lifecycle), `useScopeState` (scope
-  persistence), `useLearnerModel` (adaptive selector + storage), `useKeyHandler`
+- **Shared Hooks** — `useQuizEngine` (engine lifecycle), `useLearnerModel`
+  (adaptive selector + storage), `useGroupScope` (group scope + recommendations
+  for 6 modes), `useModeLifecycle` (navigation activate/deactivate for all
+  modes), `useScopeState` (low-level scope persistence), `useKeyHandler`
   (keyboard events). Each mode composes these hooks.
 - **Shared UI Components** — `ModeScreen`, `QuizArea`, `PracticeCard`,
   `StatsTable`/`StatsGrid`, `NoteButtons`, `GroupToggles`, etc. Emit the same

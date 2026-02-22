@@ -291,6 +291,14 @@ export type StatsTableRow = {
   revItemId: string;
 };
 
+// --- Mode lifecycle ---
+
+/** Navigation handle for activating/deactivating a quiz mode. */
+export type ModeHandle = {
+  activate(): void;
+  deactivate(): void;
+};
+
 // --- Practice summary state ---
 
 export type PracticeSummaryState = {

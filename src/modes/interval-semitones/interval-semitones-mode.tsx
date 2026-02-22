@@ -1,17 +1,13 @@
 // Interval ↔ Semitones Preact mode component.
 // Composes shared hooks + UI components with mode-specific logic from logic.ts.
 
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/hooks';
+import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
+import type { ModeHandle } from '../../types.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
 import { usePhaseClass } from '../../hooks/use-phase-class.ts';
+import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import {
   useRoundSummary,
   useStatsSelector,
@@ -42,15 +38,6 @@ import {
   getStatsRows,
   type Question,
 } from './logic.ts';
-
-// ---------------------------------------------------------------------------
-// Mode handle for navigation integration
-// ---------------------------------------------------------------------------
-
-export type ModeHandle = {
-  activate(): void;
-  deactivate(): void;
-};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -179,18 +166,7 @@ export function IntervalSemitonesMode(
   );
 
   // --- Navigation handle ---
-  useLayoutEffect(() => {
-    onMount({
-      activate() {
-        learner.syncBaseline();
-        engine.updateIdleMessage();
-      },
-      deactivate() {
-        if (engine.state.phase !== 'idle') engine.stop();
-        setCalibrating(false);
-      },
-    });
-  }, [engine, learner]);
+  useModeLifecycle(onMount, engine, learner, setCalibrating);
 
   // --- Derived state ---
   const dir = currentQ?.dir ?? 'fwd';

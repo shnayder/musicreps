@@ -1891,11 +1891,46 @@ button {
     { name: "A#", displayName: "A#/Bb", num: 10, accepts: ["a#", "bb"] },
     { name: "B", displayName: "B", num: 11, accepts: ["b"] }
   ];
+  var NATURAL_NOTES = ["C", "D", "E", "F", "G", "A", "B"];
+  var NOTE_NAMES = NOTES.map((n2) => n2.name);
+  var ACCIDENTAL_NAMES = NOTE_NAMES.filter((n2) => n2.includes("#"));
+  var INTERVALS = [
+    { name: "minor 2nd", num: 1, abbrev: "m2" },
+    { name: "Major 2nd", num: 2, abbrev: "M2" },
+    { name: "minor 3rd", num: 3, abbrev: "m3" },
+    { name: "Major 3rd", num: 4, abbrev: "M3" },
+    { name: "Perfect 4th", num: 5, abbrev: "P4" },
+    { name: "Tritone", num: 6, abbrev: "TT", altAbbrevs: ["A4", "d5"] },
+    { name: "Perfect 5th", num: 7, abbrev: "P5" },
+    { name: "minor 6th", num: 8, abbrev: "m6" },
+    { name: "Major 6th", num: 9, abbrev: "M6" },
+    { name: "minor 7th", num: 10, abbrev: "m7" },
+    { name: "Major 7th", num: 11, abbrev: "M7" },
+    { name: "Octave", num: 12, abbrev: "P8" }
+  ];
+  var INTERVAL_ABBREVS = INTERVALS.map((i2) => i2.abbrev);
   function pickAccidentalName(displayName, useFlats) {
     if (!displayName.includes("/")) return displayName;
     const [sharp, flat] = displayName.split("/");
     return useFlats ? flat : sharp;
   }
+  var KEYSIG_LABELS = [
+    "0",
+    "1#",
+    "2#",
+    "3#",
+    "4#",
+    "5#",
+    "6#",
+    "7#",
+    "1b",
+    "2b",
+    "3b",
+    "4b",
+    "5b",
+    "6b",
+    "7b"
+  ];
   var DIATONIC_CHORDS = [
     { degree: 1, numeral: "I", quality: "major", qualityLabel: "" },
     { degree: 2, numeral: "ii", quality: "minor", qualityLabel: "m" },
@@ -1911,6 +1946,15 @@ button {
     }
   ];
   var ROMAN_NUMERALS = DIATONIC_CHORDS.map((c2) => c2.numeral);
+  var DEGREE_LABELS = [
+    ["1", "1st"],
+    ["2", "2nd"],
+    ["3", "3rd"],
+    ["4", "4th"],
+    ["5", "5th"],
+    ["6", "6th"],
+    ["7", "7th"]
+  ];
   var GUITAR = {
     id: "fretboard",
     // mode ID (preserved for backward compat)
@@ -1967,66 +2011,9 @@ button {
   }
 
   // src/ui/buttons.tsx
-  var ALL_NOTES = [
-    "C",
-    "C#",
-    "D",
-    "D#",
-    "E",
-    "F",
-    "F#",
-    "G",
-    "G#",
-    "A",
-    "A#",
-    "B"
-  ];
-  var ACCIDENTALS = ["C#", "D#", "F#", "G#", "A#"];
-  var NATURALS = ["C", "D", "E", "F", "G", "A", "B"];
-  var INTERVALS = [
-    "m2",
-    "M2",
-    "m3",
-    "M3",
-    "P4",
-    "TT",
-    "P5",
-    "m6",
-    "M6",
-    "m7",
-    "M7",
-    "P8"
-  ];
-  var KEYSIGS = [
-    "0",
-    "1#",
-    "2#",
-    "3#",
-    "4#",
-    "5#",
-    "6#",
-    "7#",
-    "1b",
-    "2b",
-    "3b",
-    "4b",
-    "5b",
-    "6b",
-    "7b"
-  ];
-  var DEGREES = [
-    ["1", "1st"],
-    ["2", "2nd"],
-    ["3", "3rd"],
-    ["4", "4th"],
-    ["5", "5th"],
-    ["6", "6th"],
-    ["7", "7th"]
-  ];
-  var NUMERALS = ["I", "ii", "iii", "IV", "V", "vi", "vii\xB0"];
   function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive }) {
     const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
-    return /* @__PURE__ */ u2("div", { class: cls, children: ALL_NOTES.map((n2) => {
+    return /* @__PURE__ */ u2("div", { class: cls, children: NOTE_NAMES.map((n2) => {
       let label;
       if (useFlats !== void 0) {
         const note = NOTES.find((x2) => x2.name === n2);
@@ -2049,7 +2036,7 @@ button {
   }
   function PianoNoteButtons({ onAnswer, hideAccidentals }) {
     return /* @__PURE__ */ u2("div", { class: "note-buttons", children: [
-      /* @__PURE__ */ u2("div", { class: "note-row-accidentals", children: ACCIDENTALS.map((n2) => /* @__PURE__ */ u2(
+      /* @__PURE__ */ u2("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
@@ -2060,7 +2047,7 @@ button {
         },
         n2
       )) }),
-      /* @__PURE__ */ u2("div", { class: "note-row-naturals", children: NATURALS.map((n2) => /* @__PURE__ */ u2(
+      /* @__PURE__ */ u2("div", { class: "note-row-naturals", children: NATURAL_NOTES.map((n2) => /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
@@ -2091,7 +2078,7 @@ button {
   }
   function IntervalButtons({ onAnswer, hidden }) {
     const cls = "answer-buttons answer-buttons-intervals" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u2("div", { class: cls, children: INTERVALS.map((iv) => /* @__PURE__ */ u2(
+    return /* @__PURE__ */ u2("div", { class: cls, children: INTERVAL_ABBREVS.map((iv) => /* @__PURE__ */ u2(
       "button",
       {
         type: "button",
@@ -2105,7 +2092,7 @@ button {
   }
   function KeysigButtons({ onAnswer, hidden }) {
     const cls = "answer-buttons answer-buttons-keysig" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u2("div", { class: cls, children: KEYSIGS.map((s2) => /* @__PURE__ */ u2(
+    return /* @__PURE__ */ u2("div", { class: cls, children: KEYSIG_LABELS.map((s2) => /* @__PURE__ */ u2(
       "button",
       {
         type: "button",
@@ -2119,7 +2106,7 @@ button {
   }
   function DegreeButtons({ onAnswer, hidden }) {
     const cls = "answer-buttons answer-buttons-degrees" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u2("div", { class: cls, children: DEGREES.map(([val, label]) => /* @__PURE__ */ u2(
+    return /* @__PURE__ */ u2("div", { class: cls, children: DEGREE_LABELS.map(([val, label]) => /* @__PURE__ */ u2(
       "button",
       {
         type: "button",
@@ -2133,7 +2120,7 @@ button {
   }
   function NumeralButtons({ onAnswer, hidden }) {
     const cls = "answer-buttons answer-buttons-numerals" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u2("div", { class: cls, children: NUMERALS.map((n2) => /* @__PURE__ */ u2(
+    return /* @__PURE__ */ u2("div", { class: cls, children: ROMAN_NUMERALS.map((n2) => /* @__PURE__ */ u2(
       "button",
       {
         type: "button",

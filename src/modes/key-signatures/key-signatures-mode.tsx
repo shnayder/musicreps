@@ -2,27 +2,18 @@
 // Forward: "D major -> ?" -> "2#", Reverse: "3b -> ?" -> Eb.
 // 24 items (12 keys x 2 dirs), grouped by key group.
 
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/hooks';
-import type { RecommendationResult } from '../../types.ts';
+import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
+import type { ModeHandle } from '../../types.ts';
 import { displayNote } from '../../music-data.ts';
 import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
-import { computeRecommendations } from '../../recommendations.ts';
-import {
-  buildRecommendationText,
-  computePracticeSummary,
-} from '../../mode-ui-state.ts';
+import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
-import { useScopeState } from '../../hooks/use-scope-state.ts';
+import { useGroupScope } from '../../hooks/use-group-scope.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
 import { usePhaseClass } from '../../hooks/use-phase-class.ts';
+import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import {
   useRoundSummary,
   useStatsSelector,
@@ -58,15 +49,6 @@ import {
 } from './logic.ts';
 
 // ---------------------------------------------------------------------------
-// Mode handle for navigation integration
-// ---------------------------------------------------------------------------
-
-export type ModeHandle = {
-  activate(): void;
-  deactivate(): void;
-};
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -77,35 +59,36 @@ export function KeySignaturesMode(
     onMount: (handle: ModeHandle) => void;
   },
 ) {
-  // --- Scope ---
-  const [scope, scopeActions] = useScopeState({
-    kind: 'groups',
-    groups: KEY_GROUPS.map((g, i) => ({
-      index: i,
-      label: g.label,
-      itemIds: getItemIdsForGroup(i),
-    })),
-    defaultEnabled: [0, 1],
-    storageKey: 'keySignatures_enabledGroups',
-    label: 'Keys',
-    sortUnstarted: (a, b) => a.string - b.string,
-  });
-
-  const enabledGroups = scope.kind === 'groups'
-    ? scope.enabledGroups
-    : new Set([0, 1]);
-
   // --- Core hooks ---
   const learner = useLearnerModel('keySignatures', ALL_ITEMS);
 
-  // --- Enabled items ---
-  const enabledItems = useMemo(() => {
-    const items: string[] = [];
-    for (const g of enabledGroups) {
-      items.push(...getItemIdsForGroup(g));
-    }
-    return items;
-  }, [enabledGroups]);
+  // --- Scope + recommendations ---
+  const {
+    scopeActions,
+    enabledGroups,
+    enabledItems,
+    practicingLabel,
+    recommendation,
+    recommendationText,
+    applyRecommendation,
+    getEnabledItems,
+    getPracticingLabel,
+  } = useGroupScope({
+    groups: KEY_GROUPS,
+    getItemIdsForGroup,
+    allGroupIndices: ALL_GROUP_INDICES,
+    storageKey: 'keySignatures_enabledGroups',
+    scopeLabel: 'Keys',
+    defaultEnabled: [0, 1],
+    selector: learner.selector,
+    formatLabel: (groups) => {
+      if (groups.size === KEY_GROUPS.length) return 'all keys';
+      const keys = [...groups].sort((a, b) => a - b)
+        .flatMap((g) => KEY_GROUPS[g].keys)
+        .map((k) => displayNote(k));
+      return keys.join(', ');
+    },
+  });
 
   // --- Question state ---
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
@@ -127,54 +110,10 @@ export function KeySignaturesMode(
     [],
   );
 
-  // --- Recommendations ---
-  const recommendation = useMemo((): RecommendationResult => {
-    return computeRecommendations(
-      learner.selector,
-      ALL_GROUP_INDICES,
-      getItemIdsForGroup,
-      { expansionThreshold: 0.7 },
-      { sortUnstarted: (a, b) => a.string - b.string },
-    );
-  }, [learner.selector]);
-
-  const recommendationText = useMemo(() => {
-    return buildRecommendationText(
-      recommendation,
-      (i: number) => KEY_GROUPS[i].label,
-    );
-  }, [recommendation]);
-
-  const applyRecommendation = useCallback(() => {
-    if (recommendation.enabled) {
-      scopeActions.setScope({
-        kind: 'groups',
-        enabledGroups: recommendation.enabled,
-      });
-    }
-  }, [recommendation, scopeActions]);
-
-  // --- Practicing label ---
-  const practicingLabel = useMemo(() => {
-    if (enabledGroups.size === KEY_GROUPS.length) return 'all keys';
-    const keys = [...enabledGroups].sort((a, b) => a - b)
-      .flatMap((g) => KEY_GROUPS[g].keys)
-      .map((k) => displayNote(k));
-    return keys.join(', ');
-  }, [enabledGroups]);
-
   // --- Engine config ---
   const engineConfig = useMemo((): QuizEngineConfig => ({
-    getEnabledItems: () => {
-      const items: string[] = [];
-      const groups = scope.kind === 'groups'
-        ? scope.enabledGroups
-        : new Set([0, 1]);
-      for (const g of groups) {
-        items.push(...getItemIdsForGroup(g));
-      }
-      return items;
-    },
+    getEnabledItems,
+    getPracticingLabel,
 
     checkAnswer: (_itemId: string, input: string) => {
       const q = currentQRef.current!;
@@ -241,18 +180,7 @@ export function KeySignaturesMode(
       }
       pendingSigDigitRef.current = null;
     },
-
-    getPracticingLabel: () => {
-      const groups = scope.kind === 'groups'
-        ? scope.enabledGroups
-        : new Set([0, 1]);
-      if (groups.size === KEY_GROUPS.length) return 'all keys';
-      const keys = [...groups].sort((a, b) => a - b)
-        .flatMap((g) => KEY_GROUPS[g].keys)
-        .map((k) => displayNote(k));
-      return keys.join(', ');
-    },
-  }), [scope, noteHandler]);
+  }), [noteHandler, getEnabledItems, getPracticingLabel]);
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
@@ -305,23 +233,14 @@ export function KeySignaturesMode(
   );
 
   // --- Navigation handle ---
-  useLayoutEffect(() => {
-    onMount({
-      activate() {
-        learner.syncBaseline();
-        engine.updateIdleMessage();
-      },
-      deactivate() {
-        if (engine.state.phase !== 'idle') engine.stop();
-        noteHandler.reset();
-        if (pendingSigTimeoutRef.current) {
-          clearTimeout(pendingSigTimeoutRef.current);
-        }
-        pendingSigDigitRef.current = null;
-        setCalibrating(false);
-      },
-    });
-  }, [engine, learner, noteHandler]);
+  const deactivateCleanup = useCallback(() => {
+    noteHandler.reset();
+    if (pendingSigTimeoutRef.current) {
+      clearTimeout(pendingSigTimeoutRef.current);
+    }
+    pendingSigDigitRef.current = null;
+  }, [noteHandler]);
+  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
 
   // --- Derived state ---
   const dir = currentQ?.dir ?? 'fwd';

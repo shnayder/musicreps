@@ -48,6 +48,10 @@ Hooks layer:
   hooks/use-scope-state.ts   ← Scope persistence (localStorage)
   hooks/use-learner-model.ts ← Adaptive selector + storage
     imports: adaptive
+  hooks/use-group-scope.ts   ← Group scope + recommendations (wraps use-scope-state)
+    imports: use-scope-state, recommendations, mode-ui-state
+  hooks/use-mode-lifecycle.ts ← Navigation activate/deactivate registration
+    imports: use-quiz-engine, use-learner-model
   hooks/use-key-handler.ts   ← Keyboard event attachment
   hooks/use-phase-class.ts   ← Phase-to-CSS-class sync
   hooks/use-round-summary.ts ← Round-complete derived state + stats selector
@@ -178,40 +182,63 @@ testability. Pure state modules get the `*-state.ts` suffix.
 ### Preact Mode Components
 
 Each quiz mode is a single `.tsx` component that composes shared hooks and UI
-components. A typical mode is 100-300 lines:
+components. A typical group-based mode is 100-250 lines:
 
 ```tsx
 export function SemitoneMathMode({ container, navigateHome, onMount }) {
-  // 1. Scope state (persisted toggles)
-  const scope = useScopeState(scopeSpec);
+  // 1. Learner model (adaptive selector + storage)
+  const learner = useLearnerModel('semitoneMath', ALL_ITEMS);
 
-  // 2. Learner model (adaptive selector + storage)
-  const learner = useLearnerModel(NAMESPACE, allItemIds);
+  // 2. Scope + recommendations (persisted toggles, enabled items, labels)
+  const {
+    scopeActions, enabledGroups, enabledItems, practicingLabel,
+    recommendation, recommendationText, applyRecommendation,
+    getEnabledItems, getPracticingLabel,
+  } = useGroupScope({ groups, getItemIdsForGroup, ... });
 
-  // 3. Engine config (pure mode logic)
+  // 3. Engine config (pure mode logic + stable ref-backed scope functions)
   const engineConfig = useMemo(() => ({
-    storageNamespace: NAMESPACE,
-    allItemIds,
-    getEnabledItems: () => getEnabled(scope.state),
-    getQuestion: (id) => parseItemId(id),
-    checkAnswer: (id, input) => check(id, input),
+    getEnabledItems,       // stable ref — no scope in deps
+    getPracticingLabel,    // stable ref — no scope in deps
+    checkAnswer: (id, input) => checkAnswer(currentQRef.current!, input),
+    onPresent: (id) => { setCurrentQ(getQuestion(id)); },
+    handleKey: (e, ctx) => noteHandler.handleKey(e),
     // ...
-  }), [scope.state]);
+  }), [noteHandler, getEnabledItems, getPracticingLabel]);
 
   // 4. Quiz engine (lifecycle, timer, state)
   const engine = useQuizEngine(engineConfig, learner.selector);
 
-  // 5. Render: compose shared UI components
+  // 5. Navigation lifecycle (activate/deactivate)
+  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+
+  // 6. Render: compose shared UI components
   return (
-    <ModeScreen phase={engine.state.phase} container={container}>
-      <PracticeCard summary={summary} ... />
-      <QuizArea prompt={question.text} engine={engine}>
-        <NoteButtons onAnswer={engine.submitAnswer} />
+    <>
+      <ModeTopBar title='Semitone Math' onBack={navigateHome} />
+      <TabbedIdle ... />
+      <QuizSession ... />
+      <QuizArea prompt={promptText}>
+        <NoteButtons onAnswer={handleNoteAnswer} />
+        <FeedbackDisplay ... />
+        <RoundComplete ... />
       </QuizArea>
-    </ModeScreen>
+    </>
   );
 }
 ```
+
+**Key hooks:**
+
+- `useGroupScope` — wraps scope persistence, enabled-item derivation,
+  recommendations, and practicing-label formatting into one call. Returns stable
+  ref-backed `getEnabledItems`/`getPracticingLabel` functions that never change
+  identity, so they can be used in `engineConfig` without adding scope to the
+  dependency array. Used by the 6 group-based modes.
+- `useModeLifecycle` — registers the activate/deactivate handle with navigation.
+  Activate syncs the motor baseline and updates the idle message; deactivate
+  stops the engine, runs mode-specific cleanup, and clears calibration. Used by
+  all 9 quiz modes.
 
 **Registration** (in `app.ts`):
 
@@ -526,8 +553,8 @@ parameterized by `Instrument`. Uses `StringToggles` + `NoteFilter` for scope,
 fretboard SVG heatmap in Progress tab.
 
 **Group modes** (Semitone Math, Interval Math, Key Signatures, Scale Degrees,
-Diatonic Chords, Chord Spelling): Use `GroupToggles` component for scope. Each
-mode uses `computeRecommendations()` for progressive unlocking.
+Diatonic Chords, Chord Spelling): Use `useGroupScope` hook for scope state,
+recommendations, and practicing label. Use `GroupToggles` component for UI.
 
 **Simple modes** (Note Semitones, Interval Semitones): No scope controls — all
 items always enabled. Recommendation and mastery elements fold into the status
@@ -594,10 +621,11 @@ Step-by-step checklist:
    shared hooks and UI components (~200-400 lines)
 3. **Define** item ID format, `ALL_ITEMS`, and export from `logic.ts`:
    `getQuestion`, `checkAnswer`, group constants, grid/stats config
-4. **Compose hooks**: `useScopeState` (if scope controls needed),
-   `useLearnerModel`, `useQuizEngine`, `usePhaseClass`, `useRoundSummary`
-5. **Groups** (if applicable): use `computeRecommendations()` from
-   `recommendations.ts` for progressive unlocking
+4. **Compose hooks**: `useLearnerModel`, `useGroupScope` (for group-based modes)
+   or `useScopeState` (for custom scope), `useQuizEngine`, `usePhaseClass`,
+   `useModeLifecycle`, `useRoundSummary`
+5. **Groups** (if applicable): use `useGroupScope` which wraps scope
+   persistence, `computeRecommendations()`, and practicing-label formatting
 6. **Stats**: use `StatsTable` or `StatsGrid` component from `src/ui/stats.tsx`
 7. **HTML**: add mode screen in `modeScreens()` in `src/build-template.ts`
    (container div), and nav button in `HOME_SCREEN_HTML`

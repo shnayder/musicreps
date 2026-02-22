@@ -1,65 +1,18 @@
 // Answer button components: Preact equivalents of html-helpers button generators.
 // Each emits the same CSS class names as the build-time HTML for style parity.
 
-import { displayNote, NOTES, pickAccidentalName } from '../music-data.ts';
-
-const ALL_NOTES = [
-  'C',
-  'C#',
-  'D',
-  'D#',
-  'E',
-  'F',
-  'F#',
-  'G',
-  'G#',
-  'A',
-  'A#',
-  'B',
-];
-const ACCIDENTALS = ['C#', 'D#', 'F#', 'G#', 'A#'];
-const NATURALS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-const INTERVALS = [
-  'm2',
-  'M2',
-  'm3',
-  'M3',
-  'P4',
-  'TT',
-  'P5',
-  'm6',
-  'M6',
-  'm7',
-  'M7',
-  'P8',
-];
-const KEYSIGS = [
-  '0',
-  '1#',
-  '2#',
-  '3#',
-  '4#',
-  '5#',
-  '6#',
-  '7#',
-  '1b',
-  '2b',
-  '3b',
-  '4b',
-  '5b',
-  '6b',
-  '7b',
-];
-const DEGREES: [string, string][] = [
-  ['1', '1st'],
-  ['2', '2nd'],
-  ['3', '3rd'],
-  ['4', '4th'],
-  ['5', '5th'],
-  ['6', '6th'],
-  ['7', '7th'],
-];
-const NUMERALS = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii\u00B0']; // \u00B0 = °
+import {
+  ACCIDENTAL_NAMES,
+  DEGREE_LABELS,
+  displayNote,
+  INTERVAL_ABBREVS,
+  KEYSIG_LABELS,
+  NATURAL_NOTES,
+  NOTE_NAMES,
+  NOTES,
+  pickAccidentalName,
+  ROMAN_NUMERALS,
+} from '../music-data.ts';
 
 // ---------------------------------------------------------------------------
 // Note answer buttons (12-note grid)
@@ -80,7 +33,7 @@ export function NoteButtons(
     (calibrationActive ? ' calibration-active' : '');
   return (
     <div class={cls}>
-      {ALL_NOTES.map((n) => {
+      {NOTE_NAMES.map((n) => {
         let label: string;
         if (useFlats !== undefined) {
           const note = NOTES.find((x) => x.name === n);
@@ -119,7 +72,7 @@ export function PianoNoteButtons(
   return (
     <div class='note-buttons'>
       <div class='note-row-accidentals'>
-        {ACCIDENTALS.map((n) => (
+        {ACCIDENTAL_NAMES.map((n) => (
           <button
             type='button'
             key={n}
@@ -132,7 +85,7 @@ export function PianoNoteButtons(
         ))}
       </div>
       <div class='note-row-naturals'>
-        {NATURALS.map((n) => (
+        {NATURAL_NOTES.map((n) => (
           <button
             type='button'
             key={n}
@@ -195,7 +148,7 @@ export function IntervalButtons(
     (hidden ? ' answer-group-hidden' : '');
   return (
     <div class={cls}>
-      {INTERVALS.map((iv) => (
+      {INTERVAL_ABBREVS.map((iv) => (
         <button
           type='button'
           key={iv}
@@ -221,7 +174,7 @@ export function KeysigButtons(
     (hidden ? ' answer-group-hidden' : '');
   return (
     <div class={cls}>
-      {KEYSIGS.map((s) => (
+      {KEYSIG_LABELS.map((s) => (
         <button
           type='button'
           key={s}
@@ -250,7 +203,7 @@ export function DegreeButtons(
     (hidden ? ' answer-group-hidden' : '');
   return (
     <div class={cls}>
-      {DEGREES.map(([val, label]) => (
+      {DEGREE_LABELS.map(([val, label]) => (
         <button
           type='button'
           key={val}
@@ -279,7 +232,7 @@ export function NumeralButtons(
     (hidden ? ' answer-group-hidden' : '');
   return (
     <div class={cls}>
-      {NUMERALS.map((n) => (
+      {ROMAN_NUMERALS.map((n) => (
         <button
           type='button'
           key={n}

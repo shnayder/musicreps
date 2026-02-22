@@ -2,27 +2,18 @@
 // Forward: "IV in Bb major?" -> Eb, Reverse: "Dm is what in C major?" -> ii.
 // 168 items (12 keys x 7 degrees x 2 dirs), grouped by chord importance.
 
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/hooks';
-import type { RecommendationResult } from '../../types.ts';
+import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
+import type { ModeHandle } from '../../types.ts';
 import { displayNote, ROMAN_NUMERALS } from '../../music-data.ts';
 import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
-import { computeRecommendations } from '../../recommendations.ts';
-import {
-  buildRecommendationText,
-  computePracticeSummary,
-} from '../../mode-ui-state.ts';
+import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
-import { useScopeState } from '../../hooks/use-scope-state.ts';
+import { useGroupScope } from '../../hooks/use-group-scope.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
 import { usePhaseClass } from '../../hooks/use-phase-class.ts';
+import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import {
   useRoundSummary,
   useStatsSelector,
@@ -59,15 +50,6 @@ import {
 } from './logic.ts';
 
 // ---------------------------------------------------------------------------
-// Mode handle
-// ---------------------------------------------------------------------------
-
-export type ModeHandle = {
-  activate(): void;
-  deactivate(): void;
-};
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -78,36 +60,43 @@ export function DiatonicChordsMode(
     onMount: (handle: ModeHandle) => void;
   },
 ) {
-  const [scope, scopeActions] = useScopeState({
-    kind: 'groups',
-    groups: CHORD_GROUPS.map((g, i) => ({
-      index: i,
-      label: g.label,
-      itemIds: getItemIdsForGroup(i),
-    })),
-    defaultEnabled: [0],
-    storageKey: 'diatonicChords_enabledGroups',
-    label: 'Chords',
-    sortUnstarted: (a, b) => a.string - b.string,
-  });
-
-  const enabledGroups = scope.kind === 'groups'
-    ? scope.enabledGroups
-    : new Set([0]);
-
+  // --- Core hooks ---
   const learner = useLearnerModel('diatonicChords', ALL_ITEMS);
 
-  const enabledItems = useMemo(() => {
-    const items: string[] = [];
-    for (const g of enabledGroups) {
-      items.push(...getItemIdsForGroup(g));
-    }
-    return items;
-  }, [enabledGroups]);
+  // --- Scope + recommendations ---
+  const {
+    scopeActions,
+    enabledGroups,
+    enabledItems,
+    practicingLabel,
+    recommendation,
+    recommendationText,
+    applyRecommendation,
+    getEnabledItems,
+    getPracticingLabel,
+  } = useGroupScope({
+    groups: CHORD_GROUPS,
+    getItemIdsForGroup,
+    allGroupIndices: ALL_GROUP_INDICES,
+    storageKey: 'diatonicChords_enabledGroups',
+    scopeLabel: 'Chords',
+    defaultEnabled: [0],
+    selector: learner.selector,
+    formatLabel: (groups) => {
+      if (groups.size === CHORD_GROUPS.length) return 'all chords';
+      const numerals = [...groups].sort((a, b) => a - b)
+        .flatMap((g) => CHORD_GROUPS[g].degrees)
+        .sort((a, b) => a - b)
+        .map((d) => ROMAN_NUMERALS[d - 1]);
+      return numerals.join(', ') + ' chords';
+    },
+  });
 
+  // --- Question state ---
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const currentQRef = useRef<Question | null>(null);
 
+  // --- Key handler ---
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
   const noteHandler = useMemo(
     () =>
@@ -118,52 +107,10 @@ export function DiatonicChordsMode(
     [],
   );
 
-  const recommendation = useMemo((): RecommendationResult => {
-    return computeRecommendations(
-      learner.selector,
-      ALL_GROUP_INDICES,
-      getItemIdsForGroup,
-      { expansionThreshold: 0.7 },
-      { sortUnstarted: (a, b) => a.string - b.string },
-    );
-  }, [learner.selector]);
-
-  const recommendationText = useMemo(() => {
-    return buildRecommendationText(
-      recommendation,
-      (i: number) => CHORD_GROUPS[i].label,
-    );
-  }, [recommendation]);
-
-  const applyRecommendation = useCallback(() => {
-    if (recommendation.enabled) {
-      scopeActions.setScope({
-        kind: 'groups',
-        enabledGroups: recommendation.enabled,
-      });
-    }
-  }, [recommendation, scopeActions]);
-
-  const practicingLabel = useMemo(() => {
-    if (enabledGroups.size === CHORD_GROUPS.length) return 'all chords';
-    const numerals = [...enabledGroups].sort((a, b) => a - b)
-      .flatMap((g) => CHORD_GROUPS[g].degrees)
-      .sort((a, b) => a - b)
-      .map((d) => ROMAN_NUMERALS[d - 1]);
-    return numerals.join(', ') + ' chords';
-  }, [enabledGroups]);
-
+  // --- Engine config ---
   const engineConfig = useMemo((): QuizEngineConfig => ({
-    getEnabledItems: () => {
-      const items: string[] = [];
-      const groups = scope.kind === 'groups'
-        ? scope.enabledGroups
-        : new Set([0]);
-      for (const g of groups) {
-        items.push(...getItemIdsForGroup(g));
-      }
-      return items;
-    },
+    getEnabledItems,
+    getPracticingLabel,
 
     checkAnswer: (_itemId: string, input: string) => {
       return checkAnswer(currentQRef.current!, input);
@@ -194,19 +141,7 @@ export function DiatonicChordsMode(
 
     onStart: () => noteHandler.reset(),
     onStop: () => noteHandler.reset(),
-
-    getPracticingLabel: () => {
-      const groups = scope.kind === 'groups'
-        ? scope.enabledGroups
-        : new Set([0]);
-      if (groups.size === CHORD_GROUPS.length) return 'all chords';
-      const numerals = [...groups].sort((a, b) => a - b)
-        .flatMap((g) => CHORD_GROUPS[g].degrees)
-        .sort((a, b) => a - b)
-        .map((d) => ROMAN_NUMERALS[d - 1]);
-      return numerals.join(', ') + ' chords';
-    },
-  }), [scope, noteHandler]);
+  }), [noteHandler, getEnabledItems, getPracticingLabel]);
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
@@ -245,19 +180,11 @@ export function DiatonicChordsMode(
     ],
   );
 
-  useLayoutEffect(() => {
-    onMount({
-      activate() {
-        learner.syncBaseline();
-        engine.updateIdleMessage();
-      },
-      deactivate() {
-        if (engine.state.phase !== 'idle') engine.stop();
-        noteHandler.reset();
-        setCalibrating(false);
-      },
-    });
-  }, [engine, learner, noteHandler]);
+  // --- Navigation handle ---
+  const deactivateCleanup = useCallback(() => noteHandler.reset(), [
+    noteHandler,
+  ]);
+  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
 
   const dir = currentQ?.dir ?? 'fwd';
   const promptText = currentQ
