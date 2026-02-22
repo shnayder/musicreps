@@ -59,5 +59,5 @@ export function usePhaseClass(
         });
       }
     }
-  }, [phase, container]);
+  }, [phase, container, focusTargets]);
 }

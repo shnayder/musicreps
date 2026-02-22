@@ -99,6 +99,7 @@ export function TabbedIdle(
           <button
             type='button'
             key={tab}
+            id={prefix + '-tab-' + tab}
             role='tab'
             aria-selected={activeTab === tab}
             aria-controls={prefix + '-panel-' + tab}
@@ -115,6 +116,7 @@ export function TabbedIdle(
       <div
         id={prefix + '-panel-practice'}
         role='tabpanel'
+        aria-labelledby={prefix + '-tab-practice'}
         class={'tab-content tab-practice' +
           (activeTab === 'practice' ? ' active' : '')}
       >
@@ -123,6 +125,7 @@ export function TabbedIdle(
       <div
         id={prefix + '-panel-progress'}
         role='tabpanel'
+        aria-labelledby={prefix + '-tab-progress'}
         class={'tab-content tab-progress' +
           (activeTab === 'progress' ? ' active' : '')}
       >

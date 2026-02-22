@@ -2691,6 +2691,7 @@ button {
         "button",
         {
           type: "button",
+          id: prefix + "-tab-" + tab,
           role: "tab",
           "aria-selected": activeTab === tab,
           "aria-controls": prefix + "-panel-" + tab,
@@ -2708,6 +2709,7 @@ button {
         {
           id: prefix + "-panel-practice",
           role: "tabpanel",
+          "aria-labelledby": prefix + "-tab-practice",
           class: "tab-content tab-practice" + (activeTab === "practice" ? " active" : ""),
           children: practiceContent
         }
@@ -2717,6 +2719,7 @@ button {
         {
           id: prefix + "-panel-progress",
           role: "tabpanel",
+          "aria-labelledby": prefix + "-tab-progress",
           class: "tab-content tab-progress" + (activeTab === "progress" ? " active" : ""),
           children: progressContent
         }
