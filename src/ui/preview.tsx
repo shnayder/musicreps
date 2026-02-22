@@ -3,7 +3,9 @@
 
 import type { ComponentChildren } from 'preact';
 import { render } from 'preact';
+import { useEffect, useRef } from 'preact/hooks';
 import { NOTES } from '../music-data.ts';
+import { fretboardSVG } from '../html-helpers.ts';
 
 import {
   DegreeButtons,
@@ -48,6 +50,30 @@ function Section(
       <h3>{title}</h3>
       <div class='preview-frame'>{children}</div>
     </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Fretboard preview helpers
+// ---------------------------------------------------------------------------
+
+/** Fretboard SVG rendered via dangerouslySetInnerHTML with post-render coloring. */
+function FretboardPreview(
+  { colorCircles }: {
+    colorCircles: (root: HTMLElement) => void;
+  },
+) {
+  const ref = useRef<HTMLDivElement>(null);
+  const svgHTML = fretboardSVG();
+  useEffect(() => {
+    if (ref.current) colorCircles(ref.current);
+  }, []);
+  return (
+    <div
+      ref={ref}
+      // deno-lint-ignore react-no-danger
+      dangerouslySetInnerHTML={{ __html: svgHTML }}
+    />
   );
 }
 
@@ -318,6 +344,68 @@ function PreviewApp() {
             }
           />
         </ModeScreen>
+      </Section>
+
+      <h2>Fretboard</h2>
+      <Section title='Fretboard — Quiz Active'>
+        <FretboardPreview
+          colorCircles={(root) => {
+            const set = (s: number, f: number, fill: string) => {
+              const c = root.querySelector(
+                `circle.fb-pos[data-string="${s}"][data-fret="${f}"]`,
+              ) as SVGElement | null;
+              if (c) c.style.fill = fill;
+            };
+            set(5, 3, 'hsl(50, 100%, 50%)');
+            set(4, 5, 'hsl(122, 46%, 33%)');
+          }}
+        />
+      </Section>
+      <Section title='Fretboard — Progress Heatmap'>
+        <FretboardPreview
+          colorCircles={(root) => {
+            // Mock mastery: strings E(5), A(4), D(3) have varied levels;
+            // G(2), B(1), e(0) are unseen.
+            const mastery: Array<[number, number, string]> = [
+              // String E (5) — mostly solid/automatic
+              [5, 0, 'hsl(122, 46%, 33%)'],
+              [5, 1, 'hsl(90, 38%, 38%)'],
+              [5, 2, 'hsl(122, 46%, 33%)'],
+              [5, 3, 'hsl(90, 38%, 38%)'],
+              [5, 5, 'hsl(122, 46%, 33%)'],
+              [5, 7, 'hsl(68, 30%, 46%)'],
+              [5, 8, 'hsl(90, 38%, 38%)'],
+              [5, 9, 'hsl(122, 46%, 33%)'],
+              [5, 10, 'hsl(68, 30%, 46%)'],
+              [5, 12, 'hsl(90, 38%, 38%)'],
+              // String A (4) — mixed
+              [4, 0, 'hsl(90, 38%, 38%)'],
+              [4, 2, 'hsl(68, 30%, 46%)'],
+              [4, 3, 'hsl(122, 46%, 33%)'],
+              [4, 5, 'hsl(54, 45%, 52%)'],
+              [4, 7, 'hsl(68, 30%, 46%)'],
+              [4, 8, 'hsl(44, 65%, 58%)'],
+              [4, 9, 'hsl(54, 45%, 52%)'],
+              [4, 10, 'hsl(90, 38%, 38%)'],
+              [4, 12, 'hsl(68, 30%, 46%)'],
+              // String D (3) — needs work / fading
+              [3, 0, 'hsl(68, 30%, 46%)'],
+              [3, 2, 'hsl(44, 65%, 58%)'],
+              [3, 3, 'hsl(54, 45%, 52%)'],
+              [3, 5, 'hsl(44, 65%, 58%)'],
+              [3, 7, 'hsl(54, 45%, 52%)'],
+              [3, 8, 'hsl(44, 65%, 58%)'],
+              [3, 10, 'hsl(68, 30%, 46%)'],
+              [3, 12, 'hsl(44, 65%, 58%)'],
+            ];
+            for (const [s, f, fill] of mastery) {
+              const c = root.querySelector(
+                `circle.fb-pos[data-string="${s}"][data-fret="${f}"]`,
+              ) as SVGElement | null;
+              if (c) c.style.fill = fill;
+            }
+          }}
+        />
       </Section>
     </div>
   );

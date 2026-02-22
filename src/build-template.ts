@@ -85,7 +85,7 @@ export const HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
       </button>
     </div>
     <div class="home-footer">
-      <button class="home-settings-btn" type="button">Settings</button>
+      <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
       <span class="version">${VERSION}</span>
     </div>
   </div>`;

@@ -22,11 +22,11 @@ function heatmapColors() {
     _heatmapColors = {
       none: cssVar('--heatmap-none') || 'hsl(30, 4%, 85%)',
       level: [
-        cssVar('--heatmap-1') || 'hsl(12, 48%, 65%)',
-        cssVar('--heatmap-2') || 'hsl(30, 48%, 58%)',
-        cssVar('--heatmap-3') || 'hsl(50, 40%, 50%)',
-        cssVar('--heatmap-4') || 'hsl(72, 38%, 42%)',
-        cssVar('--heatmap-5') || 'hsl(90, 45%, 35%)',
+        cssVar('--heatmap-1') || 'hsl(44, 65%, 58%)',
+        cssVar('--heatmap-2') || 'hsl(54, 45%, 52%)',
+        cssVar('--heatmap-3') || 'hsl(68, 30%, 46%)',
+        cssVar('--heatmap-4') || 'hsl(90, 38%, 38%)',
+        cssVar('--heatmap-5') || 'hsl(122, 46%, 33%)',
       ],
     };
   }

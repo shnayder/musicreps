@@ -170,8 +170,20 @@
     </div>
 
     <!-- ================================================================== -->
-    <h2>Brand</h2>
-    <p>Sage green — natural, earthy feel. Used for CTAs and identity.</p>
+    <h2>Palette Overview</h2>
+    <p>
+      Three colors carry all the meaning: <strong>green</strong> (actions,
+      correctness, brand), <strong>gold</strong> (attention, recommendations,
+      achievements), <strong>red</strong> (errors only). Everything else is
+      warm neutral chrome.
+    </p>
+
+    <!-- ================================================================== -->
+    <h2>Brand / Success (Green)</h2>
+    <p>
+      Deep green &mdash; unified brand and success color. CTAs, correct
+      feedback, active toggles, and focus states all share this hue.
+    </p>
 
     <div id="brand-colors" class="grid"></div>
 
@@ -180,10 +192,10 @@
     <div id="topbar-colors" class="grid"></div>
 
     <!-- ================================================================== -->
-    <h2>Semantic Colors</h2>
+    <h2>Gold &amp; Red</h2>
     <p>
-      Core roles used across the UI. Each role has a primary, dark, background,
-      and text variant where applicable.
+      Gold for attention and recommendations, red for errors only. Each role
+      has primary, background, and text variants where applicable.
     </p>
 
     <div id="semantic-colors" class="grid"></div>
@@ -210,8 +222,8 @@
     <!-- ================================================================== -->
     <h2>Heatmap Scale</h2>
     <p>
-      Warm terracotta → sage sequential scale. Bright at both ends, muted in the
-      middle. No red/green dependency.
+      Warm terracotta &rarr; sage sequential scale. Bright at both ends, muted in
+      the middle. No red/green dependency.
     </p>
 
     <div id="heatmap-strip" class="heatmap-strip"></div>
@@ -272,17 +284,23 @@
       }
 
       function renderAll() {
-        // --- Brand ---
+        // --- Brand / Success (unified green) ---
         renderSwatches('brand-colors', [
           {
             v: '--color-brand',
-            note: 'Start Quiz CTA, active stats toggle, focus outline',
+            note: 'CTA, correct feedback, active toggles, progress',
           },
           {
             v: '--color-brand-dark',
-            note: 'Hover CTA, nav active text',
+            note: 'Hover CTA, nav active text, pressed state',
           },
-          { v: '--color-brand-bg', note: 'Nav active item background' },
+          { v: '--color-brand-bg', note: 'Success bg, nav active bg' },
+          { v: '--color-focus', note: 'Focus ring, active chord-slot border' },
+          { v: '--color-focus-bg', note: 'Active chord-slot bg' },
+          {
+            v: '--color-toggle-active',
+            note: 'Active string/distance toggle',
+          },
         ]);
 
         // --- Top bar ---
@@ -294,38 +312,26 @@
           },
         ]);
 
-        // --- Semantic colors ---
+        // --- Gold & Red ---
         renderSwatches('semantic-colors', [
           {
-            v: '--color-success',
-            note: 'Correct answer feedback, progress',
+            v: '--color-highlight',
+            note: 'Gold — fretboard question, achievements',
           },
           {
-            v: '--color-success-dark',
-            note: 'Calibration target border, pressed CTA',
+            v: '--color-recommended',
+            note: 'Gold — recommendation badges',
           },
-          { v: '--color-success-bg', note: 'Mastery message bg' },
-          { v: '--color-success-text', note: 'Text on success-bg' },
+          {
+            v: '--color-toggle-recommended',
+            note: 'Gold — recommended toggle glow',
+          },
           {
             v: '--color-error',
             note: 'Incorrect answer, expired countdown',
           },
           { v: '--color-error-bg', note: 'Wrong chord-slot bg' },
           { v: '--color-error-text', note: 'Text on error-bg' },
-          { v: '--color-focus', note: 'Active chord-slot border' },
-          { v: '--color-focus-bg', note: 'Active chord-slot bg' },
-          {
-            v: '--color-toggle-active',
-            note: 'Active string/distance toggle (themed)',
-          },
-          {
-            v: '--color-toggle-recommended',
-            note: 'Recommended toggle glow (themed)',
-          },
-          {
-            v: '--color-highlight',
-            note: 'Gold — current fretboard question (SVG)',
-          },
         ]);
 
         // --- Pairings ---
