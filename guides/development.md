@@ -9,6 +9,18 @@ Day-to-day workflow reference for building, testing, and deploying.
 - Playwright required for screenshots only: `npx playwright install chromium`.
   Only works locally, when `CLAUDE_CODE_REMOTE` is not set to `true`.
 
+### Web sandbox (`IS_SANDBOX=yes`)
+
+Deno's built-in npm resolver fails in the Claude Code web sandbox because the
+egress proxy's TLS certificate isn't in Deno's trust store (`UnknownIssuer`
+error on `deno install`). Workaround: use `npm install` instead — npm routes
+through the proxy correctly via `npm_config_proxy`.
+
+A session-start hook in `.claude/settings.json` handles this automatically:
+it runs `npm install` when `IS_SANDBOX=yes`. If you see
+`Could not resolve "preact-render-to-string"` errors, run `npm install`
+manually.
+
 ## Commands
 
 ```bash
