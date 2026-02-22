@@ -221,37 +221,36 @@ export function tabbedIdleHTML(config: {
   progressContent?: string;
 }): string {
   const practiceScope = config.practiceScope
-    ? `\n      <div class="practice-scope">\n        <div class="settings-row">\n          ${config.practiceScope}\n        </div>\n      </div>`
+    ? `\n          <div class="practice-scope">\n            <div class="settings-row">\n              ${config.practiceScope}\n            </div>\n          </div>`
     : '';
-  // When no practiceScope, fold recommendation + mastery into the status zone
-  // to avoid an empty scope zone with double dividers.
   const recBlock = `<div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>`;
-  const masteryBlock =
-    `<div class="mastery-message">Looks like you've got this!</div>`;
-  const statusExtra = config.practiceScope
-    ? ''
-    : `\n          ${recBlock}\n          ${masteryBlock}`;
-  const scopeZone = config.practiceScope
-    ? `\n        <div class="practice-zone practice-zone-scope">\n          ${recBlock}${practiceScope}\n          ${masteryBlock}\n        </div>`
+  const masteryBlock = `<div class="mastery-message"></div>`;
+  const hasSetupContent = config.practiceScope;
+  const setupHeader = hasSetupContent
+    ? `\n          <div class="practice-section-header">Quiz setup</div>`
     : '';
+  const setupRec = hasSetupContent ? `\n          ${recBlock}` : '';
   return `<div class="mode-tabs">
       <button class="mode-tab active" data-tab="practice">Practice</button>
       <button class="mode-tab" data-tab="progress">Progress</button>
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
-          </div>${statusExtra}
-        </div>${scopeZone}
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
+          <span class="practice-status-detail"></span>
+          ${masteryBlock}
+        </div>
+        <div class="practice-zone practice-zone-setup">${setupHeader}${setupRec}${practiceScope}
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>

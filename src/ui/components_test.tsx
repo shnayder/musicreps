@@ -208,7 +208,7 @@ describe('GroupToggles', () => {
       <GroupToggles
         labels={['+1 to +3', '+4 to +6']}
         active={new Set([0])}
-        recommended={1}
+        recommended={new Set([1])}
         onToggle={() => {}}
       />,
     );
@@ -383,24 +383,23 @@ describe('TabbedIdle', () => {
 });
 
 describe('PracticeCard', () => {
-  it('renders status zone with label and detail', () => {
+  it('renders mastery zone with label and detail', () => {
     const html = render(
       <PracticeCard
-        statusLabel='Overall: Strong'
+        statusLabel='Strong'
         statusDetail='12 of 14 fluent'
-        sessionSummary='8 questions in 60 seconds'
       />,
     );
     assert.ok(html.includes('practice-card'));
-    assert.ok(html.includes('practice-zone-status'));
+    assert.ok(html.includes('practice-zone-mastery'));
     assert.ok(html.includes('practice-status-label'));
-    assert.ok(html.includes('Overall: Strong'));
+    assert.ok(html.includes('Strong'));
     assert.ok(html.includes('12 of 14 fluent'));
     assert.ok(html.includes('practice-zone-action'));
     assert.ok(html.includes('start-btn'));
   });
 
-  it('shows recommendation inline when no scope', () => {
+  it('shows Quiz setup header when recommendation present', () => {
     const html = render(
       <PracticeCard
         recommendation='Suggestion: start A string'
@@ -410,11 +409,10 @@ describe('PracticeCard', () => {
     assert.ok(html.includes('practice-recommendation'));
     assert.ok(html.includes('practice-rec-text'));
     assert.ok(html.includes('practice-rec-btn'));
-    // No scope zone
-    assert.ok(!html.includes('practice-zone-scope'));
+    assert.ok(html.includes('Quiz setup'));
   });
 
-  it('moves recommendation to scope zone when scope provided', () => {
+  it('shows scope controls in setup zone', () => {
     const html = render(
       <PracticeCard
         recommendation='Suggestion: start D string'
@@ -422,7 +420,7 @@ describe('PracticeCard', () => {
         scope={<div class='mock-scope' />}
       />,
     );
-    assert.ok(html.includes('practice-zone-scope'));
+    assert.ok(html.includes('practice-zone-setup'));
     assert.ok(html.includes('practice-scope'));
     assert.ok(html.includes('mock-scope'));
     assert.ok(html.includes('practice-rec-text'));
@@ -454,20 +452,10 @@ describe('Recommendation', () => {
 });
 
 describe('StartButton', () => {
-  it('renders button and summary text', () => {
-    const html = render(
-      <StartButton summary='8 questions in 60 seconds' />,
-    );
-    assert.ok(html.includes('start-btn'));
-    assert.ok(html.includes('Start Quiz'));
-    assert.ok(html.includes('session-summary-text'));
-    assert.ok(html.includes('8 questions in 60 seconds'));
-  });
-
-  it('omits summary when not provided', () => {
+  it('renders start button', () => {
     const html = render(<StartButton />);
     assert.ok(html.includes('start-btn'));
-    assert.ok(!html.includes('session-summary-text'));
+    assert.ok(html.includes('Start Quiz'));
   });
 });
 

@@ -178,7 +178,7 @@ function PreviewApp() {
         <GroupToggles
           labels={['+1 to +3', '+4 to +6', '+7 to +9', '+10 to +11']}
           active={new Set([0, 1])}
-          recommended={2}
+          recommended={new Set([0, 2])}
           onToggle={() => {}}
         />
       </Section>
@@ -186,7 +186,7 @@ function PreviewApp() {
         <StringToggles
           stringNames={['E', 'A', 'D', 'G', 'B', 'e']}
           active={new Set([0, 1, 2])}
-          recommended={3}
+          recommended={new Set([1, 3])}
           onToggle={() => {}}
         />
       </Section>
@@ -233,8 +233,8 @@ function PreviewApp() {
       <Section title='ModeTopBar'>
         <ModeTopBar title='Semitone Math' />
       </Section>
-      <Section title='StartButton + Session Summary'>
-        <StartButton summary='8 questions in 60 seconds' />
+      <Section title='StartButton'>
+        <StartButton />
       </Section>
       <Section title='Recommendation'>
         <Recommendation
@@ -271,26 +271,24 @@ function PreviewApp() {
       </Section>
       <Section title='PracticeCard (no scope)'>
         <PracticeCard
-          statusLabel='Overall: Strong'
+          statusLabel='Strong'
           statusDetail='12 of 14 fluent'
           recommendation='Suggestion: start A string — 5 new items'
-          sessionSummary='8 questions in 60 seconds'
           onApplyRecommendation={() => {}}
         />
       </Section>
       <Section title='PracticeCard (with scope toggles)'>
         <PracticeCard
-          statusLabel='Strings: E, A'
+          statusLabel='Solid'
           statusDetail='24 of 26 fluent'
           recommendation='Suggestion: start D string'
-          sessionSummary='12 questions in 60 seconds'
           onApplyRecommendation={() => {}}
           scope={
             <>
               <StringToggles
                 stringNames={['E', 'A', 'D', 'G', 'B', 'e']}
                 active={new Set([0, 1])}
-                recommended={2}
+                recommended={new Set([0, 1, 2])}
                 onToggle={() => {}}
               />
               <NoteFilter mode='natural' onChange={() => {}} />
@@ -302,12 +300,7 @@ function PreviewApp() {
         <TabbedIdle
           activeTab='practice'
           onTabSwitch={() => {}}
-          practiceContent={
-            <PracticeCard
-              statusLabel='Ready to start'
-              sessionSummary='8 questions in 60 seconds'
-            />
-          }
+          practiceContent={<PracticeCard statusLabel='Ready to start' />}
           progressContent={
             <div>
               <StatsToggle active='retention' onToggle={() => {}} />
@@ -329,9 +322,8 @@ function PreviewApp() {
             onTabSwitch={() => {}}
             practiceContent={
               <PracticeCard
-                statusLabel='Overall: Good'
+                statusLabel='Solid'
                 statusDetail='8 of 12 fluent'
-                sessionSummary='8 questions in 60 seconds'
               />
             }
             progressContent={

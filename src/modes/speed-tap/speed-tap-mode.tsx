@@ -291,12 +291,6 @@ export function SpeedTapMode(
   const [statsMode, setStatsMode] = useState('retention');
 
   // --- Practice summary ---
-  const enabledNotes = useMemo(
-    () => getEnabledNotes(noteFilter),
-    [noteFilter],
-  );
-  const sessionSummary = enabledNotes.length + ' notes \u00B7 60s';
-
   const summary = useMemo(
     () =>
       computePracticeSummary({
@@ -305,13 +299,11 @@ export function SpeedTapMode(
         itemNoun: 'notes',
         recommendation: null,
         recommendationText: '',
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery,
       }),
     [
       learner.selector,
-      sessionSummary,
       engine.state.masteryText,
       engine.state.showMastery,
       engine.state.phase,
@@ -366,7 +358,6 @@ export function SpeedTapMode(
           <PracticeCard
             statusLabel={summary.statusLabel}
             statusDetail={summary.statusDetail}
-            sessionSummary={sessionSummary}
             mastery={summary.showMastery ? summary.masteryText : undefined}
             onStart={engine.start}
             scope={

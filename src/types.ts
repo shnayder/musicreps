@@ -306,7 +306,6 @@ export type PracticeSummaryState = {
   statusDetail: string;
   recommendationText: string;
   showRecommendationButton: boolean;
-  sessionSummary: string;
   masteryText: string;
   showMastery: boolean;
   enabledItemCount: number;
