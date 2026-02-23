@@ -196,8 +196,7 @@ export type EngineState = {
   feedbackText: string;
   feedbackClass: string;
   feedbackCorrect: boolean | null;
-  feedbackUserValue: string | null;
-  feedbackCorrectValue: string | null;
+  feedbackDisplayAnswer: string | null;
   timeDisplayText: string;
   hintText: string;
 
@@ -213,8 +212,6 @@ export type EngineState = {
 export type CheckAnswerResult = {
   correct: boolean;
   correctAnswer: string;
-  /** Raw value matching the correct button's data-* attribute. */
-  correctValue?: string;
 };
 
 // ---------------------------------------------------------------------------

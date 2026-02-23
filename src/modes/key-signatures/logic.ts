@@ -7,7 +7,6 @@ import {
   displayNote,
   keySignatureLabel,
   MAJOR_KEYS,
-  noteToCanonical,
   spelledNoteMatchesSemitone,
 } from '../../music-data.ts';
 
@@ -90,21 +89,19 @@ export function getQuestion(itemId: string): Question {
 export function checkAnswer(
   q: Question,
   input: string,
-): { correct: boolean; correctAnswer: string; correctValue: string } {
+): { correct: boolean; correctAnswer: string } {
   const key = MAJOR_KEYS.find((k) => k.root === q.root)!;
   if (q.dir === 'fwd') {
     const expected = keySignatureLabel(key);
     return {
       correct: input === expected,
       correctAnswer: expected,
-      correctValue: expected,
     };
   }
   const correct = spelledNoteMatchesSemitone(q.root, input);
   return {
     correct,
     correctAnswer: displayNote(q.root),
-    correctValue: noteToCanonical(q.root),
   };
 }
 

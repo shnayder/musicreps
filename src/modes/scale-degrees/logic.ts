@@ -7,7 +7,6 @@ import {
   displayNote,
   getScaleDegreeNote,
   MAJOR_KEYS,
-  noteToCanonical,
   spelledNoteMatchesSemitone,
 } from '../../music-data.ts';
 
@@ -100,20 +99,18 @@ export function getQuestion(itemId: string): Question {
 export function checkAnswer(
   q: Question,
   input: string,
-): { correct: boolean; correctAnswer: string; correctValue: string } {
+): { correct: boolean; correctAnswer: string } {
   if (q.dir === 'fwd') {
     const correct = spelledNoteMatchesSemitone(q.noteName, input);
     return {
       correct,
       correctAnswer: displayNote(q.noteName),
-      correctValue: noteToCanonical(q.noteName),
     };
   }
   const expectedDegree = String(q.degree);
   return {
     correct: input === expectedDegree,
     correctAnswer: DEGREE_LABELS[q.degree - 1],
-    correctValue: expectedDegree,
   };
 }
 

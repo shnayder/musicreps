@@ -27,7 +27,7 @@ import {
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
 import { StatsLegend, StatsTable, StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import { FeedbackBanner, FeedbackDisplay } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -271,29 +271,19 @@ export function IntervalSemitonesMode(
           )
           : (
             <>
+              <FeedbackBanner
+                correct={engine.state.feedbackCorrect}
+                answer={engine.state.feedbackDisplayAnswer}
+              />
               <IntervalButtons
                 hidden={dir === 'fwd'}
                 onAnswer={handleIntervalAnswer}
-                correctValue={engine.state.answered
-                  ? engine.state.feedbackCorrectValue ?? undefined
-                  : undefined}
-                wrongValue={engine.state.answered &&
-                    engine.state.feedbackCorrect === false
-                  ? engine.state.feedbackUserValue ?? undefined
-                  : undefined}
               />
               <NumberButtons
                 start={1}
                 end={12}
                 hidden={dir === 'rev'}
                 onAnswer={handleNumAnswer}
-                correctValue={engine.state.answered
-                  ? engine.state.feedbackCorrectValue ?? undefined
-                  : undefined}
-                wrongValue={engine.state.answered &&
-                    engine.state.feedbackCorrect === false
-                  ? engine.state.feedbackUserValue ?? undefined
-                  : undefined}
               />
               <FeedbackDisplay
                 text={engine.state.feedbackText}

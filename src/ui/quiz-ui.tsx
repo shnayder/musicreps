@@ -31,6 +31,25 @@ export function FeedbackDisplay(
 }
 
 // ---------------------------------------------------------------------------
+// FeedbackBanner — visual correct/incorrect banner above answer buttons
+// ---------------------------------------------------------------------------
+
+export function FeedbackBanner(
+  { correct, answer }: { correct: boolean | null; answer: string | null },
+) {
+  if (correct === null || !answer) {
+    return <div class='feedback-banner' />;
+  }
+  const cls = 'feedback-banner' +
+    (correct ? ' feedback-banner-correct' : ' feedback-banner-wrong');
+  return (
+    <div class={cls}>
+      {correct ? answer : 'No, ' + answer}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // CountdownBar — round timer countdown
 // ---------------------------------------------------------------------------
 

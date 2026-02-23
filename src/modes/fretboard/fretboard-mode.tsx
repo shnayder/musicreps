@@ -61,7 +61,7 @@ import {
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
 import { StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import { FeedbackBanner, FeedbackDisplay } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -620,16 +620,13 @@ export function FretboardMode(
                 // deno-lint-ignore react-no-danger
                 dangerouslySetInnerHTML={{ __html: svgHTML }}
               />
+              <FeedbackBanner
+                correct={engine.state.feedbackCorrect}
+                answer={engine.state.feedbackDisplayAnswer}
+              />
               <PianoNoteButtons
                 onAnswer={handleNoteAnswer}
                 hideAccidentals={noteFilter === 'natural'}
-                correctValue={engine.state.answered
-                  ? engine.state.feedbackCorrectValue ?? undefined
-                  : undefined}
-                wrongValue={engine.state.answered &&
-                    engine.state.feedbackCorrect === false
-                  ? engine.state.feedbackUserValue ?? undefined
-                  : undefined}
               />
               <FeedbackDisplay
                 text={engine.state.feedbackText}

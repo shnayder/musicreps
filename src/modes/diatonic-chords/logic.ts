@@ -9,7 +9,6 @@ import {
   displayNote,
   getScaleDegreeNote,
   MAJOR_KEYS,
-  noteToCanonical,
   spelledNoteMatchesSemitone,
 } from '../../music-data.ts';
 
@@ -102,21 +101,19 @@ export function getQuestion(itemId: string): Question {
 export function checkAnswer(
   q: Question,
   input: string,
-): { correct: boolean; correctAnswer: string; correctValue: string } {
+): { correct: boolean; correctAnswer: string } {
   if (q.dir === 'fwd') {
     const correct = spelledNoteMatchesSemitone(q.rootNote, input);
     const fullAnswer = displayNote(q.rootNote) + ' ' + q.chord.quality;
     return {
       correct,
       correctAnswer: fullAnswer,
-      correctValue: noteToCanonical(q.rootNote),
     };
   }
   const expectedNumeral = q.chord.numeral;
   return {
     correct: input === expectedNumeral,
     correctAnswer: expectedNumeral,
-    correctValue: expectedNumeral,
   };
 }
 

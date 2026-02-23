@@ -58,13 +58,12 @@ export function createFretboardHelpers(musicData: {
   function checkFretboardAnswer(
     currentNote: string,
     input: string,
-  ): { correct: boolean; correctAnswer: string; correctValue: string } {
+  ): { correct: boolean; correctAnswer: string } {
     const note = musicData.notes.find((n) => n.name === currentNote);
     const correct = !!(note && musicData.noteMatchesInput(note, input));
     return {
       correct,
       correctAnswer: displayNote(currentNote),
-      correctValue: currentNote,
     };
   }
 

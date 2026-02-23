@@ -5,7 +5,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle, SequentialState } from '../../types.ts';
-import { displayNote, noteToCanonical } from '../../music-data.ts';
+import { displayNote } from '../../music-data.ts';
 import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
 import { computePracticeSummary } from '../../mode-ui-state.ts';
 
@@ -34,7 +34,7 @@ import {
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
 import { StatsGrid, StatsLegend, StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import { FeedbackBanner, FeedbackDisplay } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -123,12 +123,6 @@ export function ChordSpellingMode(
   const [seqState, setSeqState] = useState<SequentialState | null>(null);
   const seqStateRef = useRef<SequentialState | null>(null);
 
-  // --- Per-step button flash ---
-  const [stepFlash, setStepFlash] = useState<
-    { correctValue: string; wrongValue?: string } | null
-  >(null);
-  const stepFlashTimer = useRef<number | null>(null);
-
   // --- Question state ---
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const currentItemRef = useRef<string | null>(null);
@@ -154,27 +148,12 @@ export function ChordSpellingMode(
     const state = seqStateRef.current;
     if (!itemId || !state) return;
 
-    // Compute per-step flash before calling handleInput
-    const idx = state.entries.length;
-    const item = parseItem(itemId);
-    const expected = item.tones[idx];
-    const stepCorrect = expected !== undefined &&
-      noteToCanonical(input) === noteToCanonical(expected);
-    setStepFlash({
-      correctValue: expected ? noteToCanonical(expected) : input,
-      wrongValue: stepCorrect ? undefined : noteToCanonical(input),
-    });
-    if (stepFlashTimer.current) clearTimeout(stepFlashTimer.current);
-
     const result = handleInput(itemId, input, state);
     if (result.status === 'continue') {
       seqStateRef.current = result.state;
       setSeqState(result.state);
-      // Clear flash after brief delay for next step
-      stepFlashTimer.current = setTimeout(() => setStepFlash(null), 300);
     } else {
       // Sequential complete — submit final result to engine.
-      // Keep flash visible through the 1s auto-advance.
       engineSubmitRef.current(result.correct ? '__correct__' : '__wrong__');
     }
   }, []);
@@ -197,8 +176,6 @@ export function ChordSpellingMode(
       const newSeqState = initSequentialState(itemId);
       seqStateRef.current = newSeqState;
       setSeqState(newSeqState);
-      setStepFlash(null);
-      if (stepFlashTimer.current) clearTimeout(stepFlashTimer.current);
     },
 
     handleKey: (
@@ -213,8 +190,6 @@ export function ChordSpellingMode(
       noteHandler.reset();
       seqStateRef.current = null;
       setSeqState(null);
-      setStepFlash(null);
-      if (stepFlashTimer.current) clearTimeout(stepFlashTimer.current);
     },
   }), [noteHandler, getEnabledItems, getPracticingLabel]);
 
@@ -364,10 +339,12 @@ export function ChordSpellingMode(
           : (
             <>
               <ChordSlots state={seqState} />
+              <FeedbackBanner
+                correct={engine.state.feedbackCorrect}
+                answer={engine.state.feedbackDisplayAnswer}
+              />
               <NoteButtons
                 onAnswer={handleNoteAnswer}
-                correctValue={stepFlash?.correctValue}
-                wrongValue={stepFlash?.wrongValue}
               />
               <FeedbackDisplay
                 text={engine.state.feedbackText}
