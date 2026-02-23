@@ -1559,6 +1559,69 @@ button {
   outline-offset: -2px;
 }
 
+/* Toggle buttons — inset outline, white on active (green) background */
+.string-toggle:focus-visible,
+.distance-toggle:focus-visible,
+.notes-toggle:focus-visible {
+  outline-offset: -2px;
+}
+.string-toggle.active:focus-visible,
+.distance-toggle.active:focus-visible,
+.notes-toggle.active:focus-visible {
+  outline-color: white;
+}
+
+/* Tab buttons */
+.mode-tab:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Answer buttons */
+.answer-btn:focus-visible,
+.note-btn:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Round-complete buttons */
+.round-complete-continue:focus-visible {
+  outline-color: white;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
+}
+.round-complete-stop:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Back button, close buttons */
+.mode-back-btn:focus-visible,
+.quiz-header-close:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Stats toggle */
+.stats-toggle-btn:focus-visible {
+  outline-offset: -2px;
+}
+.stats-toggle-btn.active:focus-visible {
+  outline-color: white;
+}
+
+/* Settings modal */
+.settings-close-btn:focus-visible {
+  outline-offset: 2px;
+}
+.settings-toggle-btn:focus-visible {
+  outline-offset: -2px;
+}
+.settings-toggle-btn.active:focus-visible {
+  outline-color: white;
+}
+
+/* Baseline, recommendation buttons */
+.baseline-rerun-btn:focus-visible,
+.practice-rec-btn:focus-visible {
+  outline-offset: 2px;
+}
+
 /* --- Reduced motion --- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -1622,64 +1685,64 @@ button {
     </div>
     <div class="home-modes">
       <div class="home-group-label">Fretboard</div>
-      <button data-mode="fretboard" class="home-mode-btn">
+      <button tabindex="0" data-mode="fretboard" class="home-mode-btn">
         <span class="home-mode-name">Guitar Fretboard</span>
         <span class="home-mode-desc">Name notes on the guitar neck</span>
       </button>
-      <button data-mode="ukulele" class="home-mode-btn">
+      <button tabindex="0" data-mode="ukulele" class="home-mode-btn">
         <span class="home-mode-name">Ukulele Fretboard</span>
         <span class="home-mode-desc">Name notes on the ukulele</span>
       </button>
-      <button data-mode="speedTap" class="home-mode-btn">
+      <button tabindex="0" data-mode="speedTap" class="home-mode-btn">
         <span class="home-mode-name">Speed Tap</span>
         <span class="home-mode-desc">Find all positions of a note</span>
       </button>
       <div class="home-group-label">Theory Lookup</div>
-      <button data-mode="noteSemitones" class="home-mode-btn">
+      <button tabindex="0" data-mode="noteSemitones" class="home-mode-btn">
         <span class="home-mode-name">Note ↔ Semitones</span>
         <span class="home-mode-desc">Convert between notes and semitone numbers</span>
       </button>
-      <button data-mode="intervalSemitones" class="home-mode-btn">
+      <button tabindex="0" data-mode="intervalSemitones" class="home-mode-btn">
         <span class="home-mode-name">Interval ↔ Semitones</span>
         <span class="home-mode-desc">Convert between intervals and semitone counts</span>
       </button>
       <div class="home-group-label">Calculation</div>
-      <button data-mode="semitoneMath" class="home-mode-btn">
+      <button tabindex="0" data-mode="semitoneMath" class="home-mode-btn">
         <span class="home-mode-name">Semitone Math</span>
         <span class="home-mode-desc">Add or subtract semitones from a note</span>
       </button>
-      <button data-mode="intervalMath" class="home-mode-btn">
+      <button tabindex="0" data-mode="intervalMath" class="home-mode-btn">
         <span class="home-mode-name">Interval Math</span>
         <span class="home-mode-desc">Apply intervals up or down from a note</span>
       </button>
       <div class="home-group-label">Keys &amp; Chords</div>
-      <button data-mode="keySignatures" class="home-mode-btn">
+      <button tabindex="0" data-mode="keySignatures" class="home-mode-btn">
         <span class="home-mode-name">Key Signatures</span>
         <span class="home-mode-desc">Match keys to their sharps and flats</span>
       </button>
-      <button data-mode="scaleDegrees" class="home-mode-btn">
+      <button tabindex="0" data-mode="scaleDegrees" class="home-mode-btn">
         <span class="home-mode-name">Scale Degrees</span>
         <span class="home-mode-desc">Name notes by scale degree in any key</span>
       </button>
-      <button data-mode="diatonicChords" class="home-mode-btn">
+      <button tabindex="0" data-mode="diatonicChords" class="home-mode-btn">
         <span class="home-mode-name">Diatonic Chords</span>
         <span class="home-mode-desc">Identify chords built on each scale degree</span>
       </button>
-      <button data-mode="chordSpelling" class="home-mode-btn">
+      <button tabindex="0" data-mode="chordSpelling" class="home-mode-btn">
         <span class="home-mode-name">Chord Spelling</span>
         <span class="home-mode-desc">Spell out the notes in any chord</span>
       </button>
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">v8.10</span>
+      <span class="version">v8.12</span>
     </div>
   </div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Guitar Fretboard</h1>
     </div>
     <div class="mode-tabs">
@@ -1700,32 +1763,32 @@ button {
           <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
+            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
           <div class="practice-scope">
             <div class="settings-row">
               <div class="toggle-group">
           <span class="toggle-group-label">Strings</span>
           <div class="string-toggles">
-            <button class="string-toggle" data-string="0" data-string-note="e">e</button>
-            <button class="string-toggle" data-string="1" data-string-note="B">B</button>
-            <button class="string-toggle" data-string="2" data-string-note="G">G</button>
-            <button class="string-toggle" data-string="3" data-string-note="D">D</button>
-            <button class="string-toggle" data-string="4" data-string-note="A">A</button>
-            <button class="string-toggle active" data-string="5" data-string-note="E">E</button>
+            <button tabindex="0" class="string-toggle" data-string="0" data-string-note="e">e</button>
+            <button tabindex="0" class="string-toggle" data-string="1" data-string-note="B">B</button>
+            <button tabindex="0" class="string-toggle" data-string="2" data-string-note="G">G</button>
+            <button tabindex="0" class="string-toggle" data-string="3" data-string-note="D">D</button>
+            <button tabindex="0" class="string-toggle" data-string="4" data-string-note="A">A</button>
+            <button tabindex="0" class="string-toggle active" data-string="5" data-string-note="E">E</button>
           </div>
         </div>
           <div class="toggle-group">
             <span class="toggle-group-label">Notes</span>
             <div class="notes-toggles">
-              <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
+              <button tabindex="0" class="notes-toggle active" data-notes="natural">natural</button>
+              <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
             </div>
           </div>
             </div>
           </div>
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -1852,7 +1915,7 @@ button {
     </div>
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -1868,7 +1931,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2000,20 +2063,20 @@ button {
     </div>
       <div class="note-buttons">
         <div class="note-row-accidentals">
-          <button class="note-btn accidental" data-note="C#">C#</button>
-          <button class="note-btn accidental" data-note="D#">D#</button>
-          <button class="note-btn accidental" data-note="F#">F#</button>
-          <button class="note-btn accidental" data-note="G#">G#</button>
-          <button class="note-btn accidental" data-note="A#">A#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="C#">C#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="D#">D#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="F#">F#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="G#">G#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="A#">A#</button>
         </div>
         <div class="note-row-naturals">
-          <button class="note-btn" data-note="C">C</button>
-          <button class="note-btn" data-note="D">D</button>
-          <button class="note-btn" data-note="E">E</button>
-          <button class="note-btn" data-note="F">F</button>
-          <button class="note-btn" data-note="G">G</button>
-          <button class="note-btn" data-note="A">A</button>
-          <button class="note-btn" data-note="B">B</button>
+          <button tabindex="0" class="note-btn" data-note="C">C</button>
+          <button tabindex="0" class="note-btn" data-note="D">D</button>
+          <button tabindex="0" class="note-btn" data-note="E">E</button>
+          <button tabindex="0" class="note-btn" data-note="F">F</button>
+          <button tabindex="0" class="note-btn" data-note="G">G</button>
+          <button tabindex="0" class="note-btn" data-note="A">A</button>
+          <button tabindex="0" class="note-btn" data-note="B">B</button>
         </div>
       </div>
       <div class="feedback"></div>
@@ -2027,8 +2090,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -2037,7 +2100,7 @@ button {
   <!-- Ukulele Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-ukulele">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Ukulele Fretboard</h1>
     </div>
     <div class="mode-tabs">
@@ -2058,30 +2121,30 @@ button {
           <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
+            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
           <div class="practice-scope">
             <div class="settings-row">
               <div class="toggle-group">
           <span class="toggle-group-label">Strings</span>
           <div class="string-toggles">
-            <button class="string-toggle" data-string="0" data-string-note="A">A</button>
-            <button class="string-toggle" data-string="1" data-string-note="E">E</button>
-            <button class="string-toggle active" data-string="2" data-string-note="C">C</button>
-            <button class="string-toggle" data-string="3" data-string-note="G">G</button>
+            <button tabindex="0" class="string-toggle" data-string="0" data-string-note="A">A</button>
+            <button tabindex="0" class="string-toggle" data-string="1" data-string-note="E">E</button>
+            <button tabindex="0" class="string-toggle active" data-string="2" data-string-note="C">C</button>
+            <button tabindex="0" class="string-toggle" data-string="3" data-string-note="G">G</button>
           </div>
         </div>
           <div class="toggle-group">
             <span class="toggle-group-label">Notes</span>
             <div class="notes-toggles">
-              <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
+              <button tabindex="0" class="notes-toggle active" data-notes="natural">natural</button>
+              <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
             </div>
           </div>
             </div>
           </div>
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -2180,7 +2243,7 @@ button {
     </div>
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -2196,7 +2259,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2300,20 +2363,20 @@ button {
     </div>
       <div class="note-buttons">
         <div class="note-row-accidentals">
-          <button class="note-btn accidental" data-note="C#">C#</button>
-          <button class="note-btn accidental" data-note="D#">D#</button>
-          <button class="note-btn accidental" data-note="F#">F#</button>
-          <button class="note-btn accidental" data-note="G#">G#</button>
-          <button class="note-btn accidental" data-note="A#">A#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="C#">C#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="D#">D#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="F#">F#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="G#">G#</button>
+          <button tabindex="0" class="note-btn accidental" data-note="A#">A#</button>
         </div>
         <div class="note-row-naturals">
-          <button class="note-btn" data-note="C">C</button>
-          <button class="note-btn" data-note="D">D</button>
-          <button class="note-btn" data-note="E">E</button>
-          <button class="note-btn" data-note="F">F</button>
-          <button class="note-btn" data-note="G">G</button>
-          <button class="note-btn" data-note="A">A</button>
-          <button class="note-btn" data-note="B">B</button>
+          <button tabindex="0" class="note-btn" data-note="C">C</button>
+          <button tabindex="0" class="note-btn" data-note="D">D</button>
+          <button tabindex="0" class="note-btn" data-note="E">E</button>
+          <button tabindex="0" class="note-btn" data-note="F">F</button>
+          <button tabindex="0" class="note-btn" data-note="G">G</button>
+          <button tabindex="0" class="note-btn" data-note="A">A</button>
+          <button tabindex="0" class="note-btn" data-note="B">B</button>
         </div>
       </div>
       <div class="feedback"></div>
@@ -2327,8 +2390,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -2337,7 +2400,7 @@ button {
   <!-- Speed Tap mode -->
   <div class="mode-screen phase-idle" id="mode-speedTap">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Speed Tap</h1>
     </div>
     <div class="mode-tabs">
@@ -2358,21 +2421,21 @@ button {
           <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
+            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
           <div class="practice-scope">
             <div class="settings-row">
               <div class="toggle-group">
             <span class="toggle-group-label">Notes</span>
             <div class="notes-toggles">
-              <button class="notes-toggle active" data-notes="natural">natural</button>
-              <button class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
+              <button tabindex="0" class="notes-toggle active" data-notes="natural">natural</button>
+              <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
             </div>
           </div>
             </div>
           </div>
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -2381,7 +2444,7 @@ button {
       
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -2397,7 +2460,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2531,18 +2594,18 @@ button {
       </div>
     </div>
       <div class="answer-buttons answer-buttons-notes answer-group-hidden">
-        <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
       <div class="time-display"></div>
@@ -2555,8 +2618,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -2565,7 +2628,7 @@ button {
   <!-- Note Semitones mode -->
   <div class="mode-screen phase-idle" id="mode-noteSemitones">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Note ↔ Semitones</h1>
     </div>
     <div class="mode-tabs">
@@ -2584,7 +2647,7 @@ button {
         </div>
         <div class="practice-zone practice-zone-setup">
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -2593,7 +2656,7 @@ button {
       
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -2609,7 +2672,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2621,32 +2684,32 @@ button {
         <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
-        <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="answer-buttons answer-buttons-numbers">
-        <button class="answer-btn answer-btn-num" data-num="0">0</button>
-        <button class="answer-btn answer-btn-num" data-num="1">1</button>
-        <button class="answer-btn answer-btn-num" data-num="2">2</button>
-        <button class="answer-btn answer-btn-num" data-num="3">3</button>
-        <button class="answer-btn answer-btn-num" data-num="4">4</button>
-        <button class="answer-btn answer-btn-num" data-num="5">5</button>
-        <button class="answer-btn answer-btn-num" data-num="6">6</button>
-        <button class="answer-btn answer-btn-num" data-num="7">7</button>
-        <button class="answer-btn answer-btn-num" data-num="8">8</button>
-        <button class="answer-btn answer-btn-num" data-num="9">9</button>
-        <button class="answer-btn answer-btn-num" data-num="10">10</button>
-        <button class="answer-btn answer-btn-num" data-num="11">11</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="0">0</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="1">1</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="2">2</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="3">3</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="4">4</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="5">5</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="6">6</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="7">7</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="8">8</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="9">9</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="10">10</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="11">11</button>
       </div>
       <div class="feedback"></div>
       <div class="time-display"></div>
@@ -2659,8 +2722,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -2669,7 +2732,7 @@ button {
   <!-- Interval Semitones mode -->
   <div class="mode-screen phase-idle" id="mode-intervalSemitones">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Interval ↔ Semitones</h1>
     </div>
     <div class="mode-tabs">
@@ -2688,7 +2751,7 @@ button {
         </div>
         <div class="practice-zone practice-zone-setup">
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -2697,7 +2760,7 @@ button {
       
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -2713,7 +2776,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2725,32 +2788,32 @@ button {
         <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-intervals">
-        <button class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
-        <button class="answer-btn answer-btn-interval" data-interval="M2">M2</button>
-        <button class="answer-btn answer-btn-interval" data-interval="m3">m3</button>
-        <button class="answer-btn answer-btn-interval" data-interval="M3">M3</button>
-        <button class="answer-btn answer-btn-interval" data-interval="P4">P4</button>
-        <button class="answer-btn answer-btn-interval" data-interval="TT">TT</button>
-        <button class="answer-btn answer-btn-interval" data-interval="P5">P5</button>
-        <button class="answer-btn answer-btn-interval" data-interval="m6">m6</button>
-        <button class="answer-btn answer-btn-interval" data-interval="M6">M6</button>
-        <button class="answer-btn answer-btn-interval" data-interval="m7">m7</button>
-        <button class="answer-btn answer-btn-interval" data-interval="M7">M7</button>
-        <button class="answer-btn answer-btn-interval" data-interval="P8">P8</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="M2">M2</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="m3">m3</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="M3">M3</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="P4">P4</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="TT">TT</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="P5">P5</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="m6">m6</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="M6">M6</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="m7">m7</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="M7">M7</button>
+        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="P8">P8</button>
       </div>
       <div class="answer-buttons answer-buttons-numbers">
-        <button class="answer-btn answer-btn-num" data-num="1">1</button>
-        <button class="answer-btn answer-btn-num" data-num="2">2</button>
-        <button class="answer-btn answer-btn-num" data-num="3">3</button>
-        <button class="answer-btn answer-btn-num" data-num="4">4</button>
-        <button class="answer-btn answer-btn-num" data-num="5">5</button>
-        <button class="answer-btn answer-btn-num" data-num="6">6</button>
-        <button class="answer-btn answer-btn-num" data-num="7">7</button>
-        <button class="answer-btn answer-btn-num" data-num="8">8</button>
-        <button class="answer-btn answer-btn-num" data-num="9">9</button>
-        <button class="answer-btn answer-btn-num" data-num="10">10</button>
-        <button class="answer-btn answer-btn-num" data-num="11">11</button>
-        <button class="answer-btn answer-btn-num" data-num="12">12</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="1">1</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="2">2</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="3">3</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="4">4</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="5">5</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="6">6</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="7">7</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="8">8</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="9">9</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="10">10</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="11">11</button>
+        <button tabindex="0" class="answer-btn answer-btn-num" data-num="12">12</button>
       </div>
       <div class="feedback"></div>
       <div class="time-display"></div>
@@ -2763,8 +2826,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -2773,7 +2836,7 @@ button {
   <!-- Semitone Math mode -->
   <div class="mode-screen phase-idle" id="mode-semitoneMath">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Semitone Math</h1>
     </div>
     <div class="mode-tabs">
@@ -2794,7 +2857,7 @@ button {
           <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
+            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
           <div class="practice-scope">
             <div class="settings-row">
@@ -2802,7 +2865,7 @@ button {
             </div>
           </div>
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -2811,7 +2874,7 @@ button {
       
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -2827,7 +2890,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2839,18 +2902,18 @@ button {
         <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
-        <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
       <div class="time-display"></div>
@@ -2863,8 +2926,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -2873,7 +2936,7 @@ button {
   <!-- Interval Math mode -->
   <div class="mode-screen phase-idle" id="mode-intervalMath">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Interval Math</h1>
     </div>
     <div class="mode-tabs">
@@ -2894,7 +2957,7 @@ button {
           <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
+            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
           <div class="practice-scope">
             <div class="settings-row">
@@ -2902,7 +2965,7 @@ button {
             </div>
           </div>
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -2911,7 +2974,7 @@ button {
       
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -2927,7 +2990,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -2939,18 +3002,18 @@ button {
         <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
-        <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
       <div class="time-display"></div>
@@ -2963,8 +3026,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -2973,7 +3036,7 @@ button {
   <!-- Key Signatures mode -->
   <div class="mode-screen phase-idle" id="mode-keySignatures">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Key Signatures</h1>
     </div>
     <div class="mode-tabs">
@@ -2994,7 +3057,7 @@ button {
           <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
+            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
           <div class="practice-scope">
             <div class="settings-row">
@@ -3002,7 +3065,7 @@ button {
             </div>
           </div>
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -3011,7 +3074,7 @@ button {
       
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -3027,7 +3090,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -3039,35 +3102,35 @@ button {
         <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-keysig">
-        <button class="answer-btn answer-btn-keysig" data-sig="0">0</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="1#">1#</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="2#">2#</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="3#">3#</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="4#">4#</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="5#">5#</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="6#">6#</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="7#">7#</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="1b">1b</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="2b">2b</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="3b">3b</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="4b">4b</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="5b">5b</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="6b">6b</button>
-        <button class="answer-btn answer-btn-keysig" data-sig="7b">7b</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="0">0</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="1#">1#</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="2#">2#</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="3#">3#</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="4#">4#</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="5#">5#</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="6#">6#</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="7#">7#</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="1b">1b</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="2b">2b</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="3b">3b</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="4b">4b</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="5b">5b</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="6b">6b</button>
+        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="7b">7b</button>
       </div>
       <div class="answer-buttons answer-buttons-notes answer-group-hidden">
-        <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
       <div class="time-display"></div>
@@ -3080,8 +3143,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -3090,7 +3153,7 @@ button {
   <!-- Scale Degrees mode -->
   <div class="mode-screen phase-idle" id="mode-scaleDegrees">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Scale Degrees</h1>
     </div>
     <div class="mode-tabs">
@@ -3111,7 +3174,7 @@ button {
           <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
+            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
           <div class="practice-scope">
             <div class="settings-row">
@@ -3119,7 +3182,7 @@ button {
             </div>
           </div>
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -3128,7 +3191,7 @@ button {
       
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -3144,7 +3207,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -3156,27 +3219,27 @@ button {
         <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
-        <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="answer-buttons answer-buttons-degrees answer-group-hidden">
-        <button class="answer-btn answer-btn-degree" data-degree="1">1st</button>
-        <button class="answer-btn answer-btn-degree" data-degree="2">2nd</button>
-        <button class="answer-btn answer-btn-degree" data-degree="3">3rd</button>
-        <button class="answer-btn answer-btn-degree" data-degree="4">4th</button>
-        <button class="answer-btn answer-btn-degree" data-degree="5">5th</button>
-        <button class="answer-btn answer-btn-degree" data-degree="6">6th</button>
-        <button class="answer-btn answer-btn-degree" data-degree="7">7th</button>
+        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="1">1st</button>
+        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="2">2nd</button>
+        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="3">3rd</button>
+        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="4">4th</button>
+        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="5">5th</button>
+        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="6">6th</button>
+        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="7">7th</button>
       </div>
       <div class="feedback"></div>
       <div class="time-display"></div>
@@ -3189,8 +3252,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -3199,7 +3262,7 @@ button {
   <!-- Diatonic Chords mode -->
   <div class="mode-screen phase-idle" id="mode-diatonicChords">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Diatonic Chords</h1>
     </div>
     <div class="mode-tabs">
@@ -3220,7 +3283,7 @@ button {
           <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
+            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
           <div class="practice-scope">
             <div class="settings-row">
@@ -3228,7 +3291,7 @@ button {
             </div>
           </div>
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -3237,7 +3300,7 @@ button {
       
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -3253,7 +3316,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -3265,27 +3328,27 @@ button {
         <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
-        <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="answer-buttons answer-buttons-numerals answer-group-hidden">
-        <button class="answer-btn answer-btn-numeral" data-numeral="I">I</button>
-        <button class="answer-btn answer-btn-numeral" data-numeral="ii">ii</button>
-        <button class="answer-btn answer-btn-numeral" data-numeral="iii">iii</button>
-        <button class="answer-btn answer-btn-numeral" data-numeral="IV">IV</button>
-        <button class="answer-btn answer-btn-numeral" data-numeral="V">V</button>
-        <button class="answer-btn answer-btn-numeral" data-numeral="vi">vi</button>
-        <button class="answer-btn answer-btn-numeral" data-numeral="vii°">vii°</button>
+        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="I">I</button>
+        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="ii">ii</button>
+        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="iii">iii</button>
+        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="IV">IV</button>
+        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="V">V</button>
+        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="vi">vi</button>
+        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="vii°">vii°</button>
       </div>
       <div class="feedback"></div>
       <div class="time-display"></div>
@@ -3298,8 +3361,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -3308,7 +3371,7 @@ button {
   <!-- Chord Spelling mode -->
   <div class="mode-screen phase-idle" id="mode-chordSpelling">
     <div class="mode-top-bar">
-      <button class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
       <h1 class="mode-title">Chord Spelling</h1>
     </div>
     <div class="mode-tabs">
@@ -3329,7 +3392,7 @@ button {
           <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
-            <button class="practice-rec-btn">Use suggestion</button>
+            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
           <div class="practice-scope">
             <div class="settings-row">
@@ -3337,7 +3400,7 @@ button {
             </div>
           </div>
           <div class="practice-zone-action">
-            <button class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Start Quiz</button>
           </div>
         </div>
       </div>
@@ -3346,7 +3409,7 @@ button {
       
       <div class="baseline-info"></div>
       <div class="stats-controls">
-        <div class="stats-toggle"><button class="stats-toggle-btn active" data-mode="retention">Recall</button><button class="stats-toggle-btn" data-mode="speed">Speed</button></div>
+        <div class="stats-toggle"><button tabindex="0" class="stats-toggle-btn active" data-mode="retention">Recall</button><button tabindex="0" class="stats-toggle-btn" data-mode="speed">Speed</button></div>
         <span class="stats"></span>
       </div>
       <div class="stats-container"></div>
@@ -3362,7 +3425,7 @@ button {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button class="quiz-header-close" aria-label="Stop quiz">×</button>
+      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 fluent</div>
@@ -3375,18 +3438,18 @@ button {
       </div>
       <div class="chord-slots"></div>
       <div class="answer-buttons answer-buttons-notes">
-        <button class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button class="answer-btn answer-btn-note" data-note="B">B</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
+        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
       <div class="time-display"></div>
@@ -3399,8 +3462,8 @@ button {
           <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-actions">
-          <button class="round-complete-continue">Keep Going</button>
-          <button class="round-complete-stop">Stop</button>
+          <button tabindex="0" class="round-complete-continue">Keep Going</button>
+          <button tabindex="0" class="round-complete-stop">Stop</button>
         </div>
       </div>
     </div>
@@ -4102,6 +4165,7 @@ button {
       modes[id] = modeController;
     }
     function navigateHome() {
+      const previousModeId = currentModeId;
       if (currentModeId && modes[currentModeId]) {
         modes[currentModeId].deactivate();
         const currentScreen = document.getElementById("mode-" + currentModeId);
@@ -4109,6 +4173,14 @@ button {
       }
       currentModeId = null;
       if (homeScreen) homeScreen.classList.remove("hidden");
+      requestAnimationFrame(() => {
+        if (previousModeId && homeScreen) {
+          const btn = homeScreen.querySelector(
+            '.home-mode-btn[data-mode="' + previousModeId + '"]'
+          );
+          if (btn) btn.focus();
+        }
+      });
     }
     function switchTo(modeId) {
       if (!modes[modeId]) return;
@@ -4122,6 +4194,12 @@ button {
       const newScreen = document.getElementById("mode-" + modeId);
       if (newScreen) newScreen.classList.add("mode-active");
       modes[modeId].activate();
+      requestAnimationFrame(() => {
+        if (newScreen) {
+          const target = newScreen.querySelector(".start-btn");
+          if (target) target.focus();
+        }
+      });
       localStorage.setItem(LAST_MODE_KEY, modeId);
     }
     function init() {
@@ -4164,23 +4242,55 @@ button {
     overlay.className = "settings-overlay";
     const modal = document.createElement("div");
     modal.className = "settings-modal";
-    modal.innerHTML = '<div class="settings-header"><span class="settings-title">Settings</span><button class="settings-close-btn" aria-label="Close">\xD7</button></div><div class="settings-body"><div class="settings-field"><div class="settings-label">Note names</div><div class="settings-toggle-group"><button class="settings-toggle-btn" data-notation="letter">A B C</button><button class="settings-toggle-btn" data-notation="solfege">Do Re Mi</button></div></div></div>';
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-label", "Settings");
+    modal.innerHTML = '<div class="settings-header"><span class="settings-title">Settings</span><button tabindex="0" class="settings-close-btn" aria-label="Close">\xD7</button></div><div class="settings-body"><div class="settings-field"><div class="settings-label">Note names</div><div class="settings-toggle-group"><button tabindex="0" class="settings-toggle-btn" data-notation="letter">A B C</button><button tabindex="0" class="settings-toggle-btn" data-notation="solfege">Do Re Mi</button></div></div></div>';
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
     const closeBtn = modal.querySelector(".settings-close-btn");
     const toggleBtns = modal.querySelectorAll(".settings-toggle-btn");
+    let previousFocus = null;
     function updateToggleState() {
       const current = getUseSolfege() ? "solfege" : "letter";
       toggleBtns.forEach(function(btn) {
         btn.classList.toggle("active", btn.dataset.notation === current);
+        btn.setAttribute(
+          "aria-pressed",
+          String(btn.dataset.notation === current)
+        );
       });
+    }
+    function trapFocus(e3) {
+      if (e3.key !== "Tab") return;
+      const focusable = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e3.shiftKey && document.activeElement === first) {
+        e3.preventDefault();
+        last.focus();
+      } else if (!e3.shiftKey && document.activeElement === last) {
+        e3.preventDefault();
+        first.focus();
+      }
     }
     function open() {
       updateToggleState();
       overlay.classList.add("open");
+      previousFocus = document.activeElement;
+      closeBtn.focus();
+      modal.addEventListener("keydown", trapFocus);
     }
     function close() {
+      modal.removeEventListener("keydown", trapFocus);
       overlay.classList.remove("open");
+      if (previousFocus) {
+        previousFocus.focus();
+        previousFocus = null;
+      }
     }
     closeBtn.addEventListener("click", close);
     overlay.addEventListener("click", function(e3) {
@@ -5479,12 +5589,26 @@ button {
     "phase-round-complete",
     "phase-calibration"
   ];
-  function usePhaseClass(container, phase) {
+  var PHASE_FOCUS_TARGETS = {
+    idle: ".start-btn",
+    "round-complete": ".round-complete-continue"
+  };
+  function usePhaseClass(container, phase, focusTargets) {
     y2(() => {
       const cls = phase === "idle" ? "phase-idle" : phase === "round-complete" ? "phase-round-complete" : phase === "calibration" ? "phase-calibration" : "phase-active";
       container.classList.remove(...PHASE_CLASSES);
       container.classList.add(cls);
-    }, [phase, container]);
+      if (focusTargets) {
+        const selector = focusTargets[phase];
+        if (selector) {
+          requestAnimationFrame(() => {
+            if (!container.classList.contains("mode-active")) return;
+            const el = container.querySelector(selector);
+            if (el) el.focus();
+          });
+        }
+      }
+    }, [phase, container, focusTargets]);
   }
 
   // src/hooks/use-mode-lifecycle.ts
@@ -5566,6 +5690,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "answer-btn answer-btn-note",
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
@@ -5581,6 +5706,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "note-btn accidental" + (hideAccidentals ? " hidden" : ""),
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
@@ -5592,6 +5718,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "note-btn",
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
@@ -5609,6 +5736,7 @@ button {
       "button",
       {
         type: "button",
+        tabIndex: 0,
         class: "answer-btn answer-btn-num",
         "data-num": String(i3),
         onClick: onAnswer ? () => onAnswer(i3) : void 0,
@@ -5623,6 +5751,7 @@ button {
       "button",
       {
         type: "button",
+        tabIndex: 0,
         class: "answer-btn answer-btn-interval",
         "data-interval": iv,
         onClick: onAnswer ? () => onAnswer(iv) : void 0,
@@ -5637,6 +5766,7 @@ button {
       "button",
       {
         type: "button",
+        tabIndex: 0,
         class: "answer-btn answer-btn-keysig",
         "data-sig": s3,
         onClick: onAnswer ? () => onAnswer(s3) : void 0,
@@ -5651,6 +5781,7 @@ button {
       "button",
       {
         type: "button",
+        tabIndex: 0,
         class: "answer-btn answer-btn-degree",
         "data-degree": val,
         onClick: onAnswer ? () => onAnswer(val) : void 0,
@@ -5665,6 +5796,7 @@ button {
       "button",
       {
         type: "button",
+        tabIndex: 0,
         class: "answer-btn answer-btn-numeral",
         "data-numeral": n2,
         onClick: onAnswer ? () => onAnswer(n2) : void 0,
@@ -5681,6 +5813,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "mode-back-btn",
           "aria-label": "Back to home",
           onClick: onBack,
@@ -5690,33 +5823,52 @@ button {
       /* @__PURE__ */ u3("h1", { class: "mode-title", children: title })
     ] });
   }
+  var tabbedIdCounter = 0;
+  var TABS = ["practice", "progress"];
+  var TAB_LABELS = {
+    practice: "Practice",
+    progress: "Progress"
+  };
   function TabbedIdle({ activeTab, onTabSwitch, practiceContent, progressContent }) {
+    const prefix = T2(() => "tabs-" + tabbedIdCounter++, []);
+    function handleTabKeyDown(e3, current) {
+      if (e3.key === "ArrowLeft" || e3.key === "ArrowRight") {
+        e3.preventDefault();
+        const next = current === "practice" ? "progress" : "practice";
+        onTabSwitch(next);
+        requestAnimationFrame(() => {
+          const container = e3.currentTarget.parentElement;
+          const nextBtn = container?.querySelector(
+            '[data-tab="' + next + '"]'
+          );
+          nextBtn?.focus();
+        });
+      }
+    }
     return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: "mode-tabs", children: [
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            class: "mode-tab" + (activeTab === "practice" ? " active" : ""),
-            "data-tab": "practice",
-            onClick: () => onTabSwitch("practice"),
-            children: "Practice"
-          }
-        ),
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            class: "mode-tab" + (activeTab === "progress" ? " active" : ""),
-            "data-tab": "progress",
-            onClick: () => onTabSwitch("progress"),
-            children: "Progress"
-          }
-        )
-      ] }),
+      /* @__PURE__ */ u3("div", { class: "mode-tabs", role: "tablist", children: TABS.map((tab) => /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          id: prefix + "-tab-" + tab,
+          role: "tab",
+          "aria-selected": activeTab === tab,
+          "aria-controls": prefix + "-panel-" + tab,
+          tabIndex: activeTab === tab ? 0 : -1,
+          class: "mode-tab" + (activeTab === tab ? " active" : ""),
+          "data-tab": tab,
+          onClick: () => onTabSwitch(tab),
+          onKeyDown: (e3) => handleTabKeyDown(e3, tab),
+          children: TAB_LABELS[tab]
+        },
+        tab
+      )) }),
       /* @__PURE__ */ u3(
         "div",
         {
+          id: prefix + "-panel-practice",
+          role: "tabpanel",
+          "aria-labelledby": prefix + "-tab-practice",
           class: "tab-content tab-practice" + (activeTab === "practice" ? " active" : ""),
           children: practiceContent
         }
@@ -5724,6 +5876,9 @@ button {
       /* @__PURE__ */ u3(
         "div",
         {
+          id: prefix + "-panel-progress",
+          role: "tabpanel",
+          "aria-labelledby": prefix + "-tab-progress",
           class: "tab-content tab-progress" + (activeTab === "progress" ? " active" : ""),
           children: progressContent
         }
@@ -5745,6 +5900,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "practice-rec-btn",
           onClick: onApplyRecommendation,
           children: "Use suggestion"
@@ -5770,7 +5926,7 @@ button {
     ] });
   }
   function StartButton({ onStart }) {
-    return /* @__PURE__ */ u3("button", { type: "button", class: "start-btn", onClick: onStart, children: "Start Quiz" });
+    return /* @__PURE__ */ u3("button", { type: "button", tabIndex: 0, class: "start-btn", onClick: onStart, children: "Start Quiz" });
   }
   function QuizSession({
     timeLeft,
@@ -5806,6 +5962,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "quiz-header-close",
           "aria-label": "Stop quiz",
           onClick: onClose,
@@ -5846,12 +6003,22 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: "round-complete-continue",
             onClick: onContinue,
             children: "Keep Going"
           }
         ),
-        /* @__PURE__ */ u3("button", { type: "button", class: "round-complete-stop", onClick: onStop, children: "Stop" })
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "round-complete-stop",
+            onClick: onStop,
+            children: "Stop"
+          }
+        )
       ] })
     ] });
   }
@@ -6059,7 +6226,9 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "stats-toggle-btn" + (active === "retention" ? " active" : ""),
+          "aria-pressed": active === "retention",
           "data-mode": "retention",
           onClick: () => onToggle("retention"),
           children: "Recall"
@@ -6069,7 +6238,9 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "stats-toggle-btn" + (active === "speed" ? " active" : ""),
+          "aria-pressed": active === "speed",
           "data-mode": "speed",
           onClick: () => onToggle("speed"),
           children: "Speed"
@@ -6103,7 +6274,16 @@ button {
         (baseline / 1e3).toFixed(1),
         "s",
         " ",
-        /* @__PURE__ */ u3("button", { type: "button", class: "baseline-rerun-btn", onClick: onRun, children: "Rerun speed check" })
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "baseline-rerun-btn",
+            onClick: onRun,
+            children: "Rerun speed check"
+          }
+        )
       ] });
     }
     return /* @__PURE__ */ u3("div", { class: "baseline-info", children: [
@@ -6111,7 +6291,16 @@ button {
       " ",
       /* @__PURE__ */ u3("span", { class: "baseline-default-tag", children: "(default)" }),
       " ",
-      /* @__PURE__ */ u3("button", { type: "button", class: "baseline-rerun-btn", onClick: onRun, children: "Run speed check" })
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "baseline-rerun-btn",
+          onClick: onRun,
+          children: "Run speed check"
+        }
+      )
     ] });
   }
   function SpeedCheck({ provider, onComplete, onCancel }) {
@@ -6226,6 +6415,7 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: "calibration-action-btn",
             onClick: () => setPhase("running"),
             children: "Start"
@@ -6269,6 +6459,7 @@ button {
         "button",
         {
           type: "button",
+          tabIndex: 0,
           class: "calibration-action-btn",
           onClick: () => onComplete(baseline),
           children: "Done"
@@ -6411,7 +6602,11 @@ button {
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
     const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    usePhaseClass(
+      container,
+      calibrating ? "calibration" : engine.state.phase,
+      PHASE_FOCUS_TARGETS
+    );
     const round = useRoundSummary(engine, "all items");
     const [activeTab, setActiveTab] = d2(
       "practice"
@@ -6661,7 +6856,11 @@ button {
     }), []);
     const engine = useQuizEngine(engineConfig, learner.selector);
     const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    usePhaseClass(
+      container,
+      calibrating ? "calibration" : engine.state.phase,
+      PHASE_FOCUS_TARGETS
+    );
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -7103,7 +7302,9 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: cls,
+            "aria-pressed": active.has(i3),
             "data-group": String(i3),
             onClick: () => onToggle(i3),
             children: label
@@ -7124,7 +7325,9 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: cls,
+            "aria-pressed": active.has(i3),
             "data-string": String(i3),
             "data-string-note": name,
             onClick: () => onToggle(i3),
@@ -7154,7 +7357,9 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: "notes-toggle" + (naturalActive ? " active" : ""),
+            "aria-pressed": naturalActive,
             "data-notes": "natural",
             onClick: () => toggle("natural"),
             children: "natural"
@@ -7164,7 +7369,9 @@ button {
           "button",
           {
             type: "button",
+            tabIndex: 0,
             class: "notes-toggle" + (accActive ? " active" : ""),
+            "aria-pressed": accActive,
             "data-notes": "sharps-flats",
             onClick: () => toggle("sharps-flats"),
             children: "sharps & flats"
@@ -7295,7 +7502,11 @@ button {
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
     const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    usePhaseClass(
+      container,
+      calibrating ? "calibration" : engine.state.phase,
+      PHASE_FOCUS_TARGETS
+    );
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -7564,7 +7775,11 @@ button {
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
     const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    usePhaseClass(
+      container,
+      calibrating ? "calibration" : engine.state.phase,
+      PHASE_FOCUS_TARGETS
+    );
     const round = useRoundSummary(engine, practicingLabel);
     const [activeTab, setActiveTab] = d2(
       "practice"
@@ -7863,7 +8078,11 @@ button {
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
     const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    usePhaseClass(
+      container,
+      calibrating ? "calibration" : engine.state.phase,
+      PHASE_FOCUS_TARGETS
+    );
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -8152,7 +8371,11 @@ button {
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
     const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    usePhaseClass(
+      container,
+      calibrating ? "calibration" : engine.state.phase,
+      PHASE_FOCUS_TARGETS
+    );
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -8438,7 +8661,11 @@ button {
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
     const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    usePhaseClass(
+      container,
+      calibrating ? "calibration" : engine.state.phase,
+      PHASE_FOCUS_TARGETS
+    );
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -8794,7 +9021,11 @@ button {
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
     const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    usePhaseClass(
+      container,
+      calibrating ? "calibration" : engine.state.phase,
+      PHASE_FOCUS_TARGETS
+    );
     const [activeTab, setActiveTab] = d2(
       "practice"
     );
@@ -9377,7 +9608,11 @@ button {
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
     const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    usePhaseClass(
+      container,
+      calibrating ? "calibration" : engine.state.phase,
+      PHASE_FOCUS_TARGETS
+    );
     const round = useRoundSummary(engine, practicingLabel);
     const [activeTab, setActiveTab] = d2(
       "practice"
@@ -9763,7 +9998,11 @@ button {
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
     const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(container, calibrating ? "calibration" : engine.state.phase);
+    usePhaseClass(
+      container,
+      calibrating ? "calibration" : engine.state.phase,
+      PHASE_FOCUS_TARGETS
+    );
     const practicingLabel = T2(() => {
       if (noteFilter === "all") return "all notes";
       if (noteFilter === "sharps-flats") return "sharps & flats";
