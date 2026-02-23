@@ -11,7 +11,7 @@ export function GroupToggles(
   { labels, active, recommended, onToggle }: {
     labels: string[];
     active: ReadonlySet<number>;
-    recommended?: number;
+    recommended?: ReadonlySet<number>;
     onToggle: (index: number) => void;
   },
 ) {
@@ -22,7 +22,7 @@ export function GroupToggles(
         {labels.map((label, i) => {
           let cls = 'distance-toggle';
           if (active.has(i)) cls += ' active';
-          if (recommended === i) cls += ' recommended';
+          if (recommended?.has(i)) cls += ' recommended';
           return (
             <button
               type='button'
@@ -50,7 +50,7 @@ export function StringToggles(
   { stringNames, active, recommended, onToggle }: {
     stringNames: string[];
     active: ReadonlySet<number>;
-    recommended?: number;
+    recommended?: ReadonlySet<number>;
     onToggle: (index: number) => void;
   },
 ) {
@@ -61,7 +61,7 @@ export function StringToggles(
         {stringNames.map((name, i) => {
           let cls = 'string-toggle';
           if (active.has(i)) cls += ' active';
-          if (recommended === i) cls += ' recommended';
+          if (recommended?.has(i)) cls += ' recommended';
           return (
             <button
               type='button'

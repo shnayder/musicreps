@@ -346,15 +346,6 @@ export function FretboardMode(
     return parts.join(', ');
   }, [enabledStrings, noteFilter, instrument]);
 
-  const sessionSummary = useMemo(() => {
-    const count = enabledStrings.size;
-    let filterLabel = 'all notes';
-    if (noteFilter === 'natural') filterLabel = 'natural notes';
-    else if (noteFilter === 'sharps-flats') filterLabel = 'sharps and flats';
-    return count + ' string' + (count !== 1 ? 's' : '') + ' \u00B7 ' +
-      filterLabel + ' \u00B7 60s';
-  }, [enabledStrings, noteFilter]);
-
   // --- Engine config ---
   const engineConfig = useMemo((): QuizEngineConfig => ({
     getEnabledItems: () => {
@@ -466,7 +457,6 @@ export function FretboardMode(
         itemNoun: 'positions',
         recommendation,
         recommendationText,
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery,
       }),
@@ -474,7 +464,6 @@ export function FretboardMode(
       learner.selector,
       recommendation,
       recommendationText,
-      sessionSummary,
       engine.state.masteryText,
       engine.state.showMastery,
       engine.state.phase,
@@ -552,7 +541,6 @@ export function FretboardMode(
             statusDetail={summary.statusDetail}
             recommendation={summary.recommendationText || undefined}
             mastery={summary.showMastery ? summary.masteryText : undefined}
-            sessionSummary={sessionSummary}
             onStart={engine.start}
             onApplyRecommendation={summary.showRecommendationButton
               ? applyRecommendation
@@ -562,7 +550,7 @@ export function FretboardMode(
                 <StringToggles
                   stringNames={instrument.stringNames}
                   active={enabledStrings}
-                  recommended={recommendation.expandIndex ?? undefined}
+                  recommended={recommendation.recommended}
                   onToggle={scopeActions.toggleString}
                 />
                 <NoteFilter

@@ -174,7 +174,6 @@ export function NoteSemitonesMode(
         itemNoun: 'items',
         recommendation: null,
         recommendationText: '',
-        sessionSummary: ALL_ITEMS.length + ' items \u00B7 60s',
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery,
       }),
@@ -228,7 +227,6 @@ export function NoteSemitonesMode(
           <PracticeCard
             statusLabel={summary.statusLabel}
             statusDetail={summary.statusDetail}
-            sessionSummary={summary.sessionSummary}
             mastery={summary.showMastery ? summary.masteryText : undefined}
             onStart={engine.start}
           />

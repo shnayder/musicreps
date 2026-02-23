@@ -70,7 +70,6 @@ export function DiatonicChordsMode(
   const {
     scopeActions,
     enabledGroups,
-    enabledItems,
     practicingLabel,
     recommendation,
     recommendationText,
@@ -163,7 +162,6 @@ export function DiatonicChordsMode(
   );
   const [statsMode, setStatsMode] = useState('retention');
 
-  const sessionSummary = enabledItems.length + ' items \u00B7 60s';
   const summary = useMemo(
     () =>
       computePracticeSummary({
@@ -172,7 +170,6 @@ export function DiatonicChordsMode(
         itemNoun: 'items',
         recommendation,
         recommendationText,
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery,
       }),
@@ -180,7 +177,6 @@ export function DiatonicChordsMode(
       learner.selector,
       recommendation,
       recommendationText,
-      sessionSummary,
       engine.state.masteryText,
       engine.state.showMastery,
       engine.state.phase,
@@ -230,7 +226,6 @@ export function DiatonicChordsMode(
             statusDetail={summary.statusDetail}
             recommendation={summary.recommendationText || undefined}
             mastery={summary.showMastery ? summary.masteryText : undefined}
-            sessionSummary={sessionSummary}
             onStart={engine.start}
             onApplyRecommendation={summary.showRecommendationButton
               ? applyRecommendation
@@ -239,7 +234,7 @@ export function DiatonicChordsMode(
               <GroupToggles
                 labels={CHORD_GROUPS.map((g) => g.label)}
                 active={enabledGroups}
-                recommended={recommendation.expandIndex ?? undefined}
+                recommended={recommendation.recommended}
                 onToggle={scopeActions.toggleGroup}
               />
             }

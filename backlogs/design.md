@@ -27,6 +27,11 @@ Owner: design workstream Branch: workstream/design
 
 ## Backlog
 
+- Practice tab boilerplate dedup -- layout changes shouldn't fan out to 10 mode
+  files. Extract shared `usePracticeTab` hook. Engineering workstream change,
+  design-identified.
+  [plans/design-docs/2026-02-22-practice-tab-dedup.md](../plans/design-docs/2026-02-22-practice-tab-dedup.md)
+
 - Quiz view
 
 1. Let's keep "mode" header all quiz states. e.g. "Guitar Fretboard" should be

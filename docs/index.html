@@ -476,13 +476,19 @@ body {
 .practice-zone + .practice-zone {
   margin-top: var(--space-5);
   padding-top: var(--space-5);
-  border-top: 1px solid var(--color-border-lighter);
 }
-.practice-status {
+.practice-section-header {
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--color-text);
+  text-align: left;
   margin-bottom: var(--space-3);
 }
+.practice-status {
+  margin-bottom: 0;
+}
 .practice-status:empty,
-.practice-status-label:empty + .practice-status-detail:empty {
+.practice-status-label:empty {
   display: none;
 }
 .practice-status-label {
@@ -493,7 +499,10 @@ body {
 .practice-status-detail {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  margin-left: var(--space-3);
+  display: block;
+}
+.practice-status-detail:empty {
+  display: none;
 }
 .practice-recommendation {
   display: flex;
@@ -543,14 +552,6 @@ body {
 /* --- Practice action zone (inside practice card) --- */
 .practice-zone-action {
   text-align: center;
-}
-.session-summary-text {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-3);
-}
-.session-summary-text:empty {
-  display: none;
 }
 
 /* --- Baseline info (Progress tab) --- */
@@ -780,9 +781,8 @@ body {
 
 .settings-row {
   display: flex;
-  align-items: center;
-  gap: var(--space-5);
-  justify-content: center;
+  flex-direction: column;
+  gap: var(--space-3);
   margin-bottom: var(--space-3);
 }
 button {
@@ -1363,14 +1363,15 @@ button {
 }
 .toggle-group {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-3);
 }
 .toggle-group-label {
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   color: var(--color-text-muted);
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 /* --- Stats tables (lookup modes) --- */
@@ -1750,20 +1751,23 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-scope">
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
-      <div class="practice-scope">
-        <div class="settings-row">
-          <div class="toggle-group">
+          <div class="practice-scope">
+            <div class="settings-row">
+              <div class="toggle-group">
           <span class="toggle-group-label">Strings</span>
           <div class="string-toggles">
             <button tabindex="0" class="string-toggle" data-string="0" data-string-note="e">e</button>
@@ -1781,13 +1785,11 @@ button {
               <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
             </div>
           </div>
-        </div>
-      </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+            </div>
+          </div>
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2107,20 +2109,23 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-scope">
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
-      <div class="practice-scope">
-        <div class="settings-row">
-          <div class="toggle-group">
+          <div class="practice-scope">
+            <div class="settings-row">
+              <div class="toggle-group">
           <span class="toggle-group-label">Strings</span>
           <div class="string-toggles">
             <button tabindex="0" class="string-toggle" data-string="0" data-string-note="A">A</button>
@@ -2136,13 +2141,11 @@ button {
               <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
             </div>
           </div>
-        </div>
-      </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+            </div>
+          </div>
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2406,33 +2409,34 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-scope">
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
-      <div class="practice-scope">
-        <div class="settings-row">
-          <div class="toggle-group">
+          <div class="practice-scope">
+            <div class="settings-row">
+              <div class="toggle-group">
             <span class="toggle-group-label">Notes</span>
             <div class="notes-toggles">
               <button tabindex="0" class="notes-toggle active" data-notes="natural">natural</button>
               <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
             </div>
           </div>
-        </div>
-      </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+            </div>
+          </div>
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2633,20 +2637,18 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
-          <div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
-          </div>
-          <div class="mastery-message">Looks like you've got this!</div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2739,20 +2741,18 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
-          <div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
-          </div>
-          <div class="mastery-message">Looks like you've got this!</div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2845,27 +2845,28 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-scope">
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
-      <div class="practice-scope">
-        <div class="settings-row">
-          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-        </div>
-      </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+          <div class="practice-scope">
+            <div class="settings-row">
+              <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+            </div>
+          </div>
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2944,27 +2945,28 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-scope">
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
-      <div class="practice-scope">
-        <div class="settings-row">
-          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-        </div>
-      </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+          <div class="practice-scope">
+            <div class="settings-row">
+              <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+            </div>
+          </div>
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -3043,27 +3045,28 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-scope">
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
-      <div class="practice-scope">
-        <div class="settings-row">
-          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-        </div>
-      </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+          <div class="practice-scope">
+            <div class="settings-row">
+              <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+            </div>
+          </div>
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -3159,27 +3162,28 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-scope">
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
-      <div class="practice-scope">
-        <div class="settings-row">
-          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-        </div>
-      </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+          <div class="practice-scope">
+            <div class="settings-row">
+              <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+            </div>
+          </div>
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -3267,27 +3271,28 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-scope">
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
-      <div class="practice-scope">
-        <div class="settings-row">
-          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-        </div>
-      </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+          <div class="practice-scope">
+            <div class="settings-row">
+              <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+            </div>
+          </div>
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -3375,27 +3380,28 @@ button {
     </div>
     <div class="tab-content tab-practice active">
       <div class="practice-card">
-        <div class="practice-zone practice-zone-status">
+        <div class="practice-zone practice-zone-mastery">
+          <div class="practice-section-header">Mastery</div>
           <div class="practice-status">
             <span class="practice-status-label"></span>
-            <span class="practice-status-detail"></span>
           </div>
+          <span class="practice-status-detail"></span>
+          <div class="mastery-message"></div>
         </div>
-        <div class="practice-zone practice-zone-scope">
+        <div class="practice-zone practice-zone-setup">
+          <div class="practice-section-header">Quiz setup</div>
           <div class="practice-recommendation">
             <span class="practice-rec-text"></span>
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>
-      <div class="practice-scope">
-        <div class="settings-row">
-          <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
-        </div>
-      </div>
-          <div class="mastery-message">Looks like you've got this!</div>
-        </div>
-        <div class="practice-zone practice-zone-action">
-          <div class="session-summary-text"></div>
-          <button tabindex="0" class="start-btn">Start Quiz</button>
+          <div class="practice-scope">
+            <div class="settings-row">
+              <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
+            </div>
+          </div>
+          <div class="practice-zone-action">
+            <button tabindex="0" class="start-btn">Start Quiz</button>
+          </div>
         </div>
       </div>
     </div>
@@ -3466,7 +3472,7 @@ button {
 
   <script>
 (() => {
-  // node_modules/preact/dist/preact.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/dist/preact.module.js
   var n;
   var l;
   var u;
@@ -4520,7 +4526,7 @@ button {
     return btn;
   }
 
-  // node_modules/preact/hooks/dist/hooks.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/hooks/dist/hooks.module.js
   var t2;
   var r2;
   var u2;
@@ -4726,7 +4732,7 @@ button {
       statusDetail = total + " " + opts.itemNoun + " to learn";
     } else {
       const pct = total > 0 ? Math.round(fluent / total * 100) : 0;
-      statusLabel = "Overall: " + statusLabelFromPct(pct);
+      statusLabel = statusLabelFromPct(pct);
       statusDetail = fluent + " of " + total + " " + opts.itemNoun + " fluent";
     }
     const hasRec = opts.recommendation !== null && opts.recommendation.recommended.size > 0;
@@ -4735,7 +4741,6 @@ button {
       statusDetail,
       recommendationText: opts.recommendationText,
       showRecommendationButton: hasRec,
-      sessionSummary: opts.sessionSummary,
       masteryText: opts.masteryText,
       showMastery: opts.showMastery,
       enabledItemCount: total
@@ -5659,7 +5664,7 @@ button {
     return { roundContext, roundCorrect, roundMedian, countText };
   }
 
-  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
   var f3 = 0;
   function u3(e3, t3, n2, o3, i3, u4) {
     t3 || (t3 = {});
@@ -5886,7 +5891,6 @@ button {
     recommendation,
     mastery,
     scope,
-    sessionSummary,
     onStart,
     onApplyRecommendation
   }) {
@@ -5903,33 +5907,26 @@ button {
         }
       ) : null
     ] }) : null;
-    const masteryBlock = mastery ? /* @__PURE__ */ u3("div", { class: "mastery-message visible", children: mastery }) : null;
-    const statusExtra = !scope ? /* @__PURE__ */ u3(k, { children: [
+    const masteryBlock = mastery ? /* @__PURE__ */ u3("div", { class: "mastery-message mastery-visible", children: mastery }) : null;
+    const hasSetupContent = scope || recommendation;
+    const setupZone = /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-setup", children: [
+      hasSetupContent ? /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Quiz setup" }) : null,
       recBlock,
-      masteryBlock
-    ] }) : null;
-    const scopeZone = scope ? /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-scope", children: [
-      recBlock,
-      /* @__PURE__ */ u3("div", { class: "practice-scope", children: /* @__PURE__ */ u3("div", { class: "settings-row", children: scope }) }),
-      masteryBlock
-    ] }) : null;
+      scope ? /* @__PURE__ */ u3("div", { class: "practice-scope", children: /* @__PURE__ */ u3("div", { class: "settings-row", children: scope }) }) : null,
+      /* @__PURE__ */ u3("div", { class: "practice-zone-action", children: /* @__PURE__ */ u3(StartButton, { onStart }) })
+    ] });
     return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
-      /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-status", children: [
-        /* @__PURE__ */ u3("div", { class: "practice-status", children: [
-          /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel || "" }),
-          /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" })
-        ] }),
-        statusExtra
+      /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-mastery", children: [
+        /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Mastery" }),
+        /* @__PURE__ */ u3("div", { class: "practice-status", children: /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel || "" }) }),
+        /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" }),
+        masteryBlock
       ] }),
-      scopeZone,
-      /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-action", children: /* @__PURE__ */ u3(StartButton, { summary: sessionSummary, onStart }) })
+      setupZone
     ] });
   }
-  function StartButton({ summary, onStart }) {
-    return /* @__PURE__ */ u3(k, { children: [
-      summary ? /* @__PURE__ */ u3("div", { class: "session-summary-text", children: summary }) : null,
-      /* @__PURE__ */ u3("button", { type: "button", tabIndex: 0, class: "start-btn", onClick: onStart, children: "Start Quiz" })
-    ] });
+  function StartButton({ onStart }) {
+    return /* @__PURE__ */ u3("button", { type: "button", tabIndex: 0, class: "start-btn", onClick: onStart, children: "Start Quiz" });
   }
   function QuizSession({
     timeLeft,
@@ -6622,7 +6619,6 @@ button {
         itemNoun: "items",
         recommendation: null,
         recommendationText: "",
-        sessionSummary: ALL_ITEMS.length + " items \xB7 60s",
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery
       }),
@@ -6664,7 +6660,6 @@ button {
             {
               statusLabel: summary.statusLabel,
               statusDetail: summary.statusDetail,
-              sessionSummary: summary.sessionSummary,
               mastery: summary.showMastery ? summary.masteryText : void 0,
               onStart: engine.start
             }
@@ -6877,7 +6872,6 @@ button {
         itemNoun: "items",
         recommendation: null,
         recommendationText: "",
-        sessionSummary: ALL_ITEMS2.length + " items \xB7 60s",
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery
       }),
@@ -6917,7 +6911,6 @@ button {
             {
               statusLabel: summary.statusLabel,
               statusDetail: summary.statusDetail,
-              sessionSummary: summary.sessionSummary,
               mastery: summary.showMastery ? summary.masteryText : void 0,
               onStart: engine.start
             }
@@ -7304,7 +7297,7 @@ button {
       /* @__PURE__ */ u3("div", { class: "distance-toggles", children: labels.map((label, i3) => {
         let cls = "distance-toggle";
         if (active.has(i3)) cls += " active";
-        if (recommended === i3) cls += " recommended";
+        if (recommended?.has(i3)) cls += " recommended";
         return /* @__PURE__ */ u3(
           "button",
           {
@@ -7327,7 +7320,7 @@ button {
       /* @__PURE__ */ u3("div", { class: "string-toggles", children: stringNames.map((name, i3) => {
         let cls = "string-toggle";
         if (active.has(i3)) cls += " active";
-        if (recommended === i3) cls += " recommended";
+        if (recommended?.has(i3)) cls += " recommended";
         return /* @__PURE__ */ u3(
           "button",
           {
@@ -7457,7 +7450,6 @@ button {
     const {
       scopeActions,
       enabledGroups,
-      enabledItems,
       practicingLabel,
       recommendation,
       recommendationText,
@@ -7519,7 +7511,6 @@ button {
       "practice"
     );
     const [statsMode, setStatsMode] = d2("retention");
-    const sessionSummary = enabledItems.length + " items \xB7 60s";
     const summary = T2(
       () => computePracticeSummary({
         allItemIds: ALL_ITEMS3,
@@ -7527,7 +7518,6 @@ button {
         itemNoun: "items",
         recommendation,
         recommendationText,
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery
       }),
@@ -7535,7 +7525,6 @@ button {
         learner.selector,
         recommendation,
         recommendationText,
-        sessionSummary,
         engine.state.masteryText,
         engine.state.showMastery,
         engine.state.phase
@@ -7571,7 +7560,6 @@ button {
               statusDetail: summary.statusDetail,
               recommendation: summary.recommendationText || void 0,
               mastery: summary.showMastery ? summary.masteryText : void 0,
-              sessionSummary,
               onStart: engine.start,
               onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
               scope: /* @__PURE__ */ u3(
@@ -7579,7 +7567,7 @@ button {
                 {
                   labels: DISTANCE_GROUPS.map((g2) => g2.label),
                   active: enabledGroups,
-                  recommended: recommendation.expandIndex ?? void 0,
+                  recommended: recommendation.recommended,
                   onToggle: scopeActions.toggleGroup
                 }
               )
@@ -7735,7 +7723,6 @@ button {
     const {
       scopeActions,
       enabledGroups,
-      enabledItems,
       practicingLabel,
       recommendation,
       recommendationText,
@@ -7798,7 +7785,6 @@ button {
       "practice"
     );
     const [statsMode, setStatsMode] = d2("retention");
-    const sessionSummary = enabledItems.length + " items \xB7 60s";
     const summary = T2(
       () => computePracticeSummary({
         allItemIds: ALL_ITEMS4,
@@ -7806,7 +7792,6 @@ button {
         itemNoun: "items",
         recommendation,
         recommendationText,
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery
       }),
@@ -7814,7 +7799,6 @@ button {
         learner.selector,
         recommendation,
         recommendationText,
-        sessionSummary,
         engine.state.masteryText,
         engine.state.showMastery,
         engine.state.phase
@@ -7849,7 +7833,6 @@ button {
               statusDetail: summary.statusDetail,
               recommendation: summary.recommendationText || void 0,
               mastery: summary.showMastery ? summary.masteryText : void 0,
-              sessionSummary,
               onStart: engine.start,
               onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
               scope: /* @__PURE__ */ u3(
@@ -7857,7 +7840,7 @@ button {
                 {
                   labels: DISTANCE_GROUPS2.map((g2) => g2.label),
                   active: enabledGroups,
-                  recommended: recommendation.expandIndex ?? void 0,
+                  recommended: recommendation.recommended,
                   onToggle: scopeActions.toggleGroup
                 }
               )
@@ -7999,7 +7982,6 @@ button {
     const {
       scopeActions,
       enabledGroups,
-      enabledItems,
       practicingLabel,
       recommendation,
       recommendationText,
@@ -8111,7 +8093,6 @@ button {
       engine.state.phase,
       statsMode
     );
-    const sessionSummary = enabledItems.length + " items \xB7 60s";
     const summary = T2(
       () => computePracticeSummary({
         allItemIds: ALL_ITEMS5,
@@ -8119,7 +8100,6 @@ button {
         itemNoun: "items",
         recommendation,
         recommendationText,
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery
       }),
@@ -8127,7 +8107,6 @@ button {
         learner.selector,
         recommendation,
         recommendationText,
-        sessionSummary,
         engine.state.masteryText,
         engine.state.showMastery,
         engine.state.phase
@@ -8165,7 +8144,6 @@ button {
               statusDetail: summary.statusDetail,
               recommendation: summary.recommendationText || void 0,
               mastery: summary.showMastery ? summary.masteryText : void 0,
-              sessionSummary,
               onStart: engine.start,
               onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
               scope: /* @__PURE__ */ u3(
@@ -8173,7 +8151,7 @@ button {
                 {
                   labels: KEY_GROUPS.map((g2) => g2.label),
                   active: enabledGroups,
-                  recommended: recommendation.expandIndex ?? void 0,
+                  recommended: recommendation.recommended,
                   onToggle: scopeActions.toggleGroup
                 }
               )
@@ -8333,7 +8311,6 @@ button {
     const {
       scopeActions,
       enabledGroups,
-      enabledItems,
       practicingLabel,
       recommendation,
       recommendationText,
@@ -8403,7 +8380,6 @@ button {
       "practice"
     );
     const [statsMode, setStatsMode] = d2("retention");
-    const sessionSummary = enabledItems.length + " items \xB7 60s";
     const summary = T2(
       () => computePracticeSummary({
         allItemIds: ALL_ITEMS6,
@@ -8411,7 +8387,6 @@ button {
         itemNoun: "items",
         recommendation,
         recommendationText,
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery
       }),
@@ -8419,7 +8394,6 @@ button {
         learner.selector,
         recommendation,
         recommendationText,
-        sessionSummary,
         engine.state.masteryText,
         engine.state.showMastery,
         engine.state.phase
@@ -8459,7 +8433,6 @@ button {
               statusDetail: summary.statusDetail,
               recommendation: summary.recommendationText || void 0,
               mastery: summary.showMastery ? summary.masteryText : void 0,
-              sessionSummary,
               onStart: engine.start,
               onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
               scope: /* @__PURE__ */ u3(
@@ -8467,7 +8440,7 @@ button {
                 {
                   labels: DEGREE_GROUPS.map((g2) => g2.label),
                   active: enabledGroups,
-                  recommended: recommendation.expandIndex ?? void 0,
+                  recommended: recommendation.recommended,
                   onToggle: scopeActions.toggleGroup
                 }
               )
@@ -8628,7 +8601,6 @@ button {
     const {
       scopeActions,
       enabledGroups,
-      enabledItems,
       practicingLabel,
       recommendation,
       recommendationText,
@@ -8698,7 +8670,6 @@ button {
       "practice"
     );
     const [statsMode, setStatsMode] = d2("retention");
-    const sessionSummary = enabledItems.length + " items \xB7 60s";
     const summary = T2(
       () => computePracticeSummary({
         allItemIds: ALL_ITEMS7,
@@ -8706,7 +8677,6 @@ button {
         itemNoun: "items",
         recommendation,
         recommendationText,
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery
       }),
@@ -8714,7 +8684,6 @@ button {
         learner.selector,
         recommendation,
         recommendationText,
-        sessionSummary,
         engine.state.masteryText,
         engine.state.showMastery,
         engine.state.phase
@@ -8754,7 +8723,6 @@ button {
               statusDetail: summary.statusDetail,
               recommendation: summary.recommendationText || void 0,
               mastery: summary.showMastery ? summary.masteryText : void 0,
-              sessionSummary,
               onStart: engine.start,
               onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
               scope: /* @__PURE__ */ u3(
@@ -8762,7 +8730,7 @@ button {
                 {
                   labels: CHORD_GROUPS.map((g2) => g2.label),
                   active: enabledGroups,
-                  recommended: recommendation.expandIndex ?? void 0,
+                  recommended: recommendation.recommended,
                   onToggle: scopeActions.toggleGroup
                 }
               )
@@ -8978,7 +8946,6 @@ button {
     const {
       scopeActions,
       enabledGroups,
-      enabledItems,
       practicingLabel,
       recommendation,
       recommendationText,
@@ -9063,7 +9030,6 @@ button {
       "practice"
     );
     const [statsMode, setStatsMode] = d2("retention");
-    const sessionSummary = enabledItems.length + " items \xB7 60s";
     const summary = T2(
       () => computePracticeSummary({
         allItemIds: ALL_ITEMS8,
@@ -9071,7 +9037,6 @@ button {
         itemNoun: "items",
         recommendation,
         recommendationText,
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery
       }),
@@ -9079,7 +9044,6 @@ button {
         learner.selector,
         recommendation,
         recommendationText,
-        sessionSummary,
         engine.state.masteryText,
         engine.state.showMastery,
         engine.state.phase
@@ -9114,7 +9078,6 @@ button {
               statusDetail: summary.statusDetail,
               recommendation: summary.recommendationText || void 0,
               mastery: summary.showMastery ? summary.masteryText : void 0,
-              sessionSummary,
               onStart: engine.start,
               onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
               scope: /* @__PURE__ */ u3(
@@ -9122,7 +9085,7 @@ button {
                 {
                   labels: SPELLING_GROUPS.map((g2) => g2.label),
                   active: enabledGroups,
-                  recommended: recommendation.expandIndex ?? void 0,
+                  recommended: recommendation.recommended,
                   onToggle: scopeActions.toggleGroup
                 }
               )
@@ -9581,13 +9544,6 @@ button {
       else if (noteFilter === "sharps-flats") parts.push("sharps and flats");
       return parts.join(", ");
     }, [enabledStrings, noteFilter, instrument]);
-    const sessionSummary = T2(() => {
-      const count = enabledStrings.size;
-      let filterLabel = "all notes";
-      if (noteFilter === "natural") filterLabel = "natural notes";
-      else if (noteFilter === "sharps-flats") filterLabel = "sharps and flats";
-      return count + " string" + (count !== 1 ? "s" : "") + " \xB7 " + filterLabel + " \xB7 60s";
-    }, [enabledStrings, noteFilter]);
     const engineConfig = T2(() => ({
       getEnabledItems: () => {
         const s3 = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
@@ -9669,7 +9625,6 @@ button {
         itemNoun: "positions",
         recommendation,
         recommendationText,
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery
       }),
@@ -9677,7 +9632,6 @@ button {
         learner.selector,
         recommendation,
         recommendationText,
-        sessionSummary,
         engine.state.masteryText,
         engine.state.showMastery,
         engine.state.phase,
@@ -9745,7 +9699,6 @@ button {
               statusDetail: summary.statusDetail,
               recommendation: summary.recommendationText || void 0,
               mastery: summary.showMastery ? summary.masteryText : void 0,
-              sessionSummary,
               onStart: engine.start,
               onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
               scope: /* @__PURE__ */ u3(k, { children: [
@@ -9754,7 +9707,7 @@ button {
                   {
                     stringNames: instrument.stringNames,
                     active: enabledStrings,
-                    recommended: recommendation.expandIndex ?? void 0,
+                    recommended: recommendation.recommended,
                     onToggle: scopeActions.toggleString
                   }
                 ),
@@ -10060,11 +10013,6 @@ button {
       "practice"
     );
     const [statsMode, setStatsMode] = d2("retention");
-    const enabledNotes = T2(
-      () => getEnabledNotes(noteFilter),
-      [noteFilter]
-    );
-    const sessionSummary = enabledNotes.length + " notes \xB7 60s";
     const summary = T2(
       () => computePracticeSummary({
         allItemIds: ALL_ITEMS9,
@@ -10072,13 +10020,11 @@ button {
         itemNoun: "notes",
         recommendation: null,
         recommendationText: "",
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery
       }),
       [
         learner.selector,
-        sessionSummary,
         engine.state.masteryText,
         engine.state.showMastery,
         engine.state.phase
@@ -10124,7 +10070,6 @@ button {
             {
               statusLabel: summary.statusLabel,
               statusDetail: summary.statusDetail,
-              sessionSummary,
               mastery: summary.showMastery ? summary.masteryText : void 0,
               onStart: engine.start,
               scope: /* @__PURE__ */ u3(

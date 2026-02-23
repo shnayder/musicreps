@@ -175,13 +175,11 @@ describe('computePracticeSummary', () => {
       itemNoun: 'items',
       recommendation: null,
       recommendationText: '',
-      sessionSummary: '3 items \u00B7 60s',
       masteryText: '',
       showMastery: false,
     });
     assert.equal(result.statusLabel, 'Ready to start');
     assert.equal(result.statusDetail, '3 items to learn');
-    assert.equal(result.sessionSummary, '3 items \u00B7 60s');
     assert.equal(result.showRecommendationButton, false);
   });
 
@@ -199,12 +197,11 @@ describe('computePracticeSummary', () => {
       itemNoun: 'positions',
       recommendation: null,
       recommendationText: '',
-      sessionSummary: '5 positions \u00B7 60s',
       masteryText: '',
       showMastery: false,
     });
     // 3 of 5 fluent = 60%
-    assert.equal(result.statusLabel, 'Overall: Solid');
+    assert.equal(result.statusLabel, 'Solid');
     assert.equal(result.statusDetail, '3 of 5 positions fluent');
   });
 
@@ -218,7 +215,6 @@ describe('computePracticeSummary', () => {
       itemNoun: 'items',
       recommendation: null,
       recommendationText: '',
-      sessionSummary: '',
       masteryText: 'Looks like you\u2019ve got this!',
       showMastery: true,
     });
@@ -242,7 +238,6 @@ describe('computePracticeSummary', () => {
       itemNoun: 'items',
       recommendation: rec,
       recommendationText: 'Suggestion: solidify Group 0',
-      sessionSummary: '',
       masteryText: '',
       showMastery: false,
     });

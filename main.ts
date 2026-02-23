@@ -99,12 +99,11 @@ interface MomentOverrides {
   practiceStatusLabel?: string;
   practiceStatusDetail?: string;
   practiceRecText?: string;
-  sessionSummary?: string;
   showMastery?: boolean;
   highlightNotes?: Array<{ s: number; f: number; fill: string }>;
   chordSlotsHtml?: string;
   hideAccidentals?: boolean;
-  toggleState?: { active: number[]; recommended?: number };
+  toggleState?: { active: number[]; recommended?: number[] };
   progressTabActive?: boolean;
   statsHtml?: string;
   statsText?: string;
@@ -265,12 +264,6 @@ function prepareMoment(source: string, o: MomentOverrides): string {
       `<span class="practice-rec-text">${o.practiceRecText}</span>`,
     );
   }
-  if (o.sessionSummary) {
-    r(
-      '<div class="session-summary-text"></div>',
-      `<div class="session-summary-text">${o.sessionSummary}</div>`,
-    );
-  }
   if (o.showMastery) {
     r(
       'class="mastery-message"',
@@ -318,13 +311,14 @@ function prepareMoment(source: string, o: MomentOverrides): string {
         `class="string-toggle active" data-string="${idx}"`,
       );
     }
-    if (o.toggleState.recommended !== undefined) {
-      const ri = o.toggleState.recommended;
-      r(
-        new RegExp(`class="string-toggle( active)?" data-string="${ri}"`),
-        (_, act) =>
-          `class="string-toggle${act || ''} recommended" data-string="${ri}"`,
-      );
+    if (o.toggleState.recommended) {
+      for (const ri of o.toggleState.recommended) {
+        r(
+          new RegExp(`class="string-toggle( active)?" data-string="${ri}"`),
+          (_, act) =>
+            `class="string-toggle${act || ''} recommended" data-string="${ri}"`,
+        );
+      }
     }
   }
 
@@ -553,8 +547,7 @@ function buildMoments(): string {
       practiceStatusDetail: 'Master current strings before adding more',
       practiceRecText:
         'Suggestion: solidify e, B strings \u2014 8 slow items\nstart G string \u2014 13 new items',
-      sessionSummary: '26 items across 2 strings',
-      toggleState: { active: [0, 1], recommended: 3 },
+      toggleState: { active: [0, 1], recommended: [0, 1, 3] },
     }),
     'phase-idle &middot; practice-status: consolidating &middot; .recommended glow on toggle',
   );
@@ -566,9 +559,8 @@ function buildMoments(): string {
       practiceStatusLabel: 'Ready to expand',
       practiceStatusDetail: 'Current strings mastered',
       practiceRecText: 'Suggestion: start G string \u2014 13 new items',
-      sessionSummary: '39 items across 3 strings',
       showMastery: true,
-      toggleState: { active: [0, 1, 3], recommended: 2 },
+      toggleState: { active: [0, 1, 3], recommended: [2] },
     }),
     'phase-idle &middot; mastery-message visible &middot; ready to expand',
   );

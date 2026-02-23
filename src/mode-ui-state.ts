@@ -90,7 +90,6 @@ export function buildRecommendationText(
  * @param itemNoun "positions" for fretboard, "items" for everything else.
  * @param recommendation Precomputed recommendation result (null for no-group modes).
  * @param recommendationText Precomputed recommendation text (from buildRecommendationText).
- * @param sessionSummary Session summary string (from mode definition).
  * @param masteryText Engine mastery text.
  * @param showMastery Engine mastery visibility.
  */
@@ -100,7 +99,6 @@ export function computePracticeSummary(opts: {
   itemNoun: string;
   recommendation: RecommendationResult | null;
   recommendationText: string;
-  sessionSummary: string;
   masteryText: string;
   showMastery: boolean;
 }): PracticeSummaryState {
@@ -120,7 +118,7 @@ export function computePracticeSummary(opts: {
     statusDetail = total + ' ' + opts.itemNoun + ' to learn';
   } else {
     const pct = total > 0 ? Math.round((fluent / total) * 100) : 0;
-    statusLabel = 'Overall: ' + statusLabelFromPct(pct);
+    statusLabel = statusLabelFromPct(pct);
     statusDetail = fluent + ' of ' + total + ' ' + opts.itemNoun + ' fluent';
   }
 
@@ -132,7 +130,6 @@ export function computePracticeSummary(opts: {
     statusDetail,
     recommendationText: opts.recommendationText,
     showRecommendationButton: hasRec,
-    sessionSummary: opts.sessionSummary,
     masteryText: opts.masteryText,
     showMastery: opts.showMastery,
     enabledItemCount: total,

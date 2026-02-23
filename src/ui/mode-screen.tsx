@@ -146,7 +146,6 @@ export function PracticeCard(
     recommendation,
     mastery,
     scope,
-    sessionSummary,
     onStart,
     onApplyRecommendation,
   }: {
@@ -155,7 +154,6 @@ export function PracticeCard(
     recommendation?: string;
     mastery?: string;
     scope?: ComponentChildren;
-    sessionSummary?: string;
     onStart?: () => void;
     onApplyRecommendation?: () => void;
   },
@@ -181,39 +179,45 @@ export function PracticeCard(
     : null;
 
   const masteryBlock = mastery
-    ? <div class='mastery-message visible'>{mastery}</div>
+    ? <div class='mastery-message mastery-visible'>{mastery}</div>
     : null;
 
-  // When scope toggles exist, recommendation + mastery go in scope zone;
-  // otherwise they appear inline in the status zone.
-  const statusExtra = !scope ? <>{recBlock}{masteryBlock}</> : null;
-  const scopeZone = scope
-    ? (
-      <div class='practice-zone practice-zone-scope'>
-        {recBlock}
-        <div class='practice-scope'>
-          <div class='settings-row'>
-            {scope}
+  // Zone 2: "Quiz setup" — suggestion + scope controls + start button.
+  // When neither scope controls nor a recommendation exist, show just the
+  // start button (no header).
+  const hasSetupContent = scope || recommendation;
+  const setupZone = (
+    <div class='practice-zone practice-zone-setup'>
+      {hasSetupContent
+        ? <div class='practice-section-header'>Quiz setup</div>
+        : null}
+      {recBlock}
+      {scope
+        ? (
+          <div class='practice-scope'>
+            <div class='settings-row'>
+              {scope}
+            </div>
           </div>
-        </div>
-        {masteryBlock}
+        )
+        : null}
+      <div class='practice-zone-action'>
+        <StartButton onStart={onStart} />
       </div>
-    )
-    : null;
+    </div>
+  );
 
   return (
     <div class='practice-card'>
-      <div class='practice-zone practice-zone-status'>
+      <div class='practice-zone practice-zone-mastery'>
+        <div class='practice-section-header'>Mastery</div>
         <div class='practice-status'>
           <span class='practice-status-label'>{statusLabel || ''}</span>
-          <span class='practice-status-detail'>{statusDetail || ''}</span>
         </div>
-        {statusExtra}
+        <span class='practice-status-detail'>{statusDetail || ''}</span>
+        {masteryBlock}
       </div>
-      {scopeZone}
-      <div class='practice-zone practice-zone-action'>
-        <StartButton summary={sessionSummary} onStart={onStart} />
-      </div>
+      {setupZone}
     </div>
   );
 }
@@ -245,19 +249,16 @@ export function Recommendation(
 }
 
 // ---------------------------------------------------------------------------
-// StartButton — start button + session summary
+// StartButton — quiz start button
 // ---------------------------------------------------------------------------
 
 export function StartButton(
-  { summary, onStart }: { summary?: string; onStart?: () => void },
+  { onStart }: { onStart?: () => void },
 ) {
   return (
-    <>
-      {summary ? <div class='session-summary-text'>{summary}</div> : null}
-      <button type='button' tabIndex={0} class='start-btn' onClick={onStart}>
-        Start Quiz
-      </button>
-    </>
+    <button type='button' tabIndex={0} class='start-btn' onClick={onStart}>
+      Start Quiz
+    </button>
   );
 }
 

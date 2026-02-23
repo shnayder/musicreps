@@ -69,7 +69,6 @@ export function KeySignaturesMode(
   const {
     scopeActions,
     enabledGroups,
-    enabledItems,
     practicingLabel,
     recommendation,
     recommendationText,
@@ -215,7 +214,6 @@ export function KeySignaturesMode(
   );
 
   // --- Practice summary ---
-  const sessionSummary = enabledItems.length + ' items \u00B7 60s';
   const summary = useMemo(
     () =>
       computePracticeSummary({
@@ -224,7 +222,6 @@ export function KeySignaturesMode(
         itemNoun: 'items',
         recommendation,
         recommendationText,
-        sessionSummary,
         masteryText: engine.state.masteryText,
         showMastery: engine.state.showMastery,
       }),
@@ -232,7 +229,6 @@ export function KeySignaturesMode(
       learner.selector,
       recommendation,
       recommendationText,
-      sessionSummary,
       engine.state.masteryText,
       engine.state.showMastery,
       engine.state.phase,
@@ -280,7 +276,6 @@ export function KeySignaturesMode(
             statusDetail={summary.statusDetail}
             recommendation={summary.recommendationText || undefined}
             mastery={summary.showMastery ? summary.masteryText : undefined}
-            sessionSummary={sessionSummary}
             onStart={engine.start}
             onApplyRecommendation={summary.showRecommendationButton
               ? applyRecommendation
@@ -289,7 +284,7 @@ export function KeySignaturesMode(
               <GroupToggles
                 labels={KEY_GROUPS.map((g) => g.label)}
                 active={enabledGroups}
-                recommended={recommendation.expandIndex ?? undefined}
+                recommended={recommendation.recommended}
                 onToggle={scopeActions.toggleGroup}
               />
             }
