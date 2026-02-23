@@ -469,7 +469,7 @@ body {
 .practice-card {
   margin-bottom: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  background: var(--color-surface);
+  background: var(--color-bg);
   border-radius: 8px;
 }
 .practice-zone + .practice-zone {
@@ -551,6 +551,7 @@ body {
 /* --- Practice action zone (inside practice card) --- */
 .practice-zone-action {
   text-align: center;
+  margin-top: var(--space-5);
 }
 
 /* --- Baseline info (Progress tab) --- */
@@ -1044,7 +1045,8 @@ button {
 .phase-round-complete .fretboard-wrapper,
 .phase-round-complete .quiz-countdown-row,
 .phase-round-complete .quiz-session-info,
-.phase-round-complete .quiz-header-close {
+.phase-round-complete .quiz-header-close,
+.phase-round-complete .quiz-last-question {
   display: none;
 }
 
@@ -1053,7 +1055,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  margin: var(--space-3) auto;
+  width: 100%;
+  margin: var(--space-3) 0;
 }
 .note-row-naturals,
 .note-row-accidentals {
@@ -1112,6 +1115,7 @@ button {
   background: var(--color-bg);
   cursor: pointer;
   padding: 0;
+  margin: 0;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1199,6 +1203,7 @@ button {
   background: var(--color-bg);
   cursor: pointer;
   padding: 0 var(--space-2);
+  margin: 0;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1383,12 +1388,13 @@ button {
 /* --- Heatmap legends --- */
 .heatmap-legend {
   display: none;
-  flex-direction: column;
-  gap: var(--space-3);
+  grid-template-columns: repeat(3, auto);
+  justify-content: center;
+  gap: var(--space-1) var(--space-4);
   margin: var(--space-4) 0;
 }
 .heatmap-legend.active {
-  display: flex;
+  display: grid;
 }
 .legend-item {
   display: flex;
@@ -1785,7 +1791,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">v8.17</span>
+      <span class="version">v8.19</span>
     </div>
   </div>
 
@@ -6239,11 +6245,13 @@ button {
   function buildStatsLegend(statsMode, baseline) {
     const c3 = heatmapColors();
     let html = '<div class="heatmap-legend active">';
-    html += legendItem(c3.none, "No data");
     if (statsMode === "retention") {
-      for (let i3 = c3.level.length - 1; i3 >= 0; i3--) {
-        html += legendItem(c3.level[i3], RETENTION_LABELS[i3]);
-      }
+      html += legendItem(c3.level[4], RETENTION_LABELS[4]);
+      html += legendItem(c3.level[2], RETENTION_LABELS[2]);
+      html += legendItem(c3.level[0], RETENTION_LABELS[0]);
+      html += legendItem(c3.level[3], RETENTION_LABELS[3]);
+      html += legendItem(c3.level[1], RETENTION_LABELS[1]);
+      html += legendItem(c3.none, "No data");
     } else {
       const b = baseline || 1e3;
       const t1 = formatThreshold(b * 1.5);
@@ -6251,10 +6259,11 @@ button {
       const t3 = formatThreshold(b * 4.5);
       const t4 = formatThreshold(b * 6);
       html += legendItem(c3.level[4], "&lt; " + t1);
-      html += legendItem(c3.level[3], t1 + "\u2013" + t22);
       html += legendItem(c3.level[2], t22 + "\u2013" + t3);
-      html += legendItem(c3.level[1], t3 + "\u2013" + t4);
       html += legendItem(c3.level[0], "&ge; " + t4);
+      html += legendItem(c3.level[3], t1 + "\u2013" + t22);
+      html += legendItem(c3.level[1], t3 + "\u2013" + t4);
+      html += legendItem(c3.none, "No data");
     }
     html += "</div>";
     return html;
@@ -6337,6 +6346,10 @@ button {
       ] }, note.name)) })
     ] });
   }
+  function StatsLegend({ statsMode, baseline }) {
+    const html = buildStatsLegend(statsMode, baseline);
+    return /* @__PURE__ */ u3("div", { dangerouslySetInnerHTML: { __html: html } });
+  }
   function StatsToggle({ active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "stats-toggle", children: [
       /* @__PURE__ */ u3(
@@ -6386,15 +6399,17 @@ button {
   var PAUSE_MS = 400;
   function BaselineInfo({ baseline, onRun }) {
     const value = baseline ? (baseline / 1e3).toFixed(1) + "s" : "1s";
-    const tag = baseline ? null : /* @__PURE__ */ u3("span", { class: "baseline-default-tag", children: "(default)" });
+    const tag = baseline ? null : /* @__PURE__ */ u3(k, { children: [
+      " ",
+      /* @__PURE__ */ u3("span", { class: "baseline-default-tag", children: "(default)" })
+    ] });
     const btnLabel = baseline ? "Rerun speed check" : "Run speed check";
     return /* @__PURE__ */ u3("div", { class: "baseline-info", children: [
       /* @__PURE__ */ u3("div", { class: "baseline-text", children: [
         "Your tap speed baseline is ",
         value,
-        " ",
         tag,
-        ". Speed ratings scale from this."
+        ". Speed and recall estimates are based on this."
       ] }),
       /* @__PURE__ */ u3(
         "button",
@@ -6779,17 +6794,26 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
-              StatsTable,
-              {
-                selector: statsSel,
-                rows: getStatsRows(),
-                fwdHeader: "N\u2192#",
-                revHeader: "#\u2192N",
-                statsMode,
-                baseline: learner.motorBaseline ?? void 0
-              }
-            ) }),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
+              /* @__PURE__ */ u3(
+                StatsTable,
+                {
+                  selector: statsSel,
+                  rows: getStatsRows(),
+                  fwdHeader: "N\u2192#",
+                  revHeader: "#\u2192N",
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              ),
+              /* @__PURE__ */ u3(
+                StatsLegend,
+                {
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              )
+            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
@@ -7038,17 +7062,26 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
-              StatsTable,
-              {
-                selector: statsSel,
-                rows: getStatsRows2(),
-                fwdHeader: "I\u2192#",
-                revHeader: "#\u2192I",
-                statsMode,
-                baseline: learner.motorBaseline ?? void 0
-              }
-            ) }),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
+              /* @__PURE__ */ u3(
+                StatsTable,
+                {
+                  selector: statsSel,
+                  rows: getStatsRows2(),
+                  fwdHeader: "I\u2192#",
+                  revHeader: "#\u2192I",
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              ),
+              /* @__PURE__ */ u3(
+                StatsLegend,
+                {
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              )
+            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
@@ -7701,16 +7734,25 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: statsSel,
-                colLabels: GRID_COL_LABELS,
-                getItemId: getGridItemId,
-                statsMode,
-                baseline: learner.motorBaseline ?? void 0
-              }
-            ) }),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
+              /* @__PURE__ */ u3(
+                StatsGrid,
+                {
+                  selector: statsSel,
+                  colLabels: GRID_COL_LABELS,
+                  getItemId: getGridItemId,
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              ),
+              /* @__PURE__ */ u3(
+                StatsLegend,
+                {
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              )
+            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
@@ -7983,16 +8025,25 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: statsSel,
-                colLabels: GRID_COL_LABELS2,
-                getItemId: getGridItemId2,
-                statsMode,
-                baseline: learner.motorBaseline ?? void 0
-              }
-            ) }),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
+              /* @__PURE__ */ u3(
+                StatsGrid,
+                {
+                  selector: statsSel,
+                  colLabels: GRID_COL_LABELS2,
+                  getItemId: getGridItemId2,
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              ),
+              /* @__PURE__ */ u3(
+                StatsLegend,
+                {
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              )
+            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
@@ -8310,17 +8361,26 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
-              StatsTable,
-              {
-                selector: statsSel,
-                rows: getStatsRows3(),
-                fwdHeader: "Key\u2192Sig",
-                revHeader: "Sig\u2192Key",
-                statsMode,
-                baseline: learner.motorBaseline ?? void 0
-              }
-            ) }),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
+              /* @__PURE__ */ u3(
+                StatsTable,
+                {
+                  selector: statsSel,
+                  rows: getStatsRows3(),
+                  fwdHeader: "Key\u2192Sig",
+                  revHeader: "Sig\u2192Key",
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              ),
+              /* @__PURE__ */ u3(
+                StatsLegend,
+                {
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              )
+            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
@@ -8608,17 +8668,26 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: statsSel,
-                colLabels: DEGREE_LABELS2,
-                getItemId: getGridItemId3,
-                statsMode,
-                notes: GRID_NOTES,
-                baseline: learner.motorBaseline ?? void 0
-              }
-            ) }),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
+              /* @__PURE__ */ u3(
+                StatsGrid,
+                {
+                  selector: statsSel,
+                  colLabels: DEGREE_LABELS2,
+                  getItemId: getGridItemId3,
+                  statsMode,
+                  notes: GRID_NOTES,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              ),
+              /* @__PURE__ */ u3(
+                StatsLegend,
+                {
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              )
+            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
@@ -8907,17 +8976,26 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: statsSel,
-                colLabels: ROMAN_NUMERALS,
-                getItemId: getGridItemId4,
-                statsMode,
-                notes: GRID_NOTES2,
-                baseline: learner.motorBaseline ?? void 0
-              }
-            ) }),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
+              /* @__PURE__ */ u3(
+                StatsGrid,
+                {
+                  selector: statsSel,
+                  colLabels: ROMAN_NUMERALS,
+                  getItemId: getGridItemId4,
+                  statsMode,
+                  notes: GRID_NOTES2,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              ),
+              /* @__PURE__ */ u3(
+                StatsLegend,
+                {
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              )
+            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
@@ -9282,17 +9360,26 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: statsSel,
-                colLabels: GRID_COL_LABELS3,
-                getItemId: getGridItemId5,
-                statsMode,
-                notes: GRID_NOTES3,
-                baseline: learner.motorBaseline ?? void 0
-              }
-            ) }),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
+              /* @__PURE__ */ u3(
+                StatsGrid,
+                {
+                  selector: statsSel,
+                  colLabels: GRID_COL_LABELS3,
+                  getItemId: getGridItemId5,
+                  statsMode,
+                  notes: GRID_NOTES3,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              ),
+              /* @__PURE__ */ u3(
+                StatsLegend,
+                {
+                  statsMode,
+                  baseline: learner.motorBaseline ?? void 0
+                }
+              )
+            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
