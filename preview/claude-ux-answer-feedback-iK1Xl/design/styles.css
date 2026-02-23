@@ -1135,16 +1135,6 @@ button {
   border-color: var(--color-text-muted);
   transform: none;
 }
-.note-btn.btn-correct {
-  background: var(--color-success-bg);
-  border-color: var(--color-success);
-  color: var(--color-success-text);
-}
-.note-btn.btn-wrong {
-  background: var(--color-error-bg);
-  border-color: var(--color-error);
-  color: var(--color-error-text);
-}
 .note-btn.hidden {
   display: none;
 }
@@ -1174,6 +1164,21 @@ button {
 }
 .quiz-last-question:empty {
   display: none;
+}
+
+/* --- Feedback banner (correct/incorrect answer display) --- */
+.feedback-banner {
+  text-align: center;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  min-height: 1.75rem;
+  margin-bottom: var(--space-2);
+}
+.feedback-banner-correct {
+  color: var(--color-success-text);
+}
+.feedback-banner-wrong {
+  color: var(--color-error-text);
 }
 
 /* --- Answer buttons grid (shared by new modes) --- */
@@ -1216,16 +1221,6 @@ button {
   background: var(--color-bg);
   border-color: var(--color-text-muted);
   transform: none;
-}
-.answer-btn.btn-correct {
-  background: var(--color-success-bg);
-  border-color: var(--color-success);
-  color: var(--color-success-text);
-}
-.answer-btn.btn-wrong {
-  background: var(--color-error-bg);
-  border-color: var(--color-error);
-  color: var(--color-error-text);
 }
 .answer-buttons-intervals {
   grid-template-columns: repeat(3, 1fr);
