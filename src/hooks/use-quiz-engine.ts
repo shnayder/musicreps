@@ -249,7 +249,11 @@ export function useQuizEngine(
     );
 
     setState((prev) => {
-      let next = engineSubmitAnswer(prev, result.correct, result.correctAnswer);
+      let next = engineSubmitAnswer(
+        prev,
+        result.correct,
+        result.correctAnswer,
+      );
       next = {
         ...next,
         roundResponseTimes: [...next.roundResponseTimes, responseTime],

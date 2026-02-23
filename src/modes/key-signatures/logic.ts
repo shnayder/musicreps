@@ -93,10 +93,16 @@ export function checkAnswer(
   const key = MAJOR_KEYS.find((k) => k.root === q.root)!;
   if (q.dir === 'fwd') {
     const expected = keySignatureLabel(key);
-    return { correct: input === expected, correctAnswer: expected };
+    return {
+      correct: input === expected,
+      correctAnswer: expected,
+    };
   }
   const correct = spelledNoteMatchesSemitone(q.root, input);
-  return { correct, correctAnswer: displayNote(q.root) };
+  return {
+    correct,
+    correctAnswer: displayNote(q.root),
+  };
 }
 
 // ---------------------------------------------------------------------------

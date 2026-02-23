@@ -1176,6 +1176,21 @@ button {
   display: none;
 }
 
+/* --- Feedback banner (correct/incorrect answer display) --- */
+.feedback-banner {
+  text-align: center;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  min-height: 1.75rem;
+  margin-bottom: var(--space-2);
+}
+.feedback-banner-correct {
+  color: var(--color-success-text);
+}
+.feedback-banner-wrong {
+  color: var(--color-error-text);
+}
+
 /* --- Answer buttons grid (shared by new modes) --- */
 .answer-buttons {
   display: grid;
@@ -1322,6 +1337,19 @@ button {
 .calibration-thresholds td:nth-child(2) {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Screen-reader-only utility --- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* --- Feedback --- */
@@ -1758,7 +1786,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">v8.18</span>
+      <span class="version">v8.21</span>
     </div>
   </div>
 
@@ -5256,6 +5284,8 @@ button {
       // Feedback
       feedbackText: "",
       feedbackClass: "feedback",
+      feedbackCorrect: null,
+      feedbackDisplayAnswer: null,
       timeDisplayText: "",
       hintText: "",
       // Mastery message
@@ -5292,6 +5322,8 @@ button {
       questionCount: state.questionCount + 1,
       feedbackText: "",
       feedbackClass: "feedback",
+      feedbackCorrect: null,
+      feedbackDisplayAnswer: null,
       timeDisplayText: "",
       hintText: "",
       answersEnabled: true
@@ -5304,6 +5336,8 @@ button {
       answersEnabled: false,
       feedbackText: isCorrect ? "Correct!" : "Incorrect \u2014 " + correctAnswer,
       feedbackClass: isCorrect ? "feedback correct" : "feedback incorrect",
+      feedbackCorrect: isCorrect,
+      feedbackDisplayAnswer: correctAnswer,
       timeDisplayText: "",
       hintText: "Tap anywhere or press Space for next",
       roundAnswered: state.roundAnswered + 1,
@@ -5325,6 +5359,8 @@ button {
       currentItemId: null,
       feedbackText: "",
       feedbackClass: "feedback",
+      feedbackCorrect: null,
+      feedbackDisplayAnswer: null,
       hintText: ""
     };
   }
@@ -5506,7 +5542,11 @@ button {
         result.correct
       );
       setState((prev) => {
-        let next = engineSubmitAnswer(prev, result.correct, result.correctAnswer);
+        let next = engineSubmitAnswer(
+          prev,
+          result.correct,
+          result.correctAnswer
+        );
         next = {
           ...next,
           roundResponseTimes: [...next.roundResponseTimes, responseTime]
@@ -6316,10 +6356,17 @@ button {
   // src/ui/quiz-ui.tsx
   function FeedbackDisplay({ text, className, time, hint }) {
     return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: className, children: text }),
+      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
       hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
     ] });
+  }
+  function FeedbackBanner({ correct, answer }) {
+    if (correct === null || !answer) {
+      return /* @__PURE__ */ u3("div", { class: "feedback-banner" });
+    }
+    const cls = "feedback-banner" + (correct ? " feedback-banner-correct" : " feedback-banner-wrong");
+    return /* @__PURE__ */ u3("div", { class: cls, children: correct ? answer : "No, " + answer });
   }
 
   // src/ui/speed-check.tsx
@@ -6566,11 +6613,17 @@ button {
   function checkAnswer(q3, input) {
     if (q3.dir === "fwd") {
       const correct2 = parseInt(input, 10) === q3.noteNum;
-      return { correct: correct2, correctAnswer: String(q3.noteNum) };
+      return {
+        correct: correct2,
+        correctAnswer: String(q3.noteNum)
+      };
     }
     const note = NOTES.find((n2) => n2.name === q3.noteName);
     const correct = noteMatchesInput(note, input);
-    return { correct, correctAnswer: displayNote(q3.accidentalChoice) };
+    return {
+      correct,
+      correctAnswer: displayNote(q3.accidentalChoice)
+    };
   }
   function getStatsRows() {
     return NOTES.map((note) => ({
@@ -6781,6 +6834,13 @@ button {
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
+              FeedbackBanner,
+              {
+                correct: engine.state.feedbackCorrect,
+                answer: engine.state.feedbackDisplayAnswer
+              }
+            ),
+            /* @__PURE__ */ u3(
               NoteButtons,
               {
                 hidden: dir === "fwd",
@@ -6839,7 +6899,10 @@ button {
   function checkAnswer2(q3, input) {
     if (q3.dir === "fwd") {
       const correct2 = parseInt(input, 10) === q3.num;
-      return { correct: correct2, correctAnswer: String(q3.num) };
+      return {
+        correct: correct2,
+        correctAnswer: String(q3.num)
+      };
     }
     const interval = INTERVALS.find((i3) => i3.abbrev === q3.abbrev);
     const correct = intervalMatchesInput(interval, input);
@@ -7040,6 +7103,13 @@ button {
               onCancel: () => setCalibrating(false)
             }
           ) : /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(
+              FeedbackBanner,
+              {
+                correct: engine.state.feedbackCorrect,
+                answer: engine.state.feedbackDisplayAnswer
+              }
+            ),
             /* @__PURE__ */ u3(
               IntervalButtons,
               {
@@ -7706,7 +7776,20 @@ button {
               onCancel: () => setCalibrating(false)
             }
           ) : /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer, useFlats }),
+            /* @__PURE__ */ u3(
+              FeedbackBanner,
+              {
+                correct: engine.state.feedbackCorrect,
+                answer: engine.state.feedbackDisplayAnswer
+              }
+            ),
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                onAnswer: handleNoteAnswer,
+                useFlats
+              }
+            ),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -7988,7 +8071,20 @@ button {
               onCancel: () => setCalibrating(false)
             }
           ) : /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer, useFlats }),
+            /* @__PURE__ */ u3(
+              FeedbackBanner,
+              {
+                correct: engine.state.feedbackCorrect,
+                answer: engine.state.feedbackDisplayAnswer
+              }
+            ),
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                onAnswer: handleNoteAnswer,
+                useFlats
+              }
+            ),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8051,10 +8147,16 @@ button {
     const key = MAJOR_KEYS.find((k3) => k3.root === q3.root);
     if (q3.dir === "fwd") {
       const expected = keySignatureLabel(key);
-      return { correct: input === expected, correctAnswer: expected };
+      return {
+        correct: input === expected,
+        correctAnswer: expected
+      };
     }
     const correct = spelledNoteMatchesSemitone(q3.root, input);
-    return { correct, correctAnswer: displayNote(q3.root) };
+    return {
+      correct,
+      correctAnswer: displayNote(q3.root)
+    };
   }
   function getStatsRows3() {
     return MAJOR_KEYS.map((key) => ({
@@ -8310,6 +8412,13 @@ button {
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
+              FeedbackBanner,
+              {
+                correct: engine.state.feedbackCorrect,
+                answer: engine.state.feedbackDisplayAnswer
+              }
+            ),
+            /* @__PURE__ */ u3(
               KeysigButtons,
               {
                 hidden: dir === "rev",
@@ -8391,7 +8500,10 @@ button {
   function checkAnswer6(q3, input) {
     if (q3.dir === "fwd") {
       const correct = spelledNoteMatchesSemitone(q3.noteName, input);
-      return { correct, correctAnswer: displayNote(q3.noteName) };
+      return {
+        correct,
+        correctAnswer: displayNote(q3.noteName)
+      };
     }
     const expectedDegree = String(q3.degree);
     return {
@@ -8608,6 +8720,13 @@ button {
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
+              FeedbackBanner,
+              {
+                correct: engine.state.feedbackCorrect,
+                answer: engine.state.feedbackDisplayAnswer
+              }
+            ),
+            /* @__PURE__ */ u3(
               NoteButtons,
               {
                 hidden: dir === "rev",
@@ -8690,7 +8809,10 @@ button {
     if (q3.dir === "fwd") {
       const correct = spelledNoteMatchesSemitone(q3.rootNote, input);
       const fullAnswer = displayNote(q3.rootNote) + " " + q3.chord.quality;
-      return { correct, correctAnswer: fullAnswer };
+      return {
+        correct,
+        correctAnswer: fullAnswer
+      };
     }
     const expectedNumeral = q3.chord.numeral;
     return {
@@ -8906,6 +9028,13 @@ button {
               onCancel: () => setCalibrating(false)
             }
           ) : /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(
+              FeedbackBanner,
+              {
+                correct: engine.state.feedbackCorrect,
+                answer: engine.state.feedbackDisplayAnswer
+              }
+            ),
             /* @__PURE__ */ u3(
               NoteButtons,
               {
@@ -9271,7 +9400,19 @@ button {
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
-            /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer }),
+            /* @__PURE__ */ u3(
+              FeedbackBanner,
+              {
+                correct: engine.state.feedbackCorrect,
+                answer: engine.state.feedbackDisplayAnswer
+              }
+            ),
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                onAnswer: handleNoteAnswer
+              }
+            ),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -9317,7 +9458,10 @@ button {
     function checkFretboardAnswer(currentNote, input) {
       const note = musicData.notes.find((n2) => n2.name === currentNote);
       const correct = !!(note && musicData.noteMatchesInput(note, input));
-      return { correct, correctAnswer: displayNote(currentNote) };
+      return {
+        correct,
+        correctAnswer: displayNote(currentNote)
+      };
     }
     function notePassesFilter(note, noteFilter) {
       if (noteFilter === "all") return true;
@@ -9912,6 +10056,13 @@ button {
               }
             ),
             /* @__PURE__ */ u3(
+              FeedbackBanner,
+              {
+                correct: engine.state.feedbackCorrect,
+                answer: engine.state.feedbackDisplayAnswer
+              }
+            ),
+            /* @__PURE__ */ u3(
               PianoNoteButtons,
               {
                 onAnswer: handleNoteAnswer,
@@ -10044,6 +10195,29 @@ button {
           }
         }, 800);
         wrongFlashTimeoutsRef.current.add(timeout);
+        const correctOnString = targetPosRef.current.filter(
+          (p3) => p3.string === s3 && !foundPosRef.current.has(p3.string + "-" + p3.fret)
+        );
+        if (correctOnString.length > 0) {
+          correctOnString.sort(
+            (a3, b) => Math.abs(a3.fret - f4) - Math.abs(b.fret - f4) || a3.fret - b.fret
+          );
+          const closest = correctOnString[0];
+          const hintKey = closest.string + "-" + closest.fret;
+          setCircleFill2(wrapper, closest.string, closest.fret, FB_TAP_CORRECT);
+          const hintTimeout = setTimeout(() => {
+            wrongFlashTimeoutsRef.current.delete(hintTimeout);
+            if (!foundPosRef.current.has(hintKey)) {
+              setCircleFill2(
+                wrapper,
+                closest.string,
+                closest.fret,
+                FB_TAP_NEUTRAL
+              );
+            }
+          }, 800);
+          wrongFlashTimeoutsRef.current.add(hintTimeout);
+        }
       }
     }, []);
     y2(() => {

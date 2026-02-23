@@ -195,6 +195,8 @@ export type EngineState = {
 
   feedbackText: string;
   feedbackClass: string;
+  feedbackCorrect: boolean | null;
+  feedbackDisplayAnswer: string | null;
   timeDisplayText: string;
   hintText: string;
 

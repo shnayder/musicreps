@@ -102,7 +102,10 @@ export function checkAnswer(
 ): { correct: boolean; correctAnswer: string } {
   if (q.dir === 'fwd') {
     const correct = spelledNoteMatchesSemitone(q.noteName, input);
-    return { correct, correctAnswer: displayNote(q.noteName) };
+    return {
+      correct,
+      correctAnswer: displayNote(q.noteName),
+    };
   }
   const expectedDegree = String(q.degree);
   return {

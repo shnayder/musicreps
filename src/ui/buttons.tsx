@@ -78,7 +78,8 @@ export function PianoNoteButtons(
             type='button'
             tabIndex={0}
             key={n}
-            class={'note-btn accidental' + (hideAccidentals ? ' hidden' : '')}
+            class={'note-btn accidental' +
+              (hideAccidentals ? ' hidden' : '')}
             data-note={n}
             onClick={onAnswer ? () => onAnswer(n) : undefined}
           >

@@ -66,11 +66,17 @@ export function checkAnswer(
 ): { correct: boolean; correctAnswer: string } {
   if (q.dir === 'fwd') {
     const correct = parseInt(input, 10) === q.noteNum;
-    return { correct, correctAnswer: String(q.noteNum) };
+    return {
+      correct,
+      correctAnswer: String(q.noteNum),
+    };
   }
   const note = NOTES.find((n) => n.name === q.noteName)!;
   const correct = noteMatchesInput(note, input);
-  return { correct, correctAnswer: displayNote(q.accidentalChoice) };
+  return {
+    correct,
+    correctAnswer: displayNote(q.accidentalChoice),
+  };
 }
 
 // ---------------------------------------------------------------------------

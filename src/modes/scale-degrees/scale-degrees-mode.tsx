@@ -33,7 +33,7 @@ import {
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
 import { StatsGrid, StatsLegend, StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import { FeedbackBanner, FeedbackDisplay } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -298,6 +298,10 @@ export function ScaleDegreesMode(
           )
           : (
             <>
+              <FeedbackBanner
+                correct={engine.state.feedbackCorrect}
+                answer={engine.state.feedbackDisplayAnswer}
+              />
               <NoteButtons
                 hidden={dir === 'rev'}
                 onAnswer={handleNoteAnswer}

@@ -105,7 +105,10 @@ export function checkAnswer(
   if (q.dir === 'fwd') {
     const correct = spelledNoteMatchesSemitone(q.rootNote, input);
     const fullAnswer = displayNote(q.rootNote) + ' ' + q.chord.quality;
-    return { correct, correctAnswer: fullAnswer };
+    return {
+      correct,
+      correctAnswer: fullAnswer,
+    };
   }
   const expectedNumeral = q.chord.numeral;
   return {

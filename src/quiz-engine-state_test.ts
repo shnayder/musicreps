@@ -195,6 +195,33 @@ describe('engineSubmitAnswer', () => {
     const incorrect = engineSubmitAnswer(q2, false, 'D');
     assert.equal(incorrect.roundCorrect, 1); // still 1
   });
+
+  it('stores feedbackCorrect and feedbackDisplayAnswer', () => {
+    const s = engineSubmitAnswer(active, false, 'C');
+    assert.equal(s.feedbackCorrect, false);
+    assert.equal(s.feedbackDisplayAnswer, 'C');
+  });
+
+  it('stores feedbackCorrect=true on correct answer', () => {
+    const s = engineSubmitAnswer(active, true, 'C');
+    assert.equal(s.feedbackCorrect, true);
+    assert.equal(s.feedbackDisplayAnswer, 'C');
+  });
+});
+
+describe('engineNextQuestion clears feedback fields', () => {
+  const active = engineNextQuestion(
+    engineStart(initialEngineState()),
+    'item-1',
+    1000,
+  );
+  const answered = engineSubmitAnswer(active, false, 'C');
+
+  it('clears feedback fields on next question', () => {
+    const next = engineNextQuestion(answered, 'item-2', 2000);
+    assert.equal(next.feedbackCorrect, null);
+    assert.equal(next.feedbackDisplayAnswer, null);
+  });
 });
 
 describe('engineStop', () => {

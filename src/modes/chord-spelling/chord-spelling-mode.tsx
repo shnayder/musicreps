@@ -34,7 +34,7 @@ import {
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
 import { StatsGrid, StatsLegend, StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import { FeedbackBanner, FeedbackDisplay } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -153,7 +153,7 @@ export function ChordSpellingMode(
       seqStateRef.current = result.state;
       setSeqState(result.state);
     } else {
-      // Sequential complete — submit final result to engine
+      // Sequential complete — submit final result to engine.
       engineSubmitRef.current(result.correct ? '__correct__' : '__wrong__');
     }
   }, []);
@@ -339,7 +339,13 @@ export function ChordSpellingMode(
           : (
             <>
               <ChordSlots state={seqState} />
-              <NoteButtons onAnswer={handleNoteAnswer} />
+              <FeedbackBanner
+                correct={engine.state.feedbackCorrect}
+                answer={engine.state.feedbackDisplayAnswer}
+              />
+              <NoteButtons
+                onAnswer={handleNoteAnswer}
+              />
               <FeedbackDisplay
                 text={engine.state.feedbackText}
                 className={engine.state.feedbackClass}

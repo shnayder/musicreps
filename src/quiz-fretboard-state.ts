@@ -61,7 +61,10 @@ export function createFretboardHelpers(musicData: {
   ): { correct: boolean; correctAnswer: string } {
     const note = musicData.notes.find((n) => n.name === currentNote);
     const correct = !!(note && musicData.noteMatchesInput(note, input));
-    return { correct, correctAnswer: displayNote(currentNote) };
+    return {
+      correct,
+      correctAnswer: displayNote(currentNote),
+    };
   }
 
   /** Test whether a note passes the filter ('natural', 'sharps-flats', or 'all'). */

@@ -62,7 +62,10 @@ export function checkAnswer(
 ): { correct: boolean; correctAnswer: string } {
   if (q.dir === 'fwd') {
     const correct = parseInt(input, 10) === q.num;
-    return { correct, correctAnswer: String(q.num) };
+    return {
+      correct,
+      correctAnswer: String(q.num),
+    };
   }
   const interval = INTERVALS.find((i) => i.abbrev === q.abbrev)!;
   const correct = intervalMatchesInput(interval, input);
