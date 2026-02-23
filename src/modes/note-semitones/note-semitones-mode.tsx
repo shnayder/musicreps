@@ -4,7 +4,11 @@
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
 import { displayNote } from '../../music-data.ts';
-import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
+import {
+  createAdaptiveKeyHandler,
+  noteNarrowingSet,
+  numberNarrowingSet,
+} from '../../quiz-engine.ts';
 import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
@@ -30,7 +34,11 @@ import {
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
 import { StatsLegend, StatsTable, StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackBanner, FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import {
+  FeedbackBanner,
+  FeedbackDisplay,
+  KeyboardHint,
+} from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -63,17 +71,20 @@ export function NoteSemitonesMode(
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const currentQRef = useRef<Question | null>(null);
 
-  // --- Key handler state ---
+  // --- Key handler state + pending state for narrowing ---
   const pendingDigitRef = useRef<number | null>(null);
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pendingDigit, setPendingDigit] = useState<number | null>(null);
 
   // Note handler for reverse direction (uses ref-indirect for submitAnswer)
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
+  const [pendingNote, setPendingNote] = useState<string | null>(null);
   const noteHandler = useMemo(
     () =>
       createAdaptiveKeyHandler(
         (note: string) => engineSubmitRef.current(note),
         () => true,
+        setPendingNote,
       ),
     [],
   );
@@ -101,6 +112,17 @@ export function NoteSemitonesMode(
       if (dir === 'rev') {
         return noteHandler.handleKey(e);
       }
+      // Forward: Enter commits pending digit immediately
+      if (e.key === 'Enter' && pendingDigitRef.current !== null) {
+        e.preventDefault();
+        clearTimeout(pendingTimeoutRef.current!);
+        const d = pendingDigitRef.current;
+        pendingDigitRef.current = null;
+        setPendingDigit(null);
+        pendingTimeoutRef.current = null;
+        ctx.submitAnswer(String(d));
+        return true;
+      }
       // Forward: digit buffering for numbers 0-11
       if (e.key >= '0' && e.key <= '9') {
         e.preventDefault();
@@ -109,6 +131,7 @@ export function NoteSemitonesMode(
           const num = pendingDigitRef.current * 10 + d;
           clearTimeout(pendingTimeoutRef.current!);
           pendingDigitRef.current = null;
+          setPendingDigit(null);
           pendingTimeoutRef.current = null;
           if (num <= 11) ctx.submitAnswer(String(num));
           return true;
@@ -117,10 +140,12 @@ export function NoteSemitonesMode(
           ctx.submitAnswer(String(d));
         } else {
           pendingDigitRef.current = d;
+          setPendingDigit(d);
           pendingTimeoutRef.current = setTimeout(() => {
             if (pendingDigitRef.current !== null) {
               ctx.submitAnswer(String(pendingDigitRef.current));
               pendingDigitRef.current = null;
+              setPendingDigit(null);
               pendingTimeoutRef.current = null;
             }
           }, 400);
@@ -134,12 +159,14 @@ export function NoteSemitonesMode(
       noteHandler.reset();
       if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
       pendingDigitRef.current = null;
+      setPendingDigit(null);
     },
 
     onStop: () => {
       noteHandler.reset();
       if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
       pendingDigitRef.current = null;
+      setPendingDigit(null);
     },
 
     getPracticingLabel: () => 'all items',
@@ -147,6 +174,16 @@ export function NoteSemitonesMode(
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
+
+  // --- Narrowing (keyboard match highlighting) ---
+  const noteNarrowing = useMemo(
+    () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+    [pendingNote, engine.state.answered],
+  );
+  const numNarrowing = useMemo(
+    () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 11),
+    [pendingDigit, engine.state.answered],
+  );
 
   // --- Calibration state ---
   const [calibrating, setCalibrating] = useState(false);
@@ -294,12 +331,17 @@ export function NoteSemitonesMode(
               <NoteButtons
                 hidden={dir === 'fwd'}
                 onAnswer={handleNoteAnswer}
+                narrowing={dir === 'rev' ? noteNarrowing : undefined}
               />
               <NumberButtons
                 start={0}
                 end={11}
                 hidden={dir === 'rev'}
                 onAnswer={handleNumAnswer}
+                narrowing={dir === 'fwd' ? numNarrowing : undefined}
+              />
+              <KeyboardHint
+                type={dir === 'fwd' ? 'number-0-11' : 'note'}
               />
               <FeedbackDisplay
                 text={engine.state.feedbackText}

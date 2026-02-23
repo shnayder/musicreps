@@ -4,7 +4,10 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
-import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
+import {
+  createAdaptiveKeyHandler,
+  noteNarrowingSet,
+} from '../../quiz-engine.ts';
 import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
@@ -32,7 +35,11 @@ import {
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
 import { StatsGrid, StatsLegend, StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackBanner, FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import {
+  FeedbackBanner,
+  FeedbackDisplay,
+  KeyboardHint,
+} from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -95,13 +102,15 @@ export function IntervalMathMode(
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const currentQRef = useRef<Question | null>(null);
 
-  // --- Key handler ---
+  // --- Key handler + pending state for narrowing ---
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
+  const [pendingNote, setPendingNote] = useState<string | null>(null);
   const noteHandler = useMemo(
     () =>
       createAdaptiveKeyHandler(
         (note: string) => engineSubmitRef.current(note),
         () => true,
+        setPendingNote,
       ),
     [],
   );
@@ -135,6 +144,12 @@ export function IntervalMathMode(
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
+
+  // --- Narrowing (keyboard match highlighting) ---
+  const noteNarrowing = useMemo(
+    () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+    [pendingNote, engine.state.answered],
+  );
 
   // --- Calibration state ---
   const [calibrating, setCalibrating] = useState(false);
@@ -287,7 +302,9 @@ export function IntervalMathMode(
               <NoteButtons
                 onAnswer={handleNoteAnswer}
                 useFlats={useFlats}
+                narrowing={noteNarrowing}
               />
+              <KeyboardHint type='note' />
               <FeedbackDisplay
                 text={engine.state.feedbackText}
                 className={engine.state.feedbackClass}

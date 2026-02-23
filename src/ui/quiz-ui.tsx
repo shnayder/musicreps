@@ -50,6 +50,30 @@ export function FeedbackBanner(
 }
 
 // ---------------------------------------------------------------------------
+// KeyboardHint — discoverable keyboard shortcut help, hidden on touch devices
+// ---------------------------------------------------------------------------
+
+/** Answer types that have keyboard support. */
+export type KeyboardHintType =
+  | 'note'
+  | 'number-0-11'
+  | 'number-1-12'
+  | null;
+
+const HINT_TEXT: Record<string, string> = {
+  'note': 'Keyboard: C D E \u2026 or C# Db \u2014 Enter to confirm',
+  'number-0-11': 'Keyboard: 0\u20139, 10, 11 \u2014 Enter to confirm',
+  'number-1-12': 'Keyboard: 1\u20139, 10, 11, 12 \u2014 Enter to confirm',
+};
+
+export function KeyboardHint(
+  { type }: { type: KeyboardHintType },
+) {
+  if (!type) return null;
+  return <div class='keyboard-hint'>{HINT_TEXT[type]}</div>;
+}
+
+// ---------------------------------------------------------------------------
 // CountdownBar — round timer countdown
 // ---------------------------------------------------------------------------
 

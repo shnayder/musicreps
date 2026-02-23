@@ -1357,6 +1357,31 @@ button {
   font-size: var(--text-base);
   margin-top: var(--space-5);
 }
+
+/* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
+.keyboard-hint {
+  display: none;
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+  text-align: center;
+  margin-top: var(--space-3);
+}
+@media (pointer: fine) {
+  .keyboard-hint {
+    display: block;
+  }
+}
+
+/* --- Keyboard narrowing (progressive button highlighting) --- */
+.kb-match {
+  border-color: var(--color-brand) !important;
+  background: var(--color-brand-bg) !important;
+  box-shadow: 0 0 0 1px var(--color-brand);
+}
+.kb-dimmed {
+  opacity: 0.4;
+}
+
 .stats {
   margin-top: var(--space-5);
   font-size: var(--text-sm);
