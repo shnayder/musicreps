@@ -31,7 +31,7 @@ import {
   RoundComplete,
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
-import { StatsGrid, StatsToggle } from '../../ui/stats.tsx';
+import { StatsGrid, StatsLegend, StatsToggle } from '../../ui/stats.tsx';
 import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
@@ -237,6 +237,10 @@ export function SemitoneMathMode(
                 selector={statsSel}
                 colLabels={GRID_COL_LABELS}
                 getItemId={getGridItemId}
+                statsMode={statsMode}
+                baseline={learner.motorBaseline ?? undefined}
+              />
+              <StatsLegend
                 statsMode={statsMode}
                 baseline={learner.motorBaseline ?? undefined}
               />

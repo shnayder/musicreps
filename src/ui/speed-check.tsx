@@ -57,14 +57,18 @@ export function BaselineInfo(
   },
 ) {
   const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
-  const tag = baseline
-    ? null
-    : <span class='baseline-default-tag'>(default)</span>;
+  const tag = baseline ? null : (
+    <>
+      {' '}
+      <span class='baseline-default-tag'>(default)</span>
+    </>
+  );
   const btnLabel = baseline ? 'Rerun speed check' : 'Run speed check';
   return (
     <div class='baseline-info'>
       <div class='baseline-text'>
-        Your tap speed baseline is {value} {tag}. Speed ratings scale from this.
+        Your tap speed baseline is {value}
+        {tag}. Speed and recall estimates are based on this.
       </div>
       <button
         type='button'
