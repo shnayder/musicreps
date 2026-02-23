@@ -26,7 +26,7 @@ import {
   RoundComplete,
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
-import { StatsTable, StatsToggle } from '../../ui/stats.tsx';
+import { StatsLegend, StatsTable, StatsToggle } from '../../ui/stats.tsx';
 import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
@@ -226,6 +226,10 @@ export function IntervalSemitonesMode(
                 rows={getStatsRows()}
                 fwdHeader='I→#'
                 revHeader='#→I'
+                statsMode={statsMode}
+                baseline={learner.motorBaseline ?? undefined}
+              />
+              <StatsLegend
                 statsMode={statsMode}
                 baseline={learner.motorBaseline ?? undefined}
               />

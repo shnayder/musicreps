@@ -143,23 +143,29 @@ function legendItem(color: string, label: string): string {
 export function buildStatsLegend(statsMode: string, baseline?: number): string {
   const c = heatmapColors();
   let html = '<div class="heatmap-legend active">';
-  html += legendItem(c.none, 'No data');
 
   if (statsMode === 'retention') {
-    for (let i = c.level.length - 1; i >= 0; i--) {
-      html += legendItem(c.level[i], RETENTION_LABELS[i]);
-    }
+    // 3-column grid: (Automatic, Getting there, Needs work) then
+    //                (Solid,     Fading,         No data)
+    html += legendItem(c.level[4], RETENTION_LABELS[4]);
+    html += legendItem(c.level[2], RETENTION_LABELS[2]);
+    html += legendItem(c.level[0], RETENTION_LABELS[0]);
+    html += legendItem(c.level[3], RETENTION_LABELS[3]);
+    html += legendItem(c.level[1], RETENTION_LABELS[1]);
+    html += legendItem(c.none, 'No data');
   } else {
     const b = baseline || 1000;
     const t1 = formatThreshold(b * 1.5);
     const t2 = formatThreshold(b * 3);
     const t3 = formatThreshold(b * 4.5);
     const t4 = formatThreshold(b * 6);
+    // 3-column grid: (fastest, mid, slowest) then (fast, slow, no data)
     html += legendItem(c.level[4], '&lt; ' + t1);
-    html += legendItem(c.level[3], t1 + '\u2013' + t2);
     html += legendItem(c.level[2], t2 + '\u2013' + t3);
-    html += legendItem(c.level[1], t3 + '\u2013' + t4);
     html += legendItem(c.level[0], '&ge; ' + t4);
+    html += legendItem(c.level[3], t1 + '\u2013' + t2);
+    html += legendItem(c.level[1], t3 + '\u2013' + t4);
+    html += legendItem(c.none, 'No data');
   }
 
   html += '</div>';
