@@ -1783,7 +1783,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">v8.20</span>
+      <span class="version">v8.21</span>
     </div>
   </div>
 
@@ -4397,12 +4397,22 @@ button {
 
   // src/quiz-engine.ts
   var NOTE_NAME_SET = new Set(NOTE_NAMES);
+  var FLAT_TO_BUTTON = {};
+  for (const note of NOTES) {
+    for (const a3 of note.accepts) {
+      if (a3.endsWith("b") && a3.length === 2) {
+        FLAT_TO_BUTTON[a3[0].toUpperCase() + "b"] = note.name;
+      }
+    }
+  }
   function noteNarrowingSet(pendingNote) {
     if (!pendingNote) return null;
     const matches = /* @__PURE__ */ new Set();
     matches.add(pendingNote);
     const sharp = pendingNote + "#";
     if (NOTE_NAME_SET.has(sharp)) matches.add(sharp);
+    const flatButton = FLAT_TO_BUTTON[pendingNote + "b"];
+    if (flatButton) matches.add(flatButton);
     return matches;
   }
   function numberNarrowingSet(pendingDigit, end, start = 0) {
@@ -6440,8 +6450,8 @@ button {
       hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
     ] });
   }
-  var NOTE_HINT_LETTER = "Keyboard: C D E \u2026 or C# Db \u2014 Enter to confirm";
-  var NOTE_HINT_SOLFEGE = "Keyboard: do re mi \u2026 or do# reb \u2014 Enter to confirm";
+  var NOTE_HINT_LETTER = "Keyboard: C D E, c d e, C#, fs (=F#), Db, bb (=Bb) \u2014 Enter to confirm";
+  var NOTE_HINT_SOLFEGE = "Keyboard: do re mi, Do Re Mi, do#, reb \u2014 Enter to confirm";
   var HINT_TEXT = {
     "number-0-11": "Keyboard: 0\u20139, 10, 11 \u2014 Enter to confirm",
     "number-1-12": "Keyboard: 1\u20139, 10, 11, 12 \u2014 Enter to confirm"

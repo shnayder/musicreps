@@ -9,8 +9,25 @@ import type { NoteKeyHandler } from './types.ts';
 const NOTE_NAME_SET = new Set(NOTE_NAMES);
 
 /**
+ * Map from flat spelling (e.g. "Db") to its button name (e.g. "C#").
+ * Built from NOTES.accepts so we highlight the enharmonic button when the
+ * user might follow a letter with 'b'.
+ */
+const FLAT_TO_BUTTON: Record<string, string> = {};
+for (const note of NOTES) {
+  for (const a of note.accepts) {
+    if (a.endsWith('b') && a.length === 2) {
+      // 'db' → 'C#' — capitalize the flat spelling for lookup
+      FLAT_TO_BUTTON[a[0].toUpperCase() + 'b'] = note.name;
+    }
+  }
+}
+
+/**
  * Compute the set of button note names matching a pending keyboard note.
- * Returns the natural note and its sharp if one exists in the button grid.
+ * Includes the natural note, its sharp (if present), and the enharmonic
+ * button reachable via flat spelling (e.g. pending "A" → {A, A#, G#}
+ * because the user might type Ab which maps to the G# button).
  * Returns null when there is no pending note.
  */
 export function noteNarrowingSet(
@@ -21,6 +38,8 @@ export function noteNarrowingSet(
   matches.add(pendingNote);
   const sharp = pendingNote + '#';
   if (NOTE_NAME_SET.has(sharp)) matches.add(sharp);
+  const flatButton = FLAT_TO_BUTTON[pendingNote + 'b'];
+  if (flatButton) matches.add(flatButton);
   return matches;
 }
 

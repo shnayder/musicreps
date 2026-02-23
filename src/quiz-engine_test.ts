@@ -488,34 +488,56 @@ describe('noteNarrowingSet', () => {
     assert.equal(noteNarrowingSet(null), null);
   });
 
-  it('returns note + sharp for notes with adjacent sharp', () => {
-    const result = noteNarrowingSet('C');
-    assert.ok(result);
+  it('C includes C and C# but no flat enharmonic (Cb not accepted)', () => {
+    const result = noteNarrowingSet('C')!;
     assert.ok(result.has('C'));
     assert.ok(result.has('C#'));
     assert.equal(result.size, 2);
   });
 
-  it('returns only natural for E (no E# in button grid)', () => {
-    const result = noteNarrowingSet('E');
-    assert.ok(result);
+  it('F includes F and F# but no flat enharmonic (Fb not accepted)', () => {
+    const result = noteNarrowingSet('F')!;
+    assert.ok(result.has('F'));
+    assert.ok(result.has('F#'));
+    assert.equal(result.size, 2);
+  });
+
+  it('D includes D, D#, and C# (via Db)', () => {
+    const result = noteNarrowingSet('D')!;
+    assert.ok(result.has('D'));
+    assert.ok(result.has('D#'));
+    assert.ok(result.has('C#'), 'Db maps to C# button');
+    assert.equal(result.size, 3);
+  });
+
+  it('A includes A, A#, and G# (via Ab)', () => {
+    const result = noteNarrowingSet('A')!;
+    assert.ok(result.has('A'));
+    assert.ok(result.has('A#'));
+    assert.ok(result.has('G#'), 'Ab maps to G# button');
+    assert.equal(result.size, 3);
+  });
+
+  it('G includes G, G#, and F# (via Gb)', () => {
+    const result = noteNarrowingSet('G')!;
+    assert.ok(result.has('G'));
+    assert.ok(result.has('G#'));
+    assert.ok(result.has('F#'), 'Gb maps to F# button');
+    assert.equal(result.size, 3);
+  });
+
+  it('E includes E and D# (via Eb) but no E#', () => {
+    const result = noteNarrowingSet('E')!;
     assert.ok(result.has('E'));
-    assert.equal(result.size, 1);
+    assert.ok(result.has('D#'), 'Eb maps to D# button');
+    assert.equal(result.size, 2);
   });
 
-  it('returns only natural for B (no B# in button grid)', () => {
-    const result = noteNarrowingSet('B');
-    assert.ok(result);
+  it('B includes B and A# (via Bb) but no B#', () => {
+    const result = noteNarrowingSet('B')!;
     assert.ok(result.has('B'));
-    assert.equal(result.size, 1);
-  });
-
-  it('returns note + sharp for all applicable notes', () => {
-    for (const note of ['C', 'D', 'F', 'G', 'A']) {
-      const result = noteNarrowingSet(note)!;
-      assert.equal(result.size, 2, `${note} should have 2 matches`);
-      assert.ok(result.has(note + '#'));
-    }
+    assert.ok(result.has('A#'), 'Bb maps to A# button');
+    assert.equal(result.size, 2);
   });
 });
 
