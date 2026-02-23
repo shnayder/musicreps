@@ -195,6 +195,43 @@ describe('engineSubmitAnswer', () => {
     const incorrect = engineSubmitAnswer(q2, false, 'D');
     assert.equal(incorrect.roundCorrect, 1); // still 1
   });
+
+  it('stores feedback button values when provided', () => {
+    const s = engineSubmitAnswer(active, false, 'C', 'D', 'C');
+    assert.equal(s.feedbackCorrect, false);
+    assert.equal(s.feedbackUserValue, 'D');
+    assert.equal(s.feedbackCorrectValue, 'C');
+  });
+
+  it('stores feedbackCorrect=true on correct answer', () => {
+    const s = engineSubmitAnswer(active, true, 'C', 'C', 'C');
+    assert.equal(s.feedbackCorrect, true);
+    assert.equal(s.feedbackUserValue, 'C');
+    assert.equal(s.feedbackCorrectValue, 'C');
+  });
+
+  it('defaults button values to null when omitted', () => {
+    const s = engineSubmitAnswer(active, true, 'C');
+    assert.equal(s.feedbackCorrect, true);
+    assert.equal(s.feedbackUserValue, null);
+    assert.equal(s.feedbackCorrectValue, null);
+  });
+});
+
+describe('engineNextQuestion clears feedback button values', () => {
+  const active = engineNextQuestion(
+    engineStart(initialEngineState()),
+    'item-1',
+    1000,
+  );
+  const answered = engineSubmitAnswer(active, false, 'C', 'D', 'C');
+
+  it('clears feedback fields on next question', () => {
+    const next = engineNextQuestion(answered, 'item-2', 2000);
+    assert.equal(next.feedbackCorrect, null);
+    assert.equal(next.feedbackUserValue, null);
+    assert.equal(next.feedbackCorrectValue, null);
+  });
 });
 
 describe('engineStop', () => {

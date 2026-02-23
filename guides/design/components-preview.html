@@ -1143,6 +1143,16 @@ button {
   border-color: var(--color-text-muted);
   transform: none;
 }
+.note-btn.btn-correct {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success-text);
+}
+.note-btn.btn-wrong {
+  background: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error-text);
+}
 .note-btn.hidden {
   display: none;
 }
@@ -1214,6 +1224,16 @@ button {
   background: var(--color-bg);
   border-color: var(--color-text-muted);
   transform: none;
+}
+.answer-btn.btn-correct {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success-text);
+}
+.answer-btn.btn-wrong {
+  background: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error-text);
 }
 .answer-buttons-intervals {
   grid-template-columns: repeat(3, 1fr);
@@ -1320,6 +1340,19 @@ button {
 .calibration-thresholds td:nth-child(2) {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Screen-reader-only utility --- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* --- Feedback --- */
@@ -2339,7 +2372,14 @@ button {
   }
 
   // src/ui/buttons.tsx
-  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive }) {
+  function feedbackClass(value, fb) {
+    if (fb.correctValue === value) return " btn-correct";
+    if (fb.wrongValue !== void 0 && fb.wrongValue === value) {
+      return " btn-wrong";
+    }
+    return "";
+  }
+  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive, correctValue, wrongValue }) {
     const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: NOTE_NAMES.map((n2) => {
       let label;
@@ -2354,7 +2394,7 @@ button {
         {
           type: "button",
           tabIndex: 0,
-          class: "answer-btn answer-btn-note",
+          class: "answer-btn answer-btn-note" + feedbackClass(n2, { correctValue, wrongValue }),
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: label
@@ -2363,14 +2403,14 @@ button {
       );
     }) });
   }
-  function PianoNoteButtons({ onAnswer, hideAccidentals }) {
+  function PianoNoteButtons({ onAnswer, hideAccidentals, correctValue, wrongValue }) {
     return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
       /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
           tabIndex: 0,
-          class: "note-btn accidental" + (hideAccidentals ? " hidden" : ""),
+          class: "note-btn accidental" + (hideAccidentals ? " hidden" : "") + feedbackClass(n2, { correctValue, wrongValue }),
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: displayNote(n2)
@@ -2382,7 +2422,7 @@ button {
         {
           type: "button",
           tabIndex: 0,
-          class: "note-btn",
+          class: "note-btn" + feedbackClass(n2, { correctValue, wrongValue }),
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: displayNote(n2)
@@ -2391,7 +2431,7 @@ button {
       )) })
     ] });
   }
-  function NumberButtons({ start, end, onAnswer, hidden }) {
+  function NumberButtons({ start, end, onAnswer, hidden, correctValue, wrongValue }) {
     const nums = [];
     for (let i3 = start; i3 <= end; i3++) nums.push(i3);
     const cls = "answer-buttons answer-buttons-numbers" + (hidden ? " answer-group-hidden" : "");
@@ -2400,7 +2440,7 @@ button {
       {
         type: "button",
         tabIndex: 0,
-        class: "answer-btn answer-btn-num",
+        class: "answer-btn answer-btn-num" + feedbackClass(String(i3), { correctValue, wrongValue }),
         "data-num": String(i3),
         onClick: onAnswer ? () => onAnswer(i3) : void 0,
         children: i3
@@ -2408,14 +2448,14 @@ button {
       i3
     )) });
   }
-  function IntervalButtons({ onAnswer, hidden }) {
+  function IntervalButtons({ onAnswer, hidden, correctValue, wrongValue }) {
     const cls = "answer-buttons answer-buttons-intervals" + (hidden ? " answer-group-hidden" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: INTERVAL_ABBREVS.map((iv) => /* @__PURE__ */ u3(
       "button",
       {
         type: "button",
         tabIndex: 0,
-        class: "answer-btn answer-btn-interval",
+        class: "answer-btn answer-btn-interval" + feedbackClass(iv, { correctValue, wrongValue }),
         "data-interval": iv,
         onClick: onAnswer ? () => onAnswer(iv) : void 0,
         children: iv
@@ -2423,14 +2463,14 @@ button {
       iv
     )) });
   }
-  function KeysigButtons({ onAnswer, hidden }) {
+  function KeysigButtons({ onAnswer, hidden, correctValue, wrongValue }) {
     const cls = "answer-buttons answer-buttons-keysig" + (hidden ? " answer-group-hidden" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: KEYSIG_LABELS.map((s3) => /* @__PURE__ */ u3(
       "button",
       {
         type: "button",
         tabIndex: 0,
-        class: "answer-btn answer-btn-keysig",
+        class: "answer-btn answer-btn-keysig" + feedbackClass(s3, { correctValue, wrongValue }),
         "data-sig": s3,
         onClick: onAnswer ? () => onAnswer(s3) : void 0,
         children: s3
@@ -2438,14 +2478,14 @@ button {
       s3
     )) });
   }
-  function DegreeButtons({ onAnswer, hidden }) {
+  function DegreeButtons({ onAnswer, hidden, correctValue, wrongValue }) {
     const cls = "answer-buttons answer-buttons-degrees" + (hidden ? " answer-group-hidden" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: DEGREE_LABELS.map(([val, label]) => /* @__PURE__ */ u3(
       "button",
       {
         type: "button",
         tabIndex: 0,
-        class: "answer-btn answer-btn-degree",
+        class: "answer-btn answer-btn-degree" + feedbackClass(val, { correctValue, wrongValue }),
         "data-degree": val,
         onClick: onAnswer ? () => onAnswer(val) : void 0,
         children: label
@@ -2453,14 +2493,14 @@ button {
       val
     )) });
   }
-  function NumeralButtons({ onAnswer, hidden }) {
+  function NumeralButtons({ onAnswer, hidden, correctValue, wrongValue }) {
     const cls = "answer-buttons answer-buttons-numerals" + (hidden ? " answer-group-hidden" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: ROMAN_NUMERALS.map((n2) => /* @__PURE__ */ u3(
       "button",
       {
         type: "button",
         tabIndex: 0,
-        class: "answer-btn answer-btn-numeral",
+        class: "answer-btn answer-btn-numeral" + feedbackClass(n2, { correctValue, wrongValue }),
         "data-numeral": n2,
         onClick: onAnswer ? () => onAnswer(n2) : void 0,
         children: n2
@@ -2817,7 +2857,7 @@ button {
   }
   function FeedbackDisplay({ text, className, time, hint }) {
     return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: className, children: text }),
+      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
       hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
     ] });

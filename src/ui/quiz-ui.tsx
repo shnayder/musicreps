@@ -23,7 +23,7 @@ export function FeedbackDisplay(
 ) {
   return (
     <>
-      <div class={className}>{text}</div>
+      <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
       {time ? <div class='time-display'>{time}</div> : null}
       {hint ? <div class='hint'>{hint}</div> : null}
     </>

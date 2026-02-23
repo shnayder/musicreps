@@ -290,12 +290,26 @@ export function NoteSemitonesMode(
               <NoteButtons
                 hidden={dir === 'fwd'}
                 onAnswer={handleNoteAnswer}
+                correctValue={engine.state.answered
+                  ? engine.state.feedbackCorrectValue ?? undefined
+                  : undefined}
+                wrongValue={engine.state.answered &&
+                    engine.state.feedbackCorrect === false
+                  ? engine.state.feedbackUserValue ?? undefined
+                  : undefined}
               />
               <NumberButtons
                 start={0}
                 end={11}
                 hidden={dir === 'rev'}
                 onAnswer={handleNumAnswer}
+                correctValue={engine.state.answered
+                  ? engine.state.feedbackCorrectValue ?? undefined
+                  : undefined}
+                wrongValue={engine.state.answered &&
+                    engine.state.feedbackCorrect === false
+                  ? engine.state.feedbackUserValue ?? undefined
+                  : undefined}
               />
               <FeedbackDisplay
                 text={engine.state.feedbackText}

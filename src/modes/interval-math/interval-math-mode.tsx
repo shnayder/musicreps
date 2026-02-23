@@ -280,7 +280,17 @@ export function IntervalMathMode(
           )
           : (
             <>
-              <NoteButtons onAnswer={handleNoteAnswer} useFlats={useFlats} />
+              <NoteButtons
+                onAnswer={handleNoteAnswer}
+                useFlats={useFlats}
+                correctValue={engine.state.answered
+                  ? engine.state.feedbackCorrectValue ?? undefined
+                  : undefined}
+                wrongValue={engine.state.answered &&
+                    engine.state.feedbackCorrect === false
+                  ? engine.state.feedbackUserValue ?? undefined
+                  : undefined}
+              />
               <FeedbackDisplay
                 text={engine.state.feedbackText}
                 className={engine.state.feedbackClass}

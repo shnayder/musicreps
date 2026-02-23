@@ -115,13 +115,14 @@ export function getQuestion(itemId: string): Question {
 export function checkAnswer(
   q: Question,
   input: string,
-): { correct: boolean; correctAnswer: string } {
+): { correct: boolean; correctAnswer: string; correctValue: string } {
   const correct = noteMatchesInput(q.answer, input);
   return {
     correct,
     correctAnswer: displayNote(
       pickAccidentalName(q.answer.displayName, q.useFlats),
     ),
+    correctValue: q.answer.name,
   };
 }
 

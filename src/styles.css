@@ -1128,6 +1128,16 @@ button {
   border-color: var(--color-text-muted);
   transform: none;
 }
+.note-btn.btn-correct {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success-text);
+}
+.note-btn.btn-wrong {
+  background: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error-text);
+}
 .note-btn.hidden {
   display: none;
 }
@@ -1199,6 +1209,16 @@ button {
   background: var(--color-bg);
   border-color: var(--color-text-muted);
   transform: none;
+}
+.answer-btn.btn-correct {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success-text);
+}
+.answer-btn.btn-wrong {
+  background: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error-text);
 }
 .answer-buttons-intervals {
   grid-template-columns: repeat(3, 1fr);
@@ -1305,6 +1325,19 @@ button {
 .calibration-thresholds td:nth-child(2) {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Screen-reader-only utility --- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* --- Feedback --- */

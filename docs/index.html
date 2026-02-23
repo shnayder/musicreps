@@ -1145,6 +1145,16 @@ button {
   border-color: var(--color-text-muted);
   transform: none;
 }
+.note-btn.btn-correct {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success-text);
+}
+.note-btn.btn-wrong {
+  background: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error-text);
+}
 .note-btn.hidden {
   display: none;
 }
@@ -1216,6 +1226,16 @@ button {
   background: var(--color-bg);
   border-color: var(--color-text-muted);
   transform: none;
+}
+.answer-btn.btn-correct {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success-text);
+}
+.answer-btn.btn-wrong {
+  background: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error-text);
 }
 .answer-buttons-intervals {
   grid-template-columns: repeat(3, 1fr);
@@ -1322,6 +1342,19 @@ button {
 .calibration-thresholds td:nth-child(2) {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Screen-reader-only utility --- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* --- Feedback --- */
@@ -1758,7 +1791,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">v8.18</span>
+      <span class="version">v8.19</span>
     </div>
   </div>
 
@@ -4142,6 +4175,10 @@ button {
   function spelledNoteMatchesSemitone(expectedName, input) {
     return spelledNoteSemitone(expectedName) === spelledNoteSemitone(input);
   }
+  function noteToCanonical(spelledName) {
+    const semitone = spelledNoteSemitone(spelledName);
+    return NOTE_NAMES[semitone];
+  }
   var GUITAR = {
     id: "fretboard",
     // mode ID (preserved for backward compat)
@@ -5256,6 +5293,9 @@ button {
       // Feedback
       feedbackText: "",
       feedbackClass: "feedback",
+      feedbackCorrect: null,
+      feedbackUserValue: null,
+      feedbackCorrectValue: null,
       timeDisplayText: "",
       hintText: "",
       // Mastery message
@@ -5292,18 +5332,24 @@ button {
       questionCount: state.questionCount + 1,
       feedbackText: "",
       feedbackClass: "feedback",
+      feedbackCorrect: null,
+      feedbackUserValue: null,
+      feedbackCorrectValue: null,
       timeDisplayText: "",
       hintText: "",
       answersEnabled: true
     };
   }
-  function engineSubmitAnswer(state, isCorrect, correctAnswer) {
+  function engineSubmitAnswer(state, isCorrect, correctAnswer, userValue, correctValue) {
     return {
       ...state,
       answered: true,
       answersEnabled: false,
       feedbackText: isCorrect ? "Correct!" : "Incorrect \u2014 " + correctAnswer,
       feedbackClass: isCorrect ? "feedback correct" : "feedback incorrect",
+      feedbackCorrect: isCorrect,
+      feedbackUserValue: userValue ?? null,
+      feedbackCorrectValue: correctValue ?? null,
       timeDisplayText: "",
       hintText: "Tap anywhere or press Space for next",
       roundAnswered: state.roundAnswered + 1,
@@ -5325,6 +5371,9 @@ button {
       currentItemId: null,
       feedbackText: "",
       feedbackClass: "feedback",
+      feedbackCorrect: null,
+      feedbackUserValue: null,
+      feedbackCorrectValue: null,
       hintText: ""
     };
   }
@@ -5388,6 +5437,10 @@ button {
   var ROUND_DURATION_MS = 6e4;
   var AUTO_ADVANCE_MS = 1e3;
   var TIMER_TICK_MS = 200;
+  function tryCanonicalizeNote(input) {
+    const canon = noteToCanonical(input);
+    return canon ?? input;
+  }
   function formatRoundTime(ms) {
     const totalSec = Math.max(0, Math.ceil(ms / 1e3));
     const min = Math.floor(totalSec / 60);
@@ -5506,7 +5559,13 @@ button {
         result.correct
       );
       setState((prev) => {
-        let next = engineSubmitAnswer(prev, result.correct, result.correctAnswer);
+        let next = engineSubmitAnswer(
+          prev,
+          result.correct,
+          result.correctAnswer,
+          tryCanonicalizeNote(input),
+          result.correctValue
+        );
         next = {
           ...next,
           roundResponseTimes: [...next.roundResponseTimes, responseTime]
@@ -5732,7 +5791,14 @@ button {
   }
 
   // src/ui/buttons.tsx
-  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive }) {
+  function feedbackClass(value, fb) {
+    if (fb.correctValue === value) return " btn-correct";
+    if (fb.wrongValue !== void 0 && fb.wrongValue === value) {
+      return " btn-wrong";
+    }
+    return "";
+  }
+  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive, correctValue, wrongValue }) {
     const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: NOTE_NAMES.map((n2) => {
       let label;
@@ -5747,7 +5813,7 @@ button {
         {
           type: "button",
           tabIndex: 0,
-          class: "answer-btn answer-btn-note",
+          class: "answer-btn answer-btn-note" + feedbackClass(n2, { correctValue, wrongValue }),
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: label
@@ -5756,14 +5822,14 @@ button {
       );
     }) });
   }
-  function PianoNoteButtons({ onAnswer, hideAccidentals }) {
+  function PianoNoteButtons({ onAnswer, hideAccidentals, correctValue, wrongValue }) {
     return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
       /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
           tabIndex: 0,
-          class: "note-btn accidental" + (hideAccidentals ? " hidden" : ""),
+          class: "note-btn accidental" + (hideAccidentals ? " hidden" : "") + feedbackClass(n2, { correctValue, wrongValue }),
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: displayNote(n2)
@@ -5775,7 +5841,7 @@ button {
         {
           type: "button",
           tabIndex: 0,
-          class: "note-btn",
+          class: "note-btn" + feedbackClass(n2, { correctValue, wrongValue }),
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: displayNote(n2)
@@ -5784,7 +5850,7 @@ button {
       )) })
     ] });
   }
-  function NumberButtons({ start, end, onAnswer, hidden }) {
+  function NumberButtons({ start, end, onAnswer, hidden, correctValue, wrongValue }) {
     const nums = [];
     for (let i3 = start; i3 <= end; i3++) nums.push(i3);
     const cls = "answer-buttons answer-buttons-numbers" + (hidden ? " answer-group-hidden" : "");
@@ -5793,7 +5859,7 @@ button {
       {
         type: "button",
         tabIndex: 0,
-        class: "answer-btn answer-btn-num",
+        class: "answer-btn answer-btn-num" + feedbackClass(String(i3), { correctValue, wrongValue }),
         "data-num": String(i3),
         onClick: onAnswer ? () => onAnswer(i3) : void 0,
         children: i3
@@ -5801,14 +5867,14 @@ button {
       i3
     )) });
   }
-  function IntervalButtons({ onAnswer, hidden }) {
+  function IntervalButtons({ onAnswer, hidden, correctValue, wrongValue }) {
     const cls = "answer-buttons answer-buttons-intervals" + (hidden ? " answer-group-hidden" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: INTERVAL_ABBREVS.map((iv) => /* @__PURE__ */ u3(
       "button",
       {
         type: "button",
         tabIndex: 0,
-        class: "answer-btn answer-btn-interval",
+        class: "answer-btn answer-btn-interval" + feedbackClass(iv, { correctValue, wrongValue }),
         "data-interval": iv,
         onClick: onAnswer ? () => onAnswer(iv) : void 0,
         children: iv
@@ -5816,14 +5882,14 @@ button {
       iv
     )) });
   }
-  function KeysigButtons({ onAnswer, hidden }) {
+  function KeysigButtons({ onAnswer, hidden, correctValue, wrongValue }) {
     const cls = "answer-buttons answer-buttons-keysig" + (hidden ? " answer-group-hidden" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: KEYSIG_LABELS.map((s3) => /* @__PURE__ */ u3(
       "button",
       {
         type: "button",
         tabIndex: 0,
-        class: "answer-btn answer-btn-keysig",
+        class: "answer-btn answer-btn-keysig" + feedbackClass(s3, { correctValue, wrongValue }),
         "data-sig": s3,
         onClick: onAnswer ? () => onAnswer(s3) : void 0,
         children: s3
@@ -5831,14 +5897,14 @@ button {
       s3
     )) });
   }
-  function DegreeButtons({ onAnswer, hidden }) {
+  function DegreeButtons({ onAnswer, hidden, correctValue, wrongValue }) {
     const cls = "answer-buttons answer-buttons-degrees" + (hidden ? " answer-group-hidden" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: DEGREE_LABELS.map(([val, label]) => /* @__PURE__ */ u3(
       "button",
       {
         type: "button",
         tabIndex: 0,
-        class: "answer-btn answer-btn-degree",
+        class: "answer-btn answer-btn-degree" + feedbackClass(val, { correctValue, wrongValue }),
         "data-degree": val,
         onClick: onAnswer ? () => onAnswer(val) : void 0,
         children: label
@@ -5846,14 +5912,14 @@ button {
       val
     )) });
   }
-  function NumeralButtons({ onAnswer, hidden }) {
+  function NumeralButtons({ onAnswer, hidden, correctValue, wrongValue }) {
     const cls = "answer-buttons answer-buttons-numerals" + (hidden ? " answer-group-hidden" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: ROMAN_NUMERALS.map((n2) => /* @__PURE__ */ u3(
       "button",
       {
         type: "button",
         tabIndex: 0,
-        class: "answer-btn answer-btn-numeral",
+        class: "answer-btn answer-btn-numeral" + feedbackClass(n2, { correctValue, wrongValue }),
         "data-numeral": n2,
         onClick: onAnswer ? () => onAnswer(n2) : void 0,
         children: n2
@@ -6316,7 +6382,7 @@ button {
   // src/ui/quiz-ui.tsx
   function FeedbackDisplay({ text, className, time, hint }) {
     return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: className, children: text }),
+      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
       hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
     ] });
@@ -6566,11 +6632,19 @@ button {
   function checkAnswer(q3, input) {
     if (q3.dir === "fwd") {
       const correct2 = parseInt(input, 10) === q3.noteNum;
-      return { correct: correct2, correctAnswer: String(q3.noteNum) };
+      return {
+        correct: correct2,
+        correctAnswer: String(q3.noteNum),
+        correctValue: String(q3.noteNum)
+      };
     }
     const note = NOTES.find((n2) => n2.name === q3.noteName);
     const correct = noteMatchesInput(note, input);
-    return { correct, correctAnswer: displayNote(q3.accidentalChoice) };
+    return {
+      correct,
+      correctAnswer: displayNote(q3.accidentalChoice),
+      correctValue: q3.noteName
+    };
   }
   function getStatsRows() {
     return NOTES.map((note) => ({
@@ -6784,7 +6858,9 @@ button {
               NoteButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -6793,7 +6869,9 @@ button {
                 start: 0,
                 end: 11,
                 hidden: dir === "rev",
-                onAnswer: handleNumAnswer
+                onAnswer: handleNumAnswer,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -6839,11 +6917,15 @@ button {
   function checkAnswer2(q3, input) {
     if (q3.dir === "fwd") {
       const correct2 = parseInt(input, 10) === q3.num;
-      return { correct: correct2, correctAnswer: String(q3.num) };
+      return {
+        correct: correct2,
+        correctAnswer: String(q3.num),
+        correctValue: String(q3.num)
+      };
     }
     const interval = INTERVALS.find((i3) => i3.abbrev === q3.abbrev);
     const correct = intervalMatchesInput(interval, input);
-    return { correct, correctAnswer: q3.abbrev };
+    return { correct, correctAnswer: q3.abbrev, correctValue: q3.abbrev };
   }
   function getStatsRows2() {
     return INTERVALS.map((interval) => ({
@@ -7044,7 +7126,9 @@ button {
               IntervalButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleIntervalAnswer
+                onAnswer: handleIntervalAnswer,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -7053,7 +7137,9 @@ button {
                 start: 1,
                 end: 12,
                 hidden: dir === "rev",
-                onAnswer: handleNumAnswer
+                onAnswer: handleNumAnswer,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -7504,7 +7590,8 @@ button {
       correct,
       correctAnswer: displayNote(
         pickAccidentalName(q3.answer.displayName, q3.useFlats)
-      )
+      ),
+      correctValue: q3.answer.name
     };
   }
   var GRID_COL_LABELS = Array.from(
@@ -7706,7 +7793,15 @@ button {
               onCancel: () => setCalibrating(false)
             }
           ) : /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer, useFlats }),
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                onAnswer: handleNoteAnswer,
+                useFlats,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
+              }
+            ),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -7789,7 +7884,8 @@ button {
       correct,
       correctAnswer: displayNote(
         pickAccidentalName(q3.answer.displayName, q3.useFlats)
-      )
+      ),
+      correctValue: q3.answer.name
     };
   }
   var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
@@ -7988,7 +8084,15 @@ button {
               onCancel: () => setCalibrating(false)
             }
           ) : /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer, useFlats }),
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                onAnswer: handleNoteAnswer,
+                useFlats,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
+              }
+            ),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8051,10 +8155,18 @@ button {
     const key = MAJOR_KEYS.find((k3) => k3.root === q3.root);
     if (q3.dir === "fwd") {
       const expected = keySignatureLabel(key);
-      return { correct: input === expected, correctAnswer: expected };
+      return {
+        correct: input === expected,
+        correctAnswer: expected,
+        correctValue: expected
+      };
     }
     const correct = spelledNoteMatchesSemitone(q3.root, input);
-    return { correct, correctAnswer: displayNote(q3.root) };
+    return {
+      correct,
+      correctAnswer: displayNote(q3.root),
+      correctValue: noteToCanonical(q3.root)
+    };
   }
   function getStatsRows3() {
     return MAJOR_KEYS.map((key) => ({
@@ -8313,14 +8425,18 @@ button {
               KeysigButtons,
               {
                 hidden: dir === "rev",
-                onAnswer: handleSigAnswer
+                onAnswer: handleSigAnswer,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
               NoteButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -8391,12 +8507,17 @@ button {
   function checkAnswer6(q3, input) {
     if (q3.dir === "fwd") {
       const correct = spelledNoteMatchesSemitone(q3.noteName, input);
-      return { correct, correctAnswer: displayNote(q3.noteName) };
+      return {
+        correct,
+        correctAnswer: displayNote(q3.noteName),
+        correctValue: noteToCanonical(q3.noteName)
+      };
     }
     const expectedDegree = String(q3.degree);
     return {
       correct: input === expectedDegree,
-      correctAnswer: DEGREE_LABELS2[q3.degree - 1]
+      correctAnswer: DEGREE_LABELS2[q3.degree - 1],
+      correctValue: expectedDegree
     };
   }
   function getGridItemId3(keyRoot, colIdx) {
@@ -8611,14 +8732,18 @@ button {
               NoteButtons,
               {
                 hidden: dir === "rev",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
               DegreeButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleDegreeAnswer
+                onAnswer: handleDegreeAnswer,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -8690,12 +8815,17 @@ button {
     if (q3.dir === "fwd") {
       const correct = spelledNoteMatchesSemitone(q3.rootNote, input);
       const fullAnswer = displayNote(q3.rootNote) + " " + q3.chord.quality;
-      return { correct, correctAnswer: fullAnswer };
+      return {
+        correct,
+        correctAnswer: fullAnswer,
+        correctValue: noteToCanonical(q3.rootNote)
+      };
     }
     const expectedNumeral = q3.chord.numeral;
     return {
       correct: input === expectedNumeral,
-      correctAnswer: expectedNumeral
+      correctAnswer: expectedNumeral,
+      correctValue: expectedNumeral
     };
   }
   function getGridItemId4(keyRoot, colIdx) {
@@ -8910,14 +9040,18 @@ button {
               NoteButtons,
               {
                 hidden: dir === "rev",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
               NumeralButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleNumeralAnswer
+                onAnswer: handleNumeralAnswer,
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -9085,6 +9219,8 @@ button {
     });
     const [seqState, setSeqState] = d2(null);
     const seqStateRef = A2(null);
+    const [stepFlash, setStepFlash] = d2(null);
+    const stepFlashTimer = A2(null);
     const [currentQ, setCurrentQ] = d2(null);
     const currentItemRef = A2(null);
     const engineSubmitRef = A2(() => {
@@ -9102,10 +9238,20 @@ button {
       const itemId = currentItemRef.current;
       const state = seqStateRef.current;
       if (!itemId || !state) return;
+      const idx = state.entries.length;
+      const item = parseItem(itemId);
+      const expected = item.tones[idx];
+      const stepCorrect = expected !== void 0 && noteToCanonical(input) === noteToCanonical(expected);
+      setStepFlash({
+        correctValue: expected ? noteToCanonical(expected) : input,
+        wrongValue: stepCorrect ? void 0 : noteToCanonical(input)
+      });
+      if (stepFlashTimer.current) clearTimeout(stepFlashTimer.current);
       const result = handleInput(itemId, input, state);
       if (result.status === "continue") {
         seqStateRef.current = result.state;
         setSeqState(result.state);
+        stepFlashTimer.current = setTimeout(() => setStepFlash(null), 300);
       } else {
         engineSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
       }
@@ -9124,6 +9270,8 @@ button {
         const newSeqState = initSequentialState(itemId);
         seqStateRef.current = newSeqState;
         setSeqState(newSeqState);
+        setStepFlash(null);
+        if (stepFlashTimer.current) clearTimeout(stepFlashTimer.current);
       },
       handleKey: (e3, _ctx) => {
         return noteHandler.handleKey(e3);
@@ -9133,6 +9281,8 @@ button {
         noteHandler.reset();
         seqStateRef.current = null;
         setSeqState(null);
+        setStepFlash(null);
+        if (stepFlashTimer.current) clearTimeout(stepFlashTimer.current);
       }
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
@@ -9271,7 +9421,14 @@ button {
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
-            /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer }),
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                onAnswer: handleNoteAnswer,
+                correctValue: stepFlash?.correctValue,
+                wrongValue: stepFlash?.wrongValue
+              }
+            ),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -9317,7 +9474,11 @@ button {
     function checkFretboardAnswer(currentNote, input) {
       const note = musicData.notes.find((n2) => n2.name === currentNote);
       const correct = !!(note && musicData.noteMatchesInput(note, input));
-      return { correct, correctAnswer: displayNote(currentNote) };
+      return {
+        correct,
+        correctAnswer: displayNote(currentNote),
+        correctValue: currentNote
+      };
     }
     function notePassesFilter(note, noteFilter) {
       if (noteFilter === "all") return true;
@@ -9915,7 +10076,9 @@ button {
               PianoNoteButtons,
               {
                 onAnswer: handleNoteAnswer,
-                hideAccidentals: noteFilter === "natural"
+                hideAccidentals: noteFilter === "natural",
+                correctValue: engine.state.answered ? engine.state.feedbackCorrectValue ?? void 0 : void 0,
+                wrongValue: engine.state.answered && engine.state.feedbackCorrect === false ? engine.state.feedbackUserValue ?? void 0 : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -10044,6 +10207,29 @@ button {
           }
         }, 800);
         wrongFlashTimeoutsRef.current.add(timeout);
+        const correctOnString = targetPosRef.current.filter(
+          (p3) => p3.string === s3 && !foundPosRef.current.has(p3.string + "-" + p3.fret)
+        );
+        if (correctOnString.length > 0) {
+          correctOnString.sort(
+            (a3, b) => Math.abs(a3.fret - f4) - Math.abs(b.fret - f4) || a3.fret - b.fret
+          );
+          const closest = correctOnString[0];
+          const hintKey = closest.string + "-" + closest.fret;
+          setCircleFill2(wrapper, closest.string, closest.fret, FB_TAP_CORRECT);
+          const hintTimeout = setTimeout(() => {
+            wrongFlashTimeoutsRef.current.delete(hintTimeout);
+            if (!foundPosRef.current.has(hintKey)) {
+              setCircleFill2(
+                wrapper,
+                closest.string,
+                closest.fret,
+                FB_TAP_NEUTRAL
+              );
+            }
+          }, 800);
+          wrongFlashTimeoutsRef.current.add(hintTimeout);
+        }
       }
     }, []);
     y2(() => {

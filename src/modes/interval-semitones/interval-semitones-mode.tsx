@@ -274,12 +274,26 @@ export function IntervalSemitonesMode(
               <IntervalButtons
                 hidden={dir === 'fwd'}
                 onAnswer={handleIntervalAnswer}
+                correctValue={engine.state.answered
+                  ? engine.state.feedbackCorrectValue ?? undefined
+                  : undefined}
+                wrongValue={engine.state.answered &&
+                    engine.state.feedbackCorrect === false
+                  ? engine.state.feedbackUserValue ?? undefined
+                  : undefined}
               />
               <NumberButtons
                 start={1}
                 end={12}
                 hidden={dir === 'rev'}
                 onAnswer={handleNumAnswer}
+                correctValue={engine.state.answered
+                  ? engine.state.feedbackCorrectValue ?? undefined
+                  : undefined}
+                wrongValue={engine.state.answered &&
+                    engine.state.feedbackCorrect === false
+                  ? engine.state.feedbackUserValue ?? undefined
+                  : undefined}
               />
               <FeedbackDisplay
                 text={engine.state.feedbackText}

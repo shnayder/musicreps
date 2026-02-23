@@ -623,6 +623,13 @@ export function FretboardMode(
               <PianoNoteButtons
                 onAnswer={handleNoteAnswer}
                 hideAccidentals={noteFilter === 'natural'}
+                correctValue={engine.state.answered
+                  ? engine.state.feedbackCorrectValue ?? undefined
+                  : undefined}
+                wrongValue={engine.state.answered &&
+                    engine.state.feedbackCorrect === false
+                  ? engine.state.feedbackUserValue ?? undefined
+                  : undefined}
               />
               <FeedbackDisplay
                 text={engine.state.feedbackText}

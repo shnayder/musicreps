@@ -11,6 +11,7 @@ import type {
   CheckAnswerResult,
   EngineState,
 } from '../types.ts';
+import { noteToCanonical } from '../music-data.ts';
 import {
   engineContinueRound,
   engineNextQuestion,
@@ -29,6 +30,12 @@ import {
 const ROUND_DURATION_MS = 60000;
 const AUTO_ADVANCE_MS = 1000;
 const TIMER_TICK_MS = 200;
+
+/** Try to canonicalize a user input as a note name; fall back to raw input. */
+function tryCanonicalizeNote(input: string): string {
+  const canon = noteToCanonical(input);
+  return canon ?? input;
+}
 
 // ---------------------------------------------------------------------------
 // Config type — what the mode provides to the engine
@@ -249,7 +256,13 @@ export function useQuizEngine(
     );
 
     setState((prev) => {
-      let next = engineSubmitAnswer(prev, result.correct, result.correctAnswer);
+      let next = engineSubmitAnswer(
+        prev,
+        result.correct,
+        result.correctAnswer,
+        tryCanonicalizeNote(input),
+        result.correctValue,
+      );
       next = {
         ...next,
         roundResponseTimes: [...next.roundResponseTimes, responseTime],

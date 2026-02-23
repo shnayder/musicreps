@@ -299,10 +299,24 @@ export function DiatonicChordsMode(
               <NoteButtons
                 hidden={dir === 'rev'}
                 onAnswer={handleNoteAnswer}
+                correctValue={engine.state.answered
+                  ? engine.state.feedbackCorrectValue ?? undefined
+                  : undefined}
+                wrongValue={engine.state.answered &&
+                    engine.state.feedbackCorrect === false
+                  ? engine.state.feedbackUserValue ?? undefined
+                  : undefined}
               />
               <NumeralButtons
                 hidden={dir === 'fwd'}
                 onAnswer={handleNumeralAnswer}
+                correctValue={engine.state.answered
+                  ? engine.state.feedbackCorrectValue ?? undefined
+                  : undefined}
+                wrongValue={engine.state.answered &&
+                    engine.state.feedbackCorrect === false
+                  ? engine.state.feedbackUserValue ?? undefined
+                  : undefined}
               />
               <FeedbackDisplay
                 text={engine.state.feedbackText}

@@ -349,10 +349,24 @@ export function KeySignaturesMode(
               <KeysigButtons
                 hidden={dir === 'rev'}
                 onAnswer={handleSigAnswer}
+                correctValue={engine.state.answered
+                  ? engine.state.feedbackCorrectValue ?? undefined
+                  : undefined}
+                wrongValue={engine.state.answered &&
+                    engine.state.feedbackCorrect === false
+                  ? engine.state.feedbackUserValue ?? undefined
+                  : undefined}
               />
               <NoteButtons
                 hidden={dir === 'fwd'}
                 onAnswer={handleNoteAnswer}
+                correctValue={engine.state.answered
+                  ? engine.state.feedbackCorrectValue ?? undefined
+                  : undefined}
+                wrongValue={engine.state.answered &&
+                    engine.state.feedbackCorrect === false
+                  ? engine.state.feedbackUserValue ?? undefined
+                  : undefined}
               />
               <FeedbackDisplay
                 text={engine.state.feedbackText}

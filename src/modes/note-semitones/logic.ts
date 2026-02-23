@@ -63,14 +63,22 @@ export function getQuestion(itemId: string): Question {
 export function checkAnswer(
   q: Question,
   input: string,
-): { correct: boolean; correctAnswer: string } {
+): { correct: boolean; correctAnswer: string; correctValue: string } {
   if (q.dir === 'fwd') {
     const correct = parseInt(input, 10) === q.noteNum;
-    return { correct, correctAnswer: String(q.noteNum) };
+    return {
+      correct,
+      correctAnswer: String(q.noteNum),
+      correctValue: String(q.noteNum),
+    };
   }
   const note = NOTES.find((n) => n.name === q.noteName)!;
   const correct = noteMatchesInput(note, input);
-  return { correct, correctAnswer: displayNote(q.accidentalChoice) };
+  return {
+    correct,
+    correctAnswer: displayNote(q.accidentalChoice),
+    correctValue: q.noteName,
+  };
 }
 
 // ---------------------------------------------------------------------------

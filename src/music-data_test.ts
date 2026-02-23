@@ -24,6 +24,7 @@ import {
   noteMatchesInput,
   NOTES,
   noteSub,
+  noteToCanonical,
   parseSpelledNote,
   pickAccidentalName,
   pickRandomAccidental,
@@ -1063,5 +1064,39 @@ describe('harmonic/chordal context (rule 1)', () => {
     const major = CHORD_TYPES.find((t) => t.name === 'major')!;
     const tones = getChordTones('Db', major);
     assert.deepEqual(tones, ['Db', 'F', 'Ab']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// noteToCanonical — maps spelled names to NOTE_NAMES[] canonical form
+// ---------------------------------------------------------------------------
+
+describe('noteToCanonical', () => {
+  it('maps natural notes to themselves', () => {
+    assert.equal(noteToCanonical('C'), 'C');
+    assert.equal(noteToCanonical('D'), 'D');
+    assert.equal(noteToCanonical('E'), 'E');
+    assert.equal(noteToCanonical('G'), 'G');
+    assert.equal(noteToCanonical('B'), 'B');
+  });
+
+  it('maps sharp notes to NOTE_NAMES canonical form', () => {
+    assert.equal(noteToCanonical('F#'), 'F#');
+    assert.equal(noteToCanonical('C#'), 'C#');
+    assert.equal(noteToCanonical('G#'), 'G#');
+  });
+
+  it('maps flat notes to their sharp canonical equivalent', () => {
+    assert.equal(noteToCanonical('Bb'), 'A#');
+    assert.equal(noteToCanonical('Db'), 'C#');
+    assert.equal(noteToCanonical('Eb'), 'D#');
+    assert.equal(noteToCanonical('Gb'), 'F#');
+    assert.equal(noteToCanonical('Ab'), 'G#');
+  });
+
+  it('maps all 12 notes consistently', () => {
+    for (const note of NOTES) {
+      assert.equal(noteToCanonical(note.name), note.name);
+    }
   });
 });

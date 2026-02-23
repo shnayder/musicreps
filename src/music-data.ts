@@ -487,6 +487,15 @@ export function spelledNoteMatchesSemitone(
   return spelledNoteSemitone(expectedName) === spelledNoteSemitone(input);
 }
 
+/**
+ * Map any spelled note name to the canonical NOTES[].name used by buttons.
+ * E.g., 'Bb' → 'A#', 'F#' → 'F#', 'C' → 'C'.
+ */
+export function noteToCanonical(spelledName: string): string {
+  const semitone = spelledNoteSemitone(spelledName);
+  return NOTE_NAMES[semitone];
+}
+
 // ---------------------------------------------------------------------------
 // Instrument configurations
 // ---------------------------------------------------------------------------

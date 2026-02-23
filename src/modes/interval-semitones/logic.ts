@@ -59,14 +59,18 @@ export function getQuestion(itemId: string): Question {
 export function checkAnswer(
   q: Question,
   input: string,
-): { correct: boolean; correctAnswer: string } {
+): { correct: boolean; correctAnswer: string; correctValue: string } {
   if (q.dir === 'fwd') {
     const correct = parseInt(input, 10) === q.num;
-    return { correct, correctAnswer: String(q.num) };
+    return {
+      correct,
+      correctAnswer: String(q.num),
+      correctValue: String(q.num),
+    };
   }
   const interval = INTERVALS.find((i) => i.abbrev === q.abbrev)!;
   const correct = intervalMatchesInput(interval, input);
-  return { correct, correctAnswer: q.abbrev };
+  return { correct, correctAnswer: q.abbrev, correctValue: q.abbrev };
 }
 
 // ---------------------------------------------------------------------------
