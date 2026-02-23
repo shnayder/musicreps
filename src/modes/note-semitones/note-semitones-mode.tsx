@@ -233,10 +233,6 @@ export function NoteSemitonesMode(
         }
         progressContent={
           <div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
-            />
             <div class='stats-controls'>
               <StatsToggle active={statsMode} onToggle={setStatsMode} />
             </div>
@@ -250,6 +246,10 @@ export function NoteSemitonesMode(
                 baseline={learner.motorBaseline ?? undefined}
               />
             </div>
+            <BaselineInfo
+              baseline={learner.motorBaseline}
+              onRun={() => setCalibrating(true)}
+            />
           </div>
         }
       />

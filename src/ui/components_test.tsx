@@ -252,9 +252,9 @@ describe('NoteFilter', () => {
 
 describe('TextPrompt', () => {
   it('renders prompt text', () => {
-    const html = render(<TextPrompt text='C + 5 = ?' />);
+    const html = render(<TextPrompt text='C + 5' />);
     assert.ok(html.includes('quiz-prompt'));
-    assert.ok(html.includes('C + 5 = ?'));
+    assert.ok(html.includes('C + 5'));
   });
 });
 
@@ -504,14 +504,14 @@ describe('SessionInfo', () => {
 describe('QuizArea', () => {
   it('renders prompt and children', () => {
     const html = render(
-      <QuizArea prompt='C + 5 = ?'>
+      <QuizArea prompt='C + 5'>
         <div class='test-buttons'>buttons</div>
       </QuizArea>,
     );
     assert.ok(html.includes('quiz-area'));
     assert.ok(html.includes('quiz-prompt-row'));
     assert.ok(html.includes('quiz-prompt'));
-    assert.ok(html.includes('C + 5 = ?'));
+    assert.ok(html.includes('C + 5'));
     assert.ok(html.includes('quiz-last-question'));
     assert.ok(html.includes('test-buttons'));
   });

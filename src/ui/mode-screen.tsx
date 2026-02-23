@@ -353,9 +353,9 @@ export function QuizArea(
 ) {
   return (
     <div class='quiz-area'>
+      <div class='quiz-last-question'>{lastQuestion || ''}</div>
       <div class='quiz-prompt-row'>
         <div class='quiz-prompt'>{prompt || ''}</div>
-        <div class='quiz-last-question'>{lastQuestion || ''}</div>
       </div>
       {children}
     </div>
@@ -378,12 +378,19 @@ export function RoundComplete(
 ) {
   return (
     <div class='round-complete'>
-      <div class='round-complete-context'>{context || ''}</div>
       <div class='round-complete-heading'>{heading || ''}</div>
       <div class='round-complete-stats'>
         <div class='round-stat-line round-stat-correct'>{correct || ''}</div>
         <div class='round-stat-line round-stat-median'>{median || ''}</div>
       </div>
+      {context
+        ? (
+          <div class='round-complete-overall'>
+            <div class='round-complete-overall-label'>Overall</div>
+            <div class='round-complete-context'>{context}</div>
+          </div>
+        )
+        : null}
       <div class='round-complete-actions'>
         <button
           type='button'

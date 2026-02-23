@@ -115,14 +115,13 @@ body {
 .home-screen {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
   padding: var(--space-5);
 }
 .home-screen.hidden {
   display: none;
 }
 .home-header {
-  text-align: center;
+  text-align: left;
   padding: var(--space-6) 0 var(--space-4);
 }
 .home-title {
@@ -138,7 +137,7 @@ body {
   width: 32px;
   height: 3px;
   background: var(--color-brand);
-  margin: var(--space-3) auto 0;
+  margin: var(--space-3) 0 0;
   border-radius: 2px;
 }
 .home-modes {
@@ -558,12 +557,15 @@ body {
 .baseline-info {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  text-align: center;
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-3);
+  padding: var(--space-4) 0;
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--color-border-lighter);
 }
 .baseline-info:empty {
   display: none;
+}
+.baseline-text {
+  margin-bottom: var(--space-3);
 }
 .baseline-default-tag {
   font-style: italic;
@@ -579,7 +581,6 @@ body {
   color: var(--color-text-muted);
   cursor: pointer;
   margin: 0;
-  margin-left: var(--space-2);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .baseline-rerun-btn:hover {
@@ -592,7 +593,7 @@ body {
 
 /* --- Progress tab stats controls (within tab) --- */
 .tab-content .stats-controls {
-  text-align: center;
+  text-align: left;
   margin: var(--space-3) 0;
   padding-bottom: var(--space-2);
 }
@@ -931,9 +932,12 @@ button {
 .phase-active,
 .phase-round-complete,
 .phase-calibration {
-  background: var(--color-surface);
+  background: var(--color-bg);
   margin: 0 calc(-1 * var(--space-5));
   padding: 0 var(--space-5);
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 /* --- Quiz area (subtle card containment) --- */
 /* Phase-driven visibility: shown during active, round-complete, calibration */
@@ -946,24 +950,21 @@ button {
 .phase-active .quiz-area,
 .phase-round-complete .quiz-area,
 .phase-calibration .quiz-area {
-  display: block;
-  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  background: var(--color-bg);
   border-radius: 12px;
   padding: var(--space-5);
 }
 .phase-active .quiz-area {
-  border: 1px solid var(--color-border-lighter);
   padding: var(--space-3) var(--space-3);
 }
 /* --- Round complete --- */
 .round-complete {
   text-align: center;
   padding: var(--space-6) 0;
-}
-.round-complete-context {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-4);
 }
 .round-complete-heading {
   font-size: var(--text-xl);
@@ -973,6 +974,21 @@ button {
 }
 .round-complete-stats {
   margin: var(--space-3) 0 var(--space-5);
+}
+.round-complete-overall {
+  margin-bottom: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-lighter);
+}
+.round-complete-overall-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+.round-complete-context {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 .round-stat-line {
   font-size: var(--text-base);
@@ -1149,6 +1165,8 @@ button {
   font-size: var(--text-sm);
   color: var(--color-recommended);
   font-weight: 500;
+  text-align: center;
+  margin-bottom: var(--space-2);
 }
 .quiz-last-question:empty {
   display: none;
@@ -1311,7 +1329,7 @@ button {
   color: var(--color-success);
 }
 .incorrect {
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 .time-display {
   color: var(--color-text-muted);
@@ -1332,9 +1350,8 @@ button {
 /* --- Heatmap legends --- */
 .heatmap-legend {
   display: none;
-  justify-content: center;
+  flex-direction: column;
   gap: var(--space-3);
-  flex-wrap: wrap;
   margin: var(--space-4) 0;
 }
 .heatmap-legend.active {
@@ -1455,7 +1472,7 @@ button {
 
 /* --- Stats controls (toggle above chart) --- */
 .stats-controls {
-  text-align: center;
+  text-align: left;
   margin: var(--space-3) 0;
   padding-bottom: var(--space-2);
 }
@@ -1735,7 +1752,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">v8.12</span>
+      <span class="version">v8.16</span>
     </div>
   </div>
 
@@ -1938,9 +1955,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
@@ -2083,11 +2100,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -2266,9 +2286,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
@@ -2383,11 +2403,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -2467,9 +2490,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="speed-tap-status">
         <span class="speed-tap-progress"></span>
@@ -2611,11 +2634,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -2679,9 +2705,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -2715,11 +2741,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -2783,9 +2812,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-intervals">
         <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
@@ -2819,11 +2848,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -2897,9 +2929,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -2919,11 +2951,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -2997,9 +3032,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -3019,11 +3054,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -3097,9 +3135,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-keysig">
         <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="0">0</button>
@@ -3136,11 +3174,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -3214,9 +3255,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -3245,11 +3286,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -3323,9 +3367,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
@@ -3354,11 +3398,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -3432,9 +3479,9 @@ button {
       </div>
     </div>
     <div class="quiz-area">
+      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
-        <div class="quiz-last-question"></div>
       </div>
       <div class="chord-slots"></div>
       <div class="answer-buttons answer-buttons-notes">
@@ -3455,11 +3502,14 @@ button {
       <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
-        <div class="round-complete-context"></div>
         <div class="round-complete-heading"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
           <div class="round-stat-line round-stat-median"></div>
+        </div>
+        <div class="round-complete-overall">
+          <div class="round-complete-overall-label">Overall</div>
+          <div class="round-complete-context"></div>
         </div>
         <div class="round-complete-actions">
           <button tabindex="0" class="round-complete-continue">Keep Going</button>
@@ -3472,7 +3522,7 @@ button {
 
   <script>
 (() => {
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/dist/preact.module.js
+  // node_modules/preact/dist/preact.module.js
   var n;
   var l;
   var u;
@@ -4526,7 +4576,7 @@ button {
     return btn;
   }
 
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/hooks/dist/hooks.module.js
+  // node_modules/preact/hooks/dist/hooks.module.js
   var t2;
   var r2;
   var u2;
@@ -5664,7 +5714,7 @@ button {
     return { roundContext, roundCorrect, roundMedian, countText };
   }
 
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
   var f3 = 0;
   function u3(e3, t3, n2, o3, i3, u4) {
     t3 || (t3 = {});
@@ -5983,21 +6033,22 @@ button {
   }
   function QuizArea({ prompt, lastQuestion, children }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }),
-        /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" })
-      ] }),
+      /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" }),
+      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }) }),
       children
     ] });
   }
   function RoundComplete({ context, heading, correct, median, onContinue, onStop }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
-      /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context || "" }),
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: [
         /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }),
         /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-median", children: median || "" })
       ] }),
+      context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
+        /* @__PURE__ */ u3("div", { class: "round-complete-overall-label", children: "Overall" }),
+        /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
+      ] }) : null,
       /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
         /* @__PURE__ */ u3(
           "button",
@@ -6268,29 +6319,17 @@ button {
   var WARMUP_TRIALS = 2;
   var PAUSE_MS = 400;
   function BaselineInfo({ baseline, onRun }) {
-    if (baseline) {
-      return /* @__PURE__ */ u3("div", { class: "baseline-info", children: [
-        "Response time baseline: ",
-        (baseline / 1e3).toFixed(1),
-        "s",
-        " ",
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "baseline-rerun-btn",
-            onClick: onRun,
-            children: "Rerun speed check"
-          }
-        )
-      ] });
-    }
+    const value = baseline ? (baseline / 1e3).toFixed(1) + "s" : "1s";
+    const tag = baseline ? null : /* @__PURE__ */ u3("span", { class: "baseline-default-tag", children: "(default)" });
+    const btnLabel = baseline ? "Rerun speed check" : "Run speed check";
     return /* @__PURE__ */ u3("div", { class: "baseline-info", children: [
-      "Response time baseline: 1s",
-      " ",
-      /* @__PURE__ */ u3("span", { class: "baseline-default-tag", children: "(default)" }),
-      " ",
+      /* @__PURE__ */ u3("div", { class: "baseline-text", children: [
+        "Your tap speed baseline is ",
+        value,
+        " ",
+        tag,
+        ". Speed ratings scale from this."
+      ] }),
       /* @__PURE__ */ u3(
         "button",
         {
@@ -6298,7 +6337,7 @@ button {
           tabIndex: 0,
           class: "baseline-rerun-btn",
           onClick: onRun,
-          children: "Run speed check"
+          children: btnLabel
         }
       )
     ] });
@@ -6665,13 +6704,6 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsTable,
@@ -6683,7 +6715,14 @@ button {
                 statsMode,
                 baseline: learner.motorBaseline ?? void 0
               }
-            ) })
+            ) }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            )
           ] })
         }
       ),
@@ -6916,13 +6955,6 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsTable,
@@ -6934,7 +6966,14 @@ button {
                 statsMode,
                 baseline: learner.motorBaseline ?? void 0
               }
-            ) })
+            ) }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            )
           ] })
         }
       ),
@@ -7574,13 +7613,6 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsGrid,
@@ -7591,7 +7623,14 @@ button {
                 statsMode,
                 baseline: learner.motorBaseline ?? void 0
               }
-            ) })
+            ) }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            )
           ] })
         }
       ),
@@ -7847,13 +7886,6 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsGrid,
@@ -7864,7 +7896,14 @@ button {
                 statsMode,
                 baseline: learner.motorBaseline ?? void 0
               }
-            ) })
+            ) }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            )
           ] })
         }
       ),
@@ -8158,13 +8197,6 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsTable,
@@ -8176,7 +8208,14 @@ button {
                 statsMode,
                 baseline: learner.motorBaseline ?? void 0
               }
-            ) })
+            ) }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            )
           ] })
         }
       ),
@@ -8447,13 +8486,6 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsGrid,
@@ -8465,7 +8497,14 @@ button {
                 notes: GRID_NOTES,
                 baseline: learner.motorBaseline ?? void 0
               }
-            ) })
+            ) }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            )
           ] })
         }
       ),
@@ -8737,13 +8776,6 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsGrid,
@@ -8755,7 +8787,14 @@ button {
                 notes: GRID_NOTES2,
                 baseline: learner.motorBaseline ?? void 0
               }
-            ) })
+            ) }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            )
           ] })
         }
       ),
@@ -9092,13 +9131,6 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
               StatsGrid,
@@ -9110,7 +9142,14 @@ button {
                 notes: GRID_NOTES3,
                 baseline: learner.motorBaseline ?? void 0
               }
-            ) })
+            ) }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            )
           ] })
         }
       ),
@@ -9680,7 +9719,7 @@ button {
       noteHandler
     ]);
     useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
-    const promptText = currentQ ? "Name this note." : "";
+    const promptText = currentQ ? "Name this note" : "";
     const handleNoteAnswer = q2(
       (note) => engine.submitAnswer(note),
       [engine.submitAnswer]
@@ -9722,13 +9761,6 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3("div", { class: "stats-container", children: [
               /* @__PURE__ */ u3(
@@ -9744,7 +9776,14 @@ button {
                   dangerouslySetInnerHTML: { __html: legendHTML }
                 }
               )
-            ] })
+            ] }),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
+              }
+            )
           ] })
         }
       ),
@@ -10082,19 +10121,19 @@ button {
             }
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            ),
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
             /* @__PURE__ */ u3(
               "div",
               {
                 class: "stats-container",
                 dangerouslySetInnerHTML: { __html: statsHTML }
+              }
+            ),
+            /* @__PURE__ */ u3(
+              BaselineInfo,
+              {
+                baseline: learner.motorBaseline,
+                onRun: () => setCalibrating(true)
               }
             )
           ] })

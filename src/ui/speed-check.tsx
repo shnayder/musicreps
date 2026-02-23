@@ -56,32 +56,23 @@ export function BaselineInfo(
     onRun: () => void;
   },
 ) {
-  if (baseline) {
-    return (
-      <div class='baseline-info'>
-        Response time baseline: {(baseline / 1000).toFixed(1)}s{' '}
-        <button
-          type='button'
-          tabIndex={0}
-          class='baseline-rerun-btn'
-          onClick={onRun}
-        >
-          Rerun speed check
-        </button>
-      </div>
-    );
-  }
+  const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
+  const tag = baseline
+    ? null
+    : <span class='baseline-default-tag'>(default)</span>;
+  const btnLabel = baseline ? 'Rerun speed check' : 'Run speed check';
   return (
     <div class='baseline-info'>
-      Response time baseline: 1s{' '}
-      <span class='baseline-default-tag'>(default)</span>{' '}
+      <div class='baseline-text'>
+        Your tap speed baseline is {value} {tag}. Speed ratings scale from this.
+      </div>
       <button
         type='button'
         tabIndex={0}
         class='baseline-rerun-btn'
         onClick={onRun}
       >
-        Run speed check
+        {btnLabel}
       </button>
     </div>
   );
