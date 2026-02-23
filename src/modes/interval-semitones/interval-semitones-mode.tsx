@@ -27,7 +27,11 @@ import {
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
 import { StatsLegend, StatsTable, StatsToggle } from '../../ui/stats.tsx';
-import { numberNarrowingSet } from '../../quiz-engine.ts';
+import {
+  numberNarrowingSet,
+  PENDING_DELAY_AMBIGUOUS,
+  PENDING_DELAY_UNAMBIGUOUS,
+} from '../../quiz-engine.ts';
 import {
   FeedbackBanner,
   FeedbackDisplay,
@@ -124,6 +128,9 @@ export function IntervalSemitonesMode(
           // 0 or 1 — could be 10, 11, 12
           pendingDigitRef.current = d;
           setPendingDigit(d);
+          const delay = numberNarrowingSet(d, 12, 1)!.size > 1
+            ? PENDING_DELAY_AMBIGUOUS
+            : PENDING_DELAY_UNAMBIGUOUS;
           pendingTimeoutRef.current = setTimeout(() => {
             if (pendingDigitRef.current !== null) {
               if (pendingDigitRef.current >= 1) {
@@ -133,7 +140,7 @@ export function IntervalSemitonesMode(
               setPendingDigit(null);
               pendingTimeoutRef.current = null;
             }
-          }, 400);
+          }, delay);
         }
         return true;
       }

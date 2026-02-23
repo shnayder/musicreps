@@ -8,6 +8,13 @@ import type { NoteKeyHandler } from './types.ts';
 /** Set of note names in the standard 12-button grid. */
 const NOTE_NAME_SET = new Set(NOTE_NAMES);
 
+/** Delay (ms) before auto-submitting when multiple completions remain. */
+export const PENDING_DELAY_AMBIGUOUS = 600;
+/** Delay (ms) before auto-submitting when input is unambiguous (single match).
+ *  Currently all note letters and buffered digits produce multiple matches,
+ *  so this branch doesn't fire — kept for clarity and future input types. */
+export const PENDING_DELAY_UNAMBIGUOUS = 400;
+
 /**
  * Map from flat spelling (e.g. "Db") to its button name (e.g. "C#").
  * Built from NOTES.accepts so we highlight the enharmonic button when the
@@ -98,7 +105,7 @@ export function createNoteKeyHandler(
   function handleKey(e: KeyboardEvent): boolean {
     const key = e.key.toUpperCase();
 
-    // Enter commits the pending note immediately (skip 400ms wait)
+    // Enter commits the pending note immediately (skip pending wait)
     if (e.key === 'Enter' && pendingNote) {
       e.preventDefault();
       if (pendingTimeout) clearTimeout(pendingTimeout);
@@ -142,12 +149,15 @@ export function createNoteKeyHandler(
         submitAnswer(key);
       } else {
         setPending(key);
+        const delay = noteNarrowingSet(key)!.size > 1
+          ? PENDING_DELAY_AMBIGUOUS
+          : PENDING_DELAY_UNAMBIGUOUS;
         pendingTimeout = setTimeout(() => {
           const note = pendingNote!;
           setPending(null);
           pendingTimeout = null;
           submitAnswer(note);
-        }, 400);
+        }, delay);
       }
       return true;
     }
@@ -212,7 +222,7 @@ export function createSolfegeKeyHandler(
   function handleKey(e: KeyboardEvent): boolean {
     const key = e.key.toLowerCase();
 
-    // Enter commits the pending note immediately (skip 400ms wait)
+    // Enter commits the pending note immediately (skip pending wait)
     if (e.key === 'Enter') {
       if (pendingNote) {
         e.preventDefault();
@@ -270,12 +280,15 @@ export function createSolfegeKeyHandler(
           submitAnswer(note);
         } else {
           setPending(note);
+          const delay = noteNarrowingSet(note)!.size > 1
+            ? PENDING_DELAY_AMBIGUOUS
+            : PENDING_DELAY_UNAMBIGUOUS;
           pendingTimeout = setTimeout(() => {
             const n = pendingNote!;
             setPending(null);
             pendingTimeout = null;
             submitAnswer(n);
-          }, 400);
+          }, delay);
         }
       } else if (buffer.length >= 2) {
         // Invalid pair — reset

@@ -8,6 +8,8 @@ import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,
   numberNarrowingSet,
+  PENDING_DELAY_AMBIGUOUS,
+  PENDING_DELAY_UNAMBIGUOUS,
 } from '../../quiz-engine.ts';
 import { computePracticeSummary } from '../../mode-ui-state.ts';
 
@@ -141,6 +143,9 @@ export function NoteSemitonesMode(
         } else {
           pendingDigitRef.current = d;
           setPendingDigit(d);
+          const delay = numberNarrowingSet(d, 11)!.size > 1
+            ? PENDING_DELAY_AMBIGUOUS
+            : PENDING_DELAY_UNAMBIGUOUS;
           pendingTimeoutRef.current = setTimeout(() => {
             if (pendingDigitRef.current !== null) {
               ctx.submitAnswer(String(pendingDigitRef.current));
@@ -148,7 +153,7 @@ export function NoteSemitonesMode(
               setPendingDigit(null);
               pendingTimeoutRef.current = null;
             }
-          }, 400);
+          }, delay);
         }
         return true;
       }
