@@ -22,7 +22,10 @@ import {
   NOTES,
 } from '../../music-data.ts';
 import { DEFAULT_CONFIG } from '../../adaptive.ts';
-import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
+import {
+  createAdaptiveKeyHandler,
+  noteNarrowingSet,
+} from '../../quiz-engine.ts';
 import { computeRecommendations } from '../../recommendations.ts';
 import {
   buildRecommendationText,
@@ -61,7 +64,7 @@ import {
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
 import { StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import { FeedbackDisplay, KeyboardHint } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -246,16 +249,18 @@ export function FretboardMode(
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const currentQRef = useRef<Question | null>(null);
 
-  // --- Key handler ---
+  // --- Key handler + pending state for narrowing ---
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
   const noteFilterRef = useRef(noteFilter);
   noteFilterRef.current = noteFilter;
 
+  const [pendingNote, setPendingNote] = useState<string | null>(null);
   const noteHandler = useMemo(
     () =>
       createAdaptiveKeyHandler(
         (note: string) => engineSubmitRef.current(note),
         () => noteFilterRef.current !== 'natural',
+        setPendingNote,
       ),
     [],
   );
@@ -428,6 +433,12 @@ export function FretboardMode(
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
+
+  // --- Narrowing (keyboard match highlighting) ---
+  const noteNarrowing = useMemo(
+    () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+    [pendingNote, engine.state.answered],
+  );
 
   // --- Calibration state ---
   const [calibrating, setCalibrating] = useState(false);
@@ -623,7 +634,9 @@ export function FretboardMode(
               <PianoNoteButtons
                 onAnswer={handleNoteAnswer}
                 hideAccidentals={noteFilter === 'natural'}
+                narrowing={noteNarrowing}
               />
+              <KeyboardHint type='note' />
               <FeedbackDisplay
                 text={engine.state.feedbackText}
                 className={engine.state.feedbackClass}

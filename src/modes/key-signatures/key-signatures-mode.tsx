@@ -5,7 +5,10 @@
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
 import { displayNote } from '../../music-data.ts';
-import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
+import {
+  createAdaptiveKeyHandler,
+  noteNarrowingSet,
+} from '../../quiz-engine.ts';
 import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
@@ -32,8 +35,8 @@ import {
   RoundComplete,
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
-import { StatsLegend, StatsTable, StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import { StatsTable, StatsToggle } from '../../ui/stats.tsx';
+import { FeedbackDisplay, KeyboardHint } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -103,11 +106,13 @@ export function KeySignaturesMode(
   );
 
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
+  const [pendingNote, setPendingNote] = useState<string | null>(null);
   const noteHandler = useMemo(
     () =>
       createAdaptiveKeyHandler(
         (note: string) => engineSubmitRef.current(note),
         () => true,
+        setPendingNote,
       ),
     [],
   );
@@ -135,6 +140,18 @@ export function KeySignaturesMode(
       const dir = currentQRef.current?.dir;
       if (dir === 'rev') {
         return noteHandler.handleKey(e);
+      }
+      // Forward: Enter commits pending '0' (only valid standalone digit)
+      if (
+        e.key === 'Enter' && pendingSigDigitRef.current !== null
+      ) {
+        e.preventDefault();
+        clearTimeout(pendingSigTimeoutRef.current!);
+        const d = pendingSigDigitRef.current;
+        pendingSigDigitRef.current = null;
+        pendingSigTimeoutRef.current = null;
+        if (d === '0') ctx.submitAnswer('0');
+        return true;
       }
       // Forward: number + #/b for key sig answers
       if (e.key >= '0' && e.key <= '7') {
@@ -186,6 +203,12 @@ export function KeySignaturesMode(
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
+
+  // --- Narrowing (keyboard match highlighting, reverse direction only) ---
+  const noteNarrowing = useMemo(
+    () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+    [pendingNote, engine.state.answered],
+  );
 
   // --- Calibration state ---
   const [calibrating, setCalibrating] = useState(false);
@@ -295,6 +318,10 @@ export function KeySignaturesMode(
             <div class='stats-controls'>
               <StatsToggle active={statsMode} onToggle={setStatsMode} />
             </div>
+            <BaselineInfo
+              baseline={learner.motorBaseline}
+              onRun={() => setCalibrating(true)}
+            />
             <div class='stats-container'>
               <StatsTable
                 selector={statsSel}
@@ -304,15 +331,7 @@ export function KeySignaturesMode(
                 statsMode={statsMode}
                 baseline={learner.motorBaseline ?? undefined}
               />
-              <StatsLegend
-                statsMode={statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
             </div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
-            />
           </div>
         }
       />
@@ -353,7 +372,9 @@ export function KeySignaturesMode(
               <NoteButtons
                 hidden={dir === 'fwd'}
                 onAnswer={handleNoteAnswer}
+                narrowing={dir === 'rev' ? noteNarrowing : undefined}
               />
+              <KeyboardHint type={dir === 'rev' ? 'note' : null} />
               <FeedbackDisplay
                 text={engine.state.feedbackText}
                 className={engine.state.feedbackClass}

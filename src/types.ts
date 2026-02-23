@@ -219,6 +219,8 @@ export type CheckAnswerResult = {
 export type NoteKeyHandler = {
   handleKey(e: KeyboardEvent): boolean;
   reset(): void;
+  /** Returns the currently buffered note (e.g., 'C' awaiting accidental). */
+  getPendingNote(): string | null;
 };
 
 // ---------------------------------------------------------------------------

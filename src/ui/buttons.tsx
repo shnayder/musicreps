@@ -19,13 +19,15 @@ import {
 // ---------------------------------------------------------------------------
 
 export function NoteButtons(
-  { onAnswer, hidden, useFlats, calibrationActive }: {
+  { onAnswer, hidden, useFlats, calibrationActive, narrowing }: {
     onAnswer?: (note: string) => void;
     hidden?: boolean;
     /** When set, accidental buttons show flats (true) or sharps (false). */
     useFlats?: boolean;
     /** Add .calibration-active class (keeps buttons visible during calibration). */
     calibrationActive?: boolean;
+    /** Set of note names to highlight as keyboard matches; others dimmed. */
+    narrowing?: ReadonlySet<string> | null;
   },
 ) {
   const cls = 'answer-buttons answer-buttons-notes' +
@@ -43,12 +45,16 @@ export function NoteButtons(
         } else {
           label = displayNote(n);
         }
+        let btnCls = 'answer-btn answer-btn-note';
+        if (narrowing) {
+          btnCls += narrowing.has(n) ? ' kb-match' : ' kb-dimmed';
+        }
         return (
           <button
             type='button'
             tabIndex={0}
             key={n}
-            class='answer-btn answer-btn-note'
+            class={btnCls}
             data-note={n}
             onClick={onAnswer ? () => onAnswer(n) : undefined}
           >
@@ -65,40 +71,54 @@ export function NoteButtons(
 // ---------------------------------------------------------------------------
 
 export function PianoNoteButtons(
-  { onAnswer, hideAccidentals }: {
+  { onAnswer, hideAccidentals, narrowing }: {
     onAnswer?: (note: string) => void;
     hideAccidentals?: boolean;
+    /** Set of note names to highlight as keyboard matches; others dimmed. */
+    narrowing?: ReadonlySet<string> | null;
   },
 ) {
   return (
     <div class='note-buttons'>
       <div class='note-row-accidentals'>
-        {ACCIDENTAL_NAMES.map((n) => (
-          <button
-            type='button'
-            tabIndex={0}
-            key={n}
-            class={'note-btn accidental' + (hideAccidentals ? ' hidden' : '')}
-            data-note={n}
-            onClick={onAnswer ? () => onAnswer(n) : undefined}
-          >
-            {displayNote(n)}
-          </button>
-        ))}
+        {ACCIDENTAL_NAMES.map((n) => {
+          let cls = 'note-btn accidental' + (hideAccidentals ? ' hidden' : '');
+          if (narrowing && !hideAccidentals) {
+            cls += narrowing.has(n) ? ' kb-match' : ' kb-dimmed';
+          }
+          return (
+            <button
+              type='button'
+              tabIndex={0}
+              key={n}
+              class={cls}
+              data-note={n}
+              onClick={onAnswer ? () => onAnswer(n) : undefined}
+            >
+              {displayNote(n)}
+            </button>
+          );
+        })}
       </div>
       <div class='note-row-naturals'>
-        {NATURAL_NOTES.map((n) => (
-          <button
-            type='button'
-            tabIndex={0}
-            key={n}
-            class='note-btn'
-            data-note={n}
-            onClick={onAnswer ? () => onAnswer(n) : undefined}
-          >
-            {displayNote(n)}
-          </button>
-        ))}
+        {NATURAL_NOTES.map((n) => {
+          let cls = 'note-btn';
+          if (narrowing) {
+            cls += narrowing.has(n) ? ' kb-match' : ' kb-dimmed';
+          }
+          return (
+            <button
+              type='button'
+              tabIndex={0}
+              key={n}
+              class={cls}
+              data-note={n}
+              onClick={onAnswer ? () => onAnswer(n) : undefined}
+            >
+              {displayNote(n)}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -109,11 +129,13 @@ export function PianoNoteButtons(
 // ---------------------------------------------------------------------------
 
 export function NumberButtons(
-  { start, end, onAnswer, hidden }: {
+  { start, end, onAnswer, hidden, narrowing }: {
     start: number;
     end: number;
     onAnswer?: (num: number) => void;
     hidden?: boolean;
+    /** Set of number strings to highlight as keyboard matches; others dimmed. */
+    narrowing?: ReadonlySet<string> | null;
   },
 ) {
   const nums = [];
@@ -122,18 +144,24 @@ export function NumberButtons(
     (hidden ? ' answer-group-hidden' : '');
   return (
     <div class={cls}>
-      {nums.map((i) => (
-        <button
-          type='button'
-          tabIndex={0}
-          key={i}
-          class='answer-btn answer-btn-num'
-          data-num={String(i)}
-          onClick={onAnswer ? () => onAnswer(i) : undefined}
-        >
-          {i}
-        </button>
-      ))}
+      {nums.map((i) => {
+        let btnCls = 'answer-btn answer-btn-num';
+        if (narrowing) {
+          btnCls += narrowing.has(String(i)) ? ' kb-match' : ' kb-dimmed';
+        }
+        return (
+          <button
+            type='button'
+            tabIndex={0}
+            key={i}
+            class={btnCls}
+            data-num={String(i)}
+            onClick={onAnswer ? () => onAnswer(i) : undefined}
+          >
+            {i}
+          </button>
+        );
+      })}
     </div>
   );
 }

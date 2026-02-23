@@ -2,8 +2,48 @@
 // calibration helpers. Used by Preact mode components and the
 // useQuizEngine hook.
 
-import { displayNote, getUseSolfege, NOTES } from './music-data.ts';
+import { displayNote, getUseSolfege, NOTE_NAMES, NOTES } from './music-data.ts';
 import type { NoteKeyHandler } from './types.ts';
+
+/** Set of note names in the standard 12-button grid. */
+const NOTE_NAME_SET = new Set(NOTE_NAMES);
+
+/**
+ * Compute the set of button note names matching a pending keyboard note.
+ * Returns the natural note and its sharp if one exists in the button grid.
+ * Returns null when there is no pending note.
+ */
+export function noteNarrowingSet(
+  pendingNote: string | null,
+): ReadonlySet<string> | null {
+  if (!pendingNote) return null;
+  const matches = new Set<string>();
+  matches.add(pendingNote);
+  const sharp = pendingNote + '#';
+  if (NOTE_NAME_SET.has(sharp)) matches.add(sharp);
+  return matches;
+}
+
+/**
+ * Compute the set of number button strings matching a pending digit.
+ * For digit 1 in 0-11: {1, 10, 11}. For digit 1 in 1-12: {1, 10, 11, 12}.
+ * Returns null when there is no pending digit.
+ */
+export function numberNarrowingSet(
+  pendingDigit: number | null,
+  end: number,
+): ReadonlySet<string> | null {
+  if (pendingDigit === null) return null;
+  const matches = new Set<string>();
+  matches.add(String(pendingDigit));
+  // Multi-digit completions (pendingDigit * 10 + d)
+  for (let d = 0; d <= 9; d++) {
+    const num = pendingDigit * 10 + d;
+    if (num > end) break;
+    if (num >= 0) matches.add(String(num));
+  }
+  return matches;
+}
 
 /**
  * Create a keyboard handler for note input (C D E F G A B + #/s/b for accidentals).
@@ -17,18 +57,35 @@ import type { NoteKeyHandler } from './types.ts';
 export function createNoteKeyHandler(
   submitAnswer: (note: string) => void,
   allowAccidentals: () => boolean = () => true,
+  onPendingChange?: (pendingNote: string | null) => void,
 ): NoteKeyHandler {
   let pendingNote: string | null = null;
   let pendingTimeout: number | null = null;
 
+  function setPending(note: string | null): void {
+    pendingNote = note;
+    onPendingChange?.(note);
+  }
+
   function reset(): void {
     if (pendingTimeout) clearTimeout(pendingTimeout);
-    pendingNote = null;
+    setPending(null);
     pendingTimeout = null;
   }
 
   function handleKey(e: KeyboardEvent): boolean {
     const key = e.key.toUpperCase();
+
+    // Enter commits the pending note immediately (skip 400ms wait)
+    if (e.key === 'Enter' && pendingNote) {
+      e.preventDefault();
+      if (pendingTimeout) clearTimeout(pendingTimeout);
+      const note = pendingNote;
+      setPending(null);
+      pendingTimeout = null;
+      submitAnswer(note);
+      return true;
+    }
 
     // Handle #/s for sharps or b for flats after a pending note
     if (pendingNote && allowAccidentals()) {
@@ -38,17 +95,19 @@ export function createNoteKeyHandler(
       ) {
         e.preventDefault();
         if (pendingTimeout) clearTimeout(pendingTimeout);
-        submitAnswer(pendingNote + '#');
-        pendingNote = null;
+        const note = pendingNote;
+        setPending(null);
         pendingTimeout = null;
+        submitAnswer(note + '#');
         return true;
       }
       if (e.key === 'b' || e.key === 'B') {
         e.preventDefault();
         if (pendingTimeout) clearTimeout(pendingTimeout);
-        submitAnswer(pendingNote + 'b');
-        pendingNote = null;
+        const note = pendingNote;
+        setPending(null);
         pendingTimeout = null;
+        submitAnswer(note + 'b');
         return true;
       }
     }
@@ -60,11 +119,12 @@ export function createNoteKeyHandler(
       if (!allowAccidentals()) {
         submitAnswer(key);
       } else {
-        pendingNote = key;
+        setPending(key);
         pendingTimeout = setTimeout(() => {
-          submitAnswer(pendingNote!);
-          pendingNote = null;
+          const note = pendingNote!;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note);
         }, 400);
       }
       return true;
@@ -73,7 +133,11 @@ export function createNoteKeyHandler(
     return false;
   }
 
-  return { handleKey, reset };
+  function getPendingNote(): string | null {
+    return pendingNote;
+  }
+
+  return { handleKey, reset, getPendingNote };
 }
 
 /**
@@ -84,6 +148,7 @@ export function createNoteKeyHandler(
 export function createSolfegeKeyHandler(
   submitAnswer: (note: string) => void,
   allowAccidentals: () => boolean = () => true,
+  onPendingChange?: (pendingNote: string | null) => void,
 ): NoteKeyHandler {
   const SOLFEGE_TO_NOTE: Record<string, string> = {
     'do': 'C',
@@ -100,42 +165,69 @@ export function createSolfegeKeyHandler(
   let pendingNote: string | null = null;
   let pendingTimeout: number | null = null;
 
+  function setPending(note: string | null): void {
+    pendingNote = note;
+    onPendingChange?.(note);
+  }
+
   function reset(): void {
     buffer = '';
     if (pendingTimeout) clearTimeout(pendingTimeout);
     pendingTimeout = null;
-    pendingNote = null;
+    setPending(null);
   }
 
   function submitPending(): void {
     if (pendingNote) {
       if (pendingTimeout) clearTimeout(pendingTimeout);
-      submitAnswer(pendingNote);
-      pendingNote = null;
+      const note = pendingNote;
+      setPending(null);
       pendingTimeout = null;
+      submitAnswer(note);
     }
   }
 
   function handleKey(e: KeyboardEvent): boolean {
     const key = e.key.toLowerCase();
 
+    // Enter commits the pending note immediately (skip 400ms wait)
+    if (e.key === 'Enter') {
+      if (pendingNote) {
+        e.preventDefault();
+        if (pendingTimeout) clearTimeout(pendingTimeout);
+        const note = pendingNote;
+        setPending(null);
+        pendingTimeout = null;
+        submitAnswer(note);
+        return true;
+      }
+      // Clear partial syllable buffer without submitting
+      if (buffer.length > 0) {
+        buffer = '';
+        return true;
+      }
+      return false;
+    }
+
     // Handle accidental after resolved syllable
     if (pendingNote && allowAccidentals()) {
       if (e.key === '#' || (e.shiftKey && e.key === '3')) {
         e.preventDefault();
         if (pendingTimeout) clearTimeout(pendingTimeout);
-        submitAnswer(pendingNote + '#');
-        pendingNote = null;
+        const note = pendingNote;
+        setPending(null);
         pendingTimeout = null;
+        submitAnswer(note + '#');
         return true;
       }
       // 'b' is flat (no solfège syllable starts with 'b')
       if (key === 'b') {
         e.preventDefault();
         if (pendingTimeout) clearTimeout(pendingTimeout);
-        submitAnswer(pendingNote + 'b');
-        pendingNote = null;
+        const note = pendingNote;
+        setPending(null);
         pendingTimeout = null;
+        submitAnswer(note + 'b');
         return true;
       }
     }
@@ -155,11 +247,12 @@ export function createSolfegeKeyHandler(
         if (!allowAccidentals()) {
           submitAnswer(note);
         } else {
-          pendingNote = note;
+          setPending(note);
           pendingTimeout = setTimeout(() => {
-            submitAnswer(pendingNote!);
-            pendingNote = null;
+            const n = pendingNote!;
+            setPending(null);
             pendingTimeout = null;
+            submitAnswer(n);
           }, 400);
         }
       } else if (buffer.length >= 2) {
@@ -181,7 +274,11 @@ export function createSolfegeKeyHandler(
     return false;
   }
 
-  return { handleKey, reset };
+  function getPendingNote(): string | null {
+    return pendingNote;
+  }
+
+  return { handleKey, reset, getPendingNote };
 }
 
 /**
@@ -191,11 +288,17 @@ export function createSolfegeKeyHandler(
 export function createAdaptiveKeyHandler(
   submitAnswer: (note: string) => void,
   allowAccidentals: () => boolean = () => true,
+  onPendingChange?: (pendingNote: string | null) => void,
 ): NoteKeyHandler {
-  const letterHandler = createNoteKeyHandler(submitAnswer, allowAccidentals);
+  const letterHandler = createNoteKeyHandler(
+    submitAnswer,
+    allowAccidentals,
+    onPendingChange,
+  );
   const solfegeHandler = createSolfegeKeyHandler(
     submitAnswer,
     allowAccidentals,
+    onPendingChange,
   );
 
   return {
@@ -207,6 +310,11 @@ export function createAdaptiveKeyHandler(
     reset(): void {
       letterHandler.reset();
       solfegeHandler.reset();
+    },
+    getPendingNote(): string | null {
+      return getUseSolfege()
+        ? solfegeHandler.getPendingNote()
+        : letterHandler.getPendingNote();
     },
   };
 }

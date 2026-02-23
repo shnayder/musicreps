@@ -4,7 +4,10 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
-import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
+import {
+  createAdaptiveKeyHandler,
+  noteNarrowingSet,
+} from '../../quiz-engine.ts';
 import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
@@ -31,8 +34,8 @@ import {
   RoundComplete,
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
-import { StatsGrid, StatsLegend, StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import { StatsGrid, StatsToggle } from '../../ui/stats.tsx';
+import { FeedbackDisplay, KeyboardHint } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -95,13 +98,15 @@ export function SemitoneMathMode(
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const currentQRef = useRef<Question | null>(null);
 
-  // --- Key handler ---
+  // --- Key handler + pending state for narrowing ---
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
+  const [pendingNote, setPendingNote] = useState<string | null>(null);
   const noteHandler = useMemo(
     () =>
       createAdaptiveKeyHandler(
         (note: string) => engineSubmitRef.current(note),
         () => true,
+        setPendingNote,
       ),
     [],
   );
@@ -135,6 +140,12 @@ export function SemitoneMathMode(
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
+
+  // --- Narrowing (keyboard match highlighting) ---
+  const noteNarrowing = useMemo(
+    () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+    [pendingNote, engine.state.answered],
+  );
 
   // --- Calibration state ---
   const [calibrating, setCalibrating] = useState(false);
@@ -232,6 +243,10 @@ export function SemitoneMathMode(
             <div class='stats-controls'>
               <StatsToggle active={statsMode} onToggle={setStatsMode} />
             </div>
+            <BaselineInfo
+              baseline={learner.motorBaseline}
+              onRun={() => setCalibrating(true)}
+            />
             <div class='stats-container'>
               <StatsGrid
                 selector={statsSel}
@@ -240,15 +255,7 @@ export function SemitoneMathMode(
                 statsMode={statsMode}
                 baseline={learner.motorBaseline ?? undefined}
               />
-              <StatsLegend
-                statsMode={statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
             </div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
-            />
           </div>
         }
       />
@@ -282,7 +289,12 @@ export function SemitoneMathMode(
           )
           : (
             <>
-              <NoteButtons onAnswer={handleNoteAnswer} useFlats={useFlats} />
+              <NoteButtons
+                onAnswer={handleNoteAnswer}
+                useFlats={useFlats}
+                narrowing={noteNarrowing}
+              />
+              <KeyboardHint type='note' />
               <FeedbackDisplay
                 text={engine.state.feedbackText}
                 className={engine.state.feedbackClass}

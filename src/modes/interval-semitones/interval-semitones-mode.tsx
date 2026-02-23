@@ -26,8 +26,9 @@ import {
   RoundComplete,
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
-import { StatsLegend, StatsTable, StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import { StatsTable, StatsToggle } from '../../ui/stats.tsx';
+import { numberNarrowingSet } from '../../quiz-engine.ts';
+import { FeedbackDisplay, KeyboardHint } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -60,9 +61,10 @@ export function IntervalSemitonesMode(
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const currentQRef = useRef<Question | null>(null);
 
-  // --- Key handler state (digit buffering for forward direction) ---
+  // --- Key handler state + pending state for narrowing ---
   const pendingDigitRef = useRef<number | null>(null);
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pendingDigit, setPendingDigit] = useState<number | null>(null);
 
   // --- Engine config ---
   const engineConfig = useMemo((): QuizEngineConfig => ({
@@ -88,6 +90,17 @@ export function IntervalSemitonesMode(
         // No keyboard for interval buttons
         return false;
       }
+      // Forward: Enter commits pending digit immediately
+      if (e.key === 'Enter' && pendingDigitRef.current !== null) {
+        e.preventDefault();
+        clearTimeout(pendingTimeoutRef.current!);
+        const d = pendingDigitRef.current;
+        pendingDigitRef.current = null;
+        setPendingDigit(null);
+        pendingTimeoutRef.current = null;
+        if (d >= 1) ctx.submitAnswer(String(d));
+        return true;
+      }
       // Forward: digit buffering for numbers 1-12
       if (e.key >= '0' && e.key <= '9') {
         e.preventDefault();
@@ -96,6 +109,7 @@ export function IntervalSemitonesMode(
           const num = pendingDigitRef.current * 10 + d;
           clearTimeout(pendingTimeoutRef.current!);
           pendingDigitRef.current = null;
+          setPendingDigit(null);
           pendingTimeoutRef.current = null;
           if (num >= 1 && num <= 12) ctx.submitAnswer(String(num));
           return true;
@@ -105,12 +119,14 @@ export function IntervalSemitonesMode(
         } else {
           // 0 or 1 — could be 10, 11, 12
           pendingDigitRef.current = d;
+          setPendingDigit(d);
           pendingTimeoutRef.current = setTimeout(() => {
             if (pendingDigitRef.current !== null) {
               if (pendingDigitRef.current >= 1) {
                 ctx.submitAnswer(String(pendingDigitRef.current));
               }
               pendingDigitRef.current = null;
+              setPendingDigit(null);
               pendingTimeoutRef.current = null;
             }
           }, 400);
@@ -123,17 +139,25 @@ export function IntervalSemitonesMode(
     onStart: () => {
       if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
       pendingDigitRef.current = null;
+      setPendingDigit(null);
     },
 
     onStop: () => {
       if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
       pendingDigitRef.current = null;
+      setPendingDigit(null);
     },
 
     getPracticingLabel: () => 'all items',
   }), []);
 
   const engine = useQuizEngine(engineConfig, learner.selector);
+
+  // --- Narrowing (keyboard match highlighting, forward direction only) ---
+  const numNarrowing = useMemo(
+    () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 12),
+    [pendingDigit, engine.state.answered],
+  );
 
   // --- Calibration state ---
   const [calibrating, setCalibrating] = useState(false);
@@ -220,6 +244,10 @@ export function IntervalSemitonesMode(
             <div class='stats-controls'>
               <StatsToggle active={statsMode} onToggle={setStatsMode} />
             </div>
+            <BaselineInfo
+              baseline={learner.motorBaseline}
+              onRun={() => setCalibrating(true)}
+            />
             <div class='stats-container'>
               <StatsTable
                 selector={statsSel}
@@ -229,15 +257,7 @@ export function IntervalSemitonesMode(
                 statsMode={statsMode}
                 baseline={learner.motorBaseline ?? undefined}
               />
-              <StatsLegend
-                statsMode={statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
             </div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
-            />
           </div>
         }
       />
@@ -280,6 +300,10 @@ export function IntervalSemitonesMode(
                 end={12}
                 hidden={dir === 'rev'}
                 onAnswer={handleNumAnswer}
+                narrowing={dir === 'fwd' ? numNarrowing : undefined}
+              />
+              <KeyboardHint
+                type={dir === 'fwd' ? 'number-1-12' : null}
               />
               <FeedbackDisplay
                 text={engine.state.feedbackText}

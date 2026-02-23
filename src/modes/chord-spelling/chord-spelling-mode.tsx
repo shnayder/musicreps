@@ -6,7 +6,10 @@
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle, SequentialState } from '../../types.ts';
 import { displayNote } from '../../music-data.ts';
-import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
+import {
+  createAdaptiveKeyHandler,
+  noteNarrowingSet,
+} from '../../quiz-engine.ts';
 import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
@@ -33,8 +36,8 @@ import {
   RoundComplete,
   TabbedIdle,
 } from '../../ui/mode-screen.tsx';
-import { StatsGrid, StatsLegend, StatsToggle } from '../../ui/stats.tsx';
-import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
+import { StatsGrid, StatsToggle } from '../../ui/stats.tsx';
+import { FeedbackDisplay, KeyboardHint } from '../../ui/quiz-ui.tsx';
 import {
   BaselineInfo,
   BUTTON_PROVIDER,
@@ -127,8 +130,9 @@ export function ChordSpellingMode(
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const currentItemRef = useRef<string | null>(null);
 
-  // --- Key handler ---
+  // --- Key handler + pending state for narrowing ---
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
+  const [pendingNote, setPendingNote] = useState<string | null>(null);
 
   // The key handler routes through sequential input, not engine.submitAnswer
   const handleSeqInputRef = useRef<(note: string) => void>(() => {});
@@ -138,6 +142,7 @@ export function ChordSpellingMode(
       createAdaptiveKeyHandler(
         (note: string) => handleSeqInputRef.current(note),
         () => true,
+        setPendingNote,
       ),
     [],
   );
@@ -195,6 +200,12 @@ export function ChordSpellingMode(
 
   const engine = useQuizEngine(engineConfig, learner.selector);
   engineSubmitRef.current = engine.submitAnswer;
+
+  // --- Narrowing (keyboard match highlighting) ---
+  const noteNarrowing = useMemo(
+    () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+    [pendingNote, engine.state.answered],
+  );
 
   // --- Calibration state ---
   const [calibrating, setCalibrating] = useState(false);
@@ -287,6 +298,10 @@ export function ChordSpellingMode(
             <div class='stats-controls'>
               <StatsToggle active={statsMode} onToggle={setStatsMode} />
             </div>
+            <BaselineInfo
+              baseline={learner.motorBaseline}
+              onRun={() => setCalibrating(true)}
+            />
             <div class='stats-container'>
               <StatsGrid
                 selector={statsSel}
@@ -296,15 +311,7 @@ export function ChordSpellingMode(
                 notes={GRID_NOTES}
                 baseline={learner.motorBaseline ?? undefined}
               />
-              <StatsLegend
-                statsMode={statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
             </div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
-            />
           </div>
         }
       />
@@ -339,7 +346,11 @@ export function ChordSpellingMode(
           : (
             <>
               <ChordSlots state={seqState} />
-              <NoteButtons onAnswer={handleNoteAnswer} />
+              <NoteButtons
+                onAnswer={handleNoteAnswer}
+                narrowing={noteNarrowing}
+              />
+              <KeyboardHint type='note' />
               <FeedbackDisplay
                 text={engine.state.feedbackText}
                 className={engine.state.feedbackClass}
