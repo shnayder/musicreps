@@ -1,164 +1,165 @@
-# Answer Feedback — Implementation Plan
+# Answer Feedback — Implementation Plan (v2: Feedback Banner)
 
 ## Problem / Context
 
-Feedback for correct/incorrect answers is a text line below the buttons ("Correct!"
-/ "Incorrect — B"). This feels disconnected — the user has to shift attention from
-the button grid to the text below. The spec calls for button-level visual feedback:
-flash the tapped button green (correct) or red (wrong) + highlight the correct
-button green simultaneously. See `plans/product-specs/active/2026-02-23-answer-feedback-spec.md`.
+The v1 button-highlighting approach doesn't work well on mobile:
+- The user's finger obscures both the pressed button and nearby ones during the
+  1s feedback window.
+- Two buttons lighting up at once (correct + wrong) is visually distracting.
+
+**New approach**: a text feedback banner between the question prompt and the
+answer buttons — well above the finger zone.
+
+- **Correct**: show the answer in green (e.g., "C").
+- **Wrong**: show "No, {answer}" in red (e.g., "No, D").
+
+## Branch
+
+Stay on `claude/ux-answer-feedback-iK1Xl` — this is the same feature, iterated.
+The button-flash commit gets superseded, not reverted.
 
 ## Design
 
 ### Data flow
 
-1. **`CheckAnswerResult` gains `correctValue`** — the raw value matching a button's
-   `data-*` attribute (e.g., `"C#"` for NoteButtons, `"5"` for NumberButtons).
-   Each mode's `checkAnswer` already knows this; making it explicit is one line per mode.
+1. **`EngineState` gains `feedbackDisplayAnswer: string | null`** — the
+   display-formatted correct answer (e.g., "B♭"). Set from the existing
+   `correctAnswer` parameter in `engineSubmitAnswer`.
 
-2. **`EngineState` gains three fields** — `feedbackCorrect` (boolean), `feedbackUserValue`
-   (user's raw input), `feedbackCorrectValue` (the correct button value).
-   Set in `engineSubmitAnswer`, cleared in `engineNextQuestion`.
+2. **Remove button-feedback fields** — `feedbackCorrectValue` and
+   `feedbackUserValue` are no longer needed. Remove them from `EngineState`,
+   `engineSubmitAnswer` params, and `engineNextQuestion`/`engineRoundComplete`
+   clears.
 
-3. **`engineSubmitAnswer` takes two extra params** — `userValue` and `correctValue`.
-   The hook's `submitAnswer` passes `input` and `result.correctValue`.
+3. **Remove `correctValue` from `CheckAnswerResult`** — only existed for
+   button-to-value matching. Remove from type and all mode `checkAnswer`
+   returns.
 
-4. **Button components gain `correctValue` / `wrongValue` props** — when a button's
-   value matches `correctValue`, it gets `.btn-correct`; when it matches `wrongValue`,
-   `.btn-wrong`. Only set when `engine.state.answered`.
+4. **`FeedbackBanner` component** — new component in `src/ui/quiz-ui.tsx`.
+   Props: `correct: boolean | null`, `answer: string | null`. Renders:
+   - `null` when `correct` is null (not yet answered)
+   - Answer text in green when correct
+   - "No, {answer}" in red when wrong
+   - Screen reader: existing sr-only `FeedbackDisplay` continues to handle
+     `aria-live`.
 
-5. **Each mode passes feedback values to its button component(s)** — derived from
-   `engine.state.feedbackCorrectValue` and `engine.state.feedbackUserValue`. Only
-   the visible button group (for bidirectional modes) gets the values.
+5. **Each mode renders `<FeedbackBanner>` as a child of `QuizArea`**, placed
+   just above the buttons. This lets fretboard modes keep the SVG above the
+   banner (SVG → banner → piano buttons).
 
-6. **FeedbackDisplay becomes sr-only** — the `<div class={className}>` text becomes
-   visually hidden but announced via `aria-live="polite"`. Time and hint displays
-   remain visible.
+6. **Button components lose feedback props** — remove `FeedbackProps` type,
+   `feedbackClass()` helper, and all `correctValue`/`wrongValue` props.
 
-### Button value mapping per mode
+7. **Chord Spelling** — remove per-step button flash (`stepFlash` state and
+   timer). ChordSlots already colors each slot. After full chord entry, the
+   banner shows the same `feedbackDisplayAnswer` as other modes.
 
-| Mode | Button(s) | correctValue source |
-|------|-----------|-------------------|
-| Fretboard (guitar/ukulele) | PianoNoteButtons | `currentNote` (NOTES[].name) |
-| Note ↔ Semitones (fwd) | NumberButtons | `String(q.noteNum)` |
-| Note ↔ Semitones (rev) | NoteButtons | `q.noteName` |
-| Interval ↔ Semitones (fwd) | NumberButtons | `String(q.num)` |
-| Interval ↔ Semitones (rev) | IntervalButtons | `q.abbrev` |
-| Semitone Math | NoteButtons | `q.answer.name` |
-| Interval Math | NoteButtons | `q.answer.name` |
-| Key Signatures (fwd) | KeysigButtons | `keySignatureLabel(key)` |
-| Key Signatures (rev) | NoteButtons | `noteToCanonical(q.root)` |
-| Scale Degrees (fwd) | NoteButtons | `noteToCanonical(q.noteName)` |
-| Scale Degrees (rev) | DegreeButtons | `String(q.degree)` |
-| Diatonic Chords (fwd) | NoteButtons | `noteToCanonical(q.rootNote)` |
-| Diatonic Chords (rev) | NumeralButtons | `q.chord.numeral` |
-| Chord Spelling | NoteButtons | per-step (mode-level, not engine) |
-| Speed Tap | SVG circles | per-position (mode-level, not engine) |
+8. **Speed Tap** — unchanged. Its SVG-based feedback (circle fills) is
+   independent of buttons.
 
-**`noteToCanonical(spelledName)`** — new helper in music-data.ts. Maps any spelled
-note (e.g., "Bb", "F#") to its NOTES[].name equivalent (e.g., "A#", "F#"). Uses
-`spelledNoteSemitone` for the lookup.
+### Banner placement (DOM order within QuizArea)
 
-### Chord spelling per-step flash
+```
+quiz-area
+  quiz-last-question
+  quiz-prompt-row
+    quiz-prompt              ← question text
+  [fretboard SVG]            ← fretboard modes only
+  feedback-banner            ← NEW: between prompt/SVG and buttons
+  answer-buttons / note-buttons
+  feedback (sr-only)
+  hint
+  round-complete
+```
 
-ChordSlots already colors per step. For buttons, the mode tracks `stepFlash` state:
-`{ correctValue, wrongValue } | null`. Set on each sequential input, cleared after
-300ms or when next step activates.
+### CSS
 
-### Speed tap correct position highlight
+New `.feedback-banner` class:
+- Text centered, sized prominently but smaller than the prompt
+- Uses existing `--color-success-text` / `--color-error-text` color tokens
+- Fixed `min-height` to prevent layout shift between answered/unanswered states
+- Visible only during the `answered` window (same 1s as before)
 
-On wrong tap, find the correct position(s) on the same string. Flash the closest
-one green (800ms, same timer as the red flash). Uses existing `setCircleFill` helper.
+Remove `.btn-correct` and `.btn-wrong` from both `.answer-btn` and `.note-btn`.
 
 ## Implementation Steps
 
-### Step 1: Types and engine state (independently testable)
+### Step 1: Engine state changes
 
-- `src/types.ts`: Add `correctValue?: string` to `CheckAnswerResult`.
-  Add `feedbackCorrect`, `feedbackUserValue`, `feedbackCorrectValue` to `EngineState`.
-- `src/quiz-engine-state.ts`: Update `engineSubmitAnswer` signature. Update
-  `engineNextQuestion` and `initialEngineState` to clear new fields.
-- `src/quiz-engine-state_test.ts`: Add tests for new fields.
+- `src/types.ts`: Add `feedbackDisplayAnswer: string | null` to `EngineState`.
+  Remove `feedbackCorrectValue` and `feedbackUserValue`. Remove `correctValue`
+  from `CheckAnswerResult`.
+- `src/quiz-engine-state.ts`: Remove `userValue`/`correctValue` params from
+  `engineSubmitAnswer`. Store `correctAnswer` as `feedbackDisplayAnswer`. Clear
+  it in `initialEngineState`, `engineNextQuestion`, `engineRoundComplete`.
+- `src/quiz-engine-state_test.ts`: Update tests for changed fields.
 
 ### Step 2: Hook plumbing
 
-- `src/hooks/use-quiz-engine.ts`: Pass `input` and `result.correctValue` through
-  to `engineSubmitAnswer`.
+- `src/hooks/use-quiz-engine.ts`: Simplify `submitAnswer` — remove
+  `tryCanonicalizeNote(input)` and `result.correctValue` arguments. Can remove
+  `tryCanonicalizeNote` helper and `noteToCanonical` import.
 
-### Step 3: CSS
+### Step 3: FeedbackBanner component
 
-- `src/styles.css`: Add `.btn-correct` and `.btn-wrong` classes for `.answer-btn`
-  and `.note-btn`. Use existing `--color-success-*` / `--color-error-*` variables.
+- `src/ui/quiz-ui.tsx`: Add `FeedbackBanner` component. Props:
+  `{ correct: boolean | null, answer: string | null }`.
 
-### Step 4: Button components
+### Step 4: Banner CSS
 
-- `src/ui/buttons.tsx`: Add `correctValue` and `wrongValue` optional props to all
-  7 button components. Apply `.btn-correct` / `.btn-wrong` CSS classes when values
-  match.
+- `src/styles.css`: Add `.feedback-banner`, `.feedback-banner-correct`,
+  `.feedback-banner-wrong`. Remove `.btn-correct` / `.btn-wrong` from both
+  `.answer-btn` and `.note-btn`.
 
-### Step 5: FeedbackDisplay becomes sr-only
+### Step 5: Button components — remove feedback props
 
-- `src/ui/quiz-ui.tsx`: Wrap the feedback text div in a visually-hidden `aria-live`
-  region. Remove visible feedback text. Keep time and hint visible.
-- `src/styles.css`: Add `.sr-only` utility class.
+- `src/ui/buttons.tsx`: Remove `FeedbackProps` type, `feedbackClass()` helper,
+  and `correctValue`/`wrongValue` from all 7 button components.
 
-### Step 6: Mode checkAnswer updates (all 8 standard modes with logic.ts)
+### Step 6: Mode logic — remove correctValue
 
-- `src/modes/note-semitones/logic.ts`: Return `correctValue`.
-- `src/modes/interval-semitones/logic.ts`: Return `correctValue`.
-- `src/modes/semitone-math/logic.ts`: Return `correctValue`.
-- `src/modes/interval-math/logic.ts`: Return `correctValue`.
-- `src/modes/key-signatures/logic.ts`: Return `correctValue`.
-- `src/modes/scale-degrees/logic.ts`: Return `correctValue`.
-- `src/modes/diatonic-chords/logic.ts`: Return `correctValue`.
-- `src/quiz-fretboard-state.ts`: Return `correctValue` from `checkFretboardAnswer`.
-- `src/music-data.ts`: Add `noteToCanonical()` helper.
+- Remove `correctValue` from `checkAnswer` return in:
+  `note-semitones`, `interval-semitones`, `semitone-math`, `interval-math`,
+  `key-signatures`, `scale-degrees`, `diatonic-chords` logic.ts files.
+- Remove `correctValue` from `checkFretboardAnswer` in
+  `quiz-fretboard-state.ts`.
 
-### Step 7: Mode render updates (pass flash props to buttons)
+### Step 7: Mode components — add banner, remove button feedback
 
-- All 9 standard mode .tsx files: pass `correctValue`/`wrongValue` from engine
-  state to the appropriate button component(s).
+- All 10 mode `.tsx` files: remove `correctValue`/`wrongValue` threading to
+  buttons. Add `<FeedbackBanner>` as a child before buttons.
+- Chord spelling: also remove `stepFlash` state, `stepFlashTimer`, and related
+  logic.
 
-### Step 8: Chord spelling per-step button flash
+### Step 8: Version bump + build
 
-- `src/modes/chord-spelling/chord-spelling-mode.tsx`: Add `stepFlash` state.
-  Flash buttons on each sequential input, clear after brief delay.
+- `src/build-template.ts`: bump version.
+- Run `deno task ok`.
 
-### Step 9: Speed tap correct position highlight
+### Step 9: Update design spec
 
-- `src/modes/speed-tap/speed-tap-mode.tsx`: On wrong tap, find closest correct
-  position on the same string and flash it green.
-
-### Step 10: Version bump
-
-- `src/build-template.ts`: v8.16 → v8.17.
+- Update this plan file (already done by writing it).
 
 ## Files Modified
 
 | File | Changes |
 |------|---------|
-| `src/types.ts` | Add fields to EngineState, CheckAnswerResult |
-| `src/quiz-engine-state.ts` | Update engineSubmitAnswer, engineNextQuestion, initialEngineState |
-| `src/quiz-engine-state_test.ts` | Tests for new fields |
-| `src/hooks/use-quiz-engine.ts` | Pass feedback values through |
-| `src/styles.css` | .btn-correct, .btn-wrong, .sr-only |
-| `src/ui/buttons.tsx` | correctValue/wrongValue props on all button types |
-| `src/ui/quiz-ui.tsx` | FeedbackDisplay sr-only conversion |
-| `src/music-data.ts` | noteToCanonical() helper |
-| `src/quiz-fretboard-state.ts` | correctValue in checkFretboardAnswer |
-| `src/modes/*/logic.ts` (7 files) | correctValue in checkAnswer |
-| `src/modes/*/*.tsx` (11 files) | Pass flash props to buttons |
+| `src/types.ts` | Add `feedbackDisplayAnswer`, remove `feedbackCorrectValue`/`feedbackUserValue`/`correctValue` |
+| `src/quiz-engine-state.ts` | Simplify `engineSubmitAnswer`, add `feedbackDisplayAnswer` |
+| `src/quiz-engine-state_test.ts` | Update tests |
+| `src/hooks/use-quiz-engine.ts` | Remove canonicalization, simplify submitAnswer call |
+| `src/ui/quiz-ui.tsx` | Add `FeedbackBanner` component |
+| `src/ui/buttons.tsx` | Remove all feedback props and helpers |
+| `src/styles.css` | Add `.feedback-banner`, remove `.btn-correct`/`.btn-wrong` |
+| `src/modes/*/logic.ts` (7 files) | Remove `correctValue` from returns |
+| `src/quiz-fretboard-state.ts` | Remove `correctValue` from return |
+| `src/modes/*/*.tsx` (10 files) | Add banner, remove button feedback threading |
 | `src/build-template.ts` | Version bump |
 
 ## Testing
 
-- Engine state tests: `engineSubmitAnswer` sets new fields, `engineNextQuestion` clears them.
-- `noteToCanonical` unit test: verify Bb→A#, C→C, F#→F#, Db→C# etc.
-- Manual: verify all 10 modes show green/red button flash on answer.
-- Manual: verify chord spelling flashes per step.
-- Manual: verify speed tap shows correct position on wrong tap.
-- Manual: verify screen reader announces feedback text.
-
-## Version
-
-v8.16 → v8.17.
+- Engine state tests: `feedbackDisplayAnswer` set/cleared correctly.
+- Manual: all 10 modes show feedback banner on answer.
+- Manual: chord spelling shows banner after full chord, per-step slots still work.
+- Manual: mobile — banner visible above finger zone.
+- Manual: screen reader still announces feedback via sr-only div.
