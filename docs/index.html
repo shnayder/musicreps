@@ -1346,6 +1346,31 @@ button {
   font-size: var(--text-base);
   margin-top: var(--space-5);
 }
+
+/* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
+.keyboard-hint {
+  display: none;
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+  text-align: center;
+  margin-top: var(--space-3);
+}
+@media (pointer: fine) {
+  .keyboard-hint {
+    display: block;
+  }
+}
+
+/* --- Keyboard narrowing (progressive button highlighting) --- */
+.kb-match {
+  border-color: var(--color-brand) !important;
+  background: var(--color-brand-bg) !important;
+  box-shadow: 0 0 0 1px var(--color-brand);
+}
+.kb-dimmed {
+  opacity: 0.4;
+}
+
 .stats {
   margin-top: var(--space-5);
   font-size: var(--text-sm);
@@ -1758,7 +1783,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">v8.18</span>
+      <span class="version">v8.19</span>
     </div>
   </div>
 
@@ -4371,31 +4396,66 @@ button {
   }
 
   // src/quiz-engine.ts
-  function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  var NOTE_NAME_SET = new Set(NOTE_NAMES);
+  function noteNarrowingSet(pendingNote) {
+    if (!pendingNote) return null;
+    const matches = /* @__PURE__ */ new Set();
+    matches.add(pendingNote);
+    const sharp = pendingNote + "#";
+    if (NOTE_NAME_SET.has(sharp)) matches.add(sharp);
+    return matches;
+  }
+  function numberNarrowingSet(pendingDigit, end) {
+    if (pendingDigit === null) return null;
+    const matches = /* @__PURE__ */ new Set();
+    matches.add(String(pendingDigit));
+    for (let d3 = 0; d3 <= 9; d3++) {
+      const num = pendingDigit * 10 + d3;
+      if (num > end) break;
+      if (num >= 0) matches.add(String(num));
+    }
+    return matches;
+  }
+  function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
     let pendingNote = null;
     let pendingTimeout = null;
+    function setPending(note) {
+      pendingNote = note;
+      onPendingChange?.(note);
+    }
     function reset() {
       if (pendingTimeout) clearTimeout(pendingTimeout);
-      pendingNote = null;
+      setPending(null);
       pendingTimeout = null;
     }
     function handleKey(e3) {
       const key = e3.key.toUpperCase();
+      if (e3.key === "Enter" && pendingNote) {
+        e3.preventDefault();
+        if (pendingTimeout) clearTimeout(pendingTimeout);
+        const note = pendingNote;
+        setPending(null);
+        pendingTimeout = null;
+        submitAnswer(note);
+        return true;
+      }
       if (pendingNote && allowAccidentals()) {
         if (e3.key === "#" || e3.key === "s" || e3.key === "S" || e3.shiftKey && e3.key === "3") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "#");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "#");
           return true;
         }
         if (e3.key === "b" || e3.key === "B") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "b");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "b");
           return true;
         }
       }
@@ -4405,20 +4465,24 @@ button {
         if (!allowAccidentals()) {
           submitAnswer(key);
         } else {
-          pendingNote = key;
+          setPending(key);
           pendingTimeout = setTimeout(() => {
-            submitAnswer(pendingNote);
-            pendingNote = null;
+            const note = pendingNote;
+            setPending(null);
             pendingTimeout = null;
+            submitAnswer(note);
           }, 400);
         }
         return true;
       }
       return false;
     }
-    return { handleKey, reset };
+    function getPendingNote() {
+      return pendingNote;
+    }
+    return { handleKey, reset, getPendingNote };
   }
-  function createSolfegeKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  function createSolfegeKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
     const SOLFEGE_TO_NOTE = {
       "do": "C",
       "re": "D",
@@ -4432,37 +4496,60 @@ button {
     let buffer = "";
     let pendingNote = null;
     let pendingTimeout = null;
+    function setPending(note) {
+      pendingNote = note;
+      onPendingChange?.(note);
+    }
     function reset() {
       buffer = "";
       if (pendingTimeout) clearTimeout(pendingTimeout);
       pendingTimeout = null;
-      pendingNote = null;
+      setPending(null);
     }
     function submitPending() {
       if (pendingNote) {
         if (pendingTimeout) clearTimeout(pendingTimeout);
-        submitAnswer(pendingNote);
-        pendingNote = null;
+        const note = pendingNote;
+        setPending(null);
         pendingTimeout = null;
+        submitAnswer(note);
       }
     }
     function handleKey(e3) {
       const key = e3.key.toLowerCase();
+      if (e3.key === "Enter") {
+        if (pendingNote) {
+          e3.preventDefault();
+          if (pendingTimeout) clearTimeout(pendingTimeout);
+          const note = pendingNote;
+          setPending(null);
+          pendingTimeout = null;
+          submitAnswer(note);
+          return true;
+        }
+        if (buffer.length > 0) {
+          buffer = "";
+          return true;
+        }
+        return false;
+      }
       if (pendingNote && allowAccidentals()) {
         if (e3.key === "#" || e3.shiftKey && e3.key === "3") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "#");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "#");
           return true;
         }
         if (key === "b") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "b");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "b");
           return true;
         }
       }
@@ -4478,11 +4565,12 @@ button {
           if (!allowAccidentals()) {
             submitAnswer(note);
           } else {
-            pendingNote = note;
+            setPending(note);
             pendingTimeout = setTimeout(() => {
-              submitAnswer(pendingNote);
-              pendingNote = null;
+              const n2 = pendingNote;
+              setPending(null);
               pendingTimeout = null;
+              submitAnswer(n2);
             }, 400);
           }
         } else if (buffer.length >= 2) {
@@ -4498,13 +4586,21 @@ button {
       }
       return false;
     }
-    return { handleKey, reset };
+    function getPendingNote() {
+      return pendingNote;
+    }
+    return { handleKey, reset, getPendingNote };
   }
-  function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true) {
-    const letterHandler = createNoteKeyHandler(submitAnswer, allowAccidentals);
+  function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
+    const letterHandler = createNoteKeyHandler(
+      submitAnswer,
+      allowAccidentals,
+      onPendingChange
+    );
     const solfegeHandler = createSolfegeKeyHandler(
       submitAnswer,
-      allowAccidentals
+      allowAccidentals,
+      onPendingChange
     );
     return {
       handleKey(e3) {
@@ -4513,6 +4609,9 @@ button {
       reset() {
         letterHandler.reset();
         solfegeHandler.reset();
+      },
+      getPendingNote() {
+        return getUseSolfege() ? solfegeHandler.getPendingNote() : letterHandler.getPendingNote();
       }
     };
   }
@@ -5732,7 +5831,7 @@ button {
   }
 
   // src/ui/buttons.tsx
-  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive }) {
+  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive, narrowing }) {
     const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: NOTE_NAMES.map((n2) => {
       let label;
@@ -5742,12 +5841,16 @@ button {
       } else {
         label = displayNote(n2);
       }
+      let btnCls = "answer-btn answer-btn-note";
+      if (narrowing) {
+        btnCls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+      }
       return /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
           tabIndex: 0,
-          class: "answer-btn answer-btn-note",
+          class: btnCls,
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: label
@@ -5756,50 +5859,68 @@ button {
       );
     }) });
   }
-  function PianoNoteButtons({ onAnswer, hideAccidentals }) {
+  function PianoNoteButtons({ onAnswer, hideAccidentals, narrowing }) {
     return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
-      /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "note-btn accidental" + (hideAccidentals ? " hidden" : ""),
-          "data-note": n2,
-          onClick: onAnswer ? () => onAnswer(n2) : void 0,
-          children: displayNote(n2)
-        },
-        n2
-      )) }),
-      /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: NATURAL_NOTES.map((n2) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "note-btn",
-          "data-note": n2,
-          onClick: onAnswer ? () => onAnswer(n2) : void 0,
-          children: displayNote(n2)
-        },
-        n2
-      )) })
+      /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => {
+        let cls = "note-btn accidental" + (hideAccidentals ? " hidden" : "");
+        if (narrowing && !hideAccidentals) {
+          cls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            "data-note": n2,
+            onClick: onAnswer ? () => onAnswer(n2) : void 0,
+            children: displayNote(n2)
+          },
+          n2
+        );
+      }) }),
+      /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: NATURAL_NOTES.map((n2) => {
+        let cls = "note-btn";
+        if (narrowing) {
+          cls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            "data-note": n2,
+            onClick: onAnswer ? () => onAnswer(n2) : void 0,
+            children: displayNote(n2)
+          },
+          n2
+        );
+      }) })
     ] });
   }
-  function NumberButtons({ start, end, onAnswer, hidden }) {
+  function NumberButtons({ start, end, onAnswer, hidden, narrowing }) {
     const nums = [];
     for (let i3 = start; i3 <= end; i3++) nums.push(i3);
     const cls = "answer-buttons answer-buttons-numbers" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children: nums.map((i3) => /* @__PURE__ */ u3(
-      "button",
-      {
-        type: "button",
-        tabIndex: 0,
-        class: "answer-btn answer-btn-num",
-        "data-num": String(i3),
-        onClick: onAnswer ? () => onAnswer(i3) : void 0,
-        children: i3
-      },
-      i3
-    )) });
+    return /* @__PURE__ */ u3("div", { class: cls, children: nums.map((i3) => {
+      let btnCls = "answer-btn answer-btn-num";
+      if (narrowing) {
+        btnCls += narrowing.has(String(i3)) ? " kb-match" : " kb-dimmed";
+      }
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-num": String(i3),
+          onClick: onAnswer ? () => onAnswer(i3) : void 0,
+          children: i3
+        },
+        i3
+      );
+    }) });
   }
   function IntervalButtons({ onAnswer, hidden }) {
     const cls = "answer-buttons answer-buttons-intervals" + (hidden ? " answer-group-hidden" : "");
@@ -6280,10 +6401,6 @@ button {
       ] }, note.name)) })
     ] });
   }
-  function StatsLegend({ statsMode, baseline }) {
-    const html = buildStatsLegend(statsMode, baseline);
-    return /* @__PURE__ */ u3("div", { dangerouslySetInnerHTML: { __html: html } });
-  }
   function StatsToggle({ active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "stats-toggle", children: [
       /* @__PURE__ */ u3(
@@ -6320,6 +6437,15 @@ button {
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
       hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
     ] });
+  }
+  var HINT_TEXT = {
+    "note": "Keyboard: C D E \u2026 or C# Db \u2014 Enter to confirm",
+    "number-0-11": "Keyboard: 0\u20139, 10, 11 \u2014 Enter to confirm",
+    "number-1-12": "Keyboard: 1\u20139, 10, 11, 12 \u2014 Enter to confirm"
+  };
+  function KeyboardHint({ type }) {
+    if (!type) return null;
+    return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: HINT_TEXT[type] });
   }
 
   // src/ui/speed-check.tsx
@@ -6589,12 +6715,15 @@ button {
     const currentQRef = A2(null);
     const pendingDigitRef = A2(null);
     const pendingTimeoutRef = A2(null);
+    const [pendingDigit, setPendingDigit] = d2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -6614,6 +6743,16 @@ button {
         if (dir2 === "rev") {
           return noteHandler.handleKey(e3);
         }
+        if (e3.key === "Enter" && pendingDigitRef.current !== null) {
+          e3.preventDefault();
+          clearTimeout(pendingTimeoutRef.current);
+          const d3 = pendingDigitRef.current;
+          pendingDigitRef.current = null;
+          setPendingDigit(null);
+          pendingTimeoutRef.current = null;
+          ctx.submitAnswer(String(d3));
+          return true;
+        }
         if (e3.key >= "0" && e3.key <= "9") {
           e3.preventDefault();
           const d3 = parseInt(e3.key);
@@ -6621,6 +6760,7 @@ button {
             const num = pendingDigitRef.current * 10 + d3;
             clearTimeout(pendingTimeoutRef.current);
             pendingDigitRef.current = null;
+            setPendingDigit(null);
             pendingTimeoutRef.current = null;
             if (num <= 11) ctx.submitAnswer(String(num));
             return true;
@@ -6629,10 +6769,12 @@ button {
             ctx.submitAnswer(String(d3));
           } else {
             pendingDigitRef.current = d3;
+            setPendingDigit(d3);
             pendingTimeoutRef.current = setTimeout(() => {
               if (pendingDigitRef.current !== null) {
                 ctx.submitAnswer(String(pendingDigitRef.current));
                 pendingDigitRef.current = null;
+                setPendingDigit(null);
                 pendingTimeoutRef.current = null;
               }
             }, 400);
@@ -6645,16 +6787,26 @@ button {
         noteHandler.reset();
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       onStop: () => {
         noteHandler.reset();
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       getPracticingLabel: () => "all items"
     }), [noteHandler]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
+    const numNarrowing = T2(
+      () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 11),
+      [pendingDigit, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -6720,33 +6872,24 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsTable,
-                {
-                  selector: statsSel,
-                  rows: getStatsRows(),
-                  fwdHeader: "N\u2192#",
-                  revHeader: "#\u2192N",
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
                 baseline: learner.motorBaseline,
                 onRun: () => setCalibrating(true)
               }
-            )
+            ),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
+              StatsTable,
+              {
+                selector: statsSel,
+                rows: getStatsRows(),
+                fwdHeader: "N\u2192#",
+                revHeader: "#\u2192N",
+                statsMode,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ) })
           ] })
         }
       ),
@@ -6784,7 +6927,8 @@ button {
               NoteButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "rev" ? noteNarrowing : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -6793,7 +6937,14 @@ button {
                 start: 0,
                 end: 11,
                 hidden: dir === "rev",
-                onAnswer: handleNumAnswer
+                onAnswer: handleNumAnswer,
+                narrowing: dir === "fwd" ? numNarrowing : void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              KeyboardHint,
+              {
+                type: dir === "fwd" ? "number-0-11" : "note"
               }
             ),
             /* @__PURE__ */ u3(
@@ -6862,6 +7013,7 @@ button {
     const currentQRef = A2(null);
     const pendingDigitRef = A2(null);
     const pendingTimeoutRef = A2(null);
+    const [pendingDigit, setPendingDigit] = d2(null);
     const engineConfig = T2(() => ({
       getEnabledItems: () => ALL_ITEMS2,
       checkAnswer: (_itemId, input) => {
@@ -6878,6 +7030,16 @@ button {
         if (dir2 === "rev") {
           return false;
         }
+        if (e3.key === "Enter" && pendingDigitRef.current !== null) {
+          e3.preventDefault();
+          clearTimeout(pendingTimeoutRef.current);
+          const d3 = pendingDigitRef.current;
+          pendingDigitRef.current = null;
+          setPendingDigit(null);
+          pendingTimeoutRef.current = null;
+          if (d3 >= 1) ctx.submitAnswer(String(d3));
+          return true;
+        }
         if (e3.key >= "0" && e3.key <= "9") {
           e3.preventDefault();
           const d3 = parseInt(e3.key);
@@ -6885,6 +7047,7 @@ button {
             const num = pendingDigitRef.current * 10 + d3;
             clearTimeout(pendingTimeoutRef.current);
             pendingDigitRef.current = null;
+            setPendingDigit(null);
             pendingTimeoutRef.current = null;
             if (num >= 1 && num <= 12) ctx.submitAnswer(String(num));
             return true;
@@ -6893,12 +7056,14 @@ button {
             ctx.submitAnswer(String(d3));
           } else {
             pendingDigitRef.current = d3;
+            setPendingDigit(d3);
             pendingTimeoutRef.current = setTimeout(() => {
               if (pendingDigitRef.current !== null) {
                 if (pendingDigitRef.current >= 1) {
                   ctx.submitAnswer(String(pendingDigitRef.current));
                 }
                 pendingDigitRef.current = null;
+                setPendingDigit(null);
                 pendingTimeoutRef.current = null;
               }
             }, 400);
@@ -6910,14 +7075,20 @@ button {
       onStart: () => {
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       onStop: () => {
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       getPracticingLabel: () => "all items"
     }), []);
     const engine = useQuizEngine(engineConfig, learner.selector);
+    const numNarrowing = T2(
+      () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 12),
+      [pendingDigit, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -6980,33 +7151,24 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsTable,
-                {
-                  selector: statsSel,
-                  rows: getStatsRows2(),
-                  fwdHeader: "I\u2192#",
-                  revHeader: "#\u2192I",
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
                 baseline: learner.motorBaseline,
                 onRun: () => setCalibrating(true)
               }
-            )
+            ),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
+              StatsTable,
+              {
+                selector: statsSel,
+                rows: getStatsRows2(),
+                fwdHeader: "I\u2192#",
+                revHeader: "#\u2192I",
+                statsMode,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ) })
           ] })
         }
       ),
@@ -7053,7 +7215,14 @@ button {
                 start: 1,
                 end: 12,
                 hidden: dir === "rev",
-                onAnswer: handleNumAnswer
+                onAnswer: handleNumAnswer,
+                narrowing: dir === "fwd" ? numNarrowing : void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              KeyboardHint,
+              {
+                type: dir === "fwd" ? "number-1-12" : null
               }
             ),
             /* @__PURE__ */ u3(
@@ -7546,10 +7715,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -7573,6 +7744,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -7647,32 +7822,23 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: statsSel,
-                  colLabels: GRID_COL_LABELS,
-                  getItemId: getGridItemId,
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
                 baseline: learner.motorBaseline,
                 onRun: () => setCalibrating(true)
               }
-            )
+            ),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
+              StatsGrid,
+              {
+                selector: statsSel,
+                colLabels: GRID_COL_LABELS,
+                getItemId: getGridItemId,
+                statsMode,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ) })
           ] })
         }
       ),
@@ -7706,7 +7872,15 @@ button {
               onCancel: () => setCalibrating(false)
             }
           ) : /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer, useFlats }),
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                onAnswer: handleNoteAnswer,
+                useFlats,
+                narrowing: noteNarrowing
+              }
+            ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -7828,10 +8002,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -7855,6 +8031,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -7929,32 +8109,23 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: statsSel,
-                  colLabels: GRID_COL_LABELS2,
-                  getItemId: getGridItemId2,
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
                 baseline: learner.motorBaseline,
                 onRun: () => setCalibrating(true)
               }
-            )
+            ),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
+              StatsGrid,
+              {
+                selector: statsSel,
+                colLabels: GRID_COL_LABELS2,
+                getItemId: getGridItemId2,
+                statsMode,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ) })
           ] })
         }
       ),
@@ -7988,7 +8159,15 @@ button {
               onCancel: () => setCalibrating(false)
             }
           ) : /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer, useFlats }),
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                onAnswer: handleNoteAnswer,
+                useFlats,
+                narrowing: noteNarrowing
+              }
+            ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8100,10 +8279,12 @@ button {
     );
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -8123,6 +8304,15 @@ button {
         const dir2 = currentQRef.current?.dir;
         if (dir2 === "rev") {
           return noteHandler.handleKey(e3);
+        }
+        if (e3.key === "Enter" && pendingSigDigitRef.current !== null) {
+          e3.preventDefault();
+          clearTimeout(pendingSigTimeoutRef.current);
+          const d3 = pendingSigDigitRef.current;
+          pendingSigDigitRef.current = null;
+          pendingSigTimeoutRef.current = null;
+          if (d3 === "0") ctx.submitAnswer("0");
+          return true;
         }
         if (e3.key >= "0" && e3.key <= "7") {
           e3.preventDefault();
@@ -8167,6 +8357,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -8249,33 +8443,24 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsTable,
-                {
-                  selector: statsSel,
-                  rows: getStatsRows3(),
-                  fwdHeader: "Key\u2192Sig",
-                  revHeader: "Sig\u2192Key",
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
                 baseline: learner.motorBaseline,
                 onRun: () => setCalibrating(true)
               }
-            )
+            ),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
+              StatsTable,
+              {
+                selector: statsSel,
+                rows: getStatsRows3(),
+                fwdHeader: "Key\u2192Sig",
+                revHeader: "Sig\u2192Key",
+                statsMode,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ) })
           ] })
         }
       ),
@@ -8320,9 +8505,11 @@ button {
               NoteButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "rev" ? noteNarrowing : void 0
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: dir === "rev" ? "note" : null }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8434,10 +8621,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -8469,6 +8658,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -8547,33 +8740,24 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: statsSel,
-                  colLabels: DEGREE_LABELS2,
-                  getItemId: getGridItemId3,
-                  statsMode,
-                  notes: GRID_NOTES,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
                 baseline: learner.motorBaseline,
                 onRun: () => setCalibrating(true)
               }
-            )
+            ),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
+              StatsGrid,
+              {
+                selector: statsSel,
+                colLabels: DEGREE_LABELS2,
+                getItemId: getGridItemId3,
+                statsMode,
+                notes: GRID_NOTES,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ) })
           ] })
         }
       ),
@@ -8611,7 +8795,8 @@ button {
               NoteButtons,
               {
                 hidden: dir === "rev",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "fwd" ? noteNarrowing : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -8621,6 +8806,7 @@ button {
                 onAnswer: handleDegreeAnswer
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: dir === "fwd" ? "note" : null }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8733,10 +8919,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -8768,6 +8956,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -8846,33 +9038,24 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: statsSel,
-                  colLabels: ROMAN_NUMERALS,
-                  getItemId: getGridItemId4,
-                  statsMode,
-                  notes: GRID_NOTES2,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
                 baseline: learner.motorBaseline,
                 onRun: () => setCalibrating(true)
               }
-            )
+            ),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
+              StatsGrid,
+              {
+                selector: statsSel,
+                colLabels: ROMAN_NUMERALS,
+                getItemId: getGridItemId4,
+                statsMode,
+                notes: GRID_NOTES2,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ) })
           ] })
         }
       ),
@@ -8910,7 +9093,8 @@ button {
               NoteButtons,
               {
                 hidden: dir === "rev",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "fwd" ? noteNarrowing : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -8920,6 +9104,7 @@ button {
                 onAnswer: handleNumeralAnswer
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: dir === "fwd" ? "note" : null }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -9089,12 +9274,14 @@ button {
     const currentItemRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const handleSeqInputRef = A2(() => {
     });
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => handleSeqInputRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -9137,6 +9324,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -9210,33 +9401,24 @@ button {
           ),
           progressContent: /* @__PURE__ */ u3("div", { children: [
             /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: statsSel,
-                  colLabels: GRID_COL_LABELS3,
-                  getItemId: getGridItemId5,
-                  statsMode,
-                  notes: GRID_NOTES3,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
             /* @__PURE__ */ u3(
               BaselineInfo,
               {
                 baseline: learner.motorBaseline,
                 onRun: () => setCalibrating(true)
               }
-            )
+            ),
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: /* @__PURE__ */ u3(
+              StatsGrid,
+              {
+                selector: statsSel,
+                colLabels: GRID_COL_LABELS3,
+                getItemId: getGridItemId5,
+                statsMode,
+                notes: GRID_NOTES3,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ) })
           ] })
         }
       ),
@@ -9271,7 +9453,14 @@ button {
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
-            /* @__PURE__ */ u3(NoteButtons, { onAnswer: handleNoteAnswer }),
+            /* @__PURE__ */ u3(
+              NoteButtons,
+              {
+                onAnswer: handleNoteAnswer,
+                narrowing: noteNarrowing
+              }
+            ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -9593,10 +9782,12 @@ button {
     });
     const noteFilterRef = A2(noteFilter);
     noteFilterRef.current = noteFilter;
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => noteFilterRef.current !== "natural"
+        () => noteFilterRef.current !== "natural",
+        setPendingNote
       ),
       []
     );
@@ -9733,6 +9924,10 @@ button {
     }), [scope, noteHandler, fb, instrument]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -9915,9 +10110,11 @@ button {
               PianoNoteButtons,
               {
                 onAnswer: handleNoteAnswer,
-                hideAccidentals: noteFilter === "natural"
+                hideAccidentals: noteFilter === "natural",
+                narrowing: noteNarrowing
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
