@@ -22,6 +22,8 @@ the user types.
 - Number input has similar buffering for two-digit values (typing "1" waits for
   a possible second digit)
 - Power users who would benefit most from keyboard input have no way to learn it
+- No way to skip the buffer — if you typed C and want the natural, you must wait
+  400ms; there's no "I'm done, commit now" gesture
 
 ## Goals
 
@@ -33,7 +35,8 @@ the user types.
 
 ## Non-Goals
 
-- Changing the underlying keyboard handler logic (key bindings, timing, routing)
+- Overhauling the keyboard handler architecture (key bindings, timing, routing
+  stay the same — the one addition is Enter-to-commit)
 - Adding keyboard shortcuts for navigation, settings, or non-answer input
 - Supporting keyboard input on mobile (this is about surfacing what already
   exists on desktop)
@@ -56,12 +59,12 @@ on touch-primary devices. No JS device detection needed.
 
 The hint text varies by answer type:
 
-| Answer type      | Hint text                                       | Modes using it                                       |
-| ---------------- | ----------------------------------------------- | ---------------------------------------------------- |
-| Note (letter)    | **Keyboard:** C D E … or C# Db (type # b s)    | Fretboard, Semitone Math, Interval Math, Chord Spelling, Key Sigs*, Scale Degrees*, Diatonic Chords* |
-| Note (solfège)   | **Keyboard:** do re mi … or do# reb             | Same modes when solfège is enabled                   |
-| Number 0–11      | **Keyboard:** 0–9, 10, 11                       | Note↔Semitones (forward direction)                   |
-| Number 1–12      | **Keyboard:** 1–9, 10, 11, 12                   | Interval↔Semitones (forward direction)               |
+| Answer type      | Hint text                                                | Modes using it                                       |
+| ---------------- | -------------------------------------------------------- | ---------------------------------------------------- |
+| Note (letter)    | **Keyboard:** C D E … or C# Db — Enter to confirm       | Fretboard, Semitone Math, Interval Math, Chord Spelling, Key Sigs*, Scale Degrees*, Diatonic Chords* |
+| Note (solfège)   | **Keyboard:** do re mi … or do# reb — Enter to confirm  | Same modes when solfège is enabled                   |
+| Number 0–11      | **Keyboard:** 0–9, 10, 11 — Enter to confirm            | Note↔Semitones (forward direction)                   |
+| Number 1–12      | **Keyboard:** 1–9, 10, 11, 12 — Enter to confirm        | Interval↔Semitones (forward direction)               |
 | Interval name    | _(no keyboard hint — no keyboard handler today)_ | Interval↔Semitones (reverse direction)               |
 | Key sig label    | _(no keyboard hint — no keyboard handler today)_ | Key Sigs (forward direction)                         |
 | Degree label     | _(no keyboard hint — no keyboard handler today)_ | Scale Degrees (forward direction)                    |
@@ -97,9 +100,10 @@ what will happen.
 
 1. User types `C` → buttons **C** and **C#** both highlight as "possible
    matches." All other buttons dim slightly.
-2. Three ways to resolve:
+2. Four ways to resolve:
    - Type `#` or `s` → **C#** commits immediately, highlighting clears
    - Type `b` → **Cb** commits immediately, highlighting clears
+   - **Press Enter** → **C** commits immediately as a natural, no waiting
    - Type another note letter (e.g., `D`) → **C** commits (natural), then
      **D** and **D#** highlight as new possible matches
    - Wait 400ms → **C** auto-commits (existing timeout behavior), highlighting
@@ -112,8 +116,8 @@ what will happen.
 1. User types `d` → no buttons highlight yet (ambiguous — could be "do")
 2. User types `o` → syllable resolves to "do" = C. Buttons **C** and **C#**
    highlight as possible matches (same as letter mode after resolving the note).
-3. Resolution follows the same three paths: accidental key, new syllable start,
-   or timeout.
+3. Resolution follows the same four paths: accidental key, Enter, new syllable
+   start, or timeout.
 
 Since solfège syllables require two characters before the note is known, the
 first keypress won't narrow the buttons. That's fine — the user gets feedback on
@@ -123,10 +127,11 @@ the second keypress, which is when the note resolves.
 
 1. User types `1` → buttons **1**, **10**, **11**, and **12** all highlight
    (any number starting with 1).
-2. Three ways to resolve:
+2. Four ways to resolve:
    - Type `0` → **10** commits immediately
    - Type `1` → **11** commits immediately
    - Type `2` → **12** commits immediately
+   - **Press Enter** → **1** commits immediately
    - Wait 400ms → **1** auto-commits
 3. Digits 2–9 commit immediately with no buffer and no highlighting delay.
 
@@ -167,9 +172,12 @@ match the partial keyboard input for the *current* slot. The per-slot visual
 
 ## Cross-Cutting Design Notes
 
-- **No changes to key bindings or timing.** The 400ms buffer, the key
-  assignments, and the routing logic all stay the same. This spec is purely
-  about surfacing what's already happening.
+- **One new key binding: Enter to commit.** When a note or digit is buffered
+  (pending the 400ms timeout), pressing Enter commits it immediately as-is. The
+  400ms buffer, the existing key assignments, and the routing logic all stay the
+  same otherwise. Enter already means "next question" when no buffer is pending,
+  so this is a natural extension — Enter commits the buffer if there is one,
+  advances if there isn't.
 - **Button components gain a "narrowing" prop.** Each button component
   (`NoteButtons`, `PianoNoteButtons`, `NumberButtons`, etc.) needs to accept a
   set of highlighted button IDs and apply the possible-match / dimmed styles.
@@ -200,12 +208,18 @@ match the partial keyboard input for the *current* slot. The per-slot visual
   that flow. Below the buttons, it's available when the user's eye scans down
   after seeing the answer options.
 
-- **Progressive narrowing coexists with the timeout, doesn't replace it.** The
-  400ms auto-commit is important for fast typists who don't want to press Enter
-  after every note. Narrowing makes the buffer *visible* but doesn't change the
-  commit behavior. Users who see the highlighting and want to commit early can
-  type the accidental or press Enter; users who are fast enough to not notice
-  the 400ms keep their existing flow.
+- **Enter to commit: immediate escape from the 400ms buffer.** When a note or
+  digit is pending, Enter commits it as the natural/single-digit value. This
+  doesn't replace the timeout — fast typists who don't mind the 400ms can
+  ignore Enter entirely. But for users who know they want C (not C#), Enter
+  lets them move on instantly instead of waiting. Enter already means "next
+  question" in the feedback phase, so the key serves double duty without
+  conflict: commit if buffering, advance if not.
+
+- **Progressive narrowing coexists with the timeout and Enter.** The 400ms
+  auto-commit stays as a fallback. Narrowing makes the buffer *visible*. Enter
+  provides an explicit commit. Three complementary mechanisms: see what's
+  pending (narrowing), wait it out (timeout), or force it (Enter).
 
 - **No visible text input field.** Button highlighting is sufficient to show
   the buffer state. A text field would add UI weight, create confusion about
