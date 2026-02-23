@@ -183,7 +183,8 @@ export function PracticeCard(
     : null;
 
   // Zone 2: "Quiz setup" — suggestion + scope controls + start button.
-  // When no scope controls exist, show just the start button (no header).
+  // When neither scope controls nor a recommendation exist, show just the
+  // start button (no header).
   const hasSetupContent = scope || recommendation;
   const setupZone = (
     <div class='practice-zone practice-zone-setup'>

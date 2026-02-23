@@ -228,11 +228,14 @@ export function tabbedIdleHTML(config: {
             <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
           </div>`;
   const masteryBlock = `<div class="mastery-message"></div>`;
-  const hasSetupContent = config.practiceScope;
-  const setupHeader = hasSetupContent
+  // Build-time scaffold only knows about scope controls, not dynamic
+  // recommendations. The Preact PracticeCard also considers recommendation
+  // presence when deciding whether to show the "Quiz setup" header.
+  const hasScope = config.practiceScope;
+  const setupHeader = hasScope
     ? `\n          <div class="practice-section-header">Quiz setup</div>`
     : '';
-  const setupRec = hasSetupContent ? `\n          ${recBlock}` : '';
+  const setupRec = hasScope ? `\n          ${recBlock}` : '';
   return `<div class="mode-tabs">
       <button class="mode-tab active" data-tab="practice">Practice</button>
       <button class="mode-tab" data-tab="progress">Progress</button>
