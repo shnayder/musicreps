@@ -79,7 +79,8 @@ plans/                   # Design docs, product specs, execution plans
   generated/             #   Generated artifacts
   references/            #   Reference material
 backlogs/                # Per-workstream backlogs (product, design, engineering, process)
-docs/                    # Built output for GitHub Pages
+static/                  # Static assets copied to docs/ at build time
+docs/                    # Built output (gitignored, created by deno task build)
   design/                #   Design reference pages (copied from guides/design/)
 .github/workflows/       # CI: preview deploys for claude/* branches
 ```

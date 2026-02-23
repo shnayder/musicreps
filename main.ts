@@ -982,9 +982,13 @@ if (import.meta.main) {
     ]);
     const css = fontCss + '\n' + rawCss;
     const html = assembleHTML(css, js);
-    await Deno.mkdir('docs', { recursive: true });
-    await Deno.writeTextFile('docs/index.html', html);
-    await Deno.writeTextFile('docs/sw.js', SERVICE_WORKER);
+    const docsDir = resolve('./docs');
+    await Deno.mkdir(docsDir, { recursive: true });
+    for (const name of ['apple-touch-icon.png', 'favicon-32x32.png']) {
+      await Deno.copyFile(resolve(`./static/${name}`), `${docsDir}/${name}`);
+    }
+    await Deno.writeTextFile(`${docsDir}/index.html`, html);
+    await Deno.writeTextFile(`${docsDir}/sw.js`, SERVICE_WORKER);
 
     // Moments page
     const momentsHtml = buildMoments();
