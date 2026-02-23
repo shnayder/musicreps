@@ -32,15 +32,18 @@ export function noteNarrowingSet(
 export function numberNarrowingSet(
   pendingDigit: number | null,
   end: number,
+  start = 0,
 ): ReadonlySet<string> | null {
   if (pendingDigit === null) return null;
   const matches = new Set<string>();
-  matches.add(String(pendingDigit));
+  if (pendingDigit >= start && pendingDigit <= end) {
+    matches.add(String(pendingDigit));
+  }
   // Multi-digit completions (pendingDigit * 10 + d)
   for (let d = 0; d <= 9; d++) {
     const num = pendingDigit * 10 + d;
     if (num > end) break;
-    if (num >= 0) matches.add(String(num));
+    if (num >= start) matches.add(String(num));
   }
   return matches;
 }

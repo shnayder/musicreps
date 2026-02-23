@@ -155,7 +155,8 @@ export function IntervalSemitonesMode(
 
   // --- Narrowing (keyboard match highlighting, forward direction only) ---
   const numNarrowing = useMemo(
-    () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 12),
+    () =>
+      engine.state.answered ? null : numberNarrowingSet(pendingDigit, 12, 1),
     [pendingDigit, engine.state.answered],
   );
 

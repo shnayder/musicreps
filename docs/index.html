@@ -1783,7 +1783,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">v8.19</span>
+      <span class="version">v8.20</span>
     </div>
   </div>
 
@@ -4405,14 +4405,16 @@ button {
     if (NOTE_NAME_SET.has(sharp)) matches.add(sharp);
     return matches;
   }
-  function numberNarrowingSet(pendingDigit, end) {
+  function numberNarrowingSet(pendingDigit, end, start = 0) {
     if (pendingDigit === null) return null;
     const matches = /* @__PURE__ */ new Set();
-    matches.add(String(pendingDigit));
+    if (pendingDigit >= start && pendingDigit <= end) {
+      matches.add(String(pendingDigit));
+    }
     for (let d3 = 0; d3 <= 9; d3++) {
       const num = pendingDigit * 10 + d3;
       if (num > end) break;
-      if (num >= 0) matches.add(String(num));
+      if (num >= start) matches.add(String(num));
     }
     return matches;
   }
@@ -6438,14 +6440,16 @@ button {
       hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
     ] });
   }
+  var NOTE_HINT_LETTER = "Keyboard: C D E \u2026 or C# Db \u2014 Enter to confirm";
+  var NOTE_HINT_SOLFEGE = "Keyboard: do re mi \u2026 or do# reb \u2014 Enter to confirm";
   var HINT_TEXT = {
-    "note": "Keyboard: C D E \u2026 or C# Db \u2014 Enter to confirm",
     "number-0-11": "Keyboard: 0\u20139, 10, 11 \u2014 Enter to confirm",
     "number-1-12": "Keyboard: 1\u20139, 10, 11, 12 \u2014 Enter to confirm"
   };
   function KeyboardHint({ type }) {
     if (!type) return null;
-    return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: HINT_TEXT[type] });
+    const text = type === "note" ? getUseSolfege() ? NOTE_HINT_SOLFEGE : NOTE_HINT_LETTER : HINT_TEXT[type];
+    return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: text });
   }
 
   // src/ui/speed-check.tsx
@@ -7086,7 +7090,7 @@ button {
     }), []);
     const engine = useQuizEngine(engineConfig, learner.selector);
     const numNarrowing = T2(
-      () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 12),
+      () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 12, 1),
       [pendingDigit, engine.state.answered]
     );
     const [calibrating, setCalibrating] = d2(false);

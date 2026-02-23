@@ -533,7 +533,7 @@ describe('numberNarrowingSet', () => {
   });
 
   it('pending digit 1 in 1-12 range', () => {
-    const result = numberNarrowingSet(1, 12)!;
+    const result = numberNarrowingSet(1, 12, 1)!;
     assert.ok(result.has('1'));
     assert.ok(result.has('10'));
     assert.ok(result.has('11'));
@@ -548,9 +548,15 @@ describe('numberNarrowingSet', () => {
     assert.equal(result.size, 10);
   });
 
-  it('pending digit 0 in 1-12 range', () => {
-    const result = numberNarrowingSet(0, 12)!;
-    assert.ok(result.has('0'));
+  it('pending digit 0 in 1-12 range excludes 0', () => {
+    const result = numberNarrowingSet(0, 12, 1)!;
+    // 0 is below start=1, so excluded; multi-digit: 01=1..09=9 all ≥ 1
+    assert.ok(!result.has('0'), '0 should be excluded (below start)');
+    const expected = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    for (const value of expected) {
+      assert.ok(result.has(value), `Expected result to contain ${value}`);
+    }
+    assert.equal(result.size, expected.length);
   });
 });
 
