@@ -105,14 +105,13 @@ body {
 .home-screen {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
   padding: var(--space-5);
 }
 .home-screen.hidden {
   display: none;
 }
 .home-header {
-  text-align: center;
+  text-align: left;
   padding: var(--space-6) 0 var(--space-4);
 }
 .home-title {
@@ -128,7 +127,7 @@ body {
   width: 32px;
   height: 3px;
   background: var(--color-brand);
-  margin: var(--space-3) auto 0;
+  margin: var(--space-3) 0 0;
   border-radius: 2px;
 }
 .home-modes {
@@ -460,7 +459,7 @@ body {
 .practice-card {
   margin-bottom: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  background: var(--color-surface);
+  background: var(--color-bg);
   border-radius: 8px;
 }
 .practice-zone + .practice-zone {
@@ -542,18 +541,22 @@ body {
 /* --- Practice action zone (inside practice card) --- */
 .practice-zone-action {
   text-align: center;
+  margin-top: var(--space-5);
 }
 
 /* --- Baseline info (Progress tab) --- */
 .baseline-info {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  text-align: center;
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-3);
+  padding: var(--space-4) 0;
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--color-border-lighter);
 }
 .baseline-info:empty {
   display: none;
+}
+.baseline-text {
+  margin-bottom: var(--space-3);
 }
 .baseline-default-tag {
   font-style: italic;
@@ -569,7 +572,6 @@ body {
   color: var(--color-text-muted);
   cursor: pointer;
   margin: 0;
-  margin-left: var(--space-2);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .baseline-rerun-btn:hover {
@@ -582,7 +584,7 @@ body {
 
 /* --- Progress tab stats controls (within tab) --- */
 .tab-content .stats-controls {
-  text-align: center;
+  text-align: left;
   margin: var(--space-3) 0;
   padding-bottom: var(--space-2);
 }
@@ -921,9 +923,12 @@ button {
 .phase-active,
 .phase-round-complete,
 .phase-calibration {
-  background: var(--color-surface);
+  background: var(--color-bg);
   margin: 0 calc(-1 * var(--space-5));
   padding: 0 var(--space-5);
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 /* --- Quiz area (subtle card containment) --- */
 /* Phase-driven visibility: shown during active, round-complete, calibration */
@@ -936,24 +941,21 @@ button {
 .phase-active .quiz-area,
 .phase-round-complete .quiz-area,
 .phase-calibration .quiz-area {
-  display: block;
-  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  background: var(--color-bg);
   border-radius: 12px;
   padding: var(--space-5);
 }
 .phase-active .quiz-area {
-  border: 1px solid var(--color-border-lighter);
   padding: var(--space-3) var(--space-3);
 }
 /* --- Round complete --- */
 .round-complete {
   text-align: center;
   padding: var(--space-6) 0;
-}
-.round-complete-context {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-4);
 }
 .round-complete-heading {
   font-size: var(--text-xl);
@@ -963,6 +965,21 @@ button {
 }
 .round-complete-stats {
   margin: var(--space-3) 0 var(--space-5);
+}
+.round-complete-overall {
+  margin-bottom: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-lighter);
+}
+.round-complete-overall-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+.round-complete-context {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 .round-stat-line {
   font-size: var(--text-base);
@@ -1018,7 +1035,8 @@ button {
 .phase-round-complete .fretboard-wrapper,
 .phase-round-complete .quiz-countdown-row,
 .phase-round-complete .quiz-session-info,
-.phase-round-complete .quiz-header-close {
+.phase-round-complete .quiz-header-close,
+.phase-round-complete .quiz-last-question {
   display: none;
 }
 
@@ -1027,7 +1045,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  margin: var(--space-3) auto;
+  width: 100%;
+  margin: var(--space-3) 0;
 }
 .note-row-naturals,
 .note-row-accidentals {
@@ -1086,6 +1105,7 @@ button {
   background: var(--color-bg);
   cursor: pointer;
   padding: 0;
+  margin: 0;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1139,6 +1159,8 @@ button {
   font-size: var(--text-sm);
   color: var(--color-recommended);
   font-weight: 500;
+  text-align: center;
+  margin-bottom: var(--space-2);
 }
 .quiz-last-question:empty {
   display: none;
@@ -1161,6 +1183,7 @@ button {
   background: var(--color-bg);
   cursor: pointer;
   padding: 0 var(--space-2);
+  margin: 0;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1301,7 +1324,7 @@ button {
   color: var(--color-success);
 }
 .incorrect {
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 .time-display {
   color: var(--color-text-muted);
@@ -1347,13 +1370,13 @@ button {
 /* --- Heatmap legends --- */
 .heatmap-legend {
   display: none;
+  grid-template-columns: repeat(3, auto);
   justify-content: center;
-  gap: var(--space-3);
-  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
   margin: var(--space-4) 0;
 }
 .heatmap-legend.active {
-  display: flex;
+  display: grid;
 }
 .legend-item {
   display: flex;
@@ -1470,7 +1493,7 @@ button {
 
 /* --- Stats controls (toggle above chart) --- */
 .stats-controls {
-  text-align: center;
+  text-align: left;
   margin: var(--space-3) 0;
   padding-bottom: var(--space-2);
 }
