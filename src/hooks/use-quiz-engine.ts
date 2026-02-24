@@ -380,6 +380,32 @@ export function useQuizEngine(
     return () => document.removeEventListener('keydown', handleKeydown);
   }, [state.phase !== 'idle', stop, continueQuiz, submitAnswer]);
 
+  // --- Tap-to-advance (click anywhere during feedback) ---
+
+  useEffect(() => {
+    if (state.phase === 'idle') return;
+
+    function handleClick(e: MouseEvent) {
+      const s = stateRef.current;
+      if (s.phase !== 'active' || !s.answered) return;
+      // Don't intercept clicks on interactive elements
+      if (
+        (e.target as HTMLElement).closest(
+          'button, a, input, select, textarea',
+        )
+      ) return;
+
+      if (autoAdvanceRef.current) {
+        clearTimeout(autoAdvanceRef.current);
+        autoAdvanceRef.current = null;
+      }
+      nextQuestionRef.current();
+    }
+
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [state.phase !== 'idle']);
+
   // Clean up timers on unmount
   useEffect(() => {
     return () => {
