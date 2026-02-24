@@ -11,6 +11,7 @@ async function gitText(...args: string[]): Promise<string> {
     stderr: 'null',
   });
   const out = await cmd.output();
+  if (!out.success) throw new Error(`git ${args[0]} failed`);
   return new TextDecoder().decode(out.stdout).trim();
 }
 

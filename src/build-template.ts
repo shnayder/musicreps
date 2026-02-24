@@ -1,7 +1,7 @@
 // Shared build template — single source of truth for the HTML assembly.
-// Imported by both main.ts (Deno) and build.ts (Node) to eliminate
-// duplication between build scripts. Version is injected at build time
-// by replacing the __VERSION__ placeholder (see getVersion() in main.ts).
+// Imported by main.ts (Deno) to eliminate duplication between build
+// scripts. Version is injected at build time by replacing the
+// __VERSION__ placeholder (see getVersion() in main.ts).
 
 import {
   degreeAnswerButtons,
