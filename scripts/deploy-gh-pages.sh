@@ -39,6 +39,7 @@ if [ "$MODE" = "cleanup" ]; then
     exit 0
   fi
   git checkout -- . 2>/dev/null || true
+  git clean -fd 2>/dev/null || true
   git checkout -B gh-pages origin/gh-pages
 
   if [ ! -d "preview/${SAFE_NAME}" ]; then
@@ -49,6 +50,7 @@ if [ "$MODE" = "cleanup" ]; then
   COMMIT_MSG="Cleanup preview: ${BRANCH}"
 else
   git checkout -- . 2>/dev/null || true
+  git clean -fd 2>/dev/null || true
   if git fetch origin gh-pages 2>/dev/null; then
     git checkout -B gh-pages origin/gh-pages
   else
