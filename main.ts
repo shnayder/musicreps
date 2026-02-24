@@ -1,6 +1,40 @@
 import { assembleHTML, SERVICE_WORKER } from './src/build-template.ts';
 
 // ---------------------------------------------------------------------------
+// Version — derived from git at build time
+// ---------------------------------------------------------------------------
+
+async function gitText(...args: string[]): Promise<string> {
+  const cmd = new Deno.Command('git', {
+    args,
+    stdout: 'piped',
+    stderr: 'null',
+  });
+  const out = await cmd.output();
+  if (!out.success) throw new Error(`git ${args[0]} failed`);
+  return new TextDecoder().decode(out.stdout).trim();
+}
+
+async function getVersion(): Promise<string> {
+  try {
+    const [branch, hash] = await Promise.all([
+      gitText('rev-parse', '--abbrev-ref', 'HEAD'),
+      gitText('rev-parse', '--short=6', 'HEAD'),
+    ]);
+    if (branch === 'main') {
+      const count = await gitText('rev-list', '--count', 'HEAD');
+      return `#${count}`;
+    }
+    const suffix = branch.includes('/')
+      ? branch.slice(branch.lastIndexOf('/') + 1)
+      : branch;
+    return `${hash} ${suffix}`;
+  } catch {
+    return 'dev';
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Bundle JS with esbuild (subprocess for Deno compatibility)
 // ---------------------------------------------------------------------------
 
@@ -52,12 +86,16 @@ async function fontFaceCSS(): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function buildHTML(): Promise<string> {
-  const [rawCss, fontCss, js] = await Promise.all([
+  const [rawCss, fontCss, js, version] = await Promise.all([
     Deno.readTextFile(resolve('./src/styles.css')),
     fontFaceCSS(),
     bundleJS(),
+    getVersion(),
   ]);
-  return assembleHTML(fontCss + '\n' + rawCss, js);
+  return assembleHTML(fontCss + '\n' + rawCss, js).replaceAll(
+    '__VERSION__',
+    version,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -161,6 +199,9 @@ export { buildHTML, SERVICE_WORKER as sw };
 // ---------------------------------------------------------------------------
 
 if (import.meta.main) {
+  const version = await getVersion();
+  const stamp = (html: string) => html.replaceAll('__VERSION__', version);
+
   if (Deno.args.includes('--build')) {
     const [rawCss, fontCss, js] = await Promise.all([
       Deno.readTextFile(resolve('./src/styles.css')),
@@ -168,7 +209,7 @@ if (import.meta.main) {
       bundleJS(),
     ]);
     const css = fontCss + '\n' + rawCss;
-    const html = assembleHTML(css, js);
+    const html = stamp(assembleHTML(css, js));
     const docsDir = resolve('./docs');
     await Deno.mkdir(docsDir, { recursive: true });
     for (const name of ['apple-touch-icon.png', 'favicon-32x32.png']) {

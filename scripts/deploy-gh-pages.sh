@@ -90,7 +90,7 @@ else
   if [ "$MODE" = "production" ]; then
     find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name 'preview' -exec rm -rf {} +
     cp -r /tmp/build/* .
-    VERSION=$(grep -o 'v[0-9]\+\.[0-9]\+' index.html | head -1 || echo "unknown")
+    VERSION=$(grep -oP '(?<=class="version">)[^<]+' index.html | head -1 || echo "unknown")
     COMMIT_MSG="Build production: ${VERSION}"
   else
     rm -rf "preview/${SAFE_NAME}"

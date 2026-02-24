@@ -36,8 +36,8 @@ npx tsx scripts/take-screenshots.ts
 
 ## Build System
 
-The HTML template, version number, and page structure live in
-`src/build-template.ts` — the single source of truth. `main.ts` is the single
+The HTML template and page structure live in `src/build-template.ts` — the
+single source of truth. `main.ts` is the single
 build script (Deno), which shells out to esbuild CLI via `Deno.Command`. Source
 files are ES modules bundled by esbuild into a single IIFE `<script>` block.
 
@@ -94,12 +94,16 @@ are classified by path automatically.
 
 ## Versioning
 
-A version number is displayed on the home screen (`<span class="version">`).
-**Always bump the version with every change** — even tiny bug fixes or label
-tweaks. The user needs to confirm they're testing the latest build; a stale
-version number makes that impossible. The version lives in one place: `VERSION`
-in `src/build-template.ts`. Bump by 1 for normal changes (v3.13 → v3.14 → v3.15)
-and bump the major version for large overhauls (v3.x → v4.0).
+A version identifier is displayed on the home screen (`<span class="version">`).
+It is derived from git at build time — no source changes needed. The logic lives
+in `getVersion()` in `main.ts`:
+
+- **`main` branch:** `#<commit-count>` (e.g., `#1247`) — monotonic build number
+- **Other branches:** `<short-hash> <branch-suffix>` (e.g., `a1b2c3 fix-button`)
+- **Fallback (no git):** `dev`
+
+The HTML template in `src/build-template.ts` contains a `__VERSION__` placeholder
+that gets replaced during the build.
 
 ## Branching
 

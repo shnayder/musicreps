@@ -19,14 +19,11 @@ deno task ok                                     # All checks + build
 tests, and build in sequence — any failure stops the chain. Don't push broken
 code by accident.
 
-**Always bump the version** (`VERSION` in `src/build-template.ts`) with every
-change — even tiny fixes. Bump by 1 for normal changes (v3.13 → v3.14 → v3.15).
-Bump the major version for large overhauls (v3.x → v4.0).
-
 **The HTML template lives in `src/build-template.ts`** — the single source of
-truth for the page structure and version number. `main.ts` handles both building
-(with `--build`) and dev serving. Mode-specific content is passed as arguments
-to `modeScreen()` in `src/html-helpers.ts`.
+truth for the page structure. **Version is derived from git at build time** (see
+`getVersion()` in `main.ts`) — no manual bumps needed. `main.ts` handles both
+building (with `--build`) and dev serving. Mode-specific content is passed as
+arguments to `modeScreen()` in `src/html-helpers.ts`.
 
 ## Structure
 
@@ -34,7 +31,7 @@ to `modeScreen()` in `src/html-helpers.ts`.
 main.ts                  # Build + dev server + moments generation (Deno)
 src/
   app.ts                 # Entry point: registers Preact modes, starts navigation
-  build-template.ts      # HTML template, version number (build-time)
+  build-template.ts      # HTML template (build-time)
   html-helpers.ts        # Build-time HTML: mode scaffold, fretboard SVG
   fretboard.ts           # Build-time SVG: fret/string/note generation
   adaptive.ts            # Adaptive question selector
@@ -200,7 +197,7 @@ about focus, not access control. Regular rebase from main keeps them in sync.
 design and engineering. Rebase often; keep HTML/CSS and JS behavior cleanly
 separated.
 
-**Version bumps**: only engineering bumps the version number.
+**Versioning**: derived from git at build time — no manual bumps needed.
 
 **Backlogs**: each workstream has its own in `backlogs/`. The old monolithic
 `backlog.md` is archived at `backlogs/legacy.md`.
