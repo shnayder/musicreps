@@ -5,6 +5,8 @@ import {
   createNoteKeyHandler,
   createSolfegeKeyHandler,
   getCalibrationThresholds,
+  noteNarrowingSet,
+  numberNarrowingSet,
   pickCalibrationButton,
 } from './quiz-engine.ts';
 import { getUseSolfege, setUseSolfege } from './music-data.ts';
@@ -90,6 +92,84 @@ describe('createNoteKeyHandler', () => {
     handler.handleKey({ key: 'c', preventDefault() {} } as any);
     handler.reset();
     assert.deepEqual(submitted, []);
+  });
+
+  it('Enter commits pending note immediately', () => {
+    const submitted: string[] = [];
+    const handler = createNoteKeyHandler(
+      (input: string) => submitted.push(input),
+      () => true,
+    );
+    handler.handleKey({ key: 'c', preventDefault() {} } as any);
+    assert.equal(submitted.length, 0); // still pending
+    handler.handleKey({ key: 'Enter', preventDefault() {} } as any);
+    assert.deepEqual(submitted, ['C']);
+  });
+
+  it('Enter does nothing with no pending note', () => {
+    const submitted: string[] = [];
+    const handler = createNoteKeyHandler(
+      (input: string) => submitted.push(input),
+      () => true,
+    );
+    const handled = handler.handleKey(
+      { key: 'Enter', preventDefault() {} } as any,
+    );
+    assert.ok(!handled);
+    assert.deepEqual(submitted, []);
+  });
+
+  it('getPendingNote returns current buffer state', () => {
+    const submitted: string[] = [];
+    const handler = createNoteKeyHandler(
+      (input: string) => submitted.push(input),
+      () => true,
+    );
+    assert.equal(handler.getPendingNote(), null);
+    handler.handleKey({ key: 'c', preventDefault() {} } as any);
+    assert.equal(handler.getPendingNote(), 'C');
+    handler.handleKey({ key: 'Enter', preventDefault() {} } as any);
+    assert.equal(handler.getPendingNote(), null);
+  });
+
+  it('onPendingChange fires on pending transitions', () => {
+    const submitted: string[] = [];
+    const pending: (string | null)[] = [];
+    const handler = createNoteKeyHandler(
+      (input: string) => submitted.push(input),
+      () => true,
+      (note) => pending.push(note),
+    );
+    handler.handleKey({ key: 'c', preventDefault() {} } as any);
+    assert.deepEqual(pending, ['C']);
+    handler.handleKey({ key: 'Enter', preventDefault() {} } as any);
+    assert.deepEqual(pending, ['C', null]);
+  });
+
+  it('onPendingChange fires null on accidental commit', () => {
+    const pending: (string | null)[] = [];
+    const handler = createNoteKeyHandler(
+      () => {},
+      () => true,
+      (note) => pending.push(note),
+    );
+    handler.handleKey({ key: 'g', preventDefault() {} } as any);
+    handler.handleKey(
+      { key: '#', shiftKey: false, preventDefault() {} } as any,
+    );
+    assert.deepEqual(pending, ['G', null]);
+  });
+
+  it('onPendingChange fires null on reset', () => {
+    const pending: (string | null)[] = [];
+    const handler = createNoteKeyHandler(
+      () => {},
+      () => true,
+      (note) => pending.push(note),
+    );
+    handler.handleKey({ key: 'a', preventDefault() {} } as any);
+    handler.reset();
+    assert.deepEqual(pending, ['A', null]);
   });
 });
 
@@ -238,6 +318,76 @@ describe('createSolfegeKeyHandler', () => {
     // Should not submit after reset even if timeout fires
     assert.deepEqual(submitted, []);
   });
+
+  it('Enter commits pending note immediately', () => {
+    const submitted: string[] = [];
+    const handler = createSolfegeKeyHandler(
+      (input: string) => submitted.push(input),
+      () => true,
+    );
+    handler.handleKey({ key: 'd', preventDefault() {} } as any);
+    handler.handleKey({ key: 'o', preventDefault() {} } as any);
+    assert.equal(submitted.length, 0); // pending for accidental
+    handler.handleKey({ key: 'Enter', preventDefault() {} } as any);
+    assert.deepEqual(submitted, ['C']);
+  });
+
+  it('Enter clears partial syllable buffer', () => {
+    const submitted: string[] = [];
+    const handler = createSolfegeKeyHandler(
+      (input: string) => submitted.push(input),
+      () => false, // no accidentals — immediate submit after resolve
+    );
+    handler.handleKey({ key: 'd', preventDefault() {} } as any);
+    // Buffer has 'd' but syllable not complete
+    const handled = handler.handleKey(
+      { key: 'Enter', preventDefault() {} } as any,
+    );
+    assert.ok(handled); // consumed the Enter to clear buffer
+    assert.deepEqual(submitted, []); // nothing submitted
+    // Handler should work normally after clearing
+    handler.handleKey({ key: 'r', preventDefault() {} } as any);
+    handler.handleKey({ key: 'e', preventDefault() {} } as any);
+    assert.deepEqual(submitted, ['D']);
+  });
+
+  it('Enter does nothing with no pending state', () => {
+    const submitted: string[] = [];
+    const handler = createSolfegeKeyHandler(
+      (input: string) => submitted.push(input),
+      () => true,
+    );
+    const handled = handler.handleKey(
+      { key: 'Enter', preventDefault() {} } as any,
+    );
+    assert.ok(!handled);
+    assert.deepEqual(submitted, []);
+  });
+
+  it('getPendingNote returns current buffer state', () => {
+    const handler = createSolfegeKeyHandler(() => {}, () => true);
+    assert.equal(handler.getPendingNote(), null);
+    handler.handleKey({ key: 'd', preventDefault() {} } as any);
+    assert.equal(handler.getPendingNote(), null); // still building syllable
+    handler.handleKey({ key: 'o', preventDefault() {} } as any);
+    assert.equal(handler.getPendingNote(), 'C'); // resolved to C, pending accidental
+    handler.handleKey({ key: 'Enter', preventDefault() {} } as any);
+    assert.equal(handler.getPendingNote(), null); // committed
+  });
+
+  it('onPendingChange fires on pending transitions', () => {
+    const pending: (string | null)[] = [];
+    const handler = createSolfegeKeyHandler(
+      () => {},
+      () => true,
+      (note) => pending.push(note),
+    );
+    handler.handleKey({ key: 'd', preventDefault() {} } as any);
+    handler.handleKey({ key: 'o', preventDefault() {} } as any);
+    assert.deepEqual(pending, ['C']);
+    handler.handleKey({ key: 'Enter', preventDefault() {} } as any);
+    assert.deepEqual(pending, ['C', null]);
+  });
 });
 
 describe('createAdaptiveKeyHandler', () => {
@@ -328,6 +478,107 @@ describe('pickCalibrationButton', () => {
     const rng = () => [0.5, 0][call++];
     const btn = pickCalibrationButton([Cs, Fs], null, rng);
     assert.ok([Cs, Fs].includes(btn));
+  });
+});
+
+// --- noteNarrowingSet / numberNarrowingSet tests ---
+
+describe('noteNarrowingSet', () => {
+  it('returns null for null input', () => {
+    assert.equal(noteNarrowingSet(null), null);
+  });
+
+  it('C includes C and C# but no flat enharmonic (Cb not accepted)', () => {
+    const result = noteNarrowingSet('C')!;
+    assert.ok(result.has('C'));
+    assert.ok(result.has('C#'));
+    assert.equal(result.size, 2);
+  });
+
+  it('F includes F and F# but no flat enharmonic (Fb not accepted)', () => {
+    const result = noteNarrowingSet('F')!;
+    assert.ok(result.has('F'));
+    assert.ok(result.has('F#'));
+    assert.equal(result.size, 2);
+  });
+
+  it('D includes D, D#, and C# (via Db)', () => {
+    const result = noteNarrowingSet('D')!;
+    assert.ok(result.has('D'));
+    assert.ok(result.has('D#'));
+    assert.ok(result.has('C#'), 'Db maps to C# button');
+    assert.equal(result.size, 3);
+  });
+
+  it('A includes A, A#, and G# (via Ab)', () => {
+    const result = noteNarrowingSet('A')!;
+    assert.ok(result.has('A'));
+    assert.ok(result.has('A#'));
+    assert.ok(result.has('G#'), 'Ab maps to G# button');
+    assert.equal(result.size, 3);
+  });
+
+  it('G includes G, G#, and F# (via Gb)', () => {
+    const result = noteNarrowingSet('G')!;
+    assert.ok(result.has('G'));
+    assert.ok(result.has('G#'));
+    assert.ok(result.has('F#'), 'Gb maps to F# button');
+    assert.equal(result.size, 3);
+  });
+
+  it('E includes E and D# (via Eb) but no E#', () => {
+    const result = noteNarrowingSet('E')!;
+    assert.ok(result.has('E'));
+    assert.ok(result.has('D#'), 'Eb maps to D# button');
+    assert.equal(result.size, 2);
+  });
+
+  it('B includes B and A# (via Bb) but no B#', () => {
+    const result = noteNarrowingSet('B')!;
+    assert.ok(result.has('B'));
+    assert.ok(result.has('A#'), 'Bb maps to A# button');
+    assert.equal(result.size, 2);
+  });
+});
+
+describe('numberNarrowingSet', () => {
+  it('returns null for null input', () => {
+    assert.equal(numberNarrowingSet(null, 11), null);
+  });
+
+  it('pending digit 1 in 0-11 range', () => {
+    const result = numberNarrowingSet(1, 11)!;
+    assert.ok(result.has('1'));
+    assert.ok(result.has('10'));
+    assert.ok(result.has('11'));
+    assert.equal(result.size, 3);
+  });
+
+  it('pending digit 1 in 1-12 range', () => {
+    const result = numberNarrowingSet(1, 12, 1)!;
+    assert.ok(result.has('1'));
+    assert.ok(result.has('10'));
+    assert.ok(result.has('11'));
+    assert.ok(result.has('12'));
+    assert.equal(result.size, 4);
+  });
+
+  it('pending digit 0 in 0-11 range', () => {
+    const result = numberNarrowingSet(0, 11)!;
+    assert.ok(result.has('0'));
+    // 0*10+0=0, 0*10+1=1, ..., 0*10+9=9, all ≤ 11
+    assert.equal(result.size, 10);
+  });
+
+  it('pending digit 0 in 1-12 range excludes 0', () => {
+    const result = numberNarrowingSet(0, 12, 1)!;
+    // 0 is below start=1, so excluded; multi-digit: 01=1..09=9 all ≥ 1
+    assert.ok(!result.has('0'), '0 should be excluded (below start)');
+    const expected = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    for (const value of expected) {
+      assert.ok(result.has(value), `Expected result to contain ${value}`);
+    }
+    assert.equal(result.size, expected.length);
   });
 });
 

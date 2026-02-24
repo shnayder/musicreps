@@ -1372,6 +1372,33 @@ button {
   font-size: var(--text-base);
   margin-top: var(--space-5);
 }
+
+/* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
+.keyboard-hint {
+  display: none;
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+  text-align: center;
+  margin-top: var(--space-3);
+}
+@media (pointer: fine) {
+  .keyboard-hint {
+    display: block;
+  }
+}
+
+/* --- Keyboard narrowing (progressive button highlighting) --- */
+/* Neutral treatment: strong border + surface bg — avoids brand/success green
+   which would read as "correct" rather than "possible match". */
+.kb-match {
+  border-color: var(--color-text) !important;
+  background: var(--color-surface) !important;
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+.kb-dimmed {
+  opacity: 0.4;
+}
+
 .stats {
   margin-top: var(--space-5);
   font-size: var(--text-sm);
@@ -2367,7 +2394,7 @@ button {
   }
 
   // src/ui/buttons.tsx
-  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive }) {
+  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive, narrowing }) {
     const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: NOTE_NAMES.map((n2) => {
       let label;
@@ -2377,12 +2404,16 @@ button {
       } else {
         label = displayNote(n2);
       }
+      let btnCls = "answer-btn answer-btn-note";
+      if (narrowing) {
+        btnCls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+      }
       return /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
           tabIndex: 0,
-          class: "answer-btn answer-btn-note",
+          class: btnCls,
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: label
@@ -2391,50 +2422,68 @@ button {
       );
     }) });
   }
-  function PianoNoteButtons({ onAnswer, hideAccidentals }) {
+  function PianoNoteButtons({ onAnswer, hideAccidentals, narrowing }) {
     return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
-      /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "note-btn accidental" + (hideAccidentals ? " hidden" : ""),
-          "data-note": n2,
-          onClick: onAnswer ? () => onAnswer(n2) : void 0,
-          children: displayNote(n2)
-        },
-        n2
-      )) }),
-      /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: NATURAL_NOTES.map((n2) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "note-btn",
-          "data-note": n2,
-          onClick: onAnswer ? () => onAnswer(n2) : void 0,
-          children: displayNote(n2)
-        },
-        n2
-      )) })
+      /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => {
+        let cls = "note-btn accidental" + (hideAccidentals ? " hidden" : "");
+        if (narrowing && !hideAccidentals) {
+          cls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            "data-note": n2,
+            onClick: onAnswer ? () => onAnswer(n2) : void 0,
+            children: displayNote(n2)
+          },
+          n2
+        );
+      }) }),
+      /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: NATURAL_NOTES.map((n2) => {
+        let cls = "note-btn";
+        if (narrowing) {
+          cls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            "data-note": n2,
+            onClick: onAnswer ? () => onAnswer(n2) : void 0,
+            children: displayNote(n2)
+          },
+          n2
+        );
+      }) })
     ] });
   }
-  function NumberButtons({ start, end, onAnswer, hidden }) {
+  function NumberButtons({ start, end, onAnswer, hidden, narrowing }) {
     const nums = [];
     for (let i3 = start; i3 <= end; i3++) nums.push(i3);
     const cls = "answer-buttons answer-buttons-numbers" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children: nums.map((i3) => /* @__PURE__ */ u3(
-      "button",
-      {
-        type: "button",
-        tabIndex: 0,
-        class: "answer-btn answer-btn-num",
-        "data-num": String(i3),
-        onClick: onAnswer ? () => onAnswer(i3) : void 0,
-        children: i3
-      },
-      i3
-    )) });
+    return /* @__PURE__ */ u3("div", { class: cls, children: nums.map((i3) => {
+      let btnCls = "answer-btn answer-btn-num";
+      if (narrowing) {
+        btnCls += narrowing.has(String(i3)) ? " kb-match" : " kb-dimmed";
+      }
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-num": String(i3),
+          onClick: onAnswer ? () => onAnswer(i3) : void 0,
+          children: i3
+        },
+        i3
+      );
+    }) });
   }
   function IntervalButtons({ onAnswer, hidden }) {
     const cls = "answer-buttons answer-buttons-intervals" + (hidden ? " answer-group-hidden" : "");
