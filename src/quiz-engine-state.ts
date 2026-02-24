@@ -3,14 +3,6 @@
 
 import type { EngineState } from './types.ts';
 
-/** True when the primary pointer is coarse (phone/tablet). */
-const IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === 'function' &&
-  globalThis.matchMedia('(pointer: coarse)').matches;
-
-const HINT_ADVANCE = IS_TOUCH_PRIMARY
-  ? 'Tap anywhere for next'
-  : 'Tap anywhere or press Space for next';
-
 /** Create the initial (idle) engine state. */
 export function initialEngineState(): EngineState {
   return {
@@ -103,6 +95,7 @@ export function engineSubmitAnswer(
   state: EngineState,
   isCorrect: boolean,
   correctAnswer: string,
+  hintText = 'Tap anywhere or press Space for next',
 ): EngineState {
   return {
     ...state,
@@ -113,7 +106,7 @@ export function engineSubmitAnswer(
     feedbackCorrect: isCorrect,
     feedbackDisplayAnswer: correctAnswer,
     timeDisplayText: '',
-    hintText: HINT_ADVANCE,
+    hintText,
     roundAnswered: state.roundAnswered + 1,
     roundCorrect: state.roundCorrect + (isCorrect ? 1 : 0),
   };
