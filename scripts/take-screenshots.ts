@@ -13,6 +13,13 @@ import { mkdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { defaultItems } from '../src/fixtures/items.ts';
+import type { FixtureDetail } from '../src/fixtures/quiz-page.ts';
+import {
+  quizActive,
+  quizCorrectFeedback,
+  quizRoundComplete,
+  quizWrongFeedback,
+} from '../src/fixtures/quiz-page.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -53,167 +60,6 @@ const MODE_IDS = [
 const ENGINE_MODES = MODE_IDS.filter((id) => id !== 'speedTap');
 
 // ---------------------------------------------------------------------------
-// Fixture builders (inline — mirror src/fixtures/quiz-page.ts logic)
-// These build the FixtureDetail objects that get dispatched as events.
-// ---------------------------------------------------------------------------
-
-type FixtureDetail = {
-  engineState?: Record<string, unknown>;
-  timerPct?: number;
-  timerText?: string;
-  timerWarning?: boolean;
-  timerLastQuestion?: boolean;
-  presentItemId?: string;
-};
-
-function quizActiveFixture(itemId: string): FixtureDetail {
-  return {
-    engineState: {
-      phase: 'active',
-      currentItemId: itemId,
-      answered: false,
-      questionStartTime: Date.now(),
-      questionCount: 7,
-      quizStartTime: Date.now() - 21000,
-      quizActive: true,
-      answersEnabled: true,
-      roundNumber: 1,
-      roundAnswered: 6,
-      roundCorrect: 4,
-      roundTimerExpired: false,
-      roundResponseTimes: [],
-      roundDurationMs: 0,
-      masteredCount: 5,
-      totalEnabledCount: 18,
-      feedbackText: '',
-      feedbackClass: 'feedback',
-      feedbackCorrect: null,
-      feedbackDisplayAnswer: null,
-      timeDisplayText: '',
-      hintText: '',
-      masteryText: '',
-      showMastery: false,
-      calibrationBaseline: null,
-    },
-    timerPct: 65,
-    timerText: '0:39',
-    timerWarning: false,
-    timerLastQuestion: false,
-    presentItemId: itemId,
-  };
-}
-
-function quizCorrectFixture(itemId: string): FixtureDetail {
-  return {
-    engineState: {
-      phase: 'active',
-      currentItemId: itemId,
-      answered: true,
-      questionStartTime: Date.now() - 820,
-      questionCount: 14,
-      quizStartTime: Date.now() - 32000,
-      quizActive: true,
-      answersEnabled: false,
-      roundNumber: 1,
-      roundAnswered: 13,
-      roundCorrect: 11,
-      roundTimerExpired: false,
-      roundResponseTimes: [],
-      roundDurationMs: 0,
-      masteredCount: 8,
-      totalEnabledCount: 18,
-      feedbackText: 'Correct!',
-      feedbackClass: 'feedback correct',
-      feedbackCorrect: true,
-      feedbackDisplayAnswer: 'D#',
-      timeDisplayText: '0.82s',
-      hintText: 'Tap anywhere or press Space for next',
-      masteryText: '',
-      showMastery: false,
-      calibrationBaseline: null,
-    },
-    timerPct: 55,
-    timerText: '0:28',
-    timerWarning: false,
-    timerLastQuestion: false,
-    presentItemId: itemId,
-  };
-}
-
-function quizWrongFixture(itemId: string): FixtureDetail {
-  return {
-    engineState: {
-      phase: 'active',
-      currentItemId: itemId,
-      answered: true,
-      questionStartTime: Date.now() - 1340,
-      questionCount: 22,
-      quizStartTime: Date.now() - 42000,
-      quizActive: true,
-      answersEnabled: false,
-      roundNumber: 1,
-      roundAnswered: 21,
-      roundCorrect: 14,
-      roundTimerExpired: false,
-      roundResponseTimes: [],
-      roundDurationMs: 0,
-      masteredCount: 10,
-      totalEnabledCount: 20,
-      feedbackText: 'Incorrect \u2014 D#',
-      feedbackClass: 'feedback incorrect',
-      feedbackCorrect: false,
-      feedbackDisplayAnswer: 'D#',
-      timeDisplayText: '',
-      hintText: 'Tap anywhere or press Space for next',
-      masteryText: '',
-      showMastery: false,
-      calibrationBaseline: null,
-    },
-    timerPct: 38,
-    timerText: '0:18',
-    timerWarning: false,
-    timerLastQuestion: false,
-    presentItemId: itemId,
-  };
-}
-
-function roundCompleteFixture(): FixtureDetail {
-  return {
-    engineState: {
-      phase: 'round-complete',
-      currentItemId: null,
-      answered: false,
-      questionStartTime: null,
-      questionCount: 18,
-      quizStartTime: Date.now() - 63000,
-      quizActive: true,
-      answersEnabled: false,
-      roundNumber: 1,
-      roundAnswered: 18,
-      roundCorrect: 16,
-      roundTimerExpired: true,
-      roundResponseTimes: Array(18).fill(900),
-      roundDurationMs: 63000,
-      masteredCount: 12,
-      totalEnabledCount: 18,
-      feedbackText: '',
-      feedbackClass: 'feedback',
-      feedbackCorrect: null,
-      feedbackDisplayAnswer: null,
-      timeDisplayText: '',
-      hintText: '',
-      masteryText: '',
-      showMastery: false,
-      calibrationBaseline: null,
-    },
-    timerPct: 0,
-    timerText: '0:00',
-    timerWarning: false,
-    timerLastQuestion: false,
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Screenshot manifest
 // ---------------------------------------------------------------------------
 
@@ -233,7 +79,7 @@ function buildManifest(): ScreenshotEntry[] {
       entries.push({
         name: `${modeId}-quiz`,
         modeId,
-        fixture: quizActiveFixture(defaultItems[modeId]),
+        fixture: quizActive(defaultItems[modeId]),
       });
     }
   }
@@ -242,29 +88,29 @@ function buildManifest(): ScreenshotEntry[] {
   entries.push({
     name: 'design-correct-feedback',
     modeId: 'semitoneMath',
-    fixture: quizCorrectFixture(defaultItems.semitoneMath),
+    fixture: quizCorrectFeedback(defaultItems.semitoneMath),
   });
   entries.push({
     name: 'design-wrong-feedback',
     modeId: 'semitoneMath',
-    fixture: quizWrongFixture(defaultItems.semitoneMath),
+    fixture: quizWrongFeedback(defaultItems.semitoneMath),
   });
   entries.push({
     name: 'design-round-complete',
     modeId: 'semitoneMath',
-    fixture: roundCompleteFixture(),
+    fixture: quizRoundComplete(),
   });
 
   // Fretboard design moments: correct + wrong
   entries.push({
     name: 'design-fretboard-correct',
     modeId: 'fretboard',
-    fixture: quizCorrectFixture(defaultItems.fretboard),
+    fixture: quizCorrectFeedback(defaultItems.fretboard),
   });
   entries.push({
     name: 'design-fretboard-wrong',
     modeId: 'fretboard',
-    fixture: quizWrongFixture(defaultItems.fretboard),
+    fixture: quizWrongFeedback(defaultItems.fretboard),
   });
 
   return entries;
@@ -352,15 +198,14 @@ async function main() {
       // No overrides file — use defaults
     }
 
-    // Helper: switch to a mode via home screen
-    async function switchToMode(modeId: string) {
-      const backBtn = await page.$('.mode-screen.mode-active .mode-back-btn');
-      if (backBtn) {
-        await backBtn.click();
-        await page.waitForTimeout(200);
-      }
+    // Helper: navigate to a mode via page reload + real UI click.
+    // Page reload guarantees clean state — no stale mode-active classes,
+    // no leftover fixture state, no navigation system desync.
+    async function navigateToMode(modeId: string) {
+      await page.goto(`${BASE_URL}/?fixtures`);
+      await page.waitForLoadState('networkidle');
       await page.click(`[data-mode="${modeId}"]`);
-      await page.waitForTimeout(300);
+      await page.waitForSelector(`#mode-${modeId}.mode-active`);
     }
 
     // Helper: capture screenshot
@@ -399,77 +244,38 @@ async function main() {
         { sel: container, detail: fixture },
       );
 
-      // Wait for fixture to be applied (Preact re-render + onPresent)
+      // Wait for fixture to be applied (Preact re-render + derived state)
       await page.waitForSelector(`${container}[data-fixture-applied="true"]`, {
         timeout: 5000,
       });
 
-      // Small delay to let CSS transitions settle
-      await page.waitForTimeout(150);
+      // Wait for derived state → Preact re-render + useEffect side effects
+      await page.waitForTimeout(500);
     }
 
     // --- Capture screenshots ---
+    // Each mode switch reloads the page for clean state. After a fixture,
+    // the next entry also reloads to clear stale quiz state.
     let currentMode = '';
+    let previousHadFixture = false;
+
     for (const entry of manifest) {
-      // Switch mode if needed
-      if (entry.modeId !== currentMode) {
-        console.log(`Mode: ${entry.modeId}`);
-        await switchToMode(entry.modeId);
+      const needsReload = entry.modeId !== currentMode || previousHadFixture;
+
+      if (needsReload) {
+        if (entry.modeId !== currentMode) {
+          console.log(`Mode: ${entry.modeId}`);
+        }
+        await navigateToMode(entry.modeId);
         currentMode = entry.modeId;
       }
 
-      // Apply fixture if present
       if (entry.fixture) {
         await applyFixture(entry.modeId, entry.fixture);
       }
 
       await capture(entry.name);
-
-      // If we applied a fixture, reset to idle for next capture
-      if (entry.fixture) {
-        // Navigate away and back to reset state
-        const nextEntry = manifest[manifest.indexOf(entry) + 1];
-        if (
-          nextEntry && nextEntry.modeId === entry.modeId && !nextEntry.fixture
-        ) {
-          // Next entry is an idle capture of the same mode — just reset
-          await page.evaluate(
-            ({ sel }) => {
-              const el = document.querySelector(sel);
-              if (!el) return;
-              el.removeAttribute('data-fixture-applied');
-              el.dispatchEvent(
-                new CustomEvent('__fixture__', {
-                  detail: {
-                    engineState: {
-                      phase: 'idle',
-                      currentItemId: null,
-                      answered: false,
-                      quizActive: false,
-                      answersEnabled: false,
-                      feedbackText: '',
-                      feedbackClass: 'feedback',
-                      feedbackCorrect: null,
-                      feedbackDisplayAnswer: null,
-                      hintText: '',
-                      timeDisplayText: '',
-                      masteryText: '',
-                      showMastery: false,
-                    },
-                    timerPct: 100,
-                    timerText: '',
-                    timerWarning: false,
-                    timerLastQuestion: false,
-                  },
-                  bubbles: false,
-                }),
-              );
-            },
-            { sel: `#mode-${entry.modeId}` },
-          );
-          await page.waitForTimeout(200);
-        }
-      }
+      previousHadFixture = !!entry.fixture;
     }
 
     await browser.close();

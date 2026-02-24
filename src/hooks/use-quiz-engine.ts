@@ -48,8 +48,6 @@ export type QuizEngineConfig = {
   getEnabledItems: () => string[];
   /** Check user's answer against correct answer. */
   checkAnswer: (itemId: string, input: string) => CheckAnswerResult;
-  /** Called when the engine presents a new question. */
-  onPresent?: (itemId: string) => void;
   /** Called after the user answers. */
   onAnswer?: (
     itemId: string,
@@ -243,10 +241,6 @@ export function useQuizEngine(
 
     const nextItemId = selectorRef.current.selectNext(items);
     setState((prev) => engineNextQuestion(prev, nextItemId, Date.now()));
-
-    if (configRef.current.onPresent) {
-      configRef.current.onPresent(nextItemId);
-    }
   }, []);
   nextQuestionRef.current = nextQuestion;
 
@@ -451,14 +445,6 @@ export function useQuizEngine(
       }
       if (detail.timerLastQuestion !== undefined) {
         setTimerLastQuestion(detail.timerLastQuestion);
-      }
-
-      // Trigger mode-specific rendering (fretboard highlights, chord slots, etc.)
-      if (detail.presentItemId && configRef.current.onPresent) {
-        setTimeout(
-          () => configRef.current.onPresent!(detail.presentItemId!),
-          0,
-        );
       }
 
       // Signal completion so Playwright can waitForSelector

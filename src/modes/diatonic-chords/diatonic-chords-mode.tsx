@@ -93,8 +93,7 @@ export function DiatonicChordsMode(
     },
   });
 
-  // --- Question state ---
-  const [currentQ, setCurrentQ] = useState<Question | null>(null);
+  // --- Question state (ref pre-declared for use in engineConfig) ---
   const currentQRef = useRef<Question | null>(null);
 
   // --- Key handler + pending state for narrowing ---
@@ -117,12 +116,6 @@ export function DiatonicChordsMode(
 
     checkAnswer: (_itemId: string, input: string) => {
       return checkAnswer(currentQRef.current!, input);
-    },
-
-    onPresent: (itemId: string) => {
-      const q = getQuestion(itemId);
-      currentQRef.current = q;
-      setCurrentQ(q);
     },
 
     handleKey: (
@@ -148,6 +141,14 @@ export function DiatonicChordsMode(
 
   const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
+
+  // --- Derived question state (single source of truth) ---
+  const currentQ = useMemo(() => {
+    const id = engine.state.currentItemId;
+    if (!id || engine.state.phase === 'idle') return null;
+    return getQuestion(id);
+  }, [engine.state.currentItemId, engine.state.phase]);
+  currentQRef.current = currentQ;
 
   // --- Narrowing (keyboard match highlighting, forward direction only) ---
   const noteNarrowing = useMemo(

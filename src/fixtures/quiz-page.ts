@@ -23,7 +23,6 @@ export type FixtureDetail = {
   timerText?: string;
   timerWarning?: boolean;
   timerLastQuestion?: boolean;
-  presentItemId?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -81,7 +80,6 @@ export function quizActive(itemId: string): FixtureDetail {
     timerText: timerMidRound.text,
     timerWarning: timerMidRound.warning,
     timerLastQuestion: timerMidRound.lastQuestion,
-    presentItemId: itemId,
   };
 }
 
@@ -111,7 +109,6 @@ export function quizCorrectFeedback(itemId: string): FixtureDetail {
     timerText: '0:28',
     timerWarning: false,
     timerLastQuestion: false,
-    presentItemId: itemId,
   };
 }
 
@@ -140,7 +137,6 @@ export function quizWrongFeedback(itemId: string): FixtureDetail {
     timerText: '0:18',
     timerWarning: false,
     timerLastQuestion: false,
-    presentItemId: itemId,
   };
 }
 

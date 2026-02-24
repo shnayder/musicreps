@@ -51,7 +51,6 @@ import {
   handleInput,
   initSequentialState,
   parseItem,
-  type Question,
   SPELLING_GROUPS,
 } from './logic.ts';
 
@@ -118,13 +117,10 @@ export function ChordSpellingMode(
     },
   });
 
-  // --- Sequential state ---
+  // --- Question + sequential state (refs pre-declared for use in engineConfig) ---
+  const currentItemRef = useRef<string | null>(null);
   const [seqState, setSeqState] = useState<SequentialState | null>(null);
   const seqStateRef = useRef<SequentialState | null>(null);
-
-  // --- Question state ---
-  const [currentQ, setCurrentQ] = useState<Question | null>(null);
-  const currentItemRef = useRef<string | null>(null);
 
   // --- Key handler + pending state for narrowing ---
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
@@ -170,15 +166,6 @@ export function ChordSpellingMode(
       return checkAnswer(itemId, input);
     },
 
-    onPresent: (itemId: string) => {
-      const q = parseItem(itemId);
-      currentItemRef.current = itemId;
-      setCurrentQ(q);
-      const newSeqState = initSequentialState(itemId);
-      seqStateRef.current = newSeqState;
-      setSeqState(newSeqState);
-    },
-
     handleKey: (
       e: KeyboardEvent,
       _ctx: { submitAnswer: (input: string) => void },
@@ -196,6 +183,30 @@ export function ChordSpellingMode(
 
   const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
+
+  // --- Derived question state (single source of truth) ---
+  const currentQ = useMemo(() => {
+    const id = engine.state.currentItemId;
+    if (!id || engine.state.phase === 'idle') return null;
+    return parseItem(id);
+  }, [engine.state.currentItemId, engine.state.phase]);
+
+  // Re-initialize sequential state when question changes (sync during render
+  // to avoid a one-frame flash of stale chord slots).
+  const prevItemRef = useRef<string | null>(null);
+  const currentItemId = engine.state.currentItemId;
+  if (currentItemId !== prevItemRef.current) {
+    prevItemRef.current = currentItemId;
+    currentItemRef.current = currentItemId;
+    if (currentItemId && engine.state.phase !== 'idle') {
+      const newSeqState = initSequentialState(currentItemId);
+      seqStateRef.current = newSeqState;
+      setSeqState(newSeqState);
+    } else {
+      seqStateRef.current = null;
+      setSeqState(null);
+    }
+  }
 
   // --- Narrowing (keyboard match highlighting) ---
   const noteNarrowing = useMemo(

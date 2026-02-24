@@ -90,8 +90,7 @@ export function IntervalMathMode(
     },
   });
 
-  // --- Question state ---
-  const [currentQ, setCurrentQ] = useState<Question | null>(null);
+  // --- Question state (ref pre-declared for use in engineConfig) ---
   const currentQRef = useRef<Question | null>(null);
 
   // --- Key handler + pending state for narrowing ---
@@ -117,12 +116,6 @@ export function IntervalMathMode(
       return checkAnswer(q, input);
     },
 
-    onPresent: (itemId: string) => {
-      const q = getQuestion(itemId);
-      currentQRef.current = q;
-      setCurrentQ(q);
-    },
-
     handleKey: (
       e: KeyboardEvent,
       _ctx: { submitAnswer: (input: string) => void },
@@ -136,6 +129,14 @@ export function IntervalMathMode(
 
   const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
+
+  // --- Derived question state (single source of truth) ---
+  const currentQ = useMemo(() => {
+    const id = engine.state.currentItemId;
+    if (!id || engine.state.phase === 'idle') return null;
+    return getQuestion(id);
+  }, [engine.state.currentItemId, engine.state.phase]);
+  currentQRef.current = currentQ;
 
   // --- Narrowing (keyboard match highlighting) ---
   const noteNarrowing = useMemo(

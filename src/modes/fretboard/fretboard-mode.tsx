@@ -236,13 +236,12 @@ export function FretboardMode(
 
   const learner = useLearnerModel(instrument.storageNamespace, ALL_ITEMS);
 
-  // --- Question state ---
+  // --- Question state (ref pre-declared for use in engineConfig) ---
   type Question = {
     currentString: number;
     currentFret: number;
     currentNote: string;
   };
-  const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const currentQRef = useRef<Question | null>(null);
 
   // --- Key handler + pending state for narrowing ---
@@ -362,22 +361,6 @@ export function FretboardMode(
       return fb.checkFretboardAnswer(q.currentNote, input);
     },
 
-    onPresent: (itemId: string) => {
-      const q = fb.parseFretboardItem(itemId);
-      currentQRef.current = q;
-      setCurrentQ(q);
-      // Highlight the position on the quiz fretboard
-      if (quizFbRef.current) {
-        clearAll(quizFbRef.current);
-        setCircleFill(
-          quizFbRef.current,
-          q.currentString,
-          q.currentFret,
-          FB_QUIZ_HL,
-        );
-      }
-    },
-
     onAnswer: (itemId: string, result) => {
       if (quizFbRef.current) {
         const q = fb.parseFretboardItem(itemId);
@@ -429,6 +412,30 @@ export function FretboardMode(
 
   const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
+
+  // --- Derived question state (single source of truth) ---
+  const currentQ = useMemo(() => {
+    const id = engine.state.currentItemId;
+    if (!id || engine.state.phase === 'idle') return null;
+    return fb.parseFretboardItem(id);
+  }, [engine.state.currentItemId, engine.state.phase, fb]);
+  currentQRef.current = currentQ;
+
+  // --- SVG highlight (imperative side effect on question change) ---
+  useEffect(() => {
+    if (!quizFbRef.current) return;
+    if (!currentQ) {
+      clearAll(quizFbRef.current);
+      return;
+    }
+    clearAll(quizFbRef.current);
+    setCircleFill(
+      quizFbRef.current,
+      currentQ.currentString,
+      currentQ.currentFret,
+      FB_QUIZ_HL,
+    );
+  }, [currentQ]);
 
   // --- Narrowing (keyboard match highlighting) ---
   const noteNarrowing = useMemo(
