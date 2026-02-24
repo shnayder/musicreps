@@ -1,4 +1,4 @@
-// Playwright screenshot script: captures idle + quiz screenshots for all 10 modes.
+// Playwright screenshot script: captures idle + quiz screenshots for all modes.
 // Usage: npx tsx scripts/take-screenshots.ts
 
 import { chromium } from 'playwright';
@@ -23,6 +23,7 @@ const DEVICE_SCALE_FACTOR = 3;
 // All mode IDs in registration order (from app.js)
 const MODE_IDS = [
   'fretboard',
+  'ukulele',
   'speedTap',
   'noteSemitones',
   'intervalSemitones',
@@ -272,25 +273,10 @@ async function main() {
       console.log('  (round-complete not captured — timer did not expire)');
     }
 
-    // --- Menu screenshot ---
-    // Go home first
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
-    const backBtn2 = await page.$('.mode-screen.mode-active .mode-back-btn');
-    if (backBtn2) {
-      await backBtn2.click();
-      await page.waitForTimeout(200);
-    }
-    console.log('Menu');
-    await page.click('.hamburger');
-    await page.waitForSelector('.nav-drawer.open');
-    await page.waitForTimeout(300);
-    await capture('menu');
-
     await browser.close();
     console.log(
       `\nDone! ${
-        MODE_IDS.length * 2 + 1 + designCaptures
+        MODE_IDS.length * 2 + designCaptures
       } screenshots in ${OUT_DIR}`,
     );
   } finally {
