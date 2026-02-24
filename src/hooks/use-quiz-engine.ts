@@ -30,6 +30,14 @@ const ROUND_DURATION_MS = 60000;
 const AUTO_ADVANCE_MS = 1000;
 const TIMER_TICK_MS = 200;
 
+/** True when the primary pointer is coarse (phone/tablet). */
+const IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === 'function' &&
+  globalThis.matchMedia('(pointer: coarse)').matches;
+
+const HINT_ADVANCE = IS_TOUCH_PRIMARY
+  ? 'Tap anywhere for next'
+  : 'Tap anywhere or press Space for next';
+
 // ---------------------------------------------------------------------------
 // Config type — what the mode provides to the engine
 // ---------------------------------------------------------------------------
@@ -253,6 +261,7 @@ export function useQuizEngine(
         prev,
         result.correct,
         result.correctAnswer,
+        HINT_ADVANCE,
       );
       next = {
         ...next,
@@ -379,6 +388,31 @@ export function useQuizEngine(
     document.addEventListener('keydown', handleKeydown);
     return () => document.removeEventListener('keydown', handleKeydown);
   }, [state.phase !== 'idle', stop, continueQuiz, submitAnswer]);
+
+  // --- Tap-to-advance (click anywhere during feedback) ---
+
+  useEffect(() => {
+    if (state.phase === 'idle') return;
+
+    function handleClick(e: MouseEvent) {
+      const s = stateRef.current;
+      if (s.phase !== 'active' || !s.answered) return;
+      // Don't intercept clicks on interactive elements
+      if (!e.target || !(e.target instanceof Element)) return;
+      if (
+        e.target.closest('button, a, input, select, textarea')
+      ) return;
+
+      if (autoAdvanceRef.current) {
+        clearTimeout(autoAdvanceRef.current);
+        autoAdvanceRef.current = null;
+      }
+      nextQuestionRef.current();
+    }
+
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [state.phase !== 'idle']);
 
   // Clean up timers on unmount
   useEffect(() => {

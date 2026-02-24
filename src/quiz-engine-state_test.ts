@@ -173,9 +173,14 @@ describe('engineSubmitAnswer', () => {
     assert.equal(s.timeDisplayText, '');
   });
 
-  it('shows hint text', () => {
+  it('shows hint text (default)', () => {
     const s = engineSubmitAnswer(active, true, 'C');
     assert.equal(s.hintText, 'Tap anywhere or press Space for next');
+  });
+
+  it('shows custom hint text when provided', () => {
+    const s = engineSubmitAnswer(active, true, 'C', 'Tap anywhere for next');
+    assert.equal(s.hintText, 'Tap anywhere for next');
   });
 
   it('increments roundAnswered on each answer', () => {
