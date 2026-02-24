@@ -1374,6 +1374,33 @@ button {
   font-size: var(--text-base);
   margin-top: var(--space-5);
 }
+
+/* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
+.keyboard-hint {
+  display: none;
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+  text-align: center;
+  margin-top: var(--space-3);
+}
+@media (pointer: fine) {
+  .keyboard-hint {
+    display: block;
+  }
+}
+
+/* --- Keyboard narrowing (progressive button highlighting) --- */
+/* Neutral treatment: strong border + surface bg — avoids brand/success green
+   which would read as "correct" rather than "possible match". */
+.kb-match {
+  border-color: var(--color-text) !important;
+  background: var(--color-surface) !important;
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+.kb-dimmed {
+  opacity: 0.4;
+}
+
 .stats {
   margin-top: var(--space-5);
   font-size: var(--text-sm);
@@ -4399,31 +4426,80 @@ button {
   }
 
   // src/quiz-engine.ts
-  function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  var NOTE_NAME_SET = new Set(NOTE_NAMES);
+  var PENDING_DELAY_AMBIGUOUS = 600;
+  var PENDING_DELAY_UNAMBIGUOUS = 400;
+  var FLAT_TO_BUTTON = {};
+  for (const note of NOTES) {
+    for (const a3 of note.accepts) {
+      if (a3.endsWith("b") && a3.length === 2) {
+        FLAT_TO_BUTTON[a3[0].toUpperCase() + "b"] = note.name;
+      }
+    }
+  }
+  function noteNarrowingSet(pendingNote) {
+    if (!pendingNote) return null;
+    const matches = /* @__PURE__ */ new Set();
+    matches.add(pendingNote);
+    const sharp = pendingNote + "#";
+    if (NOTE_NAME_SET.has(sharp)) matches.add(sharp);
+    const flatButton = FLAT_TO_BUTTON[pendingNote + "b"];
+    if (flatButton) matches.add(flatButton);
+    return matches;
+  }
+  function numberNarrowingSet(pendingDigit, end, start = 0) {
+    if (pendingDigit === null) return null;
+    const matches = /* @__PURE__ */ new Set();
+    if (pendingDigit >= start && pendingDigit <= end) {
+      matches.add(String(pendingDigit));
+    }
+    for (let d3 = 0; d3 <= 9; d3++) {
+      const num = pendingDigit * 10 + d3;
+      if (num > end) break;
+      if (num >= start) matches.add(String(num));
+    }
+    return matches;
+  }
+  function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
     let pendingNote = null;
     let pendingTimeout = null;
+    function setPending(note) {
+      pendingNote = note;
+      onPendingChange?.(note);
+    }
     function reset() {
       if (pendingTimeout) clearTimeout(pendingTimeout);
-      pendingNote = null;
+      setPending(null);
       pendingTimeout = null;
     }
     function handleKey(e3) {
       const key = e3.key.toUpperCase();
+      if (e3.key === "Enter" && pendingNote) {
+        e3.preventDefault();
+        if (pendingTimeout) clearTimeout(pendingTimeout);
+        const note = pendingNote;
+        setPending(null);
+        pendingTimeout = null;
+        submitAnswer(note);
+        return true;
+      }
       if (pendingNote && allowAccidentals()) {
         if (e3.key === "#" || e3.key === "s" || e3.key === "S" || e3.shiftKey && e3.key === "3") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "#");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "#");
           return true;
         }
         if (e3.key === "b" || e3.key === "B") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "b");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "b");
           return true;
         }
       }
@@ -4433,20 +4509,25 @@ button {
         if (!allowAccidentals()) {
           submitAnswer(key);
         } else {
-          pendingNote = key;
+          setPending(key);
+          const delay = noteNarrowingSet(key).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
           pendingTimeout = setTimeout(() => {
-            submitAnswer(pendingNote);
-            pendingNote = null;
+            const note = pendingNote;
+            setPending(null);
             pendingTimeout = null;
-          }, 400);
+            submitAnswer(note);
+          }, delay);
         }
         return true;
       }
       return false;
     }
-    return { handleKey, reset };
+    function getPendingNote() {
+      return pendingNote;
+    }
+    return { handleKey, reset, getPendingNote };
   }
-  function createSolfegeKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  function createSolfegeKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
     const SOLFEGE_TO_NOTE = {
       "do": "C",
       "re": "D",
@@ -4460,37 +4541,60 @@ button {
     let buffer = "";
     let pendingNote = null;
     let pendingTimeout = null;
+    function setPending(note) {
+      pendingNote = note;
+      onPendingChange?.(note);
+    }
     function reset() {
       buffer = "";
       if (pendingTimeout) clearTimeout(pendingTimeout);
       pendingTimeout = null;
-      pendingNote = null;
+      setPending(null);
     }
     function submitPending() {
       if (pendingNote) {
         if (pendingTimeout) clearTimeout(pendingTimeout);
-        submitAnswer(pendingNote);
-        pendingNote = null;
+        const note = pendingNote;
+        setPending(null);
         pendingTimeout = null;
+        submitAnswer(note);
       }
     }
     function handleKey(e3) {
       const key = e3.key.toLowerCase();
+      if (e3.key === "Enter") {
+        if (pendingNote) {
+          e3.preventDefault();
+          if (pendingTimeout) clearTimeout(pendingTimeout);
+          const note = pendingNote;
+          setPending(null);
+          pendingTimeout = null;
+          submitAnswer(note);
+          return true;
+        }
+        if (buffer.length > 0) {
+          buffer = "";
+          return true;
+        }
+        return false;
+      }
       if (pendingNote && allowAccidentals()) {
         if (e3.key === "#" || e3.shiftKey && e3.key === "3") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "#");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "#");
           return true;
         }
         if (key === "b") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "b");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "b");
           return true;
         }
       }
@@ -4506,12 +4610,14 @@ button {
           if (!allowAccidentals()) {
             submitAnswer(note);
           } else {
-            pendingNote = note;
+            setPending(note);
+            const delay = noteNarrowingSet(note).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
             pendingTimeout = setTimeout(() => {
-              submitAnswer(pendingNote);
-              pendingNote = null;
+              const n2 = pendingNote;
+              setPending(null);
               pendingTimeout = null;
-            }, 400);
+              submitAnswer(n2);
+            }, delay);
           }
         } else if (buffer.length >= 2) {
           buffer = "";
@@ -4526,13 +4632,21 @@ button {
       }
       return false;
     }
-    return { handleKey, reset };
+    function getPendingNote() {
+      return pendingNote;
+    }
+    return { handleKey, reset, getPendingNote };
   }
-  function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true) {
-    const letterHandler = createNoteKeyHandler(submitAnswer, allowAccidentals);
+  function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
+    const letterHandler = createNoteKeyHandler(
+      submitAnswer,
+      allowAccidentals,
+      onPendingChange
+    );
     const solfegeHandler = createSolfegeKeyHandler(
       submitAnswer,
-      allowAccidentals
+      allowAccidentals,
+      onPendingChange
     );
     return {
       handleKey(e3) {
@@ -4541,6 +4655,9 @@ button {
       reset() {
         letterHandler.reset();
         solfegeHandler.reset();
+      },
+      getPendingNote() {
+        return getUseSolfege() ? solfegeHandler.getPendingNote() : letterHandler.getPendingNote();
       }
     };
   }
@@ -5772,7 +5889,7 @@ button {
   }
 
   // src/ui/buttons.tsx
-  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive }) {
+  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive, narrowing }) {
     const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: NOTE_NAMES.map((n2) => {
       let label;
@@ -5782,12 +5899,16 @@ button {
       } else {
         label = displayNote(n2);
       }
+      let btnCls = "answer-btn answer-btn-note";
+      if (narrowing) {
+        btnCls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+      }
       return /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
           tabIndex: 0,
-          class: "answer-btn answer-btn-note",
+          class: btnCls,
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: label
@@ -5796,50 +5917,68 @@ button {
       );
     }) });
   }
-  function PianoNoteButtons({ onAnswer, hideAccidentals }) {
+  function PianoNoteButtons({ onAnswer, hideAccidentals, narrowing }) {
     return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
-      /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "note-btn accidental" + (hideAccidentals ? " hidden" : ""),
-          "data-note": n2,
-          onClick: onAnswer ? () => onAnswer(n2) : void 0,
-          children: displayNote(n2)
-        },
-        n2
-      )) }),
-      /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: NATURAL_NOTES.map((n2) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "note-btn",
-          "data-note": n2,
-          onClick: onAnswer ? () => onAnswer(n2) : void 0,
-          children: displayNote(n2)
-        },
-        n2
-      )) })
+      /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => {
+        let cls = "note-btn accidental" + (hideAccidentals ? " hidden" : "");
+        if (narrowing && !hideAccidentals) {
+          cls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            "data-note": n2,
+            onClick: onAnswer ? () => onAnswer(n2) : void 0,
+            children: displayNote(n2)
+          },
+          n2
+        );
+      }) }),
+      /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: NATURAL_NOTES.map((n2) => {
+        let cls = "note-btn";
+        if (narrowing) {
+          cls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            "data-note": n2,
+            onClick: onAnswer ? () => onAnswer(n2) : void 0,
+            children: displayNote(n2)
+          },
+          n2
+        );
+      }) })
     ] });
   }
-  function NumberButtons({ start, end, onAnswer, hidden }) {
+  function NumberButtons({ start, end, onAnswer, hidden, narrowing }) {
     const nums = [];
     for (let i3 = start; i3 <= end; i3++) nums.push(i3);
     const cls = "answer-buttons answer-buttons-numbers" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children: nums.map((i3) => /* @__PURE__ */ u3(
-      "button",
-      {
-        type: "button",
-        tabIndex: 0,
-        class: "answer-btn answer-btn-num",
-        "data-num": String(i3),
-        onClick: onAnswer ? () => onAnswer(i3) : void 0,
-        children: i3
-      },
-      i3
-    )) });
+    return /* @__PURE__ */ u3("div", { class: cls, children: nums.map((i3) => {
+      let btnCls = "answer-btn answer-btn-num";
+      if (narrowing) {
+        btnCls += narrowing.has(String(i3)) ? " kb-match" : " kb-dimmed";
+      }
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-num": String(i3),
+          onClick: onAnswer ? () => onAnswer(i3) : void 0,
+          children: i3
+        },
+        i3
+      );
+    }) });
   }
   function IntervalButtons({ onAnswer, hidden }) {
     const cls = "answer-buttons answer-buttons-intervals" + (hidden ? " answer-group-hidden" : "");
@@ -6368,6 +6507,17 @@ button {
     const cls = "feedback-banner" + (correct ? " feedback-banner-correct" : " feedback-banner-wrong");
     return /* @__PURE__ */ u3("div", { class: cls, children: correct ? answer : "No, " + answer });
   }
+  var NOTE_HINT_LETTER = "Keyboard: C D E, c d e, C#, fs (=F#), Db, bb (=Bb) \u2014 Enter to confirm";
+  var NOTE_HINT_SOLFEGE = "Keyboard: do re mi, Do Re Mi, do#, reb \u2014 Enter to confirm";
+  var HINT_TEXT = {
+    "number-0-11": "Keyboard: 0\u20139, 10, 11 \u2014 Enter to confirm",
+    "number-1-12": "Keyboard: 1\u20139, 10, 11, 12 \u2014 Enter to confirm"
+  };
+  function KeyboardHint({ type }) {
+    if (!type) return null;
+    const text = type === "note" ? getUseSolfege() ? NOTE_HINT_SOLFEGE : NOTE_HINT_LETTER : HINT_TEXT[type];
+    return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: text });
+  }
 
   // src/ui/speed-check.tsx
   var BUTTON_PROVIDER = {
@@ -6642,12 +6792,15 @@ button {
     const currentQRef = A2(null);
     const pendingDigitRef = A2(null);
     const pendingTimeoutRef = A2(null);
+    const [pendingDigit, setPendingDigit] = d2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -6667,6 +6820,16 @@ button {
         if (dir2 === "rev") {
           return noteHandler.handleKey(e3);
         }
+        if (e3.key === "Enter" && pendingDigitRef.current !== null) {
+          e3.preventDefault();
+          clearTimeout(pendingTimeoutRef.current);
+          const d3 = pendingDigitRef.current;
+          pendingDigitRef.current = null;
+          setPendingDigit(null);
+          pendingTimeoutRef.current = null;
+          ctx.submitAnswer(String(d3));
+          return true;
+        }
         if (e3.key >= "0" && e3.key <= "9") {
           e3.preventDefault();
           const d3 = parseInt(e3.key);
@@ -6674,6 +6837,7 @@ button {
             const num = pendingDigitRef.current * 10 + d3;
             clearTimeout(pendingTimeoutRef.current);
             pendingDigitRef.current = null;
+            setPendingDigit(null);
             pendingTimeoutRef.current = null;
             if (num <= 11) ctx.submitAnswer(String(num));
             return true;
@@ -6682,13 +6846,16 @@ button {
             ctx.submitAnswer(String(d3));
           } else {
             pendingDigitRef.current = d3;
+            setPendingDigit(d3);
+            const delay = numberNarrowingSet(d3, 11).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
             pendingTimeoutRef.current = setTimeout(() => {
               if (pendingDigitRef.current !== null) {
                 ctx.submitAnswer(String(pendingDigitRef.current));
                 pendingDigitRef.current = null;
+                setPendingDigit(null);
                 pendingTimeoutRef.current = null;
               }
-            }, 400);
+            }, delay);
           }
           return true;
         }
@@ -6698,16 +6865,26 @@ button {
         noteHandler.reset();
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       onStop: () => {
         noteHandler.reset();
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       getPracticingLabel: () => "all items"
     }), [noteHandler]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
+    const numNarrowing = T2(
+      () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 11),
+      [pendingDigit, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -6844,7 +7021,8 @@ button {
               NoteButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "rev" ? noteNarrowing : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -6853,7 +7031,14 @@ button {
                 start: 0,
                 end: 11,
                 hidden: dir === "rev",
-                onAnswer: handleNumAnswer
+                onAnswer: handleNumAnswer,
+                narrowing: dir === "fwd" ? numNarrowing : void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              KeyboardHint,
+              {
+                type: dir === "fwd" ? "number-0-11" : "note"
               }
             ),
             /* @__PURE__ */ u3(
@@ -6925,6 +7110,7 @@ button {
     const currentQRef = A2(null);
     const pendingDigitRef = A2(null);
     const pendingTimeoutRef = A2(null);
+    const [pendingDigit, setPendingDigit] = d2(null);
     const engineConfig = T2(() => ({
       getEnabledItems: () => ALL_ITEMS2,
       checkAnswer: (_itemId, input) => {
@@ -6941,6 +7127,16 @@ button {
         if (dir2 === "rev") {
           return false;
         }
+        if (e3.key === "Enter" && pendingDigitRef.current !== null) {
+          e3.preventDefault();
+          clearTimeout(pendingTimeoutRef.current);
+          const d3 = pendingDigitRef.current;
+          pendingDigitRef.current = null;
+          setPendingDigit(null);
+          pendingTimeoutRef.current = null;
+          if (d3 >= 1) ctx.submitAnswer(String(d3));
+          return true;
+        }
         if (e3.key >= "0" && e3.key <= "9") {
           e3.preventDefault();
           const d3 = parseInt(e3.key);
@@ -6948,6 +7144,7 @@ button {
             const num = pendingDigitRef.current * 10 + d3;
             clearTimeout(pendingTimeoutRef.current);
             pendingDigitRef.current = null;
+            setPendingDigit(null);
             pendingTimeoutRef.current = null;
             if (num >= 1 && num <= 12) ctx.submitAnswer(String(num));
             return true;
@@ -6956,15 +7153,18 @@ button {
             ctx.submitAnswer(String(d3));
           } else {
             pendingDigitRef.current = d3;
+            setPendingDigit(d3);
+            const delay = numberNarrowingSet(d3, 12, 1).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
             pendingTimeoutRef.current = setTimeout(() => {
               if (pendingDigitRef.current !== null) {
                 if (pendingDigitRef.current >= 1) {
                   ctx.submitAnswer(String(pendingDigitRef.current));
                 }
                 pendingDigitRef.current = null;
+                setPendingDigit(null);
                 pendingTimeoutRef.current = null;
               }
-            }, 400);
+            }, delay);
           }
           return true;
         }
@@ -6973,14 +7173,20 @@ button {
       onStart: () => {
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       onStop: () => {
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       getPracticingLabel: () => "all items"
     }), []);
     const engine = useQuizEngine(engineConfig, learner.selector);
+    const numNarrowing = T2(
+      () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 12, 1),
+      [pendingDigit, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -7123,7 +7329,14 @@ button {
                 start: 1,
                 end: 12,
                 hidden: dir === "rev",
-                onAnswer: handleNumAnswer
+                onAnswer: handleNumAnswer,
+                narrowing: dir === "fwd" ? numNarrowing : void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              KeyboardHint,
+              {
+                type: dir === "fwd" ? "number-1-12" : null
               }
             ),
             /* @__PURE__ */ u3(
@@ -7616,10 +7829,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -7643,6 +7858,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -7787,9 +8006,11 @@ button {
               NoteButtons,
               {
                 onAnswer: handleNoteAnswer,
-                useFlats
+                useFlats,
+                narrowing: noteNarrowing
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -7911,10 +8132,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -7938,6 +8161,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -8082,9 +8309,11 @@ button {
               NoteButtons,
               {
                 onAnswer: handleNoteAnswer,
-                useFlats
+                useFlats,
+                narrowing: noteNarrowing
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8202,10 +8431,12 @@ button {
     );
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -8225,6 +8456,15 @@ button {
         const dir2 = currentQRef.current?.dir;
         if (dir2 === "rev") {
           return noteHandler.handleKey(e3);
+        }
+        if (e3.key === "Enter" && pendingSigDigitRef.current !== null) {
+          e3.preventDefault();
+          clearTimeout(pendingSigTimeoutRef.current);
+          const d3 = pendingSigDigitRef.current;
+          pendingSigDigitRef.current = null;
+          pendingSigTimeoutRef.current = null;
+          if (d3 === "0") ctx.submitAnswer("0");
+          return true;
         }
         if (e3.key >= "0" && e3.key <= "7") {
           e3.preventDefault();
@@ -8269,6 +8509,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -8429,9 +8673,11 @@ button {
               NoteButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "rev" ? noteNarrowing : void 0
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: dir === "rev" ? "note" : null }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8546,10 +8792,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -8581,6 +8829,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -8730,7 +8982,8 @@ button {
               NoteButtons,
               {
                 hidden: dir === "rev",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "fwd" ? noteNarrowing : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -8740,6 +8993,7 @@ button {
                 onAnswer: handleDegreeAnswer
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: dir === "fwd" ? "note" : null }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8855,10 +9109,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -8890,6 +9146,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -9039,7 +9299,8 @@ button {
               NoteButtons,
               {
                 hidden: dir === "rev",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "fwd" ? noteNarrowing : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -9049,6 +9310,7 @@ button {
                 onAnswer: handleNumeralAnswer
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: dir === "fwd" ? "note" : null }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -9218,12 +9480,14 @@ button {
     const currentItemRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const handleSeqInputRef = A2(() => {
     });
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => handleSeqInputRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -9266,6 +9530,10 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -9410,9 +9678,11 @@ button {
             /* @__PURE__ */ u3(
               NoteButtons,
               {
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: noteNarrowing
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -9737,10 +10007,12 @@ button {
     });
     const noteFilterRef = A2(noteFilter);
     noteFilterRef.current = noteFilter;
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => noteFilterRef.current !== "natural"
+        () => noteFilterRef.current !== "natural",
+        setPendingNote
       ),
       []
     );
@@ -9877,6 +10149,10 @@ button {
     }), [scope, noteHandler, fb, instrument]);
     const engine = useQuizEngine(engineConfig, learner.selector);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -10066,9 +10342,11 @@ button {
               PianoNoteButtons,
               {
                 onAnswer: handleNoteAnswer,
-                hideAccidentals: noteFilter === "natural"
+                hideAccidentals: noteFilter === "natural",
+                narrowing: noteNarrowing
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
