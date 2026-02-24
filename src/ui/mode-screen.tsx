@@ -4,6 +4,9 @@
 
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
+import type { PracticeSummaryState } from '../types.ts';
+import { StatsToggle } from './stats.tsx';
+import { BaselineInfo } from './speed-check.tsx';
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -140,15 +143,8 @@ export function TabbedIdle(
 // ---------------------------------------------------------------------------
 
 export function PracticeCard(
-  {
-    statusLabel,
-    statusDetail,
-    recommendation,
-    mastery,
-    scope,
-    onStart,
-    onApplyRecommendation,
-  }: {
+  props: {
+    summary?: PracticeSummaryState;
     statusLabel?: string;
     statusDetail?: string;
     recommendation?: string;
@@ -158,6 +154,22 @@ export function PracticeCard(
     onApplyRecommendation?: () => void;
   },
 ) {
+  // When summary is provided, map its fields; individual props override.
+  const statusLabel = props.statusLabel ??
+    (props.summary ? props.summary.statusLabel : undefined);
+  const statusDetail = props.statusDetail ??
+    (props.summary ? props.summary.statusDetail : undefined);
+  const recommendation = props.recommendation ??
+    (props.summary && props.summary.recommendationText
+      ? props.summary.recommendationText
+      : undefined);
+  const mastery = props.mastery ??
+    (props.summary && props.summary.showMastery
+      ? props.summary.masteryText
+      : undefined);
+  const onApplyRecommendation = props.onApplyRecommendation;
+  const { scope, onStart } = props;
+
   const recBlock = recommendation
     ? (
       <div class='practice-recommendation'>
@@ -410,5 +422,66 @@ export function RoundComplete(
         </button>
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// PracticeTab — composes TabbedIdle + PracticeCard + progress wrapper
+// ---------------------------------------------------------------------------
+
+export function PracticeTab(
+  {
+    summary,
+    onStart,
+    onApplyRecommendation,
+    scope,
+    statsContent,
+    statsMode,
+    onStatsToggle,
+    baseline,
+    onCalibrate,
+    activeTab,
+    onTabSwitch,
+  }: {
+    summary: PracticeSummaryState;
+    onStart: () => void;
+    onApplyRecommendation?: () => void;
+    scope?: ComponentChildren;
+    statsContent: ComponentChildren;
+    statsMode: string;
+    onStatsToggle: (mode: string) => void;
+    baseline: number | null;
+    onCalibrate: () => void;
+    activeTab: 'practice' | 'progress';
+    onTabSwitch: (tab: 'practice' | 'progress') => void;
+  },
+) {
+  return (
+    <TabbedIdle
+      activeTab={activeTab}
+      onTabSwitch={onTabSwitch}
+      practiceContent={
+        <PracticeCard
+          summary={summary}
+          onStart={onStart}
+          onApplyRecommendation={onApplyRecommendation}
+          scope={scope}
+        />
+      }
+      progressContent={
+        <div>
+          <div class='stats-controls'>
+            <StatsToggle active={statsMode} onToggle={onStatsToggle} />
+          </div>
+          <div class='stats-container'>
+            {statsContent}
+          </div>
+          <BaselineInfo
+            baseline={baseline}
+            onRun={onCalibrate}
+          />
+        </div>
+      }
+    />
   );
 }

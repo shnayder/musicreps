@@ -11,22 +11,18 @@ import {
   usePhaseClass,
 } from '../../hooks/use-phase-class.ts';
 import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
-import {
-  useRoundSummary,
-  useStatsSelector,
-} from '../../hooks/use-round-summary.ts';
-import { computePracticeSummary } from '../../mode-ui-state.ts';
+import { useRoundSummary } from '../../hooks/use-round-summary.ts';
+import { usePracticeSummary } from '../../hooks/use-practice-summary.ts';
 
 import { IntervalButtons, NumberButtons } from '../../ui/buttons.tsx';
 import {
   ModeTopBar,
-  PracticeCard,
+  PracticeTab,
   QuizArea,
   QuizSession,
   RoundComplete,
-  TabbedIdle,
 } from '../../ui/mode-screen.tsx';
-import { StatsLegend, StatsTable, StatsToggle } from '../../ui/stats.tsx';
+import { StatsLegend, StatsTable } from '../../ui/stats.tsx';
 import {
   numberNarrowingSet,
   PENDING_DELAY_AMBIGUOUS,
@@ -37,11 +33,7 @@ import {
   FeedbackDisplay,
   KeyboardHint,
 } from '../../ui/quiz-ui.tsx';
-import {
-  BaselineInfo,
-  BUTTON_PROVIDER,
-  SpeedCheck,
-} from '../../ui/speed-check.tsx';
+import { BUTTON_PROVIDER, SpeedCheck } from '../../ui/speed-check.tsx';
 
 import {
   ALL_ITEMS,
@@ -181,31 +173,15 @@ export function IntervalSemitonesMode(
     PHASE_FOCUS_TARGETS,
   );
 
-  // --- Tab state ---
-  const [activeTab, setActiveTab] = useState<'practice' | 'progress'>(
-    'practice',
-  );
-  const [statsMode, setStatsMode] = useState('retention');
-
-  // --- Practice summary ---
-  const summary = useMemo(
-    () =>
-      computePracticeSummary({
-        allItemIds: ALL_ITEMS,
-        selector: learner.selector,
-        itemNoun: 'items',
-        recommendation: null,
-        recommendationText: '',
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery,
-      }),
-    [
-      learner.selector,
-      engine.state.masteryText,
-      engine.state.showMastery,
-      engine.state.phase,
-    ],
-  );
+  // --- Practice summary + tab/stats state ---
+  const ps = usePracticeSummary({
+    allItems: ALL_ITEMS,
+    selector: learner.selector,
+    engine,
+    itemNoun: 'items',
+    recommendation: null,
+    recommendationText: '',
+  });
 
   // --- Navigation handle ---
   useModeLifecycle(onMount, engine, learner, setCalibrating);
@@ -229,53 +205,35 @@ export function IntervalSemitonesMode(
   // Round-complete derived values
   const round = useRoundSummary(engine, 'all items');
 
-  // Stats selector adapter
-  const statsSel = useStatsSelector(
-    learner.selector,
-    engine.state.phase,
-    statsMode,
-  );
-
   // --- Render ---
   return (
     <>
       <ModeTopBar title='Interval ↔ Semitones' onBack={navigateHome} />
-      <TabbedIdle
-        activeTab={activeTab}
-        onTabSwitch={setActiveTab}
-        practiceContent={
-          <PracticeCard
-            statusLabel={summary.statusLabel}
-            statusDetail={summary.statusDetail}
-            mastery={summary.showMastery ? summary.masteryText : undefined}
-            onStart={engine.start}
-          />
-        }
-        progressContent={
-          <div>
-            <div class='stats-controls'>
-              <StatsToggle active={statsMode} onToggle={setStatsMode} />
-            </div>
-            <div class='stats-container'>
-              <StatsTable
-                selector={statsSel}
-                rows={getStatsRows()}
-                fwdHeader='I→#'
-                revHeader='#→I'
-                statsMode={statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
-              <StatsLegend
-                statsMode={statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
-            </div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
+      <PracticeTab
+        summary={ps.summary}
+        onStart={engine.start}
+        statsContent={
+          <>
+            <StatsTable
+              selector={ps.statsSel}
+              rows={getStatsRows()}
+              fwdHeader='I→#'
+              revHeader='#→I'
+              statsMode={ps.statsMode}
+              baseline={learner.motorBaseline ?? undefined}
             />
-          </div>
+            <StatsLegend
+              statsMode={ps.statsMode}
+              baseline={learner.motorBaseline ?? undefined}
+            />
+          </>
         }
+        statsMode={ps.statsMode}
+        onStatsToggle={ps.setStatsMode}
+        baseline={learner.motorBaseline}
+        onCalibrate={() => setCalibrating(true)}
+        activeTab={ps.activeTab}
+        onTabSwitch={ps.setActiveTab}
       />
       <QuizSession
         timeLeft={engine.timerText}
