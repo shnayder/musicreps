@@ -85,12 +85,16 @@ async function fontFaceCSS(): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function buildHTML(): Promise<string> {
-  const [rawCss, fontCss, js] = await Promise.all([
+  const [rawCss, fontCss, js, version] = await Promise.all([
     Deno.readTextFile(resolve('./src/styles.css')),
     fontFaceCSS(),
     bundleJS(),
+    getVersion(),
   ]);
-  return assembleHTML(fontCss + '\n' + rawCss, js);
+  return assembleHTML(fontCss + '\n' + rawCss, js).replaceAll(
+    '__VERSION__',
+    version,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -226,7 +230,7 @@ if (import.meta.main) {
 
     console.log('Built to docs/index.html + docs/sw.js + docs/design/');
   } else {
-    const html = stamp(await buildHTML());
+    const html = await buildHTML();
     Deno.serve({ port: 8001 }, async (req) => {
       const url = new URL(req.url);
       if (url.pathname === '/sw.js') {
