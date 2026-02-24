@@ -283,7 +283,7 @@ export function SpeedTapMode(
     },
   }), [scope]);
 
-  const engine = useQuizEngine(engineConfig, learner.selector);
+  const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
 
   // --- Calibration state ---

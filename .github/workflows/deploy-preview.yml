@@ -53,6 +53,7 @@ jobs:
         run: deno task build
 
       - name: Cache Playwright browsers
+        if: contains(github.ref_name, '/ui/')
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
@@ -61,10 +62,12 @@ jobs:
             ${{ runner.os }}-playwright-
 
       - name: Install Playwright browsers
+        if: contains(github.ref_name, '/ui/')
         run: npx playwright install --with-deps chromium
 
       - name: Capture screenshots
-        run: npx tsx scripts/take-screenshots.ts
+        if: contains(github.ref_name, '/ui/')
+        run: npx tsx scripts/take-screenshots.ts --ci
 
       - name: Deploy preview
         run: bash scripts/deploy-gh-pages.sh preview "${{ github.ref_name }}"
@@ -86,8 +89,10 @@ jobs:
             });
 
             const marker = '<!-- preview-bot -->';
+            const hasScreenshots = context.ref.includes('/ui/');
             const screenshotsUrl = `${previewUrl}screenshots/index.html`;
-            const body = `${marker}\n**Preview deployed:** ${previewUrl}\n**Screenshots:** [View all](${screenshotsUrl})`;
+            const screenshotsLine = hasScreenshots ? `\n**Screenshots:** [View all](${screenshotsUrl})` : '';
+            const body = `${marker}\n**Preview deployed:** ${previewUrl}${screenshotsLine}`;
 
             for (const pr of pulls.data) {
               // Check if we already commented
@@ -133,8 +138,10 @@ jobs:
             const previewUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/preview/${safeName}/`;
 
             const marker = '<!-- preview-bot -->';
+            const hasScreenshots = branch.includes('/ui/');
             const screenshotsUrl = `${previewUrl}screenshots/index.html`;
-            const body = `${marker}\n**Preview deployed:** ${previewUrl}\n**Screenshots:** [View all](${screenshotsUrl})`;
+            const screenshotsLine = hasScreenshots ? `\n**Screenshots:** [View all](${screenshotsUrl})` : '';
+            const body = `${marker}\n**Preview deployed:** ${previewUrl}${screenshotsLine}`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,

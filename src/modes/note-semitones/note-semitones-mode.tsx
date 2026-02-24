@@ -169,7 +169,7 @@ export function NoteSemitonesMode(
     getPracticingLabel: () => 'all items',
   }), [noteHandler]);
 
-  const engine = useQuizEngine(engineConfig, learner.selector);
+  const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
 
   // --- Narrowing (keyboard match highlighting) ---

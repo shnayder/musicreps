@@ -11,6 +11,7 @@ import type {
   CheckAnswerResult,
   EngineState,
 } from '../types.ts';
+import type { FixtureDetail } from '../fixtures/quiz-page.ts';
 import {
   engineContinueRound,
   engineNextQuestion,
@@ -106,9 +107,14 @@ function formatRoundTime(ms: number): string {
 // Hook
 // ---------------------------------------------------------------------------
 
+/** True when `?fixtures` is in the page URL. */
+const FIXTURES_ENABLED = typeof globalThis.location !== 'undefined' &&
+  new URLSearchParams(globalThis.location.search).has('fixtures');
+
 export function useQuizEngine(
   config: QuizEngineConfig,
   selector: AdaptiveSelector,
+  fixtureTarget?: HTMLElement,
 ): QuizEngineHandle {
   const [state, setState] = useState<EngineState>(initialEngineState);
 
@@ -421,6 +427,47 @@ export function useQuizEngine(
       if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
     };
   }, []);
+
+  // --- Fixture injection (dev/screenshot only) ---
+
+  useEffect(() => {
+    if (!FIXTURES_ENABLED || !fixtureTarget) return;
+    const target = fixtureTarget; // capture for closure narrowing
+
+    function handleFixture(e: Event) {
+      const detail = (e as CustomEvent<FixtureDetail>).detail;
+      if (!detail) return;
+
+      // Apply engine state override
+      if (detail.engineState) {
+        setState((prev) => ({ ...prev, ...detail.engineState }));
+      }
+
+      // Apply timer overrides
+      if (detail.timerPct !== undefined) setTimerPct(detail.timerPct);
+      if (detail.timerText !== undefined) setTimerText(detail.timerText);
+      if (detail.timerWarning !== undefined) {
+        setTimerWarning(detail.timerWarning);
+      }
+      if (detail.timerLastQuestion !== undefined) {
+        setTimerLastQuestion(detail.timerLastQuestion);
+      }
+
+      // Trigger mode-specific rendering (fretboard highlights, chord slots, etc.)
+      if (detail.presentItemId && configRef.current.onPresent) {
+        setTimeout(
+          () => configRef.current.onPresent!(detail.presentItemId!),
+          0,
+        );
+      }
+
+      // Signal completion so Playwright can waitForSelector
+      target.setAttribute('data-fixture-applied', 'true');
+    }
+
+    target.addEventListener('__fixture__', handleFixture);
+    return () => target.removeEventListener('__fixture__', handleFixture);
+  }, [fixtureTarget]);
 
   return {
     state,

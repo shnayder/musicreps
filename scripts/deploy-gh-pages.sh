@@ -26,12 +26,19 @@ if [ "$MODE" = "production" ]; then
 elif [ "$MODE" = "preview" ]; then
   mkdir -p /tmp/preview-build
   cp -r docs/* /tmp/preview-build/
-  # Stash screenshots if they were captured by CI
-  if [ -d screenshots ] && ls screenshots/*.png >/dev/null 2>&1; then
-    mkdir -p /tmp/preview-build/screenshots
-    cp screenshots/*.png /tmp/preview-build/screenshots/
-    # Generate index.html (GitHub Pages has no directory listing)
-    cat > /tmp/preview-build/screenshots/index.html << 'SSEOF'
+  # Stash screenshots if they were captured by CI (PNG or JPEG)
+  if [ -d screenshots ]; then
+    has_screenshots=false
+    for ext in png jpg; do
+      if ls screenshots/*."$ext" >/dev/null 2>&1; then has_screenshots=true; break; fi
+    done
+    if [ "$has_screenshots" = true ]; then
+      mkdir -p /tmp/preview-build/screenshots
+      for ext in png jpg; do
+        ls screenshots/*."$ext" >/dev/null 2>&1 && cp screenshots/*."$ext" /tmp/preview-build/screenshots/
+      done
+      # Generate index.html (GitHub Pages has no directory listing)
+      cat > /tmp/preview-build/screenshots/index.html << 'SSEOF'
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Screenshots</title>
 <style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem}
@@ -41,11 +48,14 @@ elif [ "$MODE" = "preview" ]; then
 .grid span{display:block;font-size:.85rem;margin-top:.25rem}</style></head>
 <body><h1>Screenshots</h1><div class="grid">
 SSEOF
-    for img in /tmp/preview-build/screenshots/*.png; do
-      fname="$(basename "$img")"
-      echo "<a href=\"${fname}\"><img src=\"${fname}\" loading=\"lazy\"><span>${fname%.png}</span></a>" >> /tmp/preview-build/screenshots/index.html
-    done
-    echo "</div></body></html>" >> /tmp/preview-build/screenshots/index.html
+      for img in /tmp/preview-build/screenshots/*.png /tmp/preview-build/screenshots/*.jpg; do
+        [ -f "$img" ] || continue
+        fname="$(basename "$img")"
+        label="${fname%.*}"
+        echo "<a href=\"${fname}\"><img src=\"${fname}\" loading=\"lazy\"><span>${label}</span></a>" >> /tmp/preview-build/screenshots/index.html
+      done
+      echo "</div></body></html>" >> /tmp/preview-build/screenshots/index.html
+    fi
   fi
 fi
 
