@@ -52,6 +52,14 @@ jobs:
       - name: Build
         run: deno task build
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
@@ -78,7 +86,7 @@ jobs:
             });
 
             const marker = '<!-- preview-bot -->';
-            const screenshotsUrl = `${previewUrl}screenshots/`;
+            const screenshotsUrl = `${previewUrl}screenshots/index.html`;
             const body = `${marker}\n**Preview deployed:** ${previewUrl}\n**Screenshots:** [View all](${screenshotsUrl})`;
 
             for (const pr of pulls.data) {
@@ -125,7 +133,7 @@ jobs:
             const previewUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/preview/${safeName}/`;
 
             const marker = '<!-- preview-bot -->';
-            const screenshotsUrl = `${previewUrl}screenshots/`;
+            const screenshotsUrl = `${previewUrl}screenshots/index.html`;
             const body = `${marker}\n**Preview deployed:** ${previewUrl}\n**Screenshots:** [View all](${screenshotsUrl})`;
 
             await github.rest.issues.createComment({

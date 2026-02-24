@@ -30,6 +30,22 @@ elif [ "$MODE" = "preview" ]; then
   if [ -d screenshots ] && ls screenshots/*.png >/dev/null 2>&1; then
     mkdir -p /tmp/preview-build/screenshots
     cp screenshots/*.png /tmp/preview-build/screenshots/
+    # Generate index.html (GitHub Pages has no directory listing)
+    cat > /tmp/preview-build/screenshots/index.html << 'SSEOF'
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Screenshots</title>
+<style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.grid a{display:block;text-align:center;text-decoration:none;color:#333}
+.grid img{width:100%;border:1px solid #ddd;border-radius:4px}
+.grid span{display:block;font-size:.85rem;margin-top:.25rem}</style></head>
+<body><h1>Screenshots</h1><div class="grid">
+SSEOF
+    for img in /tmp/preview-build/screenshots/*.png; do
+      fname="$(basename "$img")"
+      echo "<a href=\"${fname}\"><img src=\"${fname}\" loading=\"lazy\"><span>${fname%.png}</span></a>" >> /tmp/preview-build/screenshots/index.html
+    done
+    echo "</div></body></html>" >> /tmp/preview-build/screenshots/index.html
   fi
 fi
 
@@ -101,7 +117,7 @@ INDEXEOF
     name="$(basename "$dir")"
     echo "<li><a href=\"${name}/\">${name}</a></li>" >> preview/index.html
     if [ -d "preview/${name}/screenshots" ]; then
-      echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/screenshots/\">${name} — Screenshots</a></li>" >> preview/index.html
+      echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/screenshots/index.html\">${name} — Screenshots</a></li>" >> preview/index.html
     fi
     if [ -d "preview/${name}/design" ]; then
       echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/components.html\">${name} — Design System</a></li>" >> preview/index.html

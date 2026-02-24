@@ -172,7 +172,7 @@ preview deploy workflow copies all files from `docs/` automatically.
 
 Pushes to `claude/*` branches automatically deploy a preview build via GitHub
 Actions. The workflow (`.github/workflows/deploy-preview.yml`) builds the app
-and commits the output to `docs/preview/<branch-name>/` on main.
+and deploys the output to `preview/<branch-name>/` on the `gh-pages` branch.
 
 - **Preview URL:** `shnayder.github.io/musicreps/preview/<branch-name>/`
 - **Cleanup:** `.github/workflows/cleanup-preview.yml` removes the preview
