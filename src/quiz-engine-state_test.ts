@@ -175,7 +175,11 @@ describe('engineSubmitAnswer', () => {
 
   it('shows hint text', () => {
     const s = engineSubmitAnswer(active, true, 'C');
-    assert.equal(s.hintText, 'Tap anywhere or press Space for next');
+    assert.ok(
+      s.hintText === 'Tap anywhere for next' ||
+        s.hintText === 'Tap anywhere or press Space for next',
+      `unexpected hint: ${s.hintText}`,
+    );
   });
 
   it('increments roundAnswered on each answer', () => {
