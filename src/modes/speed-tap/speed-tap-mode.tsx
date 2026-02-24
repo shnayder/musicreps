@@ -17,7 +17,6 @@ import {
   getSpeedHeatmapColor,
 } from '../../stats-display.ts';
 import { fretboardSVG } from '../../html-helpers.ts';
-import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
 import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
@@ -29,24 +28,19 @@ import {
   usePhaseClass,
 } from '../../hooks/use-phase-class.ts';
 import { useRoundSummary } from '../../hooks/use-round-summary.ts';
+import { usePracticeSummary } from '../../hooks/use-practice-summary.ts';
 
 import { NoteButtons } from '../../ui/buttons.tsx';
 import { NoteFilter } from '../../ui/scope.tsx';
 import {
   ModeTopBar,
-  PracticeCard,
+  PracticeTab,
   QuizArea,
   QuizSession,
   RoundComplete,
-  TabbedIdle,
 } from '../../ui/mode-screen.tsx';
-import { StatsToggle } from '../../ui/stats.tsx';
 import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
-import {
-  BaselineInfo,
-  BUTTON_PROVIDER,
-  SpeedCheck,
-} from '../../ui/speed-check.tsx';
+import { BUTTON_PROVIDER, SpeedCheck } from '../../ui/speed-check.tsx';
 
 import {
   ALL_ITEMS,
@@ -311,31 +305,15 @@ export function SpeedTapMode(
 
   const round = useRoundSummary(engine, practicingLabel);
 
-  // --- Tab + stats state ---
-  const [activeTab, setActiveTab] = useState<'practice' | 'progress'>(
-    'practice',
-  );
-  const [statsMode, setStatsMode] = useState('retention');
-
-  // --- Practice summary ---
-  const summary = useMemo(
-    () =>
-      computePracticeSummary({
-        allItemIds: ALL_ITEMS,
-        selector: learner.selector,
-        itemNoun: 'notes',
-        recommendation: null,
-        recommendationText: '',
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery,
-      }),
-    [
-      learner.selector,
-      engine.state.masteryText,
-      engine.state.showMastery,
-      engine.state.phase,
-    ],
-  );
+  // --- Practice summary + tab/stats state ---
+  const ps = usePracticeSummary({
+    allItems: ALL_ITEMS,
+    selector: learner.selector,
+    engine,
+    itemNoun: 'notes',
+    recommendation: null,
+    recommendationText: '',
+  });
 
   // --- Cleanup timeouts on unmount ---
   useEffect(() => {
@@ -355,7 +333,7 @@ export function SpeedTapMode(
     }
     html += '</tr></thead><tbody><tr>';
     for (let j = 0; j < NOTES.length; j++) {
-      if (statsMode === 'retention') {
+      if (ps.statsMode === 'retention') {
         const auto = learner.selector.getAutomaticity(NOTES[j].name);
         html += '<td class="stats-cell" style="background:' +
           getAutomaticityColor(auto) + '"></td>';
@@ -369,49 +347,41 @@ export function SpeedTapMode(
       }
     }
     html += '</tr></tbody></table>';
-    html += buildStatsLegend(statsMode, learner.motorBaseline ?? undefined);
+    html += buildStatsLegend(ps.statsMode, learner.motorBaseline ?? undefined);
     return html;
-  }, [learner.selector, statsMode, engine.state.phase, learner.motorBaseline]);
+  }, [
+    learner.selector,
+    ps.statsMode,
+    engine.state.phase,
+    learner.motorBaseline,
+  ]);
 
   const promptText = currentDisplayName ? 'Tap all ' + currentDisplayName : '';
 
   return (
     <>
       <ModeTopBar title='Speed Tap' onBack={navigateHome} />
-      <TabbedIdle
-        activeTab={activeTab}
-        onTabSwitch={setActiveTab}
-        practiceContent={
-          <PracticeCard
-            statusLabel={summary.statusLabel}
-            statusDetail={summary.statusDetail}
-            mastery={summary.showMastery ? summary.masteryText : undefined}
-            onStart={engine.start}
-            scope={
-              <NoteFilter
-                mode={noteFilter}
-                onChange={(f) =>
-                  scopeActions.setNoteFilter(f as NoteFilterType)}
-              />
-            }
+      <PracticeTab
+        summary={ps.summary}
+        onStart={engine.start}
+        scope={
+          <NoteFilter
+            mode={noteFilter}
+            onChange={(f) => scopeActions.setNoteFilter(f as NoteFilterType)}
           />
         }
-        progressContent={
-          <div>
-            <div class='stats-controls'>
-              <StatsToggle active={statsMode} onToggle={setStatsMode} />
-            </div>
-            <div
-              class='stats-container'
-              // deno-lint-ignore react-no-danger
-              dangerouslySetInnerHTML={{ __html: statsHTML }}
-            />
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
-            />
-          </div>
+        statsContent={
+          <div
+            // deno-lint-ignore react-no-danger
+            dangerouslySetInnerHTML={{ __html: statsHTML }}
+          />
         }
+        statsMode={ps.statsMode}
+        onStatsToggle={ps.setStatsMode}
+        baseline={learner.motorBaseline}
+        onCalibrate={() => setCalibrating(true)}
+        activeTab={ps.activeTab}
+        onTabSwitch={ps.setActiveTab}
       />
       <QuizSession
         timeLeft={engine.timerText}

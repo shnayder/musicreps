@@ -27,10 +27,7 @@ import {
   noteNarrowingSet,
 } from '../../quiz-engine.ts';
 import { computeRecommendations } from '../../recommendations.ts';
-import {
-  buildRecommendationText,
-  computePracticeSummary,
-} from '../../mode-ui-state.ts';
+import { buildRecommendationText } from '../../mode-ui-state.ts';
 import {
   buildStatsLegend,
   getAutomaticityColor,
@@ -52,28 +49,23 @@ import {
 } from '../../hooks/use-phase-class.ts';
 import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import { useRoundSummary } from '../../hooks/use-round-summary.ts';
+import { usePracticeSummary } from '../../hooks/use-practice-summary.ts';
 
 import { PianoNoteButtons } from '../../ui/buttons.tsx';
 import { NoteFilter, StringToggles } from '../../ui/scope.tsx';
 import {
   ModeTopBar,
-  PracticeCard,
+  PracticeTab,
   QuizArea,
   QuizSession,
   RoundComplete,
-  TabbedIdle,
 } from '../../ui/mode-screen.tsx';
-import { StatsToggle } from '../../ui/stats.tsx';
 import {
   FeedbackBanner,
   FeedbackDisplay,
   KeyboardHint,
 } from '../../ui/quiz-ui.tsx';
-import {
-  BaselineInfo,
-  BUTTON_PROVIDER,
-  SpeedCheck,
-} from '../../ui/speed-check.tsx';
+import { BUTTON_PROVIDER, SpeedCheck } from '../../ui/speed-check.tsx';
 
 // ---------------------------------------------------------------------------
 // SVG helpers
@@ -457,34 +449,15 @@ export function FretboardMode(
   // --- Round summary (context, correct, median, baseline, count) ---
   const round = useRoundSummary(engine, practicingLabel);
 
-  // --- Tab + stats state ---
-  const [activeTab, setActiveTab] = useState<'practice' | 'progress'>(
-    'practice',
-  );
-  const [statsMode, setStatsMode] = useState('retention');
-
-  // --- Practice summary ---
-  const summary = useMemo(
-    () =>
-      computePracticeSummary({
-        allItemIds: ALL_ITEMS,
-        selector: learner.selector,
-        itemNoun: 'positions',
-        recommendation,
-        recommendationText,
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery,
-      }),
-    [
-      learner.selector,
-      recommendation,
-      recommendationText,
-      engine.state.masteryText,
-      engine.state.showMastery,
-      engine.state.phase,
-      ALL_ITEMS,
-    ],
-  );
+  // --- Practice summary + tab/stats state ---
+  const ps = usePracticeSummary({
+    allItems: ALL_ITEMS,
+    selector: learner.selector,
+    engine,
+    itemNoun: 'positions',
+    recommendation,
+    recommendationText,
+  });
 
   // --- Heatmap rendering (progress fretboard) ---
   useEffect(() => {
@@ -493,7 +466,7 @@ export function FretboardMode(
     for (const s of allStrings) {
       for (let f = 0; f < instrument.fretCount; f++) {
         const itemId = s + '-' + f;
-        if (statsMode === 'retention') {
+        if (ps.statsMode === 'retention') {
           const auto = learner.selector.getAutomaticity(itemId);
           setCircleFill(wrapper, s, f, getAutomaticityColor(auto));
         } else {
@@ -510,7 +483,7 @@ export function FretboardMode(
     }
   }, [
     learner.selector,
-    statsMode,
+    ps.statsMode,
     engine.state.phase,
     allStrings,
     instrument,
@@ -526,8 +499,8 @@ export function FretboardMode(
 
   // --- Stats legend ---
   const legendHTML = useMemo(
-    () => buildStatsLegend(statsMode, learner.motorBaseline ?? undefined),
-    [statsMode, learner.motorBaseline],
+    () => buildStatsLegend(ps.statsMode, learner.motorBaseline ?? undefined),
+    [ps.statsMode, learner.motorBaseline],
   );
 
   // --- Navigation handle ---
@@ -547,58 +520,45 @@ export function FretboardMode(
   return (
     <>
       <ModeTopBar title={instrument.name} onBack={navigateHome} />
-      <TabbedIdle
-        activeTab={activeTab}
-        onTabSwitch={setActiveTab}
-        practiceContent={
-          <PracticeCard
-            statusLabel={summary.statusLabel}
-            statusDetail={summary.statusDetail}
-            recommendation={summary.recommendationText || undefined}
-            mastery={summary.showMastery ? summary.masteryText : undefined}
-            onStart={engine.start}
-            onApplyRecommendation={summary.showRecommendationButton
-              ? applyRecommendation
-              : undefined}
-            scope={
-              <>
-                <StringToggles
-                  stringNames={instrument.stringNames}
-                  active={enabledStrings}
-                  recommended={recommendation.recommended}
-                  onToggle={scopeActions.toggleString}
-                />
-                <NoteFilter
-                  mode={noteFilter}
-                  onChange={(f) =>
-                    scopeActions.setNoteFilter(f as NoteFilterType)}
-                />
-              </>
-            }
-          />
-        }
-        progressContent={
-          <div>
-            <div class='stats-controls'>
-              <StatsToggle active={statsMode} onToggle={setStatsMode} />
-            </div>
-            <div class='stats-container'>
-              <div
-                ref={progressFbRef}
-                // deno-lint-ignore react-no-danger
-                dangerouslySetInnerHTML={{ __html: svgHTML }}
-              />
-              <div
-                // deno-lint-ignore react-no-danger
-                dangerouslySetInnerHTML={{ __html: legendHTML }}
-              />
-            </div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
+      <PracticeTab
+        summary={ps.summary}
+        onStart={engine.start}
+        onApplyRecommendation={ps.summary.showRecommendationButton
+          ? applyRecommendation
+          : undefined}
+        scope={
+          <>
+            <StringToggles
+              stringNames={instrument.stringNames}
+              active={enabledStrings}
+              recommended={recommendation.recommended}
+              onToggle={scopeActions.toggleString}
             />
-          </div>
+            <NoteFilter
+              mode={noteFilter}
+              onChange={(f) => scopeActions.setNoteFilter(f as NoteFilterType)}
+            />
+          </>
         }
+        statsContent={
+          <>
+            <div
+              ref={progressFbRef}
+              // deno-lint-ignore react-no-danger
+              dangerouslySetInnerHTML={{ __html: svgHTML }}
+            />
+            <div
+              // deno-lint-ignore react-no-danger
+              dangerouslySetInnerHTML={{ __html: legendHTML }}
+            />
+          </>
+        }
+        statsMode={ps.statsMode}
+        onStatsToggle={ps.setStatsMode}
+        baseline={learner.motorBaseline}
+        onCalibrate={() => setCalibrating(true)}
+        activeTab={ps.activeTab}
+        onTabSwitch={ps.setActiveTab}
       />
       <QuizSession
         timeLeft={engine.timerText}

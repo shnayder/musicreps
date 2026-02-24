@@ -8,7 +8,6 @@ import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,
 } from '../../quiz-engine.ts';
-import { computePracticeSummary } from '../../mode-ui-state.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
 import { useGroupScope } from '../../hooks/use-group-scope.ts';
@@ -19,32 +18,25 @@ import {
   usePhaseClass,
 } from '../../hooks/use-phase-class.ts';
 import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
-import {
-  useRoundSummary,
-  useStatsSelector,
-} from '../../hooks/use-round-summary.ts';
+import { useRoundSummary } from '../../hooks/use-round-summary.ts';
+import { usePracticeSummary } from '../../hooks/use-practice-summary.ts';
 
 import { NoteButtons } from '../../ui/buttons.tsx';
 import { GroupToggles } from '../../ui/scope.tsx';
 import {
   ModeTopBar,
-  PracticeCard,
+  PracticeTab,
   QuizArea,
   QuizSession,
   RoundComplete,
-  TabbedIdle,
 } from '../../ui/mode-screen.tsx';
-import { StatsGrid, StatsLegend, StatsToggle } from '../../ui/stats.tsx';
+import { StatsGrid, StatsLegend } from '../../ui/stats.tsx';
 import {
   FeedbackBanner,
   FeedbackDisplay,
   KeyboardHint,
 } from '../../ui/quiz-ui.tsx';
-import {
-  BaselineInfo,
-  BUTTON_PROVIDER,
-  SpeedCheck,
-} from '../../ui/speed-check.tsx';
+import { BUTTON_PROVIDER, SpeedCheck } from '../../ui/speed-check.tsx';
 
 import {
   ALL_GROUP_INDICES,
@@ -162,33 +154,15 @@ export function IntervalMathMode(
   );
   const round = useRoundSummary(engine, practicingLabel);
 
-  // --- Tab state ---
-  const [activeTab, setActiveTab] = useState<'practice' | 'progress'>(
-    'practice',
-  );
-  const [statsMode, setStatsMode] = useState('retention');
-
-  // --- Practice summary ---
-  const summary = useMemo(
-    () =>
-      computePracticeSummary({
-        allItemIds: ALL_ITEMS,
-        selector: learner.selector,
-        itemNoun: 'items',
-        recommendation,
-        recommendationText,
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery,
-      }),
-    [
-      learner.selector,
-      recommendation,
-      recommendationText,
-      engine.state.masteryText,
-      engine.state.showMastery,
-      engine.state.phase,
-    ],
-  );
+  // --- Practice summary + tab/stats state ---
+  const ps = usePracticeSummary({
+    allItems: ALL_ITEMS,
+    selector: learner.selector,
+    engine,
+    itemNoun: 'items',
+    recommendation,
+    recommendationText,
+  });
 
   // --- Navigation handle ---
   const deactivateCleanup = useCallback(() => noteHandler.reset(), [
@@ -206,64 +180,45 @@ export function IntervalMathMode(
     [engine.submitAnswer],
   );
 
-  // Update stats selector when mode changes
-  const statsSel = useStatsSelector(
-    learner.selector,
-    engine.state.phase,
-    statsMode,
-  );
-
   // --- Render ---
   return (
     <>
       <ModeTopBar title='Interval Math' onBack={navigateHome} />
-      <TabbedIdle
-        activeTab={activeTab}
-        onTabSwitch={setActiveTab}
-        practiceContent={
-          <PracticeCard
-            statusLabel={summary.statusLabel}
-            statusDetail={summary.statusDetail}
-            recommendation={summary.recommendationText || undefined}
-            mastery={summary.showMastery ? summary.masteryText : undefined}
-            onStart={engine.start}
-            onApplyRecommendation={summary.showRecommendationButton
-              ? applyRecommendation
-              : undefined}
-            scope={
-              <GroupToggles
-                labels={DISTANCE_GROUPS.map((g) => g.label)}
-                active={enabledGroups}
-                recommended={recommendation.recommended}
-                onToggle={scopeActions.toggleGroup}
-              />
-            }
+      <PracticeTab
+        summary={ps.summary}
+        onStart={engine.start}
+        onApplyRecommendation={ps.summary.showRecommendationButton
+          ? applyRecommendation
+          : undefined}
+        scope={
+          <GroupToggles
+            labels={DISTANCE_GROUPS.map((g) => g.label)}
+            active={enabledGroups}
+            recommended={recommendation.recommended}
+            onToggle={scopeActions.toggleGroup}
           />
         }
-        progressContent={
-          <div>
-            <div class='stats-controls'>
-              <StatsToggle active={statsMode} onToggle={setStatsMode} />
-            </div>
-            <div class='stats-container'>
-              <StatsGrid
-                selector={statsSel}
-                colLabels={GRID_COL_LABELS}
-                getItemId={getGridItemId}
-                statsMode={statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
-              <StatsLegend
-                statsMode={statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
-            </div>
-            <BaselineInfo
-              baseline={learner.motorBaseline}
-              onRun={() => setCalibrating(true)}
+        statsContent={
+          <>
+            <StatsGrid
+              selector={ps.statsSel}
+              colLabels={GRID_COL_LABELS}
+              getItemId={getGridItemId}
+              statsMode={ps.statsMode}
+              baseline={learner.motorBaseline ?? undefined}
             />
-          </div>
+            <StatsLegend
+              statsMode={ps.statsMode}
+              baseline={learner.motorBaseline ?? undefined}
+            />
+          </>
         }
+        statsMode={ps.statsMode}
+        onStatsToggle={ps.setStatsMode}
+        baseline={learner.motorBaseline}
+        onCalibrate={() => setCalibrating(true)}
+        activeTab={ps.activeTab}
+        onTabSwitch={ps.setActiveTab}
       />
       <QuizSession
         timeLeft={engine.timerText}

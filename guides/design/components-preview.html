@@ -1803,7 +1803,7 @@ button {
   <div id="preview-root"></div>
   <script>
 (() => {
-  // node_modules/preact/dist/preact.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/dist/preact.module.js
   var n;
   var l;
   var u;
@@ -1868,8 +1868,8 @@ button {
     I.__r = 0;
   }
   function P(n2, l3, u4, t3, i3, r3, o3, e3, f4, c3, s3) {
-    var a3, h2, y3, d2, w3, g2, _2, m3 = t3 && t3.__k || v, b = l3.length;
-    for (f4 = A(u4, l3, m3, f4, b), a3 = 0; a3 < b; a3++) null != (y3 = u4.__k[a3]) && (h2 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g2 = z(n2, y3, h2, i3, r3, o3, e3, f4, c3, s3), d2 = y3.__e, y3.ref && h2.ref != y3.ref && (h2.ref && D(h2.ref, null, y3), s3.push(y3.ref, y3.__c || d2, y3)), null == w3 && null != d2 && (w3 = d2), (_2 = !!(4 & y3.__u)) || h2.__k === y3.__k ? f4 = H(y3, f4, n2, _2) : "function" == typeof y3.type && void 0 !== g2 ? f4 = g2 : d2 && (f4 = d2.nextSibling), y3.__u &= -7);
+    var a3, h2, y3, d3, w3, g2, _2, m3 = t3 && t3.__k || v, b = l3.length;
+    for (f4 = A(u4, l3, m3, f4, b), a3 = 0; a3 < b; a3++) null != (y3 = u4.__k[a3]) && (h2 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g2 = z(n2, y3, h2, i3, r3, o3, e3, f4, c3, s3), d3 = y3.__e, y3.ref && h2.ref != y3.ref && (h2.ref && D(h2.ref, null, y3), s3.push(y3.ref, y3.__c || d3, y3)), null == w3 && null != d3 && (w3 = d3), (_2 = !!(4 & y3.__u)) || h2.__k === y3.__k ? f4 = H(y3, f4, n2, _2) : "function" == typeof y3.type && void 0 !== g2 ? f4 = g2 : d3 && (f4 = d3.nextSibling), y3.__u &= -7);
     return u4.__e = w3, f4;
   }
   function A(n2, l3, u4, t3, i3) {
@@ -2054,7 +2054,7 @@ button {
     return n2.__v.__b - l3.__v.__b;
   }, I.__r = 0, f = /(PointerCapture)$|Capture$/i, c = 0, s = O(false), a = O(true), h = 0;
 
-  // node_modules/preact/hooks/dist/hooks.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/hooks/dist/hooks.module.js
   var t2;
   var r2;
   var u2;
@@ -2382,7 +2382,7 @@ button {
     </div>`;
   }
 
-  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
   var f3 = 0;
   function u3(e3, t3, n2, o3, i3, u4) {
     t3 || (t3 = {});
@@ -2906,6 +2906,17 @@ button {
     return /* @__PURE__ */ u3("div", { class: cls, children: /* @__PURE__ */ u3("div", { class: "quiz-countdown-fill", style: { width: `${pct}%` } }) });
   }
 
+  // src/quiz-engine.ts
+  var NOTE_NAME_SET = new Set(NOTE_NAMES);
+  var FLAT_TO_BUTTON = {};
+  for (const note of NOTES) {
+    for (const a3 of note.accepts) {
+      if (a3.endsWith("b") && a3.length === 2) {
+        FLAT_TO_BUTTON[a3[0].toUpperCase() + "b"] = note.name;
+      }
+    }
+  }
+
   // src/ui/mode-screen.tsx
   function ModeScreen({ id, phase, children }) {
     return /* @__PURE__ */ u3("div", { class: `mode-screen phase-${phase}`, id: `mode-${id}`, children });
@@ -2988,15 +2999,13 @@ button {
       )
     ] });
   }
-  function PracticeCard({
-    statusLabel,
-    statusDetail,
-    recommendation,
-    mastery,
-    scope,
-    onStart,
-    onApplyRecommendation
-  }) {
+  function PracticeCard(props) {
+    const statusLabel = props.statusLabel ?? (props.summary ? props.summary.statusLabel : void 0);
+    const statusDetail = props.statusDetail ?? (props.summary ? props.summary.statusDetail : void 0);
+    const recommendation = props.recommendation ?? (props.summary && props.summary.recommendationText ? props.summary.recommendationText : void 0);
+    const mastery = props.mastery ?? (props.summary && props.summary.showMastery ? props.summary.masteryText : void 0);
+    const onApplyRecommendation = props.onApplyRecommendation;
+    const { scope, onStart } = props;
     const recBlock = recommendation ? /* @__PURE__ */ u3("div", { class: "practice-recommendation", children: [
       /* @__PURE__ */ u3("span", { class: "practice-rec-text", children: recommendation }),
       onApplyRecommendation ? /* @__PURE__ */ u3(
