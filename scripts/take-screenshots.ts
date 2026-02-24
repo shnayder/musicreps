@@ -131,8 +131,8 @@ async function main() {
       const modeContainer = `#mode-${modeId}`;
       await page.click(`${modeContainer} .start-btn`);
 
-      // Wait for quiz to become active
-      await page.waitForSelector(`${modeContainer} .quiz-area.active`, {
+      // Wait for quiz to become active (phase-driven: .phase-active on container)
+      await page.waitForSelector(`${modeContainer}.phase-active`, {
         timeout: 5000,
       });
       await page.waitForTimeout(500); // let first question render
@@ -142,8 +142,7 @@ async function main() {
 
       // Stop quiz — press Escape
       await page.keyboard.press('Escape');
-      await page.waitForSelector(`${modeContainer} .quiz-area.active`, {
-        state: 'hidden',
+      await page.waitForSelector(`${modeContainer}.phase-idle`, {
         timeout: 3000,
       }).catch(() => {});
       await page.waitForTimeout(200);
@@ -157,7 +156,7 @@ async function main() {
     console.log('Design moments: feedback states');
     await switchToMode(feedbackMode);
     await page.click(`${feedbackContainer} .start-btn`);
-    await page.waitForSelector(`${feedbackContainer} .quiz-area.active`, {
+    await page.waitForSelector(`${feedbackContainer}.phase-active`, {
       timeout: 5000,
     });
     await page.waitForTimeout(500);
@@ -237,7 +236,7 @@ async function main() {
     console.log('Design moments: round-complete');
     await switchToMode(feedbackMode);
     await page.click(`${feedbackContainer} .start-btn`);
-    await page.waitForSelector(`${feedbackContainer} .quiz-area.active`, {
+    await page.waitForSelector(`${feedbackContainer}.phase-active`, {
       timeout: 5000,
     });
     await page.waitForTimeout(300);
