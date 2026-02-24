@@ -279,7 +279,8 @@
     <p>
       <strong>Hue</strong> encodes speed (gold&thinsp;=&thinsp;slow &rarr;
       green&thinsp;=&thinsp;fast). <strong>Saturation</strong> encodes freshness
-      (vivid&thinsp;=&thinsp;just practiced &rarr; grey&thinsp;=&thinsp;stale).
+      (vivid&thinsp;=&thinsp;just practiced &rarr; muted&thinsp;=&thinsp;stale).
+      Even stale items keep enough color to read the speed level.
       Unseen items are neutral grey with a dashed border.
     </p>
 
@@ -292,8 +293,9 @@
     <!-- ============================================================ -->
     <h2>2. Continuous fade</h2>
     <p>
-      Each speed level fades smoothly from vivid to grey. The strips below show
-      20 steps of saturation decay for each hue.
+      Each speed level fades smoothly from vivid to muted. The strips below show
+      20 steps of saturation decay for each hue, stopping at a floor that
+      preserves readable color.
     </p>
     <div id="fadeDemo"></div>
 
@@ -346,13 +348,16 @@
 
       const NONE_COLOR = 'hsl(30, 4%, 85%)';
 
+      // Freshness floor: even maximally stale items retain this fraction of
+      // their original color so you can still read the speed level.
+      const FRESHNESS_FLOOR = 0.25;
+
       // Freshness columns for the matrix
       const FRESHNESS_COLS = [
         { label: 'Fresh', f: 1.0 },
-        { label: 'Recent', f: 0.75 },
-        { label: 'Aging', f: 0.45 },
-        { label: 'Stale', f: 0.2 },
-        { label: 'Very stale', f: 0.05 },
+        { label: 'Recent', f: 0.7 },
+        { label: 'Aging', f: 0.4 },
+        { label: 'Stale', f: 0.0 },
       ];
 
       function hsl(h, s, l) {
@@ -360,23 +365,22 @@
       }
 
       /**
-       * Apply freshness fade: interpolate saturation toward 0 (grey),
-       * and lightness toward a neutral value (75%) as freshness drops.
-       * This ensures stale colors converge toward a common warm grey
-       * regardless of their starting hue.
+       * Apply freshness fade: interpolate saturation and lightness toward
+       * a neutral value as freshness drops, but never past FRESHNESS_FLOOR.
+       * Even maximally stale items keep enough color to read the speed level.
        */
       function fadeColor(speed, freshness) {
         const neutralL = 78;
-        const s = speed.s * freshness;
-        const l = speed.l + (neutralL - speed.l) * (1 - freshness);
+        const f = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * freshness;
+        const s = speed.s * f;
+        const l = speed.l + (neutralL - speed.l) * (1 - f);
         return hsl(speed.h, Math.round(s), Math.round(l));
       }
 
       function needsLightText(s, l, freshness) {
         const neutralL = 78;
-        const effectiveL = s + (neutralL - s) * (1 - freshness);
-        // Use the lightness after fade
-        const adjustedL = l + (neutralL - l) * (1 - freshness);
+        const f = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * freshness;
+        const adjustedL = l + (neutralL - l) * (1 - f);
         return adjustedL <= 50;
       }
 
