@@ -5261,8 +5261,6 @@ button {
   }
 
   // src/quiz-engine-state.ts
-  var IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
-  var HINT_ADVANCE = IS_TOUCH_PRIMARY ? "Tap anywhere for next" : "Tap anywhere or press Space for next";
   function initialEngineState() {
     return {
       phase: "idle",
@@ -5331,7 +5329,7 @@ button {
       answersEnabled: true
     };
   }
-  function engineSubmitAnswer(state, isCorrect, correctAnswer) {
+  function engineSubmitAnswer(state, isCorrect, correctAnswer, hintText = "Tap anywhere or press Space for next") {
     return {
       ...state,
       answered: true,
@@ -5341,7 +5339,7 @@ button {
       feedbackCorrect: isCorrect,
       feedbackDisplayAnswer: correctAnswer,
       timeDisplayText: "",
-      hintText: HINT_ADVANCE,
+      hintText,
       roundAnswered: state.roundAnswered + 1,
       roundCorrect: state.roundCorrect + (isCorrect ? 1 : 0)
     };
@@ -5426,6 +5424,8 @@ button {
   var ROUND_DURATION_MS = 6e4;
   var AUTO_ADVANCE_MS = 1e3;
   var TIMER_TICK_MS = 200;
+  var IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
+  var HINT_ADVANCE = IS_TOUCH_PRIMARY ? "Tap anywhere for next" : "Tap anywhere or press Space for next";
   function formatRoundTime(ms) {
     const totalSec = Math.max(0, Math.ceil(ms / 1e3));
     const min = Math.floor(totalSec / 60);
@@ -5547,7 +5547,8 @@ button {
         let next = engineSubmitAnswer(
           prev,
           result.correct,
-          result.correctAnswer
+          result.correctAnswer,
+          HINT_ADVANCE
         );
         next = {
           ...next,
@@ -5664,9 +5665,8 @@ button {
       function handleClick(e3) {
         const s3 = stateRef.current;
         if (s3.phase !== "active" || !s3.answered) return;
-        if (e3.target.closest(
-          "button, a, input, select, textarea"
-        )) return;
+        if (!e3.target || !(e3.target instanceof Element)) return;
+        if (e3.target.closest("button, a, input, select, textarea")) return;
         if (autoAdvanceRef.current) {
           clearTimeout(autoAdvanceRef.current);
           autoAdvanceRef.current = null;
