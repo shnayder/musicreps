@@ -1,6 +1,7 @@
-// Shared build template — single source of truth for the HTML assembly,
-// and version number. Imported by both main.ts (Deno) and build.ts (Node)
-// to eliminate duplication between build scripts.
+// Shared build template — single source of truth for the HTML assembly.
+// Imported by both main.ts (Deno) and build.ts (Node) to eliminate
+// duplication between build scripts. Version is injected at build time
+// by replacing the __VERSION__ placeholder (see getVersion() in main.ts).
 
 import {
   degreeAnswerButtons,
@@ -16,12 +17,6 @@ import {
   pianoNoteButtons,
   tabbedIdleHTML,
 } from './html-helpers.ts';
-
-// ---------------------------------------------------------------------------
-// Version — single source of truth
-// ---------------------------------------------------------------------------
-
-export const VERSION = 'v8.25';
 
 // ---------------------------------------------------------------------------
 // Shared HTML fragments
@@ -86,7 +81,7 @@ export const HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">${VERSION}</span>
+      <span class="version">__VERSION__</span>
     </div>
   </div>`;
 

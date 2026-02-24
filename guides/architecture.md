@@ -95,8 +95,7 @@ into the browser scope. `main.ts` (Deno) shells out to esbuild CLI via
 
 ### Shared Template (`src/build-template.ts`)
 
-The HTML template and version number live in `src/build-template.ts` — the
-single source of truth. `main.ts` imports from it:
+The HTML template lives in `src/build-template.ts` — the single source of truth. `main.ts` imports from it:
 
 ```typescript
 import { assembleHTML, SERVICE_WORKER } from './src/build-template.ts';
@@ -106,10 +105,9 @@ Key exports:
 
 | Export                  | Purpose                                   |
 | ----------------------- | ----------------------------------------- |
-| `VERSION`               | Single version string (e.g. `"v6.9"`)     |
 | `assembleHTML(css, js)` | Assembles the complete index.html         |
 | `SERVICE_WORKER`        | Service worker JS string                  |
-| `HOME_SCREEN_HTML`      | Home screen markup (also used by moments) |
+| `HOME_SCREEN_HTML`      | Home screen markup (`__VERSION__` placeholder) |
 | `DISTANCE_TOGGLES`      | Shared toggle HTML fragment               |
 
 ### Adding a New Source File
@@ -633,4 +631,4 @@ Step-by-step checklist:
     guide's mode table
 12. **CLAUDE.md**: update quiz modes table with item count, answer type, and ID
     format
-13. **Version**: bump `VERSION` in `src/build-template.ts`
+13. **Version**: derived from git automatically at build time (no manual step)

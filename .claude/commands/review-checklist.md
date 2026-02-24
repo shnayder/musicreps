@@ -11,7 +11,8 @@ N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 
 - [ ] esbuild resolves the module graph from `src/app.ts` — new source files
       just need proper `import`/`export` statements
-- [ ] Version number (`VERSION` in `src/build-template.ts`) bumped
+- [ ] Version displays correctly in built output (derived from git at build
+      time)
 - [ ] `deno task build` produces correct output
 
 ## Architecture patterns
