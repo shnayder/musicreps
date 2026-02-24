@@ -1174,6 +1174,21 @@ button {
   display: none;
 }
 
+/* --- Feedback banner (correct/incorrect answer display) --- */
+.feedback-banner {
+  text-align: center;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  min-height: 1.75rem;
+  margin-bottom: var(--space-2);
+}
+.feedback-banner-correct {
+  color: var(--color-success-text);
+}
+.feedback-banner-wrong {
+  color: var(--color-error-text);
+}
+
 /* --- Answer buttons grid (shared by new modes) --- */
 .answer-buttons {
   display: grid;
@@ -1320,6 +1335,19 @@ button {
 .calibration-thresholds td:nth-child(2) {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Screen-reader-only utility --- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* --- Feedback --- */
@@ -2866,7 +2894,7 @@ button {
   }
   function FeedbackDisplay({ text, className, time, hint }) {
     return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: className, children: text }),
+      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
       hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
     ] });
