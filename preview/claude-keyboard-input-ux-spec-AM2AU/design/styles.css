@@ -1352,10 +1352,12 @@ button {
 }
 
 /* --- Keyboard narrowing (progressive button highlighting) --- */
+/* Neutral treatment: strong border + surface bg — avoids brand/success green
+   which would read as "correct" rather than "possible match". */
 .kb-match {
-  border-color: var(--color-brand) !important;
-  background: var(--color-brand-bg) !important;
-  box-shadow: 0 0 0 1px var(--color-brand);
+  border-color: var(--color-text) !important;
+  background: var(--color-surface) !important;
+  box-shadow: 0 0 0 1px var(--color-border);
 }
 .kb-dimmed {
   opacity: 0.4;
