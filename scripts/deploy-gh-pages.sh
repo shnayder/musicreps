@@ -26,6 +26,11 @@ if [ "$MODE" = "production" ]; then
 elif [ "$MODE" = "preview" ]; then
   mkdir -p /tmp/preview-build
   cp -r docs/* /tmp/preview-build/
+  # Stash screenshots if they were captured by CI
+  if [ -d screenshots ] && ls screenshots/*.png >/dev/null 2>&1; then
+    mkdir -p /tmp/preview-build/screenshots
+    cp screenshots/*.png /tmp/preview-build/screenshots/
+  fi
 fi
 
 # --- Git setup ---
@@ -95,6 +100,9 @@ INDEXEOF
     [ "$dir" = "preview/*/" ] && continue
     name="$(basename "$dir")"
     echo "<li><a href=\"${name}/\">${name}</a></li>" >> preview/index.html
+    if [ -d "preview/${name}/screenshots" ]; then
+      echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/screenshots/\">${name} — Screenshots</a></li>" >> preview/index.html
+    fi
     if [ -d "preview/${name}/design" ]; then
       echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/components.html\">${name} — Design System</a></li>" >> preview/index.html
       echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/colors.html\">${name} — Color System</a></li>" >> preview/index.html

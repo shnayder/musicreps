@@ -52,6 +52,12 @@ jobs:
       - name: Build
         run: deno task build
 
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture screenshots
+        run: npx tsx scripts/take-screenshots.ts
+
       - name: Deploy preview
         run: bash scripts/deploy-gh-pages.sh preview "${{ github.ref_name }}"
 
@@ -72,7 +78,8 @@ jobs:
             });
 
             const marker = '<!-- preview-bot -->';
-            const body = `${marker}\n**Preview deployed:** ${previewUrl}`;
+            const screenshotsUrl = `${previewUrl}screenshots/`;
+            const body = `${marker}\n**Preview deployed:** ${previewUrl}\n**Screenshots:** [View all](${screenshotsUrl})`;
 
             for (const pr of pulls.data) {
               // Check if we already commented
@@ -118,7 +125,8 @@ jobs:
             const previewUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/preview/${safeName}/`;
 
             const marker = '<!-- preview-bot -->';
-            const body = `${marker}\n**Preview deployed:** ${previewUrl}`;
+            const screenshotsUrl = `${previewUrl}screenshots/`;
+            const body = `${marker}\n**Preview deployed:** ${previewUrl}\n**Screenshots:** [View all](${screenshotsUrl})`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,

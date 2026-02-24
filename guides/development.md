@@ -180,6 +180,50 @@ and commits the output to `docs/preview/<branch-name>/` on main.
 - **PR comment:** the deploy workflow posts the preview URL on any associated
   PR.
 
+## Agent Screenshot Workflow
+
+The CI pipeline captures screenshots of all 10 quiz modes on every push to a
+`claude/*` branch. The agent can download and view these to verify UI changes
+without running a browser locally.
+
+### How it works
+
+1. `deploy-preview.yml` runs `take-screenshots.ts` after building
+2. Screenshots are deployed to gh-pages under `preview/<branch>/screenshots/`
+3. The agent downloads via `raw.githubusercontent.com` (the only image host
+   accessible from the web sandbox — `*.github.io` is blocked by the egress
+   proxy)
+
+### Step-by-step
+
+```bash
+# 1. Push your changes
+git push -u origin claude/my-branch
+
+# 2. Poll workflow status until complete (~2-3 min)
+curl -s "https://api.github.com/repos/shnayder/musicreps/actions/runs?branch=claude/my-branch&per_page=1" \
+  | python3 -c "import sys,json; r=json.load(sys.stdin)['workflow_runs'][0]; print(r['status'], r['conclusion'] or '')"
+
+# 3. List available screenshots
+#    (branch name in the path has non-alphanumeric chars replaced with -)
+curl -s "https://api.github.com/repos/shnayder/musicreps/contents/preview/claude-my-branch/screenshots?ref=gh-pages" \
+  | python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['name'].endswith('.png')]"
+
+# 4. Download a specific screenshot
+curl -sL -o /tmp/screenshot.png \
+  "https://raw.githubusercontent.com/shnayder/musicreps/gh-pages/preview/claude-my-branch/screenshots/fretboard-idle.png"
+```
+
+Then use `Read /tmp/screenshot.png` to view the image.
+
+### Available screenshots
+
+Each mode produces two screenshots: `<mode>-idle.png` and `<mode>-quiz.png`.
+Additional design moment captures: `design-correct-feedback.png`,
+`design-wrong-feedback.png`, `design-round-complete.png`, and `menu.png`.
+
+~25 screenshots total. See `scripts/take-screenshots.ts` for the full list.
+
 ## iOS App (Capacitor)
 
 The iOS app is a Capacitor wrapper around the same `docs/index.html` build. The

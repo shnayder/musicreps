@@ -12,21 +12,30 @@ visually verify UI changes during development. The agent needs to:
 ## Approach
 
 Extend the existing CI pipeline to automatically capture and publish
-screenshots on every push to a `claude/*` branch. The agent fetches these
-screenshots via public URLs (gh-pages) or the GitHub API, views them with the
-`Read` tool (which renders images), and iterates.
+screenshots on every push to a `claude/*` branch. The agent downloads these
+screenshots via `raw.githubusercontent.com` (which bypasses the egress proxy's
+block on `*.github.io`), views them with the `Read` tool, and iterates.
+
+### Network access (tested 2026-02-24)
+
+| Path | Status | Use |
+|------|--------|-----|
+| `shnayder.github.io` | **Blocked** (403, egress proxy) | Humans only (browser) |
+| `raw.githubusercontent.com` | **Works** | Agent downloads screenshots |
+| `api.github.com` | **Works** (unauthenticated) | Agent polls workflow status |
+| `github.com` | **Works** | General access |
 
 ### Why this approach
 
 - **Existing infrastructure covers 80%.** `take-screenshots.ts` already
   captures ~25 screenshots across all modes and key design moments. The
   `deploy-preview.yml` workflow already builds and deploys to gh-pages on
-  every `claude/*` push. The `build-screenshot-review.ts` script already
-  generates a baseline-vs-current comparison page.
-- **gh-pages is publicly accessible** — no API auth needed to download images.
-  The agent can also use `Read` on downloaded files to view them.
-- **Workflow artifacts are the backup path** — uploaded alongside gh-pages
-  deployment, available via GitHub API for programmatic access.
+  every `claude/*` push.
+- **gh-pages + raw.githubusercontent.com** — files on the `gh-pages` branch
+  are accessible at `raw.githubusercontent.com/shnayder/musicreps/gh-pages/...`
+  without authentication. This works from the sandbox (tested).
+- **Dual audience:** humans view screenshots via `shnayder.github.io` in their
+  browser; the agent downloads the same files via `raw.githubusercontent.com`.
 
 ### Alternatives considered
 
@@ -35,9 +44,9 @@ screenshots via public URLs (gh-pages) or the GitHub API, views them with the
 - **Commit screenshots to the feature branch** — pollutes git history with
   binary files. gh-pages is the right place.
 - **Only use artifacts (no gh-pages)** — requires authenticated API calls.
-  gh-pages avoids this.
-- **Build a custom lightweight system** — unnecessary given the existing
-  `take-screenshots.ts` does exactly what's needed.
+  The artifact download endpoint returns 401 without a token.
+- **Direct gh-pages URLs** — blocked by egress proxy (`*.github.io` not in
+  allowlist). `raw.githubusercontent.com` is the working alternative.
 
 ---
 
@@ -48,12 +57,11 @@ screenshots via public URLs (gh-pages) or the GitHub API, views them with the
 After the existing build step, add steps to:
 
 1. Install Playwright browsers (`npx playwright install --with-deps chromium`)
-2. Run `deno task screenshots` (captures to `screenshots/`)
-3. Run `deno task screenshots:baseline` first time, then `screenshots:review`
-   to generate the comparison HTML
+2. Capture screenshots to `screenshots/` (the default output directory)
 
-The workflow already has Deno, Node 20, and npm dependencies installed. Playwright
-is already in `package.json`. The only missing piece is browser binaries.
+The workflow already has Deno, Node 20, and npm dependencies installed.
+Playwright is already in `package.json`. The only missing piece is browser
+binaries.
 
 ```yaml
 # After existing "Build" step:
@@ -62,153 +70,75 @@ is already in `package.json`. The only missing piece is browser binaries.
   run: npx playwright install --with-deps chromium
 
 - name: Capture screenshots
-  run: npx tsx scripts/take-screenshots.ts --dir screenshots/current
-
-- name: Generate screenshot review page
-  run: |
-    # If baseline exists in the repo, use it; otherwise current = baseline
-    if [ -d screenshots/baseline ]; then
-      npx tsx scripts/build-screenshot-review.ts
-    else
-      cp -r screenshots/current screenshots/baseline
-    fi
+  run: npx tsx scripts/take-screenshots.ts
 ```
 
 ### Step 2: Deploy screenshots alongside preview
 
-Modify `deploy-gh-pages.sh` (or the workflow directly) so that when deploying a
-preview, the `screenshots/` directory is included in the preview deployment:
+Modify `deploy-gh-pages.sh` so that when deploying a preview, the
+`screenshots/` directory is copied into the preview deployment:
 
 ```
 preview/<branch-name>/
-  index.html          # The app (already deployed)
+  index.html              # The app (already deployed)
   screenshots/
-    current/
-      fretboard-idle.png
-      fretboard-quiz.png
-      ...
-    baseline/
-      ...              # (if available)
-  design/
-    screenshot-review.html  # Comparison page
+    fretboard-idle.png
+    fretboard-quiz.png
+    ...
 ```
 
-This means screenshots are accessible at:
-`https://shnayder.github.io/musicreps/preview/<branch>/screenshots/current/<name>.png`
+Agent access URL pattern:
+```
+https://raw.githubusercontent.com/shnayder/musicreps/gh-pages/preview/<safe-branch>/screenshots/<name>.png
+```
+
+Human browser URL (same files):
+```
+https://shnayder.github.io/musicreps/preview/<safe-branch>/screenshots/<name>.png
+```
 
 Changes to `deploy-gh-pages.sh`:
-- In the preview branch, after copying `docs/*`, also copy `screenshots/` into
-  the preview directory.
+- In the preview branch, after stashing `docs/*`, also stash `screenshots/`
+  into the preview directory.
 
-### Step 3: Upload screenshots as workflow artifacts (backup)
+### Step 3: Enhance PR comment with screenshot info
 
-Add an artifact upload step so screenshots are also available via the GitHub API:
-
-```yaml
-- name: Upload screenshots
-  uses: actions/upload-artifact@v4
-  with:
-    name: screenshots-${{ github.sha }}
-    path: screenshots/
-    retention-days: 30
-```
-
-This provides an API-accessible backup. The agent can download via:
-```bash
-curl --proxy "$PROXY_URL" \
-  "https://api.github.com/repos/shnayder/musicreps/actions/runs/{run_id}/artifacts"
-```
-
-### Step 4: Establish baseline management
-
-**Baseline strategy:** The first screenshot run on a branch becomes the baseline.
-Subsequent runs compare against it.
-
-Options (in order of simplicity):
-
-**Option A — Branch-relative baseline (recommended):**
-- First push to a `claude/*` branch: capture screenshots, save as both
-  `baseline/` and `current/`.
-- Subsequent pushes: capture only `current/`, compare against saved `baseline/`.
-- Baseline is stored as a workflow artifact from the first run, downloaded
-  in subsequent runs.
-
-**Option B — Main-branch baseline:**
-- Maintain a `screenshots/baseline/` directory in the repo (or on gh-pages)
-  from the `main` branch.
-- Every `claude/*` push compares against main's screenshots.
-- Simpler conceptually but requires a separate workflow to update baselines
-  when main changes.
-
-**Recommendation: Start with Option A.** It's self-contained per branch.
-
-Implementation:
-```yaml
-- name: Download baseline (if exists)
-  uses: actions/download-artifact@v4
-  with:
-    name: screenshots-baseline-${{ github.ref_name }}
-    path: screenshots/baseline
-  continue-on-error: true  # First run won't have baseline
-
-- name: Capture current screenshots
-  run: npx tsx scripts/take-screenshots.ts --dir screenshots/current
-
-- name: Save baseline (first run only)
-  if: steps.download-baseline.outcome == 'failure'
-  uses: actions/upload-artifact@v4
-  with:
-    name: screenshots-baseline-${{ github.ref_name }}
-    path: screenshots/current
-    retention-days: 90
-```
-
-### Step 5: Post screenshot summary on PR
-
-Extend the existing PR comment bot to include screenshot information:
+Extend the existing PR comment bot to include screenshot links:
 
 ```
 <!-- preview-bot -->
 **Preview deployed:** https://shnayder.github.io/musicreps/preview/<branch>/
 
-**Screenshots:** [View all](https://shnayder.github.io/musicreps/preview/<branch>/screenshots/current/)
-**Comparison:** [Baseline vs Current](https://shnayder.github.io/musicreps/preview/<branch>/design/screenshot-review.html)
+**Screenshots:** [View all](https://shnayder.github.io/musicreps/preview/<branch>/screenshots/)
 ```
 
-This gives the human reviewer quick access too.
+This gives the human reviewer quick access.
 
-### Step 6: Agent workflow for fetching and viewing screenshots
+### Step 4: Document agent workflow
 
-Document the agent's workflow for UI iteration:
+Add a section to `guides/development.md` documenting the agent's screenshot
+workflow:
 
 1. **Make changes** to CSS/HTML/JS
 2. **Push** to the `claude/*` branch
 3. **Wait** for the workflow to complete (~2-3 min for build + screenshots)
 4. **Check workflow status:**
    ```bash
-   curl --proxy "$PROXY_URL" \
-     "https://api.github.com/repos/shnayder/musicreps/actions/runs?branch=<branch>&per_page=1"
+   curl -s "https://api.github.com/repos/shnayder/musicreps/actions/runs?branch=<branch>&per_page=1" \
+     | python3 -c "import sys,json; r=json.load(sys.stdin)['workflow_runs'][0]; print(r['status'], r['conclusion'] or '')"
    ```
-5. **Download specific screenshots** from gh-pages:
+5. **List available screenshots:**
    ```bash
-   curl --proxy "$PROXY_URL" -L -o /tmp/screenshot.png \
-     "https://shnayder.github.io/musicreps/preview/<branch>/screenshots/current/fretboard-idle.png"
+   curl -s "https://api.github.com/repos/shnayder/musicreps/contents/preview/<safe-branch>/screenshots?ref=gh-pages" \
+     | python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['name'].endswith('.png')]"
    ```
-6. **View with Read tool:** `Read /tmp/screenshot.png`
-7. **Iterate** based on what's visible
-
-### Step 7: Enhance screenshot script for targeted captures (stretch)
-
-Add an optional `--modes` flag to `take-screenshots.ts` to capture only
-specific modes:
-
-```bash
-npx tsx scripts/take-screenshots.ts --modes fretboard,semitoneMath
-```
-
-This would allow the workflow to accept a configuration input for faster
-iteration when only specific modes are being changed. Not needed for v1 —
-the full set of ~25 screenshots runs fast enough in CI.
+6. **Download and view:**
+   ```bash
+   curl -sL -o /tmp/screenshot.png \
+     "https://raw.githubusercontent.com/shnayder/musicreps/gh-pages/preview/<safe-branch>/screenshots/fretboard-idle.png"
+   ```
+   Then: `Read /tmp/screenshot.png`
+7. **Iterate** (back to step 1)
 
 ---
 
@@ -216,9 +146,8 @@ the full set of ~25 screenshots runs fast enough in CI.
 
 | File | Change |
 |------|--------|
-| `.github/workflows/deploy-preview.yml` | Add Playwright install, screenshot capture, artifact upload, baseline management, enhanced PR comment |
-| `scripts/deploy-gh-pages.sh` | Copy `screenshots/` and `screenshot-review.html` into preview directory |
-| `scripts/take-screenshots.ts` | Minor: accept `--modes` flag for subset capture (stretch goal) |
+| `.github/workflows/deploy-preview.yml` | Add Playwright install, screenshot capture, enhanced PR comment |
+| `scripts/deploy-gh-pages.sh` | Copy `screenshots/` into preview directory |
 | `guides/development.md` | Document agent screenshot workflow |
 
 ---
@@ -238,22 +167,22 @@ Agent makes UI changes
 │  1. Lint / fmt / typecheck      │
 │  2. Build app → docs/           │
 │  3. Install Playwright          │
-│  4. Capture screenshots         │
-│  5. Generate review page        │
-│  6. Deploy to gh-pages:         │
+│  4. Capture screenshots → ...   │
+│     screenshots/*.png           │
+│  5. Deploy to gh-pages:         │
 │     preview/<branch>/           │
 │       index.html                │
-│       screenshots/current/*.png │
-│       design/screenshot-review  │
-│  7. Upload artifact (backup)    │
-│  8. Comment on PR               │
+│       screenshots/*.png         │
+│  6. Comment on PR               │
 └─────────────────────────────────┘
         │
         ▼
 Agent polls workflow status via API
+(api.github.com — works from sandbox)
         │
         ▼
-Agent downloads screenshots from gh-pages
+Agent downloads screenshots via
+raw.githubusercontent.com (works)
         │
         ▼
 Agent views with Read tool
@@ -264,24 +193,17 @@ Agent iterates (back to top)
 
 ---
 
-## Open Questions
+## Future Enhancements
 
-1. **Screenshot review page generation:** `build-screenshot-review.ts` currently
-   reads from `screenshots/baseline/` and `screenshots/` (not
-   `screenshots/current/`). Need to either adjust the script's paths or use
-   symlinks/copies in the workflow so baseline/current align with the script's
-   expectations.
+1. **Baseline comparison page:** Use `build-screenshot-review.ts` to generate
+   a side-by-side comparison HTML page. Requires baseline management (first
+   run saves baseline, subsequent runs compare against it). Not needed for v1
+   — the agent just needs to see current state.
 
-2. **Baseline persistence across workflow runs:** GitHub Actions artifacts with
-   the same name overwrite. We need the baseline artifact to persist while
-   current changes. Using distinct artifact names
-   (`screenshots-baseline-<branch>` vs `screenshots-current-<sha>`) handles
-   this.
+2. **Targeted captures:** Add `--modes` flag to `take-screenshots.ts` for
+   faster iteration when only specific modes are being changed.
 
-3. **Workflow duration:** Playwright screenshot capture adds ~30-60s to the
-   workflow (browser install is cached after first run). This is acceptable
-   for the value provided.
+3. **Pixel-diff images:** Generate visual diff overlays using `pixelmatch`.
 
-4. **Screenshot diff images:** A future enhancement could generate pixel-diff
-   images (red overlay showing changed pixels) using a tool like `pixelmatch`.
-   Not needed for v1 — side-by-side comparison is sufficient.
+4. **Artifact upload:** Upload screenshots as workflow artifacts alongside
+   gh-pages deployment for redundancy.
