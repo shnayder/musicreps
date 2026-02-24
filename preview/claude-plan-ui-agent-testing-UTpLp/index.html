@@ -1374,6 +1374,33 @@ button {
   font-size: var(--text-base);
   margin-top: var(--space-5);
 }
+
+/* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
+.keyboard-hint {
+  display: none;
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+  text-align: center;
+  margin-top: var(--space-3);
+}
+@media (pointer: fine) {
+  .keyboard-hint {
+    display: block;
+  }
+}
+
+/* --- Keyboard narrowing (progressive button highlighting) --- */
+/* Neutral treatment: strong border + surface bg — avoids brand/success green
+   which would read as "correct" rather than "possible match". */
+.kb-match {
+  border-color: var(--color-text) !important;
+  background: var(--color-surface) !important;
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+.kb-dimmed {
+  opacity: 0.4;
+}
+
 .stats {
   margin-top: var(--space-5);
   font-size: var(--text-sm);
@@ -4399,31 +4426,80 @@ button {
   }
 
   // src/quiz-engine.ts
-  function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  var NOTE_NAME_SET = new Set(NOTE_NAMES);
+  var PENDING_DELAY_AMBIGUOUS = 600;
+  var PENDING_DELAY_UNAMBIGUOUS = 400;
+  var FLAT_TO_BUTTON = {};
+  for (const note of NOTES) {
+    for (const a3 of note.accepts) {
+      if (a3.endsWith("b") && a3.length === 2) {
+        FLAT_TO_BUTTON[a3[0].toUpperCase() + "b"] = note.name;
+      }
+    }
+  }
+  function noteNarrowingSet(pendingNote) {
+    if (!pendingNote) return null;
+    const matches = /* @__PURE__ */ new Set();
+    matches.add(pendingNote);
+    const sharp = pendingNote + "#";
+    if (NOTE_NAME_SET.has(sharp)) matches.add(sharp);
+    const flatButton = FLAT_TO_BUTTON[pendingNote + "b"];
+    if (flatButton) matches.add(flatButton);
+    return matches;
+  }
+  function numberNarrowingSet(pendingDigit, end, start = 0) {
+    if (pendingDigit === null) return null;
+    const matches = /* @__PURE__ */ new Set();
+    if (pendingDigit >= start && pendingDigit <= end) {
+      matches.add(String(pendingDigit));
+    }
+    for (let d3 = 0; d3 <= 9; d3++) {
+      const num = pendingDigit * 10 + d3;
+      if (num > end) break;
+      if (num >= start) matches.add(String(num));
+    }
+    return matches;
+  }
+  function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
     let pendingNote = null;
     let pendingTimeout = null;
+    function setPending(note) {
+      pendingNote = note;
+      onPendingChange?.(note);
+    }
     function reset() {
       if (pendingTimeout) clearTimeout(pendingTimeout);
-      pendingNote = null;
+      setPending(null);
       pendingTimeout = null;
     }
     function handleKey(e3) {
       const key = e3.key.toUpperCase();
+      if (e3.key === "Enter" && pendingNote) {
+        e3.preventDefault();
+        if (pendingTimeout) clearTimeout(pendingTimeout);
+        const note = pendingNote;
+        setPending(null);
+        pendingTimeout = null;
+        submitAnswer(note);
+        return true;
+      }
       if (pendingNote && allowAccidentals()) {
         if (e3.key === "#" || e3.key === "s" || e3.key === "S" || e3.shiftKey && e3.key === "3") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "#");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "#");
           return true;
         }
         if (e3.key === "b" || e3.key === "B") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "b");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "b");
           return true;
         }
       }
@@ -4433,20 +4509,25 @@ button {
         if (!allowAccidentals()) {
           submitAnswer(key);
         } else {
-          pendingNote = key;
+          setPending(key);
+          const delay = noteNarrowingSet(key).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
           pendingTimeout = setTimeout(() => {
-            submitAnswer(pendingNote);
-            pendingNote = null;
+            const note = pendingNote;
+            setPending(null);
             pendingTimeout = null;
-          }, 400);
+            submitAnswer(note);
+          }, delay);
         }
         return true;
       }
       return false;
     }
-    return { handleKey, reset };
+    function getPendingNote() {
+      return pendingNote;
+    }
+    return { handleKey, reset, getPendingNote };
   }
-  function createSolfegeKeyHandler(submitAnswer, allowAccidentals = () => true) {
+  function createSolfegeKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
     const SOLFEGE_TO_NOTE = {
       "do": "C",
       "re": "D",
@@ -4460,37 +4541,60 @@ button {
     let buffer = "";
     let pendingNote = null;
     let pendingTimeout = null;
+    function setPending(note) {
+      pendingNote = note;
+      onPendingChange?.(note);
+    }
     function reset() {
       buffer = "";
       if (pendingTimeout) clearTimeout(pendingTimeout);
       pendingTimeout = null;
-      pendingNote = null;
+      setPending(null);
     }
     function submitPending() {
       if (pendingNote) {
         if (pendingTimeout) clearTimeout(pendingTimeout);
-        submitAnswer(pendingNote);
-        pendingNote = null;
+        const note = pendingNote;
+        setPending(null);
         pendingTimeout = null;
+        submitAnswer(note);
       }
     }
     function handleKey(e3) {
       const key = e3.key.toLowerCase();
+      if (e3.key === "Enter") {
+        if (pendingNote) {
+          e3.preventDefault();
+          if (pendingTimeout) clearTimeout(pendingTimeout);
+          const note = pendingNote;
+          setPending(null);
+          pendingTimeout = null;
+          submitAnswer(note);
+          return true;
+        }
+        if (buffer.length > 0) {
+          buffer = "";
+          return true;
+        }
+        return false;
+      }
       if (pendingNote && allowAccidentals()) {
         if (e3.key === "#" || e3.shiftKey && e3.key === "3") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "#");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "#");
           return true;
         }
         if (key === "b") {
           e3.preventDefault();
           if (pendingTimeout) clearTimeout(pendingTimeout);
-          submitAnswer(pendingNote + "b");
-          pendingNote = null;
+          const note = pendingNote;
+          setPending(null);
           pendingTimeout = null;
+          submitAnswer(note + "b");
           return true;
         }
       }
@@ -4506,12 +4610,14 @@ button {
           if (!allowAccidentals()) {
             submitAnswer(note);
           } else {
-            pendingNote = note;
+            setPending(note);
+            const delay = noteNarrowingSet(note).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
             pendingTimeout = setTimeout(() => {
-              submitAnswer(pendingNote);
-              pendingNote = null;
+              const n2 = pendingNote;
+              setPending(null);
               pendingTimeout = null;
-            }, 400);
+              submitAnswer(n2);
+            }, delay);
           }
         } else if (buffer.length >= 2) {
           buffer = "";
@@ -4526,13 +4632,21 @@ button {
       }
       return false;
     }
-    return { handleKey, reset };
+    function getPendingNote() {
+      return pendingNote;
+    }
+    return { handleKey, reset, getPendingNote };
   }
-  function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true) {
-    const letterHandler = createNoteKeyHandler(submitAnswer, allowAccidentals);
+  function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
+    const letterHandler = createNoteKeyHandler(
+      submitAnswer,
+      allowAccidentals,
+      onPendingChange
+    );
     const solfegeHandler = createSolfegeKeyHandler(
       submitAnswer,
-      allowAccidentals
+      allowAccidentals,
+      onPendingChange
     );
     return {
       handleKey(e3) {
@@ -4541,6 +4655,9 @@ button {
       reset() {
         letterHandler.reset();
         solfegeHandler.reset();
+      },
+      getPendingNote() {
+        return getUseSolfege() ? solfegeHandler.getPendingNote() : letterHandler.getPendingNote();
       }
     };
   }
@@ -4759,76 +4876,6 @@ button {
   }
   function D2(n2, t3) {
     return "function" == typeof t3 ? t3(n2) : t3;
-  }
-
-  // src/mode-ui-state.ts
-  function countFluent(itemIds, getAutomaticity, threshold) {
-    let fluent = 0;
-    let seen = 0;
-    for (let i3 = 0; i3 < itemIds.length; i3++) {
-      const auto = getAutomaticity(itemIds[i3]);
-      if (auto !== null) {
-        seen++;
-        if (auto > threshold) fluent++;
-      }
-    }
-    return { fluent, seen };
-  }
-  function statusLabelFromPct(pct) {
-    if (pct >= 80) return "Strong";
-    if (pct >= 50) return "Solid";
-    if (pct >= 20) return "Building";
-    return "Getting started";
-  }
-  function buildRecommendationText(result, getGroupLabel, extraParts) {
-    if (result.recommended.size === 0) return "";
-    const parts = [];
-    if (result.consolidateIndices.length > 0) {
-      const labels = result.consolidateIndices.slice().sort((a3, b) => a3 - b).map(getGroupLabel);
-      parts.push(
-        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
-      );
-    }
-    if (result.expandIndex !== null) {
-      parts.push(
-        "start " + getGroupLabel(result.expandIndex) + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
-      );
-    }
-    if (extraParts) {
-      for (let i3 = 0; i3 < extraParts.length; i3++) {
-        parts.push(extraParts[i3]);
-      }
-    }
-    return parts.length > 0 ? "Suggestion: " + parts.join(", ") : "";
-  }
-  function computePracticeSummary(opts) {
-    const threshold = opts.selector.getConfig().automaticityThreshold;
-    const { fluent, seen } = countFluent(
-      opts.allItemIds,
-      (id) => opts.selector.getAutomaticity(id),
-      threshold
-    );
-    const total = opts.allItemIds.length;
-    let statusLabel;
-    let statusDetail;
-    if (seen === 0) {
-      statusLabel = "Ready to start";
-      statusDetail = total + " " + opts.itemNoun + " to learn";
-    } else {
-      const pct = total > 0 ? Math.round(fluent / total * 100) : 0;
-      statusLabel = statusLabelFromPct(pct);
-      statusDetail = fluent + " of " + total + " " + opts.itemNoun + " fluent";
-    }
-    const hasRec = opts.recommendation !== null && opts.recommendation.recommended.size > 0;
-    return {
-      statusLabel,
-      statusDetail,
-      recommendationText: opts.recommendationText,
-      showRecommendationButton: hasRec,
-      masteryText: opts.masteryText,
-      showMastery: opts.showMastery,
-      enabledItemCount: total
-    };
   }
 
   // src/adaptive.ts
@@ -5329,7 +5376,7 @@ button {
       answersEnabled: true
     };
   }
-  function engineSubmitAnswer(state, isCorrect, correctAnswer) {
+  function engineSubmitAnswer(state, isCorrect, correctAnswer, hintText = "Tap anywhere or press Space for next") {
     return {
       ...state,
       answered: true,
@@ -5339,7 +5386,7 @@ button {
       feedbackCorrect: isCorrect,
       feedbackDisplayAnswer: correctAnswer,
       timeDisplayText: "",
-      hintText: "Tap anywhere or press Space for next",
+      hintText,
       roundAnswered: state.roundAnswered + 1,
       roundCorrect: state.roundCorrect + (isCorrect ? 1 : 0)
     };
@@ -5424,13 +5471,16 @@ button {
   var ROUND_DURATION_MS = 6e4;
   var AUTO_ADVANCE_MS = 1e3;
   var TIMER_TICK_MS = 200;
+  var IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
+  var HINT_ADVANCE = IS_TOUCH_PRIMARY ? "Tap anywhere for next" : "Tap anywhere or press Space for next";
   function formatRoundTime(ms) {
     const totalSec = Math.max(0, Math.ceil(ms / 1e3));
     const min = Math.floor(totalSec / 60);
     const sec = totalSec % 60;
     return min + ":" + (sec < 10 ? "0" : "") + sec;
   }
-  function useQuizEngine(config, selector) {
+  var FIXTURES_ENABLED = typeof globalThis.location !== "undefined" && new URLSearchParams(globalThis.location.search).has("fixtures");
+  function useQuizEngine(config, selector, fixtureTarget) {
     const [state, setState] = d2(initialEngineState);
     const [timerPct, setTimerPct] = d2(100);
     const [timerText, setTimerText] = d2("");
@@ -5545,7 +5595,8 @@ button {
         let next = engineSubmitAnswer(
           prev,
           result.correct,
-          result.correctAnswer
+          result.correctAnswer,
+          HINT_ADVANCE
         );
         next = {
           ...next,
@@ -5658,11 +5709,55 @@ button {
       return () => document.removeEventListener("keydown", handleKeydown);
     }, [state.phase !== "idle", stop, continueQuiz, submitAnswer]);
     y2(() => {
+      if (state.phase === "idle") return;
+      function handleClick(e3) {
+        const s3 = stateRef.current;
+        if (s3.phase !== "active" || !s3.answered) return;
+        if (!e3.target || !(e3.target instanceof Element)) return;
+        if (e3.target.closest("button, a, input, select, textarea")) return;
+        if (autoAdvanceRef.current) {
+          clearTimeout(autoAdvanceRef.current);
+          autoAdvanceRef.current = null;
+        }
+        nextQuestionRef.current();
+      }
+      document.addEventListener("click", handleClick);
+      return () => document.removeEventListener("click", handleClick);
+    }, [state.phase !== "idle"]);
+    y2(() => {
       return () => {
         if (roundTimerRef.current) clearInterval(roundTimerRef.current);
         if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
       };
     }, []);
+    y2(() => {
+      if (!FIXTURES_ENABLED || !fixtureTarget) return;
+      const target = fixtureTarget;
+      function handleFixture(e3) {
+        const detail = e3.detail;
+        if (!detail) return;
+        if (detail.engineState) {
+          setState((prev) => ({ ...prev, ...detail.engineState }));
+        }
+        if (detail.timerPct !== void 0) setTimerPct(detail.timerPct);
+        if (detail.timerText !== void 0) setTimerText(detail.timerText);
+        if (detail.timerWarning !== void 0) {
+          setTimerWarning(detail.timerWarning);
+        }
+        if (detail.timerLastQuestion !== void 0) {
+          setTimerLastQuestion(detail.timerLastQuestion);
+        }
+        if (detail.presentItemId && configRef.current.onPresent) {
+          setTimeout(
+            () => configRef.current.onPresent(detail.presentItemId),
+            0
+          );
+        }
+        target.setAttribute("data-fixture-applied", "true");
+      }
+      target.addEventListener("__fixture__", handleFixture);
+      return () => target.removeEventListener("__fixture__", handleFixture);
+    }, [fixtureTarget]);
     return {
       state,
       timerPct,
@@ -5760,6 +5855,118 @@ button {
     return { roundContext, roundCorrect, roundMedian, countText };
   }
 
+  // src/mode-ui-state.ts
+  function countFluent(itemIds, getAutomaticity, threshold) {
+    let fluent = 0;
+    let seen = 0;
+    for (let i3 = 0; i3 < itemIds.length; i3++) {
+      const auto = getAutomaticity(itemIds[i3]);
+      if (auto !== null) {
+        seen++;
+        if (auto > threshold) fluent++;
+      }
+    }
+    return { fluent, seen };
+  }
+  function statusLabelFromPct(pct) {
+    if (pct >= 80) return "Strong";
+    if (pct >= 50) return "Solid";
+    if (pct >= 20) return "Building";
+    return "Getting started";
+  }
+  function buildRecommendationText(result, getGroupLabel, extraParts) {
+    if (result.recommended.size === 0) return "";
+    const parts = [];
+    if (result.consolidateIndices.length > 0) {
+      const labels = result.consolidateIndices.slice().sort((a3, b) => a3 - b).map(getGroupLabel);
+      parts.push(
+        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
+      );
+    }
+    if (result.expandIndex !== null) {
+      parts.push(
+        "start " + getGroupLabel(result.expandIndex) + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
+      );
+    }
+    if (extraParts) {
+      for (let i3 = 0; i3 < extraParts.length; i3++) {
+        parts.push(extraParts[i3]);
+      }
+    }
+    return parts.length > 0 ? "Suggestion: " + parts.join(", ") : "";
+  }
+  function computePracticeSummary(opts) {
+    const threshold = opts.selector.getConfig().automaticityThreshold;
+    const { fluent, seen } = countFluent(
+      opts.allItemIds,
+      (id) => opts.selector.getAutomaticity(id),
+      threshold
+    );
+    const total = opts.allItemIds.length;
+    let statusLabel;
+    let statusDetail;
+    if (seen === 0) {
+      statusLabel = "Ready to start";
+      statusDetail = total + " " + opts.itemNoun + " to learn";
+    } else {
+      const pct = total > 0 ? Math.round(fluent / total * 100) : 0;
+      statusLabel = statusLabelFromPct(pct);
+      statusDetail = fluent + " of " + total + " " + opts.itemNoun + " fluent";
+    }
+    const hasRec = opts.recommendation !== null && opts.recommendation.recommended.size > 0;
+    return {
+      statusLabel,
+      statusDetail,
+      recommendationText: opts.recommendationText,
+      showRecommendationButton: hasRec,
+      masteryText: opts.masteryText,
+      showMastery: opts.showMastery,
+      enabledItemCount: total
+    };
+  }
+
+  // src/hooks/use-practice-summary.ts
+  function usePracticeSummary(opts) {
+    const [activeTab, setActiveTab] = d2(
+      "practice"
+    );
+    const [statsMode, setStatsMode] = d2("retention");
+    const summary = T2(
+      () => computePracticeSummary({
+        allItemIds: opts.allItems,
+        selector: opts.selector,
+        itemNoun: opts.itemNoun,
+        recommendation: opts.recommendation,
+        recommendationText: opts.recommendationText,
+        masteryText: opts.engine.state.masteryText,
+        showMastery: opts.engine.state.showMastery
+      }),
+      [
+        opts.selector,
+        opts.recommendation,
+        opts.recommendationText,
+        opts.engine.state.masteryText,
+        opts.engine.state.showMastery,
+        opts.engine.state.phase,
+        opts.allItems,
+        opts.itemNoun
+      ]
+    );
+    const statsSel = useStatsSelector(
+      opts.selector,
+      opts.engine.state.phase,
+      statsMode
+    );
+    return {
+      summary,
+      activeTab,
+      setActiveTab,
+      statsMode,
+      setStatsMode,
+      statsSel
+    };
+  }
+
   // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
   var f3 = 0;
   function u3(e3, t3, n2, o3, i3, u4) {
@@ -5772,7 +5979,7 @@ button {
   }
 
   // src/ui/buttons.tsx
-  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive }) {
+  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive, narrowing }) {
     const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: NOTE_NAMES.map((n2) => {
       let label;
@@ -5782,12 +5989,16 @@ button {
       } else {
         label = displayNote(n2);
       }
+      let btnCls = "answer-btn answer-btn-note";
+      if (narrowing) {
+        btnCls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+      }
       return /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
           tabIndex: 0,
-          class: "answer-btn answer-btn-note",
+          class: btnCls,
           "data-note": n2,
           onClick: onAnswer ? () => onAnswer(n2) : void 0,
           children: label
@@ -5796,50 +6007,68 @@ button {
       );
     }) });
   }
-  function PianoNoteButtons({ onAnswer, hideAccidentals }) {
+  function PianoNoteButtons({ onAnswer, hideAccidentals, narrowing }) {
     return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
-      /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "note-btn accidental" + (hideAccidentals ? " hidden" : ""),
-          "data-note": n2,
-          onClick: onAnswer ? () => onAnswer(n2) : void 0,
-          children: displayNote(n2)
-        },
-        n2
-      )) }),
-      /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: NATURAL_NOTES.map((n2) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "note-btn",
-          "data-note": n2,
-          onClick: onAnswer ? () => onAnswer(n2) : void 0,
-          children: displayNote(n2)
-        },
-        n2
-      )) })
+      /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => {
+        let cls = "note-btn accidental" + (hideAccidentals ? " hidden" : "");
+        if (narrowing && !hideAccidentals) {
+          cls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            "data-note": n2,
+            onClick: onAnswer ? () => onAnswer(n2) : void 0,
+            children: displayNote(n2)
+          },
+          n2
+        );
+      }) }),
+      /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: NATURAL_NOTES.map((n2) => {
+        let cls = "note-btn";
+        if (narrowing) {
+          cls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            "data-note": n2,
+            onClick: onAnswer ? () => onAnswer(n2) : void 0,
+            children: displayNote(n2)
+          },
+          n2
+        );
+      }) })
     ] });
   }
-  function NumberButtons({ start, end, onAnswer, hidden }) {
+  function NumberButtons({ start, end, onAnswer, hidden, narrowing }) {
     const nums = [];
     for (let i3 = start; i3 <= end; i3++) nums.push(i3);
     const cls = "answer-buttons answer-buttons-numbers" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children: nums.map((i3) => /* @__PURE__ */ u3(
-      "button",
-      {
-        type: "button",
-        tabIndex: 0,
-        class: "answer-btn answer-btn-num",
-        "data-num": String(i3),
-        onClick: onAnswer ? () => onAnswer(i3) : void 0,
-        children: i3
-      },
-      i3
-    )) });
+    return /* @__PURE__ */ u3("div", { class: cls, children: nums.map((i3) => {
+      let btnCls = "answer-btn answer-btn-num";
+      if (narrowing) {
+        btnCls += narrowing.has(String(i3)) ? " kb-match" : " kb-dimmed";
+      }
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-num": String(i3),
+          onClick: onAnswer ? () => onAnswer(i3) : void 0,
+          children: i3
+        },
+        i3
+      );
+    }) });
   }
   function IntervalButtons({ onAnswer, hidden }) {
     const cls = "answer-buttons answer-buttons-intervals" + (hidden ? " answer-group-hidden" : "");
@@ -5900,224 +6129,6 @@ button {
       },
       n2
     )) });
-  }
-
-  // src/ui/mode-screen.tsx
-  function ModeTopBar({ title, onBack }) {
-    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: [
-      /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "mode-back-btn",
-          "aria-label": "Back to home",
-          onClick: onBack,
-          children: "\u2190"
-        }
-      ),
-      /* @__PURE__ */ u3("h1", { class: "mode-title", children: title })
-    ] });
-  }
-  var tabbedIdCounter = 0;
-  var TABS = ["practice", "progress"];
-  var TAB_LABELS = {
-    practice: "Practice",
-    progress: "Progress"
-  };
-  function TabbedIdle({ activeTab, onTabSwitch, practiceContent, progressContent }) {
-    const prefix = T2(() => "tabs-" + tabbedIdCounter++, []);
-    function handleTabKeyDown(e3, current) {
-      if (e3.key === "ArrowLeft" || e3.key === "ArrowRight") {
-        e3.preventDefault();
-        const next = current === "practice" ? "progress" : "practice";
-        onTabSwitch(next);
-        requestAnimationFrame(() => {
-          const container = e3.currentTarget.parentElement;
-          const nextBtn = container?.querySelector(
-            '[data-tab="' + next + '"]'
-          );
-          nextBtn?.focus();
-        });
-      }
-    }
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: "mode-tabs", role: "tablist", children: TABS.map((tab) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          id: prefix + "-tab-" + tab,
-          role: "tab",
-          "aria-selected": activeTab === tab,
-          "aria-controls": prefix + "-panel-" + tab,
-          tabIndex: activeTab === tab ? 0 : -1,
-          class: "mode-tab" + (activeTab === tab ? " active" : ""),
-          "data-tab": tab,
-          onClick: () => onTabSwitch(tab),
-          onKeyDown: (e3) => handleTabKeyDown(e3, tab),
-          children: TAB_LABELS[tab]
-        },
-        tab
-      )) }),
-      /* @__PURE__ */ u3(
-        "div",
-        {
-          id: prefix + "-panel-practice",
-          role: "tabpanel",
-          "aria-labelledby": prefix + "-tab-practice",
-          class: "tab-content tab-practice" + (activeTab === "practice" ? " active" : ""),
-          children: practiceContent
-        }
-      ),
-      /* @__PURE__ */ u3(
-        "div",
-        {
-          id: prefix + "-panel-progress",
-          role: "tabpanel",
-          "aria-labelledby": prefix + "-tab-progress",
-          class: "tab-content tab-progress" + (activeTab === "progress" ? " active" : ""),
-          children: progressContent
-        }
-      )
-    ] });
-  }
-  function PracticeCard({
-    statusLabel,
-    statusDetail,
-    recommendation,
-    mastery,
-    scope,
-    onStart,
-    onApplyRecommendation
-  }) {
-    const recBlock = recommendation ? /* @__PURE__ */ u3("div", { class: "practice-recommendation", children: [
-      /* @__PURE__ */ u3("span", { class: "practice-rec-text", children: recommendation }),
-      onApplyRecommendation ? /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "practice-rec-btn",
-          onClick: onApplyRecommendation,
-          children: "Use suggestion"
-        }
-      ) : null
-    ] }) : null;
-    const masteryBlock = mastery ? /* @__PURE__ */ u3("div", { class: "mastery-message mastery-visible", children: mastery }) : null;
-    const hasSetupContent = scope || recommendation;
-    const setupZone = /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-setup", children: [
-      hasSetupContent ? /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Quiz setup" }) : null,
-      recBlock,
-      scope ? /* @__PURE__ */ u3("div", { class: "practice-scope", children: /* @__PURE__ */ u3("div", { class: "settings-row", children: scope }) }) : null,
-      /* @__PURE__ */ u3("div", { class: "practice-zone-action", children: /* @__PURE__ */ u3(StartButton, { onStart }) })
-    ] });
-    return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
-      /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-mastery", children: [
-        /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Mastery" }),
-        /* @__PURE__ */ u3("div", { class: "practice-status", children: /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel || "" }) }),
-        /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" }),
-        masteryBlock
-      ] }),
-      setupZone
-    ] });
-  }
-  function StartButton({ onStart }) {
-    return /* @__PURE__ */ u3("button", { type: "button", tabIndex: 0, class: "start-btn", onClick: onStart, children: "Start Quiz" });
-  }
-  function QuizSession({
-    timeLeft,
-    timerPct,
-    context,
-    count,
-    fluent,
-    total,
-    isWarning,
-    isLastQuestion,
-    onClose
-  }) {
-    const pct = total ? Math.round((fluent || 0) / total * 100) : 0;
-    return /* @__PURE__ */ u3("div", { class: "quiz-session", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-countdown-row", children: [
-        /* @__PURE__ */ u3(
-          "div",
-          {
-            class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
-            children: /* @__PURE__ */ u3(
-              "div",
-              {
-                class: "quiz-countdown-fill",
-                style: { width: `${timerPct ?? 100}%` }
-              }
-            )
-          }
-        ),
-        /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" })
-      ] }),
-      /* @__PURE__ */ u3(SessionInfo, { context, count }),
-      /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "quiz-header-close",
-          "aria-label": "Stop quiz",
-          onClick: onClose,
-          children: "\xD7"
-        }
-      ),
-      /* @__PURE__ */ u3("div", { class: "progress-bar", children: [
-        /* @__PURE__ */ u3("div", { class: "progress-fill", style: { width: `${pct}%` } }),
-        /* @__PURE__ */ u3("div", { class: "progress-text", children: fluent != null && total != null ? `${fluent} / ${total} fluent` : "" })
-      ] })
-    ] });
-  }
-  function SessionInfo({ context, count }) {
-    return /* @__PURE__ */ u3("div", { class: "quiz-session-info", children: [
-      /* @__PURE__ */ u3("span", { class: "quiz-info-context", children: context || "" }),
-      /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: count || "" })
-    ] });
-  }
-  function QuizArea({ prompt, lastQuestion, children }) {
-    return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" }),
-      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }) }),
-      children
-    ] });
-  }
-  function RoundComplete({ context, heading, correct, median, onContinue, onStop }) {
-    return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
-      /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
-      /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: [
-        /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }),
-        /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-median", children: median || "" })
-      ] }),
-      context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
-        /* @__PURE__ */ u3("div", { class: "round-complete-overall-label", children: "Overall" }),
-        /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
-      ] }) : null,
-      /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "round-complete-continue",
-            onClick: onContinue,
-            children: "Keep Going"
-          }
-        ),
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "round-complete-stop",
-            onClick: onStop,
-            children: "Stop"
-          }
-        )
-      ] })
-    ] });
   }
 
   // src/stats-display.ts
@@ -6353,22 +6364,6 @@ button {
     ] });
   }
 
-  // src/ui/quiz-ui.tsx
-  function FeedbackDisplay({ text, className, time, hint }) {
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
-      time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
-      hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
-    ] });
-  }
-  function FeedbackBanner({ correct, answer }) {
-    if (correct === null || !answer) {
-      return /* @__PURE__ */ u3("div", { class: "feedback-banner" });
-    }
-    const cls = "feedback-banner" + (correct ? " feedback-banner-correct" : " feedback-banner-wrong");
-    return /* @__PURE__ */ u3("div", { class: cls, children: correct ? answer : "No, " + answer });
-  }
-
   // src/ui/speed-check.tsx
   var BUTTON_PROVIDER = {
     key: "button",
@@ -6569,6 +6564,290 @@ button {
     ] });
   }
 
+  // src/ui/mode-screen.tsx
+  function ModeTopBar({ title, onBack }) {
+    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: [
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "mode-back-btn",
+          "aria-label": "Back to home",
+          onClick: onBack,
+          children: "\u2190"
+        }
+      ),
+      /* @__PURE__ */ u3("h1", { class: "mode-title", children: title })
+    ] });
+  }
+  var tabbedIdCounter = 0;
+  var TABS = ["practice", "progress"];
+  var TAB_LABELS = {
+    practice: "Practice",
+    progress: "Progress"
+  };
+  function TabbedIdle({ activeTab, onTabSwitch, practiceContent, progressContent }) {
+    const prefix = T2(() => "tabs-" + tabbedIdCounter++, []);
+    function handleTabKeyDown(e3, current) {
+      if (e3.key === "ArrowLeft" || e3.key === "ArrowRight") {
+        e3.preventDefault();
+        const next = current === "practice" ? "progress" : "practice";
+        onTabSwitch(next);
+        requestAnimationFrame(() => {
+          const container = e3.currentTarget.parentElement;
+          const nextBtn = container?.querySelector(
+            '[data-tab="' + next + '"]'
+          );
+          nextBtn?.focus();
+        });
+      }
+    }
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3("div", { class: "mode-tabs", role: "tablist", children: TABS.map((tab) => /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          id: prefix + "-tab-" + tab,
+          role: "tab",
+          "aria-selected": activeTab === tab,
+          "aria-controls": prefix + "-panel-" + tab,
+          tabIndex: activeTab === tab ? 0 : -1,
+          class: "mode-tab" + (activeTab === tab ? " active" : ""),
+          "data-tab": tab,
+          onClick: () => onTabSwitch(tab),
+          onKeyDown: (e3) => handleTabKeyDown(e3, tab),
+          children: TAB_LABELS[tab]
+        },
+        tab
+      )) }),
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          id: prefix + "-panel-practice",
+          role: "tabpanel",
+          "aria-labelledby": prefix + "-tab-practice",
+          class: "tab-content tab-practice" + (activeTab === "practice" ? " active" : ""),
+          children: practiceContent
+        }
+      ),
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          id: prefix + "-panel-progress",
+          role: "tabpanel",
+          "aria-labelledby": prefix + "-tab-progress",
+          class: "tab-content tab-progress" + (activeTab === "progress" ? " active" : ""),
+          children: progressContent
+        }
+      )
+    ] });
+  }
+  function PracticeCard(props) {
+    const statusLabel = props.statusLabel ?? (props.summary ? props.summary.statusLabel : void 0);
+    const statusDetail = props.statusDetail ?? (props.summary ? props.summary.statusDetail : void 0);
+    const recommendation = props.recommendation ?? (props.summary && props.summary.recommendationText ? props.summary.recommendationText : void 0);
+    const mastery = props.mastery ?? (props.summary && props.summary.showMastery ? props.summary.masteryText : void 0);
+    const onApplyRecommendation = props.onApplyRecommendation;
+    const { scope, onStart } = props;
+    const recBlock = recommendation ? /* @__PURE__ */ u3("div", { class: "practice-recommendation", children: [
+      /* @__PURE__ */ u3("span", { class: "practice-rec-text", children: recommendation }),
+      onApplyRecommendation ? /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "practice-rec-btn",
+          onClick: onApplyRecommendation,
+          children: "Use suggestion"
+        }
+      ) : null
+    ] }) : null;
+    const masteryBlock = mastery ? /* @__PURE__ */ u3("div", { class: "mastery-message mastery-visible", children: mastery }) : null;
+    const hasSetupContent = scope || recommendation;
+    const setupZone = /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-setup", children: [
+      hasSetupContent ? /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Quiz setup" }) : null,
+      recBlock,
+      scope ? /* @__PURE__ */ u3("div", { class: "practice-scope", children: /* @__PURE__ */ u3("div", { class: "settings-row", children: scope }) }) : null,
+      /* @__PURE__ */ u3("div", { class: "practice-zone-action", children: /* @__PURE__ */ u3(StartButton, { onStart }) })
+    ] });
+    return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
+      /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-mastery", children: [
+        /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Mastery" }),
+        /* @__PURE__ */ u3("div", { class: "practice-status", children: /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel || "" }) }),
+        /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" }),
+        masteryBlock
+      ] }),
+      setupZone
+    ] });
+  }
+  function StartButton({ onStart }) {
+    return /* @__PURE__ */ u3("button", { type: "button", tabIndex: 0, class: "start-btn", onClick: onStart, children: "Start Quiz" });
+  }
+  function QuizSession({
+    timeLeft,
+    timerPct,
+    context,
+    count,
+    fluent,
+    total,
+    isWarning,
+    isLastQuestion,
+    onClose
+  }) {
+    const pct = total ? Math.round((fluent || 0) / total * 100) : 0;
+    return /* @__PURE__ */ u3("div", { class: "quiz-session", children: [
+      /* @__PURE__ */ u3("div", { class: "quiz-countdown-row", children: [
+        /* @__PURE__ */ u3(
+          "div",
+          {
+            class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
+            children: /* @__PURE__ */ u3(
+              "div",
+              {
+                class: "quiz-countdown-fill",
+                style: { width: `${timerPct ?? 100}%` }
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" })
+      ] }),
+      /* @__PURE__ */ u3(SessionInfo, { context, count }),
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "quiz-header-close",
+          "aria-label": "Stop quiz",
+          onClick: onClose,
+          children: "\xD7"
+        }
+      ),
+      /* @__PURE__ */ u3("div", { class: "progress-bar", children: [
+        /* @__PURE__ */ u3("div", { class: "progress-fill", style: { width: `${pct}%` } }),
+        /* @__PURE__ */ u3("div", { class: "progress-text", children: fluent != null && total != null ? `${fluent} / ${total} fluent` : "" })
+      ] })
+    ] });
+  }
+  function SessionInfo({ context, count }) {
+    return /* @__PURE__ */ u3("div", { class: "quiz-session-info", children: [
+      /* @__PURE__ */ u3("span", { class: "quiz-info-context", children: context || "" }),
+      /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: count || "" })
+    ] });
+  }
+  function QuizArea({ prompt, lastQuestion, children }) {
+    return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
+      /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" }),
+      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }) }),
+      children
+    ] });
+  }
+  function RoundComplete({ context, heading, correct, median, onContinue, onStop }) {
+    return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
+      /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
+      /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: [
+        /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }),
+        /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-median", children: median || "" })
+      ] }),
+      context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
+        /* @__PURE__ */ u3("div", { class: "round-complete-overall-label", children: "Overall" }),
+        /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
+      ] }) : null,
+      /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "round-complete-continue",
+            onClick: onContinue,
+            children: "Keep Going"
+          }
+        ),
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "round-complete-stop",
+            onClick: onStop,
+            children: "Stop"
+          }
+        )
+      ] })
+    ] });
+  }
+  function PracticeTab({
+    summary,
+    onStart,
+    onApplyRecommendation,
+    scope,
+    statsContent,
+    statsMode,
+    onStatsToggle,
+    baseline,
+    onCalibrate,
+    activeTab,
+    onTabSwitch
+  }) {
+    return /* @__PURE__ */ u3(
+      TabbedIdle,
+      {
+        activeTab,
+        onTabSwitch,
+        practiceContent: /* @__PURE__ */ u3(
+          PracticeCard,
+          {
+            summary,
+            onStart,
+            onApplyRecommendation,
+            scope
+          }
+        ),
+        progressContent: /* @__PURE__ */ u3("div", { children: [
+          /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: onStatsToggle }) }),
+          /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent }),
+          /* @__PURE__ */ u3(
+            BaselineInfo,
+            {
+              baseline,
+              onRun: onCalibrate
+            }
+          )
+        ] })
+      }
+    );
+  }
+
+  // src/ui/quiz-ui.tsx
+  function FeedbackDisplay({ text, className, time, hint }) {
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
+      time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
+      hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
+    ] });
+  }
+  function FeedbackBanner({ correct, answer }) {
+    if (correct === null || !answer) {
+      return /* @__PURE__ */ u3("div", { class: "feedback-banner" });
+    }
+    const cls = "feedback-banner" + (correct ? " feedback-banner-correct" : " feedback-banner-wrong");
+    return /* @__PURE__ */ u3("div", { class: cls, children: correct ? answer : "No, " + answer });
+  }
+  var NOTE_HINT_LETTER = "Keyboard: C D E, c d e, C#, fs (=F#), Db, bb (=Bb) \u2014 Enter to confirm";
+  var NOTE_HINT_SOLFEGE = "Keyboard: do re mi, Do Re Mi, do#, reb \u2014 Enter to confirm";
+  var HINT_TEXT = {
+    "number-0-11": "Keyboard: 0\u20139, 10, 11 \u2014 Enter to confirm",
+    "number-1-12": "Keyboard: 1\u20139, 10, 11, 12 \u2014 Enter to confirm"
+  };
+  function KeyboardHint({ type }) {
+    if (!type) return null;
+    const text = type === "note" ? getUseSolfege() ? NOTE_HINT_SOLFEGE : NOTE_HINT_LETTER : HINT_TEXT[type];
+    return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: text });
+  }
+
   // src/mode-utils.ts
   function buildBidirectionalIds(keys) {
     const ids = [];
@@ -6642,12 +6921,15 @@ button {
     const currentQRef = A2(null);
     const pendingDigitRef = A2(null);
     const pendingTimeoutRef = A2(null);
+    const [pendingDigit, setPendingDigit] = d2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -6667,6 +6949,16 @@ button {
         if (dir2 === "rev") {
           return noteHandler.handleKey(e3);
         }
+        if (e3.key === "Enter" && pendingDigitRef.current !== null) {
+          e3.preventDefault();
+          clearTimeout(pendingTimeoutRef.current);
+          const d3 = pendingDigitRef.current;
+          pendingDigitRef.current = null;
+          setPendingDigit(null);
+          pendingTimeoutRef.current = null;
+          ctx.submitAnswer(String(d3));
+          return true;
+        }
         if (e3.key >= "0" && e3.key <= "9") {
           e3.preventDefault();
           const d3 = parseInt(e3.key);
@@ -6674,6 +6966,7 @@ button {
             const num = pendingDigitRef.current * 10 + d3;
             clearTimeout(pendingTimeoutRef.current);
             pendingDigitRef.current = null;
+            setPendingDigit(null);
             pendingTimeoutRef.current = null;
             if (num <= 11) ctx.submitAnswer(String(num));
             return true;
@@ -6682,13 +6975,16 @@ button {
             ctx.submitAnswer(String(d3));
           } else {
             pendingDigitRef.current = d3;
+            setPendingDigit(d3);
+            const delay = numberNarrowingSet(d3, 11).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
             pendingTimeoutRef.current = setTimeout(() => {
               if (pendingDigitRef.current !== null) {
                 ctx.submitAnswer(String(pendingDigitRef.current));
                 pendingDigitRef.current = null;
+                setPendingDigit(null);
                 pendingTimeoutRef.current = null;
               }
-            }, 400);
+            }, delay);
           }
           return true;
         }
@@ -6698,16 +6994,26 @@ button {
         noteHandler.reset();
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       onStop: () => {
         noteHandler.reset();
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       getPracticingLabel: () => "all items"
     }), [noteHandler]);
-    const engine = useQuizEngine(engineConfig, learner.selector);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
+    const numNarrowing = T2(
+      () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 11),
+      [pendingDigit, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -6715,27 +7021,14 @@ button {
       PHASE_FOCUS_TARGETS
     );
     const round = useRoundSummary(engine, "all items");
-    const [activeTab, setActiveTab] = d2(
-      "practice"
-    );
-    const [statsMode, setStatsMode] = d2("retention");
-    const summary = T2(
-      () => computePracticeSummary({
-        allItemIds: ALL_ITEMS,
-        selector: learner.selector,
-        itemNoun: "items",
-        recommendation: null,
-        recommendationText: "",
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery
-      }),
-      [
-        learner.selector,
-        engine.state.masteryText,
-        engine.state.showMastery,
-        engine.state.phase
-      ]
-    );
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS,
+      selector: learner.selector,
+      engine,
+      itemNoun: "items",
+      recommendation: null,
+      recommendationText: ""
+    });
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
@@ -6750,57 +7043,39 @@ button {
       (num) => engine.submitAnswer(String(num)),
       [engine.submitAnswer]
     );
-    const statsSel = useStatsSelector(
-      learner.selector,
-      engine.state.phase,
-      statsMode
-    );
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(ModeTopBar, { title: "Note \u2194 Semitones", onBack: navigateHome }),
       /* @__PURE__ */ u3(
-        TabbedIdle,
+        PracticeTab,
         {
-          activeTab,
-          onTabSwitch: setActiveTab,
-          practiceContent: /* @__PURE__ */ u3(
-            PracticeCard,
-            {
-              statusLabel: summary.statusLabel,
-              statusDetail: summary.statusDetail,
-              mastery: summary.showMastery ? summary.masteryText : void 0,
-              onStart: engine.start
-            }
-          ),
-          progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsTable,
-                {
-                  selector: statsSel,
-                  rows: getStatsRows(),
-                  fwdHeader: "N\u2192#",
-                  revHeader: "#\u2192N",
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
+          summary: ps.summary,
+          onStart: engine.start,
+          statsContent: /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
-              BaselineInfo,
+              StatsTable,
               {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
+                selector: ps.statsSel,
+                rows: getStatsRows(),
+                fwdHeader: "N\u2192#",
+                revHeader: "#\u2192N",
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              StatsLegend,
+              {
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
               }
             )
-          ] })
+          ] }),
+          statsMode: ps.statsMode,
+          onStatsToggle: ps.setStatsMode,
+          baseline: learner.motorBaseline,
+          onCalibrate: () => setCalibrating(true),
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
         }
       ),
       /* @__PURE__ */ u3(
@@ -6844,7 +7119,8 @@ button {
               NoteButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "rev" ? noteNarrowing : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -6853,7 +7129,14 @@ button {
                 start: 0,
                 end: 11,
                 hidden: dir === "rev",
-                onAnswer: handleNumAnswer
+                onAnswer: handleNumAnswer,
+                narrowing: dir === "fwd" ? numNarrowing : void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              KeyboardHint,
+              {
+                type: dir === "fwd" ? "number-0-11" : "note"
               }
             ),
             /* @__PURE__ */ u3(
@@ -6925,6 +7208,7 @@ button {
     const currentQRef = A2(null);
     const pendingDigitRef = A2(null);
     const pendingTimeoutRef = A2(null);
+    const [pendingDigit, setPendingDigit] = d2(null);
     const engineConfig = T2(() => ({
       getEnabledItems: () => ALL_ITEMS2,
       checkAnswer: (_itemId, input) => {
@@ -6941,6 +7225,16 @@ button {
         if (dir2 === "rev") {
           return false;
         }
+        if (e3.key === "Enter" && pendingDigitRef.current !== null) {
+          e3.preventDefault();
+          clearTimeout(pendingTimeoutRef.current);
+          const d3 = pendingDigitRef.current;
+          pendingDigitRef.current = null;
+          setPendingDigit(null);
+          pendingTimeoutRef.current = null;
+          if (d3 >= 1) ctx.submitAnswer(String(d3));
+          return true;
+        }
         if (e3.key >= "0" && e3.key <= "9") {
           e3.preventDefault();
           const d3 = parseInt(e3.key);
@@ -6948,6 +7242,7 @@ button {
             const num = pendingDigitRef.current * 10 + d3;
             clearTimeout(pendingTimeoutRef.current);
             pendingDigitRef.current = null;
+            setPendingDigit(null);
             pendingTimeoutRef.current = null;
             if (num >= 1 && num <= 12) ctx.submitAnswer(String(num));
             return true;
@@ -6956,15 +7251,18 @@ button {
             ctx.submitAnswer(String(d3));
           } else {
             pendingDigitRef.current = d3;
+            setPendingDigit(d3);
+            const delay = numberNarrowingSet(d3, 12, 1).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
             pendingTimeoutRef.current = setTimeout(() => {
               if (pendingDigitRef.current !== null) {
                 if (pendingDigitRef.current >= 1) {
                   ctx.submitAnswer(String(pendingDigitRef.current));
                 }
                 pendingDigitRef.current = null;
+                setPendingDigit(null);
                 pendingTimeoutRef.current = null;
               }
-            }, 400);
+            }, delay);
           }
           return true;
         }
@@ -6973,41 +7271,34 @@ button {
       onStart: () => {
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       onStop: () => {
         if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
         pendingDigitRef.current = null;
+        setPendingDigit(null);
       },
       getPracticingLabel: () => "all items"
     }), []);
-    const engine = useQuizEngine(engineConfig, learner.selector);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
+    const numNarrowing = T2(
+      () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 12, 1),
+      [pendingDigit, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
       calibrating ? "calibration" : engine.state.phase,
       PHASE_FOCUS_TARGETS
     );
-    const [activeTab, setActiveTab] = d2(
-      "practice"
-    );
-    const [statsMode, setStatsMode] = d2("retention");
-    const summary = T2(
-      () => computePracticeSummary({
-        allItemIds: ALL_ITEMS2,
-        selector: learner.selector,
-        itemNoun: "items",
-        recommendation: null,
-        recommendationText: "",
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery
-      }),
-      [
-        learner.selector,
-        engine.state.masteryText,
-        engine.state.showMastery,
-        engine.state.phase
-      ]
-    );
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS2,
+      selector: learner.selector,
+      engine,
+      itemNoun: "items",
+      recommendation: null,
+      recommendationText: ""
+    });
     useModeLifecycle(onMount, engine, learner, setCalibrating);
     const dir = currentQ?.dir ?? "fwd";
     const promptText = currentQ ? currentQ.dir === "fwd" ? currentQ.name : String(currentQ.num) : "";
@@ -7020,57 +7311,39 @@ button {
       [engine.submitAnswer]
     );
     const round = useRoundSummary(engine, "all items");
-    const statsSel = useStatsSelector(
-      learner.selector,
-      engine.state.phase,
-      statsMode
-    );
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(ModeTopBar, { title: "Interval \u2194 Semitones", onBack: navigateHome }),
       /* @__PURE__ */ u3(
-        TabbedIdle,
+        PracticeTab,
         {
-          activeTab,
-          onTabSwitch: setActiveTab,
-          practiceContent: /* @__PURE__ */ u3(
-            PracticeCard,
-            {
-              statusLabel: summary.statusLabel,
-              statusDetail: summary.statusDetail,
-              mastery: summary.showMastery ? summary.masteryText : void 0,
-              onStart: engine.start
-            }
-          ),
-          progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsTable,
-                {
-                  selector: statsSel,
-                  rows: getStatsRows2(),
-                  fwdHeader: "I\u2192#",
-                  revHeader: "#\u2192I",
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
+          summary: ps.summary,
+          onStart: engine.start,
+          statsContent: /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
-              BaselineInfo,
+              StatsTable,
               {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
+                selector: ps.statsSel,
+                rows: getStatsRows2(),
+                fwdHeader: "I\u2192#",
+                revHeader: "#\u2192I",
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              StatsLegend,
+              {
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
               }
             )
-          ] })
+          ] }),
+          statsMode: ps.statsMode,
+          onStatsToggle: ps.setStatsMode,
+          baseline: learner.motorBaseline,
+          onCalibrate: () => setCalibrating(true),
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
         }
       ),
       /* @__PURE__ */ u3(
@@ -7123,7 +7396,14 @@ button {
                 start: 1,
                 end: 12,
                 hidden: dir === "rev",
-                onAnswer: handleNumAnswer
+                onAnswer: handleNumAnswer,
+                narrowing: dir === "fwd" ? numNarrowing : void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              KeyboardHint,
+              {
+                type: dir === "fwd" ? "number-1-12" : null
               }
             ),
             /* @__PURE__ */ u3(
@@ -7616,10 +7896,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -7641,37 +7923,26 @@ button {
       onStart: () => noteHandler.reset(),
       onStop: () => noteHandler.reset()
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
       calibrating ? "calibration" : engine.state.phase,
       PHASE_FOCUS_TARGETS
     );
-    const [activeTab, setActiveTab] = d2(
-      "practice"
-    );
-    const [statsMode, setStatsMode] = d2("retention");
-    const summary = T2(
-      () => computePracticeSummary({
-        allItemIds: ALL_ITEMS3,
-        selector: learner.selector,
-        itemNoun: "items",
-        recommendation,
-        recommendationText,
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery
-      }),
-      [
-        learner.selector,
-        recommendation,
-        recommendationText,
-        engine.state.masteryText,
-        engine.state.showMastery,
-        engine.state.phase
-      ]
-    );
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS3,
+      selector: learner.selector,
+      engine,
+      itemNoun: "items",
+      recommendation,
+      recommendationText
+    });
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
@@ -7683,67 +7954,48 @@ button {
       [engine.submitAnswer]
     );
     const round = useRoundSummary(engine, practicingLabel);
-    const statsSel = useStatsSelector(
-      learner.selector,
-      engine.state.phase,
-      statsMode
-    );
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(ModeTopBar, { title: "Semitone Math", onBack: navigateHome }),
       /* @__PURE__ */ u3(
-        TabbedIdle,
+        PracticeTab,
         {
-          activeTab,
-          onTabSwitch: setActiveTab,
-          practiceContent: /* @__PURE__ */ u3(
-            PracticeCard,
+          summary: ps.summary,
+          onStart: engine.start,
+          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
+          scope: /* @__PURE__ */ u3(
+            GroupToggles,
             {
-              statusLabel: summary.statusLabel,
-              statusDetail: summary.statusDetail,
-              recommendation: summary.recommendationText || void 0,
-              mastery: summary.showMastery ? summary.masteryText : void 0,
-              onStart: engine.start,
-              onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
-              scope: /* @__PURE__ */ u3(
-                GroupToggles,
-                {
-                  labels: DISTANCE_GROUPS.map((g2) => g2.label),
-                  active: enabledGroups,
-                  recommended: recommendation.recommended,
-                  onToggle: scopeActions.toggleGroup
-                }
-              )
+              labels: DISTANCE_GROUPS.map((g2) => g2.label),
+              active: enabledGroups,
+              recommended: recommendation.recommended,
+              onToggle: scopeActions.toggleGroup
             }
           ),
-          progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: statsSel,
-                  colLabels: GRID_COL_LABELS,
-                  getItemId: getGridItemId,
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
+          statsContent: /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
-              BaselineInfo,
+              StatsGrid,
               {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
+                selector: ps.statsSel,
+                colLabels: GRID_COL_LABELS,
+                getItemId: getGridItemId,
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              StatsLegend,
+              {
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
               }
             )
-          ] })
+          ] }),
+          statsMode: ps.statsMode,
+          onStatsToggle: ps.setStatsMode,
+          baseline: learner.motorBaseline,
+          onCalibrate: () => setCalibrating(true),
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
         }
       ),
       /* @__PURE__ */ u3(
@@ -7787,9 +8039,11 @@ button {
               NoteButtons,
               {
                 onAnswer: handleNoteAnswer,
-                useFlats
+                useFlats,
+                narrowing: noteNarrowing
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -7911,10 +8165,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -7936,8 +8192,12 @@ button {
       onStart: () => noteHandler.reset(),
       onStop: () => noteHandler.reset()
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -7945,29 +8205,14 @@ button {
       PHASE_FOCUS_TARGETS
     );
     const round = useRoundSummary(engine, practicingLabel);
-    const [activeTab, setActiveTab] = d2(
-      "practice"
-    );
-    const [statsMode, setStatsMode] = d2("retention");
-    const summary = T2(
-      () => computePracticeSummary({
-        allItemIds: ALL_ITEMS4,
-        selector: learner.selector,
-        itemNoun: "items",
-        recommendation,
-        recommendationText,
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery
-      }),
-      [
-        learner.selector,
-        recommendation,
-        recommendationText,
-        engine.state.masteryText,
-        engine.state.showMastery,
-        engine.state.phase
-      ]
-    );
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS4,
+      selector: learner.selector,
+      engine,
+      itemNoun: "items",
+      recommendation,
+      recommendationText
+    });
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
@@ -7978,67 +8223,48 @@ button {
       (note) => engine.submitAnswer(note),
       [engine.submitAnswer]
     );
-    const statsSel = useStatsSelector(
-      learner.selector,
-      engine.state.phase,
-      statsMode
-    );
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(ModeTopBar, { title: "Interval Math", onBack: navigateHome }),
       /* @__PURE__ */ u3(
-        TabbedIdle,
+        PracticeTab,
         {
-          activeTab,
-          onTabSwitch: setActiveTab,
-          practiceContent: /* @__PURE__ */ u3(
-            PracticeCard,
+          summary: ps.summary,
+          onStart: engine.start,
+          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
+          scope: /* @__PURE__ */ u3(
+            GroupToggles,
             {
-              statusLabel: summary.statusLabel,
-              statusDetail: summary.statusDetail,
-              recommendation: summary.recommendationText || void 0,
-              mastery: summary.showMastery ? summary.masteryText : void 0,
-              onStart: engine.start,
-              onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
-              scope: /* @__PURE__ */ u3(
-                GroupToggles,
-                {
-                  labels: DISTANCE_GROUPS2.map((g2) => g2.label),
-                  active: enabledGroups,
-                  recommended: recommendation.recommended,
-                  onToggle: scopeActions.toggleGroup
-                }
-              )
+              labels: DISTANCE_GROUPS2.map((g2) => g2.label),
+              active: enabledGroups,
+              recommended: recommendation.recommended,
+              onToggle: scopeActions.toggleGroup
             }
           ),
-          progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: statsSel,
-                  colLabels: GRID_COL_LABELS2,
-                  getItemId: getGridItemId2,
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
+          statsContent: /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
-              BaselineInfo,
+              StatsGrid,
               {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
+                selector: ps.statsSel,
+                colLabels: GRID_COL_LABELS2,
+                getItemId: getGridItemId2,
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              StatsLegend,
+              {
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
               }
             )
-          ] })
+          ] }),
+          statsMode: ps.statsMode,
+          onStatsToggle: ps.setStatsMode,
+          baseline: learner.motorBaseline,
+          onCalibrate: () => setCalibrating(true),
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
         }
       ),
       /* @__PURE__ */ u3(
@@ -8082,9 +8308,11 @@ button {
               NoteButtons,
               {
                 onAnswer: handleNoteAnswer,
-                useFlats
+                useFlats,
+                narrowing: noteNarrowing
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8202,10 +8430,12 @@ button {
     );
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -8225,6 +8455,15 @@ button {
         const dir2 = currentQRef.current?.dir;
         if (dir2 === "rev") {
           return noteHandler.handleKey(e3);
+        }
+        if (e3.key === "Enter" && pendingSigDigitRef.current !== null) {
+          e3.preventDefault();
+          clearTimeout(pendingSigTimeoutRef.current);
+          const d3 = pendingSigDigitRef.current;
+          pendingSigDigitRef.current = null;
+          pendingSigTimeoutRef.current = null;
+          if (d3 === "0") ctx.submitAnswer("0");
+          return true;
         }
         if (e3.key >= "0" && e3.key <= "7") {
           e3.preventDefault();
@@ -8267,43 +8506,27 @@ button {
         pendingSigDigitRef.current = null;
       }
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
       calibrating ? "calibration" : engine.state.phase,
       PHASE_FOCUS_TARGETS
     );
-    const [activeTab, setActiveTab] = d2(
-      "practice"
-    );
-    const [statsMode, setStatsMode] = d2("retention");
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS5,
+      selector: learner.selector,
+      engine,
+      itemNoun: "items",
+      recommendation,
+      recommendationText
+    });
     const round = useRoundSummary(engine, practicingLabel);
-    const statsSel = useStatsSelector(
-      learner.selector,
-      engine.state.phase,
-      statsMode
-    );
-    const summary = T2(
-      () => computePracticeSummary({
-        allItemIds: ALL_ITEMS5,
-        selector: learner.selector,
-        itemNoun: "items",
-        recommendation,
-        recommendationText,
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery
-      }),
-      [
-        learner.selector,
-        recommendation,
-        recommendationText,
-        engine.state.masteryText,
-        engine.state.showMastery,
-        engine.state.phase
-      ]
-    );
     const deactivateCleanup = q2(() => {
       noteHandler.reset();
       if (pendingSigTimeoutRef.current) {
@@ -8325,60 +8548,46 @@ button {
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(ModeTopBar, { title: "Key Signatures", onBack: navigateHome }),
       /* @__PURE__ */ u3(
-        TabbedIdle,
+        PracticeTab,
         {
-          activeTab,
-          onTabSwitch: setActiveTab,
-          practiceContent: /* @__PURE__ */ u3(
-            PracticeCard,
+          summary: ps.summary,
+          onStart: engine.start,
+          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
+          scope: /* @__PURE__ */ u3(
+            GroupToggles,
             {
-              statusLabel: summary.statusLabel,
-              statusDetail: summary.statusDetail,
-              recommendation: summary.recommendationText || void 0,
-              mastery: summary.showMastery ? summary.masteryText : void 0,
-              onStart: engine.start,
-              onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
-              scope: /* @__PURE__ */ u3(
-                GroupToggles,
-                {
-                  labels: KEY_GROUPS.map((g2) => g2.label),
-                  active: enabledGroups,
-                  recommended: recommendation.recommended,
-                  onToggle: scopeActions.toggleGroup
-                }
-              )
+              labels: KEY_GROUPS.map((g2) => g2.label),
+              active: enabledGroups,
+              recommended: recommendation.recommended,
+              onToggle: scopeActions.toggleGroup
             }
           ),
-          progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsTable,
-                {
-                  selector: statsSel,
-                  rows: getStatsRows3(),
-                  fwdHeader: "Key\u2192Sig",
-                  revHeader: "Sig\u2192Key",
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
+          statsContent: /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
-              BaselineInfo,
+              StatsTable,
               {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
+                selector: ps.statsSel,
+                rows: getStatsRows3(),
+                fwdHeader: "Key\u2192Sig",
+                revHeader: "Sig\u2192Key",
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              StatsLegend,
+              {
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
               }
             )
-          ] })
+          ] }),
+          statsMode: ps.statsMode,
+          onStatsToggle: ps.setStatsMode,
+          baseline: learner.motorBaseline,
+          onCalibrate: () => setCalibrating(true),
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
         }
       ),
       /* @__PURE__ */ u3(
@@ -8429,9 +8638,11 @@ button {
               NoteButtons,
               {
                 hidden: dir === "fwd",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "rev" ? noteNarrowing : void 0
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: dir === "rev" ? "note" : null }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8546,10 +8757,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -8579,37 +8792,26 @@ button {
       onStart: () => noteHandler.reset(),
       onStop: () => noteHandler.reset()
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
       calibrating ? "calibration" : engine.state.phase,
       PHASE_FOCUS_TARGETS
     );
-    const [activeTab, setActiveTab] = d2(
-      "practice"
-    );
-    const [statsMode, setStatsMode] = d2("retention");
-    const summary = T2(
-      () => computePracticeSummary({
-        allItemIds: ALL_ITEMS6,
-        selector: learner.selector,
-        itemNoun: "items",
-        recommendation,
-        recommendationText,
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery
-      }),
-      [
-        learner.selector,
-        recommendation,
-        recommendationText,
-        engine.state.masteryText,
-        engine.state.showMastery,
-        engine.state.phase
-      ]
-    );
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS6,
+      selector: learner.selector,
+      engine,
+      itemNoun: "items",
+      recommendation,
+      recommendationText
+    });
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
@@ -8625,68 +8827,49 @@ button {
       [engine.submitAnswer]
     );
     const round = useRoundSummary(engine, practicingLabel);
-    const statsSel = useStatsSelector(
-      learner.selector,
-      engine.state.phase,
-      statsMode
-    );
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(ModeTopBar, { title: "Scale Degrees", onBack: navigateHome }),
       /* @__PURE__ */ u3(
-        TabbedIdle,
+        PracticeTab,
         {
-          activeTab,
-          onTabSwitch: setActiveTab,
-          practiceContent: /* @__PURE__ */ u3(
-            PracticeCard,
+          summary: ps.summary,
+          onStart: engine.start,
+          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
+          scope: /* @__PURE__ */ u3(
+            GroupToggles,
             {
-              statusLabel: summary.statusLabel,
-              statusDetail: summary.statusDetail,
-              recommendation: summary.recommendationText || void 0,
-              mastery: summary.showMastery ? summary.masteryText : void 0,
-              onStart: engine.start,
-              onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
-              scope: /* @__PURE__ */ u3(
-                GroupToggles,
-                {
-                  labels: DEGREE_GROUPS.map((g2) => g2.label),
-                  active: enabledGroups,
-                  recommended: recommendation.recommended,
-                  onToggle: scopeActions.toggleGroup
-                }
-              )
+              labels: DEGREE_GROUPS.map((g2) => g2.label),
+              active: enabledGroups,
+              recommended: recommendation.recommended,
+              onToggle: scopeActions.toggleGroup
             }
           ),
-          progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: statsSel,
-                  colLabels: DEGREE_LABELS2,
-                  getItemId: getGridItemId3,
-                  statsMode,
-                  notes: GRID_NOTES,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
+          statsContent: /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
-              BaselineInfo,
+              StatsGrid,
               {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
+                selector: ps.statsSel,
+                colLabels: DEGREE_LABELS2,
+                getItemId: getGridItemId3,
+                statsMode: ps.statsMode,
+                notes: GRID_NOTES,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              StatsLegend,
+              {
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
               }
             )
-          ] })
+          ] }),
+          statsMode: ps.statsMode,
+          onStatsToggle: ps.setStatsMode,
+          baseline: learner.motorBaseline,
+          onCalibrate: () => setCalibrating(true),
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
         }
       ),
       /* @__PURE__ */ u3(
@@ -8730,7 +8913,8 @@ button {
               NoteButtons,
               {
                 hidden: dir === "rev",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "fwd" ? noteNarrowing : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -8740,6 +8924,7 @@ button {
                 onAnswer: handleDegreeAnswer
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: dir === "fwd" ? "note" : null }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -8855,10 +9040,12 @@ button {
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -8888,37 +9075,26 @@ button {
       onStart: () => noteHandler.reset(),
       onStop: () => noteHandler.reset()
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
       calibrating ? "calibration" : engine.state.phase,
       PHASE_FOCUS_TARGETS
     );
-    const [activeTab, setActiveTab] = d2(
-      "practice"
-    );
-    const [statsMode, setStatsMode] = d2("retention");
-    const summary = T2(
-      () => computePracticeSummary({
-        allItemIds: ALL_ITEMS7,
-        selector: learner.selector,
-        itemNoun: "items",
-        recommendation,
-        recommendationText,
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery
-      }),
-      [
-        learner.selector,
-        recommendation,
-        recommendationText,
-        engine.state.masteryText,
-        engine.state.showMastery,
-        engine.state.phase
-      ]
-    );
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS7,
+      selector: learner.selector,
+      engine,
+      itemNoun: "items",
+      recommendation,
+      recommendationText
+    });
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
@@ -8934,68 +9110,49 @@ button {
       [engine.submitAnswer]
     );
     const round = useRoundSummary(engine, practicingLabel);
-    const statsSel = useStatsSelector(
-      learner.selector,
-      engine.state.phase,
-      statsMode
-    );
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(ModeTopBar, { title: "Diatonic Chords", onBack: navigateHome }),
       /* @__PURE__ */ u3(
-        TabbedIdle,
+        PracticeTab,
         {
-          activeTab,
-          onTabSwitch: setActiveTab,
-          practiceContent: /* @__PURE__ */ u3(
-            PracticeCard,
+          summary: ps.summary,
+          onStart: engine.start,
+          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
+          scope: /* @__PURE__ */ u3(
+            GroupToggles,
             {
-              statusLabel: summary.statusLabel,
-              statusDetail: summary.statusDetail,
-              recommendation: summary.recommendationText || void 0,
-              mastery: summary.showMastery ? summary.masteryText : void 0,
-              onStart: engine.start,
-              onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
-              scope: /* @__PURE__ */ u3(
-                GroupToggles,
-                {
-                  labels: CHORD_GROUPS.map((g2) => g2.label),
-                  active: enabledGroups,
-                  recommended: recommendation.recommended,
-                  onToggle: scopeActions.toggleGroup
-                }
-              )
+              labels: CHORD_GROUPS.map((g2) => g2.label),
+              active: enabledGroups,
+              recommended: recommendation.recommended,
+              onToggle: scopeActions.toggleGroup
             }
           ),
-          progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: statsSel,
-                  colLabels: ROMAN_NUMERALS,
-                  getItemId: getGridItemId4,
-                  statsMode,
-                  notes: GRID_NOTES2,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
+          statsContent: /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
-              BaselineInfo,
+              StatsGrid,
               {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
+                selector: ps.statsSel,
+                colLabels: ROMAN_NUMERALS,
+                getItemId: getGridItemId4,
+                statsMode: ps.statsMode,
+                notes: GRID_NOTES2,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              StatsLegend,
+              {
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
               }
             )
-          ] })
+          ] }),
+          statsMode: ps.statsMode,
+          onStatsToggle: ps.setStatsMode,
+          baseline: learner.motorBaseline,
+          onCalibrate: () => setCalibrating(true),
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
         }
       ),
       /* @__PURE__ */ u3(
@@ -9039,7 +9196,8 @@ button {
               NoteButtons,
               {
                 hidden: dir === "rev",
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: dir === "fwd" ? noteNarrowing : void 0
               }
             ),
             /* @__PURE__ */ u3(
@@ -9049,6 +9207,7 @@ button {
                 onAnswer: handleNumeralAnswer
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: dir === "fwd" ? "note" : null }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -9218,12 +9377,14 @@ button {
     const currentItemRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
+    const [pendingNote, setPendingNote] = d2(null);
     const handleSeqInputRef = A2(() => {
     });
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => handleSeqInputRef.current(note),
-        () => true
+        () => true,
+        setPendingNote
       ),
       []
     );
@@ -9264,37 +9425,26 @@ button {
         setSeqState(null);
       }
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
       calibrating ? "calibration" : engine.state.phase,
       PHASE_FOCUS_TARGETS
     );
-    const [activeTab, setActiveTab] = d2(
-      "practice"
-    );
-    const [statsMode, setStatsMode] = d2("retention");
-    const summary = T2(
-      () => computePracticeSummary({
-        allItemIds: ALL_ITEMS8,
-        selector: learner.selector,
-        itemNoun: "items",
-        recommendation,
-        recommendationText,
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery
-      }),
-      [
-        learner.selector,
-        recommendation,
-        recommendationText,
-        engine.state.masteryText,
-        engine.state.showMastery,
-        engine.state.phase
-      ]
-    );
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS8,
+      selector: learner.selector,
+      engine,
+      itemNoun: "items",
+      recommendation,
+      recommendationText
+    });
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
@@ -9305,68 +9455,49 @@ button {
       [handleSequentialInput]
     );
     const round = useRoundSummary(engine, practicingLabel);
-    const statsSel = useStatsSelector(
-      learner.selector,
-      engine.state.phase,
-      statsMode
-    );
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(ModeTopBar, { title: "Chord Spelling", onBack: navigateHome }),
       /* @__PURE__ */ u3(
-        TabbedIdle,
+        PracticeTab,
         {
-          activeTab,
-          onTabSwitch: setActiveTab,
-          practiceContent: /* @__PURE__ */ u3(
-            PracticeCard,
+          summary: ps.summary,
+          onStart: engine.start,
+          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
+          scope: /* @__PURE__ */ u3(
+            GroupToggles,
             {
-              statusLabel: summary.statusLabel,
-              statusDetail: summary.statusDetail,
-              recommendation: summary.recommendationText || void 0,
-              mastery: summary.showMastery ? summary.masteryText : void 0,
-              onStart: engine.start,
-              onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
-              scope: /* @__PURE__ */ u3(
-                GroupToggles,
-                {
-                  labels: SPELLING_GROUPS.map((g2) => g2.label),
-                  active: enabledGroups,
-                  recommended: recommendation.recommended,
-                  onToggle: scopeActions.toggleGroup
-                }
-              )
+              labels: SPELLING_GROUPS.map((g2) => g2.label),
+              active: enabledGroups,
+              recommended: recommendation.recommended,
+              onToggle: scopeActions.toggleGroup
             }
           ),
-          progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: statsSel,
-                  colLabels: GRID_COL_LABELS3,
-                  getItemId: getGridItemId5,
-                  statsMode,
-                  notes: GRID_NOTES3,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                StatsLegend,
-                {
-                  statsMode,
-                  baseline: learner.motorBaseline ?? void 0
-                }
-              )
-            ] }),
+          statsContent: /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
-              BaselineInfo,
+              StatsGrid,
               {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
+                selector: ps.statsSel,
+                colLabels: GRID_COL_LABELS3,
+                getItemId: getGridItemId5,
+                statsMode: ps.statsMode,
+                notes: GRID_NOTES3,
+                baseline: learner.motorBaseline ?? void 0
+              }
+            ),
+            /* @__PURE__ */ u3(
+              StatsLegend,
+              {
+                statsMode: ps.statsMode,
+                baseline: learner.motorBaseline ?? void 0
               }
             )
-          ] })
+          ] }),
+          statsMode: ps.statsMode,
+          onStatsToggle: ps.setStatsMode,
+          baseline: learner.motorBaseline,
+          onCalibrate: () => setCalibrating(true),
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
         }
       ),
       /* @__PURE__ */ u3(
@@ -9410,9 +9541,11 @@ button {
             /* @__PURE__ */ u3(
               NoteButtons,
               {
-                onAnswer: handleNoteAnswer
+                onAnswer: handleNoteAnswer,
+                narrowing: noteNarrowing
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -9737,10 +9870,12 @@ button {
     });
     const noteFilterRef = A2(noteFilter);
     noteFilterRef.current = noteFilter;
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => noteFilterRef.current !== "natural"
+        () => noteFilterRef.current !== "natural",
+        setPendingNote
       ),
       []
     );
@@ -9875,8 +10010,12 @@ button {
         return parts.join(", ");
       }
     }), [scope, noteHandler, fb, instrument]);
-    const engine = useQuizEngine(engineConfig, learner.selector);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
       container,
@@ -9884,37 +10023,21 @@ button {
       PHASE_FOCUS_TARGETS
     );
     const round = useRoundSummary(engine, practicingLabel);
-    const [activeTab, setActiveTab] = d2(
-      "practice"
-    );
-    const [statsMode, setStatsMode] = d2("retention");
-    const summary = T2(
-      () => computePracticeSummary({
-        allItemIds: ALL_ITEMS10,
-        selector: learner.selector,
-        itemNoun: "positions",
-        recommendation,
-        recommendationText,
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery
-      }),
-      [
-        learner.selector,
-        recommendation,
-        recommendationText,
-        engine.state.masteryText,
-        engine.state.showMastery,
-        engine.state.phase,
-        ALL_ITEMS10
-      ]
-    );
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS10,
+      selector: learner.selector,
+      engine,
+      itemNoun: "positions",
+      recommendation,
+      recommendationText
+    });
     y2(() => {
       const wrapper = progressFbRef.current;
       if (!wrapper) return;
       for (const s3 of allStrings) {
         for (let f4 = 0; f4 < instrument.fretCount; f4++) {
           const itemId = s3 + "-" + f4;
-          if (statsMode === "retention") {
+          if (ps.statsMode === "retention") {
             const auto = learner.selector.getAutomaticity(itemId);
             setCircleFill(wrapper, s3, f4, getAutomaticityColor(auto));
           } else {
@@ -9931,7 +10054,7 @@ button {
       }
     }, [
       learner.selector,
-      statsMode,
+      ps.statsMode,
       engine.state.phase,
       allStrings,
       instrument,
@@ -9943,8 +10066,8 @@ button {
       return setupHoverCard(wrapper, instrument, fb, learner.selector);
     }, [instrument, fb, learner.selector]);
     const legendHTML = T2(
-      () => buildStatsLegend(statsMode, learner.motorBaseline ?? void 0),
-      [statsMode, learner.motorBaseline]
+      () => buildStatsLegend(ps.statsMode, learner.motorBaseline ?? void 0),
+      [ps.statsMode, learner.motorBaseline]
     );
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
@@ -9958,64 +10081,50 @@ button {
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(ModeTopBar, { title: instrument.name, onBack: navigateHome }),
       /* @__PURE__ */ u3(
-        TabbedIdle,
+        PracticeTab,
         {
-          activeTab,
-          onTabSwitch: setActiveTab,
-          practiceContent: /* @__PURE__ */ u3(
-            PracticeCard,
-            {
-              statusLabel: summary.statusLabel,
-              statusDetail: summary.statusDetail,
-              recommendation: summary.recommendationText || void 0,
-              mastery: summary.showMastery ? summary.masteryText : void 0,
-              onStart: engine.start,
-              onApplyRecommendation: summary.showRecommendationButton ? applyRecommendation : void 0,
-              scope: /* @__PURE__ */ u3(k, { children: [
-                /* @__PURE__ */ u3(
-                  StringToggles,
-                  {
-                    stringNames: instrument.stringNames,
-                    active: enabledStrings,
-                    recommended: recommendation.recommended,
-                    onToggle: scopeActions.toggleString
-                  }
-                ),
-                /* @__PURE__ */ u3(
-                  NoteFilter,
-                  {
-                    mode: noteFilter,
-                    onChange: (f4) => scopeActions.setNoteFilter(f4)
-                  }
-                )
-              ] })
-            }
-          ),
-          progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: [
-              /* @__PURE__ */ u3(
-                "div",
-                {
-                  ref: progressFbRef,
-                  dangerouslySetInnerHTML: { __html: svgHTML }
-                }
-              ),
-              /* @__PURE__ */ u3(
-                "div",
-                {
-                  dangerouslySetInnerHTML: { __html: legendHTML }
-                }
-              )
-            ] }),
+          summary: ps.summary,
+          onStart: engine.start,
+          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
+          scope: /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
-              BaselineInfo,
+              StringToggles,
               {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
+                stringNames: instrument.stringNames,
+                active: enabledStrings,
+                recommended: recommendation.recommended,
+                onToggle: scopeActions.toggleString
+              }
+            ),
+            /* @__PURE__ */ u3(
+              NoteFilter,
+              {
+                mode: noteFilter,
+                onChange: (f4) => scopeActions.setNoteFilter(f4)
               }
             )
-          ] })
+          ] }),
+          statsContent: /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(
+              "div",
+              {
+                ref: progressFbRef,
+                dangerouslySetInnerHTML: { __html: svgHTML }
+              }
+            ),
+            /* @__PURE__ */ u3(
+              "div",
+              {
+                dangerouslySetInnerHTML: { __html: legendHTML }
+              }
+            )
+          ] }),
+          statsMode: ps.statsMode,
+          onStatsToggle: ps.setStatsMode,
+          baseline: learner.motorBaseline,
+          onCalibrate: () => setCalibrating(true),
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
         }
       ),
       /* @__PURE__ */ u3(
@@ -10066,9 +10175,11 @@ button {
               PianoNoteButtons,
               {
                 onAnswer: handleNoteAnswer,
-                hideAccidentals: noteFilter === "natural"
+                hideAccidentals: noteFilter === "natural",
+                narrowing: noteNarrowing
               }
             ),
+            /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
             /* @__PURE__ */ u3(
               FeedbackDisplay,
               {
@@ -10295,7 +10406,7 @@ button {
         return getPositionsForNote(itemId).length;
       }
     }), [scope]);
-    const engine = useQuizEngine(engineConfig, learner.selector);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
     const [calibrating, setCalibrating] = d2(false);
     usePhaseClass(
@@ -10309,27 +10420,14 @@ button {
       return "natural notes";
     }, [noteFilter]);
     const round = useRoundSummary(engine, practicingLabel);
-    const [activeTab, setActiveTab] = d2(
-      "practice"
-    );
-    const [statsMode, setStatsMode] = d2("retention");
-    const summary = T2(
-      () => computePracticeSummary({
-        allItemIds: ALL_ITEMS9,
-        selector: learner.selector,
-        itemNoun: "notes",
-        recommendation: null,
-        recommendationText: "",
-        masteryText: engine.state.masteryText,
-        showMastery: engine.state.showMastery
-      }),
-      [
-        learner.selector,
-        engine.state.masteryText,
-        engine.state.showMastery,
-        engine.state.phase
-      ]
-    );
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS9,
+      selector: learner.selector,
+      engine,
+      itemNoun: "notes",
+      recommendation: null,
+      recommendationText: ""
+    });
     y2(() => {
       return () => {
         wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
@@ -10343,7 +10441,7 @@ button {
       }
       html += "</tr></thead><tbody><tr>";
       for (let j3 = 0; j3 < NOTES.length; j3++) {
-        if (statsMode === "retention") {
+        if (ps.statsMode === "retention") {
           const auto = learner.selector.getAutomaticity(NOTES[j3].name);
           html += '<td class="stats-cell" style="background:' + getAutomaticityColor(auto) + '"></td>';
         } else {
@@ -10354,50 +10452,41 @@ button {
         }
       }
       html += "</tr></tbody></table>";
-      html += buildStatsLegend(statsMode, learner.motorBaseline ?? void 0);
+      html += buildStatsLegend(ps.statsMode, learner.motorBaseline ?? void 0);
       return html;
-    }, [learner.selector, statsMode, engine.state.phase, learner.motorBaseline]);
+    }, [
+      learner.selector,
+      ps.statsMode,
+      engine.state.phase,
+      learner.motorBaseline
+    ]);
     const promptText = currentDisplayName ? "Tap all " + currentDisplayName : "";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(ModeTopBar, { title: "Speed Tap", onBack: navigateHome }),
       /* @__PURE__ */ u3(
-        TabbedIdle,
+        PracticeTab,
         {
-          activeTab,
-          onTabSwitch: setActiveTab,
-          practiceContent: /* @__PURE__ */ u3(
-            PracticeCard,
+          summary: ps.summary,
+          onStart: engine.start,
+          scope: /* @__PURE__ */ u3(
+            NoteFilter,
             {
-              statusLabel: summary.statusLabel,
-              statusDetail: summary.statusDetail,
-              mastery: summary.showMastery ? summary.masteryText : void 0,
-              onStart: engine.start,
-              scope: /* @__PURE__ */ u3(
-                NoteFilter,
-                {
-                  mode: noteFilter,
-                  onChange: (f4) => scopeActions.setNoteFilter(f4)
-                }
-              )
+              mode: noteFilter,
+              onChange: (f4) => scopeActions.setNoteFilter(f4)
             }
           ),
-          progressContent: /* @__PURE__ */ u3("div", { children: [
-            /* @__PURE__ */ u3("div", { class: "stats-controls", children: /* @__PURE__ */ u3(StatsToggle, { active: statsMode, onToggle: setStatsMode }) }),
-            /* @__PURE__ */ u3(
-              "div",
-              {
-                class: "stats-container",
-                dangerouslySetInnerHTML: { __html: statsHTML }
-              }
-            ),
-            /* @__PURE__ */ u3(
-              BaselineInfo,
-              {
-                baseline: learner.motorBaseline,
-                onRun: () => setCalibrating(true)
-              }
-            )
-          ] })
+          statsContent: /* @__PURE__ */ u3(
+            "div",
+            {
+              dangerouslySetInnerHTML: { __html: statsHTML }
+            }
+          ),
+          statsMode: ps.statsMode,
+          onStatsToggle: ps.setStatsMode,
+          baseline: learner.motorBaseline,
+          onCalibrate: () => setCalibrating(true),
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
         }
       ),
       /* @__PURE__ */ u3(
