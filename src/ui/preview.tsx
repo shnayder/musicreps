@@ -6,6 +6,15 @@ import { render } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { NOTES } from '../music-data.ts';
 import { fretboardSVG } from '../html-helpers.ts';
+import {
+  feedbackCorrect,
+  feedbackWrong,
+  goodRound,
+  roughRound,
+  sessionEarlyRound,
+  timerMidRound,
+  timerWarning,
+} from '../fixtures/index.ts';
 
 import {
   DegreeButtons,
@@ -207,23 +216,23 @@ function PreviewApp() {
       </Section>
       <Section title='Feedback — Correct'>
         <FeedbackDisplay
-          text='Correct!'
-          className='feedback correct'
-          time='0.82s'
+          text={feedbackCorrect.text}
+          className={feedbackCorrect.className}
+          time={feedbackCorrect.time}
         />
       </Section>
       <Section title='Feedback — Incorrect'>
         <FeedbackDisplay
-          text='F — correct answer: E'
-          className='feedback incorrect'
-          hint='C → E is a major third (4 semitones)'
+          text={feedbackWrong.text}
+          className={feedbackWrong.className}
+          hint={feedbackWrong.hint}
         />
       </Section>
-      <Section title='Countdown Bar (75%)'>
-        <CountdownBar pct={75} />
+      <Section title='Countdown Bar (mid-round)'>
+        <CountdownBar pct={timerMidRound.pct} />
       </Section>
-      <Section title='Countdown Bar — Warning (15%)'>
-        <CountdownBar pct={15} warning />
+      <Section title='Countdown Bar — Warning'>
+        <CountdownBar pct={timerWarning.pct} warning />
       </Section>
       <Section title='Countdown Bar — Last Question'>
         <CountdownBar pct={50} lastQuestion />
@@ -243,7 +252,10 @@ function PreviewApp() {
         />
       </Section>
       <Section title='SessionInfo'>
-        <SessionInfo context='Natural notes, A string' count='5 of 12' />
+        <SessionInfo
+          context={sessionEarlyRound.context}
+          count={sessionEarlyRound.count}
+        />
       </Section>
       <Section title='QuizSession (header)'>
         <QuizSession
@@ -261,12 +273,20 @@ function PreviewApp() {
           <FeedbackDisplay text='' className='feedback' />
         </QuizArea>
       </Section>
-      <Section title='RoundComplete'>
+      <Section title='RoundComplete — Good'>
         <RoundComplete
-          context='Round 1 complete'
-          heading='Great job!'
-          correct='8 correct (80%)'
-          median='Median: 425ms'
+          context={goodRound.context}
+          heading={goodRound.heading}
+          correct={goodRound.correct}
+          median={goodRound.median}
+        />
+      </Section>
+      <Section title='RoundComplete — Rough'>
+        <RoundComplete
+          context={roughRound.context}
+          heading={roughRound.heading}
+          correct={roughRound.correct}
+          median={roughRound.median}
         />
       </Section>
       <Section title='PracticeCard (no scope)'>

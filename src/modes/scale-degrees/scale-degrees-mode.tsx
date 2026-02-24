@@ -146,7 +146,7 @@ export function ScaleDegreesMode(
     onStop: () => noteHandler.reset(),
   }), [noteHandler, getEnabledItems, getPracticingLabel]);
 
-  const engine = useQuizEngine(engineConfig, learner.selector);
+  const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
 
   // --- Narrowing (keyboard match highlighting, forward direction only) ---

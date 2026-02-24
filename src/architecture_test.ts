@@ -96,6 +96,7 @@ type Layer =
   | 'foundation'
   | 'engine'
   | 'display'
+  | 'fixtures'
   | 'mode-logic'
   | 'hooks'
   | 'ui'
@@ -146,6 +147,7 @@ function classifyLayer(file: string): Layer {
   if (BUILD_TIME.has(file)) return 'build-time';
   if (APP.has(file)) return 'app';
   if (TOOL.has(file)) return 'tool';
+  if (file.startsWith('src/fixtures/')) return 'fixtures';
   if (file.startsWith('src/hooks/')) return 'hooks';
   if (file.startsWith('src/ui/')) return 'ui';
   if (file.match(/src\/modes\/[^/]+\/logic\.ts$/)) return 'mode-logic';

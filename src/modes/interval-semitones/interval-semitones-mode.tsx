@@ -154,7 +154,7 @@ export function IntervalSemitonesMode(
     getPracticingLabel: () => 'all items',
   }), []);
 
-  const engine = useQuizEngine(engineConfig, learner.selector);
+  const engine = useQuizEngine(engineConfig, learner.selector, container);
 
   // --- Narrowing (keyboard match highlighting, forward direction only) ---
   const numNarrowing = useMemo(

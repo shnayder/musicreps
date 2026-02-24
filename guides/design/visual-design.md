@@ -11,23 +11,22 @@ components and HTML helpers as production — rebuild (`deno task build`) or
 refresh the dev server after edits. Hand-written pages link directly to
 `src/styles.css` so CSS changes are visible on refresh with no rebuild.
 
-| Page                                               | Contents                                       | Source                                                 |
-| -------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------ |
-| [components-preview.html](components-preview.html) | Preact UI components with mock data            | **Build-generated** from `src/ui/preview.tsx`          |
-| [moments.html](moments.html)                       | Assembled screen layouts at 402px (all phases) | **Build-generated** by `buildMoments()` in `main.ts`  |
-| [colors.html](colors.html)                         | Color swatches, heatmap scale, semantic tokens | Hand-written                                           |
-| [components.html](components.html)                 | Design tokens, layout patterns, variant A/B    | Hand-written                                           |
+| Page                                               | Contents                                       | Source                                        |
+| -------------------------------------------------- | ---------------------------------------------- | --------------------------------------------- |
+| [components-preview.html](components-preview.html) | Preact UI components with mock data            | **Build-generated** from `src/ui/preview.tsx` |
+| [colors.html](colors.html)                         | Color swatches, heatmap scale, semantic tokens | Hand-written                                  |
+| [components.html](components.html)                 | Design tokens, layout patterns, variant A/B    | Hand-written                                  |
 
 **Component preview** (`components-preview.html`) is the primary tool for
 iterating on component design. It renders real Preact components (`NoteButtons`,
-`PracticeCard`, `StatsGrid`, `RoundComplete`, etc.) with fixture data, so
-changes to `src/ui/*.tsx` are immediately visible after a rebuild. Available at
-`localhost:8001/preview` during dev.
+`PracticeCard`, `StatsGrid`, `RoundComplete`, etc.) with shared fixture data
+from `src/fixtures/`, so changes to `src/ui/*.tsx` are immediately visible
+after a rebuild. Available at `localhost:8001/preview` during dev.
 
-**Moments** (`moments.html`) shows assembled screen states (quiz active,
-feedback, round complete, idle tabs) using the same `modeScreen()` and button
-helpers as production. To add or change a moment, edit `buildMoments()` in
-`main.ts`.
+**Screenshots** replace the old static moments page. The Playwright script
+(`scripts/take-screenshots.ts`) captures deterministic screenshots by
+dispatching fixture events to the running app. Push to a `/ui/` branch to
+generate screenshots in CI.
 
 **Components** (`components.html`) covers design system primitives that aren't
 Preact components: CSS custom property swatches, spacing/typography scales,

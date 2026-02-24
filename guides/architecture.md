@@ -120,24 +120,17 @@ Key exports:
    `FOUNDATION`, `ENGINE`, `DISPLAY`, `APP`, `TOOL`, or `BUILD_TIME`) — the test
    will fail if the file isn't classified
 
-### Moments Page Generation
+### Screenshot Fixtures
 
-`main.ts` also generates `guides/design/moments.html` — a design reference page
-showing assembled screen layouts at mobile width. It reuses the same HTML
-helpers (`modeScreen()`, `fretboardSVG()`, `pianoNoteButtons()`, etc.) as the
-production app, so the moments never drift from reality.
+`src/fixtures/` contains shared state fixtures for deterministic screenshots.
+Leaf fixtures (feedback, timer, session, round-complete) are plain data objects;
+page-level fixtures compose them into `EngineState` + timer overrides using the
+pure functions from `quiz-engine-state.ts`.
 
-Key functions in `main.ts`:
-
-- **`prepareMoment(html, overrides)`** — string replacement engine. Takes
-  generated mode-screen HTML and injects phase classes, quiz content, feedback,
-  toggle states, fretboard highlights, etc.
-- **`momentFrame(label, html, annotation)`** — wraps content in the moment
-  frame/label/annotation chrome.
-- **`buildMoments()`** — generates all moments and writes the file. Each moment
-  creates a fresh mode screen (via the HTML helpers) then applies overrides.
-
-The existing copy logic handles `docs/design/moments.html` automatically.
+The `useQuizEngine` hook accepts an optional `fixtureTarget` element. When
+`?fixtures` is in the URL, it listens for `__fixture__` custom events on the
+container and applies the state override. `scripts/take-screenshots.ts` uses
+this to capture screenshots by dispatching fixtures — no clicking needed.
 
 ## Key Patterns
 

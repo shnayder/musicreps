@@ -1,28 +1,43 @@
-// Playwright screenshot script: captures idle + quiz screenshots for all 10 modes.
-// Usage: npx tsx scripts/take-screenshots.ts
+// Fixture-based Playwright screenshot script.
+// Navigates to each mode with ?fixtures, dispatches __fixture__ events,
+// and captures deterministic screenshots.
+//
+// Usage:
+//   npx tsx scripts/take-screenshots.ts             # 3x PNG (default)
+//   npx tsx scripts/take-screenshots.ts --ci         # 1x JPEG (CI mode)
+//   npx tsx scripts/take-screenshots.ts --dir ./out  # custom output dir
 
 import { chromium } from 'playwright';
 import { ChildProcess, spawn } from 'child_process';
 import { mkdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { defaultItems } from '../src/fixtures/items.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = 8001;
-const URL = `http://localhost:${PORT}`;
-
-// Accept --dir <path> to override the default output directory.
-const dirIdx = process.argv.indexOf('--dir');
-const OUT_DIR = dirIdx >= 0 && process.argv[dirIdx + 1]
-  ? path.resolve(process.argv[dirIdx + 1])
-  : path.resolve(__dirname, '..', 'screenshots');
+const BASE_URL = `http://localhost:${PORT}`;
 const VIEWPORT = { width: 402, height: 873 };
-const DEVICE_SCALE_FACTOR = 3;
 
-// All mode IDs in registration order (from app.js)
+// Parse CLI flags
+const args = process.argv.slice(2);
+const ciMode = args.includes('--ci');
+const dirIdx = args.indexOf('--dir');
+const OUT_DIR = dirIdx >= 0 && args[dirIdx + 1]
+  ? path.resolve(args[dirIdx + 1])
+  : path.resolve(__dirname, '..', 'screenshots');
+const DEVICE_SCALE_FACTOR = ciMode ? 1 : 3;
+const IMG_EXT = ciMode ? 'jpg' : 'png';
+const IMG_TYPE = ciMode ? 'jpeg' as const : 'png' as const;
+
+// ---------------------------------------------------------------------------
+// Mode IDs
+// ---------------------------------------------------------------------------
+
 const MODE_IDS = [
   'fretboard',
+  'ukulele',
   'speedTap',
   'noteSemitones',
   'intervalSemitones',
@@ -34,13 +49,235 @@ const MODE_IDS = [
   'chordSpelling',
 ] as const;
 
-// Modes that use QuizEngine and need motorBaseline seeded (all except speedTap)
+// Modes that use QuizEngine (all except speedTap)
 const ENGINE_MODES = MODE_IDS.filter((id) => id !== 'speedTap');
+
+// ---------------------------------------------------------------------------
+// Fixture builders (inline — mirror src/fixtures/quiz-page.ts logic)
+// These build the FixtureDetail objects that get dispatched as events.
+// ---------------------------------------------------------------------------
+
+type FixtureDetail = {
+  engineState?: Record<string, unknown>;
+  timerPct?: number;
+  timerText?: string;
+  timerWarning?: boolean;
+  timerLastQuestion?: boolean;
+  presentItemId?: string;
+};
+
+function quizActiveFixture(itemId: string): FixtureDetail {
+  return {
+    engineState: {
+      phase: 'active',
+      currentItemId: itemId,
+      answered: false,
+      questionStartTime: Date.now(),
+      questionCount: 7,
+      quizStartTime: Date.now() - 21000,
+      quizActive: true,
+      answersEnabled: true,
+      roundNumber: 1,
+      roundAnswered: 6,
+      roundCorrect: 4,
+      roundTimerExpired: false,
+      roundResponseTimes: [],
+      roundDurationMs: 0,
+      masteredCount: 5,
+      totalEnabledCount: 18,
+      feedbackText: '',
+      feedbackClass: 'feedback',
+      feedbackCorrect: null,
+      feedbackDisplayAnswer: null,
+      timeDisplayText: '',
+      hintText: '',
+      masteryText: '',
+      showMastery: false,
+      calibrationBaseline: null,
+    },
+    timerPct: 65,
+    timerText: '0:39',
+    timerWarning: false,
+    timerLastQuestion: false,
+    presentItemId: itemId,
+  };
+}
+
+function quizCorrectFixture(itemId: string): FixtureDetail {
+  return {
+    engineState: {
+      phase: 'active',
+      currentItemId: itemId,
+      answered: true,
+      questionStartTime: Date.now() - 820,
+      questionCount: 14,
+      quizStartTime: Date.now() - 32000,
+      quizActive: true,
+      answersEnabled: false,
+      roundNumber: 1,
+      roundAnswered: 13,
+      roundCorrect: 11,
+      roundTimerExpired: false,
+      roundResponseTimes: [],
+      roundDurationMs: 0,
+      masteredCount: 8,
+      totalEnabledCount: 18,
+      feedbackText: 'Correct!',
+      feedbackClass: 'feedback correct',
+      feedbackCorrect: true,
+      feedbackDisplayAnswer: 'D#',
+      timeDisplayText: '0.82s',
+      hintText: 'Tap anywhere or press Space for next',
+      masteryText: '',
+      showMastery: false,
+      calibrationBaseline: null,
+    },
+    timerPct: 55,
+    timerText: '0:28',
+    timerWarning: false,
+    timerLastQuestion: false,
+    presentItemId: itemId,
+  };
+}
+
+function quizWrongFixture(itemId: string): FixtureDetail {
+  return {
+    engineState: {
+      phase: 'active',
+      currentItemId: itemId,
+      answered: true,
+      questionStartTime: Date.now() - 1340,
+      questionCount: 22,
+      quizStartTime: Date.now() - 42000,
+      quizActive: true,
+      answersEnabled: false,
+      roundNumber: 1,
+      roundAnswered: 21,
+      roundCorrect: 14,
+      roundTimerExpired: false,
+      roundResponseTimes: [],
+      roundDurationMs: 0,
+      masteredCount: 10,
+      totalEnabledCount: 20,
+      feedbackText: 'Incorrect \u2014 D#',
+      feedbackClass: 'feedback incorrect',
+      feedbackCorrect: false,
+      feedbackDisplayAnswer: 'D#',
+      timeDisplayText: '',
+      hintText: 'Tap anywhere or press Space for next',
+      masteryText: '',
+      showMastery: false,
+      calibrationBaseline: null,
+    },
+    timerPct: 38,
+    timerText: '0:18',
+    timerWarning: false,
+    timerLastQuestion: false,
+    presentItemId: itemId,
+  };
+}
+
+function roundCompleteFixture(): FixtureDetail {
+  return {
+    engineState: {
+      phase: 'round-complete',
+      currentItemId: null,
+      answered: false,
+      questionStartTime: null,
+      questionCount: 18,
+      quizStartTime: Date.now() - 63000,
+      quizActive: true,
+      answersEnabled: false,
+      roundNumber: 1,
+      roundAnswered: 18,
+      roundCorrect: 16,
+      roundTimerExpired: true,
+      roundResponseTimes: Array(18).fill(900),
+      roundDurationMs: 63000,
+      masteredCount: 12,
+      totalEnabledCount: 18,
+      feedbackText: '',
+      feedbackClass: 'feedback',
+      feedbackCorrect: null,
+      feedbackDisplayAnswer: null,
+      timeDisplayText: '',
+      hintText: '',
+      masteryText: '',
+      showMastery: false,
+      calibrationBaseline: null,
+    },
+    timerPct: 0,
+    timerText: '0:00',
+    timerWarning: false,
+    timerLastQuestion: false,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Screenshot manifest
+// ---------------------------------------------------------------------------
+
+type ScreenshotEntry = {
+  name: string;
+  modeId: string;
+  fixture?: FixtureDetail;
+};
+
+function buildManifest(): ScreenshotEntry[] {
+  const entries: ScreenshotEntry[] = [];
+
+  // All modes: idle + quiz
+  for (const modeId of MODE_IDS) {
+    entries.push({ name: `${modeId}-idle`, modeId });
+    if (modeId !== 'speedTap') {
+      entries.push({
+        name: `${modeId}-quiz`,
+        modeId,
+        fixture: quizActiveFixture(defaultItems[modeId]),
+      });
+    }
+  }
+
+  // Design moments: correct, wrong, round-complete (semitoneMath)
+  entries.push({
+    name: 'design-correct-feedback',
+    modeId: 'semitoneMath',
+    fixture: quizCorrectFixture(defaultItems.semitoneMath),
+  });
+  entries.push({
+    name: 'design-wrong-feedback',
+    modeId: 'semitoneMath',
+    fixture: quizWrongFixture(defaultItems.semitoneMath),
+  });
+  entries.push({
+    name: 'design-round-complete',
+    modeId: 'semitoneMath',
+    fixture: roundCompleteFixture(),
+  });
+
+  // Fretboard design moments: correct + wrong
+  entries.push({
+    name: 'design-fretboard-correct',
+    modeId: 'fretboard',
+    fixture: quizCorrectFixture(defaultItems.fretboard),
+  });
+  entries.push({
+    name: 'design-fretboard-wrong',
+    modeId: 'fretboard',
+    fixture: quizWrongFixture(defaultItems.fretboard),
+  });
+
+  return entries;
+}
+
+// ---------------------------------------------------------------------------
+// Dev server
+// ---------------------------------------------------------------------------
 
 function startServer(): ChildProcess {
   const proc = spawn(
     'deno',
-    ['run', '--allow-net', '--allow-read', 'main.ts'],
+    ['run', '--allow-net', '--allow-read', '--allow-run', 'main.ts'],
     {
       cwd: path.resolve(__dirname, '..'),
       stdio: 'pipe',
@@ -48,7 +285,6 @@ function startServer(): ChildProcess {
   );
   proc.stderr?.on('data', (d: Buffer) => {
     const msg = d.toString();
-    // Only show errors, not routine "Listening on" messages
     if (!msg.includes('Listening on')) process.stderr.write(msg);
   });
   return proc;
@@ -58,7 +294,7 @@ async function waitForServer(timeoutMs = 10_000): Promise<void> {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const res = await fetch(URL);
+      const res = await fetch(`${BASE_URL}`);
       if (res.ok) return;
     } catch { /* server not ready yet */ }
     await new Promise((r) => setTimeout(r, 200));
@@ -66,10 +302,13 @@ async function waitForServer(timeoutMs = 10_000): Promise<void> {
   throw new Error(`Server did not start within ${timeoutMs}ms`);
 }
 
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
 async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
 
-  // Start dev server
   console.log('Starting dev server...');
   const server = startServer();
   try {
@@ -83,217 +322,158 @@ async function main() {
     });
     const page = await context.newPage();
 
-    // Load page once to initialize localStorage
-    await page.goto(URL);
+    // Load page with ?fixtures to enable fixture injection
+    await page.goto(`${BASE_URL}/?fixtures`);
     await page.waitForLoadState('networkidle');
 
-    // Seed motorBaseline for all engine-based modes to skip calibration
+    // Seed motorBaseline for all engine modes to skip calibration
     for (const ns of ENGINE_MODES) {
       await page.evaluate(
         (key) => localStorage.setItem(key, '500'),
         `motorBaseline_${ns}`,
       );
     }
-    // Speed tap doesn't need motorBaseline but does need its own init handled
 
     // Reload so app picks up seeded baselines
     await page.reload();
     await page.waitForLoadState('networkidle');
 
+    // Build manifest (apply overrides if present)
+    let manifest = buildManifest();
+    try {
+      const overridesPath = path.resolve(__dirname, 'screenshot-overrides.ts');
+      const overrides = await import(overridesPath);
+      if (overrides.add) manifest = [...manifest, ...overrides.add];
+      if (overrides.remove) {
+        const removeSet = new Set(overrides.remove);
+        manifest = manifest.filter((e) => !removeSet.has(e.name));
+      }
+    } catch {
+      // No overrides file — use defaults
+    }
+
     // Helper: switch to a mode via home screen
     async function switchToMode(modeId: string) {
-      // Go home first (click back button if in a mode)
       const backBtn = await page.$('.mode-screen.mode-active .mode-back-btn');
       if (backBtn) {
         await backBtn.click();
         await page.waitForTimeout(200);
       }
       await page.click(`[data-mode="${modeId}"]`);
-      await page.waitForTimeout(300); // settle animations
-    }
-
-    // Helper: capture a screenshot
-    async function capture(name: string) {
-      const filePath = path.join(OUT_DIR, `${name}.png`);
-      await page.screenshot({ path: filePath });
-      console.log(`  ${name}.png`);
-    }
-
-    // --- Capture each mode ---
-    for (const modeId of MODE_IDS) {
-      console.log(`Mode: ${modeId}`);
-      await switchToMode(modeId);
-
-      // Idle screenshot
-      await capture(`${modeId}-idle`);
-
-      // Start quiz
-      const modeContainer = `#mode-${modeId}`;
-      await page.click(`${modeContainer} .start-btn`);
-
-      // Wait for quiz to become active
-      await page.waitForSelector(`${modeContainer} .quiz-area.active`, {
-        timeout: 5000,
-      });
-      await page.waitForTimeout(500); // let first question render
-
-      // Quiz screenshot
-      await capture(`${modeId}-quiz`);
-
-      // Stop quiz — press Escape
-      await page.keyboard.press('Escape');
-      await page.waitForSelector(`${modeContainer} .quiz-area.active`, {
-        state: 'hidden',
-        timeout: 3000,
-      }).catch(() => {});
-      await page.waitForTimeout(200);
-    }
-
-    // --- Design moment captures (correct, wrong, round-complete) ---
-    let designCaptures = 0;
-    // Use semitoneMath as the representative mode for feedback states
-    const feedbackMode = 'semitoneMath';
-    const feedbackContainer = `#mode-${feedbackMode}`;
-    console.log('Design moments: feedback states');
-    await switchToMode(feedbackMode);
-    await page.click(`${feedbackContainer} .start-btn`);
-    await page.waitForSelector(`${feedbackContainer} .quiz-area.active`, {
-      timeout: 5000,
-    });
-    await page.waitForTimeout(500);
-
-    // Correct feedback: try each answer button until we get "correct" feedback
-    const noteButtons = await page.$$(`${feedbackContainer} .answer-btn`);
-    for (const btn of noteButtons) {
-      const isDisabled = await btn.getAttribute('disabled');
-      if (isDisabled !== null) continue;
-      await btn.click();
-      await page.waitForTimeout(200);
-      const feedback = await page.$(`${feedbackContainer} .feedback .correct`);
-      if (feedback) break;
-      // If wrong, wait for next question and try again
-      await page.keyboard.press('Space');
       await page.waitForTimeout(300);
     }
-    // If we got correct feedback, capture it
-    const gotCorrect = await page.$(`${feedbackContainer} .feedback .correct`);
-    if (gotCorrect) {
-      await capture('design-correct-feedback');
-      designCaptures++;
+
+    // Helper: capture screenshot
+    async function capture(name: string) {
+      const filePath = path.join(OUT_DIR, `${name}.${IMG_EXT}`);
+      await page.screenshot({
+        path: filePath,
+        type: IMG_TYPE,
+        ...(ciMode ? { quality: 80 } : {}),
+      });
+      console.log(`  ${name}.${IMG_EXT}`);
     }
 
-    // Wrong feedback: submit an intentionally wrong answer
-    await page.keyboard.press('Space');
-    await page.waitForTimeout(300);
-    // Get the correct answer text so we can avoid it
-    const wrongCapture = await page.evaluate((container: string) => {
-      const buttons = document.querySelectorAll(
-        `${container} .answer-btn:not([disabled])`,
+    // Helper: dispatch fixture and wait for application
+    async function applyFixture(modeId: string, fixture: FixtureDetail) {
+      const container = `#mode-${modeId}`;
+
+      // Clear previous fixture-applied marker
+      await page.evaluate(
+        (sel) => {
+          const el = document.querySelector(sel);
+          if (el) el.removeAttribute('data-fixture-applied');
+        },
+        container,
       );
-      // Click the first available button — likely wrong for most questions
-      if (buttons.length > 0) {
-        (buttons[0] as HTMLElement).click();
-        return true;
-      }
-      return false;
-    }, feedbackContainer);
-    if (wrongCapture) {
-      await page.waitForTimeout(200);
-      // Check if it was actually wrong; if correct, try next question
-      const wrongFeedback = await page.$(
-        `${feedbackContainer} .feedback .incorrect`,
-      );
-      if (wrongFeedback) {
-        await capture('design-wrong-feedback');
-        designCaptures++;
-      } else {
-        // Got correct by accident, try one more time
-        await page.keyboard.press('Space');
-        await page.waitForTimeout(300);
-        await page.evaluate((container: string) => {
-          const buttons = document.querySelectorAll(
-            `${container} .answer-btn:not([disabled])`,
+
+      // Dispatch __fixture__ custom event
+      await page.evaluate(
+        ({ sel, detail }) => {
+          const el = document.querySelector(sel);
+          if (!el) throw new Error(`Container not found: ${sel}`);
+          el.dispatchEvent(
+            new CustomEvent('__fixture__', { detail, bubbles: false }),
           );
-          if (buttons.length > 0) (buttons[0] as HTMLElement).click();
-        }, feedbackContainer);
-        await page.waitForTimeout(200);
-        const retryWrong = await page.$(
-          `${feedbackContainer} .feedback .incorrect`,
-        );
-        if (retryWrong) {
-          await capture('design-wrong-feedback');
-          designCaptures++;
-        } else {
-          console.log('  (wrong-feedback not captured — got correct twice)');
+        },
+        { sel: container, detail: fixture },
+      );
+
+      // Wait for fixture to be applied (Preact re-render + onPresent)
+      await page.waitForSelector(`${container}[data-fixture-applied="true"]`, {
+        timeout: 5000,
+      });
+
+      // Small delay to let CSS transitions settle
+      await page.waitForTimeout(150);
+    }
+
+    // --- Capture screenshots ---
+    let currentMode = '';
+    for (const entry of manifest) {
+      // Switch mode if needed
+      if (entry.modeId !== currentMode) {
+        console.log(`Mode: ${entry.modeId}`);
+        await switchToMode(entry.modeId);
+        currentMode = entry.modeId;
+      }
+
+      // Apply fixture if present
+      if (entry.fixture) {
+        await applyFixture(entry.modeId, entry.fixture);
+      }
+
+      await capture(entry.name);
+
+      // If we applied a fixture, reset to idle for next capture
+      if (entry.fixture) {
+        // Navigate away and back to reset state
+        const nextEntry = manifest[manifest.indexOf(entry) + 1];
+        if (
+          nextEntry && nextEntry.modeId === entry.modeId && !nextEntry.fixture
+        ) {
+          // Next entry is an idle capture of the same mode — just reset
+          await page.evaluate(
+            ({ sel }) => {
+              const el = document.querySelector(sel);
+              if (!el) return;
+              el.removeAttribute('data-fixture-applied');
+              el.dispatchEvent(
+                new CustomEvent('__fixture__', {
+                  detail: {
+                    engineState: {
+                      phase: 'idle',
+                      currentItemId: null,
+                      answered: false,
+                      quizActive: false,
+                      answersEnabled: false,
+                      feedbackText: '',
+                      feedbackClass: 'feedback',
+                      feedbackCorrect: null,
+                      feedbackDisplayAnswer: null,
+                      hintText: '',
+                      timeDisplayText: '',
+                      masteryText: '',
+                      showMastery: false,
+                    },
+                    timerPct: 100,
+                    timerText: '',
+                    timerWarning: false,
+                    timerLastQuestion: false,
+                  },
+                  bubbles: false,
+                }),
+              );
+            },
+            { sel: `#mode-${entry.modeId}` },
+          );
+          await page.waitForTimeout(200);
         }
       }
     }
 
-    // Stop current quiz
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
-
-    // Round-complete: shorten timer to trigger round end quickly
-    console.log('Design moments: round-complete');
-    await switchToMode(feedbackMode);
-    await page.click(`${feedbackContainer} .start-btn`);
-    await page.waitForSelector(`${feedbackContainer} .quiz-area.active`, {
-      timeout: 5000,
-    });
-    await page.waitForTimeout(300);
-
-    // Answer a few questions to accumulate stats before the round ends
-    for (let i = 0; i < 5; i++) {
-      const keys = ['c', 'd', 'e', 'f', 'g', 'a', 'b'];
-      await page.keyboard.press(keys[i % keys.length]);
-      await page.waitForTimeout(100);
-      await page.keyboard.press('Space');
-      await page.waitForTimeout(100);
-    }
-    // Fast-forward perceived time by 70s so the engine thinks the round expired
-    await page.evaluate(() => {
-      const realNow = Date.now;
-      const realPerf = performance.now;
-      const offset = 70_000;
-      Date.now = () => realNow.call(Date) + offset;
-      performance.now = () => realPerf.call(performance) + offset;
-    });
-    // Trigger a timer check by answering one more question
-    await page.keyboard.press('c');
-    await page.waitForTimeout(300);
-    const roundComplete = await page.waitForSelector(
-      `${feedbackContainer} .round-complete`,
-      { state: 'visible', timeout: 5_000 },
-    ).catch(() => null);
-    if (roundComplete) {
-      await page.waitForTimeout(300);
-      await capture('design-round-complete');
-      designCaptures++;
-    } else {
-      console.log('  (round-complete not captured — timer did not expire)');
-    }
-
-    // --- Menu screenshot ---
-    // Go home first
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
-    const backBtn2 = await page.$('.mode-screen.mode-active .mode-back-btn');
-    if (backBtn2) {
-      await backBtn2.click();
-      await page.waitForTimeout(200);
-    }
-    console.log('Menu');
-    await page.click('.hamburger');
-    await page.waitForSelector('.nav-drawer.open');
-    await page.waitForTimeout(300);
-    await capture('menu');
-
     await browser.close();
-    console.log(
-      `\nDone! ${
-        MODE_IDS.length * 2 + 1 + designCaptures
-      } screenshots in ${OUT_DIR}`,
-    );
+    console.log(`\nDone! ${manifest.length} screenshots in ${OUT_DIR}`);
   } finally {
     server.kill();
   }
