@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress &amp; Recall — Prototype</title>
+    <link rel="stylesheet" href="../../src/styles.css">
+    <style>
+      body {
+        max-width: 760px;
+        padding: 2rem 1rem;
+        min-height: auto;
+        color: var(--color-text);
+        line-height: 1.5;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+      .subtitle {
+        color: var(--color-text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin: 2.5rem 0 0.5rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px solid var(--color-border-lighter);
+      }
+      h3 { font-size: 0.95rem; margin: 1.5rem 0 0.5rem; }
+      p, .note {
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+        margin: 0 0 1rem;
+      }
+      .note { font-style: italic; }
+
+      /* --- Color matrix --- */
+      .color-matrix {
+        display: grid;
+        gap: 2px;
+        margin: 1rem 0;
+      }
+      .color-matrix.full {
+        grid-template-columns: 80px repeat(4, 1fr);
+      }
+      .matrix-header {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-align: center;
+        padding: 0.3rem 0.2rem;
+        color: var(--color-text-muted);
+      }
+      .matrix-row-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        padding-right: 0.5rem;
+        color: var(--color-text);
+      }
+      .matrix-cell {
+        height: 36px;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+      }
+      .matrix-cell.none {
+        border: 1px dashed var(--color-border-light);
+      }
+
+      /* --- Legend prototype --- */
+      .legend-proto {
+        display: flex;
+        align-items: stretch;
+        gap: 1.5rem;
+        margin: 1rem 0;
+        padding: 0.75rem 1rem;
+        background: var(--color-surface);
+        border-radius: 6px;
+        border: 1px solid var(--color-border-lighter);
+      }
+      .legend-gradient {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .legend-gradient-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .legend-gradient-bar {
+        display: flex;
+        gap: 1px;
+        flex-shrink: 0;
+      }
+      .legend-gradient-bar .swatch {
+        width: 24px;
+        height: 14px;
+        border-radius: 2px;
+      }
+      .legend-gradient-label {
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+      }
+      .legend-axis-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.65rem;
+        color: var(--color-text-light);
+        margin-top: 0.25rem;
+        padding: 0 0;
+      }
+      .legend-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      .legend-section-title {
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-text-light);
+        margin-bottom: 0.15rem;
+      }
+      .legend-item-row {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .legend-swatch-sm {
+        width: 14px;
+        height: 14px;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+      .legend-swatch-sm.none-swatch {
+        border: 1px dashed var(--color-border);
+      }
+      .legend-label {
+        font-size: 0.72rem;
+        color: var(--color-text-muted);
+      }
+
+      /* --- Scenario grids --- */
+      .scenario {
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: var(--color-surface);
+        border-radius: 8px;
+        border: 1px solid var(--color-border-lighter);
+      }
+      .scenario-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 0 0 0.15rem;
+      }
+      .scenario-desc {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        margin: 0 0 0.75rem;
+      }
+      .scenario-grid {
+        display: grid;
+        gap: 2px;
+        margin: 0.5rem 0;
+      }
+      .scenario-grid.fretboard {
+        grid-template-columns: 28px repeat(13, 1fr);
+      }
+      .scenario-grid.lookup {
+        grid-template-columns: 40px repeat(12, 1fr);
+      }
+      .sg-header {
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-align: center;
+        padding: 0.15rem 0;
+        color: var(--color-text-light);
+      }
+      .sg-row-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 0.3rem;
+        color: var(--color-text-muted);
+      }
+      .sg-cell {
+        height: 22px;
+        border-radius: 2px;
+        font-size: 0;
+      }
+      .sg-cell.none {
+        background: hsl(30, 4%, 85%);
+      }
+
+      /* --- Comparison: old vs new --- */
+      .comparison {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin: 1rem 0;
+      }
+      .comparison-panel {
+        padding: 0.75rem;
+        border-radius: 6px;
+        border: 1px solid var(--color-border-lighter);
+      }
+      .comparison-panel h4 {
+        font-size: 0.8rem;
+        margin: 0 0 0.5rem;
+        color: var(--color-text-muted);
+      }
+      .mini-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 2px;
+      }
+      .mini-cell {
+        height: 18px;
+        border-radius: 2px;
+      }
+
+      /* --- Fade demonstration --- */
+      .fade-demo {
+        display: flex;
+        gap: 3px;
+        margin: 0.5rem 0;
+        align-items: flex-end;
+      }
+      .fade-strip {
+        flex: 1;
+        height: 28px;
+        border-radius: 3px;
+        position: relative;
+      }
+      .fade-demo-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.65rem;
+        color: var(--color-text-light);
+        margin-top: 0.15rem;
+      }
+      .fade-demo-ticks {
+        display: flex;
+        gap: 3px;
+        margin-top: 0.1rem;
+      }
+      .fade-demo-ticks span {
+        flex: 1;
+        text-align: center;
+        font-size: 0.55rem;
+        color: var(--color-text-light);
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid var(--color-border-lighter);
+        margin: 2rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Progress & Recall Display</h1>
+    <p class="subtitle">
+      Speed &times; freshness — continuous saturation fade prototype
+    </p>
+
+    <!-- ============================================================ -->
+    <h2>1. The encoding</h2>
+    <p>
+      <strong>Hue</strong> encodes speed (gold&thinsp;=&thinsp;slow &rarr;
+      green&thinsp;=&thinsp;fast). <strong>Saturation</strong> encodes freshness
+      (vivid&thinsp;=&thinsp;just practiced &rarr; muted&thinsp;=&thinsp;stale).
+      Even stale items keep enough color to read the speed level.
+      Unseen items are neutral grey with a dashed border.
+    </p>
+
+    <div class="color-matrix full" id="fullMatrix"></div>
+    <p class="note">
+      Saturation fades continuously — "Fresh / Aging / Stale" are reference
+      points, not buckets.
+    </p>
+
+    <!-- ============================================================ -->
+    <h2>2. Continuous fade</h2>
+    <p>
+      Each speed level fades smoothly from vivid to muted. The strips below show
+      20 steps of saturation decay for each hue, stopping at a floor that
+      preserves readable color.
+    </p>
+    <div id="fadeDemo"></div>
+
+    <!-- ============================================================ -->
+    <h2>3. Legend</h2>
+    <p>
+      The legend replaces the old retention/speed toggle. Two small gradient
+      bars + a "no data" swatch.
+    </p>
+    <div id="legendProto"></div>
+
+    <!-- ============================================================ -->
+    <h2>4. Scenarios</h2>
+    <p>
+      Simulated heatmap grids showing what a learner's progress looks like at
+      different stages. Each cell's color is computed from a plausible
+      speed&thinsp;&times;&thinsp;freshness pair.
+    </p>
+
+    <div id="scenarios"></div>
+
+    <!-- ============================================================ -->
+    <h2>5. Old vs. new</h2>
+    <p>
+      Side-by-side comparison on the same underlying data (Scenario C —
+      recently mastered). The old 5-bucket retention view can't distinguish
+      "mastered and fresh" from "mastered and stale."
+    </p>
+    <div id="comparison"></div>
+
+    <hr>
+    <p class="note">
+      Prototype — <code>guides/design/progress-recall-prototype.html</code>.
+      Colors computed in JS from the same HSL values as production.
+    </p>
+
+    <script>
+      // ----------------------------------------------------------------
+      // Color computation
+      // ----------------------------------------------------------------
+
+      // The 5 speed levels from the existing heatmap scale (hue, sat%, light%)
+      const SPEED_LEVELS = [
+        { label: 'Needs work', h: 44, s: 65, l: 58 },  // heatmap-1
+        { label: 'Fading',     h: 54, s: 45, l: 52 },  // heatmap-2
+        { label: 'Getting there', h: 68, s: 30, l: 46 },// heatmap-3
+        { label: 'Solid',      h: 90, s: 38, l: 38 },  // heatmap-4
+        { label: 'Automatic',  h: 122, s: 46, l: 33 }, // heatmap-5
+      ];
+
+      const NONE_COLOR = 'hsl(30, 4%, 85%)';
+
+      // Freshness floor: even maximally stale items retain this fraction of
+      // their original color so you can still read the speed level.
+      const FRESHNESS_FLOOR = 0.25;
+
+      // Freshness columns for the matrix
+      const FRESHNESS_COLS = [
+        { label: 'Fresh', f: 1.0 },
+        { label: 'Recent', f: 0.7 },
+        { label: 'Aging', f: 0.4 },
+        { label: 'Stale', f: 0.0 },
+      ];
+
+      function hsl(h, s, l) {
+        return `hsl(${h}, ${s}%, ${l}%)`;
+      }
+
+      /**
+       * Apply freshness fade: interpolate saturation and lightness toward
+       * a neutral value as freshness drops, but never past FRESHNESS_FLOOR.
+       * Even maximally stale items keep enough color to read the speed level.
+       */
+      function fadeColor(speed, freshness) {
+        const neutralL = 78;
+        const f = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * freshness;
+        const s = speed.s * f;
+        const l = speed.l + (neutralL - speed.l) * (1 - f);
+        return hsl(speed.h, Math.round(s), Math.round(l));
+      }
+
+      function needsLightText(s, l, freshness) {
+        const neutralL = 78;
+        const f = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * freshness;
+        const adjustedL = l + (neutralL - l) * (1 - f);
+        return adjustedL <= 50;
+      }
+
+      // ----------------------------------------------------------------
+      // 1. Full color matrix
+      // ----------------------------------------------------------------
+      (function buildMatrix() {
+        const el = document.getElementById('fullMatrix');
+        // Header row
+        el.appendChild(div('matrix-header', ''));
+        FRESHNESS_COLS.forEach(fc => {
+          el.appendChild(div('matrix-header', fc.label));
+        });
+
+        // One row per speed level (fastest first)
+        const reversed = [...SPEED_LEVELS].reverse();
+        reversed.forEach(speed => {
+          el.appendChild(div('matrix-row-label', speed.label));
+          FRESHNESS_COLS.forEach(fc => {
+            const color = fadeColor(speed, fc.f);
+            const light = needsLightText(speed.s, speed.l, fc.f);
+            const cell = div('matrix-cell', '');
+            cell.style.background = color;
+            cell.style.color = light ? '#fff' : 'var(--color-text)';
+            el.appendChild(cell);
+          });
+        });
+
+        // Unseen row
+        el.appendChild(div('matrix-row-label', 'Unseen'));
+        FRESHNESS_COLS.forEach((_, i) => {
+          if (i === Math.floor(FRESHNESS_COLS.length / 2)) {
+            const cell = div('matrix-cell none', 'No data');
+            cell.style.background = NONE_COLOR;
+            cell.style.gridColumn = `span ${FRESHNESS_COLS.length - i}`;
+            el.appendChild(cell);
+          } else if (i < Math.floor(FRESHNESS_COLS.length / 2)) {
+            // empty spacers before the merged cell
+            const spacer = div('matrix-cell', '');
+            spacer.style.background = 'transparent';
+            el.appendChild(spacer);
+          }
+        });
+      })();
+
+      // ----------------------------------------------------------------
+      // 2. Continuous fade strips
+      // ----------------------------------------------------------------
+      (function buildFadeDemo() {
+        const container = document.getElementById('fadeDemo');
+        const STEPS = 20;
+        const reversed = [...SPEED_LEVELS].reverse();
+
+        reversed.forEach(speed => {
+          const row = document.createElement('div');
+          const label = document.createElement('div');
+          label.style.cssText = 'font-size:0.7rem;font-weight:600;color:var(--color-text-muted);margin-bottom:0.2rem;';
+          label.textContent = speed.label;
+          row.appendChild(label);
+
+          const strip = document.createElement('div');
+          strip.className = 'fade-demo';
+          for (let i = 0; i < STEPS; i++) {
+            const f = 1 - (i / (STEPS - 1));
+            const s = document.createElement('div');
+            s.className = 'fade-strip';
+            s.style.background = fadeColor(speed, f);
+            strip.appendChild(s);
+          }
+          row.appendChild(strip);
+
+          // Only add tick labels on the last row
+          if (speed === reversed[reversed.length - 1]) {
+            const labels = document.createElement('div');
+            labels.className = 'fade-demo-labels';
+            labels.innerHTML = '<span>Fresh</span><span>Aging</span><span>Stale</span>';
+            row.appendChild(labels);
+          }
+          row.style.marginBottom = '0.5rem';
+          container.appendChild(row);
+        });
+      })();
+
+      // ----------------------------------------------------------------
+      // 3. Legend
+      // ----------------------------------------------------------------
+      (function buildLegend() {
+        const el = document.getElementById('legendProto');
+
+        const legend = document.createElement('div');
+        legend.className = 'legend-proto';
+
+        // Speed section: gradient bar from slow to fast
+        const speedSec = document.createElement('div');
+        speedSec.className = 'legend-section';
+        const speedTitle = div('legend-section-title', 'Speed');
+        speedSec.appendChild(speedTitle);
+
+        // Show a single gradient row at full freshness
+        const speedBar = document.createElement('div');
+        speedBar.className = 'legend-gradient-bar';
+        SPEED_LEVELS.forEach(sp => {
+          const sw = document.createElement('div');
+          sw.className = 'swatch';
+          sw.style.background = fadeColor(sp, 1.0);
+          speedBar.appendChild(sw);
+        });
+        speedSec.appendChild(speedBar);
+        const speedLabels = document.createElement('div');
+        speedLabels.className = 'legend-axis-labels';
+        speedLabels.innerHTML = '<span>Slow</span><span>Fast</span>';
+        speedLabels.style.width = (24 * 5 + 4) + 'px';
+        speedSec.appendChild(speedLabels);
+
+        legend.appendChild(speedSec);
+
+        // Freshness section: gradient bar from vivid to grey
+        const freshSec = document.createElement('div');
+        freshSec.className = 'legend-section';
+        const freshTitle = div('legend-section-title', 'Freshness');
+        freshSec.appendChild(freshTitle);
+
+        const freshBar = document.createElement('div');
+        freshBar.className = 'legend-gradient-bar';
+        const midSpeed = SPEED_LEVELS[3]; // "Solid" — a readable mid-green
+        for (let i = 0; i < 5; i++) {
+          const f = 1 - (i / 4);
+          const sw = document.createElement('div');
+          sw.className = 'swatch';
+          sw.style.background = fadeColor(midSpeed, f);
+          freshBar.appendChild(sw);
+        }
+        freshSec.appendChild(freshBar);
+        const freshLabels = document.createElement('div');
+        freshLabels.className = 'legend-axis-labels';
+        freshLabels.innerHTML = '<span>Fresh</span><span>Stale</span>';
+        freshLabels.style.width = (24 * 5 + 4) + 'px';
+        freshSec.appendChild(freshLabels);
+
+        legend.appendChild(freshSec);
+
+        // No data swatch
+        const noneSec = document.createElement('div');
+        noneSec.className = 'legend-section';
+        noneSec.style.justifyContent = 'center';
+        const noneRow = document.createElement('div');
+        noneRow.className = 'legend-item-row';
+        const noneSw = document.createElement('div');
+        noneSw.className = 'legend-swatch-sm none-swatch';
+        noneSw.style.background = NONE_COLOR;
+        noneRow.appendChild(noneSw);
+        noneRow.appendChild(div('legend-label', 'No data'));
+        noneSec.appendChild(noneRow);
+        legend.appendChild(noneSec);
+
+        el.appendChild(legend);
+      })();
+
+      // ----------------------------------------------------------------
+      // 4. Scenarios
+      // ----------------------------------------------------------------
+      (function buildScenarios() {
+        const el = document.getElementById('scenarios');
+
+        const scenarios = [
+          {
+            title: 'A. Just starting',
+            desc: 'First session on guitar fretboard — practiced open strings and first few frets on high E and B.',
+            type: 'fretboard',
+            rows: ['E', 'B', 'G', 'D', 'A', 'E'],
+            cols: 13,
+            // Returns { speed: 0-4, freshness: 0-1 } or null (unseen)
+            cell(r, c) {
+              // Strings 0-1 (high E, B), frets 0-4: just practiced, slow
+              if (r <= 1 && c <= 4) {
+                // Open string frets are a bit easier
+                const speed = c === 0 ? 2 : (c <= 2 ? 1 : 0);
+                return { speed, freshness: 0.9 + Math.random() * 0.1 };
+              }
+              return null;
+            },
+          },
+          {
+            title: 'B. Building — week two',
+            desc: 'Practiced daily for a week, expanding across strings. Early frets solidifying, newer areas still slow. Yesterday\'s session focused on G and D strings.',
+            type: 'fretboard',
+            rows: ['E', 'B', 'G', 'D', 'A', 'E'],
+            cols: 13,
+            cell(r, c) {
+              if (c > 7) return null; // Haven't reached high frets yet
+              if (r >= 4 && c > 3) return null; // Low strings barely started
+
+              // Time since practice varies by area
+              let freshness, speed;
+
+              if (r <= 1 && c <= 4) {
+                // High E/B, low frets: practiced a lot over the week
+                speed = c === 0 ? 4 : 3;
+                freshness = 0.55 + Math.random() * 0.15; // practiced 2 days ago
+              } else if (r <= 1 && c <= 7) {
+                // High E/B, mid frets: started 3 days ago
+                speed = 1 + Math.floor(Math.random() * 2);
+                freshness = 0.4 + Math.random() * 0.15;
+              } else if (r <= 3 && c <= 4) {
+                // G/D, low frets: yesterday's session focus
+                speed = 1 + Math.floor(Math.random() * 2);
+                freshness = 0.85 + Math.random() * 0.15;
+              } else if (r <= 3 && c <= 7) {
+                // G/D, mid frets: yesterday, still slow
+                speed = Math.floor(Math.random() * 2);
+                freshness = 0.8 + Math.random() * 0.15;
+              } else {
+                // A/low E: barely touched, 4+ days ago
+                speed = 0;
+                freshness = 0.25 + Math.random() * 0.15;
+              }
+              return { speed, freshness };
+            },
+          },
+          {
+            title: 'C. Mastered recently',
+            desc: 'Four weeks of daily practice. Most items are fast and fresh — a few weak spots on high frets remain. Natural notes are strongest.',
+            type: 'fretboard',
+            rows: ['E', 'B', 'G', 'D', 'A', 'E'],
+            cols: 13,
+            cell(r, c) {
+              let speed, freshness;
+              // Mostly fast, recently practiced
+              speed = 3 + Math.floor(Math.random() * 2); // 3 or 4
+              freshness = 0.7 + Math.random() * 0.25;
+
+              // High frets are weaker
+              if (c >= 10) {
+                speed = 1 + Math.floor(Math.random() * 2);
+                freshness = 0.5 + Math.random() * 0.2;
+              }
+              // A few random weak spots
+              if ((r + c) % 7 === 0 && c > 5) {
+                speed = 2;
+                freshness = 0.45 + Math.random() * 0.15;
+              }
+              return { speed, freshness };
+            },
+          },
+          {
+            title: 'D. Mastered but haven\'t returned',
+            desc: 'Was fully fluent two months ago, hasn\'t used the app since. Still plays guitar daily — the knowledge is there but the app can\'t see it. Everything fades toward grey uniformly.',
+            type: 'fretboard',
+            rows: ['E', 'B', 'G', 'D', 'A', 'E'],
+            cols: 13,
+            cell(r, c) {
+              // Was fast everywhere, but ~60 days stale
+              // Speed data is preserved (high), freshness is very low
+              let speed = 3 + Math.floor(Math.random() * 2);
+              const freshness = 0.04 + Math.random() * 0.06; // nearly grey
+
+              // High frets were slightly weaker even at peak
+              if (c >= 10) speed = 2 + Math.floor(Math.random() * 2);
+
+              return { speed, freshness };
+            },
+          },
+          {
+            title: 'E. Returned after a break',
+            desc: 'Same as D, but did one session yesterday focusing on the first 5 frets. Those cells pop back to vivid while the rest stays faded — the contrast instantly shows what\'s been refreshed.',
+            type: 'fretboard',
+            rows: ['E', 'B', 'G', 'D', 'A', 'E'],
+            cols: 13,
+            cell(r, c) {
+              let speed, freshness;
+              if (c <= 4) {
+                // Yesterday's session — fast and fresh again
+                speed = 3 + Math.floor(Math.random() * 2);
+                freshness = 0.85 + Math.random() * 0.15;
+              } else {
+                // Still stale from the 2-month break
+                speed = 3 + Math.floor(Math.random() * 2);
+                freshness = 0.04 + Math.random() * 0.06;
+                if (c >= 10) speed = 2 + Math.floor(Math.random() * 2);
+              }
+              return { speed, freshness };
+            },
+          },
+        ];
+
+        scenarios.forEach(sc => {
+          const card = document.createElement('div');
+          card.className = 'scenario';
+          card.innerHTML = `<div class="scenario-title">${sc.title}</div>
+            <div class="scenario-desc">${sc.desc}</div>`;
+
+          const grid = document.createElement('div');
+          grid.className = 'scenario-grid ' + sc.type;
+
+          // Header row
+          grid.appendChild(div('sg-header', ''));
+          for (let c = 0; c < sc.cols; c++) {
+            grid.appendChild(div('sg-header', c.toString()));
+          }
+
+          // Data rows
+          sc.rows.forEach((rowLabel, r) => {
+            grid.appendChild(div('sg-row-label', rowLabel));
+            for (let c = 0; c < sc.cols; c++) {
+              const data = sc.cell(r, c);
+              const cell = document.createElement('div');
+              if (data === null) {
+                cell.className = 'sg-cell none';
+              } else {
+                cell.className = 'sg-cell';
+                cell.style.background = fadeColor(
+                  SPEED_LEVELS[data.speed],
+                  data.freshness,
+                );
+              }
+              grid.appendChild(cell);
+            }
+          });
+
+          card.appendChild(grid);
+          el.appendChild(card);
+        });
+      })();
+
+      // ----------------------------------------------------------------
+      // 5. Old vs new comparison
+      // ----------------------------------------------------------------
+      (function buildComparison() {
+        const el = document.getElementById('comparison');
+        const comp = document.createElement('div');
+        comp.className = 'comparison';
+
+        // Generate the "recently mastered" data once, share between panels
+        const rows = 6, cols = 6;
+        const data = [];
+        for (let r = 0; r < rows; r++) {
+          const row = [];
+          for (let c = 0; c < cols; c++) {
+            // Mostly fast/fresh, some weak spots
+            let speed = 3 + Math.floor(Math.random() * 2);
+            let freshness = 0.7 + Math.random() * 0.25;
+            if ((r + c) % 5 === 0) {
+              speed = 1 + Math.floor(Math.random() * 2);
+              freshness = 0.4 + Math.random() * 0.2;
+            }
+            row.push({ speed, freshness });
+          }
+          data.push(row);
+        }
+
+        // Old: 5-bucket retention (automaticity = speed × freshness, bucketed)
+        const oldPanel = document.createElement('div');
+        oldPanel.className = 'comparison-panel';
+        oldPanel.innerHTML = '<h4>Current: 5-bucket retention</h4>';
+        const oldGrid = document.createElement('div');
+        oldGrid.className = 'mini-grid';
+        data.forEach(row => {
+          row.forEach(d => {
+            const auto = (d.speed / 4) * d.freshness; // rough automaticity
+            const cell = document.createElement('div');
+            cell.className = 'mini-cell';
+            // Bucket into 5 levels like the current system
+            let level;
+            if (auto > 0.8) level = 4;
+            else if (auto > 0.6) level = 3;
+            else if (auto > 0.4) level = 2;
+            else if (auto > 0.2) level = 1;
+            else level = 0;
+            cell.style.background = hsl(
+              SPEED_LEVELS[level].h,
+              SPEED_LEVELS[level].s,
+              SPEED_LEVELS[level].l,
+            );
+            oldGrid.appendChild(cell);
+          });
+        });
+        oldPanel.appendChild(oldGrid);
+
+        // New: speed × freshness
+        const newPanel = document.createElement('div');
+        newPanel.className = 'comparison-panel';
+        newPanel.innerHTML = '<h4>New: speed &times; freshness</h4>';
+        const newGrid = document.createElement('div');
+        newGrid.className = 'mini-grid';
+        data.forEach(row => {
+          row.forEach(d => {
+            const cell = document.createElement('div');
+            cell.className = 'mini-cell';
+            cell.style.background = fadeColor(SPEED_LEVELS[d.speed], d.freshness);
+            newGrid.appendChild(cell);
+          });
+        });
+        newPanel.appendChild(newGrid);
+
+        comp.appendChild(oldPanel);
+        comp.appendChild(newPanel);
+        el.appendChild(comp);
+      })();
+
+      // ----------------------------------------------------------------
+      // Helpers
+      // ----------------------------------------------------------------
+      function div(cls, text) {
+        const d = document.createElement('div');
+        d.className = cls;
+        d.textContent = text;
+        return d;
+      }
+    </script>
+  </body>
+</html>
