@@ -130,14 +130,14 @@ workflow:
 5. **List available screenshots:**
    ```bash
    curl -s "https://api.github.com/repos/shnayder/musicreps/contents/preview/<safe-branch>/screenshots?ref=gh-pages" \
-     | python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['name'].endswith('.png')]"
+     | python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['name'].endswith(('.png','.jpg'))]"
    ```
 6. **Download and view:**
    ```bash
-   curl -sL -o /tmp/screenshot.png \
-     "https://raw.githubusercontent.com/shnayder/musicreps/gh-pages/preview/<safe-branch>/screenshots/fretboard-idle.png"
+   curl -sL -o /tmp/screenshot.jpg \
+     "https://raw.githubusercontent.com/shnayder/musicreps/gh-pages/preview/<safe-branch>/screenshots/fretboard-idle.jpg"
    ```
-   Then: `Read /tmp/screenshot.png`
+   Then: `Read /tmp/screenshot.jpg`
 7. **Iterate** (back to step 1)
 
 ---

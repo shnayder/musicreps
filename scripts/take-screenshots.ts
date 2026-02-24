@@ -12,6 +12,7 @@ import { ChildProcess, spawn } from 'child_process';
 import { mkdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { defaultItems } from '../src/fixtures/items.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -31,7 +32,7 @@ const IMG_EXT = ciMode ? 'jpg' : 'png';
 const IMG_TYPE = ciMode ? 'jpeg' as const : 'png' as const;
 
 // ---------------------------------------------------------------------------
-// Mode IDs and default items
+// Mode IDs
 // ---------------------------------------------------------------------------
 
 const MODE_IDS = [
@@ -50,20 +51,6 @@ const MODE_IDS = [
 
 // Modes that use QuizEngine (all except speedTap)
 const ENGINE_MODES = MODE_IDS.filter((id) => id !== 'speedTap');
-
-const DEFAULT_ITEMS: Record<string, string> = {
-  fretboard: '5-8',
-  ukulele: '0-5',
-  noteSemitones: 'C:fwd',
-  intervalSemitones: 'P4:fwd',
-  semitoneMath: 'C+3',
-  intervalMath: 'C+m3',
-  keySignatures: 'D:fwd',
-  scaleDegrees: 'C:3:fwd',
-  diatonicChords: 'C:IV:fwd',
-  chordSpelling: 'C:major',
-  speedTap: 'C',
-};
 
 // ---------------------------------------------------------------------------
 // Fixture builders (inline — mirror src/fixtures/quiz-page.ts logic)
@@ -246,7 +233,7 @@ function buildManifest(): ScreenshotEntry[] {
       entries.push({
         name: `${modeId}-quiz`,
         modeId,
-        fixture: quizActiveFixture(DEFAULT_ITEMS[modeId]),
+        fixture: quizActiveFixture(defaultItems[modeId]),
       });
     }
   }
@@ -255,12 +242,12 @@ function buildManifest(): ScreenshotEntry[] {
   entries.push({
     name: 'design-correct-feedback',
     modeId: 'semitoneMath',
-    fixture: quizCorrectFixture(DEFAULT_ITEMS.semitoneMath),
+    fixture: quizCorrectFixture(defaultItems.semitoneMath),
   });
   entries.push({
     name: 'design-wrong-feedback',
     modeId: 'semitoneMath',
-    fixture: quizWrongFixture(DEFAULT_ITEMS.semitoneMath),
+    fixture: quizWrongFixture(defaultItems.semitoneMath),
   });
   entries.push({
     name: 'design-round-complete',
@@ -272,12 +259,12 @@ function buildManifest(): ScreenshotEntry[] {
   entries.push({
     name: 'design-fretboard-correct',
     modeId: 'fretboard',
-    fixture: quizCorrectFixture(DEFAULT_ITEMS.fretboard),
+    fixture: quizCorrectFixture(defaultItems.fretboard),
   });
   entries.push({
     name: 'design-fretboard-wrong',
     modeId: 'fretboard',
-    fixture: quizWrongFixture(DEFAULT_ITEMS.fretboard),
+    fixture: quizWrongFixture(defaultItems.fretboard),
   });
 
   return entries;
