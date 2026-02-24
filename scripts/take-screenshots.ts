@@ -40,7 +40,7 @@ const ENGINE_MODES = MODE_IDS.filter((id) => id !== 'speedTap');
 function startServer(): ChildProcess {
   const proc = spawn(
     'deno',
-    ['run', '--allow-net', '--allow-read', 'main.ts'],
+    ['run', '--allow-net', '--allow-read', '--allow-run', 'main.ts'],
     {
       cwd: path.resolve(__dirname, '..'),
       stdio: 'pipe',
