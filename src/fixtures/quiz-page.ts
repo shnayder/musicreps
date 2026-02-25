@@ -3,6 +3,7 @@
 // __fixture__ events.
 
 import type { EngineState } from '../types.ts';
+import type { SpeedCheckFixture } from '../ui/speed-check.tsx';
 import {
   engineNextQuestion,
   engineRoundComplete,
@@ -23,6 +24,7 @@ export type FixtureDetail = {
   timerText?: string;
   timerWarning?: boolean;
   timerLastQuestion?: boolean;
+  calibration?: SpeedCheckFixture;
 };
 
 // ---------------------------------------------------------------------------
@@ -179,4 +181,26 @@ export function quizRoundComplete(
     timerWarning: false,
     timerLastQuestion: false,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Speed Check (calibration) fixtures
+// ---------------------------------------------------------------------------
+
+export function speedCheckIntro(): FixtureDetail {
+  return { calibration: { phase: 'intro' } };
+}
+
+export function speedCheckTesting(): FixtureDetail {
+  return {
+    calibration: {
+      phase: 'running',
+      trialProgress: '5 / 10',
+      targetNote: 'E',
+    },
+  };
+}
+
+export function speedCheckResults(): FixtureDetail {
+  return { calibration: { phase: 'results', baseline: 520 } };
 }

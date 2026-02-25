@@ -10,6 +10,9 @@ import {
   quizCorrectFeedback,
   quizRoundComplete,
   quizWrongFeedback,
+  speedCheckIntro,
+  speedCheckResults,
+  speedCheckTesting,
 } from './quiz-page.ts';
 
 // Mode-specific getQuestion / parseItem functions
@@ -68,8 +71,10 @@ const modeQuestionFns: Record<string, (itemId: string) => unknown> = {
 // ---------------------------------------------------------------------------
 
 describe('fixture item ID validity', () => {
-  for (const [modeId, itemId] of Object.entries(defaultItems)) {
-    it(`${modeId}: getQuestion("${itemId}") returns a valid question`, () => {
+  for (const [key, itemId] of Object.entries(defaultItems)) {
+    // Strip _rev suffix to get the base mode ID
+    const modeId = key.replace(/_rev$/, '');
+    it(`${key}: getQuestion("${itemId}") returns a valid question`, () => {
       const fn = modeQuestionFns[modeId];
       assert.ok(fn, `No getQuestion function for mode ${modeId}`);
       const q = fn(itemId);
@@ -173,6 +178,27 @@ describe('fixture engine state validity', () => {
       assert.equal(typeof fixture.timerLastQuestion, 'boolean');
     }
   });
+
+  it('speedCheckIntro produces calibration fixture with intro phase', () => {
+    const fixture = speedCheckIntro();
+    assert.ok(fixture.calibration);
+    assert.equal(fixture.calibration!.phase, 'intro');
+  });
+
+  it('speedCheckTesting produces calibration fixture with running phase', () => {
+    const fixture = speedCheckTesting();
+    assert.ok(fixture.calibration);
+    assert.equal(fixture.calibration!.phase, 'running');
+    assert.equal(fixture.calibration!.trialProgress, '5 / 10');
+    assert.equal(fixture.calibration!.targetNote, 'E');
+  });
+
+  it('speedCheckResults produces calibration fixture with results phase', () => {
+    const fixture = speedCheckResults();
+    assert.ok(fixture.calibration);
+    assert.equal(fixture.calibration!.phase, 'results');
+    assert.equal(fixture.calibration!.baseline, 520);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -205,8 +231,9 @@ describe('fixture manifest completeness', () => {
 
   it('defaultItems has no extraneous entries', () => {
     for (const key of Object.keys(defaultItems)) {
+      const baseMode = key.replace(/_rev$/, '');
       assert.ok(
-        ALL_MODE_IDS.includes(key),
+        ALL_MODE_IDS.includes(baseMode),
         `defaultItems has unknown mode: ${key}`,
       );
     }

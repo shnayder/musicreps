@@ -30,8 +30,11 @@ deno task test                       # Run all tests
 deno task lint                       # Lint check
 deno task fmt                        # Format check
 
-# Take screenshots of all modes (starts dev server automatically)
-npx tsx scripts/take-screenshots.ts
+# Screenshots (starts dev server automatically)
+npx tsx scripts/take-screenshots.ts             # all screenshots (3x PNG)
+npx tsx scripts/take-screenshots.ts --list      # print all names and exit
+npx tsx scripts/take-screenshots.ts --only pat  # only names matching pat
+npx tsx scripts/take-screenshots.ts --ci        # 1x JPEG (CI mode)
 ```
 
 ## Build System
@@ -222,20 +225,42 @@ Then use `Read /tmp/screenshot.jpg` to view the image.
 
 ### Available screenshots
 
-Each mode produces two screenshots: `<mode>-idle` and `<mode>-quiz`.
-Additional design moments: `design-correct-feedback`, `design-wrong-feedback`,
+Each mode produces `<mode>-idle` and `<mode>-quiz`. Bidirectional modes also
+get `<mode>-quiz-rev` (reverse direction). Speed Check adds three fixture-based
+captures: `speedCheck-intro`, `speedCheck-testing`, `speedCheck-results`.
+Design moments: `design-correct-feedback`, `design-wrong-feedback`,
 `design-round-complete`, `design-fretboard-correct`, `design-fretboard-wrong`.
 
-~27 screenshots total. See `scripts/take-screenshots.ts` for the full manifest.
+~34 screenshots total. Run `--list` to see the full manifest.
 
-### Customizing the manifest
+### Filtering screenshots
 
-Create `scripts/screenshot-overrides.ts` to add or remove entries:
+Use `--only` with comma-separated substrings to capture a subset:
 
-```typescript
-export const add = [{ name: 'custom-shot', modeId: 'semitoneMath', fixture: { ... } }];
-export const remove = ['speedTap-idle'];  // names to skip
+```bash
+npx tsx scripts/take-screenshots.ts --only speedCheck
+npx tsx scripts/take-screenshots.ts --only noteSemitones-quiz,intervalSemitones-quiz
 ```
+
+### Screenshot & Fixture Design Principles
+
+1. **Fixture injection, not UI interaction** — screenshots use `__fixture__`
+   events to inject state directly. Never click through the UI to reach a
+   state. This is deterministic, fast, and doesn't break when CSS/selectors
+   change.
+
+2. **Pure state drives rendering** — if a UI state can't be reached via fixture
+   injection, that's a signal the state should be hoisted or exposed. Add
+   fixture support to the component, don't work around it with Playwright
+   clicks.
+
+3. **Manifest as single source of truth** — `buildManifest()` defines all
+   screenshots. Use `--list` to inspect, `--only` to filter. No separate
+   override files.
+
+4. **Each screenshot = one fixture** — every `ScreenshotEntry` with visual
+   content has a `fixture` field. Entries without fixtures capture idle state
+   (the default after navigation).
 
 ## iOS App (Capacitor)
 
