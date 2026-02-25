@@ -247,18 +247,22 @@ export function ScaleDegreesMode(
       )}
       {!isIdle && (
         <>
-          <QuizSession
-            timeLeft={engine.timerText}
-            timerPct={engine.timerPct}
-            context={practicingLabel}
-            count={round.countText}
-            isWarning={engine.timerWarning}
-            isLastQuestion={engine.timerLastQuestion}
-            onClose={engine.stop}
-          />
+          {phase !== 'round-complete' && (
+            <QuizSession
+              timeLeft={engine.timerText}
+              timerPct={engine.timerPct}
+              context={practicingLabel}
+              count={round.countText}
+              isWarning={engine.timerWarning}
+              isLastQuestion={engine.timerLastQuestion}
+              onClose={engine.stop}
+            />
+          )}
           <QuizArea
-            prompt={engine.calibrating ? '' : promptText}
-            lastQuestion={engine.calibrating
+            prompt={(engine.calibrating || phase === 'round-complete')
+              ? ''
+              : promptText}
+            lastQuestion={(engine.calibrating || phase === 'round-complete')
               ? ''
               : (engine.state.roundTimerExpired ? 'Last question' : '')}
           >

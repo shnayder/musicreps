@@ -281,7 +281,7 @@ export function StartButton(
 }
 
 // ---------------------------------------------------------------------------
-// QuizSession — countdown, session info, close button, progress bar
+// QuizSession — countdown, session info, close button
 // ---------------------------------------------------------------------------
 
 export function QuizSession(
@@ -360,10 +360,12 @@ export function QuizArea(
 ) {
   return (
     <div class='quiz-area'>
-      <div class='quiz-last-question'>{lastQuestion || ''}</div>
-      <div class='quiz-prompt-row'>
-        <div class='quiz-prompt'>{prompt || ''}</div>
-      </div>
+      {lastQuestion && <div class='quiz-last-question'>{lastQuestion}</div>}
+      {prompt && (
+        <div class='quiz-prompt-row'>
+          <div class='quiz-prompt'>{prompt}</div>
+        </div>
+      )}
       {children}
     </div>
   );

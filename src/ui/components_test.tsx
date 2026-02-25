@@ -514,7 +514,6 @@ describe('QuizArea', () => {
     assert.ok(html.includes('quiz-prompt-row'));
     assert.ok(html.includes('quiz-prompt'));
     assert.ok(html.includes('C + 5'));
-    assert.ok(html.includes('quiz-last-question'));
     assert.ok(html.includes('test-buttons'));
   });
 
