@@ -1709,7 +1709,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">3e4e43 layout-improvements</span>
+      <span class="version">5b0c64 layout-improvements</span>
     </div>
   </div>
 
@@ -10562,6 +10562,7 @@ button {
     nav.registerMode(id, {
       name,
       init() {
+        container.textContent = "";
         J(
           _(Component, {
             container,
@@ -10587,6 +10588,7 @@ button {
     nav.registerMode(id, {
       name,
       init() {
+        cont.textContent = "";
         J(
           _(FretboardMode, {
             instrument,
