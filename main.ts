@@ -25,9 +25,7 @@ async function getVersion(): Promise<string> {
       // CI sets BUILD_NUMBER via GitHub API — no full history needed.
       const envCount = Deno.env.get('BUILD_NUMBER');
       if (envCount) return `#${envCount}`;
-      // Local builds: full clone has accurate history.
-      const count = await gitText('rev-list', '--count', 'HEAD');
-      return `#${count}`;
+      return hash;
     }
     const suffix = branch.includes('/')
       ? branch.slice(branch.lastIndexOf('/') + 1)

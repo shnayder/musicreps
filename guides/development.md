@@ -100,7 +100,7 @@ in `getVersion()` in `main.ts`:
 
 - **`main` branch:** `#<commit-count>` (e.g., `#1247`) — monotonic build number.
   In CI, the count comes from the GitHub API via the `BUILD_NUMBER` env var
-  (avoids fetching full history). Locally, `git rev-list --count` is used.
+  (avoids fetching full history). Falls back to short SHA if unavailable.
 - **Other branches:** `<short-hash> <branch-suffix>` (e.g., `a1b2c3 fix-button`)
 - **Fallback (no git):** `dev`
 
