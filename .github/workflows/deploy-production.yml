@@ -53,8 +53,10 @@ jobs:
             --include 2>/dev/null \
             | grep -i '^link:' \
             | sed 's/.*page=\([0-9]*\)>; rel="last".*/\1/')
-          if [ -z "$COUNT" ]; then COUNT=1; fi
-          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ -z "$COUNT" ]; then
+            echo "::warning::Could not determine commit count from GitHub API"
+          fi
+          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
 
       - name: Build
         run: deno task build
