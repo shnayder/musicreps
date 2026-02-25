@@ -22,13 +22,10 @@ async function getVersion(): Promise<string> {
       gitText('rev-parse', '--short=6', 'HEAD'),
     ]);
     if (branch === 'main') {
-      // Shallow clones (e.g. CI default) truncate history — unshallow first.
-      const isShallow = await gitText('rev-parse', '--is-shallow-repository');
-      if (isShallow === 'true') {
-        try {
-          await gitText('fetch', '--unshallow');
-        } catch { /* network unavailable — count will be low */ }
-      }
+      // CI sets BUILD_NUMBER via GitHub API — no full history needed.
+      const envCount = Deno.env.get('BUILD_NUMBER');
+      if (envCount) return `#${envCount}`;
+      // Local builds: full clone has accurate history.
       const count = await gitText('rev-list', '--count', 'HEAD');
       return `#${count}`;
     }
