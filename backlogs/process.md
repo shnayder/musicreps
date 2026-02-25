@@ -24,18 +24,18 @@ Owner: process workstream Branch: workstream/process
 
 ## Backlog
 
+- obsidian for backlog management and specs?
+- Update PR descriptions as we go
 - [P1] Set up notifications when web mode or local claude finishes or stops for
   questions (iOS/watch) #tooling
   - overview dashboard of what needs my attention? Shown in the corner on every
     desktop
 - [--] version number on every screen. And perhaps starting on home screen after
   all?
+    - version number conflicts on ~all commits. Constant churn. Throw it away and auto-compute a build number from # of commits? And include branch name in preview build page titles?
 - [P1] Product spec review checklist + command (like code review) #review
   #tooling
 - [P1] Post-merge clean-up checklist/trigger #workflow #automation
-- [P1] Linter setup #automation
-- CI deploy conflicts -- if one job's deploy didn't finish when another lands,
-  the new one got cancelled. #bug.
 - [P1] Review and improvement process after every feature / bug fix batch
   #review #feedback
   - How could we have prevented the bug?
@@ -43,20 +43,17 @@ Owner: process workstream Branch: workstream/process
   - What patterns/libraries would make future work easier?
 - [P1] Fix GH auto review config (get Claude to wait/respond automatically)
   #review #automation
+- look for large code files, refactor
 - [P2] step-by-step review tooling #review #tooling
   - here's a big spec, plan, etc. Go through it chunk by chunk, ask for
     feedback, incorporate it.
+- tailscale + tmux + ssh + phone?
+- color terminals to match worktrees
 - [P2] script/hook to filter for new user-facing terminology, or wrong words
   #automation #review
 - [P2] backlog wrangling -- how to keep it organized, sized. "Start on the next
   thing" command perhaps. #planning #tooling
 - [P2] Improve GH code review instructions #review
-- [P2] Switch GitHub Pages to Actions deployment mode #automation #ci
-  - Currently deploys from `docs/` folder on main, so build artifacts must be
-    committed. Actions deployment builds in CI and deploys directly — no
-    committed artifacts, cleaner diffs, no bot commits on main, no risk of
-    source/artifact drift.
-- [P2] Testing on a branch — dev server locally but phone needs merge #workflow
 - [P2] Size plans using XS-L (anything >L needs splitting) #planning
 - [P2] Periodic git cleanup: remove merged feature branches #workflow
   #automation
