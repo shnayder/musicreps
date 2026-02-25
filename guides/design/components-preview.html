@@ -928,9 +928,11 @@ button {
 }
 
 /* --- Quiz-active visual focus --- */
-.phase-active,
-.phase-round-complete,
-.phase-calibration {
+/* .mode-screen prefix gives 0-2-0 specificity to override
+   .mode-screen.mode-active { display: block } (also 0-2-0, but earlier). */
+.mode-screen.phase-active,
+.mode-screen.phase-round-complete,
+.mode-screen.phase-calibration {
   background: var(--color-bg);
   margin: 0 calc(-1 * var(--space-5));
   padding: 0 var(--space-5);
@@ -1038,6 +1040,7 @@ button {
 .phase-round-complete .chord-slots,
 .phase-round-complete .feedback,
 .phase-round-complete .hint,
+.phase-round-complete .keyboard-hint,
 .phase-round-complete .time-display,
 .phase-round-complete .speed-tap-status,
 .phase-round-complete .fretboard-wrapper,
@@ -1724,9 +1727,9 @@ button {
     margin-left: calc(-1 * var(--space-1));
   }
 
-  .phase-active,
-  .phase-round-complete,
-  .phase-calibration {
+  .mode-screen.phase-active,
+  .mode-screen.phase-round-complete,
+  .mode-screen.phase-calibration {
     margin: 0 calc(-1 * var(--space-1));
     padding: 0 var(--space-1);
   }
@@ -1734,11 +1737,6 @@ button {
   .fretboard-container {
     width: 100%;
     max-width: none;
-  }
-
-  .answer-buttons {
-    grid-template-columns: repeat(3, 1fr);
-    max-width: 280px;
   }
 
   .quiz-prompt {
