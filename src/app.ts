@@ -35,6 +35,7 @@ function registerPreactMode(id: string, name: string, Component: any) {
   nav.registerMode(id, {
     name,
     init() {
+      container.textContent = ''; // Clear build-time HTML before Preact takes over
       render(
         h(Component, {
           container,
@@ -66,6 +67,7 @@ function registerFretboardMode(
   nav.registerMode(id, {
     name,
     init() {
+      cont.textContent = ''; // Clear build-time HTML before Preact takes over
       render(
         h(FretboardMode, {
           instrument,
