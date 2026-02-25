@@ -347,6 +347,13 @@ describe('ModeTopBar', () => {
     assert.ok(html.includes('Semitone Math'));
     assert.ok(html.includes('\u2190'));
   });
+
+  it('hides back button when showBack is false', () => {
+    const html = render(<ModeTopBar title='Test' showBack={false} />);
+    assert.ok(html.includes('mode-top-bar'));
+    assert.ok(html.includes('mode-title'));
+    assert.ok(!html.includes('mode-back-btn'));
+  });
 });
 
 describe('TabbedIdle', () => {

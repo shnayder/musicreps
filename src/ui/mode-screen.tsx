@@ -37,19 +37,25 @@ export function ModeScreen(
 // ---------------------------------------------------------------------------
 
 export function ModeTopBar(
-  { title, onBack }: { title: string; onBack?: () => void },
+  { title, onBack, showBack = true }: {
+    title: string;
+    onBack?: () => void;
+    showBack?: boolean;
+  },
 ) {
   return (
     <div class='mode-top-bar'>
-      <button
-        type='button'
-        tabIndex={0}
-        class='mode-back-btn'
-        aria-label='Back to home'
-        onClick={onBack}
-      >
-        {'\u2190' /* ← back arrow */}
-      </button>
+      {showBack && (
+        <button
+          type='button'
+          tabIndex={0}
+          class='mode-back-btn'
+          aria-label='Back to home'
+          onClick={onBack}
+        >
+          {'\u2190' /* ← back arrow */}
+        </button>
+      )}
       <h1 class='mode-title'>{title}</h1>
     </div>
   );

@@ -200,99 +200,115 @@ export function IntervalSemitonesMode(
   const round = useRoundSummary(engine, 'all items');
 
   // --- Render ---
+  const phase = engine.state.phase;
+  const isIdle = phase === 'idle';
+
   return (
     <>
-      <ModeTopBar title='Interval ↔ Semitones' onBack={navigateHome} />
-      <PracticeTab
-        summary={ps.summary}
-        onStart={engine.start}
-        statsContent={
-          <>
-            <StatsTable
-              selector={ps.statsSel}
-              rows={getStatsRows()}
-              fwdHeader='I→#'
-              revHeader='#→I'
-              statsMode={ps.statsMode}
-              baseline={learner.motorBaseline ?? undefined}
-            />
-            <StatsLegend
-              statsMode={ps.statsMode}
-              baseline={learner.motorBaseline ?? undefined}
-            />
-          </>
-        }
-        statsMode={ps.statsMode}
-        onStatsToggle={ps.setStatsMode}
-        baseline={learner.motorBaseline}
-        onCalibrate={engine.startCalibration}
-        activeTab={ps.activeTab}
-        onTabSwitch={ps.setActiveTab}
+      <ModeTopBar
+        title='Interval ↔ Semitones'
+        onBack={navigateHome}
+        showBack={isIdle}
       />
-      <QuizSession
-        timeLeft={engine.timerText}
-        timerPct={engine.timerPct}
-        context='all items'
-        count={round.countText}
-        isWarning={engine.timerWarning}
-        isLastQuestion={engine.timerLastQuestion}
-        onClose={engine.stop}
-      />
-      <QuizArea
-        prompt={engine.calibrating ? '' : promptText}
-        lastQuestion={engine.calibrating
-          ? ''
-          : (engine.state.roundTimerExpired ? 'Last question' : '')}
-      >
-        {engine.calibrating
-          ? (
-            <SpeedCheck
-              provider={BUTTON_PROVIDER}
-              fixture={engine.calibrationFixture}
-              onComplete={(baseline) => {
-                learner.applyBaseline(baseline);
-                engine.endCalibration();
-              }}
-              onCancel={engine.endCalibration}
-            />
-          )
-          : (
+      {isIdle && (
+        <PracticeTab
+          summary={ps.summary}
+          onStart={engine.start}
+          statsContent={
             <>
-              <FeedbackBanner
-                correct={engine.state.feedbackCorrect}
-                answer={engine.state.feedbackDisplayAnswer}
+              <StatsTable
+                selector={ps.statsSel}
+                rows={getStatsRows()}
+                fwdHeader='I→#'
+                revHeader='#→I'
+                statsMode={ps.statsMode}
+                baseline={learner.motorBaseline ?? undefined}
               />
-              <IntervalButtons
-                hidden={dir === 'fwd'}
-                onAnswer={handleIntervalAnswer}
-              />
-              <NumberButtons
-                start={1}
-                end={12}
-                hidden={dir === 'rev'}
-                onAnswer={handleNumAnswer}
-                narrowing={dir === 'fwd' ? numNarrowing : undefined}
-              />
-              <KeyboardHint
-                type={dir === 'fwd' ? 'number-1-12' : null}
-              />
-              <FeedbackDisplay
-                text={engine.state.feedbackText}
-                className={engine.state.feedbackClass}
-                time={engine.state.timeDisplayText || undefined}
-                hint={engine.state.hintText || undefined}
-              />
-              <RoundComplete
-                context={round.roundContext}
-                heading='Round complete'
-                correct={round.roundCorrect}
-                median={round.roundMedian}
-                onContinue={engine.continueQuiz}
-                onStop={engine.stop}
+              <StatsLegend
+                statsMode={ps.statsMode}
+                baseline={learner.motorBaseline ?? undefined}
               />
             </>
-          )}
-      </QuizArea>
+          }
+          statsMode={ps.statsMode}
+          onStatsToggle={ps.setStatsMode}
+          baseline={learner.motorBaseline}
+          onCalibrate={engine.startCalibration}
+          activeTab={ps.activeTab}
+          onTabSwitch={ps.setActiveTab}
+        />
+      )}
+      {!isIdle && (
+        <>
+          <QuizSession
+            timeLeft={engine.timerText}
+            timerPct={engine.timerPct}
+            context='all items'
+            count={round.countText}
+            isWarning={engine.timerWarning}
+            isLastQuestion={engine.timerLastQuestion}
+            onClose={engine.stop}
+          />
+          <QuizArea
+            prompt={engine.calibrating ? '' : promptText}
+            lastQuestion={engine.calibrating
+              ? ''
+              : (engine.state.roundTimerExpired ? 'Last question' : '')}
+          >
+            {engine.calibrating
+              ? (
+                <SpeedCheck
+                  provider={BUTTON_PROVIDER}
+                  fixture={engine.calibrationFixture}
+                  onComplete={(baseline) => {
+                    learner.applyBaseline(baseline);
+                    engine.endCalibration();
+                  }}
+                  onCancel={engine.endCalibration}
+                />
+              )
+              : phase === 'round-complete'
+              ? (
+                <RoundComplete
+                  context={round.roundContext}
+                  heading='Round complete'
+                  correct={round.roundCorrect}
+                  median={round.roundMedian}
+                  onContinue={engine.continueQuiz}
+                  onStop={engine.stop}
+                />
+              )
+              : (
+                <>
+                  <FeedbackBanner
+                    correct={engine.state.feedbackCorrect}
+                    answer={engine.state.feedbackDisplayAnswer}
+                  />
+                  <IntervalButtons
+                    hidden={dir === 'fwd'}
+                    onAnswer={handleIntervalAnswer}
+                  />
+                  <NumberButtons
+                    start={1}
+                    end={12}
+                    hidden={dir === 'rev'}
+                    onAnswer={handleNumAnswer}
+                    narrowing={dir === 'fwd' ? numNarrowing : undefined}
+                  />
+                  <KeyboardHint
+                    type={dir === 'fwd' ? 'number-1-12' : null}
+                  />
+                  <FeedbackDisplay
+                    text={engine.state.feedbackText}
+                    className={engine.state.feedbackClass}
+                    time={engine.state.timeDisplayText || undefined}
+                    hint={engine.state.hintText || undefined}
+                  />
+                </>
+              )}
+          </QuizArea>
+        </>
+      )}
     </>
   );
 }

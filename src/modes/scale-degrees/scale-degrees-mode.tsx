@@ -196,106 +196,122 @@ export function ScaleDegreesMode(
 
   const round = useRoundSummary(engine, practicingLabel);
 
+  const phase = engine.state.phase;
+  const isIdle = phase === 'idle';
+
   return (
     <>
-      <ModeTopBar title='Scale Degrees' onBack={navigateHome} />
-      <PracticeTab
-        summary={ps.summary}
-        onStart={engine.start}
-        onApplyRecommendation={ps.summary.showRecommendationButton
-          ? applyRecommendation
-          : undefined}
-        scope={
-          <GroupToggles
-            labels={DEGREE_GROUPS.map((g) => g.label)}
-            active={enabledGroups}
-            recommended={recommendation.recommended}
-            onToggle={scopeActions.toggleGroup}
-          />
-        }
-        statsContent={
-          <>
-            <StatsGrid
-              selector={ps.statsSel}
-              colLabels={DEGREE_LABELS}
-              getItemId={getGridItemId}
-              statsMode={ps.statsMode}
-              notes={GRID_NOTES}
-              baseline={learner.motorBaseline ?? undefined}
-            />
-            <StatsLegend
-              statsMode={ps.statsMode}
-              baseline={learner.motorBaseline ?? undefined}
-            />
-          </>
-        }
-        statsMode={ps.statsMode}
-        onStatsToggle={ps.setStatsMode}
-        baseline={learner.motorBaseline}
-        onCalibrate={engine.startCalibration}
-        activeTab={ps.activeTab}
-        onTabSwitch={ps.setActiveTab}
+      <ModeTopBar
+        title='Scale Degrees'
+        onBack={navigateHome}
+        showBack={isIdle}
       />
-      <QuizSession
-        timeLeft={engine.timerText}
-        timerPct={engine.timerPct}
-        context={practicingLabel}
-        count={round.countText}
-        isWarning={engine.timerWarning}
-        isLastQuestion={engine.timerLastQuestion}
-        onClose={engine.stop}
-      />
-      <QuizArea
-        prompt={engine.calibrating ? '' : promptText}
-        lastQuestion={engine.calibrating
-          ? ''
-          : (engine.state.roundTimerExpired ? 'Last question' : '')}
-      >
-        {engine.calibrating
-          ? (
-            <SpeedCheck
-              provider={BUTTON_PROVIDER}
-              fixture={engine.calibrationFixture}
-              onComplete={(baseline) => {
-                learner.applyBaseline(baseline);
-                engine.endCalibration();
-              }}
-              onCancel={engine.endCalibration}
+      {isIdle && (
+        <PracticeTab
+          summary={ps.summary}
+          onStart={engine.start}
+          onApplyRecommendation={ps.summary.showRecommendationButton
+            ? applyRecommendation
+            : undefined}
+          scope={
+            <GroupToggles
+              labels={DEGREE_GROUPS.map((g) => g.label)}
+              active={enabledGroups}
+              recommended={recommendation.recommended}
+              onToggle={scopeActions.toggleGroup}
             />
-          )
-          : (
+          }
+          statsContent={
             <>
-              <FeedbackBanner
-                correct={engine.state.feedbackCorrect}
-                answer={engine.state.feedbackDisplayAnswer}
+              <StatsGrid
+                selector={ps.statsSel}
+                colLabels={DEGREE_LABELS}
+                getItemId={getGridItemId}
+                statsMode={ps.statsMode}
+                notes={GRID_NOTES}
+                baseline={learner.motorBaseline ?? undefined}
               />
-              <NoteButtons
-                hidden={dir === 'rev'}
-                onAnswer={handleNoteAnswer}
-                narrowing={dir === 'fwd' ? noteNarrowing : undefined}
-              />
-              <DegreeButtons
-                hidden={dir === 'fwd'}
-                onAnswer={handleDegreeAnswer}
-              />
-              <KeyboardHint type={dir === 'fwd' ? 'note' : null} />
-              <FeedbackDisplay
-                text={engine.state.feedbackText}
-                className={engine.state.feedbackClass}
-                time={engine.state.timeDisplayText || undefined}
-                hint={engine.state.hintText || undefined}
-              />
-              <RoundComplete
-                context={round.roundContext}
-                heading='Round complete'
-                correct={round.roundCorrect}
-                median={round.roundMedian}
-                onContinue={engine.continueQuiz}
-                onStop={engine.stop}
+              <StatsLegend
+                statsMode={ps.statsMode}
+                baseline={learner.motorBaseline ?? undefined}
               />
             </>
-          )}
-      </QuizArea>
+          }
+          statsMode={ps.statsMode}
+          onStatsToggle={ps.setStatsMode}
+          baseline={learner.motorBaseline}
+          onCalibrate={engine.startCalibration}
+          activeTab={ps.activeTab}
+          onTabSwitch={ps.setActiveTab}
+        />
+      )}
+      {!isIdle && (
+        <>
+          <QuizSession
+            timeLeft={engine.timerText}
+            timerPct={engine.timerPct}
+            context={practicingLabel}
+            count={round.countText}
+            isWarning={engine.timerWarning}
+            isLastQuestion={engine.timerLastQuestion}
+            onClose={engine.stop}
+          />
+          <QuizArea
+            prompt={engine.calibrating ? '' : promptText}
+            lastQuestion={engine.calibrating
+              ? ''
+              : (engine.state.roundTimerExpired ? 'Last question' : '')}
+          >
+            {engine.calibrating
+              ? (
+                <SpeedCheck
+                  provider={BUTTON_PROVIDER}
+                  fixture={engine.calibrationFixture}
+                  onComplete={(baseline) => {
+                    learner.applyBaseline(baseline);
+                    engine.endCalibration();
+                  }}
+                  onCancel={engine.endCalibration}
+                />
+              )
+              : phase === 'round-complete'
+              ? (
+                <RoundComplete
+                  context={round.roundContext}
+                  heading='Round complete'
+                  correct={round.roundCorrect}
+                  median={round.roundMedian}
+                  onContinue={engine.continueQuiz}
+                  onStop={engine.stop}
+                />
+              )
+              : (
+                <>
+                  <FeedbackBanner
+                    correct={engine.state.feedbackCorrect}
+                    answer={engine.state.feedbackDisplayAnswer}
+                  />
+                  <NoteButtons
+                    hidden={dir === 'rev'}
+                    onAnswer={handleNoteAnswer}
+                    narrowing={dir === 'fwd' ? noteNarrowing : undefined}
+                  />
+                  <DegreeButtons
+                    hidden={dir === 'fwd'}
+                    onAnswer={handleDegreeAnswer}
+                  />
+                  <KeyboardHint type={dir === 'fwd' ? 'note' : null} />
+                  <FeedbackDisplay
+                    text={engine.state.feedbackText}
+                    className={engine.state.feedbackClass}
+                    time={engine.state.timeDisplayText || undefined}
+                    hint={engine.state.hintText || undefined}
+                  />
+                </>
+              )}
+          </QuizArea>
+        </>
+      )}
     </>
   );
 }

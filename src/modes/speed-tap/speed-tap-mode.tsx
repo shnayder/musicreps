@@ -364,86 +364,102 @@ export function SpeedTapMode(
 
   const promptText = currentDisplayName ? 'Tap all ' + currentDisplayName : '';
 
+  const phase = engine.state.phase;
+  const isIdle = phase === 'idle';
+
   return (
     <>
-      <ModeTopBar title='Speed Tap' onBack={navigateHome} />
-      <PracticeTab
-        summary={ps.summary}
-        onStart={engine.start}
-        scope={
-          <NoteFilter
-            mode={noteFilter}
-            onChange={(f) => scopeActions.setNoteFilter(f as NoteFilterType)}
-          />
-        }
-        statsContent={
-          <div
-            // deno-lint-ignore react-no-danger
-            dangerouslySetInnerHTML={{ __html: statsHTML }}
-          />
-        }
-        statsMode={ps.statsMode}
-        onStatsToggle={ps.setStatsMode}
-        baseline={learner.motorBaseline}
-        onCalibrate={engine.startCalibration}
-        activeTab={ps.activeTab}
-        onTabSwitch={ps.setActiveTab}
+      <ModeTopBar
+        title='Speed Tap'
+        onBack={navigateHome}
+        showBack={isIdle}
       />
-      <QuizSession
-        timeLeft={engine.timerText}
-        timerPct={engine.timerPct}
-        context={practicingLabel}
-        count={round.countText}
-        isWarning={engine.timerWarning}
-        isLastQuestion={engine.timerLastQuestion}
-        onClose={engine.stop}
-      />
-      <QuizArea
-        prompt={engine.calibrating ? '' : promptText}
-        lastQuestion={engine.calibrating
-          ? ''
-          : (engine.state.roundTimerExpired ? 'Last question' : '')}
-      >
-        {engine.calibrating
-          ? (
-            <SpeedCheck
-              provider={BUTTON_PROVIDER}
-              fixture={engine.calibrationFixture}
-              onComplete={(baseline) => {
-                learner.applyBaseline(baseline);
-                engine.endCalibration();
-              }}
-              onCancel={engine.endCalibration}
+      {isIdle && (
+        <PracticeTab
+          summary={ps.summary}
+          onStart={engine.start}
+          scope={
+            <NoteFilter
+              mode={noteFilter}
+              onChange={(f) => scopeActions.setNoteFilter(f as NoteFilterType)}
             />
-          )
-          : (
-            <>
-              <div class='speed-tap-status'>
-                <span class='speed-tap-progress'>{progressText}</span>
-              </div>
-              <div
-                ref={quizFbRef}
-                // deno-lint-ignore react-no-danger
-                dangerouslySetInnerHTML={{ __html: svgHTML }}
-              />
-              <NoteButtons hidden onAnswer={() => {}} />
-              <FeedbackDisplay
-                text={engine.state.feedbackText}
-                className={engine.state.feedbackClass}
-                time={engine.state.timeDisplayText || undefined}
-                hint={engine.state.hintText || undefined}
-              />
-              <RoundComplete
-                context={round.roundContext}
-                heading='Round complete'
-                correct={round.roundCorrect}
-                median={round.roundMedian}
-                onContinue={engine.continueQuiz}
-                onStop={engine.stop}
-              />
-            </>
-          )}
-      </QuizArea>
+          }
+          statsContent={
+            <div
+              // deno-lint-ignore react-no-danger
+              dangerouslySetInnerHTML={{ __html: statsHTML }}
+            />
+          }
+          statsMode={ps.statsMode}
+          onStatsToggle={ps.setStatsMode}
+          baseline={learner.motorBaseline}
+          onCalibrate={engine.startCalibration}
+          activeTab={ps.activeTab}
+          onTabSwitch={ps.setActiveTab}
+        />
+      )}
+      {!isIdle && (
+        <>
+          <QuizSession
+            timeLeft={engine.timerText}
+            timerPct={engine.timerPct}
+            context={practicingLabel}
+            count={round.countText}
+            isWarning={engine.timerWarning}
+            isLastQuestion={engine.timerLastQuestion}
+            onClose={engine.stop}
+          />
+          <QuizArea
+            prompt={engine.calibrating ? '' : promptText}
+            lastQuestion={engine.calibrating
+              ? ''
+              : (engine.state.roundTimerExpired ? 'Last question' : '')}
+          >
+            {engine.calibrating
+              ? (
+                <SpeedCheck
+                  provider={BUTTON_PROVIDER}
+                  fixture={engine.calibrationFixture}
+                  onComplete={(baseline) => {
+                    learner.applyBaseline(baseline);
+                    engine.endCalibration();
+                  }}
+                  onCancel={engine.endCalibration}
+                />
+              )
+              : phase === 'round-complete'
+              ? (
+                <RoundComplete
+                  context={round.roundContext}
+                  heading='Round complete'
+                  correct={round.roundCorrect}
+                  median={round.roundMedian}
+                  onContinue={engine.continueQuiz}
+                  onStop={engine.stop}
+                />
+              )
+              : (
+                <>
+                  <div class='speed-tap-status'>
+                    <span class='speed-tap-progress'>{progressText}</span>
+                  </div>
+                  <div
+                    ref={quizFbRef}
+                    // deno-lint-ignore react-no-danger
+                    dangerouslySetInnerHTML={{ __html: svgHTML }}
+                  />
+                  <NoteButtons hidden onAnswer={() => {}} />
+                  <FeedbackDisplay
+                    text={engine.state.feedbackText}
+                    className={engine.state.feedbackClass}
+                    time={engine.state.timeDisplayText || undefined}
+                    hint={engine.state.hintText || undefined}
+                  />
+                </>
+              )}
+          </QuizArea>
+        </>
+      )}
     </>
   );
 }

@@ -1,5 +1,9 @@
 // usePhaseClass — sync engine phase to CSS classes on the container element.
-// Replaces identical useEffect blocks in all mode components.
+// Still needed for: (1) full-bleed flex layout during quiz (phase-active/
+// phase-round-complete/phase-calibration), (2) navigation's Escape key check
+// (reads phase class), (3) focus management (moves focus to .start-btn on
+// idle, .round-complete-continue on round-complete). Child visibility is now
+// handled by Preact conditional rendering, not CSS phase rules.
 
 import { useEffect } from 'preact/hooks';
 import { isCalibrationPhase } from '../types.ts';
