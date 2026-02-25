@@ -2,8 +2,9 @@
 //
 // Every quiz mode registers the same pattern with the navigation system:
 //   activate  → sync motor baseline + update idle message
-//   deactivate → stop engine (if running) + mode-specific cleanup + clear calibration
+//   deactivate → stop engine (if running) + mode-specific cleanup
 //
+// engine.stop() resets to idle, which clears calibrating state automatically.
 // Modes pass any extra cleanup (noteHandler.reset, timeout clearing, etc.)
 // via the optional `onDeactivate` callback.
 
@@ -18,17 +19,15 @@ import type { LearnerModel } from './use-learner-model.ts';
  * @param onMount     Navigation registration callback (from mode props).
  * @param engine      Quiz engine handle (for stop + updateIdleMessage).
  * @param learner     Learner model (for syncBaseline).
- * @param setCalibrating  State setter to clear calibration on deactivate.
  * @param onDeactivate Optional mode-specific cleanup (e.g. noteHandler.reset,
- *                     clearing pending timeouts). Called after engine stop,
- *                     before clearing calibration. Should be a stable
- *                     reference (wrap in useCallback if needed).
+ *                     clearing pending timeouts). Called after engine stop.
+ *                     Should be a stable reference (wrap in useCallback if
+ *                     needed).
  */
 export function useModeLifecycle(
   onMount: (handle: ModeHandle) => void,
   engine: QuizEngineHandle,
   learner: LearnerModel,
-  setCalibrating: (v: boolean) => void,
   onDeactivate?: () => void,
 ): void {
   useLayoutEffect(() => {
@@ -40,8 +39,7 @@ export function useModeLifecycle(
       deactivate() {
         if (engine.state.phase !== 'idle') engine.stop();
         onDeactivate?.();
-        setCalibrating(false);
       },
     });
-  }, [onMount, engine, learner, setCalibrating, onDeactivate]);
+  }, [onMount, engine, learner, onDeactivate]);
 }

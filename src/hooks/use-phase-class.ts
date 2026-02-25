@@ -4,8 +4,6 @@
 import { useEffect } from 'preact/hooks';
 import type { EnginePhase } from '../types.ts';
 
-type PhaseKey = EnginePhase | 'calibration';
-
 const PHASE_CLASSES = [
   'phase-idle',
   'phase-active',
@@ -19,32 +17,29 @@ const PHASE_CLASSES = [
  * Runs as a side effect whenever the phase changes.
  *
  * Maps: 'idle' → 'phase-idle', 'round-complete' → 'phase-round-complete',
- * 'calibration' → 'phase-calibration',
+ * calibration-* → 'phase-calibration',
  * everything else (active, etc.) → 'phase-active'.
- *
- * Modes pass `calibrating ? 'calibration' : engine.state.phase` to override
- * the engine phase during speed check.
  *
  * Optional `focusTargets` maps phases to CSS selectors. When the phase changes
  * to a phase with a focus target, focus moves to the first matching element.
  */
 /** Default focus targets: idle → Start Quiz, round-complete → Keep Going. */
-export const PHASE_FOCUS_TARGETS: Partial<Record<PhaseKey, string>> = {
+export const PHASE_FOCUS_TARGETS: Partial<Record<EnginePhase, string>> = {
   idle: '.start-btn',
   'round-complete': '.round-complete-continue',
 };
 
 export function usePhaseClass(
   container: HTMLElement,
-  phase: PhaseKey,
-  focusTargets?: Partial<Record<PhaseKey, string>>,
+  phase: EnginePhase,
+  focusTargets?: Partial<Record<EnginePhase, string>>,
 ): void {
   useEffect(() => {
     const cls = phase === 'idle'
       ? 'phase-idle'
       : phase === 'round-complete'
       ? 'phase-round-complete'
-      : phase === 'calibration'
+      : phase.startsWith('calibration')
       ? 'phase-calibration'
       : 'phase-active';
     container.classList.remove(...PHASE_CLASSES);

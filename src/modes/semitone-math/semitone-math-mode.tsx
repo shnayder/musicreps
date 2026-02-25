@@ -144,15 +144,8 @@ export function SemitoneMathMode(
     [pendingNote, engine.state.answered],
   );
 
-  // --- Calibration state ---
-  const [calibrating, setCalibrating] = useState(false);
-
-  // --- Phase class sync (calibration overrides engine phase) ---
-  usePhaseClass(
-    container,
-    calibrating ? 'calibration' : engine.state.phase,
-    PHASE_FOCUS_TARGETS,
-  );
+  // --- Phase class sync ---
+  usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
 
   // --- Practice summary + tab/stats state ---
   const ps = usePracticeSummary({
@@ -168,7 +161,7 @@ export function SemitoneMathMode(
   const deactivateCleanup = useCallback(() => noteHandler.reset(), [
     noteHandler,
   ]);
-  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
 
   // --- Derived state ---
   const promptText = currentQ?.promptText ?? '';
@@ -219,7 +212,7 @@ export function SemitoneMathMode(
         statsMode={ps.statsMode}
         onStatsToggle={ps.setStatsMode}
         baseline={learner.motorBaseline}
-        onCalibrate={() => setCalibrating(true)}
+        onCalibrate={engine.startCalibration}
         activeTab={ps.activeTab}
         onTabSwitch={ps.setActiveTab}
       />
@@ -235,20 +228,21 @@ export function SemitoneMathMode(
         onClose={engine.stop}
       />
       <QuizArea
-        prompt={calibrating ? '' : promptText}
-        lastQuestion={calibrating
+        prompt={engine.calibrating ? '' : promptText}
+        lastQuestion={engine.calibrating
           ? ''
           : (engine.state.roundTimerExpired ? 'Last question' : '')}
       >
-        {calibrating
+        {engine.calibrating
           ? (
             <SpeedCheck
               provider={BUTTON_PROVIDER}
+              fixture={engine.calibrationFixture}
               onComplete={(baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               }}
-              onCancel={() => setCalibrating(false)}
+              onCancel={engine.endCalibration}
             />
           )
           : (

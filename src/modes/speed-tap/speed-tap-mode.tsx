@@ -299,15 +299,8 @@ export function SpeedTapMode(
     });
   }, [currentItemId]);
 
-  // --- Calibration state ---
-  const [calibrating, setCalibrating] = useState(false);
-
   // --- Phase class sync ---
-  usePhaseClass(
-    container,
-    calibrating ? 'calibration' : engine.state.phase,
-    PHASE_FOCUS_TARGETS,
-  );
+  usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
 
   // --- Round summary (context, correct, median, baseline, count) ---
   const practicingLabel = useMemo(() => {
@@ -336,7 +329,7 @@ export function SpeedTapMode(
   }, []);
 
   // --- Navigation handle ---
-  useModeLifecycle(onMount, engine, learner, setCalibrating);
+  useModeLifecycle(onMount, engine, learner);
 
   // --- Stats rendering (custom — uses automaticity/speed heatmap, no StatsTable) ---
   const statsHTML = useMemo(() => {
@@ -392,7 +385,7 @@ export function SpeedTapMode(
         statsMode={ps.statsMode}
         onStatsToggle={ps.setStatsMode}
         baseline={learner.motorBaseline}
-        onCalibrate={() => setCalibrating(true)}
+        onCalibrate={engine.startCalibration}
         activeTab={ps.activeTab}
         onTabSwitch={ps.setActiveTab}
       />
@@ -408,20 +401,21 @@ export function SpeedTapMode(
         onClose={engine.stop}
       />
       <QuizArea
-        prompt={calibrating ? '' : promptText}
-        lastQuestion={calibrating
+        prompt={engine.calibrating ? '' : promptText}
+        lastQuestion={engine.calibrating
           ? ''
           : (engine.state.roundTimerExpired ? 'Last question' : '')}
       >
-        {calibrating
+        {engine.calibrating
           ? (
             <SpeedCheck
               provider={BUTTON_PROVIDER}
+              fixture={engine.calibrationFixture}
               onComplete={(baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               }}
-              onCancel={() => setCalibrating(false)}
+              onCancel={engine.endCalibration}
             />
           )
           : (

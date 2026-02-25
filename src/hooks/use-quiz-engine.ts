@@ -1,9 +1,8 @@
 // useQuizEngine — Preact hook wrapping the quiz engine lifecycle.
 // Owns the pure state machine (quiz-engine-state.ts), round timer,
-// auto-advance timer, and keyboard routing. Components render
-// reactively from the returned state — no manual DOM manipulation.
-//
-// Calibration is left as an imperative escape hatch for Phase 5+.
+// auto-advance timer, keyboard routing, and calibration lifecycle.
+// Components render reactively from the returned state — no manual
+// DOM manipulation.
 
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import type {
@@ -12,7 +11,9 @@ import type {
   EngineState,
 } from '../types.ts';
 import type { FixtureDetail } from '../fixtures/quiz-page.ts';
+import type { SpeedCheckFixture } from '../ui/speed-check.tsx';
 import {
+  engineCalibrationIntro,
   engineContinueRound,
   engineNextQuestion,
   engineRoundComplete,
@@ -81,6 +82,11 @@ export type QuizEngineHandle = {
   timerWarning: boolean;
   timerLastQuestion: boolean;
 
+  /** True when phase is calibration-intro, calibrating, or calibration-results. */
+  calibrating: boolean;
+  /** Fixture data for SpeedCheck component (set via __fixture__ events). */
+  calibrationFixture: SpeedCheckFixture | undefined;
+
   // Actions
   start: () => void;
   stop: () => void;
@@ -88,6 +94,10 @@ export type QuizEngineHandle = {
   nextQuestion: () => void;
   continueQuiz: () => void;
   updateIdleMessage: () => void;
+  /** Transition to calibration-intro phase. */
+  startCalibration: () => void;
+  /** Transition back to idle (end calibration). */
+  endCalibration: () => void;
 };
 
 // ---------------------------------------------------------------------------
@@ -336,8 +346,23 @@ export function useQuizEngine(
     }
     stopRoundTimer();
     setState(engineStop);
+    setCalibrationFixture(undefined);
     if (configRef.current.onStop) configRef.current.onStop();
   }, [stopRoundTimer]);
+
+  // --- Calibration lifecycle ---
+
+  const [calibrationFixture, setCalibrationFixture] = useState<
+    SpeedCheckFixture | undefined
+  >();
+
+  const startCalibration = useCallback(() => {
+    setState(engineCalibrationIntro);
+  }, []);
+
+  const endCalibration = useCallback(() => {
+    setState(engineStop);
+  }, []);
 
   const updateIdleMessage = useCallback(() => {
     if (stateRef.current.phase !== 'idle') return;
@@ -447,6 +472,17 @@ export function useQuizEngine(
         setTimerLastQuestion(detail.timerLastQuestion);
       }
 
+      // Apply calibration fixture
+      if (detail.calibration) {
+        const calPhase = detail.calibration.phase === 'results'
+          ? 'calibration-results' as const
+          : detail.calibration.phase === 'running'
+          ? 'calibrating' as const
+          : 'calibration-intro' as const;
+        setState((prev) => ({ ...prev, phase: calPhase }));
+        setCalibrationFixture(detail.calibration);
+      }
+
       // Signal completion so Playwright can waitForSelector
       target.setAttribute('data-fixture-applied', 'true');
     }
@@ -461,11 +497,15 @@ export function useQuizEngine(
     timerText,
     timerWarning,
     timerLastQuestion,
+    calibrating: state.phase.startsWith('calibration'),
+    calibrationFixture,
     start,
     stop,
     submitAnswer,
     nextQuestion,
     continueQuiz,
     updateIdleMessage,
+    startCalibration,
+    endCalibration,
   };
 }

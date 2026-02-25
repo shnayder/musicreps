@@ -214,15 +214,8 @@ export function ChordSpellingMode(
     [pendingNote, engine.state.answered],
   );
 
-  // --- Calibration state ---
-  const [calibrating, setCalibrating] = useState(false);
-
   // --- Phase class sync ---
-  usePhaseClass(
-    container,
-    calibrating ? 'calibration' : engine.state.phase,
-    PHASE_FOCUS_TARGETS,
-  );
+  usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
 
   // --- Practice summary + tab/stats state ---
   const ps = usePracticeSummary({
@@ -238,7 +231,7 @@ export function ChordSpellingMode(
   const deactivateCleanup = useCallback(() => noteHandler.reset(), [
     noteHandler,
   ]);
-  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
 
   // --- Derived state ---
   const promptText = currentQ
@@ -288,7 +281,7 @@ export function ChordSpellingMode(
         statsMode={ps.statsMode}
         onStatsToggle={ps.setStatsMode}
         baseline={learner.motorBaseline}
-        onCalibrate={() => setCalibrating(true)}
+        onCalibrate={engine.startCalibration}
         activeTab={ps.activeTab}
         onTabSwitch={ps.setActiveTab}
       />
@@ -304,20 +297,21 @@ export function ChordSpellingMode(
         onClose={engine.stop}
       />
       <QuizArea
-        prompt={calibrating ? '' : promptText}
-        lastQuestion={calibrating
+        prompt={engine.calibrating ? '' : promptText}
+        lastQuestion={engine.calibrating
           ? ''
           : (engine.state.roundTimerExpired ? 'Last question' : '')}
       >
-        {calibrating
+        {engine.calibrating
           ? (
             <SpeedCheck
               provider={BUTTON_PROVIDER}
+              fixture={engine.calibrationFixture}
               onComplete={(baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               }}
-              onCancel={() => setCalibrating(false)}
+              onCancel={engine.endCalibration}
             />
           )
           : (
