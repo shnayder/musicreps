@@ -37,19 +37,25 @@ export function ModeScreen(
 // ---------------------------------------------------------------------------
 
 export function ModeTopBar(
-  { title, onBack }: { title: string; onBack?: () => void },
+  { title, onBack, showBack = true }: {
+    title: string;
+    onBack?: () => void;
+    showBack?: boolean;
+  },
 ) {
   return (
     <div class='mode-top-bar'>
-      <button
-        type='button'
-        tabIndex={0}
-        class='mode-back-btn'
-        aria-label='Back to home'
-        onClick={onBack}
-      >
-        {'\u2190' /* ← back arrow */}
-      </button>
+      {showBack && (
+        <button
+          type='button'
+          tabIndex={0}
+          class='mode-back-btn'
+          aria-label='Back to home'
+          onClick={onBack}
+        >
+          {'\u2190' /* ← back arrow */}
+        </button>
+      )}
       <h1 class='mode-title'>{title}</h1>
     </div>
   );
@@ -275,7 +281,7 @@ export function StartButton(
 }
 
 // ---------------------------------------------------------------------------
-// QuizSession — countdown, session info, close button, progress bar
+// QuizSession — countdown, session info, close button
 // ---------------------------------------------------------------------------
 
 export function QuizSession(
@@ -284,8 +290,6 @@ export function QuizSession(
     timerPct,
     context,
     count,
-    fluent,
-    total,
     isWarning,
     isLastQuestion,
     onClose,
@@ -294,14 +298,11 @@ export function QuizSession(
     timerPct?: number;
     context?: string;
     count?: string;
-    fluent?: number;
-    total?: number;
     isWarning?: boolean;
     isLastQuestion?: boolean;
     onClose?: () => void;
   },
 ) {
-  const pct = total ? Math.round((fluent || 0) / total * 100) : 0;
   return (
     <div class='quiz-session'>
       <div class='quiz-countdown-row'>
@@ -327,12 +328,6 @@ export function QuizSession(
       >
         {'\u00D7' /* × close button */}
       </button>
-      <div class='progress-bar'>
-        <div class='progress-fill' style={{ width: `${pct}%` }} />
-        <div class='progress-text'>
-          {fluent != null && total != null ? `${fluent} / ${total} fluent` : ''}
-        </div>
-      </div>
     </div>
   );
 }
@@ -365,10 +360,12 @@ export function QuizArea(
 ) {
   return (
     <div class='quiz-area'>
-      <div class='quiz-last-question'>{lastQuestion || ''}</div>
-      <div class='quiz-prompt-row'>
-        <div class='quiz-prompt'>{prompt || ''}</div>
-      </div>
+      {lastQuestion && <div class='quiz-last-question'>{lastQuestion}</div>}
+      {prompt && (
+        <div class='quiz-prompt-row'>
+          <div class='quiz-prompt'>{prompt}</div>
+        </div>
+      )}
       {children}
     </div>
   );

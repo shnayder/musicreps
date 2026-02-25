@@ -347,6 +347,13 @@ describe('ModeTopBar', () => {
     assert.ok(html.includes('Semitone Math'));
     assert.ok(html.includes('\u2190'));
   });
+
+  it('hides back button when showBack is false', () => {
+    const html = render(<ModeTopBar title='Test' showBack={false} />);
+    assert.ok(html.includes('mode-top-bar'));
+    assert.ok(html.includes('mode-title'));
+    assert.ok(!html.includes('mode-back-btn'));
+  });
 });
 
 describe('TabbedIdle', () => {
@@ -460,15 +467,13 @@ describe('StartButton', () => {
 });
 
 describe('QuizSession', () => {
-  it('renders countdown, info, close, and progress', () => {
+  it('renders countdown, info, and close', () => {
     const html = render(
       <QuizSession
         timeLeft='42s'
         timerPct={65}
         context='Natural notes'
         count='5 of 12'
-        fluent={6}
-        total={14}
       />,
     );
     assert.ok(html.includes('quiz-session'));
@@ -482,9 +487,6 @@ describe('QuizSession', () => {
     assert.ok(html.includes('Natural notes'));
     assert.ok(html.includes('5 of 12'));
     assert.ok(html.includes('quiz-header-close'));
-    assert.ok(html.includes('progress-bar'));
-    assert.ok(html.includes('progress-fill'));
-    assert.ok(html.includes('6 / 14 fluent'));
   });
 });
 
@@ -512,7 +514,6 @@ describe('QuizArea', () => {
     assert.ok(html.includes('quiz-prompt-row'));
     assert.ok(html.includes('quiz-prompt'));
     assert.ok(html.includes('C + 5'));
-    assert.ok(html.includes('quiz-last-question'));
     assert.ok(html.includes('test-buttons'));
   });
 

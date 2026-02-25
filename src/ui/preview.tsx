@@ -262,8 +262,6 @@ function PreviewApp() {
           timeLeft='42s'
           context='Natural notes'
           count='5 of 12'
-          fluent={6}
-          total={14}
           isWarning={false}
         />
       </Section>
