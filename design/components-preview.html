@@ -268,18 +268,6 @@ body {
   font-weight: 600;
   flex: 1;
 }
-/* Hide back button during active quiz and calibration; keep title visible */
-.phase-active .mode-back-btn,
-.phase-calibration .mode-back-btn,
-.phase-round-complete .mode-back-btn {
-  display: none;
-}
-.phase-active .mode-top-bar,
-.phase-calibration .mode-top-bar,
-.phase-round-complete .mode-top-bar {
-  margin-bottom: 0;
-}
-
 /* --- Settings modal --- */
 .settings-overlay {
   display: none;
@@ -386,26 +374,8 @@ body {
   display: block;
 }
 
-/* --- Phase-driven visibility --- */
 .quiz-session {
   position: relative;
-}
-.phase-idle .quiz-session {
-  display: none;
-}
-
-/* Hide tabs and tab content during non-idle phases */
-/* .tab-content.active needs explicit override (higher specificity than .tab-content.active display:block) */
-.phase-active .mode-tabs,
-.phase-active .tab-content,
-.phase-active .tab-content.active,
-.phase-calibration .mode-tabs,
-.phase-calibration .tab-content,
-.phase-calibration .tab-content.active,
-.phase-round-complete .mode-tabs,
-.phase-round-complete .tab-content,
-.phase-round-complete .tab-content.active {
-  display: none;
 }
 
 /* Element-level visibility (replaces inline style="display: none;") */
@@ -413,12 +383,6 @@ body {
   display: none;
 }
 .mastery-message.mastery-visible {
-  display: block;
-}
-.round-complete {
-  display: none;
-}
-.phase-round-complete .round-complete {
   display: block;
 }
 .stats-container.stats-hidden {
@@ -890,7 +854,7 @@ button {
   background: var(--color-surface-hover);
 }
 
-/* --- Progress bar --- */
+/* --- Progress bar (build-time template only) --- */
 .progress-bar {
   width: 100%;
   max-width: 300px;
@@ -900,9 +864,6 @@ button {
   margin: 0 auto var(--space-4);
   overflow: hidden;
   position: relative;
-}
-.phase-active .progress-bar,
-.phase-round-complete .progress-bar {
   display: none;
 }
 .progress-fill {
@@ -928,9 +889,11 @@ button {
 }
 
 /* --- Quiz-active visual focus --- */
-.phase-active,
-.phase-round-complete,
-.phase-calibration {
+/* .mode-screen prefix gives 0-2-0 specificity to override
+   .mode-screen.mode-active { display: block } (also 0-2-0, but earlier). */
+.mode-screen.phase-active,
+.mode-screen.phase-round-complete,
+.mode-screen.phase-calibration {
   background: var(--color-bg);
   margin: 0 calc(-1 * var(--space-5));
   padding: 0 var(--space-5);
@@ -938,27 +901,14 @@ button {
   flex-direction: column;
   min-height: 100dvh;
 }
-/* --- Quiz area (subtle card containment) --- */
-/* Phase-driven visibility: shown during active, round-complete, calibration */
+/* --- Quiz area --- */
 .quiz-area {
-  display: none;
-  text-align: center;
-  margin: var(--space-5) 0;
-  border: 2px solid transparent;
-}
-.phase-active .quiz-area,
-.phase-round-complete .quiz-area,
-.phase-calibration .quiz-area {
   display: flex;
   flex-direction: column;
   justify-content: center;
   flex: 1;
-  background: var(--color-bg);
-  border-radius: 12px;
-  padding: var(--space-5);
-}
-.phase-active .quiz-area {
-  padding: var(--space-3) var(--space-3);
+  text-align: center;
+  padding: var(--space-3);
 }
 /* --- Round complete --- */
 .round-complete {
@@ -1031,23 +981,6 @@ button {
 .round-complete-stop:active {
   background: var(--color-surface-pressed);
 }
-/* Hide quiz prompt, answer buttons, and feedback during round-complete */
-.phase-round-complete .quiz-prompt-row,
-.phase-round-complete .answer-buttons,
-.phase-round-complete .note-buttons,
-.phase-round-complete .chord-slots,
-.phase-round-complete .feedback,
-.phase-round-complete .hint,
-.phase-round-complete .time-display,
-.phase-round-complete .speed-tap-status,
-.phase-round-complete .fretboard-wrapper,
-.phase-round-complete .quiz-countdown-row,
-.phase-round-complete .quiz-session-info,
-.phase-round-complete .quiz-header-close,
-.phase-round-complete .quiz-last-question {
-  display: none;
-}
-
 /* --- Note buttons (piano-style layout) --- */
 .note-buttons {
   display: flex;
@@ -1236,38 +1169,6 @@ button {
 
 /* --- Answer group visibility (toggled by mode JS for bidirectional questions) --- */
 .answer-group-hidden {
-  display: none;
-}
-
-/* --- Calibration overlay: inside quiz-area, hide non-calibration content --- */
-.phase-calibration .answer-buttons:not(.calibration-active),
-.phase-calibration .note-buttons:not(.calibration-active) {
-  display: none;
-}
-.phase-calibration .answer-buttons.calibration-active {
-  display: grid;
-}
-.phase-calibration .note-buttons.calibration-active {
-  display: flex;
-}
-.phase-calibration .speed-tap-status,
-.phase-calibration .fretboard-wrapper {
-  display: none;
-}
-.phase-calibration .chord-slots {
-  display: none;
-}
-/* Calibration: hide quiz info (progress bar shows trial count instead) */
-.phase-calibration .quiz-session-info {
-  display: none;
-}
-/* Intro + results: hide buttons and progress */
-.phase-calibration.calibration-intro .calibration-active,
-.phase-calibration.calibration-results .calibration-active {
-  display: none;
-}
-.phase-calibration.calibration-intro .progress-bar,
-.phase-calibration.calibration-results .progress-bar {
   display: none;
 }
 
@@ -1724,9 +1625,9 @@ button {
     margin-left: calc(-1 * var(--space-1));
   }
 
-  .phase-active,
-  .phase-round-complete,
-  .phase-calibration {
+  .mode-screen.phase-active,
+  .mode-screen.phase-round-complete,
+  .mode-screen.phase-calibration {
     margin: 0 calc(-1 * var(--space-1));
     padding: 0 var(--space-1);
   }
@@ -2968,9 +2869,9 @@ button {
   function ModeScreen({ id, phase, children }) {
     return /* @__PURE__ */ u3("div", { class: `mode-screen phase-${phase}`, id: `mode-${id}`, children });
   }
-  function ModeTopBar({ title, onBack }) {
+  function ModeTopBar({ title, onBack, showBack = true }) {
     return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: [
-      /* @__PURE__ */ u3(
+      showBack && /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
@@ -3107,13 +3008,10 @@ button {
     timerPct,
     context,
     count,
-    fluent,
-    total,
     isWarning,
     isLastQuestion,
     onClose
   }) {
-    const pct = total ? Math.round((fluent || 0) / total * 100) : 0;
     return /* @__PURE__ */ u3("div", { class: "quiz-session", children: [
       /* @__PURE__ */ u3("div", { class: "quiz-countdown-row", children: [
         /* @__PURE__ */ u3(
@@ -3142,11 +3040,7 @@ button {
           onClick: onClose,
           children: "\xD7"
         }
-      ),
-      /* @__PURE__ */ u3("div", { class: "progress-bar", children: [
-        /* @__PURE__ */ u3("div", { class: "progress-fill", style: { width: `${pct}%` } }),
-        /* @__PURE__ */ u3("div", { class: "progress-text", children: fluent != null && total != null ? `${fluent} / ${total} fluent` : "" })
-      ] })
+      )
     ] });
   }
   function SessionInfo({ context, count }) {
@@ -3157,8 +3051,8 @@ button {
   }
   function QuizArea({ prompt, lastQuestion, children }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || "" }),
-      /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt || "" }) }),
+      lastQuestion && /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion }),
+      prompt && /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt }) }),
       children
     ] });
   }
@@ -3359,8 +3253,6 @@ button {
           timeLeft: "42s",
           context: "Natural notes",
           count: "5 of 12",
-          fluent: 6,
-          total: 14,
           isWarning: false
         }
       ) }),
