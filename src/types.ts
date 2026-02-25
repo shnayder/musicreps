@@ -174,6 +174,10 @@ export type EnginePhase =
   | 'calibrating'
   | 'calibration-results';
 
+export function isCalibrationPhase(phase: EnginePhase): boolean {
+  return phase === 'calibrating' || phase.startsWith('calibration');
+}
+
 export type EngineState = {
   phase: EnginePhase;
   currentItemId: string | null;

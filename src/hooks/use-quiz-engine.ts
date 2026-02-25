@@ -10,6 +10,7 @@ import type {
   CheckAnswerResult,
   EngineState,
 } from '../types.ts';
+import { isCalibrationPhase } from '../types.ts';
 import type { FixtureDetail } from '../fixtures/quiz-page.ts';
 import type { SpeedCheckFixture } from '../ui/speed-check.tsx';
 import {
@@ -357,10 +358,12 @@ export function useQuizEngine(
   >();
 
   const startCalibration = useCallback(() => {
+    setCalibrationFixture(undefined);
     setState(engineCalibrationIntro);
   }, []);
 
   const endCalibration = useCallback(() => {
+    setCalibrationFixture(undefined);
     setState(engineStop);
   }, []);
 
@@ -497,7 +500,7 @@ export function useQuizEngine(
     timerText,
     timerWarning,
     timerLastQuestion,
-    calibrating: state.phase.startsWith('calibration'),
+    calibrating: isCalibrationPhase(state.phase),
     calibrationFixture,
     start,
     stop,

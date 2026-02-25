@@ -2,6 +2,7 @@
 // Replaces identical useEffect blocks in all mode components.
 
 import { useEffect } from 'preact/hooks';
+import { isCalibrationPhase } from '../types.ts';
 import type { EnginePhase } from '../types.ts';
 
 const PHASE_CLASSES = [
@@ -39,7 +40,7 @@ export function usePhaseClass(
       ? 'phase-idle'
       : phase === 'round-complete'
       ? 'phase-round-complete'
-      : phase.startsWith('calibration')
+      : isCalibrationPhase(phase)
       ? 'phase-calibration'
       : 'phase-active';
     container.classList.remove(...PHASE_CLASSES);

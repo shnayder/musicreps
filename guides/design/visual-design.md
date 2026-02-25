@@ -395,6 +395,17 @@ buttons. Intervals map 1:1 to semitones, so the same spatial layout
 reinforces the semitone-to-interval association. The gap between P4 and P5
 (no top-row button) mirrors the E-F piano gap.
 
+### Viewport queries vs. component sizing
+
+Component-level sizing (grids, max-widths) should not vary by viewport width.
+Components may render in different contexts — the component preview page, a
+screenshot viewport, or the actual app — so viewport-conditional sizing creates
+mismatches. Use the container's own `max-width` constraint instead.
+
+Reserve `@media` viewport queries for **structural layout** (body padding, phase
+margins) and **typography scaling**, not for component internals like button grid
+columns or answer-area widths.
+
 ---
 
 ## Interaction Patterns

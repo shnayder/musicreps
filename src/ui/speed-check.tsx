@@ -17,9 +17,9 @@ import { computeMedian } from '../adaptive.ts';
 /** Describes a fixture state for deterministic screenshots. */
 export type SpeedCheckFixture = {
   phase: 'intro' | 'running' | 'results';
-  /** Baseline value in ms (for 'results' phase). Defaults to 520. */
+  /** Baseline value in ms (for 'results' phase). Defaults to 0. */
   baseline?: number;
-  /** Trial progress text (for 'running' phase). Defaults to '5 / 10'. */
+  /** Trial progress text (for 'running' phase). Defaults to ''. */
   trialProgress?: string;
   /** Which button to highlight green (for 'running' phase). */
   targetNote?: string;

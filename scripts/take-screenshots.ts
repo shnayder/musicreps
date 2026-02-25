@@ -9,13 +9,13 @@
 //   npx tsx scripts/take-screenshots.ts --list       # print all names and exit
 //   npx tsx scripts/take-screenshots.ts --only pat   # only names matching pat
 
-import { chromium } from "playwright";
-import { ChildProcess, spawn } from "child_process";
-import { mkdirSync, writeFileSync } from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { defaultItems } from "../src/fixtures/items.ts";
-import type { FixtureDetail } from "../src/fixtures/quiz-page.ts";
+import { chromium } from 'playwright';
+import { ChildProcess, spawn } from 'child_process';
+import { mkdirSync, writeFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { defaultItems } from '../src/fixtures/items.ts';
+import type { FixtureDetail } from '../src/fixtures/quiz-page.ts';
 import {
   quizActive,
   quizCorrectFeedback,
@@ -24,7 +24,7 @@ import {
   speedCheckIntro,
   speedCheckResults,
   speedCheckTesting,
-} from "../src/fixtures/quiz-page.ts";
+} from '../src/fixtures/quiz-page.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,54 +34,54 @@ const VIEWPORT = { width: 402, height: 873 };
 
 // Parse CLI flags
 const args = process.argv.slice(2);
-const ciMode = args.includes("--ci");
-const dirIdx = args.indexOf("--dir");
-const OUT_DIR =
-  dirIdx >= 0 && args[dirIdx + 1]
-    ? path.resolve(args[dirIdx + 1])
-    : path.resolve(__dirname, "..", "screenshots");
-const listMode = args.includes("--list");
-const onlyIdx = args.indexOf("--only");
-const onlyPatterns =
-  onlyIdx >= 0 && args[onlyIdx + 1] ? args[onlyIdx + 1].split(",") : null;
+const ciMode = args.includes('--ci');
+const dirIdx = args.indexOf('--dir');
+const OUT_DIR = dirIdx >= 0 && args[dirIdx + 1]
+  ? path.resolve(args[dirIdx + 1])
+  : path.resolve(__dirname, '..', 'screenshots');
+const listMode = args.includes('--list');
+const onlyIdx = args.indexOf('--only');
+const onlyPatterns = onlyIdx >= 0 && args[onlyIdx + 1]
+  ? args[onlyIdx + 1].split(',')
+  : null;
 const DEVICE_SCALE_FACTOR = ciMode ? 1 : 3;
-const IMG_EXT = ciMode ? "jpg" : "png";
-const IMG_TYPE = ciMode ? ("jpeg" as const) : ("png" as const);
+const IMG_EXT = ciMode ? 'jpg' : 'png';
+const IMG_TYPE = ciMode ? ('jpeg' as const) : ('png' as const);
 
 // ---------------------------------------------------------------------------
 // Mode IDs
 // ---------------------------------------------------------------------------
 
 const MODE_IDS = [
-  "fretboard",
-  "ukulele",
-  "speedTap",
-  "noteSemitones",
-  "intervalSemitones",
-  "semitoneMath",
-  "intervalMath",
-  "keySignatures",
-  "scaleDegrees",
-  "diatonicChords",
-  "chordSpelling",
+  'fretboard',
+  'ukulele',
+  'speedTap',
+  'noteSemitones',
+  'intervalSemitones',
+  'semitoneMath',
+  'intervalMath',
+  'keySignatures',
+  'scaleDegrees',
+  'diatonicChords',
+  'chordSpelling',
 ] as const;
 
-// Modes that use QuizEngine (all except speedTap)
-const ENGINE_MODES = MODE_IDS.filter((id) => id !== "speedTap");
+// All modes use QuizEngine — seed motor baselines so calibration is skipped.
+const ENGINE_MODES = MODE_IDS;
 
 // Display names matching src/app.ts registrations
 const MODE_TITLES: Record<string, string> = {
-  fretboard: "Guitar Fretboard",
-  ukulele: "Ukulele Fretboard",
-  speedTap: "Speed Tap",
-  noteSemitones: "Note \u2194 Semitones",
-  intervalSemitones: "Interval \u2194 Semitones",
-  semitoneMath: "Semitone Math",
-  intervalMath: "Interval Math",
-  keySignatures: "Key Signatures",
-  scaleDegrees: "Scale Degrees",
-  diatonicChords: "Diatonic Chords",
-  chordSpelling: "Chord Spelling",
+  fretboard: 'Guitar Fretboard',
+  ukulele: 'Ukulele Fretboard',
+  speedTap: 'Speed Tap',
+  noteSemitones: 'Note \u2194 Semitones',
+  intervalSemitones: 'Interval \u2194 Semitones',
+  semitoneMath: 'Semitone Math',
+  intervalMath: 'Interval Math',
+  keySignatures: 'Key Signatures',
+  scaleDegrees: 'Scale Degrees',
+  diatonicChords: 'Diatonic Chords',
+  chordSpelling: 'Chord Spelling',
 };
 
 // ---------------------------------------------------------------------------
@@ -95,11 +95,11 @@ type ScreenshotEntry = {
 };
 
 const BIDIRECTIONAL_MODES = new Set([
-  "noteSemitones",
-  "intervalSemitones",
-  "keySignatures",
-  "scaleDegrees",
-  "diatonicChords",
+  'noteSemitones',
+  'intervalSemitones',
+  'keySignatures',
+  'scaleDegrees',
+  'diatonicChords',
 ]);
 
 function buildManifest(): ScreenshotEntry[] {
@@ -108,67 +108,65 @@ function buildManifest(): ScreenshotEntry[] {
   // All modes: idle + quiz (+ reverse quiz for bidirectional modes)
   for (const modeId of MODE_IDS) {
     entries.push({ name: `${modeId}-idle`, modeId });
-    if (modeId !== "speedTap") {
+    entries.push({
+      name: `${modeId}-quiz`,
+      modeId,
+      fixture: quizActive(defaultItems[modeId]),
+    });
+    if (BIDIRECTIONAL_MODES.has(modeId)) {
       entries.push({
-        name: `${modeId}-quiz`,
+        name: `${modeId}-quiz-rev`,
         modeId,
-        fixture: quizActive(defaultItems[modeId]),
+        fixture: quizActive(defaultItems[`${modeId}_rev`]),
       });
-      if (BIDIRECTIONAL_MODES.has(modeId)) {
-        entries.push({
-          name: `${modeId}-quiz-rev`,
-          modeId,
-          fixture: quizActive(defaultItems[`${modeId}_rev`]),
-        });
-      }
     }
   }
 
   // Speed Check: fixture-based calibration captures
   entries.push(
     {
-      name: "speedCheck-intro",
-      modeId: "speedTap",
+      name: 'speedCheck-intro',
+      modeId: 'speedTap',
       fixture: speedCheckIntro(),
     },
     {
-      name: "speedCheck-testing",
-      modeId: "speedTap",
+      name: 'speedCheck-testing',
+      modeId: 'speedTap',
       fixture: speedCheckTesting(),
     },
     {
-      name: "speedCheck-results",
-      modeId: "speedTap",
+      name: 'speedCheck-results',
+      modeId: 'speedTap',
       fixture: speedCheckResults(),
     },
   );
 
   // Design moments: correct, wrong, round-complete (semitoneMath)
   entries.push({
-    name: "design-correct-feedback",
-    modeId: "semitoneMath",
+    name: 'design-correct-feedback',
+    modeId: 'semitoneMath',
     fixture: quizCorrectFeedback(defaultItems.semitoneMath),
   });
   entries.push({
-    name: "design-wrong-feedback",
-    modeId: "semitoneMath",
+    name: 'design-wrong-feedback',
+    modeId: 'semitoneMath',
     fixture: quizWrongFeedback(defaultItems.semitoneMath),
   });
   entries.push({
-    name: "design-round-complete",
-    modeId: "semitoneMath",
+    name: 'design-round-complete',
+    modeId: 'semitoneMath',
     fixture: quizRoundComplete(),
   });
 
   // Fretboard design moments: correct + wrong
   entries.push({
-    name: "design-fretboard-correct",
-    modeId: "fretboard",
+    name: 'design-fretboard-correct',
+    modeId: 'fretboard',
     fixture: quizCorrectFeedback(defaultItems.fretboard),
   });
   entries.push({
-    name: "design-fretboard-wrong",
-    modeId: "fretboard",
+    name: 'design-fretboard-wrong',
+    modeId: 'fretboard',
     fixture: quizWrongFeedback(defaultItems.fretboard),
   });
 
@@ -181,16 +179,16 @@ function buildManifest(): ScreenshotEntry[] {
 
 function startServer(): ChildProcess {
   const proc = spawn(
-    "deno",
-    ["run", "--allow-net", "--allow-read", "--allow-run", "main.ts"],
+    'deno',
+    ['run', '--allow-net', '--allow-read', '--allow-run', 'main.ts'],
     {
-      cwd: path.resolve(__dirname, ".."),
-      stdio: "pipe",
+      cwd: path.resolve(__dirname, '..'),
+      stdio: 'pipe',
     },
   );
-  proc.stderr?.on("data", (d: Buffer) => {
+  proc.stderr?.on('data', (d: Buffer) => {
     const msg = d.toString();
-    if (!msg.includes("Listening on")) process.stderr.write(msg);
+    if (!msg.includes('Listening on')) process.stderr.write(msg);
   });
   return proc;
 }
@@ -224,9 +222,9 @@ function generateIndexHTML(
   const designEntries: ScreenshotEntry[] = [];
 
   for (const entry of manifest) {
-    if (entry.name.startsWith("design-")) {
+    if (entry.name.startsWith('design-')) {
       designEntries.push(entry);
-    } else if (entry.name.startsWith("speedCheck-")) {
+    } else if (entry.name.startsWith('speedCheck-')) {
       speedCheckEntries.push(entry);
     } else {
       const group = modeGroups.get(entry.modeId) ?? [];
@@ -240,13 +238,13 @@ function generateIndexHTML(
     const prefix = `${entry.modeId}-`;
     if (entry.name.startsWith(prefix)) return entry.name.slice(prefix.length);
     // Speed Check entries use 'speedCheck-' prefix under speedTap mode
-    if (entry.name.startsWith("speedCheck-")) {
-      return entry.name.slice("speedCheck-".length);
+    if (entry.name.startsWith('speedCheck-')) {
+      return entry.name.slice('speedCheck-'.length);
     }
     return entry.name;
   }
   function designLabel(entry: ScreenshotEntry): string {
-    return entry.name.replace(/^design-/, "").replace(/-/g, " ");
+    return entry.name.replace(/^design-/, '').replace(/-/g, ' ');
   }
 
   function shotHTML(name: string, label: string): string {
@@ -254,22 +252,22 @@ function generateIndexHTML(
     return `<a href="${file}"><img src="${file}" loading="lazy"><span>${label}</span></a>`;
   }
 
-  let sections = "";
+  let sections = '';
 
   // Mode sections in manifest order (preserves MODE_IDS order)
   for (const modeId of MODE_IDS) {
     const entries = modeGroups.get(modeId);
     if (!entries) continue;
     const title = MODE_TITLES[modeId] ?? modeId;
-    const shots = entries.map((e) => shotHTML(e.name, modeLabel(e))).join("\n");
+    const shots = entries.map((e) => shotHTML(e.name, modeLabel(e))).join('\n');
     sections += `<h2>${title}</h2>\n<div class="shots">\n${shots}\n</div>\n`;
   }
 
   // Speed Check section
   if (speedCheckEntries.length > 0) {
     const shots = speedCheckEntries
-      .map((e) => shotHTML(e.name, e.name.slice("speedCheck-".length)))
-      .join("\n");
+      .map((e) => shotHTML(e.name, e.name.slice('speedCheck-'.length)))
+      .join('\n');
     sections += `<h2>Speed Check</h2>\n<div class="shots">\n${shots}\n</div>\n`;
   }
 
@@ -277,8 +275,9 @@ function generateIndexHTML(
   if (designEntries.length > 0) {
     const shots = designEntries
       .map((e) => shotHTML(e.name, designLabel(e)))
-      .join("\n");
-    sections += `<h2>Design Moments</h2>\n<div class="shots">\n${shots}\n</div>\n`;
+      .join('\n');
+    sections +=
+      `<h2>Design Moments</h2>\n<div class="shots">\n${shots}\n</div>\n`;
   }
 
   const html = `<!DOCTYPE html>
@@ -296,7 +295,7 @@ h2 { margin-top: 2rem; font-size: 1.3rem; }
 ${sections}</body></html>
 `;
 
-  const filePath = path.join(outDir, "index.html");
+  const filePath = path.join(outDir, 'index.html');
   writeFileSync(filePath, html);
   console.log(`Generated ${filePath}`);
 }
@@ -310,7 +309,7 @@ async function main() {
   let manifest = buildManifest();
   if (onlyPatterns) {
     manifest = manifest.filter((e) =>
-      onlyPatterns.some((p) => e.name.includes(p)),
+      onlyPatterns.some((p) => e.name.includes(p))
     );
   }
 
@@ -322,11 +321,11 @@ async function main() {
 
   mkdirSync(OUT_DIR, { recursive: true });
 
-  console.log("Starting dev server...");
+  console.log('Starting dev server...');
   const server = startServer();
   try {
     await waitForServer();
-    console.log("Server ready.");
+    console.log('Server ready.');
 
     const browser = await chromium.launch();
     const context = await browser.newContext({
@@ -337,26 +336,26 @@ async function main() {
 
     // Load page with ?fixtures to enable fixture injection
     await page.goto(`${BASE_URL}/?fixtures`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
 
     // Seed motorBaseline for all engine modes to skip calibration
     for (const ns of ENGINE_MODES) {
       await page.evaluate(
-        (key) => localStorage.setItem(key, "500"),
+        (key) => localStorage.setItem(key, '500'),
         `motorBaseline_${ns}`,
       );
     }
 
     // Reload so app picks up seeded baselines
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
 
     // Helper: navigate to a mode via page reload + real UI click.
     // Page reload guarantees clean state — no stale mode-active classes,
     // no leftover fixture state, no navigation system desync.
     async function navigateToMode(modeId: string) {
       await page.goto(`${BASE_URL}/?fixtures`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState('networkidle');
       await page.click(`[data-mode="${modeId}"]`);
       await page.waitForSelector(`#mode-${modeId}.mode-active`);
     }
@@ -379,7 +378,7 @@ async function main() {
       // Clear previous fixture-applied marker
       await page.evaluate((sel) => {
         const el = document.querySelector(sel);
-        if (el) el.removeAttribute("data-fixture-applied");
+        if (el) el.removeAttribute('data-fixture-applied');
       }, container);
 
       // Dispatch __fixture__ custom event
@@ -388,7 +387,7 @@ async function main() {
           const el = document.querySelector(sel);
           if (!el) throw new Error(`Container not found: ${sel}`);
           el.dispatchEvent(
-            new CustomEvent("__fixture__", { detail, bubbles: false }),
+            new CustomEvent('__fixture__', { detail, bubbles: false }),
           );
         },
         { sel: container, detail: fixture },
@@ -404,7 +403,7 @@ async function main() {
     }
 
     // --- Capture all screenshots via fixture injection ---
-    let currentMode = "";
+    let currentMode = '';
     let previousHadFixture = false;
 
     for (const entry of manifest) {
