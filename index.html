@@ -1738,11 +1738,6 @@ button {
     max-width: none;
   }
 
-  .answer-buttons {
-    grid-template-columns: repeat(3, 1fr);
-    max-width: 280px;
-  }
-
   .quiz-prompt {
     font-size: 1.6rem;
   }
@@ -1813,7 +1808,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">#642</span>
+      <span class="version">#649</span>
     </div>
   </div>
 
@@ -5307,6 +5302,11 @@ button {
     };
   }
 
+  // src/types.ts
+  function isCalibrationPhase(phase) {
+    return phase === "calibrating" || phase.startsWith("calibration");
+  }
+
   // src/quiz-engine-state.ts
   function initialEngineState() {
     return {
@@ -5420,6 +5420,20 @@ button {
       roundCorrect: 0,
       roundTimerExpired: false,
       roundResponseTimes: []
+    };
+  }
+  function engineCalibrationIntro(state, hintOverride) {
+    return {
+      ...state,
+      phase: "calibration-intro",
+      showMastery: false,
+      quizActive: true,
+      answersEnabled: false,
+      feedbackText: "Quick Speed Check",
+      feedbackClass: "feedback",
+      hintText: hintOverride !== void 0 ? hintOverride : "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
+      timeDisplayText: "",
+      calibrationBaseline: null
     };
   }
   function engineStop(_state) {
@@ -5576,9 +5590,6 @@ button {
       if (items.length === 0) return;
       const nextItemId = selectorRef.current.selectNext(items);
       setState((prev) => engineNextQuestion(prev, nextItemId, Date.now()));
-      if (configRef.current.onPresent) {
-        configRef.current.onPresent(nextItemId);
-      }
     }, []);
     nextQuestionRef.current = nextQuestion;
     const submitAnswer = q2((input) => {
@@ -5662,8 +5673,18 @@ button {
       }
       stopRoundTimer();
       setState(engineStop);
+      setCalibrationFixture(void 0);
       if (configRef.current.onStop) configRef.current.onStop();
     }, [stopRoundTimer]);
+    const [calibrationFixture, setCalibrationFixture] = d2();
+    const startCalibration = q2(() => {
+      setCalibrationFixture(void 0);
+      setState(engineCalibrationIntro);
+    }, []);
+    const endCalibration = q2(() => {
+      setCalibrationFixture(void 0);
+      setState(engineStop);
+    }, []);
     const updateIdleMessage = q2(() => {
       if (stateRef.current.phase !== "idle") return;
       const items = configRef.current.getEnabledItems();
@@ -5747,11 +5768,10 @@ button {
         if (detail.timerLastQuestion !== void 0) {
           setTimerLastQuestion(detail.timerLastQuestion);
         }
-        if (detail.presentItemId && configRef.current.onPresent) {
-          setTimeout(
-            () => configRef.current.onPresent(detail.presentItemId),
-            0
-          );
+        if (detail.calibration) {
+          const calPhase = detail.calibration.phase === "results" ? "calibration-results" : detail.calibration.phase === "running" ? "calibrating" : "calibration-intro";
+          setState((prev) => ({ ...prev, phase: calPhase }));
+          setCalibrationFixture(detail.calibration);
         }
         target.setAttribute("data-fixture-applied", "true");
       }
@@ -5764,12 +5784,16 @@ button {
       timerText,
       timerWarning,
       timerLastQuestion,
+      calibrating: isCalibrationPhase(state.phase),
+      calibrationFixture,
       start,
       stop,
       submitAnswer,
       nextQuestion,
       continueQuiz,
-      updateIdleMessage
+      updateIdleMessage,
+      startCalibration,
+      endCalibration
     };
   }
 
@@ -5786,7 +5810,7 @@ button {
   };
   function usePhaseClass(container, phase, focusTargets) {
     y2(() => {
-      const cls = phase === "idle" ? "phase-idle" : phase === "round-complete" ? "phase-round-complete" : phase === "calibration" ? "phase-calibration" : "phase-active";
+      const cls = phase === "idle" ? "phase-idle" : phase === "round-complete" ? "phase-round-complete" : isCalibrationPhase(phase) ? "phase-calibration" : "phase-active";
       container.classList.remove(...PHASE_CLASSES);
       container.classList.add(cls);
       if (focusTargets) {
@@ -5803,7 +5827,7 @@ button {
   }
 
   // src/hooks/use-mode-lifecycle.ts
-  function useModeLifecycle(onMount, engine, learner, setCalibrating, onDeactivate) {
+  function useModeLifecycle(onMount, engine, learner, onDeactivate) {
     _2(() => {
       onMount({
         activate() {
@@ -5813,10 +5837,9 @@ button {
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
           onDeactivate?.();
-          setCalibrating(false);
         }
       });
-    }, [onMount, engine, learner, setCalibrating, onDeactivate]);
+    }, [onMount, engine, learner, onDeactivate]);
   }
 
   // src/hooks/use-round-summary.ts
@@ -6399,10 +6422,14 @@ button {
       )
     ] });
   }
-  function SpeedCheck({ provider, onComplete, onCancel }) {
-    const [phase, setPhase] = d2("intro");
-    const [baseline, setBaseline] = d2(0);
-    const [trialProgress, setTrialProgress] = d2("");
+  function SpeedCheck({ provider, onComplete, onCancel, fixture }) {
+    const [phase, setPhase] = d2(
+      fixture?.phase ?? "intro"
+    );
+    const [baseline, setBaseline] = d2(fixture?.baseline ?? 0);
+    const [trialProgress, setTrialProgress] = d2(
+      fixture?.trialProgress ?? ""
+    );
     const buttonsRef = A2(null);
     const trialRef = A2({
       active: false,
@@ -6466,6 +6493,7 @@ button {
       }
     }, [presentNextTrial]);
     y2(() => {
+      if (fixture) return;
       function onKeyDown(e3) {
         if (e3.key === "Escape") {
           e3.preventDefault();
@@ -6487,8 +6515,9 @@ button {
       }
       document.addEventListener("keydown", onKeyDown);
       return () => document.removeEventListener("keydown", onKeyDown);
-    }, [phase, handleTrialResponse, onCancel]);
+    }, [fixture, phase, handleTrialResponse, onCancel]);
     y2(() => {
+      if (fixture) return;
       if (phase !== "running") return;
       const state = trialRef.current;
       state.active = true;
@@ -6503,7 +6532,18 @@ button {
         state.active = false;
         if (state.trialTimeout) clearTimeout(state.trialTimeout);
       };
-    }, [phase, presentNextTrial]);
+    }, [fixture, phase, presentNextTrial]);
+    y2(() => {
+      if (!fixture || fixture.phase !== "running" || !fixture.targetNote) return;
+      if (!buttonsRef.current) return;
+      const btn = buttonsRef.current.querySelector(
+        `.answer-btn-note[data-note="${fixture.targetNote}"]`
+      );
+      if (btn) btn.classList.add("calibration-target");
+      return () => {
+        if (btn) btn.classList.remove("calibration-target");
+      };
+    }, [fixture]);
     if (phase === "intro") {
       return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
         /* @__PURE__ */ u3("p", { children: provider.introText }),
@@ -6917,7 +6957,6 @@ button {
   // src/modes/note-semitones/note-semitones-mode.tsx
   function NoteSemitonesMode({ container, navigateHome, onMount }) {
     const learner = useLearnerModel("noteSemitones", ALL_ITEMS);
-    const [currentQ, setCurrentQ] = d2(null);
     const currentQRef = A2(null);
     const pendingDigitRef = A2(null);
     const pendingTimeoutRef = A2(null);
@@ -6938,11 +6977,6 @@ button {
       checkAnswer: (_itemId, input) => {
         const q3 = currentQRef.current;
         return checkAnswer(q3, input);
-      },
-      onPresent: (itemId) => {
-        const q3 = getQuestion(itemId);
-        currentQRef.current = q3;
-        setCurrentQ(q3);
       },
       handleKey: (e3, ctx) => {
         const dir2 = currentQRef.current?.dir;
@@ -7006,6 +7040,12 @@ button {
     }), [noteHandler]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return getQuestion(id);
+    }, [engine.state.currentItemId, engine.state.phase]);
+    currentQRef.current = currentQ;
     const noteNarrowing = T2(
       () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
       [pendingNote, engine.state.answered]
@@ -7014,12 +7054,7 @@ button {
       () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 11),
       [pendingDigit, engine.state.answered]
     );
-    const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(
-      container,
-      calibrating ? "calibration" : engine.state.phase,
-      PHASE_FOCUS_TARGETS
-    );
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const round = useRoundSummary(engine, "all items");
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS,
@@ -7032,7 +7067,7 @@ button {
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
-    useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
     const dir = currentQ?.dir ?? "fwd";
     const promptText = currentQ ? currentQ.dir === "fwd" ? displayNote(currentQ.accidentalChoice) : String(currentQ.noteNum) : "";
     const handleNoteAnswer = q2(
@@ -7073,7 +7108,7 @@ button {
           statsMode: ps.statsMode,
           onStatsToggle: ps.setStatsMode,
           baseline: learner.motorBaseline,
-          onCalibrate: () => setCalibrating(true),
+          onCalibrate: engine.startCalibration,
           activeTab: ps.activeTab,
           onTabSwitch: ps.setActiveTab
         }
@@ -7095,17 +7130,18 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: calibrating ? "" : promptText,
-          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-          children: calibrating ? /* @__PURE__ */ u3(
+          prompt: engine.calibrating ? "" : promptText,
+          lastQuestion: engine.calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: engine.calibrating ? /* @__PURE__ */ u3(
             SpeedCheck,
             {
               provider: BUTTON_PROVIDER,
+              fixture: engine.calibrationFixture,
               onComplete: (baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               },
-              onCancel: () => setCalibrating(false)
+              onCancel: engine.endCalibration
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
@@ -7204,7 +7240,6 @@ button {
   // src/modes/interval-semitones/interval-semitones-mode.tsx
   function IntervalSemitonesMode({ container, navigateHome, onMount }) {
     const learner = useLearnerModel("intervalSemitones", ALL_ITEMS2);
-    const [currentQ, setCurrentQ] = d2(null);
     const currentQRef = A2(null);
     const pendingDigitRef = A2(null);
     const pendingTimeoutRef = A2(null);
@@ -7214,11 +7249,6 @@ button {
       checkAnswer: (_itemId, input) => {
         const q3 = currentQRef.current;
         return checkAnswer2(q3, input);
-      },
-      onPresent: (itemId) => {
-        const q3 = getQuestion2(itemId);
-        currentQRef.current = q3;
-        setCurrentQ(q3);
       },
       handleKey: (e3, ctx) => {
         const dir2 = currentQRef.current?.dir;
@@ -7281,16 +7311,17 @@ button {
       getPracticingLabel: () => "all items"
     }), []);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return getQuestion2(id);
+    }, [engine.state.currentItemId, engine.state.phase]);
+    currentQRef.current = currentQ;
     const numNarrowing = T2(
       () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 12, 1),
       [pendingDigit, engine.state.answered]
     );
-    const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(
-      container,
-      calibrating ? "calibration" : engine.state.phase,
-      PHASE_FOCUS_TARGETS
-    );
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS2,
       selector: learner.selector,
@@ -7299,7 +7330,7 @@ button {
       recommendation: null,
       recommendationText: ""
     });
-    useModeLifecycle(onMount, engine, learner, setCalibrating);
+    useModeLifecycle(onMount, engine, learner);
     const dir = currentQ?.dir ?? "fwd";
     const promptText = currentQ ? currentQ.dir === "fwd" ? currentQ.name : String(currentQ.num) : "";
     const handleIntervalAnswer = q2(
@@ -7341,7 +7372,7 @@ button {
           statsMode: ps.statsMode,
           onStatsToggle: ps.setStatsMode,
           baseline: learner.motorBaseline,
-          onCalibrate: () => setCalibrating(true),
+          onCalibrate: engine.startCalibration,
           activeTab: ps.activeTab,
           onTabSwitch: ps.setActiveTab
         }
@@ -7363,17 +7394,18 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: calibrating ? "" : promptText,
-          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-          children: calibrating ? /* @__PURE__ */ u3(
+          prompt: engine.calibrating ? "" : promptText,
+          lastQuestion: engine.calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: engine.calibrating ? /* @__PURE__ */ u3(
             SpeedCheck,
             {
               provider: BUTTON_PROVIDER,
+              fixture: engine.calibrationFixture,
               onComplete: (baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               },
-              onCancel: () => setCalibrating(false)
+              onCancel: engine.endCalibration
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
@@ -7892,7 +7924,6 @@ button {
         return labels.join(", ") + " semitones";
       }
     });
-    const [currentQ, setCurrentQ] = d2(null);
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
@@ -7912,11 +7943,6 @@ button {
         const q3 = currentQRef.current;
         return checkAnswer3(q3, input);
       },
-      onPresent: (itemId) => {
-        const q3 = getQuestion3(itemId);
-        currentQRef.current = q3;
-        setCurrentQ(q3);
-      },
       handleKey: (e3, _ctx) => {
         return noteHandler.handleKey(e3);
       },
@@ -7925,16 +7951,17 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return getQuestion3(id);
+    }, [engine.state.currentItemId, engine.state.phase]);
+    currentQRef.current = currentQ;
     const noteNarrowing = T2(
       () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
       [pendingNote, engine.state.answered]
     );
-    const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(
-      container,
-      calibrating ? "calibration" : engine.state.phase,
-      PHASE_FOCUS_TARGETS
-    );
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS3,
       selector: learner.selector,
@@ -7946,7 +7973,7 @@ button {
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
-    useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
     const promptText = currentQ?.promptText ?? "";
     const useFlats = currentQ?.useFlats;
     const handleNoteAnswer = q2(
@@ -7993,7 +8020,7 @@ button {
           statsMode: ps.statsMode,
           onStatsToggle: ps.setStatsMode,
           baseline: learner.motorBaseline,
-          onCalibrate: () => setCalibrating(true),
+          onCalibrate: engine.startCalibration,
           activeTab: ps.activeTab,
           onTabSwitch: ps.setActiveTab
         }
@@ -8015,17 +8042,18 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: calibrating ? "" : promptText,
-          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-          children: calibrating ? /* @__PURE__ */ u3(
+          prompt: engine.calibrating ? "" : promptText,
+          lastQuestion: engine.calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: engine.calibrating ? /* @__PURE__ */ u3(
             SpeedCheck,
             {
               provider: BUTTON_PROVIDER,
+              fixture: engine.calibrationFixture,
               onComplete: (baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               },
-              onCancel: () => setCalibrating(false)
+              onCancel: engine.endCalibration
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
@@ -8161,7 +8189,6 @@ button {
         return labels.join(", ") + " intervals";
       }
     });
-    const [currentQ, setCurrentQ] = d2(null);
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
@@ -8181,11 +8208,6 @@ button {
         const q3 = currentQRef.current;
         return checkAnswer4(q3, input);
       },
-      onPresent: (itemId) => {
-        const q3 = getQuestion4(itemId);
-        currentQRef.current = q3;
-        setCurrentQ(q3);
-      },
       handleKey: (e3, _ctx) => {
         return noteHandler.handleKey(e3);
       },
@@ -8194,16 +8216,17 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return getQuestion4(id);
+    }, [engine.state.currentItemId, engine.state.phase]);
+    currentQRef.current = currentQ;
     const noteNarrowing = T2(
       () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
       [pendingNote, engine.state.answered]
     );
-    const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(
-      container,
-      calibrating ? "calibration" : engine.state.phase,
-      PHASE_FOCUS_TARGETS
-    );
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const round = useRoundSummary(engine, practicingLabel);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS4,
@@ -8216,7 +8239,7 @@ button {
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
-    useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
     const promptText = currentQ?.promptText ?? "";
     const useFlats = currentQ?.useFlats;
     const handleNoteAnswer = q2(
@@ -8262,7 +8285,7 @@ button {
           statsMode: ps.statsMode,
           onStatsToggle: ps.setStatsMode,
           baseline: learner.motorBaseline,
-          onCalibrate: () => setCalibrating(true),
+          onCalibrate: engine.startCalibration,
           activeTab: ps.activeTab,
           onTabSwitch: ps.setActiveTab
         }
@@ -8284,17 +8307,18 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: calibrating ? "" : promptText,
-          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-          children: calibrating ? /* @__PURE__ */ u3(
+          prompt: engine.calibrating ? "" : promptText,
+          lastQuestion: engine.calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: engine.calibrating ? /* @__PURE__ */ u3(
             SpeedCheck,
             {
               provider: BUTTON_PROVIDER,
+              fixture: engine.calibrationFixture,
               onComplete: (baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               },
-              onCancel: () => setCalibrating(false)
+              onCancel: engine.endCalibration
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
@@ -8422,7 +8446,6 @@ button {
         return keys.join(", ");
       }
     });
-    const [currentQ, setCurrentQ] = d2(null);
     const currentQRef = A2(null);
     const pendingSigDigitRef = A2(null);
     const pendingSigTimeoutRef = A2(
@@ -8445,11 +8468,6 @@ button {
       checkAnswer: (_itemId, input) => {
         const q3 = currentQRef.current;
         return checkAnswer5(q3, input);
-      },
-      onPresent: (itemId) => {
-        const q3 = getQuestion5(itemId);
-        currentQRef.current = q3;
-        setCurrentQ(q3);
       },
       handleKey: (e3, ctx) => {
         const dir2 = currentQRef.current?.dir;
@@ -8508,16 +8526,17 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return getQuestion5(id);
+    }, [engine.state.currentItemId, engine.state.phase]);
+    currentQRef.current = currentQ;
     const noteNarrowing = T2(
       () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
       [pendingNote, engine.state.answered]
     );
-    const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(
-      container,
-      calibrating ? "calibration" : engine.state.phase,
-      PHASE_FOCUS_TARGETS
-    );
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS5,
       selector: learner.selector,
@@ -8534,7 +8553,7 @@ button {
       }
       pendingSigDigitRef.current = null;
     }, [noteHandler]);
-    useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
     const dir = currentQ?.dir ?? "fwd";
     const promptText = currentQ ? currentQ.dir === "fwd" ? displayNote(currentQ.root) + " major" : currentQ.sigLabel + " major" : "";
     const handleSigAnswer = q2(
@@ -8585,7 +8604,7 @@ button {
           statsMode: ps.statsMode,
           onStatsToggle: ps.setStatsMode,
           baseline: learner.motorBaseline,
-          onCalibrate: () => setCalibrating(true),
+          onCalibrate: engine.startCalibration,
           activeTab: ps.activeTab,
           onTabSwitch: ps.setActiveTab
         }
@@ -8607,17 +8626,18 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: calibrating ? "" : promptText,
-          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-          children: calibrating ? /* @__PURE__ */ u3(
+          prompt: engine.calibrating ? "" : promptText,
+          lastQuestion: engine.calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: engine.calibrating ? /* @__PURE__ */ u3(
             SpeedCheck,
             {
               provider: BUTTON_PROVIDER,
+              fixture: engine.calibrationFixture,
               onComplete: (baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               },
-              onCancel: () => setCalibrating(false)
+              onCancel: engine.endCalibration
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
@@ -8753,7 +8773,6 @@ button {
         return degrees.map((d3) => DEGREE_LABELS2[d3 - 1]).join(", ") + " degrees";
       }
     });
-    const [currentQ, setCurrentQ] = d2(null);
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
@@ -8772,11 +8791,6 @@ button {
       checkAnswer: (_itemId, input) => {
         return checkAnswer6(currentQRef.current, input);
       },
-      onPresent: (itemId) => {
-        const q3 = getQuestion6(itemId);
-        currentQRef.current = q3;
-        setCurrentQ(q3);
-      },
       handleKey: (e3, _ctx) => {
         const dir2 = currentQRef.current?.dir;
         if (dir2 === "fwd") {
@@ -8794,16 +8808,17 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return getQuestion6(id);
+    }, [engine.state.currentItemId, engine.state.phase]);
+    currentQRef.current = currentQ;
     const noteNarrowing = T2(
       () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
       [pendingNote, engine.state.answered]
     );
-    const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(
-      container,
-      calibrating ? "calibration" : engine.state.phase,
-      PHASE_FOCUS_TARGETS
-    );
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS6,
       selector: learner.selector,
@@ -8815,7 +8830,7 @@ button {
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
-    useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
     const dir = currentQ?.dir ?? "fwd";
     const promptText = currentQ ? currentQ.dir === "fwd" ? DEGREE_LABELS2[currentQ.degree - 1] + " of " + displayNote(currentQ.keyRoot) + " major" : displayNote(currentQ.keyRoot) + " major: " + displayNote(currentQ.noteName) : "";
     const handleNoteAnswer = q2(
@@ -8867,7 +8882,7 @@ button {
           statsMode: ps.statsMode,
           onStatsToggle: ps.setStatsMode,
           baseline: learner.motorBaseline,
-          onCalibrate: () => setCalibrating(true),
+          onCalibrate: engine.startCalibration,
           activeTab: ps.activeTab,
           onTabSwitch: ps.setActiveTab
         }
@@ -8889,17 +8904,18 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: calibrating ? "" : promptText,
-          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-          children: calibrating ? /* @__PURE__ */ u3(
+          prompt: engine.calibrating ? "" : promptText,
+          lastQuestion: engine.calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: engine.calibrating ? /* @__PURE__ */ u3(
             SpeedCheck,
             {
               provider: BUTTON_PROVIDER,
+              fixture: engine.calibrationFixture,
               onComplete: (baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               },
-              onCancel: () => setCalibrating(false)
+              onCancel: engine.endCalibration
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
@@ -9036,7 +9052,6 @@ button {
         return numerals.join(", ") + " chords";
       }
     });
-    const [currentQ, setCurrentQ] = d2(null);
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
@@ -9055,11 +9070,6 @@ button {
       checkAnswer: (_itemId, input) => {
         return checkAnswer7(currentQRef.current, input);
       },
-      onPresent: (itemId) => {
-        const q3 = getQuestion7(itemId);
-        currentQRef.current = q3;
-        setCurrentQ(q3);
-      },
       handleKey: (e3, _ctx) => {
         const dir2 = currentQRef.current?.dir;
         if (dir2 === "fwd") {
@@ -9077,16 +9087,17 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return getQuestion7(id);
+    }, [engine.state.currentItemId, engine.state.phase]);
+    currentQRef.current = currentQ;
     const noteNarrowing = T2(
       () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
       [pendingNote, engine.state.answered]
     );
-    const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(
-      container,
-      calibrating ? "calibration" : engine.state.phase,
-      PHASE_FOCUS_TARGETS
-    );
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS7,
       selector: learner.selector,
@@ -9098,7 +9109,7 @@ button {
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
-    useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
     const dir = currentQ?.dir ?? "fwd";
     const promptText = currentQ ? currentQ.dir === "fwd" ? currentQ.chord.numeral + " in " + displayNote(currentQ.keyRoot) + " major" : displayNote(currentQ.rootNote) + currentQ.chord.qualityLabel + " in " + displayNote(currentQ.keyRoot) + " major" : "";
     const handleNoteAnswer = q2(
@@ -9150,7 +9161,7 @@ button {
           statsMode: ps.statsMode,
           onStatsToggle: ps.setStatsMode,
           baseline: learner.motorBaseline,
-          onCalibrate: () => setCalibrating(true),
+          onCalibrate: engine.startCalibration,
           activeTab: ps.activeTab,
           onTabSwitch: ps.setActiveTab
         }
@@ -9172,17 +9183,18 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: calibrating ? "" : promptText,
-          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-          children: calibrating ? /* @__PURE__ */ u3(
+          prompt: engine.calibrating ? "" : promptText,
+          lastQuestion: engine.calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: engine.calibrating ? /* @__PURE__ */ u3(
             SpeedCheck,
             {
               provider: BUTTON_PROVIDER,
+              fixture: engine.calibrationFixture,
               onComplete: (baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               },
-              onCancel: () => setCalibrating(false)
+              onCancel: engine.endCalibration
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
@@ -9371,10 +9383,9 @@ button {
         return labels.join(", ") + " chords";
       }
     });
+    const currentItemRef = A2(null);
     const [seqState, setSeqState] = d2(null);
     const seqStateRef = A2(null);
-    const [currentQ, setCurrentQ] = d2(null);
-    const currentItemRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
     const [pendingNote, setPendingNote] = d2(null);
@@ -9407,14 +9418,6 @@ button {
       checkAnswer: (itemId, input) => {
         return checkAnswer8(itemId, input);
       },
-      onPresent: (itemId) => {
-        const q3 = parseItem(itemId);
-        currentItemRef.current = itemId;
-        setCurrentQ(q3);
-        const newSeqState = initSequentialState(itemId);
-        seqStateRef.current = newSeqState;
-        setSeqState(newSeqState);
-      },
       handleKey: (e3, _ctx) => {
         return noteHandler.handleKey(e3);
       },
@@ -9427,16 +9430,30 @@ button {
     }), [noteHandler, getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return parseItem(id);
+    }, [engine.state.currentItemId, engine.state.phase]);
+    const prevItemRef = A2(null);
+    const currentItemId = engine.state.currentItemId;
+    if (currentItemId !== prevItemRef.current) {
+      prevItemRef.current = currentItemId;
+      currentItemRef.current = currentItemId;
+      if (currentItemId && engine.state.phase !== "idle") {
+        const newSeqState = initSequentialState(currentItemId);
+        seqStateRef.current = newSeqState;
+        setSeqState(newSeqState);
+      } else {
+        seqStateRef.current = null;
+        setSeqState(null);
+      }
+    }
     const noteNarrowing = T2(
       () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
       [pendingNote, engine.state.answered]
     );
-    const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(
-      container,
-      calibrating ? "calibration" : engine.state.phase,
-      PHASE_FOCUS_TARGETS
-    );
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS8,
       selector: learner.selector,
@@ -9448,7 +9465,7 @@ button {
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
-    useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
     const promptText = currentQ ? displayNote(currentQ.rootName) + currentQ.chordType.symbol : "";
     const handleNoteAnswer = q2(
       (note) => handleSequentialInput(note),
@@ -9495,7 +9512,7 @@ button {
           statsMode: ps.statsMode,
           onStatsToggle: ps.setStatsMode,
           baseline: learner.motorBaseline,
-          onCalibrate: () => setCalibrating(true),
+          onCalibrate: engine.startCalibration,
           activeTab: ps.activeTab,
           onTabSwitch: ps.setActiveTab
         }
@@ -9517,17 +9534,18 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: calibrating ? "" : promptText,
-          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-          children: calibrating ? /* @__PURE__ */ u3(
+          prompt: engine.calibrating ? "" : promptText,
+          lastQuestion: engine.calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: engine.calibrating ? /* @__PURE__ */ u3(
             SpeedCheck,
             {
               provider: BUTTON_PROVIDER,
+              fixture: engine.calibrationFixture,
               onComplete: (baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               },
-              onCancel: () => setCalibrating(false)
+              onCancel: engine.endCalibration
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
@@ -9864,7 +9882,6 @@ button {
     const enabledStrings = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
     const noteFilter = scope.kind === "fretboard" ? scope.noteFilter : "natural";
     const learner = useLearnerModel(instrument.storageNamespace, ALL_ITEMS10);
-    const [currentQ, setCurrentQ] = d2(null);
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
@@ -9959,20 +9976,6 @@ button {
         const q3 = fb.parseFretboardItem(itemId);
         return fb.checkFretboardAnswer(q3.currentNote, input);
       },
-      onPresent: (itemId) => {
-        const q3 = fb.parseFretboardItem(itemId);
-        currentQRef.current = q3;
-        setCurrentQ(q3);
-        if (quizFbRef.current) {
-          clearAll(quizFbRef.current);
-          setCircleFill(
-            quizFbRef.current,
-            q3.currentString,
-            q3.currentFret,
-            FB_QUIZ_HL
-          );
-        }
-      },
       onAnswer: (itemId, result) => {
         if (quizFbRef.current) {
           const q3 = fb.parseFretboardItem(itemId);
@@ -10012,16 +10015,31 @@ button {
     }), [scope, noteHandler, fb, instrument]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return fb.parseFretboardItem(id);
+    }, [engine.state.currentItemId, engine.state.phase, fb]);
+    currentQRef.current = currentQ;
+    y2(() => {
+      if (!quizFbRef.current) return;
+      if (!currentQ) {
+        clearAll(quizFbRef.current);
+        return;
+      }
+      clearAll(quizFbRef.current);
+      setCircleFill(
+        quizFbRef.current,
+        currentQ.currentString,
+        currentQ.currentFret,
+        FB_QUIZ_HL
+      );
+    }, [currentQ]);
     const noteNarrowing = T2(
       () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
       [pendingNote, engine.state.answered]
     );
-    const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(
-      container,
-      calibrating ? "calibration" : engine.state.phase,
-      PHASE_FOCUS_TARGETS
-    );
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const round = useRoundSummary(engine, practicingLabel);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS10,
@@ -10072,7 +10090,7 @@ button {
     const deactivateCleanup = q2(() => noteHandler.reset(), [
       noteHandler
     ]);
-    useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
     const promptText = currentQ ? "Name this note" : "";
     const handleNoteAnswer = q2(
       (note) => engine.submitAnswer(note),
@@ -10122,7 +10140,7 @@ button {
           statsMode: ps.statsMode,
           onStatsToggle: ps.setStatsMode,
           baseline: learner.motorBaseline,
-          onCalibrate: () => setCalibrating(true),
+          onCalibrate: engine.startCalibration,
           activeTab: ps.activeTab,
           onTabSwitch: ps.setActiveTab
         }
@@ -10144,17 +10162,18 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: calibrating ? "" : promptText,
-          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-          children: calibrating ? /* @__PURE__ */ u3(
+          prompt: engine.calibrating ? "" : promptText,
+          lastQuestion: engine.calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: engine.calibrating ? /* @__PURE__ */ u3(
             SpeedCheck,
             {
               provider: BUTTON_PROVIDER,
+              fixture: engine.calibrationFixture,
               onComplete: (baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               },
-              onCancel: () => setCalibrating(false)
+              onCancel: engine.endCalibration
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
@@ -10349,26 +10368,6 @@ button {
           correctAnswer: displayNote(currentNoteRef.current)
         };
       },
-      onPresent: (itemId) => {
-        const note = NOTES.find((n2) => n2.name === itemId);
-        const name = note ? displayNote(pickRandomAccidental(note.displayName)) : displayNote(itemId);
-        const positions = getPositionsForNote(itemId);
-        currentNoteRef.current = itemId;
-        targetPosRef.current = positions;
-        foundPosRef.current = /* @__PURE__ */ new Set();
-        roundActiveRef.current = true;
-        setCurrentDisplayName(name);
-        setProgressText("0 / " + positions.length);
-        const wrapper = quizFbRef.current;
-        if (wrapper) {
-          wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
-          wrongFlashTimeoutsRef.current.clear();
-          clearAllCircles(wrapper);
-          wrapper.querySelectorAll(".fb-pos").forEach((c3) => {
-            c3.style.fill = FB_TAP_NEUTRAL;
-          });
-        }
-      },
       onAnswer: (_itemId, result) => {
         roundActiveRef.current = false;
         if (!result.correct && quizFbRef.current) {
@@ -10408,12 +10407,37 @@ button {
     }), [scope]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
-    const [calibrating, setCalibrating] = d2(false);
-    usePhaseClass(
-      container,
-      calibrating ? "calibration" : engine.state.phase,
-      PHASE_FOCUS_TARGETS
-    );
+    const prevItemRef = A2(null);
+    const currentItemId = engine.state.currentItemId;
+    if (currentItemId !== prevItemRef.current) {
+      prevItemRef.current = currentItemId;
+      if (currentItemId && engine.state.phase !== "idle") {
+        const note = NOTES.find((n2) => n2.name === currentItemId);
+        const name = note ? displayNote(pickRandomAccidental(note.displayName)) : displayNote(currentItemId);
+        const positions = getPositionsForNote(currentItemId);
+        currentNoteRef.current = currentItemId;
+        targetPosRef.current = positions;
+        foundPosRef.current = /* @__PURE__ */ new Set();
+        roundActiveRef.current = true;
+        setCurrentDisplayName(name);
+        setProgressText("0 / " + positions.length);
+      }
+    }
+    y2(() => {
+      const wrapper = quizFbRef.current;
+      if (!wrapper) return;
+      if (!currentItemId || engine.state.phase === "idle") {
+        clearAllCircles(wrapper);
+        return;
+      }
+      wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
+      wrongFlashTimeoutsRef.current.clear();
+      clearAllCircles(wrapper);
+      wrapper.querySelectorAll(".fb-pos").forEach((c3) => {
+        c3.style.fill = FB_TAP_NEUTRAL;
+      });
+    }, [currentItemId]);
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const practicingLabel = T2(() => {
       if (noteFilter === "all") return "all notes";
       if (noteFilter === "sharps-flats") return "sharps & flats";
@@ -10433,7 +10457,7 @@ button {
         wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
       };
     }, []);
-    useModeLifecycle(onMount, engine, learner, setCalibrating);
+    useModeLifecycle(onMount, engine, learner);
     const statsHTML = T2(() => {
       let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
       for (let i3 = 0; i3 < NOTES.length; i3++) {
@@ -10484,7 +10508,7 @@ button {
           statsMode: ps.statsMode,
           onStatsToggle: ps.setStatsMode,
           baseline: learner.motorBaseline,
-          onCalibrate: () => setCalibrating(true),
+          onCalibrate: engine.startCalibration,
           activeTab: ps.activeTab,
           onTabSwitch: ps.setActiveTab
         }
@@ -10506,17 +10530,18 @@ button {
       /* @__PURE__ */ u3(
         QuizArea,
         {
-          prompt: calibrating ? "" : promptText,
-          lastQuestion: calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-          children: calibrating ? /* @__PURE__ */ u3(
+          prompt: engine.calibrating ? "" : promptText,
+          lastQuestion: engine.calibrating ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+          children: engine.calibrating ? /* @__PURE__ */ u3(
             SpeedCheck,
             {
               provider: BUTTON_PROVIDER,
+              fixture: engine.calibrationFixture,
               onComplete: (baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               },
-              onCancel: () => setCalibrating(false)
+              onCancel: engine.endCalibration
             }
           ) : /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3("div", { class: "speed-tap-status", children: /* @__PURE__ */ u3("span", { class: "speed-tap-progress", children: progressText }) }),
