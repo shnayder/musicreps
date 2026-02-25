@@ -284,8 +284,6 @@ export function QuizSession(
     timerPct,
     context,
     count,
-    fluent,
-    total,
     isWarning,
     isLastQuestion,
     onClose,
@@ -294,14 +292,11 @@ export function QuizSession(
     timerPct?: number;
     context?: string;
     count?: string;
-    fluent?: number;
-    total?: number;
     isWarning?: boolean;
     isLastQuestion?: boolean;
     onClose?: () => void;
   },
 ) {
-  const pct = total ? Math.round((fluent || 0) / total * 100) : 0;
   return (
     <div class='quiz-session'>
       <div class='quiz-countdown-row'>
@@ -327,12 +322,6 @@ export function QuizSession(
       >
         {'\u00D7' /* × close button */}
       </button>
-      <div class='progress-bar'>
-        <div class='progress-fill' style={{ width: `${pct}%` }} />
-        <div class='progress-text'>
-          {fluent != null && total != null ? `${fluent} / ${total} fluent` : ''}
-        </div>
-      </div>
     </div>
   );
 }

@@ -297,8 +297,6 @@ export function KeySignaturesMode(
         timerPct={engine.timerPct}
         context={practicingLabel}
         count={round.countText}
-        fluent={engine.state.masteredCount}
-        total={engine.state.totalEnabledCount}
         isWarning={engine.timerWarning}
         isLastQuestion={engine.timerLastQuestion}
         onClose={engine.stop}

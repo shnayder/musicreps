@@ -460,15 +460,13 @@ describe('StartButton', () => {
 });
 
 describe('QuizSession', () => {
-  it('renders countdown, info, close, and progress', () => {
+  it('renders countdown, info, and close', () => {
     const html = render(
       <QuizSession
         timeLeft='42s'
         timerPct={65}
         context='Natural notes'
         count='5 of 12'
-        fluent={6}
-        total={14}
       />,
     );
     assert.ok(html.includes('quiz-session'));
@@ -482,9 +480,6 @@ describe('QuizSession', () => {
     assert.ok(html.includes('Natural notes'));
     assert.ok(html.includes('5 of 12'));
     assert.ok(html.includes('quiz-header-close'));
-    assert.ok(html.includes('progress-bar'));
-    assert.ok(html.includes('progress-fill'));
-    assert.ok(html.includes('6 / 14 fluent'));
   });
 });
 
