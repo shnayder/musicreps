@@ -3,6 +3,7 @@
 // __fixture__ events.
 
 import type { EngineState } from '../types.ts';
+import type { SpeedCheckFixture } from '../ui/speed-check.tsx';
 import {
   engineNextQuestion,
   engineRoundComplete,
@@ -23,7 +24,7 @@ export type FixtureDetail = {
   timerText?: string;
   timerWarning?: boolean;
   timerLastQuestion?: boolean;
-  presentItemId?: string;
+  calibration?: SpeedCheckFixture;
 };
 
 // ---------------------------------------------------------------------------
@@ -81,7 +82,6 @@ export function quizActive(itemId: string): FixtureDetail {
     timerText: timerMidRound.text,
     timerWarning: timerMidRound.warning,
     timerLastQuestion: timerMidRound.lastQuestion,
-    presentItemId: itemId,
   };
 }
 
@@ -111,7 +111,6 @@ export function quizCorrectFeedback(itemId: string): FixtureDetail {
     timerText: '0:28',
     timerWarning: false,
     timerLastQuestion: false,
-    presentItemId: itemId,
   };
 }
 
@@ -140,7 +139,6 @@ export function quizWrongFeedback(itemId: string): FixtureDetail {
     timerText: '0:18',
     timerWarning: false,
     timerLastQuestion: false,
-    presentItemId: itemId,
   };
 }
 
@@ -183,4 +181,26 @@ export function quizRoundComplete(
     timerWarning: false,
     timerLastQuestion: false,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Speed Check (calibration) fixtures
+// ---------------------------------------------------------------------------
+
+export function speedCheckIntro(): FixtureDetail {
+  return { calibration: { phase: 'intro' } };
+}
+
+export function speedCheckTesting(): FixtureDetail {
+  return {
+    calibration: {
+      phase: 'running',
+      trialProgress: '5 / 10',
+      targetNote: 'E',
+    },
+  };
+}
+
+export function speedCheckResults(): FixtureDetail {
+  return { calibration: { phase: 'results', baseline: 520 } };
 }

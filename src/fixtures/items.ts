@@ -12,4 +12,10 @@ export const defaultItems: Record<string, string> = {
   diatonicChords: 'C:IV:fwd',
   chordSpelling: 'C:major',
   speedTap: 'C',
+  // Reverse direction for bidirectional modes
+  noteSemitones_rev: 'C:rev',
+  intervalSemitones_rev: 'P4:rev',
+  keySignatures_rev: 'D:rev',
+  scaleDegrees_rev: 'C:3:rev',
+  diatonicChords_rev: 'C:IV:rev',
 };

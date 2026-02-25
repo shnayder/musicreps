@@ -215,32 +215,6 @@ export function SpeedTapMode(
       };
     },
 
-    onPresent: (itemId: string) => {
-      const note = NOTES.find((n) => n.name === itemId);
-      const name = note
-        ? displayNote(pickRandomAccidental(note.displayName))
-        : displayNote(itemId);
-      const positions = getPositionsForNote(itemId);
-
-      currentNoteRef.current = itemId;
-      targetPosRef.current = positions;
-      foundPosRef.current = new Set();
-      roundActiveRef.current = true;
-      setCurrentDisplayName(name);
-      setProgressText('0 / ' + positions.length);
-
-      // Set all circles to neutral
-      const wrapper = quizFbRef.current;
-      if (wrapper) {
-        wrongFlashTimeoutsRef.current.forEach((t) => clearTimeout(t));
-        wrongFlashTimeoutsRef.current.clear();
-        clearAllCircles(wrapper);
-        wrapper.querySelectorAll<SVGElement>('.fb-pos').forEach((c) => {
-          c.style.fill = FB_TAP_NEUTRAL;
-        });
-      }
-    },
-
     onAnswer: (_itemId: string, result) => {
       roundActiveRef.current = false;
       if (!result.correct && quizFbRef.current) {
@@ -286,15 +260,47 @@ export function SpeedTapMode(
   const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
 
-  // --- Calibration state ---
-  const [calibrating, setCalibrating] = useState(false);
+  // --- Derived question state (single source of truth) ---
+  // Re-initialize spatial state when the item changes (sync during render
+  // to keep display and refs in sync with engine state).
+  const prevItemRef = useRef<string | null>(null);
+  const currentItemId = engine.state.currentItemId;
+  if (currentItemId !== prevItemRef.current) {
+    prevItemRef.current = currentItemId;
+    if (currentItemId && engine.state.phase !== 'idle') {
+      const note = NOTES.find((n) => n.name === currentItemId);
+      const name = note
+        ? displayNote(pickRandomAccidental(note.displayName))
+        : displayNote(currentItemId);
+      const positions = getPositionsForNote(currentItemId);
+
+      currentNoteRef.current = currentItemId;
+      targetPosRef.current = positions;
+      foundPosRef.current = new Set();
+      roundActiveRef.current = true;
+      setCurrentDisplayName(name);
+      setProgressText('0 / ' + positions.length);
+    }
+  }
+
+  // SVG reset when question changes (imperative DOM — must run as effect)
+  useEffect(() => {
+    const wrapper = quizFbRef.current;
+    if (!wrapper) return;
+    if (!currentItemId || engine.state.phase === 'idle') {
+      clearAllCircles(wrapper);
+      return;
+    }
+    wrongFlashTimeoutsRef.current.forEach((t) => clearTimeout(t));
+    wrongFlashTimeoutsRef.current.clear();
+    clearAllCircles(wrapper);
+    wrapper.querySelectorAll<SVGElement>('.fb-pos').forEach((c) => {
+      c.style.fill = FB_TAP_NEUTRAL;
+    });
+  }, [currentItemId]);
 
   // --- Phase class sync ---
-  usePhaseClass(
-    container,
-    calibrating ? 'calibration' : engine.state.phase,
-    PHASE_FOCUS_TARGETS,
-  );
+  usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
 
   // --- Round summary (context, correct, median, baseline, count) ---
   const practicingLabel = useMemo(() => {
@@ -323,7 +329,7 @@ export function SpeedTapMode(
   }, []);
 
   // --- Navigation handle ---
-  useModeLifecycle(onMount, engine, learner, setCalibrating);
+  useModeLifecycle(onMount, engine, learner);
 
   // --- Stats rendering (custom — uses automaticity/speed heatmap, no StatsTable) ---
   const statsHTML = useMemo(() => {
@@ -379,7 +385,7 @@ export function SpeedTapMode(
         statsMode={ps.statsMode}
         onStatsToggle={ps.setStatsMode}
         baseline={learner.motorBaseline}
-        onCalibrate={() => setCalibrating(true)}
+        onCalibrate={engine.startCalibration}
         activeTab={ps.activeTab}
         onTabSwitch={ps.setActiveTab}
       />
@@ -395,20 +401,21 @@ export function SpeedTapMode(
         onClose={engine.stop}
       />
       <QuizArea
-        prompt={calibrating ? '' : promptText}
-        lastQuestion={calibrating
+        prompt={engine.calibrating ? '' : promptText}
+        lastQuestion={engine.calibrating
           ? ''
           : (engine.state.roundTimerExpired ? 'Last question' : '')}
       >
-        {calibrating
+        {engine.calibrating
           ? (
             <SpeedCheck
               provider={BUTTON_PROVIDER}
+              fixture={engine.calibrationFixture}
               onComplete={(baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               }}
-              onCancel={() => setCalibrating(false)}
+              onCancel={engine.endCalibration}
             />
           )
           : (

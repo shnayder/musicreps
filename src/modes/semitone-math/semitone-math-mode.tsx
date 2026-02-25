@@ -90,8 +90,7 @@ export function SemitoneMathMode(
     },
   });
 
-  // --- Question state ---
-  const [currentQ, setCurrentQ] = useState<Question | null>(null);
+  // --- Question state (ref pre-declared for use in engineConfig) ---
   const currentQRef = useRef<Question | null>(null);
 
   // --- Key handler + pending state for narrowing ---
@@ -117,12 +116,6 @@ export function SemitoneMathMode(
       return checkAnswer(q, input);
     },
 
-    onPresent: (itemId: string) => {
-      const q = getQuestion(itemId);
-      currentQRef.current = q;
-      setCurrentQ(q);
-    },
-
     handleKey: (
       e: KeyboardEvent,
       _ctx: { submitAnswer: (input: string) => void },
@@ -137,21 +130,22 @@ export function SemitoneMathMode(
   const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
 
+  // --- Derived question state (single source of truth) ---
+  const currentQ = useMemo(() => {
+    const id = engine.state.currentItemId;
+    if (!id || engine.state.phase === 'idle') return null;
+    return getQuestion(id);
+  }, [engine.state.currentItemId, engine.state.phase]);
+  currentQRef.current = currentQ;
+
   // --- Narrowing (keyboard match highlighting) ---
   const noteNarrowing = useMemo(
     () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
     [pendingNote, engine.state.answered],
   );
 
-  // --- Calibration state ---
-  const [calibrating, setCalibrating] = useState(false);
-
-  // --- Phase class sync (calibration overrides engine phase) ---
-  usePhaseClass(
-    container,
-    calibrating ? 'calibration' : engine.state.phase,
-    PHASE_FOCUS_TARGETS,
-  );
+  // --- Phase class sync ---
+  usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
 
   // --- Practice summary + tab/stats state ---
   const ps = usePracticeSummary({
@@ -167,7 +161,7 @@ export function SemitoneMathMode(
   const deactivateCleanup = useCallback(() => noteHandler.reset(), [
     noteHandler,
   ]);
-  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
 
   // --- Derived state ---
   const promptText = currentQ?.promptText ?? '';
@@ -218,7 +212,7 @@ export function SemitoneMathMode(
         statsMode={ps.statsMode}
         onStatsToggle={ps.setStatsMode}
         baseline={learner.motorBaseline}
-        onCalibrate={() => setCalibrating(true)}
+        onCalibrate={engine.startCalibration}
         activeTab={ps.activeTab}
         onTabSwitch={ps.setActiveTab}
       />
@@ -234,20 +228,21 @@ export function SemitoneMathMode(
         onClose={engine.stop}
       />
       <QuizArea
-        prompt={calibrating ? '' : promptText}
-        lastQuestion={calibrating
+        prompt={engine.calibrating ? '' : promptText}
+        lastQuestion={engine.calibrating
           ? ''
           : (engine.state.roundTimerExpired ? 'Last question' : '')}
       >
-        {calibrating
+        {engine.calibrating
           ? (
             <SpeedCheck
               provider={BUTTON_PROVIDER}
+              fixture={engine.calibrationFixture}
               onComplete={(baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               }}
-              onCancel={() => setCalibrating(false)}
+              onCancel={engine.endCalibration}
             />
           )
           : (

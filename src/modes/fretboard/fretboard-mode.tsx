@@ -236,13 +236,12 @@ export function FretboardMode(
 
   const learner = useLearnerModel(instrument.storageNamespace, ALL_ITEMS);
 
-  // --- Question state ---
+  // --- Question state (ref pre-declared for use in engineConfig) ---
   type Question = {
     currentString: number;
     currentFret: number;
     currentNote: string;
   };
-  const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const currentQRef = useRef<Question | null>(null);
 
   // --- Key handler + pending state for narrowing ---
@@ -362,22 +361,6 @@ export function FretboardMode(
       return fb.checkFretboardAnswer(q.currentNote, input);
     },
 
-    onPresent: (itemId: string) => {
-      const q = fb.parseFretboardItem(itemId);
-      currentQRef.current = q;
-      setCurrentQ(q);
-      // Highlight the position on the quiz fretboard
-      if (quizFbRef.current) {
-        clearAll(quizFbRef.current);
-        setCircleFill(
-          quizFbRef.current,
-          q.currentString,
-          q.currentFret,
-          FB_QUIZ_HL,
-        );
-      }
-    },
-
     onAnswer: (itemId: string, result) => {
       if (quizFbRef.current) {
         const q = fb.parseFretboardItem(itemId);
@@ -430,21 +413,38 @@ export function FretboardMode(
   const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
 
+  // --- Derived question state (single source of truth) ---
+  const currentQ = useMemo(() => {
+    const id = engine.state.currentItemId;
+    if (!id || engine.state.phase === 'idle') return null;
+    return fb.parseFretboardItem(id);
+  }, [engine.state.currentItemId, engine.state.phase, fb]);
+  currentQRef.current = currentQ;
+
+  // --- SVG highlight (imperative side effect on question change) ---
+  useEffect(() => {
+    if (!quizFbRef.current) return;
+    if (!currentQ) {
+      clearAll(quizFbRef.current);
+      return;
+    }
+    clearAll(quizFbRef.current);
+    setCircleFill(
+      quizFbRef.current,
+      currentQ.currentString,
+      currentQ.currentFret,
+      FB_QUIZ_HL,
+    );
+  }, [currentQ]);
+
   // --- Narrowing (keyboard match highlighting) ---
   const noteNarrowing = useMemo(
     () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
     [pendingNote, engine.state.answered],
   );
 
-  // --- Calibration state ---
-  const [calibrating, setCalibrating] = useState(false);
-
   // --- Phase class sync ---
-  usePhaseClass(
-    container,
-    calibrating ? 'calibration' : engine.state.phase,
-    PHASE_FOCUS_TARGETS,
-  );
+  usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
 
   // --- Round summary (context, correct, median, baseline, count) ---
   const round = useRoundSummary(engine, practicingLabel);
@@ -507,7 +507,7 @@ export function FretboardMode(
   const deactivateCleanup = useCallback(() => noteHandler.reset(), [
     noteHandler,
   ]);
-  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
 
   // --- Derived state ---
   const promptText = currentQ ? 'Name this note' : '';
@@ -556,7 +556,7 @@ export function FretboardMode(
         statsMode={ps.statsMode}
         onStatsToggle={ps.setStatsMode}
         baseline={learner.motorBaseline}
-        onCalibrate={() => setCalibrating(true)}
+        onCalibrate={engine.startCalibration}
         activeTab={ps.activeTab}
         onTabSwitch={ps.setActiveTab}
       />
@@ -572,20 +572,21 @@ export function FretboardMode(
         onClose={engine.stop}
       />
       <QuizArea
-        prompt={calibrating ? '' : promptText}
-        lastQuestion={calibrating
+        prompt={engine.calibrating ? '' : promptText}
+        lastQuestion={engine.calibrating
           ? ''
           : (engine.state.roundTimerExpired ? 'Last question' : '')}
       >
-        {calibrating
+        {engine.calibrating
           ? (
             <SpeedCheck
               provider={BUTTON_PROVIDER}
+              fixture={engine.calibrationFixture}
               onComplete={(baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               }}
-              onCancel={() => setCalibrating(false)}
+              onCancel={engine.endCalibration}
             />
           )
           : (

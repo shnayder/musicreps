@@ -11,6 +11,21 @@ import {
 import { computeMedian } from '../adaptive.ts';
 
 // ---------------------------------------------------------------------------
+// Fixture type (used by useQuizEngine for fixture injection)
+// ---------------------------------------------------------------------------
+
+/** Describes a fixture state for deterministic screenshots. */
+export type SpeedCheckFixture = {
+  phase: 'intro' | 'running' | 'results';
+  /** Baseline value in ms (for 'results' phase). Defaults to 0. */
+  baseline?: number;
+  /** Trial progress text (for 'running' phase). Defaults to ''. */
+  trialProgress?: string;
+  /** Which button to highlight green (for 'running' phase). */
+  targetNote?: string;
+};
+
+// ---------------------------------------------------------------------------
 // Provider type
 // ---------------------------------------------------------------------------
 
@@ -94,17 +109,24 @@ export function BaselineInfo(
  * @param provider   Provider config (intro/trial text).
  * @param onComplete Called with the computed baseline (ms) when done.
  * @param onCancel   Called when the user cancels (Escape key).
+ * @param fixture    Optional fixture data for deterministic screenshots.
+ *                   When provided, skips trial loop and renders frozen state.
  */
 export function SpeedCheck(
-  { provider, onComplete, onCancel }: {
+  { provider, onComplete, onCancel, fixture }: {
     provider: SpeedCheckProvider;
     onComplete: (baseline: number) => void;
     onCancel: () => void;
+    fixture?: SpeedCheckFixture;
   },
 ) {
-  const [phase, setPhase] = useState<'intro' | 'running' | 'results'>('intro');
-  const [baseline, setBaseline] = useState(0);
-  const [trialProgress, setTrialProgress] = useState('');
+  const [phase, setPhase] = useState<'intro' | 'running' | 'results'>(
+    fixture?.phase ?? 'intro',
+  );
+  const [baseline, setBaseline] = useState(fixture?.baseline ?? 0);
+  const [trialProgress, setTrialProgress] = useState(
+    fixture?.trialProgress ?? '',
+  );
   const buttonsRef = useRef<HTMLDivElement>(null);
   const trialRef = useRef({
     active: false,
@@ -195,6 +217,8 @@ export function SpeedCheck(
 
   // --- Keyboard: Escape to cancel; note keys during trials ---
   useEffect(() => {
+    if (fixture) return; // Fixture mode — no keyboard handling.
+
     function onKeyDown(e: KeyboardEvent) {
       // Escape cancels at any point.
       if (e.key === 'Escape') {
@@ -224,10 +248,11 @@ export function SpeedCheck(
 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [phase, handleTrialResponse, onCancel]);
+  }, [fixture, phase, handleTrialResponse, onCancel]);
 
   // --- Start trials when phase becomes 'running' ---
   useEffect(() => {
+    if (fixture) return; // Fixture mode — no trial loop.
     if (phase !== 'running') return;
 
     const state = trialRef.current;
@@ -245,7 +270,20 @@ export function SpeedCheck(
       state.active = false;
       if (state.trialTimeout) clearTimeout(state.trialTimeout);
     };
-  }, [phase, presentNextTrial]);
+  }, [fixture, phase, presentNextTrial]);
+
+  // --- Fixture: highlight target button for 'running' screenshots ---
+  useEffect(() => {
+    if (!fixture || fixture.phase !== 'running' || !fixture.targetNote) return;
+    if (!buttonsRef.current) return;
+    const btn = buttonsRef.current.querySelector(
+      `.answer-btn-note[data-note="${fixture.targetNote}"]`,
+    ) as HTMLElement | null;
+    if (btn) btn.classList.add('calibration-target');
+    return () => {
+      if (btn) btn.classList.remove('calibration-target');
+    };
+  }, [fixture]);
 
   // --- Render: Intro ---
   if (phase === 'intro') {

@@ -51,7 +51,6 @@ import {
   handleInput,
   initSequentialState,
   parseItem,
-  type Question,
   SPELLING_GROUPS,
 } from './logic.ts';
 
@@ -118,13 +117,10 @@ export function ChordSpellingMode(
     },
   });
 
-  // --- Sequential state ---
+  // --- Question + sequential state (refs pre-declared for use in engineConfig) ---
+  const currentItemRef = useRef<string | null>(null);
   const [seqState, setSeqState] = useState<SequentialState | null>(null);
   const seqStateRef = useRef<SequentialState | null>(null);
-
-  // --- Question state ---
-  const [currentQ, setCurrentQ] = useState<Question | null>(null);
-  const currentItemRef = useRef<string | null>(null);
 
   // --- Key handler + pending state for narrowing ---
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
@@ -170,15 +166,6 @@ export function ChordSpellingMode(
       return checkAnswer(itemId, input);
     },
 
-    onPresent: (itemId: string) => {
-      const q = parseItem(itemId);
-      currentItemRef.current = itemId;
-      setCurrentQ(q);
-      const newSeqState = initSequentialState(itemId);
-      seqStateRef.current = newSeqState;
-      setSeqState(newSeqState);
-    },
-
     handleKey: (
       e: KeyboardEvent,
       _ctx: { submitAnswer: (input: string) => void },
@@ -197,21 +184,38 @@ export function ChordSpellingMode(
   const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
 
+  // --- Derived question state (single source of truth) ---
+  const currentQ = useMemo(() => {
+    const id = engine.state.currentItemId;
+    if (!id || engine.state.phase === 'idle') return null;
+    return parseItem(id);
+  }, [engine.state.currentItemId, engine.state.phase]);
+
+  // Re-initialize sequential state when question changes (sync during render
+  // to avoid a one-frame flash of stale chord slots).
+  const prevItemRef = useRef<string | null>(null);
+  const currentItemId = engine.state.currentItemId;
+  if (currentItemId !== prevItemRef.current) {
+    prevItemRef.current = currentItemId;
+    currentItemRef.current = currentItemId;
+    if (currentItemId && engine.state.phase !== 'idle') {
+      const newSeqState = initSequentialState(currentItemId);
+      seqStateRef.current = newSeqState;
+      setSeqState(newSeqState);
+    } else {
+      seqStateRef.current = null;
+      setSeqState(null);
+    }
+  }
+
   // --- Narrowing (keyboard match highlighting) ---
   const noteNarrowing = useMemo(
     () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
     [pendingNote, engine.state.answered],
   );
 
-  // --- Calibration state ---
-  const [calibrating, setCalibrating] = useState(false);
-
   // --- Phase class sync ---
-  usePhaseClass(
-    container,
-    calibrating ? 'calibration' : engine.state.phase,
-    PHASE_FOCUS_TARGETS,
-  );
+  usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
 
   // --- Practice summary + tab/stats state ---
   const ps = usePracticeSummary({
@@ -227,7 +231,7 @@ export function ChordSpellingMode(
   const deactivateCleanup = useCallback(() => noteHandler.reset(), [
     noteHandler,
   ]);
-  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
+  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
 
   // --- Derived state ---
   const promptText = currentQ
@@ -277,7 +281,7 @@ export function ChordSpellingMode(
         statsMode={ps.statsMode}
         onStatsToggle={ps.setStatsMode}
         baseline={learner.motorBaseline}
-        onCalibrate={() => setCalibrating(true)}
+        onCalibrate={engine.startCalibration}
         activeTab={ps.activeTab}
         onTabSwitch={ps.setActiveTab}
       />
@@ -293,20 +297,21 @@ export function ChordSpellingMode(
         onClose={engine.stop}
       />
       <QuizArea
-        prompt={calibrating ? '' : promptText}
-        lastQuestion={calibrating
+        prompt={engine.calibrating ? '' : promptText}
+        lastQuestion={engine.calibrating
           ? ''
           : (engine.state.roundTimerExpired ? 'Last question' : '')}
       >
-        {calibrating
+        {engine.calibrating
           ? (
             <SpeedCheck
               provider={BUTTON_PROVIDER}
+              fixture={engine.calibrationFixture}
               onComplete={(baseline) => {
                 learner.applyBaseline(baseline);
-                setCalibrating(false);
+                engine.endCalibration();
               }}
-              onCancel={() => setCalibrating(false)}
+              onCancel={engine.endCalibration}
             />
           )
           : (
