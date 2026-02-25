@@ -22,8 +22,10 @@ async function getVersion(): Promise<string> {
       gitText('rev-parse', '--short=6', 'HEAD'),
     ]);
     if (branch === 'main') {
-      const count = await gitText('rev-list', '--count', 'HEAD');
-      return `#${count}`;
+      // CI sets BUILD_NUMBER via GitHub API — no full history needed.
+      const envCount = Deno.env.get('BUILD_NUMBER');
+      if (envCount) return `#${envCount}`;
+      return hash;
     }
     const suffix = branch.includes('/')
       ? branch.slice(branch.lastIndexOf('/') + 1)

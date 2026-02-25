@@ -43,8 +43,25 @@ jobs:
       - name: Test
         run: deno test --no-check --allow-read --allow-run=deno
 
+      - name: Get commit count
+        id: commit-count
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get total commit count via GitHub API (avoids fetching full history)
+          COUNT=$(gh api "repos/${{ github.repository }}/commits?sha=main&per_page=1" \
+            --include 2>/dev/null \
+            | grep -i '^link:' \
+            | sed 's/.*page=\([0-9]*\)>; rel="last".*/\1/')
+          if [ -z "$COUNT" ]; then
+            echo "::warning::Could not determine commit count from GitHub API"
+          fi
+          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
+
       - name: Build
         run: deno task build
+        env:
+          BUILD_NUMBER: ${{ steps.commit-count.outputs.count }}
 
       - name: Deploy to gh-pages
         run: bash scripts/deploy-gh-pages.sh production
