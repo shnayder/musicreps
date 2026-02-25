@@ -98,7 +98,9 @@ A version identifier is displayed on the home screen (`<span class="version">`).
 It is derived from git at build time — no source changes needed. The logic lives
 in `getVersion()` in `main.ts`:
 
-- **`main` branch:** `#<commit-count>` (e.g., `#1247`) — monotonic build number
+- **`main` branch:** `#<commit-count>` (e.g., `#1247`) — monotonic build number.
+  In CI, the count comes from the GitHub API via the `BUILD_NUMBER` env var
+  (avoids fetching full history). Locally, `git rev-list --count` is used.
 - **Other branches:** `<short-hash> <branch-suffix>` (e.g., `a1b2c3 fix-button`)
 - **Fallback (no git):** `dev`
 
