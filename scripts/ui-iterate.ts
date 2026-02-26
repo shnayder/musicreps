@@ -1,11 +1,11 @@
 // UI iteration tool: capture screenshots of specific app states across
 // versions, annotate them in a review HTML page, export feedback for Claude.
 //
-// Usage:
-//   npx tsx scripts/ui-iterate.ts new <session> <state1> [state2...]
-//   npx tsx scripts/ui-iterate.ts capture [session]
-//   npx tsx scripts/ui-iterate.ts view [session]
-//   npx tsx scripts/ui-iterate.ts list
+// Usage (via deno task, see deno.json):
+//   deno task iterate new <session> <state1> [state2...]
+//   deno task iterate capture [session]
+//   deno task iterate view [session]
+//   deno task iterate list
 //
 // State names match the screenshot manifest (e.g. fretboard-idle,
 // semitoneMath-quiz, design-correct-feedback). Use --list-states to see all.
@@ -17,6 +17,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  statSync,
   writeFileSync,
 } from 'fs';
 import path from 'path';
@@ -210,13 +211,30 @@ async function captureStates(
 // Review HTML generation
 // ---------------------------------------------------------------------------
 
+function escapeHtml(s: string): string {
+  return s.replace(
+    /[&<>"']/g,
+    (
+      c,
+    ) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[
+      c
+    ]!),
+  );
+}
+
 function generateReviewHTML(name: string, session: Session): void {
   const { states, versions } = session;
   const colCount = states.length + 1; // +1 for General column
 
   // Table header
   const headers = states
-    .map((s) => `<th title="${s}">${s}</th>`)
+    .map((s) => `<th title="${escapeHtml(s)}">${escapeHtml(s)}</th>`)
     .join('\n          ');
 
   // Table body: one group per version
@@ -224,32 +242,40 @@ function generateReviewHTML(name: string, session: Session): void {
   for (const ver of versions) {
     body += `
       <tr class="ver-header">
-        <td colspan="${colCount}"><h2>${ver}</h2></td>
+        <td colspan="${colCount}"><h2>${escapeHtml(ver)}</h2></td>
       </tr>
       <tr class="shots">`;
     for (const state of states) {
-      const file = `${ver}/${state}.png`;
+      const file = `${encodeURIComponent(ver)}/${
+        encodeURIComponent(state)
+      }.png`;
       body += `
-        <td><img src="${file}" alt="${state} ${ver}"></td>`;
+        <td><img src="${file}" alt="${escapeHtml(state)} ${
+        escapeHtml(ver)
+      }"></td>`;
     }
     body += `
         <td></td>
       </tr>
       <tr class="notes">`;
     for (const state of states) {
-      const id = `${ver}--${state}`;
+      const id = `${escapeHtml(ver)}--${escapeHtml(state)}`;
       body += `
-        <td><textarea id="${id}" placeholder="Notes on ${state}..." rows="4"></textarea></td>`;
+        <td><textarea id="${id}" placeholder="Notes on ${
+        escapeHtml(state)
+      }..." rows="4"></textarea></td>`;
     }
     body += `
-        <td><textarea id="${ver}--general" placeholder="General notes..." rows="4"></textarea></td>
+        <td><textarea id="${
+      escapeHtml(ver)
+    }--general" placeholder="General notes..." rows="4"></textarea></td>
       </tr>`;
   }
 
   const html = `<!DOCTYPE html>
 <html><head>
 <meta charset="utf-8">
-<title>UI Iteration: ${name}</title>
+<title>UI Iteration: ${escapeHtml(name)}</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -298,7 +324,7 @@ function generateReviewHTML(name: string, session: Session): void {
 </head>
 <body>
 
-<h1>UI Iteration: ${name}</h1>
+<h1>UI Iteration: ${escapeHtml(name)}</h1>
 <div class="toolbar">
   <button id="btn-copy" title="Copy feedback summary to clipboard">Copy Summary</button>
   <button id="btn-save" title="Download feedback as .md file">Save .md</button>
@@ -450,11 +476,11 @@ function usage(): never {
   console.log(`UI iteration tool — capture, annotate, iterate.
 
 Usage:
-  npx tsx scripts/ui-iterate.ts new <session> <state1> [state2...]
-  npx tsx scripts/ui-iterate.ts capture [session]
-  npx tsx scripts/ui-iterate.ts view [session]
-  npx tsx scripts/ui-iterate.ts list
-  npx tsx scripts/ui-iterate.ts --list-states
+  deno task iterate new <session> <state1> [state2...]
+  deno task iterate capture [session]
+  deno task iterate view [session]
+  deno task iterate list
+  deno task iterate --list-states
 
 Commands:
   new       Create a new iteration session and capture v1 screenshots.
@@ -508,6 +534,12 @@ async function main() {
       }
 
       const dir = sessionDir(sessionName);
+      if (existsSync(sessionFile(sessionName))) {
+        console.error(
+          `Session "${sessionName}" already exists. Choose a different name or delete ${dir}.`,
+        );
+        process.exit(1);
+      }
       mkdirSync(dir, { recursive: true });
 
       const session: Session = { states: stateNames, versions: ['v1'] };
@@ -535,19 +567,13 @@ async function main() {
           );
           process.exit(1);
         }
-        // Pick most recently modified
+        // Pick most recently modified session
         sessionName = sessions
           .map((s) => ({
             name: s,
-            mtime: new Date(
-              readFileSync(sessionFile(s), 'utf-8') ? 0 : 0,
-            ).getTime(),
+            mtime: statSync(sessionFile(s)).mtimeMs,
           }))
           .sort((a, b) => b.mtime - a.mtime)[0].name;
-
-        // Actually just pick the last one alphabetically for now;
-        // a better heuristic would use file mtime
-        sessionName = sessions[sessions.length - 1];
         console.log(`Using session: ${sessionName}`);
       }
 
