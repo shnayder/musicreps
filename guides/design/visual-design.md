@@ -78,6 +78,25 @@ the palette or adding new color tokens:
 6. **Warm neutral chrome** — text, surfaces, and borders use warm-shifted grays
    (`hsl(30, …)`) to avoid a sterile wireframe feel.
 
+### Using the Color System
+
+**Always reference CSS custom properties.** If no variable covers the case,
+extend the system with a new token — don't hardcode raw HSL or hex values.
+One-off experiments during active iteration are fine, but finalized code should
+use variables so the palette stays maintainable and discoverable.
+
+**Semantic color families** follow a consistent pattern: an accent color plus
+bg, border, and text variants. Currently three families exist:
+
+| Family        | Accent               | `-bg`   | `-border` | `-text`  |
+| ------------- | -------------------- | ------- | --------- | -------- |
+| Brand/Success | `--color-brand`      | `-bg`   | —         | `-text`  |
+| Error         | `--color-error`      | `-bg`   | —         | `-text`  |
+| Recommended   | `--color-recommended`| `-bg`   | `-border` | `-text`  |
+
+When adding a new semantic color, follow this pattern: define the accent first,
+then add `-bg`, `-border`, and `-text` variants as needed.
+
 ### Brand / Success (Green)
 
 Deep green — unified brand and success color. CTAs, correct feedback, active
@@ -94,18 +113,21 @@ toggles, and focus states all share this hue.
 | `--color-success-text`  | `#1b5e20` | Text on success/brand backgrounds          |
 | `--color-focus`         | `#2e7d32` | Active chord-slot border (green, not blue) |
 | `--color-focus-bg`      | `#e8f5e9` | Active chord-slot background               |
-| `--color-toggle-active` | `#2e7d32` | Active string/distance toggle              |
+| `--color-toggle-active` | `hsl(0, 0%, 32%)`  | Active string/distance toggle (neutral)   |
 
 ### Gold (Attention)
 
 Gold draws the eye to recommendations and the current question without implying
-right/wrong.
+right/wrong. The recommended family has a full set of semantic variants for
+card surfaces (suggestion card).
 
-| Token                        | Value               | Usage                      |
-| ---------------------------- | ------------------- | -------------------------- |
-| `--color-highlight`          | `#EAB308`           | Current fretboard question |
-| `--color-recommended`        | `#D4A017`           | Recommendation badges      |
-| `--color-toggle-recommended` | `hsl(44, 80%, 46%)` | Recommended toggle glow    |
+| Token                       | Value                | Usage                                   |
+| --------------------------- | -------------------- | --------------------------------------- |
+| `--color-highlight`         | `#EAB308`            | Current fretboard question              |
+| `--color-recommended`       | `#D4A017`            | Accent: suggestion card header & border |
+| `--color-recommended-bg`    | `hsl(44, 70%, 96%)`  | Suggestion card background              |
+| `--color-recommended-border`| `hsl(44, 60%, 80%)`  | Suggestion card border                  |
+| `--color-recommended-text`  | `hsl(44, 80%, 25%)`  | Dark gold text on recommended surfaces  |
 
 ### Error (Red)
 
@@ -228,7 +250,7 @@ woff2. No external font requests — fully offline-compatible.
 
 ## Component Patterns
 
-### Primary Button (Start Quiz)
+### Primary Button (Practice)
 
 Brand sage background, white text, subtle shadow, hover darkens. Uses
 `.start-btn` class applied via `modeScreen()` scaffold.
@@ -327,8 +349,11 @@ active quiz and calibration phases.
 
 ### Practice Card
 
-Consolidated single card containing: status → recommendation → scope toggles →
-Start Quiz CTA. Uses `--color-surface` background, 8px radius.
+Consolidated single card containing: mastery status → suggestion card →
+scope toggles → Practice CTA. Uses `--color-bg` background, 8px radius.
+When a recommendation exists, a gold suggestion card (`.suggestion-card`)
+appears at the top of the Practice Settings zone with an "Accept" button
+that pre-fills the scope toggles.
 
 ### Quiz Session Info
 
