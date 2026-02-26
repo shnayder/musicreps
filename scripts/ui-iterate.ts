@@ -8,7 +8,8 @@
 //   deno task iterate list
 //
 // State names match the screenshot manifest (e.g. fretboard-idle,
-// semitoneMath-quiz, design-correct-feedback). Use --list-states to see all.
+// semitoneMath-quiz, design-correct-feedback) or component manifest
+// (e.g. comp/buttons, comp/tabs). Use --list-states to see all.
 
 import { chromium } from 'playwright';
 import { ChildProcess, spawn } from 'child_process';
@@ -28,6 +29,12 @@ import {
   ENGINE_MODES,
   type ScreenshotEntry,
 } from './screenshot-manifest.ts';
+import {
+  buildComponentManifest,
+  type ComponentEntry,
+  isComponentName,
+} from './component-manifest.ts';
+import { captureComponents } from './capture-components.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -257,6 +264,40 @@ async function captureStates(
     console.log(`Captured ${sorted.length} screenshots in ${outDir}`);
   } finally {
     server.kill();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Partitioned capture: app states (dev server) + components (file://)
+// ---------------------------------------------------------------------------
+
+async function captureSessionStates(
+  stateNames: string[],
+  outDir: string,
+  appManifestMap: Map<string, ScreenshotEntry>,
+  compManifestMap: Map<string, ComponentEntry>,
+): Promise<void> {
+  const appNames = stateNames.filter((s) => !isComponentName(s));
+  const compNames = stateNames.filter((s) => isComponentName(s));
+
+  // Capture app states (needs dev server)
+  if (appNames.length > 0) {
+    const appEntries = appNames.map((s) => {
+      const entry = appManifestMap.get(s);
+      if (!entry) throw new Error(`State "${s}" no longer in manifest`);
+      return entry;
+    });
+    await captureStates(appEntries, outDir);
+  }
+
+  // Capture component states (file://, no server)
+  if (compNames.length > 0) {
+    const compEntries = compNames.map((s) => {
+      const entry = compManifestMap.get(s);
+      if (!entry) throw new Error(`Component "${s}" no longer in manifest`);
+      return entry;
+    });
+    await captureComponents({ entries: compEntries, outDir });
   }
 }
 
@@ -571,7 +612,8 @@ Commands:
 Options:
   --list-states   Print all valid state names and exit.
 
-State names match the screenshot manifest (run --list-states to see all).
+State names match the screenshot or component manifest (run --list-states to see all).
+Component names use the comp/ prefix (e.g. comp/buttons, comp/tabs).
 `);
   process.exit(1);
 }
@@ -579,10 +621,12 @@ State names match the screenshot manifest (run --list-states to see all).
 async function main() {
   const args = process.argv.slice(2);
 
-  // --list-states: print all valid state names
+  // --list-states: print all valid state names (app + component)
   if (args.includes('--list-states')) {
     const manifest = buildManifest();
     for (const entry of manifest) console.log(entry.name);
+    const compEntries = buildComponentManifest();
+    for (const entry of compEntries) console.log(entry.name);
     return;
   }
 
@@ -591,6 +635,9 @@ async function main() {
 
   const manifest = buildManifest();
   const manifestMap = new Map(manifest.map((e) => [e.name, e]));
+  const compManifest = buildComponentManifest();
+  const compMap = new Map(compManifest.map((e) => [e.name, e]));
+  const allNames = new Set([...manifestMap.keys(), ...compMap.keys()]);
 
   switch (command) {
     case 'new': {
@@ -605,8 +652,8 @@ async function main() {
         usage();
       }
 
-      // Validate state names
-      const invalid = stateNames.filter((s) => !manifestMap.has(s));
+      // Validate state names against both app and component manifests
+      const invalid = stateNames.filter((s) => !allNames.has(s));
       if (invalid.length > 0) {
         console.error(`Unknown state(s): ${invalid.join(', ')}`);
         console.error('Run --list-states to see valid names.');
@@ -625,9 +672,8 @@ async function main() {
       const session: Session = { states: stateNames, versions: ['v1'] };
       writeSession(sessionName, session);
 
-      const entries = stateNames.map((s) => manifestMap.get(s)!);
       const outDir = path.join(dir, 'v1');
-      await captureStates(entries, outDir);
+      await captureSessionStates(stateNames, outDir, manifestMap, compMap);
 
       generateReviewHTML(sessionName, session);
       const reviewPath = path.join(dir, 'review.html');
@@ -661,14 +707,8 @@ async function main() {
       const nextNum = session.versions.length + 1;
       const nextVer = `v${nextNum}`;
 
-      const entries = session.states.map((s) => {
-        const entry = manifestMap.get(s);
-        if (!entry) throw new Error(`State "${s}" no longer in manifest`);
-        return entry;
-      });
-
       const outDir = path.join(sessionDir(sessionName), nextVer);
-      await captureStates(entries, outDir);
+      await captureSessionStates(session.states, outDir, manifestMap, compMap);
 
       session.versions.push(nextVer);
       writeSession(sessionName, session);

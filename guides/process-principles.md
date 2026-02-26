@@ -17,6 +17,7 @@ tighter review automation.
 This means:
 
 - When a bug reveals a missing convention, document the convention.
+- When you have a choice between accommodating an existing design and refactoring into a clear one, prefer the latter.
 - When a feature requires a pattern that will recur, extract it as shared
   infrastructure.
 - When review catches a class of issue repeatedly, add it to the automated
