@@ -31,10 +31,12 @@
   --color-focus-bg: #e8f5e9;
   /* Gold accents (highlights, recommendations, achievements) */
   --color-recommended: #d4a017;
+  --color-recommended-bg: hsl(44, 70%, 96%);
+  --color-recommended-border: hsl(44, 60%, 80%);
+  --color-recommended-text: hsl(44, 80%, 25%);
   --color-highlight: #eab308;
   /* UI accents */
-  --color-toggle-active: #2e7d32;
-  --color-toggle-recommended: hsl(44, 80%, 46%); /* gold */
+  --color-toggle-active: hsl(0, 0%, 32%);
   /* Text (warm neutrals) */
   --color-text: hsl(30, 5%, 20%);
   --color-text-muted: hsl(30, 3%, 40%);
@@ -80,6 +82,11 @@
   --space-4: 0.75rem;
   --space-5: 1rem;
   --space-6: 1.5rem;
+
+  /* Border radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
 * {
@@ -136,7 +143,7 @@ body {
   height: 3px;
   background: var(--color-brand);
   margin: var(--space-3) 0 0;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .home-modes {
   flex: 1;
@@ -170,7 +177,7 @@ body {
   background: var(--color-bg);
   border: 1px solid var(--color-border-lighter);
   border-left: 3px solid var(--color-brand);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   margin-bottom: var(--space-2);
   cursor: pointer;
   position: relative;
@@ -254,7 +261,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 .mode-back-btn:hover {
   background: var(--color-surface-hover);
@@ -286,7 +293,7 @@ body {
 }
 .settings-modal {
   background: var(--color-bg);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
   width: 280px;
   max-width: 90vw;
@@ -335,7 +342,7 @@ body {
 .settings-toggle-group {
   display: flex;
   gap: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--color-border);
 }
@@ -432,7 +439,7 @@ body {
   margin-bottom: var(--space-4);
   padding: var(--space-4) var(--space-5);
   background: var(--color-bg);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 .practice-zone + .practice-zone {
   margin-top: var(--space-5);
@@ -446,15 +453,23 @@ body {
   margin-bottom: var(--space-3);
 }
 .practice-status {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
   margin-bottom: 0;
 }
 .practice-status:empty,
 .practice-status-label:empty {
   display: none;
 }
+.practice-status-prefix {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
 .practice-status-label {
-  font-weight: 600;
-  font-size: var(--text-base);
+  font-weight: 500;
+  font-size: var(--text-sm);
   color: var(--color-text);
 }
 .practice-status-detail {
@@ -465,41 +480,46 @@ body {
 .practice-status-detail:empty {
   display: none;
 }
-.practice-recommendation {
+.suggestion-card {
+  background: var(--color-recommended-bg);
+  border: 1px solid var(--color-recommended-border);
+  border-left: 3px solid var(--color-recommended);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+.suggestion-card-header {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-recommended);
+  margin-bottom: var(--space-2);
+}
+.suggestion-card-body {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
 }
-.practice-recommendation:empty,
-.practice-rec-text:empty ~ .practice-rec-btn {
-  display: none;
-}
-.practice-rec-text {
+.suggestion-card-text {
+  flex: 1;
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+  min-width: 0;
 }
-.practice-rec-text:empty {
-  display: none;
-}
-.practice-rec-btn {
+.suggestion-card-accept {
   font-size: var(--text-xs);
   font-weight: 500;
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-brand);
-  border-radius: 6px;
-  background: var(--color-brand-bg);
-  color: var(--color-brand-dark);
+  border: 1px solid var(--color-recommended);
+  border-radius: var(--radius-sm);
+  background: var(--color-recommended-bg);
+  color: var(--color-recommended-text);
   cursor: pointer;
-  margin: 0;
-  transition: background 0.15s ease;
+  flex-shrink: 0;
 }
-.practice-rec-btn:hover {
-  background: var(--color-brand);
+.suggestion-card-accept:hover {
+  background: var(--color-recommended);
   color: white;
-}
-.practice-rec-btn.hidden {
-  display: none;
 }
 
 /* --- Practice scope (inside practice card) --- */
@@ -560,7 +580,7 @@ body {
 .baseline-rerun-btn {
   background: none;
   border: 1px solid var(--color-border-light);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-xs);
   font-weight: 500;
@@ -588,13 +608,13 @@ body {
   display: flex;
   flex-direction: row;
   gap: var(--space-1);
-  justify-content: center;
+  justify-content: flex-start;
 }
 .string-toggle {
   width: 36px;
   height: 36px;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-border);
   font-size: var(--text-sm);
@@ -612,22 +632,16 @@ body {
   color: white;
   border-color: var(--color-toggle-active);
 }
-.string-toggle.recommended {
-  box-shadow: 0 0 0 2px var(--color-toggle-recommended);
-}
-.string-toggle.active.recommended {
-  border-color: var(--color-toggle-recommended);
-}
 .distance-toggles {
   display: flex;
   flex-direction: row;
   gap: var(--space-1);
-  justify-content: center;
+  justify-content: flex-start;
 }
 .distance-toggle {
   height: 36px;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-border);
   font-size: var(--text-xs);
@@ -645,22 +659,16 @@ body {
   color: white;
   border-color: var(--color-toggle-active);
 }
-.distance-toggle.recommended {
-  box-shadow: 0 0 0 2px var(--color-toggle-recommended);
-}
-.distance-toggle.active.recommended {
-  border-color: var(--color-toggle-recommended);
-}
 .notes-toggles {
   display: flex;
   flex-direction: row;
   gap: var(--space-1);
-  justify-content: center;
+  justify-content: flex-start;
 }
 .notes-toggle {
   height: 36px;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-border);
   font-size: var(--text-xs);
@@ -725,7 +733,7 @@ body {
 .hc-inner {
   background: var(--color-bg);
   border: 1px solid var(--color-border-light);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 0.35rem 0.5rem;
   min-width: 65px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
@@ -748,14 +756,14 @@ body {
 }
 .hc-bar {
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: hsl(30, 5%, 90%);
   margin-top: 0.25rem;
   overflow: hidden;
 }
 .hc-bar-fill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition: width 0.2s;
 }
 
@@ -778,16 +786,16 @@ button {
   font-size: var(--text-base);
   padding: var(--space-3) var(--space-5);
   margin-bottom: var(--space-3);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   text-align: center;
 }
 
-/* --- Primary CTA (Start Quiz) --- */
+/* --- Primary CTA (Practice) --- */
 .start-btn {
   background: var(--color-brand);
   color: white;
   border: 2px solid var(--color-brand);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: var(--text-md);
   padding: var(--space-4) var(--space-6);
@@ -802,6 +810,25 @@ button {
 .start-btn:active {
   transform: scale(0.98);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.start-btn:disabled {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border-light);
+  color: var(--color-text-light);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.start-btn:disabled:hover {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border-light);
+  box-shadow: none;
+  transform: none;
+}
+.start-validation-message {
+  font-size: var(--text-xs);
+  color: var(--color-error-text);
+  text-align: center;
+  margin-top: var(--space-2);
 }
 
 /* --- Quiz countdown row — bar + timer side by side --- */
@@ -861,7 +888,7 @@ button {
   padding: 0 var(--space-2);
   line-height: 1;
   margin: 0;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: color 0.15s ease, background 0.15s ease;
   z-index: 1;
 }
@@ -876,7 +903,7 @@ button {
   max-width: 300px;
   height: 20px;
   background: var(--color-surface-alt);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   margin: 0 auto var(--space-4);
   overflow: hidden;
   position: relative;
@@ -885,7 +912,7 @@ button {
 .progress-fill {
   height: 100%;
   background: var(--color-success);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   transition: width 0.3s ease;
   min-width: 0;
 }
@@ -970,7 +997,7 @@ button {
   background: var(--color-brand);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: var(--text-base);
   font-weight: 600;
   cursor: pointer;
@@ -987,7 +1014,7 @@ button {
   background: none;
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: var(--text-base);
   cursor: pointer;
 }
@@ -1058,7 +1085,7 @@ button {
   font-size: var(--text-md);
   font-weight: 500;
   border: 2px solid var(--color-text-muted);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--color-bg);
   cursor: pointer;
   padding: 0;
@@ -1151,7 +1178,7 @@ button {
   font-size: var(--text-md);
   font-weight: 500;
   border: 2px solid var(--color-text-muted);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--color-bg);
   cursor: pointer;
   padding: 0 var(--space-2);
@@ -1209,7 +1236,7 @@ button {
   background: var(--color-brand);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: background 0.15s ease;
 }
@@ -1357,7 +1384,7 @@ button {
 .legend-bar-swatch {
   width: 28px;
   height: 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .legend-axis-labels {
   display: flex;
@@ -1384,6 +1411,7 @@ button {
   color: var(--color-text-muted);
   font-weight: 500;
   flex-shrink: 0;
+  min-width: 3.5rem;
 }
 
 /* --- Stats tables (lookup modes) --- */
@@ -1408,7 +1436,7 @@ button {
 .stats-cell {
   width: 40px;
   height: 28px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 0;
   box-sizing: border-box;
 }
@@ -1495,7 +1523,7 @@ button {
   width: 3rem;
   height: 2.5rem;
   border: 2px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: var(--text-md);
   font-weight: 600;
   background: var(--color-surface);
@@ -1585,7 +1613,7 @@ button {
 
 /* Baseline, recommendation buttons */
 .baseline-rerun-btn:focus-visible,
-.practice-rec-btn:focus-visible {
+.suggestion-card-accept:focus-visible {
   outline-offset: 2px;
 }
 
@@ -2670,51 +2698,41 @@ button {
   }
 
   // src/ui/scope.tsx
-  function GroupToggles({ labels, active, recommended, onToggle }) {
+  function GroupToggles({ labels, active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
       /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Groups" }),
-      /* @__PURE__ */ u3("div", { class: "distance-toggles", children: labels.map((label, i3) => {
-        let cls = "distance-toggle";
-        if (active.has(i3)) cls += " active";
-        if (recommended?.has(i3)) cls += " recommended";
-        return /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: cls,
-            "aria-pressed": active.has(i3),
-            "data-group": String(i3),
-            onClick: () => onToggle(i3),
-            children: label
-          },
-          i3
-        );
-      }) })
+      /* @__PURE__ */ u3("div", { class: "distance-toggles", children: labels.map((label, i3) => /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "distance-toggle" + (active.has(i3) ? " active" : ""),
+          "aria-pressed": active.has(i3),
+          "data-group": String(i3),
+          onClick: () => onToggle(i3),
+          children: label
+        },
+        i3
+      )) })
     ] });
   }
-  function StringToggles({ stringNames, active, recommended, onToggle }) {
+  function StringToggles({ stringNames, active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
       /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Strings" }),
-      /* @__PURE__ */ u3("div", { class: "string-toggles", children: stringNames.map((name, i3) => {
-        let cls = "string-toggle";
-        if (active.has(i3)) cls += " active";
-        if (recommended?.has(i3)) cls += " recommended";
-        return /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: cls,
-            "aria-pressed": active.has(i3),
-            "data-string": String(i3),
-            "data-string-note": name,
-            onClick: () => onToggle(i3),
-            children: name
-          },
-          i3
-        );
-      }) })
+      /* @__PURE__ */ u3("div", { class: "string-toggles", children: stringNames.map((name, i3) => /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "string-toggle" + (active.has(i3) ? " active" : ""),
+          "aria-pressed": active.has(i3),
+          "data-string": String(i3),
+          "data-string-note": name,
+          onClick: () => onToggle(i3),
+          children: name
+        },
+        i3
+      )) })
     ] });
   }
   function NoteFilter({ mode, onChange }) {
@@ -2723,10 +2741,12 @@ button {
     function toggle(which) {
       if (which === "natural") {
         if (naturalActive && accActive) onChange("sharps-flats");
-        else if (!naturalActive) onChange(accActive ? "all" : "natural");
+        else if (naturalActive) onChange(accActive ? "sharps-flats" : "none");
+        else onChange(accActive ? "all" : "natural");
       } else {
         if (accActive && naturalActive) onChange("natural");
-        else if (!accActive) onChange(naturalActive ? "all" : "sharps-flats");
+        else if (accActive) onChange(naturalActive ? "natural" : "none");
+        else onChange(naturalActive ? "all" : "sharps-flats");
       }
     }
     return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
@@ -2896,31 +2916,46 @@ button {
     const mastery = props.mastery ?? (props.summary && props.summary.showMastery ? props.summary.masteryText : void 0);
     const onApplyRecommendation = props.onApplyRecommendation;
     const { scope, onStart } = props;
-    const recBlock = recommendation ? /* @__PURE__ */ u3("div", { class: "practice-recommendation", children: [
-      /* @__PURE__ */ u3("span", { class: "practice-rec-text", children: recommendation }),
-      onApplyRecommendation ? /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "practice-rec-btn",
-          onClick: onApplyRecommendation,
-          children: "Use suggestion"
-        }
-      ) : null
+    const scopeDisabled = props.scopeValid === false;
+    const validationMessage = scopeDisabled ? props.validationMessage : void 0;
+    const recBlock = recommendation ? /* @__PURE__ */ u3("div", { class: "suggestion-card", children: [
+      /* @__PURE__ */ u3("div", { class: "suggestion-card-header", children: "Suggestion" }),
+      /* @__PURE__ */ u3("div", { class: "suggestion-card-body", children: [
+        /* @__PURE__ */ u3("span", { class: "suggestion-card-text", children: recommendation }),
+        onApplyRecommendation ? /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "suggestion-card-accept",
+            onClick: onApplyRecommendation,
+            children: "Accept"
+          }
+        ) : null
+      ] })
     ] }) : null;
     const masteryBlock = mastery ? /* @__PURE__ */ u3("div", { class: "mastery-message mastery-visible", children: mastery }) : null;
     const hasSetupContent = scope || recommendation;
     const setupZone = /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-setup", children: [
-      hasSetupContent ? /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Quiz setup" }) : null,
+      hasSetupContent ? /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Practice Settings" }) : null,
       recBlock,
       scope ? /* @__PURE__ */ u3("div", { class: "practice-scope", children: /* @__PURE__ */ u3("div", { class: "settings-row", children: scope }) }) : null,
-      /* @__PURE__ */ u3("div", { class: "practice-zone-action", children: /* @__PURE__ */ u3(StartButton, { onStart }) })
+      /* @__PURE__ */ u3("div", { class: "practice-zone-action", children: /* @__PURE__ */ u3(
+        StartButton,
+        {
+          onStart,
+          disabled: scopeDisabled,
+          validationMessage
+        }
+      ) })
     ] });
     return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
       /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-mastery", children: [
         /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Mastery" }),
-        /* @__PURE__ */ u3("div", { class: "practice-status", children: /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel || "" }) }),
+        /* @__PURE__ */ u3("div", { class: "practice-status", children: statusLabel ? /* @__PURE__ */ u3(k, { children: [
+          /* @__PURE__ */ u3("span", { class: "practice-status-prefix", children: "Status" }),
+          /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel })
+        ] }) : null }),
         /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" }),
         masteryBlock
       ] }),
@@ -2928,22 +2963,40 @@ button {
     ] });
   }
   function Recommendation({ text, onApply }) {
-    return /* @__PURE__ */ u3("div", { class: "practice-recommendation", children: [
-      /* @__PURE__ */ u3("span", { class: "practice-rec-text", children: text }),
-      onApply ? /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u3("div", { class: "suggestion-card", children: [
+      /* @__PURE__ */ u3("div", { class: "suggestion-card-header", children: "Suggestion" }),
+      /* @__PURE__ */ u3("div", { class: "suggestion-card-body", children: [
+        /* @__PURE__ */ u3("span", { class: "suggestion-card-text", children: text }),
+        onApply ? /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "suggestion-card-accept",
+            onClick: onApply,
+            children: "Accept"
+          }
+        ) : null
+      ] })
+    ] });
+  }
+  function StartButton({ onStart, disabled, validationMessage }) {
+    const msgId = validationMessage ? "start-validation-msg" : void 0;
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
           tabIndex: 0,
-          class: "practice-rec-btn",
-          onClick: onApply,
-          children: "Use suggestion"
+          class: "start-btn",
+          onClick: onStart,
+          disabled,
+          "aria-describedby": msgId,
+          children: "Practice"
         }
-      ) : null
+      ),
+      validationMessage ? /* @__PURE__ */ u3("div", { id: msgId, class: "start-validation-message", children: validationMessage }) : null
     ] });
-  }
-  function StartButton({ onStart }) {
-    return /* @__PURE__ */ u3("button", { type: "button", tabIndex: 0, class: "start-btn", onClick: onStart, children: "Start Quiz" });
   }
   function QuizSession({
     timeLeft,
@@ -3128,7 +3181,6 @@ button {
         {
           labels: ["+1 to +3", "+4 to +6", "+7 to +9", "+10 to +11"],
           active: /* @__PURE__ */ new Set([0, 1]),
-          recommended: /* @__PURE__ */ new Set([0, 2]),
           onToggle: () => {
           }
         }
@@ -3138,7 +3190,6 @@ button {
         {
           stringNames: ["E", "A", "D", "G", "B", "e"],
           active: /* @__PURE__ */ new Set([0, 1, 2]),
-          recommended: /* @__PURE__ */ new Set([1, 3]),
           onToggle: () => {
           }
         }
@@ -3181,7 +3232,7 @@ button {
       /* @__PURE__ */ u3(Section, { title: "Recommendation", children: /* @__PURE__ */ u3(
         Recommendation,
         {
-          text: "Suggestion: solidify +1 to +3 \u2014 3 slow items",
+          text: "solidify +1 to +3 \u2014 3 slow items",
           onApply: () => {
           }
         }
@@ -3229,7 +3280,7 @@ button {
         {
           statusLabel: "Strong",
           statusDetail: "12 of 14 fluent",
-          recommendation: "Suggestion: start A string \u2014 5 new items",
+          recommendation: "start A string \u2014 5 new items",
           onApplyRecommendation: () => {
           }
         }
@@ -3239,7 +3290,7 @@ button {
         {
           statusLabel: "Solid",
           statusDetail: "24 of 26 fluent",
-          recommendation: "Suggestion: start D string",
+          recommendation: "start D string",
           onApplyRecommendation: () => {
           },
           scope: /* @__PURE__ */ u3(k, { children: [
@@ -3248,7 +3299,6 @@ button {
               {
                 stringNames: ["E", "A", "D", "G", "B", "e"],
                 active: /* @__PURE__ */ new Set([0, 1]),
-                recommended: /* @__PURE__ */ new Set([0, 1, 2]),
                 onToggle: () => {
                 }
               }
