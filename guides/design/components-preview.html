@@ -3073,6 +3073,14 @@ button {
       getAutomaticity(id) {
         return lookup[id] ?? null;
       },
+      getSpeedScore(id) {
+        return lookup[id] ?? null;
+      },
+      getFreshness(id) {
+        const auto = lookup[id];
+        if (auto == null) return null;
+        return 0.3 + auto * 0.7;
+      },
       getStats(_id) {
         return null;
       }
@@ -3090,7 +3098,7 @@ button {
       /* @__PURE__ */ u3(Section, { title: "Degree Buttons", children: /* @__PURE__ */ u3(DegreeButtons, {}) }),
       /* @__PURE__ */ u3(Section, { title: "Numeral Buttons", children: /* @__PURE__ */ u3(NumeralButtons, {}) }),
       /* @__PURE__ */ u3("h2", { children: "Stats" }),
-      /* @__PURE__ */ u3(Section, { title: "Recall Heatmap (StatsGrid)", children: /* @__PURE__ */ u3(
+      /* @__PURE__ */ u3(Section, { title: "Progress Heatmap (StatsGrid)", children: /* @__PURE__ */ u3(
         StatsGrid,
         {
           selector: sel,

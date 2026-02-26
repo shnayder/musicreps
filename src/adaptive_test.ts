@@ -4,6 +4,7 @@ import {
   computeAutomaticity,
   computeAutomaticityForDisplay,
   computeEwma,
+  computeFreshness,
   computeMedian,
   computeRecall,
   computeSpeedScore,
@@ -158,6 +159,53 @@ describe('computeRecall', () => {
       r1 > r2,
       `recall at 1h (${r1}) should be > recall at 10h (${r2})`,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeFreshness
+// ---------------------------------------------------------------------------
+
+describe('computeFreshness', () => {
+  const HOUR = 3600_000;
+
+  it('returns null for unseen items', () => {
+    assert.equal(computeFreshness(null, null, 1000), null);
+    assert.equal(computeFreshness(4, null, 1000), null);
+    assert.equal(computeFreshness(null, 500, 1000), null);
+  });
+
+  it('returns 0 for zero stability', () => {
+    assert.equal(computeFreshness(0, 1000, 2000), 0);
+  });
+
+  it('returns 1 when no time has elapsed', () => {
+    const now = Date.now();
+    assert.equal(computeFreshness(4, now, now), 1);
+  });
+
+  it('returns 1 for future timestamps', () => {
+    const now = Date.now();
+    assert.equal(computeFreshness(4, now + 1000, now), 1);
+  });
+
+  it('returns 0.5 at exactly one half-life', () => {
+    const now = Date.now();
+    const lastCorrect = now - 4 * HOUR; // 4 hours ago, stability = 4h
+    assert.equal(computeFreshness(4, lastCorrect, now), 0.5);
+  });
+
+  it('returns 0.25 at two half-lives', () => {
+    const now = Date.now();
+    const lastCorrect = now - 8 * HOUR; // 8 hours ago, stability = 4h
+    assert.equal(computeFreshness(4, lastCorrect, now), 0.25);
+  });
+
+  it('decays over time', () => {
+    const now = Date.now();
+    const f1 = computeFreshness(4, now - 1 * HOUR, now)!;
+    const f2 = computeFreshness(4, now - 10 * HOUR, now)!;
+    assert.ok(f1 > f2, `freshness at 1h (${f1}) should be > at 10h (${f2})`);
   });
 });
 

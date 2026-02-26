@@ -113,6 +113,15 @@ function mockSelector(): StatsSelector {
     getAutomaticity(id: string) {
       return lookup[id] ?? null;
     },
+    getSpeedScore(id: string) {
+      return lookup[id] ?? null;
+    },
+    getFreshness(id: string) {
+      // Simulate varying freshness: items with data get 0.3–1.0
+      const auto = lookup[id];
+      if (auto == null) return null;
+      return 0.3 + auto * 0.7;
+    },
     getStats(_id: string) {
       return null;
     },
@@ -152,7 +161,7 @@ function PreviewApp() {
       </Section>
 
       <h2>Stats</h2>
-      <Section title='Recall Heatmap (StatsGrid)'>
+      <Section title='Progress Heatmap (StatsGrid)'>
         <StatsGrid
           selector={sel}
           colLabels={['+1', '+2', '+3', '+4', '+5', '+6']}

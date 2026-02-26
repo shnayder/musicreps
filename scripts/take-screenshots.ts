@@ -66,19 +66,22 @@ function startServer(): { proc: ChildProcess; portReady: Promise<number> } {
     },
   );
   const portReady = new Promise<number>((resolve, reject) => {
-    proc.stderr?.on('data', (d: Buffer) => {
-      const msg = d.toString();
-      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
-      if (m) resolve(parseInt(m[1], 10));
-      else if (!msg.includes('Listening on')) process.stderr.write(msg);
-    });
-    proc.on('exit', (code) => {
-      if (code) reject(new Error(`Server exited with code ${code}`));
-    });
-    setTimeout(
+    const timeout = setTimeout(
       () => reject(new Error('Server did not start within 10s')),
       10_000,
     );
+    proc.stderr?.on('data', (d: Buffer) => {
+      const msg = d.toString();
+      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
+      if (m) {
+        clearTimeout(timeout);
+        resolve(parseInt(m[1], 10));
+      } else if (!msg.includes('Listening on')) process.stderr.write(msg);
+    });
+    proc.on('exit', (code) => {
+      clearTimeout(timeout);
+      if (code) reject(new Error(`Server exited with code ${code}`));
+    });
   });
   return { proc, portReady };
 }
@@ -298,7 +301,8 @@ async function main() {
 
     for (const entry of manifest) {
       const needsReload = entry.modeId !== currentMode ||
-        previousHadFixture || previousHadLocalStorage;
+        previousHadFixture || previousHadLocalStorage ||
+        !!entry.localStorageData;
 
       // Seed localStorage before navigation so the reload picks it up
       if (entry.localStorageData) {

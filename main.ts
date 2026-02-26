@@ -253,7 +253,13 @@ if (import.meta.main) {
   } else {
     const html = await buildHTML();
     const portArg = Deno.args.find((a) => a.startsWith('--port='));
-    const startPort = portArg ? parseInt(portArg.split('=')[1], 10) : 8001;
+    let startPort = 8001;
+    if (portArg) {
+      const parsed = parseInt(portArg.split('=')[1], 10);
+      if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 65535) {
+        startPort = parsed;
+      }
+    }
     const port = findOpenPort(startPort);
     Deno.serve({ port }, async (req) => {
       const url = new URL(req.url);
