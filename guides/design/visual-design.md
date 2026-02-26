@@ -259,7 +259,7 @@ Brand sage background, white text, subtle shadow, hover darkens. Uses
 background: var(--color-brand);
 color: white;
 border: 2px solid var(--color-brand);
-border-radius: 8px;
+border-radius: var(--radius-md);
 font-weight: 600;
 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 ```
@@ -309,7 +309,7 @@ single number needs context (e.g., baseline, round stats).
 Full-screen mode selector. Title uses `--font-display` (DM Serif Display) with
 a 32×3px green accent bar beneath it (`.home-title::after`).
 
-Mode cards have a 3px green (`--color-brand`) left border, 10px radius, 1px
+Mode cards have a 3px green (`--color-brand`) left border, `--radius-md`, 1px
 `--color-border-lighter` border, and a right-facing chevron (`::after`
 pseudo-element). Card title is `--text-base` semibold; description is
 `--text-sm` muted.
@@ -350,7 +350,7 @@ active quiz and calibration phases.
 ### Practice Card
 
 Consolidated single card containing: mastery status → suggestion card →
-scope toggles → Practice CTA. Uses `--color-bg` background, 8px radius.
+scope toggles → Practice CTA. Uses `--color-bg` background, `--radius-md`.
 When a recommendation exists, a gold suggestion card (`.suggestion-card`)
 appears at the top of the Practice Settings zone with an "Accept" button
 that pre-fills the scope toggles.
@@ -403,14 +403,14 @@ surface to provide visual containment. Reuses existing tokens.
 ```css
 background: var(--color-bg);
 border: 1px solid var(--color-border-lighter);
-border-radius: 12px;
+border-radius: var(--radius-lg);
 padding: var(--space-5);
 max-width: 360px;
 margin: 0 auto;
 ```
 
 **Rationale:** Floating stats on the surface background feel unfinished.
-The card uses the same 12px radius as `.quiz-area.active` and the same
+The card uses `--radius-lg` (same as `.quiz-area.active`) and the same
 `--color-border-lighter` border for consistency.
 
 ### Two-row answer layout

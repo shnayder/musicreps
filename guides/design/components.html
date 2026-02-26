@@ -45,13 +45,13 @@
         font-size: 0.8em;
         background: var(--color-surface);
         padding: 0.1em 0.35em;
-        border-radius: 3px;
+        border-radius: var(--radius-sm);
       }
 
       /* Showcase panels */
       .showcase {
         border: 1px solid var(--color-border-light);
-        border-radius: 8px;
+        border-radius: var(--radius-md);
         overflow: hidden;
         margin: 0.75rem 0;
       }
@@ -105,7 +105,7 @@
       .space-bar {
         height: 20px;
         background: var(--color-brand);
-        border-radius: 3px;
+        border-radius: var(--radius-sm);
         opacity: 0.7;
       }
       .space-label {
@@ -179,7 +179,7 @@
         width: 120px;
         height: 72px;
         background: var(--color-bg);
-        border-radius: 8px;
+        border-radius: var(--radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -190,7 +190,7 @@
       /* Alignment guides */
       .align-demo {
         border: 1px dashed var(--color-border-light);
-        border-radius: 6px;
+        border-radius: var(--radius-sm);
         padding: 0.75rem;
       }
 
@@ -204,14 +204,14 @@
       .touch-outline {
         position: absolute;
         border: 1px dashed var(--color-error);
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         pointer-events: none;
       }
 
       /* Transition demo */
       .transition-demo {
         padding: 0.5rem 1rem;
-        border-radius: 6px;
+        border-radius: var(--radius-sm);
         font-size: 0.85rem;
         font-weight: 500;
         cursor: pointer;
@@ -236,7 +236,7 @@
       .grid-cell {
         background: var(--color-surface);
         border: 1px solid var(--color-border-light);
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         padding: 0.5rem;
         font-size: 0.75rem;
         color: var(--color-text-muted);
@@ -269,7 +269,7 @@
         flex: 1;
         min-width: 180px;
         border: 1px solid var(--color-border-light);
-        border-radius: 8px;
+        border-radius: var(--radius-md);
         overflow: hidden;
       }
       .variant-panel-label {
@@ -350,7 +350,7 @@
       .rc-card {
         background: var(--color-bg);
         border: 1px solid var(--color-border-lighter);
-        border-radius: 12px;
+        border-radius: var(--radius-lg);
         padding: var(--space-5);
         max-width: 360px;
         margin: 0 auto;
@@ -358,7 +358,7 @@
       .rc-card-brand {
         background: var(--color-brand-bg);
         border: 1px solid var(--color-border-lighter);
-        border-radius: 12px;
+        border-radius: var(--radius-lg);
         padding: var(--space-5);
         max-width: 360px;
         margin: 0 auto;
@@ -368,7 +368,7 @@
       .quiz-sim {
         height: 580px;
         border: 1px solid var(--color-border-light);
-        border-radius: 12px;
+        border-radius: var(--radius-lg);
         background: var(--color-surface);
         overflow: hidden;
         padding: var(--space-3);
@@ -413,11 +413,15 @@
     </div>
 
     <!-- ================================================================== -->
+    <section data-component="spacing-scale">
     <h2>Spacing Scale</h2>
     <p>6 tokens from 2px to 24px. Used for all gaps, padding, and margins.</p>
     <div id="spacing-scale"></div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="typography-scale">
     <h2>Typography Scale</h2>
     <p>
       7 size tokens. Font weights: 400 (normal), 500 (medium &mdash;
@@ -444,7 +448,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="border-radius">
     <h2>Border Radius</h2>
     <p>Consistent rounding across component types.</p>
     <div class="showcase">
@@ -454,7 +461,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="shadows">
     <h2>Shadows</h2>
     <p>Used sparingly &mdash; only on elevated elements.</p>
     <div class="showcase">
@@ -483,7 +493,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="buttons">
     <h2>Buttons</h2>
 
     <h3>Primary CTA</h3>
@@ -498,7 +511,7 @@
         <div class="anno-block">
           background: var(--color-brand) &middot; border: 2px solid
           var(--color-brand)<br>
-          font-weight: 600 &middot; border-radius: 8px &middot; shadow: 0 2px
+          font-weight: 600 &middot; border-radius: var(--radius-md) &middot; shadow: 0 2px
           8px rgba(0,0,0,0.12)<br>
           :hover &rarr; --color-brand-dark &middot; :active &rarr; scale(0.98)
         </div>
@@ -612,7 +625,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="toggles">
     <h2>Toggles</h2>
 
     <h3>String Toggles</h3>
@@ -655,12 +671,15 @@
           </div>
         </div>
         <div class="anno-block">
-          border-radius: 8px container &middot; active: brand fill
+          border-radius: var(--radius-md) container &middot; active: brand fill
         </div>
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="tabs">
     <h2>Tabs</h2>
     <p>Practice / Progress tab switcher. Bottom border indicator.</p>
     <div class="showcase">
@@ -678,7 +697,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="cards-surfaces">
     <h2>Cards &amp; Surfaces</h2>
 
     <h3>Quiz Area Card</h3>
@@ -687,7 +709,7 @@
       <div class="showcase-label">Quiz card (active phase)</div>
       <div class="showcase-body">
         <div
-          style="background: var(--color-surface); border-radius: 12px; padding: var(--space-5); border: 1px solid var(--color-border-lighter); text-align: center; max-width: 400px"
+          style="background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-5); border: 1px solid var(--color-border-lighter); text-align: center; max-width: 400px"
         >
           <div
             style="font-size: var(--text-2xl); font-weight: 600; margin-bottom: var(--space-3)"
@@ -713,7 +735,7 @@
           </div>
         </div>
         <div class="anno-block">
-          bg: var(--color-surface) &middot; border-radius: 12px &middot;
+          bg: var(--color-surface) &middot; border-radius: var(--radius-lg) &middot;
           padding: var(--space-5)<br>
           active border: 1px solid var(--color-border-lighter)
         </div>
@@ -750,7 +772,7 @@
           </div>
         </div>
         <div class="anno-block">
-          bg: var(--color-bg) &middot; border-radius: 8px &middot; padding:
+          bg: var(--color-bg) &middot; border-radius: var(--radius-md) &middot; padding:
           --space-4 --space-5
         </div>
       </div>
@@ -796,7 +818,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="feedback-slots">
     <h2>Feedback &amp; Slots</h2>
 
     <h3>Feedback Text</h3>
@@ -836,7 +861,7 @@
         </div>
         <div class="anno-block">
           3rem &times; 2.5rem &middot; border: 2px &middot; border-radius:
-          6px<br>
+          var(--radius-sm)<br>
           active: focus-bg + focus border &middot; correct: success-bg &middot;
           wrong: error-bg
         </div>
@@ -852,7 +877,7 @@
         </div>
         <div class="anno-block">
           bg: var(--color-success-bg) &middot; color: var(--color-success-text)
-          &middot; border-radius: 6px
+          &middot; border-radius: var(--radius-sm)
         </div>
       </div>
     </div>
@@ -902,7 +927,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="progress-timing">
     <h2>Progress &amp; Timing</h2>
 
     <h3>Progress Bar</h3>
@@ -917,7 +945,7 @@
         </div>
         <div class="anno-block">
           max-width: 300px &middot; height: 20px &middot; border-radius:
-          10px<br>
+          var(--radius-md)<br>
           fill: var(--color-success) &middot; bg: var(--color-surface-alt)
           &middot; transition: width 0.3s
         </div>
@@ -949,7 +977,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="navigation">
     <h2>Navigation</h2>
 
     <h3>Home Screen</h3>
@@ -975,7 +1006,7 @@
           </button>
         </div>
         <div class="anno-block" style="padding: 0.5rem 0.75rem">
-          mode buttons: flex column, 1px border, 8px radius<br>
+          mode buttons: flex column, 1px border, var(--radius-md)<br>
           group labels: uppercase, --text-xs, letter-spacing 0.05em,
           --color-text-muted
         </div>
@@ -1002,7 +1033,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="fretboard">
     <h2>Fretboard</h2>
     <p>
       The primary quiz surface for guitar and ukulele modes. SVG scales to fill
@@ -1052,7 +1086,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="heatmap-stats">
     <h2>Heatmap &amp; Stats</h2>
 
     <h3>Heatmap Cells</h3>
@@ -1063,7 +1100,7 @@
         <div class="showcase-row" id="heatmap-cells"></div>
         <div class="anno-block">
           stats-cell: 40&times;28px (table), 30&times;24px (grid) &middot;
-          border-radius: 4px<br>
+          border-radius: var(--radius-sm)<br>
           text flips to white at level 3+ (L &le; 50%)
         </div>
       </div>
@@ -1082,7 +1119,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="layout-patterns">
     <h2>Layout Patterns</h2>
 
     <h3>Content Width</h3>
@@ -1230,7 +1270,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="touch-targets">
     <h2>Touch Targets</h2>
     <p>Minimum 44px on all interactive elements (WCAG / Apple HIG).</p>
     <div class="showcase">
@@ -1240,7 +1283,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="interaction-motion">
     <h2>Interaction &amp; Motion</h2>
 
     <h3>Transitions</h3>
@@ -1279,7 +1325,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="phase-visibility">
     <h2>Phase Visibility</h2>
     <p>
       Each mode screen uses a phase class to show/hide groups of elements. No JS
@@ -1409,7 +1458,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="mobile-breakpoint">
     <h2>Mobile Breakpoint</h2>
     <p>
       Single breakpoint at 599px. Changes body padding, removes side borders,
@@ -1531,7 +1583,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="variant-comparisons">
     <h2>Variant Comparisons</h2>
     <p>
       Side-by-side A/B panels for design polish iteration. Variant CSS lives in
@@ -1654,7 +1709,10 @@
       </div>
     </div>
 
+    </section>
+
     <!-- ================================================================== -->
+    <section data-component="phase3-layout">
     <h2>Phase 3 &mdash; Layout</h2>
     <p>
       Layout and sizing exploration for quiz polish Phase 3. Variant CSS is
@@ -2110,6 +2168,7 @@
         </div>
       </div>
     </div>
+    </section>
 
     <script>
       function v(name) {
@@ -2175,35 +2234,27 @@
       // --- Border radius ---
       (function () {
         var radii = [
-          { r: '3px', label: '3px', usage: 'legend swatch' },
           {
-            r: '4px',
-            label: '4px',
-            usage: 'toggle, heatmap cell, fret number',
+            token: '--radius-sm',
+            usage: 'toggles, cells, bars, small btns, slots',
           },
           {
-            r: '6px',
-            label: '6px',
-            usage: 'chord slot, mastery, small btn',
+            token: '--radius-md',
+            usage: 'cards, answer btns, CTAs, mode btns, progress',
           },
           {
-            r: '8px',
-            label: '8px',
-            usage: 'CTA, answer btn, practice summary, settings',
-          },
-          { r: '10px', label: '10px', usage: 'progress bar' },
-          {
-            r: '12px',
-            label: '12px',
-            usage: 'quiz card, settings modal',
+            token: '--radius-lg',
+            usage: 'settings modal',
           },
         ];
         var el = document.getElementById('radius-demo');
         el.innerHTML = radii.map(function (r) {
+          var val = v(r.token);
           return '<div class="radius-box">' +
-            '<div class="radius-shape" style="border-radius:' + r.r +
-            ';"></div>' +
-            '<span class="anno">' + r.label + '</span>' +
+            '<div class="radius-shape" style="border-radius:var(' +
+            r.token + ');"></div>' +
+            '<span class="anno">' + r.token + '</span>' +
+            '<span class="anno">' + val + '</span>' +
             '<span class="anno">' + r.usage + '</span>' +
             '</div>';
         }).join('');
