@@ -6,7 +6,7 @@ import type { Note, StringRecommendation } from './types.ts';
 
 /**
  * Toggle a string in the enabled set. Returns a new Set.
- * Ensures at least one string is always enabled.
+ * Allows deselecting all strings — caller validates before starting a quiz.
  */
 export function toggleFretboardString(
   enabledStrings: Set<number>,
@@ -14,7 +14,7 @@ export function toggleFretboardString(
 ): Set<number> {
   const next = new Set(enabledStrings);
   if (next.has(string)) {
-    if (next.size > 1) next.delete(string);
+    next.delete(string);
   } else {
     next.add(string);
   }
@@ -67,8 +67,9 @@ export function createFretboardHelpers(musicData: {
     };
   }
 
-  /** Test whether a note passes the filter ('natural', 'sharps-flats', or 'all'). */
+  /** Test whether a note passes the filter ('natural', 'sharps-flats', 'all', or 'none'). */
   function notePassesFilter(note: string, noteFilter: string): boolean {
+    if (noteFilter === 'none') return false;
     if (noteFilter === 'all') return true;
     const isNatural = musicData.naturalNotes.includes(note);
     return noteFilter === 'natural' ? isNatural : !isNatural;

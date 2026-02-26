@@ -51,6 +51,11 @@ How the product should work — what it does and doesn't do for users.
     knows the material but the UI makes them feel like they're failing, the
     design is wrong. Urgency cues should pace, not punish.
 
+11. **Language reinforces identity.** UI copy should say "practice" and "reps",
+    not "quiz" or "test." The product is a practice tool — language that
+    implies evaluation or grading undermines the low-stakes, skill-building
+    tone. See [terminology.md](terminology.md) for the full term mapping.
+
 ---
 
 ## Visual Design Principles

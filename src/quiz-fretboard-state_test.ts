@@ -159,6 +159,11 @@ describe('getFretboardEnabledItems', () => {
     assert.ok(items.includes('5-3')); // G
   });
 
+  it('single string, filter=none: returns zero items', () => {
+    const items = fb.getFretboardEnabledItems(new Set([5]), 'none');
+    assert.equal(items.length, 0);
+  });
+
   it('single string, filter=sharps-flats: returns only accidental frets', () => {
     const items = fb.getFretboardEnabledItems(new Set([5]), 'sharps-flats');
     // Low E string: E F F# G G# A A# B C C# D D# E
@@ -221,10 +226,9 @@ describe('toggleFretboardString', () => {
     assert.equal(result.size, 1);
   });
 
-  it('does not remove the last string', () => {
+  it('allows deselecting the last string', () => {
     const result = toggleFretboardString(new Set([5]), 5);
-    assert.ok(result.has(5));
-    assert.equal(result.size, 1);
+    assert.equal(result.size, 0);
   });
 
   it('returns a new Set (immutable)', () => {

@@ -192,11 +192,12 @@ export function IntervalMathMode(
           onApplyRecommendation={ps.summary.showRecommendationButton
             ? applyRecommendation
             : undefined}
+          scopeValid={enabledGroups.size > 0}
+          validationMessage='Select at least one group'
           scope={
             <GroupToggles
               labels={DISTANCE_GROUPS.map((g) => g.label)}
               active={enabledGroups}
-              recommended={recommendation.recommended}
               onToggle={scopeActions.toggleGroup}
             />
           }

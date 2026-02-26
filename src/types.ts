@@ -235,7 +235,7 @@ export type NoteKeyHandler = {
 // Scope and mode configuration
 // ---------------------------------------------------------------------------
 
-export type NoteFilter = 'natural' | 'sharps-flats' | 'all';
+export type NoteFilter = 'natural' | 'sharps-flats' | 'all' | 'none';
 
 export type GroupDef = {
   index: number;

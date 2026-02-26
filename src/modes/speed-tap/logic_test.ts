@@ -165,6 +165,11 @@ describe('getEnabledNotes', () => {
     assert.deepEqual(notes, ['C#', 'D#', 'F#', 'G#', 'A#']);
   });
 
+  it('"none" returns empty array', () => {
+    const notes = getEnabledNotes('none');
+    assert.equal(notes.length, 0);
+  });
+
   it('"all" returns 12 notes', () => {
     const notes = getEnabledNotes('all');
     assert.equal(notes.length, 12);

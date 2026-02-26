@@ -113,6 +113,11 @@ Before considering a spec ready for review, verify:
       disguised as "cross-cutting notes."
 - [ ] **Decisions are resolved.** Each decision states the chosen option and the
       rationale. No "TBD" or "we could do X or Y."
+- [ ] **Visual values use design tokens.** Colors, font sizes, spacing, and
+      border radii reference existing CSS custom properties — not hardcoded
+      HSL/hex/px values. If no token exists, the spec should extend the system
+      (add a new variable to `:root`). See
+      [visual-design.md](design/visual-design.md#using-the-color-system).
 
 ## Architectural Review (Before Implementing)
 
@@ -282,6 +287,8 @@ must follow, update the relevant guide(s) so the knowledge isn't lost. Examples:
 - New shared utility or pattern → update `architecture.md`
 - New build step or workflow → update `development.md`
 - New quiz mode → update the "Adding a New Quiz Mode" checklist
+- New component pattern → add showcase to `guides/design/components.html`
+- New color token or design token → update `guides/design/visual-design.md`
 
 The test is: **if someone adding a new mode or feature would need to know this
 to get it right, it belongs in a guide.** Don't rely on code comments alone for

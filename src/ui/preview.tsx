@@ -191,7 +191,6 @@ function PreviewApp() {
         <GroupToggles
           labels={['+1 to +3', '+4 to +6', '+7 to +9', '+10 to +11']}
           active={new Set([0, 1])}
-          recommended={new Set([0, 2])}
           onToggle={() => {}}
         />
       </Section>
@@ -199,7 +198,6 @@ function PreviewApp() {
         <StringToggles
           stringNames={['E', 'A', 'D', 'G', 'B', 'e']}
           active={new Set([0, 1, 2])}
-          recommended={new Set([1, 3])}
           onToggle={() => {}}
         />
       </Section>
@@ -251,7 +249,7 @@ function PreviewApp() {
       </Section>
       <Section title='Recommendation'>
         <Recommendation
-          text='Suggestion: solidify +1 to +3 — 3 slow items'
+          text='solidify +1 to +3 — 3 slow items'
           onApply={() => {}}
         />
       </Section>
@@ -295,7 +293,7 @@ function PreviewApp() {
         <PracticeCard
           statusLabel='Strong'
           statusDetail='12 of 14 fluent'
-          recommendation='Suggestion: start A string — 5 new items'
+          recommendation='start A string — 5 new items'
           onApplyRecommendation={() => {}}
         />
       </Section>
@@ -303,14 +301,13 @@ function PreviewApp() {
         <PracticeCard
           statusLabel='Solid'
           statusDetail='24 of 26 fluent'
-          recommendation='Suggestion: start D string'
+          recommendation='start D string'
           onApplyRecommendation={() => {}}
           scope={
             <>
               <StringToggles
                 stringNames={['E', 'A', 'D', 'G', 'B', 'e']}
                 active={new Set([0, 1])}
-                recommended={new Set([0, 1, 2])}
                 onToggle={() => {}}
               />
               <NoteFilter mode='natural' onChange={() => {}} />

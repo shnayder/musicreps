@@ -85,8 +85,8 @@ preserves anything you might need to recover.
    `phase-active`, `phase-round-complete`) are set imperatively on the container
    element via `useEffect` keyed on engine phase.
 
-5. **Toggle CSS classes for state** — `.active`, `.recommended`, `.correct`,
-   `.incorrect`. Compute class strings from props/state in JSX.
+5. **Toggle CSS classes for state** — `.active`, `.correct`, `.incorrect`.
+   Compute class strings from props/state in JSX.
 
 ## State Management
 
@@ -167,8 +167,13 @@ preserves anything you might need to recover.
 ## CSS Conventions
 
 - **BEM-lite naming**: `.quiz-controls`, `.string-toggle`, `.baseline-rerun-btn`
-- **Functional classes**: `.active`, `.recommended`, `.correct`, `.incorrect`
+- **Functional classes**: `.active`, `.correct`, `.incorrect`
 - **Mobile-first responsive**: base styles for mobile, media queries for larger
-- **HSL for computed colors**: heatmap colors use `hsl()` for smooth gradients
+- **Use CSS custom properties for all design tokens** — colors, font sizes,
+  spacing, border radii. Raw values belong only inside `:root` variable
+  definitions. If no variable exists, extend the system rather than hardcoding.
+  See [visual-design.md](design/visual-design.md#using-the-color-system).
+- **HSL for variable definitions**: `:root` color variables use `hsl()` for
+  readability and tuning. Code outside `:root` references `var(--color-*)`.
 - **No inline styles** — use CSS classes. Visibility controlled by conditional
   rendering (`{show && <Component />}`) or CSS class toggling in JSX

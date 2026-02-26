@@ -40,7 +40,7 @@ function loadScope(spec: ScopeSpec): ScopeState {
     );
     if (
       savedFilter === 'natural' || savedFilter === 'sharps-flats' ||
-      savedFilter === 'all'
+      savedFilter === 'all' || savedFilter === 'none'
     ) {
       noteFilter = savedFilter;
     }
@@ -50,7 +50,10 @@ function loadScope(spec: ScopeSpec): ScopeState {
   if (spec.kind === 'note-filter') {
     let noteFilter: NoteFilter = 'natural';
     const saved = localStorage.getItem(spec.storageKey);
-    if (saved === 'natural' || saved === 'sharps-flats' || saved === 'all') {
+    if (
+      saved === 'natural' || saved === 'sharps-flats' ||
+      saved === 'all' || saved === 'none'
+    ) {
       noteFilter = saved;
     }
     return { kind: 'note-filter', noteFilter };
@@ -112,7 +115,7 @@ export function useScopeState(
       if (prev.kind !== 'groups') return prev;
       const next = new Set(prev.enabledGroups);
       if (next.has(index)) {
-        if (next.size > 1) next.delete(index);
+        next.delete(index);
       } else {
         next.add(index);
       }
@@ -127,7 +130,7 @@ export function useScopeState(
       if (prev.kind !== 'fretboard') return prev;
       const next = new Set(prev.enabledStrings);
       if (next.has(index)) {
-        if (next.size > 1) next.delete(index);
+        next.delete(index);
       } else {
         next.add(index);
       }

@@ -223,9 +223,12 @@ export function tabbedIdleHTML(config: {
   const practiceScope = config.practiceScope
     ? `\n          <div class="practice-scope">\n            <div class="settings-row">\n              ${config.practiceScope}\n            </div>\n          </div>`
     : '';
-  const recBlock = `<div class="practice-recommendation">
-            <span class="practice-rec-text"></span>
-            <button tabindex="0" class="practice-rec-btn">Use suggestion</button>
+  const recBlock = `<div class="suggestion-card">
+            <div class="suggestion-card-header">Suggestion</div>
+            <div class="suggestion-card-body">
+              <span class="suggestion-card-text"></span>
+              <button tabindex="0" class="suggestion-card-accept">Accept</button>
+            </div>
           </div>`;
   const masteryBlock = `<div class="mastery-message"></div>`;
   // Build-time scaffold only knows about scope controls, not dynamic
@@ -233,7 +236,7 @@ export function tabbedIdleHTML(config: {
   // presence when deciding whether to show the "Quiz setup" header.
   const hasScope = config.practiceScope;
   const setupHeader = hasScope
-    ? `\n          <div class="practice-section-header">Quiz setup</div>`
+    ? `\n          <div class="practice-section-header">Practice Settings</div>`
     : '';
   const setupRec = hasScope ? `\n          ${recBlock}` : '';
   return `<div class="mode-tabs">
@@ -252,7 +255,7 @@ export function tabbedIdleHTML(config: {
         </div>
         <div class="practice-zone practice-zone-setup">${setupHeader}${setupRec}${practiceScope}
           <div class="practice-zone-action">
-            <button tabindex="0" class="start-btn">Start Quiz</button>
+            <button tabindex="0" class="start-btn">Practice</button>
           </div>
         </div>
       </div>

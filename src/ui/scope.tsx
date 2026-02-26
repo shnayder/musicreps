@@ -8,10 +8,9 @@ import { displayNote } from '../music-data.ts';
 // ---------------------------------------------------------------------------
 
 export function GroupToggles(
-  { labels, active, recommended, onToggle }: {
+  { labels, active, onToggle }: {
     labels: string[];
     active: ReadonlySet<number>;
-    recommended?: ReadonlySet<number>;
     onToggle: (index: number) => void;
   },
 ) {
@@ -19,24 +18,19 @@ export function GroupToggles(
     <div class='toggle-group'>
       <span class='toggle-group-label'>Groups</span>
       <div class='distance-toggles'>
-        {labels.map((label, i) => {
-          let cls = 'distance-toggle';
-          if (active.has(i)) cls += ' active';
-          if (recommended?.has(i)) cls += ' recommended';
-          return (
-            <button
-              type='button'
-              tabIndex={0}
-              key={i}
-              class={cls}
-              aria-pressed={active.has(i)}
-              data-group={String(i)}
-              onClick={() => onToggle(i)}
-            >
-              {label}
-            </button>
-          );
-        })}
+        {labels.map((label, i) => (
+          <button
+            type='button'
+            tabIndex={0}
+            key={i}
+            class={'distance-toggle' + (active.has(i) ? ' active' : '')}
+            aria-pressed={active.has(i)}
+            data-group={String(i)}
+            onClick={() => onToggle(i)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -47,10 +41,9 @@ export function GroupToggles(
 // ---------------------------------------------------------------------------
 
 export function StringToggles(
-  { stringNames, active, recommended, onToggle }: {
+  { stringNames, active, onToggle }: {
     stringNames: string[];
     active: ReadonlySet<number>;
-    recommended?: ReadonlySet<number>;
     onToggle: (index: number) => void;
   },
 ) {
@@ -58,25 +51,20 @@ export function StringToggles(
     <div class='toggle-group'>
       <span class='toggle-group-label'>Strings</span>
       <div class='string-toggles'>
-        {stringNames.map((name, i) => {
-          let cls = 'string-toggle';
-          if (active.has(i)) cls += ' active';
-          if (recommended?.has(i)) cls += ' recommended';
-          return (
-            <button
-              type='button'
-              tabIndex={0}
-              key={i}
-              class={cls}
-              aria-pressed={active.has(i)}
-              data-string={String(i)}
-              data-string-note={name}
-              onClick={() => onToggle(i)}
-            >
-              {name}
-            </button>
-          );
-        })}
+        {stringNames.map((name, i) => (
+          <button
+            type='button'
+            tabIndex={0}
+            key={i}
+            class={'string-toggle' + (active.has(i) ? ' active' : '')}
+            aria-pressed={active.has(i)}
+            data-string={String(i)}
+            data-string-note={name}
+            onClick={() => onToggle(i)}
+          >
+            {name}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -88,7 +76,7 @@ export function StringToggles(
 
 export function NoteFilter(
   { mode, onChange }: {
-    mode: 'natural' | 'sharps-flats' | 'all';
+    mode: 'natural' | 'sharps-flats' | 'all' | 'none';
     onChange: (mode: string) => void;
   },
 ) {
@@ -98,12 +86,12 @@ export function NoteFilter(
   function toggle(which: 'natural' | 'sharps-flats') {
     if (which === 'natural') {
       if (naturalActive && accActive) onChange('sharps-flats');
-      else if (!naturalActive) onChange(accActive ? 'all' : 'natural');
-      // else: only natural active, can't deselect both — no-op
+      else if (naturalActive) onChange(accActive ? 'sharps-flats' : 'none');
+      else onChange(accActive ? 'all' : 'natural');
     } else {
       if (accActive && naturalActive) onChange('natural');
-      else if (!accActive) onChange(naturalActive ? 'all' : 'sharps-flats');
-      // else: only acc active, can't deselect both — no-op
+      else if (accActive) onChange(naturalActive ? 'natural' : 'none');
+      else onChange(naturalActive ? 'all' : 'sharps-flats');
     }
   }
 

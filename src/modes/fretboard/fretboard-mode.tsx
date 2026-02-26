@@ -521,12 +521,13 @@ export function FretboardMode(
           onApplyRecommendation={ps.summary.showRecommendationButton
             ? applyRecommendation
             : undefined}
+          scopeValid={enabledStrings.size > 0 && noteFilter !== 'none'}
+          validationMessage='Select at least one string and one note type'
           scope={
             <>
               <StringToggles
                 stringNames={instrument.stringNames}
                 active={enabledStrings}
-                recommended={recommendation.recommended}
                 onToggle={scopeActions.toggleString}
               />
               <NoteFilter
