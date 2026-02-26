@@ -35,6 +35,13 @@ npx tsx scripts/take-screenshots.ts             # all screenshots (3x PNG)
 npx tsx scripts/take-screenshots.ts --list      # print all names and exit
 npx tsx scripts/take-screenshots.ts --only pat  # only names matching pat
 npx tsx scripts/take-screenshots.ts --ci        # 1x JPEG (CI mode)
+
+# UI iteration (local design review)
+deno task iterate new <session> <state1> [state2...]  # create session + capture v1
+deno task iterate capture [session]                   # capture next version
+deno task iterate view [session]                      # open review page
+deno task iterate list                                # list sessions
+deno task iterate --list-states                       # print valid state names
 ```
 
 ## Build System
@@ -263,6 +270,45 @@ npx tsx scripts/take-screenshots.ts --only noteSemitones-quiz,intervalSemitones-
 4. **Each screenshot = one fixture** — every `ScreenshotEntry` with visual
    content has a `fixture` field. Entries without fixtures capture idle state
    (the default after navigation).
+
+## UI Iteration Tool
+
+Local tool for iterating on visual changes. Captures specific app states across
+versions, generates an HTML review page for side-by-side comparison and
+annotation.
+
+```bash
+deno task iterate --list-states                          # print all valid state names
+deno task iterate new my-session fretboard-idle semitoneMath-quiz  # create session, capture v1
+deno task iterate capture my-session                     # capture v2 (next version)
+deno task iterate view my-session                        # open review page
+deno task iterate list                                   # list all sessions
+```
+
+### How it works
+
+1. `new` creates a named session with a set of state names, captures v1
+   screenshots using the same fixture injection as `take-screenshots.ts`, and
+   generates `review.html`.
+2. Make code changes, then run `capture` to add the next version.
+3. The review HTML shows a table: one column per state + a General column, rows
+   grouped by version. Each cell has the screenshot (300px wide, 1x scale) and a
+   textarea for notes.
+4. Notes persist in localStorage. "Copy Summary" formats all annotations as
+   markdown for pasting back into a conversation.
+
+### State names
+
+State names match the screenshot manifest — the same names used by
+`take-screenshots.ts`. Run `deno task iterate --list-states` to see the full
+list. Common ones: `<mode>-idle`, `<mode>-quiz`, `<mode>-quiz-rev`,
+`design-correct-feedback`, `design-wrong-feedback`, `design-round-complete`.
+
+### Session storage
+
+Sessions live in `screenshots/iterate/<session-name>/` (gitignored). Each
+version's screenshots are in a `v1/`, `v2/`, etc. subdirectory. `session.json`
+tracks the state list and version history.
 
 ## iOS App (Capacitor)
 
