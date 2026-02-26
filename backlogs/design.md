@@ -32,21 +32,10 @@ Owner: design workstream Branch: workstream/design
   design-identified.
   [plans/design-docs/2026-02-22-practice-tab-dedup.md](../plans/design-docs/2026-02-22-practice-tab-dedup.md)
 
-- Quiz view
+- better design workflow -- make sure components are right, iterate locally with html, css, fixtures.
+- tailwind to make it even more local?
 
-1. Let's keep "mode" header all quiz states. e.g. "Guitar Fretboard" should be
-   visible during quiz, round complete states, and speed check. Put the timeout
-   bar elements just below it.
-1. selected strings still not persisting across reload -- are we overwriting
-   with suggestion? not saving? Logic should be outside UI layer, tested.
-1. suggestions should not depend on naturals/accidental toggle, just on your
-   recall status. The mode should have some prioritization logic -- in case of
-   fretboard, learn all naturals, then add accidentals, then polish everything.
-   General rule: Page logic should flow top to bottom.
-
-- Future: We might have multiple suggestions later. e.g. "Learn accidentals on E
-  string" & "Solidify A and D strings" at the same time user can pick one or
-  both. Later.
+- try stats and fretboard with rectangle tabs instead of small circles? Like in the stats redesign prototype?
 
 1. round complete state:
 
