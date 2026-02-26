@@ -26,7 +26,7 @@ import {
   PianoNoteButtons,
 } from './buttons.tsx';
 import type { StatsSelector } from './stats.tsx';
-import { StatsGrid, StatsLegend, StatsTable, StatsToggle } from './stats.tsx';
+import { StatsGrid, StatsLegend, StatsTable } from './stats.tsx';
 import {
   GroupToggles,
   NoteFilter,
@@ -157,7 +157,6 @@ function PreviewApp() {
           selector={sel}
           colLabels={['+1', '+2', '+3', '+4', '+5', '+6']}
           getItemId={(name, ci) => `${name}+${ci + 1}`}
-          statsMode='retention'
         />
       </Section>
       <Section title='Bidirectional Table (StatsTable)'>
@@ -172,14 +171,10 @@ function PreviewApp() {
           }))}
           fwdHeader='→ Semi'
           revHeader='→ Note'
-          statsMode='retention'
         />
       </Section>
       <Section title='Stats Legend'>
-        <StatsLegend statsMode='retention' />
-      </Section>
-      <Section title='Stats Toggle'>
-        <StatsToggle active='retention' onToggle={() => {}} />
+        <StatsLegend />
       </Section>
 
       <h2>Scope Controls</h2>
@@ -321,12 +316,10 @@ function PreviewApp() {
           practiceContent={<PracticeCard statusLabel='Ready to start' />}
           progressContent={
             <div>
-              <StatsToggle active='retention' onToggle={() => {}} />
               <StatsGrid
                 selector={sel}
                 colLabels={['+1', '+2', '+3']}
                 getItemId={(name, ci) => `${name}+${ci + 1}`}
-                statsMode='retention'
               />
             </div>
           }
@@ -349,7 +342,6 @@ function PreviewApp() {
                 selector={sel}
                 colLabels={['+1', '+2']}
                 getItemId={(name, ci) => `${name}+${ci + 1}`}
-                statsMode='retention'
               />
             }
           />

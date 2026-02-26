@@ -110,6 +110,8 @@ export interface AdaptiveSelector {
   getWeight(itemId: string): number;
   getRecall(itemId: string): number | null;
   getAutomaticity(itemId: string): number | null;
+  getSpeedScore(itemId: string): number | null;
+  getFreshness(itemId: string): number | null;
   getStringRecommendations(
     stringIndices: number[],
     getItemIds: (index: number) => string[],

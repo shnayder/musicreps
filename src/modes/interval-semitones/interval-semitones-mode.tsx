@@ -221,17 +221,10 @@ export function IntervalSemitonesMode(
                 rows={getStatsRows()}
                 fwdHeader='I→#'
                 revHeader='#→I'
-                statsMode={ps.statsMode}
-                baseline={learner.motorBaseline ?? undefined}
               />
-              <StatsLegend
-                statsMode={ps.statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
+              <StatsLegend />
             </>
           }
-          statsMode={ps.statsMode}
-          onStatsToggle={ps.setStatsMode}
           baseline={learner.motorBaseline}
           onCalibrate={engine.startCalibration}
           activeTab={ps.activeTab}

@@ -197,6 +197,11 @@ about focus, not access control. Regular rebase from main keeps them in sync.
 design and engineering. Rebase often; keep HTML/CSS and JS behavior cleanly
 separated.
 
+**Dev servers** — other worktrees may be running dev servers. Never kill
+processes you didn't start. `main.ts --port=N` tries port N, then N+1, etc.
+until it finds an open one. Scripts request port 8002 and discover the actual
+port from the server's `Listening on` stderr output.
+
 **Versioning**: derived from git at build time — no manual bumps needed.
 
 **Backlogs**: each workstream has its own in `backlogs/`. The old monolithic

@@ -13,22 +13,24 @@ import { computeMedian } from '../adaptive.ts';
 export type StatsViewSelector = {
   getAutomaticity(id: string): number | null;
   getStats(id: string): ItemStats | null;
+  getSpeedScore(id: string): number | null;
+  getFreshness(id: string): number | null;
 };
 
 /**
  * Create a memoized stats selector adapter from a learner model.
- * Re-evaluates when the engine phase changes (so stats refresh after answers)
- * or when the stats display mode toggles.
+ * Re-evaluates when the engine phase changes (so stats refresh after answers).
  */
 export function useStatsSelector(
   selector: AdaptiveSelector,
   enginePhase: string,
-  statsMode: string,
 ): StatsViewSelector {
   return useMemo((): StatsViewSelector => ({
     getAutomaticity: (id: string) => selector.getAutomaticity(id),
     getStats: (id: string) => selector.getStats(id),
-  }), [selector, enginePhase, statsMode]);
+    getSpeedScore: (id: string) => selector.getSpeedScore(id),
+    getFreshness: (id: string) => selector.getFreshness(id),
+  }), [selector, enginePhase]);
 }
 
 // ---------------------------------------------------------------------------
@@ -36,9 +38,9 @@ export function useStatsSelector(
 // ---------------------------------------------------------------------------
 
 export type RoundSummary = {
-  /** Context line: "practicing label · X / Y fluent". */
+  /** Context line: "practicing label . X / Y fluent". */
   roundContext: string;
-  /** Accuracy line: "8 / 10 correct · 42s". */
+  /** Accuracy line: "8 / 10 correct . 42s". */
   roundCorrect: string;
   /** Median line: "1.2s median response time" or empty. */
   roundMedian: string;
@@ -52,7 +54,7 @@ export type RoundSummary = {
  *
  * @param engine     Quiz engine handle (for round stats, mastery counts).
  * @param practicingLabel  What the user is currently practicing, e.g.
- *   "±1–2, ±3–4 semitones" or "all items". Shown in the round context line.
+ *   "+/-1-2, +/-3-4 semitones" or "all items". Shown in the round context line.
  */
 export function useRoundSummary(
   engine: QuizEngineHandle,

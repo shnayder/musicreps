@@ -166,7 +166,7 @@ preserves anything you might need to recover.
 
 ## CSS Conventions
 
-- **BEM-lite naming**: `.quiz-controls`, `.string-toggle`, `.stats-toggle-btn`
+- **BEM-lite naming**: `.quiz-controls`, `.string-toggle`, `.baseline-rerun-btn`
 - **Functional classes**: `.active`, `.recommended`, `.correct`, `.incorrect`
 - **Mobile-first responsive**: base styles for mobile, media queries for larger
 - **HSL for computed colors**: heatmap colors use `hsl()` for smooth gradients

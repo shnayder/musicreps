@@ -135,8 +135,7 @@ The freshness signal needs a decay function. Two candidates:
    visually. An item practiced yesterday looks the same regardless of its
    stability.
 
-Decision deferred to implementation — likely start with fixed-reference for
-simplicity and revisit if it doesn't feel right.
+Decision: go with stability-relative. The whole point of the learning model is to estimate what the user remembers, so the visuals should reflect that.
 
 ### CSS implementation
 
@@ -167,8 +166,7 @@ per cell — it would gain a freshness parameter and interpolate saturation.
   where items are already circles. Worth prototyping both.
 - **Legend layout**: 2D swatch grid vs. annotated gradient bar vs. something
   else — needs visual exploration.
-- **Exact fade timescale**: how many days until "fully stale" (near-grey)?
-  Stability-relative or fixed? If fixed, what reference period?
-- **Text readability**: as colors fade toward grey, the dark-text/light-text
+- **Exact fade timescale**: how many days until "fully stale" (near-grey)? Can we show this to the user in some useful form? Simplest may be "last practiced {time} ago"
+  - **Text readability**: as colors fade toward grey, the dark-text/light-text
   threshold from `heatmapNeedsLightText` needs to account for the reduced
   saturation.

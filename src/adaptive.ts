@@ -58,6 +58,23 @@ export function computeRecall(
 }
 
 /**
+ * Predicted freshness using half-life model: F = 2^(-t/S).
+ * Same formula as computeRecall but takes lastCorrectAt timestamp directly.
+ * Returns null for unseen items.
+ */
+export function computeFreshness(
+  stabilityHours: number | null,
+  lastCorrectAt: number | null,
+  nowMs: number = Date.now(),
+): number | null {
+  if (stabilityHours == null || lastCorrectAt == null) return null;
+  if (stabilityHours <= 0) return 0;
+  const elapsedHours = (nowMs - lastCorrectAt) / 3600000;
+  if (elapsedHours <= 0) return 1;
+  return Math.pow(2, -elapsedHours / stabilityHours);
+}
+
+/**
  * Speed score: maps EWMA onto [0, 1].
  * - minTime (1000ms) → 1.0 (fully automatic)
  * - automaticityTarget (3000ms) → 0.5
@@ -378,6 +395,24 @@ export function createAdaptiveSelector(
     return computeAutomaticityForDisplay(recall, speed, true);
   }
 
+  function getSpeedScore(itemId: string): number | null {
+    const stats = storage.getStats(itemId);
+    if (!stats) return null;
+    const speed = computeSpeedScore(stats.ewma, scaledConfig(itemId));
+    // Show "needs work" for seen-but-no-speed items
+    if (speed == null && stats.sampleCount > 0) return 0;
+    return speed;
+  }
+
+  function getFreshness(itemId: string): number | null {
+    const stats = storage.getStats(itemId);
+    if (!stats) return null;
+    return computeFreshness(
+      stats.stability ?? null,
+      stats.lastCorrectAt ?? null,
+    );
+  }
+
   /**
    * Recommend strings to review, sorted by needsWork descending.
    *
@@ -482,6 +517,8 @@ export function createAdaptiveSelector(
     getWeight,
     getRecall,
     getAutomaticity,
+    getSpeedScore,
+    getFreshness,
     getStringRecommendations,
     checkAllMastered,
     checkAllAutomatic,

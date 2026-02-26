@@ -1,5 +1,5 @@
 // usePracticeSummary — absorbs practice tab boilerplate shared by all 10 modes.
-// Owns tab state (practice/progress), stats display mode, summary computation,
+// Owns tab state (practice/progress), summary computation,
 // and the stats selector adapter. Each mode calls this once and gets everything
 // needed for the PracticeTab component.
 
@@ -22,13 +22,11 @@ export type PracticeSummaryHandle = {
   summary: PracticeSummaryState;
   activeTab: 'practice' | 'progress';
   setActiveTab: (tab: 'practice' | 'progress') => void;
-  statsMode: string;
-  setStatsMode: (mode: string) => void;
   statsSel: StatsViewSelector;
 };
 
 /**
- * Compute practice summary state + tab/stats controls for a quiz mode.
+ * Compute practice summary state + tab controls for a quiz mode.
  *
  * @param allItems All item IDs in the mode (not just enabled).
  * @param selector Adaptive selector (for automaticity lookups).
@@ -48,7 +46,6 @@ export function usePracticeSummary(opts: {
   const [activeTab, setActiveTab] = useState<'practice' | 'progress'>(
     'practice',
   );
-  const [statsMode, setStatsMode] = useState('retention');
 
   const summary = useMemo(
     () =>
@@ -76,15 +73,12 @@ export function usePracticeSummary(opts: {
   const statsSel = useStatsSelector(
     opts.selector,
     opts.engine.state.phase,
-    statsMode,
   );
 
   return {
     summary,
     activeTab,
     setActiveTab,
-    statsMode,
-    setStatsMode,
     statsSel,
   };
 }

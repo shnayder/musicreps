@@ -31,7 +31,7 @@ import { buildRecommendationText } from '../../mode-ui-state.ts';
 import {
   buildStatsLegend,
   getAutomaticityColor,
-  getSpeedHeatmapColor,
+  getStatsCellColor,
 } from '../../stats-display.ts';
 import {
   computeNotePrioritization,
@@ -466,28 +466,15 @@ export function FretboardMode(
     for (const s of allStrings) {
       for (let f = 0; f < instrument.fretCount; f++) {
         const itemId = s + '-' + f;
-        if (ps.statsMode === 'retention') {
-          const auto = learner.selector.getAutomaticity(itemId);
-          setCircleFill(wrapper, s, f, getAutomaticityColor(auto));
-        } else {
-          const stats = learner.selector.getStats(itemId);
-          const ewma = stats ? stats.ewma : null;
-          setCircleFill(
-            wrapper,
-            s,
-            f,
-            getSpeedHeatmapColor(ewma, learner.motorBaseline ?? undefined),
-          );
-        }
+        const color = getStatsCellColor(learner.selector, itemId);
+        setCircleFill(wrapper, s, f, color);
       }
     }
   }, [
     learner.selector,
-    ps.statsMode,
     engine.state.phase,
     allStrings,
     instrument,
-    learner.motorBaseline,
   ]);
 
   // --- Hover card setup ---
@@ -499,8 +486,8 @@ export function FretboardMode(
 
   // --- Stats legend ---
   const legendHTML = useMemo(
-    () => buildStatsLegend(ps.statsMode, learner.motorBaseline ?? undefined),
-    [ps.statsMode, learner.motorBaseline],
+    () => buildStatsLegend(),
+    [],
   );
 
   // --- Navigation handle ---
@@ -562,8 +549,6 @@ export function FretboardMode(
               />
             </>
           }
-          statsMode={ps.statsMode}
-          onStatsToggle={ps.setStatsMode}
           baseline={learner.motorBaseline}
           onCalibrate={engine.startCalibration}
           activeTab={ps.activeTab}

@@ -12,6 +12,15 @@ import {
   speedCheckResults,
   speedCheckTesting,
 } from '../src/fixtures/quiz-page.ts';
+import {
+  building,
+  fretboardItemIds,
+  justStarting,
+  masteredFresh,
+  masteredStale,
+  returnedAfterBreak,
+  semitoneMathItemIds,
+} from '../src/fixtures/heatmap-scenarios.ts';
 
 // ---------------------------------------------------------------------------
 // Mode IDs & titles
@@ -65,6 +74,8 @@ export type ScreenshotEntry = {
   name: string;
   modeId: string;
   fixture?: FixtureDetail;
+  localStorageData?: Record<string, string>;
+  clickTab?: 'progress';
 };
 
 // ---------------------------------------------------------------------------
@@ -138,6 +149,38 @@ export function buildManifest(): ScreenshotEntry[] {
     modeId: 'fretboard',
     fixture: quizWrongFeedback(defaultItems.fretboard),
   });
+
+  // Progress tab: semitoneMath heatmap scenarios (12x11 grid)
+  const mathIds = semitoneMathItemIds();
+  const scenarios: [
+    string,
+    (ns: string, ids: string[]) => Record<string, string>,
+  ][] = [
+    ['just-starting', justStarting],
+    ['building', building],
+    ['mastered-fresh', masteredFresh],
+    ['mastered-stale', masteredStale],
+    ['returned', returnedAfterBreak],
+  ];
+  for (const [label, scenarioFn] of scenarios) {
+    entries.push({
+      name: `design-progress-${label}`,
+      modeId: 'semitoneMath',
+      localStorageData: scenarioFn('semitoneMath', mathIds),
+      clickTab: 'progress',
+    });
+  }
+
+  // Progress tab: fretboard heatmap scenarios (6x13 grid)
+  const fbIds = fretboardItemIds(6, 13);
+  for (const [label, scenarioFn] of scenarios) {
+    entries.push({
+      name: `design-fretboard-progress-${label}`,
+      modeId: 'fretboard',
+      localStorageData: scenarioFn('fretboard', fbIds),
+      clickTab: 'progress',
+    });
+  }
 
   return entries;
 }

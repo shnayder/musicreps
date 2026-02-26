@@ -527,15 +527,13 @@ Every mode renders a two-tab idle layout via Preact components (`PracticeCard`,
       .session-summary-text                ← "48 items · 60s"
       .mastery-message                     ← "Looks like you've got this!"
       .start-btn                           ← "Start Quiz"
-  .practice-advanced (<details>)           ← collapsible section
-    .recalibrate-btn                       ← "Redo speed check"
-
 .tab-progress (.tab-content)               ← hidden until clicked
-  (optional: mode-specific content,
-   e.g. fretboard SVG for heatmap)
-  .stats-container                         ← rendered on demand
-  .stats-controls
-    .stats-toggle                          ← [Recall] [Speed]
+  .stats-container                         ← heatmap grid/table + legend
+  .baseline-info                           ← speed check section
+    .baseline-header                       ← "Speed check"
+    .baseline-metric                       ← "Response time  0.5s"
+    .baseline-explanation                  ← threshold explanation
+    .baseline-rerun-btn                    ← "Redo speed check"
 ```
 
 ### Mode categories

@@ -62,8 +62,7 @@ const PAUSE_MS = 400;
 
 /**
  * Shows the motor baseline in the progress tab with a run/rerun button.
- * If no baseline exists, shows "Using default: 1s" with "Run speed check".
- * If baseline exists, shows "Response time baseline: Xs" with "Rerun speed check".
+ * Uses "label: value / explanation" hierarchy with the number emphasized.
  */
 export function BaselineInfo(
   { baseline, onRun }: {
@@ -72,18 +71,22 @@ export function BaselineInfo(
   },
 ) {
   const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
-  const tag = baseline ? null : (
-    <>
-      {' '}
-      <span class='baseline-default-tag'>(default)</span>
-    </>
-  );
-  const btnLabel = baseline ? 'Rerun speed check' : 'Run speed check';
+  const tag = baseline
+    ? null
+    : <span class='baseline-default-tag'>(default)</span>;
+  const btnLabel = baseline ? 'Redo speed check' : 'Run speed check';
   return (
     <div class='baseline-info'>
-      <div class='baseline-text'>
-        Your tap speed baseline is {value}
-        {tag}. Speed and recall estimates are based on this.
+      <div class='baseline-header'>Speed check</div>
+      <div class='baseline-metric'>
+        <span class='baseline-label'>Response time</span>
+        <span class='baseline-value'>
+          {value}
+          {tag && <>{tag}</>}
+        </span>
+      </div>
+      <div class='baseline-explanation'>
+        Timing thresholds are based on this measurement.
       </div>
       <button
         type='button'

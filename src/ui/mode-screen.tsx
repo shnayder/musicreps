@@ -5,7 +5,6 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
 import type { PracticeSummaryState } from '../types.ts';
-import { StatsToggle } from './stats.tsx';
 import { BaselineInfo } from './speed-check.tsx';
 
 // ---------------------------------------------------------------------------
@@ -433,10 +432,8 @@ export function PracticeTab(
     onApplyRecommendation,
     scope,
     statsContent,
-    statsMode,
-    onStatsToggle,
-    baseline,
     onCalibrate,
+    baseline,
     activeTab,
     onTabSwitch,
   }: {
@@ -445,10 +442,8 @@ export function PracticeTab(
     onApplyRecommendation?: () => void;
     scope?: ComponentChildren;
     statsContent: ComponentChildren;
-    statsMode: string;
-    onStatsToggle: (mode: string) => void;
-    baseline: number | null;
     onCalibrate: () => void;
+    baseline: number | null;
     activeTab: 'practice' | 'progress';
     onTabSwitch: (tab: 'practice' | 'progress') => void;
   },
@@ -467,9 +462,6 @@ export function PracticeTab(
       }
       progressContent={
         <div>
-          <div class='stats-controls'>
-            <StatsToggle active={statsMode} onToggle={onStatsToggle} />
-          </div>
           <div class='stats-container'>
             {statsContent}
           </div>

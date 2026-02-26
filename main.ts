@@ -197,6 +197,24 @@ async function copyDesignPages(css: string): Promise<void> {
 export { buildHTML, SERVICE_WORKER as sw };
 
 // ---------------------------------------------------------------------------
+// Port selection (find first available port starting from preferred)
+// ---------------------------------------------------------------------------
+
+function findOpenPort(start: number): number {
+  for (let port = start; port < start + 100; port++) {
+    try {
+      const listener = Deno.listen({ port });
+      listener.close();
+      return port;
+    } catch (e) {
+      if (e instanceof Deno.errors.AddrInUse) continue;
+      throw e;
+    }
+  }
+  throw new Error(`No open port found in range ${start}–${start + 99}`);
+}
+
+// ---------------------------------------------------------------------------
 // CLI entry point
 // ---------------------------------------------------------------------------
 
@@ -234,7 +252,10 @@ if (import.meta.main) {
     console.log('Built to docs/index.html + docs/sw.js + docs/design/');
   } else {
     const html = await buildHTML();
-    Deno.serve({ port: 8001 }, async (req) => {
+    const portArg = Deno.args.find((a) => a.startsWith('--port='));
+    const startPort = portArg ? parseInt(portArg.split('=')[1], 10) : 8001;
+    const port = findOpenPort(startPort);
+    Deno.serve({ port }, async (req) => {
       const url = new URL(req.url);
       if (url.pathname === '/sw.js') {
         return new Response(SERVICE_WORKER, {

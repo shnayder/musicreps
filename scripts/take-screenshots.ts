@@ -25,8 +25,8 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const PORT = 8001;
-const BASE_URL = `http://localhost:${PORT}`;
+const PREFERRED_PORT = 8002;
+let BASE_URL = '';
 const VIEWPORT = { width: 402, height: 873 };
 
 // Parse CLI flags
@@ -49,34 +49,38 @@ const IMG_TYPE = ciMode ? ('jpeg' as const) : ('png' as const);
 // Dev server
 // ---------------------------------------------------------------------------
 
-function startServer(): ChildProcess {
+function startServer(): { proc: ChildProcess; portReady: Promise<number> } {
   const proc = spawn(
     'deno',
-    ['run', '--allow-net', '--allow-read', '--allow-run', 'main.ts'],
+    [
+      'run',
+      '--allow-net',
+      '--allow-read',
+      '--allow-run',
+      'main.ts',
+      `--port=${PREFERRED_PORT}`,
+    ],
     {
       cwd: path.resolve(__dirname, '..'),
       stdio: 'pipe',
     },
   );
-  proc.stderr?.on('data', (d: Buffer) => {
-    const msg = d.toString();
-    if (!msg.includes('Listening on')) process.stderr.write(msg);
+  const portReady = new Promise<number>((resolve, reject) => {
+    proc.stderr?.on('data', (d: Buffer) => {
+      const msg = d.toString();
+      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
+      if (m) resolve(parseInt(m[1], 10));
+      else if (!msg.includes('Listening on')) process.stderr.write(msg);
+    });
+    proc.on('exit', (code) => {
+      if (code) reject(new Error(`Server exited with code ${code}`));
+    });
+    setTimeout(
+      () => reject(new Error('Server did not start within 10s')),
+      10_000,
+    );
   });
-  return proc;
-}
-
-async function waitForServer(timeoutMs = 10_000): Promise<void> {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    try {
-      const res = await fetch(`${BASE_URL}`);
-      if (res.ok) return;
-    } catch {
-      /* server not ready yet */
-    }
-    await new Promise((r) => setTimeout(r, 200));
-  }
-  throw new Error(`Server did not start within ${timeoutMs}ms`);
+  return { proc, portReady };
 }
 
 // ---------------------------------------------------------------------------
@@ -88,13 +92,16 @@ function generateIndexHTML(
   outDir: string,
   imgExt: string,
 ): void {
-  // Split into mode groups, speed check, and design moments
+  // Split into mode groups, speed check, design moments, and progress tab
   const modeGroups = new Map<string, ScreenshotEntry[]>();
   const speedCheckEntries: ScreenshotEntry[] = [];
   const designEntries: ScreenshotEntry[] = [];
+  const progressEntries: ScreenshotEntry[] = [];
 
   for (const entry of manifest) {
-    if (entry.name.startsWith('design-')) {
+    if (entry.clickTab === 'progress') {
+      progressEntries.push(entry);
+    } else if (entry.name.startsWith('design-')) {
       designEntries.push(entry);
     } else if (entry.name.startsWith('speedCheck-')) {
       speedCheckEntries.push(entry);
@@ -152,6 +159,15 @@ function generateIndexHTML(
       `<h2>Design Moments</h2>\n<div class="shots">\n${shots}\n</div>\n`;
   }
 
+  // Progress tab section
+  if (progressEntries.length > 0) {
+    const shots = progressEntries
+      .map((e) => shotHTML(e.name, designLabel(e)))
+      .join('\n');
+    sections +=
+      `<h2>Progress Tab</h2>\n<div class="shots">\n${shots}\n</div>\n`;
+  }
+
   const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Screenshots</title>
 <style>
@@ -194,10 +210,11 @@ async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
 
   console.log('Starting dev server...');
-  const server = startServer();
+  const { proc: server, portReady } = startServer();
   try {
-    await waitForServer();
-    console.log('Server ready.');
+    const port = await portReady;
+    BASE_URL = `http://localhost:${port}`;
+    console.log(`Server ready on port ${port}.`);
 
     const browser = await chromium.launch();
     const context = await browser.newContext({
@@ -277,9 +294,20 @@ async function main() {
     // --- Capture all screenshots via fixture injection ---
     let currentMode = '';
     let previousHadFixture = false;
+    let previousHadLocalStorage = false;
 
     for (const entry of manifest) {
-      const needsReload = entry.modeId !== currentMode || previousHadFixture;
+      const needsReload = entry.modeId !== currentMode ||
+        previousHadFixture || previousHadLocalStorage;
+
+      // Seed localStorage before navigation so the reload picks it up
+      if (entry.localStorageData) {
+        await page.evaluate((data: Record<string, string>) => {
+          for (const [k, v] of Object.entries(data)) {
+            localStorage.setItem(k, v);
+          }
+        }, entry.localStorageData);
+      }
 
       if (needsReload) {
         if (entry.modeId !== currentMode) {
@@ -293,8 +321,25 @@ async function main() {
         await applyFixture(entry.modeId, entry.fixture);
       }
 
+      // Switch to progress tab after navigation
+      if (entry.clickTab) {
+        const sel = `#mode-${entry.modeId} [data-tab="${entry.clickTab}"]`;
+        await page.click(sel);
+        await page.waitForTimeout(200);
+      }
+
       await capture(entry.name);
       previousHadFixture = !!entry.fixture;
+
+      // Clean up seeded localStorage for next entry
+      if (entry.localStorageData) {
+        await page.evaluate((keys: string[]) => {
+          for (const k of keys) localStorage.removeItem(k);
+        }, Object.keys(entry.localStorageData));
+        previousHadLocalStorage = true;
+      } else {
+        previousHadLocalStorage = false;
+      }
     }
 
     await browser.close();
