@@ -240,8 +240,14 @@ export function PracticeCard(
       <div class='practice-zone practice-zone-mastery'>
         <div class='practice-section-header'>Mastery</div>
         <div class='practice-status'>
-          <span class='practice-status-prefix'>Status</span>
-          <span class='practice-status-label'>{statusLabel || ''}</span>
+          {statusLabel
+            ? (
+              <>
+                <span class='practice-status-prefix'>Status</span>
+                <span class='practice-status-label'>{statusLabel}</span>
+              </>
+            )
+            : null}
         </div>
         <span class='practice-status-detail'>{statusDetail || ''}</span>
         {masteryBlock}
@@ -291,6 +297,7 @@ export function StartButton(
     validationMessage?: string;
   },
 ) {
+  const msgId = validationMessage ? 'start-validation-msg' : undefined;
   return (
     <>
       <button
@@ -299,11 +306,16 @@ export function StartButton(
         class='start-btn'
         onClick={onStart}
         disabled={disabled}
+        aria-describedby={msgId}
       >
         Practice
       </button>
       {validationMessage
-        ? <div class='start-validation-message'>{validationMessage}</div>
+        ? (
+          <div id={msgId} class='start-validation-message'>
+            {validationMessage}
+          </div>
+        )
         : null}
     </>
   );

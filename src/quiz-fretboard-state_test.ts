@@ -159,6 +159,11 @@ describe('getFretboardEnabledItems', () => {
     assert.ok(items.includes('5-3')); // G
   });
 
+  it('single string, filter=none: returns zero items', () => {
+    const items = fb.getFretboardEnabledItems(new Set([5]), 'none');
+    assert.equal(items.length, 0);
+  });
+
   it('single string, filter=sharps-flats: returns only accidental frets', () => {
     const items = fb.getFretboardEnabledItems(new Set([5]), 'sharps-flats');
     // Low E string: E F F# G G# A A# B C C# D D# E

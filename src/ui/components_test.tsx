@@ -442,6 +442,26 @@ describe('StartButton', () => {
     assert.ok(html.includes('start-btn'));
     assert.ok(html.includes('Practice'));
   });
+
+  it('applies disabled attribute', () => {
+    const html = render(<StartButton disabled />);
+    assert.ok(html.includes('disabled'));
+  });
+
+  it('shows validation message with aria-describedby', () => {
+    const html = render(
+      <StartButton validationMessage='Select at least one string' />,
+    );
+    assert.ok(html.includes('Select at least one string'));
+    assert.ok(html.includes('start-validation-message'));
+    assert.ok(html.includes('aria-describedby'));
+  });
+
+  it('omits validation message when not provided', () => {
+    const html = render(<StartButton />);
+    assert.ok(!html.includes('start-validation-message'));
+    assert.ok(!html.includes('aria-describedby'));
+  });
 });
 
 describe('QuizSession', () => {
