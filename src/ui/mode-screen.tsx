@@ -157,6 +157,8 @@ export function PracticeCard(
     scope?: ComponentChildren;
     onStart?: () => void;
     onApplyRecommendation?: () => void;
+    scopeValid?: boolean;
+    validationMessage?: string;
   },
 ) {
   // When summary is provided, map its fields; individual props override.
@@ -174,23 +176,28 @@ export function PracticeCard(
       : undefined);
   const onApplyRecommendation = props.onApplyRecommendation;
   const { scope, onStart } = props;
+  const scopeDisabled = props.scopeValid === false;
+  const validationMessage = scopeDisabled ? props.validationMessage : undefined;
 
   const recBlock = recommendation
     ? (
-      <div class='practice-recommendation'>
-        <span class='practice-rec-text'>{recommendation}</span>
-        {onApplyRecommendation
-          ? (
-            <button
-              type='button'
-              tabIndex={0}
-              class='practice-rec-btn'
-              onClick={onApplyRecommendation}
-            >
-              Use suggestion
-            </button>
-          )
-          : null}
+      <div class='suggestion-card'>
+        <div class='suggestion-card-header'>Suggestion</div>
+        <div class='suggestion-card-body'>
+          <span class='suggestion-card-text'>{recommendation}</span>
+          {onApplyRecommendation
+            ? (
+              <button
+                type='button'
+                tabIndex={0}
+                class='suggestion-card-accept'
+                onClick={onApplyRecommendation}
+              >
+                Accept
+              </button>
+            )
+            : null}
+        </div>
       </div>
     )
     : null;
@@ -206,7 +213,7 @@ export function PracticeCard(
   const setupZone = (
     <div class='practice-zone practice-zone-setup'>
       {hasSetupContent
-        ? <div class='practice-section-header'>Quiz setup</div>
+        ? <div class='practice-section-header'>Practice Settings</div>
         : null}
       {recBlock}
       {scope
@@ -219,7 +226,11 @@ export function PracticeCard(
         )
         : null}
       <div class='practice-zone-action'>
-        <StartButton onStart={onStart} />
+        <StartButton
+          onStart={onStart}
+          disabled={scopeDisabled}
+          validationMessage={validationMessage}
+        />
       </div>
     </div>
   );
@@ -229,6 +240,7 @@ export function PracticeCard(
       <div class='practice-zone practice-zone-mastery'>
         <div class='practice-section-header'>Mastery</div>
         <div class='practice-status'>
+          <span class='practice-status-prefix'>Status</span>
           <span class='practice-status-label'>{statusLabel || ''}</span>
         </div>
         <span class='practice-status-detail'>{statusDetail || ''}</span>
@@ -247,20 +259,23 @@ export function Recommendation(
   { text, onApply }: { text: string; onApply?: () => void },
 ) {
   return (
-    <div class='practice-recommendation'>
-      <span class='practice-rec-text'>{text}</span>
-      {onApply
-        ? (
-          <button
-            type='button'
-            tabIndex={0}
-            class='practice-rec-btn'
-            onClick={onApply}
-          >
-            Use suggestion
-          </button>
-        )
-        : null}
+    <div class='suggestion-card'>
+      <div class='suggestion-card-header'>Suggestion</div>
+      <div class='suggestion-card-body'>
+        <span class='suggestion-card-text'>{text}</span>
+        {onApply
+          ? (
+            <button
+              type='button'
+              tabIndex={0}
+              class='suggestion-card-accept'
+              onClick={onApply}
+            >
+              Accept
+            </button>
+          )
+          : null}
+      </div>
     </div>
   );
 }
@@ -270,12 +285,27 @@ export function Recommendation(
 // ---------------------------------------------------------------------------
 
 export function StartButton(
-  { onStart }: { onStart?: () => void },
+  { onStart, disabled, validationMessage }: {
+    onStart?: () => void;
+    disabled?: boolean;
+    validationMessage?: string;
+  },
 ) {
   return (
-    <button type='button' tabIndex={0} class='start-btn' onClick={onStart}>
-      Start Quiz
-    </button>
+    <>
+      <button
+        type='button'
+        tabIndex={0}
+        class='start-btn'
+        onClick={onStart}
+        disabled={disabled}
+      >
+        Practice
+      </button>
+      {validationMessage
+        ? <div class='start-validation-message'>{validationMessage}</div>
+        : null}
+    </>
   );
 }
 
@@ -436,6 +466,8 @@ export function PracticeTab(
     baseline,
     activeTab,
     onTabSwitch,
+    scopeValid,
+    validationMessage,
   }: {
     summary: PracticeSummaryState;
     onStart: () => void;
@@ -446,6 +478,8 @@ export function PracticeTab(
     baseline: number | null;
     activeTab: 'practice' | 'progress';
     onTabSwitch: (tab: 'practice' | 'progress') => void;
+    scopeValid?: boolean;
+    validationMessage?: string;
   },
 ) {
   return (
@@ -458,6 +492,8 @@ export function PracticeTab(
           onStart={onStart}
           onApplyRecommendation={onApplyRecommendation}
           scope={scope}
+          scopeValid={scopeValid}
+          validationMessage={validationMessage}
         />
       }
       progressContent={

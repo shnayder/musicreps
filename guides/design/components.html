@@ -726,19 +726,72 @@
       <div class="showcase-label">Practice card</div>
       <div class="showcase-body">
         <div class="practice-card" style="max-width: 400px">
-          <div class="practice-status">
-            <span class="practice-status-label">Consolidating</span>
+          <div class="practice-zone practice-zone-mastery">
+            <div class="practice-section-header">Mastery</div>
+            <div class="practice-status">
+              <span class="practice-status-prefix">Status</span>
+              <span class="practice-status-label">Consolidating</span>
+            </div>
             <span class="practice-status-detail"
             >Master current strings before adding more</span>
           </div>
-          <div class="practice-recommendation">
-            <span class="practice-rec-text">Recommended: add string B</span>
-            <button class="practice-rec-btn" style="margin: 0">Apply</button>
+          <div class="practice-zone practice-zone-setup">
+            <div class="practice-section-header">Practice Settings</div>
+            <div class="suggestion-card">
+              <div class="suggestion-card-header">Suggestion</div>
+              <div class="suggestion-card-body">
+                <span class="suggestion-card-text">start B string &mdash; 5 new items, naturals first</span>
+                <button class="suggestion-card-accept" style="margin: 0">Accept</button>
+              </div>
+            </div>
+            <div class="practice-zone-action">
+              <button class="start-btn" style="margin: 0">Practice</button>
+            </div>
           </div>
         </div>
         <div class="anno-block">
-          bg: var(--color-surface) &middot; border-radius: 8px &middot; padding:
+          bg: var(--color-bg) &middot; border-radius: 8px &middot; padding:
           --space-4 --space-5
+        </div>
+      </div>
+    </div>
+
+    <h3>Suggestion Card</h3>
+    <p>Gold-themed card for recommendations. Appears inside Practice Settings
+      when the system has a suggestion. Uses the <code>--color-recommended-*</code>
+      family: <code>--color-recommended</code> (accent),
+      <code>--color-recommended-bg</code> (surface),
+      <code>--color-recommended-border</code> (border),
+      <code>--color-recommended-text</code> (dark text).</p>
+    <div class="showcase">
+      <div class="showcase-label">Suggestion card</div>
+      <div class="showcase-body">
+        <div style="max-width: 400px">
+          <div class="suggestion-card">
+            <div class="suggestion-card-header">Suggestion</div>
+            <div class="suggestion-card-body">
+              <span class="suggestion-card-text">start E string &mdash; 13 new items, naturals first</span>
+              <button class="suggestion-card-accept" style="margin: 0">Accept</button>
+            </div>
+          </div>
+        </div>
+        <div class="anno-block">
+          bg: --color-recommended-bg &middot; border: --color-recommended-border
+          &middot; left accent: --color-recommended &middot; header:
+          --color-recommended &middot; button text: --color-recommended-text
+        </div>
+      </div>
+    </div>
+    <div class="showcase">
+      <div class="showcase-label">Suggestion card (no button)</div>
+      <div class="showcase-body">
+        <div style="max-width: 400px">
+          <div class="suggestion-card">
+            <div class="suggestion-card-header">Suggestion</div>
+            <div class="suggestion-card-body">
+              <span class="suggestion-card-text">solidify +1 to +3 &mdash; 8 slow items</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

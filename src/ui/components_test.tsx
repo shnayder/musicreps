@@ -181,18 +181,16 @@ describe('StatsGrid', () => {
 // ---------------------------------------------------------------------------
 
 describe('GroupToggles', () => {
-  it('renders toggles with active and recommended states', () => {
+  it('renders toggles with active state', () => {
     const html = render(
       <GroupToggles
         labels={['+1 to +3', '+4 to +6']}
         active={new Set([0])}
-        recommended={new Set([1])}
         onToggle={() => {}}
       />,
     );
     assert.ok(html.includes('toggle-group'));
     assert.ok(html.includes('distance-toggle active'));
-    assert.ok(html.includes('distance-toggle recommended'));
     assert.ok(html.includes('+1 to +3'));
     assert.ok(html.includes('+4 to +6'));
   });
@@ -384,23 +382,24 @@ describe('PracticeCard', () => {
     assert.ok(html.includes('start-btn'));
   });
 
-  it('shows Quiz setup header when recommendation present', () => {
+  it('shows Practice Settings header when recommendation present', () => {
     const html = render(
       <PracticeCard
-        recommendation='Suggestion: start A string'
+        recommendation='start A string'
         onApplyRecommendation={() => {}}
       />,
     );
-    assert.ok(html.includes('practice-recommendation'));
-    assert.ok(html.includes('practice-rec-text'));
-    assert.ok(html.includes('practice-rec-btn'));
-    assert.ok(html.includes('Quiz setup'));
+    assert.ok(html.includes('suggestion-card'));
+    assert.ok(html.includes('suggestion-card-header'));
+    assert.ok(html.includes('suggestion-card-text'));
+    assert.ok(html.includes('suggestion-card-accept'));
+    assert.ok(html.includes('Practice Settings'));
   });
 
   it('shows scope controls in setup zone', () => {
     const html = render(
       <PracticeCard
-        recommendation='Suggestion: start D string'
+        recommendation='start D string'
         onApplyRecommendation={() => {}}
         scope={<div class='mock-scope' />}
       />,
@@ -408,7 +407,7 @@ describe('PracticeCard', () => {
     assert.ok(html.includes('practice-zone-setup'));
     assert.ok(html.includes('practice-scope'));
     assert.ok(html.includes('mock-scope'));
-    assert.ok(html.includes('practice-rec-text'));
+    assert.ok(html.includes('suggestion-card-text'));
   });
 
   it('shows mastery message', () => {
@@ -423,16 +422,17 @@ describe('PracticeCard', () => {
 describe('Recommendation', () => {
   it('renders text and button', () => {
     const html = render(
-      <Recommendation text='Suggestion: solidify +1' onApply={() => {}} />,
+      <Recommendation text='solidify +1' onApply={() => {}} />,
     );
-    assert.ok(html.includes('practice-recommendation'));
-    assert.ok(html.includes('Suggestion: solidify +1'));
-    assert.ok(html.includes('practice-rec-btn'));
+    assert.ok(html.includes('suggestion-card'));
+    assert.ok(html.includes('suggestion-card-header'));
+    assert.ok(html.includes('solidify +1'));
+    assert.ok(html.includes('suggestion-card-accept'));
   });
 
   it('omits button when no onApply', () => {
-    const html = render(<Recommendation text='Suggestion: test' />);
-    assert.ok(!html.includes('practice-rec-btn'));
+    const html = render(<Recommendation text='test' />);
+    assert.ok(!html.includes('suggestion-card-accept'));
   });
 });
 
@@ -440,7 +440,7 @@ describe('StartButton', () => {
   it('renders start button', () => {
     const html = render(<StartButton />);
     assert.ok(html.includes('start-btn'));
-    assert.ok(html.includes('Start Quiz'));
+    assert.ok(html.includes('Practice'));
   });
 });
 

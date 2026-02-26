@@ -362,6 +362,8 @@ export function SpeedTapMode(
         <PracticeTab
           summary={ps.summary}
           onStart={engine.start}
+          scopeValid={noteFilter !== 'none'}
+          validationMessage='Select at least one note type'
           scope={
             <NoteFilter
               mode={noteFilter}

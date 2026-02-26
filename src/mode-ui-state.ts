@@ -79,7 +79,7 @@ export function buildRecommendationText(
     }
   }
 
-  return parts.length > 0 ? 'Suggestion: ' + parts.join(', ') : '';
+  return parts.length > 0 ? parts.join(', ') : '';
 }
 
 /**

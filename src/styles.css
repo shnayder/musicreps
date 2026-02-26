@@ -16,10 +16,12 @@
   --color-focus-bg: #e8f5e9;
   /* Gold accents (highlights, recommendations, achievements) */
   --color-recommended: #d4a017;
+  --color-recommended-bg: hsl(44, 70%, 96%);
+  --color-recommended-border: hsl(44, 60%, 80%);
+  --color-recommended-text: hsl(44, 80%, 25%);
   --color-highlight: #eab308;
   /* UI accents */
-  --color-toggle-active: #2e7d32;
-  --color-toggle-recommended: hsl(44, 80%, 46%); /* gold */
+  --color-toggle-active: hsl(0, 0%, 32%);
   /* Text (warm neutrals) */
   --color-text: hsl(30, 5%, 20%);
   --color-text-muted: hsl(30, 3%, 40%);
@@ -431,15 +433,23 @@ body {
   margin-bottom: var(--space-3);
 }
 .practice-status {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
   margin-bottom: 0;
 }
 .practice-status:empty,
 .practice-status-label:empty {
   display: none;
 }
+.practice-status-prefix {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
 .practice-status-label {
-  font-weight: 600;
-  font-size: var(--text-base);
+  font-weight: 500;
+  font-size: var(--text-sm);
   color: var(--color-text);
 }
 .practice-status-detail {
@@ -450,41 +460,46 @@ body {
 .practice-status-detail:empty {
   display: none;
 }
-.practice-recommendation {
+.suggestion-card {
+  background: var(--color-recommended-bg);
+  border: 1px solid var(--color-recommended-border);
+  border-left: 3px solid var(--color-recommended);
+  border-radius: 8px;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+.suggestion-card-header {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-recommended);
+  margin-bottom: var(--space-2);
+}
+.suggestion-card-body {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
 }
-.practice-recommendation:empty,
-.practice-rec-text:empty ~ .practice-rec-btn {
-  display: none;
-}
-.practice-rec-text {
+.suggestion-card-text {
+  flex: 1;
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+  min-width: 0;
 }
-.practice-rec-text:empty {
-  display: none;
-}
-.practice-rec-btn {
+.suggestion-card-accept {
   font-size: var(--text-xs);
   font-weight: 500;
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-brand);
+  border: 1px solid var(--color-recommended);
   border-radius: 6px;
-  background: var(--color-brand-bg);
-  color: var(--color-brand-dark);
+  background: var(--color-recommended-bg);
+  color: var(--color-recommended-text);
   cursor: pointer;
-  margin: 0;
-  transition: background 0.15s ease;
+  flex-shrink: 0;
 }
-.practice-rec-btn:hover {
-  background: var(--color-brand);
+.suggestion-card-accept:hover {
+  background: var(--color-recommended);
   color: white;
-}
-.practice-rec-btn.hidden {
-  display: none;
 }
 
 /* --- Practice scope (inside practice card) --- */
@@ -573,7 +588,7 @@ body {
   display: flex;
   flex-direction: row;
   gap: var(--space-1);
-  justify-content: center;
+  justify-content: flex-start;
 }
 .string-toggle {
   width: 36px;
@@ -597,17 +612,11 @@ body {
   color: white;
   border-color: var(--color-toggle-active);
 }
-.string-toggle.recommended {
-  box-shadow: 0 0 0 2px var(--color-toggle-recommended);
-}
-.string-toggle.active.recommended {
-  border-color: var(--color-toggle-recommended);
-}
 .distance-toggles {
   display: flex;
   flex-direction: row;
   gap: var(--space-1);
-  justify-content: center;
+  justify-content: flex-start;
 }
 .distance-toggle {
   height: 36px;
@@ -630,17 +639,11 @@ body {
   color: white;
   border-color: var(--color-toggle-active);
 }
-.distance-toggle.recommended {
-  box-shadow: 0 0 0 2px var(--color-toggle-recommended);
-}
-.distance-toggle.active.recommended {
-  border-color: var(--color-toggle-recommended);
-}
 .notes-toggles {
   display: flex;
   flex-direction: row;
   gap: var(--space-1);
-  justify-content: center;
+  justify-content: flex-start;
 }
 .notes-toggle {
   height: 36px;
@@ -767,7 +770,7 @@ button {
   text-align: center;
 }
 
-/* --- Primary CTA (Start Quiz) --- */
+/* --- Primary CTA (Practice) --- */
 .start-btn {
   background: var(--color-brand);
   color: white;
@@ -787,6 +790,25 @@ button {
 .start-btn:active {
   transform: scale(0.98);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.start-btn:disabled {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border-light);
+  color: var(--color-text-light);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.start-btn:disabled:hover {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border-light);
+  box-shadow: none;
+  transform: none;
+}
+.start-validation-message {
+  font-size: var(--text-xs);
+  color: var(--color-error-text);
+  text-align: center;
+  margin-top: var(--space-2);
 }
 
 /* --- Quiz countdown row — bar + timer side by side --- */
@@ -1369,6 +1391,7 @@ button {
   color: var(--color-text-muted);
   font-weight: 500;
   flex-shrink: 0;
+  min-width: 3.5rem;
 }
 
 /* --- Stats tables (lookup modes) --- */
@@ -1570,7 +1593,7 @@ button {
 
 /* Baseline, recommendation buttons */
 .baseline-rerun-btn:focus-visible,
-.practice-rec-btn:focus-visible {
+.suggestion-card-accept:focus-visible {
   outline-offset: 2px;
 }
 

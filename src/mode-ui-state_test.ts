@@ -106,7 +106,7 @@ describe('buildRecommendationText', () => {
     const text = buildRecommendationText(result, label);
     assert.equal(
       text,
-      'Suggestion: solidify Group 0, Group 1 \u2014 5 slow items',
+      'solidify Group 0, Group 1 \u2014 5 slow items',
     );
   });
 
@@ -120,7 +120,7 @@ describe('buildRecommendationText', () => {
       expandNewCount: 8,
     };
     const text = buildRecommendationText(result, label);
-    assert.equal(text, 'Suggestion: start Group 2 \u2014 8 new items');
+    assert.equal(text, 'start Group 2 \u2014 8 new items');
   });
 
   it('combines consolidation + expansion + extra parts', () => {
@@ -237,11 +237,11 @@ describe('computePracticeSummary', () => {
       selector: makeSelector({ 'a': 0.2 }) as any,
       itemNoun: 'items',
       recommendation: rec,
-      recommendationText: 'Suggestion: solidify Group 0',
+      recommendationText: 'solidify Group 0',
       masteryText: '',
       showMastery: false,
     });
     assert.equal(result.showRecommendationButton, true);
-    assert.equal(result.recommendationText, 'Suggestion: solidify Group 0');
+    assert.equal(result.recommendationText, 'solidify Group 0');
   });
 });

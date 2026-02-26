@@ -221,10 +221,9 @@ describe('toggleFretboardString', () => {
     assert.equal(result.size, 1);
   });
 
-  it('does not remove the last string', () => {
+  it('allows deselecting the last string', () => {
     const result = toggleFretboardString(new Set([5]), 5);
-    assert.ok(result.has(5));
-    assert.equal(result.size, 1);
+    assert.equal(result.size, 0);
   });
 
   it('returns a new Set (immutable)', () => {

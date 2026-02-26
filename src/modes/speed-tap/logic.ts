@@ -58,6 +58,7 @@ export function getPositionsForNote(
  * @example getEnabledNotes("all") → all 12 notes
  */
 export function getEnabledNotes(filter: NoteFilterType): string[] {
+  if (filter === 'none') return [];
   if (filter === 'natural') return NATURAL_NOTES.slice();
   if (filter === 'sharps-flats') {
     return NOTES.filter((n) => !NATURAL_NOTES.includes(n.name))
