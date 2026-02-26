@@ -2947,10 +2947,10 @@ button {
     return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
       /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-mastery", children: [
         /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Mastery" }),
-        /* @__PURE__ */ u3("div", { class: "practice-status", children: [
+        /* @__PURE__ */ u3("div", { class: "practice-status", children: statusLabel ? /* @__PURE__ */ u3(k, { children: [
           /* @__PURE__ */ u3("span", { class: "practice-status-prefix", children: "Status" }),
-          /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel || "" })
-        ] }),
+          /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel })
+        ] }) : null }),
         /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" }),
         masteryBlock
       ] }),
@@ -2976,6 +2976,7 @@ button {
     ] });
   }
   function StartButton({ onStart, disabled, validationMessage }) {
+    const msgId = validationMessage ? "start-validation-msg" : void 0;
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(
         "button",
@@ -2985,10 +2986,11 @@ button {
           class: "start-btn",
           onClick: onStart,
           disabled,
+          "aria-describedby": msgId,
           children: "Practice"
         }
       ),
-      validationMessage ? /* @__PURE__ */ u3("div", { class: "start-validation-message", children: validationMessage }) : null
+      validationMessage ? /* @__PURE__ */ u3("div", { id: msgId, class: "start-validation-message", children: validationMessage }) : null
     ] });
   }
   function QuizSession({
