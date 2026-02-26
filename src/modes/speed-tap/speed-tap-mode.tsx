@@ -11,11 +11,7 @@ import {
 } from 'preact/hooks';
 import type { ModeHandle, NoteFilter as NoteFilterType } from '../../types.ts';
 import { displayNote, NOTES, pickRandomAccidental } from '../../music-data.ts';
-import {
-  buildStatsLegend,
-  getAutomaticityColor,
-  getSpeedHeatmapColor,
-} from '../../stats-display.ts';
+import { buildStatsLegend, getStatsCellColor } from '../../stats-display.ts';
 import { fretboardSVG } from '../../html-helpers.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
@@ -339,27 +335,15 @@ export function SpeedTapMode(
     }
     html += '</tr></thead><tbody><tr>';
     for (let j = 0; j < NOTES.length; j++) {
-      if (ps.statsMode === 'retention') {
-        const auto = learner.selector.getAutomaticity(NOTES[j].name);
-        html += '<td class="stats-cell" style="background:' +
-          getAutomaticityColor(auto) + '"></td>';
-      } else {
-        const stats = learner.selector.getStats(NOTES[j].name);
-        const posCount = getPositionsForNote(NOTES[j].name).length;
-        const perPosMs = stats ? stats.ewma / posCount : null;
-        html += '<td class="stats-cell" style="background:' +
-          getSpeedHeatmapColor(perPosMs, learner.motorBaseline ?? undefined) +
-          '"></td>';
-      }
+      const color = getStatsCellColor(learner.selector, NOTES[j].name);
+      html += '<td class="stats-cell" style="background:' + color + '"></td>';
     }
     html += '</tr></tbody></table>';
-    html += buildStatsLegend(ps.statsMode, learner.motorBaseline ?? undefined);
+    html += buildStatsLegend();
     return html;
   }, [
     learner.selector,
-    ps.statsMode,
     engine.state.phase,
-    learner.motorBaseline,
   ]);
 
   const promptText = currentDisplayName ? 'Tap all ' + currentDisplayName : '';
@@ -390,8 +374,6 @@ export function SpeedTapMode(
               dangerouslySetInnerHTML={{ __html: statsHTML }}
             />
           }
-          statsMode={ps.statsMode}
-          onStatsToggle={ps.setStatsMode}
           baseline={learner.motorBaseline}
           onCalibrate={engine.startCalibration}
           activeTab={ps.activeTab}

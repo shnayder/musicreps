@@ -16,7 +16,7 @@ import {
   PianoNoteButtons,
 } from './buttons.tsx';
 import type { StatsSelector } from './stats.tsx';
-import { StatsGrid, StatsToggle } from './stats.tsx';
+import { StatsGrid } from './stats.tsx';
 import { GroupToggles, NoteFilter, StringToggles } from './scope.tsx';
 import { CountdownBar, FeedbackDisplay, TextPrompt } from './quiz-ui.tsx';
 import {
@@ -168,33 +168,11 @@ describe('StatsGrid', () => {
         selector={mockSelector()}
         colLabels={['+1', '+2']}
         getItemId={(name, ci) => `${name}+${ci + 1}`}
-        statsMode='retention'
       />,
     );
     assert.ok(html.includes('stats-grid'));
     assert.ok(html.includes('stats-grid-row-label'));
     assert.ok(html.includes('stats-cell'));
-  });
-});
-
-describe('StatsToggle', () => {
-  it('marks active mode', () => {
-    const html = render(
-      <StatsToggle active='retention' onToggle={() => {}} />,
-    );
-    assert.ok(html.includes('stats-toggle'));
-    // The retention button should have 'active' class
-    assert.ok(html.includes('stats-toggle-btn active'));
-  });
-
-  it('marks speed when active', () => {
-    const html = render(
-      <StatsToggle active='speed' onToggle={() => {}} />,
-    );
-    // Speed button should have active, retention should not
-    const parts = html.split('data-mode="speed"');
-    // The button before speed data-mode should have 'active'
-    assert.ok(parts.length > 1);
   });
 });
 

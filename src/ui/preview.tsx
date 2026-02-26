@@ -26,7 +26,7 @@ import {
   PianoNoteButtons,
 } from './buttons.tsx';
 import type { StatsSelector } from './stats.tsx';
-import { StatsGrid, StatsLegend, StatsTable, StatsToggle } from './stats.tsx';
+import { StatsGrid, StatsLegend, StatsTable } from './stats.tsx';
 import {
   GroupToggles,
   NoteFilter,
@@ -113,6 +113,15 @@ function mockSelector(): StatsSelector {
     getAutomaticity(id: string) {
       return lookup[id] ?? null;
     },
+    getSpeedScore(id: string) {
+      return lookup[id] ?? null;
+    },
+    getFreshness(id: string) {
+      // Simulate varying freshness: items with data get 0.3–1.0
+      const auto = lookup[id];
+      if (auto == null) return null;
+      return 0.3 + auto * 0.7;
+    },
     getStats(_id: string) {
       return null;
     },
@@ -152,12 +161,11 @@ function PreviewApp() {
       </Section>
 
       <h2>Stats</h2>
-      <Section title='Recall Heatmap (StatsGrid)'>
+      <Section title='Progress Heatmap (StatsGrid)'>
         <StatsGrid
           selector={sel}
           colLabels={['+1', '+2', '+3', '+4', '+5', '+6']}
           getItemId={(name, ci) => `${name}+${ci + 1}`}
-          statsMode='retention'
         />
       </Section>
       <Section title='Bidirectional Table (StatsTable)'>
@@ -172,14 +180,10 @@ function PreviewApp() {
           }))}
           fwdHeader='→ Semi'
           revHeader='→ Note'
-          statsMode='retention'
         />
       </Section>
       <Section title='Stats Legend'>
-        <StatsLegend statsMode='retention' />
-      </Section>
-      <Section title='Stats Toggle'>
-        <StatsToggle active='retention' onToggle={() => {}} />
+        <StatsLegend />
       </Section>
 
       <h2>Scope Controls</h2>
@@ -321,12 +325,10 @@ function PreviewApp() {
           practiceContent={<PracticeCard statusLabel='Ready to start' />}
           progressContent={
             <div>
-              <StatsToggle active='retention' onToggle={() => {}} />
               <StatsGrid
                 selector={sel}
                 colLabels={['+1', '+2', '+3']}
                 getItemId={(name, ci) => `${name}+${ci + 1}`}
-                statsMode='retention'
               />
             </div>
           }
@@ -349,7 +351,6 @@ function PreviewApp() {
                 selector={sel}
                 colLabels={['+1', '+2']}
                 getItemId={(name, ci) => `${name}+${ci + 1}`}
-                statsMode='retention'
               />
             }
           />

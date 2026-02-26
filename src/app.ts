@@ -114,8 +114,6 @@ const settings = createSettingsModal({
     document.querySelectorAll('.mode-screen.mode-active').forEach(
       (el: Element) => {
         refreshNoteButtonLabels(el as HTMLElement);
-        const activeToggle = el.querySelector('.stats-toggle-btn.active');
-        if (activeToggle) (activeToggle as HTMLElement).click();
       },
     );
   },

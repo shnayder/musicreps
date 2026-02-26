@@ -33,8 +33,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const ITERATE_DIR = path.join(ROOT, 'screenshots', 'iterate');
 
-const PORT = 8001;
-const BASE_URL = `http://localhost:${PORT}`;
+const PREFERRED_PORT = 8002;
+let BASE_URL = '';
 const VIEWPORT = { width: 402, height: 873 };
 
 // ---------------------------------------------------------------------------
@@ -77,17 +77,38 @@ function listSessions(): string[] {
 // Dev server (same pattern as take-screenshots.ts)
 // ---------------------------------------------------------------------------
 
-function startServer(): ChildProcess {
+function startServer(): { proc: ChildProcess; portReady: Promise<number> } {
   const proc = spawn(
     'deno',
-    ['run', '--allow-net', '--allow-read', '--allow-run', 'main.ts'],
+    [
+      'run',
+      '--allow-net',
+      '--allow-read',
+      '--allow-run',
+      'main.ts',
+      `--port=${PREFERRED_PORT}`,
+    ],
     { cwd: ROOT, stdio: 'pipe' },
   );
-  proc.stderr?.on('data', (d: Buffer) => {
-    const msg = d.toString();
-    if (!msg.includes('Listening on')) process.stderr.write(msg);
+  const portReady = new Promise<number>((resolve, reject) => {
+    const timeout = setTimeout(
+      () => reject(new Error('Server did not start within 10s')),
+      10_000,
+    );
+    proc.stderr?.on('data', (d: Buffer) => {
+      const msg = d.toString();
+      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
+      if (m) {
+        clearTimeout(timeout);
+        resolve(parseInt(m[1], 10));
+      } else if (!msg.includes('Listening on')) process.stderr.write(msg);
+    });
+    proc.on('exit', (code) => {
+      clearTimeout(timeout);
+      if (code) reject(new Error(`Server exited with code ${code}`));
+    });
   });
-  return proc;
+  return { proc, portReady };
 }
 
 async function waitForServer(timeoutMs = 10_000): Promise<void> {
@@ -115,10 +136,11 @@ async function captureStates(
   mkdirSync(outDir, { recursive: true });
 
   console.log('Starting dev server...');
-  const server = startServer();
+  const { proc: server, portReady } = startServer();
   try {
-    await waitForServer();
-    console.log('Server ready.');
+    const port = await portReady;
+    BASE_URL = `http://localhost:${port}`;
+    console.log(`Server ready on port ${port}.`);
 
     const browser = await chromium.launch();
     const context = await browser.newContext({
@@ -181,9 +203,22 @@ async function captureStates(
 
     let currentMode = '';
     let previousHadFixture = false;
+    let previousHadLocalStorage = false;
 
     for (const entry of sorted) {
-      const needsReload = entry.modeId !== currentMode || previousHadFixture;
+      const needsReload = entry.modeId !== currentMode ||
+        previousHadFixture || previousHadLocalStorage ||
+        !!entry.localStorageData;
+
+      // Seed localStorage before navigation so the reload picks it up
+      if (entry.localStorageData) {
+        await page.evaluate((data: Record<string, string>) => {
+          for (const [k, v] of Object.entries(data)) {
+            localStorage.setItem(k, v);
+          }
+        }, entry.localStorageData);
+      }
+
       if (needsReload) {
         if (entry.modeId !== currentMode) {
           console.log(`Mode: ${entry.modeId}`);
@@ -194,10 +229,28 @@ async function captureStates(
       if (entry.fixture) {
         await applyFixture(entry.modeId, entry.fixture);
       }
+
+      // Switch to progress tab after navigation
+      if (entry.clickTab) {
+        const sel = `#mode-${entry.modeId} [data-tab="${entry.clickTab}"]`;
+        await page.click(sel);
+        await page.waitForTimeout(200);
+      }
+
       const filePath = path.join(outDir, `${entry.name}.png`);
       await page.screenshot({ path: filePath, type: 'png' });
       console.log(`  ${entry.name}.png`);
       previousHadFixture = !!entry.fixture;
+
+      // Clean up seeded localStorage for next entry
+      if (entry.localStorageData) {
+        await page.evaluate((keys: string[]) => {
+          for (const k of keys) localStorage.removeItem(k);
+        }, Object.keys(entry.localStorageData));
+        previousHadLocalStorage = true;
+      } else {
+        previousHadLocalStorage = false;
+      }
     }
 
     await browser.close();
@@ -242,7 +295,11 @@ function generateReviewHTML(name: string, session: Session): void {
   for (const ver of versions) {
     body += `
       <tr class="ver-header">
-        <td colspan="${colCount}"><h2>${escapeHtml(ver)}</h2></td>
+        <td colspan="${colCount}"><h2>${
+      escapeHtml(ver)
+    }</h2><button onclick="copyRound('${
+      escapeHtml(ver)
+    }')">Copy round summary</button></td>
       </tr>
       <tr class="shots">`;
     for (const state of states) {
@@ -318,15 +375,23 @@ function generateReviewHTML(name: string, session: Session): void {
     width: 300px; min-height: 60px; resize: vertical;
     font-family: system-ui, sans-serif; font-size: .8rem;
     border: 1px solid #ccc; border-radius: 4px; padding: .3rem;
+    field-sizing: content;
   }
   textarea:focus { outline: 2px solid #4a90d9; border-color: transparent; }
+  .ver-header { position: relative; }
+  .ver-header td { display: flex; align-items: center; gap: .75rem; }
+  .ver-header button {
+    padding: .25rem .6rem; border-radius: 4px; border: 1px solid #ccc;
+    background: #fff; cursor: pointer; font-size: .75rem; white-space: nowrap;
+  }
+  .ver-header button:hover { background: #e8e8e8; }
 </style>
 </head>
 <body>
 
 <h1>UI Iteration: ${escapeHtml(name)}</h1>
 <div class="toolbar">
-  <button id="btn-copy" title="Copy feedback summary to clipboard">Copy Summary</button>
+  <button id="btn-copy" title="Copy all feedback to clipboard">Copy full summary</button>
   <button id="btn-save" title="Download feedback as .md file">Save .md</button>
   <span class="status" id="status"></span>
 </div>
@@ -381,22 +446,31 @@ document.addEventListener('input', (e) => {
 loadNotes();
 
 // --- Summary generation ---
+function buildRoundLines(ver) {
+  const lines = [];
+  const gen = document.getElementById(ver + '--general');
+  if (gen && gen.value.trim()) {
+    lines.push('**General:** ' + gen.value.trim());
+  }
+  for (const state of STATES) {
+    const ta = document.getElementById(ver + '--' + state);
+    if (ta && ta.value.trim()) {
+      lines.push('**' + state + ':** ' + ta.value.trim());
+    }
+  }
+  return lines;
+}
+
+function buildRoundSummary(ver) {
+  const lines = ['## UI Iteration Feedback — ' + SESSION, '', '### ' + ver, ''];
+  lines.push(...buildRoundLines(ver));
+  return lines.join('\\n');
+}
+
 function buildSummary() {
   const lines = ['## UI Iteration Feedback — ' + SESSION, ''];
   for (const ver of VERSIONS) {
-    const verLines = [];
-    // General first
-    const gen = document.getElementById(ver + '--general');
-    if (gen && gen.value.trim()) {
-      verLines.push('**General:** ' + gen.value.trim());
-    }
-    // Per-state
-    for (const state of STATES) {
-      const ta = document.getElementById(ver + '--' + state);
-      if (ta && ta.value.trim()) {
-        verLines.push('**' + state + ':** ' + ta.value.trim());
-      }
-    }
+    const verLines = buildRoundLines(ver);
     if (verLines.length > 0) {
       lines.push('### ' + ver, '');
       lines.push(...verLines);
@@ -406,22 +480,28 @@ function buildSummary() {
   return lines.join('\\n');
 }
 
-// Copy to clipboard
-document.getElementById('btn-copy').addEventListener('click', async () => {
-  const text = buildSummary();
+async function copyToClipboard(text, label) {
   try {
     await navigator.clipboard.writeText(text);
-    showStatus('Copied!');
+    showStatus('Copied ' + label + '!');
   } catch {
-    // Fallback: select a temporary textarea
     const ta = document.createElement('textarea');
     ta.value = text;
     document.body.appendChild(ta);
     ta.select();
     document.execCommand('copy');
     document.body.removeChild(ta);
-    showStatus('Copied (fallback)');
+    showStatus('Copied ' + label + ' (fallback)');
   }
+}
+
+async function copyRound(ver) {
+  await copyToClipboard(buildRoundSummary(ver), ver);
+}
+
+// Copy full summary to clipboard
+document.getElementById('btn-copy').addEventListener('click', () => {
+  copyToClipboard(buildSummary(), 'full summary');
 });
 
 // Save as .md download
@@ -611,12 +691,9 @@ async function main() {
         sessionName = sessions[sessions.length - 1];
         console.log(`Using session: ${sessionName}`);
       }
-      const dir = sessionDir(sessionName);
-      const reviewPath = path.join(dir, 'review.html');
-      if (!existsSync(reviewPath)) {
-        console.error(`No review.html found for session "${sessionName}".`);
-        process.exit(1);
-      }
+      const session = readSession(sessionName);
+      generateReviewHTML(sessionName, session);
+      const reviewPath = path.join(sessionDir(sessionName), 'review.html');
       openInBrowser(reviewPath);
       console.log(`Opened ${reviewPath}`);
       break;

@@ -13,3 +13,12 @@ export {
 export type { FixtureDetail } from './quiz-page.ts';
 export { idleConsolidating, idleReadyToExpand } from './idle-page.ts';
 export { defaultItems } from './items.ts';
+export {
+  building,
+  fretboardItemIds,
+  justStarting,
+  masteredFresh,
+  masteredStale,
+  returnedAfterBreak,
+  semitoneMathItemIds,
+} from './heatmap-scenarios.ts';

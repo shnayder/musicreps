@@ -14,10 +14,12 @@ import {
 export interface StatsSelector {
   getAutomaticity(id: string): number | null;
   getStats(id: string): ItemStats | null;
+  getSpeedScore?(id: string): number | null;
+  getFreshness?(id: string): number | null;
 }
 
 // ---------------------------------------------------------------------------
-// StatsTable — bidirectional lookup table (Note ↔ Semitones, etc.)
+// StatsTable — bidirectional lookup table (Note <-> Semitones, etc.)
 // ---------------------------------------------------------------------------
 
 export interface StatsTableRow {
@@ -29,13 +31,11 @@ export interface StatsTableRow {
 }
 
 export function StatsTable(
-  { selector, rows, fwdHeader, revHeader, statsMode, baseline }: {
+  { selector, rows, fwdHeader, revHeader }: {
     selector: StatsSelector;
     rows: StatsTableRow[];
     fwdHeader: string;
     revHeader: string;
-    statsMode: string;
-    baseline?: number;
   },
 ) {
   if (!rows || rows.length === 0) return null;
@@ -51,18 +51,8 @@ export function StatsTable(
       </thead>
       <tbody>
         {rows.map((row) => {
-          const fwdColor = getStatsCellColor(
-            selector,
-            row.fwdItemId,
-            statsMode,
-            baseline,
-          );
-          const revColor = getStatsCellColor(
-            selector,
-            row.revItemId,
-            statsMode,
-            baseline,
-          );
+          const fwdColor = getStatsCellColor(selector, row.fwdItemId);
+          const revColor = getStatsCellColor(selector, row.revItemId);
           return (
             <tr key={row.fwdItemId}>
               <td>{row.label}</td>
@@ -84,17 +74,15 @@ export function StatsTable(
 }
 
 // ---------------------------------------------------------------------------
-// StatsGrid — heatmap grid (12 notes × N columns)
+// StatsGrid — heatmap grid (12 notes x N columns)
 // ---------------------------------------------------------------------------
 
 export function StatsGrid(
-  { selector, colLabels, getItemId, statsMode, notes, baseline }: {
+  { selector, colLabels, getItemId, notes }: {
     selector: StatsSelector;
     colLabels: string[];
     getItemId: (noteName: string, colIndex: number) => string | string[];
-    statsMode: string;
     notes?: { name: string; displayName: string }[];
-    baseline?: number;
   },
 ) {
   const noteList = notes || NOTES;
@@ -115,13 +103,8 @@ export function StatsGrid(
             {colLabels.map((_, i) => {
               const itemId = getItemId(note.name, i);
               const color = Array.isArray(itemId)
-                ? getStatsCellColorMerged(
-                  selector,
-                  itemId,
-                  statsMode,
-                  baseline,
-                )
-                : getStatsCellColor(selector, itemId, statsMode, baseline);
+                ? getStatsCellColorMerged(selector, itemId)
+                : getStatsCellColor(selector, itemId);
               const light = heatmapNeedsLightText(color);
               return (
                 <td
@@ -142,51 +125,10 @@ export function StatsGrid(
 }
 
 // ---------------------------------------------------------------------------
-// StatsLegend — color scale legend
+// StatsLegend — color scale legend (2D: speed x freshness)
 // ---------------------------------------------------------------------------
 
-export function StatsLegend(
-  { statsMode, baseline }: { statsMode: string; baseline?: number },
-) {
-  // Reuse the existing pure HTML builder — render via dangerouslySetInnerHTML
-  // to avoid duplicating the legend logic. Phase 3+ can replace with pure JSX.
-  const html = buildStatsLegend(statsMode, baseline);
+export function StatsLegend() {
+  const html = buildStatsLegend();
   return <div dangerouslySetInnerHTML={{ __html: html }} />;
-}
-
-// ---------------------------------------------------------------------------
-// StatsToggle — Recall / Speed toggle buttons
-// ---------------------------------------------------------------------------
-
-export function StatsToggle(
-  { active, onToggle }: {
-    active: string;
-    onToggle: (mode: string) => void;
-  },
-) {
-  return (
-    <div class='stats-toggle'>
-      <button
-        type='button'
-        tabIndex={0}
-        class={'stats-toggle-btn' +
-          (active === 'retention' ? ' active' : '')}
-        aria-pressed={active === 'retention'}
-        data-mode='retention'
-        onClick={() => onToggle('retention')}
-      >
-        Recall
-      </button>
-      <button
-        type='button'
-        tabIndex={0}
-        class={'stats-toggle-btn' + (active === 'speed' ? ' active' : '')}
-        aria-pressed={active === 'speed'}
-        data-mode='speed'
-        onClick={() => onToggle('speed')}
-      >
-        Speed
-      </button>
-    </div>
-  );
 }

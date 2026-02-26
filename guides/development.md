@@ -296,6 +296,9 @@ deno task iterate list                                   # list all sessions
    textarea for notes.
 4. Notes persist in localStorage. "Copy Summary" formats all annotations as
    markdown for pasting back into a conversation.
+5. **Tip:** Claude can view screenshots directly via the Read tool (e.g.,
+   `screenshots/iterate/<session>/v3/design-progress-building.png`) — useful
+   for inspecting visual details without opening the review page.
 
 ### State names
 

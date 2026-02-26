@@ -225,18 +225,11 @@ export function DiatonicChordsMode(
                 selector={ps.statsSel}
                 colLabels={ROMAN_NUMERALS}
                 getItemId={getGridItemId}
-                statsMode={ps.statsMode}
                 notes={GRID_NOTES}
-                baseline={learner.motorBaseline ?? undefined}
               />
-              <StatsLegend
-                statsMode={ps.statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
+              <StatsLegend />
             </>
           }
-          statsMode={ps.statsMode}
-          onStatsToggle={ps.setStatsMode}
           baseline={learner.motorBaseline}
           onCalibrate={engine.startCalibration}
           activeTab={ps.activeTab}

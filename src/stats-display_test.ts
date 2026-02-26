@@ -3,21 +3,19 @@ import { strict as assert } from 'node:assert';
 import {
   buildStatsLegend,
   getAutomaticityColor,
-  getSpeedHeatmapColor,
+  getSpeedFreshnessColor,
   getStatsCellColor,
   getStatsCellColorMerged,
+  heatmapNeedsLightText,
 } from './stats-display.ts';
 
 // Heatmap palette (matches fallback values in stats-display.ts)
 const NONE = 'hsl(30, 4%, 85%)';
 const L1 = 'hsl(44, 65%, 58%)';
-const L2 = 'hsl(54, 45%, 52%)';
-const L3 = 'hsl(68, 30%, 46%)';
-const L4 = 'hsl(90, 38%, 38%)';
 const L5 = 'hsl(122, 46%, 33%)';
 
 // ---------------------------------------------------------------------------
-// getAutomaticityColor
+// getAutomaticityColor (legacy, still exported)
 // ---------------------------------------------------------------------------
 
 describe('getAutomaticityColor', () => {
@@ -29,129 +27,84 @@ describe('getAutomaticityColor', () => {
     assert.equal(getAutomaticityColor(0.9), L5);
   });
 
-  it('returns olive-green for 0.6-0.8', () => {
-    assert.equal(getAutomaticityColor(0.7), L4);
-  });
-
-  it('returns olive for 0.4-0.6', () => {
-    assert.equal(getAutomaticityColor(0.5), L3);
-  });
-
-  it('returns warm olive for 0.2-0.4', () => {
-    assert.equal(getAutomaticityColor(0.3), L2);
-  });
-
   it('returns gold for low automaticity (<=0.2)', () => {
     assert.equal(getAutomaticityColor(0.1), L1);
   });
+});
 
-  it('returns gold for zero', () => {
-    assert.equal(getAutomaticityColor(0), L1);
+// ---------------------------------------------------------------------------
+// getSpeedFreshnessColor
+// ---------------------------------------------------------------------------
+
+describe('getSpeedFreshnessColor', () => {
+  it('returns grey for null speedScore', () => {
+    assert.equal(getSpeedFreshnessColor(null, 1.0), NONE);
+  });
+
+  it('returns grey for null freshness', () => {
+    assert.equal(getSpeedFreshnessColor(0.9, null), NONE);
+  });
+
+  it('returns vivid green for high speed + high freshness', () => {
+    const color = getSpeedFreshnessColor(0.9, 1.0);
+    // Should be close to hsl(122, 46%, 33%) — the automatic level at full freshness
+    assert.ok(color.startsWith('hsl(122,'));
+    assert.ok(color.includes('46%')); // full saturation
+  });
+
+  it('returns desaturated color for low freshness', () => {
+    const vivid = getSpeedFreshnessColor(0.9, 1.0);
+    const stale = getSpeedFreshnessColor(0.9, 0.0);
+    // Stale version should have lower saturation and higher lightness
+    const vividSat = parseInt(vivid.match(/,\s*(\d+)%/)![1]);
+    const staleSat = parseInt(stale.match(/,\s*(\d+)%/)![1]);
+    assert.ok(staleSat < vividSat, 'stale should have lower saturation');
+  });
+
+  it('returns gold hue for low speed', () => {
+    const color = getSpeedFreshnessColor(0.1, 1.0);
+    assert.ok(color.startsWith('hsl(44,'));
+  });
+
+  it('returns green hue for high speed', () => {
+    const color = getSpeedFreshnessColor(0.9, 1.0);
+    assert.ok(color.startsWith('hsl(122,'));
   });
 });
 
 // ---------------------------------------------------------------------------
-// getSpeedHeatmapColor
-// ---------------------------------------------------------------------------
-
-describe('getSpeedHeatmapColor', () => {
-  it('returns grey for null', () => {
-    assert.equal(getSpeedHeatmapColor(null, null), NONE);
-  });
-
-  it('returns green for fast (<1500ms) with default baseline', () => {
-    assert.equal(getSpeedHeatmapColor(1000, null), L5);
-  });
-
-  it('returns olive-green for 1500-3000ms with default baseline', () => {
-    assert.equal(getSpeedHeatmapColor(2000, null), L4);
-  });
-
-  it('returns olive for 3000-4500ms with default baseline', () => {
-    assert.equal(getSpeedHeatmapColor(4000, null), L3);
-  });
-
-  it('returns warm olive for 4500-6000ms with default baseline', () => {
-    assert.equal(getSpeedHeatmapColor(5000, null), L2);
-  });
-
-  it('returns gold for slow (>=6000ms) with default baseline', () => {
-    assert.equal(getSpeedHeatmapColor(7000, null), L1);
-  });
-
-  it('scales thresholds with baseline=1500 (mobile user)', () => {
-    // green: < 1500*1.5 = 2250ms
-    assert.equal(getSpeedHeatmapColor(2000, 1500), L5);
-    // olive-green: 2250-4500ms
-    assert.equal(getSpeedHeatmapColor(3000, 1500), L4);
-    // olive: 4500-6750ms
-    assert.equal(getSpeedHeatmapColor(5000, 1500), L3);
-    // warm olive: 6750-9000ms
-    assert.equal(getSpeedHeatmapColor(8000, 1500), L2);
-    // gold: >= 9000ms
-    assert.equal(getSpeedHeatmapColor(10000, 1500), L1);
-  });
-
-  it('scales thresholds with baseline=700 (fast keyboard user)', () => {
-    // green: < 700*1.5 = 1050ms
-    assert.equal(getSpeedHeatmapColor(900, 700), L5);
-    // olive-green for moderate speed with baseline 700
-    assert.equal(getSpeedHeatmapColor(1200, 700), L4);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// getStatsCellColor
+// getStatsCellColor (new: uses speedScore + freshness)
 // ---------------------------------------------------------------------------
 
 describe('getStatsCellColor', () => {
-  it('delegates to getAutomaticityColor in retention mode', () => {
+  it('returns combined color when speedScore and freshness available', () => {
     const selector = {
+      getSpeedScore: () => 0.9,
+      getFreshness: () => 0.8,
       getAutomaticity: () => 0.9,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColor(selector, 'test', 'retention', null), L5);
+    const color = getStatsCellColor(selector, 'test');
+    assert.ok(color.startsWith('hsl(122,')); // high speed = green
   });
 
-  it('delegates to getSpeedHeatmapColor in speed mode', () => {
+  it('returns grey when no data', () => {
     const selector = {
+      getSpeedScore: () => null,
+      getFreshness: () => null,
       getAutomaticity: () => null,
-      getStats: () => ({ ewma: 2000 }),
-    } as any;
-    assert.equal(getStatsCellColor(selector, 'test', 'speed', null), L4);
+      getStats: () => null,
+    };
+    assert.equal(getStatsCellColor(selector, 'test'), NONE);
   });
 
-  it('passes baseline through to getSpeedHeatmapColor', () => {
-    const selector = {
-      getAutomaticity: () => null,
-      getStats: () => ({ ewma: 2000 }),
-    } as any;
-    // With baseline=1500, 2000ms is < 2250 (1500*1.5) → sage
-    assert.equal(getStatsCellColor(selector, 'test', 'speed', 1500), L5);
-  });
-
-  it('returns grey for speed mode with no stats', () => {
+  it('falls back gracefully when getSpeedScore not on selector', () => {
     const selector = {
       getAutomaticity: () => null,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColor(selector, 'test', 'speed', null), NONE);
-  });
-
-  it('returns grey for retention mode with null automaticity', () => {
-    const selector = {
-      getAutomaticity: () => null,
-      getStats: () => null,
-    };
-    assert.equal(getStatsCellColor(selector, 'test', 'retention', null), NONE);
-  });
-
-  it('returns lowest level for retention mode with zero automaticity (wrong-only item)', () => {
-    const selector = {
-      getAutomaticity: () => 0,
-      getStats: () => ({ ewma: 9000 }),
-    } as any;
-    assert.equal(getStatsCellColor(selector, 'test', 'retention', null), L1);
+    // Without getSpeedScore/getFreshness, should return NONE
+    assert.equal(getStatsCellColor(selector, 'test'), NONE);
   });
 });
 
@@ -162,94 +115,69 @@ describe('getStatsCellColor', () => {
 describe('getStatsCellColorMerged', () => {
   it('falls back to getStatsCellColor when passed a string', () => {
     const selector = {
+      getSpeedScore: () => 0.9,
+      getFreshness: () => 0.8,
       getAutomaticity: () => 0.9,
       getStats: () => null,
     };
     assert.equal(
-      getStatsCellColorMerged(selector, 'C+3' as any, 'retention', null),
-      getStatsCellColor(selector, 'C+3', 'retention', null),
+      getStatsCellColorMerged(selector, 'C+3'),
+      getStatsCellColor(selector, 'C+3'),
     );
   });
 
-  it('returns grey when no items have data (retention)', () => {
+  it('returns grey when no items have data', () => {
     const selector = {
+      getSpeedScore: () => null,
+      getFreshness: () => null,
       getAutomaticity: () => null,
       getStats: () => null,
     };
     assert.equal(
-      getStatsCellColorMerged(selector, ['A+3', 'A-3'], 'retention', null),
+      getStatsCellColorMerged(selector, ['A+3', 'A-3']),
       NONE,
     );
   });
 
-  it('returns grey when no items have data (speed)', () => {
+  it('averages speed and freshness across items', () => {
+    const speedData: Record<string, number | null> = {
+      'C+3': 0.9,
+      'C-3': 0.7,
+    };
+    const freshData: Record<string, number | null> = {
+      'C+3': 1.0,
+      'C-3': 0.6,
+    };
     const selector = {
+      getSpeedScore: (id: string) => speedData[id] ?? null,
+      getFreshness: (id: string) => freshData[id] ?? null,
       getAutomaticity: () => null,
       getStats: () => null,
     };
-    assert.equal(
-      getStatsCellColorMerged(selector, ['A+3', 'A-3'], 'speed', null),
-      NONE,
-    );
+    const color = getStatsCellColorMerged(selector, ['C+3', 'C-3']);
+    // average speed = 0.8, average freshness = 0.8
+    // speed 0.8 is NOT >0.8 so level 3 (hue 90)
+    assert.ok(color.startsWith('hsl(90,'));
   });
 
-  it('averages automaticity across both directions (retention)', () => {
-    const data: Record<string, number | null> = { 'C+3': 0.9, 'C-3': 0.7 };
-    const selector = {
-      getAutomaticity: (id: string) => data[id] ?? null,
-      getStats: () => null,
+  it('uses only available items when one is unseen', () => {
+    const speedData: Record<string, number | null> = {
+      'C+3': 0.9,
+      'C-3': null,
     };
-    // average = 0.8, which is exactly the >0.8 boundary → falls to 0.6-0.8 bucket
-    // Actually 0.8 is NOT > 0.8, so it's the 0.6-0.8 bucket
-    assert.equal(
-      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'retention', null),
-      L4,
-    );
-  });
-
-  it('uses only available direction when one is unseen (retention)', () => {
-    const data: Record<string, number | null> = { 'C+3': 0.9, 'C-3': null };
-    const selector = {
-      getAutomaticity: (id: string) => data[id] ?? null,
-      getStats: () => null,
-    };
-    // Only C+3 has data (0.9), so result = 0.9 → >0.8 bucket = sage
-    assert.equal(
-      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'retention', null),
-      L5,
-    );
-  });
-
-  it('averages ewma across both directions (speed)', () => {
-    const data: Record<string, { ewma: number } | null> = {
-      'C+3': { ewma: 1000 },
-      'C-3': { ewma: 2000 },
-    };
-    const selector = {
-      getAutomaticity: () => null,
-      getStats: (id: string) => data[id] ?? null,
-    } as any;
-    // average = 1500, which is NOT < 1500, so it's the 1500-3000 bucket
-    assert.equal(
-      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'speed', null),
-      L4,
-    );
-  });
-
-  it('uses only available direction when one is unseen (speed)', () => {
-    const data: Record<string, { ewma: number } | null> = {
-      'C+3': { ewma: 1000 },
+    const freshData: Record<string, number | null> = {
+      'C+3': 1.0,
       'C-3': null,
     };
     const selector = {
+      getSpeedScore: (id: string) => speedData[id] ?? null,
+      getFreshness: (id: string) => freshData[id] ?? null,
       getAutomaticity: () => null,
-      getStats: (id: string) => data[id] ?? null,
-    } as any;
-    // Only C+3 has data (1000ms) → <1500 bucket = sage
-    assert.equal(
-      getStatsCellColorMerged(selector, ['C+3', 'C-3'], 'speed', null),
-      L5,
-    );
+      getStats: () => null,
+    };
+    const color = getStatsCellColorMerged(selector, ['C+3', 'C-3']);
+    // Only C+3 has data: speed=0.9 (>0.8 → level 4, hue 122), freshness=1.0
+    assert.ok(color.startsWith('hsl(122,'));
   });
 });
 
@@ -258,33 +186,62 @@ describe('getStatsCellColorMerged', () => {
 // ---------------------------------------------------------------------------
 
 describe('buildStatsLegend', () => {
-  it("returns retention legend with 'Automatic' text", () => {
-    const html = buildStatsLegend('retention');
+  it('contains Speed and Last practiced section titles', () => {
+    const html = buildStatsLegend();
+    assert.ok(html.includes('legend-section-title'));
+    assert.ok(html.includes('>Speed<'));
+    assert.ok(html.includes('>Last practiced<'));
+  });
+
+  it('contains gradient bars with swatches', () => {
+    const html = buildStatsLegend();
+    assert.ok(html.includes('legend-gradient-bar'));
+    assert.ok(html.includes('legend-bar-swatch'));
+  });
+
+  it('contains axis labels for both dimensions', () => {
+    const html = buildStatsLegend();
+    assert.ok(html.includes('legend-axis-labels'));
     assert.ok(html.includes('Automatic'));
-    assert.ok(html.includes('Needs work'));
-    assert.ok(html.includes('No data'));
-    assert.ok(!html.includes('1.5s')); // no speed labels
+    assert.ok(html.includes('Hesitant'));
+    assert.ok(html.includes('Recent'));
+    assert.ok(html.includes('Long ago'));
   });
 
-  it('retention legend ignores baseline', () => {
-    const html = buildStatsLegend('retention', 2000);
-    assert.ok(html.includes('Automatic'));
-    assert.ok(!html.includes('3s')); // no speed thresholds
+  it('speed bar starts with green (fast) and ends with gold (slow)', () => {
+    const html = buildStatsLegend();
+    // First swatch in speed bar should be hsl(122,...) (green/fast)
+    const barMatch = html.match(/legend-gradient-bar">(.*?)<\/div>\s*<\/div>/s);
+    assert.ok(barMatch, 'should find gradient bar');
+    const firstSwatch = barMatch![1];
+    assert.ok(
+      firstSwatch.startsWith(
+        '<div class="legend-bar-swatch" style="background:hsl(122,',
+      ),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// heatmapNeedsLightText
+// ---------------------------------------------------------------------------
+
+describe('heatmapNeedsLightText', () => {
+  it('returns true for dark background (L <= 50)', () => {
+    assert.ok(heatmapNeedsLightText('hsl(122, 46%, 33%)'));
+    assert.ok(heatmapNeedsLightText('hsl(90, 38%, 38%)'));
+    assert.ok(heatmapNeedsLightText('hsl(68, 30%, 46%)'));
+    assert.ok(heatmapNeedsLightText('hsl(54, 45%, 50%)'));
   });
 
-  it('returns speed legend with default thresholds (baseline=1000)', () => {
-    const html = buildStatsLegend('speed');
-    assert.ok(html.includes('1.5s'));
-    assert.ok(html.includes('6s'));
-    assert.ok(html.includes('No data'));
-    assert.ok(!html.includes('Automatic')); // no retention labels
+  it('returns false for light background (L > 50)', () => {
+    assert.ok(!heatmapNeedsLightText('hsl(44, 65%, 58%)'));
+    assert.ok(!heatmapNeedsLightText('hsl(30, 4%, 85%)'));
+    assert.ok(!heatmapNeedsLightText('hsl(122, 12%, 70%)'));
   });
 
-  it('returns speed legend with scaled thresholds (baseline=1500)', () => {
-    const html = buildStatsLegend('speed', 1500);
-    // 1500*1.5=2250 → "2.3s", 1500*3=4500 → "4.5s", 1500*6=9000 → "9s"
-    assert.ok(html.includes('2.3s'), 'should show 2.3s threshold');
-    assert.ok(html.includes('4.5s'), 'should show 4.5s threshold');
-    assert.ok(html.includes('9s'), 'should show 9s threshold');
+  it('returns false for empty/invalid color', () => {
+    assert.ok(!heatmapNeedsLightText(''));
+    assert.ok(!heatmapNeedsLightText('red'));
   });
 });

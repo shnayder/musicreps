@@ -242,9 +242,9 @@ font-weight: 600;
 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 ```
 
-### Secondary Buttons (Stop, Recalibrate)
+### Secondary Buttons (Stop, Redo)
 
-Outlined, not filled. `.stop-btn` has normal border; `.recalibrate-btn` has
+Outlined, not filled. `.stop-btn` has normal border; `.baseline-rerun-btn` has
 lighter border and muted text.
 
 ### Answer / Note Buttons
@@ -257,9 +257,30 @@ buttons use `--color-surface-accent` background.
 `--color-surface` inactive, `--color-toggle-active` active. 36px minimum size
 for touch targets. Transition and hover states.
 
-### Stats Toggle (Recall / Speed)
+### Baseline Info (Speed Check)
 
-Uses `--color-brand` for active state (same green as all active elements).
+Appears at the bottom of the progress tab. Uses a "label: value / explanation"
+hierarchy pattern where the measured value is visually prominent.
+
+```
+Speed check                    (section header — sm, semibold, muted)
+Response time    0.5s          (label: sm muted, value: md semibold)
+                 (default)     (tag — italic, light, when uncalibrated)
+Timing thresholds are based    (explanation — xs, light)
+on this measurement.
+[Redo speed check]             (secondary button — outlined, xs)
+```
+
+The section header uses `--text-sm` semibold with `--color-text-muted` — a
+quieter version of `.practice-section-header` appropriate for this subordinate
+section at the bottom of the progress tab. The value
+(`--text-md`, semibold, `--color-text`) is the dominant element; the label
+(`--text-sm`, `--color-text-muted`) reads as a quiet annotation.
+
+**Info hierarchy pattern:** When displaying a metric with context, use
+"label: value / explanation" — value is visually dominant (larger, bolder),
+label is quieter, explanation is smallest. This pattern applies wherever a
+single number needs context (e.g., baseline, round stats).
 
 ### Home Screen
 

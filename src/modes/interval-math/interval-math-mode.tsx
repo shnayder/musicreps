@@ -206,17 +206,10 @@ export function IntervalMathMode(
                 selector={ps.statsSel}
                 colLabels={GRID_COL_LABELS}
                 getItemId={getGridItemId}
-                statsMode={ps.statsMode}
-                baseline={learner.motorBaseline ?? undefined}
               />
-              <StatsLegend
-                statsMode={ps.statsMode}
-                baseline={learner.motorBaseline ?? undefined}
-              />
+              <StatsLegend />
             </>
           }
-          statsMode={ps.statsMode}
-          onStatsToggle={ps.setStatsMode}
           baseline={learner.motorBaseline}
           onCalibrate={engine.startCalibration}
           activeTab={ps.activeTab}
