@@ -22,6 +22,11 @@ import {
   MODE_TITLES,
   type ScreenshotEntry,
 } from './screenshot-manifest.ts';
+import {
+  buildComponentManifest,
+  type ComponentEntry,
+} from './component-manifest.ts';
+import { captureComponents } from './capture-components.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -94,6 +99,7 @@ function generateIndexHTML(
   manifest: ScreenshotEntry[],
   outDir: string,
   imgExt: string,
+  componentEntries?: ComponentEntry[],
 ): void {
   // Split into mode groups, speed check, design moments, and progress tab
   const modeGroups = new Map<string, ScreenshotEntry[]>();
@@ -171,6 +177,14 @@ function generateIndexHTML(
       `<h2>Progress Tab</h2>\n<div class="shots">\n${shots}\n</div>\n`;
   }
 
+  // Components section
+  if (componentEntries && componentEntries.length > 0) {
+    const shots = componentEntries
+      .map((e) => shotHTML(e.name, e.name.replace('comp/', '')))
+      .join('\n');
+    sections += `<h2>Components</h2>\n<div class="shots">\n${shots}\n</div>\n`;
+  }
+
   const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Screenshots</title>
 <style>
@@ -196,7 +210,7 @@ ${sections}</body></html>
 // ---------------------------------------------------------------------------
 
 async function main() {
-  // Build manifest and apply --only filter
+  // Build app manifest and apply --only filter
   let manifest = buildManifest();
   if (onlyPatterns) {
     manifest = manifest.filter((e) =>
@@ -204,154 +218,179 @@ async function main() {
     );
   }
 
+  // Build component manifest and apply --only filter
+  let compEntries = buildComponentManifest(onlyPatterns);
+
   // --list: print all names and exit (no browser needed)
   if (listMode) {
     for (const entry of manifest) console.log(entry.name);
+    for (const entry of compEntries) console.log(entry.name);
     return;
   }
 
   mkdirSync(OUT_DIR, { recursive: true });
 
-  console.log('Starting dev server...');
-  const { proc: server, portReady } = startServer();
-  try {
-    const port = await portReady;
-    BASE_URL = `http://localhost:${port}`;
-    console.log(`Server ready on port ${port}.`);
+  const hasAppEntries = manifest.length > 0;
+  const hasCompEntries = compEntries.length > 0;
 
-    const browser = await chromium.launch();
-    const context = await browser.newContext({
-      viewport: VIEWPORT,
-      deviceScaleFactor: DEVICE_SCALE_FACTOR,
-    });
-    const page = await context.newPage();
+  // --- Capture app screenshots (needs dev server) ---
+  if (hasAppEntries) {
+    console.log('Starting dev server...');
+    const { proc: server, portReady } = startServer();
+    try {
+      const port = await portReady;
+      BASE_URL = `http://localhost:${port}`;
+      console.log(`Server ready on port ${port}.`);
 
-    // Load page with ?fixtures to enable fixture injection
-    await page.goto(`${BASE_URL}/?fixtures`);
-    await page.waitForLoadState('networkidle');
+      const browser = await chromium.launch();
+      const context = await browser.newContext({
+        viewport: VIEWPORT,
+        deviceScaleFactor: DEVICE_SCALE_FACTOR,
+      });
+      const page = await context.newPage();
 
-    // Seed motorBaseline for all engine modes to skip calibration
-    for (const ns of ENGINE_MODES) {
-      await page.evaluate(
-        (key) => localStorage.setItem(key, '500'),
-        `motorBaseline_${ns}`,
-      );
-    }
-
-    // Reload so app picks up seeded baselines
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-
-    // Helper: navigate to a mode via page reload + real UI click.
-    // Page reload guarantees clean state — no stale mode-active classes,
-    // no leftover fixture state, no navigation system desync.
-    async function navigateToMode(modeId: string) {
+      // Load page with ?fixtures to enable fixture injection
       await page.goto(`${BASE_URL}/?fixtures`);
       await page.waitForLoadState('networkidle');
-      await page.click(`[data-mode="${modeId}"]`);
-      await page.waitForSelector(`#mode-${modeId}.mode-active`);
-    }
 
-    // Helper: capture screenshot
-    async function capture(name: string) {
-      const filePath = path.join(OUT_DIR, `${name}.${IMG_EXT}`);
-      await page.screenshot({
-        path: filePath,
-        type: IMG_TYPE,
-        ...(ciMode ? { quality: 80 } : {}),
-      });
-      console.log(`  ${name}.${IMG_EXT}`);
-    }
+      // Seed motorBaseline for all engine modes to skip calibration
+      for (const ns of ENGINE_MODES) {
+        await page.evaluate(
+          (key) => localStorage.setItem(key, '500'),
+          `motorBaseline_${ns}`,
+        );
+      }
 
-    // Helper: dispatch fixture and wait for application
-    async function applyFixture(modeId: string, fixture: FixtureDetail) {
-      const container = `#mode-${modeId}`;
+      // Reload so app picks up seeded baselines
+      await page.reload();
+      await page.waitForLoadState('networkidle');
 
-      // Clear previous fixture-applied marker
-      await page.evaluate((sel) => {
-        const el = document.querySelector(sel);
-        if (el) el.removeAttribute('data-fixture-applied');
-      }, container);
+      // Helper: navigate to a mode via page reload + real UI click.
+      // Page reload guarantees clean state — no stale mode-active classes,
+      // no leftover fixture state, no navigation system desync.
+      async function navigateToMode(modeId: string) {
+        await page.goto(`${BASE_URL}/?fixtures`);
+        await page.waitForLoadState('networkidle');
+        await page.click(`[data-mode="${modeId}"]`);
+        await page.waitForSelector(`#mode-${modeId}.mode-active`);
+      }
 
-      // Dispatch __fixture__ custom event
-      await page.evaluate(
-        ({ sel, detail }) => {
+      // Helper: capture screenshot
+      async function capture(name: string) {
+        const filePath = path.join(OUT_DIR, `${name}.${IMG_EXT}`);
+        await page.screenshot({
+          path: filePath,
+          type: IMG_TYPE,
+          ...(ciMode ? { quality: 80 } : {}),
+        });
+        console.log(`  ${name}.${IMG_EXT}`);
+      }
+
+      // Helper: dispatch fixture and wait for application
+      async function applyFixture(modeId: string, fixture: FixtureDetail) {
+        const container = `#mode-${modeId}`;
+
+        // Clear previous fixture-applied marker
+        await page.evaluate((sel) => {
           const el = document.querySelector(sel);
-          if (!el) throw new Error(`Container not found: ${sel}`);
-          el.dispatchEvent(
-            new CustomEvent('__fixture__', { detail, bubbles: false }),
-          );
-        },
-        { sel: container, detail: fixture },
-      );
+          if (el) el.removeAttribute('data-fixture-applied');
+        }, container);
 
-      // Wait for fixture to be applied (Preact re-render + derived state)
-      await page.waitForSelector(`${container}[data-fixture-applied="true"]`, {
-        timeout: 5000,
-      });
+        // Dispatch __fixture__ custom event
+        await page.evaluate(
+          ({ sel, detail }) => {
+            const el = document.querySelector(sel);
+            if (!el) throw new Error(`Container not found: ${sel}`);
+            el.dispatchEvent(
+              new CustomEvent('__fixture__', { detail, bubbles: false }),
+            );
+          },
+          { sel: container, detail: fixture },
+        );
 
-      // Wait for derived state → Preact re-render + useEffect side effects
-      await page.waitForTimeout(500);
-    }
+        // Wait for fixture to be applied (Preact re-render + derived state)
+        await page.waitForSelector(
+          `${container}[data-fixture-applied="true"]`,
+          { timeout: 5000 },
+        );
 
-    // --- Capture all screenshots via fixture injection ---
-    let currentMode = '';
-    let previousHadFixture = false;
-    let previousHadLocalStorage = false;
-
-    for (const entry of manifest) {
-      const needsReload = entry.modeId !== currentMode ||
-        previousHadFixture || previousHadLocalStorage ||
-        !!entry.localStorageData;
-
-      // Seed localStorage before navigation so the reload picks it up
-      if (entry.localStorageData) {
-        await page.evaluate((data: Record<string, string>) => {
-          for (const [k, v] of Object.entries(data)) {
-            localStorage.setItem(k, v);
-          }
-        }, entry.localStorageData);
+        // Wait for derived state → Preact re-render + useEffect side effects
+        await page.waitForTimeout(500);
       }
 
-      if (needsReload) {
-        if (entry.modeId !== currentMode) {
-          console.log(`Mode: ${entry.modeId}`);
+      // --- Capture all screenshots via fixture injection ---
+      let currentMode = '';
+      let previousHadFixture = false;
+      let previousHadLocalStorage = false;
+
+      for (const entry of manifest) {
+        const needsReload = entry.modeId !== currentMode ||
+          previousHadFixture || previousHadLocalStorage ||
+          !!entry.localStorageData;
+
+        // Seed localStorage before navigation so the reload picks it up
+        if (entry.localStorageData) {
+          await page.evaluate((data: Record<string, string>) => {
+            for (const [k, v] of Object.entries(data)) {
+              localStorage.setItem(k, v);
+            }
+          }, entry.localStorageData);
         }
-        await navigateToMode(entry.modeId);
-        currentMode = entry.modeId;
+
+        if (needsReload) {
+          if (entry.modeId !== currentMode) {
+            console.log(`Mode: ${entry.modeId}`);
+          }
+          await navigateToMode(entry.modeId);
+          currentMode = entry.modeId;
+        }
+
+        if (entry.fixture) {
+          await applyFixture(entry.modeId, entry.fixture);
+        }
+
+        // Switch to progress tab after navigation
+        if (entry.clickTab) {
+          const sel = `#mode-${entry.modeId} [data-tab="${entry.clickTab}"]`;
+          await page.click(sel);
+          await page.waitForTimeout(200);
+        }
+
+        await capture(entry.name);
+        previousHadFixture = !!entry.fixture;
+
+        // Clean up seeded localStorage for next entry
+        if (entry.localStorageData) {
+          await page.evaluate((keys: string[]) => {
+            for (const k of keys) localStorage.removeItem(k);
+          }, Object.keys(entry.localStorageData));
+          previousHadLocalStorage = true;
+        } else {
+          previousHadLocalStorage = false;
+        }
       }
 
-      if (entry.fixture) {
-        await applyFixture(entry.modeId, entry.fixture);
-      }
-
-      // Switch to progress tab after navigation
-      if (entry.clickTab) {
-        const sel = `#mode-${entry.modeId} [data-tab="${entry.clickTab}"]`;
-        await page.click(sel);
-        await page.waitForTimeout(200);
-      }
-
-      await capture(entry.name);
-      previousHadFixture = !!entry.fixture;
-
-      // Clean up seeded localStorage for next entry
-      if (entry.localStorageData) {
-        await page.evaluate((keys: string[]) => {
-          for (const k of keys) localStorage.removeItem(k);
-        }, Object.keys(entry.localStorageData));
-        previousHadLocalStorage = true;
-      } else {
-        previousHadLocalStorage = false;
-      }
+      await browser.close();
+      console.log(`Captured ${manifest.length} app screenshots.`);
+    } finally {
+      server.kill();
     }
-
-    await browser.close();
-    generateIndexHTML(manifest, OUT_DIR, IMG_EXT);
-    console.log(`\nDone! ${manifest.length} screenshots in ${OUT_DIR}`);
-  } finally {
-    server.kill();
   }
+
+  // --- Capture component screenshots (file://, no server) ---
+  if (hasCompEntries) {
+    console.log('Capturing component screenshots...');
+    await captureComponents({
+      entries: compEntries,
+      outDir: OUT_DIR,
+      imgType: IMG_TYPE,
+      ...(ciMode ? { quality: 80 } : {}),
+    });
+  }
+
+  generateIndexHTML(manifest, OUT_DIR, IMG_EXT, compEntries);
+  const total = manifest.length + compEntries.length;
+  console.log(`\nDone! ${total} screenshots in ${OUT_DIR}`);
 }
 
 main().catch((err) => {

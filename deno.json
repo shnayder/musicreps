@@ -45,6 +45,7 @@
     "screenshots": "npx tsx scripts/take-screenshots.ts",
     "screenshots:baseline": "npx tsx scripts/take-screenshots.ts --dir screenshots/baseline",
     "screenshots:review": "npx tsx scripts/build-screenshot-review.ts",
-    "iterate": "npx tsx scripts/ui-iterate.ts"
+    "iterate": "npx tsx scripts/ui-iterate.ts",
+    "screenshots:components": "npx tsx scripts/take-screenshots.ts --only comp/"
   }
 }
