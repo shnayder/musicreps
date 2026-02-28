@@ -250,6 +250,12 @@ export function useQuizEngine(
     const items = configRef.current.getEnabledItems();
     if (items.length === 0) return;
 
+    // Clear focus from the previously-answered button so it doesn't
+    // carry a stuck :hover/:focus style into the next question.
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     const nextItemId = selectorRef.current.selectNext(items);
     setState((prev) => engineNextQuestion(prev, nextItemId, Date.now()));
   }, []);
