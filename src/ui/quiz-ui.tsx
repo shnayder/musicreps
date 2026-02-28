@@ -27,7 +27,12 @@ export function FeedbackDisplay(
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
       {time ? <div class='time-display'>{time}</div> : null}
-      {hint ? <div class='hint'>{hint}</div> : null}
+      <div
+        class='hint'
+        style={hint ? undefined : { visibility: 'hidden' }}
+      >
+        {hint || '\u00A0'}
+      </div>
     </>
   );
 }

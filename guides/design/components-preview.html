@@ -1716,7 +1716,7 @@ button {
   <div id="preview-root"></div>
   <script>
 (() => {
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/dist/preact.module.js
+  // node_modules/preact/dist/preact.module.js
   var n;
   var l;
   var u;
@@ -1967,7 +1967,7 @@ button {
     return n2.__v.__b - l3.__v.__b;
   }, I.__r = 0, f = /(PointerCapture)$|Capture$/i, c = 0, s = O(false), a = O(true), h = 0;
 
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/hooks/dist/hooks.module.js
+  // node_modules/preact/hooks/dist/hooks.module.js
   var t2;
   var r2;
   var u2;
@@ -2352,7 +2352,7 @@ button {
   var HOUR = 36e5;
   var DAY = 24 * HOUR;
 
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
   var f3 = 0;
   function u3(e3, t3, n2, o3, i3, u4) {
     t3 || (t3 = {});
@@ -2806,7 +2806,14 @@ button {
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
-      hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "hint",
+          style: hint ? void 0 : { visibility: "hidden" },
+          children: hint || "\xA0"
+        }
+      )
     ] });
   }
   function CountdownBar({ pct, warning, lastQuestion }) {
@@ -2952,10 +2959,10 @@ button {
     return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
       /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-mastery", children: [
         /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Mastery" }),
-        /* @__PURE__ */ u3("div", { class: "practice-status", children: [
+        /* @__PURE__ */ u3("div", { class: "practice-status", children: statusLabel ? /* @__PURE__ */ u3(k, { children: [
           /* @__PURE__ */ u3("span", { class: "practice-status-prefix", children: "Status" }),
-          /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel || "" })
-        ] }),
+          /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel })
+        ] }) : null }),
         /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" }),
         masteryBlock
       ] }),
@@ -2981,6 +2988,7 @@ button {
     ] });
   }
   function StartButton({ onStart, disabled, validationMessage }) {
+    const msgId = validationMessage ? "start-validation-msg" : void 0;
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(
         "button",
@@ -2990,10 +2998,11 @@ button {
           class: "start-btn",
           onClick: onStart,
           disabled,
+          "aria-describedby": msgId,
           children: "Practice"
         }
       ),
-      validationMessage ? /* @__PURE__ */ u3("div", { class: "start-validation-message", children: validationMessage }) : null
+      validationMessage ? /* @__PURE__ */ u3("div", { id: msgId, class: "start-validation-message", children: validationMessage }) : null
     ] });
   }
   function QuizSession({
