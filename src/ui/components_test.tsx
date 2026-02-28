@@ -261,12 +261,20 @@ describe('FeedbackDisplay', () => {
     assert.ok(html.includes('Try again'));
   });
 
-  it('omits time and hint when not provided', () => {
+  it('omits time when not provided; hint always present but hidden', () => {
     const html = render(
       <FeedbackDisplay text='X' className='feedback' />,
     );
     assert.ok(!html.includes('time-display'));
-    assert.ok(!html.includes('hint'));
+    // hint div is always rendered to reserve space (prevents layout jump)
+    const hintDivMatch = html.match(
+      /<div[^>]*class="[^"]*\bhint\b[^"]*"[^>]*>/,
+    );
+    assert.ok(hintDivMatch, 'hint div should be rendered');
+    assert.match(
+      hintDivMatch[0],
+      /style="[^"]*\bvisibility:\s*hidden\b[^"]*"/,
+    );
   });
 });
 
