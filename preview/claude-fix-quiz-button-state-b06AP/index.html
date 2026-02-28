@@ -1735,7 +1735,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">924c2d fix-quiz-button-state-b06AP</span>
+      <span class="version">f4cb9f fix-quiz-button-state-b06AP</span>
     </div>
   </div>
 
@@ -10481,6 +10481,8 @@ button {
   }
 
   // src/app.ts
+  document.addEventListener("touchstart", () => {
+  }, { passive: true });
   var nav = createNavigation();
   function registerPreactMode(id, name, Component) {
     let handle = null;
