@@ -2806,7 +2806,14 @@ button {
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
-      hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : null
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "hint",
+          style: hint ? void 0 : { visibility: "hidden" },
+          children: hint || "\xA0"
+        }
+      )
     ] });
   }
   function CountdownBar({ pct, warning, lastQuestion }) {
