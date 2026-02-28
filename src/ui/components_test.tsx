@@ -267,8 +267,14 @@ describe('FeedbackDisplay', () => {
     );
     assert.ok(!html.includes('time-display'));
     // hint div is always rendered to reserve space (prevents layout jump)
-    assert.ok(html.includes('hint'));
-    assert.ok(html.includes('visibility'));
+    const hintDivMatch = html.match(
+      /<div[^>]*class="[^"]*\bhint\b[^"]*"[^>]*>/,
+    );
+    assert.ok(hintDivMatch, 'hint div should be rendered');
+    assert.match(
+      hintDivMatch[0],
+      /style="[^"]*\bvisibility:\s*hidden\b[^"]*"/,
+    );
   });
 });
 
