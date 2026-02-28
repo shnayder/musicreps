@@ -118,6 +118,9 @@ N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       settings together) with labels or headings
 - [ ] All toggles, progress indicators, and data displays have text labels — no
       bare numbers or unlabeled button groups
+- [ ] Elements that cycle between visible/hidden (e.g., hint text, feedback
+      rows) use `visibility: hidden` — not conditional render — inside
+      flex-centered containers, to avoid layout shift
 - [ ] No redundant affordances for the same action (e.g., two different "stop
       quiz" controls)
 - [ ] Quiz-configuration settings hidden during active quiz unless needed
