@@ -24,6 +24,10 @@ import { ChordSpellingMode } from './modes/chord-spelling/chord-spelling-mode.ts
 import { FretboardMode } from './modes/fretboard/fretboard-mode.tsx';
 import { SpeedTapMode } from './modes/speed-tap/speed-tap-mode.tsx';
 
+// Enable :active pseudo-class on iOS Safari. WebKit doesn't fire :active on
+// touch unless the document has a touchstart listener.
+document.addEventListener('touchstart', () => {}, { passive: true });
+
 const nav = createNavigation();
 
 // --- Preact-based modes ---
