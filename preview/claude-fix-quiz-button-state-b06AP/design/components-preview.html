@@ -1104,6 +1104,11 @@ button {
   .note-btn.accidental:hover {
     background: var(--color-surface-pressed);
   }
+  .note-btn:disabled:hover {
+    background: var(--color-bg);
+    border-color: var(--color-text-muted);
+    transform: none;
+  }
 }
 .note-btn.accidental {
   background: var(--color-surface-accent);
@@ -1115,13 +1120,6 @@ button {
 .note-btn:disabled {
   opacity: 0.5;
   cursor: default;
-}
-@media (hover: hover) {
-  .note-btn:disabled:hover {
-    background: var(--color-bg);
-    border-color: var(--color-text-muted);
-    transform: none;
-  }
 }
 .note-btn.hidden {
   display: none;
@@ -1198,6 +1196,11 @@ button {
     background: var(--color-surface-hover);
     border-color: var(--color-text);
   }
+  .answer-btn:disabled:hover {
+    background: var(--color-bg);
+    border-color: var(--color-text-muted);
+    transform: none;
+  }
 }
 .answer-btn:active {
   background: var(--color-surface-pressed);
@@ -1206,13 +1209,6 @@ button {
 .answer-btn:disabled {
   opacity: 0.5;
   cursor: default;
-}
-@media (hover: hover) {
-  .answer-btn:disabled:hover {
-    background: var(--color-bg);
-    border-color: var(--color-text-muted);
-    transform: none;
-  }
 }
 .answer-buttons-intervals {
   grid-template-columns: repeat(3, 1fr);

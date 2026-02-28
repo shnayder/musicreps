@@ -1106,6 +1106,11 @@ button {
   .note-btn.accidental:hover {
     background: var(--color-surface-pressed);
   }
+  .note-btn:disabled:hover {
+    background: var(--color-bg);
+    border-color: var(--color-text-muted);
+    transform: none;
+  }
 }
 .note-btn.accidental {
   background: var(--color-surface-accent);
@@ -1117,13 +1122,6 @@ button {
 .note-btn:disabled {
   opacity: 0.5;
   cursor: default;
-}
-@media (hover: hover) {
-  .note-btn:disabled:hover {
-    background: var(--color-bg);
-    border-color: var(--color-text-muted);
-    transform: none;
-  }
 }
 .note-btn.hidden {
   display: none;
@@ -1200,6 +1198,11 @@ button {
     background: var(--color-surface-hover);
     border-color: var(--color-text);
   }
+  .answer-btn:disabled:hover {
+    background: var(--color-bg);
+    border-color: var(--color-text-muted);
+    transform: none;
+  }
 }
 .answer-btn:active {
   background: var(--color-surface-pressed);
@@ -1208,13 +1211,6 @@ button {
 .answer-btn:disabled {
   opacity: 0.5;
   cursor: default;
-}
-@media (hover: hover) {
-  .answer-btn:disabled:hover {
-    background: var(--color-bg);
-    border-color: var(--color-text-muted);
-    transform: none;
-  }
 }
 .answer-buttons-intervals {
   grid-template-columns: repeat(3, 1fr);
@@ -1735,7 +1731,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">f4cb9f fix-quiz-button-state-b06AP</span>
+      <span class="version">c002e6 fix-quiz-button-state-b06AP</span>
     </div>
   </div>
 
@@ -5522,8 +5518,9 @@ button {
       }
       const items = configRef.current.getEnabledItems();
       if (items.length === 0) return;
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
+      const el = document.activeElement;
+      if (el instanceof HTMLElement && el.matches(".answer-btn, .note-btn")) {
+        el.blur();
       }
       const nextItemId = selectorRef.current.selectNext(items);
       setState((prev) => engineNextQuestion(prev, nextItemId, Date.now()));
