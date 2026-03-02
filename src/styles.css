@@ -1306,6 +1306,35 @@ button {
   margin-top: var(--space-5);
 }
 
+/* --- Next button (explicit advance during feedback) --- */
+.next-btn {
+  display: block;
+  margin: var(--space-4) auto var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-brand);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  min-height: 48px;
+}
+@media (hover: hover) {
+  .next-btn:hover {
+    opacity: 0.9;
+  }
+}
+.next-btn:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+.next-btn:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
 /* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
 .keyboard-hint {
   display: none;

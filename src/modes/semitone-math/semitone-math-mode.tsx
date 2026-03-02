@@ -280,6 +280,9 @@ export function SemitoneMathMode(
                     className={engine.state.feedbackClass}
                     time={engine.state.timeDisplayText || undefined}
                     hint={engine.state.hintText || undefined}
+                    onNext={engine.state.answered
+                      ? engine.nextQuestion
+                      : undefined}
                   />
                 </>
               )}

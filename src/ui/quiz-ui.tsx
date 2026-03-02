@@ -16,17 +16,25 @@ export function TextPrompt({ text }: { text: string }) {
 // ---------------------------------------------------------------------------
 
 export function FeedbackDisplay(
-  { text, className, time, hint }: {
+  { text, className, time, hint, onNext }: {
     text: string;
     className: string;
     time?: string;
     hint?: string;
+    onNext?: () => void;
   },
 ) {
   return (
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
       {time ? <div class='time-display'>{time}</div> : null}
+      {onNext
+        ? (
+          <button type='button' class='next-btn' onClick={onNext}>
+            Next
+          </button>
+        )
+        : null}
       <div
         class='hint'
         style={hint ? undefined : { visibility: 'hidden' }}

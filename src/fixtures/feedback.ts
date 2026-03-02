@@ -6,7 +6,7 @@ export const feedbackCorrect = {
   correct: true as const,
   displayAnswer: 'D#',
   time: '0.82s',
-  hint: 'Tap anywhere or press Space for next',
+  hint: 'Space for next',
 };
 
 export const feedbackWrong = {
@@ -14,5 +14,5 @@ export const feedbackWrong = {
   className: 'feedback incorrect',
   correct: false as const,
   displayAnswer: 'D#',
-  hint: 'Tap anywhere or press Space for next',
+  hint: 'Space for next',
 };

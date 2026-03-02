@@ -37,9 +37,7 @@ const TIMER_TICK_MS = 200;
 const IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === 'function' &&
   globalThis.matchMedia('(pointer: coarse)').matches;
 
-const HINT_ADVANCE = IS_TOUCH_PRIMARY
-  ? 'Tap anywhere for next'
-  : 'Tap anywhere or press Space for next';
+const HINT_ADVANCE = IS_TOUCH_PRIMARY ? '' : 'Space for next';
 
 // ---------------------------------------------------------------------------
 // Config type — what the mode provides to the engine
@@ -432,9 +430,12 @@ export function useQuizEngine(
     function handleClick(e: MouseEvent) {
       const s = stateRef.current;
       if (s.phase !== 'active' || !s.answered) return;
-      // Don't intercept clicks on interactive elements
+      // Don't intercept clicks on interactive elements — but allow
+      // answer/note button taps through so they advance during feedback.
       if (!e.target || !(e.target instanceof Element)) return;
+      const isAnswerBtn = e.target.closest('.answer-btn, .note-btn');
       if (
+        !isAnswerBtn &&
         e.target.closest('button, a, input, select, textarea')
       ) return;
 
