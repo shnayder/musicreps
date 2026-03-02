@@ -422,34 +422,6 @@ export function useQuizEngine(
     return () => document.removeEventListener('keydown', handleKeydown);
   }, [state.phase !== 'idle', stop, continueQuiz, submitAnswer]);
 
-  // --- Tap-to-advance (click anywhere during feedback) ---
-
-  useEffect(() => {
-    if (state.phase === 'idle') return;
-
-    function handleClick(e: MouseEvent) {
-      const s = stateRef.current;
-      if (s.phase !== 'active' || !s.answered) return;
-      // Don't intercept clicks on interactive elements — but allow
-      // answer/note button taps through so they advance during feedback.
-      if (!e.target || !(e.target instanceof Element)) return;
-      const isAnswerBtn = e.target.closest('.answer-btn, .note-btn');
-      if (
-        !isAnswerBtn &&
-        e.target.closest('button, a, input, select, textarea')
-      ) return;
-
-      if (autoAdvanceRef.current) {
-        clearTimeout(autoAdvanceRef.current);
-        autoAdvanceRef.current = null;
-      }
-      nextQuestionRef.current();
-    }
-
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
-  }, [state.phase !== 'idle']);
-
   // Clean up timers on unmount
   useEffect(() => {
     return () => {
