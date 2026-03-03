@@ -32,6 +32,7 @@ import {
 const ROUND_DURATION_MS = 60000;
 const AUTO_ADVANCE_MS = 1000;
 const TIMER_TICK_MS = 200;
+const LAST_QUESTION_CAP_MS = 30000;
 
 /** True when the primary pointer is coarse (phone/tablet). */
 const IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === 'function' &&
@@ -143,6 +144,7 @@ export function useQuizEngine(
   const roundTimerRef = useRef<number | null>(null);
   const roundTimerStartRef = useRef<number | null>(null);
   const autoAdvanceRef = useRef<number | null>(null);
+  const lastQuestionCapRef = useRef<number | null>(null);
 
   // --- Compute progress ---
 
@@ -163,6 +165,10 @@ export function useQuizEngine(
     if (roundTimerRef.current) {
       clearInterval(roundTimerRef.current);
       roundTimerRef.current = null;
+    }
+    if (lastQuestionCapRef.current) {
+      clearTimeout(lastQuestionCapRef.current);
+      lastQuestionCapRef.current = null;
     }
     roundTimerStartRef.current = null;
     setTimerPct(100);
@@ -197,6 +203,13 @@ export function useQuizEngine(
         setTimeout(() => transitionToRoundCompleteRef.current(), 0);
       } else {
         setTimerLastQuestion(true);
+        // Cap the last question at 30 seconds — if the user walks away,
+        // end the round automatically.
+        lastQuestionCapRef.current = setTimeout(() => {
+          if (stateRef.current.phase === 'active') {
+            transitionToRoundCompleteRef.current();
+          }
+        }, LAST_QUESTION_CAP_MS);
       }
       return next;
     });
@@ -427,6 +440,7 @@ export function useQuizEngine(
     return () => {
       if (roundTimerRef.current) clearInterval(roundTimerRef.current);
       if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
+      if (lastQuestionCapRef.current) clearTimeout(lastQuestionCapRef.current);
     };
   }, []);
 
