@@ -576,6 +576,16 @@ export function FretboardMode(
             lastQuestion={(engine.calibrating || phase === 'round-complete')
               ? ''
               : (engine.state.roundTimerExpired ? 'Last question' : '')}
+            questionContent={(!engine.calibrating &&
+                phase !== 'round-complete')
+              ? (
+                <div
+                  ref={quizFbRef}
+                  // deno-lint-ignore react-no-danger
+                  dangerouslySetInnerHTML={{ __html: svgHTML }}
+                />
+              )
+              : undefined}
           >
             {engine.calibrating
               ? (
@@ -602,11 +612,6 @@ export function FretboardMode(
               )
               : (
                 <>
-                  <div
-                    ref={quizFbRef}
-                    // deno-lint-ignore react-no-danger
-                    dangerouslySetInnerHTML={{ __html: svgHTML }}
-                  />
                   <FeedbackBanner
                     correct={engine.state.feedbackCorrect}
                     answer={engine.state.feedbackDisplayAnswer}

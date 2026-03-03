@@ -393,20 +393,26 @@ export function SessionInfo(
 // ---------------------------------------------------------------------------
 
 export function QuizArea(
-  { prompt, lastQuestion, children }: {
+  { prompt, lastQuestion, questionContent, children }: {
     prompt?: string;
     lastQuestion?: string;
+    /** Content that is part of the question (e.g. fretboard SVG).
+     *  Rendered inside the question group, above the answer area. */
+    questionContent?: ComponentChildren;
     children: ComponentChildren;
   },
 ) {
   return (
     <div class='quiz-area'>
-      {lastQuestion && <div class='quiz-last-question'>{lastQuestion}</div>}
-      {prompt && (
-        <div class='quiz-prompt-row'>
-          <div class='quiz-prompt'>{prompt}</div>
-        </div>
-      )}
+      <div class='quiz-question-group'>
+        {lastQuestion && <div class='quiz-last-question'>{lastQuestion}</div>}
+        {prompt && (
+          <div class='quiz-prompt-row'>
+            <div class='quiz-prompt'>{prompt}</div>
+          </div>
+        )}
+        {questionContent}
+      </div>
       {children}
     </div>
   );
