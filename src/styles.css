@@ -130,6 +130,12 @@ body {
   margin: var(--space-3) 0 0;
   border-radius: var(--radius-sm);
 }
+.home-tagline {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
 .home-modes {
   flex: 1;
 }
@@ -227,11 +233,13 @@ body {
 
 /* --- Mode top bar --- */
 .mode-top-bar {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
   padding: var(--space-3) 0;
   margin-bottom: var(--space-3);
+}
+.mode-top-bar-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
 }
 .mode-back-btn {
   background: none;
@@ -242,7 +250,7 @@ body {
   min-width: 44px;
   min-height: 44px;
   color: var(--color-text-muted);
-  margin: 0;
+  margin: calc(-1 * var(--space-2)) 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,11 +262,56 @@ body {
 .mode-back-btn:active {
   background: var(--color-surface-pressed);
 }
+.mode-top-bar-text {
+  flex: 1;
+  min-width: 0;
+}
 .mode-title {
   margin: 0;
   font-size: var(--text-lg);
   font-weight: 600;
-  flex: 1;
+}
+.mode-description {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+.mode-description-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  cursor: pointer;
+  text-align: left;
+}
+.mode-description-toggle:hover {
+  color: var(--color-text);
+}
+.mode-description-chevron {
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  transition: transform 0.15s ease;
+  line-height: 1.1;
+  flex-shrink: 0;
+  width: 1em;
+  margin-left: -1em;
+}
+.mode-description-toggle:focus-visible {
+  outline-offset: 2px;
+}
+.mode-description-toggle:active {
+  color: var(--color-text);
+}
+.mode-description-toggle.open .mode-description-chevron {
+  transform: rotate(90deg);
 }
 /* --- Settings modal --- */
 .settings-overlay {

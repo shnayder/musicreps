@@ -371,6 +371,42 @@ describe('ModeTopBar', () => {
     assert.ok(html.includes('mode-title'));
     assert.ok(!html.includes('mode-back-btn'));
   });
+
+  it('renders description without detail as static paragraph', () => {
+    const html = render(
+      <ModeTopBar title='Test' description='Some description' />,
+    );
+    assert.ok(html.includes('mode-description'));
+    assert.ok(html.includes('Some description'));
+    assert.ok(!html.includes('mode-description-toggle'));
+  });
+
+  it('renders description with detail as expandable toggle', () => {
+    const html = render(
+      <ModeTopBar
+        title='Test'
+        description='Short desc'
+        detail='Long detail'
+      />,
+    );
+    assert.ok(html.includes('mode-description-toggle'));
+    assert.ok(html.includes('aria-expanded'));
+    assert.ok(html.includes('Short desc'));
+    assert.ok(!html.includes('Long detail'));
+  });
+
+  it('shows detail when _previewOpen is true', () => {
+    const html = render(
+      <ModeTopBar
+        title='Test'
+        description='Short desc'
+        detail='Long detail'
+        _previewOpen
+      />,
+    );
+    assert.ok(html.includes('Long detail'));
+    assert.ok(html.includes('open'));
+  });
 });
 
 describe('TabbedIdle', () => {

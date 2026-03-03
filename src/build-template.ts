@@ -28,55 +28,56 @@ export const DISTANCE_TOGGLES =
 export const HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     <div class="home-header">
       <h1 class="home-title">Music Reps</h1>
+      <p class="home-tagline">Instant recall for music fundamentals. You know the theory\u2009\u2014\u2009now make it automatic.</p>
     </div>
     <div class="home-modes">
       <div class="home-group-label">Fretboard</div>
       <button tabindex="0" data-mode="fretboard" class="home-mode-btn">
         <span class="home-mode-name">Guitar Fretboard</span>
-        <span class="home-mode-desc">Name notes on the guitar neck</span>
+        <span class="home-mode-desc">Stop hunting for notes on the fretboard</span>
       </button>
       <button tabindex="0" data-mode="ukulele" class="home-mode-btn">
         <span class="home-mode-name">Ukulele Fretboard</span>
-        <span class="home-mode-desc">Name notes on the ukulele</span>
+        <span class="home-mode-desc">Stop hunting for notes on the fretboard</span>
       </button>
       <button tabindex="0" data-mode="speedTap" class="home-mode-btn">
         <span class="home-mode-name">Speed Tap</span>
-        <span class="home-mode-desc">Find all positions of a note</span>
+        <span class="home-mode-desc">See a note, find every position instantly</span>
       </button>
       <div class="home-group-label">Theory Lookup</div>
       <button tabindex="0" data-mode="noteSemitones" class="home-mode-btn">
         <span class="home-mode-name">Note \u2194 Semitones</span>
-        <span class="home-mode-desc">Convert between notes and semitone numbers</span>
+        <span class="home-mode-desc">The number system behind the chromatic scale</span>
       </button>
       <button tabindex="0" data-mode="intervalSemitones" class="home-mode-btn">
         <span class="home-mode-name">Interval \u2194 Semitones</span>
-        <span class="home-mode-desc">Convert between intervals and semitone counts</span>
+        <span class="home-mode-desc">Know the size of every interval in semitones</span>
       </button>
       <div class="home-group-label">Calculation</div>
       <button tabindex="0" data-mode="semitoneMath" class="home-mode-btn">
         <span class="home-mode-name">Semitone Math</span>
-        <span class="home-mode-desc">Add or subtract semitones from a note</span>
+        <span class="home-mode-desc">Transpose by semitones without counting</span>
       </button>
       <button tabindex="0" data-mode="intervalMath" class="home-mode-btn">
         <span class="home-mode-name">Interval Math</span>
-        <span class="home-mode-desc">Apply intervals up or down from a note</span>
+        <span class="home-mode-desc">Transpose by interval without counting</span>
       </button>
       <div class="home-group-label">Keys &amp; Chords</div>
       <button tabindex="0" data-mode="keySignatures" class="home-mode-btn">
         <span class="home-mode-name">Key Signatures</span>
-        <span class="home-mode-desc">Match keys to their sharps and flats</span>
+        <span class="home-mode-desc">See a key, know its sharps and flats instantly</span>
       </button>
       <button tabindex="0" data-mode="scaleDegrees" class="home-mode-btn">
         <span class="home-mode-name">Scale Degrees</span>
-        <span class="home-mode-desc">Name notes by scale degree in any key</span>
+        <span class="home-mode-desc">Connect notes to their function in a key</span>
       </button>
       <button tabindex="0" data-mode="diatonicChords" class="home-mode-btn">
         <span class="home-mode-name">Diatonic Chords</span>
-        <span class="home-mode-desc">Identify chords built on each scale degree</span>
+        <span class="home-mode-desc">Know which chords belong in any key</span>
       </button>
       <button tabindex="0" data-mode="chordSpelling" class="home-mode-btn">
         <span class="home-mode-name">Chord Spelling</span>
-        <span class="home-mode-desc">Spell out the notes in any chord</span>
+        <span class="home-mode-desc">Know the notes in any chord from memory</span>
       </button>
     </div>
     <div class="home-footer">

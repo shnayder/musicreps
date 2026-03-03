@@ -3,9 +3,13 @@
 // mode screen layouts with phase management, tabs, and quiz sessions.
 
 import type { ComponentChildren } from 'preact';
-import { useMemo } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { FixtureDetail } from '../fixtures/quiz-page.ts';
 import type { PracticeSummaryState } from '../types.ts';
 import { BaselineInfo } from './speed-check.tsx';
+
+const FIXTURES_ENABLED = typeof location !== 'undefined' &&
+  new URLSearchParams(location.search).has('fixtures');
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -32,30 +36,79 @@ export function ModeScreen(
 }
 
 // ---------------------------------------------------------------------------
-// ModeTopBar — back button + mode title
+// ModeTopBar — back button + mode title + expandable detail
 // ---------------------------------------------------------------------------
 
 export function ModeTopBar(
-  { title, onBack, showBack = true }: {
+  { title, description, detail, onBack, showBack = true, _previewOpen }: {
     title: string;
+    description?: string;
+    detail?: string;
     onBack?: () => void;
     showBack?: boolean;
+    /** Force detail open state for component previews. */
+    _previewOpen?: boolean;
   },
 ) {
+  const [detailOpen, setDetailOpen] = useState(_previewOpen ?? false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Listen for __fixture__ events to control detail open state in screenshots.
+  useEffect(() => {
+    if (!FIXTURES_ENABLED || !ref.current) return;
+    const container = ref.current.closest('.mode-screen');
+    if (!container) return;
+    function handleFixture(e: Event) {
+      const d = (e as CustomEvent<FixtureDetail>).detail;
+      if (d?.skillAboutOpen !== undefined) setDetailOpen(d.skillAboutOpen);
+    }
+    container.addEventListener('__fixture__', handleFixture);
+    return () => container.removeEventListener('__fixture__', handleFixture);
+  }, []);
+
   return (
-    <div class='mode-top-bar'>
-      {showBack && (
-        <button
-          type='button'
-          tabIndex={0}
-          class='mode-back-btn'
-          aria-label='Back to home'
-          onClick={onBack}
-        >
-          {'\u2190' /* ← back arrow */}
-        </button>
-      )}
-      <h1 class='mode-title'>{title}</h1>
+    <div ref={ref} class='mode-top-bar'>
+      <div class='mode-top-bar-row'>
+        {showBack && (
+          <button
+            type='button'
+            tabIndex={0}
+            class='mode-back-btn'
+            aria-label='Back to home'
+            onClick={onBack}
+          >
+            {'\u2190' /* ← back arrow */}
+          </button>
+        )}
+        <div class='mode-top-bar-text'>
+          <h1 class='mode-title'>{title}</h1>
+          {description && (
+            detail
+              ? (
+                <button
+                  type='button'
+                  class={'mode-description-toggle' +
+                    (detailOpen ? ' open' : '')}
+                  aria-expanded={detailOpen}
+                  onClick={() => setDetailOpen(!detailOpen)}
+                >
+                  <span class='mode-description-chevron'>›</span>
+                  <span>
+                    {description}
+                    {detailOpen && (
+                      <>
+                        <br />
+                        <br />
+                        {detail}
+                      </>
+                    )}
+                  </span>
+                </button>
+              )
+              : <p class='mode-description'>{description}</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -173,6 +173,7 @@ async function captureStates(
     async function navigateToMode(modeId: string) {
       await page.goto(`${BASE_URL}/?fixtures`);
       await page.waitForLoadState('networkidle');
+      if (modeId === 'home') return;
       await page.click(`[data-mode="${modeId}"]`);
       await page.waitForSelector(`#mode-${modeId}.mode-active`);
     }

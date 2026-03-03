@@ -17,6 +17,8 @@ import type {
 } from '../../types.ts';
 import {
   displayNote,
+  MODE_DESCRIPTIONS,
+  MODE_DETAIL,
   NATURAL_NOTES,
   noteMatchesInput,
   NOTES,
@@ -512,6 +514,8 @@ export function FretboardMode(
     <>
       <ModeTopBar
         title={instrument.name}
+        description={MODE_DESCRIPTIONS[instrument.id]}
+        detail={MODE_DETAIL[instrument.id]}
         onBack={navigateHome}
         showBack={isIdle}
       />

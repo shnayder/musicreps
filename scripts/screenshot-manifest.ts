@@ -85,6 +85,9 @@ export type ScreenshotEntry = {
 export function buildManifest(): ScreenshotEntry[] {
   const entries: ScreenshotEntry[] = [];
 
+  // Home screen (before any mode is selected)
+  entries.push({ name: 'home', modeId: 'home' });
+
   // All modes: idle + quiz (+ reverse quiz for bidirectional modes)
   for (const modeId of MODE_IDS) {
     entries.push({ name: `${modeId}-idle`, modeId });
@@ -101,6 +104,20 @@ export function buildManifest(): ScreenshotEntry[] {
       });
     }
   }
+
+  // Skill About expanded: idle with "Why practice this?" open
+  entries.push(
+    {
+      name: 'fretboard-about',
+      modeId: 'fretboard',
+      fixture: { skillAboutOpen: true },
+    },
+    {
+      name: 'semitoneMath-about',
+      modeId: 'semitoneMath',
+      fixture: { skillAboutOpen: true },
+    },
+  );
 
   // Speed Check: fixture-based calibration captures
   entries.push(

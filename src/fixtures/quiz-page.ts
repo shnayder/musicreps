@@ -25,6 +25,7 @@ export type FixtureDetail = {
   timerWarning?: boolean;
   timerLastQuestion?: boolean;
   calibration?: SpeedCheckFixture;
+  skillAboutOpen?: boolean;
 };
 
 // ---------------------------------------------------------------------------

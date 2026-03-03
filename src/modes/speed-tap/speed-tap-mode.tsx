@@ -10,7 +10,13 @@ import {
   useState,
 } from 'preact/hooks';
 import type { ModeHandle, NoteFilter as NoteFilterType } from '../../types.ts';
-import { displayNote, NOTES, pickRandomAccidental } from '../../music-data.ts';
+import {
+  displayNote,
+  MODE_DESCRIPTIONS,
+  MODE_DETAIL,
+  NOTES,
+  pickRandomAccidental,
+} from '../../music-data.ts';
 import { buildStatsLegend, getStatsCellColor } from '../../stats-display.ts';
 import { fretboardSVG } from '../../html-helpers.ts';
 
@@ -356,6 +362,8 @@ export function SpeedTapMode(
     <>
       <ModeTopBar
         title='Speed Tap'
+        description={MODE_DESCRIPTIONS.speedTap}
+        detail={MODE_DETAIL.speedTap}
         onBack={navigateHome}
         showBack={isIdle}
       />

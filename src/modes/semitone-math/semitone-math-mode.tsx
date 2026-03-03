@@ -4,6 +4,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
+import { MODE_DESCRIPTIONS, MODE_DETAIL } from '../../music-data.ts';
 import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,
@@ -185,6 +186,8 @@ export function SemitoneMathMode(
     <>
       <ModeTopBar
         title='Semitone Math'
+        description={MODE_DESCRIPTIONS.semitoneMath}
+        detail={MODE_DETAIL.semitoneMath}
         onBack={navigateHome}
         showBack={isIdle}
       />

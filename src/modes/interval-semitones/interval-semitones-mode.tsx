@@ -3,6 +3,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
+import { MODE_DESCRIPTIONS, MODE_DETAIL } from '../../music-data.ts';
 import type { QuizEngineConfig } from '../../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../../hooks/use-quiz-engine.ts';
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
@@ -208,6 +209,8 @@ export function IntervalSemitonesMode(
     <>
       <ModeTopBar
         title='Interval ↔ Semitones'
+        description={MODE_DESCRIPTIONS.intervalSemitones}
+        detail={MODE_DETAIL.intervalSemitones}
         onBack={navigateHome}
         showBack={isIdle}
       />
