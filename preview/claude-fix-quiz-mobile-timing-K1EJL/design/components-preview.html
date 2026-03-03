@@ -1692,6 +1692,13 @@ button {
     font-size: 1.6rem;
   }
 
+  /* Push answer buttons and next button toward the bottom of the screen
+     so they sit in the thumb zone on mobile devices. */
+  .quiz-area {
+    justify-content: flex-end;
+    padding-bottom: var(--space-4);
+  }
+
   /* Prevent iOS zoom on input focus */
   input, button {
     font-size: 16px;
@@ -2839,7 +2846,16 @@ button {
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
-      onNext ? /* @__PURE__ */ u3("button", { type: "button", class: "next-btn", onClick: onNext, children: "Next" }) : null,
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          class: "next-btn",
+          onClick: onNext,
+          style: onNext ? void 0 : { visibility: "hidden" },
+          children: "Next"
+        }
+      ),
       /* @__PURE__ */ u3(
         "div",
         {
@@ -3253,7 +3269,9 @@ button {
         {
           text: feedbackCorrect.text,
           className: feedbackCorrect.className,
-          time: feedbackCorrect.time
+          time: feedbackCorrect.time,
+          onNext: () => {
+          }
         }
       ) }),
       /* @__PURE__ */ u3(Section, { title: "Feedback \u2014 Incorrect", children: /* @__PURE__ */ u3(
@@ -3261,7 +3279,9 @@ button {
         {
           text: feedbackWrong.text,
           className: feedbackWrong.className,
-          hint: feedbackWrong.hint
+          hint: feedbackWrong.hint,
+          onNext: () => {
+          }
         }
       ) }),
       /* @__PURE__ */ u3(Section, { title: "Countdown Bar (mid-round)", children: /* @__PURE__ */ u3(CountdownBar, { pct: timerMidRound.pct }) }),

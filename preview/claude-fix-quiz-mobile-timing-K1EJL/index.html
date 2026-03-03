@@ -1694,6 +1694,13 @@ button {
     font-size: 1.6rem;
   }
 
+  /* Push answer buttons and next button toward the bottom of the screen
+     so they sit in the thumb zone on mobile devices. */
+  .quiz-area {
+    justify-content: flex-end;
+    padding-bottom: var(--space-4);
+  }
+
   /* Prevent iOS zoom on input focus */
   input, button {
     font-size: 16px;
@@ -1760,7 +1767,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">eb8d1a fix-quiz-mobile-timing-K1EJL</span>
+      <span class="version">fa7afc fix-quiz-mobile-timing-K1EJL</span>
     </div>
   </div>
 
@@ -6792,7 +6799,16 @@ button {
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
-      onNext ? /* @__PURE__ */ u3("button", { type: "button", class: "next-btn", onClick: onNext, children: "Next" }) : null,
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          class: "next-btn",
+          onClick: onNext,
+          style: onNext ? void 0 : { visibility: "hidden" },
+          children: "Next"
+        }
+      ),
       /* @__PURE__ */ u3(
         "div",
         {
