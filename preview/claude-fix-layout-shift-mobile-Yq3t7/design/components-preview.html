@@ -3269,7 +3269,9 @@ button {
         {
           text: feedbackCorrect.text,
           className: feedbackCorrect.className,
-          time: feedbackCorrect.time
+          time: feedbackCorrect.time,
+          onNext: () => {
+          }
         }
       ) }),
       /* @__PURE__ */ u3(Section, { title: "Feedback \u2014 Incorrect", children: /* @__PURE__ */ u3(
@@ -3277,7 +3279,9 @@ button {
         {
           text: feedbackWrong.text,
           className: feedbackWrong.className,
-          hint: feedbackWrong.hint
+          hint: feedbackWrong.hint,
+          onNext: () => {
+          }
         }
       ) }),
       /* @__PURE__ */ u3(Section, { title: "Countdown Bar (mid-round)", children: /* @__PURE__ */ u3(CountdownBar, { pct: timerMidRound.pct }) }),
