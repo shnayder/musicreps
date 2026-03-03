@@ -1128,13 +1128,17 @@ button {
 }
 
 /* --- Quiz prompt (text modes) --- */
+.quiz-question-group {
+  margin-top: 12vh;
+  margin-bottom: auto;
+  flex-shrink: 0;
+}
 .quiz-prompt-row {
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: var(--space-2);
   margin: var(--space-5) 0;
-  margin-bottom: auto;
   min-height: 2.5rem;
 }
 .quiz-prompt {
@@ -1771,7 +1775,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">dedc27 fix-quiz-mobile-timing-K1EJL</span>
+      <span class="version">8e0e45 fix-quiz-mobile-timing-K1EJL</span>
     </div>
   </div>
 
@@ -5455,6 +5459,7 @@ button {
   var ROUND_DURATION_MS = 6e4;
   var AUTO_ADVANCE_MS = 1e3;
   var TIMER_TICK_MS = 200;
+  var LAST_QUESTION_CAP_MS = 3e4;
   var IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
   var HINT_ADVANCE = IS_TOUCH_PRIMARY ? "" : "Space for next";
   function formatRoundTime(ms) {
@@ -5479,6 +5484,7 @@ button {
     const roundTimerRef = A2(null);
     const roundTimerStartRef = A2(null);
     const autoAdvanceRef = A2(null);
+    const lastQuestionCapRef = A2(null);
     const computeProgress = q2(() => {
       const items = configRef.current.getEnabledItems();
       let mastered = 0;
@@ -5493,6 +5499,10 @@ button {
       if (roundTimerRef.current) {
         clearInterval(roundTimerRef.current);
         roundTimerRef.current = null;
+      }
+      if (lastQuestionCapRef.current) {
+        clearTimeout(lastQuestionCapRef.current);
+        lastQuestionCapRef.current = null;
       }
       roundTimerStartRef.current = null;
       setTimerPct(100);
@@ -5519,6 +5529,11 @@ button {
           setTimeout(() => transitionToRoundCompleteRef.current(), 0);
         } else {
           setTimerLastQuestion(true);
+          lastQuestionCapRef.current = setTimeout(() => {
+            if (stateRef.current.phase === "active") {
+              transitionToRoundCompleteRef.current();
+            }
+          }, LAST_QUESTION_CAP_MS);
         }
         return next;
       });
@@ -5707,6 +5722,7 @@ button {
       return () => {
         if (roundTimerRef.current) clearInterval(roundTimerRef.current);
         if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
+        if (lastQuestionCapRef.current) clearTimeout(lastQuestionCapRef.current);
       };
     }, []);
     y2(() => {
@@ -6523,10 +6539,13 @@ button {
       /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: count || "" })
     ] });
   }
-  function QuizArea({ prompt, lastQuestion, children }) {
+  function QuizArea({ prompt, lastQuestion, questionContent, children }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-      lastQuestion && /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion }),
-      prompt && /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt }) }),
+      /* @__PURE__ */ u3("div", { class: "quiz-question-group", children: [
+        lastQuestion && /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion }),
+        prompt && /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt }) }),
+        questionContent
+      ] }),
       children
     ] });
   }
@@ -10103,6 +10122,13 @@ button {
           {
             prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
             lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
+            questionContent: !engine.calibrating && phase !== "round-complete" ? /* @__PURE__ */ u3(
+              "div",
+              {
+                ref: quizFbRef,
+                dangerouslySetInnerHTML: { __html: svgHTML }
+              }
+            ) : void 0,
             children: engine.calibrating ? /* @__PURE__ */ u3(
               SpeedCheck,
               {
@@ -10125,13 +10151,6 @@ button {
                 onStop: engine.stop
               }
             ) : /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                "div",
-                {
-                  ref: quizFbRef,
-                  dangerouslySetInnerHTML: { __html: svgHTML }
-                }
-              ),
               /* @__PURE__ */ u3(
                 FeedbackBanner,
                 {
