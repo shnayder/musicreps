@@ -1134,6 +1134,7 @@ button {
   justify-content: center;
   gap: var(--space-2);
   margin: var(--space-5) 0;
+  margin-bottom: auto;
   min-height: 2.5rem;
 }
 .quiz-prompt {
@@ -1694,11 +1695,14 @@ button {
     font-size: 1.6rem;
   }
 
-  /* Push answer buttons and next button toward the bottom of the screen
-     so they sit in the thumb zone on mobile devices. */
+  /* Prompt's margin-bottom:auto pushes answers toward the bottom;
+     just add extra padding so they clear the screen edge. */
   .quiz-area {
-    justify-content: flex-end;
     padding-bottom: var(--space-4);
+  }
+
+  .next-btn {
+    width: 80%;
   }
 
   /* Prevent iOS zoom on input focus */
@@ -1767,7 +1771,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">fa7afc fix-quiz-mobile-timing-K1EJL</span>
+      <span class="version">dedc27 fix-quiz-mobile-timing-K1EJL</span>
     </div>
   </div>
 
