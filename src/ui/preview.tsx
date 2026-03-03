@@ -221,6 +221,7 @@ function PreviewApp() {
           text={feedbackCorrect.text}
           className={feedbackCorrect.className}
           time={feedbackCorrect.time}
+          onNext={() => {}}
         />
       </Section>
       <Section title='Feedback — Incorrect'>
@@ -228,6 +229,7 @@ function PreviewApp() {
           text={feedbackWrong.text}
           className={feedbackWrong.className}
           hint={feedbackWrong.hint}
+          onNext={() => {}}
         />
       </Section>
       <Section title='Countdown Bar (mid-round)'>

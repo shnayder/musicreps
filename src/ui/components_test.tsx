@@ -276,6 +276,38 @@ describe('FeedbackDisplay', () => {
       /style="[^"]*\bvisibility:\s*hidden\b[^"]*"/,
     );
   });
+
+  it('renders visible Next button when onNext provided', () => {
+    const html = render(
+      <FeedbackDisplay
+        text='Correct!'
+        className='feedback correct'
+        onNext={() => {}}
+      />,
+    );
+    const btnMatch = html.match(
+      /<button[^>]*class="[^"]*\bnext-btn\b[^"]*"[^>]*>/,
+    );
+    assert.ok(btnMatch, 'next-btn should be rendered');
+    assert.ok(
+      !btnMatch[0].includes('visibility'),
+      'should not be hidden when onNext provided',
+    );
+  });
+
+  it('hides Next button when onNext not provided', () => {
+    const html = render(
+      <FeedbackDisplay text='X' className='feedback' />,
+    );
+    const btnMatch = html.match(
+      /<button[^>]*class="[^"]*\bnext-btn\b[^"]*"[^>]*>/,
+    );
+    assert.ok(btnMatch, 'next-btn should be rendered for layout stability');
+    assert.match(
+      btnMatch[0],
+      /style="[^"]*\bvisibility:\s*hidden\b[^"]*"/,
+    );
+  });
 });
 
 describe('CountdownBar', () => {
