@@ -28,13 +28,14 @@ export function FeedbackDisplay(
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
       {time ? <div class='time-display'>{time}</div> : null}
-      {onNext
-        ? (
-          <button type='button' class='next-btn' onClick={onNext}>
-            Next
-          </button>
-        )
-        : null}
+      <button
+        type='button'
+        class='next-btn'
+        onClick={onNext}
+        style={onNext ? undefined : { visibility: 'hidden' }}
+      >
+        Next
+      </button>
       <div
         class='hint'
         style={hint ? undefined : { visibility: 'hidden' }}
