@@ -273,7 +273,6 @@ function PreviewApp() {
       <Section title='QuizArea'>
         <QuizArea
           prompt='C + 5'
-          lastQuestion=''
           controls={
             <>
               <NoteButtons />

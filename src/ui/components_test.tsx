@@ -559,11 +559,16 @@ describe('QuizArea', () => {
     assert.ok(html.includes('test-buttons'));
   });
 
-  it('renders last question badge', () => {
+  it('renders last question in session info', () => {
     const html = render(
-      <QuizArea prompt='test' lastQuestion='Last Q' controls={<div />} />,
+      <SessionInfo
+        context='natural'
+        count='3 answers'
+        lastQuestion='Last question'
+      />,
     );
-    assert.ok(html.includes('Last Q'));
+    assert.ok(html.includes('Last question'));
+    assert.ok(html.includes('quiz-info-last-question'));
   });
 
   it('renders children directly when no controls', () => {

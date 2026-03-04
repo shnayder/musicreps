@@ -9,6 +9,7 @@ import {
   stringLines,
   SVG_HEIGHT,
   svgWidth,
+  tapTargetRects,
 } from './fretboard.ts';
 
 // ---------------------------------------------------------------------------
@@ -156,6 +157,8 @@ interface FretboardSVGConfig {
   stringCount?: number;
   fretCount?: number;
   fretMarkers?: number[];
+  /** Include invisible rect tap targets covering each fret cell. */
+  tapTargets?: boolean;
 }
 
 /** Generate a complete fretboard SVG wrapper. Defaults to guitar dimensions. */
@@ -180,6 +183,11 @@ export function fretboardSVG(config: FretboardSVGConfig = {}): string {
           ${stringLines(sc)}
           <!-- Position circles -->
           ${positionCircles(sc, fc)}
+          ${
+    config.tapTargets
+      ? '<!-- Tap targets -->\n          ' + tapTargetRects(sc, fc)
+      : ''
+  }
         </svg>
         <div class="hover-card"><div class="hc-inner">
           <div class="hc-note"></div>
@@ -340,7 +348,6 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>

@@ -5,21 +5,23 @@
 // frets run top-to-bottom (Y axis). This matches a guitar held upright and
 // viewed from the front — low strings on the left, high strings on the right.
 
-/** Fret positions along the neck (pixels). Spacing decreases like a real instrument. */
+/** Fret positions along the neck (pixels). Spacing decreases toward higher
+ *  frets like a real instrument, but less aggressively than physical scaling
+ *  so upper frets remain comfortably tappable on mobile screens. */
 export const fretPositions = [
   0,
-  65,
-  126,
-  183,
-  237,
-  288,
-  336,
-  381,
-  423,
-  463,
-  500,
-  535,
-  568,
+  56,
+  110,
+  163,
+  214,
+  264,
+  311,
+  358,
+  402,
+  445,
+  486,
+  526,
+  564,
   600,
 ];
 
@@ -121,6 +123,29 @@ export function positionCircles(
         return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${
           stringX(string, stringCount)
         }" cy="${noteY(fret)}" r="14"/>`;
+      }).join('\n      '),
+  ).join('\n      ');
+}
+
+/** Generate invisible rect tap targets covering each fret cell. */
+export function tapTargetRects(
+  stringCount: number = 6,
+  fretCount: number = 13,
+): string {
+  const w = svgWidth(stringCount);
+  return Array.from(
+    { length: stringCount },
+    (_, string) =>
+      Array.from({ length: fretCount }, (_, fret) => {
+        const cx = stringX(string, stringCount);
+        const x = Math.max(0, cx - STRING_GAP / 2);
+        const right = Math.min(w, cx + STRING_GAP / 2);
+        const y = fret === 0 ? 0 : fretPositions[fret];
+        const bottom = fretPositions[fret + 1] ??
+          fretPositions[fretPositions.length - 1];
+        return `<rect class="fb-tap" data-string="${string}" data-fret="${fret}" x="${x}" y="${y}" width="${
+          right - x
+        }" height="${bottom - y}"/>`;
       }).join('\n      '),
   ).join('\n      ');
 }

@@ -120,13 +120,13 @@ export function SpeedTapMode(
   const [currentDisplayName, setCurrentDisplayName] = useState('');
 
   // --- Fretboard SVG ---
-  const svgHTML = useMemo(() => fretboardSVG(), []);
+  const svgHTML = useMemo(() => fretboardSVG({ tapTargets: true }), []);
 
   // --- Tap handler ---
   const handleTap = useCallback((e: MouseEvent) => {
     if (!roundActiveRef.current || !currentNoteRef.current) return;
     const el = (e.target as Element).closest(
-      'circle.fb-pos[data-string][data-fret]',
+      '.fb-tap[data-string][data-fret]',
     ) as SVGElement | null;
     if (!el) return;
 
@@ -381,6 +381,9 @@ export function SpeedTapMode(
               count={round.countText}
               isWarning={engine.timerWarning}
               isLastQuestion={engine.timerLastQuestion}
+              lastQuestion={engine.state.roundTimerExpired
+                ? 'Last question'
+                : ''}
               onClose={engine.stop}
             />
           )}
@@ -419,9 +422,6 @@ export function SpeedTapMode(
             : (
               <QuizArea
                 prompt={promptText}
-                lastQuestion={engine.state.roundTimerExpired
-                  ? 'Last question'
-                  : ''}
                 controls={
                   <>
                     <NoteButtons hidden onAnswer={() => {}} />
