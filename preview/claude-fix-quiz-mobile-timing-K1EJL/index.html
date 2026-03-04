@@ -946,23 +946,27 @@ button {
   flex-direction: column;
   min-height: 100dvh;
 }
-/* --- Quiz area --- */
+/* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   flex: 1;
   text-align: center;
   padding: var(--space-3);
 }
+.quiz-content {
+  padding-top: 12vh;
+  flex-shrink: 0;
+  text-align: center;
+}
+.quiz-controls {
+  margin-top: auto;
+  text-align: center;
+}
 /* --- Round complete --- */
 .round-complete {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   align-items: center;
   text-align: center;
-  padding-top: 12vh;
 }
 .round-complete-heading {
   font-size: var(--text-xl);
@@ -997,7 +1001,6 @@ button {
   display: flex;
   gap: var(--space-3);
   justify-content: center;
-  margin-top: auto;
   padding-bottom: var(--space-4);
 }
 .round-complete-continue {
@@ -1134,11 +1137,6 @@ button {
 }
 
 /* --- Quiz prompt (text modes) --- */
-.quiz-question-group {
-  margin-top: 12vh;
-  margin-bottom: auto;
-  flex-shrink: 0;
-}
 .quiz-prompt-row {
   display: flex;
   align-items: baseline;
@@ -1265,8 +1263,8 @@ button {
 }
 .calibration-results {
   text-align: center;
-  margin: var(--space-5) auto;
   max-width: 420px;
+  margin: 0 auto;
 }
 .calibration-baseline {
   font-size: var(--text-md);
@@ -1705,8 +1703,8 @@ button {
     font-size: 1.6rem;
   }
 
-  /* Prompt's margin-bottom:auto pushes answers toward the bottom;
-     just add extra padding so they clear the screen edge. */
+  /* .quiz-controls margin-top:auto pushes controls toward the bottom;
+     extra padding so they clear the screen edge on mobile. */
   .quiz-area {
     padding-bottom: var(--space-4);
   }
@@ -1781,7 +1779,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">701172 fix-quiz-mobile-timing-K1EJL</span>
+      <span class="version">612e6a fix-quiz-mobile-timing-K1EJL</span>
     </div>
   </div>
 
@@ -6290,9 +6288,9 @@ button {
       };
     }, [fixture]);
     if (phase === "intro") {
-      return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
-        /* @__PURE__ */ u3("p", { children: provider.introText }),
-        /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u3(k, { children: [
+        /* @__PURE__ */ u3("div", { class: "quiz-content calibration-results", children: /* @__PURE__ */ u3("p", { children: provider.introText }) }),
+        /* @__PURE__ */ u3("div", { class: "quiz-controls", children: /* @__PURE__ */ u3(
           "button",
           {
             type: "button",
@@ -6301,42 +6299,46 @@ button {
             onClick: () => setPhase("running"),
             children: "Start"
           }
-        )
+        ) })
       ] });
     }
     if (phase === "running") {
-      return /* @__PURE__ */ u3("div", { children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: provider.trialText }),
-        /* @__PURE__ */ u3("div", { ref: buttonsRef, children: /* @__PURE__ */ u3(
-          NoteButtons,
-          {
-            onAnswer: handleTrialResponse,
-            calibrationActive: true
-          }
-        ) }),
-        /* @__PURE__ */ u3("div", { class: "calibration-progress", children: trialProgress })
+      return /* @__PURE__ */ u3(k, { children: [
+        /* @__PURE__ */ u3("div", { class: "quiz-content", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: provider.trialText }) }),
+        /* @__PURE__ */ u3("div", { class: "quiz-controls", children: [
+          /* @__PURE__ */ u3("div", { ref: buttonsRef, children: /* @__PURE__ */ u3(
+            NoteButtons,
+            {
+              onAnswer: handleTrialResponse,
+              calibrationActive: true
+            }
+          ) }),
+          /* @__PURE__ */ u3("div", { class: "calibration-progress", children: trialProgress })
+        ] })
       ] });
     }
     const thresholds = getCalibrationThresholds(baseline);
-    return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
-      /* @__PURE__ */ u3("div", { class: "calibration-baseline", children: [
-        "Your baseline: ",
-        (baseline / 1e3).toFixed(2),
-        "s"
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3("div", { class: "quiz-content calibration-results", children: [
+        /* @__PURE__ */ u3("div", { class: "calibration-baseline", children: [
+          "Your baseline: ",
+          (baseline / 1e3).toFixed(2),
+          "s"
+        ] }),
+        /* @__PURE__ */ u3("table", { class: "calibration-thresholds", children: [
+          /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
+            /* @__PURE__ */ u3("th", { children: "Level" }),
+            /* @__PURE__ */ u3("th", { children: "Max time" }),
+            /* @__PURE__ */ u3("th", { children: "Meaning" })
+          ] }) }),
+          /* @__PURE__ */ u3("tbody", { children: thresholds.map((t3) => /* @__PURE__ */ u3("tr", { children: [
+            /* @__PURE__ */ u3("td", { children: t3.label }),
+            /* @__PURE__ */ u3("td", { children: t3.maxMs !== null ? (t3.maxMs / 1e3).toFixed(1) + "s" : "\u2014" }),
+            /* @__PURE__ */ u3("td", { children: t3.meaning })
+          ] }, t3.label)) })
+        ] })
       ] }),
-      /* @__PURE__ */ u3("table", { class: "calibration-thresholds", children: [
-        /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
-          /* @__PURE__ */ u3("th", { children: "Level" }),
-          /* @__PURE__ */ u3("th", { children: "Max time" }),
-          /* @__PURE__ */ u3("th", { children: "Meaning" })
-        ] }) }),
-        /* @__PURE__ */ u3("tbody", { children: thresholds.map((t3) => /* @__PURE__ */ u3("tr", { children: [
-          /* @__PURE__ */ u3("td", { children: t3.label }),
-          /* @__PURE__ */ u3("td", { children: t3.maxMs !== null ? (t3.maxMs / 1e3).toFixed(1) + "s" : "\u2014" }),
-          /* @__PURE__ */ u3("td", { children: t3.meaning })
-        ] }, t3.label)) })
-      ] }),
-      /* @__PURE__ */ u3(
+      /* @__PURE__ */ u3("div", { class: "quiz-controls", children: /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
@@ -6345,7 +6347,7 @@ button {
           onClick: () => onComplete(baseline),
           children: "Done"
         }
-      )
+      ) })
     ] });
   }
 
@@ -6545,18 +6547,20 @@ button {
       /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: count || "" })
     ] });
   }
-  function QuizArea({ prompt, lastQuestion, questionContent, children }) {
-    const hasQuestionContent = !!(lastQuestion || prompt || questionContent);
-    return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-      hasQuestionContent && /* @__PURE__ */ u3("div", { class: "quiz-question-group", children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || null }),
-        prompt && /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt }) }),
-        questionContent
-      ] }),
-      children
-    ] });
+  function QuizArea({ prompt, lastQuestion, controls, children }) {
+    if (controls !== void 0) {
+      return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
+        /* @__PURE__ */ u3("div", { class: "quiz-content", children: [
+          /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || null }),
+          prompt && /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt }) }),
+          children
+        ] }),
+        /* @__PURE__ */ u3("div", { class: "quiz-controls", children: controls })
+      ] });
+    }
+    return /* @__PURE__ */ u3("div", { class: "quiz-area", children });
   }
-  function RoundComplete({ context, heading, correct, median, onContinue, onStop }) {
+  function RoundCompleteInfo({ context, heading, correct, median }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: [
@@ -6566,29 +6570,31 @@ button {
       context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
         /* @__PURE__ */ u3("div", { class: "round-complete-overall-label", children: "Overall" }),
         /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
-      ] }) : null,
-      /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "round-complete-continue",
-            onClick: onContinue,
-            children: "Keep Going"
-          }
-        ),
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "round-complete-stop",
-            onClick: onStop,
-            children: "Stop"
-          }
-        )
-      ] })
+      ] }) : null
+    ] });
+  }
+  function RoundCompleteActions({ onContinue, onStop }) {
+    return /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "round-complete-continue",
+          onClick: onContinue,
+          children: "Keep Going"
+        }
+      ),
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "round-complete-stop",
+          onClick: onStop,
+          children: "Stop"
+        }
+      )
     ] });
   }
   function PracticeTab({
@@ -7105,33 +7111,43 @@ button {
             onClose: engine.stop
           }
         ),
-        /* @__PURE__ */ u3(
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
-            lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-            children: engine.calibrating ? /* @__PURE__ */ u3(
-              SpeedCheck,
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
               {
-                provider: BUTTON_PROVIDER,
-                fixture: engine.calibrationFixture,
-                onComplete: (baseline) => {
-                  learner.applyBaseline(baseline);
-                  engine.endCalibration();
-                },
-                onCancel: engine.endCalibration
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
               }
-            ) : phase === "round-complete" ? /* @__PURE__ */ u3(
-              RoundComplete,
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
               {
                 context: round.roundContext,
                 heading: "Round complete",
                 correct: round.roundCorrect,
-                median: round.roundMedian,
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
+                median: round.roundMedian
               }
-            ) : /* @__PURE__ */ u3(k, { children: [
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
                 {
@@ -7368,33 +7384,43 @@ button {
             onClose: engine.stop
           }
         ),
-        /* @__PURE__ */ u3(
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
-            lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-            children: engine.calibrating ? /* @__PURE__ */ u3(
-              SpeedCheck,
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
               {
-                provider: BUTTON_PROVIDER,
-                fixture: engine.calibrationFixture,
-                onComplete: (baseline) => {
-                  learner.applyBaseline(baseline);
-                  engine.endCalibration();
-                },
-                onCancel: engine.endCalibration
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
               }
-            ) : phase === "round-complete" ? /* @__PURE__ */ u3(
-              RoundComplete,
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
               {
                 context: round.roundContext,
                 heading: "Round complete",
                 correct: round.roundCorrect,
-                median: round.roundMedian,
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
+                median: round.roundMedian
               }
-            ) : /* @__PURE__ */ u3(k, { children: [
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
                 {
@@ -8008,33 +8034,43 @@ button {
             onClose: engine.stop
           }
         ),
-        /* @__PURE__ */ u3(
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
-            lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-            children: engine.calibrating ? /* @__PURE__ */ u3(
-              SpeedCheck,
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
               {
-                provider: BUTTON_PROVIDER,
-                fixture: engine.calibrationFixture,
-                onComplete: (baseline) => {
-                  learner.applyBaseline(baseline);
-                  engine.endCalibration();
-                },
-                onCancel: engine.endCalibration
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
               }
-            ) : phase === "round-complete" ? /* @__PURE__ */ u3(
-              RoundComplete,
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
               {
                 context: round.roundContext,
                 heading: "Round complete",
                 correct: round.roundCorrect,
-                median: round.roundMedian,
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
+                median: round.roundMedian
               }
-            ) : /* @__PURE__ */ u3(k, { children: [
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
                 {
@@ -8273,33 +8309,43 @@ button {
             onClose: engine.stop
           }
         ),
-        /* @__PURE__ */ u3(
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
-            lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-            children: engine.calibrating ? /* @__PURE__ */ u3(
-              SpeedCheck,
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
               {
-                provider: BUTTON_PROVIDER,
-                fixture: engine.calibrationFixture,
-                onComplete: (baseline) => {
-                  learner.applyBaseline(baseline);
-                  engine.endCalibration();
-                },
-                onCancel: engine.endCalibration
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
               }
-            ) : phase === "round-complete" ? /* @__PURE__ */ u3(
-              RoundComplete,
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
               {
                 context: round.roundContext,
                 heading: "Round complete",
                 correct: round.roundCorrect,
-                median: round.roundMedian,
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
+                median: round.roundMedian
               }
-            ) : /* @__PURE__ */ u3(k, { children: [
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
                 {
@@ -8592,33 +8638,43 @@ button {
             onClose: engine.stop
           }
         ),
-        /* @__PURE__ */ u3(
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
-            lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-            children: engine.calibrating ? /* @__PURE__ */ u3(
-              SpeedCheck,
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
               {
-                provider: BUTTON_PROVIDER,
-                fixture: engine.calibrationFixture,
-                onComplete: (baseline) => {
-                  learner.applyBaseline(baseline);
-                  engine.endCalibration();
-                },
-                onCancel: engine.endCalibration
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
               }
-            ) : phase === "round-complete" ? /* @__PURE__ */ u3(
-              RoundComplete,
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
               {
                 context: round.roundContext,
                 heading: "Round complete",
                 correct: round.roundCorrect,
-                median: round.roundMedian,
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
+                median: round.roundMedian
               }
-            ) : /* @__PURE__ */ u3(k, { children: [
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
                 {
@@ -8870,33 +8926,43 @@ button {
             onClose: engine.stop
           }
         ),
-        /* @__PURE__ */ u3(
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
-            lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-            children: engine.calibrating ? /* @__PURE__ */ u3(
-              SpeedCheck,
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
               {
-                provider: BUTTON_PROVIDER,
-                fixture: engine.calibrationFixture,
-                onComplete: (baseline) => {
-                  learner.applyBaseline(baseline);
-                  engine.endCalibration();
-                },
-                onCancel: engine.endCalibration
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
               }
-            ) : phase === "round-complete" ? /* @__PURE__ */ u3(
-              RoundComplete,
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
               {
                 context: round.roundContext,
                 heading: "Round complete",
                 correct: round.roundCorrect,
-                median: round.roundMedian,
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
+                median: round.roundMedian
               }
-            ) : /* @__PURE__ */ u3(k, { children: [
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
                 {
@@ -9149,33 +9215,43 @@ button {
             onClose: engine.stop
           }
         ),
-        /* @__PURE__ */ u3(
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
-            lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-            children: engine.calibrating ? /* @__PURE__ */ u3(
-              SpeedCheck,
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
               {
-                provider: BUTTON_PROVIDER,
-                fixture: engine.calibrationFixture,
-                onComplete: (baseline) => {
-                  learner.applyBaseline(baseline);
-                  engine.endCalibration();
-                },
-                onCancel: engine.endCalibration
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
               }
-            ) : phase === "round-complete" ? /* @__PURE__ */ u3(
-              RoundComplete,
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
               {
                 context: round.roundContext,
                 heading: "Round complete",
                 correct: round.roundCorrect,
-                median: round.roundMedian,
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
+                median: round.roundMedian
               }
-            ) : /* @__PURE__ */ u3(k, { children: [
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
                 {
@@ -9500,33 +9576,43 @@ button {
             onClose: engine.stop
           }
         ),
-        /* @__PURE__ */ u3(
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
-            lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-            children: engine.calibrating ? /* @__PURE__ */ u3(
-              SpeedCheck,
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
               {
-                provider: BUTTON_PROVIDER,
-                fixture: engine.calibrationFixture,
-                onComplete: (baseline) => {
-                  learner.applyBaseline(baseline);
-                  engine.endCalibration();
-                },
-                onCancel: engine.endCalibration
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
               }
-            ) : phase === "round-complete" ? /* @__PURE__ */ u3(
-              RoundComplete,
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
               {
                 context: round.roundContext,
                 heading: "Round complete",
                 correct: round.roundCorrect,
-                median: round.roundMedian,
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
+                median: round.roundMedian
               }
-            ) : /* @__PURE__ */ u3(k, { children: [
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
               /* @__PURE__ */ u3(
                 FeedbackBanner,
@@ -10124,40 +10210,43 @@ button {
             onClose: engine.stop
           }
         ),
-        /* @__PURE__ */ u3(
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
-            lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-            questionContent: !engine.calibrating && phase !== "round-complete" ? /* @__PURE__ */ u3(
-              "div",
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
               {
-                ref: quizFbRef,
-                dangerouslySetInnerHTML: { __html: svgHTML }
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
               }
-            ) : void 0,
-            children: engine.calibrating ? /* @__PURE__ */ u3(
-              SpeedCheck,
-              {
-                provider: BUTTON_PROVIDER,
-                fixture: engine.calibrationFixture,
-                onComplete: (baseline) => {
-                  learner.applyBaseline(baseline);
-                  engine.endCalibration();
-                },
-                onCancel: engine.endCalibration
-              }
-            ) : phase === "round-complete" ? /* @__PURE__ */ u3(
-              RoundComplete,
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
               {
                 context: round.roundContext,
                 heading: "Round complete",
                 correct: round.roundCorrect,
-                median: round.roundMedian,
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
+                median: round.roundMedian
               }
-            ) : /* @__PURE__ */ u3(k, { children: [
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
                 {
@@ -10184,7 +10273,14 @@ button {
                   onNext: engine.state.answered ? engine.nextQuestion : void 0
                 }
               )
-            ] })
+            ] }),
+            children: /* @__PURE__ */ u3(
+              "div",
+              {
+                ref: quizFbRef,
+                dangerouslySetInnerHTML: { __html: svgHTML }
+              }
+            )
           }
         )
       ] })
@@ -10493,41 +10589,43 @@ button {
             onClose: engine.stop
           }
         ),
-        /* @__PURE__ */ u3(
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: engine.calibrating || phase === "round-complete" ? "" : promptText,
-            lastQuestion: engine.calibrating || phase === "round-complete" ? "" : engine.state.roundTimerExpired ? "Last question" : "",
-            children: engine.calibrating ? /* @__PURE__ */ u3(
-              SpeedCheck,
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
               {
-                provider: BUTTON_PROVIDER,
-                fixture: engine.calibrationFixture,
-                onComplete: (baseline) => {
-                  learner.applyBaseline(baseline);
-                  engine.endCalibration();
-                },
-                onCancel: engine.endCalibration
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
               }
-            ) : phase === "round-complete" ? /* @__PURE__ */ u3(
-              RoundComplete,
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
               {
                 context: round.roundContext,
                 heading: "Round complete",
                 correct: round.roundCorrect,
-                median: round.roundMedian,
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
+                median: round.roundMedian
               }
-            ) : /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3("div", { class: "speed-tap-status", children: /* @__PURE__ */ u3("span", { class: "speed-tap-progress", children: progressText }) }),
-              /* @__PURE__ */ u3(
-                "div",
-                {
-                  ref: quizFbRef,
-                  dangerouslySetInnerHTML: { __html: svgHTML }
-                }
-              ),
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(NoteButtons, { hidden: true, onAnswer: () => {
               } }),
               /* @__PURE__ */ u3(
@@ -10540,7 +10638,17 @@ button {
                   onNext: engine.state.answered ? engine.nextQuestion : void 0
                 }
               )
-            ] })
+            ] }),
+            children: [
+              /* @__PURE__ */ u3("div", { class: "speed-tap-status", children: /* @__PURE__ */ u3("span", { class: "speed-tap-progress", children: progressText }) }),
+              /* @__PURE__ */ u3(
+                "div",
+                {
+                  ref: quizFbRef,
+                  dangerouslySetInnerHTML: { __html: svgHTML }
+                }
+              )
+            ]
           }
         )
       ] })
