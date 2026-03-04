@@ -30,7 +30,7 @@ const MAX_FRET_COUNT = fretPositions.length - 1; // 13
 const PAD_X = 18;
 
 /** Spacing between adjacent strings (horizontal). */
-const STRING_GAP = 38;
+const STRING_GAP = 50;
 
 /** Compute the X coordinate for a string index (left-to-right, low string first). */
 export function stringX(stringIndex: number, stringCount: number): number {
