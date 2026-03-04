@@ -717,6 +717,12 @@ body {
   transition: fill 0.15s;
   pointer-events: all;
 }
+.fb-tap {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+  pointer-events: all;
+}
 
 /* Hover card */
 .hover-card {
@@ -872,6 +878,10 @@ button {
 .quiz-info-context {
   flex: 1;
 }
+.quiz-info-last-question {
+  color: var(--color-recommended);
+  font-weight: 500;
+}
 .quiz-info-count {
   font-variant-numeric: tabular-nums;
 }
@@ -943,13 +953,18 @@ button {
   flex-direction: column;
   min-height: 100dvh;
 }
+.mode-screen.phase-active .mode-top-bar,
+.mode-screen.phase-round-complete .mode-top-bar,
+.mode-screen.phase-calibration .mode-top-bar {
+  display: none;
+}
 /* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
   display: flex;
   flex-direction: column;
   flex: 1;
   text-align: center;
-  padding: var(--space-3);
+  padding: 0 var(--space-3) var(--space-3);
 }
 .quiz-content {
   flex: 1;
@@ -1142,7 +1157,7 @@ button {
   align-items: baseline;
   justify-content: center;
   gap: var(--space-2);
-  margin: var(--space-5) 0;
+  margin: var(--space-2) 0;
   min-height: 2.5rem;
 }
 .quiz-prompt {
@@ -1150,16 +1165,6 @@ button {
   font-weight: 600;
 }
 .quiz-prompt:empty {
-  display: none;
-}
-.quiz-last-question {
-  font-size: var(--text-sm);
-  color: var(--color-recommended);
-  font-weight: 500;
-  text-align: center;
-  margin-bottom: var(--space-2);
-}
-.quiz-last-question:empty {
   display: none;
 }
 
