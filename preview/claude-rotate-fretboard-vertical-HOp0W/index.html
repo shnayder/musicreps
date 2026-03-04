@@ -694,7 +694,7 @@ body {
   position: relative;
   width: 100%;
   min-width: 0;
-  max-width: 380px;
+  max-width: 500px;
   max-height: 50vh;
   margin: 0 auto;
 }
@@ -1530,10 +1530,7 @@ button {
   justify-content: center;
   gap: var(--space-6);
   font-size: var(--text-lg);
-  margin: var(--space-3) 0;
-}
-.quiz-prompt-row + .speed-tap-status {
-  margin-top: calc(-1 * var(--space-4));
+  margin: 0 0 var(--space-3) 0;
 }
 .speed-tap-progress {
   font-weight: 500;
@@ -1708,7 +1705,7 @@ button {
 
   .fretboard-container {
     width: 100%;
-    max-width: 380px;
+    max-width: 500px;
   }
 
   .quiz-prompt {
@@ -1791,7 +1788,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">09b2cc rotate-fretboard-vertical-HOp0W</span>
+      <span class="version">7d8cbb rotate-fretboard-vertical-HOp0W</span>
     </div>
   </div>
 
@@ -10330,7 +10327,6 @@ button {
   }
 
   // src/modes/speed-tap/speed-tap-mode.tsx
-  var FB_TAP_NEUTRAL = "hsl(30, 4%, 90%)";
   var FB_TAP_CORRECT = "hsl(122, 46%, 33%)";
   function setCircleFill2(root, string, fret, color) {
     const circle = root.querySelector(
@@ -10399,7 +10395,7 @@ button {
         const timeout = setTimeout(() => {
           wrongFlashTimeoutsRef.current.delete(timeout);
           if (!foundPosRef.current.has(key)) {
-            setCircleFill2(wrapper, s3, f4, FB_TAP_NEUTRAL);
+            setCircleFill2(wrapper, s3, f4, "");
           }
         }, 800);
         wrongFlashTimeoutsRef.current.add(timeout);
@@ -10420,7 +10416,7 @@ button {
                 wrapper,
                 closest.string,
                 closest.fret,
-                FB_TAP_NEUTRAL
+                ""
               );
             }
           }, 800);
@@ -10505,9 +10501,6 @@ button {
       wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
       wrongFlashTimeoutsRef.current.clear();
       clearAllCircles(wrapper);
-      wrapper.querySelectorAll(".fb-pos").forEach((c3) => {
-        c3.style.fill = FB_TAP_NEUTRAL;
-      });
     }, [currentItemId]);
     usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const practicingLabel = T2(() => {
