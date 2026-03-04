@@ -675,7 +675,8 @@ body {
   position: relative;
   width: 100%;
   min-width: 0;
-  max-width: 1200px;
+  max-width: 380px;
+  margin: 0 auto;
 }
 .fretboard {
   width: 100%;
@@ -1679,7 +1680,7 @@ button {
 
   .fretboard-container {
     width: 100%;
-    max-width: none;
+    max-width: 380px;
   }
 
   .quiz-prompt {
