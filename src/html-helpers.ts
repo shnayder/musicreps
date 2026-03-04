@@ -7,7 +7,9 @@ import {
   fretPositions,
   positionCircles,
   stringLines,
-  svgHeight,
+  SVG_HEIGHT,
+  svgWidth,
+  tapTargetRects,
 } from './fretboard.ts';
 
 // ---------------------------------------------------------------------------
@@ -155,30 +157,37 @@ interface FretboardSVGConfig {
   stringCount?: number;
   fretCount?: number;
   fretMarkers?: number[];
+  /** Include invisible rect tap targets covering each fret cell. */
+  tapTargets?: boolean;
 }
 
 /** Generate a complete fretboard SVG wrapper. Defaults to guitar dimensions. */
 export function fretboardSVG(config: FretboardSVGConfig = {}): string {
   const sc = config.stringCount ?? 6;
   const fc = config.fretCount ?? 13;
-  const h = svgHeight(sc);
+  const w = svgWidth(sc);
   const markers = config.fretMarkers ?? [3, 5, 7, 9, 12];
   const idAttr = config.id ? ` id="${config.id}"` : '';
   return `<div class="fretboard-wrapper">
       <div class="fretboard-container">
-        <svg class="fretboard"${idAttr} viewBox="0 0 600 ${h}">
+        <svg class="fretboard"${idAttr} viewBox="0 0 ${w} ${SVG_HEIGHT}">
           <!-- Fret marker dots (inlays) -->
           ${fretMarkerDots(sc, markers, fc)}
-          <!-- Nut (wide bar at fret 0) -->
-          <rect class="fb-nut" x="${
+          <!-- Nut (horizontal bar at top) -->
+          <rect class="fb-nut" x="0" y="${
     fretPositions[1] - 2
-  }" y="0" width="4" height="${h}" rx="1"/>
-          <!-- Frets (vertical lines) -->
-          ${fretLines(h)}
-          <!-- Strings (horizontal lines) -->
+  }" width="${w}" height="4" rx="1"/>
+          <!-- Frets (horizontal lines) -->
+          ${fretLines(w)}
+          <!-- Strings (vertical lines) -->
           ${stringLines(sc)}
           <!-- Position circles -->
           ${positionCircles(sc, fc)}
+          ${
+    config.tapTargets
+      ? '<!-- Tap targets -->\n          ' + tapTargetRects(sc, fc)
+      : ''
+  }
         </svg>
         <div class="hover-card"><div class="hc-inner">
           <div class="hc-note"></div>
@@ -339,7 +348,6 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>

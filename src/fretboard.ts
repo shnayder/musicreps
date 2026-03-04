@@ -1,68 +1,78 @@
 // SVG fretboard generation — runs at build time to produce static SVG markup.
 // Parameterized for any fretted instrument (guitar, ukulele, etc.).
+//
+// Orientation: vertical (nut at top). Strings run left-to-right (X axis),
+// frets run top-to-bottom (Y axis). This matches a guitar held upright and
+// viewed from the front — low strings on the left, high strings on the right.
 
-/** Fret positions along the neck (pixels). Spacing decreases like a real instrument. */
+/** Fret positions along the neck (pixels). Spacing decreases toward higher
+ *  frets like a real instrument, but less aggressively than physical scaling
+ *  so upper frets remain comfortably tappable on mobile screens. */
 export const fretPositions = [
   0,
-  65,
-  126,
-  183,
-  237,
-  288,
-  336,
-  381,
-  423,
-  463,
-  500,
-  535,
-  568,
+  56,
+  110,
+  163,
+  214,
+  264,
+  311,
+  358,
+  402,
+  445,
+  486,
+  526,
+  564,
   600,
 ];
 
 /** Maximum fretCount supported by fretPositions (needs positions[fret+1]). */
 const MAX_FRET_COUNT = fretPositions.length - 1; // 13
 
-/** Y padding above/below outermost strings. */
-const PAD_Y = 18;
+/** X padding left/right of outermost strings. */
+const PAD_X = 18;
 
-/** Spacing between adjacent strings. */
-const STRING_GAP = 38;
+/** Spacing between adjacent strings (horizontal). */
+const STRING_GAP = 50;
 
-/** Compute the Y coordinate for a string index. */
-export function stringY(stringIndex: number): number {
-  return PAD_Y + stringIndex * STRING_GAP;
+/** Compute the X coordinate for a string index (left-to-right, low string first). */
+export function stringX(stringIndex: number, stringCount: number): number {
+  // Reverse so string 0 (high) is on the right, matching horizontal convention
+  // where string 0 was at the top. Low strings (higher index) sit on the left.
+  return PAD_X + (stringCount - 1 - stringIndex) * STRING_GAP;
 }
 
-/** Compute the X coordinate for a note at a given fret. */
-export function noteX(fret: number): number {
+/** Compute the Y coordinate for a note at a given fret (nut at top). */
+export function noteY(fret: number): number {
   return fret === 0
     ? (fretPositions[0] + fretPositions[1]) / 2
     : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
 }
 
-/** Compute SVG height for a given string count. */
-export function svgHeight(stringCount: number): number {
-  return (stringCount - 1) * STRING_GAP + PAD_Y * 2;
+/** Compute SVG width for a given string count. */
+export function svgWidth(stringCount: number): number {
+  return (stringCount - 1) * STRING_GAP + PAD_X * 2;
 }
 
-/** Generate SVG fret lines (vertical). Starts from fret 2; fret 1 (nut) is a separate element. */
-export function fretLines(height: number): string {
+/** The SVG height is the full fret extent. */
+export const SVG_HEIGHT = fretPositions[fretPositions.length - 1]; // 600
+
+/** Generate SVG fret lines (horizontal). Starts from fret 2; fret 1 (nut) is separate. */
+export function fretLines(width: number): string {
   return fretPositions
     .slice(2)
     .map(
-      (x) =>
-        `<line class="fb-fret" x1="${x}" y1="0" x2="${x}" y2="${height}" stroke-width="1"/>`,
+      (y) =>
+        `<line class="fb-fret" x1="0" y1="${y}" x2="${width}" y2="${y}" stroke-width="1"/>`,
     )
     .join('\n      ');
 }
 
-/** Generate SVG string lines (horizontal, thicker for lower strings). */
+/** Generate SVG string lines (vertical, thicker for lower-pitched strings). */
 export function stringLines(stringCount: number = 6): string {
   return Array.from({ length: stringCount }, (_, i) => {
     const thickness = 1 + i * 0.4;
-    return `<line class="fb-string" x1="0" y1="${stringY(i)}" x2="600" y2="${
-      stringY(i)
-    }" stroke-width="${thickness}"/>`;
+    const x = stringX(i, stringCount);
+    return `<line class="fb-string" x1="${x}" y1="0" x2="${x}" y2="${SVG_HEIGHT}" stroke-width="${thickness}"/>`;
   }).join('\n      ');
 }
 
@@ -72,27 +82,26 @@ export function fretMarkerDots(
   markers: number[] = [3, 5, 7, 9, 12],
   fretCount: number = 13,
 ): string {
-  const h = svgHeight(stringCount);
+  const w = svgWidth(stringCount);
   return markers
     .filter((fret) => fret < fretCount)
     .map((fret) => {
-      const cx = noteX(fret);
+      const cy = noteY(fret);
       if (fret === 12) {
         // Double dot at fret 12
-        let y1: number, y2: number;
+        let x1: number, x2: number;
         if (stringCount <= 4) {
-          // Not enough strings for distinct "between" positions — place on strings 1 and (n-2)
-          y1 = stringY(1);
-          y2 = stringY(stringCount - 2);
+          x1 = stringX(1, stringCount);
+          x2 = stringX(stringCount - 2, stringCount);
         } else {
-          // 5+ strings: between strings 1-2 and (n-3)-(n-2)
-          y1 = (stringY(1) + stringY(2)) / 2;
-          y2 = (stringY(stringCount - 3) + stringY(stringCount - 2)) / 2;
+          x1 = (stringX(1, stringCount) + stringX(2, stringCount)) / 2;
+          x2 = (stringX(stringCount - 3, stringCount) +
+            stringX(stringCount - 2, stringCount)) / 2;
         }
-        return `<circle class="fb-marker" cx="${cx}" cy="${y1}" r="4"/>` +
-          `<circle class="fb-marker" cx="${cx}" cy="${y2}" r="4"/>`;
+        return `<circle class="fb-marker" cx="${x1}" cy="${cy}" r="4"/>` +
+          `<circle class="fb-marker" cx="${x2}" cy="${cy}" r="4"/>`;
       }
-      return `<circle class="fb-marker" cx="${cx}" cy="${h / 2}" r="4"/>`;
+      return `<circle class="fb-marker" cx="${w / 2}" cy="${cy}" r="4"/>`;
     })
     .join('\n      ');
 }
@@ -112,8 +121,31 @@ export function positionCircles(
     (_, string) =>
       Array.from({ length: fretCount }, (_, fret) => {
         return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${
-          noteX(fret)
-        }" cy="${stringY(string)}" r="10"/>`;
+          stringX(string, stringCount)
+        }" cy="${noteY(fret)}" r="14"/>`;
+      }).join('\n      '),
+  ).join('\n      ');
+}
+
+/** Generate invisible rect tap targets covering each fret cell. */
+export function tapTargetRects(
+  stringCount: number = 6,
+  fretCount: number = 13,
+): string {
+  const w = svgWidth(stringCount);
+  return Array.from(
+    { length: stringCount },
+    (_, string) =>
+      Array.from({ length: fretCount }, (_, fret) => {
+        const cx = stringX(string, stringCount);
+        const x = Math.max(0, cx - STRING_GAP / 2);
+        const right = Math.min(w, cx + STRING_GAP / 2);
+        const y = fret === 0 ? 0 : fretPositions[fret];
+        const bottom = fretPositions[fret + 1] ??
+          fretPositions[fretPositions.length - 1];
+        return `<rect class="fb-tap" data-string="${string}" data-fret="${fret}" x="${x}" y="${y}" width="${
+          right - x
+        }" height="${bottom - y}"/>`;
       }).join('\n      '),
   ).join('\n      ');
 }

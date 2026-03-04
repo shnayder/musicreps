@@ -155,16 +155,18 @@ function setupHoverCard(
     )!.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
     const cx = elRect.left + elRect.width / 2 - containerRect.left;
-    const cy = elRect.top - containerRect.top;
+    const cy = elRect.top + elRect.height / 2 - containerRect.top;
 
-    if (cy < 50) {
-      card.style.left = cx + 'px';
-      card.style.top = (cy + elRect.height + 6) + 'px';
-      card.style.transform = 'translate(-50%, 0)';
+    // Position card to left or right of target, centered vertically
+    const midX = containerRect.width / 2;
+    if (cx < midX) {
+      card.style.left = (cx + elRect.width / 2 + 6) + 'px';
+      card.style.top = cy + 'px';
+      card.style.transform = 'translate(0, -50%)';
     } else {
-      card.style.left = cx + 'px';
-      card.style.top = (cy - 6) + 'px';
-      card.style.transform = 'translate(-50%, -100%)';
+      card.style.left = (cx - elRect.width / 2 - 6) + 'px';
+      card.style.top = cy + 'px';
+      card.style.transform = 'translate(-100%, -50%)';
     }
     card.classList.add('visible');
   }
@@ -567,6 +569,9 @@ export function FretboardMode(
               count={round.countText}
               isWarning={engine.timerWarning}
               isLastQuestion={engine.timerLastQuestion}
+              lastQuestion={engine.state.roundTimerExpired
+                ? 'Last question'
+                : ''}
               onClose={engine.stop}
             />
           )}
@@ -605,9 +610,6 @@ export function FretboardMode(
             : (
               <QuizArea
                 prompt={promptText}
-                lastQuestion={engine.state.roundTimerExpired
-                  ? 'Last question'
-                  : ''}
                 controls={
                   <>
                     <FeedbackBanner

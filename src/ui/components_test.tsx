@@ -540,6 +540,18 @@ describe('SessionInfo', () => {
     assert.ok(html.includes('quiz-info-count'));
     assert.ok(html.includes('3 of 8'));
   });
+
+  it('renders last question in session info', () => {
+    const html = render(
+      <SessionInfo
+        context='natural'
+        count='3 answers'
+        lastQuestion='Last question'
+      />,
+    );
+    assert.ok(html.includes('Last question'));
+    assert.ok(html.includes('quiz-info-last-question'));
+  });
 });
 
 describe('QuizArea', () => {
@@ -557,13 +569,6 @@ describe('QuizArea', () => {
     assert.ok(html.includes('quiz-prompt'));
     assert.ok(html.includes('C + 5'));
     assert.ok(html.includes('test-buttons'));
-  });
-
-  it('renders last question badge', () => {
-    const html = render(
-      <QuizArea prompt='test' lastQuestion='Last Q' controls={<div />} />,
-    );
-    assert.ok(html.includes('Last Q'));
   });
 
   it('renders children directly when no controls', () => {

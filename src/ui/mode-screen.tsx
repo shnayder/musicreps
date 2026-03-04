@@ -333,6 +333,7 @@ export function QuizSession(
     count,
     isWarning,
     isLastQuestion,
+    lastQuestion,
     onClose,
   }: {
     timeLeft?: string;
@@ -341,6 +342,7 @@ export function QuizSession(
     count?: string;
     isWarning?: boolean;
     isLastQuestion?: boolean;
+    lastQuestion?: string;
     onClose?: () => void;
   },
 ) {
@@ -359,7 +361,11 @@ export function QuizSession(
         </div>
         <span class='quiz-info-time'>{timeLeft || ''}</span>
       </div>
-      <SessionInfo context={context} count={count} />
+      <SessionInfo
+        context={context}
+        count={count}
+        lastQuestion={lastQuestion}
+      />
       <button
         type='button'
         tabIndex={0}
@@ -378,11 +384,18 @@ export function QuizSession(
 // ---------------------------------------------------------------------------
 
 export function SessionInfo(
-  { context, count }: { context?: string; count?: string },
+  { context, count, lastQuestion }: {
+    context?: string;
+    count?: string;
+    lastQuestion?: string;
+  },
 ) {
   return (
     <div class='quiz-session-info'>
       <span class='quiz-info-context'>{context || ''}</span>
+      {lastQuestion
+        ? <span class='quiz-info-last-question'>{lastQuestion}</span>
+        : null}
       <span class='quiz-info-count'>{count || ''}</span>
     </div>
   );
@@ -395,9 +408,8 @@ export function SessionInfo(
 // ---------------------------------------------------------------------------
 
 export function QuizArea(
-  { prompt, lastQuestion, controls, children }: {
+  { prompt, controls, children }: {
     prompt?: string;
-    lastQuestion?: string;
     controls?: ComponentChildren;
     children?: ComponentChildren;
   },
@@ -406,12 +418,6 @@ export function QuizArea(
     return (
       <div class='quiz-area'>
         <div class='quiz-content'>
-          {
-            /* Always render the wrapper to keep DOM positions stable
-               (prevents Preact from recreating sibling nodes like the
-               fretboard when lastQuestion toggles). :empty hides it. */
-          }
-          <div class='quiz-last-question'>{lastQuestion || null}</div>
           {prompt && (
             <div class='quiz-prompt-row'>
               <div class='quiz-prompt'>{prompt}</div>

@@ -299,6 +299,9 @@ export function ChordSpellingMode(
               count={round.countText}
               isWarning={engine.timerWarning}
               isLastQuestion={engine.timerLastQuestion}
+              lastQuestion={engine.state.roundTimerExpired
+                ? 'Last question'
+                : ''}
               onClose={engine.stop}
             />
           )}
@@ -337,9 +340,6 @@ export function ChordSpellingMode(
             : (
               <QuizArea
                 prompt={promptText}
-                lastQuestion={engine.state.roundTimerExpired
-                  ? 'Last question'
-                  : ''}
                 controls={
                   <>
                     <ChordSlots state={seqState} />

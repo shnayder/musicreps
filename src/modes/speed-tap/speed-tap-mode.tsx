@@ -50,7 +50,6 @@ import {
 // UI constants and DOM helpers (not pure logic — kept in mode file)
 // ---------------------------------------------------------------------------
 
-const FB_TAP_NEUTRAL = 'hsl(30, 4%, 90%)';
 const FB_TAP_CORRECT = 'hsl(122, 46%, 33%)';
 
 function setCircleFill(
@@ -121,13 +120,13 @@ export function SpeedTapMode(
   const [currentDisplayName, setCurrentDisplayName] = useState('');
 
   // --- Fretboard SVG ---
-  const svgHTML = useMemo(() => fretboardSVG(), []);
+  const svgHTML = useMemo(() => fretboardSVG({ tapTargets: true }), []);
 
   // --- Tap handler ---
   const handleTap = useCallback((e: MouseEvent) => {
     if (!roundActiveRef.current || !currentNoteRef.current) return;
     const el = (e.target as Element).closest(
-      'circle.fb-pos[data-string][data-fret]',
+      '.fb-tap[data-string][data-fret]',
     ) as SVGElement | null;
     if (!el) return;
 
@@ -155,7 +154,7 @@ export function SpeedTapMode(
       const timeout = setTimeout(() => {
         wrongFlashTimeoutsRef.current.delete(timeout);
         if (!foundPosRef.current.has(key)) {
-          setCircleFill(wrapper, s, f, FB_TAP_NEUTRAL);
+          setCircleFill(wrapper, s, f, '');
         }
       }, 800);
       wrongFlashTimeoutsRef.current.add(timeout);
@@ -180,7 +179,7 @@ export function SpeedTapMode(
               wrapper,
               closest.string,
               closest.fret,
-              FB_TAP_NEUTRAL,
+              '',
             );
           }
         }, 800);
@@ -283,9 +282,6 @@ export function SpeedTapMode(
     wrongFlashTimeoutsRef.current.forEach((t) => clearTimeout(t));
     wrongFlashTimeoutsRef.current.clear();
     clearAllCircles(wrapper);
-    wrapper.querySelectorAll<SVGElement>('.fb-pos').forEach((c) => {
-      c.style.fill = FB_TAP_NEUTRAL;
-    });
   }, [currentItemId]);
 
   // --- Phase class sync ---
@@ -385,6 +381,9 @@ export function SpeedTapMode(
               count={round.countText}
               isWarning={engine.timerWarning}
               isLastQuestion={engine.timerLastQuestion}
+              lastQuestion={engine.state.roundTimerExpired
+                ? 'Last question'
+                : ''}
               onClose={engine.stop}
             />
           )}
@@ -423,9 +422,6 @@ export function SpeedTapMode(
             : (
               <QuizArea
                 prompt={promptText}
-                lastQuestion={engine.state.roundTimerExpired
-                  ? 'Last question'
-                  : ''}
                 controls={
                   <>
                     <NoteButtons hidden onAnswer={() => {}} />
