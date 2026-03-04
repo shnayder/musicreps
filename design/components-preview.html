@@ -944,19 +944,27 @@ button {
   flex-direction: column;
   min-height: 100dvh;
 }
-/* --- Quiz area --- */
+/* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   flex: 1;
   text-align: center;
   padding: var(--space-3);
 }
+.quiz-content {
+  padding-top: 12vh;
+  flex-shrink: 0;
+  text-align: center;
+}
+.quiz-controls {
+  margin-top: auto;
+  text-align: center;
+}
 /* --- Round complete --- */
 .round-complete {
+  align-items: center;
   text-align: center;
-  padding: var(--space-6) 0;
 }
 .round-complete-heading {
   font-size: var(--text-xl);
@@ -991,6 +999,7 @@ button {
   display: flex;
   gap: var(--space-3);
   justify-content: center;
+  padding-bottom: var(--space-4);
 }
 .round-complete-continue {
   padding: var(--space-3) var(--space-5);
@@ -1252,8 +1261,8 @@ button {
 }
 .calibration-results {
   text-align: center;
-  margin: var(--space-5) auto;
   max-width: 420px;
+  margin: 0 auto;
 }
 .calibration-baseline {
   font-size: var(--text-md);
@@ -1319,6 +1328,35 @@ button {
   color: var(--color-text-muted);
   font-size: var(--text-base);
   margin-top: var(--space-5);
+}
+
+/* --- Next button (explicit advance during feedback) --- */
+.next-btn {
+  display: block;
+  margin: var(--space-4) auto var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-brand);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  min-height: 48px;
+}
+@media (hover: hover) {
+  .next-btn:hover {
+    opacity: 0.9;
+  }
+}
+.next-btn:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+.next-btn:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
 }
 
 /* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
@@ -1661,6 +1699,16 @@ button {
 
   .quiz-prompt {
     font-size: 1.6rem;
+  }
+
+  /* .quiz-controls margin-top:auto pushes controls toward the bottom;
+     extra padding so they clear the screen edge on mobile. */
+  .quiz-area {
+    padding-bottom: var(--space-4);
+  }
+
+  .next-btn {
+    width: 80%;
   }
 
   /* Prevent iOS zoom on input focus */
@@ -2306,14 +2354,14 @@ button {
     correct: true,
     displayAnswer: "D#",
     time: "0.82s",
-    hint: "Tap anywhere or press Space for next"
+    hint: "Space for next"
   };
   var feedbackWrong = {
     text: "Incorrect \u2014 D#",
     className: "feedback incorrect",
     correct: false,
     displayAnswer: "D#",
-    hint: "Tap anywhere or press Space for next"
+    hint: "Space for next"
   };
 
   // src/fixtures/timer.ts
@@ -2806,10 +2854,20 @@ button {
   function TextPrompt({ text }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: text });
   }
-  function FeedbackDisplay({ text, className, time, hint }) {
+  function FeedbackDisplay({ text, className, time, hint, onNext }) {
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          class: "next-btn",
+          onClick: onNext,
+          style: onNext ? void 0 : { visibility: "hidden" },
+          children: "Next"
+        }
+      ),
       /* @__PURE__ */ u3(
         "div",
         {
@@ -3055,14 +3113,20 @@ button {
       /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: count || "" })
     ] });
   }
-  function QuizArea({ prompt, lastQuestion, children }) {
-    return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-      lastQuestion && /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion }),
-      prompt && /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt }) }),
-      children
-    ] });
+  function QuizArea({ prompt, lastQuestion, controls, children }) {
+    if (controls !== void 0) {
+      return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
+        /* @__PURE__ */ u3("div", { class: "quiz-content", children: [
+          /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || null }),
+          prompt && /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt }) }),
+          children
+        ] }),
+        /* @__PURE__ */ u3("div", { class: "quiz-controls", children: controls })
+      ] });
+    }
+    return /* @__PURE__ */ u3("div", { class: "quiz-area", children });
   }
-  function RoundComplete({ context, heading, correct, median, onContinue, onStop }) {
+  function RoundCompleteInfo({ context, heading, correct, median }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: [
@@ -3072,29 +3136,31 @@ button {
       context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
         /* @__PURE__ */ u3("div", { class: "round-complete-overall-label", children: "Overall" }),
         /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
-      ] }) : null,
-      /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "round-complete-continue",
-            onClick: onContinue,
-            children: "Keep Going"
-          }
-        ),
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "round-complete-stop",
-            onClick: onStop,
-            children: "Stop"
-          }
-        )
-      ] })
+      ] }) : null
+    ] });
+  }
+  function RoundCompleteActions({ onContinue, onStop }) {
+    return /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "round-complete-continue",
+          onClick: onContinue,
+          children: "Keep Going"
+        }
+      ),
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "round-complete-stop",
+          onClick: onStop,
+          children: "Stop"
+        }
+      )
     ] });
   }
 
@@ -3223,7 +3289,9 @@ button {
         {
           text: feedbackCorrect.text,
           className: feedbackCorrect.className,
-          time: feedbackCorrect.time
+          time: feedbackCorrect.time,
+          onNext: () => {
+          }
         }
       ) }),
       /* @__PURE__ */ u3(Section, { title: "Feedback \u2014 Incorrect", children: /* @__PURE__ */ u3(
@@ -3231,7 +3299,9 @@ button {
         {
           text: feedbackWrong.text,
           className: feedbackWrong.className,
-          hint: feedbackWrong.hint
+          hint: feedbackWrong.hint,
+          onNext: () => {
+          }
         }
       ) }),
       /* @__PURE__ */ u3(Section, { title: "Countdown Bar (mid-round)", children: /* @__PURE__ */ u3(CountdownBar, { pct: timerMidRound.pct }) }),
@@ -3264,28 +3334,35 @@ button {
           isWarning: false
         }
       ) }),
-      /* @__PURE__ */ u3(Section, { title: "QuizArea", children: /* @__PURE__ */ u3(QuizArea, { prompt: "C + 5", lastQuestion: "", children: [
-        /* @__PURE__ */ u3(NoteButtons, {}),
-        /* @__PURE__ */ u3(FeedbackDisplay, { text: "", className: "feedback" })
-      ] }) }),
-      /* @__PURE__ */ u3(Section, { title: "RoundComplete \u2014 Good", children: /* @__PURE__ */ u3(
-        RoundComplete,
+      /* @__PURE__ */ u3(Section, { title: "QuizArea", children: /* @__PURE__ */ u3(
+        QuizArea,
+        {
+          prompt: "C + 5",
+          lastQuestion: "",
+          controls: /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(NoteButtons, {}),
+            /* @__PURE__ */ u3(FeedbackDisplay, { text: "", className: "feedback" })
+          ] })
+        }
+      ) }),
+      /* @__PURE__ */ u3(Section, { title: "RoundComplete \u2014 Good", children: /* @__PURE__ */ u3(QuizArea, { controls: /* @__PURE__ */ u3(RoundCompleteActions, {}), children: /* @__PURE__ */ u3(
+        RoundCompleteInfo,
         {
           context: goodRound.context,
           heading: goodRound.heading,
           correct: goodRound.correct,
           median: goodRound.median
         }
-      ) }),
-      /* @__PURE__ */ u3(Section, { title: "RoundComplete \u2014 Rough", children: /* @__PURE__ */ u3(
-        RoundComplete,
+      ) }) }),
+      /* @__PURE__ */ u3(Section, { title: "RoundComplete \u2014 Rough", children: /* @__PURE__ */ u3(QuizArea, { controls: /* @__PURE__ */ u3(RoundCompleteActions, {}), children: /* @__PURE__ */ u3(
+        RoundCompleteInfo,
         {
           context: roughRound.context,
           heading: roughRound.heading,
           correct: roughRound.correct,
           median: roughRound.median
         }
-      ) }),
+      ) }) }),
       /* @__PURE__ */ u3(Section, { title: "PracticeCard (no scope)", children: /* @__PURE__ */ u3(
         PracticeCard,
         {
