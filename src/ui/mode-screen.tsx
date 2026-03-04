@@ -90,9 +90,11 @@ export function ModeTopBar(
                   class={'mode-description-toggle' +
                     (detailOpen ? ' open' : '')}
                   aria-expanded={detailOpen}
-                  onClick={() => setDetailOpen(!detailOpen)}
+                  onClick={() => setDetailOpen((open) => !open)}
                 >
-                  <span class='mode-description-chevron'>›</span>
+                  <span class='mode-description-chevron' aria-hidden='true'>
+                    ›
+                  </span>
                   <span>
                     {description}
                     {detailOpen && (

@@ -17,6 +17,7 @@ import {
   pianoNoteButtons,
   tabbedIdleHTML,
 } from './html-helpers.ts';
+import { MODE_DESCRIPTIONS } from './music-data.ts';
 
 // ---------------------------------------------------------------------------
 // Shared HTML fragments
@@ -25,6 +26,14 @@ import {
 export const DISTANCE_TOGGLES =
   '<div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>';
 
+function modeBtn(modeId: string, name: string): string {
+  const desc = MODE_DESCRIPTIONS[modeId] || '';
+  return `      <button tabindex="0" data-mode="${modeId}" class="home-mode-btn">
+        <span class="home-mode-name">${name}</span>
+        <span class="home-mode-desc">${desc}</span>
+      </button>`;
+}
+
 export const HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     <div class="home-header">
       <h1 class="home-title">Music Reps</h1>
@@ -32,53 +41,20 @@ export const HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
     </div>
     <div class="home-modes">
       <div class="home-group-label">Fretboard</div>
-      <button tabindex="0" data-mode="fretboard" class="home-mode-btn">
-        <span class="home-mode-name">Guitar Fretboard</span>
-        <span class="home-mode-desc">Stop hunting for notes on the fretboard</span>
-      </button>
-      <button tabindex="0" data-mode="ukulele" class="home-mode-btn">
-        <span class="home-mode-name">Ukulele Fretboard</span>
-        <span class="home-mode-desc">Stop hunting for notes on the fretboard</span>
-      </button>
-      <button tabindex="0" data-mode="speedTap" class="home-mode-btn">
-        <span class="home-mode-name">Speed Tap</span>
-        <span class="home-mode-desc">See a note, find every position instantly</span>
-      </button>
+${modeBtn('fretboard', 'Guitar Fretboard')}
+${modeBtn('ukulele', 'Ukulele Fretboard')}
+${modeBtn('speedTap', 'Speed Tap')}
       <div class="home-group-label">Theory Lookup</div>
-      <button tabindex="0" data-mode="noteSemitones" class="home-mode-btn">
-        <span class="home-mode-name">Note \u2194 Semitones</span>
-        <span class="home-mode-desc">The number system behind the chromatic scale</span>
-      </button>
-      <button tabindex="0" data-mode="intervalSemitones" class="home-mode-btn">
-        <span class="home-mode-name">Interval \u2194 Semitones</span>
-        <span class="home-mode-desc">Know the size of every interval in semitones</span>
-      </button>
+${modeBtn('noteSemitones', 'Note \u2194 Semitones')}
+${modeBtn('intervalSemitones', 'Interval \u2194 Semitones')}
       <div class="home-group-label">Calculation</div>
-      <button tabindex="0" data-mode="semitoneMath" class="home-mode-btn">
-        <span class="home-mode-name">Semitone Math</span>
-        <span class="home-mode-desc">Transpose by semitones without counting</span>
-      </button>
-      <button tabindex="0" data-mode="intervalMath" class="home-mode-btn">
-        <span class="home-mode-name">Interval Math</span>
-        <span class="home-mode-desc">Transpose by interval without counting</span>
-      </button>
+${modeBtn('semitoneMath', 'Semitone Math')}
+${modeBtn('intervalMath', 'Interval Math')}
       <div class="home-group-label">Keys &amp; Chords</div>
-      <button tabindex="0" data-mode="keySignatures" class="home-mode-btn">
-        <span class="home-mode-name">Key Signatures</span>
-        <span class="home-mode-desc">See a key, know its sharps and flats instantly</span>
-      </button>
-      <button tabindex="0" data-mode="scaleDegrees" class="home-mode-btn">
-        <span class="home-mode-name">Scale Degrees</span>
-        <span class="home-mode-desc">Connect notes to their function in a key</span>
-      </button>
-      <button tabindex="0" data-mode="diatonicChords" class="home-mode-btn">
-        <span class="home-mode-name">Diatonic Chords</span>
-        <span class="home-mode-desc">Know which chords belong in any key</span>
-      </button>
-      <button tabindex="0" data-mode="chordSpelling" class="home-mode-btn">
-        <span class="home-mode-name">Chord Spelling</span>
-        <span class="home-mode-desc">Know the notes in any chord from memory</span>
-      </button>
+${modeBtn('keySignatures', 'Key Signatures')}
+${modeBtn('scaleDegrees', 'Scale Degrees')}
+${modeBtn('diatonicChords', 'Diatonic Chords')}
+${modeBtn('chordSpelling', 'Chord Spelling')}
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
