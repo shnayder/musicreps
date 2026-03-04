@@ -30,7 +30,8 @@ import {
   PracticeTab,
   QuizArea,
   QuizSession,
-  RoundComplete,
+  RoundCompleteActions,
+  RoundCompleteInfo,
 } from '../../ui/mode-screen.tsx';
 import { StatsGrid, StatsLegend } from '../../ui/stats.tsx';
 import {
@@ -301,16 +302,9 @@ export function ChordSpellingMode(
               onClose={engine.stop}
             />
           )}
-          <QuizArea
-            prompt={(engine.calibrating || phase === 'round-complete')
-              ? ''
-              : promptText}
-            lastQuestion={(engine.calibrating || phase === 'round-complete')
-              ? ''
-              : (engine.state.roundTimerExpired ? 'Last question' : '')}
-          >
-            {engine.calibrating
-              ? (
+          {engine.calibrating
+            ? (
+              <QuizArea>
                 <SpeedCheck
                   provider={BUTTON_PROVIDER}
                   fixture={engine.calibrationFixture}
@@ -320,42 +314,57 @@ export function ChordSpellingMode(
                   }}
                   onCancel={engine.endCalibration}
                 />
-              )
-              : phase === 'round-complete'
-              ? (
-                <RoundComplete
+              </QuizArea>
+            )
+            : phase === 'round-complete'
+            ? (
+              <QuizArea
+                controls={
+                  <RoundCompleteActions
+                    onContinue={engine.continueQuiz}
+                    onStop={engine.stop}
+                  />
+                }
+              >
+                <RoundCompleteInfo
                   context={round.roundContext}
                   heading='Round complete'
                   correct={round.roundCorrect}
                   median={round.roundMedian}
-                  onContinue={engine.continueQuiz}
-                  onStop={engine.stop}
                 />
-              )
-              : (
-                <>
-                  <ChordSlots state={seqState} />
-                  <FeedbackBanner
-                    correct={engine.state.feedbackCorrect}
-                    answer={engine.state.feedbackDisplayAnswer}
-                  />
-                  <NoteButtons
-                    onAnswer={handleNoteAnswer}
-                    narrowing={noteNarrowing}
-                  />
-                  <KeyboardHint type='note' />
-                  <FeedbackDisplay
-                    text={engine.state.feedbackText}
-                    className={engine.state.feedbackClass}
-                    time={engine.state.timeDisplayText || undefined}
-                    hint={engine.state.hintText || undefined}
-                    onNext={engine.state.answered
-                      ? engine.nextQuestion
-                      : undefined}
-                  />
-                </>
-              )}
-          </QuizArea>
+              </QuizArea>
+            )
+            : (
+              <QuizArea
+                prompt={promptText}
+                lastQuestion={engine.state.roundTimerExpired
+                  ? 'Last question'
+                  : ''}
+                controls={
+                  <>
+                    <ChordSlots state={seqState} />
+                    <FeedbackBanner
+                      correct={engine.state.feedbackCorrect}
+                      answer={engine.state.feedbackDisplayAnswer}
+                    />
+                    <NoteButtons
+                      onAnswer={handleNoteAnswer}
+                      narrowing={noteNarrowing}
+                    />
+                    <KeyboardHint type='note' />
+                    <FeedbackDisplay
+                      text={engine.state.feedbackText}
+                      className={engine.state.feedbackClass}
+                      time={engine.state.timeDisplayText || undefined}
+                      hint={engine.state.hintText || undefined}
+                      onNext={engine.state.answered
+                        ? engine.nextQuestion
+                        : undefined}
+                    />
+                  </>
+                }
+              />
+            )}
         </>
       )}
     </>
