@@ -32,14 +32,13 @@ import {
 const ROUND_DURATION_MS = 60000;
 const AUTO_ADVANCE_MS = 1000;
 const TIMER_TICK_MS = 200;
+const LAST_QUESTION_CAP_MS = 30000;
 
 /** True when the primary pointer is coarse (phone/tablet). */
 const IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === 'function' &&
   globalThis.matchMedia('(pointer: coarse)').matches;
 
-const HINT_ADVANCE = IS_TOUCH_PRIMARY
-  ? 'Tap anywhere for next'
-  : 'Tap anywhere or press Space for next';
+const HINT_ADVANCE = IS_TOUCH_PRIMARY ? '' : 'Space for next';
 
 // ---------------------------------------------------------------------------
 // Config type — what the mode provides to the engine
@@ -145,6 +144,7 @@ export function useQuizEngine(
   const roundTimerRef = useRef<number | null>(null);
   const roundTimerStartRef = useRef<number | null>(null);
   const autoAdvanceRef = useRef<number | null>(null);
+  const lastQuestionCapRef = useRef<number | null>(null);
 
   // --- Compute progress ---
 
@@ -165,6 +165,10 @@ export function useQuizEngine(
     if (roundTimerRef.current) {
       clearInterval(roundTimerRef.current);
       roundTimerRef.current = null;
+    }
+    if (lastQuestionCapRef.current) {
+      clearTimeout(lastQuestionCapRef.current);
+      lastQuestionCapRef.current = null;
     }
     roundTimerStartRef.current = null;
     setTimerPct(100);
@@ -199,6 +203,13 @@ export function useQuizEngine(
         setTimeout(() => transitionToRoundCompleteRef.current(), 0);
       } else {
         setTimerLastQuestion(true);
+        // Cap the last question at 30 seconds — if the user walks away,
+        // end the round automatically.
+        lastQuestionCapRef.current = setTimeout(() => {
+          if (stateRef.current.phase === 'active') {
+            transitionToRoundCompleteRef.current();
+          }
+        }, LAST_QUESTION_CAP_MS);
       }
       return next;
     });
@@ -424,36 +435,12 @@ export function useQuizEngine(
     return () => document.removeEventListener('keydown', handleKeydown);
   }, [state.phase !== 'idle', stop, continueQuiz, submitAnswer]);
 
-  // --- Tap-to-advance (click anywhere during feedback) ---
-
-  useEffect(() => {
-    if (state.phase === 'idle') return;
-
-    function handleClick(e: MouseEvent) {
-      const s = stateRef.current;
-      if (s.phase !== 'active' || !s.answered) return;
-      // Don't intercept clicks on interactive elements
-      if (!e.target || !(e.target instanceof Element)) return;
-      if (
-        e.target.closest('button, a, input, select, textarea')
-      ) return;
-
-      if (autoAdvanceRef.current) {
-        clearTimeout(autoAdvanceRef.current);
-        autoAdvanceRef.current = null;
-      }
-      nextQuestionRef.current();
-    }
-
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
-  }, [state.phase !== 'idle']);
-
   // Clean up timers on unmount
   useEffect(() => {
     return () => {
       if (roundTimerRef.current) clearInterval(roundTimerRef.current);
       if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
+      if (lastQuestionCapRef.current) clearTimeout(lastQuestionCapRef.current);
     };
   }, []);
 

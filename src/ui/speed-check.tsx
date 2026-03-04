@@ -291,75 +291,87 @@ export function SpeedCheck(
   // --- Render: Intro ---
   if (phase === 'intro') {
     return (
-      <div class='calibration-results'>
-        <p>{provider.introText}</p>
-        <button
-          type='button'
-          tabIndex={0}
-          class='calibration-action-btn'
-          onClick={() => setPhase('running')}
-        >
-          Start
-        </button>
-      </div>
+      <>
+        <div class='quiz-content calibration-results'>
+          <p>{provider.introText}</p>
+        </div>
+        <div class='quiz-controls'>
+          <button
+            type='button'
+            tabIndex={0}
+            class='calibration-action-btn'
+            onClick={() => setPhase('running')}
+          >
+            Start
+          </button>
+        </div>
+      </>
     );
   }
 
   // --- Render: Running (trial loop) ---
   if (phase === 'running') {
     return (
-      <div>
-        <div class='quiz-prompt'>{provider.trialText}</div>
-        <div ref={buttonsRef}>
-          <NoteButtons
-            onAnswer={handleTrialResponse}
-            calibrationActive
-          />
+      <>
+        <div class='quiz-content'>
+          <div class='quiz-prompt'>{provider.trialText}</div>
         </div>
-        <div class='calibration-progress'>{trialProgress}</div>
-      </div>
+        <div class='quiz-controls'>
+          <div ref={buttonsRef}>
+            <NoteButtons
+              onAnswer={handleTrialResponse}
+              calibrationActive
+            />
+          </div>
+          <div class='calibration-progress'>{trialProgress}</div>
+        </div>
+      </>
     );
   }
 
   // --- Render: Results ---
   const thresholds = getCalibrationThresholds(baseline);
   return (
-    <div class='calibration-results'>
-      <div class='calibration-baseline'>
-        Your baseline: {(baseline / 1000).toFixed(2)}s
-      </div>
-      <table class='calibration-thresholds'>
-        <thead>
-          <tr>
-            <th>Level</th>
-            <th>Max time</th>
-            <th>Meaning</th>
-          </tr>
-        </thead>
-        <tbody>
-          {thresholds.map((t) => (
-            <tr key={t.label}>
-              <td>{t.label}</td>
-              <td>
-                {
-                  t.maxMs !== null
-                    ? (t.maxMs / 1000).toFixed(1) + 's'
-                    : '\u2014' /* \u2014 = — (em dash) */
-                }
-              </td>
-              <td>{t.meaning}</td>
+    <>
+      <div class='quiz-content calibration-results'>
+        <div class='calibration-baseline'>
+          Your baseline: {(baseline / 1000).toFixed(2)}s
+        </div>
+        <table class='calibration-thresholds'>
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th>Max time</th>
+              <th>Meaning</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <button
-        type='button'
-        tabIndex={0}
-        class='calibration-action-btn'
-        onClick={() => onComplete(baseline)}
-      >
-        Done
-      </button>
-    </div>
+          </thead>
+          <tbody>
+            {thresholds.map((t) => (
+              <tr key={t.label}>
+                <td>{t.label}</td>
+                <td>
+                  {
+                    t.maxMs !== null
+                      ? (t.maxMs / 1000).toFixed(1) + 's'
+                      : '\u2014' /* \u2014 = — (em dash) */
+                  }
+                </td>
+                <td>{t.meaning}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div class='quiz-controls'>
+        <button
+          type='button'
+          tabIndex={0}
+          class='calibration-action-btn'
+          onClick={() => onComplete(baseline)}
+        >
+          Done
+        </button>
+      </div>
+    </>
   );
 }

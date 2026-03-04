@@ -95,7 +95,7 @@ export function engineSubmitAnswer(
   state: EngineState,
   isCorrect: boolean,
   correctAnswer: string,
-  hintText = 'Tap anywhere or press Space for next',
+  hintText = 'Space for next',
 ): EngineState {
   return {
     ...state,

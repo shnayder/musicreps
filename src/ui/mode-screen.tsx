@@ -389,41 +389,54 @@ export function SessionInfo(
 }
 
 // ---------------------------------------------------------------------------
-// QuizArea — prompt + content + feedback + round-complete wrapper
+// QuizArea — two-zone layout: content (what app presents) + controls (user
+// responds with). When `controls` is provided, QuizArea renders both zones.
+// When omitted, children render directly (e.g. SpeedCheck manages its own).
 // ---------------------------------------------------------------------------
 
 export function QuizArea(
-  { prompt, lastQuestion, children }: {
+  { prompt, lastQuestion, controls, children }: {
     prompt?: string;
     lastQuestion?: string;
-    children: ComponentChildren;
+    controls?: ComponentChildren;
+    children?: ComponentChildren;
   },
 ) {
-  return (
-    <div class='quiz-area'>
-      {lastQuestion && <div class='quiz-last-question'>{lastQuestion}</div>}
-      {prompt && (
-        <div class='quiz-prompt-row'>
-          <div class='quiz-prompt'>{prompt}</div>
+  if (controls !== undefined) {
+    return (
+      <div class='quiz-area'>
+        <div class='quiz-content'>
+          {
+            /* Always render the wrapper to keep DOM positions stable
+               (prevents Preact from recreating sibling nodes like the
+               fretboard when lastQuestion toggles). :empty hides it. */
+          }
+          <div class='quiz-last-question'>{lastQuestion || null}</div>
+          {prompt && (
+            <div class='quiz-prompt-row'>
+              <div class='quiz-prompt'>{prompt}</div>
+            </div>
+          )}
+          {children}
         </div>
-      )}
-      {children}
-    </div>
-  );
+        <div class='quiz-controls'>{controls}</div>
+      </div>
+    );
+  }
+  return <div class='quiz-area'>{children}</div>;
 }
 
 // ---------------------------------------------------------------------------
-// RoundComplete — round-complete display
+// RoundCompleteInfo — round-complete content (heading, stats, overall context).
+// Rendered in .quiz-content zone.
 // ---------------------------------------------------------------------------
 
-export function RoundComplete(
-  { context, heading, correct, median, onContinue, onStop }: {
+export function RoundCompleteInfo(
+  { context, heading, correct, median }: {
     context?: string;
     heading?: string;
     correct?: string;
     median?: string;
-    onContinue?: () => void;
-    onStop?: () => void;
   },
 ) {
   return (
@@ -441,24 +454,39 @@ export function RoundComplete(
           </div>
         )
         : null}
-      <div class='round-complete-actions'>
-        <button
-          type='button'
-          tabIndex={0}
-          class='round-complete-continue'
-          onClick={onContinue}
-        >
-          Keep Going
-        </button>
-        <button
-          type='button'
-          tabIndex={0}
-          class='round-complete-stop'
-          onClick={onStop}
-        >
-          Stop
-        </button>
-      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// RoundCompleteActions — round-complete controls (keep going / stop).
+// Rendered in .quiz-controls zone.
+// ---------------------------------------------------------------------------
+
+export function RoundCompleteActions(
+  { onContinue, onStop }: {
+    onContinue?: () => void;
+    onStop?: () => void;
+  },
+) {
+  return (
+    <div class='round-complete-actions'>
+      <button
+        type='button'
+        tabIndex={0}
+        class='round-complete-continue'
+        onClick={onContinue}
+      >
+        Keep Going
+      </button>
+      <button
+        type='button'
+        tabIndex={0}
+        class='round-complete-stop'
+        onClick={onStop}
+      >
+        Stop
+      </button>
     </div>
   );
 }

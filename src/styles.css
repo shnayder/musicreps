@@ -929,19 +929,27 @@ button {
   flex-direction: column;
   min-height: 100dvh;
 }
-/* --- Quiz area --- */
+/* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   flex: 1;
   text-align: center;
   padding: var(--space-3);
 }
+.quiz-content {
+  padding-top: 12vh;
+  flex-shrink: 0;
+  text-align: center;
+}
+.quiz-controls {
+  margin-top: auto;
+  text-align: center;
+}
 /* --- Round complete --- */
 .round-complete {
+  align-items: center;
   text-align: center;
-  padding: var(--space-6) 0;
 }
 .round-complete-heading {
   font-size: var(--text-xl);
@@ -976,6 +984,7 @@ button {
   display: flex;
   gap: var(--space-3);
   justify-content: center;
+  padding-bottom: var(--space-4);
 }
 .round-complete-continue {
   padding: var(--space-3) var(--space-5);
@@ -1237,8 +1246,8 @@ button {
 }
 .calibration-results {
   text-align: center;
-  margin: var(--space-5) auto;
   max-width: 420px;
+  margin: 0 auto;
 }
 .calibration-baseline {
   font-size: var(--text-md);
@@ -1304,6 +1313,35 @@ button {
   color: var(--color-text-muted);
   font-size: var(--text-base);
   margin-top: var(--space-5);
+}
+
+/* --- Next button (explicit advance during feedback) --- */
+.next-btn {
+  display: block;
+  margin: var(--space-4) auto var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-brand);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  min-height: 48px;
+}
+@media (hover: hover) {
+  .next-btn:hover {
+    opacity: 0.9;
+  }
+}
+.next-btn:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+.next-btn:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
 }
 
 /* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
@@ -1646,6 +1684,16 @@ button {
 
   .quiz-prompt {
     font-size: 1.6rem;
+  }
+
+  /* .quiz-controls margin-top:auto pushes controls toward the bottom;
+     extra padding so they clear the screen edge on mobile. */
+  .quiz-area {
+    padding-bottom: var(--space-4);
+  }
+
+  .next-btn {
+    width: 80%;
   }
 
   /* Prevent iOS zoom on input focus */

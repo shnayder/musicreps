@@ -49,7 +49,7 @@ function buildActiveState(
       s,
       opts.correct,
       opts.correctAnswer ?? 'D#',
-      'Tap anywhere or press Space for next',
+      'Space for next',
     );
   }
   if (opts.questionCount !== undefined) {
