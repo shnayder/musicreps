@@ -189,14 +189,6 @@ export function SpeedTapMode(
     }
   }, []);
 
-  // Attach click handler to quiz fretboard
-  useEffect(() => {
-    const wrapper = quizFbRef.current;
-    if (!wrapper) return;
-    wrapper.addEventListener('click', handleTap);
-    return () => wrapper.removeEventListener('click', handleTap);
-  }, [handleTap]);
-
   // --- Engine config ---
   const engineConfig = useMemo((): QuizEngineConfig => ({
     getEnabledItems: () => {
@@ -454,6 +446,7 @@ export function SpeedTapMode(
                 </div>
                 <div
                   ref={quizFbRef}
+                  onClick={handleTap}
                   // deno-lint-ignore react-no-danger
                   dangerouslySetInnerHTML={{ __html: svgHTML }}
                 />
