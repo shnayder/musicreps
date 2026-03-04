@@ -955,8 +955,12 @@ button {
 }
 /* --- Round complete --- */
 .round-complete {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: var(--space-6) 0;
+  padding-top: 12vh;
 }
 .round-complete-heading {
   font-size: var(--text-xl);
@@ -991,6 +995,8 @@ button {
   display: flex;
   gap: var(--space-3);
   justify-content: center;
+  margin-top: auto;
+  padding-bottom: var(--space-4);
 }
 .round-complete-continue {
   padding: var(--space-3) var(--space-5);
@@ -3110,9 +3116,10 @@ button {
     ] });
   }
   function QuizArea({ prompt, lastQuestion, questionContent, children }) {
+    const hasQuestionContent = !!(lastQuestion || prompt || questionContent);
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-question-group", children: [
-        lastQuestion && /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion }),
+      hasQuestionContent && /* @__PURE__ */ u3("div", { class: "quiz-question-group", children: [
+        /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || null }),
         prompt && /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt }) }),
         questionContent
       ] }),
