@@ -1779,7 +1779,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">#700</span>
+      <span class="version">#702</span>
     </div>
   </div>
 
@@ -10413,12 +10413,6 @@ button {
         }
       }
     }, []);
-    y2(() => {
-      const wrapper = quizFbRef.current;
-      if (!wrapper) return;
-      wrapper.addEventListener("click", handleTap);
-      return () => wrapper.removeEventListener("click", handleTap);
-    }, [handleTap]);
     const engineConfig = T2(() => ({
       getEnabledItems: () => {
         const nf = scope.kind === "note-filter" ? scope.noteFilter : "natural";
@@ -10645,6 +10639,7 @@ button {
                 "div",
                 {
                   ref: quizFbRef,
+                  onClick: handleTap,
                   dangerouslySetInnerHTML: { __html: svgHTML }
                 }
               )
