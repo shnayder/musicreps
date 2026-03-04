@@ -671,28 +671,23 @@ body {
   color: white;
   border-color: var(--color-toggle-active);
 }
+/* Constrain both width and height so the vertical SVG fits on screen.
+   The SVG preserves aspect ratio, so limiting height shrinks width too. */
 .fretboard-container {
   position: relative;
   width: 100%;
   min-width: 0;
   max-width: 380px;
+  max-height: 50vh;
   margin: 0 auto;
 }
 .fretboard {
-  width: 100%;
+  width: auto;
+  max-height: 50vh;
   height: auto;
   display: block;
   background: var(--color-bg);
   touch-action: manipulation;
-}
-/* During quiz, constrain fretboard height so it fits on mobile screens.
-   The SVG preserves aspect ratio, so limiting height shrinks width too. */
-.quiz-content .fretboard-container {
-  max-height: 50vh;
-}
-.quiz-content .fretboard {
-  max-height: 50vh;
-  width: auto;
 }
 /* SVG fretboard — new circle-based design */
 .fb-string {
