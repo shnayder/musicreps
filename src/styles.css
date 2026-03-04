@@ -708,6 +708,7 @@ body {
   stroke: none;
   cursor: pointer;
   transition: fill 0.15s;
+  pointer-events: all;
 }
 
 /* Hover card */
