@@ -700,6 +700,15 @@ body {
   background: var(--color-bg);
   touch-action: manipulation;
 }
+/* During quiz, constrain fretboard height so it fits on mobile screens.
+   The SVG preserves aspect ratio, so limiting height shrinks width too. */
+.quiz-content .fretboard-container {
+  max-height: 50vh;
+}
+.quiz-content .fretboard {
+  max-height: 50vh;
+  width: auto;
+}
 /* SVG fretboard — new circle-based design */
 .fb-string {
   stroke: hsl(30, 8%, 72%);
@@ -954,9 +963,12 @@ button {
   padding: var(--space-3);
 }
 .quiz-content {
-  padding-top: 12vh;
-  flex-shrink: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
+  min-height: 0;
 }
 .quiz-controls {
   margin-top: auto;
