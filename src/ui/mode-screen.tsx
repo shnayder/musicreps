@@ -402,17 +402,25 @@ export function QuizArea(
     children: ComponentChildren;
   },
 ) {
+  const hasQuestionContent = !!(lastQuestion || prompt || questionContent);
   return (
     <div class='quiz-area'>
-      <div class='quiz-question-group'>
-        {lastQuestion && <div class='quiz-last-question'>{lastQuestion}</div>}
-        {prompt && (
-          <div class='quiz-prompt-row'>
-            <div class='quiz-prompt'>{prompt}</div>
-          </div>
-        )}
-        {questionContent}
-      </div>
+      {hasQuestionContent && (
+        <div class='quiz-question-group'>
+          {
+            /* Always render the wrapper to keep DOM positions stable
+               (prevents Preact from recreating sibling nodes like the
+               fretboard when lastQuestion toggles). :empty hides it. */
+          }
+          <div class='quiz-last-question'>{lastQuestion || null}</div>
+          {prompt && (
+            <div class='quiz-prompt-row'>
+              <div class='quiz-prompt'>{prompt}</div>
+            </div>
+          )}
+          {questionContent}
+        </div>
+      )}
       {children}
     </div>
   );
