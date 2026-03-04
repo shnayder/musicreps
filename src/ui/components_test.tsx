@@ -26,7 +26,8 @@ import {
   QuizArea,
   QuizSession,
   Recommendation,
-  RoundComplete,
+  RoundCompleteActions,
+  RoundCompleteInfo,
   SessionInfo,
   StartButton,
   TabbedIdle,
@@ -542,13 +543,16 @@ describe('SessionInfo', () => {
 });
 
 describe('QuizArea', () => {
-  it('renders prompt and children', () => {
+  it('renders prompt and controls in two zones', () => {
     const html = render(
-      <QuizArea prompt='C + 5'>
-        <div class='test-buttons'>buttons</div>
-      </QuizArea>,
+      <QuizArea
+        prompt='C + 5'
+        controls={<div class='test-buttons'>buttons</div>}
+      />,
     );
     assert.ok(html.includes('quiz-area'));
+    assert.ok(html.includes('quiz-content'));
+    assert.ok(html.includes('quiz-controls'));
     assert.ok(html.includes('quiz-prompt-row'));
     assert.ok(html.includes('quiz-prompt'));
     assert.ok(html.includes('C + 5'));
@@ -557,18 +561,28 @@ describe('QuizArea', () => {
 
   it('renders last question badge', () => {
     const html = render(
-      <QuizArea prompt='test' lastQuestion='Last Q'>
-        <div />
-      </QuizArea>,
+      <QuizArea prompt='test' lastQuestion='Last Q' controls={<div />} />,
     );
     assert.ok(html.includes('Last Q'));
   });
+
+  it('renders children directly when no controls', () => {
+    const html = render(
+      <QuizArea>
+        <div class='raw-child'>inner</div>
+      </QuizArea>,
+    );
+    assert.ok(html.includes('quiz-area'));
+    assert.ok(html.includes('raw-child'));
+    assert.ok(!html.includes('quiz-content'));
+    assert.ok(!html.includes('quiz-controls'));
+  });
 });
 
-describe('RoundComplete', () => {
-  it('renders context, heading, stats, and actions', () => {
+describe('RoundCompleteInfo', () => {
+  it('renders heading, stats, and context', () => {
     const html = render(
-      <RoundComplete
+      <RoundCompleteInfo
         context='Round 1 complete'
         heading='Great job!'
         correct='8 correct (80%)'
@@ -584,6 +598,12 @@ describe('RoundComplete', () => {
     assert.ok(html.includes('8 correct (80%)'));
     assert.ok(html.includes('round-stat-median'));
     assert.ok(html.includes('Median: 425ms'));
+  });
+});
+
+describe('RoundCompleteActions', () => {
+  it('renders keep-going and stop buttons', () => {
+    const html = render(<RoundCompleteActions />);
     assert.ok(html.includes('round-complete-continue'));
     assert.ok(html.includes('Keep Going'));
     assert.ok(html.includes('round-complete-stop'));

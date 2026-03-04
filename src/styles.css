@@ -929,23 +929,27 @@ button {
   flex-direction: column;
   min-height: 100dvh;
 }
-/* --- Quiz area --- */
+/* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   flex: 1;
   text-align: center;
   padding: var(--space-3);
 }
+.quiz-content {
+  padding-top: 12vh;
+  flex-shrink: 0;
+  text-align: center;
+}
+.quiz-controls {
+  margin-top: auto;
+  text-align: center;
+}
 /* --- Round complete --- */
 .round-complete {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   align-items: center;
   text-align: center;
-  padding-top: 12vh;
 }
 .round-complete-heading {
   font-size: var(--text-xl);
@@ -980,7 +984,6 @@ button {
   display: flex;
   gap: var(--space-3);
   justify-content: center;
-  margin-top: auto;
   padding-bottom: var(--space-4);
 }
 .round-complete-continue {
@@ -1117,11 +1120,6 @@ button {
 }
 
 /* --- Quiz prompt (text modes) --- */
-.quiz-question-group {
-  margin-top: 12vh;
-  margin-bottom: auto;
-  flex-shrink: 0;
-}
 .quiz-prompt-row {
   display: flex;
   align-items: baseline;
@@ -1248,8 +1246,8 @@ button {
 }
 .calibration-results {
   text-align: center;
-  margin: var(--space-5) auto;
   max-width: 420px;
+  margin: 0 auto;
 }
 .calibration-baseline {
   font-size: var(--text-md);
@@ -1688,8 +1686,8 @@ button {
     font-size: 1.6rem;
   }
 
-  /* Prompt's margin-bottom:auto pushes answers toward the bottom;
-     just add extra padding so they clear the screen edge. */
+  /* .quiz-controls margin-top:auto pushes controls toward the bottom;
+     extra padding so they clear the screen edge on mobile. */
   .quiz-area {
     padding-bottom: var(--space-4);
   }

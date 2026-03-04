@@ -41,7 +41,8 @@ import {
   QuizArea,
   QuizSession,
   Recommendation,
-  RoundComplete,
+  RoundCompleteActions,
+  RoundCompleteInfo,
   SessionInfo,
   StartButton,
   TabbedIdle,
@@ -270,26 +271,36 @@ function PreviewApp() {
         />
       </Section>
       <Section title='QuizArea'>
-        <QuizArea prompt='C + 5' lastQuestion=''>
-          <NoteButtons />
-          <FeedbackDisplay text='' className='feedback' />
-        </QuizArea>
+        <QuizArea
+          prompt='C + 5'
+          lastQuestion=''
+          controls={
+            <>
+              <NoteButtons />
+              <FeedbackDisplay text='' className='feedback' />
+            </>
+          }
+        />
       </Section>
       <Section title='RoundComplete — Good'>
-        <RoundComplete
-          context={goodRound.context}
-          heading={goodRound.heading}
-          correct={goodRound.correct}
-          median={goodRound.median}
-        />
+        <QuizArea controls={<RoundCompleteActions />}>
+          <RoundCompleteInfo
+            context={goodRound.context}
+            heading={goodRound.heading}
+            correct={goodRound.correct}
+            median={goodRound.median}
+          />
+        </QuizArea>
       </Section>
       <Section title='RoundComplete — Rough'>
-        <RoundComplete
-          context={roughRound.context}
-          heading={roughRound.heading}
-          correct={roughRound.correct}
-          median={roughRound.median}
-        />
+        <QuizArea controls={<RoundCompleteActions />}>
+          <RoundCompleteInfo
+            context={roughRound.context}
+            heading={roughRound.heading}
+            correct={roughRound.correct}
+            median={roughRound.median}
+          />
+        </QuizArea>
       </Section>
       <Section title='PracticeCard (no scope)'>
         <PracticeCard

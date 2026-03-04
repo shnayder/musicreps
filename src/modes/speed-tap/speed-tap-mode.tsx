@@ -33,7 +33,8 @@ import {
   PracticeTab,
   QuizArea,
   QuizSession,
-  RoundComplete,
+  RoundCompleteActions,
+  RoundCompleteInfo,
 } from '../../ui/mode-screen.tsx';
 import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
 import { BUTTON_PROVIDER, SpeedCheck } from '../../ui/speed-check.tsx';
@@ -395,16 +396,9 @@ export function SpeedTapMode(
               onClose={engine.stop}
             />
           )}
-          <QuizArea
-            prompt={(engine.calibrating || phase === 'round-complete')
-              ? ''
-              : promptText}
-            lastQuestion={(engine.calibrating || phase === 'round-complete')
-              ? ''
-              : (engine.state.roundTimerExpired ? 'Last question' : '')}
-          >
-            {engine.calibrating
-              ? (
+          {engine.calibrating
+            ? (
+              <QuizArea>
                 <SpeedCheck
                   provider={BUTTON_PROVIDER}
                   fixture={engine.calibrationFixture}
@@ -414,41 +408,57 @@ export function SpeedTapMode(
                   }}
                   onCancel={engine.endCalibration}
                 />
-              )
-              : phase === 'round-complete'
-              ? (
-                <RoundComplete
+              </QuizArea>
+            )
+            : phase === 'round-complete'
+            ? (
+              <QuizArea
+                controls={
+                  <RoundCompleteActions
+                    onContinue={engine.continueQuiz}
+                    onStop={engine.stop}
+                  />
+                }
+              >
+                <RoundCompleteInfo
                   context={round.roundContext}
                   heading='Round complete'
                   correct={round.roundCorrect}
                   median={round.roundMedian}
-                  onContinue={engine.continueQuiz}
-                  onStop={engine.stop}
                 />
-              )
-              : (
-                <>
-                  <div class='speed-tap-status'>
-                    <span class='speed-tap-progress'>{progressText}</span>
-                  </div>
-                  <div
-                    ref={quizFbRef}
-                    // deno-lint-ignore react-no-danger
-                    dangerouslySetInnerHTML={{ __html: svgHTML }}
-                  />
-                  <NoteButtons hidden onAnswer={() => {}} />
-                  <FeedbackDisplay
-                    text={engine.state.feedbackText}
-                    className={engine.state.feedbackClass}
-                    time={engine.state.timeDisplayText || undefined}
-                    hint={engine.state.hintText || undefined}
-                    onNext={engine.state.answered
-                      ? engine.nextQuestion
-                      : undefined}
-                  />
-                </>
-              )}
-          </QuizArea>
+              </QuizArea>
+            )
+            : (
+              <QuizArea
+                prompt={promptText}
+                lastQuestion={engine.state.roundTimerExpired
+                  ? 'Last question'
+                  : ''}
+                controls={
+                  <>
+                    <NoteButtons hidden onAnswer={() => {}} />
+                    <FeedbackDisplay
+                      text={engine.state.feedbackText}
+                      className={engine.state.feedbackClass}
+                      time={engine.state.timeDisplayText || undefined}
+                      hint={engine.state.hintText || undefined}
+                      onNext={engine.state.answered
+                        ? engine.nextQuestion
+                        : undefined}
+                    />
+                  </>
+                }
+              >
+                <div class='speed-tap-status'>
+                  <span class='speed-tap-progress'>{progressText}</span>
+                </div>
+                <div
+                  ref={quizFbRef}
+                  // deno-lint-ignore react-no-danger
+                  dangerouslySetInnerHTML={{ __html: svgHTML }}
+                />
+              </QuizArea>
+            )}
         </>
       )}
     </>

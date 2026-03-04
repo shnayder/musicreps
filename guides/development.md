@@ -479,3 +479,7 @@ curl -sS --proxy "$PROXY_URL" \
 
 The proxy authenticates automatically via the JWT in `GLOBAL_AGENT_HTTP_PROXY`.
 No `GH_TOKEN` needed. Git push/pull work normally via the `origin` remote.
+
+**Read-only.** The proxy supports GET requests (list PRs, read comments) but
+not POST/PATCH (create PRs, post comments). Push the branch and create PRs
+manually or let CI handle it.
