@@ -688,16 +688,22 @@ body {
   color: white;
   border-color: var(--color-toggle-active);
 }
+/* Constrain both width and height so the vertical SVG fits on screen.
+   The SVG preserves aspect ratio, so limiting height shrinks width too. */
 .fretboard-container {
   position: relative;
   width: 100%;
   min-width: 0;
-  max-width: 1200px;
+  max-width: 500px;
+  max-height: 50vh;
+  margin: 0 auto;
 }
 .fretboard {
-  width: 100%;
+  width: auto;
+  max-height: 50vh;
   height: auto;
   display: block;
+  margin: 0 auto;
   background: var(--color-bg);
   touch-action: manipulation;
 }
@@ -715,10 +721,17 @@ body {
   fill: hsl(30, 5%, 62%);
 }
 .fb-pos {
-  fill: hsl(30, 5%, 90%);
+  fill: none;
   stroke: none;
   cursor: pointer;
   transition: fill 0.15s;
+  pointer-events: all;
+}
+.fb-tap {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+  pointer-events: all;
 }
 
 /* Hover card */
@@ -875,6 +888,10 @@ button {
 .quiz-info-context {
   flex: 1;
 }
+.quiz-info-last-question {
+  color: var(--color-recommended);
+  font-weight: 500;
+}
 .quiz-info-count {
   font-variant-numeric: tabular-nums;
 }
@@ -946,18 +963,26 @@ button {
   flex-direction: column;
   min-height: 100dvh;
 }
+.mode-screen.phase-active .mode-top-bar,
+.mode-screen.phase-round-complete .mode-top-bar,
+.mode-screen.phase-calibration .mode-top-bar {
+  display: none;
+}
 /* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
   display: flex;
   flex-direction: column;
   flex: 1;
   text-align: center;
-  padding: var(--space-3);
+  padding: 0 var(--space-3) var(--space-3);
 }
 .quiz-content {
-  padding-top: 12vh;
-  flex-shrink: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
+  min-height: 0;
 }
 .quiz-controls {
   margin-top: auto;
@@ -1142,7 +1167,7 @@ button {
   align-items: baseline;
   justify-content: center;
   gap: var(--space-2);
-  margin: var(--space-5) 0;
+  margin: var(--space-2) 0;
   min-height: 2.5rem;
 }
 .quiz-prompt {
@@ -1150,16 +1175,6 @@ button {
   font-weight: 600;
 }
 .quiz-prompt:empty {
-  display: none;
-}
-.quiz-last-question {
-  font-size: var(--text-sm);
-  color: var(--color-recommended);
-  font-weight: 500;
-  text-align: center;
-  margin-bottom: var(--space-2);
-}
-.quiz-last-question:empty {
   display: none;
 }
 
@@ -1521,7 +1536,7 @@ button {
   justify-content: center;
   gap: var(--space-6);
   font-size: var(--text-lg);
-  margin: var(--space-3) 0;
+  margin: 0 0 var(--space-3) 0;
 }
 .speed-tap-progress {
   font-weight: 500;
@@ -1696,7 +1711,7 @@ button {
 
   .fretboard-container {
     width: 100%;
-    max-width: none;
+    max-width: 500px;
   }
 
   .quiz-prompt {
@@ -1779,7 +1794,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">#702</span>
+      <span class="version">#712</span>
     </div>
   </div>
 
@@ -1843,114 +1858,115 @@ button {
     <div class="tab-content tab-progress">
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
-        <svg class="fretboard" viewBox="0 0 600 226">
+        <svg class="fretboard" viewBox="0 0 286 600">
           <!-- Fret marker dots (inlays) -->
-          <circle class="fb-marker" cx="210" cy="113" r="4"/>
-      <circle class="fb-marker" cx="312" cy="113" r="4"/>
-      <circle class="fb-marker" cx="402" cy="113" r="4"/>
-      <circle class="fb-marker" cx="481.5" cy="113" r="4"/>
-      <circle class="fb-marker" cx="584" cy="75" r="4"/><circle class="fb-marker" cx="584" cy="151" r="4"/>
-          <!-- Nut (wide bar at fret 0) -->
-          <rect class="fb-nut" x="63" y="0" width="4" height="226" rx="1"/>
-          <!-- Frets (vertical lines) -->
-          <line class="fb-fret" x1="126" y1="0" x2="126" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="183" y1="0" x2="183" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="237" y1="0" x2="237" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="288" y1="0" x2="288" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="336" y1="0" x2="336" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="381" y1="0" x2="381" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="423" y1="0" x2="423" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="463" y1="0" x2="463" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="500" y1="0" x2="500" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="535" y1="0" x2="535" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="568" y1="0" x2="568" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="600" y1="0" x2="600" y2="226" stroke-width="1"/>
-          <!-- Strings (horizontal lines) -->
-          <line class="fb-string" x1="0" y1="18" x2="600" y2="18" stroke-width="1"/>
-      <line class="fb-string" x1="0" y1="56" x2="600" y2="56" stroke-width="1.4"/>
-      <line class="fb-string" x1="0" y1="94" x2="600" y2="94" stroke-width="1.8"/>
-      <line class="fb-string" x1="0" y1="132" x2="600" y2="132" stroke-width="2.2"/>
-      <line class="fb-string" x1="0" y1="170" x2="600" y2="170" stroke-width="2.6"/>
-      <line class="fb-string" x1="0" y1="208" x2="600" y2="208" stroke-width="3"/>
+          <circle class="fb-marker" cx="143" cy="188.5" r="4"/>
+      <circle class="fb-marker" cx="143" cy="287.5" r="4"/>
+      <circle class="fb-marker" cx="143" cy="380" r="4"/>
+      <circle class="fb-marker" cx="143" cy="465.5" r="4"/>
+      <circle class="fb-marker" cx="193" cy="582" r="4"/><circle class="fb-marker" cx="93" cy="582" r="4"/>
+          <!-- Nut (horizontal bar at top) -->
+          <rect class="fb-nut" x="0" y="54" width="286" height="4" rx="1"/>
+          <!-- Frets (horizontal lines) -->
+          <line class="fb-fret" x1="0" y1="110" x2="286" y2="110" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="163" x2="286" y2="163" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="214" x2="286" y2="214" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="264" x2="286" y2="264" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="311" x2="286" y2="311" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="358" x2="286" y2="358" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="402" x2="286" y2="402" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="445" x2="286" y2="445" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="486" x2="286" y2="486" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="526" x2="286" y2="526" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="564" x2="286" y2="564" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="600" x2="286" y2="600" stroke-width="1"/>
+          <!-- Strings (vertical lines) -->
+          <line class="fb-string" x1="268" y1="0" x2="268" y2="600" stroke-width="1"/>
+      <line class="fb-string" x1="218" y1="0" x2="218" y2="600" stroke-width="1.4"/>
+      <line class="fb-string" x1="168" y1="0" x2="168" y2="600" stroke-width="1.8"/>
+      <line class="fb-string" x1="118" y1="0" x2="118" y2="600" stroke-width="2.2"/>
+      <line class="fb-string" x1="68" y1="0" x2="68" y2="600" stroke-width="2.6"/>
+      <line class="fb-string" x1="18" y1="0" x2="18" y2="600" stroke-width="3"/>
           <!-- Position circles -->
-          <circle class="fb-pos" data-string="0" data-fret="0" cx="32.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="1" cx="95.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="2" cx="154.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="3" cx="210" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="4" cx="262.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="5" cx="312" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="6" cx="358.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="7" cx="402" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="8" cx="443" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="9" cx="481.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="10" cx="517.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="11" cx="551.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="12" cx="584" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="0" cx="32.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="1" cx="95.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="2" cx="154.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="3" cx="210" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="4" cx="262.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="5" cx="312" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="6" cx="358.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="7" cx="402" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="8" cx="443" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="9" cx="481.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="10" cx="517.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="11" cx="551.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="12" cx="584" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="0" cx="32.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="1" cx="95.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="2" cx="154.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="3" cx="210" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="4" cx="262.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="5" cx="312" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="6" cx="358.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="7" cx="402" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="8" cx="443" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="9" cx="481.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="10" cx="517.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="11" cx="551.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="12" cx="584" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="0" cx="32.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="1" cx="95.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="2" cx="154.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="3" cx="210" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="4" cx="262.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="5" cx="312" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="6" cx="358.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="7" cx="402" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="8" cx="443" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="9" cx="481.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="10" cx="517.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="11" cx="551.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="12" cx="584" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="0" cx="32.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="1" cx="95.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="2" cx="154.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="3" cx="210" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="4" cx="262.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="5" cx="312" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="6" cx="358.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="7" cx="402" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="8" cx="443" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="9" cx="481.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="10" cx="517.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="11" cx="551.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="12" cx="584" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="0" cx="32.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="1" cx="95.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="2" cx="154.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="3" cx="210" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="4" cx="262.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="5" cx="312" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="6" cx="358.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="7" cx="402" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="8" cx="443" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="9" cx="481.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="10" cx="517.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="11" cx="551.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="12" cx="584" cy="208" r="10"/>
+          <circle class="fb-pos" data-string="0" data-fret="0" cx="268" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="1" cx="268" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="2" cx="268" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="3" cx="268" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="4" cx="268" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="5" cx="268" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="6" cx="268" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="7" cx="268" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="8" cx="268" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="9" cx="268" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="10" cx="268" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="11" cx="268" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="12" cx="268" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="0" cx="218" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="1" cx="218" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="2" cx="218" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="3" cx="218" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="4" cx="218" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="5" cx="218" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="6" cx="218" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="7" cx="218" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="8" cx="218" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="9" cx="218" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="10" cx="218" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="11" cx="218" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="12" cx="218" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="0" cx="168" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="1" cx="168" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="2" cx="168" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="3" cx="168" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="4" cx="168" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="5" cx="168" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="6" cx="168" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="7" cx="168" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="8" cx="168" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="9" cx="168" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="10" cx="168" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="11" cx="168" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="12" cx="168" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="0" cx="118" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="1" cx="118" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="2" cx="118" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="3" cx="118" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="4" cx="118" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="5" cx="118" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="6" cx="118" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="7" cx="118" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="8" cx="118" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="9" cx="118" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="10" cx="118" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="11" cx="118" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="12" cx="118" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="0" cx="68" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="1" cx="68" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="2" cx="68" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="3" cx="68" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="4" cx="68" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="5" cx="68" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="6" cx="68" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="7" cx="68" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="8" cx="68" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="9" cx="68" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="10" cx="68" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="11" cx="68" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="12" cx="68" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="0" cx="18" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="1" cx="18" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="2" cx="18" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="3" cx="18" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="4" cx="18" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="5" cx="18" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="6" cx="18" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="7" cx="18" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="8" cx="18" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="9" cx="18" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="10" cx="18" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="11" cx="18" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="12" cx="18" cy="582" r="14"/>
+          
         </svg>
         <div class="hover-card"><div class="hc-inner">
           <div class="hc-note"></div>
@@ -1981,120 +1997,120 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
-        <svg class="fretboard" viewBox="0 0 600 226">
+        <svg class="fretboard" viewBox="0 0 286 600">
           <!-- Fret marker dots (inlays) -->
-          <circle class="fb-marker" cx="210" cy="113" r="4"/>
-      <circle class="fb-marker" cx="312" cy="113" r="4"/>
-      <circle class="fb-marker" cx="402" cy="113" r="4"/>
-      <circle class="fb-marker" cx="481.5" cy="113" r="4"/>
-      <circle class="fb-marker" cx="584" cy="75" r="4"/><circle class="fb-marker" cx="584" cy="151" r="4"/>
-          <!-- Nut (wide bar at fret 0) -->
-          <rect class="fb-nut" x="63" y="0" width="4" height="226" rx="1"/>
-          <!-- Frets (vertical lines) -->
-          <line class="fb-fret" x1="126" y1="0" x2="126" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="183" y1="0" x2="183" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="237" y1="0" x2="237" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="288" y1="0" x2="288" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="336" y1="0" x2="336" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="381" y1="0" x2="381" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="423" y1="0" x2="423" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="463" y1="0" x2="463" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="500" y1="0" x2="500" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="535" y1="0" x2="535" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="568" y1="0" x2="568" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="600" y1="0" x2="600" y2="226" stroke-width="1"/>
-          <!-- Strings (horizontal lines) -->
-          <line class="fb-string" x1="0" y1="18" x2="600" y2="18" stroke-width="1"/>
-      <line class="fb-string" x1="0" y1="56" x2="600" y2="56" stroke-width="1.4"/>
-      <line class="fb-string" x1="0" y1="94" x2="600" y2="94" stroke-width="1.8"/>
-      <line class="fb-string" x1="0" y1="132" x2="600" y2="132" stroke-width="2.2"/>
-      <line class="fb-string" x1="0" y1="170" x2="600" y2="170" stroke-width="2.6"/>
-      <line class="fb-string" x1="0" y1="208" x2="600" y2="208" stroke-width="3"/>
+          <circle class="fb-marker" cx="143" cy="188.5" r="4"/>
+      <circle class="fb-marker" cx="143" cy="287.5" r="4"/>
+      <circle class="fb-marker" cx="143" cy="380" r="4"/>
+      <circle class="fb-marker" cx="143" cy="465.5" r="4"/>
+      <circle class="fb-marker" cx="193" cy="582" r="4"/><circle class="fb-marker" cx="93" cy="582" r="4"/>
+          <!-- Nut (horizontal bar at top) -->
+          <rect class="fb-nut" x="0" y="54" width="286" height="4" rx="1"/>
+          <!-- Frets (horizontal lines) -->
+          <line class="fb-fret" x1="0" y1="110" x2="286" y2="110" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="163" x2="286" y2="163" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="214" x2="286" y2="214" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="264" x2="286" y2="264" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="311" x2="286" y2="311" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="358" x2="286" y2="358" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="402" x2="286" y2="402" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="445" x2="286" y2="445" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="486" x2="286" y2="486" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="526" x2="286" y2="526" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="564" x2="286" y2="564" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="600" x2="286" y2="600" stroke-width="1"/>
+          <!-- Strings (vertical lines) -->
+          <line class="fb-string" x1="268" y1="0" x2="268" y2="600" stroke-width="1"/>
+      <line class="fb-string" x1="218" y1="0" x2="218" y2="600" stroke-width="1.4"/>
+      <line class="fb-string" x1="168" y1="0" x2="168" y2="600" stroke-width="1.8"/>
+      <line class="fb-string" x1="118" y1="0" x2="118" y2="600" stroke-width="2.2"/>
+      <line class="fb-string" x1="68" y1="0" x2="68" y2="600" stroke-width="2.6"/>
+      <line class="fb-string" x1="18" y1="0" x2="18" y2="600" stroke-width="3"/>
           <!-- Position circles -->
-          <circle class="fb-pos" data-string="0" data-fret="0" cx="32.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="1" cx="95.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="2" cx="154.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="3" cx="210" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="4" cx="262.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="5" cx="312" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="6" cx="358.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="7" cx="402" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="8" cx="443" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="9" cx="481.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="10" cx="517.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="11" cx="551.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="12" cx="584" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="0" cx="32.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="1" cx="95.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="2" cx="154.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="3" cx="210" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="4" cx="262.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="5" cx="312" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="6" cx="358.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="7" cx="402" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="8" cx="443" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="9" cx="481.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="10" cx="517.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="11" cx="551.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="12" cx="584" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="0" cx="32.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="1" cx="95.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="2" cx="154.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="3" cx="210" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="4" cx="262.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="5" cx="312" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="6" cx="358.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="7" cx="402" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="8" cx="443" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="9" cx="481.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="10" cx="517.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="11" cx="551.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="12" cx="584" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="0" cx="32.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="1" cx="95.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="2" cx="154.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="3" cx="210" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="4" cx="262.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="5" cx="312" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="6" cx="358.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="7" cx="402" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="8" cx="443" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="9" cx="481.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="10" cx="517.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="11" cx="551.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="12" cx="584" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="0" cx="32.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="1" cx="95.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="2" cx="154.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="3" cx="210" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="4" cx="262.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="5" cx="312" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="6" cx="358.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="7" cx="402" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="8" cx="443" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="9" cx="481.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="10" cx="517.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="11" cx="551.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="12" cx="584" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="0" cx="32.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="1" cx="95.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="2" cx="154.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="3" cx="210" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="4" cx="262.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="5" cx="312" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="6" cx="358.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="7" cx="402" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="8" cx="443" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="9" cx="481.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="10" cx="517.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="11" cx="551.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="12" cx="584" cy="208" r="10"/>
+          <circle class="fb-pos" data-string="0" data-fret="0" cx="268" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="1" cx="268" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="2" cx="268" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="3" cx="268" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="4" cx="268" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="5" cx="268" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="6" cx="268" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="7" cx="268" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="8" cx="268" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="9" cx="268" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="10" cx="268" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="11" cx="268" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="12" cx="268" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="0" cx="218" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="1" cx="218" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="2" cx="218" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="3" cx="218" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="4" cx="218" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="5" cx="218" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="6" cx="218" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="7" cx="218" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="8" cx="218" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="9" cx="218" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="10" cx="218" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="11" cx="218" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="12" cx="218" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="0" cx="168" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="1" cx="168" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="2" cx="168" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="3" cx="168" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="4" cx="168" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="5" cx="168" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="6" cx="168" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="7" cx="168" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="8" cx="168" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="9" cx="168" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="10" cx="168" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="11" cx="168" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="12" cx="168" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="0" cx="118" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="1" cx="118" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="2" cx="118" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="3" cx="118" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="4" cx="118" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="5" cx="118" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="6" cx="118" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="7" cx="118" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="8" cx="118" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="9" cx="118" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="10" cx="118" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="11" cx="118" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="12" cx="118" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="0" cx="68" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="1" cx="68" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="2" cx="68" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="3" cx="68" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="4" cx="68" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="5" cx="68" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="6" cx="68" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="7" cx="68" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="8" cx="68" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="9" cx="68" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="10" cx="68" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="11" cx="68" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="12" cx="68" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="0" cx="18" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="1" cx="18" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="2" cx="18" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="3" cx="18" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="4" cx="18" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="5" cx="18" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="6" cx="18" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="7" cx="18" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="8" cx="18" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="9" cx="18" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="10" cx="18" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="11" cx="18" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="12" cx="18" cy="582" r="14"/>
+          
         </svg>
         <div class="hover-card"><div class="hc-inner">
           <div class="hc-note"></div>
@@ -2201,86 +2217,87 @@ button {
     <div class="tab-content tab-progress">
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
-        <svg class="fretboard" viewBox="0 0 600 150">
+        <svg class="fretboard" viewBox="0 0 186 600">
           <!-- Fret marker dots (inlays) -->
-          <circle class="fb-marker" cx="210" cy="75" r="4"/>
-      <circle class="fb-marker" cx="312" cy="75" r="4"/>
-      <circle class="fb-marker" cx="402" cy="75" r="4"/>
-      <circle class="fb-marker" cx="517.5" cy="75" r="4"/>
-      <circle class="fb-marker" cx="584" cy="56" r="4"/><circle class="fb-marker" cx="584" cy="94" r="4"/>
-          <!-- Nut (wide bar at fret 0) -->
-          <rect class="fb-nut" x="63" y="0" width="4" height="150" rx="1"/>
-          <!-- Frets (vertical lines) -->
-          <line class="fb-fret" x1="126" y1="0" x2="126" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="183" y1="0" x2="183" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="237" y1="0" x2="237" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="288" y1="0" x2="288" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="336" y1="0" x2="336" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="381" y1="0" x2="381" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="423" y1="0" x2="423" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="463" y1="0" x2="463" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="500" y1="0" x2="500" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="535" y1="0" x2="535" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="568" y1="0" x2="568" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="600" y1="0" x2="600" y2="150" stroke-width="1"/>
-          <!-- Strings (horizontal lines) -->
-          <line class="fb-string" x1="0" y1="18" x2="600" y2="18" stroke-width="1"/>
-      <line class="fb-string" x1="0" y1="56" x2="600" y2="56" stroke-width="1.4"/>
-      <line class="fb-string" x1="0" y1="94" x2="600" y2="94" stroke-width="1.8"/>
-      <line class="fb-string" x1="0" y1="132" x2="600" y2="132" stroke-width="2.2"/>
+          <circle class="fb-marker" cx="93" cy="188.5" r="4"/>
+      <circle class="fb-marker" cx="93" cy="287.5" r="4"/>
+      <circle class="fb-marker" cx="93" cy="380" r="4"/>
+      <circle class="fb-marker" cx="93" cy="506" r="4"/>
+      <circle class="fb-marker" cx="118" cy="582" r="4"/><circle class="fb-marker" cx="68" cy="582" r="4"/>
+          <!-- Nut (horizontal bar at top) -->
+          <rect class="fb-nut" x="0" y="54" width="186" height="4" rx="1"/>
+          <!-- Frets (horizontal lines) -->
+          <line class="fb-fret" x1="0" y1="110" x2="186" y2="110" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="163" x2="186" y2="163" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="214" x2="186" y2="214" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="264" x2="186" y2="264" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="311" x2="186" y2="311" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="358" x2="186" y2="358" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="402" x2="186" y2="402" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="445" x2="186" y2="445" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="486" x2="186" y2="486" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="526" x2="186" y2="526" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="564" x2="186" y2="564" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="600" x2="186" y2="600" stroke-width="1"/>
+          <!-- Strings (vertical lines) -->
+          <line class="fb-string" x1="168" y1="0" x2="168" y2="600" stroke-width="1"/>
+      <line class="fb-string" x1="118" y1="0" x2="118" y2="600" stroke-width="1.4"/>
+      <line class="fb-string" x1="68" y1="0" x2="68" y2="600" stroke-width="1.8"/>
+      <line class="fb-string" x1="18" y1="0" x2="18" y2="600" stroke-width="2.2"/>
           <!-- Position circles -->
-          <circle class="fb-pos" data-string="0" data-fret="0" cx="32.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="1" cx="95.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="2" cx="154.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="3" cx="210" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="4" cx="262.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="5" cx="312" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="6" cx="358.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="7" cx="402" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="8" cx="443" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="9" cx="481.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="10" cx="517.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="11" cx="551.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="12" cx="584" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="0" cx="32.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="1" cx="95.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="2" cx="154.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="3" cx="210" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="4" cx="262.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="5" cx="312" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="6" cx="358.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="7" cx="402" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="8" cx="443" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="9" cx="481.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="10" cx="517.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="11" cx="551.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="12" cx="584" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="0" cx="32.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="1" cx="95.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="2" cx="154.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="3" cx="210" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="4" cx="262.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="5" cx="312" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="6" cx="358.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="7" cx="402" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="8" cx="443" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="9" cx="481.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="10" cx="517.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="11" cx="551.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="12" cx="584" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="0" cx="32.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="1" cx="95.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="2" cx="154.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="3" cx="210" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="4" cx="262.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="5" cx="312" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="6" cx="358.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="7" cx="402" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="8" cx="443" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="9" cx="481.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="10" cx="517.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="11" cx="551.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="12" cx="584" cy="132" r="10"/>
+          <circle class="fb-pos" data-string="0" data-fret="0" cx="168" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="1" cx="168" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="2" cx="168" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="3" cx="168" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="4" cx="168" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="5" cx="168" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="6" cx="168" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="7" cx="168" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="8" cx="168" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="9" cx="168" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="10" cx="168" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="11" cx="168" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="12" cx="168" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="0" cx="118" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="1" cx="118" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="2" cx="118" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="3" cx="118" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="4" cx="118" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="5" cx="118" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="6" cx="118" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="7" cx="118" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="8" cx="118" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="9" cx="118" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="10" cx="118" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="11" cx="118" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="12" cx="118" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="0" cx="68" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="1" cx="68" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="2" cx="68" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="3" cx="68" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="4" cx="68" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="5" cx="68" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="6" cx="68" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="7" cx="68" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="8" cx="68" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="9" cx="68" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="10" cx="68" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="11" cx="68" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="12" cx="68" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="0" cx="18" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="1" cx="18" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="2" cx="18" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="3" cx="18" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="4" cx="18" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="5" cx="18" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="6" cx="18" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="7" cx="18" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="8" cx="18" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="9" cx="18" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="10" cx="18" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="11" cx="18" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="12" cx="18" cy="582" r="14"/>
+          
         </svg>
         <div class="hover-card"><div class="hc-inner">
           <div class="hc-note"></div>
@@ -2311,92 +2328,92 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
-        <svg class="fretboard" viewBox="0 0 600 150">
+        <svg class="fretboard" viewBox="0 0 186 600">
           <!-- Fret marker dots (inlays) -->
-          <circle class="fb-marker" cx="210" cy="75" r="4"/>
-      <circle class="fb-marker" cx="312" cy="75" r="4"/>
-      <circle class="fb-marker" cx="402" cy="75" r="4"/>
-      <circle class="fb-marker" cx="517.5" cy="75" r="4"/>
-      <circle class="fb-marker" cx="584" cy="56" r="4"/><circle class="fb-marker" cx="584" cy="94" r="4"/>
-          <!-- Nut (wide bar at fret 0) -->
-          <rect class="fb-nut" x="63" y="0" width="4" height="150" rx="1"/>
-          <!-- Frets (vertical lines) -->
-          <line class="fb-fret" x1="126" y1="0" x2="126" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="183" y1="0" x2="183" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="237" y1="0" x2="237" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="288" y1="0" x2="288" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="336" y1="0" x2="336" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="381" y1="0" x2="381" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="423" y1="0" x2="423" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="463" y1="0" x2="463" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="500" y1="0" x2="500" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="535" y1="0" x2="535" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="568" y1="0" x2="568" y2="150" stroke-width="1"/>
-      <line class="fb-fret" x1="600" y1="0" x2="600" y2="150" stroke-width="1"/>
-          <!-- Strings (horizontal lines) -->
-          <line class="fb-string" x1="0" y1="18" x2="600" y2="18" stroke-width="1"/>
-      <line class="fb-string" x1="0" y1="56" x2="600" y2="56" stroke-width="1.4"/>
-      <line class="fb-string" x1="0" y1="94" x2="600" y2="94" stroke-width="1.8"/>
-      <line class="fb-string" x1="0" y1="132" x2="600" y2="132" stroke-width="2.2"/>
+          <circle class="fb-marker" cx="93" cy="188.5" r="4"/>
+      <circle class="fb-marker" cx="93" cy="287.5" r="4"/>
+      <circle class="fb-marker" cx="93" cy="380" r="4"/>
+      <circle class="fb-marker" cx="93" cy="506" r="4"/>
+      <circle class="fb-marker" cx="118" cy="582" r="4"/><circle class="fb-marker" cx="68" cy="582" r="4"/>
+          <!-- Nut (horizontal bar at top) -->
+          <rect class="fb-nut" x="0" y="54" width="186" height="4" rx="1"/>
+          <!-- Frets (horizontal lines) -->
+          <line class="fb-fret" x1="0" y1="110" x2="186" y2="110" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="163" x2="186" y2="163" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="214" x2="186" y2="214" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="264" x2="186" y2="264" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="311" x2="186" y2="311" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="358" x2="186" y2="358" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="402" x2="186" y2="402" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="445" x2="186" y2="445" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="486" x2="186" y2="486" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="526" x2="186" y2="526" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="564" x2="186" y2="564" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="600" x2="186" y2="600" stroke-width="1"/>
+          <!-- Strings (vertical lines) -->
+          <line class="fb-string" x1="168" y1="0" x2="168" y2="600" stroke-width="1"/>
+      <line class="fb-string" x1="118" y1="0" x2="118" y2="600" stroke-width="1.4"/>
+      <line class="fb-string" x1="68" y1="0" x2="68" y2="600" stroke-width="1.8"/>
+      <line class="fb-string" x1="18" y1="0" x2="18" y2="600" stroke-width="2.2"/>
           <!-- Position circles -->
-          <circle class="fb-pos" data-string="0" data-fret="0" cx="32.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="1" cx="95.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="2" cx="154.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="3" cx="210" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="4" cx="262.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="5" cx="312" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="6" cx="358.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="7" cx="402" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="8" cx="443" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="9" cx="481.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="10" cx="517.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="11" cx="551.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="12" cx="584" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="0" cx="32.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="1" cx="95.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="2" cx="154.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="3" cx="210" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="4" cx="262.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="5" cx="312" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="6" cx="358.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="7" cx="402" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="8" cx="443" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="9" cx="481.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="10" cx="517.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="11" cx="551.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="12" cx="584" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="0" cx="32.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="1" cx="95.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="2" cx="154.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="3" cx="210" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="4" cx="262.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="5" cx="312" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="6" cx="358.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="7" cx="402" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="8" cx="443" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="9" cx="481.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="10" cx="517.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="11" cx="551.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="12" cx="584" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="0" cx="32.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="1" cx="95.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="2" cx="154.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="3" cx="210" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="4" cx="262.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="5" cx="312" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="6" cx="358.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="7" cx="402" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="8" cx="443" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="9" cx="481.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="10" cx="517.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="11" cx="551.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="12" cx="584" cy="132" r="10"/>
+          <circle class="fb-pos" data-string="0" data-fret="0" cx="168" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="1" cx="168" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="2" cx="168" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="3" cx="168" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="4" cx="168" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="5" cx="168" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="6" cx="168" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="7" cx="168" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="8" cx="168" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="9" cx="168" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="10" cx="168" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="11" cx="168" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="12" cx="168" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="0" cx="118" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="1" cx="118" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="2" cx="118" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="3" cx="118" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="4" cx="118" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="5" cx="118" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="6" cx="118" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="7" cx="118" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="8" cx="118" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="9" cx="118" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="10" cx="118" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="11" cx="118" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="12" cx="118" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="0" cx="68" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="1" cx="68" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="2" cx="68" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="3" cx="68" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="4" cx="68" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="5" cx="68" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="6" cx="68" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="7" cx="68" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="8" cx="68" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="9" cx="68" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="10" cx="68" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="11" cx="68" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="12" cx="68" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="0" cx="18" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="1" cx="18" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="2" cx="18" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="3" cx="18" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="4" cx="18" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="5" cx="18" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="6" cx="18" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="7" cx="18" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="8" cx="18" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="9" cx="18" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="10" cx="18" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="11" cx="18" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="12" cx="18" cy="582" r="14"/>
+          
         </svg>
         <div class="hover-card"><div class="hc-inner">
           <div class="hc-note"></div>
@@ -2514,7 +2531,6 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
@@ -2523,114 +2539,115 @@ button {
       </div>
       <div class="fretboard-wrapper">
       <div class="fretboard-container">
-        <svg class="fretboard" viewBox="0 0 600 226">
+        <svg class="fretboard" viewBox="0 0 286 600">
           <!-- Fret marker dots (inlays) -->
-          <circle class="fb-marker" cx="210" cy="113" r="4"/>
-      <circle class="fb-marker" cx="312" cy="113" r="4"/>
-      <circle class="fb-marker" cx="402" cy="113" r="4"/>
-      <circle class="fb-marker" cx="481.5" cy="113" r="4"/>
-      <circle class="fb-marker" cx="584" cy="75" r="4"/><circle class="fb-marker" cx="584" cy="151" r="4"/>
-          <!-- Nut (wide bar at fret 0) -->
-          <rect class="fb-nut" x="63" y="0" width="4" height="226" rx="1"/>
-          <!-- Frets (vertical lines) -->
-          <line class="fb-fret" x1="126" y1="0" x2="126" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="183" y1="0" x2="183" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="237" y1="0" x2="237" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="288" y1="0" x2="288" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="336" y1="0" x2="336" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="381" y1="0" x2="381" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="423" y1="0" x2="423" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="463" y1="0" x2="463" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="500" y1="0" x2="500" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="535" y1="0" x2="535" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="568" y1="0" x2="568" y2="226" stroke-width="1"/>
-      <line class="fb-fret" x1="600" y1="0" x2="600" y2="226" stroke-width="1"/>
-          <!-- Strings (horizontal lines) -->
-          <line class="fb-string" x1="0" y1="18" x2="600" y2="18" stroke-width="1"/>
-      <line class="fb-string" x1="0" y1="56" x2="600" y2="56" stroke-width="1.4"/>
-      <line class="fb-string" x1="0" y1="94" x2="600" y2="94" stroke-width="1.8"/>
-      <line class="fb-string" x1="0" y1="132" x2="600" y2="132" stroke-width="2.2"/>
-      <line class="fb-string" x1="0" y1="170" x2="600" y2="170" stroke-width="2.6"/>
-      <line class="fb-string" x1="0" y1="208" x2="600" y2="208" stroke-width="3"/>
+          <circle class="fb-marker" cx="143" cy="188.5" r="4"/>
+      <circle class="fb-marker" cx="143" cy="287.5" r="4"/>
+      <circle class="fb-marker" cx="143" cy="380" r="4"/>
+      <circle class="fb-marker" cx="143" cy="465.5" r="4"/>
+      <circle class="fb-marker" cx="193" cy="582" r="4"/><circle class="fb-marker" cx="93" cy="582" r="4"/>
+          <!-- Nut (horizontal bar at top) -->
+          <rect class="fb-nut" x="0" y="54" width="286" height="4" rx="1"/>
+          <!-- Frets (horizontal lines) -->
+          <line class="fb-fret" x1="0" y1="110" x2="286" y2="110" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="163" x2="286" y2="163" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="214" x2="286" y2="214" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="264" x2="286" y2="264" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="311" x2="286" y2="311" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="358" x2="286" y2="358" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="402" x2="286" y2="402" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="445" x2="286" y2="445" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="486" x2="286" y2="486" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="526" x2="286" y2="526" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="564" x2="286" y2="564" stroke-width="1"/>
+      <line class="fb-fret" x1="0" y1="600" x2="286" y2="600" stroke-width="1"/>
+          <!-- Strings (vertical lines) -->
+          <line class="fb-string" x1="268" y1="0" x2="268" y2="600" stroke-width="1"/>
+      <line class="fb-string" x1="218" y1="0" x2="218" y2="600" stroke-width="1.4"/>
+      <line class="fb-string" x1="168" y1="0" x2="168" y2="600" stroke-width="1.8"/>
+      <line class="fb-string" x1="118" y1="0" x2="118" y2="600" stroke-width="2.2"/>
+      <line class="fb-string" x1="68" y1="0" x2="68" y2="600" stroke-width="2.6"/>
+      <line class="fb-string" x1="18" y1="0" x2="18" y2="600" stroke-width="3"/>
           <!-- Position circles -->
-          <circle class="fb-pos" data-string="0" data-fret="0" cx="32.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="1" cx="95.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="2" cx="154.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="3" cx="210" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="4" cx="262.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="5" cx="312" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="6" cx="358.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="7" cx="402" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="8" cx="443" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="9" cx="481.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="10" cx="517.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="11" cx="551.5" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="0" data-fret="12" cx="584" cy="18" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="0" cx="32.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="1" cx="95.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="2" cx="154.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="3" cx="210" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="4" cx="262.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="5" cx="312" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="6" cx="358.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="7" cx="402" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="8" cx="443" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="9" cx="481.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="10" cx="517.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="11" cx="551.5" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="1" data-fret="12" cx="584" cy="56" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="0" cx="32.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="1" cx="95.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="2" cx="154.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="3" cx="210" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="4" cx="262.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="5" cx="312" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="6" cx="358.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="7" cx="402" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="8" cx="443" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="9" cx="481.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="10" cx="517.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="11" cx="551.5" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="2" data-fret="12" cx="584" cy="94" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="0" cx="32.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="1" cx="95.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="2" cx="154.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="3" cx="210" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="4" cx="262.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="5" cx="312" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="6" cx="358.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="7" cx="402" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="8" cx="443" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="9" cx="481.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="10" cx="517.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="11" cx="551.5" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="3" data-fret="12" cx="584" cy="132" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="0" cx="32.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="1" cx="95.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="2" cx="154.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="3" cx="210" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="4" cx="262.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="5" cx="312" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="6" cx="358.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="7" cx="402" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="8" cx="443" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="9" cx="481.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="10" cx="517.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="11" cx="551.5" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="4" data-fret="12" cx="584" cy="170" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="0" cx="32.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="1" cx="95.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="2" cx="154.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="3" cx="210" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="4" cx="262.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="5" cx="312" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="6" cx="358.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="7" cx="402" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="8" cx="443" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="9" cx="481.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="10" cx="517.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="11" cx="551.5" cy="208" r="10"/>
-      <circle class="fb-pos" data-string="5" data-fret="12" cx="584" cy="208" r="10"/>
+          <circle class="fb-pos" data-string="0" data-fret="0" cx="268" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="1" cx="268" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="2" cx="268" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="3" cx="268" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="4" cx="268" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="5" cx="268" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="6" cx="268" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="7" cx="268" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="8" cx="268" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="9" cx="268" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="10" cx="268" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="11" cx="268" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="0" data-fret="12" cx="268" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="0" cx="218" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="1" cx="218" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="2" cx="218" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="3" cx="218" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="4" cx="218" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="5" cx="218" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="6" cx="218" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="7" cx="218" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="8" cx="218" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="9" cx="218" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="10" cx="218" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="11" cx="218" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="1" data-fret="12" cx="218" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="0" cx="168" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="1" cx="168" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="2" cx="168" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="3" cx="168" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="4" cx="168" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="5" cx="168" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="6" cx="168" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="7" cx="168" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="8" cx="168" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="9" cx="168" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="10" cx="168" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="11" cx="168" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="2" data-fret="12" cx="168" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="0" cx="118" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="1" cx="118" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="2" cx="118" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="3" cx="118" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="4" cx="118" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="5" cx="118" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="6" cx="118" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="7" cx="118" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="8" cx="118" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="9" cx="118" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="10" cx="118" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="11" cx="118" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="3" data-fret="12" cx="118" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="0" cx="68" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="1" cx="68" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="2" cx="68" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="3" cx="68" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="4" cx="68" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="5" cx="68" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="6" cx="68" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="7" cx="68" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="8" cx="68" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="9" cx="68" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="10" cx="68" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="11" cx="68" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="4" data-fret="12" cx="68" cy="582" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="0" cx="18" cy="28" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="1" cx="18" cy="83" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="2" cx="18" cy="136.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="3" cx="18" cy="188.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="4" cx="18" cy="239" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="5" cx="18" cy="287.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="6" cx="18" cy="334.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="7" cx="18" cy="380" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="8" cx="18" cy="423.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="9" cx="18" cy="465.5" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="10" cx="18" cy="506" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="11" cx="18" cy="545" r="14"/>
+      <circle class="fb-pos" data-string="5" data-fret="12" cx="18" cy="582" r="14"/>
+          
         </svg>
         <div class="hover-card"><div class="hc-inner">
           <div class="hc-note"></div>
@@ -2725,7 +2742,6 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
@@ -2828,7 +2844,6 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
@@ -2944,7 +2959,6 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
@@ -3046,7 +3060,6 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
@@ -3148,7 +3161,6 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
@@ -3267,7 +3279,6 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
@@ -3378,7 +3389,6 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
@@ -3489,7 +3499,6 @@ button {
       </div>
     </div>
     <div class="quiz-area">
-      <div class="quiz-last-question"></div>
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
@@ -6508,6 +6517,7 @@ button {
     count,
     isWarning,
     isLastQuestion,
+    lastQuestion,
     onClose
   }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-session", children: [
@@ -6527,7 +6537,14 @@ button {
         ),
         /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" })
       ] }),
-      /* @__PURE__ */ u3(SessionInfo, { context, count }),
+      /* @__PURE__ */ u3(
+        SessionInfo,
+        {
+          context,
+          count,
+          lastQuestion
+        }
+      ),
       /* @__PURE__ */ u3(
         "button",
         {
@@ -6541,17 +6558,17 @@ button {
       )
     ] });
   }
-  function SessionInfo({ context, count }) {
+  function SessionInfo({ context, count, lastQuestion }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-session-info", children: [
       /* @__PURE__ */ u3("span", { class: "quiz-info-context", children: context || "" }),
+      lastQuestion ? /* @__PURE__ */ u3("span", { class: "quiz-info-last-question", children: lastQuestion }) : null,
       /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: count || "" })
     ] });
   }
-  function QuizArea({ prompt, lastQuestion, controls, children }) {
+  function QuizArea({ prompt, controls, children }) {
     if (controls !== void 0) {
       return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
         /* @__PURE__ */ u3("div", { class: "quiz-content", children: [
-          /* @__PURE__ */ u3("div", { class: "quiz-last-question", children: lastQuestion || null }),
           prompt && /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt }) }),
           children
         ] }),
@@ -7108,6 +7125,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -7146,7 +7164,6 @@ button {
           QuizArea,
           {
             prompt: promptText,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
@@ -7381,6 +7398,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -7419,7 +7437,6 @@ button {
           QuizArea,
           {
             prompt: promptText,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
@@ -8031,6 +8048,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -8069,7 +8087,6 @@ button {
           QuizArea,
           {
             prompt: promptText,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
@@ -8306,6 +8323,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -8344,7 +8362,6 @@ button {
           QuizArea,
           {
             prompt: promptText,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
@@ -8635,6 +8652,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -8673,7 +8691,6 @@ button {
           QuizArea,
           {
             prompt: promptText,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
@@ -8923,6 +8940,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -8961,7 +8979,6 @@ button {
           QuizArea,
           {
             prompt: promptText,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
@@ -9212,6 +9229,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -9250,7 +9268,6 @@ button {
           QuizArea,
           {
             prompt: promptText,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
@@ -9573,6 +9590,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -9611,7 +9629,6 @@ button {
           QuizArea,
           {
             prompt: promptText,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
               /* @__PURE__ */ u3(
@@ -9724,59 +9741,61 @@ button {
   // src/fretboard.ts
   var fretPositions = [
     0,
-    65,
-    126,
-    183,
-    237,
-    288,
-    336,
-    381,
-    423,
-    463,
-    500,
-    535,
-    568,
+    56,
+    110,
+    163,
+    214,
+    264,
+    311,
+    358,
+    402,
+    445,
+    486,
+    526,
+    564,
     600
   ];
   var MAX_FRET_COUNT = fretPositions.length - 1;
-  var PAD_Y = 18;
-  var STRING_GAP = 38;
-  function stringY(stringIndex) {
-    return PAD_Y + stringIndex * STRING_GAP;
+  var PAD_X = 18;
+  var STRING_GAP = 50;
+  function stringX(stringIndex, stringCount) {
+    return PAD_X + (stringCount - 1 - stringIndex) * STRING_GAP;
   }
-  function noteX(fret) {
+  function noteY(fret) {
     return fret === 0 ? (fretPositions[0] + fretPositions[1]) / 2 : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
   }
-  function svgHeight(stringCount) {
-    return (stringCount - 1) * STRING_GAP + PAD_Y * 2;
+  function svgWidth(stringCount) {
+    return (stringCount - 1) * STRING_GAP + PAD_X * 2;
   }
-  function fretLines(height) {
+  var SVG_HEIGHT = fretPositions[fretPositions.length - 1];
+  function fretLines(width) {
     return fretPositions.slice(2).map(
-      (x2) => `<line class="fb-fret" x1="${x2}" y1="0" x2="${x2}" y2="${height}" stroke-width="1"/>`
+      (y3) => `<line class="fb-fret" x1="0" y1="${y3}" x2="${width}" y2="${y3}" stroke-width="1"/>`
     ).join("\n      ");
   }
   function stringLines(stringCount = 6) {
     return Array.from({ length: stringCount }, (_3, i3) => {
       const thickness = 1 + i3 * 0.4;
-      return `<line class="fb-string" x1="0" y1="${stringY(i3)}" x2="600" y2="${stringY(i3)}" stroke-width="${thickness}"/>`;
+      const x2 = stringX(i3, stringCount);
+      return `<line class="fb-string" x1="${x2}" y1="0" x2="${x2}" y2="${SVG_HEIGHT}" stroke-width="${thickness}"/>`;
     }).join("\n      ");
   }
   function fretMarkerDots(stringCount = 6, markers = [3, 5, 7, 9, 12], fretCount = 13) {
-    const h3 = svgHeight(stringCount);
+    const w3 = svgWidth(stringCount);
     return markers.filter((fret) => fret < fretCount).map((fret) => {
-      const cx = noteX(fret);
+      const cy = noteY(fret);
       if (fret === 12) {
-        let y1, y22;
+        let x1, x2;
         if (stringCount <= 4) {
-          y1 = stringY(1);
-          y22 = stringY(stringCount - 2);
+          x1 = stringX(1, stringCount);
+          x2 = stringX(stringCount - 2, stringCount);
         } else {
-          y1 = (stringY(1) + stringY(2)) / 2;
-          y22 = (stringY(stringCount - 3) + stringY(stringCount - 2)) / 2;
+          x1 = (stringX(1, stringCount) + stringX(2, stringCount)) / 2;
+          x2 = (stringX(stringCount - 3, stringCount) + stringX(stringCount - 2, stringCount)) / 2;
         }
-        return `<circle class="fb-marker" cx="${cx}" cy="${y1}" r="4"/><circle class="fb-marker" cx="${cx}" cy="${y22}" r="4"/>`;
+        return `<circle class="fb-marker" cx="${x1}" cy="${cy}" r="4"/><circle class="fb-marker" cx="${x2}" cy="${cy}" r="4"/>`;
       }
-      return `<circle class="fb-marker" cx="${cx}" cy="${h3 / 2}" r="4"/>`;
+      return `<circle class="fb-marker" cx="${w3 / 2}" cy="${cy}" r="4"/>`;
     }).join("\n      ");
   }
   function positionCircles(stringCount = 6, fretCount = 13) {
@@ -9788,7 +9807,21 @@ button {
     return Array.from(
       { length: stringCount },
       (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
-        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${noteX(fret)}" cy="${stringY(string)}" r="10"/>`;
+        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="14"/>`;
+      }).join("\n      ")
+    ).join("\n      ");
+  }
+  function tapTargetRects(stringCount = 6, fretCount = 13) {
+    const w3 = svgWidth(stringCount);
+    return Array.from(
+      { length: stringCount },
+      (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
+        const cx = stringX(string, stringCount);
+        const x2 = Math.max(0, cx - STRING_GAP / 2);
+        const right = Math.min(w3, cx + STRING_GAP / 2);
+        const y3 = fret === 0 ? 0 : fretPositions[fret];
+        const bottom = fretPositions[fret + 1] ?? fretPositions[fretPositions.length - 1];
+        return `<rect class="fb-tap" data-string="${string}" data-fret="${fret}" x="${x2}" y="${y3}" width="${right - x2}" height="${bottom - y3}"/>`;
       }).join("\n      ")
     ).join("\n      ");
   }
@@ -9797,22 +9830,23 @@ button {
   function fretboardSVG(config = {}) {
     const sc = config.stringCount ?? 6;
     const fc = config.fretCount ?? 13;
-    const h3 = svgHeight(sc);
+    const w3 = svgWidth(sc);
     const markers = config.fretMarkers ?? [3, 5, 7, 9, 12];
     const idAttr = config.id ? ` id="${config.id}"` : "";
     return `<div class="fretboard-wrapper">
       <div class="fretboard-container">
-        <svg class="fretboard"${idAttr} viewBox="0 0 600 ${h3}">
+        <svg class="fretboard"${idAttr} viewBox="0 0 ${w3} ${SVG_HEIGHT}">
           <!-- Fret marker dots (inlays) -->
           ${fretMarkerDots(sc, markers, fc)}
-          <!-- Nut (wide bar at fret 0) -->
-          <rect class="fb-nut" x="${fretPositions[1] - 2}" y="0" width="4" height="${h3}" rx="1"/>
-          <!-- Frets (vertical lines) -->
-          ${fretLines(h3)}
-          <!-- Strings (horizontal lines) -->
+          <!-- Nut (horizontal bar at top) -->
+          <rect class="fb-nut" x="0" y="${fretPositions[1] - 2}" width="${w3}" height="4" rx="1"/>
+          <!-- Frets (horizontal lines) -->
+          ${fretLines(w3)}
+          <!-- Strings (vertical lines) -->
           ${stringLines(sc)}
           <!-- Position circles -->
           ${positionCircles(sc, fc)}
+          ${config.tapTargets ? "<!-- Tap targets -->\n          " + tapTargetRects(sc, fc) : ""}
         </svg>
         <div class="hover-card"><div class="hc-inner">
           <div class="hc-note"></div>
@@ -9885,15 +9919,16 @@ button {
       ).getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
       const cx = elRect.left + elRect.width / 2 - containerRect.left;
-      const cy = elRect.top - containerRect.top;
-      if (cy < 50) {
-        card.style.left = cx + "px";
-        card.style.top = cy + elRect.height + 6 + "px";
-        card.style.transform = "translate(-50%, 0)";
+      const cy = elRect.top + elRect.height / 2 - containerRect.top;
+      const midX = containerRect.width / 2;
+      if (cx < midX) {
+        card.style.left = cx + elRect.width / 2 + 6 + "px";
+        card.style.top = cy + "px";
+        card.style.transform = "translate(0, -50%)";
       } else {
-        card.style.left = cx + "px";
-        card.style.top = cy - 6 + "px";
-        card.style.transform = "translate(-50%, -100%)";
+        card.style.left = cx - elRect.width / 2 - 6 + "px";
+        card.style.top = cy + "px";
+        card.style.transform = "translate(-100%, -50%)";
       }
       card.classList.add("visible");
     }
@@ -10207,6 +10242,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -10245,7 +10281,6 @@ button {
           QuizArea,
           {
             prompt: promptText,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
@@ -10315,7 +10350,6 @@ button {
   }
 
   // src/modes/speed-tap/speed-tap-mode.tsx
-  var FB_TAP_NEUTRAL = "hsl(30, 4%, 90%)";
   var FB_TAP_CORRECT = "hsl(122, 46%, 33%)";
   function setCircleFill2(root, string, fret, color) {
     const circle = root.querySelector(
@@ -10355,11 +10389,11 @@ button {
       }
     }, []);
     const [currentDisplayName, setCurrentDisplayName] = d2("");
-    const svgHTML = T2(() => fretboardSVG(), []);
+    const svgHTML = T2(() => fretboardSVG({ tapTargets: true }), []);
     const handleTap = q2((e3) => {
       if (!roundActiveRef.current || !currentNoteRef.current) return;
       const el = e3.target.closest(
-        "circle.fb-pos[data-string][data-fret]"
+        ".fb-tap[data-string][data-fret]"
       );
       if (!el) return;
       const s3 = parseInt(el.dataset.string);
@@ -10384,7 +10418,7 @@ button {
         const timeout = setTimeout(() => {
           wrongFlashTimeoutsRef.current.delete(timeout);
           if (!foundPosRef.current.has(key)) {
-            setCircleFill2(wrapper, s3, f4, FB_TAP_NEUTRAL);
+            setCircleFill2(wrapper, s3, f4, "");
           }
         }, 800);
         wrongFlashTimeoutsRef.current.add(timeout);
@@ -10405,7 +10439,7 @@ button {
                 wrapper,
                 closest.string,
                 closest.fret,
-                FB_TAP_NEUTRAL
+                ""
               );
             }
           }, 800);
@@ -10490,9 +10524,6 @@ button {
       wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
       wrongFlashTimeoutsRef.current.clear();
       clearAllCircles(wrapper);
-      wrapper.querySelectorAll(".fb-pos").forEach((c3) => {
-        c3.style.fill = FB_TAP_NEUTRAL;
-      });
     }, [currentItemId]);
     usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const practicingLabel = T2(() => {
@@ -10580,6 +10611,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -10618,7 +10650,6 @@ button {
           QuizArea,
           {
             prompt: promptText,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(NoteButtons, { hidden: true, onAnswer: () => {
               } }),
