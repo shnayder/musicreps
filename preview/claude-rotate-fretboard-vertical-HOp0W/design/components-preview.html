@@ -701,6 +701,7 @@ body {
   max-height: 50vh;
   height: auto;
   display: block;
+  margin: 0 auto;
   background: var(--color-bg);
   touch-action: manipulation;
 }
@@ -718,7 +719,7 @@ body {
   fill: hsl(30, 5%, 62%);
 }
 .fb-pos {
-  fill: hsl(30, 5%, 90%);
+  fill: none;
   stroke: none;
   cursor: pointer;
   transition: fill 0.15s;
@@ -1528,6 +1529,9 @@ button {
   gap: var(--space-6);
   font-size: var(--text-lg);
   margin: var(--space-3) 0;
+}
+.quiz-prompt-row + .speed-tap-status {
+  margin-top: calc(-1 * var(--space-4));
 }
 .speed-tap-progress {
   font-weight: 500;

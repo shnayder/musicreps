@@ -703,6 +703,7 @@ body {
   max-height: 50vh;
   height: auto;
   display: block;
+  margin: 0 auto;
   background: var(--color-bg);
   touch-action: manipulation;
 }
@@ -720,7 +721,7 @@ body {
   fill: hsl(30, 5%, 62%);
 }
 .fb-pos {
-  fill: hsl(30, 5%, 90%);
+  fill: none;
   stroke: none;
   cursor: pointer;
   transition: fill 0.15s;
@@ -1531,6 +1532,9 @@ button {
   font-size: var(--text-lg);
   margin: var(--space-3) 0;
 }
+.quiz-prompt-row + .speed-tap-status {
+  margin-top: calc(-1 * var(--space-4));
+}
 .speed-tap-progress {
   font-weight: 500;
 }
@@ -1787,7 +1791,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">b70bfb rotate-fretboard-vertical-HOp0W</span>
+      <span class="version">09b2cc rotate-fretboard-vertical-HOp0W</span>
     </div>
   </div>
 
