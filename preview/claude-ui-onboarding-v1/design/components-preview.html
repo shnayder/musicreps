@@ -297,7 +297,8 @@ body {
   align-items: flex-start;
   gap: 0;
   margin: var(--space-1) 0 0;
-  padding: 0;
+  padding: var(--space-1) 0;
+  min-height: 44px;
   background: none;
   border: none;
   font: inherit;
@@ -3028,9 +3029,9 @@ button {
             type: "button",
             class: "mode-description-toggle" + (detailOpen ? " open" : ""),
             "aria-expanded": detailOpen,
-            onClick: () => setDetailOpen(!detailOpen),
+            onClick: () => setDetailOpen((open) => !open),
             children: [
-              /* @__PURE__ */ u3("span", { class: "mode-description-chevron", children: "\u203A" }),
+              /* @__PURE__ */ u3("span", { class: "mode-description-chevron", "aria-hidden": "true", children: "\u203A" }),
               /* @__PURE__ */ u3("span", { children: [
                 description,
                 detailOpen && /* @__PURE__ */ u3(k, { children: [
