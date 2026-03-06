@@ -26,8 +26,9 @@ import { KEY_SIGNATURES_DEF } from './modes/key-signatures/definition.ts';
 import { SCALE_DEGREES_DEF } from './modes/scale-degrees/definition.ts';
 import { DIATONIC_CHORDS_DEF } from './modes/diatonic-chords/definition.ts';
 
+import { createFretboardDef } from './modes/fretboard/definition.tsx';
+
 // Hand-written modes (too specialized for GenericMode)
-import { FretboardMode } from './modes/fretboard/fretboard-mode.tsx';
 import { SpeedTapMode } from './modes/speed-tap/speed-tap-mode.tsx';
 import { ChordSpellingMode } from './modes/chord-spelling/chord-spelling-mode.tsx';
 
@@ -97,43 +98,9 @@ function registerDeclarativeMode(def: ModeDefinition<any>) {
   });
 }
 
-// Fretboard modes need extra instrument prop
-function registerFretboardMode(
-  id: string,
-  name: string,
-  instrument: typeof GUITAR,
-) {
-  let handle: ModeHandle | null = null;
-  const cont = document.getElementById('mode-' + id)!;
-  nav.registerMode(id, {
-    name,
-    init() {
-      cont.textContent = ''; // Clear build-time HTML before Preact takes over
-      render(
-        h(FretboardMode, {
-          instrument,
-          container: cont,
-          navigateHome: () => nav.navigateHome(),
-          onMount: (h: ModeHandle) => {
-            handle = h;
-          },
-        }),
-        cont,
-      );
-    },
-    activate() {
-      handle?.activate();
-    },
-    deactivate() {
-      handle?.deactivate();
-    },
-  });
-}
-
-registerFretboardMode('fretboard', 'Guitar Fretboard', GUITAR);
-registerFretboardMode('ukulele', 'Ukulele Fretboard', UKULELE);
-
-// Declarative modes (GenericMode + text input)
+// Declarative modes
+registerDeclarativeMode(createFretboardDef(GUITAR));
+registerDeclarativeMode(createFretboardDef(UKULELE));
 registerDeclarativeMode(NOTE_SEMITONES_DEF);
 registerDeclarativeMode(INTERVAL_SEMITONES_DEF);
 registerDeclarativeMode(SEMITONE_MATH_DEF);

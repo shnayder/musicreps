@@ -2,7 +2,16 @@
 // A ModeDefinition captures everything that varies between quiz modes,
 // letting GenericMode handle all the shared hook composition + rendering.
 
-import type { StatsTableRow } from '../types.ts';
+import type { ComponentChildren } from 'preact';
+import type { CheckAnswerResult, ItemStats, StatsTableRow } from '../types.ts';
+
+/** Minimal selector interface for stats rendering (color computation). */
+export type StatsSelector = {
+  getSpeedScore(id: string): number | null;
+  getFreshness(id: string): number | null;
+  getAutomaticity(id: string): number | null;
+  getStats(id: string): ItemStats | null;
+};
 
 // ---------------------------------------------------------------------------
 // Button types — what clickable/tappable buttons appear during quiz
@@ -95,6 +104,39 @@ export type NoStatsDef = { kind: 'none' };
 export type StatsDef = GridStatsDef | TableStatsDef | NoStatsDef;
 
 // ---------------------------------------------------------------------------
+// Mode controller — optional hook for imperative rendering + engine hooks
+// ---------------------------------------------------------------------------
+
+/**
+ * Returned by a mode's `useController` hook. Provides custom rendering,
+ * engine lifecycle hooks, and keyboard handling. All fields are optional —
+ * GenericMode falls back to defaults for anything not provided.
+ */
+export type ModeController<Q> = {
+  /** Custom prompt content rendered as QuizArea child (replaces text prompt). */
+  renderPrompt?: (q: Q) => ComponentChildren;
+  /** Custom stats content rendered in the practice tab (replaces grid/table). */
+  renderStats?: (selector: StatsSelector) => ComponentChildren;
+  /** Called after the user answers (e.g., color an SVG circle). */
+  onAnswer?: (itemId: string, result: CheckAnswerResult) => void;
+  /** Called when quiz starts. */
+  onStart?: () => void;
+  /** Called when quiz stops. */
+  onStop?: () => void;
+  /** Mode keyboard handler. Return true if handled. Replaces text input. */
+  handleKey?: (
+    e: KeyboardEvent,
+    ctx: { submitAnswer: (input: string) => void },
+  ) => boolean | void;
+  /** Called on mode deactivation (e.g., reset keyboard handler). */
+  deactivateCleanup?: () => void;
+  /** Keyboard narrowing set for PianoNoteButtons. */
+  narrowing?: ReadonlySet<string> | null;
+  /** Dynamic hideAccidentals override for PianoNoteButtons. */
+  hideAccidentals?: boolean;
+};
+
+// ---------------------------------------------------------------------------
 // ModeDefinition — the full declarative mode specification
 // ---------------------------------------------------------------------------
 
@@ -104,6 +146,9 @@ export type StatsDef = GridStatsDef | TableStatsDef | NoStatsDef;
  * The generic component handles all hook composition, rendering, and phase
  * transitions. Keyboard input is via a text field + Enter — no per-mode
  * keyboard handler needed. Buttons remain for tap/click.
+ *
+ * Modes with custom rendering needs (e.g., SVG fretboard) provide a
+ * `useController` hook that returns imperative rendering and lifecycle hooks.
  *
  * @typeParam Q - The question type returned by getQuestion.
  */
@@ -152,4 +197,9 @@ export type ModeDefinition<Q = unknown> = {
   buttons: AnswerDef;
   scope: ScopeDef;
   stats: StatsDef;
+
+  // --- Optional controller hook ---
+  /** Preact hook returning imperative rendering + lifecycle hooks.
+   *  Called inside GenericMode — may use useRef, useState, etc. */
+  useController?: (enabledGroups: ReadonlySet<number>) => ModeController<Q>;
 };

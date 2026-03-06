@@ -2,6 +2,10 @@
 // Handles all hook composition, text-input keyboard handling, and
 // phase-conditional rendering. Keyboard input is via a text field + Enter;
 // buttons remain for tap/click on mobile.
+//
+// Modes with custom rendering needs (e.g., SVG fretboard) provide a
+// `useController` hook that can override prompt rendering, stats rendering,
+// engine lifecycle hooks, and keyboard handling.
 
 import {
   useCallback,
@@ -43,10 +47,14 @@ import {
   RoundCompleteInfo,
 } from '../ui/mode-screen.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from '../ui/stats.tsx';
-import { FeedbackBanner, FeedbackDisplay } from '../ui/quiz-ui.tsx';
+import {
+  FeedbackBanner,
+  FeedbackDisplay,
+  KeyboardHint,
+} from '../ui/quiz-ui.tsx';
 import { BUTTON_PROVIDER, SpeedCheck } from '../ui/speed-check.tsx';
 
-import type { ButtonsDef, ModeDefinition } from './types.ts';
+import type { ButtonsDef, ModeController, ModeDefinition } from './types.ts';
 
 // ---------------------------------------------------------------------------
 // AnswerInput — text field for keyboard answers
@@ -115,11 +123,20 @@ function AnswerInput(
 // ---------------------------------------------------------------------------
 
 function ResponseButtons(
-  { buttonsDef, hidden, onAnswer, useFlats }: {
+  {
+    buttonsDef,
+    hidden,
+    onAnswer,
+    useFlats,
+    narrowing,
+    hideAccidentalsOverride,
+  }: {
     buttonsDef: ButtonsDef;
     hidden?: boolean;
     onAnswer: (input: string) => void;
     useFlats?: boolean;
+    narrowing?: ReadonlySet<string> | null;
+    hideAccidentalsOverride?: boolean;
   },
 ) {
   switch (buttonsDef.kind) {
@@ -135,7 +152,9 @@ function ResponseButtons(
       return (
         <PianoNoteButtons
           onAnswer={onAnswer}
-          hideAccidentals={buttonsDef.hideAccidentals}
+          hideAccidentals={hideAccidentalsOverride ??
+            buttonsDef.hideAccidentals}
+          narrowing={narrowing}
         />
       );
     case 'number':
@@ -161,6 +180,8 @@ function ResponseButtons(
 // ---------------------------------------------------------------------------
 // GenericMode component
 // ---------------------------------------------------------------------------
+
+const EMPTY_GROUPS: ReadonlySet<number> = new Set();
 
 export function GenericMode<Q>(
   { def, container, navigateHome, onMount }: {
@@ -190,6 +211,14 @@ export function GenericMode<Q>(
     ? useGroupScope(groupScopeSpec)
     : null;
 
+  // --- Controller (optional — for modes with custom rendering/hooks) ---
+  const enabledGroups = groupScopeResult?.enabledGroups ?? EMPTY_GROUPS;
+  const ctrl: ModeController<Q> = def.useController
+    ? def.useController(enabledGroups)
+    : {};
+  const ctrlRef = useRef(ctrl);
+  ctrlRef.current = ctrl;
+
   // --- Question state ---
   const currentQRef = useRef<Q | null>(null);
 
@@ -214,12 +243,23 @@ export function GenericMode<Q>(
       const q = currentQRef.current!;
       return def.checkAnswer(q, input);
     },
-    // No handleKey — keyboard input goes through the text field.
-    // The engine still handles Space/Enter/Escape for next/stop/continue
-    // via its own routing; those keys won't reach us because the text
-    // input stops propagation on Enter, and Space/Escape are not
-    // intercepted by the input.
-  }), [def]);
+
+    onAnswer: (itemId, result) => {
+      ctrlRef.current.onAnswer?.(itemId, result);
+    },
+
+    onStart: () => {
+      ctrlRef.current.onStart?.();
+    },
+
+    onStop: () => {
+      ctrlRef.current.onStop?.();
+    },
+
+    handleKey: ctrl.handleKey
+      ? (e, ctx) => ctrlRef.current.handleKey!(e, ctx)
+      : undefined,
+  }), [def, !!ctrl.handleKey]);
 
   const engine = useQuizEngine(engineConfig, learner.selector, container);
 
@@ -256,7 +296,8 @@ export function GenericMode<Q>(
   });
 
   // --- Navigation handle ---
-  useModeLifecycle(onMount, engine, learner);
+  const deactivateCleanup = ctrl.deactivateCleanup;
+  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
 
   // --- Prompt text ---
   const promptText = currentQ ? def.getPromptText(currentQ) : '';
@@ -290,6 +331,7 @@ export function GenericMode<Q>(
   // --- Render ---
   const phase = engine.state.phase;
   const isIdle = phase === 'idle';
+  const hasCustomKeyboard = !!ctrl.handleKey;
 
   // Determine active/inactive buttons for rendering
   const activeButtons: ButtonsDef = def.buttons.kind === 'bidirectional'
@@ -303,6 +345,7 @@ export function GenericMode<Q>(
   return (
     <>
       <ModeTopBar
+        modeId={def.id}
         title={def.name}
         description={def.description}
         beforeAfter={def.beforeAfter}
@@ -332,23 +375,28 @@ export function GenericMode<Q>(
             : undefined}
           statsContent={
             <>
-              {def.stats.kind === 'grid' && (
-                <StatsGrid
-                  selector={ps.statsSel}
-                  colLabels={def.stats.colLabels}
-                  getItemId={def.stats.getItemId}
-                  notes={def.stats.notes}
-                />
+              {ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : (
+                <>
+                  {def.stats.kind === 'grid' && (
+                    <StatsGrid
+                      selector={ps.statsSel}
+                      colLabels={def.stats.colLabels}
+                      getItemId={def.stats.getItemId}
+                      notes={def.stats.notes}
+                    />
+                  )}
+                  {def.stats.kind === 'table' && (
+                    <StatsTable
+                      selector={ps.statsSel}
+                      rows={def.stats.getRows()}
+                      fwdHeader={def.stats.fwdHeader}
+                      revHeader={def.stats.revHeader}
+                    />
+                  )}
+                </>
               )}
-              {def.stats.kind === 'table' && (
-                <StatsTable
-                  selector={ps.statsSel}
-                  rows={def.stats.getRows()}
-                  fwdHeader={def.stats.fwdHeader}
-                  revHeader={def.stats.revHeader}
-                />
-              )}
-              {def.stats.kind !== 'none' && <StatsLegend />}
+              {(def.stats.kind !== 'none' || ctrl.renderStats) &&
+                <StatsLegend />}
             </>
           }
           baseline={learner.motorBaseline}
@@ -408,22 +456,28 @@ export function GenericMode<Q>(
             )
             : (
               <QuizArea
-                prompt={promptText}
+                prompt={ctrl.renderPrompt ? undefined : promptText}
                 controls={
                   <>
                     <FeedbackBanner
                       correct={engine.state.feedbackCorrect}
                       answer={engine.state.feedbackDisplayAnswer}
                     />
-                    <AnswerInput
-                      onSubmit={handleSubmit}
-                      disabled={engine.state.answered}
-                      placeholder={placeholder}
-                    />
+                    {hasCustomKeyboard
+                      ? <KeyboardHint type='note' />
+                      : (
+                        <AnswerInput
+                          onSubmit={handleSubmit}
+                          disabled={engine.state.answered}
+                          placeholder={placeholder}
+                        />
+                      )}
                     <ResponseButtons
                       buttonsDef={activeButtons}
                       onAnswer={handleSubmit}
                       useFlats={useFlats}
+                      narrowing={ctrl.narrowing}
+                      hideAccidentalsOverride={ctrl.hideAccidentals}
                     />
                     {inactiveButtons && (
                       <ResponseButtons
@@ -443,7 +497,11 @@ export function GenericMode<Q>(
                     />
                   </>
                 }
-              />
+              >
+                {currentQ && ctrl.renderPrompt
+                  ? ctrl.renderPrompt(currentQ)
+                  : null}
+              </QuizArea>
             )}
         </>
       )}
