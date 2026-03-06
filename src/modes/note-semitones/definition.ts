@@ -3,6 +3,7 @@
 
 import {
   displayNote,
+  isValidNoteInput,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
 } from '../../music-data.ts';
@@ -28,6 +29,8 @@ export const NOTE_SEMITONES_DEF: ModeDefinition<Question> = {
   getPromptText: (q) =>
     q.dir === 'fwd' ? displayNote(q.accidentalChoice) : String(q.noteNum),
   checkAnswer,
+  validateInput: (q, input) =>
+    q.dir === 'fwd' ? /^\d{1,2}$/.test(input) : isValidNoteInput(input),
   getDirection: (q) => q.dir,
 
   inputPlaceholder: (q) => q.dir === 'fwd' ? '0\u201311' : 'Note name',

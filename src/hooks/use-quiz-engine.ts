@@ -422,6 +422,8 @@ export function useQuizEngine(
           continueQuiz();
           break;
         case 'delegate':
+          // Skip delegation when typing in a text input (AnswerInput handles it)
+          if (e.target instanceof HTMLInputElement) break;
           if (configRef.current.handleKey) {
             configRef.current.handleKey(e, { submitAnswer });
           }

@@ -198,9 +198,48 @@ export function pickRandomAccidental(displayName: string) {
   return Math.random() < 0.5 ? sharp : flat;
 }
 
-/** Check if a user input matches any accepted answer for a note. */
+/** Check if a user input matches any accepted answer for a note.
+ *  Accepts 's' as alias for '#' (e.g. "Cs" = "C#", "fs" = "f#"). */
 export function noteMatchesInput(note: Note, input: string) {
-  return note.accepts.includes(input.toLowerCase());
+  const lower = input.toLowerCase();
+  if (note.accepts.includes(lower)) return true;
+  // Try 's' → '#' substitution (e.g. "cs" → "c#")
+  if (lower.endsWith('s') && lower.length === 2) {
+    return note.accepts.includes(lower[0] + '#');
+  }
+  return false;
+}
+
+/** Valid note input pattern: letter A-G, optional #/b/s suffix. */
+const NOTE_INPUT_RE = /^[a-gA-G][#bBsS]?$/;
+
+/** Check if input looks like a note name (for input validation). */
+export function isValidNoteInput(input: string): boolean {
+  return NOTE_INPUT_RE.test(input);
+}
+
+/** Valid interval abbreviation pattern: m2, M3, P4, P5, TT, A4, d5, P8, etc. */
+const INTERVAL_INPUT_RE = /^[mMPAdTp][2-8Tt]$/;
+
+/** Check if input looks like an interval abbreviation. */
+export function isValidIntervalInput(input: string): boolean {
+  return INTERVAL_INPUT_RE.test(input);
+}
+
+/** Valid key signature input: "0", "1#"–"7#", "1b"–"7b". */
+const KEYSIG_INPUT_RE = /^(0|[1-7][#bB])$/;
+
+/** Check if input looks like a key signature label. */
+export function isValidKeysigInput(input: string): boolean {
+  return KEYSIG_INPUT_RE.test(input);
+}
+
+/** Valid numeral input: I, ii, iii, IV, V, vi, vii, vii° etc. */
+const NUMERAL_INPUT_RE = /^[IiVv]{1,4}°?$/;
+
+/** Check if input looks like a Roman numeral. */
+export function isValidNumeralInput(input: string): boolean {
+  return NUMERAL_INPUT_RE.test(input);
 }
 
 /** Check if a user input matches an interval abbreviation (case-sensitive). */

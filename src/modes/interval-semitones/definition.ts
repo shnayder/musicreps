@@ -1,7 +1,11 @@
 // Interval ↔ Semitones — declarative mode definition.
 // Bidirectional: "minor 2nd" → 1, or 7 → "P5".
 
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../music-data.ts';
+import {
+  isValidIntervalInput,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../music-data.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_ITEMS,
@@ -23,6 +27,8 @@ export const INTERVAL_SEMITONES_DEF: ModeDefinition<Question> = {
   getQuestion,
   getPromptText: (q) => q.dir === 'fwd' ? q.name : String(q.num),
   checkAnswer,
+  validateInput: (q, input) =>
+    q.dir === 'fwd' ? /^\d{1,2}$/.test(input) : isValidIntervalInput(input),
   getDirection: (q) => q.dir,
 
   inputPlaceholder: (q) => q.dir === 'fwd' ? '1\u201312' : 'Interval (e.g. P5)',

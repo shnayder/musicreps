@@ -1,7 +1,11 @@
 // Interval Math — declarative mode definition.
 // "C + m3 = ?" → user answers with a note name.
 
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../music-data.ts';
+import {
+  isValidNoteInput,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../music-data.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,
@@ -27,6 +31,7 @@ export const INTERVAL_MATH_DEF: ModeDefinition<Question> = {
   getQuestion,
   getPromptText: (q) => q.promptText,
   checkAnswer,
+  validateInput: (_q, input) => isValidNoteInput(input),
   getUseFlats: (q) => q.useFlats,
 
   inputPlaceholder: 'Note name',

@@ -3,6 +3,8 @@
 
 import {
   displayNote,
+  isValidKeysigInput,
+  isValidNoteInput,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
 } from '../../music-data.ts';
@@ -31,6 +33,8 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   getPromptText: (q) =>
     q.dir === 'fwd' ? displayNote(q.root) + ' major' : q.sigLabel + ' major',
   checkAnswer,
+  validateInput: (q, input) =>
+    q.dir === 'fwd' ? isValidKeysigInput(input) : isValidNoteInput(input),
   getDirection: (q) => q.dir,
 
   inputPlaceholder: (q) =>

@@ -3,6 +3,7 @@
 
 import {
   displayNote,
+  isValidNoteInput,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
 } from '../../music-data.ts';
@@ -37,6 +38,8 @@ export const SCALE_DEGREES_DEF: ModeDefinition<Question> = {
       : displayNote(q.keyRoot) + ' major: ' +
         displayNote(q.noteName),
   checkAnswer,
+  validateInput: (q, input) =>
+    q.dir === 'fwd' ? isValidNoteInput(input) : /^[1-7]$/.test(input),
   getDirection: (q) => q.dir,
 
   inputPlaceholder: (q) => q.dir === 'fwd' ? 'Note name' : 'Degree (1\u20137)',

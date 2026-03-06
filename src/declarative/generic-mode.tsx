@@ -51,10 +51,28 @@ import {
   FeedbackBanner,
   FeedbackDisplay,
   KeyboardHint,
+  type KeyboardHintType,
 } from '../ui/quiz-ui.tsx';
 import { BUTTON_PROVIDER, SpeedCheck } from '../ui/speed-check.tsx';
 
 import type { ButtonsDef, ModeController, ModeDefinition } from './types.ts';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Derive the keyboard hint type from the active button kind. */
+function getHintType(buttons: ButtonsDef): KeyboardHintType {
+  switch (buttons.kind) {
+    case 'note':
+    case 'piano-note':
+      return 'note';
+    case 'number':
+      return buttons.start === 0 ? 'number-0-11' : 'number-1-12';
+    default:
+      return null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // AnswerInput — text field for keyboard answers
@@ -358,7 +376,6 @@ export function GenericMode<Q>(
   // --- Render ---
   const phase = engine.state.phase;
   const isIdle = phase === 'idle';
-  const hasCustomKeyboard = !!ctrl.handleKey;
 
   // Determine active/inactive buttons for rendering
   const activeButtons: ButtonsDef = def.buttons.kind === 'bidirectional'
@@ -490,15 +507,6 @@ export function GenericMode<Q>(
                       correct={engine.state.feedbackCorrect}
                       answer={engine.state.feedbackDisplayAnswer}
                     />
-                    {hasCustomKeyboard
-                      ? <KeyboardHint type='note' />
-                      : (
-                        <AnswerInput
-                          onSubmit={handleSubmit}
-                          disabled={engine.state.answered}
-                          placeholder={placeholder}
-                        />
-                      )}
                     <ResponseButtons
                       buttonsDef={activeButtons}
                       onAnswer={handleSubmit}
@@ -513,6 +521,12 @@ export function GenericMode<Q>(
                         onAnswer={handleSubmit}
                       />
                     )}
+                    <AnswerInput
+                      onSubmit={handleSubmit}
+                      disabled={engine.state.answered}
+                      placeholder={placeholder}
+                    />
+                    <KeyboardHint type={getHintType(activeButtons)} />
                     <FeedbackDisplay
                       text={engine.state.feedbackText}
                       className={engine.state.feedbackClass}

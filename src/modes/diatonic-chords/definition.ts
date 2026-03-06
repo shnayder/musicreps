@@ -3,6 +3,8 @@
 
 import {
   displayNote,
+  isValidNoteInput,
+  isValidNumeralInput,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
   ROMAN_NUMERALS,
@@ -37,6 +39,8 @@ export const DIATONIC_CHORDS_DEF: ModeDefinition<Question> = {
       : displayNote(q.rootNote) + q.chord.qualityLabel +
         ' in ' + displayNote(q.keyRoot) + ' major',
   checkAnswer,
+  validateInput: (q, input) =>
+    q.dir === 'fwd' ? isValidNoteInput(input) : isValidNumeralInput(input),
   getDirection: (q) => q.dir,
 
   inputPlaceholder: (q) => q.dir === 'fwd' ? 'Note name' : 'Numeral (e.g. IV)',
