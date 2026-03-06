@@ -1344,7 +1344,7 @@ button {
 }
 /* Answer text input (declarative modes) */
 .answer-input {
-  display: block;
+  display: none;
   width: 100%;
   max-width: 280px;
   margin: var(--space-2) auto;
@@ -1359,8 +1359,13 @@ button {
   outline: none;
   transition: border-color 0.15s;
 }
+@media (pointer: fine) {
+  .answer-input {
+    display: block;
+  }
+}
 .answer-input:focus {
-  border-color: var(--color-primary);
+  border-color: var(--color-border);
 }
 .answer-input:disabled {
   opacity: 0.5;

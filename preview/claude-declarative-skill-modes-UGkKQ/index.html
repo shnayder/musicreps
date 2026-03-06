@@ -1354,7 +1354,7 @@ button {
 }
 /* Answer text input (declarative modes) */
 .answer-input {
-  display: block;
+  display: none;
   width: 100%;
   max-width: 280px;
   margin: var(--space-2) auto;
@@ -1369,8 +1369,13 @@ button {
   outline: none;
   transition: border-color 0.15s;
 }
+@media (pointer: fine) {
+  .answer-input {
+    display: block;
+  }
+}
 .answer-input:focus {
-  border-color: var(--color-primary);
+  border-color: var(--color-border);
 }
 .answer-input:disabled {
   opacity: 0.5;
@@ -1928,7 +1933,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="a13c43 declarative-skill-modes-UGkKQ"></div>
+  <div class="home-screen" id="home-screen" data-version="fc4bb1 declarative-skill-modes-UGkKQ"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -4014,7 +4019,28 @@ button {
     return Math.random() < 0.5 ? sharp : flat;
   }
   function noteMatchesInput(note, input) {
-    return note.accepts.includes(input.toLowerCase());
+    const lower = input.toLowerCase();
+    if (note.accepts.includes(lower)) return true;
+    if (lower.endsWith("s") && lower.length === 2) {
+      return note.accepts.includes(lower[0] + "#");
+    }
+    return false;
+  }
+  var NOTE_INPUT_RE = /^[a-gA-G][#bBsS]?$/;
+  function isValidNoteInput(input) {
+    return NOTE_INPUT_RE.test(input);
+  }
+  var INTERVAL_INPUT_RE = /^[mMPAdTp][2-8Tt]$/;
+  function isValidIntervalInput(input) {
+    return INTERVAL_INPUT_RE.test(input);
+  }
+  var KEYSIG_INPUT_RE = /^(0|[1-7][#bB])$/;
+  function isValidKeysigInput(input) {
+    return KEYSIG_INPUT_RE.test(input);
+  }
+  var NUMERAL_INPUT_RE = /^[IiVv]{1,4}°?$/;
+  function isValidNumeralInput(input) {
+    return NUMERAL_INPUT_RE.test(input);
   }
   function intervalMatchesInput(interval, input) {
     if (input === interval.abbrev) return true;
@@ -6464,6 +6490,7 @@ button {
             continueQuiz();
             break;
           case "delegate":
+            if (e3.target instanceof HTMLInputElement) break;
             if (configRef.current.handleKey) {
               configRef.current.handleKey(e3, { submitAnswer });
             }
@@ -7621,6 +7648,17 @@ button {
   }
 
   // src/declarative/generic-mode.tsx
+  function getHintType(buttons) {
+    switch (buttons.kind) {
+      case "note":
+      case "piano-note":
+        return "note";
+      case "number":
+        return buttons.start === 0 ? "number-0-11" : "number-1-12";
+      default:
+        return null;
+    }
+  }
   function AnswerInput({ onSubmit, disabled, placeholder, onInvalid }) {
     const inputRef = A2(null);
     const [shake, setShake] = d2(false);
@@ -7817,7 +7855,6 @@ button {
     })();
     const phase = engine.state.phase;
     const isIdle = phase === "idle";
-    const hasCustomKeyboard = !!ctrl.handleKey;
     const activeButtons = def.buttons.kind === "bidirectional" ? dir === "fwd" ? def.buttons.fwd : def.buttons.rev : def.buttons;
     const inactiveButtons = def.buttons.kind === "bidirectional" ? dir === "fwd" ? def.buttons.rev : def.buttons.fwd : null;
     return /* @__PURE__ */ u3(k, { children: [
@@ -7934,14 +7971,6 @@ button {
                   answer: engine.state.feedbackDisplayAnswer
                 }
               ),
-              hasCustomKeyboard ? /* @__PURE__ */ u3(KeyboardHint, { type: "note" }) : /* @__PURE__ */ u3(
-                AnswerInput,
-                {
-                  onSubmit: handleSubmit,
-                  disabled: engine.state.answered,
-                  placeholder
-                }
-              ),
               /* @__PURE__ */ u3(
                 ResponseButtons,
                 {
@@ -7960,6 +7989,15 @@ button {
                   onAnswer: handleSubmit
                 }
               ),
+              /* @__PURE__ */ u3(
+                AnswerInput,
+                {
+                  onSubmit: handleSubmit,
+                  disabled: engine.state.answered,
+                  placeholder
+                }
+              ),
+              /* @__PURE__ */ u3(KeyboardHint, { type: getHintType(activeButtons) }),
               /* @__PURE__ */ u3(
                 FeedbackDisplay,
                 {
@@ -8056,6 +8094,7 @@ button {
     getQuestion,
     getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.accidentalChoice) : String(q3.noteNum),
     checkAnswer,
+    validateInput: (q3, input) => q3.dir === "fwd" ? /^\d{1,2}$/.test(input) : isValidNoteInput(input),
     getDirection: (q3) => q3.dir,
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "0\u201311" : "Note name",
     buttons: {
@@ -8120,6 +8159,7 @@ button {
     getQuestion: getQuestion2,
     getPromptText: (q3) => q3.dir === "fwd" ? q3.name : String(q3.num),
     checkAnswer: checkAnswer2,
+    validateInput: (q3, input) => q3.dir === "fwd" ? /^\d{1,2}$/.test(input) : isValidIntervalInput(input),
     getDirection: (q3) => q3.dir,
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "1\u201312" : "Interval (e.g. P5)",
     buttons: {
@@ -8211,6 +8251,7 @@ button {
     getQuestion: getQuestion3,
     getPromptText: (q3) => q3.promptText,
     checkAnswer: checkAnswer3,
+    validateInput: (_q, input) => isValidNoteInput(input),
     getUseFlats: (q3) => q3.useFlats,
     inputPlaceholder: "Note name",
     buttons: { kind: "note" },
@@ -8312,6 +8353,7 @@ button {
     getQuestion: getQuestion4,
     getPromptText: (q3) => q3.promptText,
     checkAnswer: checkAnswer4,
+    validateInput: (_q, input) => isValidNoteInput(input),
     getUseFlats: (q3) => q3.useFlats,
     inputPlaceholder: "Note name",
     buttons: { kind: "note" },
@@ -8405,6 +8447,7 @@ button {
     getQuestion: getQuestion5,
     getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " major" : q3.sigLabel + " major",
     checkAnswer: checkAnswer5,
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
     getDirection: (q3) => q3.dir,
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "Signature (e.g. 2#)" : "Note name",
     buttons: {
@@ -8504,6 +8547,7 @@ button {
     getQuestion: getQuestion6,
     getPromptText: (q3) => q3.dir === "fwd" ? DEGREE_LABELS2[q3.degree - 1] + " of " + displayNote(q3.keyRoot) + " major" : displayNote(q3.keyRoot) + " major: " + displayNote(q3.noteName),
     checkAnswer: checkAnswer6,
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : /^[1-7]$/.test(input),
     getDirection: (q3) => q3.dir,
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Degree (1\u20137)",
     buttons: {
@@ -8604,6 +8648,7 @@ button {
     getQuestion: getQuestion7,
     getPromptText: (q3) => q3.dir === "fwd" ? q3.chord.numeral + " in " + displayNote(q3.keyRoot) + " major" : displayNote(q3.rootNote) + q3.chord.qualityLabel + " in " + displayNote(q3.keyRoot) + " major",
     checkAnswer: checkAnswer7,
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input),
     getDirection: (q3) => q3.dir,
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
     buttons: {
@@ -8920,6 +8965,7 @@ button {
       getQuestion: (itemId) => getQuestion8(instrument, itemId),
       getPromptText: () => "Name this note",
       checkAnswer: (_q, input) => checkAnswer8(instrument, _q.currentNote, input),
+      validateInput: (_q, input) => isValidNoteInput(input),
       buttons: { kind: "piano-note" },
       scope: {
         kind: "groups",
