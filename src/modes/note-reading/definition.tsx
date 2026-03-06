@@ -3,7 +3,7 @@
 // note-key submission (no accidentals, no Enter needed).
 
 import { useEffect, useMemo, useRef } from 'preact/hooks';
-import { createNoteKeyHandler } from '../../quiz-engine.ts';
+import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
 import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../music-data.ts';
 import type {
   ModeController,
@@ -18,6 +18,7 @@ import {
   getItemIdsForGroup,
   getQuestion,
   GRID_COL_LABELS,
+  GRID_NOTES,
   GROUPS,
   type Question,
 } from './logic.ts';
@@ -87,6 +88,7 @@ export const NOTE_READING_DEF: ModeDefinition<Question> = {
     kind: 'grid',
     colLabels: GRID_COL_LABELS,
     getItemId: getGridItemId,
+    notes: GRID_NOTES,
   },
 
   useController: () => useNoteReadingController(),
@@ -110,7 +112,7 @@ function useNoteReadingController(): ModeController<Question> {
 
   const noteHandler = useMemo(
     () =>
-      createNoteKeyHandler(
+      createAdaptiveKeyHandler(
         (note: string) => engineSubmitRef.current(note),
         () => false, // no accidentals — submit immediately on key press
       ),
@@ -135,7 +137,7 @@ function useNoteReadingController(): ModeController<Question> {
     onStart: () => noteHandler.reset(),
     onStop: () => {
       noteHandler.reset();
-      if (staffRef.current) staffRef.current.innerHTML = '';
+      if (staffRef.current) staffRef.current.textContent = '';
     },
 
     handleKey: (e, ctx) => {

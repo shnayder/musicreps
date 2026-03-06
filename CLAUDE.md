@@ -144,6 +144,7 @@ graph, algorithm details, and step-by-step "adding a new quiz mode" checklist.
 | Scale Degrees        | 144 (12 keys x 6 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `C:7:rev`   |
 | Diatonic Chords      | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral         | `Bb:IV:fwd`, `C:D:rev` |
 | Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`    |
+| Note Reading         | 66 (33 treble + 33 bass)           | Note name (natural)     | `t:E4`, `b:G2`         |
 
 Bidirectional modes track each direction as a separate item.
 
