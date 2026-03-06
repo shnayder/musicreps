@@ -14,6 +14,11 @@ import {
   intervalByNum,
   intervalMatchesInput,
   INTERVALS,
+  isValidIntervalInput,
+  isValidKeysigInput,
+  isValidNoteInput,
+  isValidNumberInput,
+  isValidNumeralInput,
   keyBySignatureLabel,
   keySignatureLabel,
   LETTER_NAMES,
@@ -127,6 +132,153 @@ describe('noteMatchesInput', () => {
 
   it('rejects wrong input', () => {
     assert.ok(!noteMatchesInput(NOTES[0], 'd'));
+  });
+});
+
+describe('isValidNoteInput', () => {
+  it('accepts natural notes', () => {
+    for (const n of ['C', 'D', 'E', 'F', 'G', 'A', 'B']) {
+      assert.ok(isValidNoteInput(n), n);
+      assert.ok(isValidNoteInput(n.toLowerCase()), n.toLowerCase());
+    }
+  });
+
+  it('accepts sharps and flats', () => {
+    for (const s of ['C#', 'Db', 'F#', 'Gb', 'Ab', 'Bb']) {
+      assert.ok(isValidNoteInput(s), s);
+    }
+  });
+
+  it('accepts s as sharp alias', () => {
+    for (const s of ['Cs', 'Fs', 'cs', 'fs', 'AS']) {
+      assert.ok(isValidNoteInput(s), s);
+    }
+  });
+
+  it('rejects invalid input', () => {
+    for (const s of ['', 'X', 'CC', 'C##', '1', 'do', 'xyz', 'Cbb']) {
+      assert.ok(!isValidNoteInput(s), `should reject: ${s}`);
+    }
+  });
+});
+
+describe('isValidNumberInput', () => {
+  it('accepts numbers in range 0-11', () => {
+    for (let i = 0; i <= 11; i++) {
+      assert.ok(isValidNumberInput(String(i), 0, 11), String(i));
+    }
+  });
+
+  it('rejects numbers outside range 0-11', () => {
+    for (const s of ['-1', '12', '13', '30', '66', '99']) {
+      assert.ok(!isValidNumberInput(s, 0, 11), `should reject: ${s}`);
+    }
+  });
+
+  it('accepts numbers in range 1-12', () => {
+    for (let i = 1; i <= 12; i++) {
+      assert.ok(isValidNumberInput(String(i), 1, 12), String(i));
+    }
+  });
+
+  it('rejects 0 and 13+ for range 1-12', () => {
+    for (const s of ['0', '13', '20', '66']) {
+      assert.ok(!isValidNumberInput(s, 1, 12), `should reject: ${s}`);
+    }
+  });
+
+  it('rejects non-numeric input', () => {
+    for (const s of ['', 'abc', 'C', '1.5', '-1', '100']) {
+      assert.ok(!isValidNumberInput(s, 0, 11), `should reject: ${s}`);
+    }
+  });
+});
+
+describe('isValidIntervalInput', () => {
+  it('accepts standard interval abbreviations', () => {
+    for (
+      const s of [
+        'm2',
+        'M2',
+        'm3',
+        'M3',
+        'P4',
+        'P5',
+        'm6',
+        'M6',
+        'm7',
+        'M7',
+        'P8',
+      ]
+    ) {
+      assert.ok(isValidIntervalInput(s), s);
+    }
+  });
+
+  it('accepts tritone variants', () => {
+    for (const s of ['TT', 'A4', 'd5']) {
+      assert.ok(isValidIntervalInput(s), s);
+    }
+  });
+
+  it('rejects invalid input', () => {
+    for (const s of ['', 'C', 'x2', 'm0', 'P9', 'MM', '12', 'minor']) {
+      assert.ok(!isValidIntervalInput(s), `should reject: ${s}`);
+    }
+  });
+});
+
+describe('isValidKeysigInput', () => {
+  it('accepts valid key signatures', () => {
+    assert.ok(isValidKeysigInput('0'));
+    for (let i = 1; i <= 7; i++) {
+      assert.ok(isValidKeysigInput(i + '#'), i + '#');
+      assert.ok(isValidKeysigInput(i + 'b'), i + 'b');
+    }
+  });
+
+  it('rejects invalid input', () => {
+    for (const s of ['', '8#', '0#', '8b', '0b', 'C', '##', '1', '12']) {
+      assert.ok(!isValidKeysigInput(s), `should reject: ${s}`);
+    }
+  });
+});
+
+describe('isValidNumeralInput', () => {
+  it('accepts standard Roman numerals', () => {
+    for (const s of ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii', 'vii°']) {
+      assert.ok(isValidNumeralInput(s), s);
+    }
+  });
+
+  it('rejects invalid input', () => {
+    for (const s of ['', '1', 'X', 'abc', 'IIIIV', 'viiii']) {
+      assert.ok(!isValidNumeralInput(s), `should reject: ${s}`);
+    }
+  });
+});
+
+describe('noteMatchesInput with s→# normalization', () => {
+  it('matches Cs as C#', () => {
+    assert.ok(noteMatchesInput(NOTES[1], 'Cs'));
+    assert.ok(noteMatchesInput(NOTES[1], 'cs'));
+  });
+
+  it('matches Fs as F#', () => {
+    assert.ok(noteMatchesInput(NOTES[6], 'Fs'));
+    assert.ok(noteMatchesInput(NOTES[6], 'fs'));
+  });
+
+  it('matches As as A#', () => {
+    assert.ok(noteMatchesInput(NOTES[10], 'As'));
+    assert.ok(noteMatchesInput(NOTES[10], 'as'));
+  });
+
+  it('still matches standard input', () => {
+    assert.ok(noteMatchesInput(NOTES[0], 'c'));
+    assert.ok(noteMatchesInput(NOTES[1], 'c#'));
+    assert.ok(noteMatchesInput(NOTES[1], 'db'));
+    assert.ok(noteMatchesInput(NOTES[10], 'bb'));
   });
 });
 

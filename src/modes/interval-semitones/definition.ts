@@ -3,6 +3,7 @@
 
 import {
   isValidIntervalInput,
+  isValidNumberInput,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
 } from '../../music-data.ts';
@@ -28,7 +29,9 @@ export const INTERVAL_SEMITONES_DEF: ModeDefinition<Question> = {
   getPromptText: (q) => q.dir === 'fwd' ? q.name : String(q.num),
   checkAnswer,
   validateInput: (q, input) =>
-    q.dir === 'fwd' ? /^\d{1,2}$/.test(input) : isValidIntervalInput(input),
+    q.dir === 'fwd'
+      ? isValidNumberInput(input, 1, 12)
+      : isValidIntervalInput(input),
   getDirection: (q) => q.dir,
 
   inputPlaceholder: (q) => q.dir === 'fwd' ? '1\u201312' : 'Interval (e.g. P5)',

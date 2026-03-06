@@ -218,6 +218,17 @@ export function isValidNoteInput(input: string): boolean {
   return NOTE_INPUT_RE.test(input);
 }
 
+/** Check if input is a valid integer in [min, max]. */
+export function isValidNumberInput(
+  input: string,
+  min: number,
+  max: number,
+): boolean {
+  if (!/^\d{1,2}$/.test(input)) return false;
+  const n = parseInt(input, 10);
+  return n >= min && n <= max;
+}
+
 /** Valid interval abbreviation pattern: m2, M3, P4, P5, TT, A4, d5, P8, etc. */
 const INTERVAL_INPUT_RE = /^[mMPAdTp][2-8Tt]$/;
 

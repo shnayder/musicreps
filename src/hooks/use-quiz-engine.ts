@@ -30,7 +30,6 @@ import {
 } from '../quiz-engine-state.ts';
 
 const ROUND_DURATION_MS = 60000;
-const AUTO_ADVANCE_MS = 1000;
 const TIMER_TICK_MS = 200;
 const LAST_QUESTION_CAP_MS = 30000;
 
@@ -143,7 +142,6 @@ export function useQuizEngine(
 
   const roundTimerRef = useRef<number | null>(null);
   const roundTimerStartRef = useRef<number | null>(null);
-  const autoAdvanceRef = useRef<number | null>(null);
   const lastQuestionCapRef = useRef<number | null>(null);
 
   // --- Compute progress ---
@@ -247,11 +245,6 @@ export function useQuizEngine(
   // --- Engine actions ---
 
   const nextQuestion = useCallback(() => {
-    if (autoAdvanceRef.current) {
-      clearTimeout(autoAdvanceRef.current);
-      autoAdvanceRef.current = null;
-    }
-
     // If round timer expired, transition to round-complete
     if (stateRef.current.roundTimerExpired) {
       transitionToRoundCompleteRef.current();
@@ -317,19 +310,13 @@ export function useQuizEngine(
       );
     }
 
-    // Auto-advance or handle timer expiry
+    // Handle timer expiry — transition to round-complete after brief delay
     if (stateRef.current.roundTimerExpired) {
       setTimeout(() => {
         if (stateRef.current.phase === 'active') {
           transitionToRoundCompleteRef.current();
         }
       }, 600);
-    } else {
-      autoAdvanceRef.current = setTimeout(() => {
-        if (stateRef.current.phase === 'active' && stateRef.current.answered) {
-          nextQuestionRef.current();
-        }
-      }, AUTO_ADVANCE_MS);
     }
   }, [computeProgress]);
 
@@ -359,10 +346,6 @@ export function useQuizEngine(
   }, [startRoundTimer]);
 
   const stop = useCallback(() => {
-    if (autoAdvanceRef.current) {
-      clearTimeout(autoAdvanceRef.current);
-      autoAdvanceRef.current = null;
-    }
     stopRoundTimer();
     setState(engineStop);
     setCalibrationFixture(undefined);
@@ -411,10 +394,6 @@ export function useQuizEngine(
           break;
         case 'next':
           e.preventDefault();
-          if (autoAdvanceRef.current) {
-            clearTimeout(autoAdvanceRef.current);
-            autoAdvanceRef.current = null;
-          }
           nextQuestionRef.current();
           break;
         case 'continue':
@@ -441,7 +420,6 @@ export function useQuizEngine(
   useEffect(() => {
     return () => {
       if (roundTimerRef.current) clearInterval(roundTimerRef.current);
-      if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
       if (lastQuestionCapRef.current) clearTimeout(lastQuestionCapRef.current);
     };
   }, []);
