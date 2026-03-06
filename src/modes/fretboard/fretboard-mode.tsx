@@ -515,6 +515,7 @@ export function FretboardMode(
   return (
     <>
       <ModeTopBar
+        modeId={instrument.id}
         title={instrument.name}
         description={MODE_DESCRIPTIONS[instrument.id]}
         beforeAfter={MODE_BEFORE_AFTER[instrument.id]}

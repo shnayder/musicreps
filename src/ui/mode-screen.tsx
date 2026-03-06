@@ -5,6 +5,7 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
 import type { PracticeSummaryState } from '../types.ts';
+import { SkillIcon } from './icons.tsx';
 import { BaselineInfo } from './speed-check.tsx';
 
 // ---------------------------------------------------------------------------
@@ -36,7 +37,8 @@ export function ModeScreen(
 // ---------------------------------------------------------------------------
 
 export function ModeTopBar(
-  { title, description, beforeAfter, onBack, showBack = true }: {
+  { modeId, title, description, beforeAfter, onBack, showBack = true }: {
+    modeId?: string;
     title: string;
     description?: string;
     beforeAfter?: { before: string; after: string };
@@ -47,16 +49,10 @@ export function ModeTopBar(
   return (
     <div class='mode-top-bar'>
       <div class='mode-top-bar-row'>
+        {modeId && <SkillIcon modeId={modeId} />}
         <div class='mode-top-bar-text'>
           <h1 class='mode-title'>{title}</h1>
           {description && <p class='mode-description'>{description}</p>}
-          {beforeAfter && (
-            <div class='mode-before-after'>
-              <span class='mode-ba-before'>{beforeAfter.before}</span>
-              <span class='mode-ba-arrow'>&rarr;</span>
-              <span class='mode-ba-after'>{beforeAfter.after}</span>
-            </div>
-          )}
         </div>
         {showBack && (
           <button
@@ -70,6 +66,13 @@ export function ModeTopBar(
           </button>
         )}
       </div>
+      {beforeAfter && (
+        <div class='mode-before-after'>
+          <span class='mode-ba-before'>{beforeAfter.before}</span>
+          <span class='mode-ba-arrow'>&rarr;</span>
+          <span class='mode-ba-after'>{beforeAfter.after}</span>
+        </div>
+      )}
     </div>
   );
 }

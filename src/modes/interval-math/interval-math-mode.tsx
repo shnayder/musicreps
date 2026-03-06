@@ -183,6 +183,7 @@ export function IntervalMathMode(
   return (
     <>
       <ModeTopBar
+        modeId='intervalMath'
         title='Interval Math'
         description={MODE_DESCRIPTIONS.intervalMath}
         beforeAfter={MODE_BEFORE_AFTER.intervalMath}

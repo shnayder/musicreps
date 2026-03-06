@@ -9,6 +9,7 @@ import {
   TRACKS,
 } from '../music-data.ts';
 import type { Track } from '../music-data.ts';
+import { SkillIcon } from './icons.tsx';
 
 // ---------------------------------------------------------------------------
 // localStorage persistence for selected tracks
@@ -99,8 +100,13 @@ function SkillCard(
       tabIndex={0}
       onClick={() => onSelectMode(modeId)}
     >
-      <span class='home-mode-name'>{name}</span>
-      <span class='home-mode-desc'>{desc}</span>
+      <span class='skill-card-header'>
+        <SkillIcon modeId={modeId} />
+        <span class='skill-card-header-text'>
+          <span class='home-mode-name'>{name}</span>
+          <span class='home-mode-desc'>{desc}</span>
+        </span>
+      </span>
       {ba && (
         <div class='skill-card-ba'>
           <span class='skill-card-before'>{ba.before}</span>

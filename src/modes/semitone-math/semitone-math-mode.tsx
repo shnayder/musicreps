@@ -185,6 +185,7 @@ export function SemitoneMathMode(
   return (
     <>
       <ModeTopBar
+        modeId='semitoneMath'
         title='Semitone Math'
         description={MODE_DESCRIPTIONS.semitoneMath}
         beforeAfter={MODE_BEFORE_AFTER.semitoneMath}

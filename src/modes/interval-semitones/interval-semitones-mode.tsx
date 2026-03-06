@@ -208,6 +208,7 @@ export function IntervalSemitonesMode(
   return (
     <>
       <ModeTopBar
+        modeId='intervalSemitones'
         title='Interval ↔ Semitones'
         description={MODE_DESCRIPTIONS.intervalSemitones}
         beforeAfter={MODE_BEFORE_AFTER.intervalSemitones}

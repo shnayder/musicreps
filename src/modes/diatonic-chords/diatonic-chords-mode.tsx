@@ -206,6 +206,7 @@ export function DiatonicChordsMode(
   return (
     <>
       <ModeTopBar
+        modeId='diatonicChords'
         title='Diatonic Chords'
         description={MODE_DESCRIPTIONS.diatonicChords}
         beforeAfter={MODE_BEFORE_AFTER.diatonicChords}

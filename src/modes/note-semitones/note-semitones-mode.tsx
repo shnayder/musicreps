@@ -233,6 +233,7 @@ export function NoteSemitonesMode(
   return (
     <>
       <ModeTopBar
+        modeId='noteSemitones'
         title='Note ↔ Semitones'
         description={MODE_DESCRIPTIONS.noteSemitones}
         beforeAfter={MODE_BEFORE_AFTER.noteSemitones}
