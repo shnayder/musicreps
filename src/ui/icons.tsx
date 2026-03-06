@@ -1,6 +1,6 @@
 // Inline SVG icons from Lucide (MIT license).
 // Source files saved in static/icons/.
-// Each component renders a 24x24 SVG that inherits color via currentColor.
+// Each component renders a 28x28 SVG that inherits color via currentColor.
 
 const ICON_PROPS = {
   xmlns: 'http://www.w3.org/2000/svg',
