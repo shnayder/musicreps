@@ -251,7 +251,6 @@ if (import.meta.main) {
 
     console.log('Built to docs/index.html + docs/sw.js + docs/design/');
   } else {
-    const html = await buildHTML();
     const portArg = Deno.args.find((a) => a.startsWith('--port='));
     let startPort = 8001;
     if (portArg) {
@@ -275,6 +274,8 @@ if (import.meta.main) {
           headers: { 'content-type': 'text/html' },
         });
       }
+      // Re-bundle on every request so source changes are picked up immediately
+      const html = await buildHTML();
       return new Response(html, {
         headers: { 'content-type': 'text/html' },
       });

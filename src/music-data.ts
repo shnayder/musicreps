@@ -50,7 +50,7 @@ export const INTERVAL_ABBREVS = INTERVALS.map((i) => i.abbrev);
 export const MODE_DESCRIPTIONS: Record<string, string> = {
   fretboard: 'Stop hunting for notes on the fretboard',
   ukulele: 'Stop hunting for notes on the fretboard',
-  speedTap: 'See a note, find every position instantly',
+  speedTap: 'Know all positions of a note instantly',
   noteSemitones: 'The number system behind the chromatic scale',
   intervalSemitones: 'Know the size of every interval in semitones',
   semitoneMath: 'Transpose by semitones without counting',
@@ -58,7 +58,7 @@ export const MODE_DESCRIPTIONS: Record<string, string> = {
   keySignatures: 'See a key, know its sharps and flats instantly',
   scaleDegrees: 'Connect notes to their function in a key',
   diatonicChords: 'Know which chords belong in any key',
-  chordSpelling: 'Know the notes in any chord from memory',
+  chordSpelling: 'Know the notes in any chord',
 };
 
 // Centralized display names for all modes.
@@ -91,8 +91,8 @@ export const MODE_BEFORE_AFTER: Record<
   },
   speedTap: {
     before:
-      '\u201CAll the C\u2019s\u2026 3rd fret A, 8th fret E\u2026 um\u2026\u201D',
-    after: '\u201CAll the C\u2019s.\u201D \u2014 tap tap tap tap tap',
+      '\u201CAll the C\u2019s\u2026 8th fret E, 3rd fret A\u2026 um\u2026\u201D',
+    after: '\u201CC\u2019s. Frets 8, 3, 10, 5, 1, 8.\u201D',
   },
   noteSemitones: {
     before: '\u201CG#\u2026 G is 7, so G# is\u2026 8?\u201D',
@@ -248,7 +248,7 @@ export function spelledNoteName(letter: string, accidental: number) {
 /** Get the semitone value (0-11) of a spelled note. */
 export function spelledNoteSemitone(name: string) {
   const { letter, accidental } = parseSpelledNote(name);
-  return ((NATURAL_SEMITONES[letter] + accidental) % 12 + 12) % 12;
+  return (((NATURAL_SEMITONES[letter] + accidental) % 12) + 12) % 12;
 }
 
 /**
@@ -260,7 +260,7 @@ export function getScaleDegreeNote(keyRoot: string, degree: number) {
   const root = parseSpelledNote(keyRoot);
   const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
   const rootSemitone =
-    ((NATURAL_SEMITONES[root.letter] + root.accidental) % 12 + 12) % 12;
+    (((NATURAL_SEMITONES[root.letter] + root.accidental) % 12) + 12) % 12;
 
   const targetLetterIdx = (rootLetterIdx + degree - 1) % 7;
   const targetLetter = LETTER_NAMES[targetLetterIdx];
@@ -445,16 +445,16 @@ export const DEGREE_LABELS: [string, string][] = [
 
 // Letter offset from root for each chord-tone label
 const DEGREE_LETTER_OFFSETS: Record<string, number> = {
-  'R': 0,
+  R: 0,
   '2': 1,
-  'b3': 2,
+  b3: 2,
   '3': 2,
   '4': 3,
-  'b5': 4,
+  b5: 4,
   '5': 4,
   '#5': 4,
   '6': 5,
-  'b7': 6,
+  b7: 6,
   '7': 6,
 };
 
@@ -562,7 +562,7 @@ export function getChordTones(rootName: string, chordType: ChordType) {
   const root = parseSpelledNote(rootName);
   const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
   const rootSemitone =
-    ((NATURAL_SEMITONES[root.letter] + root.accidental) % 12 + 12) % 12;
+    (((NATURAL_SEMITONES[root.letter] + root.accidental) % 12) + 12) % 12;
 
   return chordType.intervals.map((interval: number, i: number) => {
     const degreeLabel = chordType.degrees[i];
@@ -590,8 +590,10 @@ export function chordDisplayName(rootName: string, chordType: ChordType) {
 export function spelledNoteMatchesInput(expectedName: string, input: string) {
   const expected = parseSpelledNote(expectedName);
   const given = parseSpelledNote(input);
-  return given.letter.toUpperCase() === expected.letter.toUpperCase() &&
-    given.accidental === expected.accidental;
+  return (
+    given.letter.toUpperCase() === expected.letter.toUpperCase() &&
+    given.accidental === expected.accidental
+  );
 }
 
 /**
@@ -663,13 +665,17 @@ export function setUseSolfege(v: boolean) {
   _useSolfege = v;
   try {
     localStorage.setItem('fretboard_notation', v ? 'solfege' : 'letter');
-  } catch (_) { /* expected */ }
+  } catch (_) {
+    /* expected */
+  }
 }
 
 // Load notation preference on module evaluation
 try {
   _useSolfege = localStorage.getItem('fretboard_notation') === 'solfege';
-} catch (_) { /* expected */ }
+} catch (_) {
+  /* expected */
+}
 
 /**
  * Format a note name for display. Always replaces ASCII accidentals with
