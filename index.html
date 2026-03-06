@@ -57,6 +57,11 @@
   /* Overlay */
   --color-overlay: rgba(0, 0, 0, 0.35);
 
+  /* Track colors */
+  --color-track-core: hsl(30, 3%, 40%);
+  --color-track-guitar: hsl(25, 55%, 45%);
+  --color-track-ukulele: hsl(185, 40%, 38%);
+
   /* Heatmap scale (gold → green, matches palette: attention → mastered) */
   --heatmap-none: hsl(30, 4%, 85%);
   --heatmap-1: hsl(44, 65%, 58%);
@@ -89,6 +94,10 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+
+  /* Interactive element sizes */
+  --size-close-btn: 2.25rem;
+  --size-content-inset: var(--space-5);
 }
 
 * {
@@ -147,6 +156,12 @@ body {
   margin: var(--space-3) 0 0;
   border-radius: var(--radius-sm);
 }
+.home-tagline {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
 .home-modes {
   flex: 1;
 }
@@ -156,9 +171,17 @@ body {
   gap: var(--space-3);
   font-size: var(--text-sm);
   font-weight: 700;
-  color: var(--color-text-muted);
-  margin-top: 2rem;
+  margin-top: var(--space-6);
   margin-bottom: var(--space-2);
+}
+.track-group-core {
+  color: var(--color-track-core);
+}
+.track-group-guitar {
+  color: var(--color-track-guitar);
+}
+.track-group-ukulele {
+  color: var(--color-track-ukulele);
 }
 .home-group-label::after {
   content: '';
@@ -166,8 +189,8 @@ body {
   height: 1px;
   background: var(--color-border-lighter);
 }
-.home-group-label:first-child {
-  margin-top: 0;
+.track-skills-list:first-child .home-group-label {
+  margin-top: var(--space-4);
 }
 .home-mode-btn {
   display: flex;
@@ -180,7 +203,7 @@ body {
   border: 1px solid var(--color-border-lighter);
   border-left: 3px solid var(--color-brand);
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
   cursor: pointer;
   position: relative;
 }
@@ -199,6 +222,121 @@ body {
 }
 .home-mode-btn:active {
   background: var(--color-surface-pressed);
+}
+/* --- Track selection --- */
+.track-selection-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+.track-selection-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-lighter);
+}
+.track-chips {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.track-chip {
+  padding: var(--space-2) var(--space-4);
+  border-radius: 999px;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  margin: 0;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.track-chip:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+.track-chip:disabled {
+  cursor: default;
+}
+.track-chip.active {
+  color: white;
+  border-color: transparent;
+}
+.track-chip.active.track-core {
+  background: var(--color-track-core);
+}
+.track-chip.active.track-guitar {
+  background: var(--color-track-guitar);
+}
+.track-chip.active.track-ukulele {
+  background: var(--color-track-ukulele);
+}
+.track-chip:focus-visible {
+  outline-offset: 2px;
+}
+/* --- Skill cards (extends home-mode-btn) --- */
+.skill-card {
+  position: relative;
+}
+.skill-card[data-track='core'] {
+  border-left-color: var(--color-track-core);
+}
+.skill-card[data-track='guitar'] {
+  border-left-color: var(--color-track-guitar);
+}
+.skill-card[data-track='ukulele'] {
+  border-left-color: var(--color-track-ukulele);
+}
+.skill-card-ba {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+.skill-card-before {
+  text-align: right;
+  color: var(--color-text-muted);
+}
+.skill-card-arrow {
+  color: var(--color-brand);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+.skill-card-after {
+  color: var(--color-text);
+  font-weight: 600;
+}
+/* --- Other skills (collapsed section) --- */
+.home-other-skills {
+  margin-top: var(--space-5);
+}
+.home-other-skills summary {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--space-3) 0;
+  list-style: none;
+}
+.home-other-skills summary::-webkit-details-marker {
+  display: none;
+}
+.home-other-skills summary::before {
+  content: '\25B6';
+  display: inline-block;
+  font-size: 0.6em;
+  margin-right: var(--space-2);
+  transition: transform 0.15s ease;
+}
+.home-other-skills[open] summary::before {
+  transform: rotate(90deg);
 }
 .home-mode-name {
   font-size: var(--text-base);
@@ -244,38 +382,72 @@ body {
 
 /* --- Mode top bar --- */
 .mode-top-bar {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
   padding: var(--space-3) 0;
+  padding-left: var(--size-content-inset);
   margin-bottom: var(--space-3);
 }
-.mode-back-btn {
+.mode-top-bar-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+.mode-close-btn {
   background: none;
   border: none;
-  font-size: var(--text-xl);
+  font-size: var(--size-close-btn);
   cursor: pointer;
   padding: var(--space-2);
   min-width: 44px;
   min-height: 44px;
-  color: var(--color-text-muted);
-  margin: 0;
+  color: var(--color-text-light);
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  line-height: 1;
 }
-.mode-back-btn:hover {
+.mode-close-btn:hover {
+  color: var(--color-text);
   background: var(--color-surface-hover);
 }
-.mode-back-btn:active {
+.mode-close-btn:active {
   background: var(--color-surface-pressed);
+}
+.mode-top-bar-text {
+  flex: 1;
+  min-width: 0;
 }
 .mode-title {
   margin: 0;
   font-size: var(--text-lg);
   font-weight: 600;
-  flex: 1;
+}
+.mode-description {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+.mode-before-after {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+.mode-ba-before {
+  color: var(--color-text-light);
+}
+.mode-ba-arrow {
+  color: var(--color-text-light);
+  flex-shrink: 0;
+}
+.mode-ba-after {
+  color: var(--color-text);
+  font-weight: 600;
 }
 /* --- Settings modal --- */
 .settings-overlay {
@@ -1654,7 +1826,7 @@ button {
 }
 
 /* Back button, close buttons */
-.mode-back-btn:focus-visible,
+.mode-close-btn:focus-visible,
 .quiz-header-close:focus-visible {
   outline-offset: -2px;
 }
@@ -1738,70 +1910,12 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen">
-    <div class="home-header">
-      <h1 class="home-title">Music Reps</h1>
-    </div>
-    <div class="home-modes">
-      <div class="home-group-label">Fretboard</div>
-      <button tabindex="0" data-mode="fretboard" class="home-mode-btn">
-        <span class="home-mode-name">Guitar Fretboard</span>
-        <span class="home-mode-desc">Name notes on the guitar neck</span>
-      </button>
-      <button tabindex="0" data-mode="ukulele" class="home-mode-btn">
-        <span class="home-mode-name">Ukulele Fretboard</span>
-        <span class="home-mode-desc">Name notes on the ukulele</span>
-      </button>
-      <button tabindex="0" data-mode="speedTap" class="home-mode-btn">
-        <span class="home-mode-name">Speed Tap</span>
-        <span class="home-mode-desc">Find all positions of a note</span>
-      </button>
-      <div class="home-group-label">Theory Lookup</div>
-      <button tabindex="0" data-mode="noteSemitones" class="home-mode-btn">
-        <span class="home-mode-name">Note ↔ Semitones</span>
-        <span class="home-mode-desc">Convert between notes and semitone numbers</span>
-      </button>
-      <button tabindex="0" data-mode="intervalSemitones" class="home-mode-btn">
-        <span class="home-mode-name">Interval ↔ Semitones</span>
-        <span class="home-mode-desc">Convert between intervals and semitone counts</span>
-      </button>
-      <div class="home-group-label">Calculation</div>
-      <button tabindex="0" data-mode="semitoneMath" class="home-mode-btn">
-        <span class="home-mode-name">Semitone Math</span>
-        <span class="home-mode-desc">Add or subtract semitones from a note</span>
-      </button>
-      <button tabindex="0" data-mode="intervalMath" class="home-mode-btn">
-        <span class="home-mode-name">Interval Math</span>
-        <span class="home-mode-desc">Apply intervals up or down from a note</span>
-      </button>
-      <div class="home-group-label">Keys &amp; Chords</div>
-      <button tabindex="0" data-mode="keySignatures" class="home-mode-btn">
-        <span class="home-mode-name">Key Signatures</span>
-        <span class="home-mode-desc">Match keys to their sharps and flats</span>
-      </button>
-      <button tabindex="0" data-mode="scaleDegrees" class="home-mode-btn">
-        <span class="home-mode-name">Scale Degrees</span>
-        <span class="home-mode-desc">Name notes by scale degree in any key</span>
-      </button>
-      <button tabindex="0" data-mode="diatonicChords" class="home-mode-btn">
-        <span class="home-mode-name">Diatonic Chords</span>
-        <span class="home-mode-desc">Identify chords built on each scale degree</span>
-      </button>
-      <button tabindex="0" data-mode="chordSpelling" class="home-mode-btn">
-        <span class="home-mode-name">Chord Spelling</span>
-        <span class="home-mode-desc">Spell out the notes in any chord</span>
-      </button>
-    </div>
-    <div class="home-footer">
-      <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">#712</span>
-    </div>
-  </div>
+  <div class="home-screen" id="home-screen" data-version="#718"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Guitar Fretboard</h1>
     </div>
     <div class="mode-tabs">
@@ -2162,7 +2276,7 @@ button {
   <!-- Ukulele Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-ukulele">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Ukulele Fretboard</h1>
     </div>
     <div class="mode-tabs">
@@ -2465,7 +2579,7 @@ button {
   <!-- Speed Tap mode -->
   <div class="mode-screen phase-idle" id="mode-speedTap">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Speed Tap</h1>
     </div>
     <div class="mode-tabs">
@@ -2695,7 +2809,7 @@ button {
   <!-- Note Semitones mode -->
   <div class="mode-screen phase-idle" id="mode-noteSemitones">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Note ↔ Semitones</h1>
     </div>
     <div class="mode-tabs">
@@ -2797,7 +2911,7 @@ button {
   <!-- Interval Semitones mode -->
   <div class="mode-screen phase-idle" id="mode-intervalSemitones">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Interval ↔ Semitones</h1>
     </div>
     <div class="mode-tabs">
@@ -2899,7 +3013,7 @@ button {
   <!-- Semitone Math mode -->
   <div class="mode-screen phase-idle" id="mode-semitoneMath">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Semitone Math</h1>
     </div>
     <div class="mode-tabs">
@@ -3000,7 +3114,7 @@ button {
   <!-- Interval Math mode -->
   <div class="mode-screen phase-idle" id="mode-intervalMath">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Interval Math</h1>
     </div>
     <div class="mode-tabs">
@@ -3101,7 +3215,7 @@ button {
   <!-- Key Signatures mode -->
   <div class="mode-screen phase-idle" id="mode-keySignatures">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Key Signatures</h1>
     </div>
     <div class="mode-tabs">
@@ -3219,7 +3333,7 @@ button {
   <!-- Scale Degrees mode -->
   <div class="mode-screen phase-idle" id="mode-scaleDegrees">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Scale Degrees</h1>
     </div>
     <div class="mode-tabs">
@@ -3329,7 +3443,7 @@ button {
   <!-- Diatonic Chords mode -->
   <div class="mode-screen phase-idle" id="mode-diatonicChords">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Diatonic Chords</h1>
     </div>
     <div class="mode-tabs">
@@ -3439,7 +3553,7 @@ button {
   <!-- Chord Spelling mode -->
   <div class="mode-screen phase-idle" id="mode-chordSpelling">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">←</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">×</button>
       <h1 class="mode-title">Chord Spelling</h1>
     </div>
     <div class="mode-tabs">
@@ -3825,6 +3939,105 @@ button {
     { name: "Octave", num: 12, abbrev: "P8" }
   ];
   var INTERVAL_ABBREVS = INTERVALS.map((i3) => i3.abbrev);
+  var MODE_DESCRIPTIONS = {
+    fretboard: "Stop hunting for notes on the fretboard",
+    ukulele: "Stop hunting for notes on the fretboard",
+    speedTap: "Know all positions of a note instantly",
+    noteSemitones: "The number system behind the chromatic scale",
+    intervalSemitones: "Know the size of every interval in semitones",
+    semitoneMath: "Transpose by semitones without counting",
+    intervalMath: "Transpose by interval without counting",
+    keySignatures: "See a key, know its sharps and flats instantly",
+    scaleDegrees: "Connect notes to their function in a key",
+    diatonicChords: "Know which chords belong in any key",
+    chordSpelling: "Know the notes in any chord"
+  };
+  var MODE_NAMES = {
+    fretboard: "Guitar Fretboard",
+    ukulele: "Ukulele Fretboard",
+    speedTap: "Speed Tap",
+    noteSemitones: "Note \u2194 Semitones",
+    intervalSemitones: "Interval \u2194 Semitones",
+    semitoneMath: "Semitone Math",
+    intervalMath: "Interval Math",
+    keySignatures: "Key Signatures",
+    scaleDegrees: "Scale Degrees",
+    diatonicChords: "Diatonic Chords",
+    chordSpelling: "Chord Spelling"
+  };
+  var MODE_BEFORE_AFTER = {
+    fretboard: {
+      before: "\u201C7th fret, G string\u2026 G, G#, A\u2026 D?\u201D",
+      after: "\u201C7th fret, G string. D.\u201D"
+    },
+    ukulele: {
+      before: "\u201C5th fret, C string\u2026 C, D, E\u2026 E?\u201D",
+      after: "\u201C5th fret, C string. E.\u201D"
+    },
+    speedTap: {
+      before: "\u201CAll the C\u2019s\u2026 8th fret E, 3rd fret A\u2026 um\u2026\u201D",
+      after: "\u201CC\u2019s. Frets 8, 3, 10, 5, 1, 8.\u201D"
+    },
+    noteSemitones: {
+      before: "\u201CG#\u2026 G is 7, so G# is\u2026 8?\u201D",
+      after: "\u201CG#. 8.\u201D"
+    },
+    intervalSemitones: {
+      before: "\u201CMajor 6th\u2026 that\u2019s\u2026 9 semitones?\u201D",
+      after: "\u201CM6. 9 semitones.\u201D"
+    },
+    semitoneMath: {
+      before: "\u201CF# + 4\u2026 G, G#, A, A#\u2026 Bb?\u201D",
+      after: "\u201CF# + 4. Bb.\u201D"
+    },
+    intervalMath: {
+      before: "\u201CC + m6\u2026 minor 6th is 8 semitones\u2026 Ab?\u201D",
+      after: "\u201CC + m6. Ab.\u201D"
+    },
+    keySignatures: {
+      before: "\u201C3 flats\u2026 Bb, Eb, Ab\u2026 so Eb major?\u201D",
+      after: "\u201C3 flats: Eb major.\u201D"
+    },
+    scaleDegrees: {
+      before: "\u201C5th degree of Bb\u2026 Bb, C, D, Eb, F\u2026 F?\u201D",
+      after: "\u201C5th of Bb. F.\u201D"
+    },
+    diatonicChords: {
+      before: "\u201CIV in G\u2026 G, A, B, C\u2026 C major?\u201D",
+      after: "\u201CIV in G. C major.\u201D"
+    },
+    chordSpelling: {
+      before: "\u201CFm7\u2026 F, Ab, C\u2026 what\u2019s the 7th\u2026 Eb\u201D",
+      after: "\u201CFm7. F Ab C Eb.\u201D"
+    }
+  };
+  var TRACKS = [
+    {
+      id: "core",
+      label: "Core",
+      alwaysSelected: true,
+      skills: [
+        "noteSemitones",
+        "intervalSemitones",
+        "semitoneMath",
+        "intervalMath",
+        "keySignatures",
+        "scaleDegrees",
+        "diatonicChords",
+        "chordSpelling"
+      ]
+    },
+    {
+      id: "guitar",
+      label: "Guitar",
+      skills: ["fretboard", "speedTap"]
+    },
+    {
+      id: "ukulele",
+      label: "Ukulele",
+      skills: ["ukulele"]
+    }
+  ];
   function noteByNum(num) {
     return NOTES[(num % 12 + 12) % 12];
   }
@@ -4027,16 +4240,16 @@ button {
     ["7", "7th"]
   ];
   var DEGREE_LETTER_OFFSETS = {
-    "R": 0,
+    R: 0,
     "2": 1,
-    "b3": 2,
+    b3: 2,
     "3": 2,
     "4": 3,
-    "b5": 4,
+    b5: 4,
     "5": 4,
     "#5": 4,
     "6": 5,
-    "b7": 6,
+    b7: 6,
     "7": 6
   };
   var CHORD_TYPES = [
@@ -4272,16 +4485,7 @@ button {
       localStorage.setItem(LAST_MODE_KEY, modeId);
     }
     function init() {
-      if (homeScreen) {
-        homeScreen.querySelectorAll(".home-mode-btn").forEach(
-          function(btn) {
-            btn.addEventListener("click", function() {
-              switchTo(btn.dataset.mode);
-            });
-          }
-        );
-      }
-      document.querySelectorAll(".mode-back-btn").forEach(
+      document.querySelectorAll(".mode-close-btn").forEach(
         function(btn) {
           btn.addEventListener("click", function() {
             navigateHome();
@@ -4834,6 +5038,172 @@ button {
   }
   function D2(n2, t3) {
     return "function" == typeof t3 ? t3(n2) : t3;
+  }
+
+  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  var f3 = 0;
+  function u3(e3, t3, n2, o3, i3, u4) {
+    t3 || (t3 = {});
+    var a3, c3, p3 = t3;
+    if ("ref" in p3) for (c3 in p3 = {}, t3) "ref" == c3 ? a3 = t3[c3] : p3[c3] = t3[c3];
+    var l3 = { type: e3, props: p3, key: n2, ref: a3, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --f3, __i: -1, __u: 0, __source: i3, __self: u4 };
+    if ("function" == typeof e3 && (a3 = e3.defaultProps)) for (c3 in a3) void 0 === p3[c3] && (p3[c3] = a3[c3]);
+    return l.vnode && l.vnode(l3), l3;
+  }
+
+  // src/ui/home-screen.tsx
+  var STORAGE_KEY = "selectedTracks";
+  function loadSelectedTracks() {
+    const allIds = new Set(TRACKS.map((t3) => t3.id));
+    const alwaysIds = TRACKS.filter((t3) => t3.alwaysSelected).map((t3) => t3.id);
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr) && arr.length > 0) {
+          const loaded = new Set(arr.filter((id) => allIds.has(id)));
+          for (const id of alwaysIds) loaded.add(id);
+          if (loaded.size > 0) return loaded;
+        }
+      }
+    } catch (_3) {
+    }
+    return new Set(allIds);
+  }
+  function saveSelectedTracks(selected) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...selected]));
+    } catch (_3) {
+    }
+  }
+  function TrackChips({ tracks, selected, onToggle }) {
+    return /* @__PURE__ */ u3("div", { class: "track-chips", children: tracks.map((track) => {
+      const isActive = selected.has(track.id);
+      const cls = `track-chip track-${track.id}${isActive ? " active" : ""}`;
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          class: cls,
+          onClick: () => onToggle(track.id),
+          "aria-pressed": isActive,
+          disabled: track.alwaysSelected,
+          children: track.label
+        },
+        track.id
+      );
+    }) });
+  }
+  function SkillCard({ modeId, trackId, onSelectMode }) {
+    const name = MODE_NAMES[modeId] || modeId;
+    const desc = MODE_DESCRIPTIONS[modeId] || "";
+    const ba = MODE_BEFORE_AFTER[modeId];
+    return /* @__PURE__ */ u3(
+      "button",
+      {
+        type: "button",
+        class: "home-mode-btn skill-card",
+        "data-mode": modeId,
+        "data-track": trackId,
+        tabIndex: 0,
+        onClick: () => onSelectMode(modeId),
+        children: [
+          /* @__PURE__ */ u3("span", { class: "home-mode-name", children: name }),
+          /* @__PURE__ */ u3("span", { class: "home-mode-desc", children: desc }),
+          ba && /* @__PURE__ */ u3("div", { class: "skill-card-ba", children: [
+            /* @__PURE__ */ u3("span", { class: "skill-card-before", children: ba.before }),
+            /* @__PURE__ */ u3("span", { class: "skill-card-arrow", children: "\u2192" }),
+            /* @__PURE__ */ u3("span", { class: "skill-card-after", children: ba.after })
+          ] })
+        ]
+      }
+    );
+  }
+  function TrackSkillsList({ track, onSelectMode }) {
+    return /* @__PURE__ */ u3("div", { class: "track-skills-list", children: [
+      /* @__PURE__ */ u3("div", { class: `home-group-label track-group-${track.id}`, children: track.label }),
+      track.skills.map((modeId) => /* @__PURE__ */ u3(
+        SkillCard,
+        {
+          modeId,
+          trackId: track.id,
+          onSelectMode
+        },
+        modeId
+      ))
+    ] });
+  }
+  function OtherTracks({ tracks, onSelectMode }) {
+    if (tracks.length === 0) return null;
+    return /* @__PURE__ */ u3("details", { class: "home-other-skills", children: [
+      /* @__PURE__ */ u3("summary", { children: "Other skills" }),
+      tracks.map((track) => /* @__PURE__ */ u3(
+        TrackSkillsList,
+        {
+          track,
+          onSelectMode
+        },
+        track.id
+      ))
+    ] });
+  }
+  function HomeScreen({ onSelectMode, onOpenSettings, version: version2 }) {
+    const [selected, setSelected] = d2(loadSelectedTracks);
+    const handleToggle = q2((id) => {
+      const track = TRACKS.find((t3) => t3.id === id);
+      if (track?.alwaysSelected) return;
+      setSelected((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        saveSelectedTracks(next);
+        return next;
+      });
+    }, []);
+    const selectedTracks = TRACKS.filter((t3) => selected.has(t3.id));
+    const deselectedTracks = TRACKS.filter((t3) => !selected.has(t3.id));
+    return /* @__PURE__ */ u3("div", { class: "home-content", children: [
+      /* @__PURE__ */ u3("div", { class: "home-header", children: [
+        /* @__PURE__ */ u3("h1", { class: "home-title", children: "Music Reps" }),
+        /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Instant recall for music fundamentals. You know the theory\u2009\u2014\u2009now make it automatic." })
+      ] }),
+      /* @__PURE__ */ u3("div", { class: "track-selection-header", children: "Select tracks" }),
+      /* @__PURE__ */ u3(
+        TrackChips,
+        {
+          tracks: TRACKS,
+          selected,
+          onToggle: handleToggle
+        }
+      ),
+      /* @__PURE__ */ u3("div", { class: "home-modes", children: [
+        selectedTracks.map((track) => /* @__PURE__ */ u3(
+          TrackSkillsList,
+          {
+            track,
+            onSelectMode
+          },
+          track.id
+        )),
+        /* @__PURE__ */ u3(OtherTracks, { tracks: deselectedTracks, onSelectMode })
+      ] }),
+      /* @__PURE__ */ u3("div", { class: "home-footer", children: [
+        /* @__PURE__ */ u3(
+          "a",
+          {
+            class: "home-settings-btn text-link",
+            href: "#settings",
+            role: "button",
+            onClick: (e3) => {
+              e3.preventDefault();
+              onOpenSettings();
+            },
+            children: "Settings"
+          }
+        ),
+        /* @__PURE__ */ u3("span", { class: "version", children: version2 })
+      ] })
+    ] });
   }
 
   // src/adaptive.ts
@@ -5975,17 +6345,6 @@ button {
     };
   }
 
-  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
-  var f3 = 0;
-  function u3(e3, t3, n2, o3, i3, u4) {
-    t3 || (t3 = {});
-    var a3, c3, p3 = t3;
-    if ("ref" in p3) for (c3 in p3 = {}, t3) "ref" == c3 ? a3 = t3[c3] : p3[c3] = t3[c3];
-    var l3 = { type: e3, props: p3, key: n2, ref: a3, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --f3, __i: -1, __u: 0, __source: i3, __self: u4 };
-    if ("function" == typeof e3 && (a3 = e3.defaultProps)) for (c3 in a3) void 0 === p3[c3] && (p3[c3] = a3[c3]);
-    return l.vnode && l.vnode(l3), l3;
-  }
-
   // src/ui/buttons.tsx
   function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive, narrowing }) {
     const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
@@ -6361,21 +6720,29 @@ button {
   }
 
   // src/ui/mode-screen.tsx
-  function ModeTopBar({ title, onBack, showBack = true }) {
-    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: [
+  function ModeTopBar({ title, description, beforeAfter, onBack, showBack = true }) {
+    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: /* @__PURE__ */ u3("div", { class: "mode-top-bar-row", children: [
+      /* @__PURE__ */ u3("div", { class: "mode-top-bar-text", children: [
+        /* @__PURE__ */ u3("h1", { class: "mode-title", children: title }),
+        description && /* @__PURE__ */ u3("p", { class: "mode-description", children: description }),
+        beforeAfter && /* @__PURE__ */ u3("div", { class: "mode-before-after", children: [
+          /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: beforeAfter.before }),
+          /* @__PURE__ */ u3("span", { class: "mode-ba-arrow", children: "\u2192" }),
+          /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: beforeAfter.after })
+        ] })
+      ] }),
       showBack && /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
           tabIndex: 0,
-          class: "mode-back-btn",
+          class: "mode-close-btn",
           "aria-label": "Back to home",
           onClick: onBack,
-          children: "\u2190"
+          children: "\xD7"
         }
-      ),
-      /* @__PURE__ */ u3("h1", { class: "mode-title", children: title })
-    ] });
+      )
+    ] }) });
   }
   var tabbedIdCounter = 0;
   var TABS = ["practice", "progress"];
@@ -7088,6 +7455,8 @@ button {
         ModeTopBar,
         {
           title: "Note \u2194 Semitones",
+          description: MODE_DESCRIPTIONS.noteSemitones,
+          beforeAfter: MODE_BEFORE_AFTER.noteSemitones,
           onBack: navigateHome,
           showBack: isIdle
         }
@@ -7361,6 +7730,8 @@ button {
         ModeTopBar,
         {
           title: "Interval \u2194 Semitones",
+          description: MODE_DESCRIPTIONS.intervalSemitones,
+          beforeAfter: MODE_BEFORE_AFTER.intervalSemitones,
           onBack: navigateHome,
           showBack: isIdle
         }
@@ -8001,6 +8372,8 @@ button {
         ModeTopBar,
         {
           title: "Semitone Math",
+          description: MODE_DESCRIPTIONS.semitoneMath,
+          beforeAfter: MODE_BEFORE_AFTER.semitoneMath,
           onBack: navigateHome,
           showBack: isIdle
         }
@@ -8276,6 +8649,8 @@ button {
         ModeTopBar,
         {
           title: "Interval Math",
+          description: MODE_DESCRIPTIONS.intervalMath,
+          beforeAfter: MODE_BEFORE_AFTER.intervalMath,
           onBack: navigateHome,
           showBack: isIdle
         }
@@ -8604,6 +8979,8 @@ button {
         ModeTopBar,
         {
           title: "Key Signatures",
+          description: MODE_DESCRIPTIONS.keySignatures,
+          beforeAfter: MODE_BEFORE_AFTER.keySignatures,
           onBack: navigateHome,
           showBack: isIdle
         }
@@ -8892,6 +9269,8 @@ button {
         ModeTopBar,
         {
           title: "Scale Degrees",
+          description: MODE_DESCRIPTIONS.scaleDegrees,
+          beforeAfter: MODE_BEFORE_AFTER.scaleDegrees,
           onBack: navigateHome,
           showBack: isIdle
         }
@@ -9181,6 +9560,8 @@ button {
         ModeTopBar,
         {
           title: "Diatonic Chords",
+          description: MODE_DESCRIPTIONS.diatonicChords,
+          beforeAfter: MODE_BEFORE_AFTER.diatonicChords,
           onBack: navigateHome,
           showBack: isIdle
         }
@@ -9542,6 +9923,8 @@ button {
         ModeTopBar,
         {
           title: "Chord Spelling",
+          description: MODE_DESCRIPTIONS.chordSpelling,
+          beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
           onBack: navigateHome,
           showBack: isIdle
         }
@@ -10182,6 +10565,8 @@ button {
         ModeTopBar,
         {
           title: instrument.name,
+          description: MODE_DESCRIPTIONS[instrument.id],
+          beforeAfter: MODE_BEFORE_AFTER[instrument.id],
           onBack: navigateHome,
           showBack: isIdle
         }
@@ -10571,6 +10956,8 @@ button {
         ModeTopBar,
         {
           title: "Speed Tap",
+          description: MODE_DESCRIPTIONS.speedTap,
+          beforeAfter: MODE_BEFORE_AFTER.speedTap,
           onBack: navigateHome,
           showBack: isIdle
         }
@@ -10763,10 +11150,17 @@ button {
       );
     }
   });
-  var settingsBtn = document.querySelector(".home-settings-btn");
-  if (settingsBtn) {
-    settingsBtn.addEventListener("click", () => settings.open());
-  }
+  var homeRoot = document.getElementById("home-screen");
+  var version = homeRoot.dataset.version || "";
+  homeRoot.textContent = "";
+  J(
+    _(HomeScreen, {
+      onSelectMode: (modeId) => nav.switchTo(modeId),
+      onOpenSettings: () => settings.open(),
+      version
+    }),
+    homeRoot
+  );
   if ("serviceWorker" in navigator && !window.Capacitor) {
     navigator.serviceWorker.register("sw.js");
   }
