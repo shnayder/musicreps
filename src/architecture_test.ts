@@ -150,6 +150,8 @@ function classifyLayer(file: string): Layer {
   if (file.startsWith('src/fixtures/')) return 'fixtures';
   if (file.startsWith('src/hooks/')) return 'hooks';
   if (file.startsWith('src/ui/')) return 'ui';
+  if (file === 'src/declarative/types.ts') return 'hooks';
+  if (file === 'src/declarative/generic-mode.tsx') return 'ui';
   if (file.match(/src\/modes\/[^/]+\/logic\.ts$/)) return 'mode-logic';
   if (file.startsWith('src/modes/')) return 'mode-component';
   if (file === 'src/mode-utils.ts') return 'mode-logic';
