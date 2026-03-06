@@ -47,6 +47,7 @@
     "screenshots:review": "npx tsx scripts/build-screenshot-review.ts",
     "iterate": "npx tsx scripts/ui-iterate.ts",
     "screenshots:components": "npx tsx scripts/take-screenshots.ts --only comp/",
-    "diagnostic": "npx tsx scripts/recommendation-diagnostic.ts"
+    "diagnostic": "npx tsx scripts/recommendation-diagnostic.ts",
+    "item-model": "npx tsx scripts/item-model-diagnostic.ts"
   }
 }
