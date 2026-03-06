@@ -1933,7 +1933,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="fc4bb1 declarative-skill-modes-UGkKQ"></div>
+  <div class="home-screen" id="home-screen" data-version="07024d declarative-skill-modes-UGkKQ"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -4029,6 +4029,11 @@ button {
   var NOTE_INPUT_RE = /^[a-gA-G][#bBsS]?$/;
   function isValidNoteInput(input) {
     return NOTE_INPUT_RE.test(input);
+  }
+  function isValidNumberInput(input, min, max) {
+    if (!/^\d{1,2}$/.test(input)) return false;
+    const n2 = parseInt(input, 10);
+    return n2 >= min && n2 <= max;
   }
   var INTERVAL_INPUT_RE = /^[mMPAdTp][2-8Tt]$/;
   function isValidIntervalInput(input) {
@@ -6240,7 +6245,6 @@ button {
 
   // src/hooks/use-quiz-engine.ts
   var ROUND_DURATION_MS = 6e4;
-  var AUTO_ADVANCE_MS = 1e3;
   var TIMER_TICK_MS = 200;
   var LAST_QUESTION_CAP_MS = 3e4;
   var IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
@@ -6266,7 +6270,6 @@ button {
     selectorRef.current = selector;
     const roundTimerRef = A2(null);
     const roundTimerStartRef = A2(null);
-    const autoAdvanceRef = A2(null);
     const lastQuestionCapRef = A2(null);
     const computeProgress = q2(() => {
       const items = configRef.current.getEnabledItems();
@@ -6346,10 +6349,6 @@ button {
       }, TIMER_TICK_MS);
     }, [handleRoundTimerExpiry]);
     const nextQuestion = q2(() => {
-      if (autoAdvanceRef.current) {
-        clearTimeout(autoAdvanceRef.current);
-        autoAdvanceRef.current = null;
-      }
       if (stateRef.current.roundTimerExpired) {
         transitionToRoundCompleteRef.current();
         return;
@@ -6410,12 +6409,6 @@ button {
             transitionToRoundCompleteRef.current();
           }
         }, 600);
-      } else {
-        autoAdvanceRef.current = setTimeout(() => {
-          if (stateRef.current.phase === "active" && stateRef.current.answered) {
-            nextQuestionRef.current();
-          }
-        }, AUTO_ADVANCE_MS);
       }
     }, [computeProgress]);
     const start = q2(() => {
@@ -6439,10 +6432,6 @@ button {
       setTimeout(() => nextQuestionRef.current(), 0);
     }, [startRoundTimer]);
     const stop = q2(() => {
-      if (autoAdvanceRef.current) {
-        clearTimeout(autoAdvanceRef.current);
-        autoAdvanceRef.current = null;
-      }
       stopRoundTimer();
       setState(engineStop);
       setCalibrationFixture(void 0);
@@ -6479,10 +6468,6 @@ button {
             break;
           case "next":
             e3.preventDefault();
-            if (autoAdvanceRef.current) {
-              clearTimeout(autoAdvanceRef.current);
-              autoAdvanceRef.current = null;
-            }
             nextQuestionRef.current();
             break;
           case "continue":
@@ -6505,7 +6490,6 @@ button {
     y2(() => {
       return () => {
         if (roundTimerRef.current) clearInterval(roundTimerRef.current);
-        if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
         if (lastQuestionCapRef.current) clearTimeout(lastQuestionCapRef.current);
       };
     }, []);
@@ -8094,7 +8078,7 @@ button {
     getQuestion,
     getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.accidentalChoice) : String(q3.noteNum),
     checkAnswer,
-    validateInput: (q3, input) => q3.dir === "fwd" ? /^\d{1,2}$/.test(input) : isValidNoteInput(input),
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 0, 11) : isValidNoteInput(input),
     getDirection: (q3) => q3.dir,
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "0\u201311" : "Note name",
     buttons: {
@@ -8159,7 +8143,7 @@ button {
     getQuestion: getQuestion2,
     getPromptText: (q3) => q3.dir === "fwd" ? q3.name : String(q3.num),
     checkAnswer: checkAnswer2,
-    validateInput: (q3, input) => q3.dir === "fwd" ? /^\d{1,2}$/.test(input) : isValidIntervalInput(input),
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 1, 12) : isValidIntervalInput(input),
     getDirection: (q3) => q3.dir,
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "1\u201312" : "Interval (e.g. P5)",
     buttons: {
