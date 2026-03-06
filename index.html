@@ -1937,7 +1937,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#722"></div>
+  <div class="home-screen" id="home-screen" data-version="#727"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -5364,7 +5364,7 @@ button {
     recallThreshold: 0.5,
     // P(recall) below this = "due"
     expansionThreshold: 0.7,
-    // fraction of seen items that must be retained before suggesting new strings
+    // level automaticity (10th percentile) above which expansion is suggested
     speedBonusMax: 1.5,
     // fast answers grow stability up to this extra factor
     selfCorrectionThreshold: 1500,
@@ -5600,41 +5600,52 @@ button {
         stats.lastCorrectAt ?? null
       );
     }
+    function getLevelAutomaticity(itemIds, percentile = 0.1) {
+      if (itemIds.length === 0) return { level: 0, seen: 0 };
+      let seen = 0;
+      const values = [];
+      for (let i3 = 0; i3 < itemIds.length; i3++) {
+        const auto = getAutomaticity(itemIds[i3]);
+        if (auto !== null) {
+          seen++;
+          values.push(auto);
+        } else {
+          values.push(0);
+        }
+      }
+      values.sort((a3, b) => a3 - b);
+      const rawIndex = Math.ceil(values.length * percentile) - 1;
+      const index = Math.min(values.length - 1, Math.max(0, rawIndex));
+      return { level: values[index], seen };
+    }
     function getStringRecommendations(stringIndices, getItemIds) {
       const results = stringIndices.map((s3) => {
         const items = getItemIds(s3);
-        let dueCount = 0;
+        let workingCount = 0;
         let unseenCount = 0;
-        let masteredCount = 0;
+        let fluentCount = 0;
         for (const id of items) {
-          const recall = getRecall(id);
-          if (recall === null) {
+          const auto = getAutomaticity(id);
+          if (auto === null) {
             unseenCount++;
-          } else if (recall < cfg.recallThreshold) {
-            dueCount++;
+          } else if (auto > cfg.automaticityThreshold) {
+            fluentCount++;
           } else {
-            masteredCount++;
+            workingCount++;
           }
         }
         return {
           string: s3,
-          dueCount,
+          workingCount,
           unseenCount,
-          masteredCount,
+          fluentCount,
           totalCount: items.length
         };
       });
       results.sort(
-        (a3, b) => b.dueCount + b.unseenCount - (a3.dueCount + a3.unseenCount)
+        (a3, b) => b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount)
       );
       return results;
-    }
-    function checkAllMastered(items) {
-      for (const id of items) {
-        const recall = getRecall(id);
-        if (recall === null || recall < cfg.recallThreshold) return false;
-      }
-      return items.length > 0;
     }
     function checkAllAutomatic(items) {
       for (const id of items) {
@@ -5645,7 +5656,7 @@ button {
     }
     function checkNeedsReview(items) {
       if (items.length === 0) return false;
-      let hasDueItem = false;
+      let hasDecayedItem = false;
       for (const id of items) {
         const stats = storage.getStats(id);
         if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) {
@@ -5654,10 +5665,12 @@ button {
         const rc = getResponseCount(id);
         const speed = computeSpeedScore(stats.ewma, cfg, rc);
         if (speed == null || speed < 0.5) return false;
-        const recall = getRecall(id);
-        if (recall !== null && recall < cfg.recallThreshold) hasDueItem = true;
+        const auto = getAutomaticity(id);
+        if (auto !== null && auto <= cfg.automaticityThreshold) {
+          hasDecayedItem = true;
+        }
       }
-      return hasDueItem;
+      return hasDecayedItem;
     }
     function updateConfig(newCfg) {
       cfg = { ...cfg, ...newCfg };
@@ -5674,8 +5687,8 @@ button {
       getAutomaticity,
       getSpeedScore,
       getFreshness,
+      getLevelAutomaticity,
       getStringRecommendations,
-      checkAllMastered,
       checkAllAutomatic,
       checkNeedsReview,
       updateConfig,
@@ -6389,11 +6402,29 @@ button {
     }
     return { fluent, seen };
   }
-  function statusLabelFromPct(pct) {
-    if (pct >= 80) return "Strong";
-    if (pct >= 50) return "Solid";
-    if (pct >= 20) return "Building";
-    return "Getting started";
+  function computeLevelAutomaticity(itemIds, getAutomaticity, percentile = 0.1) {
+    if (itemIds.length === 0) return { level: 0, seen: 0 };
+    let seen = 0;
+    const values = [];
+    for (let i3 = 0; i3 < itemIds.length; i3++) {
+      const auto = getAutomaticity(itemIds[i3]);
+      if (auto !== null) {
+        seen++;
+        values.push(auto);
+      } else {
+        values.push(0);
+      }
+    }
+    values.sort((a3, b) => a3 - b);
+    const rawIndex = Math.ceil(values.length * percentile) - 1;
+    const index = Math.min(values.length - 1, Math.max(0, rawIndex));
+    return { level: values[index], seen };
+  }
+  function statusLabelFromLevel(level) {
+    if (level >= 0.8) return "Automatic";
+    if (level >= 0.5) return "Fluent";
+    if (level >= 0.2) return "Developing";
+    return "Learning";
   }
   function buildRecommendationText(result, getGroupLabel, extraParts) {
     if (result.recommended.size === 0) return "";
@@ -6401,7 +6432,7 @@ button {
     if (result.consolidateIndices.length > 0) {
       const labels = result.consolidateIndices.slice().sort((a3, b) => a3 - b).map(getGroupLabel);
       parts.push(
-        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateDueCount + " slow item" + (result.consolidateDueCount !== 1 ? "s" : "")
+        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateWorkingCount + " item" + (result.consolidateWorkingCount !== 1 ? "s" : "") + " to work on"
       );
     }
     if (result.expandIndex !== null) {
@@ -6418,20 +6449,23 @@ button {
   }
   function computePracticeSummary(opts) {
     const threshold = opts.selector.getConfig().automaticityThreshold;
-    const { fluent, seen } = countFluent(
+    const { fluent } = countFluent(
       opts.allItemIds,
       (id) => opts.selector.getAutomaticity(id),
       threshold
     );
     const total = opts.allItemIds.length;
+    const { level, seen } = computeLevelAutomaticity(
+      opts.allItemIds,
+      (id) => opts.selector.getAutomaticity(id)
+    );
     let statusLabel;
     let statusDetail;
     if (seen === 0) {
-      statusLabel = "Ready to start";
+      statusLabel = "Not started";
       statusDetail = total + " " + opts.itemNoun + " to learn";
     } else {
-      const pct = total > 0 ? Math.round(fluent / total * 100) : 0;
-      statusLabel = statusLabelFromPct(pct);
+      statusLabel = statusLabelFromLevel(level);
       statusDetail = fluent + " of " + total + " " + opts.itemNoun + " fluent";
     }
     const hasRec = opts.recommendation !== null && opts.recommendation.recommended.size > 0;
@@ -8014,7 +8048,7 @@ button {
           recommended: /* @__PURE__ */ new Set([first.string]),
           enabled: /* @__PURE__ */ new Set([first.string]),
           consolidateIndices: [],
-          consolidateDueCount: 0,
+          consolidateWorkingCount: 0,
           expandIndex: first.string,
           expandNewCount: first.totalCount
         };
@@ -8023,32 +8057,28 @@ button {
         recommended: /* @__PURE__ */ new Set(),
         enabled: null,
         consolidateIndices: [],
-        consolidateDueCount: 0,
+        consolidateWorkingCount: 0,
         expandIndex: null,
         expandNewCount: 0
       };
     }
-    const totalSeen = started.reduce(
-      (sum, r3) => sum + (r3.masteredCount + r3.dueCount),
-      0
-    );
-    const totalMastered = started.reduce((sum, r3) => sum + r3.masteredCount, 0);
-    const consolidatedRatio = totalSeen > 0 ? totalMastered / totalSeen : 0;
+    const startedItemIds = started.flatMap((r3) => getItemIds(r3.string));
+    const { level } = selector.getLevelAutomaticity(startedItemIds);
     const startedByWork = [...started].sort(
-      (a3, b) => b.dueCount + b.unseenCount - (a3.dueCount + a3.unseenCount)
+      (a3, b) => b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount)
     );
-    const workCounts = startedByWork.map((r3) => r3.dueCount + r3.unseenCount);
+    const workCounts = startedByWork.map((r3) => r3.workingCount + r3.unseenCount);
     const medianWork = workCounts[Math.floor(workCounts.length / 2)];
     const recommended = /* @__PURE__ */ new Set();
     const enabled = /* @__PURE__ */ new Set();
     const consolidateIndices = [];
-    let consolidateDueCount = 0;
+    let consolidateWorkingCount = 0;
     for (const r3 of startedByWork) {
-      if (r3.dueCount + r3.unseenCount > medianWork) {
+      if (r3.workingCount + r3.unseenCount > medianWork) {
         recommended.add(r3.string);
         enabled.add(r3.string);
         consolidateIndices.push(r3.string);
-        consolidateDueCount += r3.dueCount + r3.unseenCount;
+        consolidateWorkingCount += r3.workingCount + r3.unseenCount;
       }
     }
     if (enabled.size === 0) {
@@ -8056,11 +8086,11 @@ button {
       recommended.add(r3.string);
       enabled.add(r3.string);
       consolidateIndices.push(r3.string);
-      consolidateDueCount += r3.dueCount + r3.unseenCount;
+      consolidateWorkingCount += r3.workingCount + r3.unseenCount;
     }
     let expandIndex = null;
     let expandNewCount = 0;
-    if (consolidatedRatio >= config.expansionThreshold && unstarted.length > 0) {
+    if (level >= config.expansionThreshold && unstarted.length > 0) {
       const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
       expandIndex = sorted[0].string;
       expandNewCount = sorted[0].totalCount;
@@ -8071,7 +8101,7 @@ button {
       recommended,
       enabled,
       consolidateIndices,
-      consolidateDueCount,
+      consolidateWorkingCount,
       expandIndex,
       expandNewCount
     };
@@ -10259,12 +10289,12 @@ button {
   }
   function computeNotePrioritization(naturalStats, threshold) {
     let totalSeen = 0;
-    let totalMastered = 0;
+    let totalFluent = 0;
     for (const r3 of naturalStats) {
-      totalSeen += r3.masteredCount + r3.dueCount;
-      totalMastered += r3.masteredCount;
+      totalSeen += r3.fluentCount + r3.workingCount;
+      totalFluent += r3.fluentCount;
     }
-    const ratio = totalSeen > 0 ? totalMastered / totalSeen : 0;
+    const ratio = totalSeen > 0 ? totalFluent / totalSeen : 0;
     if (totalSeen === 0 || ratio < threshold) {
       return { suggestedFilter: "natural", naturalMasteryRatio: ratio };
     }
