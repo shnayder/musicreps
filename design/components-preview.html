@@ -280,14 +280,34 @@ body {
 .skill-card {
   position: relative;
 }
+.skill-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.skill-card-header-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.skill-icon {
+  flex-shrink: 0;
+  color: var(--skill-accent);
+}
 .skill-card[data-track='core'] {
+  --skill-accent: var(--color-track-core);
   border-left-color: var(--color-track-core);
 }
 .skill-card[data-track='guitar'] {
+  --skill-accent: var(--color-track-guitar);
   border-left-color: var(--color-track-guitar);
 }
 .skill-card[data-track='ukulele'] {
+  --skill-accent: var(--color-track-ukulele);
   border-left-color: var(--color-track-ukulele);
+}
+.skill-card::after {
+  color: var(--skill-accent);
 }
 .skill-card-ba {
   display: grid;
@@ -386,8 +406,12 @@ body {
 }
 .mode-top-bar-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-3);
+}
+.mode-top-bar .skill-icon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
 }
 .mode-close-btn {
   background: none;
@@ -429,19 +453,22 @@ body {
   line-height: 1.3;
 }
 .mode-before-after {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: baseline;
-  gap: var(--space-2);
+  gap: var(--space-3);
   margin: var(--space-2) 0 0;
   font-size: var(--text-xs);
   line-height: 1.4;
 }
 .mode-ba-before {
-  color: var(--color-text-light);
+  text-align: right;
+  color: var(--color-text-muted);
 }
 .mode-ba-arrow {
-  color: var(--color-text-light);
-  flex-shrink: 0;
+  color: var(--color-brand);
+  font-size: var(--text-base);
+  font-weight: 700;
 }
 .mode-ba-after {
   color: var(--color-text);
@@ -3089,6 +3116,113 @@ button {
     return /* @__PURE__ */ u3("div", { class: cls, children: /* @__PURE__ */ u3("div", { class: "quiz-countdown-fill", style: { width: `${pct}%` } }) });
   }
 
+  // src/ui/icons.tsx
+  var ICON_PROPS = {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "28",
+    height: "28",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    class: "skill-icon",
+    "aria-hidden": "true"
+  };
+  function Guitar() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "m11.9 12.1 4.514-4.514" }),
+      /* @__PURE__ */ u3("path", { d: "M20.1 2.3a1 1 0 0 0-1.4 0l-1.114 1.114A2 2 0 0 0 17 4.828v1.344a2 2 0 0 1-.586 1.414A2 2 0 0 1 17.828 7h1.344a2 2 0 0 0 1.414-.586L21.7 5.3a1 1 0 0 0 0-1.4z" }),
+      /* @__PURE__ */ u3("path", { d: "m6 16 2 2" }),
+      /* @__PURE__ */ u3("path", { d: "M8.23 9.85A3 3 0 0 1 11 8a5 5 0 0 1 5 5 3 3 0 0 1-1.85 2.77l-.92.38A2 2 0 0 0 12 18a4 4 0 0 1-4 4 6 6 0 0 1-6-6 4 4 0 0 1 4-4 2 2 0 0 0 1.85-1.23z" })
+    ] });
+  }
+  function Zap() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: /* @__PURE__ */ u3("path", { d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" }) });
+  }
+  function Hash() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("line", { x1: "4", x2: "20", y1: "9", y2: "9" }),
+      /* @__PURE__ */ u3("line", { x1: "4", x2: "20", y1: "15", y2: "15" }),
+      /* @__PURE__ */ u3("line", { x1: "10", x2: "8", y1: "3", y2: "21" }),
+      /* @__PURE__ */ u3("line", { x1: "16", x2: "14", y1: "3", y2: "21" })
+    ] });
+  }
+  function Ruler() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" }),
+      /* @__PURE__ */ u3("path", { d: "m14.5 12.5 2-2" }),
+      /* @__PURE__ */ u3("path", { d: "m11.5 9.5 2-2" }),
+      /* @__PURE__ */ u3("path", { d: "m8.5 6.5 2-2" }),
+      /* @__PURE__ */ u3("path", { d: "m17.5 15.5 2-2" })
+    ] });
+  }
+  function Calculator() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("rect", { width: "16", height: "20", x: "4", y: "2", rx: "2" }),
+      /* @__PURE__ */ u3("line", { x1: "8", x2: "16", y1: "6", y2: "6" }),
+      /* @__PURE__ */ u3("line", { x1: "16", x2: "16", y1: "14", y2: "18" }),
+      /* @__PURE__ */ u3("path", { d: "M16 10h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M12 10h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M8 10h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M12 14h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M8 14h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M12 18h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M8 18h.01" })
+    ] });
+  }
+  function ListOrdered() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "M11 5h10" }),
+      /* @__PURE__ */ u3("path", { d: "M11 12h10" }),
+      /* @__PURE__ */ u3("path", { d: "M11 19h10" }),
+      /* @__PURE__ */ u3("path", { d: "M4 4h1v5" }),
+      /* @__PURE__ */ u3("path", { d: "M4 9h2" }),
+      /* @__PURE__ */ u3("path", { d: "M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02" })
+    ] });
+  }
+  function KeyRound() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" }),
+      /* @__PURE__ */ u3("circle", { cx: "16.5", cy: "7.5", r: ".5", fill: "currentColor" })
+    ] });
+  }
+  function Signal() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "M2 20h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M7 20v-4" }),
+      /* @__PURE__ */ u3("path", { d: "M12 20v-8" }),
+      /* @__PURE__ */ u3("path", { d: "M17 20V8" }),
+      /* @__PURE__ */ u3("path", { d: "M22 4v16" })
+    ] });
+  }
+  function SpellCheck() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "m6 16 6-12 6 12" }),
+      /* @__PURE__ */ u3("path", { d: "M8 12h8" }),
+      /* @__PURE__ */ u3("path", { d: "m16 20 2 2 4-4" })
+    ] });
+  }
+  var MODE_ICONS = {
+    fretboard: Guitar,
+    ukulele: Guitar,
+    speedTap: Zap,
+    noteSemitones: Hash,
+    intervalSemitones: Ruler,
+    semitoneMath: Calculator,
+    intervalMath: Calculator,
+    keySignatures: KeyRound,
+    scaleDegrees: Signal,
+    diatonicChords: ListOrdered,
+    chordSpelling: SpellCheck
+  };
+  function SkillIcon({ modeId }) {
+    const Icon = MODE_ICONS[modeId];
+    if (!Icon) return null;
+    return /* @__PURE__ */ u3(Icon, {});
+  }
+
   // src/quiz-engine.ts
   var NOTE_NAME_SET = new Set(NOTE_NAMES);
   var FLAT_TO_BUTTON = {};
@@ -3104,29 +3238,32 @@ button {
   function ModeScreen({ id, phase, children }) {
     return /* @__PURE__ */ u3("div", { class: `mode-screen phase-${phase}`, id: `mode-${id}`, children });
   }
-  function ModeTopBar({ title, description, beforeAfter, onBack, showBack = true }) {
-    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: /* @__PURE__ */ u3("div", { class: "mode-top-bar-row", children: [
-      /* @__PURE__ */ u3("div", { class: "mode-top-bar-text", children: [
-        /* @__PURE__ */ u3("h1", { class: "mode-title", children: title }),
-        description && /* @__PURE__ */ u3("p", { class: "mode-description", children: description }),
-        beforeAfter && /* @__PURE__ */ u3("div", { class: "mode-before-after", children: [
-          /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: beforeAfter.before }),
-          /* @__PURE__ */ u3("span", { class: "mode-ba-arrow", children: "\u2192" }),
-          /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: beforeAfter.after })
-        ] })
+  function ModeTopBar({ modeId, title, description, beforeAfter, onBack, showBack = true }) {
+    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: [
+      /* @__PURE__ */ u3("div", { class: "mode-top-bar-row", children: [
+        modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
+        /* @__PURE__ */ u3("div", { class: "mode-top-bar-text", children: [
+          /* @__PURE__ */ u3("h1", { class: "mode-title", children: title }),
+          description && /* @__PURE__ */ u3("p", { class: "mode-description", children: description })
+        ] }),
+        showBack && /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "mode-close-btn",
+            "aria-label": "Back to home",
+            onClick: onBack,
+            children: "\xD7"
+          }
+        )
       ] }),
-      showBack && /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "mode-close-btn",
-          "aria-label": "Back to home",
-          onClick: onBack,
-          children: "\xD7"
-        }
-      )
-    ] }) });
+      beforeAfter && /* @__PURE__ */ u3("div", { class: "mode-before-after", children: [
+        /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: beforeAfter.before }),
+        /* @__PURE__ */ u3("span", { class: "mode-ba-arrow", children: "\u2192" }),
+        /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: beforeAfter.after })
+      ] })
+    ] });
   }
   var tabbedIdCounter = 0;
   var TABS = ["practice", "progress"];
