@@ -1727,7 +1727,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">bded30 mastery-and-recommendations</span>
+      <span class="version">33436c mastery-and-recommendations</span>
     </div>
   </div>
 
@@ -5032,10 +5032,20 @@ button {
     }
     function getLevelAutomaticity(itemIds, percentile = 0.1) {
       if (itemIds.length === 0) return { level: 0, seen: 0 };
-      const values = itemIds.map((id) => getAutomaticity(id) ?? 0);
+      let seen = 0;
+      const values = [];
+      for (let i3 = 0; i3 < itemIds.length; i3++) {
+        const auto = getAutomaticity(itemIds[i3]);
+        if (auto !== null) {
+          seen++;
+          values.push(auto);
+        } else {
+          values.push(0);
+        }
+      }
       values.sort((a3, b) => a3 - b);
-      const index = Math.max(0, Math.ceil(values.length * percentile) - 1);
-      const seen = values.filter((v3) => v3 > 0).length;
+      const rawIndex = Math.ceil(values.length * percentile) - 1;
+      const index = Math.min(values.length - 1, Math.max(0, rawIndex));
       return { level: values[index], seen };
     }
     function getStringRecommendations(stringIndices, getItemIds) {
@@ -5824,10 +5834,20 @@ button {
   }
   function computeLevelAutomaticity(itemIds, getAutomaticity, percentile = 0.1) {
     if (itemIds.length === 0) return { level: 0, seen: 0 };
-    const values = itemIds.map((id) => getAutomaticity(id) ?? 0);
+    let seen = 0;
+    const values = [];
+    for (let i3 = 0; i3 < itemIds.length; i3++) {
+      const auto = getAutomaticity(itemIds[i3]);
+      if (auto !== null) {
+        seen++;
+        values.push(auto);
+      } else {
+        values.push(0);
+      }
+    }
     values.sort((a3, b) => a3 - b);
-    const index = Math.max(0, Math.ceil(values.length * percentile) - 1);
-    const seen = values.filter((v3) => v3 > 0).length;
+    const rawIndex = Math.ceil(values.length * percentile) - 1;
+    const index = Math.min(values.length - 1, Math.max(0, rawIndex));
     return { level: values[index], seen };
   }
   function statusLabelFromLevel(level) {
@@ -5842,7 +5862,7 @@ button {
     if (result.consolidateIndices.length > 0) {
       const labels = result.consolidateIndices.slice().sort((a3, b) => a3 - b).map(getGroupLabel);
       parts.push(
-        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateWorkingCount + " slow item" + (result.consolidateWorkingCount !== 1 ? "s" : "")
+        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateWorkingCount + " item" + (result.consolidateWorkingCount !== 1 ? "s" : "") + " to work on"
       );
     }
     if (result.expandIndex !== null) {
