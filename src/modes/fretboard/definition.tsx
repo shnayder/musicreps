@@ -130,13 +130,15 @@ function useFretboardController(
 
   // --- Keyboard handler + pending state for narrowing ---
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
+  const hasAccidentalsRef = useRef(hasAccidentals);
+  hasAccidentalsRef.current = hasAccidentals;
   const [pendingNote, setPendingNote] = useState<string | null>(null);
 
   const noteHandler = useMemo(
     () =>
       createAdaptiveKeyHandler(
         (note: string) => engineSubmitRef.current(note),
-        () => hasAccidentals,
+        () => hasAccidentalsRef.current,
         setPendingNote,
       ),
     [],

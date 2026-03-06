@@ -195,6 +195,8 @@ export function GenericMode<Q>(
   const learner = useLearnerModel(def.namespace, def.allItems);
 
   // --- Scope (group-based or none) ---
+  // Note: conditional hook calls below are safe because `def` is stable for
+  // the lifetime of each GenericMode instance — the branch never changes.
   const groupScopeSpec = def.scope.kind === 'groups'
     ? {
       groups: def.scope.groups,
