@@ -1722,6 +1722,26 @@ button {
   grid-template-columns: repeat(4, 1fr);
 }
 
+/* --- Natural note buttons (7-button grid) --- */
+.answer-buttons-naturals {
+  grid-template-columns: repeat(7, 1fr);
+  max-width: 420px;
+}
+
+/* --- Staff display (abcjs rendered SVG) --- */
+.staff-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: var(--space-2) auto;
+  max-width: 280px;
+  min-height: 100px;
+}
+.staff-display svg {
+  width: 100%;
+  height: auto;
+}
+
 /* --- Chord spelling slots --- */
 .chord-slots {
   display: flex;
