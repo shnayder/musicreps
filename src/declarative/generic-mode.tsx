@@ -62,7 +62,8 @@ import type { ButtonsDef, ModeController, ModeDefinition } from './types.ts';
 
 function AnswerInput(
   { onSubmit, disabled, placeholder, onInvalid }: {
-    onSubmit: (input: string) => void;
+    /** Returns true if accepted, false if rejected (input is preserved). */
+    onSubmit: (input: string) => boolean;
     disabled?: boolean;
     placeholder?: string;
     /** Called when user submits empty/whitespace-only input. */
@@ -71,6 +72,14 @@ function AnswerInput(
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [shake, setShake] = useState(false);
+  const shakeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up shake timer on unmount
+  useEffect(() => {
+    return () => {
+      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+    };
+  }, []);
 
   // Auto-focus on mount and when re-enabled
   useEffect(() => {
@@ -78,6 +87,15 @@ function AnswerInput(
       inputRef.current.focus();
     }
   }, [disabled]);
+
+  const triggerShake = useCallback(() => {
+    setShake(true);
+    if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+    shakeTimerRef.current = setTimeout(() => {
+      setShake(false);
+      shakeTimerRef.current = null;
+    }, 400);
+  }, []);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -89,26 +107,30 @@ function AnswerInput(
 
       const value = inputRef.current?.value.trim() ?? '';
       if (!value) {
-        // Shake on empty submit
-        setShake(true);
-        setTimeout(() => setShake(false), 400);
+        triggerShake();
         onInvalid?.();
         return;
       }
-      onSubmit(value);
-      if (inputRef.current) inputRef.current.value = '';
+      const accepted = onSubmit(value);
+      if (accepted) {
+        if (inputRef.current) inputRef.current.value = '';
+      } else {
+        triggerShake();
+      }
     },
-    [onSubmit, onInvalid],
+    [onSubmit, onInvalid, triggerShake],
   );
 
   const cls = 'answer-input' + (shake ? ' answer-input-shake' : '');
+  const label = placeholder ?? 'Type answer, press Enter';
 
   return (
     <input
       ref={inputRef}
       type='text'
       class={cls}
-      placeholder={placeholder ?? 'Type answer, press Enter'}
+      placeholder={label}
+      aria-label={label}
       disabled={disabled}
       onKeyDown={handleKeyDown}
       autoComplete='off'
@@ -150,12 +172,14 @@ function ResponseButtons(
       );
     case 'piano-note':
       return (
-        <PianoNoteButtons
-          onAnswer={onAnswer}
-          hideAccidentals={hideAccidentalsOverride ??
-            buttonsDef.hideAccidentals}
-          narrowing={narrowing}
-        />
+        <div class={hidden ? 'answer-group-hidden' : undefined}>
+          <PianoNoteButtons
+            onAnswer={onAnswer}
+            hideAccidentals={hideAccidentalsOverride ??
+              buttonsDef.hideAccidentals}
+            narrowing={narrowing}
+          />
+        </div>
       );
     case 'number':
       return (
@@ -311,14 +335,15 @@ export function GenericMode<Q>(
 
   // --- Answer submission (shared by text input + button tap) ---
   const handleSubmit = useCallback(
-    (input: string) => {
+    (input: string): boolean => {
       // Optional input validation — reject garbage without scoring it
       if (def.validateInput && currentQRef.current) {
         if (!def.validateInput(currentQRef.current, input)) {
-          return; // silently reject (shake animation handled by AnswerInput)
+          return false;
         }
       }
       engine.submitAnswer(input);
+      return true;
     },
     [engine.submitAnswer, def],
   );

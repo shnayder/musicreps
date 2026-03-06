@@ -327,3 +327,8 @@ This document is accompanied by a working prototype:
 The prototype proves the concept works for both unidirectional (note-only) and
 bidirectional (note + number) modes. Keyboard input uses a text field + Enter,
 which eliminated the 165-line keyboard handler factory from the first iteration.
+
+**Status:** This PR lands the framework and example definitions only. No
+existing modes are wired through `GenericMode` yet — the definitions serve as
+proof-of-concept references. Follow-up PRs will migrate modes one at a time,
+starting with semitone-math and note-semitones.
