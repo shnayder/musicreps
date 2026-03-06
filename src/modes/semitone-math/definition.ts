@@ -29,7 +29,8 @@ export const SEMITONE_MATH_DEF: ModeDefinition<Question> = {
   checkAnswer,
   getUseFlats: (q) => q.useFlats,
 
-  answer: { kind: 'note' },
+  inputPlaceholder: 'Note name',
+  buttons: { kind: 'note' },
 
   scope: {
     kind: 'groups',

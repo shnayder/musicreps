@@ -130,15 +130,46 @@ interface ModeDefinition<Q = unknown> {
 A single Preact component that:
 1. Calls all shared hooks in the standard order
 2. Builds the engine config from the definition
-3. Sets up the correct keyboard handler based on `answer` type
+3. Renders a text input for keyboard answers (+ buttons for tap/click)
 4. Renders the standard phase-conditional UI
-5. Renders the correct buttons based on `answer` and current direction
 
 ```
 GenericMode({ def, container, navigateHome, onMount })
-  └── ~150 lines of hook composition + rendering
-      replaces ~250 lines per mode
+  └── ~200 lines of hook composition + rendering
+      replaces ~250-650 lines per mode
 ```
+
+### Text input replaces keyboard handler factory
+
+**Key simplification:** Instead of per-response-type keyboard handlers (note
+handler with accidental narrowing, digit buffering with timeouts, key signature
+digit+#/b combos, etc.), all keyboard input goes through a single `<input>`
+element. User types their answer and hits Enter.
+
+**Before:** 165 lines of keyboard handler factory code per response type
+(createAdaptiveKeyHandler, digit buffering, timeout management, narrowing state,
+direction-dependent routing).
+
+**After:** 30 lines for an `<AnswerInput>` component — type, Enter, done.
+
+Buttons remain for tap/click (important on mobile). The mode definition
+specifies which buttons to show, but keyboard input is always just the
+text field.
+
+**Error handling:** An optional `validateInput(q, input) → boolean` on the mode
+definition lets modes reject garbage input (show shake animation) instead of
+scoring it as wrong. The existing `checkAnswer` functions already handle any
+string gracefully (garbage → `false`, never crashes), so this is purely a UX
+improvement.
+
+**Trade-offs:**
+- Slightly slower than single-keystroke answers for expert users (type "C#" +
+  Enter vs just pressing C then #)
+- No visual narrowing feedback on buttons as you type
+- More forgiving of typos (you can see what you typed before committing)
+- Much simpler to implement new response types (no custom keyboard handler
+  needed)
+- Uniform experience across all modes
 
 ### What this replaces
 
@@ -209,43 +240,25 @@ Speed tap uses the fretboard as the response interface (tap a position). This
 is the inverse of fretboard mode (fretboard is prompt vs. response). Could be
 handled via a custom response component extension.
 
-## Keyboard handler strategy
+## Keyboard input: text field vs handler factory
 
-The most complex part of the boilerplate is keyboard handling. The patterns are:
+**Decision: text field.** The first prototype had a keyboard handler factory
+(~165 lines) that replicated each mode's custom keyboard handling. The second
+iteration replaced it with a single `<AnswerInput>` text field (~30 lines).
 
-1. **Note handler** — `createAdaptiveKeyHandler()` with narrowing. Used by 7+ modes.
-2. **Digit buffer** — multi-digit numbers with timeout auto-submit. Used by
-   note-semitones (0-11), interval-semitones (1-12).
-3. **Direct digit** — 1-7 immediate submit. Used by scale-degrees, diatonic-chords.
-4. **Key signature** — digit + #/b combination. Used by key-signatures.
+The existing keyboard handlers have 4 distinct patterns (note with accidental
+buffering, digit buffering with timeouts, direct digit, keysig digit+#/b).
+Replicating all of them in a generic component is the most complex part of the
+declarative system — and it's unnecessary if the user just types in a text field.
 
-The GenericMode component would have a keyboard handler factory that maps
-`ResponseDef` → keyboard handler:
+The `checkAnswer` functions already handle free-text input gracefully:
+- `noteMatchesInput(note, input)` — case-insensitive, enharmonic equivalents
+- `parseInt(input)` for numbers — NaN on garbage, safe equality check
+- String comparison for roman numerals, key signatures, etc.
+- No crashes on empty string, random text, or partial input
 
-```typescript
-function keyboardHandlerForResponse(
-  resp: ResponseDef,
-  submitAnswer: (input: string) => void,
-): KeyHandler {
-  switch (resp.kind) {
-    case 'note':
-    case 'piano-note':
-      return createAdaptiveKeyHandler(submitAnswer, () => true, setPendingNote);
-    case 'number':
-      return createDigitBufferHandler(resp.start, resp.end, submitAnswer);
-    case 'degree':
-    case 'numeral':
-      return createDirectDigitHandler(1, 7, submitAnswer, resp.kind === 'numeral');
-    case 'keysig':
-      return createKeysigHandler(submitAnswer);
-    case 'interval':
-      return { handleKey: () => false, reset: () => {} };  // no keyboard
-  }
-}
-```
-
-For bidirectional modes, the GenericMode component switches the active handler
-based on current question direction.
+Optional `validateInput` on the mode definition can reject garbage (typos,
+partial input) with a shake animation instead of scoring it wrong.
 
 ## Impact analysis
 
@@ -306,11 +319,11 @@ Each step can be done independently and verified with `deno task ok`.
 ## Prototype
 
 This document is accompanied by a working prototype:
-- `src/declarative/types.ts` — ModeDefinition type + response types
-- `src/declarative/generic-mode.tsx` — GenericMode component
-- `src/declarative/keyboard-handlers.ts` — handler factories for each response type
-- `src/modes/semitone-math/definition.ts` — semitone-math as declarative def
-- `src/modes/note-semitones/definition.ts` — note-semitones as declarative def
+- `src/declarative/types.ts` — ModeDefinition, ButtonsDef, ScopeDef, StatsDef
+- `src/declarative/generic-mode.tsx` — GenericMode + AnswerInput component
+- `src/modes/semitone-math/definition.ts` — unidirectional mode (35 lines)
+- `src/modes/note-semitones/definition.ts` — bidirectional mode (40 lines)
 
 The prototype proves the concept works for both unidirectional (note-only) and
-bidirectional (note + number) modes without losing any functionality.
+bidirectional (note + number) modes. Keyboard input uses a text field + Enter,
+which eliminated the 165-line keyboard handler factory from the first iteration.

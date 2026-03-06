@@ -5,54 +5,50 @@
 import type { StatsTableRow } from '../types.ts';
 
 // ---------------------------------------------------------------------------
-// Response types — what buttons the user sees and how keyboard maps to them
+// Button types — what clickable/tappable buttons appear during quiz
 // ---------------------------------------------------------------------------
 
-export type NoteResponseDef = {
+export type NoteButtonsDef = {
   kind: 'note';
-  /** Whether to show flat labels on buttons. Called per-question. */
-  useFlats?: boolean;
 };
 
-export type PianoNoteResponseDef = {
+export type PianoNoteButtonsDef = {
   kind: 'piano-note';
   hideAccidentals?: boolean;
 };
 
-export type NumberResponseDef = {
+export type NumberButtonsDef = {
   kind: 'number';
   start: number;
   end: number;
 };
 
-export type DegreeResponseDef = { kind: 'degree' };
-export type NumeralResponseDef = { kind: 'numeral' };
-export type IntervalResponseDef = { kind: 'interval' };
-export type KeysigResponseDef = { kind: 'keysig' };
+export type DegreeButtonsDef = { kind: 'degree' };
+export type NumeralButtonsDef = { kind: 'numeral' };
+export type IntervalButtonsDef = { kind: 'interval' };
+export type KeysigButtonsDef = { kind: 'keysig' };
 
-/** A single response type (one set of buttons + one keyboard handler). */
-export type ResponseDef =
-  | NoteResponseDef
-  | PianoNoteResponseDef
-  | NumberResponseDef
-  | DegreeResponseDef
-  | NumeralResponseDef
-  | IntervalResponseDef
-  | KeysigResponseDef;
+/** Which tap/click buttons to show. Keyboard input goes through a text field. */
+export type ButtonsDef =
+  | NoteButtonsDef
+  | PianoNoteButtonsDef
+  | NumberButtonsDef
+  | DegreeButtonsDef
+  | NumeralButtonsDef
+  | IntervalButtonsDef
+  | KeysigButtonsDef;
 
 // ---------------------------------------------------------------------------
-// Answer definition — how the user answers (possibly direction-dependent)
+// Answer definition — which buttons to show (possibly direction-dependent)
 // ---------------------------------------------------------------------------
-
-export type UnidirectionalAnswer = ResponseDef;
 
 export type BidirectionalAnswer = {
   kind: 'bidirectional';
-  fwd: ResponseDef;
-  rev: ResponseDef;
+  fwd: ButtonsDef;
+  rev: ButtonsDef;
 };
 
-export type AnswerDef = UnidirectionalAnswer | BidirectionalAnswer;
+export type AnswerDef = ButtonsDef | BidirectionalAnswer;
 
 // ---------------------------------------------------------------------------
 // Scope definition — how the user filters what to practice
@@ -99,20 +95,15 @@ export type NoStatsDef = { kind: 'none' };
 export type StatsDef = GridStatsDef | TableStatsDef | NoStatsDef;
 
 // ---------------------------------------------------------------------------
-// Keyboard hint — what type hint to show below buttons
-// ---------------------------------------------------------------------------
-
-export type KeyboardHintDef = 'note' | 'number-0-11' | 'number-1-12' | null;
-
-// ---------------------------------------------------------------------------
 // ModeDefinition — the full declarative mode specification
 // ---------------------------------------------------------------------------
 
 /**
  * Everything needed to create a fully functional quiz mode.
  *
- * The generic component handles all hook composition, rendering, keyboard
- * routing, and phase transitions. The mode only provides data + pure logic.
+ * The generic component handles all hook composition, rendering, and phase
+ * transitions. Keyboard input is via a text field + Enter — no per-mode
+ * keyboard handler needed. Buttons remain for tap/click.
  *
  * @typeParam Q - The question type returned by getQuestion.
  */
@@ -147,15 +138,18 @@ export type ModeDefinition<Q = unknown> = {
   /** Whether to show flat labels on note buttons for this question. */
   getUseFlats?: (q: Q) => boolean;
 
+  // --- Input validation ---
+  /** Validate that input looks like a real answer (not garbage).
+   *  If provided and returns false, the input is rejected with a shake
+   *  animation instead of being scored as wrong.
+   *  If not provided, all non-empty input is accepted. */
+  validateInput?: (q: Q, input: string) => boolean;
+
+  /** Placeholder text for the answer text field. Can be static or per-question. */
+  inputPlaceholder?: string | ((q: Q) => string);
+
   // --- UI configuration ---
-  answer: AnswerDef;
+  buttons: AnswerDef;
   scope: ScopeDef;
   stats: StatsDef;
-
-  // --- Keyboard hint ---
-  /** Keyboard hint type shown during quiz. For bidirectional modes, this
-   *  can be a function of direction. */
-  getKeyboardHint?:
-    | KeyboardHintDef
-    | ((dir: 'fwd' | 'rev') => KeyboardHintDef);
 };

@@ -30,7 +30,8 @@ export const NOTE_SEMITONES_DEF: ModeDefinition<Question> = {
   checkAnswer,
   getDirection: (q) => q.dir,
 
-  answer: {
+  inputPlaceholder: (q) => q.dir === 'fwd' ? '0\u201311' : 'Note name',
+  buttons: {
     kind: 'bidirectional',
     fwd: { kind: 'number', start: 0, end: 11 },
     rev: { kind: 'note' },

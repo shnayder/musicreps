@@ -1,17 +1,16 @@
 // GenericMode — a single Preact component that interprets a ModeDefinition.
-// Handles all hook composition, keyboard routing, and phase-conditional
-// rendering that would otherwise be duplicated across every mode file.
+// Handles all hook composition, text-input keyboard handling, and
+// phase-conditional rendering. Keyboard input is via a text field + Enter;
+// buttons remain for tap/click on mobile.
 
-import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
-import type { ModeHandle } from '../types.ts';
 import {
-  createAdaptiveKeyHandler,
-  noteNarrowingSet,
-  numberNarrowingSet,
-  PENDING_DELAY_AMBIGUOUS,
-  PENDING_DELAY_UNAMBIGUOUS,
-} from '../quiz-engine.ts';
-import { ROMAN_NUMERALS } from '../music-data.ts';
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'preact/hooks';
+import type { ModeHandle } from '../types.ts';
 
 import { useLearnerModel } from '../hooks/use-learner-model.ts';
 import { useGroupScope } from '../hooks/use-group-scope.ts';
@@ -44,233 +43,108 @@ import {
   RoundCompleteInfo,
 } from '../ui/mode-screen.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from '../ui/stats.tsx';
-import {
-  FeedbackBanner,
-  FeedbackDisplay,
-  KeyboardHint,
-} from '../ui/quiz-ui.tsx';
+import { FeedbackBanner, FeedbackDisplay } from '../ui/quiz-ui.tsx';
 import { BUTTON_PROVIDER, SpeedCheck } from '../ui/speed-check.tsx';
 
-import type { KeyboardHintDef, ModeDefinition, ResponseDef } from './types.ts';
+import type { ButtonsDef, ModeDefinition } from './types.ts';
 
 // ---------------------------------------------------------------------------
-// Keyboard handler helpers
+// AnswerInput — text field for keyboard answers
 // ---------------------------------------------------------------------------
 
-type HandlerState = {
-  pendingNote: string | null;
-  pendingDigit: number | null;
-};
-
-/**
- * Build a keyboard handler function for a given ResponseDef.
- * Returns a handleKey function and a reset function.
- */
-function useKeyboardHandler(
-  _responseDef: ResponseDef,
-  submitAnswer: (input: string) => void,
-  setPendingNote: (n: string | null) => void,
-  setPendingDigit: (d: number | null) => void,
-  pendingState: { current: HandlerState },
+function AnswerInput(
+  { onSubmit, disabled, placeholder, onInvalid }: {
+    onSubmit: (input: string) => void;
+    disabled?: boolean;
+    placeholder?: string;
+    /** Called when user submits empty/whitespace-only input. */
+    onInvalid?: () => void;
+  },
 ) {
-  // Note handler (for note, piano-note response types)
-  const noteHandler = useMemo(
-    () =>
-      createAdaptiveKeyHandler(
-        submitAnswer,
-        () => true,
-        setPendingNote,
-      ),
-    [submitAnswer, setPendingNote],
-  );
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [shake, setShake] = useState(false);
 
-  // Digit buffer refs (for number response types)
-  const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Auto-focus on mount and when re-enabled
+  useEffect(() => {
+    if (!disabled && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [disabled]);
 
-  const handleKey = useCallback(
-    (
-      e: KeyboardEvent,
-      ctx: { submitAnswer: (input: string) => void },
-      activeResponse: ResponseDef,
-    ): boolean | void => {
-      switch (activeResponse.kind) {
-        case 'note':
-        case 'piano-note':
-          return noteHandler.handleKey(e);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      // Stop propagation so the engine's document-level keydown
+      // doesn't also fire (it would try to advance to next question).
+      e.stopPropagation();
 
-        case 'number': {
-          const { start, end } = activeResponse;
-          // Enter commits pending digit
-          if (
-            e.key === 'Enter' && pendingState.current.pendingDigit !== null
-          ) {
-            e.preventDefault();
-            clearTimeout(pendingTimeoutRef.current!);
-            const d = pendingState.current.pendingDigit;
-            pendingState.current.pendingDigit = null;
-            setPendingDigit(null);
-            pendingTimeoutRef.current = null;
-            if (d >= start) ctx.submitAnswer(String(d));
-            return true;
-          }
-          // Digit input
-          if (e.key >= '0' && e.key <= '9') {
-            e.preventDefault();
-            const d = parseInt(e.key);
-            if (pendingState.current.pendingDigit !== null) {
-              const num = pendingState.current.pendingDigit * 10 + d;
-              clearTimeout(pendingTimeoutRef.current!);
-              pendingState.current.pendingDigit = null;
-              setPendingDigit(null);
-              pendingTimeoutRef.current = null;
-              if (num >= start && num <= end) ctx.submitAnswer(String(num));
-              return true;
-            }
-            // Check if digit could be a prefix of multi-digit number
-            const couldBePrefix = d * 10 <= end;
-            if (!couldBePrefix || (d >= start && d > 1)) {
-              if (d >= start && d <= end) ctx.submitAnswer(String(d));
-            } else {
-              pendingState.current.pendingDigit = d;
-              setPendingDigit(d);
-              const delay = numberNarrowingSet(d, end, start)!.size > 1
-                ? PENDING_DELAY_AMBIGUOUS
-                : PENDING_DELAY_UNAMBIGUOUS;
-              pendingTimeoutRef.current = setTimeout(() => {
-                if (pendingState.current.pendingDigit !== null) {
-                  const v = pendingState.current.pendingDigit;
-                  if (v >= start) ctx.submitAnswer(String(v));
-                  pendingState.current.pendingDigit = null;
-                  setPendingDigit(null);
-                  pendingTimeoutRef.current = null;
-                }
-              }, delay);
-            }
-            return true;
-          }
-          return false;
-        }
-
-        case 'degree':
-          if (e.key >= '1' && e.key <= '7') {
-            e.preventDefault();
-            ctx.submitAnswer(e.key);
-            return true;
-          }
-          return false;
-
-        case 'numeral':
-          if (e.key >= '1' && e.key <= '7') {
-            e.preventDefault();
-            ctx.submitAnswer(ROMAN_NUMERALS[parseInt(e.key) - 1]);
-            return true;
-          }
-          return false;
-
-        case 'keysig': {
-          // digit + #/b keysig handler
-          if (
-            e.key === 'Enter' && pendingState.current.pendingDigit !== null
-          ) {
-            e.preventDefault();
-            clearTimeout(pendingTimeoutRef.current!);
-            const d = pendingState.current.pendingDigit;
-            pendingState.current.pendingDigit = null;
-            setPendingDigit(null);
-            pendingTimeoutRef.current = null;
-            if (d === 0) ctx.submitAnswer('0');
-            return true;
-          }
-          if (e.key >= '0' && e.key <= '7') {
-            e.preventDefault();
-            if (pendingTimeoutRef.current) {
-              clearTimeout(pendingTimeoutRef.current);
-            }
-            pendingState.current.pendingDigit = parseInt(e.key);
-            setPendingDigit(parseInt(e.key));
-            pendingTimeoutRef.current = setTimeout(() => {
-              if (pendingState.current.pendingDigit === 0) {
-                ctx.submitAnswer('0');
-              }
-              pendingState.current.pendingDigit = null;
-              setPendingDigit(null);
-              pendingTimeoutRef.current = null;
-            }, 600);
-            return true;
-          }
-          if (
-            pendingState.current.pendingDigit !== null &&
-            (e.key === '#' || e.key === 'b')
-          ) {
-            e.preventDefault();
-            clearTimeout(pendingTimeoutRef.current!);
-            const answer = pendingState.current.pendingDigit + e.key;
-            pendingState.current.pendingDigit = null;
-            setPendingDigit(null);
-            pendingTimeoutRef.current = null;
-            ctx.submitAnswer(answer);
-            return true;
-          }
-          return false;
-        }
-
-        case 'interval':
-          // No keyboard support for interval buttons
-          return false;
+      const value = inputRef.current?.value.trim() ?? '';
+      if (!value) {
+        // Shake on empty submit
+        setShake(true);
+        setTimeout(() => setShake(false), 400);
+        onInvalid?.();
+        return;
       }
+      onSubmit(value);
+      if (inputRef.current) inputRef.current.value = '';
     },
-    [noteHandler, setPendingDigit, pendingState],
+    [onSubmit, onInvalid],
   );
 
-  const reset = useCallback(() => {
-    noteHandler.reset();
-    if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
-    pendingState.current.pendingDigit = null;
-    setPendingDigit(null);
-  }, [noteHandler, setPendingDigit, pendingState]);
+  const cls = 'answer-input' + (shake ? ' answer-input-shake' : '');
 
-  return { handleKey, reset };
+  return (
+    <input
+      ref={inputRef}
+      type='text'
+      class={cls}
+      placeholder={placeholder ?? 'Type answer, press Enter'}
+      disabled={disabled}
+      onKeyDown={handleKeyDown}
+      autoComplete='off'
+      autoCorrect='off'
+      spellcheck={false}
+    />
+  );
 }
 
 // ---------------------------------------------------------------------------
-// Response buttons renderer
+// Tap/click buttons renderer (unchanged — buttons are still useful on mobile)
 // ---------------------------------------------------------------------------
 
 function ResponseButtons(
-  { responseDef, hidden, onAnswer, narrowing, useFlats }: {
-    responseDef: ResponseDef;
+  { buttonsDef, hidden, onAnswer, useFlats }: {
+    buttonsDef: ButtonsDef;
     hidden?: boolean;
     onAnswer: (input: string) => void;
-    narrowing?: ReadonlySet<string> | null;
     useFlats?: boolean;
   },
 ) {
-  switch (responseDef.kind) {
+  switch (buttonsDef.kind) {
     case 'note':
       return (
         <NoteButtons
           hidden={hidden}
           onAnswer={onAnswer}
           useFlats={useFlats}
-          narrowing={!hidden ? narrowing : undefined}
         />
       );
     case 'piano-note':
       return (
         <PianoNoteButtons
           onAnswer={onAnswer}
-          hideAccidentals={responseDef.hideAccidentals}
-          narrowing={narrowing}
+          hideAccidentals={buttonsDef.hideAccidentals}
         />
       );
     case 'number':
       return (
         <NumberButtons
-          start={responseDef.start}
-          end={responseDef.end}
+          start={buttonsDef.start}
+          end={buttonsDef.end}
           hidden={hidden}
           onAnswer={(n) => onAnswer(String(n))}
-          narrowing={!hidden ? narrowing : undefined}
         />
       );
     case 'degree':
@@ -300,7 +174,6 @@ export function GenericMode<Q>(
   const learner = useLearnerModel(def.namespace, def.allItems);
 
   // --- Scope (group-based or none) ---
-  // Build the spec object outside the hook call so TypeScript can narrow.
   const groupScopeSpec = def.scope.kind === 'groups'
     ? {
       groups: def.scope.groups,
@@ -313,39 +186,12 @@ export function GenericMode<Q>(
       formatLabel: def.scope.formatLabel,
     }
     : null;
-  // Note: hooks must be called unconditionally — useGroupScope handles
-  // the no-scope case internally via a dummy spec. For the prototype,
-  // we use conditional calls since scope.kind is stable for a mode's lifetime.
   const groupScopeResult = groupScopeSpec
     ? useGroupScope(groupScopeSpec)
     : null;
 
   // --- Question state ---
   const currentQRef = useRef<Q | null>(null);
-
-  // --- Pending input state (for keyboard narrowing) ---
-  const [pendingNote, setPendingNote] = useState<string | null>(null);
-  const [pendingDigit, setPendingDigit] = useState<number | null>(null);
-  const pendingStateRef = useRef<HandlerState>({
-    pendingNote: null,
-    pendingDigit: null,
-  });
-
-  // --- Submit ref (for keyboard handler indirection) ---
-  const engineSubmitRef = useRef<(input: string) => void>(() => {});
-
-  // --- Keyboard handler ---
-  const submitViaRef = useCallback(
-    (input: string) => engineSubmitRef.current(input),
-    [],
-  );
-  const { handleKey, reset: resetHandler } = useKeyboardHandler(
-    def.answer.kind === 'bidirectional' ? def.answer.fwd : def.answer,
-    submitViaRef,
-    setPendingNote,
-    setPendingDigit,
-    pendingStateRef,
-  );
 
   // --- Engine config ---
   const getEnabledItemsRef = useRef<() => string[]>(
@@ -368,31 +214,14 @@ export function GenericMode<Q>(
       const q = currentQRef.current!;
       return def.checkAnswer(q, input);
     },
-
-    handleKey: (
-      e: KeyboardEvent,
-      ctx: { submitAnswer: (input: string) => void },
-    ): boolean | void => {
-      // For bidirectional modes, determine active response from direction
-      const q = currentQRef.current;
-      let activeResponse: ResponseDef;
-      if (def.answer.kind === 'bidirectional' && q && def.getDirection) {
-        const dir = def.getDirection(q);
-        activeResponse = dir === 'fwd' ? def.answer.fwd : def.answer.rev;
-      } else if (def.answer.kind === 'bidirectional') {
-        activeResponse = def.answer.fwd;
-      } else {
-        activeResponse = def.answer;
-      }
-      return handleKey(e, ctx, activeResponse);
-    },
-
-    onStart: () => resetHandler(),
-    onStop: () => resetHandler(),
-  }), [def, handleKey, resetHandler]);
+    // No handleKey — keyboard input goes through the text field.
+    // The engine still handles Space/Enter/Escape for next/stop/continue
+    // via its own routing; those keys won't reach us because the text
+    // input stops propagation on Enter, and Space/Escape are not
+    // intercepted by the input.
+  }), [def]);
 
   const engine = useQuizEngine(engineConfig, learner.selector, container);
-  engineSubmitRef.current = engine.submitAnswer;
 
   // --- Derived question state ---
   const currentQ = useMemo(() => {
@@ -406,35 +235,6 @@ export function GenericMode<Q>(
   const dir = (currentQ && def.getDirection)
     ? def.getDirection(currentQ)
     : 'fwd';
-
-  // --- Narrowing ---
-  const noteNarrowing = useMemo(
-    () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-    [pendingNote, engine.state.answered],
-  );
-
-  const numEnd = (() => {
-    if (def.answer.kind === 'bidirectional') {
-      const r = dir === 'fwd' ? def.answer.fwd : def.answer.rev;
-      return r.kind === 'number' ? r.end : 0;
-    }
-    return def.answer.kind === 'number' ? def.answer.end : 0;
-  })();
-  const numStart = (() => {
-    if (def.answer.kind === 'bidirectional') {
-      const r = dir === 'fwd' ? def.answer.fwd : def.answer.rev;
-      return r.kind === 'number' ? r.start : 0;
-    }
-    return def.answer.kind === 'number' ? def.answer.start : 0;
-  })();
-
-  const numNarrowing = useMemo(
-    () =>
-      engine.state.answered
-        ? null
-        : numberNarrowingSet(pendingDigit, numEnd, numStart),
-    [pendingDigit, engine.state.answered, numEnd, numStart],
-  );
 
   // --- Phase class sync ---
   usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
@@ -456,8 +256,7 @@ export function GenericMode<Q>(
   });
 
   // --- Navigation handle ---
-  const deactivateCleanup = useCallback(() => resetHandler(), [resetHandler]);
-  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+  useModeLifecycle(onMount, engine, learner);
 
   // --- Prompt text ---
   const promptText = currentQ ? def.getPromptText(currentQ) : '';
@@ -467,52 +266,39 @@ export function GenericMode<Q>(
     ? def.getUseFlats(currentQ)
     : undefined;
 
-  // --- Answer handler ---
-  const handleAnswer = useCallback(
-    (input: string) => engine.submitAnswer(input),
-    [engine.submitAnswer],
+  // --- Answer submission (shared by text input + button tap) ---
+  const handleSubmit = useCallback(
+    (input: string) => {
+      // Optional input validation — reject garbage without scoring it
+      if (def.validateInput && currentQRef.current) {
+        if (!def.validateInput(currentQRef.current, input)) {
+          return; // silently reject (shake animation handled by AnswerInput)
+        }
+      }
+      engine.submitAnswer(input);
+    },
+    [engine.submitAnswer, def],
   );
 
-  // --- Keyboard hint ---
-  const keyboardHint: KeyboardHintDef = (() => {
-    if (!def.getKeyboardHint) {
-      // Infer from response type
-      const activeResp = def.answer.kind === 'bidirectional'
-        ? (dir === 'fwd' ? def.answer.fwd : def.answer.rev)
-        : def.answer;
-      if (activeResp.kind === 'note' || activeResp.kind === 'piano-note') {
-        return 'note';
-      }
-      if (activeResp.kind === 'number') {
-        return activeResp.start === 0 ? 'number-0-11' : 'number-1-12';
-      }
-      return null;
-    }
-    if (typeof def.getKeyboardHint === 'function') {
-      return def.getKeyboardHint(dir);
-    }
-    return def.getKeyboardHint;
+  // --- Input placeholder ---
+  const placeholder = (() => {
+    if (!def.inputPlaceholder) return undefined;
+    if (typeof def.inputPlaceholder === 'string') return def.inputPlaceholder;
+    return currentQ ? def.inputPlaceholder(currentQ) : undefined;
   })();
 
   // --- Render ---
   const phase = engine.state.phase;
   const isIdle = phase === 'idle';
 
-  // Determine active response for button rendering
-  const activeResp: ResponseDef = def.answer.kind === 'bidirectional'
-    ? (dir === 'fwd' ? def.answer.fwd : def.answer.rev)
-    : def.answer;
-  const inactiveResp: ResponseDef | null = def.answer.kind === 'bidirectional'
-    ? (dir === 'fwd' ? def.answer.rev : def.answer.fwd)
-    : null;
-
-  // Determine narrowing for the active response
-  const activeNarrowing = activeResp.kind === 'note' ||
-      activeResp.kind === 'piano-note'
-    ? noteNarrowing
-    : activeResp.kind === 'number'
-    ? numNarrowing
-    : null;
+  // Determine active/inactive buttons for rendering
+  const activeButtons: ButtonsDef = def.buttons.kind === 'bidirectional'
+    ? (dir === 'fwd' ? def.buttons.fwd : def.buttons.rev)
+    : def.buttons;
+  const inactiveButtons: ButtonsDef | null =
+    def.buttons.kind === 'bidirectional'
+      ? (dir === 'fwd' ? def.buttons.rev : def.buttons.fwd)
+      : null;
 
   return (
     <>
@@ -629,20 +415,23 @@ export function GenericMode<Q>(
                       correct={engine.state.feedbackCorrect}
                       answer={engine.state.feedbackDisplayAnswer}
                     />
+                    <AnswerInput
+                      onSubmit={handleSubmit}
+                      disabled={engine.state.answered}
+                      placeholder={placeholder}
+                    />
                     <ResponseButtons
-                      responseDef={activeResp}
-                      onAnswer={handleAnswer}
-                      narrowing={activeNarrowing}
+                      buttonsDef={activeButtons}
+                      onAnswer={handleSubmit}
                       useFlats={useFlats}
                     />
-                    {inactiveResp && (
+                    {inactiveButtons && (
                       <ResponseButtons
-                        responseDef={inactiveResp}
+                        buttonsDef={inactiveButtons}
                         hidden
-                        onAnswer={handleAnswer}
+                        onAnswer={handleSubmit}
                       />
                     )}
-                    <KeyboardHint type={keyboardHint} />
                     <FeedbackDisplay
                       text={engine.state.feedbackText}
                       className={engine.state.feedbackClass}
