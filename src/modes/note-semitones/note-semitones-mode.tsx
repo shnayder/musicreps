@@ -3,7 +3,11 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
-import { displayNote } from '../../music-data.ts';
+import {
+  displayNote,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../music-data.ts';
 import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,
@@ -230,6 +234,8 @@ export function NoteSemitonesMode(
     <>
       <ModeTopBar
         title='Note ↔ Semitones'
+        description={MODE_DESCRIPTIONS.noteSemitones}
+        beforeAfter={MODE_BEFORE_AFTER.noteSemitones}
         onBack={navigateHome}
         showBack={isIdle}
       />

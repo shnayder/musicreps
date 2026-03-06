@@ -4,7 +4,11 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
-import { displayNote } from '../../music-data.ts';
+import {
+  displayNote,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../music-data.ts';
 import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,
@@ -204,6 +208,8 @@ export function ScaleDegreesMode(
     <>
       <ModeTopBar
         title='Scale Degrees'
+        description={MODE_DESCRIPTIONS.scaleDegrees}
+        beforeAfter={MODE_BEFORE_AFTER.scaleDegrees}
         onBack={navigateHome}
         showBack={isIdle}
       />

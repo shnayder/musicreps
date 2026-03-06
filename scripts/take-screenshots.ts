@@ -103,12 +103,15 @@ function generateIndexHTML(
 ): void {
   // Split into mode groups, speed check, design moments, and progress tab
   const modeGroups = new Map<string, ScreenshotEntry[]>();
+  const homeEntries: ScreenshotEntry[] = [];
   const speedCheckEntries: ScreenshotEntry[] = [];
   const designEntries: ScreenshotEntry[] = [];
   const progressEntries: ScreenshotEntry[] = [];
 
   for (const entry of manifest) {
-    if (entry.clickTab === 'progress') {
+    if (entry.modeId === 'home') {
+      homeEntries.push(entry);
+    } else if (entry.clickTab === 'progress') {
       progressEntries.push(entry);
     } else if (entry.name.startsWith('design-')) {
       designEntries.push(entry);
@@ -141,6 +144,12 @@ function generateIndexHTML(
   }
 
   let sections = '';
+
+  // Home screen section
+  if (homeEntries.length > 0) {
+    const shots = homeEntries.map((e) => shotHTML(e.name, e.name)).join('\n');
+    sections += `<h2>Home</h2>\n<div class="shots">\n${shots}\n</div>\n`;
+  }
 
   // Mode sections in manifest order (preserves MODE_IDS order)
   for (const modeId of MODE_IDS) {
@@ -268,9 +277,11 @@ async function main() {
       // Helper: navigate to a mode via page reload + real UI click.
       // Page reload guarantees clean state — no stale mode-active classes,
       // no leftover fixture state, no navigation system desync.
+      // modeId 'home' skips the click — the home screen is visible on load.
       async function navigateToMode(modeId: string) {
         await page.goto(`${BASE_URL}/?fixtures`);
         await page.waitForLoadState('networkidle');
+        if (modeId === 'home') return;
         await page.click(`[data-mode="${modeId}"]`);
         await page.waitForSelector(`#mode-${modeId}.mode-active`);
       }

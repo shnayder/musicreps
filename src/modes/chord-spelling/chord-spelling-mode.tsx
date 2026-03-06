@@ -5,7 +5,11 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle, SequentialState } from '../../types.ts';
-import { displayNote } from '../../music-data.ts';
+import {
+  displayNote,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../music-data.ts';
 import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,
@@ -253,6 +257,8 @@ export function ChordSpellingMode(
     <>
       <ModeTopBar
         title='Chord Spelling'
+        description={MODE_DESCRIPTIONS.chordSpelling}
+        beforeAfter={MODE_BEFORE_AFTER.chordSpelling}
         onBack={navigateHome}
         showBack={isIdle}
       />

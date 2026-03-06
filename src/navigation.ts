@@ -83,19 +83,11 @@ export function createNavigation(): {
   }
 
   function init(): void {
-    // Home screen mode buttons
-    if (homeScreen) {
-      homeScreen.querySelectorAll<HTMLElement>('.home-mode-btn').forEach(
-        function (btn: HTMLElement): void {
-          btn.addEventListener('click', function (): void {
-            switchTo(btn.dataset.mode!);
-          });
-        },
-      );
-    }
+    // Home screen mode buttons are handled by Preact HomeScreen component
+    // via onSelectMode prop — no DOM query needed here.
 
     // Mode back buttons (one per mode screen)
-    document.querySelectorAll('.mode-back-btn').forEach(
+    document.querySelectorAll('.mode-close-btn').forEach(
       function (btn: Element): void {
         btn.addEventListener('click', function (): void {
           navigateHome();

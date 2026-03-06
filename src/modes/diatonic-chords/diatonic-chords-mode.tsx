@@ -4,7 +4,12 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
-import { displayNote, ROMAN_NUMERALS } from '../../music-data.ts';
+import {
+  displayNote,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+  ROMAN_NUMERALS,
+} from '../../music-data.ts';
 import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,
@@ -202,6 +207,8 @@ export function DiatonicChordsMode(
     <>
       <ModeTopBar
         title='Diatonic Chords'
+        description={MODE_DESCRIPTIONS.diatonicChords}
+        beforeAfter={MODE_BEFORE_AFTER.diatonicChords}
         onBack={navigateHome}
         showBack={isIdle}
       />

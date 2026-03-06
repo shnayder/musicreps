@@ -247,6 +247,22 @@ function PreviewApp() {
       <Section title='ModeTopBar'>
         <ModeTopBar title='Semitone Math' />
       </Section>
+      <Section title='ModeTopBar — with description'>
+        <ModeTopBar
+          title='Semitone Math'
+          description='Transpose by semitones without counting'
+        />
+      </Section>
+      <Section title='ModeTopBar — with before/after'>
+        <ModeTopBar
+          title='Semitone Math'
+          description='Transpose by semitones without counting'
+          beforeAfter={{
+            before: '\u201CF# + 4\u2026 G, G#, A, A#\u2026 Bb?\u201D',
+            after: '\u201CF# + 4. Bb.\u201D',
+          }}
+        />
+      </Section>
       <Section title='StartButton'>
         <StartButton />
       </Section>
@@ -345,7 +361,14 @@ function PreviewApp() {
       </Section>
       <Section title='ModeScreen (idle, composed)'>
         <ModeScreen id='preview-demo' phase='idle'>
-          <ModeTopBar title='Demo Mode' />
+          <ModeTopBar
+            title='Demo Mode'
+            description='Practice skill X until it becomes automatic'
+            beforeAfter={{
+              before: '\u201CX\u2026 um\u2026 Y?\u201D',
+              after: '\u201CX. Y.\u201D',
+            }}
+          />
           <TabbedIdle
             activeTab='practice'
             onTabSwitch={() => {}}

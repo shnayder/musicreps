@@ -32,30 +32,44 @@ export function ModeScreen(
 }
 
 // ---------------------------------------------------------------------------
-// ModeTopBar — back button + mode title
+// ModeTopBar — close button + mode title + description + before/after
 // ---------------------------------------------------------------------------
 
 export function ModeTopBar(
-  { title, onBack, showBack = true }: {
+  { title, description, beforeAfter, onBack, showBack = true }: {
     title: string;
+    description?: string;
+    beforeAfter?: { before: string; after: string };
     onBack?: () => void;
     showBack?: boolean;
   },
 ) {
   return (
     <div class='mode-top-bar'>
-      {showBack && (
-        <button
-          type='button'
-          tabIndex={0}
-          class='mode-back-btn'
-          aria-label='Back to home'
-          onClick={onBack}
-        >
-          {'\u2190' /* ← back arrow */}
-        </button>
-      )}
-      <h1 class='mode-title'>{title}</h1>
+      <div class='mode-top-bar-row'>
+        <div class='mode-top-bar-text'>
+          <h1 class='mode-title'>{title}</h1>
+          {description && <p class='mode-description'>{description}</p>}
+          {beforeAfter && (
+            <div class='mode-before-after'>
+              <span class='mode-ba-before'>{beforeAfter.before}</span>
+              <span class='mode-ba-arrow'>&rarr;</span>
+              <span class='mode-ba-after'>{beforeAfter.after}</span>
+            </div>
+          )}
+        </div>
+        {showBack && (
+          <button
+            type='button'
+            tabIndex={0}
+            class='mode-close-btn'
+            aria-label='Back to home'
+            onClick={onBack}
+          >
+            {'\u00D7' /* × close */}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -17,7 +17,6 @@ import {
   pianoNoteButtons,
   tabbedIdleHTML,
 } from './html-helpers.ts';
-
 // ---------------------------------------------------------------------------
 // Shared HTML fragments
 // ---------------------------------------------------------------------------
@@ -25,65 +24,9 @@ import {
 export const DISTANCE_TOGGLES =
   '<div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>';
 
-export const HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
-    <div class="home-header">
-      <h1 class="home-title">Music Reps</h1>
-    </div>
-    <div class="home-modes">
-      <div class="home-group-label">Fretboard</div>
-      <button tabindex="0" data-mode="fretboard" class="home-mode-btn">
-        <span class="home-mode-name">Guitar Fretboard</span>
-        <span class="home-mode-desc">Name notes on the guitar neck</span>
-      </button>
-      <button tabindex="0" data-mode="ukulele" class="home-mode-btn">
-        <span class="home-mode-name">Ukulele Fretboard</span>
-        <span class="home-mode-desc">Name notes on the ukulele</span>
-      </button>
-      <button tabindex="0" data-mode="speedTap" class="home-mode-btn">
-        <span class="home-mode-name">Speed Tap</span>
-        <span class="home-mode-desc">Find all positions of a note</span>
-      </button>
-      <div class="home-group-label">Theory Lookup</div>
-      <button tabindex="0" data-mode="noteSemitones" class="home-mode-btn">
-        <span class="home-mode-name">Note \u2194 Semitones</span>
-        <span class="home-mode-desc">Convert between notes and semitone numbers</span>
-      </button>
-      <button tabindex="0" data-mode="intervalSemitones" class="home-mode-btn">
-        <span class="home-mode-name">Interval \u2194 Semitones</span>
-        <span class="home-mode-desc">Convert between intervals and semitone counts</span>
-      </button>
-      <div class="home-group-label">Calculation</div>
-      <button tabindex="0" data-mode="semitoneMath" class="home-mode-btn">
-        <span class="home-mode-name">Semitone Math</span>
-        <span class="home-mode-desc">Add or subtract semitones from a note</span>
-      </button>
-      <button tabindex="0" data-mode="intervalMath" class="home-mode-btn">
-        <span class="home-mode-name">Interval Math</span>
-        <span class="home-mode-desc">Apply intervals up or down from a note</span>
-      </button>
-      <div class="home-group-label">Keys &amp; Chords</div>
-      <button tabindex="0" data-mode="keySignatures" class="home-mode-btn">
-        <span class="home-mode-name">Key Signatures</span>
-        <span class="home-mode-desc">Match keys to their sharps and flats</span>
-      </button>
-      <button tabindex="0" data-mode="scaleDegrees" class="home-mode-btn">
-        <span class="home-mode-name">Scale Degrees</span>
-        <span class="home-mode-desc">Name notes by scale degree in any key</span>
-      </button>
-      <button tabindex="0" data-mode="diatonicChords" class="home-mode-btn">
-        <span class="home-mode-name">Diatonic Chords</span>
-        <span class="home-mode-desc">Identify chords built on each scale degree</span>
-      </button>
-      <button tabindex="0" data-mode="chordSpelling" class="home-mode-btn">
-        <span class="home-mode-name">Chord Spelling</span>
-        <span class="home-mode-desc">Spell out the notes in any chord</span>
-      </button>
-    </div>
-    <div class="home-footer">
-      <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">__VERSION__</span>
-    </div>
-  </div>`;
+// Minimal placeholder — Preact HomeScreen component renders the full UI at runtime.
+export const HOME_SCREEN_HTML =
+  `  <div class="home-screen" id="home-screen" data-version="__VERSION__"></div>`;
 
 // ---------------------------------------------------------------------------
 // Mode screen HTML — each mode's unique content

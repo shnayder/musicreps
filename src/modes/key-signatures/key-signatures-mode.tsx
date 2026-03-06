@@ -4,7 +4,11 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
-import { displayNote } from '../../music-data.ts';
+import {
+  displayNote,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../music-data.ts';
 import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,
@@ -260,6 +264,8 @@ export function KeySignaturesMode(
     <>
       <ModeTopBar
         title='Key Signatures'
+        description={MODE_DESCRIPTIONS.keySignatures}
+        beforeAfter={MODE_BEFORE_AFTER.keySignatures}
         onBack={navigateHome}
         showBack={isIdle}
       />

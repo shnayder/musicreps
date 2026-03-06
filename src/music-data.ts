@@ -46,6 +46,124 @@ export const INTERVALS: Interval[] = [
 ];
 export const INTERVAL_ABBREVS = INTERVALS.map((i) => i.abbrev);
 
+// Mode descriptions — shown on home screen buttons and practice tab headers.
+export const MODE_DESCRIPTIONS: Record<string, string> = {
+  fretboard: 'Stop hunting for notes on the fretboard',
+  ukulele: 'Stop hunting for notes on the fretboard',
+  speedTap: 'Know all positions of a note instantly',
+  noteSemitones: 'The number system behind the chromatic scale',
+  intervalSemitones: 'Know the size of every interval in semitones',
+  semitoneMath: 'Transpose by semitones without counting',
+  intervalMath: 'Transpose by interval without counting',
+  keySignatures: 'See a key, know its sharps and flats instantly',
+  scaleDegrees: 'Connect notes to their function in a key',
+  diatonicChords: 'Know which chords belong in any key',
+  chordSpelling: 'Know the notes in any chord',
+};
+
+// Centralized display names for all modes.
+export const MODE_NAMES: Record<string, string> = {
+  fretboard: 'Guitar Fretboard',
+  ukulele: 'Ukulele Fretboard',
+  speedTap: 'Speed Tap',
+  noteSemitones: 'Note \u2194 Semitones',
+  intervalSemitones: 'Interval \u2194 Semitones',
+  semitoneMath: 'Semitone Math',
+  intervalMath: 'Interval Math',
+  keySignatures: 'Key Signatures',
+  scaleDegrees: 'Scale Degrees',
+  diatonicChords: 'Diatonic Chords',
+  chordSpelling: 'Chord Spelling',
+};
+
+// Before/after contrast text — shown on skill cards to communicate value.
+export const MODE_BEFORE_AFTER: Record<
+  string,
+  { before: string; after: string }
+> = {
+  fretboard: {
+    before: '\u201C7th fret, G string\u2026 G, G#, A\u2026 D?\u201D',
+    after: '\u201C7th fret, G string. D.\u201D',
+  },
+  ukulele: {
+    before: '\u201C5th fret, C string\u2026 C, D, E\u2026 E?\u201D',
+    after: '\u201C5th fret, C string. E.\u201D',
+  },
+  speedTap: {
+    before:
+      '\u201CAll the C\u2019s\u2026 8th fret E, 3rd fret A\u2026 um\u2026\u201D',
+    after: '\u201CC\u2019s. Frets 8, 3, 10, 5, 1, 8.\u201D',
+  },
+  noteSemitones: {
+    before: '\u201CG#\u2026 G is 7, so G# is\u2026 8?\u201D',
+    after: '\u201CG#. 8.\u201D',
+  },
+  intervalSemitones: {
+    before: '\u201CMajor 6th\u2026 that\u2019s\u2026 9 semitones?\u201D',
+    after: '\u201CM6. 9 semitones.\u201D',
+  },
+  semitoneMath: {
+    before: '\u201CF# + 4\u2026 G, G#, A, A#\u2026 Bb?\u201D',
+    after: '\u201CF# + 4. Bb.\u201D',
+  },
+  intervalMath: {
+    before: '\u201CC + m6\u2026 minor 6th is 8 semitones\u2026 Ab?\u201D',
+    after: '\u201CC + m6. Ab.\u201D',
+  },
+  keySignatures: {
+    before: '\u201C3 flats\u2026 Bb, Eb, Ab\u2026 so Eb major?\u201D',
+    after: '\u201C3 flats: Eb major.\u201D',
+  },
+  scaleDegrees: {
+    before: '\u201C5th degree of Bb\u2026 Bb, C, D, Eb, F\u2026 F?\u201D',
+    after: '\u201C5th of Bb. F.\u201D',
+  },
+  diatonicChords: {
+    before: '\u201CIV in G\u2026 G, A, B, C\u2026 C major?\u201D',
+    after: '\u201CIV in G. C major.\u201D',
+  },
+  chordSpelling: {
+    before: '\u201CFm7\u2026 F, Ab, C\u2026 what\u2019s the 7th\u2026 Eb\u201D',
+    after: '\u201CFm7. F Ab C Eb.\u201D',
+  },
+};
+
+// Track definitions — interest-based skill groups for the home screen.
+export type Track = {
+  id: string;
+  label: string;
+  alwaysSelected?: boolean;
+  skills: string[];
+};
+
+export const TRACKS: Track[] = [
+  {
+    id: 'core',
+    label: 'Core',
+    alwaysSelected: true,
+    skills: [
+      'noteSemitones',
+      'intervalSemitones',
+      'semitoneMath',
+      'intervalMath',
+      'keySignatures',
+      'scaleDegrees',
+      'diatonicChords',
+      'chordSpelling',
+    ],
+  },
+  {
+    id: 'guitar',
+    label: 'Guitar',
+    skills: ['fretboard', 'speedTap'],
+  },
+  {
+    id: 'ukulele',
+    label: 'Ukulele',
+    skills: ['ukulele'],
+  },
+];
+
 /** Look up a note by its semitone number (0–11). */
 export function noteByNum(num: number) {
   return NOTES[((num % 12) + 12) % 12];
@@ -130,7 +248,7 @@ export function spelledNoteName(letter: string, accidental: number) {
 /** Get the semitone value (0-11) of a spelled note. */
 export function spelledNoteSemitone(name: string) {
   const { letter, accidental } = parseSpelledNote(name);
-  return ((NATURAL_SEMITONES[letter] + accidental) % 12 + 12) % 12;
+  return (((NATURAL_SEMITONES[letter] + accidental) % 12) + 12) % 12;
 }
 
 /**
@@ -142,7 +260,7 @@ export function getScaleDegreeNote(keyRoot: string, degree: number) {
   const root = parseSpelledNote(keyRoot);
   const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
   const rootSemitone =
-    ((NATURAL_SEMITONES[root.letter] + root.accidental) % 12 + 12) % 12;
+    (((NATURAL_SEMITONES[root.letter] + root.accidental) % 12) + 12) % 12;
 
   const targetLetterIdx = (rootLetterIdx + degree - 1) % 7;
   const targetLetter = LETTER_NAMES[targetLetterIdx];
@@ -327,16 +445,16 @@ export const DEGREE_LABELS: [string, string][] = [
 
 // Letter offset from root for each chord-tone label
 const DEGREE_LETTER_OFFSETS: Record<string, number> = {
-  'R': 0,
+  R: 0,
   '2': 1,
-  'b3': 2,
+  b3: 2,
   '3': 2,
   '4': 3,
-  'b5': 4,
+  b5: 4,
   '5': 4,
   '#5': 4,
   '6': 5,
-  'b7': 6,
+  b7: 6,
   '7': 6,
 };
 
@@ -444,7 +562,7 @@ export function getChordTones(rootName: string, chordType: ChordType) {
   const root = parseSpelledNote(rootName);
   const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
   const rootSemitone =
-    ((NATURAL_SEMITONES[root.letter] + root.accidental) % 12 + 12) % 12;
+    (((NATURAL_SEMITONES[root.letter] + root.accidental) % 12) + 12) % 12;
 
   return chordType.intervals.map((interval: number, i: number) => {
     const degreeLabel = chordType.degrees[i];
@@ -472,8 +590,10 @@ export function chordDisplayName(rootName: string, chordType: ChordType) {
 export function spelledNoteMatchesInput(expectedName: string, input: string) {
   const expected = parseSpelledNote(expectedName);
   const given = parseSpelledNote(input);
-  return given.letter.toUpperCase() === expected.letter.toUpperCase() &&
-    given.accidental === expected.accidental;
+  return (
+    given.letter.toUpperCase() === expected.letter.toUpperCase() &&
+    given.accidental === expected.accidental
+  );
 }
 
 /**
@@ -545,13 +665,17 @@ export function setUseSolfege(v: boolean) {
   _useSolfege = v;
   try {
     localStorage.setItem('fretboard_notation', v ? 'solfege' : 'letter');
-  } catch (_) { /* expected */ }
+  } catch (_) {
+    /* expected */
+  }
 }
 
 // Load notation preference on module evaluation
 try {
   _useSolfege = localStorage.getItem('fretboard_notation') === 'solfege';
-} catch (_) { /* expected */ }
+} catch (_) {
+  /* expected */
+}
 
 /**
  * Format a note name for display. Always replaces ASCII accidentals with

@@ -21,6 +21,7 @@ import {
   returnedAfterBreak,
   semitoneMathItemIds,
 } from '../src/fixtures/heatmap-scenarios.ts';
+import { MODE_NAMES } from '../src/music-data.ts';
 
 // ---------------------------------------------------------------------------
 // Mode IDs & titles
@@ -43,20 +44,8 @@ export const MODE_IDS = [
 // All modes use QuizEngine — seed motor baselines so calibration is skipped.
 export const ENGINE_MODES = MODE_IDS;
 
-// Display names matching src/app.ts registrations
-export const MODE_TITLES: Record<string, string> = {
-  fretboard: 'Guitar Fretboard',
-  ukulele: 'Ukulele Fretboard',
-  speedTap: 'Speed Tap',
-  noteSemitones: 'Note \u2194 Semitones',
-  intervalSemitones: 'Interval \u2194 Semitones',
-  semitoneMath: 'Semitone Math',
-  intervalMath: 'Interval Math',
-  keySignatures: 'Key Signatures',
-  scaleDegrees: 'Scale Degrees',
-  diatonicChords: 'Diatonic Chords',
-  chordSpelling: 'Chord Spelling',
-};
+// Display names — re-exported from centralized MODE_NAMES
+export const MODE_TITLES: Record<string, string> = MODE_NAMES;
 
 const BIDIRECTIONAL_MODES = new Set([
   'noteSemitones',
@@ -84,6 +73,16 @@ export type ScreenshotEntry = {
 
 export function buildManifest(): ScreenshotEntry[] {
   const entries: ScreenshotEntry[] = [];
+
+  // Home screen (before any mode is selected)
+  entries.push({ name: 'home', modeId: 'home' });
+
+  // Home screen with only Core track selected
+  entries.push({
+    name: 'home-core-only',
+    modeId: 'home',
+    localStorageData: { selectedTracks: JSON.stringify(['core']) },
+  });
 
   // All modes: idle + quiz (+ reverse quiz for bidirectional modes)
   for (const modeId of MODE_IDS) {

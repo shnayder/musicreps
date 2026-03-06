@@ -4,6 +4,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../music-data.ts';
 import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,
@@ -183,6 +184,8 @@ export function IntervalMathMode(
     <>
       <ModeTopBar
         title='Interval Math'
+        description={MODE_DESCRIPTIONS.intervalMath}
+        beforeAfter={MODE_BEFORE_AFTER.intervalMath}
         onBack={navigateHome}
         showBack={isIdle}
       />
