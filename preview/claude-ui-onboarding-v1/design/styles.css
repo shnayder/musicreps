@@ -49,11 +49,8 @@
 
   /* Track colors */
   --color-track-core: hsl(30, 3%, 40%);
-  --color-track-core-bg: hsl(30, 5%, 95%);
   --color-track-guitar: hsl(25, 55%, 45%);
-  --color-track-guitar-bg: hsl(25, 40%, 95%);
   --color-track-ukulele: hsl(185, 40%, 38%);
-  --color-track-ukulele-bg: hsl(185, 30%, 95%);
 
   /* Heatmap scale (gold → green, matches palette: attention → mastered) */
   --heatmap-none: hsl(30, 4%, 85%);

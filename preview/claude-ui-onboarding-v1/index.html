@@ -59,11 +59,8 @@
 
   /* Track colors */
   --color-track-core: hsl(30, 3%, 40%);
-  --color-track-core-bg: hsl(30, 5%, 95%);
   --color-track-guitar: hsl(25, 55%, 45%);
-  --color-track-guitar-bg: hsl(25, 40%, 95%);
   --color-track-ukulele: hsl(185, 40%, 38%);
-  --color-track-ukulele-bg: hsl(185, 30%, 95%);
 
   /* Heatmap scale (gold → green, matches palette: attention → mastered) */
   --heatmap-none: hsl(30, 4%, 85%);
@@ -1891,7 +1888,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="e6c4cb onboarding-v1"></div>
+  <div class="home-screen" id="home-screen" data-version="2fe62c onboarding-v1"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -5041,15 +5038,21 @@ button {
   // src/ui/home-screen.tsx
   var STORAGE_KEY = "selectedTracks";
   function loadSelectedTracks() {
+    const allIds = new Set(TRACKS.map((t3) => t3.id));
+    const alwaysIds = TRACKS.filter((t3) => t3.alwaysSelected).map((t3) => t3.id);
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const arr = JSON.parse(raw);
-        if (Array.isArray(arr) && arr.length > 0) return new Set(arr);
+        if (Array.isArray(arr) && arr.length > 0) {
+          const loaded = new Set(arr.filter((id) => allIds.has(id)));
+          for (const id of alwaysIds) loaded.add(id);
+          if (loaded.size > 0) return loaded;
+        }
       }
     } catch (_3) {
     }
-    return new Set(TRACKS.map((t3) => t3.id));
+    return new Set(allIds);
   }
   function saveSelectedTracks(selected) {
     try {
