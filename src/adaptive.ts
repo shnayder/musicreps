@@ -422,10 +422,20 @@ export function createAdaptiveSelector(
     percentile: number = 0.1,
   ): { level: number; seen: number } {
     if (itemIds.length === 0) return { level: 0, seen: 0 };
-    const values = itemIds.map((id) => getAutomaticity(id) ?? 0);
+    let seen = 0;
+    const values: number[] = [];
+    for (let i = 0; i < itemIds.length; i++) {
+      const auto = getAutomaticity(itemIds[i]);
+      if (auto !== null) {
+        seen++;
+        values.push(auto);
+      } else {
+        values.push(0);
+      }
+    }
     values.sort((a, b) => a - b);
-    const index = Math.max(0, Math.ceil(values.length * percentile) - 1);
-    const seen = values.filter((v) => v > 0).length;
+    const rawIndex = Math.ceil(values.length * percentile) - 1;
+    const index = Math.min(values.length - 1, Math.max(0, rawIndex));
     return { level: values[index], seen };
   }
 

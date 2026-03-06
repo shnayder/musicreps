@@ -268,7 +268,7 @@ function PreviewApp() {
       </Section>
       <Section title='Recommendation'>
         <Recommendation
-          text='solidify +1 to +3 — 3 slow items'
+          text='solidify +1 to +3 — 3 items to work on'
           onApply={() => {}}
         />
       </Section>

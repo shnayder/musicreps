@@ -80,10 +80,10 @@ describe('computeLevelAutomaticity', () => {
     );
     // sorted: 0.0, 0.1, 0.2, ... → index 1 = 0.1
     assert.ok(Math.abs(result.level - 0.1) < 0.001);
-    assert.equal(result.seen, 11); // item-0 has auto=0 but is not null, treated as seen=0 (0 > 0 is false)
+    assert.equal(result.seen, 12); // item-0 has auto=0.0, non-null → seen
   });
 
-  it('counts seen items correctly (only auto > 0)', () => {
+  it('counts seen items correctly (non-null automaticity)', () => {
     const autos: Record<string, number | null> = {
       'a': 0.9,
       'b': null,
@@ -183,7 +183,7 @@ describe('buildRecommendationText', () => {
     const text = buildRecommendationText(result, label);
     assert.equal(
       text,
-      'solidify Group 0, Group 1 \u2014 5 slow items',
+      'solidify Group 0, Group 1 \u2014 5 items to work on',
     );
   });
 
@@ -217,7 +217,7 @@ describe('buildRecommendationText', () => {
     assert.ok(!text.includes('1 new items')); // not plural
   });
 
-  it('uses singular for 1 slow item', () => {
+  it('uses singular for 1 item to work on', () => {
     const result: RecommendationResult = {
       recommended: new Set([0]),
       enabled: null,
@@ -227,8 +227,8 @@ describe('buildRecommendationText', () => {
       expandNewCount: 0,
     };
     const text = buildRecommendationText(result, label);
-    assert.ok(text.includes('1 slow item'));
-    assert.ok(!text.includes('1 slow items'));
+    assert.ok(text.includes('1 item to work on'));
+    assert.ok(!text.includes('1 items to work on'));
   });
 });
 
