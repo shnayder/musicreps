@@ -1928,7 +1928,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="21b525 declarative-skill-modes-UGkKQ"></div>
+  <div class="home-screen" id="home-screen" data-version="230f33 declarative-skill-modes-UGkKQ"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7662,7 +7662,14 @@ button {
       }
     );
   }
-  function ResponseButtons({ buttonsDef, hidden, onAnswer, useFlats }) {
+  function ResponseButtons({
+    buttonsDef,
+    hidden,
+    onAnswer,
+    useFlats,
+    narrowing,
+    hideAccidentalsOverride
+  }) {
     switch (buttonsDef.kind) {
       case "note":
         return /* @__PURE__ */ u3(
@@ -7678,7 +7685,8 @@ button {
           PianoNoteButtons,
           {
             onAnswer,
-            hideAccidentals: buttonsDef.hideAccidentals
+            hideAccidentals: hideAccidentalsOverride ?? buttonsDef.hideAccidentals,
+            narrowing
           }
         );
       case "number":
@@ -7701,6 +7709,7 @@ button {
         return /* @__PURE__ */ u3(KeysigButtons, { hidden, onAnswer });
     }
   }
+  var EMPTY_GROUPS = /* @__PURE__ */ new Set();
   function GenericMode({ def, container, navigateHome, onMount }) {
     const learner = useLearnerModel(def.namespace, def.allItems);
     const groupScopeSpec = def.scope.kind === "groups" ? {
@@ -7714,6 +7723,10 @@ button {
       formatLabel: def.scope.formatLabel
     } : null;
     const groupScopeResult = groupScopeSpec ? useGroupScope(groupScopeSpec) : null;
+    const enabledGroups = groupScopeResult?.enabledGroups ?? EMPTY_GROUPS;
+    const ctrl = def.useController ? def.useController(enabledGroups) : {};
+    const ctrlRef = A2(ctrl);
+    ctrlRef.current = ctrl;
     const currentQRef = A2(null);
     const getEnabledItemsRef = A2(
       () => def.allItems
@@ -7731,13 +7744,18 @@ button {
       checkAnswer: (_itemId, input) => {
         const q3 = currentQRef.current;
         return def.checkAnswer(q3, input);
-      }
-      // No handleKey — keyboard input goes through the text field.
-      // The engine still handles Space/Enter/Escape for next/stop/continue
-      // via its own routing; those keys won't reach us because the text
-      // input stops propagation on Enter, and Space/Escape are not
-      // intercepted by the input.
-    }), [def]);
+      },
+      onAnswer: (itemId, result) => {
+        ctrlRef.current.onAnswer?.(itemId, result);
+      },
+      onStart: () => {
+        ctrlRef.current.onStart?.();
+      },
+      onStop: () => {
+        ctrlRef.current.onStop?.();
+      },
+      handleKey: ctrl.handleKey ? (e3, ctx) => ctrlRef.current.handleKey(e3, ctx) : void 0
+    }), [def, !!ctrl.handleKey]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     const currentQ = T2(() => {
       const id = engine.state.currentItemId;
@@ -7757,7 +7775,8 @@ button {
       recommendation: groupScopeResult?.recommendation ?? null,
       recommendationText: groupScopeResult?.recommendationText ?? ""
     });
-    useModeLifecycle(onMount, engine, learner);
+    const deactivateCleanup = ctrl.deactivateCleanup;
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
     const promptText = currentQ ? def.getPromptText(currentQ) : "";
     const useFlats = currentQ && def.getUseFlats ? def.getUseFlats(currentQ) : void 0;
     const handleSubmit = q2(
@@ -7778,12 +7797,14 @@ button {
     })();
     const phase = engine.state.phase;
     const isIdle = phase === "idle";
+    const hasCustomKeyboard = !!ctrl.handleKey;
     const activeButtons = def.buttons.kind === "bidirectional" ? dir === "fwd" ? def.buttons.fwd : def.buttons.rev : def.buttons;
     const inactiveButtons = def.buttons.kind === "bidirectional" ? dir === "fwd" ? def.buttons.rev : def.buttons.fwd : null;
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(
         ModeTopBar,
         {
+          modeId: def.id,
           title: def.name,
           description: def.description,
           beforeAfter: def.beforeAfter,
@@ -7808,25 +7829,27 @@ button {
             }
           ) : void 0,
           statsContent: /* @__PURE__ */ u3(k, { children: [
-            def.stats.kind === "grid" && /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: ps.statsSel,
-                colLabels: def.stats.colLabels,
-                getItemId: def.stats.getItemId,
-                notes: def.stats.notes
-              }
-            ),
-            def.stats.kind === "table" && /* @__PURE__ */ u3(
-              StatsTable,
-              {
-                selector: ps.statsSel,
-                rows: def.stats.getRows(),
-                fwdHeader: def.stats.fwdHeader,
-                revHeader: def.stats.revHeader
-              }
-            ),
-            def.stats.kind !== "none" && /* @__PURE__ */ u3(StatsLegend, {})
+            ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u3(k, { children: [
+              def.stats.kind === "grid" && /* @__PURE__ */ u3(
+                StatsGrid,
+                {
+                  selector: ps.statsSel,
+                  colLabels: def.stats.colLabels,
+                  getItemId: def.stats.getItemId,
+                  notes: def.stats.notes
+                }
+              ),
+              def.stats.kind === "table" && /* @__PURE__ */ u3(
+                StatsTable,
+                {
+                  selector: ps.statsSel,
+                  rows: def.stats.getRows(),
+                  fwdHeader: def.stats.fwdHeader,
+                  revHeader: def.stats.revHeader
+                }
+              )
+            ] }),
+            (def.stats.kind !== "none" || ctrl.renderStats) && /* @__PURE__ */ u3(StatsLegend, {})
           ] }),
           baseline: learner.motorBaseline,
           onCalibrate: engine.startCalibration,
@@ -7882,7 +7905,7 @@ button {
         ) : /* @__PURE__ */ u3(
           QuizArea,
           {
-            prompt: promptText,
+            prompt: ctrl.renderPrompt ? void 0 : promptText,
             controls: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 FeedbackBanner,
@@ -7891,7 +7914,7 @@ button {
                   answer: engine.state.feedbackDisplayAnswer
                 }
               ),
-              /* @__PURE__ */ u3(
+              hasCustomKeyboard ? /* @__PURE__ */ u3(KeyboardHint, { type: "note" }) : /* @__PURE__ */ u3(
                 AnswerInput,
                 {
                   onSubmit: handleSubmit,
@@ -7904,7 +7927,9 @@ button {
                 {
                   buttonsDef: activeButtons,
                   onAnswer: handleSubmit,
-                  useFlats
+                  useFlats,
+                  narrowing: ctrl.narrowing,
+                  hideAccidentalsOverride: ctrl.hideAccidentals
                 }
               ),
               inactiveButtons && /* @__PURE__ */ u3(
@@ -7925,7 +7950,8 @@ button {
                   onNext: engine.state.answered ? engine.nextQuestion : void 0
                 }
               )
-            ] })
+            ] }),
+            children: currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null
           }
         )
       ] })
@@ -8846,7 +8872,7 @@ button {
     return labels.join(", ");
   }
 
-  // src/modes/fretboard/fretboard-mode.tsx
+  // src/modes/fretboard/definition.tsx
   var FB_QUIZ_HL = "hsl(50, 100%, 50%)";
   function setCircleFill(root, string, fret, color) {
     const circle = root.querySelector(
@@ -8859,52 +8885,37 @@ button {
       c3.style.fill = "";
     });
   }
-  function FretboardMode({ instrument, container, navigateHome, onMount }) {
-    const groups = T2(() => getGroups(instrument), [instrument]);
-    const allItems = T2(() => getAllItems(instrument), [instrument]);
-    const allGroupIndices = T2(
-      () => getAllGroupIndices(instrument),
-      [instrument]
-    );
-    const boundGetItemIdsForGroup = q2(
-      (index) => getItemIdsForGroup6(instrument, index),
-      [instrument]
-    );
-    const boundFormatLabel = q2(
-      (enabled) => formatLabel(instrument, enabled),
-      [instrument]
-    );
-    const learner = useLearnerModel(instrument.storageNamespace, allItems);
-    const groupScope = useGroupScope({
-      groups,
-      getItemIdsForGroup: boundGetItemIdsForGroup,
-      allGroupIndices,
-      storageKey: instrument.storageNamespace + "_enabledGroups",
-      scopeLabel: "Groups",
-      defaultEnabled: [0],
-      selector: learner.selector,
-      formatLabel: boundFormatLabel
-    });
-    const currentQRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const hasAccidentals = T2(() => {
-      for (const g2 of groupScope.enabledGroups) {
-        if (groups[g2]?.noteFilter === "sharps-flats") return true;
-      }
-      return false;
-    }, [groupScope.enabledGroups, groups]);
-    const [pendingNote, setPendingNote] = d2(null);
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => engineSubmitRef.current(note),
-        () => hasAccidentals,
-        setPendingNote
-      ),
-      []
-    );
-    const hasAccidentalsRef = A2(hasAccidentals);
-    hasAccidentalsRef.current = hasAccidentals;
+  function createFretboardDef(instrument) {
+    const groups = getGroups(instrument);
+    const allItems = getAllItems(instrument);
+    const allGroupIndices = getAllGroupIndices(instrument);
+    return {
+      id: instrument.id,
+      name: instrument.name,
+      namespace: instrument.storageNamespace,
+      description: MODE_DESCRIPTIONS[instrument.id],
+      beforeAfter: MODE_BEFORE_AFTER[instrument.id],
+      itemNoun: "positions",
+      allItems,
+      getQuestion: (itemId) => getQuestion8(instrument, itemId),
+      getPromptText: () => "Name this note",
+      checkAnswer: (_q, input) => checkAnswer8(instrument, _q.currentNote, input),
+      buttons: { kind: "piano-note" },
+      scope: {
+        kind: "groups",
+        groups,
+        getItemIdsForGroup: (index) => getItemIdsForGroup6(instrument, index),
+        allGroupIndices,
+        storageKey: instrument.storageNamespace + "_enabledGroups",
+        scopeLabel: "Groups",
+        defaultEnabled: [0],
+        formatLabel: (enabled) => formatLabel(instrument, enabled)
+      },
+      stats: { kind: "none" },
+      useController: (enabledGroups) => useFretboardController(instrument, groups, enabledGroups)
+    };
+  }
+  function useFretboardController(instrument, groups, enabledGroups) {
     const quizFbRef = A2(null);
     const progressFbRef = A2(null);
     const svgHTML = T2(
@@ -8915,246 +8926,91 @@ button {
       }),
       [instrument]
     );
-    const engineConfig = T2(() => ({
-      getEnabledItems: groupScope.getEnabledItems,
-      getPracticingLabel: groupScope.getPracticingLabel,
-      checkAnswer: (itemId, input) => {
-        const q3 = getQuestion8(instrument, itemId);
-        return checkAnswer8(instrument, q3.currentNote, input);
+    const hasAccidentals = T2(() => {
+      for (const g2 of enabledGroups) {
+        if (groups[g2]?.noteFilter === "sharps-flats") return true;
+      }
+      return false;
+    }, [enabledGroups, groups]);
+    const engineSubmitRef = A2(() => {
+    });
+    const [pendingNote, setPendingNote] = d2(null);
+    const noteHandler = T2(
+      () => createAdaptiveKeyHandler(
+        (note) => engineSubmitRef.current(note),
+        () => hasAccidentals,
+        setPendingNote
+      ),
+      []
+    );
+    const narrowing = T2(
+      () => noteNarrowingSet(pendingNote),
+      [pendingNote]
+    );
+    const currentQRef = A2(null);
+    const renderPrompt = q2(
+      (q3) => {
+        currentQRef.current = q3;
+        const el = quizFbRef.current;
+        if (el) {
+          clearAll(el);
+          setCircleFill(el, q3.currentString, q3.currentFret, FB_QUIZ_HL);
+        }
+        return /* @__PURE__ */ u3(
+          "div",
+          {
+            ref: quizFbRef,
+            dangerouslySetInnerHTML: { __html: svgHTML }
+          }
+        );
       },
+      [svgHTML]
+    );
+    const renderStats = q2(
+      (selector) => {
+        return /* @__PURE__ */ u3(
+          "div",
+          {
+            ref: (el) => {
+              progressFbRef.current = el;
+              if (!el) return;
+              for (let s3 = 0; s3 < instrument.stringCount; s3++) {
+                for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+                  const itemId = s3 + "-" + f4;
+                  const color = getStatsCellColor(selector, itemId);
+                  setCircleFill(el, s3, f4, color);
+                }
+              }
+            },
+            dangerouslySetInnerHTML: { __html: svgHTML }
+          }
+        );
+      },
+      [svgHTML, instrument]
+    );
+    return {
+      renderPrompt,
+      renderStats,
       onAnswer: (itemId, result) => {
         if (quizFbRef.current) {
           const q3 = getQuestion8(instrument, itemId);
           const color = result.correct ? "var(--color-success)" : "var(--color-error)";
-          setCircleFill(
-            quizFbRef.current,
-            q3.currentString,
-            q3.currentFret,
-            color
-          );
+          setCircleFill(quizFbRef.current, q3.currentString, q3.currentFret, color);
         }
-      },
-      handleKey: (e3, _ctx) => {
-        return noteHandler.handleKey(e3);
       },
       onStart: () => noteHandler.reset(),
       onStop: () => {
         noteHandler.reset();
         if (quizFbRef.current) clearAll(quizFbRef.current);
-      }
-    }), [
-      noteHandler,
-      instrument,
-      groupScope.getEnabledItems,
-      groupScope.getPracticingLabel
-    ]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return getQuestion8(instrument, id);
-    }, [engine.state.currentItemId, engine.state.phase, instrument]);
-    currentQRef.current = currentQ;
-    y2(() => {
-      if (!quizFbRef.current) return;
-      if (!currentQ) {
-        clearAll(quizFbRef.current);
-        return;
-      }
-      clearAll(quizFbRef.current);
-      setCircleFill(
-        quizFbRef.current,
-        currentQ.currentString,
-        currentQ.currentFret,
-        FB_QUIZ_HL
-      );
-    }, [currentQ]);
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const round = useRoundSummary(engine, groupScope.practicingLabel);
-    const ps = usePracticeSummary({
-      allItems,
-      selector: learner.selector,
-      engine,
-      itemNoun: "positions",
-      recommendation: groupScope.recommendation,
-      recommendationText: groupScope.recommendationText
-    });
-    y2(() => {
-      const wrapper = progressFbRef.current;
-      if (!wrapper) return;
-      for (let s3 = 0; s3 < instrument.stringCount; s3++) {
-        for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-          const itemId = s3 + "-" + f4;
-          const color = getStatsCellColor(learner.selector, itemId);
-          setCircleFill(wrapper, s3, f4, color);
-        }
-      }
-    }, [
-      learner.selector,
-      engine.state.phase,
-      instrument
-    ]);
-    const legendHTML = T2(
-      () => buildStatsLegend(),
-      []
-    );
-    const deactivateCleanup = q2(() => noteHandler.reset(), [
-      noteHandler
-    ]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
-    const promptText = currentQ ? "Name this note" : "";
-    const handleNoteAnswer = q2(
-      (note) => engine.submitAnswer(note),
-      [engine.submitAnswer]
-    );
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    const groupLabels = T2(
-      () => groups.map((g2) => g2.label),
-      [groups]
-    );
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: instrument.id,
-          title: instrument.name,
-          description: MODE_DESCRIPTIONS[instrument.id],
-          beforeAfter: MODE_BEFORE_AFTER[instrument.id],
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton ? groupScope.applyRecommendation : void 0,
-          scopeValid: groupScope.enabledGroups.size > 0,
-          validationMessage: "Select at least one group",
-          scope: /* @__PURE__ */ u3(
-            GroupToggles,
-            {
-              labels: groupLabels,
-              active: groupScope.enabledGroups,
-              onToggle: groupScope.scopeActions.toggleGroup
-            }
-          ),
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              "div",
-              {
-                ref: progressFbRef,
-                dangerouslySetInnerHTML: { __html: svgHTML }
-              }
-            ),
-            /* @__PURE__ */ u3(
-              "div",
-              {
-                dangerouslySetInnerHTML: { __html: legendHTML }
-              }
-            )
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: groupScope.practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                FeedbackBanner,
-                {
-                  correct: engine.state.feedbackCorrect,
-                  answer: engine.state.feedbackDisplayAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                PianoNoteButtons,
-                {
-                  onAnswer: handleNoteAnswer,
-                  hideAccidentals: !hasAccidentals,
-                  narrowing: noteNarrowing
-                }
-              ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] }),
-            children: /* @__PURE__ */ u3(
-              "div",
-              {
-                ref: quizFbRef,
-                dangerouslySetInnerHTML: { __html: svgHTML }
-              }
-            )
-          }
-        )
-      ] })
-    ] });
+      },
+      handleKey: (e3, _ctx) => {
+        engineSubmitRef.current = _ctx.submitAnswer;
+        return noteHandler.handleKey(e3);
+      },
+      deactivateCleanup: () => noteHandler.reset(),
+      narrowing,
+      hideAccidentals: !hasAccidentals
+    };
   }
 
   // src/modes/speed-tap/logic.ts
@@ -9933,35 +9789,8 @@ button {
       }
     });
   }
-  function registerFretboardMode(id, name, instrument) {
-    let handle = null;
-    const cont = document.getElementById("mode-" + id);
-    nav.registerMode(id, {
-      name,
-      init() {
-        cont.textContent = "";
-        J(
-          _(FretboardMode, {
-            instrument,
-            container: cont,
-            navigateHome: () => nav.navigateHome(),
-            onMount: (h3) => {
-              handle = h3;
-            }
-          }),
-          cont
-        );
-      },
-      activate() {
-        handle?.activate();
-      },
-      deactivate() {
-        handle?.deactivate();
-      }
-    });
-  }
-  registerFretboardMode("fretboard", "Guitar Fretboard", GUITAR);
-  registerFretboardMode("ukulele", "Ukulele Fretboard", UKULELE);
+  registerDeclarativeMode(createFretboardDef(GUITAR));
+  registerDeclarativeMode(createFretboardDef(UKULELE));
   registerDeclarativeMode(NOTE_SEMITONES_DEF);
   registerDeclarativeMode(INTERVAL_SEMITONES_DEF);
   registerDeclarativeMode(SEMITONE_MATH_DEF);
