@@ -933,54 +933,6 @@ body {
   pointer-events: all;
 }
 
-/* Hover card */
-.hover-card {
-  position: absolute;
-  pointer-events: none;
-  z-index: 10;
-  opacity: 0;
-  transition: opacity 0.12s;
-}
-.hover-card.visible {
-  opacity: 1;
-}
-.hc-inner {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: 0.35rem 0.5rem;
-  min-width: 65px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-  text-align: center;
-}
-.hc-note {
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--color-text);
-}
-.hc-string-fret {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin-top: 0.05rem;
-}
-.hc-detail {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin-top: 0.12rem;
-}
-.hc-bar {
-  height: 3px;
-  border-radius: var(--radius-sm);
-  background: hsl(30, 5%, 90%);
-  margin-top: 0.25rem;
-  overflow: hidden;
-}
-.hc-bar-fill {
-  height: 100%;
-  border-radius: var(--radius-sm);
-  transition: width 0.2s;
-}
-
 .settings-row {
   display: flex;
   flex-direction: column;
@@ -1937,7 +1889,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="20a461 declarative-skill-modes-UGkKQ"></div>
+  <div class="home-screen" id="home-screen" data-version="f6a898 declarative-skill-modes-UGkKQ"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -1970,24 +1922,7 @@ button {
           </div>
           <div class="practice-scope">
             <div class="settings-row">
-              <div class="toggle-group">
-          <span class="toggle-group-label">Strings</span>
-          <div class="string-toggles">
-            <button tabindex="0" class="string-toggle" data-string="0" data-string-note="e">e</button>
-            <button tabindex="0" class="string-toggle" data-string="1" data-string-note="B">B</button>
-            <button tabindex="0" class="string-toggle" data-string="2" data-string-note="G">G</button>
-            <button tabindex="0" class="string-toggle" data-string="3" data-string-note="D">D</button>
-            <button tabindex="0" class="string-toggle" data-string="4" data-string-note="A">A</button>
-            <button tabindex="0" class="string-toggle active" data-string="5" data-string-note="E">E</button>
-          </div>
-        </div>
-          <div class="toggle-group">
-            <span class="toggle-group-label">Notes</span>
-            <div class="notes-toggles">
-              <button tabindex="0" class="notes-toggle active" data-notes="natural">natural</button>
-              <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
-            </div>
-          </div>
+              <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
             </div>
           </div>
           <div class="practice-zone-action">
@@ -2109,12 +2044,6 @@ button {
       <circle class="fb-pos" data-string="5" data-fret="12" cx="18" cy="582" r="14"/>
           
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>
       <div class="stats-container"></div>
@@ -2253,12 +2182,6 @@ button {
       <circle class="fb-pos" data-string="5" data-fret="12" cx="18" cy="582" r="14"/>
           
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>
       <div class="note-buttons">
@@ -2331,22 +2254,7 @@ button {
           </div>
           <div class="practice-scope">
             <div class="settings-row">
-              <div class="toggle-group">
-          <span class="toggle-group-label">Strings</span>
-          <div class="string-toggles">
-            <button tabindex="0" class="string-toggle" data-string="0" data-string-note="A">A</button>
-            <button tabindex="0" class="string-toggle" data-string="1" data-string-note="E">E</button>
-            <button tabindex="0" class="string-toggle active" data-string="2" data-string-note="C">C</button>
-            <button tabindex="0" class="string-toggle" data-string="3" data-string-note="G">G</button>
-          </div>
-        </div>
-          <div class="toggle-group">
-            <span class="toggle-group-label">Notes</span>
-            <div class="notes-toggles">
-              <button tabindex="0" class="notes-toggle active" data-notes="natural">natural</button>
-              <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
-            </div>
-          </div>
+              <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
             </div>
           </div>
           <div class="practice-zone-action">
@@ -2440,12 +2348,6 @@ button {
       <circle class="fb-pos" data-string="3" data-fret="12" cx="18" cy="582" r="14"/>
           
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>
       <div class="stats-container"></div>
@@ -2556,12 +2458,6 @@ button {
       <circle class="fb-pos" data-string="3" data-fret="12" cx="18" cy="582" r="14"/>
           
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>
       <div class="note-buttons">
@@ -2790,12 +2686,6 @@ button {
       <circle class="fb-pos" data-string="5" data-fret="12" cx="18" cy="582" r="14"/>
           
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>
       <div class="answer-buttons answer-buttons-notes answer-group-hidden">
@@ -7255,15 +7145,6 @@ button {
     const fadedL = Math.round(l3 + (NEUTRAL_L - l3) * (1 - f4));
     return `hsl(${h3}, ${fadedS}%, ${fadedL}%)`;
   }
-  function getAutomaticityColor(auto) {
-    const c3 = heatmapColors();
-    if (auto === null) return c3.none;
-    if (auto > 0.8) return c3.level[4];
-    if (auto > 0.6) return c3.level[3];
-    if (auto > 0.4) return c3.level[2];
-    if (auto > 0.2) return c3.level[1];
-    return c3.level[0];
-  }
   function getStatsCellColor(selector, itemId) {
     const speedScore = selector.getSpeedScore?.(itemId) ?? null;
     const freshness = selector.getFreshness?.(itemId) ?? null;
@@ -8121,27 +8002,6 @@ button {
       }
       return { kind: "groups", enabledGroups: enabled };
     }
-    if (spec.kind === "fretboard") {
-      const inst = spec.instrument;
-      let enabledStrings = /* @__PURE__ */ new Set([inst.defaultString]);
-      const saved = localStorage.getItem(
-        inst.storageNamespace + "_enabledStrings"
-      );
-      if (saved) {
-        try {
-          enabledStrings = new Set(JSON.parse(saved));
-        } catch (_3) {
-        }
-      }
-      let noteFilter = "natural";
-      const savedFilter = localStorage.getItem(
-        inst.storageNamespace + "_noteFilter"
-      );
-      if (savedFilter === "natural" || savedFilter === "sharps-flats" || savedFilter === "all" || savedFilter === "none") {
-        noteFilter = savedFilter;
-      }
-      return { kind: "fretboard", enabledStrings, noteFilter };
-    }
     if (spec.kind === "note-filter") {
       let noteFilter = "natural";
       const saved = localStorage.getItem(spec.storageKey);
@@ -8158,19 +8018,6 @@ button {
         spec.storageKey,
         JSON.stringify([...scope.enabledGroups])
       );
-    } else if (spec.kind === "fretboard" && scope.kind === "fretboard") {
-      const inst = spec.instrument;
-      localStorage.setItem(
-        inst.storageNamespace + "_enabledStrings",
-        JSON.stringify([...scope.enabledStrings])
-      );
-      try {
-        localStorage.setItem(
-          inst.storageNamespace + "_noteFilter",
-          scope.noteFilter
-        );
-      } catch (_3) {
-      }
     } else if (spec.kind === "note-filter" && scope.kind === "note-filter") {
       try {
         localStorage.setItem(spec.storageKey, scope.noteFilter);
@@ -8198,35 +8045,8 @@ button {
         return updated;
       });
     }, [spec]);
-    const toggleString = q2((index) => {
-      setScopeRaw((prev) => {
-        if (prev.kind !== "fretboard") return prev;
-        const next = new Set(prev.enabledStrings);
-        if (next.has(index)) {
-          next.delete(index);
-        } else {
-          next.add(index);
-        }
-        const updated = {
-          kind: "fretboard",
-          enabledStrings: next,
-          noteFilter: prev.noteFilter
-        };
-        saveScope(spec, updated);
-        return updated;
-      });
-    }, [spec]);
     const setNoteFilter = q2((filter) => {
       setScopeRaw((prev) => {
-        if (prev.kind === "fretboard") {
-          const updated = {
-            kind: "fretboard",
-            enabledStrings: prev.enabledStrings,
-            noteFilter: filter
-          };
-          saveScope(spec, updated);
-          return updated;
-        }
         if (prev.kind === "note-filter") {
           const updated = { kind: "note-filter", noteFilter: filter };
           saveScope(spec, updated);
@@ -8235,7 +8055,7 @@ button {
         return prev;
       });
     }, [spec]);
-    return [scope, { toggleGroup, toggleString, setNoteFilter, setScope }];
+    return [scope, { toggleGroup, setNoteFilter, setScope }];
   }
 
   // src/hooks/use-group-scope.ts
@@ -8324,25 +8144,6 @@ button {
           "data-group": String(i3),
           onClick: () => onToggle(i3),
           children: label
-        },
-        i3
-      )) })
-    ] });
-  }
-  function StringToggles({ stringNames, active, onToggle }) {
-    return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
-      /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Strings" }),
-      /* @__PURE__ */ u3("div", { class: "string-toggles", children: stringNames.map((name, i3) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "string-toggle" + (active.has(i3) ? " active" : ""),
-          "aria-pressed": active.has(i3),
-          "data-string": String(i3),
-          "data-string-note": name,
-          onClick: () => onToggle(i3),
-          children: name
         },
         i3
       )) })
@@ -10226,81 +10027,6 @@ button {
     ] });
   }
 
-  // src/quiz-fretboard-state.ts
-  function createFretboardHelpers(musicData) {
-    const noteNames2 = musicData.notes.map((n2) => n2.name);
-    const fretCount = musicData.fretCount || 13;
-    function getNoteAtPosition2(string, fret) {
-      const offset = musicData.stringOffsets[string];
-      return noteNames2[(offset + fret) % 12];
-    }
-    function parseFretboardItem(itemId) {
-      const [s3, f4] = itemId.split("-").map(Number);
-      return {
-        currentString: s3,
-        currentFret: f4,
-        currentNote: getNoteAtPosition2(s3, f4)
-      };
-    }
-    function checkFretboardAnswer(currentNote, input) {
-      const note = musicData.notes.find((n2) => n2.name === currentNote);
-      const correct = !!(note && musicData.noteMatchesInput(note, input));
-      return {
-        correct,
-        correctAnswer: displayNote(currentNote)
-      };
-    }
-    function notePassesFilter(note, noteFilter) {
-      if (noteFilter === "none") return false;
-      if (noteFilter === "all") return true;
-      const isNatural = musicData.naturalNotes.includes(note);
-      return noteFilter === "natural" ? isNatural : !isNatural;
-    }
-    function getFretboardEnabledItems(enabledStrings, noteFilter) {
-      const items = [];
-      for (const s3 of enabledStrings) {
-        for (let f4 = 0; f4 < fretCount; f4++) {
-          const note = getNoteAtPosition2(s3, f4);
-          if (notePassesFilter(note, noteFilter)) {
-            items.push(s3 + "-" + f4);
-          }
-        }
-      }
-      return items;
-    }
-    function getItemIdsForString(string, noteFilter) {
-      const items = [];
-      for (let f4 = 0; f4 < fretCount; f4++) {
-        const note = getNoteAtPosition2(string, f4);
-        if (notePassesFilter(note, noteFilter)) {
-          items.push(string + "-" + f4);
-        }
-      }
-      return items;
-    }
-    return {
-      fretCount,
-      getNoteAtPosition: getNoteAtPosition2,
-      parseFretboardItem,
-      checkFretboardAnswer,
-      getFretboardEnabledItems,
-      getItemIdsForString
-    };
-  }
-  function computeNotePrioritization(naturalStats, threshold) {
-    let totalSeen = 0;
-    let totalFluent = 0;
-    for (const r3 of naturalStats) {
-      totalSeen += r3.fluentCount + r3.workingCount;
-      totalFluent += r3.fluentCount;
-    }
-    const ratio = totalSeen > 0 ? totalFluent / totalSeen : 0;
-    if (totalSeen === 0 || ratio < threshold) {
-      return { suggestedFilter: "natural", naturalMasteryRatio: ratio };
-    }
-    return { suggestedFilter: "all", naturalMasteryRatio: ratio };
-  }
-
   // src/fretboard.ts
   var fretPositions = [
     0,
@@ -10411,14 +10137,153 @@ button {
           ${positionCircles(sc, fc)}
           ${config.tapTargets ? "<!-- Tap targets -->\n          " + tapTargetRects(sc, fc) : ""}
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>`;
+  }
+
+  // src/quiz-fretboard-state.ts
+  function createFretboardHelpers(musicData) {
+    const noteNames2 = musicData.notes.map((n2) => n2.name);
+    const fretCount = musicData.fretCount || 13;
+    function getNoteAtPosition2(string, fret) {
+      const offset = musicData.stringOffsets[string];
+      return noteNames2[(offset + fret) % 12];
+    }
+    function parseFretboardItem(itemId) {
+      const [s3, f4] = itemId.split("-").map(Number);
+      return {
+        currentString: s3,
+        currentFret: f4,
+        currentNote: getNoteAtPosition2(s3, f4)
+      };
+    }
+    function checkFretboardAnswer(currentNote, input) {
+      const note = musicData.notes.find((n2) => n2.name === currentNote);
+      const correct = !!(note && musicData.noteMatchesInput(note, input));
+      return {
+        correct,
+        correctAnswer: displayNote(currentNote)
+      };
+    }
+    function notePassesFilter(note, noteFilter) {
+      if (noteFilter === "none") return false;
+      if (noteFilter === "all") return true;
+      const isNatural = musicData.naturalNotes.includes(note);
+      return noteFilter === "natural" ? isNatural : !isNatural;
+    }
+    function getFretboardEnabledItems(enabledStrings, noteFilter) {
+      const items = [];
+      for (const s3 of enabledStrings) {
+        for (let f4 = 0; f4 < fretCount; f4++) {
+          const note = getNoteAtPosition2(s3, f4);
+          if (notePassesFilter(note, noteFilter)) {
+            items.push(s3 + "-" + f4);
+          }
+        }
+      }
+      return items;
+    }
+    function getItemIdsForString(string, noteFilter) {
+      const items = [];
+      for (let f4 = 0; f4 < fretCount; f4++) {
+        const note = getNoteAtPosition2(string, f4);
+        if (notePassesFilter(note, noteFilter)) {
+          items.push(string + "-" + f4);
+        }
+      }
+      return items;
+    }
+    return {
+      fretCount,
+      getNoteAtPosition: getNoteAtPosition2,
+      parseFretboardItem,
+      checkFretboardAnswer,
+      getFretboardEnabledItems,
+      getItemIdsForString
+    };
+  }
+
+  // src/modes/fretboard/logic.ts
+  var GUITAR_GROUPS = [
+    // Naturals by string (E and e combined since same notes)
+    { label: "E e", strings: [5, 0], noteFilter: "natural" },
+    { label: "A", strings: [4], noteFilter: "natural" },
+    { label: "D", strings: [3], noteFilter: "natural" },
+    { label: "G", strings: [2], noteFilter: "natural" },
+    { label: "B", strings: [1], noteFilter: "natural" },
+    // Accidentals by string pair
+    { label: "E A \u266F\u266D", strings: [5, 4], noteFilter: "sharps-flats" },
+    { label: "D G \u266F\u266D", strings: [3, 2], noteFilter: "sharps-flats" },
+    { label: "B e \u266F\u266D", strings: [1, 0], noteFilter: "sharps-flats" }
+  ];
+  var UKULELE_GROUPS = [
+    // Naturals by string
+    { label: "G", strings: [3], noteFilter: "natural" },
+    { label: "C", strings: [2], noteFilter: "natural" },
+    { label: "E", strings: [1], noteFilter: "natural" },
+    { label: "A", strings: [0], noteFilter: "natural" },
+    // Accidentals by string pair
+    { label: "G C \u266F\u266D", strings: [3, 2], noteFilter: "sharps-flats" },
+    { label: "E A \u266F\u266D", strings: [1, 0], noteFilter: "sharps-flats" }
+  ];
+  var GROUPS_BY_INSTRUMENT = {
+    fretboard: GUITAR_GROUPS,
+    ukulele: UKULELE_GROUPS
+  };
+  function getGroups(instrument) {
+    return GROUPS_BY_INSTRUMENT[instrument.id] ?? GUITAR_GROUPS;
+  }
+  var helpersCache = /* @__PURE__ */ new Map();
+  function getHelpers(instrument) {
+    let h3 = helpersCache.get(instrument.id);
+    if (!h3) {
+      h3 = createFretboardHelpers({
+        notes: NOTES,
+        naturalNotes: NATURAL_NOTES,
+        stringOffsets: instrument.stringOffsets,
+        fretCount: instrument.fretCount,
+        noteMatchesInput
+      });
+      helpersCache.set(instrument.id, h3);
+    }
+    return h3;
+  }
+  function getItemIdsForGroup7(instrument, groupIndex) {
+    const groups = getGroups(instrument);
+    const group = groups[groupIndex];
+    if (!group) return [];
+    const fb = getHelpers(instrument);
+    const items = [];
+    for (const s3 of group.strings) {
+      items.push(...fb.getItemIdsForString(s3, group.noteFilter));
+    }
+    return items;
+  }
+  function getAllItems(instrument) {
+    const items = [];
+    for (let s3 = 0; s3 < instrument.stringCount; s3++) {
+      for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+        items.push(s3 + "-" + f4);
+      }
+    }
+    return items;
+  }
+  function getAllGroupIndices(instrument) {
+    return getGroups(instrument).map((_3, i3) => i3);
+  }
+  function getQuestion8(instrument, itemId) {
+    const fb = getHelpers(instrument);
+    return fb.parseFretboardItem(itemId);
+  }
+  function checkAnswer9(instrument, currentNote, input) {
+    const fb = getHelpers(instrument);
+    return fb.checkFretboardAnswer(currentNote, input);
+  }
+  function formatLabel(instrument, enabledGroups) {
+    const groups = getGroups(instrument);
+    if (enabledGroups.size === groups.length) return "all groups";
+    const labels = Array.from(enabledGroups).sort((a3, b) => a3 - b).map((i3) => groups[i3]?.label ?? String(i3));
+    return labels.join(", ");
   }
 
   // src/modes/fretboard/fretboard-mode.tsx
@@ -10434,123 +10299,52 @@ button {
       c3.style.fill = "";
     });
   }
-  function setupHoverCard(wrapper, instrument, fb, selector) {
-    const card = wrapper.querySelector(".hover-card");
-    if (!card) return () => {
-    };
-    const svg = wrapper.querySelector("svg");
-    if (!svg) return () => {
-    };
-    function onOver(e3) {
-      const el = e3.target.closest(".fb-pos");
-      if (!el || !card) return;
-      const s3 = parseInt(el.getAttribute("data-string"));
-      const f4 = parseInt(el.getAttribute("data-fret"));
-      const itemId = s3 + "-" + f4;
-      const q3 = fb.parseFretboardItem(itemId);
-      const auto = selector.getAutomaticity(itemId);
-      const noteEl = card.querySelector(".hc-note");
-      if (noteEl) noteEl.textContent = displayNote(q3.currentNote);
-      const sfEl = card.querySelector(".hc-string-fret");
-      if (sfEl) {
-        sfEl.textContent = displayNote(instrument.stringNames[s3]) + " string, fret " + f4;
-      }
-      const detailEl = card.querySelector(".hc-detail");
-      const barFill = card.querySelector(".hc-bar-fill");
-      if (auto !== null) {
-        const pct = Math.round(auto * 100);
-        let label;
-        if (auto > 0.8) label = "Automatic";
-        else if (auto > 0.6) label = "Solid";
-        else if (auto > 0.4) label = "Getting there";
-        else if (auto > 0.2) label = "Fading";
-        else label = "Needs work";
-        if (detailEl) detailEl.textContent = label + " \xB7 " + pct + "%";
-        if (barFill) {
-          barFill.style.width = pct + "%";
-          barFill.style.background = getAutomaticityColor(auto);
-        }
-      } else {
-        if (detailEl) detailEl.textContent = "Not seen yet";
-        if (barFill) {
-          barFill.style.width = "0%";
-          barFill.style.background = "";
-        }
-      }
-      const containerRect = wrapper.querySelector(
-        ".fretboard-container"
-      ).getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      const cx = elRect.left + elRect.width / 2 - containerRect.left;
-      const cy = elRect.top + elRect.height / 2 - containerRect.top;
-      const midX = containerRect.width / 2;
-      if (cx < midX) {
-        card.style.left = cx + elRect.width / 2 + 6 + "px";
-        card.style.top = cy + "px";
-        card.style.transform = "translate(0, -50%)";
-      } else {
-        card.style.left = cx - elRect.width / 2 - 6 + "px";
-        card.style.top = cy + "px";
-        card.style.transform = "translate(-100%, -50%)";
-      }
-      card.classList.add("visible");
-    }
-    function onOut(e3) {
-      const el = e3.target.closest(".fb-pos");
-      if (el && card) card.classList.remove("visible");
-    }
-    svg.addEventListener("mouseover", onOver);
-    svg.addEventListener("mouseout", onOut);
-    return () => {
-      svg.removeEventListener("mouseover", onOver);
-      svg.removeEventListener("mouseout", onOut);
-    };
-  }
   function FretboardMode({ instrument, container, navigateHome, onMount }) {
-    const fb = T2(
-      () => createFretboardHelpers({
-        notes: NOTES,
-        naturalNotes: NATURAL_NOTES,
-        stringOffsets: instrument.stringOffsets,
-        fretCount: instrument.fretCount,
-        noteMatchesInput
-      }),
+    const groups = T2(() => getGroups(instrument), [instrument]);
+    const allItems = T2(() => getAllItems(instrument), [instrument]);
+    const allGroupIndices = T2(
+      () => getAllGroupIndices(instrument),
       [instrument]
     );
-    const allStrings = T2(
-      () => Array.from({ length: instrument.stringCount }, (_3, i3) => i3),
+    const boundGetItemIdsForGroup = q2(
+      (index) => getItemIdsForGroup7(instrument, index),
       [instrument]
     );
-    const ALL_ITEMS10 = T2(() => {
-      const items = [];
-      for (const s3 of allStrings) {
-        for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-          items.push(s3 + "-" + f4);
-        }
-      }
-      return items;
-    }, [allStrings, instrument]);
-    const [scope, scopeActions] = useScopeState({
-      kind: "fretboard",
-      instrument
+    const boundFormatLabel = q2(
+      (enabled) => formatLabel(instrument, enabled),
+      [instrument]
+    );
+    const learner = useLearnerModel(instrument.storageNamespace, allItems);
+    const groupScope = useGroupScope({
+      groups,
+      getItemIdsForGroup: boundGetItemIdsForGroup,
+      allGroupIndices,
+      storageKey: instrument.storageNamespace + "_enabledGroups",
+      scopeLabel: "Groups",
+      defaultEnabled: [0],
+      selector: learner.selector,
+      formatLabel: boundFormatLabel
     });
-    const enabledStrings = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
-    const noteFilter = scope.kind === "fretboard" ? scope.noteFilter : "natural";
-    const learner = useLearnerModel(instrument.storageNamespace, ALL_ITEMS10);
     const currentQRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
-    const noteFilterRef = A2(noteFilter);
-    noteFilterRef.current = noteFilter;
+    const hasAccidentals = T2(() => {
+      for (const g2 of groupScope.enabledGroups) {
+        if (groups[g2]?.noteFilter === "sharps-flats") return true;
+      }
+      return false;
+    }, [groupScope.enabledGroups, groups]);
     const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => noteFilterRef.current !== "natural",
+        () => hasAccidentals,
         setPendingNote
       ),
       []
     );
+    const hasAccidentalsRef = A2(hasAccidentals);
+    hasAccidentalsRef.current = hasAccidentals;
     const quizFbRef = A2(null);
     const progressFbRef = A2(null);
     const svgHTML = T2(
@@ -10561,79 +10355,16 @@ button {
       }),
       [instrument]
     );
-    const recommendation = T2(() => {
-      return computeRecommendations(
-        learner.selector,
-        allStrings,
-        (s3) => {
-          const prefix = s3 + "-";
-          return ALL_ITEMS10.filter((id) => id.startsWith(prefix));
-        },
-        DEFAULT_CONFIG,
-        { sortUnstarted: (a3, b) => b.string - a3.string }
-      );
-    }, [learner.selector, allStrings, ALL_ITEMS10]);
-    const recommendationText = T2(() => {
-      if (!recommendation || recommendation.recommended.size === 0) return "";
-      const naturalStats = learner.selector.getStringRecommendations(
-        [...recommendation.recommended],
-        (s3) => fb.getItemIdsForString(s3, "natural")
-      );
-      const pri = computeNotePrioritization(
-        naturalStats,
-        DEFAULT_CONFIG.expansionThreshold
-      );
-      const extraParts = pri.suggestedFilter === "natural" ? ["naturals first"] : ["add sharps & flats"];
-      return buildRecommendationText(
-        recommendation,
-        (s3) => displayNote(instrument.stringNames[s3]) + " string",
-        extraParts
-      );
-    }, [recommendation, learner.selector, fb, instrument]);
-    const applyRecommendation = q2(() => {
-      if (!recommendation || !recommendation.enabled) return;
-      const naturalStats = learner.selector.getStringRecommendations(
-        [...recommendation.recommended],
-        (s3) => fb.getItemIdsForString(s3, "natural")
-      );
-      const pri = computeNotePrioritization(
-        naturalStats,
-        DEFAULT_CONFIG.expansionThreshold
-      );
-      const newNoteFilter = pri.suggestedFilter === "natural" ? "natural" : "all";
-      scopeActions.setScope({
-        kind: "fretboard",
-        enabledStrings: recommendation.enabled,
-        noteFilter: newNoteFilter
-      });
-    }, [recommendation, learner.selector, fb, scopeActions]);
-    const practicingLabel = T2(() => {
-      const parts = [];
-      if (enabledStrings.size < instrument.stringCount) {
-        const names = Array.from(enabledStrings).sort((a3, b) => b - a3).map((s3) => displayNote(instrument.stringNames[s3]));
-        parts.push(
-          names.join(", ") + " string" + (names.length === 1 ? "" : "s")
-        );
-      } else {
-        parts.push("all strings");
-      }
-      if (noteFilter === "natural") parts.push("natural notes");
-      else if (noteFilter === "sharps-flats") parts.push("sharps and flats");
-      return parts.join(", ");
-    }, [enabledStrings, noteFilter, instrument]);
     const engineConfig = T2(() => ({
-      getEnabledItems: () => {
-        const s3 = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
-        const nf = scope.kind === "fretboard" ? scope.noteFilter : "natural";
-        return fb.getFretboardEnabledItems(s3, nf);
-      },
+      getEnabledItems: groupScope.getEnabledItems,
+      getPracticingLabel: groupScope.getPracticingLabel,
       checkAnswer: (itemId, input) => {
-        const q3 = fb.parseFretboardItem(itemId);
-        return fb.checkFretboardAnswer(q3.currentNote, input);
+        const q3 = getQuestion8(instrument, itemId);
+        return checkAnswer9(instrument, q3.currentNote, input);
       },
       onAnswer: (itemId, result) => {
         if (quizFbRef.current) {
-          const q3 = fb.parseFretboardItem(itemId);
+          const q3 = getQuestion8(instrument, itemId);
           const color = result.correct ? "var(--color-success)" : "var(--color-error)";
           setCircleFill(
             quizFbRef.current,
@@ -10650,31 +10381,20 @@ button {
       onStop: () => {
         noteHandler.reset();
         if (quizFbRef.current) clearAll(quizFbRef.current);
-      },
-      getPracticingLabel: () => {
-        const s3 = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
-        const nf = scope.kind === "fretboard" ? scope.noteFilter : "natural";
-        const parts = [];
-        if (s3.size < instrument.stringCount) {
-          const names = Array.from(s3).sort((a3, b) => b - a3).map((i3) => displayNote(instrument.stringNames[i3]));
-          parts.push(
-            names.join(", ") + " string" + (names.length === 1 ? "" : "s")
-          );
-        } else {
-          parts.push("all strings");
-        }
-        if (nf === "natural") parts.push("natural notes");
-        else if (nf === "sharps-flats") parts.push("sharps and flats");
-        return parts.join(", ");
       }
-    }), [scope, noteHandler, fb, instrument]);
+    }), [
+      noteHandler,
+      instrument,
+      groupScope.getEnabledItems,
+      groupScope.getPracticingLabel
+    ]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
     const currentQ = T2(() => {
       const id = engine.state.currentItemId;
       if (!id || engine.state.phase === "idle") return null;
-      return fb.parseFretboardItem(id);
-    }, [engine.state.currentItemId, engine.state.phase, fb]);
+      return getQuestion8(instrument, id);
+    }, [engine.state.currentItemId, engine.state.phase, instrument]);
     currentQRef.current = currentQ;
     y2(() => {
       if (!quizFbRef.current) return;
@@ -10695,19 +10415,19 @@ button {
       [pendingNote, engine.state.answered]
     );
     usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const round = useRoundSummary(engine, practicingLabel);
+    const round = useRoundSummary(engine, groupScope.practicingLabel);
     const ps = usePracticeSummary({
-      allItems: ALL_ITEMS10,
+      allItems,
       selector: learner.selector,
       engine,
       itemNoun: "positions",
-      recommendation,
-      recommendationText
+      recommendation: groupScope.recommendation,
+      recommendationText: groupScope.recommendationText
     });
     y2(() => {
       const wrapper = progressFbRef.current;
       if (!wrapper) return;
-      for (const s3 of allStrings) {
+      for (let s3 = 0; s3 < instrument.stringCount; s3++) {
         for (let f4 = 0; f4 < instrument.fretCount; f4++) {
           const itemId = s3 + "-" + f4;
           const color = getStatsCellColor(learner.selector, itemId);
@@ -10717,14 +10437,8 @@ button {
     }, [
       learner.selector,
       engine.state.phase,
-      allStrings,
       instrument
     ]);
-    y2(() => {
-      const wrapper = progressFbRef.current;
-      if (!wrapper) return;
-      return setupHoverCard(wrapper, instrument, fb, learner.selector);
-    }, [instrument, fb, learner.selector]);
     const legendHTML = T2(
       () => buildStatsLegend(),
       []
@@ -10740,6 +10454,10 @@ button {
     );
     const phase = engine.state.phase;
     const isIdle = phase === "idle";
+    const groupLabels = T2(
+      () => groups.map((g2) => g2.label),
+      [groups]
+    );
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(
         ModeTopBar,
@@ -10757,26 +10475,17 @@ button {
         {
           summary: ps.summary,
           onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
-          scopeValid: enabledStrings.size > 0 && noteFilter !== "none",
-          validationMessage: "Select at least one string and one note type",
-          scope: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StringToggles,
-              {
-                stringNames: instrument.stringNames,
-                active: enabledStrings,
-                onToggle: scopeActions.toggleString
-              }
-            ),
-            /* @__PURE__ */ u3(
-              NoteFilter,
-              {
-                mode: noteFilter,
-                onChange: (f4) => scopeActions.setNoteFilter(f4)
-              }
-            )
-          ] }),
+          onApplyRecommendation: ps.summary.showRecommendationButton ? groupScope.applyRecommendation : void 0,
+          scopeValid: groupScope.enabledGroups.size > 0,
+          validationMessage: "Select at least one group",
+          scope: /* @__PURE__ */ u3(
+            GroupToggles,
+            {
+              labels: groupLabels,
+              active: groupScope.enabledGroups,
+              onToggle: groupScope.scopeActions.toggleGroup
+            }
+          ),
           statsContent: /* @__PURE__ */ u3(k, { children: [
             /* @__PURE__ */ u3(
               "div",
@@ -10804,7 +10513,7 @@ button {
           {
             timeLeft: engine.timerText,
             timerPct: engine.timerPct,
-            context: practicingLabel,
+            context: groupScope.practicingLabel,
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
@@ -10859,7 +10568,7 @@ button {
                 PianoNoteButtons,
                 {
                   onAnswer: handleNoteAnswer,
-                  hideAccidentals: noteFilter === "natural",
+                  hideAccidentals: !hasAccidentals,
                   narrowing: noteNarrowing
                 }
               ),
