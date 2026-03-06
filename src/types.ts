@@ -264,10 +264,6 @@ export type ScopeSpec =
     ) => number;
   }
   | {
-    kind: 'fretboard';
-    instrument: Instrument;
-  }
-  | {
     kind: 'note-filter';
     storageKey: string;
   };
@@ -276,11 +272,6 @@ export type ScopeSpec =
 export type ScopeState =
   | { kind: 'none' }
   | { kind: 'groups'; enabledGroups: ReadonlySet<number> }
-  | {
-    kind: 'fretboard';
-    enabledStrings: ReadonlySet<number>;
-    noteFilter: NoteFilter;
-  }
   | { kind: 'note-filter'; noteFilter: NoteFilter };
 
 // --- Sequential response ---
