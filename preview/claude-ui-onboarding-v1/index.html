@@ -171,8 +171,6 @@ body {
   gap: var(--space-3);
   font-size: var(--text-sm);
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   margin-top: var(--space-6);
   margin-bottom: var(--space-2);
 }
@@ -227,10 +225,19 @@ body {
 }
 /* --- Track selection --- */
 .track-selection-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-muted);
   margin-bottom: var(--space-2);
+}
+.track-selection-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-lighter);
 }
 .track-chips {
   display: flex;
@@ -1888,7 +1895,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="2fe62c onboarding-v1"></div>
+  <div class="home-screen" id="home-screen" data-version="ac60f8 onboarding-v1"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -3926,7 +3933,7 @@ button {
   var MODE_DESCRIPTIONS = {
     fretboard: "Stop hunting for notes on the fretboard",
     ukulele: "Stop hunting for notes on the fretboard",
-    speedTap: "See a note, find every position instantly",
+    speedTap: "Know all positions of a note instantly",
     noteSemitones: "The number system behind the chromatic scale",
     intervalSemitones: "Know the size of every interval in semitones",
     semitoneMath: "Transpose by semitones without counting",
@@ -3934,7 +3941,7 @@ button {
     keySignatures: "See a key, know its sharps and flats instantly",
     scaleDegrees: "Connect notes to their function in a key",
     diatonicChords: "Know which chords belong in any key",
-    chordSpelling: "Know the notes in any chord from memory"
+    chordSpelling: "Know the notes in any chord"
   };
   var MODE_NAMES = {
     fretboard: "Guitar Fretboard",
@@ -3959,8 +3966,8 @@ button {
       after: "\u201C5th fret, C string. E.\u201D"
     },
     speedTap: {
-      before: "\u201CAll the C\u2019s\u2026 3rd fret A, 8th fret E\u2026 um\u2026\u201D",
-      after: "\u201CAll the C\u2019s.\u201D \u2014 tap tap tap tap tap"
+      before: "\u201CAll the C\u2019s\u2026 8th fret E, 3rd fret A\u2026 um\u2026\u201D",
+      after: "\u201CC\u2019s. Frets 8, 3, 10, 5, 1, 8.\u201D"
     },
     noteSemitones: {
       before: "\u201CG#\u2026 G is 7, so G# is\u2026 8?\u201D",
@@ -4224,16 +4231,16 @@ button {
     ["7", "7th"]
   ];
   var DEGREE_LETTER_OFFSETS = {
-    "R": 0,
+    R: 0,
     "2": 1,
-    "b3": 2,
+    b3: 2,
     "3": 2,
     "4": 3,
-    "b5": 4,
+    b5: 4,
     "5": 4,
     "#5": 4,
     "6": 5,
-    "b7": 6,
+    b7: 6,
     "7": 6
   };
   var CHORD_TYPES = [
