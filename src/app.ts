@@ -23,6 +23,7 @@ import { ScaleDegreesMode } from './modes/scale-degrees/scale-degrees-mode.tsx';
 import { DiatonicChordsMode } from './modes/diatonic-chords/diatonic-chords-mode.tsx';
 import { ChordSpellingMode } from './modes/chord-spelling/chord-spelling-mode.tsx';
 import { FretboardMode } from './modes/fretboard/fretboard-mode.tsx';
+import { NoteReadingMode } from './modes/note-reading/note-reading-mode.tsx';
 import { SpeedTapMode } from './modes/speed-tap/speed-tap-mode.tsx';
 
 // Enable :active pseudo-class on iOS Safari. WebKit doesn't fire :active on
@@ -97,6 +98,7 @@ function registerFretboardMode(
 registerFretboardMode('fretboard', 'Guitar Fretboard', GUITAR);
 registerFretboardMode('ukulele', 'Ukulele Fretboard', UKULELE);
 
+registerPreactMode('noteReading', 'Note Reading', NoteReadingMode);
 registerPreactMode('noteSemitones', 'Note \u2194 Semitones', NoteSemitonesMode);
 registerPreactMode(
   'intervalSemitones',
