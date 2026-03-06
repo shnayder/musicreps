@@ -1928,7 +1928,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="48dd81 declarative-skill-modes-UGkKQ"></div>
+  <div class="home-screen" id="home-screen" data-version="a13c43 declarative-skill-modes-UGkKQ"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7624,11 +7624,25 @@ button {
   function AnswerInput({ onSubmit, disabled, placeholder, onInvalid }) {
     const inputRef = A2(null);
     const [shake, setShake] = d2(false);
+    const shakeTimerRef = A2(null);
+    y2(() => {
+      return () => {
+        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      };
+    }, []);
     y2(() => {
       if (!disabled && inputRef.current) {
         inputRef.current.focus();
       }
     }, [disabled]);
+    const triggerShake = q2(() => {
+      setShake(true);
+      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      shakeTimerRef.current = setTimeout(() => {
+        setShake(false);
+        shakeTimerRef.current = null;
+      }, 400);
+    }, []);
     const handleKeyDown = q2(
       (e3) => {
         if (e3.key !== "Enter") return;
@@ -7636,24 +7650,29 @@ button {
         e3.stopPropagation();
         const value = inputRef.current?.value.trim() ?? "";
         if (!value) {
-          setShake(true);
-          setTimeout(() => setShake(false), 400);
+          triggerShake();
           onInvalid?.();
           return;
         }
-        onSubmit(value);
-        if (inputRef.current) inputRef.current.value = "";
+        const accepted = onSubmit(value);
+        if (accepted) {
+          if (inputRef.current) inputRef.current.value = "";
+        } else {
+          triggerShake();
+        }
       },
-      [onSubmit, onInvalid]
+      [onSubmit, onInvalid, triggerShake]
     );
     const cls = "answer-input" + (shake ? " answer-input-shake" : "");
+    const label = placeholder ?? "Type answer, press Enter";
     return /* @__PURE__ */ u3(
       "input",
       {
         ref: inputRef,
         type: "text",
         class: cls,
-        placeholder: placeholder ?? "Type answer, press Enter",
+        placeholder: label,
+        "aria-label": label,
         disabled,
         onKeyDown: handleKeyDown,
         autoComplete: "off",
@@ -7681,14 +7700,14 @@ button {
           }
         );
       case "piano-note":
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u3("div", { class: hidden ? "answer-group-hidden" : void 0, children: /* @__PURE__ */ u3(
           PianoNoteButtons,
           {
             onAnswer,
             hideAccidentals: hideAccidentalsOverride ?? buttonsDef.hideAccidentals,
             narrowing
           }
-        );
+        ) });
       case "number":
         return /* @__PURE__ */ u3(
           NumberButtons,
@@ -7783,10 +7802,11 @@ button {
       (input) => {
         if (def.validateInput && currentQRef.current) {
           if (!def.validateInput(currentQRef.current, input)) {
-            return;
+            return false;
           }
         }
         engine.submitAnswer(input);
+        return true;
       },
       [engine.submitAnswer, def]
     );
