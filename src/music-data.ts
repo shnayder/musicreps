@@ -59,6 +59,7 @@ export const MODE_DESCRIPTIONS: Record<string, string> = {
   scaleDegrees: 'Connect notes to their function in a key',
   diatonicChords: 'Know which chords belong in any key',
   chordSpelling: 'Know the notes in any chord',
+  noteReading: 'Read notes on treble and bass clef instantly',
 };
 
 // Centralized display names for all modes.
@@ -74,6 +75,7 @@ export const MODE_NAMES: Record<string, string> = {
   scaleDegrees: 'Scale Degrees',
   diatonicChords: 'Diatonic Chords',
   chordSpelling: 'Chord Spelling',
+  noteReading: 'Note Reading',
 };
 
 // Before/after contrast text — shown on skill cards to communicate value.
@@ -126,6 +128,11 @@ export const MODE_BEFORE_AFTER: Record<
     before: '\u201CFm7\u2026 F, Ab, C\u2026 what\u2019s the 7th\u2026 Eb\u201D',
     after: '\u201CFm7. F Ab C Eb.\u201D',
   },
+  noteReading: {
+    before:
+      '\u201CThat note\u2026 two lines above the staff\u2026 is it B?\u201D',
+    after: '\u201CTwo ledger lines above treble. B.\u201D',
+  },
 };
 
 // Track definitions — interest-based skill groups for the home screen.
@@ -150,6 +157,7 @@ export const TRACKS: Track[] = [
       'scaleDegrees',
       'diatonicChords',
       'chordSpelling',
+      'noteReading',
     ],
   },
   {
