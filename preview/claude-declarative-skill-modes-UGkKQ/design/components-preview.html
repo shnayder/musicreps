@@ -1350,6 +1350,45 @@ button {
   max-width: 360px;
   margin: var(--space-3) auto;
 }
+/* Answer text input (declarative modes) */
+.answer-input {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  margin: var(--space-2) auto;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-lg);
+  font-family: inherit;
+  text-align: center;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.answer-input:focus {
+  border-color: var(--color-primary);
+}
+.answer-input:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.answer-input-shake {
+  animation: input-shake 0.3s ease-in-out;
+}
+@keyframes input-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-4px);
+  }
+  40%, 80% {
+    transform: translateX(4px);
+  }
+}
+
 .answer-btn {
   height: 48px;
   font-size: var(--text-md);
