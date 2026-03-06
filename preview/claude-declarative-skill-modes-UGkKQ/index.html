@@ -1928,7 +1928,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="230f33 declarative-skill-modes-UGkKQ"></div>
+  <div class="home-screen" id="home-screen" data-version="48dd81 declarative-skill-modes-UGkKQ"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -8934,11 +8934,13 @@ button {
     }, [enabledGroups, groups]);
     const engineSubmitRef = A2(() => {
     });
+    const hasAccidentalsRef = A2(hasAccidentals);
+    hasAccidentalsRef.current = hasAccidentals;
     const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
-        () => hasAccidentals,
+        () => hasAccidentalsRef.current,
         setPendingNote
       ),
       []
