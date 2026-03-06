@@ -166,6 +166,7 @@ export function checkAnswer(
 // --- Stats grid ---
 
 export const GRID_ROW_LABELS = LETTERS;
+export const GRID_NOTES = LETTERS.map((n) => ({ name: n, displayName: n }));
 export const GRID_COL_LABELS = [
   'T\u266e',
   'T\u00b12',

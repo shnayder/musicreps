@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useRef } from 'preact/hooks';
 import type { ModeHandle } from '../../types.ts';
-import { createNoteKeyHandler } from '../../quiz-engine.ts';
+import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
 import { useGroupScope } from '../../hooks/use-group-scope.ts';
@@ -44,6 +44,7 @@ import {
   getItemIdsForGroup,
   getQuestion,
   GRID_COL_LABELS,
+  GRID_NOTES,
   GROUPS,
   type Question,
 } from './logic.ts';
@@ -125,7 +126,7 @@ export function NoteReadingMode(
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
   const noteHandler = useMemo(
     () =>
-      createNoteKeyHandler(
+      createAdaptiveKeyHandler(
         (note: string) => engineSubmitRef.current(note),
         () => false, // no accidentals — submit immediately on key press
       ),
@@ -171,7 +172,7 @@ export function NoteReadingMode(
     if (staffRef.current && currentQ) {
       renderStaff(staffRef.current, currentQ.abc);
     } else if (staffRef.current && !currentQ) {
-      staffRef.current.innerHTML = '';
+      staffRef.current.textContent = '';
     }
   }, [currentQ]);
 
@@ -236,6 +237,7 @@ export function NoteReadingMode(
                 selector={ps.statsSel}
                 colLabels={GRID_COL_LABELS}
                 getItemId={getGridItemId}
+                notes={GRID_NOTES}
               />
               <StatsLegend />
             </>
