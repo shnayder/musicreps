@@ -207,6 +207,7 @@ export function ScaleDegreesMode(
   return (
     <>
       <ModeTopBar
+        modeId='scaleDegrees'
         title='Scale Degrees'
         description={MODE_DESCRIPTIONS.scaleDegrees}
         beforeAfter={MODE_BEFORE_AFTER.scaleDegrees}

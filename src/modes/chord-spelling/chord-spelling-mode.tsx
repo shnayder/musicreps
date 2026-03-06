@@ -256,6 +256,7 @@ export function ChordSpellingMode(
   return (
     <>
       <ModeTopBar
+        modeId='chordSpelling'
         title='Chord Spelling'
         description={MODE_DESCRIPTIONS.chordSpelling}
         beforeAfter={MODE_BEFORE_AFTER.chordSpelling}

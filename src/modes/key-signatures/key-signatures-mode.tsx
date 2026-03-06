@@ -263,6 +263,7 @@ export function KeySignaturesMode(
   return (
     <>
       <ModeTopBar
+        modeId='keySignatures'
         title='Key Signatures'
         description={MODE_DESCRIPTIONS.keySignatures}
         beforeAfter={MODE_BEFORE_AFTER.keySignatures}

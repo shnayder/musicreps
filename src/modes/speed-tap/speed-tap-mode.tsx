@@ -349,6 +349,7 @@ export function SpeedTapMode(
   return (
     <>
       <ModeTopBar
+        modeId='speedTap'
         title='Speed Tap'
         description={MODE_DESCRIPTIONS.speedTap}
         beforeAfter={MODE_BEFORE_AFTER.speedTap}

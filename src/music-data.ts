@@ -92,18 +92,18 @@ export const MODE_BEFORE_AFTER: Record<
   speedTap: {
     before:
       '\u201CAll the C\u2019s\u2026 8th fret E, 3rd fret A\u2026 um\u2026\u201D',
-    after: '\u201CC\u2019s. Frets 8, 3, 10, 5, 1, 8.\u201D',
+    after: '\u201CC\u2019s. 8, 3, 10, 5, 1, 8.\u201D',
   },
   noteSemitones: {
-    before: '\u201CG#\u2026 G is 7, so G# is\u2026 8?\u201D',
+    before: '\u201CG#\u2026 F is 5, so G is\u2026 7, so G# is 8.\u201D',
     after: '\u201CG#. 8.\u201D',
   },
   intervalSemitones: {
-    before: '\u201CMajor 6th\u2026 that\u2019s\u2026 9 semitones?\u201D',
+    before: '\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D',
     after: '\u201CM6. 9 semitones.\u201D',
   },
   semitoneMath: {
-    before: '\u201CF# + 4\u2026 G, G#, A, A#\u2026 Bb?\u201D',
+    before: '\u201CF# + 4\u2026 G, G#, A, A#\u2026 is that Bb?\u201D',
     after: '\u201CF# + 4. Bb.\u201D',
   },
   intervalMath: {
@@ -119,7 +119,7 @@ export const MODE_BEFORE_AFTER: Record<
     after: '\u201C5th of Bb. F.\u201D',
   },
   diatonicChords: {
-    before: '\u201CIV in G\u2026 G, A, B, C\u2026 C major?\u201D',
+    before: '\u201CIV in G\u2026 G, A, B, C\u2026 so C major?\u201D',
     after: '\u201CIV in G. C major.\u201D',
   },
   chordSpelling: {
