@@ -19,6 +19,7 @@ import type { StatsSelector } from './stats.tsx';
 import { StatsGrid } from './stats.tsx';
 import { GroupToggles, NoteFilter, StringToggles } from './scope.tsx';
 import { CountdownBar, FeedbackDisplay, TextPrompt } from './quiz-ui.tsx';
+import { SkillIcon } from './icons.tsx';
 import {
   ModeScreen,
   ModeTopBar,
@@ -391,6 +392,32 @@ describe('ModeTopBar', () => {
     assert.ok(html.includes('mode-before-after'));
     assert.ok(html.includes('slow way'));
     assert.ok(html.includes('fast way'));
+  });
+
+  it('renders skill icon when modeId is provided', () => {
+    const html = render(
+      <ModeTopBar modeId='semitoneMath' title='Semitone Math' />,
+    );
+    assert.ok(html.includes('skill-icon'));
+    assert.ok(html.includes('aria-hidden="true"'));
+  });
+
+  it('renders no icon when modeId is omitted', () => {
+    const html = render(<ModeTopBar title='Test' />);
+    assert.ok(!html.includes('skill-icon'));
+  });
+});
+
+describe('SkillIcon', () => {
+  it('renders icon for known mode', () => {
+    const html = render(<SkillIcon modeId='fretboard' />);
+    assert.ok(html.includes('skill-icon'));
+    assert.ok(html.includes('<svg'));
+  });
+
+  it('renders nothing for unknown mode', () => {
+    const html = render(<SkillIcon modeId='nonexistent' />);
+    assert.equal(html, '');
   });
 });
 

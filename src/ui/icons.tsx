@@ -13,6 +13,7 @@ const ICON_PROPS = {
   'stroke-linecap': 'round',
   'stroke-linejoin': 'round',
   class: 'skill-icon',
+  'aria-hidden': 'true',
 } as const;
 
 // Guitar (acoustic guitar silhouette)
