@@ -17,8 +17,6 @@ import {
   pianoNoteButtons,
   tabbedIdleHTML,
 } from './html-helpers.ts';
-import { MODE_DESCRIPTIONS } from './music-data.ts';
-
 // ---------------------------------------------------------------------------
 // Shared HTML fragments
 // ---------------------------------------------------------------------------
@@ -26,41 +24,9 @@ import { MODE_DESCRIPTIONS } from './music-data.ts';
 export const DISTANCE_TOGGLES =
   '<div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>';
 
-function modeBtn(modeId: string, name: string): string {
-  const desc = MODE_DESCRIPTIONS[modeId] || '';
-  return `      <button tabindex="0" data-mode="${modeId}" class="home-mode-btn">
-        <span class="home-mode-name">${name}</span>
-        <span class="home-mode-desc">${desc}</span>
-      </button>`;
-}
-
-export const HOME_SCREEN_HTML = `  <div class="home-screen" id="home-screen">
-    <div class="home-header">
-      <h1 class="home-title">Music Reps</h1>
-      <p class="home-tagline">Instant recall for music fundamentals. You know the theory\u2009\u2014\u2009now make it automatic.</p>
-    </div>
-    <div class="home-modes">
-      <div class="home-group-label">Fretboard</div>
-${modeBtn('fretboard', 'Guitar Fretboard')}
-${modeBtn('ukulele', 'Ukulele Fretboard')}
-${modeBtn('speedTap', 'Speed Tap')}
-      <div class="home-group-label">Theory Lookup</div>
-${modeBtn('noteSemitones', 'Note \u2194 Semitones')}
-${modeBtn('intervalSemitones', 'Interval \u2194 Semitones')}
-      <div class="home-group-label">Calculation</div>
-${modeBtn('semitoneMath', 'Semitone Math')}
-${modeBtn('intervalMath', 'Interval Math')}
-      <div class="home-group-label">Keys &amp; Chords</div>
-${modeBtn('keySignatures', 'Key Signatures')}
-${modeBtn('scaleDegrees', 'Scale Degrees')}
-${modeBtn('diatonicChords', 'Diatonic Chords')}
-${modeBtn('chordSpelling', 'Chord Spelling')}
-    </div>
-    <div class="home-footer">
-      <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">__VERSION__</span>
-    </div>
-  </div>`;
+// Minimal placeholder — Preact HomeScreen component renders the full UI at runtime.
+export const HOME_SCREEN_HTML =
+  `  <div class="home-screen" id="home-screen" data-version="__VERSION__"></div>`;
 
 // ---------------------------------------------------------------------------
 // Mode screen HTML — each mode's unique content

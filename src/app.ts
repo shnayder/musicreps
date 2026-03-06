@@ -13,6 +13,7 @@ import { createNavigation } from './navigation.ts';
 import { createSettingsModal } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
 import type { ModeHandle } from './types.ts';
+import { HomeScreen } from './ui/home-screen.tsx';
 import { NoteSemitonesMode } from './modes/note-semitones/note-semitones-mode.tsx';
 import { IntervalSemitonesMode } from './modes/interval-semitones/interval-semitones-mode.tsx';
 import { SemitoneMathMode } from './modes/semitone-math/semitone-math-mode.tsx';
@@ -123,10 +124,18 @@ const settings = createSettingsModal({
   },
 });
 
-const settingsBtn = document.querySelector('.home-settings-btn');
-if (settingsBtn) {
-  settingsBtn.addEventListener('click', () => settings.open());
-}
+// Mount Preact home screen — replaces static build-time HTML
+const homeRoot = document.getElementById('home-screen')!;
+const version = homeRoot.dataset.version || '';
+homeRoot.textContent = '';
+render(
+  h(HomeScreen, {
+    onSelectMode: (modeId: string) => nav.switchTo(modeId),
+    onOpenSettings: () => settings.open(),
+    version,
+  }),
+  homeRoot,
+);
 
 // Register service worker for cache busting on iOS home screen
 // Skip in Capacitor — app runs from local files, no SW needed

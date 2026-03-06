@@ -317,7 +317,7 @@ interface ModeScreenOptions {
 export function modeScreen(id: string, opts: ModeScreenOptions): string {
   return `  <div class="mode-screen phase-idle" id="mode-${id}">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-back-btn" aria-label="Back to home">\u2190</button>
+      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">\u00D7</button>
       <h1 class="mode-title">${opts.modeName}</h1>
     </div>
     ${opts.idleHTML}

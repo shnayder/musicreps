@@ -61,6 +61,109 @@ export const MODE_DESCRIPTIONS: Record<string, string> = {
   chordSpelling: 'Know the notes in any chord from memory',
 };
 
+// Centralized display names for all modes.
+export const MODE_NAMES: Record<string, string> = {
+  fretboard: 'Guitar Fretboard',
+  ukulele: 'Ukulele Fretboard',
+  speedTap: 'Speed Tap',
+  noteSemitones: 'Note \u2194 Semitones',
+  intervalSemitones: 'Interval \u2194 Semitones',
+  semitoneMath: 'Semitone Math',
+  intervalMath: 'Interval Math',
+  keySignatures: 'Key Signatures',
+  scaleDegrees: 'Scale Degrees',
+  diatonicChords: 'Diatonic Chords',
+  chordSpelling: 'Chord Spelling',
+};
+
+// Before/after contrast text — shown on skill cards to communicate value.
+export const MODE_BEFORE_AFTER: Record<
+  string,
+  { before: string; after: string }
+> = {
+  fretboard: {
+    before: '\u201C7th fret, G string\u2026 G, G#, A\u2026 D?\u201D',
+    after: '\u201C7th fret, G string. D.\u201D',
+  },
+  ukulele: {
+    before: '\u201C5th fret, C string\u2026 C, D, E\u2026 E?\u201D',
+    after: '\u201C5th fret, C string. E.\u201D',
+  },
+  speedTap: {
+    before:
+      '\u201CAll the C\u2019s\u2026 3rd fret A, 8th fret E\u2026 um\u2026\u201D',
+    after: '\u201CAll the C\u2019s.\u201D \u2014 tap tap tap tap tap',
+  },
+  noteSemitones: {
+    before: '\u201CG#\u2026 G is 7, so G# is\u2026 8?\u201D',
+    after: '\u201CG#. 8.\u201D',
+  },
+  intervalSemitones: {
+    before: '\u201CMajor 6th\u2026 that\u2019s\u2026 9 semitones?\u201D',
+    after: '\u201CM6. 9 semitones.\u201D',
+  },
+  semitoneMath: {
+    before: '\u201CF# + 4\u2026 G, G#, A, A#\u2026 Bb?\u201D',
+    after: '\u201CF# + 4. Bb.\u201D',
+  },
+  intervalMath: {
+    before: '\u201CC + m6\u2026 minor 6th is 8 semitones\u2026 Ab?\u201D',
+    after: '\u201CC + m6. Ab.\u201D',
+  },
+  keySignatures: {
+    before: '\u201C3 flats\u2026 Bb, Eb, Ab\u2026 so Eb major?\u201D',
+    after: '\u201C3 flats: Eb major.\u201D',
+  },
+  scaleDegrees: {
+    before: '\u201C5th degree of Bb\u2026 Bb, C, D, Eb, F\u2026 F?\u201D',
+    after: '\u201C5th of Bb. F.\u201D',
+  },
+  diatonicChords: {
+    before: '\u201CIV in G\u2026 G, A, B, C\u2026 C major?\u201D',
+    after: '\u201CIV in G. C major.\u201D',
+  },
+  chordSpelling: {
+    before: '\u201CFm7\u2026 F, Ab, C\u2026 what\u2019s the 7th\u2026 Eb\u201D',
+    after: '\u201CFm7. F Ab C Eb.\u201D',
+  },
+};
+
+// Track definitions — interest-based skill groups for the home screen.
+export type Track = {
+  id: string;
+  label: string;
+  alwaysSelected?: boolean;
+  skills: string[];
+};
+
+export const TRACKS: Track[] = [
+  {
+    id: 'core',
+    label: 'Core',
+    alwaysSelected: true,
+    skills: [
+      'noteSemitones',
+      'intervalSemitones',
+      'semitoneMath',
+      'intervalMath',
+      'keySignatures',
+      'scaleDegrees',
+      'diatonicChords',
+      'chordSpelling',
+    ],
+  },
+  {
+    id: 'guitar',
+    label: 'Guitar',
+    skills: ['fretboard', 'speedTap'],
+  },
+  {
+    id: 'ukulele',
+    label: 'Ukulele',
+    skills: ['ukulele'],
+  },
+];
+
 // Expanded mode detail — shown in collapsible "About" section on practice tab.
 export const MODE_DETAIL: Record<string, string> = {
   fretboard:

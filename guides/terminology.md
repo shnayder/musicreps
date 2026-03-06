@@ -19,11 +19,9 @@ terms here are what the **user sees**.
 | **recall** | The heatmap tab showing how well you remember each item (predicted retention probability). | `retention`, `statsMode === 'retention'` | Users think about "recall" — can I recall this? "Retention" is psychology jargon. The tab button says "Recall". | |
 | **item** | A single question the app can ask. Generic counting term for theory modes: "24 items fluent". | `item`, `itemId` | Neutral container. Specific modes should use more specific nouns when possible (see below). | |
 | **position** | A specific fret on a specific string. Fretboard-mode counting term: "78 positions to learn". | `item` (same system) | "Position" is natural guitar vocabulary — "what note is at this position?" | |
-| **mode** | A self-contained quiz topic (e.g., Guitar Fretboard, Interval Math). Each has its own progress, settings, and item pool. | `mode`, `modeId` | Standard UI term. Not "lesson" (we don't teach), not "level" (no sequence). | |
-| **recommendation** | The app's suggestion for what to practice next within a mode — which item groups to enable. Shown as "Recommended: E string" with a "Use recommendation" button. | `computeRecommendations()` | The system recommends, not demands. The user can ignore it. | |
-
-**Question**: I don't like "mode" as a user-facing term. Need ideas? Maybe we don't need a term at all.
-**Question**: switch "recommendation" to "suggestion"? Less formal, better fit with tone.
+| **skill** | A self-contained quiz topic (e.g., Guitar Fretboard, Interval Math). Each has its own progress, settings, and item pool. | `mode`, `modeId` | Standard UI term. May have multiple "levels" of the skill. | |
+| **level** | Levels within a skill -- corresponds to a set of items to learn, typically in order of progressive difficulty or relevance (first learn major chords, then add minor, then 7, then maj 7, etc), though could also be fairly arbitrary ordering (e.g. fretboard: you can learn E, then A, then D, or frets 1-3, then 3-5, then..., or some other sequence). There is a per-level fluency assessment which affects when the system recommends moving to subsequent levels. | `group` |  | |
+| **suggestion** | The app's suggestion for what to practice next within a skill — which item groups to enable. Shown as "Recommended: E string" with a "Use recommendation" button. | `computeRecommendations()` | The system recommends, not demands. The user can ignore it. | |
 
 ---
 

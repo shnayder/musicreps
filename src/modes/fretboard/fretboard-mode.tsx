@@ -17,8 +17,8 @@ import type {
 } from '../../types.ts';
 import {
   displayNote,
+  MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
-  MODE_DETAIL,
   NATURAL_NOTES,
   noteMatchesInput,
   NOTES,
@@ -515,7 +515,7 @@ export function FretboardMode(
       <ModeTopBar
         title={instrument.name}
         description={MODE_DESCRIPTIONS[instrument.id]}
-        detail={MODE_DETAIL[instrument.id]}
+        beforeAfter={MODE_BEFORE_AFTER[instrument.id]}
         onBack={navigateHome}
         showBack={isIdle}
       />

@@ -7,8 +7,8 @@ import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { ModeHandle, SequentialState } from '../../types.ts';
 import {
   displayNote,
+  MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
-  MODE_DETAIL,
 } from '../../music-data.ts';
 import {
   createAdaptiveKeyHandler,
@@ -258,7 +258,7 @@ export function ChordSpellingMode(
       <ModeTopBar
         title='Chord Spelling'
         description={MODE_DESCRIPTIONS.chordSpelling}
-        detail={MODE_DETAIL.chordSpelling}
+        beforeAfter={MODE_BEFORE_AFTER.chordSpelling}
         onBack={navigateHome}
         showBack={isIdle}
       />

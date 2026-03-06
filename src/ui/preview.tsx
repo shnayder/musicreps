@@ -253,19 +253,14 @@ function PreviewApp() {
           description='Transpose by semitones without counting'
         />
       </Section>
-      <Section title='ModeTopBar — expandable detail (collapsed)'>
+      <Section title='ModeTopBar — with before/after'>
         <ModeTopBar
           title='Semitone Math'
           description='Transpose by semitones without counting'
-          detail='Raw chromatic transposition: "What\u2019s 4 semitones above G?" This is the building block for interval thinking, chord construction, and modulation.'
-        />
-      </Section>
-      <Section title='ModeTopBar — expandable detail (expanded)'>
-        <ModeTopBar
-          title='Semitone Math'
-          description='Transpose by semitones without counting'
-          detail='Raw chromatic transposition: "What\u2019s 4 semitones above G?" This is the building block for interval thinking, chord construction, and modulation.'
-          _previewOpen
+          beforeAfter={{
+            before: '\u201CF# + 4\u2026 G, G#, A, A#\u2026 Bb?\u201D',
+            after: '\u201CF# + 4. Bb.\u201D',
+          }}
         />
       </Section>
       <Section title='StartButton'>
@@ -370,7 +365,10 @@ function PreviewApp() {
           <ModeTopBar
             title='Demo Mode'
             description='Practice skill X until it becomes automatic'
-            detail='Detailed explanation of what this mode teaches and why automating it helps your playing.'
+            beforeAfter={{
+              before: '\u201CX\u2026 um\u2026 Y?\u201D',
+              after: '\u201CX. Y.\u201D',
+            }}
           />
           <TabbedIdle
             activeTab='practice'

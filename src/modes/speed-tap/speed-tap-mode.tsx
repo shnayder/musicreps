@@ -12,8 +12,8 @@ import {
 import type { ModeHandle, NoteFilter as NoteFilterType } from '../../types.ts';
 import {
   displayNote,
+  MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
-  MODE_DETAIL,
   NOTES,
   pickRandomAccidental,
 } from '../../music-data.ts';
@@ -363,7 +363,7 @@ export function SpeedTapMode(
       <ModeTopBar
         title='Speed Tap'
         description={MODE_DESCRIPTIONS.speedTap}
-        detail={MODE_DETAIL.speedTap}
+        beforeAfter={MODE_BEFORE_AFTER.speedTap}
         onBack={navigateHome}
         showBack={isIdle}
       />
