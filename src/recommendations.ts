@@ -12,6 +12,10 @@ export function computeRecommendations(
       indices: number[],
       getItemIds: (index: number) => string[],
     ): StringRecommendation[];
+    getLevelAutomaticity(
+      itemIds: string[],
+      percentile?: number,
+    ): { level: number; seen: number };
   },
   allIndices: number[],
   getItemIds: (index: number) => string[],
@@ -40,7 +44,7 @@ export function computeRecommendations(
         recommended: new Set([first.string]),
         enabled: new Set([first.string]),
         consolidateIndices: [],
-        consolidateDueCount: 0,
+        consolidateWorkingCount: 0,
         expandIndex: first.string,
         expandNewCount: first.totalCount,
       };
@@ -49,35 +53,33 @@ export function computeRecommendations(
       recommended: new Set(),
       enabled: null,
       consolidateIndices: [],
-      consolidateDueCount: 0,
+      consolidateWorkingCount: 0,
       expandIndex: null,
       expandNewCount: 0,
     };
   }
 
-  const totalSeen = started.reduce(
-    (sum, r) => sum + (r.masteredCount + r.dueCount),
-    0,
-  );
-  const totalMastered = started.reduce((sum, r) => sum + r.masteredCount, 0);
-  const consolidatedRatio = totalSeen > 0 ? totalMastered / totalSeen : 0;
+  // Expansion gate: level automaticity of all started items
+  const startedItemIds = started.flatMap((r) => getItemIds(r.string));
+  const { level } = selector.getLevelAutomaticity(startedItemIds);
 
   const startedByWork = [...started].sort(
-    (a, b) => (b.dueCount + b.unseenCount) - (a.dueCount + a.unseenCount),
+    (a, b) =>
+      (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount),
   );
 
-  const workCounts = startedByWork.map((r) => r.dueCount + r.unseenCount);
+  const workCounts = startedByWork.map((r) => r.workingCount + r.unseenCount);
   const medianWork = workCounts[Math.floor(workCounts.length / 2)];
   const recommended = new Set<number>();
   const enabled = new Set<number>();
   const consolidateIndices: number[] = [];
-  let consolidateDueCount = 0;
+  let consolidateWorkingCount = 0;
   for (const r of startedByWork) {
-    if (r.dueCount + r.unseenCount > medianWork) {
+    if (r.workingCount + r.unseenCount > medianWork) {
       recommended.add(r.string);
       enabled.add(r.string);
       consolidateIndices.push(r.string);
-      consolidateDueCount += r.dueCount + r.unseenCount;
+      consolidateWorkingCount += r.workingCount + r.unseenCount;
     }
   }
   if (enabled.size === 0) {
@@ -85,12 +87,12 @@ export function computeRecommendations(
     recommended.add(r.string);
     enabled.add(r.string);
     consolidateIndices.push(r.string);
-    consolidateDueCount += r.dueCount + r.unseenCount;
+    consolidateWorkingCount += r.workingCount + r.unseenCount;
   }
 
   let expandIndex: number | null = null;
   let expandNewCount: number = 0;
-  if (consolidatedRatio >= config.expansionThreshold && unstarted.length > 0) {
+  if (level >= config.expansionThreshold && unstarted.length > 0) {
     const sorted = sortUnstarted
       ? [...unstarted].sort(sortUnstarted)
       : unstarted;
@@ -104,7 +106,7 @@ export function computeRecommendations(
     recommended,
     enabled,
     consolidateIndices,
-    consolidateDueCount,
+    consolidateWorkingCount,
     expandIndex,
     expandNewCount,
   };

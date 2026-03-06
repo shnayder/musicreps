@@ -394,8 +394,8 @@ describe('computeNotePrioritization', () => {
     const stats = [
       {
         string: 0,
-        masteredCount: 0,
-        dueCount: 0,
+        fluentCount: 0,
+        workingCount: 0,
         unseenCount: 8,
         totalCount: 8,
       },
@@ -410,8 +410,8 @@ describe('computeNotePrioritization', () => {
     const stats = [
       {
         string: 0,
-        masteredCount: 3,
-        dueCount: 3,
+        fluentCount: 3,
+        workingCount: 3,
         unseenCount: 2,
         totalCount: 8,
       },
@@ -426,8 +426,8 @@ describe('computeNotePrioritization', () => {
     const stats = [
       {
         string: 0,
-        masteredCount: 7,
-        dueCount: 3,
+        fluentCount: 7,
+        workingCount: 3,
         unseenCount: 0,
         totalCount: 10,
       },
@@ -442,8 +442,8 @@ describe('computeNotePrioritization', () => {
     const stats = [
       {
         string: 0,
-        masteredCount: 8,
-        dueCount: 2,
+        fluentCount: 8,
+        workingCount: 2,
         unseenCount: 0,
         totalCount: 10,
       },
@@ -457,15 +457,15 @@ describe('computeNotePrioritization', () => {
     const stats = [
       {
         string: 0,
-        masteredCount: 4,
-        dueCount: 1,
+        fluentCount: 4,
+        workingCount: 1,
         unseenCount: 3,
         totalCount: 8,
       },
       {
         string: 1,
-        masteredCount: 3,
-        dueCount: 2,
+        fluentCount: 3,
+        workingCount: 2,
         unseenCount: 3,
         totalCount: 8,
       },
@@ -479,8 +479,8 @@ describe('computeNotePrioritization', () => {
     const stats = [
       {
         string: 0,
-        masteredCount: 2,
-        dueCount: 8,
+        fluentCount: 2,
+        workingCount: 8,
         unseenCount: 0,
         totalCount: 10,
       },

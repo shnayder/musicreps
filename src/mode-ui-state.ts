@@ -29,12 +29,33 @@ export function countFluent(
   return { fluent, seen };
 }
 
-/** Compute the status label from a fluency percentage. */
-export function statusLabelFromPct(pct: number): string {
-  if (pct >= 80) return 'Strong';
-  if (pct >= 50) return 'Solid';
-  if (pct >= 20) return 'Building';
-  return 'Getting started';
+/**
+ * Compute "level automaticity" — the p-th percentile of per-item automaticity
+ * values (unseen items contribute 0). Compresses the group's item distribution
+ * into one number that reflects the weakest items.
+ *
+ * For 12 items at p=0.1: index = ceil(1.2)-1 = 1 → 2nd lowest value.
+ * For 48 items: index = ceil(4.8)-1 = 4 → 5th lowest.
+ */
+export function computeLevelAutomaticity(
+  itemIds: string[],
+  getAutomaticity: (id: string) => number | null,
+  percentile: number = 0.1,
+): { level: number; seen: number } {
+  if (itemIds.length === 0) return { level: 0, seen: 0 };
+  const values = itemIds.map((id) => getAutomaticity(id) ?? 0);
+  values.sort((a, b) => a - b);
+  const index = Math.max(0, Math.ceil(values.length * percentile) - 1);
+  const seen = values.filter((v) => v > 0).length;
+  return { level: values[index], seen };
+}
+
+/** Compute the status label from level automaticity. */
+export function statusLabelFromLevel(level: number): string {
+  if (level >= 0.8) return 'Automatic';
+  if (level >= 0.5) return 'Fluent';
+  if (level >= 0.2) return 'Developing';
+  return 'Learning';
 }
 
 /**
@@ -60,8 +81,8 @@ export function buildRecommendationText(
       .map(getGroupLabel);
     parts.push(
       'solidify ' + labels.join(', ') +
-        ' \u2014 ' + result.consolidateDueCount + ' slow item' +
-        (result.consolidateDueCount !== 1 ? 's' : ''),
+        ' \u2014 ' + result.consolidateWorkingCount + ' slow item' +
+        (result.consolidateWorkingCount !== 1 ? 's' : ''),
     );
   }
 
@@ -103,22 +124,26 @@ export function computePracticeSummary(opts: {
   showMastery: boolean;
 }): PracticeSummaryState {
   const threshold = opts.selector.getConfig().automaticityThreshold;
-  const { fluent, seen } = countFluent(
+  const { fluent } = countFluent(
     opts.allItemIds,
     (id) => opts.selector.getAutomaticity(id),
     threshold,
   );
   const total = opts.allItemIds.length;
 
+  const { level, seen } = computeLevelAutomaticity(
+    opts.allItemIds,
+    (id) => opts.selector.getAutomaticity(id),
+  );
+
   let statusLabel: string;
   let statusDetail: string;
 
   if (seen === 0) {
-    statusLabel = 'Ready to start';
+    statusLabel = 'Not started';
     statusDetail = total + ' ' + opts.itemNoun + ' to learn';
   } else {
-    const pct = total > 0 ? Math.round((fluent / total) * 100) : 0;
-    statusLabel = statusLabelFromPct(pct);
+    statusLabel = statusLabelFromLevel(level);
     statusDetail = fluent + ' of ' + total + ' ' + opts.itemNoun + ' fluent';
   }
 

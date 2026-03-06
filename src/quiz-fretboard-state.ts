@@ -127,12 +127,12 @@ export function computeNotePrioritization(
   threshold: number,
 ): { suggestedFilter: string; naturalMasteryRatio: number } {
   let totalSeen = 0;
-  let totalMastered = 0;
+  let totalFluent = 0;
   for (const r of naturalStats) {
-    totalSeen += r.masteredCount + r.dueCount;
-    totalMastered += r.masteredCount;
+    totalSeen += r.fluentCount + r.workingCount;
+    totalFluent += r.fluentCount;
   }
-  const ratio = totalSeen > 0 ? totalMastered / totalSeen : 0;
+  const ratio = totalSeen > 0 ? totalFluent / totalSeen : 0;
   if (totalSeen === 0 || ratio < threshold) {
     return { suggestedFilter: 'natural', naturalMasteryRatio: ratio };
   }

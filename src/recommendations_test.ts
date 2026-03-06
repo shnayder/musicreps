@@ -3,12 +3,16 @@ import { strict as assert } from 'node:assert';
 import { computeRecommendations } from './recommendations.ts';
 
 // Helper: create a mock selector whose getStringRecommendations returns
-// pre-built data keyed by index.
+// pre-built data keyed by index, and getLevelAutomaticity computes from
+// per-item automaticity values derived from the group stats.
+//
+// Mock automaticity values:
+//   Fluent items → 0.9   Working items → 0.3   Unseen items → 0 (null)
 function mockSelector(
   dataByIndex: Record<number, {
-    dueCount: number;
+    workingCount: number;
     unseenCount: number;
-    masteredCount: number;
+    fluentCount: number;
     totalCount: number;
   }>,
 ) {
@@ -17,21 +21,52 @@ function mockSelector(
       indices: number[],
       _getItemIds: (i: number) => string[],
     ) {
-      // Mimic the real selector: build results, sort by work descending
       const results = indices.map((i) => {
         const d = dataByIndex[i] ??
-          { dueCount: 0, unseenCount: 0, masteredCount: 0, totalCount: 0 };
+          { workingCount: 0, unseenCount: 0, fluentCount: 0, totalCount: 0 };
         return { string: i, ...d };
       });
       results.sort((a, b) =>
-        (b.dueCount + b.unseenCount) - (a.dueCount + a.unseenCount)
+        (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount)
       );
       return results;
+    },
+    getLevelAutomaticity(
+      itemIds: string[],
+      percentile: number = 0.1,
+    ): { level: number; seen: number } {
+      const values = itemIds.map((id) => {
+        const parts = id.split('-');
+        const groupIdx = parseInt(parts[1], 10);
+        const itemIdx = parseInt(parts[3], 10);
+        const d = dataByIndex[groupIdx];
+        if (!d) return 0;
+        if (itemIdx < d.fluentCount) return 0.9;
+        if (itemIdx < d.fluentCount + d.workingCount) return 0.3;
+        return 0; // unseen
+      });
+      values.sort((a, b) => a - b);
+      const index = Math.max(0, Math.ceil(values.length * percentile) - 1);
+      const seen = values.filter((v) => v > 0).length;
+      return { level: values[index], seen };
     },
   };
 }
 
-const stubGetItemIds = (_i: number) => ['stub'];
+// Generate item IDs that encode group and item index so the mock
+// getLevelAutomaticity can decode them.
+function makeGetItemIds(
+  dataByIndex: Record<number, {
+    totalCount: number;
+    [k: string]: number;
+  }>,
+) {
+  return (i: number) => {
+    const d = dataByIndex[i];
+    const count = d ? d.totalCount : 1;
+    return Array.from({ length: count }, (_, j) => `group-${i}-item-${j}`);
+  };
+}
 const config = { expansionThreshold: 0.7 };
 
 // ---------------------------------------------------------------------------
@@ -40,14 +75,14 @@ const config = { expansionThreshold: 0.7 };
 
 describe('computeRecommendations', () => {
   it('recommends first unstarted group on fresh start', () => {
-    const sel = mockSelector({
-      0: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-      1: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-    });
+    const data = {
+      0: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
     const result = computeRecommendations(
-      sel,
+      mockSelector(data),
       [0, 1],
-      stubGetItemIds,
+      makeGetItemIds(data),
       config,
       {},
     );
@@ -58,18 +93,18 @@ describe('computeRecommendations', () => {
   });
 
   it('uses sortUnstarted on fresh start to pick first group', () => {
-    const sel = mockSelector({
-      0: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-      1: { dueCount: 0, unseenCount: 5, masteredCount: 0, totalCount: 5 },
-    });
+    const data = {
+      0: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 5, fluentCount: 0, totalCount: 5 },
+    };
     // Sort by totalCount ascending — should pick index 1 (5 items)
     const opts = {
       sortUnstarted: (a: any, b: any) => a.totalCount - b.totalCount,
     };
     const result = computeRecommendations(
-      sel,
+      mockSelector(data),
       [0, 1],
-      stubGetItemIds,
+      makeGetItemIds(data),
       config,
       opts,
     );
@@ -83,14 +118,14 @@ describe('computeRecommendations', () => {
   // ---------------------------------------------------------------------------
 
   it('recommends the single started item', () => {
-    const sel = mockSelector({
-      0: { dueCount: 3, unseenCount: 5, masteredCount: 2, totalCount: 10 },
-      1: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-    });
+    const data = {
+      0: { workingCount: 3, unseenCount: 5, fluentCount: 2, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
     const result = computeRecommendations(
-      sel,
+      mockSelector(data),
       [0, 1],
-      stubGetItemIds,
+      makeGetItemIds(data),
       config,
       {},
     );
@@ -99,19 +134,20 @@ describe('computeRecommendations', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Consolidation below threshold — no expansion
+  // Level automaticity below threshold — no expansion
   // ---------------------------------------------------------------------------
 
-  it('does not expand when consolidation ratio is below threshold', () => {
-    // 2 mastered out of 5 seen = 0.4, below 0.7
-    const sel = mockSelector({
-      0: { dueCount: 3, unseenCount: 2, masteredCount: 2, totalCount: 7 },
-      1: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-    });
+  it('does not expand when level automaticity is below threshold', () => {
+    // Group 0: 2F + 3W + 2U = 7 items. Mock autos: [0.9, 0.9, 0.3, 0.3, 0.3, 0, 0]
+    // Sorted: [0, 0, 0.3, 0.3, 0.3, 0.9, 0.9]. p10 index=0 → level=0 < 0.7
+    const data = {
+      0: { workingCount: 3, unseenCount: 2, fluentCount: 2, totalCount: 7 },
+      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
     const result = computeRecommendations(
-      sel,
+      mockSelector(data),
       [0, 1],
-      stubGetItemIds,
+      makeGetItemIds(data),
       config,
       {},
     );
@@ -123,19 +159,19 @@ describe('computeRecommendations', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Consolidation above threshold — expansion
+  // Level automaticity above threshold — expansion
   // ---------------------------------------------------------------------------
 
-  it('expands to next unstarted when consolidation ratio meets threshold', () => {
-    // 8 mastered out of 10 seen = 0.8, above 0.7
-    const sel = mockSelector({
-      0: { dueCount: 2, unseenCount: 0, masteredCount: 8, totalCount: 10 },
-      1: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-    });
+  it('expands when level automaticity meets threshold', () => {
+    // Group 0: all fluent → mock auto=0.9 for all. p10=0.9 >= 0.7 → gate opens
+    const data = {
+      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
     const result = computeRecommendations(
-      sel,
+      mockSelector(data),
       [0, 1],
-      stubGetItemIds,
+      makeGetItemIds(data),
       config,
       {},
     );
@@ -148,15 +184,15 @@ describe('computeRecommendations', () => {
   // ---------------------------------------------------------------------------
 
   it('recommends items above median work', () => {
-    const sel = mockSelector({
-      0: { dueCount: 8, unseenCount: 2, masteredCount: 0, totalCount: 10 }, // work=10
-      1: { dueCount: 1, unseenCount: 0, masteredCount: 9, totalCount: 10 }, // work=1
-      2: { dueCount: 5, unseenCount: 3, masteredCount: 2, totalCount: 10 }, // work=8
-    });
+    const data = {
+      0: { workingCount: 8, unseenCount: 2, fluentCount: 0, totalCount: 10 }, // work=10
+      1: { workingCount: 1, unseenCount: 0, fluentCount: 9, totalCount: 10 }, // work=1
+      2: { workingCount: 5, unseenCount: 3, fluentCount: 2, totalCount: 10 }, // work=8
+    };
     const result = computeRecommendations(
-      sel,
+      mockSelector(data),
       [0, 1, 2],
-      stubGetItemIds,
+      makeGetItemIds(data),
       config,
       {},
     );
@@ -174,18 +210,18 @@ describe('computeRecommendations', () => {
   // ---------------------------------------------------------------------------
 
   it('uses sortUnstarted to pick expansion target', () => {
-    // 8/10 = 0.8, above threshold
-    const sel = mockSelector({
-      0: { dueCount: 2, unseenCount: 0, masteredCount: 8, totalCount: 10 },
-      1: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-      2: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-    });
+    // All fluent → level=0.9 >= 0.7 → gate opens
+    const data = {
+      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      2: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
     // Sort unstarted ascending by string index — should pick index 1
     const opts = { sortUnstarted: (a: any, b: any) => a.string - b.string };
     const result = computeRecommendations(
-      sel,
+      mockSelector(data),
       [0, 1, 2],
-      stubGetItemIds,
+      makeGetItemIds(data),
       config,
       opts,
     );
@@ -197,26 +233,22 @@ describe('computeRecommendations', () => {
   });
 
   it('without sortUnstarted, uses first unstarted from getStringRecommendations order', () => {
-    const sel = mockSelector({
-      0: { dueCount: 2, unseenCount: 0, masteredCount: 8, totalCount: 10 },
-      1: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-      2: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-    });
-    // No sortUnstarted — uses unstarted array as returned by filter
+    const data = {
+      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      2: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
     const result = computeRecommendations(
-      sel,
+      mockSelector(data),
       [0, 1, 2],
-      stubGetItemIds,
+      makeGetItemIds(data),
       config,
       {},
     );
-    // Both 1 and 2 have same work, so order depends on the mock sort — both at top
-    // The first unstarted after filtering should be picked
     assert.ok(
       result.recommended.has(1) || result.recommended.has(2),
       'should expand to one of the unstarted items',
     );
-    // Only one unstarted should be added
     const unstartedCount = (result.recommended.has(1) ? 1 : 0) +
       (result.recommended.has(2) ? 1 : 0);
     assert.equal(unstartedCount, 1, 'should expand to exactly one unstarted');
@@ -227,15 +259,14 @@ describe('computeRecommendations', () => {
   // ---------------------------------------------------------------------------
 
   it('always recommends at least one item when data exists', () => {
-    // All items have same work (0 due + 0 unseen) — all mastered
-    const sel = mockSelector({
-      0: { dueCount: 0, unseenCount: 0, masteredCount: 10, totalCount: 10 },
-      1: { dueCount: 0, unseenCount: 0, masteredCount: 10, totalCount: 10 },
-    });
+    const data = {
+      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
+    };
     const result = computeRecommendations(
-      sel,
+      mockSelector(data),
       [0, 1],
-      stubGetItemIds,
+      makeGetItemIds(data),
       config,
       {},
     );
@@ -247,19 +278,39 @@ describe('computeRecommendations', () => {
   // Expansion at exact threshold boundary
   // ---------------------------------------------------------------------------
 
-  it('expands at exactly the threshold ratio', () => {
-    // 7 mastered out of 10 seen = 0.7, exactly at 0.7 threshold
-    const sel = mockSelector({
-      0: { dueCount: 3, unseenCount: 0, masteredCount: 7, totalCount: 10 },
-      1: { dueCount: 0, unseenCount: 10, masteredCount: 0, totalCount: 10 },
-    });
+  it('expands at exactly the threshold level', () => {
+    // All fluent → level=0.9. Use expansionThreshold=0.9 to test exact boundary
+    const data = {
+      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
     const result = computeRecommendations(
-      sel,
+      mockSelector(data),
       [0, 1],
-      stubGetItemIds,
-      config,
+      makeGetItemIds(data),
+      { expansionThreshold: 0.9 },
       {},
     );
     assert.ok(result.recommended.has(1), 'should expand at exact threshold');
+  });
+
+  it('does not expand just below the threshold level', () => {
+    // Working items produce level=0.3. Threshold=0.3 should pass,
+    // but threshold=0.31 should fail.
+    const data = {
+      0: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0, 1],
+      makeGetItemIds(data),
+      { expansionThreshold: 0.31 },
+      {},
+    );
+    assert.ok(
+      !result.recommended.has(1),
+      'should not expand below threshold',
+    );
   });
 });

@@ -97,9 +97,9 @@ export interface StorageAdapter {
 
 export type StringRecommendation = {
   string: number;
-  dueCount: number;
+  workingCount: number;
   unseenCount: number;
-  masteredCount: number;
+  fluentCount: number;
   totalCount: number;
 };
 
@@ -112,11 +112,14 @@ export interface AdaptiveSelector {
   getAutomaticity(itemId: string): number | null;
   getSpeedScore(itemId: string): number | null;
   getFreshness(itemId: string): number | null;
+  getLevelAutomaticity(
+    itemIds: string[],
+    percentile?: number,
+  ): { level: number; seen: number };
   getStringRecommendations(
     stringIndices: number[],
     getItemIds: (index: number) => string[],
   ): StringRecommendation[];
-  checkAllMastered(items: string[]): boolean;
   checkAllAutomatic(items: string[]): boolean;
   checkNeedsReview(items: string[]): boolean;
   updateConfig(newCfg: Partial<AdaptiveConfig>): void;
@@ -159,7 +162,7 @@ export type RecommendationResult = {
   recommended: Set<number>;
   enabled: Set<number> | null;
   consolidateIndices: number[];
-  consolidateDueCount: number;
+  consolidateWorkingCount: number;
   expandIndex: number | null;
   expandNewCount: number;
 };

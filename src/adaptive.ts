@@ -24,7 +24,7 @@ export const DEFAULT_CONFIG: AdaptiveConfig = {
   stabilityGrowthBase: 2.0, // multiplier on each correct answer
   stabilityDecayOnWrong: 0.3, // multiplier on wrong answer
   recallThreshold: 0.5, // P(recall) below this = "due"
-  expansionThreshold: 0.7, // fraction of seen items that must be retained before suggesting new strings
+  expansionThreshold: 0.7, // level automaticity (10th percentile) above which expansion is suggested
   speedBonusMax: 1.5, // fast answers grow stability up to this extra factor
   selfCorrectionThreshold: 1500, // ms — response time below this triggers self-correction
   automaticityTarget: 3000, // ms — response time at which speedScore ≈ 0.5
@@ -414,11 +414,27 @@ export function createAdaptiveSelector(
   }
 
   /**
+   * Compute "level automaticity" — the p-th percentile of per-item
+   * automaticity values (unseen items contribute 0).
+   */
+  function getLevelAutomaticity(
+    itemIds: string[],
+    percentile: number = 0.1,
+  ): { level: number; seen: number } {
+    if (itemIds.length === 0) return { level: 0, seen: 0 };
+    const values = itemIds.map((id) => getAutomaticity(id) ?? 0);
+    values.sort((a, b) => a - b);
+    const index = Math.max(0, Math.ceil(values.length * percentile) - 1);
+    const seen = values.filter((v) => v > 0).length;
+    return { level: values[index], seen };
+  }
+
+  /**
    * Recommend strings to review, sorted by needsWork descending.
    *
    * - unseenCount: items with no recall data (never answered correctly)
-   * - dueCount: items with established recall that dropped below threshold
-   * - masteredCount: items with recall >= threshold (currently retained)
+   * - workingCount: items seen but automaticity <= threshold (not yet automatic)
+   * - fluentCount: items with automaticity > threshold (truly automatic)
    */
   function getStringRecommendations(
     stringIndices: number[],
@@ -426,48 +442,36 @@ export function createAdaptiveSelector(
   ): StringRecommendation[] {
     const results = stringIndices.map((s) => {
       const items = getItemIds(s);
-      let dueCount = 0;
+      let workingCount = 0;
       let unseenCount = 0;
-      let masteredCount = 0;
+      let fluentCount = 0;
       for (const id of items) {
-        const recall = getRecall(id);
-        if (recall === null) {
+        const auto = getAutomaticity(id);
+        if (auto === null) {
           unseenCount++;
-        } else if (recall < cfg.recallThreshold) {
-          dueCount++;
+        } else if (auto > cfg.automaticityThreshold) {
+          fluentCount++;
         } else {
-          masteredCount++;
+          workingCount++;
         }
       }
       return {
         string: s,
-        dueCount,
+        workingCount,
         unseenCount,
-        masteredCount,
+        fluentCount,
         totalCount: items.length,
       };
     });
     results.sort((a, b) =>
-      (b.dueCount + b.unseenCount) - (a.dueCount + a.unseenCount)
+      (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount)
     );
     return results;
   }
 
   /**
-   * Check if all items have recall >= recallThreshold.
-   * Returns false if any item is unseen or below threshold.
-   */
-  function checkAllMastered(items: string[]): boolean {
-    for (const id of items) {
-      const recall = getRecall(id);
-      if (recall === null || recall < cfg.recallThreshold) return false;
-    }
-    return items.length > 0;
-  }
-
-  /**
    * Check if all items have automaticity > automaticityThreshold.
-   * This is the "fully automatic" bar — both remembered AND fast.
+   * This is the "fully automatic" bar — both fast AND recently practiced.
    * Matches the "Automatic (>80%)" band in the stats heatmap.
    */
   function checkAllAutomatic(items: string[]): boolean {
@@ -479,15 +483,15 @@ export function createAdaptiveSelector(
   }
 
   /**
-   * Check if previously-mastered material needs review.
+   * Check if previously-automatic material needs review.
    * Returns true only when ALL items had high prior skill (speedScore >= 0.5,
    * i.e. answering at or below the automaticity target, with at least 2
-   * correct answers as evidence) but at least one item's recall has since
-   * decayed below threshold.
+   * correct answers as evidence) but at least one item's automaticity has
+   * since dropped below the automatic threshold.
    */
   function checkNeedsReview(items: string[]): boolean {
     if (items.length === 0) return false;
-    let hasDueItem = false;
+    let hasDecayedItem = false;
     for (const id of items) {
       const stats = storage.getStats(id);
       if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) {
@@ -496,10 +500,12 @@ export function createAdaptiveSelector(
       const rc = getResponseCount(id);
       const speed = computeSpeedScore(stats.ewma, cfg, rc);
       if (speed == null || speed < 0.5) return false;
-      const recall = getRecall(id);
-      if (recall !== null && recall < cfg.recallThreshold) hasDueItem = true;
+      const auto = getAutomaticity(id);
+      if (auto !== null && auto <= cfg.automaticityThreshold) {
+        hasDecayedItem = true;
+      }
     }
-    return hasDueItem;
+    return hasDecayedItem;
   }
 
   function updateConfig(newCfg: Partial<AdaptiveConfig>): void {
@@ -519,8 +525,8 @@ export function createAdaptiveSelector(
     getAutomaticity,
     getSpeedScore,
     getFreshness,
+    getLevelAutomaticity,
     getStringRecommendations,
-    checkAllMastered,
     checkAllAutomatic,
     checkNeedsReview,
     updateConfig,
