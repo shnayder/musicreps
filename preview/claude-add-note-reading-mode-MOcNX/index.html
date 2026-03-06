@@ -1819,7 +1819,7 @@ button {
     </div>
     <div class="home-footer">
       <a class="home-settings-btn text-link" href="#settings" role="button">Settings</a>
-      <span class="version">e5524f add-note-reading-mode-MOcNX</span>
+      <span class="version">6b8371 add-note-reading-mode-MOcNX</span>
     </div>
   </div>
 
@@ -34289,6 +34289,7 @@ button {
   }
 
   // src/modes/note-reading/logic.ts
+  var LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
   function pitchToAbc(letter, octave) {
     if (octave >= 5) {
       return letter.toLowerCase() + "'".repeat(octave - 5);
@@ -34394,6 +34395,7 @@ ${abcNote}`;
       correctAnswer: q3.letter
     };
   }
+  var GRID_NOTES4 = LETTERS.map((n2) => ({ name: n2, displayName: n2 }));
   var GRID_COL_LABELS4 = [
     "T\u266E",
     "T\xB12",
@@ -34456,7 +34458,7 @@ ${abcNote}`;
     const engineSubmitRef = A2(() => {
     });
     const noteHandler = T2(
-      () => createNoteKeyHandler(
+      () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
         () => false
         // no accidentals — submit immediately on key press
@@ -34489,7 +34491,7 @@ ${abcNote}`;
       if (staffRef.current && currentQ) {
         renderStaff(staffRef.current, currentQ.abc);
       } else if (staffRef.current && !currentQ) {
-        staffRef.current.innerHTML = "";
+        staffRef.current.textContent = "";
       }
     }, [currentQ]);
     usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
@@ -34543,7 +34545,8 @@ ${abcNote}`;
               {
                 selector: ps.statsSel,
                 colLabels: GRID_COL_LABELS4,
-                getItemId: getGridItemId6
+                getItemId: getGridItemId6,
+                notes: GRID_NOTES4
               }
             ),
             /* @__PURE__ */ u3(StatsLegend, {})
