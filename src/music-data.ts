@@ -164,56 +164,6 @@ export const TRACKS: Track[] = [
   },
 ];
 
-// Expanded mode detail — shown in collapsible "About" section on practice tab.
-export const MODE_DETAIL: Record<string, string> = {
-  fretboard:
-    'Most guitarists know open-position notes and maybe the low E string. ' +
-    'This builds recall for every position on every string \u2014 so you can ' +
-    'read notation, find chord voicings up the neck, and improvise outside ' +
-    'familiar patterns.',
-  ukulele:
-    'Same idea as guitar fretboard \u2014 know every note, everywhere. ' +
-    'Once the whole neck is automatic, you can find any chord, read any ' +
-    'chart, and move between positions without guessing.',
-  speedTap: 'Knowing one place to play a C is useful. Knowing all of them is ' +
-    'what lets you choose the best position for the context \u2014 staying ' +
-    'in position, minimizing hand jumps, or finding a better voicing.',
-  noteSemitones:
-    'The chromatic scale has 12 notes, numbered 0\u201311. Knowing these ' +
-    'mappings is the foundation for interval arithmetic, transposition, and ' +
-    'understanding how chords and scales are built from distances.',
-  intervalSemitones:
-    'A minor 3rd is 3 semitones. A perfect 5th is 7. These numbers come ' +
-    'up constantly when building chords, analyzing harmony, or transposing. ' +
-    'This makes the mapping automatic so you stop counting.',
-  semitoneMath:
-    'Raw chromatic transposition: \u201CWhat\u2019s 4 semitones above G?\u201D ' +
-    'This is the building block for interval thinking, chord construction, ' +
-    'and modulation. Once it\u2019s instant, everything built on it gets faster.',
-  intervalMath:
-    '\u201CA major 3rd above D is F#.\u201D You use this when building chords, ' +
-    'harmonizing melodies, or transposing parts. Goes straight from interval ' +
-    'name to note \u2014 no semitone counting in between.',
-  keySignatures:
-    'When someone says \u201Cthis is in A major,\u201D you should instantly ' +
-    'know F#, C#, G#. No mental walk around the circle of fifths. Essential ' +
-    'for reading charts, transposing on the fly, and knowing why certain ' +
-    'notes sound outside.',
-  scaleDegrees:
-    '\u201CIn D major, A is the 5th.\u201D Scale degrees are how musicians ' +
-    'talk about harmony independent of key. Knowing them means you can follow ' +
-    '\u201Cplay the 3rd\u201D or \u201Cresolve to the root\u201D without ' +
-    'translating.',
-  diatonicChords:
-    '\u201CThe IV chord in Bb is Eb.\u201D Knowing diatonic chords lets you ' +
-    'predict progressions, spot borrowed chords, and communicate in Nashville ' +
-    'numbers or Roman numerals.',
-  chordSpelling:
-    '\u201CDm7 is D, F, A, C.\u201D You need this for building voicings, ' +
-    'knowing what notes to add or omit, and reading chord symbols when you ' +
-    'don\u2019t have shapes memorized.',
-};
-
 /** Look up a note by its semitone number (0–11). */
 export function noteByNum(num: number) {
   return NOTES[((num % 12) + 12) % 12];

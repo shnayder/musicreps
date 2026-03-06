@@ -32,7 +32,7 @@ export function ModeScreen(
 }
 
 // ---------------------------------------------------------------------------
-// ModeTopBar — back button + mode title + expandable detail
+// ModeTopBar — close button + mode title + description + before/after
 // ---------------------------------------------------------------------------
 
 export function ModeTopBar(

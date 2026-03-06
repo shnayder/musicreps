@@ -365,7 +365,7 @@ describe('ModeTopBar', () => {
     assert.ok(html.includes('\u00D7'));
   });
 
-  it('hides back button when showBack is false', () => {
+  it('hides close button when showBack is false', () => {
     const html = render(<ModeTopBar title='Test' showBack={false} />);
     assert.ok(html.includes('mode-top-bar'));
     assert.ok(html.includes('mode-title'));

@@ -17,15 +17,23 @@ import type { Track } from '../music-data.ts';
 const STORAGE_KEY = 'selectedTracks';
 
 function loadSelectedTracks(): Set<string> {
+  const allIds = new Set(TRACKS.map((t) => t.id));
+  const alwaysIds = TRACKS.filter((t) => t.alwaysSelected).map((t) => t.id);
+
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const arr = JSON.parse(raw);
-      if (Array.isArray(arr) && arr.length > 0) return new Set(arr);
+      if (Array.isArray(arr) && arr.length > 0) {
+        // Sanitize: keep only known track IDs, ensure alwaysSelected present
+        const loaded = new Set(arr.filter((id: string) => allIds.has(id)));
+        for (const id of alwaysIds) loaded.add(id);
+        if (loaded.size > 0) return loaded;
+      }
     }
   } catch (_) { /* expected */ }
   // Default: all tracks selected
-  return new Set(TRACKS.map((t) => t.id));
+  return new Set(allIds);
 }
 
 function saveSelectedTracks(selected: Set<string>): void {
