@@ -222,37 +222,51 @@ describe('isValidIntervalInput', () => {
   });
 
   it('rejects invalid input', () => {
-    for (const s of ['', 'C', 'x2', 'm0', 'P9', 'MM', '12', 'minor']) {
+    for (const s of ['', 'C', 'x2', 'm0', 'P9', 'p5', 'MM', '12', 'minor']) {
       assert.ok(!isValidIntervalInput(s), `should reject: ${s}`);
     }
   });
 });
 
 describe('isValidKeysigInput', () => {
-  it('accepts valid key signatures', () => {
-    assert.ok(isValidKeysigInput('0'));
-    for (let i = 1; i <= 7; i++) {
-      assert.ok(isValidKeysigInput(i + '#'), i + '#');
-      assert.ok(isValidKeysigInput(i + 'b'), i + 'b');
+  it('accepts all key signature labels from MAJOR_KEYS', () => {
+    const expected = [
+      '0',
+      '1#',
+      '2#',
+      '3#',
+      '4#',
+      '5#',
+      '6#',
+      '1b',
+      '2b',
+      '3b',
+      '4b',
+      '5b',
+    ];
+    for (const s of expected) {
+      assert.ok(isValidKeysigInput(s), s);
     }
   });
 
-  it('rejects invalid input', () => {
-    for (const s of ['', '8#', '0#', '8b', '0b', 'C', '##', '1', '12']) {
+  it('rejects labels not in MAJOR_KEYS', () => {
+    for (const s of ['', '7#', '7b', '8#', '0#', '6b', 'C', '##', '1', '12']) {
       assert.ok(!isValidKeysigInput(s), `should reject: ${s}`);
     }
   });
 });
 
 describe('isValidNumeralInput', () => {
-  it('accepts standard Roman numerals', () => {
-    for (const s of ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii', 'vii°']) {
+  it('accepts exactly the 7 diatonic numerals', () => {
+    for (const s of ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii\u00B0']) {
       assert.ok(isValidNumeralInput(s), s);
     }
   });
 
-  it('rejects invalid input', () => {
-    for (const s of ['', '1', 'X', 'abc', 'IIIIV', 'viiii']) {
+  it('rejects everything else', () => {
+    for (
+      const s of ['', '1', 'X', 'abc', 'vii', 'VII', 'VIII', 'IIII', 'viiii']
+    ) {
       assert.ok(!isValidNumeralInput(s), `should reject: ${s}`);
     }
   });

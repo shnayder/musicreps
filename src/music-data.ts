@@ -210,12 +210,22 @@ export function noteMatchesInput(note: Note, input: string) {
   return false;
 }
 
-/** Valid note input pattern: letter A-G, optional #/b/s suffix. */
-const NOTE_INPUT_RE = /^[a-gA-G][#bBsS]?$/;
+/** All strings a user could type that represent a note name.
+ *  Built from NOTES.accepts plus 's' sharp alias (e.g. "cs" for "c#"). */
+const VALID_NOTE_INPUTS: ReadonlySet<string> = new Set(
+  NOTES.flatMap((n) => {
+    const inputs = [...n.accepts];
+    // Add 's' alias for each sharp accept (e.g. "c#" → "cs")
+    for (const a of n.accepts) {
+      if (a.endsWith('#')) inputs.push(a.slice(0, -1) + 's');
+    }
+    return inputs;
+  }),
+);
 
-/** Check if input looks like a note name (for input validation). */
+/** Check if input is a valid note name (case-insensitive). */
 export function isValidNoteInput(input: string): boolean {
-  return NOTE_INPUT_RE.test(input);
+  return VALID_NOTE_INPUTS.has(input.toLowerCase());
 }
 
 /** Check if input is a valid integer in [min, max]. */
@@ -229,28 +239,44 @@ export function isValidNumberInput(
   return n >= min && n <= max;
 }
 
-/** Valid interval abbreviation pattern: m2, M3, P4, P5, TT, A4, d5, P8, etc. */
-const INTERVAL_INPUT_RE = /^[mMPAdTp][2-8Tt]$/;
+/** All valid interval abbreviations, derived from INTERVALS data. */
+const VALID_INTERVAL_INPUTS: ReadonlySet<string> = new Set(
+  INTERVALS.flatMap((i) => [i.abbrev, ...(i.altAbbrevs || [])]),
+);
 
-/** Check if input looks like an interval abbreviation. */
+/** Check if input is a valid interval abbreviation (case-sensitive). */
 export function isValidIntervalInput(input: string): boolean {
-  return INTERVAL_INPUT_RE.test(input);
+  return VALID_INTERVAL_INPUTS.has(input);
 }
 
-/** Valid key signature input: "0", "1#"–"7#", "1b"–"7b". */
-const KEYSIG_INPUT_RE = /^(0|[1-7][#bB])$/;
+/** Valid key signature labels, derived from MAJOR_KEYS at module init. */
+let VALID_KEYSIG_INPUTS: ReadonlySet<string>;
 
-/** Check if input looks like a key signature label. */
+function getValidKeysigInputs(): ReadonlySet<string> {
+  if (!VALID_KEYSIG_INPUTS) {
+    VALID_KEYSIG_INPUTS = new Set(MAJOR_KEYS.map((k) => keySignatureLabel(k)));
+  }
+  return VALID_KEYSIG_INPUTS;
+}
+
+/** Check if input is a valid key signature label. */
 export function isValidKeysigInput(input: string): boolean {
-  return KEYSIG_INPUT_RE.test(input);
+  return getValidKeysigInputs().has(input);
 }
 
-/** Valid numeral input: I, ii, iii, IV, V, vi, vii, vii° etc. */
-const NUMERAL_INPUT_RE = /^[IiVv]{1,4}°?$/;
+/** Valid Roman numeral inputs, derived from DIATONIC_CHORDS. */
+let VALID_NUMERAL_INPUTS: ReadonlySet<string>;
 
-/** Check if input looks like a Roman numeral. */
+function getValidNumeralInputs(): ReadonlySet<string> {
+  if (!VALID_NUMERAL_INPUTS) {
+    VALID_NUMERAL_INPUTS = new Set(DIATONIC_CHORDS.map((c) => c.numeral));
+  }
+  return VALID_NUMERAL_INPUTS;
+}
+
+/** Check if input is a valid Roman numeral. */
 export function isValidNumeralInput(input: string): boolean {
-  return NUMERAL_INPUT_RE.test(input);
+  return getValidNumeralInputs().has(input);
 }
 
 /** Check if a user input matches an interval abbreviation (case-sensitive). */
