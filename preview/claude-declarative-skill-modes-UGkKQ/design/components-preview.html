@@ -2369,6 +2369,18 @@ button {
     const [sharp, flat] = displayName.split("/");
     return useFlats ? flat : sharp;
   }
+  var VALID_NOTE_INPUTS = new Set(
+    NOTES.flatMap((n2) => {
+      const inputs = [...n2.accepts];
+      for (const a3 of n2.accepts) {
+        if (a3.endsWith("#")) inputs.push(a3.slice(0, -1) + "s");
+      }
+      return inputs;
+    })
+  );
+  var VALID_INTERVAL_INPUTS = new Set(
+    INTERVALS.flatMap((i3) => [i3.abbrev, ...i3.altAbbrevs || []])
+  );
   var KEYSIG_LABELS = [
     "0",
     "1#",

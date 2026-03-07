@@ -1933,7 +1933,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="07024d declarative-skill-modes-UGkKQ"></div>
+  <div class="home-screen" id="home-screen" data-version="f41f7e declarative-skill-modes-UGkKQ"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -4026,26 +4026,48 @@ button {
     }
     return false;
   }
-  var NOTE_INPUT_RE = /^[a-gA-G][#bBsS]?$/;
+  var VALID_NOTE_INPUTS = new Set(
+    NOTES.flatMap((n2) => {
+      const inputs = [...n2.accepts];
+      for (const a3 of n2.accepts) {
+        if (a3.endsWith("#")) inputs.push(a3.slice(0, -1) + "s");
+      }
+      return inputs;
+    })
+  );
   function isValidNoteInput(input) {
-    return NOTE_INPUT_RE.test(input);
+    return VALID_NOTE_INPUTS.has(input.toLowerCase());
   }
   function isValidNumberInput(input, min, max) {
     if (!/^\d{1,2}$/.test(input)) return false;
     const n2 = parseInt(input, 10);
     return n2 >= min && n2 <= max;
   }
-  var INTERVAL_INPUT_RE = /^[mMPAdTp][2-8Tt]$/;
+  var VALID_INTERVAL_INPUTS = new Set(
+    INTERVALS.flatMap((i3) => [i3.abbrev, ...i3.altAbbrevs || []])
+  );
   function isValidIntervalInput(input) {
-    return INTERVAL_INPUT_RE.test(input);
+    return VALID_INTERVAL_INPUTS.has(input);
   }
-  var KEYSIG_INPUT_RE = /^(0|[1-7][#bB])$/;
+  var VALID_KEYSIG_INPUTS;
+  function getValidKeysigInputs() {
+    if (!VALID_KEYSIG_INPUTS) {
+      VALID_KEYSIG_INPUTS = new Set(MAJOR_KEYS.map((k3) => keySignatureLabel(k3)));
+    }
+    return VALID_KEYSIG_INPUTS;
+  }
   function isValidKeysigInput(input) {
-    return KEYSIG_INPUT_RE.test(input);
+    return getValidKeysigInputs().has(input);
   }
-  var NUMERAL_INPUT_RE = /^[IiVv]{1,4}°?$/;
+  var VALID_NUMERAL_INPUTS;
+  function getValidNumeralInputs() {
+    if (!VALID_NUMERAL_INPUTS) {
+      VALID_NUMERAL_INPUTS = new Set(DIATONIC_CHORDS.map((c3) => c3.numeral));
+    }
+    return VALID_NUMERAL_INPUTS;
+  }
   function isValidNumeralInput(input) {
-    return NUMERAL_INPUT_RE.test(input);
+    return getValidNumeralInputs().has(input);
   }
   function intervalMatchesInput(interval, input) {
     if (input === interval.abbrev) return true;
