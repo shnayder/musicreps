@@ -35,7 +35,7 @@ src/
   html-helpers.ts        # Build-time HTML: mode scaffold, fretboard SVG
   fretboard.ts           # Build-time SVG: fret/string/note generation
   adaptive.ts            # Adaptive question selector
-  music-data.ts          # Shared music theory data
+  music-data.ts          # Shared music theory data + input validators
   mode-utils.ts          # Shared ID parsing/building, stats row helpers
   quiz-engine-state.ts   # Pure engine state transitions
   quiz-engine.ts         # Keyboard handlers, calibration utilities
@@ -48,11 +48,15 @@ src/
   types.ts               # Shared type definitions
   styles.css             # Inlined CSS
   *_test.ts              # Tests (node:test)
+  declarative/
+    types.ts             # ModeDefinition, ButtonsDef, ScopeDef, StatsDef
+    generic-mode.tsx     # GenericMode: interprets ModeDefinition → full UI
   modes/
     {name}/
       logic.ts            # Pure mode logic: questions, answers, items, groups
       logic_test.ts        # Tests for mode logic
-      {name}-mode.tsx      # Preact mode component
+      definition.ts        # Declarative mode definition (9 modes)
+      {name}-mode.tsx      # Hand-written Preact component (2 modes)
   ui/
     mode-screen.tsx       # Structural layout components (ModeScreen, QuizArea, etc.)
     buttons.tsx           # Answer button components (NoteButtons, NumberButtons, etc.)
@@ -88,14 +92,17 @@ Single-page app using Preact for UI components. Source files are ES modules
 bundled by esbuild (with automatic JSX transform) into a single IIFE `<script>`
 at build time. Key patterns:
 
-- **Preact Mode Components** — each quiz mode is a single `.tsx` file (~100-300
-  lines) composing shared UI components with mode-specific logic. Registered
-  with navigation via `{ init, activate, deactivate }` interface.
+- **Declarative Modes** — 9 of 11 modes use `ModeDefinition<Q>` (20-50 lines of
+  data) interpreted by `GenericMode`, which handles all hook composition,
+  rendering, and keyboard input. Modes needing custom rendering (e.g., fretboard
+  SVG) provide a `useController` hook. 2 specialized modes (Chord Spelling,
+  Speed Tap) remain as hand-written components.
 - **Shared Hooks** — `useQuizEngine` (engine lifecycle), `useLearnerModel`
   (adaptive selector + storage), `useGroupScope` (group scope + recommendations
   for 6 modes), `useModeLifecycle` (navigation activate/deactivate for all
   modes), `useScopeState` (low-level scope persistence), `useKeyHandler`
-  (keyboard events). Each mode composes these hooks.
+  (keyboard events). GenericMode composes these automatically; hand-written
+  modes compose them directly.
 - **Shared UI Components** — `ModeScreen`, `QuizArea`, `PracticeCard`,
   `StatsTable`/`StatsGrid`, `NoteButtons`, `GroupToggles`, etc. Emit the same
   CSS class names as the build-time HTML for style parity.

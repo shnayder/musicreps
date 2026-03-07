@@ -23,30 +23,6 @@ function loadScope(spec: ScopeSpec): ScopeState {
     return { kind: 'groups', enabledGroups: enabled };
   }
 
-  if (spec.kind === 'fretboard') {
-    const inst = spec.instrument;
-    let enabledStrings = new Set([inst.defaultString]);
-    const saved = localStorage.getItem(
-      inst.storageNamespace + '_enabledStrings',
-    );
-    if (saved) {
-      try {
-        enabledStrings = new Set(JSON.parse(saved));
-      } catch (_) { /* expected */ }
-    }
-    let noteFilter: NoteFilter = 'natural';
-    const savedFilter = localStorage.getItem(
-      inst.storageNamespace + '_noteFilter',
-    );
-    if (
-      savedFilter === 'natural' || savedFilter === 'sharps-flats' ||
-      savedFilter === 'all' || savedFilter === 'none'
-    ) {
-      noteFilter = savedFilter;
-    }
-    return { kind: 'fretboard', enabledStrings, noteFilter };
-  }
-
   if (spec.kind === 'note-filter') {
     let noteFilter: NoteFilter = 'natural';
     const saved = localStorage.getItem(spec.storageKey);
@@ -68,18 +44,6 @@ function saveScope(spec: ScopeSpec, scope: ScopeState): void {
       spec.storageKey,
       JSON.stringify([...scope.enabledGroups]),
     );
-  } else if (spec.kind === 'fretboard' && scope.kind === 'fretboard') {
-    const inst = spec.instrument;
-    localStorage.setItem(
-      inst.storageNamespace + '_enabledStrings',
-      JSON.stringify([...scope.enabledStrings]),
-    );
-    try {
-      localStorage.setItem(
-        inst.storageNamespace + '_noteFilter',
-        scope.noteFilter,
-      );
-    } catch (_) { /* expected */ }
   } else if (spec.kind === 'note-filter' && scope.kind === 'note-filter') {
     try {
       localStorage.setItem(spec.storageKey, scope.noteFilter);
@@ -93,7 +57,6 @@ function saveScope(spec: ScopeSpec, scope: ScopeState): void {
 
 export type ScopeActions = {
   toggleGroup: (index: number) => void;
-  toggleString: (index: number) => void;
   setNoteFilter: (filter: NoteFilter) => void;
   /** Replace scope state directly (e.g., applying recommendations). */
   setScope: (scope: ScopeState) => void;
@@ -125,36 +88,8 @@ export function useScopeState(
     });
   }, [spec]);
 
-  const toggleString = useCallback((index: number) => {
-    setScopeRaw((prev) => {
-      if (prev.kind !== 'fretboard') return prev;
-      const next = new Set(prev.enabledStrings);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      const updated: ScopeState = {
-        kind: 'fretboard',
-        enabledStrings: next,
-        noteFilter: prev.noteFilter,
-      };
-      saveScope(spec, updated);
-      return updated;
-    });
-  }, [spec]);
-
   const setNoteFilter = useCallback((filter: NoteFilter) => {
     setScopeRaw((prev) => {
-      if (prev.kind === 'fretboard') {
-        const updated: ScopeState = {
-          kind: 'fretboard',
-          enabledStrings: prev.enabledStrings,
-          noteFilter: filter,
-        };
-        saveScope(spec, updated);
-        return updated;
-      }
       if (prev.kind === 'note-filter') {
         const updated: ScopeState = { kind: 'note-filter', noteFilter: filter };
         saveScope(spec, updated);
@@ -164,5 +99,5 @@ export function useScopeState(
     });
   }, [spec]);
 
-  return [scope, { toggleGroup, toggleString, setNoteFilter, setScope }];
+  return [scope, { toggleGroup, setNoteFilter, setScope }];
 }

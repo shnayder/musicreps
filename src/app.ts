@@ -14,16 +14,23 @@ import { createSettingsModal } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
 import type { ModeHandle } from './types.ts';
 import { HomeScreen } from './ui/home-screen.tsx';
-import { NoteSemitonesMode } from './modes/note-semitones/note-semitones-mode.tsx';
-import { IntervalSemitonesMode } from './modes/interval-semitones/interval-semitones-mode.tsx';
-import { SemitoneMathMode } from './modes/semitone-math/semitone-math-mode.tsx';
-import { IntervalMathMode } from './modes/interval-math/interval-math-mode.tsx';
-import { KeySignaturesMode } from './modes/key-signatures/key-signatures-mode.tsx';
-import { ScaleDegreesMode } from './modes/scale-degrees/scale-degrees-mode.tsx';
-import { DiatonicChordsMode } from './modes/diatonic-chords/diatonic-chords-mode.tsx';
-import { ChordSpellingMode } from './modes/chord-spelling/chord-spelling-mode.tsx';
-import { FretboardMode } from './modes/fretboard/fretboard-mode.tsx';
+
+// Declarative mode definitions + GenericMode
+import { GenericMode } from './declarative/generic-mode.tsx';
+import type { ModeDefinition } from './declarative/types.ts';
+import { NOTE_SEMITONES_DEF } from './modes/note-semitones/definition.ts';
+import { INTERVAL_SEMITONES_DEF } from './modes/interval-semitones/definition.ts';
+import { SEMITONE_MATH_DEF } from './modes/semitone-math/definition.ts';
+import { INTERVAL_MATH_DEF } from './modes/interval-math/definition.ts';
+import { KEY_SIGNATURES_DEF } from './modes/key-signatures/definition.ts';
+import { SCALE_DEGREES_DEF } from './modes/scale-degrees/definition.ts';
+import { DIATONIC_CHORDS_DEF } from './modes/diatonic-chords/definition.ts';
+
+import { createFretboardDef } from './modes/fretboard/definition.tsx';
+
+// Hand-written modes (too specialized for GenericMode)
 import { SpeedTapMode } from './modes/speed-tap/speed-tap-mode.tsx';
+import { ChordSpellingMode } from './modes/chord-spelling/chord-spelling-mode.tsx';
 
 // Enable :active pseudo-class on iOS Safari. WebKit doesn't fire :active on
 // touch unless the document has a touchstart listener.
@@ -61,28 +68,25 @@ function registerPreactMode(id: string, name: string, Component: any) {
   });
 }
 
-// Fretboard modes need extra instrument prop
-function registerFretboardMode(
-  id: string,
-  name: string,
-  instrument: typeof GUITAR,
-) {
+// Declarative modes — GenericMode interprets the definition
+// deno-lint-ignore no-explicit-any
+function registerDeclarativeMode(def: ModeDefinition<any>) {
   let handle: ModeHandle | null = null;
-  const cont = document.getElementById('mode-' + id)!;
-  nav.registerMode(id, {
-    name,
+  const container = document.getElementById('mode-' + def.id)!;
+  nav.registerMode(def.id, {
+    name: def.name,
     init() {
-      cont.textContent = ''; // Clear build-time HTML before Preact takes over
+      container.textContent = '';
       render(
-        h(FretboardMode, {
-          instrument,
-          container: cont,
+        h(GenericMode, {
+          def,
+          container,
           navigateHome: () => nav.navigateHome(),
           onMount: (h: ModeHandle) => {
             handle = h;
           },
         }),
-        cont,
+        container,
       );
     },
     activate() {
@@ -94,20 +98,18 @@ function registerFretboardMode(
   });
 }
 
-registerFretboardMode('fretboard', 'Guitar Fretboard', GUITAR);
-registerFretboardMode('ukulele', 'Ukulele Fretboard', UKULELE);
+// Declarative modes
+registerDeclarativeMode(createFretboardDef(GUITAR));
+registerDeclarativeMode(createFretboardDef(UKULELE));
+registerDeclarativeMode(NOTE_SEMITONES_DEF);
+registerDeclarativeMode(INTERVAL_SEMITONES_DEF);
+registerDeclarativeMode(SEMITONE_MATH_DEF);
+registerDeclarativeMode(INTERVAL_MATH_DEF);
+registerDeclarativeMode(KEY_SIGNATURES_DEF);
+registerDeclarativeMode(SCALE_DEGREES_DEF);
+registerDeclarativeMode(DIATONIC_CHORDS_DEF);
 
-registerPreactMode('noteSemitones', 'Note \u2194 Semitones', NoteSemitonesMode);
-registerPreactMode(
-  'intervalSemitones',
-  'Interval \u2194 Semitones',
-  IntervalSemitonesMode,
-);
-registerPreactMode('semitoneMath', 'Semitone Math', SemitoneMathMode);
-registerPreactMode('intervalMath', 'Interval Math', IntervalMathMode);
-registerPreactMode('keySignatures', 'Key Signatures', KeySignaturesMode);
-registerPreactMode('scaleDegrees', 'Scale Degrees', ScaleDegreesMode);
-registerPreactMode('diatonicChords', 'Diatonic Chords', DiatonicChordsMode);
+// Hand-written modes (sequential or custom response interface)
 registerPreactMode('chordSpelling', 'Chord Spelling', ChordSpellingMode);
 registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);
 

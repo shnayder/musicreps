@@ -5,7 +5,6 @@
 
 import {
   degreeAnswerButtons,
-  fretboardIdleHTML,
   fretboardSVG,
   intervalAnswerButtons,
   keysigAnswerButtons,
@@ -38,11 +37,9 @@ function modeScreens(): string {
 ${
     modeScreen('fretboard', {
       modeName: 'Guitar Fretboard',
-      idleHTML: fretboardIdleHTML({
-        stringNames: ['e', 'B', 'G', 'D', 'A', 'E'],
-        defaultString: 5,
-        id: 'fretboard',
-        fretboardSVG: fretboardSVG({
+      idleHTML: tabbedIdleHTML({
+        practiceScope: DISTANCE_TOGGLES,
+        progressContent: fretboardSVG({
           stringCount: 6,
           fretCount: 13,
           fretMarkers: [3, 5, 7, 9, 12],
@@ -63,11 +60,9 @@ ${
 ${
     modeScreen('ukulele', {
       modeName: 'Ukulele Fretboard',
-      idleHTML: fretboardIdleHTML({
-        stringNames: ['A', 'E', 'C', 'G'],
-        defaultString: 2,
-        id: 'ukulele',
-        fretboardSVG: fretboardSVG({
+      idleHTML: tabbedIdleHTML({
+        practiceScope: DISTANCE_TOGGLES,
+        progressContent: fretboardSVG({
           stringCount: 4,
           fretCount: 13,
           fretMarkers: [3, 5, 7, 10, 12],
