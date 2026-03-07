@@ -258,7 +258,10 @@ The `checkAnswer` functions already handle free-text input gracefully:
 - No crashes on empty string, random text, or partial input
 
 Optional `validateInput` on the mode definition can reject garbage (typos,
-partial input) with a shake animation instead of scoring it wrong.
+partial input) with a shake animation instead of scoring it wrong. Validators
+use exact `Set` lookups derived from the source data arrays — never regex
+approximations. For example, `isValidIntervalInput` checks membership in
+`Set(['m2', 'M2', 'm3', ..., 'TT', 'A4', 'd5'])` built from `INTERVALS`.
 
 ## Impact analysis
 
@@ -316,19 +319,25 @@ only need to specify what's different.
 
 Each step can be done independently and verified with `deno task ok`.
 
-## Prototype
+## Implementation
 
-This document is accompanied by a working prototype:
-- `src/declarative/types.ts` — ModeDefinition, ButtonsDef, ScopeDef, StatsDef
+The declarative system is live with 9 of 11 modes using `GenericMode`:
+
+**Framework:**
+- `src/declarative/types.ts` — ModeDefinition, ModeController, ButtonsDef, ScopeDef, StatsDef
 - `src/declarative/generic-mode.tsx` — GenericMode + AnswerInput component
-- `src/modes/semitone-math/definition.ts` — unidirectional mode (35 lines)
-- `src/modes/note-semitones/definition.ts` — bidirectional mode (40 lines)
 
-The prototype proves the concept works for both unidirectional (note-only) and
-bidirectional (note + number) modes. Keyboard input uses a text field + Enter,
-which eliminated the 165-line keyboard handler factory from the first iteration.
+**Declarative modes (registered via `registerDeclarativeMode`):**
+- Guitar Fretboard, Ukulele Fretboard — use `ModeController` for SVG rendering
+- Note Semitones, Interval Semitones — bidirectional, no scope
+- Semitone Math, Interval Math — unidirectional, group scope
+- Key Signatures, Scale Degrees, Diatonic Chords — bidirectional, group scope
 
-**Status:** This PR lands the framework and example definitions only. No
-existing modes are wired through `GenericMode` yet — the definitions serve as
-proof-of-concept references. Follow-up PRs will migrate modes one at a time,
-starting with semitone-math and note-semitones.
+**Hand-written modes (registered via `registerPreactMode`):**
+- Chord Spelling — sequential note entry state machine
+- Speed Tap — fretboard-as-response interface
+
+**Input validation:** Validators use exact `Set` lookups derived from the source
+data arrays (`NOTES`, `INTERVALS`, `MAJOR_KEYS`, `DIATONIC_CHORDS`) rather than
+regex approximations. This ensures the validator accepts exactly the strings
+that `checkAnswer` can score correctly.
