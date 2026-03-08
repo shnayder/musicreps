@@ -38,6 +38,8 @@
   --color-recommended-text: hsl(44, 80%, 25%);
   --color-highlight: #eab308;
   /* UI accents */
+  --color-accent: hsl(220, 65%, 50%);
+  --color-accent-muted: hsl(220, 40%, 65%);
   --color-toggle-active: hsl(0, 0%, 32%);
   /* Text (warm neutrals) */
   --color-text: hsl(30, 5%, 20%);
@@ -1277,6 +1279,9 @@ button {
   cursor: pointer;
   padding: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1310,6 +1315,75 @@ button {
 }
 .note-btn.hidden {
   display: none;
+}
+
+/* --- Split note buttons (base note + accidental two-step input) --- */
+.split-note-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 400px;
+  margin: var(--space-3) auto;
+}
+.split-note-row-base {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+  width: 100%;
+}
+.split-note-row-accidentals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  width: 60%;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.split-note-row-accidentals.split-note-acc-hidden {
+  opacity: 0.3;
+  pointer-events: none;
+}
+.split-note-btn {
+  min-width: 0;
+  height: 48px;
+  font-size: var(--text-md);
+  font-weight: 500;
+  border: 1.5px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, border-color 0.1s, opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.split-note-btn:active {
+  background: var(--color-surface-pressed);
+  transform: scale(0.97);
+}
+.split-note-btn:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+@media (hover: hover) {
+  .split-note-btn:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-text);
+  }
+}
+.split-note-pending {
+  border-color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+.split-note-dimmed {
+  opacity: 0.4;
+}
+.split-note-acc {
+  background: var(--color-surface-accent);
 }
 
 /* --- Quiz prompt (text modes) --- */
@@ -1391,6 +1465,9 @@ button {
   cursor: pointer;
   padding: 0 var(--space-2);
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1786,28 +1863,52 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
+  min-width: 2.5rem;
+  padding: 0 0.25rem;
   height: 2.5rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-md);
+  border: none;
+  border-bottom: 2px solid var(--color-border);
+  border-radius: 0;
+  font-size: var(--text-lg);
   font-weight: 600;
-  background: var(--color-surface);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  background: transparent;
+  color: var(--color-text-muted);
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 .chord-slot.active {
-  border-color: var(--color-focus);
-  background: var(--color-focus-bg);
+  border-bottom-color: var(--color-accent);
+}
+.chord-slot.filled {
+  border-bottom-color: var(--color-text);
+  color: var(--color-text);
 }
 .chord-slot.correct {
-  border-color: var(--color-success);
-  background: var(--color-success-bg);
+  border-bottom-color: var(--color-success);
   color: var(--color-success-text);
 }
 .chord-slot.wrong {
-  border-color: var(--color-error);
-  background: var(--color-error-bg);
+  border-bottom-color: var(--color-error);
   color: var(--color-error-text);
+}
+.chord-slots-container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.chord-correct-row {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+.chord-correct-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  padding: 0 0.25rem;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-success-text);
 }
 
 /* --- Focus-visible (keyboard navigation) --- */
@@ -1847,7 +1948,8 @@ button {
 
 /* Answer buttons */
 .answer-btn:focus-visible,
-.note-btn:focus-visible {
+.note-btn:focus-visible,
+.split-note-btn:focus-visible {
   outline-offset: -2px;
 }
 
@@ -1928,7 +2030,7 @@ button {
   /* .quiz-controls margin-top:auto pushes controls toward the bottom;
      extra padding so they clear the screen edge on mobile. */
   .quiz-area {
-    padding-bottom: var(--space-4);
+    padding: 0 var(--space-4) var(--space-4);
   }
 
   .next-btn {
@@ -1945,7 +2047,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#747"></div>
+  <div class="home-screen" id="home-screen" data-version="#761"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -4849,6 +4951,12 @@ button {
         if (noteName) btn.textContent = displayNote(noteName);
       }
     );
+    container.querySelectorAll(".split-note-base").forEach(
+      function(btn) {
+        const noteName = btn.dataset.note;
+        if (noteName) btn.textContent = displayNote(noteName);
+      }
+    );
     container.querySelectorAll(".string-toggle").forEach(
       function(btn) {
         const stringNote = btn.dataset.stringNote;
@@ -6742,6 +6850,85 @@ button {
         n2
       );
     }) });
+  }
+  var ACCIDENTALS_SINGLE = [
+    { label: "\u266D", suffix: "b" },
+    // ♭
+    { label: "\u266E", suffix: "" },
+    // ♮ (natural)
+    { label: "\u266F", suffix: "#" }
+    // ♯
+  ];
+  function SplitNoteButtons({ onAnswer, sequential, pendingNote, answered }) {
+    const [pendingBase, setPendingBase] = d2(null);
+    const onAnswerRef = A2(onAnswer);
+    onAnswerRef.current = onAnswer;
+    y2(() => {
+      if (pendingNote || answered) setPendingBase(null);
+    }, [pendingNote, answered]);
+    const handleBase = q2((note) => {
+      setPendingBase((prev) => {
+        if (prev === note) {
+          onAnswerRef.current(note);
+          return null;
+        }
+        if (prev && sequential) {
+          onAnswerRef.current(prev);
+        }
+        return note;
+      });
+    }, [sequential]);
+    const pendingNoteRef = A2(pendingNote);
+    pendingNoteRef.current = pendingNote;
+    const handleAccidental = q2((suffix) => {
+      setPendingBase((prev) => {
+        const base = prev ?? pendingNoteRef.current;
+        if (!base) return null;
+        onAnswerRef.current(suffix ? base + suffix : base);
+        return null;
+      });
+    }, []);
+    const effective = pendingBase ?? pendingNote ?? null;
+    const showAccidentals = effective !== null && !answered;
+    return /* @__PURE__ */ u3("div", { class: "split-note-buttons", children: [
+      /* @__PURE__ */ u3("div", { class: "split-note-row-base", children: NATURAL_NOTES.map((n2) => {
+        let cls = "split-note-btn split-note-base";
+        if (effective === n2) cls += " split-note-pending";
+        else if (effective) cls += " split-note-dimmed";
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            "data-note": n2,
+            disabled: answered,
+            onClick: () => handleBase(n2),
+            children: displayNote(n2)
+          },
+          n2
+        );
+      }) }),
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "split-note-row-accidentals" + (showAccidentals ? "" : " split-note-acc-hidden"),
+          children: ACCIDENTALS_SINGLE.map(({ label, suffix }) => /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              tabIndex: 0,
+              class: "split-note-btn split-note-acc",
+              "data-accidental": suffix || "natural",
+              disabled: !showAccidentals,
+              onClick: () => handleAccidental(suffix),
+              children: label
+            },
+            label
+          ))
+        }
+      )
+    ] });
   }
   function PianoNoteButtons({ onAnswer, hideAccidentals, narrowing, feedback }) {
     return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
@@ -9564,41 +9751,53 @@ button {
     const item = parseItem(itemId);
     const idx = state.entries.length;
     if (idx >= item.tones.length) {
-      const allCorrect = state.entries.every((e3) => e3.correct);
-      return {
-        status: "complete",
-        correct: allCorrect,
-        correctAnswer: item.tones.map(displayNote).join(" "),
-        state
-      };
+      return { status: "complete", state };
     }
-    const expected = item.tones[idx];
-    if (spelledNoteMatchesSemitone(expected, input)) {
-      input = expected;
-    }
-    const isCorrect = spelledNoteMatchesInput(expected, input);
     const entries = [
       ...state.entries,
-      {
-        input,
-        display: isCorrect ? displayNote(expected) : displayNote(input),
-        correct: isCorrect
-      }
+      { input, display: displayNote(input), correct: null }
     ];
     const newState = {
       expectedCount: item.tones.length,
       entries
     };
     if (entries.length === item.tones.length) {
-      const allCorrect = entries.every((e3) => e3.correct);
-      return {
-        status: "complete",
-        correct: allCorrect,
-        correctAnswer: item.tones.map(displayNote).join(" "),
-        state: newState
-      };
+      return { status: "complete", state: newState };
     }
     return { status: "continue", state: newState };
+  }
+  function evaluateSequential(itemId, state) {
+    const item = parseItem(itemId);
+    const evaluatedEntries = state.entries.map((entry, i3) => {
+      const expected = item.tones[i3];
+      const isCorrect = expected !== void 0 && spelledNoteMatchesInput(expected, entry.input);
+      return {
+        input: entry.input,
+        display: isCorrect ? displayNote(expected) : displayNote(entry.input),
+        correct: isCorrect
+      };
+    });
+    const allCorrect = evaluatedEntries.every((e3) => e3.correct);
+    const correctAnswer = item.tones.map(displayNote).join(" ");
+    return {
+      correct: allCorrect,
+      correctAnswer,
+      state: { expectedCount: state.expectedCount, entries: evaluatedEntries }
+    };
+  }
+  function parseChordInput(text) {
+    return text.trim().split(/\s+/).filter(Boolean).map((token) => {
+      if (token.length === 0) return "";
+      const letter = token[0].toUpperCase();
+      if (!"CDEFGAB".includes(letter)) return token;
+      let suffix = "";
+      for (let i3 = 1; i3 < token.length; i3++) {
+        const ch = token[i3];
+        if (ch === "s" || ch === "S") suffix += "#";
+        else suffix += ch;
+      }
+      return letter + suffix;
+    });
   }
   function checkAnswer9(itemId, input) {
     const allCorrect = input === "__correct__";
@@ -9611,19 +9810,92 @@ button {
   }
 
   // src/modes/chord-spelling/chord-spelling-mode.tsx
-  function ChordSlots({ state }) {
+  function ChordSlots({ state, correctTones }) {
     if (!state) return /* @__PURE__ */ u3("div", { class: "chord-slots" });
-    return /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: state.expectedCount }, (_3, i3) => {
-      let cls = "chord-slot";
-      let content = "_";
-      if (i3 < state.entries.length) {
-        content = state.entries[i3].display;
-        cls += state.entries[i3].correct ? " correct" : " wrong";
-      } else if (i3 === state.entries.length) {
-        cls += " active";
+    const evaluated = state.entries.length > 0 && state.entries[0].correct !== null;
+    const anyWrong = evaluated && state.entries.some((e3) => !e3.correct);
+    return /* @__PURE__ */ u3("div", { class: "chord-slots-container", children: [
+      /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: state.expectedCount }, (_3, i3) => {
+        let cls = "chord-slot";
+        let content = "\xA0";
+        if (i3 < state.entries.length) {
+          content = state.entries[i3].display;
+          if (evaluated) {
+            cls += state.entries[i3].correct ? " correct" : " wrong";
+          } else {
+            cls += " filled";
+          }
+        } else if (i3 === state.entries.length) {
+          cls += " active";
+        }
+        return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
+      }) }),
+      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "chord-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "chord-correct-note", children: displayNote(t3) }, i3)) })
+    ] });
+  }
+  function ChordTextInput({ onSubmit, disabled, expectedCount }) {
+    const inputRef = A2(null);
+    const [shake, setShake] = d2(false);
+    const shakeTimerRef = A2(null);
+    y2(() => {
+      return () => {
+        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      };
+    }, []);
+    y2(() => {
+      if (!disabled && inputRef.current) {
+        inputRef.current.focus();
       }
-      return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
-    }) });
+    }, [disabled]);
+    const triggerShake = q2(() => {
+      setShake(true);
+      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      shakeTimerRef.current = setTimeout(() => {
+        setShake(false);
+        shakeTimerRef.current = null;
+      }, 400);
+    }, []);
+    const handleKeyDown = q2(
+      (e3) => {
+        if (e3.key !== "Enter") return;
+        e3.preventDefault();
+        e3.stopPropagation();
+        const value = inputRef.current?.value.trim() ?? "";
+        if (!value) {
+          triggerShake();
+          return;
+        }
+        const notes = parseChordInput(value);
+        if (notes.length !== expectedCount) {
+          triggerShake();
+          return;
+        }
+        const accepted = onSubmit(notes);
+        if (accepted) {
+          if (inputRef.current) inputRef.current.value = "";
+        } else {
+          triggerShake();
+        }
+      },
+      [onSubmit, expectedCount, triggerShake]
+    );
+    const placeholder = `${expectedCount} notes, e.g. C E G \u2014 Enter`;
+    const cls = "answer-input" + (shake ? " answer-input-shake" : "");
+    return /* @__PURE__ */ u3(
+      "input",
+      {
+        ref: inputRef,
+        type: "text",
+        class: cls,
+        placeholder,
+        "aria-label": placeholder,
+        disabled,
+        onKeyDown: handleKeyDown,
+        autoComplete: "off",
+        autoCorrect: "off",
+        spellcheck: false
+      }
+    );
   }
   function ChordSpellingMode({ container, navigateHome, onMount }) {
     const learner = useLearnerModel("chordSpelling", ALL_ITEMS9);
@@ -9655,17 +9927,6 @@ button {
     const seqStateRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
-    const [pendingNote, setPendingNote] = d2(null);
-    const handleSeqInputRef = A2(() => {
-    });
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => handleSeqInputRef.current(note),
-        () => true,
-        setPendingNote
-      ),
-      []
-    );
     const handleSequentialInput = q2((input) => {
       const itemId = currentItemRef.current;
       const state = seqStateRef.current;
@@ -9674,26 +9935,37 @@ button {
       seqStateRef.current = result.state;
       setSeqState(result.state);
       if (result.status === "complete") {
-        engineSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
+        const evalResult = evaluateSequential(itemId, result.state);
+        seqStateRef.current = evalResult.state;
+        setSeqState(evalResult.state);
+        engineSubmitRef.current(evalResult.correct ? "__correct__" : "__wrong__");
       }
     }, []);
-    handleSeqInputRef.current = handleSequentialInput;
+    const handleBatchSubmit = q2((notes) => {
+      const itemId = currentItemRef.current;
+      if (!itemId) return false;
+      let state = initSequentialState(itemId);
+      for (const note of notes) {
+        const result = handleInput(itemId, note, state);
+        state = result.state;
+      }
+      const evalResult = evaluateSequential(itemId, state);
+      seqStateRef.current = evalResult.state;
+      setSeqState(evalResult.state);
+      engineSubmitRef.current(evalResult.correct ? "__correct__" : "__wrong__");
+      return true;
+    }, []);
     const engineConfig = T2(() => ({
       getEnabledItems,
       getPracticingLabel,
       checkAnswer: (itemId, input) => {
         return checkAnswer9(itemId, input);
       },
-      handleKey: (e3, _ctx) => {
-        return noteHandler.handleKey(e3);
-      },
-      onStart: () => noteHandler.reset(),
       onStop: () => {
-        noteHandler.reset();
         seqStateRef.current = null;
         setSeqState(null);
       }
-    }), [noteHandler, getEnabledItems, getPracticingLabel]);
+    }), [getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
     const currentQ = T2(() => {
@@ -9715,10 +9987,6 @@ button {
         setSeqState(null);
       }
     }
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
     usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS9,
@@ -9728,10 +9996,7 @@ button {
       recommendation,
       recommendationText
     });
-    const deactivateCleanup = q2(() => noteHandler.reset(), [
-      noteHandler
-    ]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner);
     const promptText = currentQ ? displayNote(currentQ.rootName) + currentQ.chordType.symbol : "";
     const handleNoteAnswer = q2(
       (note) => handleSequentialInput(note),
@@ -9836,16 +10101,29 @@ button {
           {
             prompt: promptText,
             controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
               /* @__PURE__ */ u3(
-                NoteButtons,
+                ChordSlots,
                 {
-                  onAnswer: handleNoteAnswer,
-                  narrowing: noteNarrowing,
-                  useFlats: currentQ ? rootUsesFlats(currentQ.rootName) : void 0
+                  state: seqState,
+                  correctTones: currentQ?.tones ?? null
                 }
               ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
+              /* @__PURE__ */ u3(
+                SplitNoteButtons,
+                {
+                  onAnswer: handleNoteAnswer,
+                  sequential: true,
+                  answered: engine.state.answered
+                }
+              ),
+              seqState && /* @__PURE__ */ u3(
+                ChordTextInput,
+                {
+                  onSubmit: handleBatchSubmit,
+                  disabled: engine.state.answered,
+                  expectedCount: seqState.expectedCount
+                }
+              ),
               /* @__PURE__ */ u3(
                 FeedbackDisplay,
                 {

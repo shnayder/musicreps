@@ -28,6 +28,8 @@
   --color-recommended-text: hsl(44, 80%, 25%);
   --color-highlight: #eab308;
   /* UI accents */
+  --color-accent: hsl(220, 65%, 50%);
+  --color-accent-muted: hsl(220, 40%, 65%);
   --color-toggle-active: hsl(0, 0%, 32%);
   /* Text (warm neutrals) */
   --color-text: hsl(30, 5%, 20%);
@@ -1267,6 +1269,9 @@ button {
   cursor: pointer;
   padding: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1300,6 +1305,75 @@ button {
 }
 .note-btn.hidden {
   display: none;
+}
+
+/* --- Split note buttons (base note + accidental two-step input) --- */
+.split-note-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 400px;
+  margin: var(--space-3) auto;
+}
+.split-note-row-base {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+  width: 100%;
+}
+.split-note-row-accidentals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  width: 60%;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.split-note-row-accidentals.split-note-acc-hidden {
+  opacity: 0.3;
+  pointer-events: none;
+}
+.split-note-btn {
+  min-width: 0;
+  height: 48px;
+  font-size: var(--text-md);
+  font-weight: 500;
+  border: 1.5px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, border-color 0.1s, opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.split-note-btn:active {
+  background: var(--color-surface-pressed);
+  transform: scale(0.97);
+}
+.split-note-btn:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+@media (hover: hover) {
+  .split-note-btn:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-text);
+  }
+}
+.split-note-pending {
+  border-color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+.split-note-dimmed {
+  opacity: 0.4;
+}
+.split-note-acc {
+  background: var(--color-surface-accent);
 }
 
 /* --- Quiz prompt (text modes) --- */
@@ -1381,6 +1455,9 @@ button {
   cursor: pointer;
   padding: 0 var(--space-2);
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1776,28 +1853,52 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
+  min-width: 2.5rem;
+  padding: 0 0.25rem;
   height: 2.5rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-md);
+  border: none;
+  border-bottom: 2px solid var(--color-border);
+  border-radius: 0;
+  font-size: var(--text-lg);
   font-weight: 600;
-  background: var(--color-surface);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  background: transparent;
+  color: var(--color-text-muted);
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 .chord-slot.active {
-  border-color: var(--color-focus);
-  background: var(--color-focus-bg);
+  border-bottom-color: var(--color-accent);
+}
+.chord-slot.filled {
+  border-bottom-color: var(--color-text);
+  color: var(--color-text);
 }
 .chord-slot.correct {
-  border-color: var(--color-success);
-  background: var(--color-success-bg);
+  border-bottom-color: var(--color-success);
   color: var(--color-success-text);
 }
 .chord-slot.wrong {
-  border-color: var(--color-error);
-  background: var(--color-error-bg);
+  border-bottom-color: var(--color-error);
   color: var(--color-error-text);
+}
+.chord-slots-container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.chord-correct-row {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+.chord-correct-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  padding: 0 0.25rem;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-success-text);
 }
 
 /* --- Focus-visible (keyboard navigation) --- */
@@ -1837,7 +1938,8 @@ button {
 
 /* Answer buttons */
 .answer-btn:focus-visible,
-.note-btn:focus-visible {
+.note-btn:focus-visible,
+.split-note-btn:focus-visible {
   outline-offset: -2px;
 }
 
@@ -1918,7 +2020,7 @@ button {
   /* .quiz-controls margin-top:auto pushes controls toward the bottom;
      extra padding so they clear the screen edge on mobile. */
   .quiz-area {
-    padding-bottom: var(--space-4);
+    padding: 0 var(--space-4) var(--space-4);
   }
 
   .next-btn {
