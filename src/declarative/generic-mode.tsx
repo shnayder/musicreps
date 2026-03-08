@@ -480,7 +480,7 @@ export function GenericMode<Q>(
     ...userCtrl,
     renderPrompt: userCtrl.renderPrompt ?? staff.renderPrompt,
     handleKey: userCtrl.handleKey ?? noteKb.handleKey,
-    onStart: (staff.onStop || noteKb.reset || userCtrl.onStart)
+    onStart: (noteKb.reset || userCtrl.onStart)
       ? () => {
         noteKb.reset?.();
         userCtrl.onStart?.();
