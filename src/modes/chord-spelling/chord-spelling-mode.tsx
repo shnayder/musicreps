@@ -89,7 +89,7 @@ function ChordSlots(
       <div class='chord-slots'>
         {Array.from({ length: state.expectedCount }, (_, i) => {
           let cls = 'chord-slot';
-          let content = '_';
+          let content = '\u00A0';
           if (i < state.entries.length) {
             content = state.entries[i].display;
             if (evaluated) {
@@ -105,7 +105,7 @@ function ChordSlots(
       </div>
       {anyWrong && correctTones && (
         <div class='chord-correct-answer'>
-          {correctTones.map(displayNote).join('\u2003')}
+          {correctTones.map((t, i) => <span key={i}>{displayNote(t)}</span>)}
         </div>
       )}
     </div>
