@@ -1260,6 +1260,9 @@ button {
   cursor: pointer;
   padding: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1332,6 +1335,9 @@ button {
   background: var(--color-bg);
   color: var(--color-text);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background 0.1s, border-color 0.1s, opacity 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1440,6 +1446,9 @@ button {
   cursor: pointer;
   padding: 0 var(--space-2);
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1978,7 +1987,7 @@ button {
   /* .quiz-controls margin-top:auto pushes controls toward the bottom;
      extra padding so they clear the screen edge on mobile. */
   .quiz-area {
-    padding-bottom: var(--space-4);
+    padding: 0 var(--space-4) var(--space-4);
   }
 
   .next-btn {
