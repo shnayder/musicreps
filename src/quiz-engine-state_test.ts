@@ -212,6 +212,16 @@ describe('engineSubmitAnswer', () => {
     assert.equal(s.feedbackCorrect, true);
     assert.equal(s.feedbackDisplayAnswer, 'C');
   });
+
+  it('stores feedbackUserInput when provided', () => {
+    const s = engineSubmitAnswer(active, true, 'C', 'Space for next', 'C');
+    assert.equal(s.feedbackUserInput, 'C');
+  });
+
+  it('defaults feedbackUserInput to null when omitted', () => {
+    const s = engineSubmitAnswer(active, true, 'C');
+    assert.equal(s.feedbackUserInput, null);
+  });
 });
 
 describe('engineNextQuestion clears feedback fields', () => {
@@ -220,12 +230,19 @@ describe('engineNextQuestion clears feedback fields', () => {
     'item-1',
     1000,
   );
-  const answered = engineSubmitAnswer(active, false, 'C');
+  const answered = engineSubmitAnswer(
+    active,
+    false,
+    'C',
+    'Space for next',
+    'D',
+  );
 
   it('clears feedback fields on next question', () => {
     const next = engineNextQuestion(answered, 'item-2', 2000);
     assert.equal(next.feedbackCorrect, null);
     assert.equal(next.feedbackDisplayAnswer, null);
+    assert.equal(next.feedbackUserInput, null);
   });
 });
 

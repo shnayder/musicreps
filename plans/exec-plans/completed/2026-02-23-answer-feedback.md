@@ -1,4 +1,9 @@
-# Answer Feedback — Implementation Plan (v2: Feedback Banner)
+# Answer Feedback — Implementation Plan (v2: Feedback Banner) [SUPERSEDED]
+
+> **Superseded 2026-03-08**: Iterated back to button-based feedback. The text
+> banner is replaced by highlighting answer buttons directly: green bg for
+> correct, red bg for wrong press, green border to reveal the correct answer.
+> FeedbackBanner remains only for Chord Spelling mode.
 
 ## Problem / Context
 

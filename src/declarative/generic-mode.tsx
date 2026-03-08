@@ -29,6 +29,7 @@ import { useRoundSummary } from '../hooks/use-round-summary.ts';
 import { usePracticeSummary } from '../hooks/use-practice-summary.ts';
 
 import {
+  type ButtonFeedback,
   DegreeButtons,
   IntervalButtons,
   KeysigButtons,
@@ -48,7 +49,6 @@ import {
 } from '../ui/mode-screen.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from '../ui/stats.tsx';
 import {
-  FeedbackBanner,
   FeedbackDisplay,
   KeyboardHint,
   type KeyboardHintType,
@@ -170,6 +170,7 @@ function ResponseButtons(
     useFlats,
     narrowing,
     hideAccidentalsOverride,
+    feedback,
   }: {
     buttonsDef: ButtonsDef;
     hidden?: boolean;
@@ -177,6 +178,7 @@ function ResponseButtons(
     useFlats?: boolean;
     narrowing?: ReadonlySet<string> | null;
     hideAccidentalsOverride?: boolean;
+    feedback?: ButtonFeedback | null;
   },
 ) {
   switch (buttonsDef.kind) {
@@ -186,6 +188,7 @@ function ResponseButtons(
           hidden={hidden}
           onAnswer={onAnswer}
           useFlats={useFlats}
+          feedback={feedback}
         />
       );
     case 'piano-note':
@@ -196,6 +199,7 @@ function ResponseButtons(
             hideAccidentals={hideAccidentalsOverride ??
               buttonsDef.hideAccidentals}
             narrowing={narrowing}
+            feedback={feedback}
           />
         </div>
       );
@@ -206,16 +210,41 @@ function ResponseButtons(
           end={buttonsDef.end}
           hidden={hidden}
           onAnswer={(n) => onAnswer(String(n))}
+          feedback={feedback}
         />
       );
     case 'degree':
-      return <DegreeButtons hidden={hidden} onAnswer={onAnswer} />;
+      return (
+        <DegreeButtons
+          hidden={hidden}
+          onAnswer={onAnswer}
+          feedback={feedback}
+        />
+      );
     case 'numeral':
-      return <NumeralButtons hidden={hidden} onAnswer={onAnswer} />;
+      return (
+        <NumeralButtons
+          hidden={hidden}
+          onAnswer={onAnswer}
+          feedback={feedback}
+        />
+      );
     case 'interval':
-      return <IntervalButtons hidden={hidden} onAnswer={onAnswer} />;
+      return (
+        <IntervalButtons
+          hidden={hidden}
+          onAnswer={onAnswer}
+          feedback={feedback}
+        />
+      );
     case 'keysig':
-      return <KeysigButtons hidden={hidden} onAnswer={onAnswer} />;
+      return (
+        <KeysigButtons
+          hidden={hidden}
+          onAnswer={onAnswer}
+          feedback={feedback}
+        />
+      );
   }
 }
 
@@ -503,16 +532,21 @@ export function GenericMode<Q>(
                 prompt={ctrl.renderPrompt ? undefined : promptText}
                 controls={
                   <>
-                    <FeedbackBanner
-                      correct={engine.state.feedbackCorrect}
-                      answer={engine.state.feedbackDisplayAnswer}
-                    />
                     <ResponseButtons
                       buttonsDef={activeButtons}
                       onAnswer={handleSubmit}
                       useFlats={useFlats}
                       narrowing={ctrl.narrowing}
                       hideAccidentalsOverride={ctrl.hideAccidentals}
+                      feedback={engine.state.feedbackCorrect !== null &&
+                          engine.state.feedbackUserInput &&
+                          engine.state.feedbackDisplayAnswer
+                        ? {
+                          correct: engine.state.feedbackCorrect,
+                          userInput: engine.state.feedbackUserInput,
+                          displayAnswer: engine.state.feedbackDisplayAnswer,
+                        }
+                        : null}
                     />
                     {inactiveButtons && (
                       <ResponseButtons
