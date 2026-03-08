@@ -134,9 +134,8 @@ jobs:
             const previewUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/preview/${safeName}/`;
 
             const marker = '<!-- preview-bot -->';
-            const hasScreenshots = branch.includes('/ui/');
             const screenshotsUrl = `${previewUrl}screenshots/index.html`;
-            const screenshotsLine = hasScreenshots ? `\n**Screenshots:** [View all](${screenshotsUrl})` : '';
+            const screenshotsLine = `\n**Screenshots:** [View all](${screenshotsUrl})`;
             const body = `${marker}\n**Preview deployed:** ${previewUrl}${screenshotsLine}`;
 
             await github.rest.issues.createComment({
