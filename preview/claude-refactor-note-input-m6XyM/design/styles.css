@@ -1382,21 +1382,6 @@ button {
   display: none;
 }
 
-/* --- Feedback banner (correct/incorrect answer display) --- */
-.feedback-banner {
-  text-align: center;
-  font-size: var(--text-lg);
-  font-weight: 600;
-  min-height: 1.75rem;
-  margin-bottom: var(--space-2);
-}
-.feedback-banner-correct {
-  color: var(--color-success-text);
-}
-.feedback-banner-wrong {
-  color: var(--color-error-text);
-}
-
 /* --- Answer buttons grid (shared by new modes) --- */
 .answer-buttons {
   display: grid;
@@ -1484,6 +1469,27 @@ button {
   opacity: 0.5;
   cursor: default;
 }
+
+/* --- Button feedback (correct/wrong/reveal) --- */
+.btn-feedback-correct {
+  background: var(--color-success-bg) !important;
+  border-color: var(--color-success) !important;
+  color: var(--color-success-text) !important;
+  opacity: 1 !important;
+}
+.btn-feedback-wrong {
+  background: var(--color-error-bg) !important;
+  border-color: var(--color-error) !important;
+  color: var(--color-error-text) !important;
+  opacity: 1 !important;
+}
+.btn-feedback-reveal {
+  background: var(--color-success-bg) !important;
+  border-color: var(--color-success) !important;
+  color: var(--color-success-text) !important;
+  opacity: 1 !important;
+}
+
 .answer-buttons-intervals {
   grid-template-columns: repeat(3, 1fr);
 }
@@ -1618,6 +1624,12 @@ button {
 .next-btn:active {
   opacity: 0.8;
   transform: scale(0.98);
+}
+.next-btn-correct {
+  background: var(--color-success);
+}
+.next-btn-wrong {
+  background: var(--color-error);
 }
 .next-btn:focus-visible {
   outline: 2px solid var(--color-brand);
