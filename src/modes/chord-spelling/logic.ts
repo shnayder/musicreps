@@ -6,11 +6,8 @@
 // All notes are collected before evaluation. Spelling must be exact —
 // enharmonic equivalents (e.g. B vs Cb) are rejected.
 
-import type {
-  ChordType,
-  SequentialInputResult,
-  SequentialState,
-} from '../../types.ts';
+import type { ChordType } from '../../types.ts';
+import type { SequentialEvalResult } from '../../declarative/types.ts';
 import {
   CHORD_ROOTS,
   CHORD_TYPES,
@@ -107,82 +104,27 @@ export function parseItem(itemId: string): Question {
 }
 
 /**
- * Initialize sequential state for a chord-spelling question.
- * Sets the expected count (number of chord tones) and empty entries.
- *
- * @example initSequentialState("C:major") → { expectedCount: 3, entries: [] }
- */
-export function initSequentialState(itemId: string): SequentialState {
-  const item = parseItem(itemId);
-  return { expectedCount: item.tones.length, entries: [] };
-}
-
-/**
- * Collect a single note input without evaluating correctness.
- *
- * Entries are stored with `correct: null` — call `evaluateSequential`
- * after all notes are collected to determine per-note correctness.
- *
- * Returns `'continue'` while slots remain, `'complete'` when full.
- */
-export function handleInput(
-  itemId: string,
-  input: string,
-  state: SequentialState,
-): SequentialInputResult {
-  const item = parseItem(itemId);
-  const idx = state.entries.length;
-  if (idx >= item.tones.length) {
-    return { status: 'complete', state };
-  }
-
-  const entries = [
-    ...state.entries,
-    { input, display: displayNote(input), correct: null as boolean | null },
-  ];
-
-  const newState: SequentialState = {
-    expectedCount: item.tones.length,
-    entries,
-  };
-
-  if (entries.length === item.tones.length) {
-    return { status: 'complete', state: newState };
-  }
-
-  return { status: 'continue', state: newState };
-}
-
-/**
- * Evaluate all collected entries against the expected chord tones.
+ * Evaluate user's note inputs against the expected chord tones.
  * Requires exact spelling — enharmonic equivalents are rejected
  * (e.g. B ≠ Cb, F# ≠ Gb).
  *
- * Returns per-entry correctness, overall result, and the correct answer string.
+ * Used by the declarative mode definition via `sequential.evaluate`.
  */
-export function evaluateSequential(
-  itemId: string,
-  state: SequentialState,
-): { correct: boolean; correctAnswer: string; state: SequentialState } {
-  const item = parseItem(itemId);
-  const evaluatedEntries = state.entries.map((entry, i) => {
-    const expected = item.tones[i];
+export function evaluate(q: Question, inputs: string[]): SequentialEvalResult {
+  const perEntry = inputs.map((input, i) => {
+    const expected = q.tones[i];
     const isCorrect = expected !== undefined &&
-      spelledNoteMatchesInput(expected, entry.input);
+      spelledNoteMatchesInput(expected, input);
     return {
-      input: entry.input,
-      display: isCorrect ? displayNote(expected) : displayNote(entry.input),
+      display: isCorrect ? displayNote(expected) : displayNote(input),
       correct: isCorrect,
     };
   });
 
-  const allCorrect = evaluatedEntries.every((e) => e.correct);
-  const correctAnswer = item.tones.map(displayNote).join(' ');
-
   return {
-    correct: allCorrect,
-    correctAnswer,
-    state: { expectedCount: state.expectedCount, entries: evaluatedEntries },
+    correct: perEntry.every((e) => e.correct),
+    correctAnswer: q.tones.map(displayNote).join(' '),
+    perEntry,
   };
 }
 
@@ -207,20 +149,6 @@ export function parseChordInput(text: string): string[] {
     }
     return letter + suffix;
   });
-}
-
-/**
- * Final answer check used by the quiz engine after sequential input completes.
- * Uses a sentinel value ("__correct__") to signal all-correct.
- */
-export function checkAnswer(
-  itemId: string,
-  input: string,
-): { correct: boolean; correctAnswer: string } {
-  const allCorrect = input === '__correct__';
-  const item = parseItem(itemId);
-  const correctAnswer = item.tones.map(displayNote).join(' ');
-  return { correct: allCorrect, correctAnswer };
 }
 
 // ---------------------------------------------------------------------------

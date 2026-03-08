@@ -104,6 +104,44 @@ export type NoStatsDef = { kind: 'none' };
 export type StatsDef = GridStatsDef | TableStatsDef | NoStatsDef;
 
 // ---------------------------------------------------------------------------
+// Sequential response — modes that collect multiple inputs before evaluating
+// ---------------------------------------------------------------------------
+
+/** Per-entry evaluation result returned by sequential evaluate(). */
+export type SequentialEntryResult = {
+  display: string;
+  correct: boolean;
+};
+
+/** Evaluation result from a sequential mode's evaluate(). */
+export type SequentialEvalResult = {
+  correct: boolean;
+  correctAnswer: string;
+  perEntry: SequentialEntryResult[];
+};
+
+/**
+ * Configuration for modes that collect multiple inputs before scoring.
+ * The mode says "I need N inputs" and "here's how to grade them."
+ * GenericMode handles collection, slot rendering, and engine integration.
+ */
+export type SequentialDef<Q> = {
+  /** How many inputs this question expects. */
+  expectedCount: (q: Q) => number;
+
+  /** Check all collected inputs at once. Called after GenericMode has
+   *  gathered exactly `expectedCount` inputs from the user. */
+  evaluate: (q: Q, inputs: string[]) => SequentialEvalResult;
+
+  /** Parse batch text input into individual answers (optional — enables
+   *  keyboard entry). If omitted, only tap/button input is available. */
+  parseBatchInput?: (text: string) => string[];
+
+  /** Placeholder for batch text input field. */
+  batchPlaceholder?: string | ((q: Q) => string);
+};
+
+// ---------------------------------------------------------------------------
 // Mode controller — optional hook for imperative rendering + engine hooks
 // ---------------------------------------------------------------------------
 
@@ -169,11 +207,17 @@ export type ModeDefinition<Q = unknown> = {
   getQuestion: (itemId: string) => Q;
   /** Generate prompt text from a question. */
   getPromptText: (q: Q) => string;
-  /** Check user's answer against the correct answer. */
-  checkAnswer: (q: Q, input: string) => {
+  /** Check user's answer against the correct answer.
+   *  Not needed for sequential modes — GenericMode synthesizes it internally. */
+  checkAnswer?: (q: Q, input: string) => {
     correct: boolean;
     correctAnswer: string;
   };
+
+  // --- Sequential response (optional — for multi-input modes) ---
+  /** When present, GenericMode collects multiple inputs before scoring.
+   *  Replaces the single-answer checkAnswer flow. */
+  sequential?: SequentialDef<Q>;
 
   // --- Direction (for bidirectional modes) ---
   /** Get the direction of a question. Only needed for bidirectional answers. */

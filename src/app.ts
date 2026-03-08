@@ -27,10 +27,10 @@ import { SCALE_DEGREES_DEF } from './modes/scale-degrees/definition.ts';
 import { DIATONIC_CHORDS_DEF } from './modes/diatonic-chords/definition.ts';
 
 import { createFretboardDef } from './modes/fretboard/definition.tsx';
+import { CHORD_SPELLING_DEF } from './modes/chord-spelling/definition.ts';
 
 // Hand-written modes (too specialized for GenericMode)
 import { SpeedTapMode } from './modes/speed-tap/speed-tap-mode.tsx';
-import { ChordSpellingMode } from './modes/chord-spelling/chord-spelling-mode.tsx';
 
 // Enable :active pseudo-class on iOS Safari. WebKit doesn't fire :active on
 // touch unless the document has a touchstart listener.
@@ -108,9 +108,9 @@ registerDeclarativeMode(INTERVAL_MATH_DEF);
 registerDeclarativeMode(KEY_SIGNATURES_DEF);
 registerDeclarativeMode(SCALE_DEGREES_DEF);
 registerDeclarativeMode(DIATONIC_CHORDS_DEF);
+registerDeclarativeMode(CHORD_SPELLING_DEF);
 
-// Hand-written modes (sequential or custom response interface)
-registerPreactMode('chordSpelling', 'Chord Spelling', ChordSpellingMode);
+// Hand-written modes (too specialized for GenericMode)
 registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);
 
 nav.init();

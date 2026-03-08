@@ -3,6 +3,9 @@
 // phase-conditional rendering. Keyboard input is via a text field + Enter;
 // buttons remain for tap/click on mobile.
 //
+// Sequential modes (def.sequential): GenericMode collects multiple inputs,
+// renders progress slots, and evaluates all at once after the last input.
+//
 // Modes with custom rendering needs (e.g., SVG fretboard) provide a
 // `useController` hook that can override prompt rendering, stats rendering,
 // engine lifecycle hooks, and keyboard handling.
@@ -28,6 +31,7 @@ import { useModeLifecycle } from '../hooks/use-mode-lifecycle.ts';
 import { useRoundSummary } from '../hooks/use-round-summary.ts';
 import { usePracticeSummary } from '../hooks/use-practice-summary.ts';
 
+import { displayNote } from '../music-data.ts';
 import {
   type ButtonFeedback,
   DegreeButtons,
@@ -37,7 +41,9 @@ import {
   NumberButtons,
   NumeralButtons,
   PianoNoteButtons,
+  SplitNoteButtons,
 } from '../ui/buttons.tsx';
+import { SequentialSlots } from '../ui/sequential-slots.tsx';
 import { GroupToggles } from '../ui/scope.tsx';
 import {
   ModeTopBar,
@@ -55,7 +61,12 @@ import {
 } from '../ui/quiz-ui.tsx';
 import { BUTTON_PROVIDER, SpeedCheck } from '../ui/speed-check.tsx';
 
-import type { ButtonsDef, ModeController, ModeDefinition } from './types.ts';
+import type {
+  ButtonsDef,
+  ModeController,
+  ModeDefinition,
+  SequentialEntryResult,
+} from './types.ts';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -295,6 +306,16 @@ export function GenericMode<Q>(
   // --- Question state ---
   const currentQRef = useRef<Q | null>(null);
 
+  // --- Sequential state (only used when def.sequential is present) ---
+  const isSequential = !!def.sequential;
+  const [seqEntries, setSeqEntries] = useState<{ display: string }[]>([]);
+  const seqEntriesRef = useRef<string[]>([]); // raw inputs
+  const [seqEvaluated, setSeqEvaluated] = useState<
+    SequentialEntryResult[] | null
+  >(null);
+  const [seqCorrectAnswer, setSeqCorrectAnswer] = useState<string>('');
+  const seqSubmitRef = useRef<(input: string) => void>(() => {});
+
   // --- Engine config ---
   const getEnabledItemsRef = useRef<() => string[]>(
     () => def.allItems,
@@ -313,8 +334,13 @@ export function GenericMode<Q>(
     getPracticingLabel: () => getPracticingLabelRef.current(),
 
     checkAnswer: (_itemId: string, input: string) => {
+      if (isSequential) {
+        // Sequential: sentinel-based — real evaluation already happened
+        // in handleSeqInput/handleSeqBatch. The engine just records the result.
+        return { correct: input === '__correct__', correctAnswer: '' };
+      }
       const q = currentQRef.current!;
-      return def.checkAnswer(q, input);
+      return def.checkAnswer!(q, input);
     },
 
     onAnswer: (itemId, result) => {
@@ -326,15 +352,22 @@ export function GenericMode<Q>(
     },
 
     onStop: () => {
+      if (isSequential) {
+        setSeqEntries([]);
+        setSeqEvaluated(null);
+        setSeqCorrectAnswer('');
+        seqEntriesRef.current = [];
+      }
       ctrlRef.current.onStop?.();
     },
 
     handleKey: ctrl.handleKey
       ? (e, ctx) => ctrlRef.current.handleKey!(e, ctx)
       : undefined,
-  }), [def, !!ctrl.handleKey]);
+  }), [def, !!ctrl.handleKey, isSequential]);
 
   const engine = useQuizEngine(engineConfig, learner.selector, container);
+  seqSubmitRef.current = engine.submitAnswer;
 
   // --- Derived question state ---
   const currentQ = useMemo(() => {
@@ -343,6 +376,55 @@ export function GenericMode<Q>(
     return def.getQuestion(id);
   }, [engine.state.currentItemId, engine.state.phase, def]);
   currentQRef.current = currentQ;
+
+  // --- Reset sequential state on question change ---
+  const prevSeqItemRef = useRef<string | null>(null);
+  if (isSequential && engine.state.currentItemId !== prevSeqItemRef.current) {
+    prevSeqItemRef.current = engine.state.currentItemId;
+    seqEntriesRef.current = [];
+    setSeqEntries([]);
+    setSeqEvaluated(null);
+    setSeqCorrectAnswer('');
+  }
+
+  // --- Sequential input handler (one note at a time, from button tap) ---
+  const handleSeqInput = useCallback((input: string) => {
+    if (!def.sequential || !currentQRef.current) return;
+    const q = currentQRef.current;
+    const expected = def.sequential.expectedCount(q);
+    const raw = seqEntriesRef.current;
+    if (raw.length >= expected) return;
+
+    const newRaw = [...raw, input];
+    seqEntriesRef.current = newRaw;
+    setSeqEntries(newRaw.map((r) => ({ display: displayNote(r) })));
+
+    if (newRaw.length === expected) {
+      // All collected — evaluate
+      const result = def.sequential.evaluate(q, newRaw);
+      setSeqEvaluated(result.perEntry);
+      setSeqCorrectAnswer(result.correctAnswer);
+      seqSubmitRef.current(result.correct ? '__correct__' : '__wrong__');
+    }
+  }, [def]);
+
+  // --- Sequential batch submit (keyboard text input) ---
+  const handleSeqBatch = useCallback((text: string): boolean => {
+    if (!def.sequential?.parseBatchInput || !currentQRef.current) return false;
+    const q = currentQRef.current;
+    const notes = def.sequential.parseBatchInput(text);
+    const expected = def.sequential.expectedCount(q);
+    if (notes.length !== expected) return false;
+
+    seqEntriesRef.current = notes;
+    setSeqEntries(notes.map((r) => ({ display: displayNote(r) })));
+
+    const result = def.sequential.evaluate(q, notes);
+    setSeqEvaluated(result.perEntry);
+    setSeqCorrectAnswer(result.correctAnswer);
+    seqSubmitRef.current(result.correct ? '__correct__' : '__wrong__');
+    return true;
+  }, [def]);
 
   // --- Direction ---
   const dir = (currentQ && def.getDirection)
@@ -397,6 +479,14 @@ export function GenericMode<Q>(
 
   // --- Input placeholder ---
   const placeholder = (() => {
+    if (isSequential) {
+      const seq = def.sequential!;
+      if (!seq.batchPlaceholder) return undefined;
+      if (typeof seq.batchPlaceholder === 'string') {
+        return seq.batchPlaceholder;
+      }
+      return currentQ ? seq.batchPlaceholder(currentQ) : undefined;
+    }
     if (!def.inputPlaceholder) return undefined;
     if (typeof def.inputPlaceholder === 'string') return def.inputPlaceholder;
     return currentQ ? def.inputPlaceholder(currentQ) : undefined;
@@ -525,6 +615,52 @@ export function GenericMode<Q>(
                   correct={round.roundCorrect}
                   median={round.roundMedian}
                 />
+              </QuizArea>
+            )
+            : isSequential
+            ? (
+              <QuizArea
+                prompt={ctrl.renderPrompt ? undefined : promptText}
+                controls={
+                  <>
+                    <SequentialSlots
+                      expectedCount={currentQ && def.sequential
+                        ? def.sequential.expectedCount(currentQ)
+                        : 0}
+                      entries={seqEntries}
+                      evaluated={seqEvaluated}
+                      correctTones={seqCorrectAnswer
+                        ? seqCorrectAnswer.split(' ')
+                        : null}
+                    />
+                    <SplitNoteButtons
+                      onAnswer={handleSeqInput}
+                      sequential
+                      answered={engine.state.answered}
+                    />
+                    {def.sequential?.parseBatchInput && (
+                      <AnswerInput
+                        onSubmit={handleSeqBatch}
+                        disabled={engine.state.answered}
+                        placeholder={placeholder}
+                      />
+                    )}
+                    <FeedbackDisplay
+                      text={engine.state.feedbackText}
+                      className={engine.state.feedbackClass}
+                      time={engine.state.timeDisplayText || undefined}
+                      hint={engine.state.hintText || undefined}
+                      correct={engine.state.feedbackCorrect}
+                      onNext={engine.state.answered
+                        ? engine.nextQuestion
+                        : undefined}
+                    />
+                  </>
+                }
+              >
+                {currentQ && ctrl.renderPrompt
+                  ? ctrl.renderPrompt(currentQ)
+                  : null}
               </QuizArea>
             )
             : (

@@ -276,17 +276,6 @@ export type ScopeState =
   | { kind: 'groups'; enabledGroups: ReadonlySet<number> }
   | { kind: 'note-filter'; noteFilter: NoteFilter };
 
-// --- Sequential response ---
-
-export type SequentialState = {
-  expectedCount: number;
-  entries: { input: string; display: string; correct: boolean | null }[];
-};
-
-export type SequentialInputResult =
-  | { status: 'continue'; state: SequentialState }
-  | { status: 'complete'; state: SequentialState };
-
 // --- Stats ---
 
 export type StatsTableRow = {
