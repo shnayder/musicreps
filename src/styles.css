@@ -1301,7 +1301,7 @@ button {
   flex-direction: column;
   align-items: center;
   gap: 0.4rem;
-  max-width: 400px;
+  max-width: min(400px, 100%);
   margin: var(--space-3) auto;
 }
 .split-note-row-base {
@@ -1322,6 +1322,7 @@ button {
   pointer-events: none;
 }
 .split-note-btn {
+  min-width: 0;
   height: 48px;
   font-size: var(--text-md);
   font-weight: 500;
