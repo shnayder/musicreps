@@ -28,6 +28,7 @@ import { DIATONIC_CHORDS_DEF } from './modes/diatonic-chords/definition.ts';
 
 import { createFretboardDef } from './modes/fretboard/definition.tsx';
 import { CHORD_SPELLING_DEF } from './modes/chord-spelling/definition.ts';
+import { NOTE_READING_DEF } from './modes/note-reading/definition.tsx';
 
 // Hand-written modes (too specialized for GenericMode)
 import { SpeedTapMode } from './modes/speed-tap/speed-tap-mode.tsx';
@@ -109,6 +110,8 @@ registerDeclarativeMode(KEY_SIGNATURES_DEF);
 registerDeclarativeMode(SCALE_DEGREES_DEF);
 registerDeclarativeMode(DIATONIC_CHORDS_DEF);
 registerDeclarativeMode(CHORD_SPELLING_DEF);
+
+registerDeclarativeMode(NOTE_READING_DEF);
 
 // Hand-written modes (too specialized for GenericMode)
 registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);

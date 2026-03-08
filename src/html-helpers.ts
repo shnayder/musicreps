@@ -38,6 +38,15 @@ export function pianoNoteButtons(): string {
       </div>`;
 }
 
+/** 7-note natural answer button grid (C D E F G A B). */
+export function naturalNoteButtons(): string {
+  const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  return `<div class="answer-buttons answer-buttons-naturals">\n` +
+    notes.map((n) =>
+      `        <button tabindex="0" class="answer-btn answer-btn-note" data-note="${n}">${n}</button>`
+    ).join('\n') + '\n      </div>';
+}
+
 /** 12-note answer button grid (C, C#, D, ... B). */
 export function noteAnswerButtons(opts?: { hidden?: boolean }): string {
   const notes: [string, string][] = [
