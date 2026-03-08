@@ -1572,6 +1572,12 @@ button {
   opacity: 0.8;
   transform: scale(0.98);
 }
+.next-btn-correct {
+  background: var(--color-success);
+}
+.next-btn-wrong {
+  background: var(--color-error);
+}
 .next-btn:focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
@@ -1939,7 +1945,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="ed3f7a update-feedback-display-aBhxe"></div>
+  <div class="home-screen" id="home-screen" data-version="032681 update-feedback-display-aBhxe"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7655,7 +7661,10 @@ button {
   }
 
   // src/ui/quiz-ui.tsx
-  function FeedbackDisplay({ text, className, time, hint, onNext }) {
+  function FeedbackDisplay({ text, className, time, hint, correct, onNext }) {
+    let btnCls = "next-btn";
+    if (correct === true) btnCls += " next-btn-correct";
+    else if (correct === false) btnCls += " next-btn-wrong";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
@@ -7663,7 +7672,7 @@ button {
         "button",
         {
           type: "button",
-          class: "next-btn",
+          class: btnCls,
           onClick: onNext,
           style: onNext ? void 0 : { visibility: "hidden" },
           children: "Next"
@@ -8079,6 +8088,7 @@ button {
                   className: engine.state.feedbackClass,
                   time: engine.state.timeDisplayText || void 0,
                   hint: engine.state.hintText || void 0,
+                  correct: engine.state.feedbackCorrect,
                   onNext: engine.state.answered ? engine.nextQuestion : void 0
                 }
               )
@@ -9473,6 +9483,7 @@ button {
                   className: engine.state.feedbackClass,
                   time: engine.state.timeDisplayText || void 0,
                   hint: engine.state.hintText || void 0,
+                  correct: engine.state.feedbackCorrect,
                   onNext: engine.state.answered ? engine.nextQuestion : void 0
                 }
               )
@@ -9834,6 +9845,7 @@ button {
                   className: engine.state.feedbackClass,
                   time: engine.state.timeDisplayText || void 0,
                   hint: engine.state.hintText || void 0,
+                  correct: engine.state.feedbackCorrect,
                   onNext: engine.state.answered ? engine.nextQuestion : void 0
                 }
               )

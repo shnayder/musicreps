@@ -1570,6 +1570,12 @@ button {
   opacity: 0.8;
   transform: scale(0.98);
 }
+.next-btn-correct {
+  background: var(--color-success);
+}
+.next-btn-wrong {
+  background: var(--color-error);
+}
 .next-btn:focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
@@ -3127,7 +3133,10 @@ button {
   function TextPrompt({ text }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: text });
   }
-  function FeedbackDisplay({ text, className, time, hint, onNext }) {
+  function FeedbackDisplay({ text, className, time, hint, correct, onNext }) {
+    let btnCls = "next-btn";
+    if (correct === true) btnCls += " next-btn-correct";
+    else if (correct === false) btnCls += " next-btn-wrong";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
@@ -3135,7 +3144,7 @@ button {
         "button",
         {
           type: "button",
-          class: "next-btn",
+          class: btnCls,
           onClick: onNext,
           style: onNext ? void 0 : { visibility: "hidden" },
           children: "Next"
@@ -3689,6 +3698,7 @@ button {
           text: feedbackCorrect.text,
           className: feedbackCorrect.className,
           time: feedbackCorrect.time,
+          correct: feedbackCorrect.correct,
           onNext: () => {
           }
         }
@@ -3699,6 +3709,7 @@ button {
           text: feedbackWrong.text,
           className: feedbackWrong.className,
           hint: feedbackWrong.hint,
+          correct: feedbackWrong.correct,
           onNext: () => {
           }
         }
