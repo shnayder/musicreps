@@ -280,14 +280,34 @@ body {
 .skill-card {
   position: relative;
 }
+.skill-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.skill-card-header-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.skill-icon {
+  flex-shrink: 0;
+  color: var(--skill-accent);
+}
 .skill-card[data-track='core'] {
+  --skill-accent: var(--color-track-core);
   border-left-color: var(--color-track-core);
 }
 .skill-card[data-track='guitar'] {
+  --skill-accent: var(--color-track-guitar);
   border-left-color: var(--color-track-guitar);
 }
 .skill-card[data-track='ukulele'] {
+  --skill-accent: var(--color-track-ukulele);
   border-left-color: var(--color-track-ukulele);
+}
+.skill-card::after {
+  color: var(--skill-accent);
 }
 .skill-card-ba {
   display: grid;
@@ -386,8 +406,12 @@ body {
 }
 .mode-top-bar-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-3);
+}
+.mode-top-bar .skill-icon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
 }
 .mode-close-btn {
   background: none;
@@ -429,19 +453,22 @@ body {
   line-height: 1.3;
 }
 .mode-before-after {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: baseline;
-  gap: var(--space-2);
+  gap: var(--space-3);
   margin: var(--space-2) 0 0;
   font-size: var(--text-xs);
   line-height: 1.4;
 }
 .mode-ba-before {
-  color: var(--color-text-light);
+  text-align: right;
+  color: var(--color-text-muted);
 }
 .mode-ba-arrow {
-  color: var(--color-text-light);
-  flex-shrink: 0;
+  color: var(--color-brand);
+  font-size: var(--text-base);
+  font-weight: 700;
 }
 .mode-ba-after {
   color: var(--color-text);
@@ -904,54 +931,6 @@ body {
   pointer-events: all;
 }
 
-/* Hover card */
-.hover-card {
-  position: absolute;
-  pointer-events: none;
-  z-index: 10;
-  opacity: 0;
-  transition: opacity 0.12s;
-}
-.hover-card.visible {
-  opacity: 1;
-}
-.hc-inner {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: 0.35rem 0.5rem;
-  min-width: 65px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-  text-align: center;
-}
-.hc-note {
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--color-text);
-}
-.hc-string-fret {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin-top: 0.05rem;
-}
-.hc-detail {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin-top: 0.12rem;
-}
-.hc-bar {
-  height: 3px;
-  border-radius: var(--radius-sm);
-  background: hsl(30, 5%, 90%);
-  margin-top: 0.25rem;
-  overflow: hidden;
-}
-.hc-bar-fill {
-  height: 100%;
-  border-radius: var(--radius-sm);
-  transition: width 0.2s;
-}
-
 .settings-row {
   display: flex;
   flex-direction: column;
@@ -1348,21 +1327,6 @@ button {
   display: none;
 }
 
-/* --- Feedback banner (correct/incorrect answer display) --- */
-.feedback-banner {
-  text-align: center;
-  font-size: var(--text-lg);
-  font-weight: 600;
-  min-height: 1.75rem;
-  margin-bottom: var(--space-2);
-}
-.feedback-banner-correct {
-  color: var(--color-success-text);
-}
-.feedback-banner-wrong {
-  color: var(--color-error-text);
-}
-
 /* --- Answer buttons grid (shared by new modes) --- */
 .answer-buttons {
   display: grid;
@@ -1371,6 +1335,50 @@ button {
   max-width: 360px;
   margin: var(--space-3) auto;
 }
+/* Answer text input (declarative modes) */
+.answer-input {
+  display: none;
+  width: 100%;
+  max-width: 280px;
+  margin: var(--space-2) auto;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-lg);
+  font-family: inherit;
+  text-align: center;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+@media (pointer: fine) {
+  .answer-input {
+    display: block;
+  }
+}
+.answer-input:focus {
+  border-color: var(--color-border);
+}
+.answer-input:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.answer-input-shake {
+  animation: input-shake 0.3s ease-in-out;
+}
+@keyframes input-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-4px);
+  }
+  40%, 80% {
+    transform: translateX(4px);
+  }
+}
+
 .answer-btn {
   height: 48px;
   font-size: var(--text-md);
@@ -1406,6 +1414,27 @@ button {
   opacity: 0.5;
   cursor: default;
 }
+
+/* --- Button feedback (correct/wrong/reveal) --- */
+.btn-feedback-correct {
+  background: var(--color-success-bg) !important;
+  border-color: var(--color-success) !important;
+  color: var(--color-success-text) !important;
+  opacity: 1 !important;
+}
+.btn-feedback-wrong {
+  background: var(--color-error-bg) !important;
+  border-color: var(--color-error) !important;
+  color: var(--color-error-text) !important;
+  opacity: 1 !important;
+}
+.btn-feedback-reveal {
+  background: var(--color-success-bg) !important;
+  border-color: var(--color-success) !important;
+  color: var(--color-success-text) !important;
+  opacity: 1 !important;
+}
+
 .answer-buttons-intervals {
   grid-template-columns: repeat(3, 1fr);
 }
@@ -1540,6 +1569,12 @@ button {
 .next-btn:active {
   opacity: 0.8;
   transform: scale(0.98);
+}
+.next-btn-correct {
+  background: var(--color-success);
+}
+.next-btn-wrong {
+  background: var(--color-error);
 }
 .next-btn:focus-visible {
   outline: 2px solid var(--color-brand);
@@ -2366,6 +2401,18 @@ button {
     const [sharp, flat] = displayName.split("/");
     return useFlats ? flat : sharp;
   }
+  var VALID_NOTE_INPUTS = new Set(
+    NOTES.flatMap((n2) => {
+      const inputs = [...n2.accepts];
+      for (const a3 of n2.accepts) {
+        if (a3.endsWith("#")) inputs.push(a3.slice(0, -1) + "s");
+      }
+      return inputs;
+    })
+  );
+  var VALID_INTERVAL_INPUTS = new Set(
+    INTERVALS.flatMap((i3) => [i3.abbrev, ...i3.altAbbrevs || []])
+  );
   var KEYSIG_LABELS = [
     "0",
     "1#",
@@ -2561,12 +2608,6 @@ button {
           ${positionCircles(sc, fc)}
           ${config.tapTargets ? "<!-- Tap targets -->\n          " + tapTargetRects(sc, fc) : ""}
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>`;
   }
@@ -2640,7 +2681,18 @@ button {
   }
 
   // src/ui/buttons.tsx
-  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive, narrowing }) {
+  function feedbackClass(feedback, buttonValue, buttonLabel) {
+    if (!feedback) return "";
+    if (feedback.correct && buttonValue === feedback.userInput) {
+      return " btn-feedback-correct";
+    }
+    if (!feedback.correct) {
+      if (buttonValue === feedback.userInput) return " btn-feedback-wrong";
+      if (buttonLabel === feedback.displayAnswer) return " btn-feedback-reveal";
+    }
+    return "";
+  }
+  function NoteButtons({ onAnswer, hidden, useFlats, calibrationActive, narrowing, feedback }) {
     const cls = "answer-buttons answer-buttons-notes" + (hidden ? " answer-group-hidden" : "") + (calibrationActive ? " calibration-active" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: NOTE_NAMES.map((n2) => {
       let label;
@@ -2654,6 +2706,7 @@ button {
       if (narrowing) {
         btnCls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
       }
+      btnCls += feedbackClass(feedback ?? null, n2, label);
       return /* @__PURE__ */ u3(
         "button",
         {
@@ -2668,13 +2721,15 @@ button {
       );
     }) });
   }
-  function PianoNoteButtons({ onAnswer, hideAccidentals, narrowing }) {
+  function PianoNoteButtons({ onAnswer, hideAccidentals, narrowing, feedback }) {
     return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
       /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => {
+        const label = displayNote(n2);
         let cls = "note-btn accidental" + (hideAccidentals ? " hidden" : "");
         if (narrowing && !hideAccidentals) {
           cls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
         }
+        cls += feedbackClass(feedback ?? null, n2, label);
         return /* @__PURE__ */ u3(
           "button",
           {
@@ -2683,16 +2738,18 @@ button {
             class: cls,
             "data-note": n2,
             onClick: onAnswer ? () => onAnswer(n2) : void 0,
-            children: displayNote(n2)
+            children: label
           },
           n2
         );
       }) }),
       /* @__PURE__ */ u3("div", { class: "note-row-naturals", children: NATURAL_NOTES.map((n2) => {
+        const label = displayNote(n2);
         let cls = "note-btn";
         if (narrowing) {
           cls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
         }
+        cls += feedbackClass(feedback ?? null, n2, label);
         return /* @__PURE__ */ u3(
           "button",
           {
@@ -2701,29 +2758,31 @@ button {
             class: cls,
             "data-note": n2,
             onClick: onAnswer ? () => onAnswer(n2) : void 0,
-            children: displayNote(n2)
+            children: label
           },
           n2
         );
       }) })
     ] });
   }
-  function NumberButtons({ start, end, onAnswer, hidden, narrowing }) {
+  function NumberButtons({ start, end, onAnswer, hidden, narrowing, feedback }) {
     const nums = [];
     for (let i3 = start; i3 <= end; i3++) nums.push(i3);
     const cls = "answer-buttons answer-buttons-numbers" + (hidden ? " answer-group-hidden" : "");
     return /* @__PURE__ */ u3("div", { class: cls, children: nums.map((i3) => {
+      const val = String(i3);
       let btnCls = "answer-btn answer-btn-num";
       if (narrowing) {
-        btnCls += narrowing.has(String(i3)) ? " kb-match" : " kb-dimmed";
+        btnCls += narrowing.has(val) ? " kb-match" : " kb-dimmed";
       }
+      btnCls += feedbackClass(feedback ?? null, val, val);
       return /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
           tabIndex: 0,
           class: btnCls,
-          "data-num": String(i3),
+          "data-num": val,
           onClick: onAnswer ? () => onAnswer(i3) : void 0,
           children: i3
         },
@@ -2731,65 +2790,81 @@ button {
       );
     }) });
   }
-  function IntervalButtons({ onAnswer, hidden }) {
+  function IntervalButtons({ onAnswer, hidden, feedback }) {
     const cls = "answer-buttons answer-buttons-intervals" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children: INTERVAL_ABBREVS.map((iv) => /* @__PURE__ */ u3(
-      "button",
-      {
-        type: "button",
-        tabIndex: 0,
-        class: "answer-btn answer-btn-interval",
-        "data-interval": iv,
-        onClick: onAnswer ? () => onAnswer(iv) : void 0,
-        children: iv
-      },
-      iv
-    )) });
+    return /* @__PURE__ */ u3("div", { class: cls, children: INTERVAL_ABBREVS.map((iv) => {
+      let btnCls = "answer-btn answer-btn-interval";
+      btnCls += feedbackClass(feedback ?? null, iv, iv);
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-interval": iv,
+          onClick: onAnswer ? () => onAnswer(iv) : void 0,
+          children: iv
+        },
+        iv
+      );
+    }) });
   }
-  function KeysigButtons({ onAnswer, hidden }) {
+  function KeysigButtons({ onAnswer, hidden, feedback }) {
     const cls = "answer-buttons answer-buttons-keysig" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children: KEYSIG_LABELS.map((s3) => /* @__PURE__ */ u3(
-      "button",
-      {
-        type: "button",
-        tabIndex: 0,
-        class: "answer-btn answer-btn-keysig",
-        "data-sig": s3,
-        onClick: onAnswer ? () => onAnswer(s3) : void 0,
-        children: s3
-      },
-      s3
-    )) });
+    return /* @__PURE__ */ u3("div", { class: cls, children: KEYSIG_LABELS.map((s3) => {
+      let btnCls = "answer-btn answer-btn-keysig";
+      btnCls += feedbackClass(feedback ?? null, s3, s3);
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-sig": s3,
+          onClick: onAnswer ? () => onAnswer(s3) : void 0,
+          children: s3
+        },
+        s3
+      );
+    }) });
   }
-  function DegreeButtons({ onAnswer, hidden }) {
+  function DegreeButtons({ onAnswer, hidden, feedback }) {
     const cls = "answer-buttons answer-buttons-degrees" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children: DEGREE_LABELS.map(([val, label]) => /* @__PURE__ */ u3(
-      "button",
-      {
-        type: "button",
-        tabIndex: 0,
-        class: "answer-btn answer-btn-degree",
-        "data-degree": val,
-        onClick: onAnswer ? () => onAnswer(val) : void 0,
-        children: label
-      },
-      val
-    )) });
+    return /* @__PURE__ */ u3("div", { class: cls, children: DEGREE_LABELS.map(([val, label]) => {
+      let btnCls = "answer-btn answer-btn-degree";
+      btnCls += feedbackClass(feedback ?? null, val, label);
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-degree": val,
+          onClick: onAnswer ? () => onAnswer(val) : void 0,
+          children: label
+        },
+        val
+      );
+    }) });
   }
-  function NumeralButtons({ onAnswer, hidden }) {
+  function NumeralButtons({ onAnswer, hidden, feedback }) {
     const cls = "answer-buttons answer-buttons-numerals" + (hidden ? " answer-group-hidden" : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children: ROMAN_NUMERALS.map((n2) => /* @__PURE__ */ u3(
-      "button",
-      {
-        type: "button",
-        tabIndex: 0,
-        class: "answer-btn answer-btn-numeral",
-        "data-numeral": n2,
-        onClick: onAnswer ? () => onAnswer(n2) : void 0,
-        children: n2
-      },
-      n2
-    )) });
+    return /* @__PURE__ */ u3("div", { class: cls, children: ROMAN_NUMERALS.map((n2) => {
+      let btnCls = "answer-btn answer-btn-numeral";
+      btnCls += feedbackClass(feedback ?? null, n2, n2);
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-numeral": n2,
+          onClick: onAnswer ? () => onAnswer(n2) : void 0,
+          children: n2
+        },
+        n2
+      );
+    }) });
   }
 
   // src/stats-display.ts
@@ -3078,7 +3153,10 @@ button {
   function TextPrompt({ text }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: text });
   }
-  function FeedbackDisplay({ text, className, time, hint, onNext }) {
+  function FeedbackDisplay({ text, className, time, hint, correct, onNext }) {
+    let btnCls = "next-btn";
+    if (correct === true) btnCls += " next-btn-correct";
+    else if (correct === false) btnCls += " next-btn-wrong";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
@@ -3086,7 +3164,7 @@ button {
         "button",
         {
           type: "button",
-          class: "next-btn",
+          class: btnCls,
           onClick: onNext,
           style: onNext ? void 0 : { visibility: "hidden" },
           children: "Next"
@@ -3109,6 +3187,113 @@ button {
     return /* @__PURE__ */ u3("div", { class: cls, children: /* @__PURE__ */ u3("div", { class: "quiz-countdown-fill", style: { width: `${pct}%` } }) });
   }
 
+  // src/ui/icons.tsx
+  var ICON_PROPS = {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "28",
+    height: "28",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    class: "skill-icon",
+    "aria-hidden": "true"
+  };
+  function Guitar() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "m11.9 12.1 4.514-4.514" }),
+      /* @__PURE__ */ u3("path", { d: "M20.1 2.3a1 1 0 0 0-1.4 0l-1.114 1.114A2 2 0 0 0 17 4.828v1.344a2 2 0 0 1-.586 1.414A2 2 0 0 1 17.828 7h1.344a2 2 0 0 0 1.414-.586L21.7 5.3a1 1 0 0 0 0-1.4z" }),
+      /* @__PURE__ */ u3("path", { d: "m6 16 2 2" }),
+      /* @__PURE__ */ u3("path", { d: "M8.23 9.85A3 3 0 0 1 11 8a5 5 0 0 1 5 5 3 3 0 0 1-1.85 2.77l-.92.38A2 2 0 0 0 12 18a4 4 0 0 1-4 4 6 6 0 0 1-6-6 4 4 0 0 1 4-4 2 2 0 0 0 1.85-1.23z" })
+    ] });
+  }
+  function Zap() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: /* @__PURE__ */ u3("path", { d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" }) });
+  }
+  function Hash() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("line", { x1: "4", x2: "20", y1: "9", y2: "9" }),
+      /* @__PURE__ */ u3("line", { x1: "4", x2: "20", y1: "15", y2: "15" }),
+      /* @__PURE__ */ u3("line", { x1: "10", x2: "8", y1: "3", y2: "21" }),
+      /* @__PURE__ */ u3("line", { x1: "16", x2: "14", y1: "3", y2: "21" })
+    ] });
+  }
+  function Ruler() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" }),
+      /* @__PURE__ */ u3("path", { d: "m14.5 12.5 2-2" }),
+      /* @__PURE__ */ u3("path", { d: "m11.5 9.5 2-2" }),
+      /* @__PURE__ */ u3("path", { d: "m8.5 6.5 2-2" }),
+      /* @__PURE__ */ u3("path", { d: "m17.5 15.5 2-2" })
+    ] });
+  }
+  function Calculator() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("rect", { width: "16", height: "20", x: "4", y: "2", rx: "2" }),
+      /* @__PURE__ */ u3("line", { x1: "8", x2: "16", y1: "6", y2: "6" }),
+      /* @__PURE__ */ u3("line", { x1: "16", x2: "16", y1: "14", y2: "18" }),
+      /* @__PURE__ */ u3("path", { d: "M16 10h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M12 10h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M8 10h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M12 14h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M8 14h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M12 18h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M8 18h.01" })
+    ] });
+  }
+  function ListOrdered() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "M11 5h10" }),
+      /* @__PURE__ */ u3("path", { d: "M11 12h10" }),
+      /* @__PURE__ */ u3("path", { d: "M11 19h10" }),
+      /* @__PURE__ */ u3("path", { d: "M4 4h1v5" }),
+      /* @__PURE__ */ u3("path", { d: "M4 9h2" }),
+      /* @__PURE__ */ u3("path", { d: "M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02" })
+    ] });
+  }
+  function KeyRound() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" }),
+      /* @__PURE__ */ u3("circle", { cx: "16.5", cy: "7.5", r: ".5", fill: "currentColor" })
+    ] });
+  }
+  function Signal() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "M2 20h.01" }),
+      /* @__PURE__ */ u3("path", { d: "M7 20v-4" }),
+      /* @__PURE__ */ u3("path", { d: "M12 20v-8" }),
+      /* @__PURE__ */ u3("path", { d: "M17 20V8" }),
+      /* @__PURE__ */ u3("path", { d: "M22 4v16" })
+    ] });
+  }
+  function SpellCheck() {
+    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u3("path", { d: "m6 16 6-12 6 12" }),
+      /* @__PURE__ */ u3("path", { d: "M8 12h8" }),
+      /* @__PURE__ */ u3("path", { d: "m16 20 2 2 4-4" })
+    ] });
+  }
+  var MODE_ICONS = {
+    fretboard: Guitar,
+    ukulele: Guitar,
+    speedTap: Zap,
+    noteSemitones: Hash,
+    intervalSemitones: Ruler,
+    semitoneMath: Calculator,
+    intervalMath: Calculator,
+    keySignatures: KeyRound,
+    scaleDegrees: Signal,
+    diatonicChords: ListOrdered,
+    chordSpelling: SpellCheck
+  };
+  function SkillIcon({ modeId }) {
+    const Icon = MODE_ICONS[modeId];
+    if (!Icon) return null;
+    return /* @__PURE__ */ u3(Icon, {});
+  }
+
   // src/quiz-engine.ts
   var NOTE_NAME_SET = new Set(NOTE_NAMES);
   var FLAT_TO_BUTTON = {};
@@ -3124,29 +3309,32 @@ button {
   function ModeScreen({ id, phase, children }) {
     return /* @__PURE__ */ u3("div", { class: `mode-screen phase-${phase}`, id: `mode-${id}`, children });
   }
-  function ModeTopBar({ title, description, beforeAfter, onBack, showBack = true }) {
-    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: /* @__PURE__ */ u3("div", { class: "mode-top-bar-row", children: [
-      /* @__PURE__ */ u3("div", { class: "mode-top-bar-text", children: [
-        /* @__PURE__ */ u3("h1", { class: "mode-title", children: title }),
-        description && /* @__PURE__ */ u3("p", { class: "mode-description", children: description }),
-        beforeAfter && /* @__PURE__ */ u3("div", { class: "mode-before-after", children: [
-          /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: beforeAfter.before }),
-          /* @__PURE__ */ u3("span", { class: "mode-ba-arrow", children: "\u2192" }),
-          /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: beforeAfter.after })
-        ] })
+  function ModeTopBar({ modeId, title, description, beforeAfter, onBack, showBack = true }) {
+    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: [
+      /* @__PURE__ */ u3("div", { class: "mode-top-bar-row", children: [
+        modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
+        /* @__PURE__ */ u3("div", { class: "mode-top-bar-text", children: [
+          /* @__PURE__ */ u3("h1", { class: "mode-title", children: title }),
+          description && /* @__PURE__ */ u3("p", { class: "mode-description", children: description })
+        ] }),
+        showBack && /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "mode-close-btn",
+            "aria-label": "Back to home",
+            onClick: onBack,
+            children: "\xD7"
+          }
+        )
       ] }),
-      showBack && /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "mode-close-btn",
-          "aria-label": "Back to home",
-          onClick: onBack,
-          children: "\xD7"
-        }
-      )
-    ] }) });
+      beforeAfter && /* @__PURE__ */ u3("div", { class: "mode-before-after", children: [
+        /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: beforeAfter.before }),
+        /* @__PURE__ */ u3("span", { class: "mode-ba-arrow", children: "\u2192" }),
+        /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: beforeAfter.after })
+      ] })
+    ] });
   }
   var tabbedIdCounter = 0;
   var TABS = ["practice", "progress"];
@@ -3530,6 +3718,7 @@ button {
           text: feedbackCorrect.text,
           className: feedbackCorrect.className,
           time: feedbackCorrect.time,
+          correct: feedbackCorrect.correct,
           onNext: () => {
           }
         }
@@ -3540,6 +3729,7 @@ button {
           text: feedbackWrong.text,
           className: feedbackWrong.className,
           hint: feedbackWrong.hint,
+          correct: feedbackWrong.correct,
           onNext: () => {
           }
         }
@@ -3571,7 +3761,7 @@ button {
       /* @__PURE__ */ u3(Section, { title: "Recommendation", children: /* @__PURE__ */ u3(
         Recommendation,
         {
-          text: "solidify +1 to +3 \u2014 3 slow items",
+          text: "solidify +1 to +3 \u2014 3 items to work on",
           onApply: () => {
           }
         }
