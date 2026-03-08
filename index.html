@@ -1933,7 +1933,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#739"></div>
+  <div class="home-screen" id="home-screen" data-version="#741"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -4017,6 +4017,9 @@ button {
     if (!displayName.includes("/")) return displayName;
     const [sharp, flat] = displayName.split("/");
     return Math.random() < 0.5 ? sharp : flat;
+  }
+  function rootUsesFlats(rootName) {
+    return rootName.length > 1 && rootName[1] === "b";
   }
   function noteMatchesInput(note, input) {
     const lower = input.toLowerCase();
@@ -8455,6 +8458,7 @@ button {
     checkAnswer: checkAnswer5,
     validateInput: (q3, input) => q3.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
     getDirection: (q3) => q3.dir,
+    getUseFlats: (q3) => rootUsesFlats(q3.root),
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "Signature (e.g. 2#)" : "Note name",
     buttons: {
       kind: "bidirectional",
@@ -8555,6 +8559,7 @@ button {
     checkAnswer: checkAnswer6,
     validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : /^[1-7]$/.test(input),
     getDirection: (q3) => q3.dir,
+    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Degree (1\u20137)",
     buttons: {
       kind: "bidirectional",
@@ -8656,6 +8661,7 @@ button {
     checkAnswer: checkAnswer7,
     validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input),
     getDirection: (q3) => q3.dir,
+    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
     buttons: {
       kind: "bidirectional",
@@ -9506,7 +9512,8 @@ button {
       return {
         status: "complete",
         correct: allCorrect,
-        correctAnswer: item.tones.map(displayNote).join(" ")
+        correctAnswer: item.tones.map(displayNote).join(" "),
+        state
       };
     }
     const expected = item.tones[idx];
@@ -9531,7 +9538,8 @@ button {
       return {
         status: "complete",
         correct: allCorrect,
-        correctAnswer: item.tones.map(displayNote).join(" ")
+        correctAnswer: item.tones.map(displayNote).join(" "),
+        state: newState
       };
     }
     return { status: "continue", state: newState };
@@ -9607,10 +9615,9 @@ button {
       const state = seqStateRef.current;
       if (!itemId || !state) return;
       const result = handleInput(itemId, input, state);
-      if (result.status === "continue") {
-        seqStateRef.current = result.state;
-        setSeqState(result.state);
-      } else {
+      seqStateRef.current = result.state;
+      setSeqState(result.state);
+      if (result.status === "complete") {
         engineSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
       }
     }, []);
@@ -9785,7 +9792,8 @@ button {
                 NoteButtons,
                 {
                   onAnswer: handleNoteAnswer,
-                  narrowing: noteNarrowing
+                  narrowing: noteNarrowing,
+                  useFlats: currentQ ? rootUsesFlats(currentQ.rootName) : void 0
                 }
               ),
               /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
