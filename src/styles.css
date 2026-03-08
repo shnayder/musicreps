@@ -1862,10 +1862,24 @@ button {
   background: var(--color-success-bg);
   color: var(--color-success-text);
 }
+.chord-slot.filled {
+  border-color: var(--color-text-muted);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
 .chord-slot.wrong {
   border-color: var(--color-error);
   background: var(--color-error-bg);
   color: var(--color-error-text);
+}
+.chord-slots-container {
+  text-align: center;
+}
+.chord-correct-answer {
+  font-size: var(--text-sm);
+  color: var(--color-success-text);
+  margin-top: var(--space-2);
+  letter-spacing: 0.05em;
 }
 
 /* --- Focus-visible (keyboard navigation) --- */

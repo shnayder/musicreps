@@ -1,16 +1,29 @@
 // Chord Spelling Preact mode: spell out all notes of a chord in root-up order.
 // "Cm7" -> user enters C, Eb, G, Bb in sequence.
 // ~132 items: 12 roots x chord types, grouped by chord type.
-// Sequential response: each note entered separately, final result is pass/fail.
+//
+// All notes are collected before feedback. Evaluation happens after the
+// last note is entered, then slots turn green/red and the correct answer
+// is shown below if any were wrong. Spelling must be exact (B ≠ Cb).
+//
+// Two input methods:
+//   - SplitNoteButtons (tap): notes entered one at a time
+//   - Text input (keyboard): all notes at once, space-separated
+//     e.g. "C E G", "A Cb fs" — Enter to submit
 
-import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'preact/hooks';
 import type { ModeHandle, SequentialState } from '../../types.ts';
 import {
   displayNote,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
 } from '../../music-data.ts';
-import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
 import { useGroupScope } from '../../hooks/use-group-scope.ts';
@@ -35,43 +48,151 @@ import {
   RoundCompleteInfo,
 } from '../../ui/mode-screen.tsx';
 import { StatsGrid, StatsLegend } from '../../ui/stats.tsx';
-import { FeedbackDisplay, KeyboardHint } from '../../ui/quiz-ui.tsx';
+import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
 import { BUTTON_PROVIDER, SpeedCheck } from '../../ui/speed-check.tsx';
 
 import {
   ALL_GROUP_INDICES,
   ALL_ITEMS,
   checkAnswer,
+  evaluateSequential,
   getGridItemId,
   getItemIdsForGroup,
   GRID_COL_LABELS,
   GRID_NOTES,
   handleInput,
   initSequentialState,
+  parseChordInput,
   parseItem,
   SPELLING_GROUPS,
 } from './logic.ts';
 
 // ---------------------------------------------------------------------------
-// ChordSlots component — shows sequential progress
+// ChordSlots — shows sequential progress with deferred feedback
 // ---------------------------------------------------------------------------
 
-function ChordSlots({ state }: { state: SequentialState | null }) {
+function ChordSlots(
+  { state, correctTones }: {
+    state: SequentialState | null;
+    correctTones: string[] | null;
+  },
+) {
   if (!state) return <div class='chord-slots' />;
+
+  // Evaluation has happened when any entry has correct !== null
+  const evaluated = state.entries.length > 0 &&
+    state.entries[0].correct !== null;
+  const anyWrong = evaluated && state.entries.some((e) => !e.correct);
+
   return (
-    <div class='chord-slots'>
-      {Array.from({ length: state.expectedCount }, (_, i) => {
-        let cls = 'chord-slot';
-        let content = '_';
-        if (i < state.entries.length) {
-          content = state.entries[i].display;
-          cls += state.entries[i].correct ? ' correct' : ' wrong';
-        } else if (i === state.entries.length) {
-          cls += ' active';
-        }
-        return <span key={i} class={cls}>{content}</span>;
-      })}
+    <div class='chord-slots-container'>
+      <div class='chord-slots'>
+        {Array.from({ length: state.expectedCount }, (_, i) => {
+          let cls = 'chord-slot';
+          let content = '_';
+          if (i < state.entries.length) {
+            content = state.entries[i].display;
+            if (evaluated) {
+              cls += state.entries[i].correct ? ' correct' : ' wrong';
+            } else {
+              cls += ' filled';
+            }
+          } else if (i === state.entries.length) {
+            cls += ' active';
+          }
+          return <span key={i} class={cls}>{content}</span>;
+        })}
+      </div>
+      {anyWrong && correctTones && (
+        <div class='chord-correct-answer'>
+          {correctTones.map(displayNote).join('\u2003')}
+        </div>
+      )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ChordTextInput — keyboard input for typing all notes at once
+// ---------------------------------------------------------------------------
+
+function ChordTextInput(
+  { onSubmit, disabled, expectedCount }: {
+    onSubmit: (notes: string[]) => boolean;
+    disabled?: boolean;
+    expectedCount: number;
+  },
+) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [shake, setShake] = useState(false);
+  const shakeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+    };
+  }, []);
+
+  // Auto-focus when re-enabled (new question)
+  useEffect(() => {
+    if (!disabled && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [disabled]);
+
+  const triggerShake = useCallback(() => {
+    setShake(true);
+    if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+    shakeTimerRef.current = setTimeout(() => {
+      setShake(false);
+      shakeTimerRef.current = null;
+    }, 400);
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const value = inputRef.current?.value.trim() ?? '';
+      if (!value) {
+        triggerShake();
+        return;
+      }
+
+      const notes = parseChordInput(value);
+      if (notes.length !== expectedCount) {
+        triggerShake();
+        return;
+      }
+
+      const accepted = onSubmit(notes);
+      if (accepted) {
+        if (inputRef.current) inputRef.current.value = '';
+      } else {
+        triggerShake();
+      }
+    },
+    [onSubmit, expectedCount, triggerShake],
+  );
+
+  const placeholder = `${expectedCount} notes, e.g. C E G \u2014 Enter`;
+  const cls = 'answer-input' + (shake ? ' answer-input-shake' : '');
+
+  return (
+    <input
+      ref={inputRef}
+      type='text'
+      class={cls}
+      placeholder={placeholder}
+      aria-label={placeholder}
+      disabled={disabled}
+      onKeyDown={handleKeyDown}
+      autoComplete='off'
+      autoCorrect='off'
+      spellcheck={false}
+    />
   );
 }
 
@@ -115,29 +236,15 @@ export function ChordSpellingMode(
     },
   });
 
-  // --- Question + sequential state (refs pre-declared for use in engineConfig) ---
+  // --- Question + sequential state ---
   const currentItemRef = useRef<string | null>(null);
   const [seqState, setSeqState] = useState<SequentialState | null>(null);
   const seqStateRef = useRef<SequentialState | null>(null);
 
-  // --- Key handler + pending state for narrowing ---
+  // --- Engine submit ref (pre-declared for callbacks) ---
   const engineSubmitRef = useRef<(input: string) => void>(() => {});
-  const [pendingNote, setPendingNote] = useState<string | null>(null);
 
-  // The key handler routes through sequential input, not engine.submitAnswer
-  const handleSeqInputRef = useRef<(note: string) => void>(() => {});
-
-  const noteHandler = useMemo(
-    () =>
-      createAdaptiveKeyHandler(
-        (note: string) => handleSeqInputRef.current(note),
-        () => true,
-        setPendingNote,
-      ),
-    [],
-  );
-
-  // --- Sequential input handler ---
+  // --- Sequential input handler (button tap, one note at a time) ---
   const handleSequentialInput = useCallback((input: string) => {
     const itemId = currentItemRef.current;
     const state = seqStateRef.current;
@@ -146,13 +253,35 @@ export function ChordSpellingMode(
     const result = handleInput(itemId, input, state);
     seqStateRef.current = result.state;
     setSeqState(result.state);
+
     if (result.status === 'complete') {
-      // Sequential complete — submit final result to engine.
-      engineSubmitRef.current(result.correct ? '__correct__' : '__wrong__');
+      // All notes collected — evaluate and submit
+      const evalResult = evaluateSequential(itemId, result.state);
+      seqStateRef.current = evalResult.state;
+      setSeqState(evalResult.state);
+      engineSubmitRef.current(evalResult.correct ? '__correct__' : '__wrong__');
     }
   }, []);
 
-  handleSeqInputRef.current = handleSequentialInput;
+  // --- Batch submit handler (text input, all notes at once) ---
+  const handleBatchSubmit = useCallback((notes: string[]): boolean => {
+    const itemId = currentItemRef.current;
+    if (!itemId) return false;
+
+    // Build sequential state from all notes at once
+    let state = initSequentialState(itemId);
+    for (const note of notes) {
+      const result = handleInput(itemId, note, state);
+      state = result.state;
+    }
+
+    // Evaluate and submit
+    const evalResult = evaluateSequential(itemId, state);
+    seqStateRef.current = evalResult.state;
+    setSeqState(evalResult.state);
+    engineSubmitRef.current(evalResult.correct ? '__correct__' : '__wrong__');
+    return true;
+  }, []);
 
   // --- Engine config ---
   const engineConfig = useMemo((): QuizEngineConfig => ({
@@ -163,20 +292,11 @@ export function ChordSpellingMode(
       return checkAnswer(itemId, input);
     },
 
-    handleKey: (
-      e: KeyboardEvent,
-      _ctx: { submitAnswer: (input: string) => void },
-    ): boolean | void => {
-      return noteHandler.handleKey(e);
-    },
-
-    onStart: () => noteHandler.reset(),
     onStop: () => {
-      noteHandler.reset();
       seqStateRef.current = null;
       setSeqState(null);
     },
-  }), [noteHandler, getEnabledItems, getPracticingLabel]);
+  }), [getEnabledItems, getPracticingLabel]);
 
   const engine = useQuizEngine(engineConfig, learner.selector, container);
   engineSubmitRef.current = engine.submitAnswer;
@@ -219,10 +339,7 @@ export function ChordSpellingMode(
   });
 
   // --- Navigation handle ---
-  const deactivateCleanup = useCallback(() => noteHandler.reset(), [
-    noteHandler,
-  ]);
-  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+  useModeLifecycle(onMount, engine, learner);
 
   // --- Derived state ---
   const promptText = currentQ
@@ -335,14 +452,22 @@ export function ChordSpellingMode(
                 prompt={promptText}
                 controls={
                   <>
-                    <ChordSlots state={seqState} />
+                    <ChordSlots
+                      state={seqState}
+                      correctTones={currentQ?.tones ?? null}
+                    />
                     <SplitNoteButtons
                       onAnswer={handleNoteAnswer}
                       sequential
-                      pendingNote={pendingNote}
                       answered={engine.state.answered}
                     />
-                    <KeyboardHint type='note' />
+                    {seqState && (
+                      <ChordTextInput
+                        onSubmit={handleBatchSubmit}
+                        disabled={engine.state.answered}
+                        expectedCount={seqState.expectedCount}
+                      />
+                    )}
                     <FeedbackDisplay
                       text={engine.state.feedbackText}
                       className={engine.state.feedbackClass}
