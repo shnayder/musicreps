@@ -71,44 +71,52 @@ optional field, minimal type disruption. GenericMode already branches on
 
 ### 3. What does the sequential config contain?
 
+**Core principle:** As far as the mode is concerned, it asks for N notes and
+checks whether the entered ones are correct. *Getting those notes from the
+user is the system's job.* The mode definition should be minimal — declare
+what you need, not how to collect it.
+
 ```typescript
 type SequentialDef<Q> = {
-  /** Number of inputs expected for this question. */
+  /** How many inputs this question expects. */
   expectedCount: (q: Q) => number;
 
-  /** Collect one input. Returns display form. No correctness yet. */
-  collectInput: (q: Q, input: string, index: number) => string;
-
-  /** Evaluate all collected inputs at once. */
+  /** Check all collected inputs at once. Called after the system has
+   *  gathered exactly `expectedCount` inputs from the user. */
   evaluate: (q: Q, inputs: string[]) => {
     correct: boolean;
     correctAnswer: string;
     perEntry: { display: string; correct: boolean }[];
   };
 
-  /** Parse batch text input into individual answers. */
+  /** Parse batch text input into individual answers (optional — enables
+   *  keyboard entry). If omitted, only tap/button input is available. */
   parseBatchInput?: (text: string) => string[];
 
   /** Placeholder for batch text input field. */
   batchPlaceholder?: string | ((q: Q) => string);
-
-  /** Which buttons to show for sequential note entry. */
-  buttons: ButtonsDef;
 };
 ```
 
-Key choices within this:
-- **`collectInput` is trivial** — just `displayNote(input)` for chord
-  spelling. But it's a hook for future modes that might transform input
-  differently (e.g., degree numbers → note names).
-- **`evaluate` returns per-entry results** — needed for the slot UI
-  (green/red per note). This replaces the `SequentialState` type's role.
-- **`parseBatchInput` is optional** — not all sequential modes need keyboard
+Key choices:
+
+- **Only two required functions** — `expectedCount` and `evaluate`. The mode
+  says "I need 4 notes" and "here's how to grade them." Everything else
+  (slot rendering, collection, display transforms, input routing) is
+  GenericMode's job.
+- **No `collectInput`** — Display transforms (e.g., `Gb` → `G♭`) are a UI
+  concern. GenericMode applies `displayNote()` when rendering slots. If a
+  future mode needs a different transform, that's an extension point to add
+  then, not now.
+- **`evaluate` returns per-entry results** — Needed for the slot UI
+  (green/red per note). The system renders these; the mode just supplies the
+  truth table.
+- **`parseBatchInput` is optional** — Not all sequential modes need keyboard
   batch entry. Chord spelling does; a fretboard-tap mode wouldn't.
-- **Buttons are on `SequentialDef`**, not on `ModeDefinition.buttons` — because
-  sequential modes use `SplitNoteButtons` (sequential tap mode), not the
-  standard `ResponseButtons`. The top-level `buttons` field would be confusing
-  for sequential modes.
+- **No buttons field here** — Sequential modes use the top-level
+  `ModeDefinition.buttons` field, same as single-answer modes. GenericMode
+  knows to render them in sequential/chain-submit mode when `sequential` is
+  present. This avoids a confusing split between two button locations.
 
 ### 4. How does GenericMode render sequential UI?
 
@@ -187,20 +195,17 @@ future mode).
 ### 7. What about SplitNoteButtons?
 
 `SplitNoteButtons` is currently the only button component that supports
-sequential/chain-submit mode. For chord spelling, it's perfect. But future
-sequential modes might use different button types (e.g., degree buttons,
-interval buttons).
+sequential/chain-submit mode. For chord spelling, it's exactly right.
 
-**Recommendation:** Start with `SplitNoteButtons` support only (via `buttons:
-{ kind: 'piano-note' }` or similar). Future sequential modes can extend the
-button type set if needed — that's an incremental addition, not a design
-decision we need to lock in now.
+**Recommendation:** Sequential modes declare their buttons via the normal
+top-level `buttons` field (e.g., `{ kind: 'piano-note' }`). GenericMode
+detects `def.sequential` and renders them in sequential/chain-submit mode
+automatically — passing `sequential={true}` and routing each tap through the
+collection pipeline instead of directly to `submitAnswer`.
 
-Actually, looking more carefully: `SplitNoteButtons` *is* the note buttons in
-sequential mode — it handles the pending-note two-step (letter then
-accidental). The `sequential` prop on `SplitNoteButtons` enables chain-submit.
-GenericMode should render `SplitNoteButtons` when `def.sequential` is present
-and buttons kind is `'note'` or `'piano-note'`.
+Future sequential modes that need different button types (degree buttons, etc.)
+can extend the button components to support sequential mode incrementally.
+That's a button-level concern, not a mode-definition concern.
 
 ### 8. What happens to the hand-written component files?
 
@@ -220,11 +225,11 @@ After conversion:
 |---|---|---|
 | Sequential state ownership | GenericMode manages it | Pure-data definitions |
 | Type system expression | Optional `sequential` field | Additive, minimal disruption |
-| Sequential config shape | `expectedCount`, `collectInput`, `evaluate`, `parseBatchInput` | Clean separation of concerns |
+| Sequential config shape | `expectedCount` + `evaluate` (2 required fns) | Mode says what, system handles how |
 | Sequential UI rendering | Built-in slot component | Universal pattern, free for future modes |
 | Sentinel/checkAnswer | GenericMode synthesizes internally | Mode authors don't see sentinels |
 | Text input | Reuse AnswerInput + parseBatchInput | Consistent with existing pattern |
-| Button type | SplitNoteButtons for now | Extensible later |
+| Button type | Top-level `buttons` field, sequential mode automatic | Same field as single-answer modes |
 | File changes | Delete component, keep logic, add definition | Standard mode structure |
 
 ## Non-Goals
