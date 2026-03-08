@@ -1312,6 +1312,69 @@ button {
   display: none;
 }
 
+/* --- Split note buttons (base note + accidental two-step input) --- */
+.split-note-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 400px;
+  margin: var(--space-3) auto;
+}
+.split-note-row-base {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+  width: 100%;
+}
+.split-note-row-accidentals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  width: 60%;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.split-note-row-accidentals.split-note-acc-hidden {
+  opacity: 0.3;
+  pointer-events: none;
+}
+.split-note-btn {
+  height: 48px;
+  font-size: var(--text-md);
+  font-weight: 500;
+  border: 1.5px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.split-note-btn:active {
+  background: var(--color-surface-pressed);
+  transform: scale(0.97);
+}
+.split-note-btn:disabled {
+  cursor: default;
+}
+@media (hover: hover) {
+  .split-note-btn:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-text);
+  }
+}
+.split-note-pending {
+  border-color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+.split-note-dimmed {
+  opacity: 0.4;
+}
+.split-note-acc {
+  background: var(--color-surface-accent);
+}
+
 /* --- Quiz prompt (text modes) --- */
 .quiz-prompt-row {
   display: flex;
@@ -1933,7 +1996,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="e21ad5 refactor-note-input-m6XyM"></div>
+  <div class="home-screen" id="home-screen" data-version="7162c1 refactor-note-input-m6XyM"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6714,6 +6777,82 @@ button {
       );
     }) });
   }
+  var ACCIDENTALS_SINGLE = [
+    { label: "\u266D", suffix: "b" },
+    // ♭
+    { label: "\u266E", suffix: "" },
+    // ♮ (natural)
+    { label: "\u266F", suffix: "#" }
+    // ♯
+  ];
+  function SplitNoteButtons({ onAnswer, sequential, pendingNote, answered }) {
+    const [pendingBase, setPendingBase] = d2(null);
+    const onAnswerRef = A2(onAnswer);
+    onAnswerRef.current = onAnswer;
+    y2(() => {
+      if (pendingNote || answered) setPendingBase(null);
+    }, [pendingNote, answered]);
+    const handleBase = q2((note) => {
+      setPendingBase((prev) => {
+        if (prev === note) {
+          onAnswerRef.current(note);
+          return null;
+        }
+        if (prev && sequential) {
+          onAnswerRef.current(prev);
+        }
+        return note;
+      });
+    }, [sequential]);
+    const handleAccidental = q2((suffix) => {
+      setPendingBase((prev) => {
+        if (!prev) return null;
+        onAnswerRef.current(suffix ? prev + suffix : prev);
+        return null;
+      });
+    }, []);
+    const effective = pendingBase ?? pendingNote ?? null;
+    const showAccidentals = effective !== null && !answered;
+    return /* @__PURE__ */ u3("div", { class: "split-note-buttons", children: [
+      /* @__PURE__ */ u3("div", { class: "split-note-row-base", children: NATURAL_NOTES.map((n2) => {
+        let cls = "split-note-btn split-note-base";
+        if (effective === n2) cls += " split-note-pending";
+        else if (effective) cls += " split-note-dimmed";
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            "data-note": n2,
+            disabled: answered,
+            onClick: () => handleBase(n2),
+            children: displayNote(n2)
+          },
+          n2
+        );
+      }) }),
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "split-note-row-accidentals" + (showAccidentals ? "" : " split-note-acc-hidden"),
+          children: ACCIDENTALS_SINGLE.map(({ label, suffix }) => /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              tabIndex: 0,
+              class: "split-note-btn split-note-acc",
+              "data-accidental": suffix || "natural",
+              disabled: !showAccidentals,
+              onClick: () => handleAccidental(suffix),
+              children: label
+            },
+            label
+          ))
+        }
+      )
+    ] });
+  }
   function PianoNoteButtons({ onAnswer, hideAccidentals, narrowing }) {
     return /* @__PURE__ */ u3("div", { class: "note-buttons", children: [
       /* @__PURE__ */ u3("div", { class: "note-row-accidentals", children: ACCIDENTAL_NAMES.map((n2) => {
@@ -9659,10 +9798,6 @@ button {
         setSeqState(null);
       }
     }
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
     usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS9,
@@ -9789,11 +9924,12 @@ button {
                 }
               ),
               /* @__PURE__ */ u3(
-                NoteButtons,
+                SplitNoteButtons,
                 {
                   onAnswer: handleNoteAnswer,
-                  narrowing: noteNarrowing,
-                  useFlats: currentQ ? rootUsesFlats(currentQ.rootName) : void 0
+                  sequential: true,
+                  pendingNote,
+                  answered: engine.state.answered
                 }
               ),
               /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),

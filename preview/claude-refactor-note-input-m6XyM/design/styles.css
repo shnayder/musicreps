@@ -1302,6 +1302,69 @@ button {
   display: none;
 }
 
+/* --- Split note buttons (base note + accidental two-step input) --- */
+.split-note-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 400px;
+  margin: var(--space-3) auto;
+}
+.split-note-row-base {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+  width: 100%;
+}
+.split-note-row-accidentals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  width: 60%;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.split-note-row-accidentals.split-note-acc-hidden {
+  opacity: 0.3;
+  pointer-events: none;
+}
+.split-note-btn {
+  height: 48px;
+  font-size: var(--text-md);
+  font-weight: 500;
+  border: 1.5px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.split-note-btn:active {
+  background: var(--color-surface-pressed);
+  transform: scale(0.97);
+}
+.split-note-btn:disabled {
+  cursor: default;
+}
+@media (hover: hover) {
+  .split-note-btn:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-text);
+  }
+}
+.split-note-pending {
+  border-color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+.split-note-dimmed {
+  opacity: 0.4;
+}
+.split-note-acc {
+  background: var(--color-surface-accent);
+}
+
 /* --- Quiz prompt (text modes) --- */
 .quiz-prompt-row {
   display: flex;
