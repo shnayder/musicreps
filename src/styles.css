@@ -1312,21 +1312,6 @@ button {
   display: none;
 }
 
-/* --- Feedback banner (correct/incorrect answer display) --- */
-.feedback-banner {
-  text-align: center;
-  font-size: var(--text-lg);
-  font-weight: 600;
-  min-height: 1.75rem;
-  margin-bottom: var(--space-2);
-}
-.feedback-banner-correct {
-  color: var(--color-success-text);
-}
-.feedback-banner-wrong {
-  color: var(--color-error-text);
-}
-
 /* --- Answer buttons grid (shared by new modes) --- */
 .answer-buttons {
   display: grid;
