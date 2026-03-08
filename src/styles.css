@@ -116,14 +116,14 @@ body {
 .home-screen {
   display: flex;
   flex-direction: column;
-  padding: var(--space-5);
+  padding: 0 var(--space-5) var(--space-5);
 }
 .home-screen.hidden {
   display: none;
 }
 .home-header {
   text-align: left;
-  padding: var(--space-6) 0 var(--space-4);
+  padding: var(--space-3) 0 var(--space-4);
 }
 .home-title {
   font-family: var(--font-display);
@@ -188,7 +188,7 @@ body {
   border: 1px solid var(--color-border-lighter);
   border-left: 3px solid var(--color-brand);
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-3);
+  margin: 0 0 var(--space-3);
   cursor: pointer;
   position: relative;
 }
@@ -560,7 +560,7 @@ body {
 /* --- Mode screens --- */
 .mode-screen {
   display: none;
-  padding-top: var(--space-3);
+  padding-top: 0;
   flex: 1;
 }
 .mode-screen.mode-active {
@@ -1097,7 +1097,7 @@ button {
   padding: 0 var(--space-5);
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 }
 .mode-screen.phase-active .mode-top-bar,
 .mode-screen.phase-round-complete .mode-top-bar,
