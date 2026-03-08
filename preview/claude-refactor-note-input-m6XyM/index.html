@@ -1277,6 +1277,9 @@ button {
   cursor: pointer;
   padding: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1349,6 +1352,9 @@ button {
   background: var(--color-bg);
   color: var(--color-text);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background 0.1s, border-color 0.1s, opacity 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1457,6 +1463,9 @@ button {
   cursor: pointer;
   padding: 0 var(--space-2);
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1995,7 +2004,7 @@ button {
   /* .quiz-controls margin-top:auto pushes controls toward the bottom;
      extra padding so they clear the screen edge on mobile. */
   .quiz-area {
-    padding-bottom: var(--space-4);
+    padding: 0 var(--space-4) var(--space-4);
   }
 
   .next-btn {
@@ -2012,7 +2021,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="a7f1bd refactor-note-input-m6XyM"></div>
+  <div class="home-screen" id="home-screen" data-version="d08a49 refactor-note-input-m6XyM"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
