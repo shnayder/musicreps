@@ -1861,42 +1861,44 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
+  min-width: 2.5rem;
+  padding: 0 0.25rem;
   height: 2.5rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-md);
+  border: none;
+  border-bottom: 2px solid var(--color-border);
+  border-radius: 0;
+  font-size: var(--text-lg);
   font-weight: 600;
-  background: var(--color-surface);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  background: transparent;
+  color: var(--color-text-muted);
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 .chord-slot.active {
-  border-color: var(--color-focus);
-  background: var(--color-focus-bg);
-}
-.chord-slot.correct {
-  border-color: var(--color-success);
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
+  border-bottom-color: var(--color-text);
 }
 .chord-slot.filled {
-  border-color: var(--color-text-muted);
-  background: var(--color-bg);
+  border-bottom-color: var(--color-text);
   color: var(--color-text);
 }
+.chord-slot.correct {
+  border-bottom-color: var(--color-success);
+  color: var(--color-success-text);
+}
 .chord-slot.wrong {
-  border-color: var(--color-error);
-  background: var(--color-error-bg);
+  border-bottom-color: var(--color-error);
   color: var(--color-error-text);
 }
 .chord-slots-container {
   text-align: center;
 }
 .chord-correct-answer {
-  font-size: var(--text-sm);
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: 600;
   color: var(--color-success-text);
   margin-top: var(--space-2);
-  letter-spacing: 0.05em;
 }
 
 /* --- Focus-visible (keyboard navigation) --- */
@@ -2035,7 +2037,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="d7f74e refactor-note-input-m6XyM"></div>
+  <div class="home-screen" id="home-screen" data-version="18bf34 refactor-note-input-m6XyM"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -9805,7 +9807,7 @@ button {
     return /* @__PURE__ */ u3("div", { class: "chord-slots-container", children: [
       /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: state.expectedCount }, (_3, i3) => {
         let cls = "chord-slot";
-        let content = "_";
+        let content = "\xA0";
         if (i3 < state.entries.length) {
           content = state.entries[i3].display;
           if (evaluated) {
@@ -9818,7 +9820,7 @@ button {
         }
         return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
       }) }),
-      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "chord-correct-answer", children: correctTones.map(displayNote).join("\u2003") })
+      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "chord-correct-answer", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { children: displayNote(t3) }, i3)) })
     ] });
   }
   function ChordTextInput({ onSubmit, disabled, expectedCount }) {

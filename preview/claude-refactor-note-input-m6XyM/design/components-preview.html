@@ -1859,42 +1859,44 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
+  min-width: 2.5rem;
+  padding: 0 0.25rem;
   height: 2.5rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-md);
+  border: none;
+  border-bottom: 2px solid var(--color-border);
+  border-radius: 0;
+  font-size: var(--text-lg);
   font-weight: 600;
-  background: var(--color-surface);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  background: transparent;
+  color: var(--color-text-muted);
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 .chord-slot.active {
-  border-color: var(--color-focus);
-  background: var(--color-focus-bg);
-}
-.chord-slot.correct {
-  border-color: var(--color-success);
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
+  border-bottom-color: var(--color-text);
 }
 .chord-slot.filled {
-  border-color: var(--color-text-muted);
-  background: var(--color-bg);
+  border-bottom-color: var(--color-text);
   color: var(--color-text);
 }
+.chord-slot.correct {
+  border-bottom-color: var(--color-success);
+  color: var(--color-success-text);
+}
 .chord-slot.wrong {
-  border-color: var(--color-error);
-  background: var(--color-error-bg);
+  border-bottom-color: var(--color-error);
   color: var(--color-error-text);
 }
 .chord-slots-container {
   text-align: center;
 }
 .chord-correct-answer {
-  font-size: var(--text-sm);
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: 600;
   color: var(--color-success-text);
   margin-top: var(--space-2);
-  letter-spacing: 0.05em;
 }
 
 /* --- Focus-visible (keyboard navigation) --- */
