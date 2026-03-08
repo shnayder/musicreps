@@ -156,6 +156,22 @@ describe('handleInput', () => {
     }
   });
 
+  it('complete result includes final state with all entries', () => {
+    let state = initSequentialState('C:major');
+    let result = handleInput('C:major', 'C', state);
+    if (result.status === 'continue') state = result.state;
+    result = handleInput('C:major', 'E', state);
+    if (result.status === 'continue') state = result.state;
+    result = handleInput('C:major', 'G', state);
+    assert.equal(result.status, 'complete');
+    if (result.status === 'complete') {
+      assert.equal(result.state.entries.length, 3);
+      assert.equal(result.state.entries[0].display, 'C');
+      assert.equal(result.state.entries[1].display, 'E');
+      assert.equal(result.state.entries[2].display, 'G');
+    }
+  });
+
   it('entering a wrong note and completing still returns complete with correct: false', () => {
     let state = initSequentialState('C:major');
 
@@ -174,6 +190,24 @@ describe('handleInput', () => {
     assert.equal(result.status, 'complete');
     if (result.status === 'complete') {
       assert.equal(result.correct, false);
+    }
+  });
+
+  it('flat-root chord complete result uses flat spellings in display', () => {
+    // Bb minor: Bb Db F
+    let state = initSequentialState('Bb:minor');
+    let result = handleInput('Bb:minor', 'Bb', state);
+    if (result.status === 'continue') state = result.state;
+    result = handleInput('Bb:minor', 'Db', state);
+    if (result.status === 'continue') state = result.state;
+    result = handleInput('Bb:minor', 'F', state);
+    assert.equal(result.status, 'complete');
+    if (result.status === 'complete') {
+      assert.equal(result.state.entries.length, 3);
+      // Display should use flat spellings, not sharps
+      assert.equal(result.state.entries[0].display, 'B\u266D');
+      assert.equal(result.state.entries[1].display, 'D\u266D');
+      assert.equal(result.state.entries[2].display, 'F');
     }
   });
 

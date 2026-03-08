@@ -7,6 +7,7 @@ import {
   isValidNoteInput,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
+  rootUsesFlats,
 } from '../../music-data.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
@@ -36,6 +37,7 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   validateInput: (q, input) =>
     q.dir === 'fwd' ? isValidKeysigInput(input) : isValidNoteInput(input),
   getDirection: (q) => q.dir,
+  getUseFlats: (q) => rootUsesFlats(q.root),
 
   inputPlaceholder: (q) =>
     q.dir === 'fwd' ? 'Signature (e.g. 2#)' : 'Note name',

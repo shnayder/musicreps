@@ -6,6 +6,7 @@ import {
   isValidNoteInput,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
+  rootUsesFlats,
 } from '../../music-data.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
@@ -41,6 +42,7 @@ export const SCALE_DEGREES_DEF: ModeDefinition<Question> = {
   validateInput: (q, input) =>
     q.dir === 'fwd' ? isValidNoteInput(input) : /^[1-7]$/.test(input),
   getDirection: (q) => q.dir,
+  getUseFlats: (q) => rootUsesFlats(q.keyRoot),
 
   inputPlaceholder: (q) => q.dir === 'fwd' ? 'Note name' : 'Degree (1\u20137)',
   buttons: {

@@ -137,6 +137,7 @@ export function handleInput(
       status: 'complete',
       correct: allCorrect,
       correctAnswer: item.tones.map(displayNote).join(' '),
+      state,
     };
   }
 
@@ -166,6 +167,7 @@ export function handleInput(
       status: 'complete',
       correct: allCorrect,
       correctAnswer: item.tones.map(displayNote).join(' '),
+      state: newState,
     };
   }
 

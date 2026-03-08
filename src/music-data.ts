@@ -198,6 +198,11 @@ export function pickRandomAccidental(displayName: string) {
   return Math.random() < 0.5 ? sharp : flat;
 }
 
+/** Whether a root/key name uses flat accidentals (e.g. "Bb", "Eb", "Db"). */
+export function rootUsesFlats(rootName: string) {
+  return rootName.length > 1 && rootName[1] === 'b';
+}
+
 /** Check if a user input matches any accepted answer for a note.
  *  Accepts 's' as alias for '#' (e.g. "Cs" = "C#", "fs" = "f#"). */
 export function noteMatchesInput(note: Note, input: string) {
