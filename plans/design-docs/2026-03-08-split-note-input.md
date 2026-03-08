@@ -49,18 +49,53 @@ Three tiers of accidental display, chosen per mode:
    the natural
 4. If tier is "none", tapping a base note submits immediately (no pending state)
 
+### Confirming a natural
+
+No timeout — the user is always in control. Three ways to confirm a natural:
+
+1. **Double-tap** — tap the same base note again (e.g., C → C submits C♮)
+2. **Tap ♮** — explicit natural button
+3. **Tap a different base note** — submits the pending note as natural, then
+   starts pending on the new note (so D after pending C submits C♮ and starts
+   pending D)
+
+Option 3 means rapid natural-note sequences are still fast: just tap through
+the base notes and each previous one auto-submits as natural.
+
+**Discoverability:** The ♮ button serves as a visual hint that confirming is
+needed. The accidental row appearing/highlighting after a base note tap signals
+"pick one of these." New users will likely tap ♮; experienced users will
+double-tap or chain base notes.
+
 ### Keyboard input
 
-No change needed — the keyboard handler already implements this exact two-step
-flow (letter → optional accidental with timeout). The button UX would simply
-mirror the keyboard pattern, making them conceptually consistent.
+The keyboard handler (`createNoteKeyHandler`) currently uses a 600ms timeout
+(`PENDING_DELAY_AMBIGUOUS`) to auto-submit naturals. This should be updated to
+match the no-timeout button model: require explicit confirmation via Enter,
+accidental key, or next letter key. The existing "next letter auto-submits
+pending" behavior already works — just remove the timeout.
 
-### Timeout behavior
+### Swipe gestures (exploratory)
 
-Same timeout as keyboard: ~600ms after tapping a base note with no accidental
-tap, auto-submit the natural. This keeps rapid natural-note input fast (single
-tap, no wait for confirm). The ♮ button is there for users who want to be
-explicit.
+On touch devices, swiping on a base note button could select accidentals:
+
+- **Swipe up** → sharp (♯)
+- **Swipe down** → flat (♭)
+- **Long swipe up** → double sharp (𝄪)
+- **Long swipe down** → double flat (𝄫)
+- **Tap (no swipe)** → enters pending state (then confirm via double-tap, ♮,
+  or next note)
+
+This would make accidental input single-gesture instead of two-tap, potentially
+faster for experienced users. The swipe direction maps to the intuitive "sharp =
+higher = up" association.
+
+**Open questions for swipes:**
+- Is the speed gain real, or does the precision cost offset it?
+- How to make it discoverable? Maybe show a brief tooltip on first use.
+- Should swipe *replace* the two-tap flow or be an accelerator alongside it?
+- Accessibility: swipe gestures are harder for some users, so the button
+  fallback must always work.
 
 ## What This Eliminates
 
@@ -184,20 +219,16 @@ the same note set.
 
 ## Open Questions
 
-1. **Timeout value** — 600ms works well for keyboard (you're already thinking
-   about the accidental). For buttons, should it be longer since the user needs
-   to move their finger/cursor to a different button?
+1. **Solfège mode** — base note labels show Do Re Mi Fa Sol La Si instead of
+   C D E F G A B. Accidental row stays the same. Straightforward.
 
-2. **Tap the same base note to confirm natural?** — Tapping "C" then "C" again
-   could submit "C" immediately (double-tap to confirm). Alternative: only ♮
-   confirms, timeout handles the rest.
-
-3. **Solfège mode** — base note labels would show Do Re Mi Fa Sol La Si instead
-   of C D E F G A B. Accidental row stays the same. Straightforward.
-
-4. **Narrowing for keyboard** — currently highlights which chromatic buttons
-   match a pending letter. With split buttons, the base note gets
-   "selected" state and accidentals highlight. Simpler and more intuitive.
-
-5. **Mobile tap targets** — 7 base notes + 3 accidentals = 10 buttons is fewer
+2. **Mobile tap targets** — 7 base notes + 3 accidentals = 10 buttons is fewer
    than the current 12. Should be fine or better for mobile.
+
+3. **Keyboard timeout removal** — removing `PENDING_DELAY_AMBIGUOUS` from
+   keyboard input changes existing behavior. Currently "press C, wait 600ms"
+   auto-submits C. New behavior: "press C, press Enter" (or next letter).
+   Is this strictly better, or do some users rely on the auto-submit?
+
+4. **Swipe gesture viability** — worth prototyping? Or better to ship the
+   two-tap model first and explore swipes as an enhancement later?
