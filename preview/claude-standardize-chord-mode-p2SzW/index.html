@@ -2047,7 +2047,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="34c619 standardize-chord-mode-p2SzW"></div>
+  <div class="home-screen" id="home-screen" data-version="5985f6 standardize-chord-mode-p2SzW"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7076,6 +7076,28 @@ button {
     }) });
   }
 
+  // src/ui/sequential-slots.tsx
+  function SequentialSlots({ expectedCount, entries, evaluated, correctTones }) {
+    const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
+    return /* @__PURE__ */ u3("div", { class: "chord-slots-container", children: [
+      /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: expectedCount }, (_3, i3) => {
+        let cls = "chord-slot";
+        let content = "\xA0";
+        if (evaluated && i3 < evaluated.length) {
+          content = evaluated[i3].display;
+          cls += evaluated[i3].correct ? " correct" : " wrong";
+        } else if (i3 < entries.length) {
+          content = entries[i3].display;
+          cls += " filled";
+        } else if (i3 === entries.length) {
+          cls += " active";
+        }
+        return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
+      }) }),
+      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "chord-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "chord-correct-note", children: displayNote(t3) }, i3)) })
+    ] });
+  }
+
   // src/ui/scope.tsx
   function GroupToggles({ labels, active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
@@ -8060,6 +8082,13 @@ button {
     const ctrlRef = A2(ctrl);
     ctrlRef.current = ctrl;
     const currentQRef = A2(null);
+    const isSequential = !!def.sequential;
+    const [seqEntries, setSeqEntries] = d2([]);
+    const seqEntriesRef = A2([]);
+    const [seqEvaluated, setSeqEvaluated] = d2(null);
+    const [seqCorrectAnswer, setSeqCorrectAnswer] = d2("");
+    const seqSubmitRef = A2(() => {
+    });
     const getEnabledItemsRef = A2(
       () => def.allItems
     );
@@ -8074,6 +8103,9 @@ button {
       getEnabledItems: () => getEnabledItemsRef.current(),
       getPracticingLabel: () => getPracticingLabelRef.current(),
       checkAnswer: (_itemId, input) => {
+        if (isSequential) {
+          return { correct: input === "__correct__", correctAnswer: "" };
+        }
         const q3 = currentQRef.current;
         return def.checkAnswer(q3, input);
       },
@@ -8084,17 +8116,62 @@ button {
         ctrlRef.current.onStart?.();
       },
       onStop: () => {
+        if (isSequential) {
+          setSeqEntries([]);
+          setSeqEvaluated(null);
+          setSeqCorrectAnswer("");
+          seqEntriesRef.current = [];
+        }
         ctrlRef.current.onStop?.();
       },
       handleKey: ctrl.handleKey ? (e3, ctx) => ctrlRef.current.handleKey(e3, ctx) : void 0
-    }), [def, !!ctrl.handleKey]);
+    }), [def, !!ctrl.handleKey, isSequential]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
+    seqSubmitRef.current = engine.submitAnswer;
     const currentQ = T2(() => {
       const id = engine.state.currentItemId;
       if (!id || engine.state.phase === "idle") return null;
       return def.getQuestion(id);
     }, [engine.state.currentItemId, engine.state.phase, def]);
     currentQRef.current = currentQ;
+    const prevSeqItemRef = A2(null);
+    if (isSequential && engine.state.currentItemId !== prevSeqItemRef.current) {
+      prevSeqItemRef.current = engine.state.currentItemId;
+      seqEntriesRef.current = [];
+      setSeqEntries([]);
+      setSeqEvaluated(null);
+      setSeqCorrectAnswer("");
+    }
+    const handleSeqInput = q2((input) => {
+      if (!def.sequential || !currentQRef.current) return;
+      const q3 = currentQRef.current;
+      const expected = def.sequential.expectedCount(q3);
+      const raw = seqEntriesRef.current;
+      if (raw.length >= expected) return;
+      const newRaw = [...raw, input];
+      seqEntriesRef.current = newRaw;
+      setSeqEntries(newRaw.map((r3) => ({ display: displayNote(r3) })));
+      if (newRaw.length === expected) {
+        const result = def.sequential.evaluate(q3, newRaw);
+        setSeqEvaluated(result.perEntry);
+        setSeqCorrectAnswer(result.correctAnswer);
+        seqSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
+      }
+    }, [def]);
+    const handleSeqBatch = q2((text) => {
+      if (!def.sequential?.parseBatchInput || !currentQRef.current) return false;
+      const q3 = currentQRef.current;
+      const notes = def.sequential.parseBatchInput(text);
+      const expected = def.sequential.expectedCount(q3);
+      if (notes.length !== expected) return false;
+      seqEntriesRef.current = notes;
+      setSeqEntries(notes.map((r3) => ({ display: displayNote(r3) })));
+      const result = def.sequential.evaluate(q3, notes);
+      setSeqEvaluated(result.perEntry);
+      setSeqCorrectAnswer(result.correctAnswer);
+      seqSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
+      return true;
+    }, [def]);
     const dir = currentQ && def.getDirection ? def.getDirection(currentQ) : "fwd";
     usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const practicingLabel = groupScopeResult?.practicingLabel ?? "all items";
@@ -8124,6 +8201,14 @@ button {
       [engine.submitAnswer, def]
     );
     const placeholder = (() => {
+      if (isSequential) {
+        const seq = def.sequential;
+        if (!seq.batchPlaceholder) return void 0;
+        if (typeof seq.batchPlaceholder === "string") {
+          return seq.batchPlaceholder;
+        }
+        return currentQ ? seq.batchPlaceholder(currentQ) : void 0;
+      }
       if (!def.inputPlaceholder) return void 0;
       if (typeof def.inputPlaceholder === "string") return def.inputPlaceholder;
       return currentQ ? def.inputPlaceholder(currentQ) : void 0;
@@ -8233,6 +8318,50 @@ button {
                 median: round.roundMedian
               }
             )
+          }
+        ) : isSequential ? /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: ctrl.renderPrompt ? void 0 : promptText,
+            controls: /* @__PURE__ */ u3(k, { children: [
+              /* @__PURE__ */ u3(
+                SequentialSlots,
+                {
+                  expectedCount: currentQ && def.sequential ? def.sequential.expectedCount(currentQ) : 0,
+                  entries: seqEntries,
+                  evaluated: seqEvaluated,
+                  correctTones: seqCorrectAnswer ? seqCorrectAnswer.split(" ") : null
+                }
+              ),
+              /* @__PURE__ */ u3(
+                SplitNoteButtons,
+                {
+                  onAnswer: handleSeqInput,
+                  sequential: true,
+                  answered: engine.state.answered
+                }
+              ),
+              def.sequential?.parseBatchInput && /* @__PURE__ */ u3(
+                AnswerInput,
+                {
+                  onSubmit: handleSeqBatch,
+                  disabled: engine.state.answered,
+                  placeholder
+                }
+              ),
+              /* @__PURE__ */ u3(
+                FeedbackDisplay,
+                {
+                  text: engine.state.feedbackText,
+                  className: engine.state.feedbackClass,
+                  time: engine.state.timeDisplayText || void 0,
+                  hint: engine.state.hintText || void 0,
+                  correct: engine.state.feedbackCorrect,
+                  onNext: engine.state.answered ? engine.nextQuestion : void 0
+                }
+              )
+            ] }),
+            children: currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null
           }
         ) : /* @__PURE__ */ u3(
           QuizArea,
@@ -9358,9 +9487,128 @@ button {
     };
   }
 
+  // src/modes/chord-spelling/logic.ts
+  function buildGroups() {
+    let maxGroup = 0;
+    for (const ct of CHORD_TYPES) {
+      if (ct.group > maxGroup) maxGroup = ct.group;
+    }
+    const result = [];
+    for (let g2 = 0; g2 <= maxGroup; g2++) {
+      const types = CHORD_TYPES.filter((t3) => t3.group === g2);
+      const label = types.map((t3) => t3.symbol || "maj").join(", ");
+      result.push({ types, label });
+    }
+    return result;
+  }
+  var SPELLING_GROUPS = buildGroups();
+  function getItemIdsForGroup7(groupIndex) {
+    const types = SPELLING_GROUPS[groupIndex].types;
+    const items = [];
+    for (const root of CHORD_ROOTS) {
+      for (const type of types) {
+        items.push(root + ":" + type.name);
+      }
+    }
+    return items;
+  }
+  var ALL_ITEMS8 = [];
+  for (const root of CHORD_ROOTS) {
+    for (const type of CHORD_TYPES) {
+      ALL_ITEMS8.push(root + ":" + type.name);
+    }
+  }
+  var ALL_GROUP_INDICES6 = SPELLING_GROUPS.map((_3, i3) => i3);
+  var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
+    name: r3,
+    displayName: r3
+  }));
+  var GRID_COL_LABELS3 = CHORD_TYPES.map((t3) => t3.symbol || "maj");
+  function parseItem(itemId) {
+    const colonIdx = itemId.indexOf(":");
+    const rootName = itemId.substring(0, colonIdx);
+    const typeName = itemId.substring(colonIdx + 1);
+    const chordType = CHORD_TYPES.find((t3) => t3.name === typeName);
+    const tones = getChordTones(rootName, chordType);
+    return { rootName, chordType, tones };
+  }
+  function evaluate(q3, inputs) {
+    const perEntry = inputs.map((input, i3) => {
+      const expected = q3.tones[i3];
+      const isCorrect = expected !== void 0 && spelledNoteMatchesInput(expected, input);
+      return {
+        display: isCorrect ? displayNote(expected) : displayNote(input),
+        correct: isCorrect
+      };
+    });
+    return {
+      correct: perEntry.every((e3) => e3.correct),
+      correctAnswer: q3.tones.map(displayNote).join(" "),
+      perEntry
+    };
+  }
+  function parseChordInput(text) {
+    return text.trim().split(/\s+/).filter(Boolean).map((token) => {
+      if (token.length === 0) return "";
+      const letter = token[0].toUpperCase();
+      if (!"CDEFGAB".includes(letter)) return token;
+      let suffix = "";
+      for (let i3 = 1; i3 < token.length; i3++) {
+        const ch = token[i3];
+        if (ch === "s" || ch === "S") suffix += "#";
+        else suffix += ch;
+      }
+      return letter + suffix;
+    });
+  }
+  function getGridItemId5(rootName, colIdx) {
+    return rootName + ":" + CHORD_TYPES[colIdx].name;
+  }
+
+  // src/modes/chord-spelling/definition.ts
+  var CHORD_SPELLING_DEF = {
+    id: "chordSpelling",
+    name: "Chord Spelling",
+    namespace: "chordSpelling",
+    description: MODE_DESCRIPTIONS.chordSpelling,
+    beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
+    itemNoun: "items",
+    allItems: ALL_ITEMS8,
+    getQuestion: (itemId) => parseItem(itemId),
+    getPromptText: (q3) => displayNote(q3.rootName) + q3.chordType.symbol,
+    // Sequential: collect N notes, then evaluate all at once
+    sequential: {
+      expectedCount: (q3) => q3.tones.length,
+      evaluate,
+      parseBatchInput: parseChordInput,
+      batchPlaceholder: (q3) => `${q3.tones.length} notes, e.g. C E G \u2014 Enter`
+    },
+    buttons: { kind: "piano-note" },
+    scope: {
+      kind: "groups",
+      groups: SPELLING_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup7,
+      allGroupIndices: ALL_GROUP_INDICES6,
+      storageKey: "chordSpelling_enabledGroups",
+      scopeLabel: "Chord types",
+      defaultEnabled: [0],
+      formatLabel: (groups) => {
+        if (groups.size === SPELLING_GROUPS.length) return "all chord types";
+        const labels = [...groups].sort((a3, b) => a3 - b).map((g2) => SPELLING_GROUPS[g2].label);
+        return labels.join(", ") + " chords";
+      }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: GRID_COL_LABELS3,
+      getItemId: getGridItemId5,
+      notes: GRID_NOTES3
+    }
+  };
+
   // src/modes/speed-tap/logic.ts
   var noteNames = NOTES.map((n2) => n2.name);
-  var ALL_ITEMS8 = NOTES.map((n2) => n2.name);
+  var ALL_ITEMS9 = NOTES.map((n2) => n2.name);
   function getNoteAtPosition(string, fret) {
     const offset = STRING_OFFSETS[string];
     return noteNames[(offset + fret) % 12];
@@ -9404,7 +9652,7 @@ button {
       storageKey: "speedTap_noteFilter"
     });
     const noteFilter = scope.kind === "note-filter" ? scope.noteFilter : "natural";
-    const learner = useLearnerModel("speedTap", ALL_ITEMS8);
+    const learner = useLearnerModel("speedTap", ALL_ITEMS9);
     const currentNoteRef = A2(null);
     const targetPosRef = A2([]);
     const foundPosRef = A2(/* @__PURE__ */ new Set());
@@ -9546,7 +9794,7 @@ button {
     }, [noteFilter]);
     const round = useRoundSummary(engine, practicingLabel);
     const ps = usePracticeSummary({
-      allItems: ALL_ITEMS8,
+      allItems: ALL_ITEMS9,
       selector: learner.selector,
       engine,
       itemNoun: "notes",
@@ -9698,450 +9946,6 @@ button {
     ] });
   }
 
-  // src/modes/chord-spelling/logic.ts
-  function buildGroups() {
-    let maxGroup = 0;
-    for (const ct of CHORD_TYPES) {
-      if (ct.group > maxGroup) maxGroup = ct.group;
-    }
-    const result = [];
-    for (let g2 = 0; g2 <= maxGroup; g2++) {
-      const types = CHORD_TYPES.filter((t3) => t3.group === g2);
-      const label = types.map((t3) => t3.symbol || "maj").join(", ");
-      result.push({ types, label });
-    }
-    return result;
-  }
-  var SPELLING_GROUPS = buildGroups();
-  function getItemIdsForGroup7(groupIndex) {
-    const types = SPELLING_GROUPS[groupIndex].types;
-    const items = [];
-    for (const root of CHORD_ROOTS) {
-      for (const type of types) {
-        items.push(root + ":" + type.name);
-      }
-    }
-    return items;
-  }
-  var ALL_ITEMS9 = [];
-  for (const root of CHORD_ROOTS) {
-    for (const type of CHORD_TYPES) {
-      ALL_ITEMS9.push(root + ":" + type.name);
-    }
-  }
-  var ALL_GROUP_INDICES6 = SPELLING_GROUPS.map((_3, i3) => i3);
-  var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
-    name: r3,
-    displayName: r3
-  }));
-  var GRID_COL_LABELS3 = CHORD_TYPES.map((t3) => t3.symbol || "maj");
-  function parseItem(itemId) {
-    const colonIdx = itemId.indexOf(":");
-    const rootName = itemId.substring(0, colonIdx);
-    const typeName = itemId.substring(colonIdx + 1);
-    const chordType = CHORD_TYPES.find((t3) => t3.name === typeName);
-    const tones = getChordTones(rootName, chordType);
-    return { rootName, chordType, tones };
-  }
-  function initSequentialState(itemId) {
-    const item = parseItem(itemId);
-    return { expectedCount: item.tones.length, entries: [] };
-  }
-  function handleInput(itemId, input, state) {
-    const item = parseItem(itemId);
-    const idx = state.entries.length;
-    if (idx >= item.tones.length) {
-      return { status: "complete", state };
-    }
-    const entries = [
-      ...state.entries,
-      { input, display: displayNote(input), correct: null }
-    ];
-    const newState = {
-      expectedCount: item.tones.length,
-      entries
-    };
-    if (entries.length === item.tones.length) {
-      return { status: "complete", state: newState };
-    }
-    return { status: "continue", state: newState };
-  }
-  function evaluateSequential(itemId, state) {
-    const item = parseItem(itemId);
-    const evaluatedEntries = state.entries.map((entry, i3) => {
-      const expected = item.tones[i3];
-      const isCorrect = expected !== void 0 && spelledNoteMatchesInput(expected, entry.input);
-      return {
-        input: entry.input,
-        display: isCorrect ? displayNote(expected) : displayNote(entry.input),
-        correct: isCorrect
-      };
-    });
-    const allCorrect = evaluatedEntries.every((e3) => e3.correct);
-    const correctAnswer = item.tones.map(displayNote).join(" ");
-    return {
-      correct: allCorrect,
-      correctAnswer,
-      state: { expectedCount: state.expectedCount, entries: evaluatedEntries }
-    };
-  }
-  function parseChordInput(text) {
-    return text.trim().split(/\s+/).filter(Boolean).map((token) => {
-      if (token.length === 0) return "";
-      const letter = token[0].toUpperCase();
-      if (!"CDEFGAB".includes(letter)) return token;
-      let suffix = "";
-      for (let i3 = 1; i3 < token.length; i3++) {
-        const ch = token[i3];
-        if (ch === "s" || ch === "S") suffix += "#";
-        else suffix += ch;
-      }
-      return letter + suffix;
-    });
-  }
-  function checkAnswer9(itemId, input) {
-    const allCorrect = input === "__correct__";
-    const item = parseItem(itemId);
-    const correctAnswer = item.tones.map(displayNote).join(" ");
-    return { correct: allCorrect, correctAnswer };
-  }
-  function getGridItemId5(rootName, colIdx) {
-    return rootName + ":" + CHORD_TYPES[colIdx].name;
-  }
-
-  // src/modes/chord-spelling/chord-spelling-mode.tsx
-  function ChordSlots({ state, correctTones }) {
-    if (!state) return /* @__PURE__ */ u3("div", { class: "chord-slots" });
-    const evaluated = state.entries.length > 0 && state.entries[0].correct !== null;
-    const anyWrong = evaluated && state.entries.some((e3) => !e3.correct);
-    return /* @__PURE__ */ u3("div", { class: "chord-slots-container", children: [
-      /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: state.expectedCount }, (_3, i3) => {
-        let cls = "chord-slot";
-        let content = "\xA0";
-        if (i3 < state.entries.length) {
-          content = state.entries[i3].display;
-          if (evaluated) {
-            cls += state.entries[i3].correct ? " correct" : " wrong";
-          } else {
-            cls += " filled";
-          }
-        } else if (i3 === state.entries.length) {
-          cls += " active";
-        }
-        return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
-      }) }),
-      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "chord-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "chord-correct-note", children: displayNote(t3) }, i3)) })
-    ] });
-  }
-  function ChordTextInput({ onSubmit, disabled, expectedCount }) {
-    const inputRef = A2(null);
-    const [shake, setShake] = d2(false);
-    const shakeTimerRef = A2(null);
-    y2(() => {
-      return () => {
-        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
-      };
-    }, []);
-    y2(() => {
-      if (!disabled && inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, [disabled]);
-    const triggerShake = q2(() => {
-      setShake(true);
-      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
-      shakeTimerRef.current = setTimeout(() => {
-        setShake(false);
-        shakeTimerRef.current = null;
-      }, 400);
-    }, []);
-    const handleKeyDown = q2(
-      (e3) => {
-        if (e3.key !== "Enter") return;
-        e3.preventDefault();
-        e3.stopPropagation();
-        const value = inputRef.current?.value.trim() ?? "";
-        if (!value) {
-          triggerShake();
-          return;
-        }
-        const notes = parseChordInput(value);
-        if (notes.length !== expectedCount) {
-          triggerShake();
-          return;
-        }
-        const accepted = onSubmit(notes);
-        if (accepted) {
-          if (inputRef.current) inputRef.current.value = "";
-        } else {
-          triggerShake();
-        }
-      },
-      [onSubmit, expectedCount, triggerShake]
-    );
-    const placeholder = `${expectedCount} notes, e.g. C E G \u2014 Enter`;
-    const cls = "answer-input" + (shake ? " answer-input-shake" : "");
-    return /* @__PURE__ */ u3(
-      "input",
-      {
-        ref: inputRef,
-        type: "text",
-        class: cls,
-        placeholder,
-        "aria-label": placeholder,
-        disabled,
-        onKeyDown: handleKeyDown,
-        autoComplete: "off",
-        autoCorrect: "off",
-        spellcheck: false
-      }
-    );
-  }
-  function ChordSpellingMode({ container, navigateHome, onMount }) {
-    const learner = useLearnerModel("chordSpelling", ALL_ITEMS9);
-    const {
-      scopeActions,
-      enabledGroups,
-      practicingLabel,
-      recommendation,
-      recommendationText,
-      applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel
-    } = useGroupScope({
-      groups: SPELLING_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup7,
-      allGroupIndices: ALL_GROUP_INDICES6,
-      storageKey: "chordSpelling_enabledGroups",
-      scopeLabel: "Chord types",
-      defaultEnabled: [0],
-      selector: learner.selector,
-      formatLabel: (groups) => {
-        if (groups.size === SPELLING_GROUPS.length) return "all chord types";
-        const labels = [...groups].sort((a3, b) => a3 - b).map((g2) => SPELLING_GROUPS[g2].label);
-        return labels.join(", ") + " chords";
-      }
-    });
-    const currentItemRef = A2(null);
-    const [seqState, setSeqState] = d2(null);
-    const seqStateRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const handleSequentialInput = q2((input) => {
-      const itemId = currentItemRef.current;
-      const state = seqStateRef.current;
-      if (!itemId || !state) return;
-      const result = handleInput(itemId, input, state);
-      seqStateRef.current = result.state;
-      setSeqState(result.state);
-      if (result.status === "complete") {
-        const evalResult = evaluateSequential(itemId, result.state);
-        seqStateRef.current = evalResult.state;
-        setSeqState(evalResult.state);
-        engineSubmitRef.current(evalResult.correct ? "__correct__" : "__wrong__");
-      }
-    }, []);
-    const handleBatchSubmit = q2((notes) => {
-      const itemId = currentItemRef.current;
-      if (!itemId) return false;
-      let state = initSequentialState(itemId);
-      for (const note of notes) {
-        const result = handleInput(itemId, note, state);
-        state = result.state;
-      }
-      const evalResult = evaluateSequential(itemId, state);
-      seqStateRef.current = evalResult.state;
-      setSeqState(evalResult.state);
-      engineSubmitRef.current(evalResult.correct ? "__correct__" : "__wrong__");
-      return true;
-    }, []);
-    const engineConfig = T2(() => ({
-      getEnabledItems,
-      getPracticingLabel,
-      checkAnswer: (itemId, input) => {
-        return checkAnswer9(itemId, input);
-      },
-      onStop: () => {
-        seqStateRef.current = null;
-        setSeqState(null);
-      }
-    }), [getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return parseItem(id);
-    }, [engine.state.currentItemId, engine.state.phase]);
-    const prevItemRef = A2(null);
-    const currentItemId = engine.state.currentItemId;
-    if (currentItemId !== prevItemRef.current) {
-      prevItemRef.current = currentItemId;
-      currentItemRef.current = currentItemId;
-      if (currentItemId && engine.state.phase !== "idle") {
-        const newSeqState = initSequentialState(currentItemId);
-        seqStateRef.current = newSeqState;
-        setSeqState(newSeqState);
-      } else {
-        seqStateRef.current = null;
-        setSeqState(null);
-      }
-    }
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS9,
-      selector: learner.selector,
-      engine,
-      itemNoun: "items",
-      recommendation,
-      recommendationText
-    });
-    useModeLifecycle(onMount, engine, learner);
-    const promptText = currentQ ? displayNote(currentQ.rootName) + currentQ.chordType.symbol : "";
-    const handleNoteAnswer = q2(
-      (note) => handleSequentialInput(note),
-      [handleSequentialInput]
-    );
-    const round = useRoundSummary(engine, practicingLabel);
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: "chordSpelling",
-          title: "Chord Spelling",
-          description: MODE_DESCRIPTIONS.chordSpelling,
-          beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
-          scopeValid: enabledGroups.size > 0,
-          validationMessage: "Select at least one group",
-          scope: /* @__PURE__ */ u3(
-            GroupToggles,
-            {
-              labels: SPELLING_GROUPS.map((g2) => g2.label),
-              active: enabledGroups,
-              onToggle: scopeActions.toggleGroup
-            }
-          ),
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: ps.statsSel,
-                colLabels: GRID_COL_LABELS3,
-                getItemId: getGridItemId5,
-                notes: GRID_NOTES3
-              }
-            ),
-            /* @__PURE__ */ u3(StatsLegend, {})
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                ChordSlots,
-                {
-                  state: seqState,
-                  correctTones: currentQ?.tones ?? null
-                }
-              ),
-              /* @__PURE__ */ u3(
-                SplitNoteButtons,
-                {
-                  onAnswer: handleNoteAnswer,
-                  sequential: true,
-                  answered: engine.state.answered
-                }
-              ),
-              seqState && /* @__PURE__ */ u3(
-                ChordTextInput,
-                {
-                  onSubmit: handleBatchSubmit,
-                  disabled: engine.state.answered,
-                  expectedCount: seqState.expectedCount
-                }
-              ),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  correct: engine.state.feedbackCorrect,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] })
-          }
-        )
-      ] })
-    ] });
-  }
-
   // src/app.ts
   document.addEventListener("touchstart", () => {
   }, { passive: true });
@@ -10208,7 +10012,7 @@ button {
   registerDeclarativeMode(KEY_SIGNATURES_DEF);
   registerDeclarativeMode(SCALE_DEGREES_DEF);
   registerDeclarativeMode(DIATONIC_CHORDS_DEF);
-  registerPreactMode("chordSpelling", "Chord Spelling", ChordSpellingMode);
+  registerDeclarativeMode(CHORD_SPELLING_DEF);
   registerPreactMode("speedTap", "Speed Tap", SpeedTapMode);
   nav.init();
   var settings = createSettingsModal({
