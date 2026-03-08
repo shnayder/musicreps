@@ -1555,6 +1555,12 @@ button {
   opacity: 0.8;
   transform: scale(0.98);
 }
+.next-btn-correct {
+  background: var(--color-success);
+}
+.next-btn-wrong {
+  background: var(--color-error);
+}
 .next-btn:focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;

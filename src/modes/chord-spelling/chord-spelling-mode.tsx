@@ -356,6 +356,7 @@ export function ChordSpellingMode(
                       className={engine.state.feedbackClass}
                       time={engine.state.timeDisplayText || undefined}
                       hint={engine.state.hintText || undefined}
+                      correct={engine.state.feedbackCorrect}
                       onNext={engine.state.answered
                         ? engine.nextQuestion
                         : undefined}

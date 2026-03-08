@@ -310,6 +310,38 @@ describe('FeedbackDisplay', () => {
       /style="[^"]*\bvisibility:\s*hidden\b[^"]*"/,
     );
   });
+
+  it('adds next-btn-correct class when correct=true', () => {
+    const html = render(
+      <FeedbackDisplay
+        text='Correct!'
+        className='feedback correct'
+        correct
+        onNext={() => {}}
+      />,
+    );
+    assert.ok(html.includes('next-btn-correct'));
+  });
+
+  it('adds next-btn-wrong class when correct=false', () => {
+    const html = render(
+      <FeedbackDisplay
+        text='Wrong'
+        className='feedback incorrect'
+        correct={false}
+        onNext={() => {}}
+      />,
+    );
+    assert.ok(html.includes('next-btn-wrong'));
+  });
+
+  it('no color class when correct is null', () => {
+    const html = render(
+      <FeedbackDisplay text='X' className='feedback' correct={null} />,
+    );
+    assert.ok(!html.includes('next-btn-correct'));
+    assert.ok(!html.includes('next-btn-wrong'));
+  });
 });
 
 describe('CountdownBar', () => {
