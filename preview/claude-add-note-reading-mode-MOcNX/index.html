@@ -1965,7 +1965,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="2c9abe add-note-reading-mode-MOcNX"></div>
+  <div class="home-screen" id="home-screen" data-version="eafb65 add-note-reading-mode-MOcNX"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -31656,6 +31656,25 @@ button {
     return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: text });
   }
 
+  // src/staff-render.ts
+  var abcjs = null;
+  async function ensureAbcjs() {
+    if (!abcjs) {
+      abcjs = await Promise.resolve().then(() => __toESM(require_abcjs()));
+    }
+  }
+  function renderStaff(el, abc) {
+    if (!abcjs) return;
+    abcjs.renderAbc(el, abc, {
+      staffwidth: 150,
+      paddingtop: 0,
+      paddingbottom: 0,
+      paddingleft: 0,
+      paddingright: 0,
+      responsive: "resize"
+    });
+  }
+
   // src/declarative/generic-mode.tsx
   function getHintType(buttons) {
     switch (buttons.kind) {
@@ -31807,6 +31826,49 @@ button {
         );
     }
   }
+  function useStaffPrompt(getAbcNotation) {
+    const staffRef = A2(null);
+    const currentAbcRef = A2(null);
+    y2(() => {
+      if (getAbcNotation) ensureAbcjs();
+    }, [!!getAbcNotation]);
+    if (!getAbcNotation) return { renderPrompt: void 0, onStop: void 0 };
+    return {
+      renderPrompt: (q3) => {
+        const abc = getAbcNotation(q3);
+        currentAbcRef.current = abc;
+        requestAnimationFrame(() => {
+          if (staffRef.current && currentAbcRef.current) {
+            renderStaff(staffRef.current, currentAbcRef.current);
+          }
+        });
+        return /* @__PURE__ */ u3("div", { class: "staff-display", ref: staffRef });
+      },
+      onStop: () => {
+        if (staffRef.current) staffRef.current.textContent = "";
+      }
+    };
+  }
+  function useNoteKeyboard(keyboardInput) {
+    const submitRef = A2(() => {
+    });
+    const handler = T2(() => {
+      if (!keyboardInput || keyboardInput === "text") return null;
+      const allowAccidentals = keyboardInput === "note";
+      return createAdaptiveKeyHandler(
+        (note) => submitRef.current(note),
+        () => allowAccidentals
+      );
+    }, [keyboardInput]);
+    if (!handler) return { handleKey: void 0, reset: void 0 };
+    return {
+      handleKey: (e3, ctx) => {
+        submitRef.current = ctx.submitAnswer;
+        return handler.handleKey(e3);
+      },
+      reset: () => handler.reset()
+    };
+  }
   var EMPTY_GROUPS = /* @__PURE__ */ new Set();
   function GenericMode({ def, container, navigateHome, onMount }) {
     const learner = useLearnerModel(def.namespace, def.allItems);
@@ -31821,8 +31883,28 @@ button {
       formatLabel: def.scope.formatLabel
     } : null;
     const groupScopeResult = groupScopeSpec ? useGroupScope(groupScopeSpec) : null;
+    const staff = useStaffPrompt(def.getAbcNotation);
+    const noteKb = useNoteKeyboard(def.keyboardInput);
     const enabledGroups = groupScopeResult?.enabledGroups ?? EMPTY_GROUPS;
-    const ctrl = def.useController ? def.useController(enabledGroups) : {};
+    const userCtrl = def.useController ? def.useController(enabledGroups) : {};
+    const ctrl = {
+      ...userCtrl,
+      renderPrompt: userCtrl.renderPrompt ?? staff.renderPrompt,
+      handleKey: userCtrl.handleKey ?? noteKb.handleKey,
+      onStart: staff.onStop || noteKb.reset || userCtrl.onStart ? () => {
+        noteKb.reset?.();
+        userCtrl.onStart?.();
+      } : void 0,
+      onStop: staff.onStop || noteKb.reset || userCtrl.onStop ? () => {
+        staff.onStop?.();
+        noteKb.reset?.();
+        userCtrl.onStop?.();
+      } : void 0,
+      deactivateCleanup: noteKb.reset || userCtrl.deactivateCleanup ? () => {
+        noteKb.reset?.();
+        userCtrl.deactivateCleanup?.();
+      } : void 0
+    };
     const ctrlRef = A2(ctrl);
     ctrlRef.current = ctrl;
     const currentQRef = A2(null);
@@ -33244,24 +33326,7 @@ ${abcNote}`;
     return GROUP_ITEMS[colIdx].filter((id) => id[2] === rowLabel);
   }
 
-  // src/modes/note-reading/definition.tsx
-  var abcjs = null;
-  async function ensureAbcjs() {
-    if (!abcjs) {
-      abcjs = await Promise.resolve().then(() => __toESM(require_abcjs()));
-    }
-  }
-  function renderStaff(el, abc) {
-    if (!abcjs) return;
-    abcjs.renderAbc(el, abc, {
-      staffwidth: 150,
-      paddingtop: 0,
-      paddingbottom: 0,
-      paddingleft: 0,
-      paddingright: 0,
-      responsive: "resize"
-    });
-  }
+  // src/modes/note-reading/definition.ts
   var NOTE_READING_DEF = {
     id: "noteReading",
     name: "Note Reading",
@@ -33274,6 +33339,8 @@ ${abcNote}`;
     getPromptText: () => "Name this note",
     checkAnswer: (q3, input) => checkAnswer9(q3, input),
     buttons: { kind: "piano-note", hideAccidentals: true },
+    getAbcNotation: (q3) => q3.abc,
+    keyboardInput: "note-natural",
     scope: {
       kind: "groups",
       groups: GROUPS,
@@ -33293,47 +33360,8 @@ ${abcNote}`;
       colLabels: GRID_COL_LABELS3,
       getItemId: getGridItemId5,
       notes: GRID_NOTES3
-    },
-    useController: () => useNoteReadingController()
+    }
   };
-  function useNoteReadingController() {
-    y2(() => {
-      ensureAbcjs();
-    }, []);
-    const staffRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => engineSubmitRef.current(note),
-        () => false
-        // no accidentals — submit immediately on key press
-      ),
-      []
-    );
-    const currentQRef = A2(null);
-    return {
-      renderPrompt: (q3) => {
-        currentQRef.current = q3;
-        requestAnimationFrame(() => {
-          if (staffRef.current && currentQRef.current) {
-            renderStaff(staffRef.current, currentQRef.current.abc);
-          }
-        });
-        return /* @__PURE__ */ u3("div", { class: "staff-display", ref: staffRef });
-      },
-      onStart: () => noteHandler.reset(),
-      onStop: () => {
-        noteHandler.reset();
-        if (staffRef.current) staffRef.current.textContent = "";
-      },
-      handleKey: (e3, ctx) => {
-        engineSubmitRef.current = ctx.submitAnswer;
-        return noteHandler.handleKey(e3);
-      },
-      deactivateCleanup: () => noteHandler.reset()
-    };
-  }
 
   // src/modes/speed-tap/logic.ts
   var noteNames = NOTES.map((n2) => n2.name);
