@@ -337,7 +337,11 @@ export function GenericMode<Q>(
       if (isSequential) {
         // Sequential: sentinel-based — real evaluation already happened
         // in handleSeqInput/handleSeqBatch. The engine just records the result.
-        return { correct: input === '__correct__', correctAnswer: '' };
+        // Correct answer is encoded after the sentinel for screen-reader feedback.
+        const sep = input.indexOf(':');
+        const isCorrect = input.startsWith('__correct__');
+        const correctAnswer = sep >= 0 ? input.slice(sep + 1) : '';
+        return { correct: isCorrect, correctAnswer };
       }
       const q = currentQRef.current!;
       return def.checkAnswer!(q, input);
@@ -404,7 +408,8 @@ export function GenericMode<Q>(
       const result = def.sequential.evaluate(q, newRaw);
       setSeqEvaluated(result.perEntry);
       setSeqCorrectAnswer(result.correctAnswer);
-      seqSubmitRef.current(result.correct ? '__correct__' : '__wrong__');
+      const sentinel = result.correct ? '__correct__' : '__wrong__';
+      seqSubmitRef.current(sentinel + ':' + result.correctAnswer);
     }
   }, [def]);
 
@@ -422,7 +427,8 @@ export function GenericMode<Q>(
     const result = def.sequential.evaluate(q, notes);
     setSeqEvaluated(result.perEntry);
     setSeqCorrectAnswer(result.correctAnswer);
-    seqSubmitRef.current(result.correct ? '__correct__' : '__wrong__');
+    const sentinel = result.correct ? '__correct__' : '__wrong__';
+    seqSubmitRef.current(sentinel + ':' + result.correctAnswer);
     return true;
   }, [def]);
 
