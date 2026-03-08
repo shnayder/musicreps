@@ -1851,15 +1851,15 @@ button {
   grid-template-columns: repeat(4, 1fr);
 }
 
-/* --- Chord spelling slots --- */
-.chord-slots {
+/* --- Sequential response slots (chord spelling, etc.) --- */
+.seq-slots {
   display: flex;
   justify-content: center;
   gap: var(--space-3);
   margin: var(--space-4) 0;
   min-height: 2.5rem;
 }
-.chord-slot {
+.seq-slot {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1875,32 +1875,32 @@ button {
   color: var(--color-text-muted);
   transition: border-color 0.15s ease, color 0.15s ease;
 }
-.chord-slot.active {
+.seq-slot.active {
   border-bottom-color: var(--color-accent);
 }
-.chord-slot.filled {
+.seq-slot.filled {
   border-bottom-color: var(--color-text);
   color: var(--color-text);
 }
-.chord-slot.correct {
+.seq-slot.correct {
   border-bottom-color: var(--color-success);
   color: var(--color-success-text);
 }
-.chord-slot.wrong {
+.seq-slot.wrong {
   border-bottom-color: var(--color-error);
   color: var(--color-error-text);
 }
-.chord-slots-container {
+.seq-slots-container {
   display: inline-flex;
   flex-direction: column;
   align-items: stretch;
 }
-.chord-correct-row {
+.seq-correct-row {
   display: flex;
   gap: var(--space-3);
   margin-top: var(--space-1);
 }
-.chord-correct-note {
+.seq-correct-note {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2047,7 +2047,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="93ee20 standardize-chord-mode-p2SzW"></div>
+  <div class="home-screen" id="home-screen" data-version="b04887 standardize-chord-mode-p2SzW"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -3691,7 +3691,7 @@ button {
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
-      <div class="chord-slots"></div>
+      <div class="seq-slots"></div>
       <div class="answer-buttons answer-buttons-notes">
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
@@ -7079,9 +7079,9 @@ button {
   // src/ui/sequential-slots.tsx
   function SequentialSlots({ expectedCount, entries, evaluated, correctTones }) {
     const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
-    return /* @__PURE__ */ u3("div", { class: "chord-slots-container", children: [
-      /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: expectedCount }, (_3, i3) => {
-        let cls = "chord-slot";
+    return /* @__PURE__ */ u3("div", { class: "seq-slots-container", children: [
+      /* @__PURE__ */ u3("div", { class: "seq-slots", children: Array.from({ length: expectedCount }, (_3, i3) => {
+        let cls = "seq-slot";
         let content = "\xA0";
         if (evaluated && i3 < evaluated.length) {
           content = evaluated[i3].display;
@@ -7094,7 +7094,7 @@ button {
         }
         return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
       }) }),
-      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "chord-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "chord-correct-note", children: displayNote(t3) }, i3)) })
+      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: displayNote(t3) }, i3)) })
     ] });
   }
 
