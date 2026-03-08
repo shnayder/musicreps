@@ -2,24 +2,7 @@
 // No DOM, no side effects — testable logic extracted from quiz-fretboard.js.
 
 import { displayNote } from './music-data.ts';
-import type { Note, StringRecommendation } from './types.ts';
-
-/**
- * Toggle a string in the enabled set. Returns a new Set.
- * Allows deselecting all strings — caller validates before starting a quiz.
- */
-export function toggleFretboardString(
-  enabledStrings: Set<number>,
-  string: number,
-): Set<number> {
-  const next = new Set(enabledStrings);
-  if (next.has(string)) {
-    next.delete(string);
-  } else {
-    next.add(string);
-  }
-  return next;
-}
+import type { Note } from './types.ts';
 
 /**
  * Create fretboard helpers bound to music data and instrument config.
@@ -112,29 +95,4 @@ export function createFretboardHelpers(musicData: {
     getFretboardEnabledItems,
     getItemIdsForString,
   };
-}
-
-/**
- * Compute which note filter to suggest based on natural-note mastery.
- * Consolidate-before-expanding applied to note types: master naturals
- * before adding accidentals.
- *
- * naturalStats are per-string stats for natural notes only (from
- * getStringRecommendations called with a natural-only getItemIds).
- */
-export function computeNotePrioritization(
-  naturalStats: StringRecommendation[],
-  threshold: number,
-): { suggestedFilter: string; naturalMasteryRatio: number } {
-  let totalSeen = 0;
-  let totalFluent = 0;
-  for (const r of naturalStats) {
-    totalSeen += r.fluentCount + r.workingCount;
-    totalFluent += r.fluentCount;
-  }
-  const ratio = totalSeen > 0 ? totalFluent / totalSeen : 0;
-  if (totalSeen === 0 || ratio < threshold) {
-    return { suggestedFilter: 'natural', naturalMasteryRatio: ratio };
-  }
-  return { suggestedFilter: 'all', naturalMasteryRatio: ratio };
 }

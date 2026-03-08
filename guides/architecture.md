@@ -21,7 +21,7 @@ dependency graph from the entry point (`src/app.ts`):
 ```
 Foundation layer:
   adaptive.ts              ← Config, selector factory, forgetting model
-  music-data.ts            ← NOTES, INTERVALS, helpers
+  music-data.ts            ← NOTES, INTERVALS, helpers, input validators
   recommendations.ts       ← Consolidate-before-expanding algorithm
   types.ts                 ← Shared type definitions (zero runtime)
 
@@ -41,6 +41,8 @@ Mode logic layer:
     imports: music-data
   modes/{name}/logic.ts      ← Per-mode pure logic (question, answer, items, groups)
     imports: music-data, mode-utils
+  modes/{name}/definition.ts ← Declarative mode definition (ModeDefinition<Q>)
+    imports: ./logic, music-data
 
 Hooks layer:
   hooks/use-quiz-engine.ts   ← Quiz engine lifecycle (wraps quiz-engine-state)
@@ -55,6 +57,7 @@ Hooks layer:
   hooks/use-key-handler.ts   ← Keyboard event attachment
   hooks/use-phase-class.ts   ← Phase-to-CSS-class sync
   hooks/use-round-summary.ts ← Round-complete derived state + stats selector
+  declarative/types.ts       ← ModeDefinition, ButtonsDef, ScopeDef, StatsDef
 
 UI layer:
   ui/mode-screen.tsx         ← Structural components (ModeScreen, QuizArea, etc.)
@@ -62,13 +65,15 @@ UI layer:
   ui/scope.tsx               ← Scope control components (toggles, filters)
   ui/stats.tsx               ← Stats table/grid/legend components
     imports: stats-display
-  modes/{name}/{name}-mode.tsx ← 11 Preact mode components
+  declarative/generic-mode.tsx ← GenericMode: interprets ModeDefinition → full UI
+    imports: hooks, ui components, declarative/types
+  modes/{name}/{name}-mode.tsx ← 2 hand-written Preact mode components
     imports: ./logic, hooks, ui components, recommendations, mode-ui-state
 
 App layer:
   navigation.ts            ← Home screen, mode switching
   settings.ts              ← Settings modal
-  app.ts                   ← Entry point: registers Preact modes, starts navigation
+  app.ts                   ← Entry point: registers modes, starts navigation
 ```
 
 **Layers**: Foundation (adaptive, music-data, recommendations) → Engine (state
@@ -171,56 +176,86 @@ const engine = useQuizEngine(engineConfig, learner.selector);
 **When to use it**: Any logic that affects UI state and could benefit from
 testability. Pure state modules get the `*-state.ts` suffix.
 
-### Preact Mode Components
+### Declarative Modes (9 of 11 modes)
 
-Each quiz mode is a single `.tsx` component that composes shared hooks and UI
-components. A typical group-based mode is 100-250 lines:
+Most quiz modes use the **declarative system**: a `ModeDefinition<Q>` data
+object describes what varies (item space, question logic, answer buttons, scope,
+stats), and `GenericMode` handles all shared hook composition and rendering.
 
-```tsx
-export function SemitoneMathMode({ container, navigateHome, onMount }) {
-  // 1. Learner model (adaptive selector + storage)
-  const learner = useLearnerModel('semitoneMath', ALL_ITEMS);
+A typical mode definition is 20–50 lines in `src/modes/{name}/definition.ts`:
 
-  // 2. Scope + recommendations (persisted toggles, enabled items, labels)
-  const {
-    scopeActions, enabledGroups, enabledItems, practicingLabel,
-    recommendation, recommendationText, applyRecommendation,
-    getEnabledItems, getPracticingLabel,
-  } = useGroupScope({ groups, getItemIdsForGroup, ... });
-
-  // 3. Engine config (pure mode logic + stable ref-backed scope functions)
-  const engineConfig = useMemo(() => ({
-    getEnabledItems,       // stable ref — no scope in deps
-    getPracticingLabel,    // stable ref — no scope in deps
-    checkAnswer: (id, input) => checkAnswer(currentQRef.current!, input),
-    onPresent: (id) => { setCurrentQ(getQuestion(id)); },
-    handleKey: (e, ctx) => noteHandler.handleKey(e),
-    // ...
-  }), [noteHandler, getEnabledItems, getPracticingLabel]);
-
-  // 4. Quiz engine (lifecycle, timer, state)
-  const engine = useQuizEngine(engineConfig, learner.selector);
-
-  // 5. Navigation lifecycle (activate/deactivate)
-  useModeLifecycle(onMount, engine, learner, setCalibrating, deactivateCleanup);
-
-  // 6. Render: compose shared UI components
-  return (
-    <>
-      <ModeTopBar title='Semitone Math' onBack={navigateHome} />
-      <TabbedIdle ... />
-      <QuizSession ... />
-      <QuizArea prompt={promptText}>
-        <NoteButtons onAnswer={handleNoteAnswer} />
-        <FeedbackDisplay ... />
-        <RoundComplete ... />
-      </QuizArea>
-    </>
-  );
-}
+```typescript
+export const SEMITONE_MATH_DEF: ModeDefinition<Question> = {
+  id: 'semitoneMath',
+  name: 'Semitone Math',
+  namespace: 'semitoneMath',
+  description: MODE_DESCRIPTIONS.semitoneMath,
+  beforeAfter: MODE_BEFORE_AFTER.semitoneMath,
+  itemNoun: 'items',
+  allItems: ALL_ITEMS,
+  getQuestion,
+  getPromptText: (q) => q.promptText,
+  checkAnswer,
+  validateInput: (_, input) => isValidNoteInput(input),
+  buttons: { kind: 'note' },
+  scope: {
+    kind: 'groups',
+    groups: DISTANCE_GROUPS,
+    getItemIdsForGroup,
+    allGroupIndices: ALL_GROUP_INDICES,
+    storageKey: 'semitoneMath_enabledGroups',
+    scopeLabel: 'Distances',
+    defaultEnabled: [0],
+    formatLabel: (groups) => { /* ... */ },
+  },
+  stats: { kind: 'grid', colLabels: GRID_COL_LABELS, getItemId: getGridItemId },
+};
 ```
 
-**Key hooks:**
+**GenericMode** (`src/declarative/generic-mode.tsx`) interprets the definition:
+1. Calls shared hooks (`useLearnerModel`, `useGroupScope`, `useQuizEngine`, etc.)
+2. Renders an `<AnswerInput>` text field for keyboard answers + buttons for tap
+3. Handles phase-conditional rendering (idle → practice/progress tabs, active →
+   quiz area, round-complete → summary)
+
+**ModeController** — modes needing custom rendering provide a `useController`
+hook returning a `ModeController<Q>` with optional overrides: `renderPrompt` (SVG
+fretboard), `renderStats` (SVG heatmap), `handleKey` (custom keyboard handler),
+`onAnswer`/`onStart`/`onStop` lifecycle hooks. Fretboard modes use this for SVG
+prompt rendering while reusing all other GenericMode infrastructure.
+
+**Keyboard input: text field.** Instead of per-response-type keyboard handlers
+(note narrowing, digit buffering, keysig combos), all keyboard input goes
+through a single `<input>` element — type the answer, press Enter. Buttons
+remain for tap/click (important on mobile). An optional `validateInput` on the
+definition rejects garbage input with a shake animation instead of scoring it
+wrong.
+
+**Input validation: set lookups, not regex.** Validators (`isValidNoteInput`,
+`isValidIntervalInput`, `isValidKeysigInput`, `isValidNumeralInput`) use exact
+`Set` lookups derived from the actual data arrays (`NOTES`, `INTERVALS`,
+`MAJOR_KEYS`, `DIATONIC_CHORDS`). This ensures the validator accepts exactly the
+same strings that `checkAnswer` can score correctly — no regex approximations
+that silently accept garbage like `p5` or `VIII`.
+
+**Registration** (in `app.ts`):
+
+```typescript
+registerDeclarativeMode(SEMITONE_MATH_DEF);
+```
+
+### Hand-Written Modes (2 of 11 modes)
+
+Chord Spelling (sequential note entry state machine) and Speed Tap
+(fretboard-as-response) are too specialized for GenericMode. They remain as
+hand-written Preact components composing shared hooks and UI directly.
+
+```typescript
+registerPreactMode('chordSpelling', 'Chord Spelling', ChordSpellingMode);
+registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);
+```
+
+**Key hooks (shared by both patterns):**
 
 - `useGroupScope` — wraps scope persistence, enabled-item derivation,
   recommendations, and practicing-label formatting into one call. Returns stable
@@ -231,27 +266,6 @@ export function SemitoneMathMode({ container, navigateHome, onMount }) {
   Activate syncs the motor baseline and updates the idle message; deactivate
   stops the engine, runs mode-specific cleanup, and clears calibration. Used by
   all quiz mode components.
-
-**Registration** (in `app.ts`):
-
-```typescript
-function registerPreactMode(id: string, name: string, Component: any) {
-  let handle: ModeHandle | null = null;
-  const container = document.getElementById('mode-' + id)!;
-  nav.registerMode(id, {
-    name,
-    init() {
-      render(h(Component, { container, navigateHome, onMount }), container);
-    },
-    activate() {
-      handle?.activate();
-    },
-    deactivate() {
-      handle?.deactivate();
-    },
-  });
-}
-```
 
 The `onMount` callback provides a `ModeHandle` with `activate()`/`deactivate()`
 methods so navigation can signal visibility changes. The Preact component owns
@@ -593,40 +607,45 @@ CSS phase classes on `.mode-screen` control what's visible:
 
 ## Adding a New Quiz Mode
 
-**Reuse shared infrastructure.** Shared hooks (`useQuizEngine`, `useScopeState`,
-`useLearnerModel`), shared components (`ModeScreen`, `PracticeCard`,
-`NoteButtons`, `StatsTable`), `computeRecommendations()`,
-`createAdaptiveKeyHandler()`. A new mode should feel like a natural extension,
-not a separate app.
+**Prefer declarative.** Most new modes should use a `ModeDefinition` — write
+~30 lines of data, get all hook composition, rendering, and keyboard input for
+free. Only write a hand-written component if the mode needs truly custom
+response interfaces (like sequential note entry or fretboard-as-response).
 
 **Consistency over accommodation.** When a mode behaves differently, ask "should
 it?" not "how do we support that?" Change the outlier to match the standard
 rather than adding complexity. Per-mode flags are a code smell.
 
-Step-by-step checklist:
+### Declarative mode checklist (preferred)
 
 1. **Create** `src/modes/{name}/logic.ts` — pure functions for question
    generation, answer checking, item IDs, group definitions. No DOM, no hooks.
-2. **Create** `src/modes/{name}/{name}-mode.tsx` — a Preact component composing
-   shared hooks and UI components (~200-400 lines)
-3. **Define** item ID format, `ALL_ITEMS`, and export from `logic.ts`:
-   `getQuestion`, `checkAnswer`, group constants, grid/stats config
-4. **Compose hooks**: `useLearnerModel`, `useGroupScope` (for group-based modes)
-   or `useScopeState` (for custom scope), `useQuizEngine`, `usePhaseClass`,
-   `useModeLifecycle`, `useRoundSummary`
-5. **Groups** (if applicable): use `useGroupScope` which wraps scope
-   persistence, `computeRecommendations()`, and practicing-label formatting
-6. **Stats**: use `StatsTable` or `StatsGrid` component from `src/ui/stats.tsx`
-7. **HTML**: add mode screen in `modeScreens()` in `src/build-template.ts`
+2. **Create** `src/modes/{name}/definition.ts` — a `ModeDefinition<Q>` object
+   (~20-50 lines) specifying buttons, scope, stats, and pure logic references
+3. **Input validation** (if text input is used): add a `validateInput` function
+   using set-based lookup from existing data. Derive valid sets from the source
+   data arrays (e.g., `NOTES`, `INTERVALS`, `DIATONIC_CHORDS`), never regex.
+4. **HTML**: add mode screen in `modeScreens()` in `src/build-template.ts`
    (container div), and nav button in `HOME_SCREEN_HTML`
-8. **Register** mode in `app.ts` with `registerPreactMode()`
-9. **Tests**: create `src/modes/{name}/logic_test.ts` for the pure logic
-10. **Architecture test**: new `logic.ts` and `{name}-mode.tsx` files are
-    auto-classified by path (`src/modes/` prefix), so no update needed unless
-    you add shared files outside `src/modes/`
-11. **Accidentals**: determine which naming convention applies (see
-    [accidental-conventions.md](accidental-conventions.md)) and update that
-    guide's mode table
-12. **CLAUDE.md**: update quiz modes table with item count, answer type, and ID
-    format
-13. **Version**: derived from git automatically at build time (no manual step)
+5. **Register** in `app.ts` with `registerDeclarativeMode(YOUR_DEF)`
+6. **Tests**: create `src/modes/{name}/logic_test.ts` for the pure logic
+7. **Architecture test**: `logic.ts` and `definition.ts` files are
+   auto-classified by path (`src/modes/` prefix)
+8. **Accidentals**: determine which naming convention applies (see
+   [accidental-conventions.md](accidental-conventions.md)) and update that
+   guide's mode table
+9. **CLAUDE.md**: update quiz modes table with item count, answer type, and ID
+   format
+
+### Hand-written mode checklist (rare)
+
+Only for modes needing custom response interfaces (sequential input, spatial
+tap, etc.) that can't be expressed as a `ModeDefinition`:
+
+1. **Create** `src/modes/{name}/logic.ts` — pure logic (same as above)
+2. **Create** `src/modes/{name}/{name}-mode.tsx` — a Preact component composing
+   shared hooks and UI components
+3. **Compose hooks**: `useLearnerModel`, `useGroupScope`/`useScopeState`,
+   `useQuizEngine`, `usePhaseClass`, `useModeLifecycle`, `useRoundSummary`
+4. **Register** in `app.ts` with `registerPreactMode()`
+5. Steps 4-9 from the declarative checklist above

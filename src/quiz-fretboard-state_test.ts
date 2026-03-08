@@ -8,11 +8,7 @@ import {
   STRING_OFFSETS,
   UKULELE,
 } from './music-data.ts';
-import {
-  computeNotePrioritization,
-  createFretboardHelpers,
-  toggleFretboardString,
-} from './quiz-fretboard-state.ts';
+import { createFretboardHelpers } from './quiz-fretboard-state.ts';
 
 // ---------------------------------------------------------------------------
 // Guitar helpers (backward compat — uses legacy STRING_OFFSETS)
@@ -211,34 +207,6 @@ describe('getItemIdsForString', () => {
   });
 });
 
-describe('toggleFretboardString', () => {
-  it('adds a string not in the set', () => {
-    const result = toggleFretboardString(new Set([5]), 3);
-    assert.ok(result.has(5));
-    assert.ok(result.has(3));
-    assert.equal(result.size, 2);
-  });
-
-  it('removes a string in the set (if more than one)', () => {
-    const result = toggleFretboardString(new Set([3, 5]), 3);
-    assert.ok(!result.has(3));
-    assert.ok(result.has(5));
-    assert.equal(result.size, 1);
-  });
-
-  it('allows deselecting the last string', () => {
-    const result = toggleFretboardString(new Set([5]), 5);
-    assert.equal(result.size, 0);
-  });
-
-  it('returns a new Set (immutable)', () => {
-    const original = new Set([5]);
-    const result = toggleFretboardString(original, 3);
-    assert.notEqual(result, original);
-    assert.equal(original.size, 1); // original unchanged
-  });
-});
-
 // ---------------------------------------------------------------------------
 // Ukulele helpers
 // ---------------------------------------------------------------------------
@@ -380,112 +348,5 @@ describe('instrument configs', () => {
     assert.equal(UKULELE.fretCount, 13);
     assert.equal(UKULELE.stringOffsets.length, 4);
     assert.equal(UKULELE.stringNames.length, 4);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Note prioritization
-// ---------------------------------------------------------------------------
-
-describe('computeNotePrioritization', () => {
-  const threshold = 0.7;
-
-  it("suggests 'natural' when no data (all unseen)", () => {
-    const stats = [
-      {
-        string: 0,
-        fluentCount: 0,
-        workingCount: 0,
-        unseenCount: 8,
-        totalCount: 8,
-      },
-    ];
-    const result = computeNotePrioritization(stats, threshold);
-    assert.equal(result.suggestedFilter, 'natural');
-    assert.equal(result.naturalMasteryRatio, 0);
-  });
-
-  it("suggests 'natural' when below threshold", () => {
-    // 3 mastered out of 6 seen = 0.5, below 0.7
-    const stats = [
-      {
-        string: 0,
-        fluentCount: 3,
-        workingCount: 3,
-        unseenCount: 2,
-        totalCount: 8,
-      },
-    ];
-    const result = computeNotePrioritization(stats, threshold);
-    assert.equal(result.suggestedFilter, 'natural');
-    assert.ok(result.naturalMasteryRatio < threshold);
-  });
-
-  it("suggests 'all' when at threshold", () => {
-    // 7 mastered out of 10 seen = 0.7, at threshold
-    const stats = [
-      {
-        string: 0,
-        fluentCount: 7,
-        workingCount: 3,
-        unseenCount: 0,
-        totalCount: 10,
-      },
-    ];
-    const result = computeNotePrioritization(stats, threshold);
-    assert.equal(result.suggestedFilter, 'all');
-    assert.ok(result.naturalMasteryRatio >= threshold);
-  });
-
-  it("suggests 'all' when above threshold", () => {
-    // 8 mastered out of 10 seen = 0.8
-    const stats = [
-      {
-        string: 0,
-        fluentCount: 8,
-        workingCount: 2,
-        unseenCount: 0,
-        totalCount: 10,
-      },
-    ];
-    const result = computeNotePrioritization(stats, threshold);
-    assert.equal(result.suggestedFilter, 'all');
-  });
-
-  it('aggregates across multiple strings', () => {
-    // String 0: 4/5 mastered, String 1: 3/5 mastered → 7/10 = 0.7
-    const stats = [
-      {
-        string: 0,
-        fluentCount: 4,
-        workingCount: 1,
-        unseenCount: 3,
-        totalCount: 8,
-      },
-      {
-        string: 1,
-        fluentCount: 3,
-        workingCount: 2,
-        unseenCount: 3,
-        totalCount: 8,
-      },
-    ];
-    const result = computeNotePrioritization(stats, threshold);
-    assert.equal(result.suggestedFilter, 'all');
-    assert.equal(result.naturalMasteryRatio, 0.7);
-  });
-
-  it('returns correct ratio', () => {
-    const stats = [
-      {
-        string: 0,
-        fluentCount: 2,
-        workingCount: 8,
-        unseenCount: 0,
-        totalCount: 10,
-      },
-    ];
-    const result = computeNotePrioritization(stats, threshold);
-    assert.equal(result.naturalMasteryRatio, 0.2);
   });
 });

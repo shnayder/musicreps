@@ -198,9 +198,85 @@ export function pickRandomAccidental(displayName: string) {
   return Math.random() < 0.5 ? sharp : flat;
 }
 
-/** Check if a user input matches any accepted answer for a note. */
+/** Check if a user input matches any accepted answer for a note.
+ *  Accepts 's' as alias for '#' (e.g. "Cs" = "C#", "fs" = "f#"). */
 export function noteMatchesInput(note: Note, input: string) {
-  return note.accepts.includes(input.toLowerCase());
+  const lower = input.toLowerCase();
+  if (note.accepts.includes(lower)) return true;
+  // Try 's' → '#' substitution (e.g. "cs" → "c#")
+  if (lower.endsWith('s') && lower.length === 2) {
+    return note.accepts.includes(lower[0] + '#');
+  }
+  return false;
+}
+
+/** All strings a user could type that represent a note name.
+ *  Built from NOTES.accepts plus 's' sharp alias (e.g. "cs" for "c#"). */
+const VALID_NOTE_INPUTS: ReadonlySet<string> = new Set(
+  NOTES.flatMap((n) => {
+    const inputs = [...n.accepts];
+    // Add 's' alias for each sharp accept (e.g. "c#" → "cs")
+    for (const a of n.accepts) {
+      if (a.endsWith('#')) inputs.push(a.slice(0, -1) + 's');
+    }
+    return inputs;
+  }),
+);
+
+/** Check if input is a valid note name (case-insensitive). */
+export function isValidNoteInput(input: string): boolean {
+  return VALID_NOTE_INPUTS.has(input.toLowerCase());
+}
+
+/** Check if input is a valid integer in [min, max]. */
+export function isValidNumberInput(
+  input: string,
+  min: number,
+  max: number,
+): boolean {
+  if (!/^\d{1,2}$/.test(input)) return false;
+  const n = parseInt(input, 10);
+  return n >= min && n <= max;
+}
+
+/** All valid interval abbreviations, derived from INTERVALS data. */
+const VALID_INTERVAL_INPUTS: ReadonlySet<string> = new Set(
+  INTERVALS.flatMap((i) => [i.abbrev, ...(i.altAbbrevs || [])]),
+);
+
+/** Check if input is a valid interval abbreviation (case-sensitive). */
+export function isValidIntervalInput(input: string): boolean {
+  return VALID_INTERVAL_INPUTS.has(input);
+}
+
+/** Valid key signature labels, derived from MAJOR_KEYS at module init. */
+let VALID_KEYSIG_INPUTS: ReadonlySet<string>;
+
+function getValidKeysigInputs(): ReadonlySet<string> {
+  if (!VALID_KEYSIG_INPUTS) {
+    VALID_KEYSIG_INPUTS = new Set(MAJOR_KEYS.map((k) => keySignatureLabel(k)));
+  }
+  return VALID_KEYSIG_INPUTS;
+}
+
+/** Check if input is a valid key signature label. */
+export function isValidKeysigInput(input: string): boolean {
+  return getValidKeysigInputs().has(input);
+}
+
+/** Valid Roman numeral inputs, derived from DIATONIC_CHORDS. */
+let VALID_NUMERAL_INPUTS: ReadonlySet<string>;
+
+function getValidNumeralInputs(): ReadonlySet<string> {
+  if (!VALID_NUMERAL_INPUTS) {
+    VALID_NUMERAL_INPUTS = new Set(DIATONIC_CHORDS.map((c) => c.numeral));
+  }
+  return VALID_NUMERAL_INPUTS;
+}
+
+/** Check if input is a valid Roman numeral. */
+export function isValidNumeralInput(input: string): boolean {
+  return getValidNumeralInputs().has(input);
 }
 
 /** Check if a user input matches an interval abbreviation (case-sensitive). */

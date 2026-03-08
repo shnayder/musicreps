@@ -8,9 +8,11 @@ rules — this guide explains them.
 
 | Pattern                             | Example                                | When                               |
 | ----------------------------------- | -------------------------------------- | ---------------------------------- |
-| `src/modes/{name}/{name}-mode.tsx`  | `semitone-math/semitone-math-mode.tsx` | Preact mode component              |
+| `src/modes/{name}/definition.ts`    | `semitone-math/definition.ts`          | Declarative mode definition        |
+| `src/modes/{name}/{name}-mode.tsx`  | `chord-spelling/chord-spelling-mode.tsx` | Hand-written Preact mode component |
 | `src/modes/{name}/logic.ts`         | `semitone-math/logic.ts`               | Pure mode logic (no DOM, no hooks) |
 | `src/modes/{name}/logic_test.ts`    | `semitone-math/logic_test.ts`          | Tests for mode logic               |
+| `src/declarative/*.ts(x)`           | `generic-mode.tsx`, `types.ts`         | Declarative mode framework         |
 | `src/ui/{component}.tsx`            | `buttons.tsx`, `stats.tsx`             | Shared Preact UI components        |
 | `src/hooks/use-{hook}.ts`           | `use-quiz-engine.ts`                   | Preact hooks                       |
 | `src/{module}-state.ts`             | `quiz-engine-state.ts`                 | Pure state/logic (no DOM)          |
