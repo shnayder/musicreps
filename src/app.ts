@@ -28,7 +28,7 @@ import { DIATONIC_CHORDS_DEF } from './modes/diatonic-chords/definition.ts';
 
 import { createFretboardDef } from './modes/fretboard/definition.tsx';
 import { CHORD_SPELLING_DEF } from './modes/chord-spelling/definition.ts';
-import { NOTE_READING_DEF } from './modes/note-reading/definition.tsx';
+import { NOTE_READING_DEF } from './modes/note-reading/definition.ts';
 
 // Hand-written modes (too specialized for GenericMode)
 import { SpeedTapMode } from './modes/speed-tap/speed-tap-mode.tsx';
