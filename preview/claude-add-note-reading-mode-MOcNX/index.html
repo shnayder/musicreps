@@ -1965,7 +1965,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="eafb65 add-note-reading-mode-MOcNX"></div>
+  <div class="home-screen" id="home-screen" data-version="c87bc1 add-note-reading-mode-MOcNX"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -31891,7 +31891,7 @@ button {
       ...userCtrl,
       renderPrompt: userCtrl.renderPrompt ?? staff.renderPrompt,
       handleKey: userCtrl.handleKey ?? noteKb.handleKey,
-      onStart: staff.onStop || noteKb.reset || userCtrl.onStart ? () => {
+      onStart: noteKb.reset || userCtrl.onStart ? () => {
         noteKb.reset?.();
         userCtrl.onStart?.();
       } : void 0,
