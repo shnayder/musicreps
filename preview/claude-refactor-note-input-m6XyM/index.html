@@ -1356,6 +1356,7 @@ button {
 }
 .split-note-btn:disabled {
   cursor: default;
+  opacity: 0.4;
 }
 @media (hover: hover) {
   .split-note-btn:hover:not(:disabled) {
@@ -2008,7 +2009,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="8f1c5e refactor-note-input-m6XyM"></div>
+  <div class="home-screen" id="home-screen" data-version="a8d47f refactor-note-input-m6XyM"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -4912,6 +4913,12 @@ button {
         if (noteName) btn.textContent = displayNote(noteName);
       }
     );
+    container.querySelectorAll(".split-note-base").forEach(
+      function(btn) {
+        const noteName = btn.dataset.note;
+        if (noteName) btn.textContent = displayNote(noteName);
+      }
+    );
     container.querySelectorAll(".string-toggle").forEach(
       function(btn) {
         const stringNote = btn.dataset.stringNote;
@@ -6833,10 +6840,13 @@ button {
         return note;
       });
     }, [sequential]);
+    const pendingNoteRef = A2(pendingNote);
+    pendingNoteRef.current = pendingNote;
     const handleAccidental = q2((suffix) => {
       setPendingBase((prev) => {
-        if (!prev) return null;
-        onAnswerRef.current(suffix ? prev + suffix : prev);
+        const base = prev ?? pendingNoteRef.current;
+        if (!base) return null;
+        onAnswerRef.current(suffix ? base + suffix : base);
         return null;
       });
     }, []);
