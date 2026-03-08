@@ -190,7 +190,8 @@ export type ModeController<Q> = {
  *
  * @typeParam Q - The question type returned by getQuestion.
  */
-export type ModeDefinition<Q = unknown> = {
+/** Base fields shared by all mode definitions. */
+type ModeDefinitionBase<Q> = {
   // --- Identity ---
   id: string;
   name: string;
@@ -207,17 +208,6 @@ export type ModeDefinition<Q = unknown> = {
   getQuestion: (itemId: string) => Q;
   /** Generate prompt text from a question. */
   getPromptText: (q: Q) => string;
-  /** Check user's answer against the correct answer.
-   *  Not needed for sequential modes — GenericMode synthesizes it internally. */
-  checkAnswer?: (q: Q, input: string) => {
-    correct: boolean;
-    correctAnswer: string;
-  };
-
-  // --- Sequential response (optional — for multi-input modes) ---
-  /** When present, GenericMode collects multiple inputs before scoring.
-   *  Replaces the single-answer checkAnswer flow. */
-  sequential?: SequentialDef<Q>;
 
   // --- Direction (for bidirectional modes) ---
   /** Get the direction of a question. Only needed for bidirectional answers. */
@@ -247,3 +237,31 @@ export type ModeDefinition<Q = unknown> = {
    *  Called inside GenericMode — may use useRef, useState, etc. */
   useController?: (enabledGroups: ReadonlySet<number>) => ModeController<Q>;
 };
+
+/**
+ * Everything needed to create a fully functional quiz mode.
+ *
+ * Uses a discriminated union: single-answer modes must provide `checkAnswer`,
+ * sequential modes must provide `sequential`. This prevents runtime crashes
+ * from accidentally omitting `checkAnswer` on a non-sequential mode.
+ *
+ * @typeParam Q - The question type returned by getQuestion.
+ */
+export type ModeDefinition<Q = unknown> =
+  & ModeDefinitionBase<Q>
+  & (
+    | {
+      /** Check user's answer against the correct answer. */
+      checkAnswer: (q: Q, input: string) => {
+        correct: boolean;
+        correctAnswer: string;
+      };
+      sequential?: undefined;
+    }
+    | {
+      /** When present, GenericMode collects multiple inputs before scoring.
+       *  Replaces the single-answer checkAnswer flow. */
+      sequential: SequentialDef<Q>;
+      checkAnswer?: undefined;
+    }
+  );

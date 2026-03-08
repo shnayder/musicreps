@@ -28,10 +28,10 @@ export function SequentialSlots(
   const anyWrong = evaluated?.some((e) => !e.correct) ?? false;
 
   return (
-    <div class='chord-slots-container'>
-      <div class='chord-slots'>
+    <div class='seq-slots-container'>
+      <div class='seq-slots'>
         {Array.from({ length: expectedCount }, (_, i) => {
-          let cls = 'chord-slot';
+          let cls = 'seq-slot';
           let content = '\u00A0';
           if (evaluated && i < evaluated.length) {
             // Post-evaluation: show evaluated display with green/red
@@ -48,9 +48,9 @@ export function SequentialSlots(
         })}
       </div>
       {anyWrong && correctTones && (
-        <div class='chord-correct-row'>
+        <div class='seq-correct-row'>
           {correctTones.map((t, i) => (
-            <span key={i} class='chord-correct-note'>{displayNote(t)}</span>
+            <span key={i} class='seq-correct-note'>{displayNote(t)}</span>
           ))}
         </div>
       )}
