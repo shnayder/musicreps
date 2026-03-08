@@ -416,6 +416,9 @@ export function SpeedTapMode(
                       onNext={engine.state.answered
                         ? engine.nextQuestion
                         : undefined}
+                      label={engine.state.roundTimerExpired
+                        ? 'Continue'
+                        : 'Next'}
                     />
                   </>
                 }

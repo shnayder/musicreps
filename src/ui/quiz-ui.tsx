@@ -16,13 +16,14 @@ export function TextPrompt({ text }: { text: string }) {
 // ---------------------------------------------------------------------------
 
 export function FeedbackDisplay(
-  { text, className, time, hint, correct, onNext }: {
+  { text, className, time, hint, correct, onNext, label = 'Next' }: {
     text: string;
     className: string;
     time?: string;
     hint?: string;
     correct?: boolean | null;
     onNext?: () => void;
+    label?: string;
   },
 ) {
   let btnCls = 'next-btn';
@@ -38,7 +39,7 @@ export function FeedbackDisplay(
         onClick={onNext}
         style={onNext ? undefined : { visibility: 'hidden' }}
       >
-        Next
+        {label}
       </button>
       <div
         class='hint'
