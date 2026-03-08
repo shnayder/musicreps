@@ -38,6 +38,8 @@
   --color-recommended-text: hsl(44, 80%, 25%);
   --color-highlight: #eab308;
   /* UI accents */
+  --color-accent: hsl(220, 65%, 50%);
+  --color-accent-muted: hsl(220, 40%, 65%);
   --color-toggle-active: hsl(0, 0%, 32%);
   /* Text (warm neutrals) */
   --color-text: hsl(30, 5%, 20%);
@@ -1874,7 +1876,7 @@ button {
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 .chord-slot.active {
-  border-bottom-color: var(--color-text);
+  border-bottom-color: var(--color-accent);
 }
 .chord-slot.filled {
   border-bottom-color: var(--color-text);
@@ -1889,16 +1891,24 @@ button {
   color: var(--color-error-text);
 }
 .chord-slots-container {
-  text-align: center;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
 }
-.chord-correct-answer {
+.chord-correct-row {
   display: flex;
-  justify-content: center;
   gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+.chord-correct-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  padding: 0 0.25rem;
   font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-success-text);
-  margin-top: var(--space-2);
 }
 
 /* --- Focus-visible (keyboard navigation) --- */
@@ -2037,7 +2047,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="18bf34 refactor-note-input-m6XyM"></div>
+  <div class="home-screen" id="home-screen" data-version="150094 refactor-note-input-m6XyM"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -9820,7 +9830,7 @@ button {
         }
         return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
       }) }),
-      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "chord-correct-answer", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { children: displayNote(t3) }, i3)) })
+      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "chord-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "chord-correct-note", children: displayNote(t3) }, i3)) })
     ] });
   }
   function ChordTextInput({ onSubmit, disabled, expectedCount }) {
