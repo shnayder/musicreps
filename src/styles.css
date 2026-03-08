@@ -1097,7 +1097,9 @@ button {
   padding: 0 var(--space-5);
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  min-height: calc(
+    100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+  );
 }
 .mode-screen.phase-active .mode-top-bar,
 .mode-screen.phase-round-complete .mode-top-bar,

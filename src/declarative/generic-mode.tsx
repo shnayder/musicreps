@@ -732,6 +732,9 @@ export function GenericMode<Q>(
                       onNext={engine.state.answered
                         ? engine.nextQuestion
                         : undefined}
+                      label={engine.state.roundTimerExpired
+                        ? 'Continue'
+                        : 'Next'}
                     />
                   </>
                 }
