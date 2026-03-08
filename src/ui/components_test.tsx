@@ -65,6 +65,37 @@ describe('NoteButtons', () => {
     const html = render(<NoteButtons hidden />);
     assert.ok(html.includes('answer-group-hidden'));
   });
+
+  it('applies btn-feedback-correct to the pressed button on correct answer', () => {
+    const html = render(
+      <NoteButtons
+        feedback={{ correct: true, userInput: 'D', displayAnswer: 'D' }}
+      />,
+    );
+    const btnD = html.match(/<button[^>]*data-note="D"[^>]*>/);
+    assert.ok(btnD, 'D button should exist');
+    assert.ok(btnD[0].includes('btn-feedback-correct'));
+    // Other buttons should not have feedback classes
+    const btnC = html.match(/<button[^>]*data-note="C"[^>]*>/);
+    assert.ok(btnC && !btnC[0].includes('btn-feedback-'));
+  });
+
+  it('applies btn-feedback-wrong and btn-feedback-reveal on incorrect answer', () => {
+    const html = render(
+      <NoteButtons
+        feedback={{ correct: false, userInput: 'C', displayAnswer: 'D' }}
+      />,
+    );
+    const btnC = html.match(/<button[^>]*data-note="C"[^>]*>/);
+    assert.ok(btnC, 'C button should exist');
+    assert.ok(btnC[0].includes('btn-feedback-wrong'));
+    const btnD = html.match(/<button[^>]*data-note="D"[^>]*>/);
+    assert.ok(btnD, 'D button should exist');
+    assert.ok(btnD[0].includes('btn-feedback-reveal'));
+    // Uninvolved button should have no feedback class
+    const btnE = html.match(/<button[^>]*data-note="E"[^>]*>/);
+    assert.ok(btnE && !btnE[0].includes('btn-feedback-'));
+  });
 });
 
 describe('PianoNoteButtons', () => {
@@ -309,6 +340,38 @@ describe('FeedbackDisplay', () => {
       btnMatch[0],
       /style="[^"]*\bvisibility:\s*hidden\b[^"]*"/,
     );
+  });
+
+  it('adds next-btn-correct class when correct=true', () => {
+    const html = render(
+      <FeedbackDisplay
+        text='Correct!'
+        className='feedback correct'
+        correct
+        onNext={() => {}}
+      />,
+    );
+    assert.ok(html.includes('next-btn-correct'));
+  });
+
+  it('adds next-btn-wrong class when correct=false', () => {
+    const html = render(
+      <FeedbackDisplay
+        text='Wrong'
+        className='feedback incorrect'
+        correct={false}
+        onNext={() => {}}
+      />,
+    );
+    assert.ok(html.includes('next-btn-wrong'));
+  });
+
+  it('no color class when correct is null', () => {
+    const html = render(
+      <FeedbackDisplay text='X' className='feedback' correct={null} />,
+    );
+    assert.ok(!html.includes('next-btn-correct'));
+    assert.ok(!html.includes('next-btn-wrong'));
   });
 });
 

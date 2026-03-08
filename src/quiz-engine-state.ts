@@ -32,6 +32,7 @@ export function initialEngineState(): EngineState {
     feedbackClass: 'feedback',
     feedbackCorrect: null,
     feedbackDisplayAnswer: null,
+    feedbackUserInput: null,
     timeDisplayText: '',
     hintText: '',
 
@@ -84,6 +85,7 @@ export function engineNextQuestion(
     feedbackClass: 'feedback',
     feedbackCorrect: null,
     feedbackDisplayAnswer: null,
+    feedbackUserInput: null,
     timeDisplayText: '',
     hintText: '',
     answersEnabled: true,
@@ -96,6 +98,7 @@ export function engineSubmitAnswer(
   isCorrect: boolean,
   correctAnswer: string,
   hintText = 'Space for next',
+  userInput?: string,
 ): EngineState {
   return {
     ...state,
@@ -105,6 +108,7 @@ export function engineSubmitAnswer(
     feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
     feedbackCorrect: isCorrect,
     feedbackDisplayAnswer: correctAnswer,
+    feedbackUserInput: userInput ?? null,
     timeDisplayText: '',
     hintText,
     roundAnswered: state.roundAnswered + 1,
@@ -137,6 +141,7 @@ export function engineRoundComplete(state: EngineState): EngineState {
     feedbackClass: 'feedback',
     feedbackCorrect: null,
     feedbackDisplayAnswer: null,
+    feedbackUserInput: null,
     hintText: '',
   };
 }

@@ -222,6 +222,7 @@ function PreviewApp() {
           text={feedbackCorrect.text}
           className={feedbackCorrect.className}
           time={feedbackCorrect.time}
+          correct={feedbackCorrect.correct}
           onNext={() => {}}
         />
       </Section>
@@ -230,6 +231,7 @@ function PreviewApp() {
           text={feedbackWrong.text}
           className={feedbackWrong.className}
           hint={feedbackWrong.hint}
+          correct={feedbackWrong.correct}
           onNext={() => {}}
         />
       </Section>

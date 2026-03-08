@@ -15,11 +15,40 @@ import {
 } from '../music-data.ts';
 
 // ---------------------------------------------------------------------------
+// Feedback state for button highlighting after answer
+// ---------------------------------------------------------------------------
+
+export type ButtonFeedback = {
+  correct: boolean;
+  /** Raw input value the user submitted (button value). */
+  userInput: string;
+  /** Display-form correct answer (matched against button labels). */
+  displayAnswer: string;
+};
+
+/** Compute feedback CSS class for a button given its value and display label. */
+function feedbackClass(
+  feedback: ButtonFeedback | null,
+  buttonValue: string,
+  buttonLabel: string,
+): string {
+  if (!feedback) return '';
+  if (feedback.correct && buttonValue === feedback.userInput) {
+    return ' btn-feedback-correct';
+  }
+  if (!feedback.correct) {
+    if (buttonValue === feedback.userInput) return ' btn-feedback-wrong';
+    if (buttonLabel === feedback.displayAnswer) return ' btn-feedback-reveal';
+  }
+  return '';
+}
+
+// ---------------------------------------------------------------------------
 // Note answer buttons (12-note grid)
 // ---------------------------------------------------------------------------
 
 export function NoteButtons(
-  { onAnswer, hidden, useFlats, calibrationActive, narrowing }: {
+  { onAnswer, hidden, useFlats, calibrationActive, narrowing, feedback }: {
     onAnswer?: (note: string) => void;
     hidden?: boolean;
     /** When set, accidental buttons show flats (true) or sharps (false). */
@@ -28,6 +57,7 @@ export function NoteButtons(
     calibrationActive?: boolean;
     /** Set of note names to highlight as keyboard matches; others dimmed. */
     narrowing?: ReadonlySet<string> | null;
+    feedback?: ButtonFeedback | null;
   },
 ) {
   const cls = 'answer-buttons answer-buttons-notes' +
@@ -49,6 +79,7 @@ export function NoteButtons(
         if (narrowing) {
           btnCls += narrowing.has(n) ? ' kb-match' : ' kb-dimmed';
         }
+        btnCls += feedbackClass(feedback ?? null, n, label);
         return (
           <button
             type='button'
@@ -71,21 +102,24 @@ export function NoteButtons(
 // ---------------------------------------------------------------------------
 
 export function PianoNoteButtons(
-  { onAnswer, hideAccidentals, narrowing }: {
+  { onAnswer, hideAccidentals, narrowing, feedback }: {
     onAnswer?: (note: string) => void;
     hideAccidentals?: boolean;
     /** Set of note names to highlight as keyboard matches; others dimmed. */
     narrowing?: ReadonlySet<string> | null;
+    feedback?: ButtonFeedback | null;
   },
 ) {
   return (
     <div class='note-buttons'>
       <div class='note-row-accidentals'>
         {ACCIDENTAL_NAMES.map((n) => {
+          const label = displayNote(n);
           let cls = 'note-btn accidental' + (hideAccidentals ? ' hidden' : '');
           if (narrowing && !hideAccidentals) {
             cls += narrowing.has(n) ? ' kb-match' : ' kb-dimmed';
           }
+          cls += feedbackClass(feedback ?? null, n, label);
           return (
             <button
               type='button'
@@ -95,17 +129,19 @@ export function PianoNoteButtons(
               data-note={n}
               onClick={onAnswer ? () => onAnswer(n) : undefined}
             >
-              {displayNote(n)}
+              {label}
             </button>
           );
         })}
       </div>
       <div class='note-row-naturals'>
         {NATURAL_NOTES.map((n) => {
+          const label = displayNote(n);
           let cls = 'note-btn';
           if (narrowing) {
             cls += narrowing.has(n) ? ' kb-match' : ' kb-dimmed';
           }
+          cls += feedbackClass(feedback ?? null, n, label);
           return (
             <button
               type='button'
@@ -115,7 +151,7 @@ export function PianoNoteButtons(
               data-note={n}
               onClick={onAnswer ? () => onAnswer(n) : undefined}
             >
-              {displayNote(n)}
+              {label}
             </button>
           );
         })}
@@ -129,13 +165,14 @@ export function PianoNoteButtons(
 // ---------------------------------------------------------------------------
 
 export function NumberButtons(
-  { start, end, onAnswer, hidden, narrowing }: {
+  { start, end, onAnswer, hidden, narrowing, feedback }: {
     start: number;
     end: number;
     onAnswer?: (num: number) => void;
     hidden?: boolean;
     /** Set of number strings to highlight as keyboard matches; others dimmed. */
     narrowing?: ReadonlySet<string> | null;
+    feedback?: ButtonFeedback | null;
   },
 ) {
   const nums = [];
@@ -145,17 +182,19 @@ export function NumberButtons(
   return (
     <div class={cls}>
       {nums.map((i) => {
+        const val = String(i);
         let btnCls = 'answer-btn answer-btn-num';
         if (narrowing) {
-          btnCls += narrowing.has(String(i)) ? ' kb-match' : ' kb-dimmed';
+          btnCls += narrowing.has(val) ? ' kb-match' : ' kb-dimmed';
         }
+        btnCls += feedbackClass(feedback ?? null, val, val);
         return (
           <button
             type='button'
             tabIndex={0}
             key={i}
             class={btnCls}
-            data-num={String(i)}
+            data-num={val}
             onClick={onAnswer ? () => onAnswer(i) : undefined}
           >
             {i}
@@ -171,27 +210,32 @@ export function NumberButtons(
 // ---------------------------------------------------------------------------
 
 export function IntervalButtons(
-  { onAnswer, hidden }: {
+  { onAnswer, hidden, feedback }: {
     onAnswer?: (interval: string) => void;
     hidden?: boolean;
+    feedback?: ButtonFeedback | null;
   },
 ) {
   const cls = 'answer-buttons answer-buttons-intervals' +
     (hidden ? ' answer-group-hidden' : '');
   return (
     <div class={cls}>
-      {INTERVAL_ABBREVS.map((iv) => (
-        <button
-          type='button'
-          tabIndex={0}
-          key={iv}
-          class='answer-btn answer-btn-interval'
-          data-interval={iv}
-          onClick={onAnswer ? () => onAnswer(iv) : undefined}
-        >
-          {iv}
-        </button>
-      ))}
+      {INTERVAL_ABBREVS.map((iv) => {
+        let btnCls = 'answer-btn answer-btn-interval';
+        btnCls += feedbackClass(feedback ?? null, iv, iv);
+        return (
+          <button
+            type='button'
+            tabIndex={0}
+            key={iv}
+            class={btnCls}
+            data-interval={iv}
+            onClick={onAnswer ? () => onAnswer(iv) : undefined}
+          >
+            {iv}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -201,24 +245,32 @@ export function IntervalButtons(
 // ---------------------------------------------------------------------------
 
 export function KeysigButtons(
-  { onAnswer, hidden }: { onAnswer?: (sig: string) => void; hidden?: boolean },
+  { onAnswer, hidden, feedback }: {
+    onAnswer?: (sig: string) => void;
+    hidden?: boolean;
+    feedback?: ButtonFeedback | null;
+  },
 ) {
   const cls = 'answer-buttons answer-buttons-keysig' +
     (hidden ? ' answer-group-hidden' : '');
   return (
     <div class={cls}>
-      {KEYSIG_LABELS.map((s) => (
-        <button
-          type='button'
-          tabIndex={0}
-          key={s}
-          class='answer-btn answer-btn-keysig'
-          data-sig={s}
-          onClick={onAnswer ? () => onAnswer(s) : undefined}
-        >
-          {s}
-        </button>
-      ))}
+      {KEYSIG_LABELS.map((s) => {
+        let btnCls = 'answer-btn answer-btn-keysig';
+        btnCls += feedbackClass(feedback ?? null, s, s);
+        return (
+          <button
+            type='button'
+            tabIndex={0}
+            key={s}
+            class={btnCls}
+            data-sig={s}
+            onClick={onAnswer ? () => onAnswer(s) : undefined}
+          >
+            {s}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -228,27 +280,32 @@ export function KeysigButtons(
 // ---------------------------------------------------------------------------
 
 export function DegreeButtons(
-  { onAnswer, hidden }: {
+  { onAnswer, hidden, feedback }: {
     onAnswer?: (degree: string) => void;
     hidden?: boolean;
+    feedback?: ButtonFeedback | null;
   },
 ) {
   const cls = 'answer-buttons answer-buttons-degrees' +
     (hidden ? ' answer-group-hidden' : '');
   return (
     <div class={cls}>
-      {DEGREE_LABELS.map(([val, label]) => (
-        <button
-          type='button'
-          tabIndex={0}
-          key={val}
-          class='answer-btn answer-btn-degree'
-          data-degree={val}
-          onClick={onAnswer ? () => onAnswer(val) : undefined}
-        >
-          {label}
-        </button>
-      ))}
+      {DEGREE_LABELS.map(([val, label]) => {
+        let btnCls = 'answer-btn answer-btn-degree';
+        btnCls += feedbackClass(feedback ?? null, val, label);
+        return (
+          <button
+            type='button'
+            tabIndex={0}
+            key={val}
+            class={btnCls}
+            data-degree={val}
+            onClick={onAnswer ? () => onAnswer(val) : undefined}
+          >
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -258,27 +315,32 @@ export function DegreeButtons(
 // ---------------------------------------------------------------------------
 
 export function NumeralButtons(
-  { onAnswer, hidden }: {
+  { onAnswer, hidden, feedback }: {
     onAnswer?: (numeral: string) => void;
     hidden?: boolean;
+    feedback?: ButtonFeedback | null;
   },
 ) {
   const cls = 'answer-buttons answer-buttons-numerals' +
     (hidden ? ' answer-group-hidden' : '');
   return (
     <div class={cls}>
-      {ROMAN_NUMERALS.map((n) => (
-        <button
-          type='button'
-          tabIndex={0}
-          key={n}
-          class='answer-btn answer-btn-numeral'
-          data-numeral={n}
-          onClick={onAnswer ? () => onAnswer(n) : undefined}
-        >
-          {n}
-        </button>
-      ))}
+      {ROMAN_NUMERALS.map((n) => {
+        let btnCls = 'answer-btn answer-btn-numeral';
+        btnCls += feedbackClass(feedback ?? null, n, n);
+        return (
+          <button
+            type='button'
+            tabIndex={0}
+            key={n}
+            class={btnCls}
+            data-numeral={n}
+            onClick={onAnswer ? () => onAnswer(n) : undefined}
+          >
+            {n}
+          </button>
+        );
+      })}
     </div>
   );
 }

@@ -164,33 +164,6 @@ export function SpeedTapMode(
         }
       }, 800);
       wrongFlashTimeoutsRef.current.add(timeout);
-
-      // Highlight closest correct position on the same string
-      const correctOnString = targetPosRef.current.filter(
-        (p) =>
-          p.string === s &&
-          !foundPosRef.current.has(p.string + '-' + p.fret),
-      );
-      if (correctOnString.length > 0) {
-        correctOnString.sort((a, b) =>
-          Math.abs(a.fret - f) - Math.abs(b.fret - f) || a.fret - b.fret
-        );
-        const closest = correctOnString[0];
-        const hintKey = closest.string + '-' + closest.fret;
-        setCircleFill(wrapper, closest.string, closest.fret, FB_TAP_CORRECT);
-        const hintTimeout = setTimeout(() => {
-          wrongFlashTimeoutsRef.current.delete(hintTimeout);
-          if (!foundPosRef.current.has(hintKey)) {
-            setCircleFill(
-              wrapper,
-              closest.string,
-              closest.fret,
-              '',
-            );
-          }
-        }, 800);
-        wrongFlashTimeoutsRef.current.add(hintTimeout);
-      }
     }
   }, []);
 
@@ -439,6 +412,7 @@ export function SpeedTapMode(
                       className={engine.state.feedbackClass}
                       time={engine.state.timeDisplayText || undefined}
                       hint={engine.state.hintText || undefined}
+                      correct={engine.state.feedbackCorrect}
                       onNext={engine.state.answered
                         ? engine.nextQuestion
                         : undefined}

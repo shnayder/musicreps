@@ -284,6 +284,7 @@ export function useQuizEngine(
         result.correct,
         result.correctAnswer,
         HINT_ADVANCE,
+        input,
       );
       next = {
         ...next,

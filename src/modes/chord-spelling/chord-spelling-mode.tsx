@@ -39,11 +39,7 @@ import {
   RoundCompleteInfo,
 } from '../../ui/mode-screen.tsx';
 import { StatsGrid, StatsLegend } from '../../ui/stats.tsx';
-import {
-  FeedbackBanner,
-  FeedbackDisplay,
-  KeyboardHint,
-} from '../../ui/quiz-ui.tsx';
+import { FeedbackDisplay, KeyboardHint } from '../../ui/quiz-ui.tsx';
 import { BUTTON_PROVIDER, SpeedCheck } from '../../ui/speed-check.tsx';
 
 import {
@@ -350,10 +346,6 @@ export function ChordSpellingMode(
                 controls={
                   <>
                     <ChordSlots state={seqState} />
-                    <FeedbackBanner
-                      correct={engine.state.feedbackCorrect}
-                      answer={engine.state.feedbackDisplayAnswer}
-                    />
                     <NoteButtons
                       onAnswer={handleNoteAnswer}
                       narrowing={noteNarrowing}
@@ -367,6 +359,7 @@ export function ChordSpellingMode(
                       className={engine.state.feedbackClass}
                       time={engine.state.timeDisplayText || undefined}
                       hint={engine.state.hintText || undefined}
+                      correct={engine.state.feedbackCorrect}
                       onNext={engine.state.answered
                         ? engine.nextQuestion
                         : undefined}

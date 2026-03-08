@@ -16,21 +16,25 @@ export function TextPrompt({ text }: { text: string }) {
 // ---------------------------------------------------------------------------
 
 export function FeedbackDisplay(
-  { text, className, time, hint, onNext }: {
+  { text, className, time, hint, correct, onNext }: {
     text: string;
     className: string;
     time?: string;
     hint?: string;
+    correct?: boolean | null;
     onNext?: () => void;
   },
 ) {
+  let btnCls = 'next-btn';
+  if (correct === true) btnCls += ' next-btn-correct';
+  else if (correct === false) btnCls += ' next-btn-wrong';
   return (
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
       {time ? <div class='time-display'>{time}</div> : null}
       <button
         type='button'
-        class='next-btn'
+        class={btnCls}
         onClick={onNext}
         style={onNext ? undefined : { visibility: 'hidden' }}
       >
@@ -43,25 +47,6 @@ export function FeedbackDisplay(
         {hint || '\u00A0'}
       </div>
     </>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// FeedbackBanner — visual correct/incorrect banner above answer buttons
-// ---------------------------------------------------------------------------
-
-export function FeedbackBanner(
-  { correct, answer }: { correct: boolean | null; answer: string | null },
-) {
-  if (correct === null || !answer) {
-    return <div class='feedback-banner' />;
-  }
-  const cls = 'feedback-banner' +
-    (correct ? ' feedback-banner-correct' : ' feedback-banner-wrong');
-  return (
-    <div class={cls}>
-      {correct ? answer : 'No, ' + answer}
-    </div>
   );
 }
 
