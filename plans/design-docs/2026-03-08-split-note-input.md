@@ -55,12 +55,14 @@ No timeout — the user is always in control. Three ways to confirm a natural:
 
 1. **Double-tap** — tap the same base note again (e.g., C → C submits C♮)
 2. **Tap ♮** — explicit natural button
-3. **Tap a different base note** — submits the pending note as natural, then
-   starts pending on the new note (so D after pending C submits C♮ and starts
-   pending D)
+3. **Tap a different base note** (sequential modes only, e.g., Chord Spelling)
+   — submits the pending note as natural, then starts pending on the new note
+   (so D after pending C submits C♮ and starts pending D). In single-answer
+   modes, submitting the answer ends the question, so there's no "next note"
+   to chain to.
 
-Option 3 means rapid natural-note sequences are still fast: just tap through
-the base notes and each previous one auto-submits as natural.
+Option 3 means rapid natural-note sequences in sequential modes are still fast:
+just tap through the base notes and each previous one auto-submits as natural.
 
 **Discoverability:** The ♮ button serves as a visual hint that confirming is
 needed. The accidental row appearing/highlighting after a base note tap signals

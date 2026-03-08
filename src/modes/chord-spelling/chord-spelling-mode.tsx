@@ -9,12 +9,8 @@ import {
   displayNote,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
-  rootUsesFlats,
 } from '../../music-data.ts';
-import {
-  createAdaptiveKeyHandler,
-  noteNarrowingSet,
-} from '../../quiz-engine.ts';
+import { createAdaptiveKeyHandler } from '../../quiz-engine.ts';
 
 import { useLearnerModel } from '../../hooks/use-learner-model.ts';
 import { useGroupScope } from '../../hooks/use-group-scope.ts';
@@ -28,7 +24,7 @@ import { useModeLifecycle } from '../../hooks/use-mode-lifecycle.ts';
 import { useRoundSummary } from '../../hooks/use-round-summary.ts';
 import { usePracticeSummary } from '../../hooks/use-practice-summary.ts';
 
-import { NoteButtons } from '../../ui/buttons.tsx';
+import { SplitNoteButtons } from '../../ui/buttons.tsx';
 import { GroupToggles } from '../../ui/scope.tsx';
 import {
   ModeTopBar,
@@ -209,12 +205,6 @@ export function ChordSpellingMode(
     }
   }
 
-  // --- Narrowing (keyboard match highlighting) ---
-  const noteNarrowing = useMemo(
-    () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-    [pendingNote, engine.state.answered],
-  );
-
   // --- Phase class sync ---
   usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
 
@@ -346,12 +336,11 @@ export function ChordSpellingMode(
                 controls={
                   <>
                     <ChordSlots state={seqState} />
-                    <NoteButtons
+                    <SplitNoteButtons
                       onAnswer={handleNoteAnswer}
-                      narrowing={noteNarrowing}
-                      useFlats={currentQ
-                        ? rootUsesFlats(currentQ.rootName)
-                        : undefined}
+                      sequential
+                      pendingNote={pendingNote}
+                      answered={engine.state.answered}
                     />
                     <KeyboardHint type='note' />
                     <FeedbackDisplay
