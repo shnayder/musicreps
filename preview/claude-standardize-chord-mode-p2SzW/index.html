@@ -2047,7 +2047,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="5985f6 standardize-chord-mode-p2SzW"></div>
+  <div class="home-screen" id="home-screen" data-version="93ee20 standardize-chord-mode-p2SzW"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -8104,7 +8104,10 @@ button {
       getPracticingLabel: () => getPracticingLabelRef.current(),
       checkAnswer: (_itemId, input) => {
         if (isSequential) {
-          return { correct: input === "__correct__", correctAnswer: "" };
+          const sep = input.indexOf(":");
+          const isCorrect = input.startsWith("__correct__");
+          const correctAnswer = sep >= 0 ? input.slice(sep + 1) : "";
+          return { correct: isCorrect, correctAnswer };
         }
         const q3 = currentQRef.current;
         return def.checkAnswer(q3, input);
@@ -8155,7 +8158,8 @@ button {
         const result = def.sequential.evaluate(q3, newRaw);
         setSeqEvaluated(result.perEntry);
         setSeqCorrectAnswer(result.correctAnswer);
-        seqSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
+        const sentinel = result.correct ? "__correct__" : "__wrong__";
+        seqSubmitRef.current(sentinel + ":" + result.correctAnswer);
       }
     }, [def]);
     const handleSeqBatch = q2((text) => {
@@ -8169,7 +8173,8 @@ button {
       const result = def.sequential.evaluate(q3, notes);
       setSeqEvaluated(result.perEntry);
       setSeqCorrectAnswer(result.correctAnswer);
-      seqSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
+      const sentinel = result.correct ? "__correct__" : "__wrong__";
+      seqSubmitRef.current(sentinel + ":" + result.correctAnswer);
       return true;
     }, [def]);
     const dir = currentQ && def.getDirection ? def.getDirection(currentQ) : "fwd";
@@ -9583,6 +9588,8 @@ button {
       parseBatchInput: parseChordInput,
       batchPlaceholder: (q3) => `${q3.tones.length} notes, e.g. C E G \u2014 Enter`
     },
+    // Sequential modes render SplitNoteButtons automatically; this field
+    // is required by the type but unused during quizzing.
     buttons: { kind: "piano-note" },
     scope: {
       kind: "groups",
