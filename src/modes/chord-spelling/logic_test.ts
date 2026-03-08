@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import {
   ALL_ITEMS,
   checkAnswer,
+  evaluateSequential,
   getGridItemId,
   getItemIdsForGroup,
   handleInput,
   initSequentialState,
+  parseChordInput,
   parseItem,
   SPELLING_GROUPS,
 } from './logic.ts';
@@ -119,107 +121,182 @@ describe('initSequentialState', () => {
 });
 
 describe('handleInput', () => {
-  it('first correct note for "C:major" returns { status: "continue" }', () => {
+  it('first note returns { status: "continue" } with correct: null', () => {
     const state = initSequentialState('C:major');
     const result = handleInput('C:major', 'C', state);
     assert.equal(result.status, 'continue');
+    assert.equal(result.state.entries.length, 1);
+    assert.equal(result.state.entries[0].correct, null);
   });
 
-  it('first correct note advances entries in returned state', () => {
-    const state = initSequentialState('C:major');
-    const result = handleInput('C:major', 'C', state);
-    assert.equal(result.status, 'continue');
-    if (result.status === 'continue') {
-      assert.equal(result.state.entries.length, 1);
-      assert.equal(result.state.entries[0].correct, true);
-    }
-  });
-
-  it('entering all notes for "C:major" returns { status: "complete", correct: true }', () => {
-    let state = initSequentialState('C:major');
-
-    // Enter C
-    let result = handleInput('C:major', 'C', state);
-    assert.equal(result.status, 'continue');
-    if (result.status === 'continue') state = result.state;
-
-    // Enter E
-    result = handleInput('C:major', 'E', state);
-    assert.equal(result.status, 'continue');
-    if (result.status === 'continue') state = result.state;
-
-    // Enter G (final note — should complete)
-    result = handleInput('C:major', 'G', state);
-    assert.equal(result.status, 'complete');
-    if (result.status === 'complete') {
-      assert.equal(result.correct, true);
-    }
-  });
-
-  it('complete result includes final state with all entries', () => {
+  it('entries accumulate without evaluation', () => {
     let state = initSequentialState('C:major');
     let result = handleInput('C:major', 'C', state);
-    if (result.status === 'continue') state = result.state;
+    assert.equal(result.status, 'continue');
+    state = result.state;
+
     result = handleInput('C:major', 'E', state);
-    if (result.status === 'continue') state = result.state;
-    result = handleInput('C:major', 'G', state);
-    assert.equal(result.status, 'complete');
-    if (result.status === 'complete') {
-      assert.equal(result.state.entries.length, 3);
-      assert.equal(result.state.entries[0].display, 'C');
-      assert.equal(result.state.entries[1].display, 'E');
-      assert.equal(result.state.entries[2].display, 'G');
-    }
+    assert.equal(result.status, 'continue');
+    assert.equal(result.state.entries.length, 2);
+    assert.equal(result.state.entries[0].correct, null);
+    assert.equal(result.state.entries[1].correct, null);
   });
 
-  it('entering a wrong note and completing still returns complete with correct: false', () => {
+  it('entering all notes returns { status: "complete" }', () => {
     let state = initSequentialState('C:major');
-
-    // Enter wrong first note
-    let result = handleInput('C:major', 'D', state);
-    assert.equal(result.status, 'continue');
-    if (result.status === 'continue') state = result.state;
-
-    // Enter E
+    let result = handleInput('C:major', 'C', state);
+    state = result.state;
     result = handleInput('C:major', 'E', state);
-    assert.equal(result.status, 'continue');
-    if (result.status === 'continue') state = result.state;
-
-    // Enter G
+    state = result.state;
     result = handleInput('C:major', 'G', state);
     assert.equal(result.status, 'complete');
-    if (result.status === 'complete') {
-      assert.equal(result.correct, false);
-    }
+    assert.equal(result.state.entries.length, 3);
+    // Not yet evaluated
+    assert.equal(result.state.entries[0].correct, null);
   });
 
-  it('flat-root chord complete result uses flat spellings in display', () => {
-    // Bb minor: Bb Db F
-    let state = initSequentialState('Bb:minor');
-    let result = handleInput('Bb:minor', 'Bb', state);
-    if (result.status === 'continue') state = result.state;
-    result = handleInput('Bb:minor', 'Db', state);
-    if (result.status === 'continue') state = result.state;
-    result = handleInput('Bb:minor', 'F', state);
-    assert.equal(result.status, 'complete');
-    if (result.status === 'complete') {
-      assert.equal(result.state.entries.length, 3);
-      // Display should use flat spellings, not sharps
-      assert.equal(result.state.entries[0].display, 'B\u266D');
-      assert.equal(result.state.entries[1].display, 'D\u266D');
-      assert.equal(result.state.entries[2].display, 'F');
-    }
-  });
-
-  it('enharmonic input (e.g. "Gb" for "F#") is accepted as correct', () => {
-    // F#:major has tones F#, A#, C#
+  it('displays user input as-is (no normalization)', () => {
     const state = initSequentialState('F#:major');
+    // Enter enharmonic "Gb" — should display as Gb, not normalize to F#
     const result = handleInput('F#:major', 'Gb', state);
-    assert.equal(result.status, 'continue');
-    if (result.status === 'continue') {
-      // Enharmonic match is normalized — entry should be marked correct
-      assert.equal(result.state.entries[0].correct, true);
+    assert.equal(result.state.entries[0].display, 'G\u266D');
+    assert.equal(result.state.entries[0].correct, null);
+  });
+});
+
+describe('evaluateSequential', () => {
+  it('all correct notes → correct: true', () => {
+    let state = initSequentialState('C:major');
+    for (const note of ['C', 'E', 'G']) {
+      const r = handleInput('C:major', note, state);
+      state = r.state;
     }
+    const result = evaluateSequential('C:major', state);
+    assert.equal(result.correct, true);
+    assert.equal(result.state.entries.every((e) => e.correct), true);
+  });
+
+  it('wrong note → correct: false, per-entry marks', () => {
+    let state = initSequentialState('C:major');
+    for (const note of ['C', 'F', 'G']) {
+      const r = handleInput('C:major', note, state);
+      state = r.state;
+    }
+    const result = evaluateSequential('C:major', state);
+    assert.equal(result.correct, false);
+    assert.equal(result.state.entries[0].correct, true);
+    assert.equal(result.state.entries[1].correct, false); // F instead of E
+    assert.equal(result.state.entries[2].correct, true);
+  });
+
+  it('correctAnswer is the spelled tones joined by spaces', () => {
+    let state = initSequentialState('C:major');
+    for (const note of ['C', 'E', 'G']) {
+      const r = handleInput('C:major', note, state);
+      state = r.state;
+    }
+    const result = evaluateSequential('C:major', state);
+    assert.equal(result.correctAnswer, 'C E G');
+  });
+
+  it('correct entries display canonical spelling', () => {
+    let state = initSequentialState('Bb:minor');
+    for (const note of ['Bb', 'Db', 'F']) {
+      const r = handleInput('Bb:minor', note, state);
+      state = r.state;
+    }
+    const result = evaluateSequential('Bb:minor', state);
+    assert.equal(result.correct, true);
+    assert.equal(result.state.entries[0].display, 'B\u266D');
+    assert.equal(result.state.entries[1].display, 'D\u266D');
+    assert.equal(result.state.entries[2].display, 'F');
+  });
+
+  it('enharmonic equivalents are rejected (strict spelling)', () => {
+    // F#:major expects F#, A#, C# — entering Gb should be wrong
+    let state = initSequentialState('F#:major');
+    for (const note of ['Gb', 'A#', 'C#']) {
+      const r = handleInput('F#:major', note, state);
+      state = r.state;
+    }
+    const result = evaluateSequential('F#:major', state);
+    assert.equal(result.correct, false);
+    assert.equal(result.state.entries[0].correct, false); // Gb ≠ F#
+    assert.equal(result.state.entries[1].correct, true);
+    assert.equal(result.state.entries[2].correct, true);
+  });
+
+  it('B ≠ Cb (strict enharmonic check)', () => {
+    // Gb:major expects Gb, Bb, Db — entering B instead of Cb should be wrong
+    // Actually let's use a chord that has Cb. Let's try Gb:major = Gb Bb Db
+    // Hmm, Gb:major doesn't have Cb. Let's try a known case:
+    // F#:dim = F# A C — entering B# instead of C should be wrong
+    let state = initSequentialState('F#:dim');
+    const tones = parseItem('F#:dim').tones;
+    // Enter first tones correctly, then wrong spelling for last
+    for (let i = 0; i < tones.length - 1; i++) {
+      const r = handleInput('F#:dim', tones[i], state);
+      state = r.state;
+    }
+    // Enter enharmonic spelling for last tone
+    const lastTone = tones[tones.length - 1];
+    const wrongSpelling = lastTone === 'C' ? 'B#' : lastTone + 'b';
+    const r = handleInput('F#:dim', wrongSpelling, state);
+    state = r.state;
+    const result = evaluateSequential('F#:dim', state);
+    assert.equal(
+      result.state.entries[tones.length - 1].correct,
+      false,
+      `"${wrongSpelling}" should not match "${lastTone}"`,
+    );
+  });
+});
+
+describe('parseChordInput', () => {
+  it('splits by whitespace', () => {
+    assert.deepEqual(parseChordInput('C E G'), ['C', 'E', 'G']);
+  });
+
+  it('handles multiple spaces', () => {
+    assert.deepEqual(parseChordInput('C  E   G'), ['C', 'E', 'G']);
+  });
+
+  it('normalizes case', () => {
+    assert.deepEqual(parseChordInput('c e g'), ['C', 'E', 'G']);
+  });
+
+  it('"s" suffix is sharp', () => {
+    assert.deepEqual(parseChordInput('fs'), ['F#']);
+    assert.deepEqual(parseChordInput('Cs'), ['C#']);
+  });
+
+  it('"S" suffix is sharp (case-insensitive)', () => {
+    assert.deepEqual(parseChordInput('FS'), ['F#']);
+  });
+
+  it('"b" suffix is flat', () => {
+    assert.deepEqual(parseChordInput('Bb Db F'), ['Bb', 'Db', 'F']);
+  });
+
+  it('"#" suffix stays as sharp', () => {
+    assert.deepEqual(parseChordInput('F# A# C#'), ['F#', 'A#', 'C#']);
+  });
+
+  it('mixed accidentals', () => {
+    assert.deepEqual(parseChordInput('A Cb fs'), ['A', 'Cb', 'F#']);
+  });
+
+  it('trims leading/trailing whitespace', () => {
+    assert.deepEqual(parseChordInput('  C E G  '), ['C', 'E', 'G']);
+  });
+
+  it('empty string returns empty array', () => {
+    assert.deepEqual(parseChordInput(''), []);
+  });
+
+  it('handles Bb (note B-flat)', () => {
+    // "bb" should parse as B + flat → Bb
+    assert.deepEqual(parseChordInput('bb'), ['Bb']);
   });
 });
 

@@ -1,6 +1,8 @@
 // Answer button components: Preact equivalents of html-helpers button generators.
 // Each emits the same CSS class names as the build-time HTML for style parity.
 
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+
 import {
   ACCIDENTAL_NAMES,
   DEGREE_LABELS,
@@ -93,6 +95,114 @@ export function NoteButtons(
           </button>
         );
       })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Split note buttons: base note row + accidental row (two-step input)
+// ---------------------------------------------------------------------------
+
+const ACCIDENTALS_SINGLE = [
+  { label: '\u266D', suffix: 'b' }, // ♭
+  { label: '\u266E', suffix: '' }, // ♮ (natural)
+  { label: '\u266F', suffix: '#' }, // ♯
+] as const;
+
+export function SplitNoteButtons(
+  { onAnswer, sequential, pendingNote, answered }: {
+    onAnswer: (note: string) => void;
+    /** Enable chain-submit: tapping a new base note auto-submits the pending
+     *  note as natural. Only meaningful in sequential modes (Chord Spelling). */
+    sequential?: boolean;
+    /** Pending note from keyboard input — used to sync visual state. */
+    pendingNote?: string | null;
+    /** When true, buttons are inactive (answer already submitted). */
+    answered?: boolean;
+  },
+) {
+  const [pendingBase, setPendingBase] = useState<string | null>(null);
+  const onAnswerRef = useRef(onAnswer);
+  onAnswerRef.current = onAnswer;
+
+  // Sync: clear button pending state when keyboard sets a pending note
+  // (keyboard takes over), or when answered.
+  useEffect(() => {
+    if (pendingNote || answered) setPendingBase(null);
+  }, [pendingNote, answered]);
+
+  const handleBase = useCallback((note: string) => {
+    setPendingBase((prev) => {
+      if (prev === note) {
+        // Double-tap: confirm natural
+        onAnswerRef.current(note);
+        return null;
+      }
+      if (prev && sequential) {
+        // Chain: submit previous as natural, start new pending
+        onAnswerRef.current(prev);
+      }
+      return note;
+    });
+  }, [sequential]);
+
+  const pendingNoteRef = useRef(pendingNote);
+  pendingNoteRef.current = pendingNote;
+
+  const handleAccidental = useCallback((suffix: string) => {
+    setPendingBase((prev) => {
+      // Use button pending first, fall back to keyboard pending
+      const base = prev ?? pendingNoteRef.current;
+      if (!base) return null;
+      onAnswerRef.current(suffix ? base + suffix : base);
+      return null;
+    });
+  }, []);
+
+  // The effective pending state: button tap OR keyboard
+  const effective = pendingBase ?? pendingNote ?? null;
+  const showAccidentals = effective !== null && !answered;
+
+  return (
+    <div class='split-note-buttons'>
+      <div class='split-note-row-base'>
+        {NATURAL_NOTES.map((n) => {
+          let cls = 'split-note-btn split-note-base';
+          if (effective === n) cls += ' split-note-pending';
+          else if (effective) cls += ' split-note-dimmed';
+          return (
+            <button
+              type='button'
+              tabIndex={0}
+              key={n}
+              class={cls}
+              data-note={n}
+              disabled={answered}
+              onClick={() => handleBase(n)}
+            >
+              {displayNote(n)}
+            </button>
+          );
+        })}
+      </div>
+      <div
+        class={'split-note-row-accidentals' +
+          (showAccidentals ? '' : ' split-note-acc-hidden')}
+      >
+        {ACCIDENTALS_SINGLE.map(({ label, suffix }) => (
+          <button
+            type='button'
+            tabIndex={0}
+            key={label}
+            class='split-note-btn split-note-acc'
+            data-accidental={suffix || 'natural'}
+            disabled={!showAccidentals}
+            onClick={() => handleAccidental(suffix)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

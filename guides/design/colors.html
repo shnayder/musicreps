@@ -192,13 +192,23 @@
     <div id="topbar-colors" class="grid"></div>
 
     <!-- ================================================================== -->
+    <h2>Accent (Blue)</h2>
+    <p>
+      Warm blue for interactive "current input" states — distinct from success
+      green and neutral filled. Active chord-slot underline and general-purpose
+      app accent.
+    </p>
+
+    <div id="semantic-colors" class="grid"></div>
+
+    <!-- ================================================================== -->
     <h2>Gold &amp; Red</h2>
     <p>
       Gold for attention and recommendations, red for errors only. Each role
       has primary, background, and text variants where applicable.
     </p>
 
-    <div id="semantic-colors" class="grid"></div>
+    <div id="gold-red-colors" class="grid"></div>
 
     <!-- ================================================================== -->
     <h2>Semantic Pairings</h2>
@@ -295,8 +305,8 @@
             note: 'Hover CTA, nav active text, pressed state',
           },
           { v: '--color-brand-bg', note: 'Success bg, nav active bg' },
-          { v: '--color-focus', note: 'Focus ring, active chord-slot border' },
-          { v: '--color-focus-bg', note: 'Active chord-slot bg' },
+          { v: '--color-focus', note: 'Focus ring (legacy)' },
+          { v: '--color-focus-bg', note: 'Focus bg (legacy)' },
           {
             v: '--color-toggle-active',
             note: 'Active string/distance toggle',
@@ -312,8 +322,20 @@
           },
         ]);
 
-        // --- Gold & Red ---
+        // --- Accent (Blue) ---
         renderSwatches('semantic-colors', [
+          {
+            v: '--color-accent',
+            note: 'Blue — active chord-slot underline, input focus',
+          },
+          {
+            v: '--color-accent-muted',
+            note: 'Blue — lighter accent for secondary states',
+          },
+        ]);
+
+        // --- Gold & Red ---
+        renderSwatches('gold-red-colors', [
           {
             v: '--color-highlight',
             note: 'Gold — fretboard question, achievements',

@@ -2,6 +2,9 @@
 // No DOM, no hooks — just data in, data out.
 // Sequential response: user spells out chord tones one at a time.
 // ~132 items: 12 roots × chord types, grouped by chord type.
+//
+// All notes are collected before evaluation. Spelling must be exact —
+// enharmonic equivalents (e.g. B vs Cb) are rejected.
 
 import type {
   ChordType,
@@ -14,7 +17,6 @@ import {
   displayNote,
   getChordTones,
   spelledNoteMatchesInput,
-  spelledNoteMatchesSemitone,
 } from '../../music-data.ts';
 
 // ---------------------------------------------------------------------------
@@ -116,13 +118,12 @@ export function initSequentialState(itemId: string): SequentialState {
 }
 
 /**
- * Process a single note input in the sequential chord-spelling sequence.
+ * Collect a single note input without evaluating correctness.
  *
- * If the sequence is not yet complete, returns { status: 'continue', state }.
- * If all tones have been entered, returns { status: 'complete', correct, correctAnswer }.
+ * Entries are stored with `correct: null` — call `evaluateSequential`
+ * after all notes are collected to determine per-note correctness.
  *
- * Each entered note is checked against the expected tone at that position.
- * If the note is enharmonically correct (same semitone), the canonical spelling is used.
+ * Returns `'continue'` while slots remain, `'complete'` when full.
  */
 export function handleInput(
   itemId: string,
@@ -132,28 +133,12 @@ export function handleInput(
   const item = parseItem(itemId);
   const idx = state.entries.length;
   if (idx >= item.tones.length) {
-    const allCorrect = state.entries.every((e) => e.correct);
-    return {
-      status: 'complete',
-      correct: allCorrect,
-      correctAnswer: item.tones.map(displayNote).join(' '),
-      state,
-    };
+    return { status: 'complete', state };
   }
 
-  const expected = item.tones[idx];
-  if (spelledNoteMatchesSemitone(expected, input)) {
-    input = expected;
-  }
-
-  const isCorrect = spelledNoteMatchesInput(expected, input);
   const entries = [
     ...state.entries,
-    {
-      input,
-      display: isCorrect ? displayNote(expected) : displayNote(input),
-      correct: isCorrect,
-    },
+    { input, display: displayNote(input), correct: null as boolean | null },
   ];
 
   const newState: SequentialState = {
@@ -162,16 +147,66 @@ export function handleInput(
   };
 
   if (entries.length === item.tones.length) {
-    const allCorrect = entries.every((e) => e.correct);
-    return {
-      status: 'complete',
-      correct: allCorrect,
-      correctAnswer: item.tones.map(displayNote).join(' '),
-      state: newState,
-    };
+    return { status: 'complete', state: newState };
   }
 
   return { status: 'continue', state: newState };
+}
+
+/**
+ * Evaluate all collected entries against the expected chord tones.
+ * Requires exact spelling — enharmonic equivalents are rejected
+ * (e.g. B ≠ Cb, F# ≠ Gb).
+ *
+ * Returns per-entry correctness, overall result, and the correct answer string.
+ */
+export function evaluateSequential(
+  itemId: string,
+  state: SequentialState,
+): { correct: boolean; correctAnswer: string; state: SequentialState } {
+  const item = parseItem(itemId);
+  const evaluatedEntries = state.entries.map((entry, i) => {
+    const expected = item.tones[i];
+    const isCorrect = expected !== undefined &&
+      spelledNoteMatchesInput(expected, entry.input);
+    return {
+      input: entry.input,
+      display: isCorrect ? displayNote(expected) : displayNote(entry.input),
+      correct: isCorrect,
+    };
+  });
+
+  const allCorrect = evaluatedEntries.every((e) => e.correct);
+  const correctAnswer = item.tones.map(displayNote).join(' ');
+
+  return {
+    correct: allCorrect,
+    correctAnswer,
+    state: { expectedCount: state.expectedCount, entries: evaluatedEntries },
+  };
+}
+
+/**
+ * Parse keyboard text input into note names.
+ * Whitespace-separated, case-insensitive. 's' is accepted for sharp.
+ *
+ * @example parseChordInput("C E G") → ["C", "E", "G"]
+ * @example parseChordInput("A Cb fs") → ["A", "Cb", "F#"]
+ * @example parseChordInput("bb db f") → ["Bb", "Db", "F"]
+ */
+export function parseChordInput(text: string): string[] {
+  return text.trim().split(/\s+/).filter(Boolean).map((token) => {
+    if (token.length === 0) return '';
+    const letter = token[0].toUpperCase();
+    if (!'CDEFGAB'.includes(letter)) return token;
+    let suffix = '';
+    for (let i = 1; i < token.length; i++) {
+      const ch = token[i];
+      if (ch === 's' || ch === 'S') suffix += '#';
+      else suffix += ch; // '#' and 'b' stay as-is
+    }
+    return letter + suffix;
+  });
 }
 
 /**

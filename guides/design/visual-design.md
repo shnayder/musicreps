@@ -93,6 +93,7 @@ bg, border, and text variants. Currently three families exist:
 | Brand/Success | `--color-brand`      | `-bg`   | —         | `-text`  |
 | Error         | `--color-error`      | `-bg`   | —         | `-text`  |
 | Recommended   | `--color-recommended`| `-bg`   | `-border` | `-text`  |
+| Accent        | `--color-accent`     | —       | —         | `-muted` |
 
 When adding a new semantic color, follow this pattern: define the accent first,
 then add `-bg`, `-border`, and `-text` variants as needed.
@@ -111,9 +112,20 @@ toggles, and focus states all share this hue.
 | `--color-success-dark`  | `#1b5e20` | Alias — same as brand-dark                 |
 | `--color-success-bg`    | `#e8f5e9` | Alias — same as brand-bg                   |
 | `--color-success-text`  | `#1b5e20` | Text on success/brand backgrounds          |
-| `--color-focus`         | `#2e7d32` | Active chord-slot border (green, not blue) |
-| `--color-focus-bg`      | `#e8f5e9` | Active chord-slot background               |
+| `--color-focus`         | `#2e7d32` | Focus ring (legacy — see accent below)     |
+| `--color-focus-bg`      | `#e8f5e9` | Focus background (legacy)                  |
 | `--color-toggle-active` | `hsl(0, 0%, 32%)`  | Active string/distance toggle (neutral)   |
+
+### Accent (Blue)
+
+Warm blue for interactive "current input" states — visually distinct from
+success green and neutral filled slots. Used for the active chord-slot
+underline and available as a general-purpose accent throughout the app.
+
+| Token                  | Value                  | Usage                                       |
+| ---------------------- | ---------------------- | ------------------------------------------- |
+| `--color-accent`       | `hsl(220, 65%, 50%)`  | Active chord-slot underline, input focus     |
+| `--color-accent-muted` | `hsl(220, 40%, 65%)`  | Lighter variant for secondary accent states  |
 
 ### Gold (Attention)
 

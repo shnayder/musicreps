@@ -356,7 +356,7 @@ export function createAdaptiveKeyHandler(
 
 /**
  * Update all note button labels in a container to reflect current notation mode.
- * Handles .answer-btn-note, .note-btn, and .string-toggle elements.
+ * Handles .answer-btn-note, .note-btn, .split-note-base, and .string-toggle elements.
  */
 export function refreshNoteButtonLabels(container: HTMLElement): void {
   container.querySelectorAll<HTMLButtonElement>('.answer-btn-note').forEach(
@@ -368,6 +368,12 @@ export function refreshNoteButtonLabels(container: HTMLElement): void {
     },
   );
   container.querySelectorAll<HTMLButtonElement>('.note-btn').forEach(
+    function (btn) {
+      const noteName = btn.dataset.note;
+      if (noteName) btn.textContent = displayNote(noteName);
+    },
+  );
+  container.querySelectorAll<HTMLButtonElement>('.split-note-base').forEach(
     function (btn) {
       const noteName = btn.dataset.note;
       if (noteName) btn.textContent = displayNote(noteName);
