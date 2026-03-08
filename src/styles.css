@@ -1339,6 +1339,7 @@ button {
 }
 .split-note-btn:disabled {
   cursor: default;
+  opacity: 0.4;
 }
 @media (hover: hover) {
   .split-note-btn:hover:not(:disabled) {

@@ -42,7 +42,7 @@ Three tiers of accidental display, chosen per mode:
 
 ### Button input
 
-1. User taps a **base note** (C–G) → note enters "pending" state, accidental
+1. User taps a **base note** (C–B) → note enters "pending" state, accidental
    row highlights
 2. User taps an **accidental** → submits the combined note (e.g., C + ♯ = C♯)
 3. Or user taps **♮** (or another base note, or the same note again) → submits

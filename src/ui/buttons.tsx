@@ -146,10 +146,15 @@ export function SplitNoteButtons(
     });
   }, [sequential]);
 
+  const pendingNoteRef = useRef(pendingNote);
+  pendingNoteRef.current = pendingNote;
+
   const handleAccidental = useCallback((suffix: string) => {
     setPendingBase((prev) => {
-      if (!prev) return null;
-      onAnswerRef.current(suffix ? prev + suffix : prev);
+      // Use button pending first, fall back to keyboard pending
+      const base = prev ?? pendingNoteRef.current;
+      if (!base) return null;
+      onAnswerRef.current(suffix ? base + suffix : base);
       return null;
     });
   }, []);
