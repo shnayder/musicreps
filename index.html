@@ -933,54 +933,6 @@ body {
   pointer-events: all;
 }
 
-/* Hover card */
-.hover-card {
-  position: absolute;
-  pointer-events: none;
-  z-index: 10;
-  opacity: 0;
-  transition: opacity 0.12s;
-}
-.hover-card.visible {
-  opacity: 1;
-}
-.hc-inner {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: 0.35rem 0.5rem;
-  min-width: 65px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-  text-align: center;
-}
-.hc-note {
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--color-text);
-}
-.hc-string-fret {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin-top: 0.05rem;
-}
-.hc-detail {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin-top: 0.12rem;
-}
-.hc-bar {
-  height: 3px;
-  border-radius: var(--radius-sm);
-  background: hsl(30, 5%, 90%);
-  margin-top: 0.25rem;
-  overflow: hidden;
-}
-.hc-bar-fill {
-  height: 100%;
-  border-radius: var(--radius-sm);
-  transition: width 0.2s;
-}
-
 .settings-row {
   display: flex;
   flex-direction: column;
@@ -1400,6 +1352,50 @@ button {
   max-width: 360px;
   margin: var(--space-3) auto;
 }
+/* Answer text input (declarative modes) */
+.answer-input {
+  display: none;
+  width: 100%;
+  max-width: 280px;
+  margin: var(--space-2) auto;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-lg);
+  font-family: inherit;
+  text-align: center;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+@media (pointer: fine) {
+  .answer-input {
+    display: block;
+  }
+}
+.answer-input:focus {
+  border-color: var(--color-border);
+}
+.answer-input:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.answer-input-shake {
+  animation: input-shake 0.3s ease-in-out;
+}
+@keyframes input-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-4px);
+  }
+  40%, 80% {
+    transform: translateX(4px);
+  }
+}
+
 .answer-btn {
   height: 48px;
   font-size: var(--text-md);
@@ -1937,7 +1933,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#727"></div>
+  <div class="home-screen" id="home-screen" data-version="#739"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -1970,24 +1966,7 @@ button {
           </div>
           <div class="practice-scope">
             <div class="settings-row">
-              <div class="toggle-group">
-          <span class="toggle-group-label">Strings</span>
-          <div class="string-toggles">
-            <button tabindex="0" class="string-toggle" data-string="0" data-string-note="e">e</button>
-            <button tabindex="0" class="string-toggle" data-string="1" data-string-note="B">B</button>
-            <button tabindex="0" class="string-toggle" data-string="2" data-string-note="G">G</button>
-            <button tabindex="0" class="string-toggle" data-string="3" data-string-note="D">D</button>
-            <button tabindex="0" class="string-toggle" data-string="4" data-string-note="A">A</button>
-            <button tabindex="0" class="string-toggle active" data-string="5" data-string-note="E">E</button>
-          </div>
-        </div>
-          <div class="toggle-group">
-            <span class="toggle-group-label">Notes</span>
-            <div class="notes-toggles">
-              <button tabindex="0" class="notes-toggle active" data-notes="natural">natural</button>
-              <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
-            </div>
-          </div>
+              <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
             </div>
           </div>
           <div class="practice-zone-action">
@@ -2109,12 +2088,6 @@ button {
       <circle class="fb-pos" data-string="5" data-fret="12" cx="18" cy="582" r="14"/>
           
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>
       <div class="stats-container"></div>
@@ -2253,12 +2226,6 @@ button {
       <circle class="fb-pos" data-string="5" data-fret="12" cx="18" cy="582" r="14"/>
           
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>
       <div class="note-buttons">
@@ -2331,22 +2298,7 @@ button {
           </div>
           <div class="practice-scope">
             <div class="settings-row">
-              <div class="toggle-group">
-          <span class="toggle-group-label">Strings</span>
-          <div class="string-toggles">
-            <button tabindex="0" class="string-toggle" data-string="0" data-string-note="A">A</button>
-            <button tabindex="0" class="string-toggle" data-string="1" data-string-note="E">E</button>
-            <button tabindex="0" class="string-toggle active" data-string="2" data-string-note="C">C</button>
-            <button tabindex="0" class="string-toggle" data-string="3" data-string-note="G">G</button>
-          </div>
-        </div>
-          <div class="toggle-group">
-            <span class="toggle-group-label">Notes</span>
-            <div class="notes-toggles">
-              <button tabindex="0" class="notes-toggle active" data-notes="natural">natural</button>
-              <button tabindex="0" class="notes-toggle" data-notes="sharps-flats">sharps &amp; flats</button>
-            </div>
-          </div>
+              <div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>
             </div>
           </div>
           <div class="practice-zone-action">
@@ -2440,12 +2392,6 @@ button {
       <circle class="fb-pos" data-string="3" data-fret="12" cx="18" cy="582" r="14"/>
           
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>
       <div class="stats-container"></div>
@@ -2556,12 +2502,6 @@ button {
       <circle class="fb-pos" data-string="3" data-fret="12" cx="18" cy="582" r="14"/>
           
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>
       <div class="note-buttons">
@@ -2790,12 +2730,6 @@ button {
       <circle class="fb-pos" data-string="5" data-fret="12" cx="18" cy="582" r="14"/>
           
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>
       <div class="answer-buttons answer-buttons-notes answer-group-hidden">
@@ -4085,7 +4019,55 @@ button {
     return Math.random() < 0.5 ? sharp : flat;
   }
   function noteMatchesInput(note, input) {
-    return note.accepts.includes(input.toLowerCase());
+    const lower = input.toLowerCase();
+    if (note.accepts.includes(lower)) return true;
+    if (lower.endsWith("s") && lower.length === 2) {
+      return note.accepts.includes(lower[0] + "#");
+    }
+    return false;
+  }
+  var VALID_NOTE_INPUTS = new Set(
+    NOTES.flatMap((n2) => {
+      const inputs = [...n2.accepts];
+      for (const a3 of n2.accepts) {
+        if (a3.endsWith("#")) inputs.push(a3.slice(0, -1) + "s");
+      }
+      return inputs;
+    })
+  );
+  function isValidNoteInput(input) {
+    return VALID_NOTE_INPUTS.has(input.toLowerCase());
+  }
+  function isValidNumberInput(input, min, max) {
+    if (!/^\d{1,2}$/.test(input)) return false;
+    const n2 = parseInt(input, 10);
+    return n2 >= min && n2 <= max;
+  }
+  var VALID_INTERVAL_INPUTS = new Set(
+    INTERVALS.flatMap((i3) => [i3.abbrev, ...i3.altAbbrevs || []])
+  );
+  function isValidIntervalInput(input) {
+    return VALID_INTERVAL_INPUTS.has(input);
+  }
+  var VALID_KEYSIG_INPUTS;
+  function getValidKeysigInputs() {
+    if (!VALID_KEYSIG_INPUTS) {
+      VALID_KEYSIG_INPUTS = new Set(MAJOR_KEYS.map((k3) => keySignatureLabel(k3)));
+    }
+    return VALID_KEYSIG_INPUTS;
+  }
+  function isValidKeysigInput(input) {
+    return getValidKeysigInputs().has(input);
+  }
+  var VALID_NUMERAL_INPUTS;
+  function getValidNumeralInputs() {
+    if (!VALID_NUMERAL_INPUTS) {
+      VALID_NUMERAL_INPUTS = new Set(DIATONIC_CHORDS.map((c3) => c3.numeral));
+    }
+    return VALID_NUMERAL_INPUTS;
+  }
+  function isValidNumeralInput(input) {
+    return getValidNumeralInputs().has(input);
   }
   function intervalMatchesInput(interval, input) {
     if (input === interval.abbrev) return true;
@@ -4634,19 +4616,6 @@ button {
     if (NOTE_NAME_SET.has(sharp)) matches.add(sharp);
     const flatButton = FLAT_TO_BUTTON[pendingNote + "b"];
     if (flatButton) matches.add(flatButton);
-    return matches;
-  }
-  function numberNarrowingSet(pendingDigit, end, start = 0) {
-    if (pendingDigit === null) return null;
-    const matches = /* @__PURE__ */ new Set();
-    if (pendingDigit >= start && pendingDigit <= end) {
-      matches.add(String(pendingDigit));
-    }
-    for (let d3 = 0; d3 <= 9; d3++) {
-      const num = pendingDigit * 10 + d3;
-      if (num > end) break;
-      if (num >= start) matches.add(String(num));
-    }
     return matches;
   }
   function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
@@ -5811,6 +5780,312 @@ button {
     };
   }
 
+  // src/recommendations.ts
+  function computeRecommendations(selector, allIndices, getItemIds, config, options) {
+    const sortUnstarted = options && options.sortUnstarted;
+    const recs = selector.getStringRecommendations(allIndices, getItemIds);
+    const started = recs.filter((r3) => r3.unseenCount < r3.totalCount);
+    const unstarted = recs.filter((r3) => r3.unseenCount === r3.totalCount);
+    if (started.length === 0) {
+      if (unstarted.length > 0) {
+        const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
+        const first = sorted[0];
+        return {
+          recommended: /* @__PURE__ */ new Set([first.string]),
+          enabled: /* @__PURE__ */ new Set([first.string]),
+          consolidateIndices: [],
+          consolidateWorkingCount: 0,
+          expandIndex: first.string,
+          expandNewCount: first.totalCount
+        };
+      }
+      return {
+        recommended: /* @__PURE__ */ new Set(),
+        enabled: null,
+        consolidateIndices: [],
+        consolidateWorkingCount: 0,
+        expandIndex: null,
+        expandNewCount: 0
+      };
+    }
+    const startedItemIds = started.flatMap((r3) => getItemIds(r3.string));
+    const { level } = selector.getLevelAutomaticity(startedItemIds);
+    const startedByWork = [...started].sort(
+      (a3, b) => b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount)
+    );
+    const workCounts = startedByWork.map((r3) => r3.workingCount + r3.unseenCount);
+    const medianWork = workCounts[Math.floor(workCounts.length / 2)];
+    const recommended = /* @__PURE__ */ new Set();
+    const enabled = /* @__PURE__ */ new Set();
+    const consolidateIndices = [];
+    let consolidateWorkingCount = 0;
+    for (const r3 of startedByWork) {
+      if (r3.workingCount + r3.unseenCount > medianWork) {
+        recommended.add(r3.string);
+        enabled.add(r3.string);
+        consolidateIndices.push(r3.string);
+        consolidateWorkingCount += r3.workingCount + r3.unseenCount;
+      }
+    }
+    if (enabled.size === 0) {
+      const r3 = startedByWork[0];
+      recommended.add(r3.string);
+      enabled.add(r3.string);
+      consolidateIndices.push(r3.string);
+      consolidateWorkingCount += r3.workingCount + r3.unseenCount;
+    }
+    let expandIndex = null;
+    let expandNewCount = 0;
+    if (level >= config.expansionThreshold && unstarted.length > 0) {
+      const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
+      expandIndex = sorted[0].string;
+      expandNewCount = sorted[0].totalCount;
+      recommended.add(expandIndex);
+      enabled.add(expandIndex);
+    }
+    return {
+      recommended,
+      enabled,
+      consolidateIndices,
+      consolidateWorkingCount,
+      expandIndex,
+      expandNewCount
+    };
+  }
+
+  // src/mode-ui-state.ts
+  function countFluent(itemIds, getAutomaticity, threshold) {
+    let fluent = 0;
+    let seen = 0;
+    for (let i3 = 0; i3 < itemIds.length; i3++) {
+      const auto = getAutomaticity(itemIds[i3]);
+      if (auto !== null) {
+        seen++;
+        if (auto > threshold) fluent++;
+      }
+    }
+    return { fluent, seen };
+  }
+  function computeLevelAutomaticity(itemIds, getAutomaticity, percentile = 0.1) {
+    if (itemIds.length === 0) return { level: 0, seen: 0 };
+    let seen = 0;
+    const values = [];
+    for (let i3 = 0; i3 < itemIds.length; i3++) {
+      const auto = getAutomaticity(itemIds[i3]);
+      if (auto !== null) {
+        seen++;
+        values.push(auto);
+      } else {
+        values.push(0);
+      }
+    }
+    values.sort((a3, b) => a3 - b);
+    const rawIndex = Math.ceil(values.length * percentile) - 1;
+    const index = Math.min(values.length - 1, Math.max(0, rawIndex));
+    return { level: values[index], seen };
+  }
+  function statusLabelFromLevel(level) {
+    if (level >= 0.8) return "Automatic";
+    if (level >= 0.5) return "Fluent";
+    if (level >= 0.2) return "Developing";
+    return "Learning";
+  }
+  function buildRecommendationText(result, getGroupLabel, extraParts) {
+    if (result.recommended.size === 0) return "";
+    const parts = [];
+    if (result.consolidateIndices.length > 0) {
+      const labels = result.consolidateIndices.slice().sort((a3, b) => a3 - b).map(getGroupLabel);
+      parts.push(
+        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateWorkingCount + " item" + (result.consolidateWorkingCount !== 1 ? "s" : "") + " to work on"
+      );
+    }
+    if (result.expandIndex !== null) {
+      parts.push(
+        "start " + getGroupLabel(result.expandIndex) + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
+      );
+    }
+    if (extraParts) {
+      for (let i3 = 0; i3 < extraParts.length; i3++) {
+        parts.push(extraParts[i3]);
+      }
+    }
+    return parts.length > 0 ? parts.join(", ") : "";
+  }
+  function computePracticeSummary(opts) {
+    const threshold = opts.selector.getConfig().automaticityThreshold;
+    const { fluent } = countFluent(
+      opts.allItemIds,
+      (id) => opts.selector.getAutomaticity(id),
+      threshold
+    );
+    const total = opts.allItemIds.length;
+    const { level, seen } = computeLevelAutomaticity(
+      opts.allItemIds,
+      (id) => opts.selector.getAutomaticity(id)
+    );
+    let statusLabel;
+    let statusDetail;
+    if (seen === 0) {
+      statusLabel = "Not started";
+      statusDetail = total + " " + opts.itemNoun + " to learn";
+    } else {
+      statusLabel = statusLabelFromLevel(level);
+      statusDetail = fluent + " of " + total + " " + opts.itemNoun + " fluent";
+    }
+    const hasRec = opts.recommendation !== null && opts.recommendation.recommended.size > 0;
+    return {
+      statusLabel,
+      statusDetail,
+      recommendationText: opts.recommendationText,
+      showRecommendationButton: hasRec,
+      masteryText: opts.masteryText,
+      showMastery: opts.showMastery,
+      enabledItemCount: total
+    };
+  }
+
+  // src/hooks/use-scope-state.ts
+  function loadScope(spec) {
+    if (spec.kind === "none") return { kind: "none" };
+    if (spec.kind === "groups") {
+      let enabled = new Set(spec.defaultEnabled);
+      const saved = localStorage.getItem(spec.storageKey);
+      if (saved) {
+        try {
+          enabled = new Set(JSON.parse(saved));
+        } catch (_3) {
+        }
+      }
+      return { kind: "groups", enabledGroups: enabled };
+    }
+    if (spec.kind === "note-filter") {
+      let noteFilter = "natural";
+      const saved = localStorage.getItem(spec.storageKey);
+      if (saved === "natural" || saved === "sharps-flats" || saved === "all" || saved === "none") {
+        noteFilter = saved;
+      }
+      return { kind: "note-filter", noteFilter };
+    }
+    return { kind: "none" };
+  }
+  function saveScope(spec, scope) {
+    if (spec.kind === "groups" && scope.kind === "groups") {
+      localStorage.setItem(
+        spec.storageKey,
+        JSON.stringify([...scope.enabledGroups])
+      );
+    } else if (spec.kind === "note-filter" && scope.kind === "note-filter") {
+      try {
+        localStorage.setItem(spec.storageKey, scope.noteFilter);
+      } catch (_3) {
+      }
+    }
+  }
+  function useScopeState(spec) {
+    const [scope, setScopeRaw] = d2(() => loadScope(spec));
+    const setScope = q2((next) => {
+      setScopeRaw(next);
+      saveScope(spec, next);
+    }, [spec]);
+    const toggleGroup = q2((index) => {
+      setScopeRaw((prev) => {
+        if (prev.kind !== "groups") return prev;
+        const next = new Set(prev.enabledGroups);
+        if (next.has(index)) {
+          next.delete(index);
+        } else {
+          next.add(index);
+        }
+        const updated = { kind: "groups", enabledGroups: next };
+        saveScope(spec, updated);
+        return updated;
+      });
+    }, [spec]);
+    const setNoteFilter = q2((filter) => {
+      setScopeRaw((prev) => {
+        if (prev.kind === "note-filter") {
+          const updated = { kind: "note-filter", noteFilter: filter };
+          saveScope(spec, updated);
+          return updated;
+        }
+        return prev;
+      });
+    }, [spec]);
+    return [scope, { toggleGroup, setNoteFilter, setScope }];
+  }
+
+  // src/hooks/use-group-scope.ts
+  function useGroupScope(spec) {
+    const [scope, scopeActions] = useScopeState({
+      kind: "groups",
+      groups: spec.groups.map((g2, i3) => ({
+        index: i3,
+        label: g2.label,
+        itemIds: spec.getItemIdsForGroup(i3)
+      })),
+      defaultEnabled: spec.defaultEnabled,
+      storageKey: spec.storageKey,
+      label: spec.scopeLabel,
+      sortUnstarted: (a3, b) => a3.string - b.string
+    });
+    const enabledGroups = scope.kind === "groups" ? scope.enabledGroups : new Set(spec.defaultEnabled);
+    const enabledItems = T2(() => {
+      const items = [];
+      for (const g2 of enabledGroups) {
+        items.push(...spec.getItemIdsForGroup(g2));
+      }
+      return items;
+    }, [enabledGroups, spec.getItemIdsForGroup]);
+    const practicingLabel = T2(
+      () => spec.formatLabel(enabledGroups),
+      [enabledGroups, spec.formatLabel]
+    );
+    const recommendation = T2(() => {
+      return computeRecommendations(
+        spec.selector,
+        spec.allGroupIndices,
+        spec.getItemIdsForGroup,
+        { expansionThreshold: 0.7 },
+        { sortUnstarted: (a3, b) => a3.string - b.string }
+      );
+    }, [spec.selector, spec.allGroupIndices, spec.getItemIdsForGroup]);
+    const recommendationText = T2(() => {
+      return buildRecommendationText(
+        recommendation,
+        (i3) => spec.groups[i3].label
+      );
+    }, [recommendation]);
+    const applyRecommendation = q2(() => {
+      if (recommendation.enabled) {
+        scopeActions.setScope({
+          kind: "groups",
+          enabledGroups: recommendation.enabled
+        });
+      }
+    }, [recommendation, scopeActions]);
+    const enabledItemsRef = A2(enabledItems);
+    enabledItemsRef.current = enabledItems;
+    const practicingLabelRef = A2(practicingLabel);
+    practicingLabelRef.current = practicingLabel;
+    const getEnabledItems = q2(() => enabledItemsRef.current, []);
+    const getPracticingLabel = q2(
+      () => practicingLabelRef.current,
+      []
+    );
+    return {
+      scope,
+      scopeActions,
+      enabledGroups,
+      enabledItems,
+      practicingLabel,
+      recommendation,
+      recommendationText,
+      applyRecommendation,
+      getEnabledItems,
+      getPracticingLabel
+    };
+  }
+
   // src/types.ts
   function isCalibrationPhase(phase) {
     return phase === "calibrating" || phase.startsWith("calibration");
@@ -5992,7 +6267,6 @@ button {
 
   // src/hooks/use-quiz-engine.ts
   var ROUND_DURATION_MS = 6e4;
-  var AUTO_ADVANCE_MS = 1e3;
   var TIMER_TICK_MS = 200;
   var LAST_QUESTION_CAP_MS = 3e4;
   var IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
@@ -6018,7 +6292,6 @@ button {
     selectorRef.current = selector;
     const roundTimerRef = A2(null);
     const roundTimerStartRef = A2(null);
-    const autoAdvanceRef = A2(null);
     const lastQuestionCapRef = A2(null);
     const computeProgress = q2(() => {
       const items = configRef.current.getEnabledItems();
@@ -6098,10 +6371,6 @@ button {
       }, TIMER_TICK_MS);
     }, [handleRoundTimerExpiry]);
     const nextQuestion = q2(() => {
-      if (autoAdvanceRef.current) {
-        clearTimeout(autoAdvanceRef.current);
-        autoAdvanceRef.current = null;
-      }
       if (stateRef.current.roundTimerExpired) {
         transitionToRoundCompleteRef.current();
         return;
@@ -6162,12 +6431,6 @@ button {
             transitionToRoundCompleteRef.current();
           }
         }, 600);
-      } else {
-        autoAdvanceRef.current = setTimeout(() => {
-          if (stateRef.current.phase === "active" && stateRef.current.answered) {
-            nextQuestionRef.current();
-          }
-        }, AUTO_ADVANCE_MS);
       }
     }, [computeProgress]);
     const start = q2(() => {
@@ -6191,10 +6454,6 @@ button {
       setTimeout(() => nextQuestionRef.current(), 0);
     }, [startRoundTimer]);
     const stop = q2(() => {
-      if (autoAdvanceRef.current) {
-        clearTimeout(autoAdvanceRef.current);
-        autoAdvanceRef.current = null;
-      }
       stopRoundTimer();
       setState(engineStop);
       setCalibrationFixture(void 0);
@@ -6231,10 +6490,6 @@ button {
             break;
           case "next":
             e3.preventDefault();
-            if (autoAdvanceRef.current) {
-              clearTimeout(autoAdvanceRef.current);
-              autoAdvanceRef.current = null;
-            }
             nextQuestionRef.current();
             break;
           case "continue":
@@ -6242,6 +6497,7 @@ button {
             continueQuiz();
             break;
           case "delegate":
+            if (e3.target instanceof HTMLInputElement) break;
             if (configRef.current.handleKey) {
               configRef.current.handleKey(e3, { submitAnswer });
             }
@@ -6256,7 +6512,6 @@ button {
     y2(() => {
       return () => {
         if (roundTimerRef.current) clearInterval(roundTimerRef.current);
-        if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
         if (lastQuestionCapRef.current) clearTimeout(lastQuestionCapRef.current);
       };
     }, []);
@@ -6387,97 +6642,6 @@ button {
     const answerCount = engine.state.roundAnswered;
     const countText = answerCount + (answerCount === 1 ? " answer" : " answers");
     return { roundContext, roundCorrect, roundMedian, countText };
-  }
-
-  // src/mode-ui-state.ts
-  function countFluent(itemIds, getAutomaticity, threshold) {
-    let fluent = 0;
-    let seen = 0;
-    for (let i3 = 0; i3 < itemIds.length; i3++) {
-      const auto = getAutomaticity(itemIds[i3]);
-      if (auto !== null) {
-        seen++;
-        if (auto > threshold) fluent++;
-      }
-    }
-    return { fluent, seen };
-  }
-  function computeLevelAutomaticity(itemIds, getAutomaticity, percentile = 0.1) {
-    if (itemIds.length === 0) return { level: 0, seen: 0 };
-    let seen = 0;
-    const values = [];
-    for (let i3 = 0; i3 < itemIds.length; i3++) {
-      const auto = getAutomaticity(itemIds[i3]);
-      if (auto !== null) {
-        seen++;
-        values.push(auto);
-      } else {
-        values.push(0);
-      }
-    }
-    values.sort((a3, b) => a3 - b);
-    const rawIndex = Math.ceil(values.length * percentile) - 1;
-    const index = Math.min(values.length - 1, Math.max(0, rawIndex));
-    return { level: values[index], seen };
-  }
-  function statusLabelFromLevel(level) {
-    if (level >= 0.8) return "Automatic";
-    if (level >= 0.5) return "Fluent";
-    if (level >= 0.2) return "Developing";
-    return "Learning";
-  }
-  function buildRecommendationText(result, getGroupLabel, extraParts) {
-    if (result.recommended.size === 0) return "";
-    const parts = [];
-    if (result.consolidateIndices.length > 0) {
-      const labels = result.consolidateIndices.slice().sort((a3, b) => a3 - b).map(getGroupLabel);
-      parts.push(
-        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateWorkingCount + " item" + (result.consolidateWorkingCount !== 1 ? "s" : "") + " to work on"
-      );
-    }
-    if (result.expandIndex !== null) {
-      parts.push(
-        "start " + getGroupLabel(result.expandIndex) + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
-      );
-    }
-    if (extraParts) {
-      for (let i3 = 0; i3 < extraParts.length; i3++) {
-        parts.push(extraParts[i3]);
-      }
-    }
-    return parts.length > 0 ? parts.join(", ") : "";
-  }
-  function computePracticeSummary(opts) {
-    const threshold = opts.selector.getConfig().automaticityThreshold;
-    const { fluent } = countFluent(
-      opts.allItemIds,
-      (id) => opts.selector.getAutomaticity(id),
-      threshold
-    );
-    const total = opts.allItemIds.length;
-    const { level, seen } = computeLevelAutomaticity(
-      opts.allItemIds,
-      (id) => opts.selector.getAutomaticity(id)
-    );
-    let statusLabel;
-    let statusDetail;
-    if (seen === 0) {
-      statusLabel = "Not started";
-      statusDetail = total + " " + opts.itemNoun + " to learn";
-    } else {
-      statusLabel = statusLabelFromLevel(level);
-      statusDetail = fluent + " of " + total + " " + opts.itemNoun + " fluent";
-    }
-    const hasRec = opts.recommendation !== null && opts.recommendation.recommended.size > 0;
-    return {
-      statusLabel,
-      statusDetail,
-      recommendationText: opts.recommendationText,
-      showRecommendationButton: hasRec,
-      masteryText: opts.masteryText,
-      showMastery: opts.showMastery,
-      enabledItemCount: total
-    };
   }
 
   // src/hooks/use-practice-summary.ts
@@ -6669,6 +6833,70 @@ button {
       },
       n2
     )) });
+  }
+
+  // src/ui/scope.tsx
+  function GroupToggles({ labels, active, onToggle }) {
+    return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
+      /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Groups" }),
+      /* @__PURE__ */ u3("div", { class: "distance-toggles", children: labels.map((label, i3) => /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "distance-toggle" + (active.has(i3) ? " active" : ""),
+          "aria-pressed": active.has(i3),
+          "data-group": String(i3),
+          onClick: () => onToggle(i3),
+          children: label
+        },
+        i3
+      )) })
+    ] });
+  }
+  function NoteFilter({ mode, onChange }) {
+    const naturalActive = mode === "natural" || mode === "all";
+    const accActive = mode === "sharps-flats" || mode === "all";
+    function toggle(which) {
+      if (which === "natural") {
+        if (naturalActive && accActive) onChange("sharps-flats");
+        else if (naturalActive) onChange(accActive ? "sharps-flats" : "none");
+        else onChange(accActive ? "all" : "natural");
+      } else {
+        if (accActive && naturalActive) onChange("natural");
+        else if (accActive) onChange(naturalActive ? "natural" : "none");
+        else onChange(naturalActive ? "all" : "sharps-flats");
+      }
+    }
+    return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
+      /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Notes" }),
+      /* @__PURE__ */ u3("div", { class: "notes-toggles", children: [
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "notes-toggle" + (naturalActive ? " active" : ""),
+            "aria-pressed": naturalActive,
+            "data-notes": "natural",
+            onClick: () => toggle("natural"),
+            children: "natural"
+          }
+        ),
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "notes-toggle" + (accActive ? " active" : ""),
+            "aria-pressed": accActive,
+            "data-notes": "sharps-flats",
+            onClick: () => toggle("sharps-flats"),
+            children: "sharps & flats"
+          }
+        )
+      ] })
+    ] });
   }
 
   // src/ui/speed-check.tsx
@@ -7255,15 +7483,6 @@ button {
     const fadedL = Math.round(l3 + (NEUTRAL_L - l3) * (1 - f4));
     return `hsl(${h3}, ${fadedS}%, ${fadedL}%)`;
   }
-  function getAutomaticityColor(auto) {
-    const c3 = heatmapColors();
-    if (auto === null) return c3.none;
-    if (auto > 0.8) return c3.level[4];
-    if (auto > 0.6) return c3.level[3];
-    if (auto > 0.4) return c3.level[2];
-    if (auto > 0.2) return c3.level[1];
-    return c3.level[0];
-  }
   function getStatsCellColor(selector, itemId) {
     const speedScore = selector.getSpeedScore?.(itemId) ?? null;
     const freshness = selector.getFreshness?.(itemId) ?? null;
@@ -7434,6 +7653,375 @@ button {
     return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: text });
   }
 
+  // src/declarative/generic-mode.tsx
+  function getHintType(buttons) {
+    switch (buttons.kind) {
+      case "note":
+      case "piano-note":
+        return "note";
+      case "number":
+        return buttons.start === 0 ? "number-0-11" : "number-1-12";
+      default:
+        return null;
+    }
+  }
+  function AnswerInput({ onSubmit, disabled, placeholder, onInvalid }) {
+    const inputRef = A2(null);
+    const [shake, setShake] = d2(false);
+    const shakeTimerRef = A2(null);
+    y2(() => {
+      return () => {
+        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      };
+    }, []);
+    y2(() => {
+      if (!disabled && inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, [disabled]);
+    const triggerShake = q2(() => {
+      setShake(true);
+      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      shakeTimerRef.current = setTimeout(() => {
+        setShake(false);
+        shakeTimerRef.current = null;
+      }, 400);
+    }, []);
+    const handleKeyDown = q2(
+      (e3) => {
+        if (e3.key !== "Enter") return;
+        e3.preventDefault();
+        e3.stopPropagation();
+        const value = inputRef.current?.value.trim() ?? "";
+        if (!value) {
+          triggerShake();
+          onInvalid?.();
+          return;
+        }
+        const accepted = onSubmit(value);
+        if (accepted) {
+          if (inputRef.current) inputRef.current.value = "";
+        } else {
+          triggerShake();
+        }
+      },
+      [onSubmit, onInvalid, triggerShake]
+    );
+    const cls = "answer-input" + (shake ? " answer-input-shake" : "");
+    const label = placeholder ?? "Type answer, press Enter";
+    return /* @__PURE__ */ u3(
+      "input",
+      {
+        ref: inputRef,
+        type: "text",
+        class: cls,
+        placeholder: label,
+        "aria-label": label,
+        disabled,
+        onKeyDown: handleKeyDown,
+        autoComplete: "off",
+        autoCorrect: "off",
+        spellcheck: false
+      }
+    );
+  }
+  function ResponseButtons({
+    buttonsDef,
+    hidden,
+    onAnswer,
+    useFlats,
+    narrowing,
+    hideAccidentalsOverride
+  }) {
+    switch (buttonsDef.kind) {
+      case "note":
+        return /* @__PURE__ */ u3(
+          NoteButtons,
+          {
+            hidden,
+            onAnswer,
+            useFlats
+          }
+        );
+      case "piano-note":
+        return /* @__PURE__ */ u3("div", { class: hidden ? "answer-group-hidden" : void 0, children: /* @__PURE__ */ u3(
+          PianoNoteButtons,
+          {
+            onAnswer,
+            hideAccidentals: hideAccidentalsOverride ?? buttonsDef.hideAccidentals,
+            narrowing
+          }
+        ) });
+      case "number":
+        return /* @__PURE__ */ u3(
+          NumberButtons,
+          {
+            start: buttonsDef.start,
+            end: buttonsDef.end,
+            hidden,
+            onAnswer: (n2) => onAnswer(String(n2))
+          }
+        );
+      case "degree":
+        return /* @__PURE__ */ u3(DegreeButtons, { hidden, onAnswer });
+      case "numeral":
+        return /* @__PURE__ */ u3(NumeralButtons, { hidden, onAnswer });
+      case "interval":
+        return /* @__PURE__ */ u3(IntervalButtons, { hidden, onAnswer });
+      case "keysig":
+        return /* @__PURE__ */ u3(KeysigButtons, { hidden, onAnswer });
+    }
+  }
+  var EMPTY_GROUPS = /* @__PURE__ */ new Set();
+  function GenericMode({ def, container, navigateHome, onMount }) {
+    const learner = useLearnerModel(def.namespace, def.allItems);
+    const groupScopeSpec = def.scope.kind === "groups" ? {
+      groups: def.scope.groups,
+      getItemIdsForGroup: def.scope.getItemIdsForGroup,
+      allGroupIndices: def.scope.allGroupIndices,
+      storageKey: def.scope.storageKey,
+      scopeLabel: def.scope.scopeLabel,
+      defaultEnabled: def.scope.defaultEnabled,
+      selector: learner.selector,
+      formatLabel: def.scope.formatLabel
+    } : null;
+    const groupScopeResult = groupScopeSpec ? useGroupScope(groupScopeSpec) : null;
+    const enabledGroups = groupScopeResult?.enabledGroups ?? EMPTY_GROUPS;
+    const ctrl = def.useController ? def.useController(enabledGroups) : {};
+    const ctrlRef = A2(ctrl);
+    ctrlRef.current = ctrl;
+    const currentQRef = A2(null);
+    const getEnabledItemsRef = A2(
+      () => def.allItems
+    );
+    const getPracticingLabelRef = A2(
+      () => "all items"
+    );
+    if (groupScopeResult) {
+      getEnabledItemsRef.current = groupScopeResult.getEnabledItems;
+      getPracticingLabelRef.current = groupScopeResult.getPracticingLabel;
+    }
+    const engineConfig = T2(() => ({
+      getEnabledItems: () => getEnabledItemsRef.current(),
+      getPracticingLabel: () => getPracticingLabelRef.current(),
+      checkAnswer: (_itemId, input) => {
+        const q3 = currentQRef.current;
+        return def.checkAnswer(q3, input);
+      },
+      onAnswer: (itemId, result) => {
+        ctrlRef.current.onAnswer?.(itemId, result);
+      },
+      onStart: () => {
+        ctrlRef.current.onStart?.();
+      },
+      onStop: () => {
+        ctrlRef.current.onStop?.();
+      },
+      handleKey: ctrl.handleKey ? (e3, ctx) => ctrlRef.current.handleKey(e3, ctx) : void 0
+    }), [def, !!ctrl.handleKey]);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return def.getQuestion(id);
+    }, [engine.state.currentItemId, engine.state.phase, def]);
+    currentQRef.current = currentQ;
+    const dir = currentQ && def.getDirection ? def.getDirection(currentQ) : "fwd";
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
+    const practicingLabel = groupScopeResult?.practicingLabel ?? "all items";
+    const round = useRoundSummary(engine, practicingLabel);
+    const ps = usePracticeSummary({
+      allItems: def.allItems,
+      selector: learner.selector,
+      engine,
+      itemNoun: def.itemNoun,
+      recommendation: groupScopeResult?.recommendation ?? null,
+      recommendationText: groupScopeResult?.recommendationText ?? ""
+    });
+    const deactivateCleanup = ctrl.deactivateCleanup;
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+    const promptText = currentQ ? def.getPromptText(currentQ) : "";
+    const useFlats = currentQ && def.getUseFlats ? def.getUseFlats(currentQ) : void 0;
+    const handleSubmit = q2(
+      (input) => {
+        if (def.validateInput && currentQRef.current) {
+          if (!def.validateInput(currentQRef.current, input)) {
+            return false;
+          }
+        }
+        engine.submitAnswer(input);
+        return true;
+      },
+      [engine.submitAnswer, def]
+    );
+    const placeholder = (() => {
+      if (!def.inputPlaceholder) return void 0;
+      if (typeof def.inputPlaceholder === "string") return def.inputPlaceholder;
+      return currentQ ? def.inputPlaceholder(currentQ) : void 0;
+    })();
+    const phase = engine.state.phase;
+    const isIdle = phase === "idle";
+    const activeButtons = def.buttons.kind === "bidirectional" ? dir === "fwd" ? def.buttons.fwd : def.buttons.rev : def.buttons;
+    const inactiveButtons = def.buttons.kind === "bidirectional" ? dir === "fwd" ? def.buttons.rev : def.buttons.fwd : null;
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3(
+        ModeTopBar,
+        {
+          modeId: def.id,
+          title: def.name,
+          description: def.description,
+          beforeAfter: def.beforeAfter,
+          onBack: navigateHome,
+          showBack: isIdle
+        }
+      ),
+      isIdle && /* @__PURE__ */ u3(
+        PracticeTab,
+        {
+          summary: ps.summary,
+          onStart: engine.start,
+          onApplyRecommendation: ps.summary.showRecommendationButton && groupScopeResult ? groupScopeResult.applyRecommendation : void 0,
+          scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
+          validationMessage: "Select at least one group",
+          scope: groupScopeResult && def.scope.kind === "groups" ? /* @__PURE__ */ u3(
+            GroupToggles,
+            {
+              labels: def.scope.groups.map((g2) => g2.label),
+              active: groupScopeResult.enabledGroups,
+              onToggle: groupScopeResult.scopeActions.toggleGroup
+            }
+          ) : void 0,
+          statsContent: /* @__PURE__ */ u3(k, { children: [
+            ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u3(k, { children: [
+              def.stats.kind === "grid" && /* @__PURE__ */ u3(
+                StatsGrid,
+                {
+                  selector: ps.statsSel,
+                  colLabels: def.stats.colLabels,
+                  getItemId: def.stats.getItemId,
+                  notes: def.stats.notes
+                }
+              ),
+              def.stats.kind === "table" && /* @__PURE__ */ u3(
+                StatsTable,
+                {
+                  selector: ps.statsSel,
+                  rows: def.stats.getRows(),
+                  fwdHeader: def.stats.fwdHeader,
+                  revHeader: def.stats.revHeader
+                }
+              )
+            ] }),
+            (def.stats.kind !== "none" || ctrl.renderStats) && /* @__PURE__ */ u3(StatsLegend, {})
+          ] }),
+          baseline: learner.motorBaseline,
+          onCalibrate: engine.startCalibration,
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
+        }
+      ),
+      !isIdle && /* @__PURE__ */ u3(k, { children: [
+        phase !== "round-complete" && /* @__PURE__ */ u3(
+          QuizSession,
+          {
+            timeLeft: engine.timerText,
+            timerPct: engine.timerPct,
+            context: practicingLabel,
+            count: round.countText,
+            isWarning: engine.timerWarning,
+            isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            onClose: engine.stop
+          }
+        ),
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
+              {
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
+              }
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
+              {
+                context: round.roundContext,
+                heading: "Round complete",
+                correct: round.roundCorrect,
+                median: round.roundMedian
+              }
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: ctrl.renderPrompt ? void 0 : promptText,
+            controls: /* @__PURE__ */ u3(k, { children: [
+              /* @__PURE__ */ u3(
+                FeedbackBanner,
+                {
+                  correct: engine.state.feedbackCorrect,
+                  answer: engine.state.feedbackDisplayAnswer
+                }
+              ),
+              /* @__PURE__ */ u3(
+                ResponseButtons,
+                {
+                  buttonsDef: activeButtons,
+                  onAnswer: handleSubmit,
+                  useFlats,
+                  narrowing: ctrl.narrowing,
+                  hideAccidentalsOverride: ctrl.hideAccidentals
+                }
+              ),
+              inactiveButtons && /* @__PURE__ */ u3(
+                ResponseButtons,
+                {
+                  buttonsDef: inactiveButtons,
+                  hidden: true,
+                  onAnswer: handleSubmit
+                }
+              ),
+              /* @__PURE__ */ u3(
+                AnswerInput,
+                {
+                  onSubmit: handleSubmit,
+                  disabled: engine.state.answered,
+                  placeholder
+                }
+              ),
+              /* @__PURE__ */ u3(KeyboardHint, { type: getHintType(activeButtons) }),
+              /* @__PURE__ */ u3(
+                FeedbackDisplay,
+                {
+                  text: engine.state.feedbackText,
+                  className: engine.state.feedbackClass,
+                  time: engine.state.timeDisplayText || void 0,
+                  hint: engine.state.hintText || void 0,
+                  onNext: engine.state.answered ? engine.nextQuestion : void 0
+                }
+              )
+            ] }),
+            children: currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null
+          }
+        )
+      ] })
+    ] });
+  }
+
   // src/mode-utils.ts
   function buildBidirectionalIds(keys) {
     const ids = [];
@@ -7500,264 +8088,34 @@ button {
     }));
   }
 
-  // src/modes/note-semitones/note-semitones-mode.tsx
-  function NoteSemitonesMode({ container, navigateHome, onMount }) {
-    const learner = useLearnerModel("noteSemitones", ALL_ITEMS);
-    const currentQRef = A2(null);
-    const pendingDigitRef = A2(null);
-    const pendingTimeoutRef = A2(null);
-    const [pendingDigit, setPendingDigit] = d2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const [pendingNote, setPendingNote] = d2(null);
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => engineSubmitRef.current(note),
-        () => true,
-        setPendingNote
-      ),
-      []
-    );
-    const engineConfig = T2(() => ({
-      getEnabledItems: () => ALL_ITEMS,
-      checkAnswer: (_itemId, input) => {
-        const q3 = currentQRef.current;
-        return checkAnswer(q3, input);
-      },
-      handleKey: (e3, ctx) => {
-        const dir2 = currentQRef.current?.dir;
-        if (dir2 === "rev") {
-          return noteHandler.handleKey(e3);
-        }
-        if (e3.key === "Enter" && pendingDigitRef.current !== null) {
-          e3.preventDefault();
-          clearTimeout(pendingTimeoutRef.current);
-          const d3 = pendingDigitRef.current;
-          pendingDigitRef.current = null;
-          setPendingDigit(null);
-          pendingTimeoutRef.current = null;
-          ctx.submitAnswer(String(d3));
-          return true;
-        }
-        if (e3.key >= "0" && e3.key <= "9") {
-          e3.preventDefault();
-          const d3 = parseInt(e3.key);
-          if (pendingDigitRef.current !== null) {
-            const num = pendingDigitRef.current * 10 + d3;
-            clearTimeout(pendingTimeoutRef.current);
-            pendingDigitRef.current = null;
-            setPendingDigit(null);
-            pendingTimeoutRef.current = null;
-            if (num <= 11) ctx.submitAnswer(String(num));
-            return true;
-          }
-          if (d3 >= 2) {
-            ctx.submitAnswer(String(d3));
-          } else {
-            pendingDigitRef.current = d3;
-            setPendingDigit(d3);
-            const delay = numberNarrowingSet(d3, 11).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
-            pendingTimeoutRef.current = setTimeout(() => {
-              if (pendingDigitRef.current !== null) {
-                ctx.submitAnswer(String(pendingDigitRef.current));
-                pendingDigitRef.current = null;
-                setPendingDigit(null);
-                pendingTimeoutRef.current = null;
-              }
-            }, delay);
-          }
-          return true;
-        }
-        return false;
-      },
-      onStart: () => {
-        noteHandler.reset();
-        if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
-        pendingDigitRef.current = null;
-        setPendingDigit(null);
-      },
-      onStop: () => {
-        noteHandler.reset();
-        if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
-        pendingDigitRef.current = null;
-        setPendingDigit(null);
-      },
-      getPracticingLabel: () => "all items"
-    }), [noteHandler]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return getQuestion(id);
-    }, [engine.state.currentItemId, engine.state.phase]);
-    currentQRef.current = currentQ;
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
-    const numNarrowing = T2(
-      () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 11),
-      [pendingDigit, engine.state.answered]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const round = useRoundSummary(engine, "all items");
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS,
-      selector: learner.selector,
-      engine,
-      itemNoun: "items",
-      recommendation: null,
-      recommendationText: ""
-    });
-    const deactivateCleanup = q2(() => noteHandler.reset(), [
-      noteHandler
-    ]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
-    const dir = currentQ?.dir ?? "fwd";
-    const promptText = currentQ ? currentQ.dir === "fwd" ? displayNote(currentQ.accidentalChoice) : String(currentQ.noteNum) : "";
-    const handleNoteAnswer = q2(
-      (note) => engine.submitAnswer(note),
-      [engine.submitAnswer]
-    );
-    const handleNumAnswer = q2(
-      (num) => engine.submitAnswer(String(num)),
-      [engine.submitAnswer]
-    );
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: "noteSemitones",
-          title: "Note \u2194 Semitones",
-          description: MODE_DESCRIPTIONS.noteSemitones,
-          beforeAfter: MODE_BEFORE_AFTER.noteSemitones,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StatsTable,
-              {
-                selector: ps.statsSel,
-                rows: getStatsRows(),
-                fwdHeader: "N\u2192#",
-                revHeader: "#\u2192N"
-              }
-            ),
-            /* @__PURE__ */ u3(StatsLegend, {})
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: "all items",
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                FeedbackBanner,
-                {
-                  correct: engine.state.feedbackCorrect,
-                  answer: engine.state.feedbackDisplayAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                NoteButtons,
-                {
-                  hidden: dir === "fwd",
-                  onAnswer: handleNoteAnswer,
-                  narrowing: dir === "rev" ? noteNarrowing : void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                NumberButtons,
-                {
-                  start: 0,
-                  end: 11,
-                  hidden: dir === "rev",
-                  onAnswer: handleNumAnswer,
-                  narrowing: dir === "fwd" ? numNarrowing : void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                KeyboardHint,
-                {
-                  type: dir === "fwd" ? "number-0-11" : "note"
-                }
-              ),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] })
-          }
-        )
-      ] })
-    ] });
-  }
+  // src/modes/note-semitones/definition.ts
+  var NOTE_SEMITONES_DEF = {
+    id: "noteSemitones",
+    name: "Note \u2194 Semitones",
+    namespace: "noteSemitones",
+    description: MODE_DESCRIPTIONS.noteSemitones,
+    beforeAfter: MODE_BEFORE_AFTER.noteSemitones,
+    itemNoun: "items",
+    allItems: ALL_ITEMS,
+    getQuestion,
+    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.accidentalChoice) : String(q3.noteNum),
+    checkAnswer,
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 0, 11) : isValidNoteInput(input),
+    getDirection: (q3) => q3.dir,
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "0\u201311" : "Note name",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "number", start: 0, end: 11 },
+      rev: { kind: "note" }
+    },
+    scope: { kind: "none" },
+    stats: {
+      kind: "table",
+      getRows: getStatsRows,
+      fwdHeader: "N\u2192#",
+      revHeader: "#\u2192N"
+    }
+  };
 
   // src/modes/interval-semitones/logic.ts
   var ALL_ITEMS2 = buildBidirectionalIds(
@@ -7795,603 +8153,34 @@ button {
     }));
   }
 
-  // src/modes/interval-semitones/interval-semitones-mode.tsx
-  function IntervalSemitonesMode({ container, navigateHome, onMount }) {
-    const learner = useLearnerModel("intervalSemitones", ALL_ITEMS2);
-    const currentQRef = A2(null);
-    const pendingDigitRef = A2(null);
-    const pendingTimeoutRef = A2(null);
-    const [pendingDigit, setPendingDigit] = d2(null);
-    const engineConfig = T2(() => ({
-      getEnabledItems: () => ALL_ITEMS2,
-      checkAnswer: (_itemId, input) => {
-        const q3 = currentQRef.current;
-        return checkAnswer2(q3, input);
-      },
-      handleKey: (e3, ctx) => {
-        const dir2 = currentQRef.current?.dir;
-        if (dir2 === "rev") {
-          return false;
-        }
-        if (e3.key === "Enter" && pendingDigitRef.current !== null) {
-          e3.preventDefault();
-          clearTimeout(pendingTimeoutRef.current);
-          const d3 = pendingDigitRef.current;
-          pendingDigitRef.current = null;
-          setPendingDigit(null);
-          pendingTimeoutRef.current = null;
-          if (d3 >= 1) ctx.submitAnswer(String(d3));
-          return true;
-        }
-        if (e3.key >= "0" && e3.key <= "9") {
-          e3.preventDefault();
-          const d3 = parseInt(e3.key);
-          if (pendingDigitRef.current !== null) {
-            const num = pendingDigitRef.current * 10 + d3;
-            clearTimeout(pendingTimeoutRef.current);
-            pendingDigitRef.current = null;
-            setPendingDigit(null);
-            pendingTimeoutRef.current = null;
-            if (num >= 1 && num <= 12) ctx.submitAnswer(String(num));
-            return true;
-          }
-          if (d3 >= 2 && d3 <= 9) {
-            ctx.submitAnswer(String(d3));
-          } else {
-            pendingDigitRef.current = d3;
-            setPendingDigit(d3);
-            const delay = numberNarrowingSet(d3, 12, 1).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
-            pendingTimeoutRef.current = setTimeout(() => {
-              if (pendingDigitRef.current !== null) {
-                if (pendingDigitRef.current >= 1) {
-                  ctx.submitAnswer(String(pendingDigitRef.current));
-                }
-                pendingDigitRef.current = null;
-                setPendingDigit(null);
-                pendingTimeoutRef.current = null;
-              }
-            }, delay);
-          }
-          return true;
-        }
-        return false;
-      },
-      onStart: () => {
-        if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
-        pendingDigitRef.current = null;
-        setPendingDigit(null);
-      },
-      onStop: () => {
-        if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
-        pendingDigitRef.current = null;
-        setPendingDigit(null);
-      },
-      getPracticingLabel: () => "all items"
-    }), []);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return getQuestion2(id);
-    }, [engine.state.currentItemId, engine.state.phase]);
-    currentQRef.current = currentQ;
-    const numNarrowing = T2(
-      () => engine.state.answered ? null : numberNarrowingSet(pendingDigit, 12, 1),
-      [pendingDigit, engine.state.answered]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS2,
-      selector: learner.selector,
-      engine,
-      itemNoun: "items",
-      recommendation: null,
-      recommendationText: ""
-    });
-    useModeLifecycle(onMount, engine, learner);
-    const dir = currentQ?.dir ?? "fwd";
-    const promptText = currentQ ? currentQ.dir === "fwd" ? currentQ.name : String(currentQ.num) : "";
-    const handleIntervalAnswer = q2(
-      (interval) => engine.submitAnswer(interval),
-      [engine.submitAnswer]
-    );
-    const handleNumAnswer = q2(
-      (num) => engine.submitAnswer(String(num)),
-      [engine.submitAnswer]
-    );
-    const round = useRoundSummary(engine, "all items");
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: "intervalSemitones",
-          title: "Interval \u2194 Semitones",
-          description: MODE_DESCRIPTIONS.intervalSemitones,
-          beforeAfter: MODE_BEFORE_AFTER.intervalSemitones,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StatsTable,
-              {
-                selector: ps.statsSel,
-                rows: getStatsRows2(),
-                fwdHeader: "I\u2192#",
-                revHeader: "#\u2192I"
-              }
-            ),
-            /* @__PURE__ */ u3(StatsLegend, {})
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: "all items",
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                FeedbackBanner,
-                {
-                  correct: engine.state.feedbackCorrect,
-                  answer: engine.state.feedbackDisplayAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                IntervalButtons,
-                {
-                  hidden: dir === "fwd",
-                  onAnswer: handleIntervalAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                NumberButtons,
-                {
-                  start: 1,
-                  end: 12,
-                  hidden: dir === "rev",
-                  onAnswer: handleNumAnswer,
-                  narrowing: dir === "fwd" ? numNarrowing : void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                KeyboardHint,
-                {
-                  type: dir === "fwd" ? "number-1-12" : null
-                }
-              ),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] })
-          }
-        )
-      ] })
-    ] });
-  }
-
-  // src/recommendations.ts
-  function computeRecommendations(selector, allIndices, getItemIds, config, options) {
-    const sortUnstarted = options && options.sortUnstarted;
-    const recs = selector.getStringRecommendations(allIndices, getItemIds);
-    const started = recs.filter((r3) => r3.unseenCount < r3.totalCount);
-    const unstarted = recs.filter((r3) => r3.unseenCount === r3.totalCount);
-    if (started.length === 0) {
-      if (unstarted.length > 0) {
-        const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
-        const first = sorted[0];
-        return {
-          recommended: /* @__PURE__ */ new Set([first.string]),
-          enabled: /* @__PURE__ */ new Set([first.string]),
-          consolidateIndices: [],
-          consolidateWorkingCount: 0,
-          expandIndex: first.string,
-          expandNewCount: first.totalCount
-        };
-      }
-      return {
-        recommended: /* @__PURE__ */ new Set(),
-        enabled: null,
-        consolidateIndices: [],
-        consolidateWorkingCount: 0,
-        expandIndex: null,
-        expandNewCount: 0
-      };
+  // src/modes/interval-semitones/definition.ts
+  var INTERVAL_SEMITONES_DEF = {
+    id: "intervalSemitones",
+    name: "Interval \u2194 Semitones",
+    namespace: "intervalSemitones",
+    description: MODE_DESCRIPTIONS.intervalSemitones,
+    beforeAfter: MODE_BEFORE_AFTER.intervalSemitones,
+    itemNoun: "items",
+    allItems: ALL_ITEMS2,
+    getQuestion: getQuestion2,
+    getPromptText: (q3) => q3.dir === "fwd" ? q3.name : String(q3.num),
+    checkAnswer: checkAnswer2,
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 1, 12) : isValidIntervalInput(input),
+    getDirection: (q3) => q3.dir,
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "1\u201312" : "Interval (e.g. P5)",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "number", start: 1, end: 12 },
+      rev: { kind: "interval" }
+    },
+    scope: { kind: "none" },
+    stats: {
+      kind: "table",
+      getRows: getStatsRows2,
+      fwdHeader: "I\u2192#",
+      revHeader: "#\u2192I"
     }
-    const startedItemIds = started.flatMap((r3) => getItemIds(r3.string));
-    const { level } = selector.getLevelAutomaticity(startedItemIds);
-    const startedByWork = [...started].sort(
-      (a3, b) => b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount)
-    );
-    const workCounts = startedByWork.map((r3) => r3.workingCount + r3.unseenCount);
-    const medianWork = workCounts[Math.floor(workCounts.length / 2)];
-    const recommended = /* @__PURE__ */ new Set();
-    const enabled = /* @__PURE__ */ new Set();
-    const consolidateIndices = [];
-    let consolidateWorkingCount = 0;
-    for (const r3 of startedByWork) {
-      if (r3.workingCount + r3.unseenCount > medianWork) {
-        recommended.add(r3.string);
-        enabled.add(r3.string);
-        consolidateIndices.push(r3.string);
-        consolidateWorkingCount += r3.workingCount + r3.unseenCount;
-      }
-    }
-    if (enabled.size === 0) {
-      const r3 = startedByWork[0];
-      recommended.add(r3.string);
-      enabled.add(r3.string);
-      consolidateIndices.push(r3.string);
-      consolidateWorkingCount += r3.workingCount + r3.unseenCount;
-    }
-    let expandIndex = null;
-    let expandNewCount = 0;
-    if (level >= config.expansionThreshold && unstarted.length > 0) {
-      const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
-      expandIndex = sorted[0].string;
-      expandNewCount = sorted[0].totalCount;
-      recommended.add(expandIndex);
-      enabled.add(expandIndex);
-    }
-    return {
-      recommended,
-      enabled,
-      consolidateIndices,
-      consolidateWorkingCount,
-      expandIndex,
-      expandNewCount
-    };
-  }
-
-  // src/hooks/use-scope-state.ts
-  function loadScope(spec) {
-    if (spec.kind === "none") return { kind: "none" };
-    if (spec.kind === "groups") {
-      let enabled = new Set(spec.defaultEnabled);
-      const saved = localStorage.getItem(spec.storageKey);
-      if (saved) {
-        try {
-          enabled = new Set(JSON.parse(saved));
-        } catch (_3) {
-        }
-      }
-      return { kind: "groups", enabledGroups: enabled };
-    }
-    if (spec.kind === "fretboard") {
-      const inst = spec.instrument;
-      let enabledStrings = /* @__PURE__ */ new Set([inst.defaultString]);
-      const saved = localStorage.getItem(
-        inst.storageNamespace + "_enabledStrings"
-      );
-      if (saved) {
-        try {
-          enabledStrings = new Set(JSON.parse(saved));
-        } catch (_3) {
-        }
-      }
-      let noteFilter = "natural";
-      const savedFilter = localStorage.getItem(
-        inst.storageNamespace + "_noteFilter"
-      );
-      if (savedFilter === "natural" || savedFilter === "sharps-flats" || savedFilter === "all" || savedFilter === "none") {
-        noteFilter = savedFilter;
-      }
-      return { kind: "fretboard", enabledStrings, noteFilter };
-    }
-    if (spec.kind === "note-filter") {
-      let noteFilter = "natural";
-      const saved = localStorage.getItem(spec.storageKey);
-      if (saved === "natural" || saved === "sharps-flats" || saved === "all" || saved === "none") {
-        noteFilter = saved;
-      }
-      return { kind: "note-filter", noteFilter };
-    }
-    return { kind: "none" };
-  }
-  function saveScope(spec, scope) {
-    if (spec.kind === "groups" && scope.kind === "groups") {
-      localStorage.setItem(
-        spec.storageKey,
-        JSON.stringify([...scope.enabledGroups])
-      );
-    } else if (spec.kind === "fretboard" && scope.kind === "fretboard") {
-      const inst = spec.instrument;
-      localStorage.setItem(
-        inst.storageNamespace + "_enabledStrings",
-        JSON.stringify([...scope.enabledStrings])
-      );
-      try {
-        localStorage.setItem(
-          inst.storageNamespace + "_noteFilter",
-          scope.noteFilter
-        );
-      } catch (_3) {
-      }
-    } else if (spec.kind === "note-filter" && scope.kind === "note-filter") {
-      try {
-        localStorage.setItem(spec.storageKey, scope.noteFilter);
-      } catch (_3) {
-      }
-    }
-  }
-  function useScopeState(spec) {
-    const [scope, setScopeRaw] = d2(() => loadScope(spec));
-    const setScope = q2((next) => {
-      setScopeRaw(next);
-      saveScope(spec, next);
-    }, [spec]);
-    const toggleGroup = q2((index) => {
-      setScopeRaw((prev) => {
-        if (prev.kind !== "groups") return prev;
-        const next = new Set(prev.enabledGroups);
-        if (next.has(index)) {
-          next.delete(index);
-        } else {
-          next.add(index);
-        }
-        const updated = { kind: "groups", enabledGroups: next };
-        saveScope(spec, updated);
-        return updated;
-      });
-    }, [spec]);
-    const toggleString = q2((index) => {
-      setScopeRaw((prev) => {
-        if (prev.kind !== "fretboard") return prev;
-        const next = new Set(prev.enabledStrings);
-        if (next.has(index)) {
-          next.delete(index);
-        } else {
-          next.add(index);
-        }
-        const updated = {
-          kind: "fretboard",
-          enabledStrings: next,
-          noteFilter: prev.noteFilter
-        };
-        saveScope(spec, updated);
-        return updated;
-      });
-    }, [spec]);
-    const setNoteFilter = q2((filter) => {
-      setScopeRaw((prev) => {
-        if (prev.kind === "fretboard") {
-          const updated = {
-            kind: "fretboard",
-            enabledStrings: prev.enabledStrings,
-            noteFilter: filter
-          };
-          saveScope(spec, updated);
-          return updated;
-        }
-        if (prev.kind === "note-filter") {
-          const updated = { kind: "note-filter", noteFilter: filter };
-          saveScope(spec, updated);
-          return updated;
-        }
-        return prev;
-      });
-    }, [spec]);
-    return [scope, { toggleGroup, toggleString, setNoteFilter, setScope }];
-  }
-
-  // src/hooks/use-group-scope.ts
-  function useGroupScope(spec) {
-    const [scope, scopeActions] = useScopeState({
-      kind: "groups",
-      groups: spec.groups.map((g2, i3) => ({
-        index: i3,
-        label: g2.label,
-        itemIds: spec.getItemIdsForGroup(i3)
-      })),
-      defaultEnabled: spec.defaultEnabled,
-      storageKey: spec.storageKey,
-      label: spec.scopeLabel,
-      sortUnstarted: (a3, b) => a3.string - b.string
-    });
-    const enabledGroups = scope.kind === "groups" ? scope.enabledGroups : new Set(spec.defaultEnabled);
-    const enabledItems = T2(() => {
-      const items = [];
-      for (const g2 of enabledGroups) {
-        items.push(...spec.getItemIdsForGroup(g2));
-      }
-      return items;
-    }, [enabledGroups, spec.getItemIdsForGroup]);
-    const practicingLabel = T2(
-      () => spec.formatLabel(enabledGroups),
-      [enabledGroups, spec.formatLabel]
-    );
-    const recommendation = T2(() => {
-      return computeRecommendations(
-        spec.selector,
-        spec.allGroupIndices,
-        spec.getItemIdsForGroup,
-        { expansionThreshold: 0.7 },
-        { sortUnstarted: (a3, b) => a3.string - b.string }
-      );
-    }, [spec.selector, spec.allGroupIndices, spec.getItemIdsForGroup]);
-    const recommendationText = T2(() => {
-      return buildRecommendationText(
-        recommendation,
-        (i3) => spec.groups[i3].label
-      );
-    }, [recommendation]);
-    const applyRecommendation = q2(() => {
-      if (recommendation.enabled) {
-        scopeActions.setScope({
-          kind: "groups",
-          enabledGroups: recommendation.enabled
-        });
-      }
-    }, [recommendation, scopeActions]);
-    const enabledItemsRef = A2(enabledItems);
-    enabledItemsRef.current = enabledItems;
-    const practicingLabelRef = A2(practicingLabel);
-    practicingLabelRef.current = practicingLabel;
-    const getEnabledItems = q2(() => enabledItemsRef.current, []);
-    const getPracticingLabel = q2(
-      () => practicingLabelRef.current,
-      []
-    );
-    return {
-      scope,
-      scopeActions,
-      enabledGroups,
-      enabledItems,
-      practicingLabel,
-      recommendation,
-      recommendationText,
-      applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel
-    };
-  }
-
-  // src/ui/scope.tsx
-  function GroupToggles({ labels, active, onToggle }) {
-    return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
-      /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Groups" }),
-      /* @__PURE__ */ u3("div", { class: "distance-toggles", children: labels.map((label, i3) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "distance-toggle" + (active.has(i3) ? " active" : ""),
-          "aria-pressed": active.has(i3),
-          "data-group": String(i3),
-          onClick: () => onToggle(i3),
-          children: label
-        },
-        i3
-      )) })
-    ] });
-  }
-  function StringToggles({ stringNames, active, onToggle }) {
-    return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
-      /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Strings" }),
-      /* @__PURE__ */ u3("div", { class: "string-toggles", children: stringNames.map((name, i3) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "string-toggle" + (active.has(i3) ? " active" : ""),
-          "aria-pressed": active.has(i3),
-          "data-string": String(i3),
-          "data-string-note": name,
-          onClick: () => onToggle(i3),
-          children: name
-        },
-        i3
-      )) })
-    ] });
-  }
-  function NoteFilter({ mode, onChange }) {
-    const naturalActive = mode === "natural" || mode === "all";
-    const accActive = mode === "sharps-flats" || mode === "all";
-    function toggle(which) {
-      if (which === "natural") {
-        if (naturalActive && accActive) onChange("sharps-flats");
-        else if (naturalActive) onChange(accActive ? "sharps-flats" : "none");
-        else onChange(accActive ? "all" : "natural");
-      } else {
-        if (accActive && naturalActive) onChange("natural");
-        else if (accActive) onChange(naturalActive ? "natural" : "none");
-        else onChange(naturalActive ? "all" : "sharps-flats");
-      }
-    }
-    return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
-      /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Notes" }),
-      /* @__PURE__ */ u3("div", { class: "notes-toggles", children: [
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "notes-toggle" + (naturalActive ? " active" : ""),
-            "aria-pressed": naturalActive,
-            "data-notes": "natural",
-            onClick: () => toggle("natural"),
-            children: "natural"
-          }
-        ),
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "notes-toggle" + (accActive ? " active" : ""),
-            "aria-pressed": accActive,
-            "data-notes": "sharps-flats",
-            onClick: () => toggle("sharps-flats"),
-            children: "sharps & flats"
-          }
-        )
-      ] })
-    ] });
-  }
+  };
 
   // src/modes/semitone-math/logic.ts
   var DISTANCE_GROUPS = [
@@ -8456,218 +8245,42 @@ button {
     return [noteName + "+" + n2, noteName + "-" + n2];
   }
 
-  // src/modes/semitone-math/semitone-math-mode.tsx
-  function SemitoneMathMode({ container, navigateHome, onMount }) {
-    const learner = useLearnerModel("semitoneMath", ALL_ITEMS3);
-    const {
-      scopeActions,
-      enabledGroups,
-      practicingLabel,
-      recommendation,
-      recommendationText,
-      applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel
-    } = useGroupScope({
+  // src/modes/semitone-math/definition.ts
+  var SEMITONE_MATH_DEF = {
+    id: "semitoneMath",
+    name: "Semitone Math",
+    namespace: "semitoneMath",
+    description: MODE_DESCRIPTIONS.semitoneMath,
+    beforeAfter: MODE_BEFORE_AFTER.semitoneMath,
+    itemNoun: "items",
+    allItems: ALL_ITEMS3,
+    getQuestion: getQuestion3,
+    getPromptText: (q3) => q3.promptText,
+    checkAnswer: checkAnswer3,
+    validateInput: (_q, input) => isValidNoteInput(input),
+    getUseFlats: (q3) => q3.useFlats,
+    inputPlaceholder: "Note name",
+    buttons: { kind: "note" },
+    scope: {
+      kind: "groups",
       groups: DISTANCE_GROUPS,
       getItemIdsForGroup,
       allGroupIndices: ALL_GROUP_INDICES,
       storageKey: "semitoneMath_enabledGroups",
       scopeLabel: "Distances",
       defaultEnabled: [0],
-      selector: learner.selector,
       formatLabel: (groups) => {
         if (groups.size === DISTANCE_GROUPS.length) return "all distances";
         const labels = [...groups].sort((a3, b) => a3 - b).map((g2) => DISTANCE_GROUPS[g2].label);
         return labels.join(", ") + " semitones";
       }
-    });
-    const currentQRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const [pendingNote, setPendingNote] = d2(null);
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => engineSubmitRef.current(note),
-        () => true,
-        setPendingNote
-      ),
-      []
-    );
-    const engineConfig = T2(() => ({
-      getEnabledItems,
-      getPracticingLabel,
-      checkAnswer: (_itemId, input) => {
-        const q3 = currentQRef.current;
-        return checkAnswer3(q3, input);
-      },
-      handleKey: (e3, _ctx) => {
-        return noteHandler.handleKey(e3);
-      },
-      onStart: () => noteHandler.reset(),
-      onStop: () => noteHandler.reset()
-    }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return getQuestion3(id);
-    }, [engine.state.currentItemId, engine.state.phase]);
-    currentQRef.current = currentQ;
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS3,
-      selector: learner.selector,
-      engine,
-      itemNoun: "items",
-      recommendation,
-      recommendationText
-    });
-    const deactivateCleanup = q2(() => noteHandler.reset(), [
-      noteHandler
-    ]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
-    const promptText = currentQ?.promptText ?? "";
-    const useFlats = currentQ?.useFlats;
-    const handleNoteAnswer = q2(
-      (note) => engine.submitAnswer(note),
-      [engine.submitAnswer]
-    );
-    const round = useRoundSummary(engine, practicingLabel);
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: "semitoneMath",
-          title: "Semitone Math",
-          description: MODE_DESCRIPTIONS.semitoneMath,
-          beforeAfter: MODE_BEFORE_AFTER.semitoneMath,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
-          scopeValid: enabledGroups.size > 0,
-          validationMessage: "Select at least one group",
-          scope: /* @__PURE__ */ u3(
-            GroupToggles,
-            {
-              labels: DISTANCE_GROUPS.map((g2) => g2.label),
-              active: enabledGroups,
-              onToggle: scopeActions.toggleGroup
-            }
-          ),
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: ps.statsSel,
-                colLabels: GRID_COL_LABELS,
-                getItemId: getGridItemId
-              }
-            ),
-            /* @__PURE__ */ u3(StatsLegend, {})
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                FeedbackBanner,
-                {
-                  correct: engine.state.feedbackCorrect,
-                  answer: engine.state.feedbackDisplayAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                NoteButtons,
-                {
-                  onAnswer: handleNoteAnswer,
-                  useFlats,
-                  narrowing: noteNarrowing
-                }
-              ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] })
-          }
-        )
-      ] })
-    ] });
-  }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: GRID_COL_LABELS,
+      getItemId: getGridItemId
+    }
+  };
 
   // src/modes/interval-math/logic.ts
   var MATH_INTERVALS = INTERVALS.filter(
@@ -8734,218 +8347,42 @@ button {
     return [noteName + "+" + abbrev, noteName + "-" + abbrev];
   }
 
-  // src/modes/interval-math/interval-math-mode.tsx
-  function IntervalMathMode({ container, navigateHome, onMount }) {
-    const learner = useLearnerModel("intervalMath", ALL_ITEMS4);
-    const {
-      scopeActions,
-      enabledGroups,
-      practicingLabel,
-      recommendation,
-      recommendationText,
-      applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel
-    } = useGroupScope({
+  // src/modes/interval-math/definition.ts
+  var INTERVAL_MATH_DEF = {
+    id: "intervalMath",
+    name: "Interval Math",
+    namespace: "intervalMath",
+    description: MODE_DESCRIPTIONS.intervalMath,
+    beforeAfter: MODE_BEFORE_AFTER.intervalMath,
+    itemNoun: "items",
+    allItems: ALL_ITEMS4,
+    getQuestion: getQuestion4,
+    getPromptText: (q3) => q3.promptText,
+    checkAnswer: checkAnswer4,
+    validateInput: (_q, input) => isValidNoteInput(input),
+    getUseFlats: (q3) => q3.useFlats,
+    inputPlaceholder: "Note name",
+    buttons: { kind: "note" },
+    scope: {
+      kind: "groups",
       groups: DISTANCE_GROUPS2,
       getItemIdsForGroup: getItemIdsForGroup2,
       allGroupIndices: ALL_GROUP_INDICES2,
       storageKey: "intervalMath_enabledGroups",
       scopeLabel: "Intervals",
       defaultEnabled: [0],
-      selector: learner.selector,
       formatLabel: (groups) => {
         if (groups.size === DISTANCE_GROUPS2.length) return "all intervals";
         const labels = [...groups].sort((a3, b) => a3 - b).map((g2) => DISTANCE_GROUPS2[g2].label);
         return labels.join(", ") + " intervals";
       }
-    });
-    const currentQRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const [pendingNote, setPendingNote] = d2(null);
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => engineSubmitRef.current(note),
-        () => true,
-        setPendingNote
-      ),
-      []
-    );
-    const engineConfig = T2(() => ({
-      getEnabledItems,
-      getPracticingLabel,
-      checkAnswer: (_itemId, input) => {
-        const q3 = currentQRef.current;
-        return checkAnswer4(q3, input);
-      },
-      handleKey: (e3, _ctx) => {
-        return noteHandler.handleKey(e3);
-      },
-      onStart: () => noteHandler.reset(),
-      onStop: () => noteHandler.reset()
-    }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return getQuestion4(id);
-    }, [engine.state.currentItemId, engine.state.phase]);
-    currentQRef.current = currentQ;
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const round = useRoundSummary(engine, practicingLabel);
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS4,
-      selector: learner.selector,
-      engine,
-      itemNoun: "items",
-      recommendation,
-      recommendationText
-    });
-    const deactivateCleanup = q2(() => noteHandler.reset(), [
-      noteHandler
-    ]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
-    const promptText = currentQ?.promptText ?? "";
-    const useFlats = currentQ?.useFlats;
-    const handleNoteAnswer = q2(
-      (note) => engine.submitAnswer(note),
-      [engine.submitAnswer]
-    );
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: "intervalMath",
-          title: "Interval Math",
-          description: MODE_DESCRIPTIONS.intervalMath,
-          beforeAfter: MODE_BEFORE_AFTER.intervalMath,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
-          scopeValid: enabledGroups.size > 0,
-          validationMessage: "Select at least one group",
-          scope: /* @__PURE__ */ u3(
-            GroupToggles,
-            {
-              labels: DISTANCE_GROUPS2.map((g2) => g2.label),
-              active: enabledGroups,
-              onToggle: scopeActions.toggleGroup
-            }
-          ),
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: ps.statsSel,
-                colLabels: GRID_COL_LABELS2,
-                getItemId: getGridItemId2
-              }
-            ),
-            /* @__PURE__ */ u3(StatsLegend, {})
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                FeedbackBanner,
-                {
-                  correct: engine.state.feedbackCorrect,
-                  answer: engine.state.feedbackDisplayAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                NoteButtons,
-                {
-                  onAnswer: handleNoteAnswer,
-                  useFlats,
-                  narrowing: noteNarrowing
-                }
-              ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] })
-          }
-        )
-      ] })
-    ] });
-  }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: GRID_COL_LABELS2,
+      getItemId: getGridItemId2
+    }
+  };
 
   // src/modes/key-signatures/logic.ts
   var KEY_GROUPS = [
@@ -9004,287 +8441,47 @@ button {
     }));
   }
 
-  // src/modes/key-signatures/key-signatures-mode.tsx
-  function KeySignaturesMode({ container, navigateHome, onMount }) {
-    const learner = useLearnerModel("keySignatures", ALL_ITEMS5);
-    const {
-      scopeActions,
-      enabledGroups,
-      practicingLabel,
-      recommendation,
-      recommendationText,
-      applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel
-    } = useGroupScope({
+  // src/modes/key-signatures/definition.ts
+  var KEY_SIGNATURES_DEF = {
+    id: "keySignatures",
+    name: "Key Signatures",
+    namespace: "keySignatures",
+    description: MODE_DESCRIPTIONS.keySignatures,
+    beforeAfter: MODE_BEFORE_AFTER.keySignatures,
+    itemNoun: "items",
+    allItems: ALL_ITEMS5,
+    getQuestion: getQuestion5,
+    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " major" : q3.sigLabel + " major",
+    checkAnswer: checkAnswer5,
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
+    getDirection: (q3) => q3.dir,
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Signature (e.g. 2#)" : "Note name",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "keysig" },
+      rev: { kind: "note" }
+    },
+    scope: {
+      kind: "groups",
       groups: KEY_GROUPS,
       getItemIdsForGroup: getItemIdsForGroup3,
       allGroupIndices: ALL_GROUP_INDICES3,
       storageKey: "keySignatures_enabledGroups",
       scopeLabel: "Keys",
       defaultEnabled: [0, 1],
-      selector: learner.selector,
       formatLabel: (groups) => {
         if (groups.size === KEY_GROUPS.length) return "all keys";
         const keys = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => KEY_GROUPS[g2].keys).map((k3) => displayNote(k3));
         return keys.join(", ");
       }
-    });
-    const currentQRef = A2(null);
-    const pendingSigDigitRef = A2(null);
-    const pendingSigTimeoutRef = A2(
-      null
-    );
-    const engineSubmitRef = A2(() => {
-    });
-    const [pendingNote, setPendingNote] = d2(null);
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => engineSubmitRef.current(note),
-        () => true,
-        setPendingNote
-      ),
-      []
-    );
-    const engineConfig = T2(() => ({
-      getEnabledItems,
-      getPracticingLabel,
-      checkAnswer: (_itemId, input) => {
-        const q3 = currentQRef.current;
-        return checkAnswer5(q3, input);
-      },
-      handleKey: (e3, ctx) => {
-        const dir2 = currentQRef.current?.dir;
-        if (dir2 === "rev") {
-          return noteHandler.handleKey(e3);
-        }
-        if (e3.key === "Enter" && pendingSigDigitRef.current !== null) {
-          e3.preventDefault();
-          clearTimeout(pendingSigTimeoutRef.current);
-          const d3 = pendingSigDigitRef.current;
-          pendingSigDigitRef.current = null;
-          pendingSigTimeoutRef.current = null;
-          if (d3 === "0") ctx.submitAnswer("0");
-          return true;
-        }
-        if (e3.key >= "0" && e3.key <= "7") {
-          e3.preventDefault();
-          if (pendingSigTimeoutRef.current) {
-            clearTimeout(pendingSigTimeoutRef.current);
-          }
-          pendingSigDigitRef.current = e3.key;
-          pendingSigTimeoutRef.current = setTimeout(() => {
-            if (pendingSigDigitRef.current === "0") {
-              ctx.submitAnswer("0");
-            }
-            pendingSigDigitRef.current = null;
-            pendingSigTimeoutRef.current = null;
-          }, 600);
-          return true;
-        }
-        if (pendingSigDigitRef.current !== null && (e3.key === "#" || e3.key === "b")) {
-          e3.preventDefault();
-          clearTimeout(pendingSigTimeoutRef.current);
-          const answer = pendingSigDigitRef.current + e3.key;
-          pendingSigDigitRef.current = null;
-          pendingSigTimeoutRef.current = null;
-          ctx.submitAnswer(answer);
-          return true;
-        }
-        return false;
-      },
-      onStart: () => {
-        noteHandler.reset();
-        if (pendingSigTimeoutRef.current) {
-          clearTimeout(pendingSigTimeoutRef.current);
-        }
-        pendingSigDigitRef.current = null;
-      },
-      onStop: () => {
-        noteHandler.reset();
-        if (pendingSigTimeoutRef.current) {
-          clearTimeout(pendingSigTimeoutRef.current);
-        }
-        pendingSigDigitRef.current = null;
-      }
-    }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return getQuestion5(id);
-    }, [engine.state.currentItemId, engine.state.phase]);
-    currentQRef.current = currentQ;
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS5,
-      selector: learner.selector,
-      engine,
-      itemNoun: "items",
-      recommendation,
-      recommendationText
-    });
-    const round = useRoundSummary(engine, practicingLabel);
-    const deactivateCleanup = q2(() => {
-      noteHandler.reset();
-      if (pendingSigTimeoutRef.current) {
-        clearTimeout(pendingSigTimeoutRef.current);
-      }
-      pendingSigDigitRef.current = null;
-    }, [noteHandler]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
-    const dir = currentQ?.dir ?? "fwd";
-    const promptText = currentQ ? currentQ.dir === "fwd" ? displayNote(currentQ.root) + " major" : currentQ.sigLabel + " major" : "";
-    const handleSigAnswer = q2(
-      (sig) => engine.submitAnswer(sig),
-      [engine.submitAnswer]
-    );
-    const handleNoteAnswer = q2(
-      (note) => engine.submitAnswer(note),
-      [engine.submitAnswer]
-    );
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: "keySignatures",
-          title: "Key Signatures",
-          description: MODE_DESCRIPTIONS.keySignatures,
-          beforeAfter: MODE_BEFORE_AFTER.keySignatures,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
-          scopeValid: enabledGroups.size > 0,
-          validationMessage: "Select at least one group",
-          scope: /* @__PURE__ */ u3(
-            GroupToggles,
-            {
-              labels: KEY_GROUPS.map((g2) => g2.label),
-              active: enabledGroups,
-              onToggle: scopeActions.toggleGroup
-            }
-          ),
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StatsTable,
-              {
-                selector: ps.statsSel,
-                rows: getStatsRows3(),
-                fwdHeader: "Key\u2192Sig",
-                revHeader: "Sig\u2192Key"
-              }
-            ),
-            /* @__PURE__ */ u3(StatsLegend, {})
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                FeedbackBanner,
-                {
-                  correct: engine.state.feedbackCorrect,
-                  answer: engine.state.feedbackDisplayAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                KeysigButtons,
-                {
-                  hidden: dir === "rev",
-                  onAnswer: handleSigAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                NoteButtons,
-                {
-                  hidden: dir === "fwd",
-                  onAnswer: handleNoteAnswer,
-                  narrowing: dir === "rev" ? noteNarrowing : void 0
-                }
-              ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: dir === "rev" ? "note" : null }),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] })
-          }
-        )
-      ] })
-    ] });
-  }
+    },
+    stats: {
+      kind: "table",
+      getRows: getStatsRows3,
+      fwdHeader: "Key\u2192Sig",
+      revHeader: "Sig\u2192Key"
+    }
+  };
 
   // src/modes/scale-degrees/logic.ts
   var DEGREE_LABELS2 = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th"];
@@ -9344,238 +8541,47 @@ button {
     return [keyRoot + ":" + d3 + ":fwd", keyRoot + ":" + d3 + ":rev"];
   }
 
-  // src/modes/scale-degrees/scale-degrees-mode.tsx
-  function ScaleDegreesMode({ container, navigateHome, onMount }) {
-    const learner = useLearnerModel("scaleDegrees", ALL_ITEMS6);
-    const {
-      scopeActions,
-      enabledGroups,
-      practicingLabel,
-      recommendation,
-      recommendationText,
-      applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel
-    } = useGroupScope({
+  // src/modes/scale-degrees/definition.ts
+  var SCALE_DEGREES_DEF = {
+    id: "scaleDegrees",
+    name: "Scale Degrees",
+    namespace: "scaleDegrees",
+    description: MODE_DESCRIPTIONS.scaleDegrees,
+    beforeAfter: MODE_BEFORE_AFTER.scaleDegrees,
+    itemNoun: "items",
+    allItems: ALL_ITEMS6,
+    getQuestion: getQuestion6,
+    getPromptText: (q3) => q3.dir === "fwd" ? DEGREE_LABELS2[q3.degree - 1] + " of " + displayNote(q3.keyRoot) + " major" : displayNote(q3.keyRoot) + " major: " + displayNote(q3.noteName),
+    checkAnswer: checkAnswer6,
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : /^[1-7]$/.test(input),
+    getDirection: (q3) => q3.dir,
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Degree (1\u20137)",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "note" },
+      rev: { kind: "degree" }
+    },
+    scope: {
+      kind: "groups",
       groups: DEGREE_GROUPS,
       getItemIdsForGroup: getItemIdsForGroup4,
       allGroupIndices: ALL_GROUP_INDICES4,
       storageKey: "scaleDegrees_enabledGroups",
       scopeLabel: "Degrees",
       defaultEnabled: [0],
-      selector: learner.selector,
       formatLabel: (groups) => {
         if (groups.size === DEGREE_GROUPS.length) return "all degrees";
         const degrees = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => DEGREE_GROUPS[g2].degrees).sort((a3, b) => a3 - b);
         return degrees.map((d3) => DEGREE_LABELS2[d3 - 1]).join(", ") + " degrees";
       }
-    });
-    const currentQRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const [pendingNote, setPendingNote] = d2(null);
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => engineSubmitRef.current(note),
-        () => true,
-        setPendingNote
-      ),
-      []
-    );
-    const engineConfig = T2(() => ({
-      getEnabledItems,
-      getPracticingLabel,
-      checkAnswer: (_itemId, input) => {
-        return checkAnswer6(currentQRef.current, input);
-      },
-      handleKey: (e3, _ctx) => {
-        const dir2 = currentQRef.current?.dir;
-        if (dir2 === "fwd") {
-          return noteHandler.handleKey(e3);
-        }
-        if (e3.key >= "1" && e3.key <= "7") {
-          e3.preventDefault();
-          engineSubmitRef.current(e3.key);
-          return true;
-        }
-        return false;
-      },
-      onStart: () => noteHandler.reset(),
-      onStop: () => noteHandler.reset()
-    }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return getQuestion6(id);
-    }, [engine.state.currentItemId, engine.state.phase]);
-    currentQRef.current = currentQ;
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS6,
-      selector: learner.selector,
-      engine,
-      itemNoun: "items",
-      recommendation,
-      recommendationText
-    });
-    const deactivateCleanup = q2(() => noteHandler.reset(), [
-      noteHandler
-    ]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
-    const dir = currentQ?.dir ?? "fwd";
-    const promptText = currentQ ? currentQ.dir === "fwd" ? DEGREE_LABELS2[currentQ.degree - 1] + " of " + displayNote(currentQ.keyRoot) + " major" : displayNote(currentQ.keyRoot) + " major: " + displayNote(currentQ.noteName) : "";
-    const handleNoteAnswer = q2(
-      (note) => engine.submitAnswer(note),
-      [engine.submitAnswer]
-    );
-    const handleDegreeAnswer = q2(
-      (degree) => engine.submitAnswer(degree),
-      [engine.submitAnswer]
-    );
-    const round = useRoundSummary(engine, practicingLabel);
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: "scaleDegrees",
-          title: "Scale Degrees",
-          description: MODE_DESCRIPTIONS.scaleDegrees,
-          beforeAfter: MODE_BEFORE_AFTER.scaleDegrees,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
-          scopeValid: enabledGroups.size > 0,
-          validationMessage: "Select at least one group",
-          scope: /* @__PURE__ */ u3(
-            GroupToggles,
-            {
-              labels: DEGREE_GROUPS.map((g2) => g2.label),
-              active: enabledGroups,
-              onToggle: scopeActions.toggleGroup
-            }
-          ),
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: ps.statsSel,
-                colLabels: DEGREE_LABELS2,
-                getItemId: getGridItemId3,
-                notes: GRID_NOTES
-              }
-            ),
-            /* @__PURE__ */ u3(StatsLegend, {})
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                FeedbackBanner,
-                {
-                  correct: engine.state.feedbackCorrect,
-                  answer: engine.state.feedbackDisplayAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                NoteButtons,
-                {
-                  hidden: dir === "rev",
-                  onAnswer: handleNoteAnswer,
-                  narrowing: dir === "fwd" ? noteNarrowing : void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                DegreeButtons,
-                {
-                  hidden: dir === "fwd",
-                  onAnswer: handleDegreeAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: dir === "fwd" ? "note" : null }),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] })
-          }
-        )
-      ] })
-    ] });
-  }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: DEGREE_LABELS2,
+      getItemId: getGridItemId3,
+      notes: GRID_NOTES
+    }
+  };
 
   // src/modes/diatonic-chords/logic.ts
   var CHORD_GROUPS = [
@@ -9636,670 +8642,47 @@ button {
     return [keyRoot + ":" + d3 + ":fwd", keyRoot + ":" + d3 + ":rev"];
   }
 
-  // src/modes/diatonic-chords/diatonic-chords-mode.tsx
-  function DiatonicChordsMode({ container, navigateHome, onMount }) {
-    const learner = useLearnerModel("diatonicChords", ALL_ITEMS7);
-    const {
-      scopeActions,
-      enabledGroups,
-      practicingLabel,
-      recommendation,
-      recommendationText,
-      applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel
-    } = useGroupScope({
+  // src/modes/diatonic-chords/definition.ts
+  var DIATONIC_CHORDS_DEF = {
+    id: "diatonicChords",
+    name: "Diatonic Chords",
+    namespace: "diatonicChords",
+    description: MODE_DESCRIPTIONS.diatonicChords,
+    beforeAfter: MODE_BEFORE_AFTER.diatonicChords,
+    itemNoun: "items",
+    allItems: ALL_ITEMS7,
+    getQuestion: getQuestion7,
+    getPromptText: (q3) => q3.dir === "fwd" ? q3.chord.numeral + " in " + displayNote(q3.keyRoot) + " major" : displayNote(q3.rootNote) + q3.chord.qualityLabel + " in " + displayNote(q3.keyRoot) + " major",
+    checkAnswer: checkAnswer7,
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input),
+    getDirection: (q3) => q3.dir,
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "note" },
+      rev: { kind: "numeral" }
+    },
+    scope: {
+      kind: "groups",
       groups: CHORD_GROUPS,
       getItemIdsForGroup: getItemIdsForGroup5,
       allGroupIndices: ALL_GROUP_INDICES5,
       storageKey: "diatonicChords_enabledGroups",
       scopeLabel: "Chords",
       defaultEnabled: [0],
-      selector: learner.selector,
       formatLabel: (groups) => {
         if (groups.size === CHORD_GROUPS.length) return "all chords";
         const numerals = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => CHORD_GROUPS[g2].degrees).sort((a3, b) => a3 - b).map((d3) => ROMAN_NUMERALS[d3 - 1]);
         return numerals.join(", ") + " chords";
       }
-    });
-    const currentQRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const [pendingNote, setPendingNote] = d2(null);
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => engineSubmitRef.current(note),
-        () => true,
-        setPendingNote
-      ),
-      []
-    );
-    const engineConfig = T2(() => ({
-      getEnabledItems,
-      getPracticingLabel,
-      checkAnswer: (_itemId, input) => {
-        return checkAnswer7(currentQRef.current, input);
-      },
-      handleKey: (e3, _ctx) => {
-        const dir2 = currentQRef.current?.dir;
-        if (dir2 === "fwd") {
-          return noteHandler.handleKey(e3);
-        }
-        if (e3.key >= "1" && e3.key <= "7") {
-          e3.preventDefault();
-          engineSubmitRef.current(ROMAN_NUMERALS[parseInt(e3.key) - 1]);
-          return true;
-        }
-        return false;
-      },
-      onStart: () => noteHandler.reset(),
-      onStop: () => noteHandler.reset()
-    }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return getQuestion7(id);
-    }, [engine.state.currentItemId, engine.state.phase]);
-    currentQRef.current = currentQ;
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS7,
-      selector: learner.selector,
-      engine,
-      itemNoun: "items",
-      recommendation,
-      recommendationText
-    });
-    const deactivateCleanup = q2(() => noteHandler.reset(), [
-      noteHandler
-    ]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
-    const dir = currentQ?.dir ?? "fwd";
-    const promptText = currentQ ? currentQ.dir === "fwd" ? currentQ.chord.numeral + " in " + displayNote(currentQ.keyRoot) + " major" : displayNote(currentQ.rootNote) + currentQ.chord.qualityLabel + " in " + displayNote(currentQ.keyRoot) + " major" : "";
-    const handleNoteAnswer = q2(
-      (note) => engine.submitAnswer(note),
-      [engine.submitAnswer]
-    );
-    const handleNumeralAnswer = q2(
-      (numeral) => engine.submitAnswer(numeral),
-      [engine.submitAnswer]
-    );
-    const round = useRoundSummary(engine, practicingLabel);
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: "diatonicChords",
-          title: "Diatonic Chords",
-          description: MODE_DESCRIPTIONS.diatonicChords,
-          beforeAfter: MODE_BEFORE_AFTER.diatonicChords,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
-          scopeValid: enabledGroups.size > 0,
-          validationMessage: "Select at least one group",
-          scope: /* @__PURE__ */ u3(
-            GroupToggles,
-            {
-              labels: CHORD_GROUPS.map((g2) => g2.label),
-              active: enabledGroups,
-              onToggle: scopeActions.toggleGroup
-            }
-          ),
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: ps.statsSel,
-                colLabels: ROMAN_NUMERALS,
-                getItemId: getGridItemId4,
-                notes: GRID_NOTES2
-              }
-            ),
-            /* @__PURE__ */ u3(StatsLegend, {})
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                FeedbackBanner,
-                {
-                  correct: engine.state.feedbackCorrect,
-                  answer: engine.state.feedbackDisplayAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                NoteButtons,
-                {
-                  hidden: dir === "rev",
-                  onAnswer: handleNoteAnswer,
-                  narrowing: dir === "fwd" ? noteNarrowing : void 0
-                }
-              ),
-              /* @__PURE__ */ u3(
-                NumeralButtons,
-                {
-                  hidden: dir === "fwd",
-                  onAnswer: handleNumeralAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: dir === "fwd" ? "note" : null }),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] })
-          }
-        )
-      ] })
-    ] });
-  }
-
-  // src/modes/chord-spelling/logic.ts
-  function buildGroups() {
-    let maxGroup = 0;
-    for (const ct of CHORD_TYPES) {
-      if (ct.group > maxGroup) maxGroup = ct.group;
+    },
+    stats: {
+      kind: "grid",
+      colLabels: ROMAN_NUMERALS,
+      getItemId: getGridItemId4,
+      notes: GRID_NOTES2
     }
-    const result = [];
-    for (let g2 = 0; g2 <= maxGroup; g2++) {
-      const types = CHORD_TYPES.filter((t3) => t3.group === g2);
-      const label = types.map((t3) => t3.symbol || "maj").join(", ");
-      result.push({ types, label });
-    }
-    return result;
-  }
-  var SPELLING_GROUPS = buildGroups();
-  function getItemIdsForGroup6(groupIndex) {
-    const types = SPELLING_GROUPS[groupIndex].types;
-    const items = [];
-    for (const root of CHORD_ROOTS) {
-      for (const type of types) {
-        items.push(root + ":" + type.name);
-      }
-    }
-    return items;
-  }
-  var ALL_ITEMS8 = [];
-  for (const root of CHORD_ROOTS) {
-    for (const type of CHORD_TYPES) {
-      ALL_ITEMS8.push(root + ":" + type.name);
-    }
-  }
-  var ALL_GROUP_INDICES6 = SPELLING_GROUPS.map((_3, i3) => i3);
-  var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
-    name: r3,
-    displayName: r3
-  }));
-  var GRID_COL_LABELS3 = CHORD_TYPES.map((t3) => t3.symbol || "maj");
-  function parseItem(itemId) {
-    const colonIdx = itemId.indexOf(":");
-    const rootName = itemId.substring(0, colonIdx);
-    const typeName = itemId.substring(colonIdx + 1);
-    const chordType = CHORD_TYPES.find((t3) => t3.name === typeName);
-    const tones = getChordTones(rootName, chordType);
-    return { rootName, chordType, tones };
-  }
-  function initSequentialState(itemId) {
-    const item = parseItem(itemId);
-    return { expectedCount: item.tones.length, entries: [] };
-  }
-  function handleInput(itemId, input, state) {
-    const item = parseItem(itemId);
-    const idx = state.entries.length;
-    if (idx >= item.tones.length) {
-      const allCorrect = state.entries.every((e3) => e3.correct);
-      return {
-        status: "complete",
-        correct: allCorrect,
-        correctAnswer: item.tones.map(displayNote).join(" ")
-      };
-    }
-    const expected = item.tones[idx];
-    if (spelledNoteMatchesSemitone(expected, input)) {
-      input = expected;
-    }
-    const isCorrect = spelledNoteMatchesInput(expected, input);
-    const entries = [
-      ...state.entries,
-      {
-        input,
-        display: isCorrect ? displayNote(expected) : displayNote(input),
-        correct: isCorrect
-      }
-    ];
-    const newState = {
-      expectedCount: item.tones.length,
-      entries
-    };
-    if (entries.length === item.tones.length) {
-      const allCorrect = entries.every((e3) => e3.correct);
-      return {
-        status: "complete",
-        correct: allCorrect,
-        correctAnswer: item.tones.map(displayNote).join(" ")
-      };
-    }
-    return { status: "continue", state: newState };
-  }
-  function checkAnswer8(itemId, input) {
-    const allCorrect = input === "__correct__";
-    const item = parseItem(itemId);
-    const correctAnswer = item.tones.map(displayNote).join(" ");
-    return { correct: allCorrect, correctAnswer };
-  }
-  function getGridItemId5(rootName, colIdx) {
-    return rootName + ":" + CHORD_TYPES[colIdx].name;
-  }
-
-  // src/modes/chord-spelling/chord-spelling-mode.tsx
-  function ChordSlots({ state }) {
-    if (!state) return /* @__PURE__ */ u3("div", { class: "chord-slots" });
-    return /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: state.expectedCount }, (_3, i3) => {
-      let cls = "chord-slot";
-      let content = "_";
-      if (i3 < state.entries.length) {
-        content = state.entries[i3].display;
-        cls += state.entries[i3].correct ? " correct" : " wrong";
-      } else if (i3 === state.entries.length) {
-        cls += " active";
-      }
-      return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
-    }) });
-  }
-  function ChordSpellingMode({ container, navigateHome, onMount }) {
-    const learner = useLearnerModel("chordSpelling", ALL_ITEMS8);
-    const {
-      scopeActions,
-      enabledGroups,
-      practicingLabel,
-      recommendation,
-      recommendationText,
-      applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel
-    } = useGroupScope({
-      groups: SPELLING_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup6,
-      allGroupIndices: ALL_GROUP_INDICES6,
-      storageKey: "chordSpelling_enabledGroups",
-      scopeLabel: "Chord types",
-      defaultEnabled: [0],
-      selector: learner.selector,
-      formatLabel: (groups) => {
-        if (groups.size === SPELLING_GROUPS.length) return "all chord types";
-        const labels = [...groups].sort((a3, b) => a3 - b).map((g2) => SPELLING_GROUPS[g2].label);
-        return labels.join(", ") + " chords";
-      }
-    });
-    const currentItemRef = A2(null);
-    const [seqState, setSeqState] = d2(null);
-    const seqStateRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const [pendingNote, setPendingNote] = d2(null);
-    const handleSeqInputRef = A2(() => {
-    });
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => handleSeqInputRef.current(note),
-        () => true,
-        setPendingNote
-      ),
-      []
-    );
-    const handleSequentialInput = q2((input) => {
-      const itemId = currentItemRef.current;
-      const state = seqStateRef.current;
-      if (!itemId || !state) return;
-      const result = handleInput(itemId, input, state);
-      if (result.status === "continue") {
-        seqStateRef.current = result.state;
-        setSeqState(result.state);
-      } else {
-        engineSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
-      }
-    }, []);
-    handleSeqInputRef.current = handleSequentialInput;
-    const engineConfig = T2(() => ({
-      getEnabledItems,
-      getPracticingLabel,
-      checkAnswer: (itemId, input) => {
-        return checkAnswer8(itemId, input);
-      },
-      handleKey: (e3, _ctx) => {
-        return noteHandler.handleKey(e3);
-      },
-      onStart: () => noteHandler.reset(),
-      onStop: () => {
-        noteHandler.reset();
-        seqStateRef.current = null;
-        setSeqState(null);
-      }
-    }), [noteHandler, getEnabledItems, getPracticingLabel]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return parseItem(id);
-    }, [engine.state.currentItemId, engine.state.phase]);
-    const prevItemRef = A2(null);
-    const currentItemId = engine.state.currentItemId;
-    if (currentItemId !== prevItemRef.current) {
-      prevItemRef.current = currentItemId;
-      currentItemRef.current = currentItemId;
-      if (currentItemId && engine.state.phase !== "idle") {
-        const newSeqState = initSequentialState(currentItemId);
-        seqStateRef.current = newSeqState;
-        setSeqState(newSeqState);
-      } else {
-        seqStateRef.current = null;
-        setSeqState(null);
-      }
-    }
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS8,
-      selector: learner.selector,
-      engine,
-      itemNoun: "items",
-      recommendation,
-      recommendationText
-    });
-    const deactivateCleanup = q2(() => noteHandler.reset(), [
-      noteHandler
-    ]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
-    const promptText = currentQ ? displayNote(currentQ.rootName) + currentQ.chordType.symbol : "";
-    const handleNoteAnswer = q2(
-      (note) => handleSequentialInput(note),
-      [handleSequentialInput]
-    );
-    const round = useRoundSummary(engine, practicingLabel);
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: "chordSpelling",
-          title: "Chord Spelling",
-          description: MODE_DESCRIPTIONS.chordSpelling,
-          beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
-          scopeValid: enabledGroups.size > 0,
-          validationMessage: "Select at least one group",
-          scope: /* @__PURE__ */ u3(
-            GroupToggles,
-            {
-              labels: SPELLING_GROUPS.map((g2) => g2.label),
-              active: enabledGroups,
-              onToggle: scopeActions.toggleGroup
-            }
-          ),
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: ps.statsSel,
-                colLabels: GRID_COL_LABELS3,
-                getItemId: getGridItemId5,
-                notes: GRID_NOTES3
-              }
-            ),
-            /* @__PURE__ */ u3(StatsLegend, {})
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
-              /* @__PURE__ */ u3(
-                FeedbackBanner,
-                {
-                  correct: engine.state.feedbackCorrect,
-                  answer: engine.state.feedbackDisplayAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                NoteButtons,
-                {
-                  onAnswer: handleNoteAnswer,
-                  narrowing: noteNarrowing
-                }
-              ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] })
-          }
-        )
-      ] })
-    ] });
-  }
-
-  // src/quiz-fretboard-state.ts
-  function createFretboardHelpers(musicData) {
-    const noteNames2 = musicData.notes.map((n2) => n2.name);
-    const fretCount = musicData.fretCount || 13;
-    function getNoteAtPosition2(string, fret) {
-      const offset = musicData.stringOffsets[string];
-      return noteNames2[(offset + fret) % 12];
-    }
-    function parseFretboardItem(itemId) {
-      const [s3, f4] = itemId.split("-").map(Number);
-      return {
-        currentString: s3,
-        currentFret: f4,
-        currentNote: getNoteAtPosition2(s3, f4)
-      };
-    }
-    function checkFretboardAnswer(currentNote, input) {
-      const note = musicData.notes.find((n2) => n2.name === currentNote);
-      const correct = !!(note && musicData.noteMatchesInput(note, input));
-      return {
-        correct,
-        correctAnswer: displayNote(currentNote)
-      };
-    }
-    function notePassesFilter(note, noteFilter) {
-      if (noteFilter === "none") return false;
-      if (noteFilter === "all") return true;
-      const isNatural = musicData.naturalNotes.includes(note);
-      return noteFilter === "natural" ? isNatural : !isNatural;
-    }
-    function getFretboardEnabledItems(enabledStrings, noteFilter) {
-      const items = [];
-      for (const s3 of enabledStrings) {
-        for (let f4 = 0; f4 < fretCount; f4++) {
-          const note = getNoteAtPosition2(s3, f4);
-          if (notePassesFilter(note, noteFilter)) {
-            items.push(s3 + "-" + f4);
-          }
-        }
-      }
-      return items;
-    }
-    function getItemIdsForString(string, noteFilter) {
-      const items = [];
-      for (let f4 = 0; f4 < fretCount; f4++) {
-        const note = getNoteAtPosition2(string, f4);
-        if (notePassesFilter(note, noteFilter)) {
-          items.push(string + "-" + f4);
-        }
-      }
-      return items;
-    }
-    return {
-      fretCount,
-      getNoteAtPosition: getNoteAtPosition2,
-      parseFretboardItem,
-      checkFretboardAnswer,
-      getFretboardEnabledItems,
-      getItemIdsForString
-    };
-  }
-  function computeNotePrioritization(naturalStats, threshold) {
-    let totalSeen = 0;
-    let totalFluent = 0;
-    for (const r3 of naturalStats) {
-      totalSeen += r3.fluentCount + r3.workingCount;
-      totalFluent += r3.fluentCount;
-    }
-    const ratio = totalSeen > 0 ? totalFluent / totalSeen : 0;
-    if (totalSeen === 0 || ratio < threshold) {
-      return { suggestedFilter: "natural", naturalMasteryRatio: ratio };
-    }
-    return { suggestedFilter: "all", naturalMasteryRatio: ratio };
-  }
+  };
 
   // src/fretboard.ts
   var fretPositions = [
@@ -10411,17 +8794,156 @@ button {
           ${positionCircles(sc, fc)}
           ${config.tapTargets ? "<!-- Tap targets -->\n          " + tapTargetRects(sc, fc) : ""}
         </svg>
-        <div class="hover-card"><div class="hc-inner">
-          <div class="hc-note"></div>
-          <div class="hc-string-fret"></div>
-          <div class="hc-detail"></div>
-          <div class="hc-bar"><div class="hc-bar-fill"></div></div>
-        </div></div>
       </div>
     </div>`;
   }
 
-  // src/modes/fretboard/fretboard-mode.tsx
+  // src/quiz-fretboard-state.ts
+  function createFretboardHelpers(musicData) {
+    const noteNames2 = musicData.notes.map((n2) => n2.name);
+    const fretCount = musicData.fretCount || 13;
+    function getNoteAtPosition2(string, fret) {
+      const offset = musicData.stringOffsets[string];
+      return noteNames2[(offset + fret) % 12];
+    }
+    function parseFretboardItem(itemId) {
+      const [s3, f4] = itemId.split("-").map(Number);
+      return {
+        currentString: s3,
+        currentFret: f4,
+        currentNote: getNoteAtPosition2(s3, f4)
+      };
+    }
+    function checkFretboardAnswer(currentNote, input) {
+      const note = musicData.notes.find((n2) => n2.name === currentNote);
+      const correct = !!(note && musicData.noteMatchesInput(note, input));
+      return {
+        correct,
+        correctAnswer: displayNote(currentNote)
+      };
+    }
+    function notePassesFilter(note, noteFilter) {
+      if (noteFilter === "none") return false;
+      if (noteFilter === "all") return true;
+      const isNatural = musicData.naturalNotes.includes(note);
+      return noteFilter === "natural" ? isNatural : !isNatural;
+    }
+    function getFretboardEnabledItems(enabledStrings, noteFilter) {
+      const items = [];
+      for (const s3 of enabledStrings) {
+        for (let f4 = 0; f4 < fretCount; f4++) {
+          const note = getNoteAtPosition2(s3, f4);
+          if (notePassesFilter(note, noteFilter)) {
+            items.push(s3 + "-" + f4);
+          }
+        }
+      }
+      return items;
+    }
+    function getItemIdsForString(string, noteFilter) {
+      const items = [];
+      for (let f4 = 0; f4 < fretCount; f4++) {
+        const note = getNoteAtPosition2(string, f4);
+        if (notePassesFilter(note, noteFilter)) {
+          items.push(string + "-" + f4);
+        }
+      }
+      return items;
+    }
+    return {
+      fretCount,
+      getNoteAtPosition: getNoteAtPosition2,
+      parseFretboardItem,
+      checkFretboardAnswer,
+      getFretboardEnabledItems,
+      getItemIdsForString
+    };
+  }
+
+  // src/modes/fretboard/logic.ts
+  var GUITAR_GROUPS = [
+    // Naturals by string (E and e combined since same notes)
+    { label: "E e", strings: [5, 0], noteFilter: "natural" },
+    { label: "A", strings: [4], noteFilter: "natural" },
+    { label: "D", strings: [3], noteFilter: "natural" },
+    { label: "G", strings: [2], noteFilter: "natural" },
+    { label: "B", strings: [1], noteFilter: "natural" },
+    // Accidentals by string pair
+    { label: "E A \u266F\u266D", strings: [5, 4], noteFilter: "sharps-flats" },
+    { label: "D G \u266F\u266D", strings: [3, 2], noteFilter: "sharps-flats" },
+    { label: "B e \u266F\u266D", strings: [1, 0], noteFilter: "sharps-flats" }
+  ];
+  var UKULELE_GROUPS = [
+    // Naturals by string
+    { label: "G", strings: [3], noteFilter: "natural" },
+    { label: "C", strings: [2], noteFilter: "natural" },
+    { label: "E", strings: [1], noteFilter: "natural" },
+    { label: "A", strings: [0], noteFilter: "natural" },
+    // Accidentals by string pair
+    { label: "G C \u266F\u266D", strings: [3, 2], noteFilter: "sharps-flats" },
+    { label: "E A \u266F\u266D", strings: [1, 0], noteFilter: "sharps-flats" }
+  ];
+  var GROUPS_BY_INSTRUMENT = {
+    fretboard: GUITAR_GROUPS,
+    ukulele: UKULELE_GROUPS
+  };
+  function getGroups(instrument) {
+    return GROUPS_BY_INSTRUMENT[instrument.id] ?? GUITAR_GROUPS;
+  }
+  var helpersCache = /* @__PURE__ */ new Map();
+  function getHelpers(instrument) {
+    let h3 = helpersCache.get(instrument.id);
+    if (!h3) {
+      h3 = createFretboardHelpers({
+        notes: NOTES,
+        naturalNotes: NATURAL_NOTES,
+        stringOffsets: instrument.stringOffsets,
+        fretCount: instrument.fretCount,
+        noteMatchesInput
+      });
+      helpersCache.set(instrument.id, h3);
+    }
+    return h3;
+  }
+  function getItemIdsForGroup6(instrument, groupIndex) {
+    const groups = getGroups(instrument);
+    const group = groups[groupIndex];
+    if (!group) return [];
+    const fb = getHelpers(instrument);
+    const items = [];
+    for (const s3 of group.strings) {
+      items.push(...fb.getItemIdsForString(s3, group.noteFilter));
+    }
+    return items;
+  }
+  function getAllItems(instrument) {
+    const items = [];
+    for (let s3 = 0; s3 < instrument.stringCount; s3++) {
+      for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+        items.push(s3 + "-" + f4);
+      }
+    }
+    return items;
+  }
+  function getAllGroupIndices(instrument) {
+    return getGroups(instrument).map((_3, i3) => i3);
+  }
+  function getQuestion8(instrument, itemId) {
+    const fb = getHelpers(instrument);
+    return fb.parseFretboardItem(itemId);
+  }
+  function checkAnswer8(instrument, currentNote, input) {
+    const fb = getHelpers(instrument);
+    return fb.checkFretboardAnswer(currentNote, input);
+  }
+  function formatLabel(instrument, enabledGroups) {
+    const groups = getGroups(instrument);
+    if (enabledGroups.size === groups.length) return "all groups";
+    const labels = Array.from(enabledGroups).sort((a3, b) => a3 - b).map((i3) => groups[i3]?.label ?? String(i3));
+    return labels.join(", ");
+  }
+
+  // src/modes/fretboard/definition.tsx
   var FB_QUIZ_HL = "hsl(50, 100%, 50%)";
   function setCircleFill(root, string, fret, color) {
     const circle = root.querySelector(
@@ -10434,123 +8956,38 @@ button {
       c3.style.fill = "";
     });
   }
-  function setupHoverCard(wrapper, instrument, fb, selector) {
-    const card = wrapper.querySelector(".hover-card");
-    if (!card) return () => {
-    };
-    const svg = wrapper.querySelector("svg");
-    if (!svg) return () => {
-    };
-    function onOver(e3) {
-      const el = e3.target.closest(".fb-pos");
-      if (!el || !card) return;
-      const s3 = parseInt(el.getAttribute("data-string"));
-      const f4 = parseInt(el.getAttribute("data-fret"));
-      const itemId = s3 + "-" + f4;
-      const q3 = fb.parseFretboardItem(itemId);
-      const auto = selector.getAutomaticity(itemId);
-      const noteEl = card.querySelector(".hc-note");
-      if (noteEl) noteEl.textContent = displayNote(q3.currentNote);
-      const sfEl = card.querySelector(".hc-string-fret");
-      if (sfEl) {
-        sfEl.textContent = displayNote(instrument.stringNames[s3]) + " string, fret " + f4;
-      }
-      const detailEl = card.querySelector(".hc-detail");
-      const barFill = card.querySelector(".hc-bar-fill");
-      if (auto !== null) {
-        const pct = Math.round(auto * 100);
-        let label;
-        if (auto > 0.8) label = "Automatic";
-        else if (auto > 0.6) label = "Solid";
-        else if (auto > 0.4) label = "Getting there";
-        else if (auto > 0.2) label = "Fading";
-        else label = "Needs work";
-        if (detailEl) detailEl.textContent = label + " \xB7 " + pct + "%";
-        if (barFill) {
-          barFill.style.width = pct + "%";
-          barFill.style.background = getAutomaticityColor(auto);
-        }
-      } else {
-        if (detailEl) detailEl.textContent = "Not seen yet";
-        if (barFill) {
-          barFill.style.width = "0%";
-          barFill.style.background = "";
-        }
-      }
-      const containerRect = wrapper.querySelector(
-        ".fretboard-container"
-      ).getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      const cx = elRect.left + elRect.width / 2 - containerRect.left;
-      const cy = elRect.top + elRect.height / 2 - containerRect.top;
-      const midX = containerRect.width / 2;
-      if (cx < midX) {
-        card.style.left = cx + elRect.width / 2 + 6 + "px";
-        card.style.top = cy + "px";
-        card.style.transform = "translate(0, -50%)";
-      } else {
-        card.style.left = cx - elRect.width / 2 - 6 + "px";
-        card.style.top = cy + "px";
-        card.style.transform = "translate(-100%, -50%)";
-      }
-      card.classList.add("visible");
-    }
-    function onOut(e3) {
-      const el = e3.target.closest(".fb-pos");
-      if (el && card) card.classList.remove("visible");
-    }
-    svg.addEventListener("mouseover", onOver);
-    svg.addEventListener("mouseout", onOut);
-    return () => {
-      svg.removeEventListener("mouseover", onOver);
-      svg.removeEventListener("mouseout", onOut);
+  function createFretboardDef(instrument) {
+    const groups = getGroups(instrument);
+    const allItems = getAllItems(instrument);
+    const allGroupIndices = getAllGroupIndices(instrument);
+    return {
+      id: instrument.id,
+      name: instrument.name,
+      namespace: instrument.storageNamespace,
+      description: MODE_DESCRIPTIONS[instrument.id],
+      beforeAfter: MODE_BEFORE_AFTER[instrument.id],
+      itemNoun: "positions",
+      allItems,
+      getQuestion: (itemId) => getQuestion8(instrument, itemId),
+      getPromptText: () => "Name this note",
+      checkAnswer: (_q, input) => checkAnswer8(instrument, _q.currentNote, input),
+      validateInput: (_q, input) => isValidNoteInput(input),
+      buttons: { kind: "piano-note" },
+      scope: {
+        kind: "groups",
+        groups,
+        getItemIdsForGroup: (index) => getItemIdsForGroup6(instrument, index),
+        allGroupIndices,
+        storageKey: instrument.storageNamespace + "_enabledGroups",
+        scopeLabel: "Groups",
+        defaultEnabled: [0],
+        formatLabel: (enabled) => formatLabel(instrument, enabled)
+      },
+      stats: { kind: "none" },
+      useController: (enabledGroups) => useFretboardController(instrument, groups, enabledGroups)
     };
   }
-  function FretboardMode({ instrument, container, navigateHome, onMount }) {
-    const fb = T2(
-      () => createFretboardHelpers({
-        notes: NOTES,
-        naturalNotes: NATURAL_NOTES,
-        stringOffsets: instrument.stringOffsets,
-        fretCount: instrument.fretCount,
-        noteMatchesInput
-      }),
-      [instrument]
-    );
-    const allStrings = T2(
-      () => Array.from({ length: instrument.stringCount }, (_3, i3) => i3),
-      [instrument]
-    );
-    const ALL_ITEMS10 = T2(() => {
-      const items = [];
-      for (const s3 of allStrings) {
-        for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-          items.push(s3 + "-" + f4);
-        }
-      }
-      return items;
-    }, [allStrings, instrument]);
-    const [scope, scopeActions] = useScopeState({
-      kind: "fretboard",
-      instrument
-    });
-    const enabledStrings = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
-    const noteFilter = scope.kind === "fretboard" ? scope.noteFilter : "natural";
-    const learner = useLearnerModel(instrument.storageNamespace, ALL_ITEMS10);
-    const currentQRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const noteFilterRef = A2(noteFilter);
-    noteFilterRef.current = noteFilter;
-    const [pendingNote, setPendingNote] = d2(null);
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => engineSubmitRef.current(note),
-        () => noteFilterRef.current !== "natural",
-        setPendingNote
-      ),
-      []
-    );
+  function useFretboardController(instrument, groups, enabledGroups) {
     const quizFbRef = A2(null);
     const progressFbRef = A2(null);
     const svgHTML = T2(
@@ -10561,336 +8998,98 @@ button {
       }),
       [instrument]
     );
-    const recommendation = T2(() => {
-      return computeRecommendations(
-        learner.selector,
-        allStrings,
-        (s3) => {
-          const prefix = s3 + "-";
-          return ALL_ITEMS10.filter((id) => id.startsWith(prefix));
-        },
-        DEFAULT_CONFIG,
-        { sortUnstarted: (a3, b) => b.string - a3.string }
-      );
-    }, [learner.selector, allStrings, ALL_ITEMS10]);
-    const recommendationText = T2(() => {
-      if (!recommendation || recommendation.recommended.size === 0) return "";
-      const naturalStats = learner.selector.getStringRecommendations(
-        [...recommendation.recommended],
-        (s3) => fb.getItemIdsForString(s3, "natural")
-      );
-      const pri = computeNotePrioritization(
-        naturalStats,
-        DEFAULT_CONFIG.expansionThreshold
-      );
-      const extraParts = pri.suggestedFilter === "natural" ? ["naturals first"] : ["add sharps & flats"];
-      return buildRecommendationText(
-        recommendation,
-        (s3) => displayNote(instrument.stringNames[s3]) + " string",
-        extraParts
-      );
-    }, [recommendation, learner.selector, fb, instrument]);
-    const applyRecommendation = q2(() => {
-      if (!recommendation || !recommendation.enabled) return;
-      const naturalStats = learner.selector.getStringRecommendations(
-        [...recommendation.recommended],
-        (s3) => fb.getItemIdsForString(s3, "natural")
-      );
-      const pri = computeNotePrioritization(
-        naturalStats,
-        DEFAULT_CONFIG.expansionThreshold
-      );
-      const newNoteFilter = pri.suggestedFilter === "natural" ? "natural" : "all";
-      scopeActions.setScope({
-        kind: "fretboard",
-        enabledStrings: recommendation.enabled,
-        noteFilter: newNoteFilter
-      });
-    }, [recommendation, learner.selector, fb, scopeActions]);
-    const practicingLabel = T2(() => {
-      const parts = [];
-      if (enabledStrings.size < instrument.stringCount) {
-        const names = Array.from(enabledStrings).sort((a3, b) => b - a3).map((s3) => displayNote(instrument.stringNames[s3]));
-        parts.push(
-          names.join(", ") + " string" + (names.length === 1 ? "" : "s")
-        );
-      } else {
-        parts.push("all strings");
+    const hasAccidentals = T2(() => {
+      for (const g2 of enabledGroups) {
+        if (groups[g2]?.noteFilter === "sharps-flats") return true;
       }
-      if (noteFilter === "natural") parts.push("natural notes");
-      else if (noteFilter === "sharps-flats") parts.push("sharps and flats");
-      return parts.join(", ");
-    }, [enabledStrings, noteFilter, instrument]);
-    const engineConfig = T2(() => ({
-      getEnabledItems: () => {
-        const s3 = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
-        const nf = scope.kind === "fretboard" ? scope.noteFilter : "natural";
-        return fb.getFretboardEnabledItems(s3, nf);
+      return false;
+    }, [enabledGroups, groups]);
+    const engineSubmitRef = A2(() => {
+    });
+    const hasAccidentalsRef = A2(hasAccidentals);
+    hasAccidentalsRef.current = hasAccidentals;
+    const [pendingNote, setPendingNote] = d2(null);
+    const noteHandler = T2(
+      () => createAdaptiveKeyHandler(
+        (note) => engineSubmitRef.current(note),
+        () => hasAccidentalsRef.current,
+        setPendingNote
+      ),
+      []
+    );
+    const narrowing = T2(
+      () => noteNarrowingSet(pendingNote),
+      [pendingNote]
+    );
+    const currentQRef = A2(null);
+    const renderPrompt = q2(
+      (q3) => {
+        currentQRef.current = q3;
+        const el = quizFbRef.current;
+        if (el) {
+          clearAll(el);
+          setCircleFill(el, q3.currentString, q3.currentFret, FB_QUIZ_HL);
+        }
+        return /* @__PURE__ */ u3(
+          "div",
+          {
+            ref: quizFbRef,
+            dangerouslySetInnerHTML: { __html: svgHTML }
+          }
+        );
       },
-      checkAnswer: (itemId, input) => {
-        const q3 = fb.parseFretboardItem(itemId);
-        return fb.checkFretboardAnswer(q3.currentNote, input);
+      [svgHTML]
+    );
+    const renderStats = q2(
+      (selector) => {
+        return /* @__PURE__ */ u3(
+          "div",
+          {
+            ref: (el) => {
+              progressFbRef.current = el;
+              if (!el) return;
+              for (let s3 = 0; s3 < instrument.stringCount; s3++) {
+                for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+                  const itemId = s3 + "-" + f4;
+                  const color = getStatsCellColor(selector, itemId);
+                  setCircleFill(el, s3, f4, color);
+                }
+              }
+            },
+            dangerouslySetInnerHTML: { __html: svgHTML }
+          }
+        );
       },
+      [svgHTML, instrument]
+    );
+    return {
+      renderPrompt,
+      renderStats,
       onAnswer: (itemId, result) => {
         if (quizFbRef.current) {
-          const q3 = fb.parseFretboardItem(itemId);
+          const q3 = getQuestion8(instrument, itemId);
           const color = result.correct ? "var(--color-success)" : "var(--color-error)";
-          setCircleFill(
-            quizFbRef.current,
-            q3.currentString,
-            q3.currentFret,
-            color
-          );
+          setCircleFill(quizFbRef.current, q3.currentString, q3.currentFret, color);
         }
-      },
-      handleKey: (e3, _ctx) => {
-        return noteHandler.handleKey(e3);
       },
       onStart: () => noteHandler.reset(),
       onStop: () => {
         noteHandler.reset();
         if (quizFbRef.current) clearAll(quizFbRef.current);
       },
-      getPracticingLabel: () => {
-        const s3 = scope.kind === "fretboard" ? scope.enabledStrings : /* @__PURE__ */ new Set([instrument.defaultString]);
-        const nf = scope.kind === "fretboard" ? scope.noteFilter : "natural";
-        const parts = [];
-        if (s3.size < instrument.stringCount) {
-          const names = Array.from(s3).sort((a3, b) => b - a3).map((i3) => displayNote(instrument.stringNames[i3]));
-          parts.push(
-            names.join(", ") + " string" + (names.length === 1 ? "" : "s")
-          );
-        } else {
-          parts.push("all strings");
-        }
-        if (nf === "natural") parts.push("natural notes");
-        else if (nf === "sharps-flats") parts.push("sharps and flats");
-        return parts.join(", ");
-      }
-    }), [scope, noteHandler, fb, instrument]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const currentQ = T2(() => {
-      const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return fb.parseFretboardItem(id);
-    }, [engine.state.currentItemId, engine.state.phase, fb]);
-    currentQRef.current = currentQ;
-    y2(() => {
-      if (!quizFbRef.current) return;
-      if (!currentQ) {
-        clearAll(quizFbRef.current);
-        return;
-      }
-      clearAll(quizFbRef.current);
-      setCircleFill(
-        quizFbRef.current,
-        currentQ.currentString,
-        currentQ.currentFret,
-        FB_QUIZ_HL
-      );
-    }, [currentQ]);
-    const noteNarrowing = T2(
-      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
-      [pendingNote, engine.state.answered]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const round = useRoundSummary(engine, practicingLabel);
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS10,
-      selector: learner.selector,
-      engine,
-      itemNoun: "positions",
-      recommendation,
-      recommendationText
-    });
-    y2(() => {
-      const wrapper = progressFbRef.current;
-      if (!wrapper) return;
-      for (const s3 of allStrings) {
-        for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-          const itemId = s3 + "-" + f4;
-          const color = getStatsCellColor(learner.selector, itemId);
-          setCircleFill(wrapper, s3, f4, color);
-        }
-      }
-    }, [
-      learner.selector,
-      engine.state.phase,
-      allStrings,
-      instrument
-    ]);
-    y2(() => {
-      const wrapper = progressFbRef.current;
-      if (!wrapper) return;
-      return setupHoverCard(wrapper, instrument, fb, learner.selector);
-    }, [instrument, fb, learner.selector]);
-    const legendHTML = T2(
-      () => buildStatsLegend(),
-      []
-    );
-    const deactivateCleanup = q2(() => noteHandler.reset(), [
-      noteHandler
-    ]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
-    const promptText = currentQ ? "Name this note" : "";
-    const handleNoteAnswer = q2(
-      (note) => engine.submitAnswer(note),
-      [engine.submitAnswer]
-    );
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: instrument.id,
-          title: instrument.name,
-          description: MODE_DESCRIPTIONS[instrument.id],
-          beforeAfter: MODE_BEFORE_AFTER[instrument.id],
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
-        {
-          summary: ps.summary,
-          onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
-          scopeValid: enabledStrings.size > 0 && noteFilter !== "none",
-          validationMessage: "Select at least one string and one note type",
-          scope: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              StringToggles,
-              {
-                stringNames: instrument.stringNames,
-                active: enabledStrings,
-                onToggle: scopeActions.toggleString
-              }
-            ),
-            /* @__PURE__ */ u3(
-              NoteFilter,
-              {
-                mode: noteFilter,
-                onChange: (f4) => scopeActions.setNoteFilter(f4)
-              }
-            )
-          ] }),
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              "div",
-              {
-                ref: progressFbRef,
-                dangerouslySetInnerHTML: { __html: svgHTML }
-              }
-            ),
-            /* @__PURE__ */ u3(
-              "div",
-              {
-                dangerouslySetInnerHTML: { __html: legendHTML }
-              }
-            )
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                FeedbackBanner,
-                {
-                  correct: engine.state.feedbackCorrect,
-                  answer: engine.state.feedbackDisplayAnswer
-                }
-              ),
-              /* @__PURE__ */ u3(
-                PianoNoteButtons,
-                {
-                  onAnswer: handleNoteAnswer,
-                  hideAccidentals: noteFilter === "natural",
-                  narrowing: noteNarrowing
-                }
-              ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
-                  hint: engine.state.hintText || void 0,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] }),
-            children: /* @__PURE__ */ u3(
-              "div",
-              {
-                ref: quizFbRef,
-                dangerouslySetInnerHTML: { __html: svgHTML }
-              }
-            )
-          }
-        )
-      ] })
-    ] });
+      handleKey: (e3, _ctx) => {
+        engineSubmitRef.current = _ctx.submitAnswer;
+        return noteHandler.handleKey(e3);
+      },
+      deactivateCleanup: () => noteHandler.reset(),
+      narrowing,
+      hideAccidentals: !hasAccidentals
+    };
   }
 
   // src/modes/speed-tap/logic.ts
   var noteNames = NOTES.map((n2) => n2.name);
-  var ALL_ITEMS9 = NOTES.map((n2) => n2.name);
+  var ALL_ITEMS8 = NOTES.map((n2) => n2.name);
   function getNoteAtPosition(string, fret) {
     const offset = STRING_OFFSETS[string];
     return noteNames[(offset + fret) % 12];
@@ -10934,7 +9133,7 @@ button {
       storageKey: "speedTap_noteFilter"
     });
     const noteFilter = scope.kind === "note-filter" ? scope.noteFilter : "natural";
-    const learner = useLearnerModel("speedTap", ALL_ITEMS9);
+    const learner = useLearnerModel("speedTap", ALL_ITEMS8);
     const currentNoteRef = A2(null);
     const targetPosRef = A2([]);
     const foundPosRef = A2(/* @__PURE__ */ new Set());
@@ -11099,7 +9298,7 @@ button {
     }, [noteFilter]);
     const round = useRoundSummary(engine, practicingLabel);
     const ps = usePracticeSummary({
-      allItems: ALL_ITEMS9,
+      allItems: ALL_ITEMS8,
       selector: learner.selector,
       engine,
       itemNoun: "notes",
@@ -11250,6 +9449,363 @@ button {
     ] });
   }
 
+  // src/modes/chord-spelling/logic.ts
+  function buildGroups() {
+    let maxGroup = 0;
+    for (const ct of CHORD_TYPES) {
+      if (ct.group > maxGroup) maxGroup = ct.group;
+    }
+    const result = [];
+    for (let g2 = 0; g2 <= maxGroup; g2++) {
+      const types = CHORD_TYPES.filter((t3) => t3.group === g2);
+      const label = types.map((t3) => t3.symbol || "maj").join(", ");
+      result.push({ types, label });
+    }
+    return result;
+  }
+  var SPELLING_GROUPS = buildGroups();
+  function getItemIdsForGroup7(groupIndex) {
+    const types = SPELLING_GROUPS[groupIndex].types;
+    const items = [];
+    for (const root of CHORD_ROOTS) {
+      for (const type of types) {
+        items.push(root + ":" + type.name);
+      }
+    }
+    return items;
+  }
+  var ALL_ITEMS9 = [];
+  for (const root of CHORD_ROOTS) {
+    for (const type of CHORD_TYPES) {
+      ALL_ITEMS9.push(root + ":" + type.name);
+    }
+  }
+  var ALL_GROUP_INDICES6 = SPELLING_GROUPS.map((_3, i3) => i3);
+  var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
+    name: r3,
+    displayName: r3
+  }));
+  var GRID_COL_LABELS3 = CHORD_TYPES.map((t3) => t3.symbol || "maj");
+  function parseItem(itemId) {
+    const colonIdx = itemId.indexOf(":");
+    const rootName = itemId.substring(0, colonIdx);
+    const typeName = itemId.substring(colonIdx + 1);
+    const chordType = CHORD_TYPES.find((t3) => t3.name === typeName);
+    const tones = getChordTones(rootName, chordType);
+    return { rootName, chordType, tones };
+  }
+  function initSequentialState(itemId) {
+    const item = parseItem(itemId);
+    return { expectedCount: item.tones.length, entries: [] };
+  }
+  function handleInput(itemId, input, state) {
+    const item = parseItem(itemId);
+    const idx = state.entries.length;
+    if (idx >= item.tones.length) {
+      const allCorrect = state.entries.every((e3) => e3.correct);
+      return {
+        status: "complete",
+        correct: allCorrect,
+        correctAnswer: item.tones.map(displayNote).join(" ")
+      };
+    }
+    const expected = item.tones[idx];
+    if (spelledNoteMatchesSemitone(expected, input)) {
+      input = expected;
+    }
+    const isCorrect = spelledNoteMatchesInput(expected, input);
+    const entries = [
+      ...state.entries,
+      {
+        input,
+        display: isCorrect ? displayNote(expected) : displayNote(input),
+        correct: isCorrect
+      }
+    ];
+    const newState = {
+      expectedCount: item.tones.length,
+      entries
+    };
+    if (entries.length === item.tones.length) {
+      const allCorrect = entries.every((e3) => e3.correct);
+      return {
+        status: "complete",
+        correct: allCorrect,
+        correctAnswer: item.tones.map(displayNote).join(" ")
+      };
+    }
+    return { status: "continue", state: newState };
+  }
+  function checkAnswer9(itemId, input) {
+    const allCorrect = input === "__correct__";
+    const item = parseItem(itemId);
+    const correctAnswer = item.tones.map(displayNote).join(" ");
+    return { correct: allCorrect, correctAnswer };
+  }
+  function getGridItemId5(rootName, colIdx) {
+    return rootName + ":" + CHORD_TYPES[colIdx].name;
+  }
+
+  // src/modes/chord-spelling/chord-spelling-mode.tsx
+  function ChordSlots({ state }) {
+    if (!state) return /* @__PURE__ */ u3("div", { class: "chord-slots" });
+    return /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: state.expectedCount }, (_3, i3) => {
+      let cls = "chord-slot";
+      let content = "_";
+      if (i3 < state.entries.length) {
+        content = state.entries[i3].display;
+        cls += state.entries[i3].correct ? " correct" : " wrong";
+      } else if (i3 === state.entries.length) {
+        cls += " active";
+      }
+      return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
+    }) });
+  }
+  function ChordSpellingMode({ container, navigateHome, onMount }) {
+    const learner = useLearnerModel("chordSpelling", ALL_ITEMS9);
+    const {
+      scopeActions,
+      enabledGroups,
+      practicingLabel,
+      recommendation,
+      recommendationText,
+      applyRecommendation,
+      getEnabledItems,
+      getPracticingLabel
+    } = useGroupScope({
+      groups: SPELLING_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup7,
+      allGroupIndices: ALL_GROUP_INDICES6,
+      storageKey: "chordSpelling_enabledGroups",
+      scopeLabel: "Chord types",
+      defaultEnabled: [0],
+      selector: learner.selector,
+      formatLabel: (groups) => {
+        if (groups.size === SPELLING_GROUPS.length) return "all chord types";
+        const labels = [...groups].sort((a3, b) => a3 - b).map((g2) => SPELLING_GROUPS[g2].label);
+        return labels.join(", ") + " chords";
+      }
+    });
+    const currentItemRef = A2(null);
+    const [seqState, setSeqState] = d2(null);
+    const seqStateRef = A2(null);
+    const engineSubmitRef = A2(() => {
+    });
+    const [pendingNote, setPendingNote] = d2(null);
+    const handleSeqInputRef = A2(() => {
+    });
+    const noteHandler = T2(
+      () => createAdaptiveKeyHandler(
+        (note) => handleSeqInputRef.current(note),
+        () => true,
+        setPendingNote
+      ),
+      []
+    );
+    const handleSequentialInput = q2((input) => {
+      const itemId = currentItemRef.current;
+      const state = seqStateRef.current;
+      if (!itemId || !state) return;
+      const result = handleInput(itemId, input, state);
+      if (result.status === "continue") {
+        seqStateRef.current = result.state;
+        setSeqState(result.state);
+      } else {
+        engineSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
+      }
+    }, []);
+    handleSeqInputRef.current = handleSequentialInput;
+    const engineConfig = T2(() => ({
+      getEnabledItems,
+      getPracticingLabel,
+      checkAnswer: (itemId, input) => {
+        return checkAnswer9(itemId, input);
+      },
+      handleKey: (e3, _ctx) => {
+        return noteHandler.handleKey(e3);
+      },
+      onStart: () => noteHandler.reset(),
+      onStop: () => {
+        noteHandler.reset();
+        seqStateRef.current = null;
+        setSeqState(null);
+      }
+    }), [noteHandler, getEnabledItems, getPracticingLabel]);
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
+    engineSubmitRef.current = engine.submitAnswer;
+    const currentQ = T2(() => {
+      const id = engine.state.currentItemId;
+      if (!id || engine.state.phase === "idle") return null;
+      return parseItem(id);
+    }, [engine.state.currentItemId, engine.state.phase]);
+    const prevItemRef = A2(null);
+    const currentItemId = engine.state.currentItemId;
+    if (currentItemId !== prevItemRef.current) {
+      prevItemRef.current = currentItemId;
+      currentItemRef.current = currentItemId;
+      if (currentItemId && engine.state.phase !== "idle") {
+        const newSeqState = initSequentialState(currentItemId);
+        seqStateRef.current = newSeqState;
+        setSeqState(newSeqState);
+      } else {
+        seqStateRef.current = null;
+        setSeqState(null);
+      }
+    }
+    const noteNarrowing = T2(
+      () => engine.state.answered ? null : noteNarrowingSet(pendingNote),
+      [pendingNote, engine.state.answered]
+    );
+    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
+    const ps = usePracticeSummary({
+      allItems: ALL_ITEMS9,
+      selector: learner.selector,
+      engine,
+      itemNoun: "items",
+      recommendation,
+      recommendationText
+    });
+    const deactivateCleanup = q2(() => noteHandler.reset(), [
+      noteHandler
+    ]);
+    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+    const promptText = currentQ ? displayNote(currentQ.rootName) + currentQ.chordType.symbol : "";
+    const handleNoteAnswer = q2(
+      (note) => handleSequentialInput(note),
+      [handleSequentialInput]
+    );
+    const round = useRoundSummary(engine, practicingLabel);
+    const phase = engine.state.phase;
+    const isIdle = phase === "idle";
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3(
+        ModeTopBar,
+        {
+          modeId: "chordSpelling",
+          title: "Chord Spelling",
+          description: MODE_DESCRIPTIONS.chordSpelling,
+          beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
+          onBack: navigateHome,
+          showBack: isIdle
+        }
+      ),
+      isIdle && /* @__PURE__ */ u3(
+        PracticeTab,
+        {
+          summary: ps.summary,
+          onStart: engine.start,
+          onApplyRecommendation: ps.summary.showRecommendationButton ? applyRecommendation : void 0,
+          scopeValid: enabledGroups.size > 0,
+          validationMessage: "Select at least one group",
+          scope: /* @__PURE__ */ u3(
+            GroupToggles,
+            {
+              labels: SPELLING_GROUPS.map((g2) => g2.label),
+              active: enabledGroups,
+              onToggle: scopeActions.toggleGroup
+            }
+          ),
+          statsContent: /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(
+              StatsGrid,
+              {
+                selector: ps.statsSel,
+                colLabels: GRID_COL_LABELS3,
+                getItemId: getGridItemId5,
+                notes: GRID_NOTES3
+              }
+            ),
+            /* @__PURE__ */ u3(StatsLegend, {})
+          ] }),
+          baseline: learner.motorBaseline,
+          onCalibrate: engine.startCalibration,
+          activeTab: ps.activeTab,
+          onTabSwitch: ps.setActiveTab
+        }
+      ),
+      !isIdle && /* @__PURE__ */ u3(k, { children: [
+        phase !== "round-complete" && /* @__PURE__ */ u3(
+          QuizSession,
+          {
+            timeLeft: engine.timerText,
+            timerPct: engine.timerPct,
+            context: practicingLabel,
+            count: round.countText,
+            isWarning: engine.timerWarning,
+            isLastQuestion: engine.timerLastQuestion,
+            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            onClose: engine.stop
+          }
+        ),
+        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            provider: BUTTON_PROVIDER,
+            fixture: engine.calibrationFixture,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            },
+            onCancel: engine.endCalibration
+          }
+        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            controls: /* @__PURE__ */ u3(
+              RoundCompleteActions,
+              {
+                onContinue: engine.continueQuiz,
+                onStop: engine.stop
+              }
+            ),
+            children: /* @__PURE__ */ u3(
+              RoundCompleteInfo,
+              {
+                context: round.roundContext,
+                heading: "Round complete",
+                correct: round.roundCorrect,
+                median: round.roundMedian
+              }
+            )
+          }
+        ) : /* @__PURE__ */ u3(
+          QuizArea,
+          {
+            prompt: promptText,
+            controls: /* @__PURE__ */ u3(k, { children: [
+              /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
+              /* @__PURE__ */ u3(
+                FeedbackBanner,
+                {
+                  correct: engine.state.feedbackCorrect,
+                  answer: engine.state.feedbackDisplayAnswer
+                }
+              ),
+              /* @__PURE__ */ u3(
+                NoteButtons,
+                {
+                  onAnswer: handleNoteAnswer,
+                  narrowing: noteNarrowing
+                }
+              ),
+              /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
+              /* @__PURE__ */ u3(
+                FeedbackDisplay,
+                {
+                  text: engine.state.feedbackText,
+                  className: engine.state.feedbackClass,
+                  time: engine.state.timeDisplayText || void 0,
+                  hint: engine.state.hintText || void 0,
+                  onNext: engine.state.answered ? engine.nextQuestion : void 0
+                }
+              )
+            ] })
+          }
+        )
+      ] })
+    ] });
+  }
+
   // src/app.ts
   document.addEventListener("touchstart", () => {
   }, { passive: true });
@@ -11280,23 +9836,23 @@ button {
       }
     });
   }
-  function registerFretboardMode(id, name, instrument) {
+  function registerDeclarativeMode(def) {
     let handle = null;
-    const cont = document.getElementById("mode-" + id);
-    nav.registerMode(id, {
-      name,
+    const container = document.getElementById("mode-" + def.id);
+    nav.registerMode(def.id, {
+      name: def.name,
       init() {
-        cont.textContent = "";
+        container.textContent = "";
         J(
-          _(FretboardMode, {
-            instrument,
-            container: cont,
+          _(GenericMode, {
+            def,
+            container,
             navigateHome: () => nav.navigateHome(),
             onMount: (h3) => {
               handle = h3;
             }
           }),
-          cont
+          container
         );
       },
       activate() {
@@ -11307,19 +9863,15 @@ button {
       }
     });
   }
-  registerFretboardMode("fretboard", "Guitar Fretboard", GUITAR);
-  registerFretboardMode("ukulele", "Ukulele Fretboard", UKULELE);
-  registerPreactMode("noteSemitones", "Note \u2194 Semitones", NoteSemitonesMode);
-  registerPreactMode(
-    "intervalSemitones",
-    "Interval \u2194 Semitones",
-    IntervalSemitonesMode
-  );
-  registerPreactMode("semitoneMath", "Semitone Math", SemitoneMathMode);
-  registerPreactMode("intervalMath", "Interval Math", IntervalMathMode);
-  registerPreactMode("keySignatures", "Key Signatures", KeySignaturesMode);
-  registerPreactMode("scaleDegrees", "Scale Degrees", ScaleDegreesMode);
-  registerPreactMode("diatonicChords", "Diatonic Chords", DiatonicChordsMode);
+  registerDeclarativeMode(createFretboardDef(GUITAR));
+  registerDeclarativeMode(createFretboardDef(UKULELE));
+  registerDeclarativeMode(NOTE_SEMITONES_DEF);
+  registerDeclarativeMode(INTERVAL_SEMITONES_DEF);
+  registerDeclarativeMode(SEMITONE_MATH_DEF);
+  registerDeclarativeMode(INTERVAL_MATH_DEF);
+  registerDeclarativeMode(KEY_SIGNATURES_DEF);
+  registerDeclarativeMode(SCALE_DEGREES_DEF);
+  registerDeclarativeMode(DIATONIC_CHORDS_DEF);
   registerPreactMode("chordSpelling", "Chord Spelling", ChordSpellingMode);
   registerPreactMode("speedTap", "Speed Tap", SpeedTapMode);
   nav.init();

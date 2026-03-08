@@ -923,54 +923,6 @@ body {
   pointer-events: all;
 }
 
-/* Hover card */
-.hover-card {
-  position: absolute;
-  pointer-events: none;
-  z-index: 10;
-  opacity: 0;
-  transition: opacity 0.12s;
-}
-.hover-card.visible {
-  opacity: 1;
-}
-.hc-inner {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: 0.35rem 0.5rem;
-  min-width: 65px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-  text-align: center;
-}
-.hc-note {
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--color-text);
-}
-.hc-string-fret {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin-top: 0.05rem;
-}
-.hc-detail {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin-top: 0.12rem;
-}
-.hc-bar {
-  height: 3px;
-  border-radius: var(--radius-sm);
-  background: hsl(30, 5%, 90%);
-  margin-top: 0.25rem;
-  overflow: hidden;
-}
-.hc-bar-fill {
-  height: 100%;
-  border-radius: var(--radius-sm);
-  transition: width 0.2s;
-}
-
 .settings-row {
   display: flex;
   flex-direction: column;
@@ -1390,6 +1342,50 @@ button {
   max-width: 360px;
   margin: var(--space-3) auto;
 }
+/* Answer text input (declarative modes) */
+.answer-input {
+  display: none;
+  width: 100%;
+  max-width: 280px;
+  margin: var(--space-2) auto;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-lg);
+  font-family: inherit;
+  text-align: center;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+@media (pointer: fine) {
+  .answer-input {
+    display: block;
+  }
+}
+.answer-input:focus {
+  border-color: var(--color-border);
+}
+.answer-input:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.answer-input-shake {
+  animation: input-shake 0.3s ease-in-out;
+}
+@keyframes input-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-4px);
+  }
+  40%, 80% {
+    transform: translateX(4px);
+  }
+}
+
 .answer-btn {
   height: 48px;
   font-size: var(--text-md);
