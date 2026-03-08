@@ -1879,10 +1879,24 @@ button {
   background: var(--color-success-bg);
   color: var(--color-success-text);
 }
+.chord-slot.filled {
+  border-color: var(--color-text-muted);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
 .chord-slot.wrong {
   border-color: var(--color-error);
   background: var(--color-error-bg);
   color: var(--color-error-text);
+}
+.chord-slots-container {
+  text-align: center;
+}
+.chord-correct-answer {
+  font-size: var(--text-sm);
+  color: var(--color-success-text);
+  margin-top: var(--space-2);
+  letter-spacing: 0.05em;
 }
 
 /* --- Focus-visible (keyboard navigation) --- */
@@ -2021,7 +2035,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="d08a49 refactor-note-input-m6XyM"></div>
+  <div class="home-screen" id="home-screen" data-version="d7f74e refactor-note-input-m6XyM"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -9725,41 +9739,53 @@ button {
     const item = parseItem(itemId);
     const idx = state.entries.length;
     if (idx >= item.tones.length) {
-      const allCorrect = state.entries.every((e3) => e3.correct);
-      return {
-        status: "complete",
-        correct: allCorrect,
-        correctAnswer: item.tones.map(displayNote).join(" "),
-        state
-      };
+      return { status: "complete", state };
     }
-    const expected = item.tones[idx];
-    if (spelledNoteMatchesSemitone(expected, input)) {
-      input = expected;
-    }
-    const isCorrect = spelledNoteMatchesInput(expected, input);
     const entries = [
       ...state.entries,
-      {
-        input,
-        display: isCorrect ? displayNote(expected) : displayNote(input),
-        correct: isCorrect
-      }
+      { input, display: displayNote(input), correct: null }
     ];
     const newState = {
       expectedCount: item.tones.length,
       entries
     };
     if (entries.length === item.tones.length) {
-      const allCorrect = entries.every((e3) => e3.correct);
-      return {
-        status: "complete",
-        correct: allCorrect,
-        correctAnswer: item.tones.map(displayNote).join(" "),
-        state: newState
-      };
+      return { status: "complete", state: newState };
     }
     return { status: "continue", state: newState };
+  }
+  function evaluateSequential(itemId, state) {
+    const item = parseItem(itemId);
+    const evaluatedEntries = state.entries.map((entry, i3) => {
+      const expected = item.tones[i3];
+      const isCorrect = expected !== void 0 && spelledNoteMatchesInput(expected, entry.input);
+      return {
+        input: entry.input,
+        display: isCorrect ? displayNote(expected) : displayNote(entry.input),
+        correct: isCorrect
+      };
+    });
+    const allCorrect = evaluatedEntries.every((e3) => e3.correct);
+    const correctAnswer = item.tones.map(displayNote).join(" ");
+    return {
+      correct: allCorrect,
+      correctAnswer,
+      state: { expectedCount: state.expectedCount, entries: evaluatedEntries }
+    };
+  }
+  function parseChordInput(text) {
+    return text.trim().split(/\s+/).filter(Boolean).map((token) => {
+      if (token.length === 0) return "";
+      const letter = token[0].toUpperCase();
+      if (!"CDEFGAB".includes(letter)) return token;
+      let suffix = "";
+      for (let i3 = 1; i3 < token.length; i3++) {
+        const ch = token[i3];
+        if (ch === "s" || ch === "S") suffix += "#";
+        else suffix += ch;
+      }
+      return letter + suffix;
+    });
   }
   function checkAnswer9(itemId, input) {
     const allCorrect = input === "__correct__";
@@ -9772,19 +9798,92 @@ button {
   }
 
   // src/modes/chord-spelling/chord-spelling-mode.tsx
-  function ChordSlots({ state }) {
+  function ChordSlots({ state, correctTones }) {
     if (!state) return /* @__PURE__ */ u3("div", { class: "chord-slots" });
-    return /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: state.expectedCount }, (_3, i3) => {
-      let cls = "chord-slot";
-      let content = "_";
-      if (i3 < state.entries.length) {
-        content = state.entries[i3].display;
-        cls += state.entries[i3].correct ? " correct" : " wrong";
-      } else if (i3 === state.entries.length) {
-        cls += " active";
+    const evaluated = state.entries.length > 0 && state.entries[0].correct !== null;
+    const anyWrong = evaluated && state.entries.some((e3) => !e3.correct);
+    return /* @__PURE__ */ u3("div", { class: "chord-slots-container", children: [
+      /* @__PURE__ */ u3("div", { class: "chord-slots", children: Array.from({ length: state.expectedCount }, (_3, i3) => {
+        let cls = "chord-slot";
+        let content = "_";
+        if (i3 < state.entries.length) {
+          content = state.entries[i3].display;
+          if (evaluated) {
+            cls += state.entries[i3].correct ? " correct" : " wrong";
+          } else {
+            cls += " filled";
+          }
+        } else if (i3 === state.entries.length) {
+          cls += " active";
+        }
+        return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
+      }) }),
+      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "chord-correct-answer", children: correctTones.map(displayNote).join("\u2003") })
+    ] });
+  }
+  function ChordTextInput({ onSubmit, disabled, expectedCount }) {
+    const inputRef = A2(null);
+    const [shake, setShake] = d2(false);
+    const shakeTimerRef = A2(null);
+    y2(() => {
+      return () => {
+        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      };
+    }, []);
+    y2(() => {
+      if (!disabled && inputRef.current) {
+        inputRef.current.focus();
       }
-      return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
-    }) });
+    }, [disabled]);
+    const triggerShake = q2(() => {
+      setShake(true);
+      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      shakeTimerRef.current = setTimeout(() => {
+        setShake(false);
+        shakeTimerRef.current = null;
+      }, 400);
+    }, []);
+    const handleKeyDown = q2(
+      (e3) => {
+        if (e3.key !== "Enter") return;
+        e3.preventDefault();
+        e3.stopPropagation();
+        const value = inputRef.current?.value.trim() ?? "";
+        if (!value) {
+          triggerShake();
+          return;
+        }
+        const notes = parseChordInput(value);
+        if (notes.length !== expectedCount) {
+          triggerShake();
+          return;
+        }
+        const accepted = onSubmit(notes);
+        if (accepted) {
+          if (inputRef.current) inputRef.current.value = "";
+        } else {
+          triggerShake();
+        }
+      },
+      [onSubmit, expectedCount, triggerShake]
+    );
+    const placeholder = `${expectedCount} notes, e.g. C E G \u2014 Enter`;
+    const cls = "answer-input" + (shake ? " answer-input-shake" : "");
+    return /* @__PURE__ */ u3(
+      "input",
+      {
+        ref: inputRef,
+        type: "text",
+        class: cls,
+        placeholder,
+        "aria-label": placeholder,
+        disabled,
+        onKeyDown: handleKeyDown,
+        autoComplete: "off",
+        autoCorrect: "off",
+        spellcheck: false
+      }
+    );
   }
   function ChordSpellingMode({ container, navigateHome, onMount }) {
     const learner = useLearnerModel("chordSpelling", ALL_ITEMS9);
@@ -9816,17 +9915,6 @@ button {
     const seqStateRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
-    const [pendingNote, setPendingNote] = d2(null);
-    const handleSeqInputRef = A2(() => {
-    });
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => handleSeqInputRef.current(note),
-        () => true,
-        setPendingNote
-      ),
-      []
-    );
     const handleSequentialInput = q2((input) => {
       const itemId = currentItemRef.current;
       const state = seqStateRef.current;
@@ -9835,26 +9923,37 @@ button {
       seqStateRef.current = result.state;
       setSeqState(result.state);
       if (result.status === "complete") {
-        engineSubmitRef.current(result.correct ? "__correct__" : "__wrong__");
+        const evalResult = evaluateSequential(itemId, result.state);
+        seqStateRef.current = evalResult.state;
+        setSeqState(evalResult.state);
+        engineSubmitRef.current(evalResult.correct ? "__correct__" : "__wrong__");
       }
     }, []);
-    handleSeqInputRef.current = handleSequentialInput;
+    const handleBatchSubmit = q2((notes) => {
+      const itemId = currentItemRef.current;
+      if (!itemId) return false;
+      let state = initSequentialState(itemId);
+      for (const note of notes) {
+        const result = handleInput(itemId, note, state);
+        state = result.state;
+      }
+      const evalResult = evaluateSequential(itemId, state);
+      seqStateRef.current = evalResult.state;
+      setSeqState(evalResult.state);
+      engineSubmitRef.current(evalResult.correct ? "__correct__" : "__wrong__");
+      return true;
+    }, []);
     const engineConfig = T2(() => ({
       getEnabledItems,
       getPracticingLabel,
       checkAnswer: (itemId, input) => {
         return checkAnswer9(itemId, input);
       },
-      handleKey: (e3, _ctx) => {
-        return noteHandler.handleKey(e3);
-      },
-      onStart: () => noteHandler.reset(),
       onStop: () => {
-        noteHandler.reset();
         seqStateRef.current = null;
         setSeqState(null);
       }
-    }), [noteHandler, getEnabledItems, getPracticingLabel]);
+    }), [getEnabledItems, getPracticingLabel]);
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     engineSubmitRef.current = engine.submitAnswer;
     const currentQ = T2(() => {
@@ -9885,10 +9984,7 @@ button {
       recommendation,
       recommendationText
     });
-    const deactivateCleanup = q2(() => noteHandler.reset(), [
-      noteHandler
-    ]);
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner);
     const promptText = currentQ ? displayNote(currentQ.rootName) + currentQ.chordType.symbol : "";
     const handleNoteAnswer = q2(
       (note) => handleSequentialInput(note),
@@ -9993,17 +10089,29 @@ button {
           {
             prompt: promptText,
             controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(ChordSlots, { state: seqState }),
+              /* @__PURE__ */ u3(
+                ChordSlots,
+                {
+                  state: seqState,
+                  correctTones: currentQ?.tones ?? null
+                }
+              ),
               /* @__PURE__ */ u3(
                 SplitNoteButtons,
                 {
                   onAnswer: handleNoteAnswer,
                   sequential: true,
-                  pendingNote,
                   answered: engine.state.answered
                 }
               ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: "note" }),
+              seqState && /* @__PURE__ */ u3(
+                ChordTextInput,
+                {
+                  onSubmit: handleBatchSubmit,
+                  disabled: engine.state.answered,
+                  expectedCount: seqState.expectedCount
+                }
+              ),
               /* @__PURE__ */ u3(
                 FeedbackDisplay,
                 {
