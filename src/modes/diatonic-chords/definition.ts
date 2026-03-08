@@ -8,6 +8,7 @@ import {
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
   ROMAN_NUMERALS,
+  rootUsesFlats,
 } from '../../music-data.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
@@ -42,6 +43,7 @@ export const DIATONIC_CHORDS_DEF: ModeDefinition<Question> = {
   validateInput: (q, input) =>
     q.dir === 'fwd' ? isValidNoteInput(input) : isValidNumeralInput(input),
   getDirection: (q) => q.dir,
+  getUseFlats: (q) => rootUsesFlats(q.keyRoot),
 
   inputPlaceholder: (q) => q.dir === 'fwd' ? 'Note name' : 'Numeral (e.g. IV)',
   buttons: {

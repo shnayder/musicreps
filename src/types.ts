@@ -283,7 +283,12 @@ export type SequentialState = {
 
 export type SequentialInputResult =
   | { status: 'continue'; state: SequentialState }
-  | { status: 'complete'; correct: boolean; correctAnswer: string };
+  | {
+    status: 'complete';
+    correct: boolean;
+    correctAnswer: string;
+    state: SequentialState;
+  };
 
 // --- Stats ---
 

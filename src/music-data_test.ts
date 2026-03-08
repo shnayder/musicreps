@@ -33,6 +33,7 @@ import {
   pickAccidentalName,
   pickRandomAccidental,
   ROMAN_NUMERALS,
+  rootUsesFlats,
   setUseSolfege,
   SOLFEGE_MAP,
   spelledNoteMatchesInput,
@@ -627,6 +628,22 @@ describe('CHORD_ROOTS', () => {
     assert.ok(!CHORD_ROOTS.includes('Gb'));
     assert.ok(!CHORD_ROOTS.includes('G#'));
     assert.ok(!CHORD_ROOTS.includes('A#'));
+  });
+});
+
+describe('rootUsesFlats', () => {
+  it('returns true for flat roots', () => {
+    assert.equal(rootUsesFlats('Db'), true);
+    assert.equal(rootUsesFlats('Eb'), true);
+    assert.equal(rootUsesFlats('Ab'), true);
+    assert.equal(rootUsesFlats('Bb'), true);
+  });
+
+  it('returns false for natural and sharp roots', () => {
+    assert.equal(rootUsesFlats('C'), false);
+    assert.equal(rootUsesFlats('D'), false);
+    assert.equal(rootUsesFlats('B'), false);
+    assert.equal(rootUsesFlats('F#'), false);
   });
 });
 

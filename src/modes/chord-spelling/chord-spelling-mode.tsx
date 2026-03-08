@@ -9,6 +9,7 @@ import {
   displayNote,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
+  rootUsesFlats,
 } from '../../music-data.ts';
 import {
   createAdaptiveKeyHandler,
@@ -151,10 +152,9 @@ export function ChordSpellingMode(
     if (!itemId || !state) return;
 
     const result = handleInput(itemId, input, state);
-    if (result.status === 'continue') {
-      seqStateRef.current = result.state;
-      setSeqState(result.state);
-    } else {
+    seqStateRef.current = result.state;
+    setSeqState(result.state);
+    if (result.status === 'complete') {
       // Sequential complete — submit final result to engine.
       engineSubmitRef.current(result.correct ? '__correct__' : '__wrong__');
     }
@@ -357,6 +357,9 @@ export function ChordSpellingMode(
                     <NoteButtons
                       onAnswer={handleNoteAnswer}
                       narrowing={noteNarrowing}
+                      useFlats={currentQ
+                        ? rootUsesFlats(currentQ.rootName)
+                        : undefined}
                     />
                     <KeyboardHint type='note' />
                     <FeedbackDisplay
