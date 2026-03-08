@@ -104,8 +104,10 @@ function ChordSlots(
         })}
       </div>
       {anyWrong && correctTones && (
-        <div class='chord-correct-answer'>
-          {correctTones.map((t, i) => <span key={i}>{displayNote(t)}</span>)}
+        <div class='chord-correct-row'>
+          {correctTones.map((t, i) => (
+            <span key={i} class='chord-correct-note'>{displayNote(t)}</span>
+          ))}
         </div>
       )}
     </div>
