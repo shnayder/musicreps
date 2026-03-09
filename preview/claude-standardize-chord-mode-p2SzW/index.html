@@ -2047,7 +2047,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="b04887 standardize-chord-mode-p2SzW"></div>
+  <div class="home-screen" id="home-screen" data-version="6074fe standardize-chord-mode-p2SzW"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7917,6 +7917,7 @@ button {
     switch (buttons.kind) {
       case "note":
       case "piano-note":
+      case "split-note":
         return "note";
       case "number":
         return buttons.start === 0 ? "number-0-11" : "number-1-12";
@@ -7991,7 +7992,10 @@ button {
     useFlats,
     narrowing,
     hideAccidentalsOverride,
-    feedback
+    feedback,
+    sequential,
+    answered,
+    pendingNote
   }) {
     switch (buttonsDef.kind) {
       case "note":
@@ -8014,6 +8018,16 @@ button {
             feedback
           }
         ) });
+      case "split-note":
+        return /* @__PURE__ */ u3(
+          SplitNoteButtons,
+          {
+            onAnswer,
+            sequential,
+            pendingNote,
+            answered
+          }
+        );
       case "number":
         return /* @__PURE__ */ u3(
           NumberButtons,
@@ -8339,8 +8353,9 @@ button {
                 }
               ),
               /* @__PURE__ */ u3(
-                SplitNoteButtons,
+                ResponseButtons,
                 {
+                  buttonsDef: activeButtons,
                   onAnswer: handleSeqInput,
                   sequential: true,
                   answered: engine.state.answered
@@ -9588,9 +9603,7 @@ button {
       parseBatchInput: parseChordInput,
       batchPlaceholder: (q3) => `${q3.tones.length} notes, e.g. C E G \u2014 Enter`
     },
-    // Sequential modes render SplitNoteButtons automatically; this field
-    // is required by the type but unused during quizzing.
-    buttons: { kind: "piano-note" },
+    buttons: { kind: "split-note" },
     scope: {
       kind: "groups",
       groups: SPELLING_GROUPS,
