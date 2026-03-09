@@ -42,7 +42,7 @@ export function GroupToggles(
 // ---------------------------------------------------------------------------
 
 export function GroupProgressToggles(
-  { groups, active, onToggle, selector }: {
+  { groups, active, onToggle, selector, skipped, onToggleSkip }: {
     groups: { label: string; itemIds: string[] }[];
     active: ReadonlySet<number>;
     onToggle: (index: number) => void;
@@ -50,12 +50,16 @@ export function GroupProgressToggles(
       getSpeedScore(id: string): number | null;
       getFreshness(id: string): number | null;
     };
+    skipped?: ReadonlySet<number>;
+    onToggleSkip?: (index: number) => void;
   },
 ) {
-  const maxItems = Math.max(...groups.map((g) => g.itemIds.length));
   return (
-    <div class='group-progress-toggles'>
+    <div
+      class={'group-progress-toggles' + (onToggleSkip ? ' has-skip' : '')}
+    >
       {groups.map((g, i) => {
+        const isSkipped = skipped?.has(i) ?? false;
         const items = g.itemIds.map((id) => {
           const sp = selector.getSpeedScore(id);
           const fr = selector.getFreshness(id);
@@ -63,22 +67,25 @@ export function GroupProgressToggles(
           return { auto, color: getSpeedFreshnessColor(sp, fr) };
         });
         items.sort((a, b) => (b.auto ?? -1) - (a.auto ?? -1));
-        const widthPct = (g.itemIds.length / maxItems) * 100;
         return (
-          <div class='group-progress-row' key={i}>
+          <>
             <button
               type='button'
               tabIndex={0}
-              class={'distance-toggle' + (active.has(i) ? ' active' : '')}
+              key={`btn-${i}`}
+              class={'distance-toggle' +
+                (active.has(i) ? ' active' : '') +
+                (isSkipped ? ' skipped' : '')}
               aria-pressed={active.has(i)}
               data-group={String(i)}
+              disabled={isSkipped}
               onClick={() => onToggle(i)}
             >
               {g.label}
             </button>
             <div
-              class='group-progress-bar'
-              style={`max-width:${widthPct}%`}
+              class={'group-progress-bar' + (isSkipped ? ' skipped' : '')}
+              key={`bar-${i}`}
             >
               {items.map((item, j) => (
                 <div
@@ -88,7 +95,22 @@ export function GroupProgressToggles(
                 />
               ))}
             </div>
-          </div>
+            {onToggleSkip && (
+              <button
+                type='button'
+                tabIndex={0}
+                key={`skip-${i}`}
+                class='group-skip-btn'
+                title={isSkipped ? 'Restore group' : 'Skip group'}
+                aria-label={isSkipped
+                  ? `Restore ${g.label}`
+                  : `Skip ${g.label}`}
+                onClick={() => onToggleSkip(i)}
+              >
+                {isSkipped ? '\u21A9' : '\u00D7'}
+              </button>
+            )}
+          </>
         );
       })}
     </div>
