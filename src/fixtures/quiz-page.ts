@@ -13,7 +13,7 @@ import {
   initialEngineState,
 } from '../quiz-engine-state.ts';
 import { feedbackCorrect, feedbackWrong } from './feedback.ts';
-import { timerMidRound } from './timer.ts';
+import { timerAlmostExpired, timerExpired, timerMidRound } from './timer.ts';
 import { sessionEarlyRound, sessionLateRound } from './session.ts';
 // Round-complete data is in round-complete.ts; used by preview.tsx directly.
 
@@ -139,6 +139,83 @@ export function quizWrongFeedback(itemId: string): FixtureDetail {
     timerText: '0:18',
     timerWarning: false,
     timerLastQuestion: false,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Quiz active: correct feedback with 1s left (timer warning)
+// ---------------------------------------------------------------------------
+
+export function quizFeedbackTimerLow(itemId: string): FixtureDetail {
+  const s = buildActiveState(itemId, {
+    correct: true,
+    correctAnswer: feedbackCorrect.displayAnswer,
+    masteredCount: sessionLateRound.fluent,
+    totalEnabledCount: sessionLateRound.total,
+    questionCount: 18,
+  });
+  return {
+    engineState: {
+      ...s,
+      feedbackText: feedbackCorrect.text,
+      feedbackClass: feedbackCorrect.className,
+      feedbackCorrect: feedbackCorrect.correct,
+      feedbackDisplayAnswer: feedbackCorrect.displayAnswer,
+      timeDisplayText: feedbackCorrect.time,
+      hintText: feedbackCorrect.hint,
+    },
+    timerPct: timerAlmostExpired.pct,
+    timerText: timerAlmostExpired.text,
+    timerWarning: timerAlmostExpired.warning,
+    timerLastQuestion: timerAlmostExpired.lastQuestion,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Quiz active: timer expired, awaiting answer ("Last question" shown)
+// ---------------------------------------------------------------------------
+
+export function quizLastQuestionAwaiting(itemId: string): FixtureDetail {
+  const s = buildActiveState(itemId, {
+    masteredCount: sessionLateRound.fluent,
+    totalEnabledCount: sessionLateRound.total,
+    questionCount: 19,
+  });
+  return {
+    engineState: { ...s, roundTimerExpired: true },
+    timerPct: timerExpired.pct,
+    timerText: timerExpired.text,
+    timerWarning: timerExpired.warning,
+    timerLastQuestion: timerExpired.lastQuestion,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Quiz active: answered the last question (feedback + "Last question")
+// ---------------------------------------------------------------------------
+
+export function quizLastQuestionAnswered(itemId: string): FixtureDetail {
+  const s = buildActiveState(itemId, {
+    correct: false,
+    correctAnswer: feedbackWrong.displayAnswer,
+    masteredCount: sessionLateRound.fluent,
+    totalEnabledCount: sessionLateRound.total,
+    questionCount: 19,
+  });
+  return {
+    engineState: {
+      ...s,
+      roundTimerExpired: true,
+      feedbackText: feedbackWrong.text,
+      feedbackClass: feedbackWrong.className,
+      feedbackCorrect: feedbackWrong.correct,
+      feedbackDisplayAnswer: feedbackWrong.displayAnswer,
+      hintText: feedbackWrong.hint,
+    },
+    timerPct: timerExpired.pct,
+    timerText: timerExpired.text,
+    timerWarning: timerExpired.warning,
+    timerLastQuestion: timerExpired.lastQuestion,
   };
 }
 

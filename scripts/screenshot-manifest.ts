@@ -6,6 +6,9 @@ import type { FixtureDetail } from '../src/fixtures/quiz-page.ts';
 import {
   quizActive,
   quizCorrectFeedback,
+  quizFeedbackTimerLow,
+  quizLastQuestionAnswered,
+  quizLastQuestionAwaiting,
   quizRoundComplete,
   quizWrongFeedback,
   speedCheckIntro,
@@ -135,6 +138,23 @@ export function buildManifest(): ScreenshotEntry[] {
     name: 'design-round-complete',
     modeId: 'semitoneMath',
     fixture: quizRoundComplete(),
+  });
+
+  // Timer edge states: end-of-round walkthrough (semitoneMath)
+  entries.push({
+    name: 'design-feedback-timer-low',
+    modeId: 'semitoneMath',
+    fixture: quizFeedbackTimerLow(defaultItems.semitoneMath),
+  });
+  entries.push({
+    name: 'design-last-question-awaiting',
+    modeId: 'semitoneMath',
+    fixture: quizLastQuestionAwaiting(defaultItems.semitoneMath),
+  });
+  entries.push({
+    name: 'design-last-question-answered',
+    modeId: 'semitoneMath',
+    fixture: quizLastQuestionAnswered(defaultItems.semitoneMath),
   });
 
   // Fretboard design moments: correct + wrong

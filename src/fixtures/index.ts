@@ -1,12 +1,20 @@
 // Re-export all fixtures from a single entry point.
 
 export { feedbackCorrect, feedbackWrong } from './feedback.ts';
-export { timerExpired, timerMidRound, timerWarning } from './timer.ts';
+export {
+  timerAlmostExpired,
+  timerExpired,
+  timerMidRound,
+  timerWarning,
+} from './timer.ts';
 export { sessionEarlyRound, sessionLateRound } from './session.ts';
 export { goodRound, roughRound } from './round-complete.ts';
 export {
   quizActive,
   quizCorrectFeedback,
+  quizFeedbackTimerLow,
+  quizLastQuestionAnswered,
+  quizLastQuestionAwaiting,
   quizRoundComplete,
   quizWrongFeedback,
 } from './quiz-page.ts';
