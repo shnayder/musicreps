@@ -11,13 +11,18 @@ import {
 } from './logic.ts';
 
 describe('ALL_ITEMS', () => {
-  it('has 168 items (12 keys × 7 degrees × 2 directions)', () => {
-    assert.equal(ALL_ITEMS.length, 168);
+  it('has 144 items (12 keys × 6 degrees × 2 directions)', () => {
+    assert.equal(ALL_ITEMS.length, 144);
   });
 
-  it('contains fwd and rev items for all degrees', () => {
-    assert.ok(ALL_ITEMS.includes('C:1:fwd'));
-    assert.ok(ALL_ITEMS.includes('C:1:rev'));
+  it('excludes 1st degree', () => {
+    assert.ok(!ALL_ITEMS.includes('C:1:fwd'));
+    assert.ok(!ALL_ITEMS.includes('C:1:rev'));
+  });
+
+  it('contains fwd and rev items for degrees 2–7', () => {
+    assert.ok(ALL_ITEMS.includes('C:2:fwd'));
+    assert.ok(ALL_ITEMS.includes('C:2:rev'));
     assert.ok(ALL_ITEMS.includes('C:7:fwd'));
     assert.ok(ALL_ITEMS.includes('C:7:rev'));
     assert.ok(ALL_ITEMS.includes('F#:4:fwd'));
@@ -26,26 +31,27 @@ describe('ALL_ITEMS', () => {
 });
 
 describe('DEGREE_GROUPS', () => {
-  it('has 4 groups', () => {
-    assert.equal(DEGREE_GROUPS.length, 4);
+  it('has 3 groups', () => {
+    assert.equal(DEGREE_GROUPS.length, 3);
   });
 });
 
 describe('getItemIdsForGroup', () => {
-  it('group 0 contains items for degrees 1 and 5', () => {
+  it('group 0 contains items for degrees 4 and 5', () => {
     const ids = getItemIdsForGroup(0);
-    assert.ok(ids.includes('C:1:fwd'));
-    assert.ok(ids.includes('C:1:rev'));
+    assert.ok(ids.includes('C:4:fwd'));
+    assert.ok(ids.includes('C:4:rev'));
     assert.ok(ids.includes('C:5:fwd'));
     assert.ok(ids.includes('C:5:rev'));
-    assert.ok(ids.includes('D:1:fwd'));
+    assert.ok(ids.includes('D:4:fwd'));
     assert.ok(ids.includes('D:5:fwd'));
   });
 
-  it('group 0 does not include degree 3 or 4', () => {
+  it('group 0 does not include degree 1, 3, or 6', () => {
     const ids = getItemIdsForGroup(0);
+    assert.ok(!ids.includes('C:1:fwd'));
     assert.ok(!ids.includes('C:3:fwd'));
-    assert.ok(!ids.includes('C:4:fwd'));
+    assert.ok(!ids.includes('C:6:fwd'));
   });
 
   it('group 0 has 48 items (12 keys × 2 degrees × 2 directions)', () => {
@@ -69,11 +75,6 @@ describe('getQuestion', () => {
     assert.equal(q.degree, 5);
     assert.equal(q.dir, 'rev');
     assert.equal(q.noteName, 'A');
-  });
-
-  it('C:1:fwd returns noteName "C"', () => {
-    const q = getQuestion('C:1:fwd');
-    assert.equal(q.noteName, 'C');
   });
 
   it('G:4:fwd returns noteName "C"', () => {
@@ -143,18 +144,18 @@ describe('GRID_NOTES', () => {
 });
 
 describe('getGridItemId', () => {
-  it('"C", 2 returns ["C:3:fwd", "C:3:rev"] (colIdx 2 → degree 3)', () => {
-    const result = getGridItemId('C', 2);
+  it('"C", 1 returns ["C:3:fwd", "C:3:rev"] (colIdx 1 → degree 3)', () => {
+    const result = getGridItemId('C', 1);
     assert.deepEqual(result, ['C:3:fwd', 'C:3:rev']);
   });
 
-  it('"D", 4 returns ["D:5:fwd", "D:5:rev"] (colIdx 4 → degree 5)', () => {
-    const result = getGridItemId('D', 4);
+  it('"D", 3 returns ["D:5:fwd", "D:5:rev"] (colIdx 3 → degree 5)', () => {
+    const result = getGridItemId('D', 3);
     assert.deepEqual(result, ['D:5:fwd', 'D:5:rev']);
   });
 
-  it('"C", 0 returns ["C:1:fwd", "C:1:rev"] (colIdx 0 → degree 1)', () => {
+  it('"C", 0 returns ["C:2:fwd", "C:2:rev"] (colIdx 0 → degree 2)', () => {
     const result = getGridItemId('C', 0);
-    assert.deepEqual(result, ['C:1:fwd', 'C:1:rev']);
+    assert.deepEqual(result, ['C:2:fwd', 'C:2:rev']);
   });
 });
