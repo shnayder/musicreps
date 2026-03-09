@@ -82,6 +82,13 @@ export function buildRecommendationText(
 ): string {
   if (result.recommended.size === 0) return '';
 
+  // Review mode: simple text for polishing across all groups
+  if (result.reviewMode) {
+    return 'review all \u2014 polish across ' +
+      result.consolidateIndices.length + ' group' +
+      (result.consolidateIndices.length !== 1 ? 's' : '');
+  }
+
   const parts: string[] = [];
 
   if (result.consolidateIndices.length > 0) {
@@ -155,7 +162,7 @@ export function computePracticeSummary(opts: {
     statusDetail = total + ' ' + opts.itemNoun + ' to learn';
   } else {
     statusLabel = statusLabelFromLevel(level);
-    statusDetail = fluent + ' of ' + total + ' ' + opts.itemNoun + ' fluent';
+    statusDetail = fluent + '/' + total + ' ' + opts.itemNoun + ' fluent';
   }
 
   const hasRec = opts.recommendation !== null &&

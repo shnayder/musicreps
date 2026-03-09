@@ -402,6 +402,57 @@ describe('computeRecommendations', () => {
     assert.ok(result.recommended.has(0), 'highest-work group recommended');
   });
 
+  // ---------------------------------------------------------------------------
+  // Review mode
+  // ---------------------------------------------------------------------------
+
+  it('triggers review mode when all started and ≥80% fluent', () => {
+    const data = {
+      0: { workingCount: 1, unseenCount: 0, fluentCount: 9, totalCount: 10 },
+      1: { workingCount: 1, unseenCount: 0, fluentCount: 9, totalCount: 10 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0, 1],
+      makeGetItemIds(data),
+      config,
+      {},
+    );
+    assert.equal(result.reviewMode, true, 'should be review mode');
+    assert.ok(result.recommended.has(0), 'all groups recommended');
+    assert.ok(result.recommended.has(1), 'all groups recommended');
+  });
+
+  it('does not trigger review mode when fluent ratio < 80%', () => {
+    const data = {
+      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
+      1: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0, 1],
+      makeGetItemIds(data),
+      config,
+      {},
+    );
+    assert.ok(!result.reviewMode, 'should not be review mode');
+  });
+
+  it('does not trigger review mode when unstarted groups exist', () => {
+    const data = {
+      0: { workingCount: 1, unseenCount: 0, fluentCount: 9, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0, 1],
+      makeGetItemIds(data),
+      config,
+      {},
+    );
+    assert.ok(!result.reviewMode, 'should not be review mode with unstarted');
+  });
+
   it('does not expand just below the threshold level', () => {
     // Working items produce level=0.3. Threshold=0.3 should pass,
     // but threshold=0.31 should fail.

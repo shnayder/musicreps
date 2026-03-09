@@ -63,6 +63,28 @@ export function computeRecommendations(
   const startedItemIds = started.flatMap((r) => getItemIds(r.string));
   const { level } = selector.getLevelAutomaticity(startedItemIds);
 
+  // Review mode: all groups started, ≥80% fluent → recommend all for review
+  if (unstarted.length === 0) {
+    const totalFluent = started.reduce((s, r) => s + r.fluentCount, 0);
+    const totalItems = started.reduce((s, r) => s + r.totalCount, 0);
+    if (totalItems > 0 && totalFluent / totalItems >= 0.8) {
+      const allStartedIndices = started.map((r) => r.string);
+      const allWork = started.reduce(
+        (s, r) => s + r.workingCount + r.unseenCount,
+        0,
+      );
+      return {
+        recommended: new Set(allStartedIndices),
+        enabled: new Set(allStartedIndices),
+        consolidateIndices: allStartedIndices,
+        consolidateWorkingCount: allWork,
+        expandIndex: null,
+        expandNewCount: 0,
+        reviewMode: true,
+      };
+    }
+  }
+
   const startedByWork = [...started].sort(
     (a, b) =>
       (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount),
