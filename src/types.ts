@@ -167,6 +167,8 @@ export type RecommendationResult = {
   expandNewCount: number;
   /** True when most items are fluent and no unstarted groups remain. */
   reviewMode?: boolean;
+  /** Consolidation group indices where items are fast but stale. */
+  staleIndices?: number[];
 };
 
 // ---------------------------------------------------------------------------

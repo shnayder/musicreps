@@ -16,6 +16,8 @@ export function computeRecommendations(
       itemIds: string[],
       percentile?: number,
     ): { level: number; seen: number };
+    getSpeedScore?(id: string): number | null;
+    getFreshness?(id: string): number | null;
   },
   allIndices: number[],
   getItemIds: (index: number) => string[],
@@ -158,6 +160,31 @@ export function computeRecommendations(
     enabled.add(expandIndex);
   }
 
+  // Stale detection: groups where avg speed ≥ 0.5 but avg freshness < 0.5
+  let staleIndices: number[] | undefined;
+  if (selector.getSpeedScore && selector.getFreshness) {
+    const stale: number[] = [];
+    for (const idx of consolidateIndices) {
+      const ids = getItemIds(idx);
+      let speedSum = 0;
+      let freshSum = 0;
+      let count = 0;
+      for (const id of ids) {
+        const sp = selector.getSpeedScore!(id);
+        const fr = selector.getFreshness!(id);
+        if (sp !== null && fr !== null) {
+          speedSum += sp;
+          freshSum += fr;
+          count++;
+        }
+      }
+      if (count > 0 && speedSum / count >= 0.5 && freshSum / count < 0.5) {
+        stale.push(idx);
+      }
+    }
+    if (stale.length > 0) staleIndices = stale;
+  }
+
   return {
     recommended,
     enabled,
@@ -165,5 +192,6 @@ export function computeRecommendations(
     consolidateWorkingCount,
     expandIndex,
     expandNewCount,
+    staleIndices,
   };
 }

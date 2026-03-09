@@ -96,12 +96,17 @@ export function buildRecommendationText(
       .slice()
       .sort((a, b) => a - b)
       .map(getGroupLabel);
-    parts.push(
-      'solidify ' + labels.join(', ') +
-        ' \u2014 ' + result.consolidateWorkingCount + ' item' +
+    // Use "refresh" when all consolidation groups are stale
+    const allStale = result.staleIndices !== undefined &&
+      result.staleIndices.length === result.consolidateIndices.length &&
+      result.consolidateIndices.length > 0;
+    const verb = allStale ? 'refresh' : 'solidify';
+    const suffix = allStale
+      ? 'skills getting stale'
+      : result.consolidateWorkingCount + ' item' +
         (result.consolidateWorkingCount !== 1 ? 's' : '') +
-        ' to work on',
-    );
+        ' to work on';
+    parts.push(verb + ' ' + labels.join(', ') + ' \u2014 ' + suffix);
   }
 
   if (result.expandIndex !== null) {

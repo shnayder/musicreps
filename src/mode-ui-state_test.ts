@@ -245,6 +245,36 @@ describe('buildRecommendationText', () => {
     assert.equal(text, 'review all \u2014 polish across 1 group');
   });
 
+  it('uses "refresh" when all consolidation groups are stale', () => {
+    const result: RecommendationResult = {
+      recommended: new Set([0, 1]),
+      enabled: null,
+      consolidateIndices: [0, 1],
+      consolidateWorkingCount: 5,
+      expandIndex: null,
+      expandNewCount: 0,
+      staleIndices: [0, 1],
+    };
+    const text = buildRecommendationText(result, label);
+    assert.ok(text.startsWith('refresh '));
+    assert.ok(text.includes('skills getting stale'));
+  });
+
+  it('uses "solidify" when only some groups are stale', () => {
+    const result: RecommendationResult = {
+      recommended: new Set([0, 1]),
+      enabled: null,
+      consolidateIndices: [0, 1],
+      consolidateWorkingCount: 5,
+      expandIndex: null,
+      expandNewCount: 0,
+      staleIndices: [0], // only 1 of 2 stale
+    };
+    const text = buildRecommendationText(result, label);
+    assert.ok(text.startsWith('solidify '));
+    assert.ok(text.includes('items to work on'));
+  });
+
   it('uses singular for 1 item to work on', () => {
     const result: RecommendationResult = {
       recommended: new Set([0]),
