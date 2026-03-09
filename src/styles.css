@@ -852,6 +852,30 @@ body {
   color: white;
   border-color: var(--color-toggle-active);
 }
+
+/* --- Group progress toggles (vertical list with bars) --- */
+.group-progress-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.group-progress-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.group-progress-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 3px;
+  overflow: hidden;
+  flex: 1;
+}
+.group-bar-slice {
+  flex: 1;
+  min-width: 0;
+}
+
 .notes-toggles {
   display: flex;
   flex-direction: row;

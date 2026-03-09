@@ -50,7 +50,7 @@ import {
   SplitNoteButtons,
 } from '../ui/buttons.tsx';
 import { SequentialSlots } from '../ui/sequential-slots.tsx';
-import { GroupToggles } from '../ui/scope.tsx';
+import { GroupProgressToggles } from '../ui/scope.tsx';
 import {
   ModeTopBar,
   PracticeTab,
@@ -612,6 +612,9 @@ export function GenericMode<Q>(
   const phase = engine.state.phase;
   const isIdle = phase === 'idle';
 
+  // Narrowed scope for group-based modes (avoids TS narrowing issues in JSX)
+  const groupScope = def.scope.kind === 'groups' ? def.scope : null;
+
   // Determine active/inactive buttons for rendering
   const activeButtons: ButtonsDef = def.buttons.kind === 'bidirectional'
     ? (dir === 'fwd' ? def.buttons.fwd : def.buttons.rev)
@@ -643,12 +646,16 @@ export function GenericMode<Q>(
           scopeValid={!groupScopeResult ||
             groupScopeResult.enabledGroups.size > 0}
           validationMessage='Select at least one group'
-          scope={groupScopeResult && def.scope.kind === 'groups'
+          scope={groupScopeResult && groupScope
             ? (
-              <GroupToggles
-                labels={def.scope.groups.map((g) => g.label)}
+              <GroupProgressToggles
+                groups={groupScope.allGroupIndices.map((i) => ({
+                  label: groupScope.groups[i].label,
+                  itemIds: groupScope.getItemIdsForGroup(i),
+                }))}
                 active={groupScopeResult.enabledGroups}
                 onToggle={groupScopeResult.scopeActions.toggleGroup}
+                selector={learner.selector}
               />
             )
             : undefined}

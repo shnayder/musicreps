@@ -2,6 +2,7 @@
 // Used in idle screens to let users pick strings, distance groups, note types.
 
 import { displayNote } from '../music-data.ts';
+import { getSpeedFreshnessColor } from '../stats-display.ts';
 
 // ---------------------------------------------------------------------------
 // GroupToggles — distance group toggles (e.g., +1 to +3, +4 to +6)
@@ -32,6 +33,64 @@ export function GroupToggles(
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// GroupProgressToggles — vertical group rows with toggle + progress bar
+// ---------------------------------------------------------------------------
+
+export function GroupProgressToggles(
+  { groups, active, onToggle, selector }: {
+    groups: { label: string; itemIds: string[] }[];
+    active: ReadonlySet<number>;
+    onToggle: (index: number) => void;
+    selector: {
+      getSpeedScore(id: string): number | null;
+      getFreshness(id: string): number | null;
+    };
+  },
+) {
+  const maxItems = Math.max(...groups.map((g) => g.itemIds.length));
+  return (
+    <div class='group-progress-toggles'>
+      {groups.map((g, i) => {
+        const items = g.itemIds.map((id) => {
+          const sp = selector.getSpeedScore(id);
+          const fr = selector.getFreshness(id);
+          const auto = (sp !== null && fr !== null) ? sp * fr : null;
+          return { auto, color: getSpeedFreshnessColor(sp, fr) };
+        });
+        items.sort((a, b) => (b.auto ?? -1) - (a.auto ?? -1));
+        const widthPct = (g.itemIds.length / maxItems) * 100;
+        return (
+          <div class='group-progress-row' key={i}>
+            <button
+              type='button'
+              tabIndex={0}
+              class={'distance-toggle' + (active.has(i) ? ' active' : '')}
+              aria-pressed={active.has(i)}
+              data-group={String(i)}
+              onClick={() => onToggle(i)}
+            >
+              {g.label}
+            </button>
+            <div
+              class='group-progress-bar'
+              style={`max-width:${widthPct}%`}
+            >
+              {items.map((item, j) => (
+                <div
+                  class='group-bar-slice'
+                  key={j}
+                  style={`background:${item.color}`}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

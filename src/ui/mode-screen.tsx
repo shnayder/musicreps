@@ -170,7 +170,6 @@ export function PracticeCard(
     statusLabel?: string;
     statusDetail?: string;
     recommendation?: string;
-    mastery?: string;
     scope?: ComponentChildren;
     onStart?: () => void;
     onApplyRecommendation?: () => void;
@@ -186,10 +185,6 @@ export function PracticeCard(
   const recommendation = props.recommendation ??
     (props.summary && props.summary.recommendationText
       ? props.summary.recommendationText
-      : undefined);
-  const mastery = props.mastery ??
-    (props.summary && props.summary.showMastery
-      ? props.summary.masteryText
       : undefined);
   const onApplyRecommendation = props.onApplyRecommendation;
   const { scope, onStart } = props;
@@ -219,29 +214,17 @@ export function PracticeCard(
     )
     : null;
 
-  const masteryBlock = mastery
-    ? <div class='mastery-message mastery-visible'>{mastery}</div>
-    : null;
-
-  // Zone 2: "Quiz setup" — suggestion + scope controls + start button.
-  // When neither scope controls nor a recommendation exist, show just the
-  // start button (no header).
-  const hasSetupContent = scope || recommendation;
-  const setupZone = (
-    <div class='practice-zone practice-zone-setup'>
-      {hasSetupContent
-        ? <div class='practice-section-header'>Practice Settings</div>
-        : null}
+  return (
+    <div class='practice-card'>
+      {statusLabel && (
+        <div class='practice-status'>
+          <span class='practice-status-prefix'>Status</span>
+          <span class='practice-status-label'>{statusLabel}</span>
+          <span class='practice-status-detail'>{statusDetail || ''}</span>
+        </div>
+      )}
       {recBlock}
-      {scope
-        ? (
-          <div class='practice-scope'>
-            <div class='settings-row'>
-              {scope}
-            </div>
-          </div>
-        )
-        : null}
+      {scope && <div class='practice-scope'>{scope}</div>}
       <div class='practice-zone-action'>
         <StartButton
           onStart={onStart}
@@ -249,27 +232,6 @@ export function PracticeCard(
           validationMessage={validationMessage}
         />
       </div>
-    </div>
-  );
-
-  return (
-    <div class='practice-card'>
-      <div class='practice-zone practice-zone-mastery'>
-        <div class='practice-section-header'>Mastery</div>
-        <div class='practice-status'>
-          {statusLabel
-            ? (
-              <>
-                <span class='practice-status-prefix'>Status</span>
-                <span class='practice-status-label'>{statusLabel}</span>
-              </>
-            )
-            : null}
-        </div>
-        <span class='practice-status-detail'>{statusDetail || ''}</span>
-        {masteryBlock}
-      </div>
-      {setupZone}
     </div>
   );
 }
