@@ -2,7 +2,6 @@
 // Shows slots that fill as the user enters answers, with deferred feedback
 // (all slots evaluated at once after the last input).
 
-import { displayNote } from '../music-data.ts';
 import type { SequentialEntryResult } from '../declarative/types.ts';
 
 /**
@@ -21,7 +20,7 @@ export function SequentialSlots(
     entries: { display: string }[];
     /** Per-entry evaluation results. Null before evaluation. */
     evaluated: SequentialEntryResult[] | null;
-    /** Correct tones to show when any entry is wrong. */
+    /** Correct tones to show when any entry is wrong (already display-formatted). */
     correctTones: string[] | null;
   },
 ) {
@@ -50,7 +49,7 @@ export function SequentialSlots(
       {anyWrong && correctTones && (
         <div class='seq-correct-row'>
           {correctTones.map((t, i) => (
-            <span key={i} class='seq-correct-note'>{displayNote(t)}</span>
+            <span key={i} class='seq-correct-note'>{t}</span>
           ))}
         </div>
       )}
