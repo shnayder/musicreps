@@ -335,6 +335,73 @@ describe('computeRecommendations', () => {
     assert.ok(!result.recommended.has(1), 'skipped group not recommended');
   });
 
+  // ---------------------------------------------------------------------------
+  // Cap active work items (maxWorkItems)
+  // ---------------------------------------------------------------------------
+
+  it('caps work items: 5 groups × 10 working → only ~3 recommended', () => {
+    const data = {
+      0: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
+      1: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
+      2: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
+      3: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
+      4: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0, 1, 2, 3, 4],
+      makeGetItemIds(data),
+      { expansionThreshold: 0.7, maxWorkItems: 30 },
+      {},
+    );
+    assert.ok(
+      result.consolidateWorkingCount <= 30,
+      `working count ${result.consolidateWorkingCount} should be ≤ 30`,
+    );
+    assert.ok(
+      result.consolidateIndices.length <= 3,
+      `should have ≤3 groups, got ${result.consolidateIndices.length}`,
+    );
+  });
+
+  it('cap keeps at least one group even if it exceeds cap', () => {
+    const data = {
+      0: { workingCount: 40, unseenCount: 0, fluentCount: 0, totalCount: 40 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0],
+      makeGetItemIds(data),
+      { expansionThreshold: 0.7, maxWorkItems: 30 },
+      {},
+    );
+    assert.ok(result.recommended.has(0), 'should still recommend group 0');
+    assert.equal(result.consolidateIndices.length, 1);
+  });
+
+  it('cap does not trim when under limit', () => {
+    // 3 groups: work = 12, 10, 8. Sorted by work desc: [12, 10, 8].
+    // Median work = 10 (middle). Groups above median: group 0 (work=12).
+    // Only 1 group → 12 ≤ 30, no trimming needed.
+    const data = {
+      0: { workingCount: 12, unseenCount: 0, fluentCount: 0, totalCount: 12 },
+      1: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
+      2: { workingCount: 8, unseenCount: 0, fluentCount: 0, totalCount: 8 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0, 1, 2],
+      makeGetItemIds(data),
+      { expansionThreshold: 0.7, maxWorkItems: 30 },
+      {},
+    );
+    assert.ok(
+      result.consolidateWorkingCount <= 30,
+      'should be within cap',
+    );
+    assert.ok(result.recommended.has(0), 'highest-work group recommended');
+  });
+
   it('does not expand just below the threshold level', () => {
     // Working items produce level=0.3. Threshold=0.3 should pass,
     // but threshold=0.31 should fail.
