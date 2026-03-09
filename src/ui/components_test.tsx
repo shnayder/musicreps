@@ -15,6 +15,7 @@ import {
   NumeralButtons,
   PianoNoteButtons,
 } from './buttons.tsx';
+import { SequentialSlots } from './sequential-slots.tsx';
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid } from './stats.tsx';
 import { GroupToggles, NoteFilter, StringToggles } from './scope.tsx';
@@ -724,5 +725,114 @@ describe('RoundCompleteActions', () => {
     assert.ok(html.includes('Keep Going'));
     assert.ok(html.includes('round-complete-stop'));
     assert.ok(html.includes('Stop'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SequentialSlots
+// ---------------------------------------------------------------------------
+
+describe('SequentialSlots', () => {
+  it('renders empty slots with one active', () => {
+    const html = render(
+      <SequentialSlots
+        expectedCount={3}
+        entries={[]}
+        evaluated={null}
+        correctTones={null}
+      />,
+    );
+    assert.ok(html.includes('seq-slots-container'));
+    // Count <span> elements with seq-slot class (not seq-slots or seq-slots-container)
+    const slots = html.match(/class="seq-slot[\s"]/g) || [];
+    assert.equal(slots.length, 3);
+    assert.ok(html.includes('seq-slot active'));
+  });
+
+  it('renders filled slots before evaluation', () => {
+    const html = render(
+      <SequentialSlots
+        expectedCount={3}
+        entries={[{ display: 'C' }, { display: 'E' }]}
+        evaluated={null}
+        correctTones={null}
+      />,
+    );
+    assert.ok(html.includes('filled'));
+    assert.ok(html.includes('>C<'));
+    assert.ok(html.includes('>E<'));
+    // Third slot is active
+    assert.ok(html.includes('seq-slot active'));
+  });
+
+  it('renders correct/wrong classes after evaluation', () => {
+    const html = render(
+      <SequentialSlots
+        expectedCount={3}
+        entries={[]}
+        evaluated={[
+          { display: 'C', correct: true },
+          { display: 'E', correct: true },
+          { display: 'G', correct: false },
+        ]}
+        correctTones={['C', 'E', 'G♯']}
+      />,
+    );
+    const correct = (html.match(/seq-slot correct/g) || []).length;
+    const wrong = (html.match(/seq-slot wrong/g) || []).length;
+    assert.equal(correct, 2);
+    assert.equal(wrong, 1);
+  });
+
+  it('shows correct-row when any entry is wrong', () => {
+    const html = render(
+      <SequentialSlots
+        expectedCount={2}
+        entries={[]}
+        evaluated={[
+          { display: 'C', correct: true },
+          { display: 'E', correct: false },
+        ]}
+        correctTones={['C', 'E♭']}
+      />,
+    );
+    assert.ok(html.includes('seq-correct-row'));
+    assert.ok(html.includes('seq-correct-note'));
+    // correctTones are rendered as-is (already display-formatted)
+    assert.ok(html.includes('>C<'));
+    assert.ok(html.includes('>E♭<'));
+  });
+
+  it('does not show correct-row when all entries are correct', () => {
+    const html = render(
+      <SequentialSlots
+        expectedCount={2}
+        entries={[]}
+        evaluated={[
+          { display: 'C', correct: true },
+          { display: 'E', correct: true },
+        ]}
+        correctTones={['C', 'E']}
+      />,
+    );
+    assert.ok(!html.includes('seq-correct-row'));
+  });
+
+  it('renders correctTones without double-formatting', () => {
+    // correctTones arrive already display-formatted (e.g. with ♯/♭ unicode).
+    // SequentialSlots must render them as-is, not pass through displayNote().
+    const html = render(
+      <SequentialSlots
+        expectedCount={2}
+        entries={[]}
+        evaluated={[
+          { display: 'D', correct: false },
+          { display: 'F', correct: false },
+        ]}
+        correctTones={['D♯', 'F♯']}
+      />,
+    );
+    assert.ok(html.includes('>D♯<'));
+    assert.ok(html.includes('>F♯<'));
   });
 });

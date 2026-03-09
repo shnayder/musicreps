@@ -165,7 +165,7 @@ ${
     modeScreen('chordSpelling', {
       modeName: 'Chord Spelling',
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-      quizAreaContent: `<div class="chord-slots"></div>
+      quizAreaContent: `<div class="seq-slots"></div>
       ${noteAnswerButtons()}`,
     })
   }`;
