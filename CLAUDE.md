@@ -55,8 +55,8 @@ src/
     {name}/
       logic.ts            # Pure mode logic: questions, answers, items, groups
       logic_test.ts        # Tests for mode logic
-      definition.ts        # Declarative mode definition (9 modes)
-      {name}-mode.tsx      # Hand-written Preact component (2 modes)
+      definition.ts        # Declarative mode definition (10 modes)
+      {name}-mode.tsx      # Hand-written Preact component (1 mode)
   ui/
     mode-screen.tsx       # Structural layout components (ModeScreen, QuizArea, etc.)
     buttons.tsx           # Answer button components (NoteButtons, NumberButtons, etc.)
@@ -92,17 +92,17 @@ Single-page app using Preact for UI components. Source files are ES modules
 bundled by esbuild (with automatic JSX transform) into a single IIFE `<script>`
 at build time. Key patterns:
 
-- **Declarative Modes** — 9 of 11 modes use `ModeDefinition<Q>` (20-50 lines of
+- **Declarative Modes** — 10 of 11 modes use `ModeDefinition<Q>` (20-50 lines of
   data) interpreted by `GenericMode`, which handles all hook composition,
   rendering, and keyboard input. Modes needing custom rendering (e.g., fretboard
-  SVG) provide a `useController` hook. 2 specialized modes (Chord Spelling,
-  Speed Tap) remain as hand-written components.
+  SVG) provide a `useController` hook. 1 specialized mode (Speed Tap) remains as
+  a hand-written component.
 - **Shared Hooks** — `useQuizEngine` (engine lifecycle), `useLearnerModel`
   (adaptive selector + storage), `useGroupScope` (group scope + recommendations
   for 6 modes), `useModeLifecycle` (navigation activate/deactivate for all
   modes), `useScopeState` (low-level scope persistence), `useKeyHandler`
-  (keyboard events). GenericMode composes these automatically; hand-written
-  modes compose them directly.
+  (keyboard events). GenericMode composes these automatically; the hand-written
+  Speed Tap mode composes them directly.
 - **Shared UI Components** — `ModeScreen`, `QuizArea`, `PracticeCard`,
   `StatsTable`/`StatsGrid`, `NoteButtons`, `GroupToggles`, etc. Emit the same
   CSS class names as the build-time HTML for style parity.
