@@ -19,7 +19,7 @@ export function computeRecommendations(
   },
   allIndices: number[],
   getItemIds: (index: number) => string[],
-  config: { expansionThreshold: number },
+  config: { expansionThreshold: number; maxWorkItems?: number },
   options?: {
     sortUnstarted?: (
       a: StringRecommendation,
@@ -88,6 +88,40 @@ export function computeRecommendations(
     enabled.add(r.string);
     consolidateIndices.push(r.string);
     consolidateWorkingCount += r.workingCount + r.unseenCount;
+  }
+
+  // Cap: if total work items exceed maxWorkItems, trim to highest-priority
+  // groups (sorted by workingCount desc — most working = closest to done).
+  const maxWork = config.maxWorkItems ?? 30;
+  if (consolidateWorkingCount > maxWork && consolidateIndices.length > 1) {
+    // Sort consolidation groups by workingCount descending (most progress first)
+    const byWorking = consolidateIndices
+      .map((idx) => {
+        const r = startedByWork.find((s) => s.string === idx)!;
+        return { idx, work: r.workingCount + r.unseenCount };
+      })
+      .sort((a, b) => b.work - a.work);
+
+    // Rebuild: take groups until cap reached, always keep at least one
+    const keptIndices: number[] = [];
+    let keptWork = 0;
+    for (const g of byWorking) {
+      if (keptIndices.length > 0 && keptWork + g.work > maxWork) break;
+      keptIndices.push(g.idx);
+      keptWork += g.work;
+    }
+
+    // Replace consolidation set
+    consolidateIndices.length = 0;
+    recommended.clear();
+    enabled.clear();
+    consolidateWorkingCount = 0;
+    for (const idx of keptIndices) {
+      consolidateIndices.push(idx);
+      recommended.add(idx);
+      enabled.add(idx);
+      consolidateWorkingCount += byWorking.find((g) => g.idx === idx)!.work;
+    }
   }
 
   let expandIndex: number | null = null;
