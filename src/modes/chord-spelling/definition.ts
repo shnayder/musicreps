@@ -42,9 +42,7 @@ export const CHORD_SPELLING_DEF: ModeDefinition<Question> = {
     batchPlaceholder: (q) => `${q.tones.length} notes, e.g. C E G \u2014 Enter`,
   },
 
-  // Sequential modes render SplitNoteButtons automatically; this field
-  // is required by the type but unused during quizzing.
-  buttons: { kind: 'piano-note' },
+  buttons: { kind: 'split-note' },
 
   scope: {
     kind: 'groups',

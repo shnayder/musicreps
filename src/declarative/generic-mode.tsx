@@ -77,6 +77,7 @@ function getHintType(buttons: ButtonsDef): KeyboardHintType {
   switch (buttons.kind) {
     case 'note':
     case 'piano-note':
+    case 'split-note':
       return 'note';
     case 'number':
       return buttons.start === 0 ? 'number-0-11' : 'number-1-12';
@@ -182,6 +183,9 @@ function ResponseButtons(
     narrowing,
     hideAccidentalsOverride,
     feedback,
+    sequential,
+    answered,
+    pendingNote,
   }: {
     buttonsDef: ButtonsDef;
     hidden?: boolean;
@@ -190,6 +194,12 @@ function ResponseButtons(
     narrowing?: ReadonlySet<string> | null;
     hideAccidentalsOverride?: boolean;
     feedback?: ButtonFeedback | null;
+    /** Enable chain-submit for sequential modes. */
+    sequential?: boolean;
+    /** Whether the current question has been answered (disables split-note buttons). */
+    answered?: boolean;
+    /** Pending note from keyboard input (syncs split-note visual state). */
+    pendingNote?: string | null;
   },
 ) {
   switch (buttonsDef.kind) {
@@ -213,6 +223,15 @@ function ResponseButtons(
             feedback={feedback}
           />
         </div>
+      );
+    case 'split-note':
+      return (
+        <SplitNoteButtons
+          onAnswer={onAnswer}
+          sequential={sequential}
+          pendingNote={pendingNote}
+          answered={answered}
+        />
       );
     case 'number':
       return (
@@ -639,7 +658,8 @@ export function GenericMode<Q>(
                         ? seqCorrectAnswer.split(' ')
                         : null}
                     />
-                    <SplitNoteButtons
+                    <ResponseButtons
+                      buttonsDef={activeButtons}
                       onAnswer={handleSeqInput}
                       sequential
                       answered={engine.state.answered}

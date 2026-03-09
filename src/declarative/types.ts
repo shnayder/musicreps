@@ -36,6 +36,7 @@ export type DegreeButtonsDef = { kind: 'degree' };
 export type NumeralButtonsDef = { kind: 'numeral' };
 export type IntervalButtonsDef = { kind: 'interval' };
 export type KeysigButtonsDef = { kind: 'keysig' };
+export type SplitNoteButtonsDef = { kind: 'split-note' };
 
 /** Which tap/click buttons to show. Keyboard input goes through a text field. */
 export type ButtonsDef =
@@ -45,7 +46,8 @@ export type ButtonsDef =
   | DegreeButtonsDef
   | NumeralButtonsDef
   | IntervalButtonsDef
-  | KeysigButtonsDef;
+  | KeysigButtonsDef
+  | SplitNoteButtonsDef;
 
 // ---------------------------------------------------------------------------
 // Answer definition — which buttons to show (possibly direction-dependent)
