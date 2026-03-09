@@ -1843,15 +1843,15 @@ button {
   grid-template-columns: repeat(4, 1fr);
 }
 
-/* --- Chord spelling slots --- */
-.chord-slots {
+/* --- Sequential response slots (chord spelling, etc.) --- */
+.seq-slots {
   display: flex;
   justify-content: center;
   gap: var(--space-3);
   margin: var(--space-4) 0;
   min-height: 2.5rem;
 }
-.chord-slot {
+.seq-slot {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1867,32 +1867,32 @@ button {
   color: var(--color-text-muted);
   transition: border-color 0.15s ease, color 0.15s ease;
 }
-.chord-slot.active {
+.seq-slot.active {
   border-bottom-color: var(--color-accent);
 }
-.chord-slot.filled {
+.seq-slot.filled {
   border-bottom-color: var(--color-text);
   color: var(--color-text);
 }
-.chord-slot.correct {
+.seq-slot.correct {
   border-bottom-color: var(--color-success);
   color: var(--color-success-text);
 }
-.chord-slot.wrong {
+.seq-slot.wrong {
   border-bottom-color: var(--color-error);
   color: var(--color-error-text);
 }
-.chord-slots-container {
+.seq-slots-container {
   display: inline-flex;
   flex-direction: column;
   align-items: stretch;
 }
-.chord-correct-row {
+.seq-correct-row {
   display: flex;
   gap: var(--space-3);
   margin-top: var(--space-1);
 }
-.chord-correct-note {
+.seq-correct-note {
   display: inline-flex;
   align-items: center;
   justify-content: center;
