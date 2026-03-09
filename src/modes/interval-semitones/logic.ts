@@ -3,7 +3,7 @@
 // Bidirectional: forward (interval → semitone count), reverse (count → interval).
 
 import type { StatsTableRow } from '../../types.ts';
-import { intervalMatchesInput, INTERVALS } from '../../music-data.ts';
+import { INTERVALS } from '../../music-data.ts';
 import { buildBidirectionalIds } from '../../mode-utils.ts';
 
 // ---------------------------------------------------------------------------
@@ -41,35 +41,6 @@ export function getQuestion(itemId: string): Question {
     num: interval.num,
     dir: dir as 'fwd' | 'rev',
   };
-}
-
-// ---------------------------------------------------------------------------
-// Answer checking
-// ---------------------------------------------------------------------------
-
-/**
- * Check the user's answer against the expected answer.
- *
- * Forward: user enters a semitone number (1–12). Correct if it matches interval.num.
- * Reverse: user enters an interval abbreviation. Correct if it matches the interval.
- *
- * @returns { correct, correctAnswer } where correctAnswer is the display-formatted
- *   expected answer.
- */
-export function checkAnswer(
-  q: Question,
-  input: string,
-): { correct: boolean; correctAnswer: string } {
-  if (q.dir === 'fwd') {
-    const correct = parseInt(input, 10) === q.num;
-    return {
-      correct,
-      correctAnswer: String(q.num),
-    };
-  }
-  const interval = INTERVALS.find((i) => i.abbrev === q.abbrev)!;
-  const correct = intervalMatchesInput(interval, input);
-  return { correct, correctAnswer: q.abbrev };
 }
 
 // ---------------------------------------------------------------------------

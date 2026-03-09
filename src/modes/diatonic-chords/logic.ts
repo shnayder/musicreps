@@ -6,10 +6,9 @@
 import type { DiatonicChord } from '../../types.ts';
 import {
   DIATONIC_CHORDS,
-  displayNote,
   getScaleDegreeNote,
   MAJOR_KEYS,
-  spelledNoteMatchesSemitone,
+  ROMAN_NUMERALS,
 } from '../../music-data.ts';
 
 // ---------------------------------------------------------------------------
@@ -88,33 +87,16 @@ export function getQuestion(itemId: string): Question {
 }
 
 // ---------------------------------------------------------------------------
-// Answer checking
+// Input normalization
 // ---------------------------------------------------------------------------
 
-/**
- * Check the user's answer.
- *
- * Forward: user enters a note name. Correct if it matches the chord root.
- *   Shows full answer (e.g. "Eb minor").
- * Reverse: user enters a roman numeral. Correct if it matches the chord numeral.
- */
-export function checkAnswer(
-  q: Question,
-  input: string,
-): { correct: boolean; correctAnswer: string } {
-  if (q.dir === 'fwd') {
-    const correct = spelledNoteMatchesSemitone(q.rootNote, input);
-    const fullAnswer = displayNote(q.rootNote) + ' ' + q.chord.quality;
-    return {
-      correct,
-      correctAnswer: fullAnswer,
-    };
-  }
-  const expectedNumeral = q.chord.numeral;
-  return {
-    correct: input === expectedNumeral,
-    correctAnswer: expectedNumeral,
-  };
+/** Normalize user input to canonical roman numeral.
+ *  "4" → "IV", "vii" → "vii°" (adds ° for diminished). */
+export function normalizeNumeralInput(input: string): string {
+  const num = parseInt(input, 10);
+  if (num >= 1 && num <= 7) return ROMAN_NUMERALS[num - 1];
+  if (input === 'vii') return 'vii\u00B0';
+  return input;
 }
 
 // ---------------------------------------------------------------------------

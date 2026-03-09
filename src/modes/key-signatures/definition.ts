@@ -5,6 +5,8 @@ import {
   displayNote,
   isValidKeysigInput,
   isValidNoteInput,
+  keySignatureLabel,
+  MAJOR_KEYS,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
   rootUsesFlats,
@@ -13,7 +15,6 @@ import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,
   ALL_ITEMS,
-  checkAnswer,
   getItemIdsForGroup,
   getQuestion,
   getStatsRows,
@@ -33,7 +34,18 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   getQuestion,
   getPromptText: (q) =>
     q.dir === 'fwd' ? displayNote(q.root) + ' major' : q.sigLabel + ' major',
-  checkAnswer,
+  answer: {
+    kind: 'bidirectional',
+    fwd: {
+      getExpectedValue: (q) =>
+        keySignatureLabel(MAJOR_KEYS.find((k) => k.root === q.root)!),
+      comparison: 'exact',
+    },
+    rev: {
+      getExpectedValue: (q) => q.root,
+      comparison: 'note-enharmonic',
+    },
+  },
   validateInput: (q, input) =>
     q.dir === 'fwd' ? isValidKeysigInput(input) : isValidNoteInput(input),
   getDirection: (q) => q.dir,

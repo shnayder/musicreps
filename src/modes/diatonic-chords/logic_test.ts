@@ -2,11 +2,11 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ALL_ITEMS,
-  checkAnswer,
   CHORD_GROUPS,
   getGridItemId,
   getItemIdsForGroup,
   getQuestion,
+  normalizeNumeralInput,
 } from './logic.ts';
 
 describe('ALL_ITEMS', () => {
@@ -83,56 +83,51 @@ describe('getQuestion', () => {
   });
 });
 
-describe('checkAnswer fwd', () => {
-  it('correct when note matches chord root (C for I of C)', () => {
+describe('getQuestion expected values', () => {
+  it('fwd: rootNote is the expected note answer', () => {
     const q = getQuestion('C:1:fwd');
-    const result = checkAnswer(q, 'C');
-    assert.equal(result.correct, true);
+    assert.equal(q.rootNote, 'C');
   });
 
-  it('correct when note matches chord root (Eb for IV of Bb)', () => {
+  it('fwd: Bb:4 rootNote is "Eb"', () => {
     const q = getQuestion('Bb:4:fwd');
-    const result = checkAnswer(q, 'Eb');
-    assert.equal(result.correct, true);
+    assert.equal(q.rootNote, 'Eb');
   });
 
-  it('wrong when note does not match chord root', () => {
-    const q = getQuestion('C:1:fwd');
-    const result = checkAnswer(q, 'G');
-    assert.equal(result.correct, false);
+  it('rev: chord.numeral is the expected answer', () => {
+    const q = getQuestion('C:1:rev');
+    assert.equal(q.chord.numeral, 'I');
   });
 
-  it('correctAnswer includes note and quality (e.g. "C major")', () => {
-    const q = getQuestion('C:1:fwd');
-    const result = checkAnswer(q, 'G');
-    assert.ok(result.correctAnswer.includes('C'));
-    assert.ok(result.correctAnswer.includes('major'));
+  it('rev: Bb:4 chord.numeral is "IV"', () => {
+    const q = getQuestion('Bb:4:rev');
+    assert.equal(q.chord.numeral, 'IV');
   });
 });
 
-describe('checkAnswer rev', () => {
-  it('correct when numeral matches (I for degree 1 of C)', () => {
-    const q = getQuestion('C:1:rev');
-    const result = checkAnswer(q, 'I');
-    assert.equal(result.correct, true);
+describe('normalizeNumeralInput', () => {
+  it('"4" → "IV"', () => {
+    assert.equal(normalizeNumeralInput('4'), 'IV');
   });
 
-  it('correct when numeral matches (IV for degree 4 of Bb)', () => {
-    const q = getQuestion('Bb:4:rev');
-    const result = checkAnswer(q, 'IV');
-    assert.equal(result.correct, true);
+  it('"1" → "I"', () => {
+    assert.equal(normalizeNumeralInput('1'), 'I');
   });
 
-  it('wrong when numeral does not match', () => {
-    const q = getQuestion('C:1:rev');
-    const result = checkAnswer(q, 'IV');
-    assert.equal(result.correct, false);
+  it('"7" → "vii\u00B0"', () => {
+    assert.equal(normalizeNumeralInput('7'), 'vii\u00B0');
   });
 
-  it('correctAnswer is the roman numeral', () => {
-    const q = getQuestion('C:1:rev');
-    const result = checkAnswer(q, 'IV');
-    assert.equal(result.correctAnswer, 'I');
+  it('"vii" → "vii\u00B0" (adds degree sign)', () => {
+    assert.equal(normalizeNumeralInput('vii'), 'vii\u00B0');
+  });
+
+  it('"IV" passes through unchanged', () => {
+    assert.equal(normalizeNumeralInput('IV'), 'IV');
+  });
+
+  it('"vii\u00B0" passes through unchanged', () => {
+    assert.equal(normalizeNumeralInput('vii\u00B0'), 'vii\u00B0');
   });
 });
 

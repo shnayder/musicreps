@@ -21,7 +21,6 @@ import type {
 } from '../../declarative/types.ts';
 
 import {
-  checkAnswer,
   formatLabel,
   getAllGroupIndices,
   getAllItems,
@@ -78,7 +77,10 @@ export function createFretboardDef(
 
     getQuestion: (itemId) => getQuestion(instrument, itemId),
     getPromptText: () => 'Name this note',
-    checkAnswer: (_q, input) => checkAnswer(instrument, _q.currentNote, input),
+    answer: {
+      getExpectedValue: (q) => q.currentNote,
+      comparison: 'note-enharmonic',
+    },
     validateInput: (_q, input) => isValidNoteInput(input),
 
     buttons: { kind: 'piano-note' },

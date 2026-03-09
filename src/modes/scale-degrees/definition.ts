@@ -13,7 +13,6 @@ import {
   ACTIVE_DEGREES,
   ALL_GROUP_INDICES,
   ALL_ITEMS,
-  checkAnswer,
   DEGREE_GROUPS,
   DEGREE_LABELS,
   getGridItemId,
@@ -39,7 +38,18 @@ export const SCALE_DEGREES_DEF: ModeDefinition<Question> = {
         displayNote(q.keyRoot) + ' major'
       : displayNote(q.keyRoot) + ' major: ' +
         displayNote(q.noteName),
-  checkAnswer,
+  answer: {
+    kind: 'bidirectional',
+    fwd: {
+      getExpectedValue: (q) => q.noteName,
+      comparison: 'note-enharmonic',
+    },
+    rev: {
+      getExpectedValue: (q) => String(q.degree),
+      comparison: 'exact',
+      getDisplayAnswer: (q) => DEGREE_LABELS[q.degree - 1],
+    },
+  },
   validateInput: (q, input) =>
     q.dir === 'fwd' ? isValidNoteInput(input) : /^[2-7]$/.test(input),
   getDirection: (q) => q.dir,

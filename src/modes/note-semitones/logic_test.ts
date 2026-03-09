@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ALL_ITEMS, checkAnswer, getQuestion, getStatsRows } from './logic.ts';
+import { ALL_ITEMS, getQuestion, getStatsRows } from './logic.ts';
 
 // ---------------------------------------------------------------------------
 // ALL_ITEMS
@@ -84,63 +84,31 @@ describe('getQuestion for other notes', () => {
 });
 
 // ---------------------------------------------------------------------------
-// checkAnswer
+// Expected values (used by answer spec)
 // ---------------------------------------------------------------------------
 
-describe('checkAnswer fwd (note → number)', () => {
-  it('correct when number matches noteNum', () => {
+describe('getQuestion expected values', () => {
+  it('fwd: noteNum is the expected integer answer', () => {
     const q = getQuestion('C:fwd');
-    const result = checkAnswer(q, '0');
-    assert.equal(result.correct, true);
-    assert.equal(result.correctAnswer, '0');
+    assert.equal(String(q.noteNum), '0');
   });
 
-  it('wrong when number does not match', () => {
-    const q = getQuestion('C:fwd');
-    const result = checkAnswer(q, '3');
-    assert.equal(result.correct, false);
-    assert.equal(result.correctAnswer, '0');
-  });
-
-  it('correct for G (num=7)', () => {
+  it('fwd: G has noteNum 7', () => {
     const q = getQuestion('G:fwd');
-    assert.equal(checkAnswer(q, '7').correct, true);
-    assert.equal(checkAnswer(q, '6').correct, false);
+    assert.equal(String(q.noteNum), '7');
   });
 
-  it('correct for A# (num=10)', () => {
-    const q = getQuestion('A#:fwd');
-    assert.equal(checkAnswer(q, '10').correct, true);
-    assert.equal(checkAnswer(q, '11').correct, false);
-  });
-});
-
-describe('checkAnswer rev (number → note)', () => {
-  it('correct when note name matches (input "c" for C)', () => {
-    const q = getQuestion('C:rev');
-    const result = checkAnswer(q, 'c');
-    assert.equal(result.correct, true);
-  });
-
-  it('wrong for wrong note', () => {
-    const q = getQuestion('C:rev');
-    const result = checkAnswer(q, 'd');
-    assert.equal(result.correct, false);
-  });
-
-  it('accepts enharmonic equivalents for C# (c# or db)', () => {
+  it('rev: noteName is the expected canonical note', () => {
     const q = getQuestion('C#:rev');
-    assert.equal(checkAnswer(q, 'c#').correct, true);
-    assert.equal(checkAnswer(q, 'db').correct, true);
-    assert.equal(checkAnswer(q, 'c').correct, false);
+    assert.equal(q.noteName, 'C#');
   });
 
-  it('correctAnswer is the display-formatted note', () => {
-    const q = getQuestion('C:rev');
-    const result = checkAnswer(q, 'd');
-    // correctAnswer is displayNote(accidentalChoice) — at minimum a non-empty string
-    assert.ok(typeof result.correctAnswer === 'string');
-    assert.ok(result.correctAnswer.length > 0);
+  it('rev: accidentalChoice is valid display variant', () => {
+    const valid = new Set(['C#', 'Db']);
+    for (let i = 0; i < 20; i++) {
+      const q = getQuestion('C#:rev');
+      assert.ok(valid.has(q.accidentalChoice));
+    }
   });
 });
 

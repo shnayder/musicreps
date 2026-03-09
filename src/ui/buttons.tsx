@@ -20,15 +20,27 @@ import {
 // Feedback state for button highlighting after answer
 // ---------------------------------------------------------------------------
 
+/** Feedback state for highlighting buttons after an answer.
+ *
+ *  Both fields are normalized to canonical button values by GenericMode
+ *  before reaching here. For note buttons, that means NOTE_NAMES form
+ *  ("C", "C#", "D#", etc.). For other button types, values match the
+ *  button's data value (numbers, intervals, numerals, etc.).
+ */
 export type ButtonFeedback = {
   correct: boolean;
-  /** Raw input value the user submitted (button value). */
+  /** Canonical button value for the user's answer. */
   userInput: string;
-  /** Display-form correct answer (matched against button labels). */
+  /** Canonical button value for the correct answer. */
   displayAnswer: string;
 };
 
-/** Compute feedback CSS class for a button given its value and display label. */
+/** Compute feedback CSS class for a button given its value and display label.
+ *
+ *  Compares feedback fields against both buttonValue and buttonLabel to handle
+ *  cases where the canonical value differs from the display label (e.g., note
+ *  buttons: value "D#", label "D♯"; degree buttons: value "5", label "5th").
+ */
 function feedbackClass(
   feedback: ButtonFeedback | null,
   buttonValue: string,
@@ -40,7 +52,12 @@ function feedbackClass(
   }
   if (!feedback.correct) {
     if (buttonValue === feedback.userInput) return ' btn-feedback-wrong';
-    if (buttonLabel === feedback.displayAnswer) return ' btn-feedback-reveal';
+    if (
+      buttonValue === feedback.displayAnswer ||
+      buttonLabel === feedback.displayAnswer
+    ) {
+      return ' btn-feedback-reveal';
+    }
   }
   return '';
 }

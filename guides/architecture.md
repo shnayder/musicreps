@@ -195,7 +195,11 @@ export const SEMITONE_MATH_DEF: ModeDefinition<Question> = {
   allItems: ALL_ITEMS,
   getQuestion,
   getPromptText: (q) => q.promptText,
-  checkAnswer,
+  answer: {
+    getExpectedValue: (q) => q.answer.name,
+    comparison: 'note-enharmonic',
+    getDisplayAnswer: (q) => displayNote(pickAccidentalName(q.answer.displayName, q.useFlats)),
+  },
   validateInput: (_, input) => isValidNoteInput(input),
   buttons: { kind: 'note' },
   scope: {
@@ -231,12 +235,13 @@ remain for tap/click (important on mobile). An optional `validateInput` on the
 definition rejects garbage input with a shake animation instead of scoring it
 wrong.
 
-**Input validation: set lookups, not regex.** Validators (`isValidNoteInput`,
-`isValidIntervalInput`, `isValidKeysigInput`, `isValidNumeralInput`) use exact
+**Input validation: correct normalization, exact acceptance.** Validators
+(`isValidNoteInput`, `isValidIntervalInput`, `isValidKeysigInput`,
+`isValidNumeralInput`) must accept exactly the strings that the answer spec can
+score correctly — nothing more, nothing less. The current implementations use
 `Set` lookups derived from the actual data arrays (`NOTES`, `INTERVALS`,
-`MAJOR_KEYS`, `DIATONIC_CHORDS`). This ensures the validator accepts exactly the
-same strings that `checkAnswer` can score correctly — no regex approximations
-that silently accept garbage like `p5` or `VIII`.
+`MAJOR_KEYS`, `DIATONIC_CHORDS`), but any implementation (sets, iteration,
+regex) is fine as long as it meets that contract.
 
 **Registration** (in `app.ts`):
 
@@ -623,8 +628,8 @@ rather than adding complexity. Per-mode flags are a code smell.
 2. **Create** `src/modes/{name}/definition.ts` — a `ModeDefinition<Q>` object
    (~20-50 lines) specifying buttons, scope, stats, and pure logic references
 3. **Input validation** (if text input is used): add a `validateInput` function
-   using set-based lookup from existing data. Derive valid sets from the source
-   data arrays (e.g., `NOTES`, `INTERVALS`, `DIATONIC_CHORDS`), never regex.
+   that accepts exactly the strings the answer spec can score. Derive from the
+   source data arrays (e.g., `NOTES`, `INTERVALS`, `DIATONIC_CHORDS`).
 4. **HTML**: add mode screen in `modeScreens()` in `src/build-template.ts`
    (container div), and nav button in `HOME_SCREEN_HTML`
 5. **Register** in `app.ts` with `registerDeclarativeMode(YOUR_DEF)`

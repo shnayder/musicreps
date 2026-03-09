@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ALL_ITEMS, checkAnswer, getQuestion, getStatsRows } from './logic.ts';
+import { ALL_ITEMS, getQuestion, getStatsRows } from './logic.ts';
 
 // ---------------------------------------------------------------------------
 // ALL_ITEMS
@@ -79,63 +79,28 @@ describe('getQuestion for other intervals', () => {
 });
 
 // ---------------------------------------------------------------------------
-// checkAnswer
+// Expected values (used by answer spec)
 // ---------------------------------------------------------------------------
 
-describe('checkAnswer fwd (interval → number)', () => {
-  it('correct when number matches interval.num', () => {
+describe('getQuestion expected values', () => {
+  it('fwd: num is the expected integer answer', () => {
     const q = getQuestion('m2:fwd');
-    const result = checkAnswer(q, '1');
-    assert.equal(result.correct, true);
-    assert.equal(result.correctAnswer, '1');
+    assert.equal(String(q.num), '1');
   });
 
-  it('wrong when number does not match', () => {
-    const q = getQuestion('m2:fwd');
-    const result = checkAnswer(q, '2');
-    assert.equal(result.correct, false);
-    assert.equal(result.correctAnswer, '1');
-  });
-
-  it('correct for P5 (num=7)', () => {
+  it('fwd: P5 has num 7', () => {
     const q = getQuestion('P5:fwd');
-    assert.equal(checkAnswer(q, '7').correct, true);
-    assert.equal(checkAnswer(q, '5').correct, false);
+    assert.equal(String(q.num), '7');
   });
 
-  it('correct for M7 (num=11)', () => {
-    const q = getQuestion('M7:fwd');
-    assert.equal(checkAnswer(q, '11').correct, true);
-    assert.equal(checkAnswer(q, '12').correct, false);
-  });
-});
-
-describe('checkAnswer rev (number → interval)', () => {
-  it('correct when abbreviation matches', () => {
+  it('rev: abbrev is the expected interval', () => {
     const q = getQuestion('m2:rev');
-    const result = checkAnswer(q, 'm2');
-    assert.equal(result.correct, true);
-    assert.equal(result.correctAnswer, 'm2');
+    assert.equal(q.abbrev, 'm2');
   });
 
-  it('wrong for wrong abbreviation', () => {
-    const q = getQuestion('m2:rev');
-    const result = checkAnswer(q, 'M2');
-    assert.equal(result.correct, false);
-  });
-
-  it('accepts alt abbreviations for tritone (TT)', () => {
+  it('rev: TT abbrev is "TT"', () => {
     const q = getQuestion('TT:rev');
-    assert.equal(checkAnswer(q, 'TT').correct, true);
-    assert.equal(checkAnswer(q, 'A4').correct, true);
-    assert.equal(checkAnswer(q, 'd5').correct, true);
-    assert.equal(checkAnswer(q, 'P4').correct, false);
-  });
-
-  it('correct for P5', () => {
-    const q = getQuestion('P5:rev');
-    assert.equal(checkAnswer(q, 'P5').correct, true);
-    assert.equal(checkAnswer(q, 'm6').correct, false);
+    assert.equal(q.abbrev, 'TT');
   });
 });
 

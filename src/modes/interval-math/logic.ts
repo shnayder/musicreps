@@ -8,7 +8,6 @@ import {
   displayNote,
   INTERVALS,
   noteAdd,
-  noteMatchesInput,
   NOTES,
   noteSub,
   pickAccidentalName,
@@ -101,27 +100,6 @@ export function getQuestion(itemId: string): Question {
     answer,
     useFlats,
     promptText: promptNoteName + ' ' + op + ' ' + interval.abbrev,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Answer checking
-// ---------------------------------------------------------------------------
-
-/**
- * Check whether the user's note name matches the expected answer.
- * Accepts any enharmonic equivalent.
- */
-export function checkAnswer(
-  q: Question,
-  input: string,
-): { correct: boolean; correctAnswer: string } {
-  const correct = noteMatchesInput(q.answer, input);
-  return {
-    correct,
-    correctAnswer: displayNote(
-      pickAccidentalName(q.answer.displayName, q.useFlats),
-    ),
   };
 }
 

@@ -3,12 +3,7 @@
 // Bidirectional: forward (degree in key → note), reverse (note in key → degree).
 // 144 items: 12 keys × 6 degrees × 2 directions (1st excluded).
 
-import {
-  displayNote,
-  getScaleDegreeNote,
-  MAJOR_KEYS,
-  spelledNoteMatchesSemitone,
-} from '../../music-data.ts';
+import { getScaleDegreeNote, MAJOR_KEYS } from '../../music-data.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -86,34 +81,6 @@ export function getQuestion(itemId: string): Question {
   const dir = parts[2] as 'fwd' | 'rev';
   const noteName = getScaleDegreeNote(keyRoot, degree);
   return { keyRoot, degree, dir, noteName };
-}
-
-// ---------------------------------------------------------------------------
-// Answer checking
-// ---------------------------------------------------------------------------
-
-/**
- * Check the user's answer.
- *
- * Forward: user enters a note name. Correct if it matches the scale degree note.
- * Reverse: user enters a degree number (2–7). Correct if it matches the degree.
- */
-export function checkAnswer(
-  q: Question,
-  input: string,
-): { correct: boolean; correctAnswer: string } {
-  if (q.dir === 'fwd') {
-    const correct = spelledNoteMatchesSemitone(q.noteName, input);
-    return {
-      correct,
-      correctAnswer: displayNote(q.noteName),
-    };
-  }
-  const expectedDegree = String(q.degree);
-  return {
-    correct: input === expectedDegree,
-    correctAnswer: DEGREE_LABELS[q.degree - 1],
-  };
 }
 
 // ---------------------------------------------------------------------------

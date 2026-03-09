@@ -2,7 +2,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { GUITAR, UKULELE } from '../../music-data.ts';
 import {
-  checkAnswer,
   formatLabel,
   getAllGroupIndices,
   getAllItems,
@@ -131,20 +130,15 @@ describe('getQuestion', () => {
   });
 });
 
-describe('checkAnswer', () => {
-  it('correct answer', () => {
-    const result = checkAnswer(GUITAR, 'E', 'e');
-    assert.equal(result.correct, true);
+describe('getQuestion expected values', () => {
+  it('currentNote is the canonical note name', () => {
+    const q = getQuestion(GUITAR, '5-0');
+    assert.equal(q.currentNote, 'E');
   });
 
-  it('incorrect answer', () => {
-    const result = checkAnswer(GUITAR, 'E', 'f');
-    assert.equal(result.correct, false);
-  });
-
-  it('accepts enharmonic', () => {
-    const result = checkAnswer(GUITAR, 'C#', 'db');
-    assert.equal(result.correct, true);
+  it('accidental position has sharp name', () => {
+    const q = getQuestion(GUITAR, '5-1');
+    assert.equal(q.currentNote, 'F');
   });
 });
 

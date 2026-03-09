@@ -2,7 +2,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ALL_ITEMS,
-  checkAnswer,
   DEGREE_GROUPS,
   getGridItemId,
   getItemIdsForGroup,
@@ -84,49 +83,20 @@ describe('getQuestion', () => {
   });
 });
 
-describe('checkAnswer fwd', () => {
-  it('correct when note matches (E for 3rd degree of C major)', () => {
+describe('getQuestion expected values', () => {
+  it('fwd: noteName is the expected note answer', () => {
     const q = getQuestion('C:3:fwd');
-    const result = checkAnswer(q, 'E');
-    assert.equal(result.correct, true);
+    assert.equal(q.noteName, 'E');
   });
 
-  it('correct for enharmonic equivalent (A for 5th of D major)', () => {
+  it('rev: degree is the expected degree answer', () => {
+    const q = getQuestion('C:3:rev');
+    assert.equal(String(q.degree), '3');
+  });
+
+  it('D:5:fwd noteName is "A"', () => {
     const q = getQuestion('D:5:fwd');
-    const result = checkAnswer(q, 'A');
-    assert.equal(result.correct, true);
-  });
-
-  it('wrong when note does not match', () => {
-    const q = getQuestion('C:3:fwd');
-    const result = checkAnswer(q, 'F');
-    assert.equal(result.correct, false);
-  });
-
-  it('correctAnswer is the display name of the note', () => {
-    const q = getQuestion('C:3:fwd');
-    const result = checkAnswer(q, 'F');
-    assert.equal(result.correctAnswer, 'E');
-  });
-});
-
-describe('checkAnswer rev', () => {
-  it('correct when degree number matches ("3" for E in C major)', () => {
-    const q = getQuestion('C:3:rev');
-    const result = checkAnswer(q, '3');
-    assert.equal(result.correct, true);
-  });
-
-  it('wrong when degree number does not match', () => {
-    const q = getQuestion('C:3:rev');
-    const result = checkAnswer(q, '2');
-    assert.equal(result.correct, false);
-  });
-
-  it('correctAnswer is the degree label string', () => {
-    const q = getQuestion('C:3:rev');
-    const result = checkAnswer(q, '2');
-    assert.equal(result.correctAnswer, '3rd');
+    assert.equal(q.noteName, 'A');
   });
 });
 

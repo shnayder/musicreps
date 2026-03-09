@@ -11,7 +11,6 @@ import {
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_ITEMS,
-  checkAnswer,
   getQuestion,
   getStatsRows,
   type Question,
@@ -29,7 +28,18 @@ export const NOTE_SEMITONES_DEF: ModeDefinition<Question> = {
   getQuestion,
   getPromptText: (q) =>
     q.dir === 'fwd' ? displayNote(q.accidentalChoice) : String(q.noteNum),
-  checkAnswer,
+  answer: {
+    kind: 'bidirectional',
+    fwd: {
+      getExpectedValue: (q) => String(q.noteNum),
+      comparison: 'integer',
+    },
+    rev: {
+      getExpectedValue: (q) => q.noteName,
+      comparison: 'note-enharmonic',
+      getDisplayAnswer: (q) => displayNote(q.accidentalChoice),
+    },
+  },
   validateInput: (q, input) =>
     q.dir === 'fwd'
       ? isValidNumberInput(input, 0, 11)
