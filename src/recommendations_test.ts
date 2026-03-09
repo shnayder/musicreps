@@ -453,6 +453,64 @@ describe('computeRecommendations', () => {
     assert.ok(!result.reviewMode, 'should not be review mode with unstarted');
   });
 
+  // ---------------------------------------------------------------------------
+  // Stale detection
+  // ---------------------------------------------------------------------------
+
+  it('marks group as stale when high speed + low freshness', () => {
+    const data = {
+      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
+    };
+    const base = mockSelector(data);
+    const sel = {
+      ...base,
+      getSpeedScore: () => 0.8,
+      getFreshness: () => 0.2,
+    };
+    const result = computeRecommendations(
+      sel,
+      [0],
+      makeGetItemIds(data),
+      config,
+      {},
+    );
+    assert.deepStrictEqual(result.staleIndices, [0]);
+  });
+
+  it('does not mark group as stale when freshness is high', () => {
+    const data = {
+      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
+    };
+    const base = mockSelector(data);
+    const sel = {
+      ...base,
+      getSpeedScore: () => 0.8,
+      getFreshness: () => 0.8,
+    };
+    const result = computeRecommendations(
+      sel,
+      [0],
+      makeGetItemIds(data),
+      config,
+      {},
+    );
+    assert.equal(result.staleIndices, undefined);
+  });
+
+  it('staleIndices is undefined when selector lacks speed/freshness', () => {
+    const data = {
+      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0],
+      makeGetItemIds(data),
+      config,
+      {},
+    );
+    assert.equal(result.staleIndices, undefined);
+  });
+
   it('does not expand just below the threshold level', () => {
     // Working items produce level=0.3. Threshold=0.3 should pass,
     // but threshold=0.31 should fail.
