@@ -165,6 +165,8 @@ export type RecommendationResult = {
   consolidateWorkingCount: number;
   expandIndex: number | null;
   expandNewCount: number;
+  /** True when most items are fluent and no unstarted groups remain. */
+  reviewMode?: boolean;
 };
 
 // ---------------------------------------------------------------------------

@@ -217,6 +217,34 @@ describe('buildRecommendationText', () => {
     assert.ok(!text.includes('1 new items')); // not plural
   });
 
+  it('builds review mode text', () => {
+    const result: RecommendationResult = {
+      recommended: new Set([0, 1, 2]),
+      enabled: new Set([0, 1, 2]),
+      consolidateIndices: [0, 1, 2],
+      consolidateWorkingCount: 6,
+      expandIndex: null,
+      expandNewCount: 0,
+      reviewMode: true,
+    };
+    const text = buildRecommendationText(result, label);
+    assert.equal(text, 'review all \u2014 polish across 3 groups');
+  });
+
+  it('builds review mode text singular', () => {
+    const result: RecommendationResult = {
+      recommended: new Set([0]),
+      enabled: new Set([0]),
+      consolidateIndices: [0],
+      consolidateWorkingCount: 2,
+      expandIndex: null,
+      expandNewCount: 0,
+      reviewMode: true,
+    };
+    const text = buildRecommendationText(result, label);
+    assert.equal(text, 'review all \u2014 polish across 1 group');
+  });
+
   it('uses singular for 1 item to work on', () => {
     const result: RecommendationResult = {
       recommended: new Set([0]),
@@ -280,7 +308,7 @@ describe('computePracticeSummary', () => {
     // Level automaticity: values = [0.9, 0.8, 0.6, 0.3, 0] sorted = [0, 0.3, 0.6, 0.8, 0.9]
     // p=0.1: index = ceil(5*0.1)-1 = ceil(0.5)-1 = 0 → level = 0 → "Learning"
     assert.equal(result.statusLabel, 'Learning');
-    assert.equal(result.statusDetail, '3 of 5 positions fluent');
+    assert.equal(result.statusDetail, '3/5 positions fluent');
   });
 
   it('passes through mastery state', () => {
