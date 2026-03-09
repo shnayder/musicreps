@@ -2049,7 +2049,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="d28187 scale-degree-mode-difficulty-DN1Rd"></div>
+  <div class="home-screen" id="home-screen" data-version="2acc11 scale-degree-mode-difficulty-DN1Rd"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6079,6 +6079,13 @@ button {
           enabled = new Set(JSON.parse(saved));
         } catch (_3) {
         }
+      }
+      const groupCount = spec.groups.length;
+      for (const idx of enabled) {
+        if (idx < 0 || idx >= groupCount) enabled.delete(idx);
+      }
+      if (enabled.size === 0) {
+        for (const d3 of spec.defaultEnabled) enabled.add(d3);
       }
       return { kind: "groups", enabledGroups: enabled };
     }
