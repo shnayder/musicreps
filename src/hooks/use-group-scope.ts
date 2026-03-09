@@ -51,10 +51,12 @@ export type GroupScopeSpec = {
 export type GroupScopeResult = {
   /** Raw scope state (for reading `.kind`). */
   scope: ScopeState;
-  /** Scope mutation actions (toggleGroup, setScope, etc.). */
+  /** Scope mutation actions (toggleGroup, setScope, toggleSkip, etc.). */
   scopeActions: ScopeActions;
   /** Currently enabled group indices. */
   enabledGroups: ReadonlySet<number>;
+  /** Currently skipped group indices. */
+  skippedGroups: ReadonlySet<number>;
   /** All item IDs in enabled groups (memoized). */
   enabledItems: string[];
   /** Human-readable label for the active scope, e.g. "1–2, 3–4 semitones". */
@@ -82,6 +84,8 @@ export type GroupScopeResult = {
 // Hook
 // ---------------------------------------------------------------------------
 
+const EMPTY_SKIPPED: ReadonlySet<number> = new Set();
+
 export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   // --- Scope state (persisted to localStorage) ---
   const [scope, scopeActions] = useScopeState({
@@ -100,6 +104,16 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   const enabledGroups = scope.kind === 'groups'
     ? scope.enabledGroups
     : new Set(spec.defaultEnabled);
+
+  const skippedGroups: ReadonlySet<number> = scope.kind === 'groups'
+    ? scope.skippedGroups
+    : EMPTY_SKIPPED;
+
+  // Active indices = all indices minus skipped (for recommendations).
+  const activeGroupIndices = useMemo(
+    () => spec.allGroupIndices.filter((i) => !skippedGroups.has(i)),
+    [spec.allGroupIndices, skippedGroups],
+  );
 
   // --- Enabled items (derived from scope) ---
   const enabledItems = useMemo(() => {
@@ -120,12 +134,12 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   const recommendation = useMemo((): RecommendationResult => {
     return computeRecommendations(
       spec.selector,
-      spec.allGroupIndices,
+      activeGroupIndices,
       spec.getItemIdsForGroup,
       { expansionThreshold: 0.7 },
       { sortUnstarted: (a, b) => a.string - b.string },
     );
-  }, [spec.selector, spec.allGroupIndices, spec.getItemIdsForGroup]);
+  }, [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]);
 
   const recommendationText = useMemo(() => {
     return buildRecommendationText(
@@ -139,9 +153,10 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
       scopeActions.setScope({
         kind: 'groups',
         enabledGroups: recommendation.enabled,
+        skippedGroups,
       });
     }
-  }, [recommendation, scopeActions]);
+  }, [recommendation, scopeActions, skippedGroups]);
 
   // --- Stable ref-backed functions for engineConfig ---
   const enabledItemsRef = useRef(enabledItems);
@@ -160,6 +175,7 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
     scope,
     scopeActions,
     enabledGroups,
+    skippedGroups,
     enabledItems,
     practicingLabel,
     recommendation,
