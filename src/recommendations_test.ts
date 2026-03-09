@@ -294,6 +294,47 @@ describe('computeRecommendations', () => {
     assert.ok(result.recommended.has(1), 'should expand at exact threshold');
   });
 
+  // ---------------------------------------------------------------------------
+  // Skipped groups (call-site filtering)
+  // ---------------------------------------------------------------------------
+
+  it('skipped group is excluded from recommendations', () => {
+    // 4 groups, group 1 skipped (not passed in allIndices)
+    const data = {
+      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
+      1: { workingCount: 5, unseenCount: 5, fluentCount: 0, totalCount: 10 },
+      2: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      3: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0, 2, 3], // group 1 skipped
+      makeGetItemIds(data),
+      config,
+      {},
+    );
+    assert.ok(!result.recommended.has(1), 'skipped group should not appear');
+  });
+
+  it('expansion skips past skipped group to next unstarted', () => {
+    // Group 0 all fluent → expansion gate opens. Groups 1,2 unstarted.
+    // Group 1 is skipped (not in allIndices), so expansion should go to 2.
+    const data = {
+      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
+      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      2: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0, 2], // group 1 skipped
+      makeGetItemIds(data),
+      config,
+      { sortUnstarted: (a: any, b: any) => a.string - b.string },
+    );
+    assert.equal(result.expandIndex, 2, 'should expand to group 2');
+    assert.ok(!result.recommended.has(1), 'skipped group not recommended');
+  });
+
   it('does not expand just below the threshold level', () => {
     // Working items produce level=0.3. Threshold=0.3 should pass,
     // but threshold=0.31 should fail.

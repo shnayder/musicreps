@@ -273,7 +273,11 @@ export type ScopeSpec =
 /** Runtime state: what the user has currently selected. */
 export type ScopeState =
   | { kind: 'none' }
-  | { kind: 'groups'; enabledGroups: ReadonlySet<number> }
+  | {
+    kind: 'groups';
+    enabledGroups: ReadonlySet<number>;
+    skippedGroups: ReadonlySet<number>;
+  }
   | { kind: 'note-filter'; noteFilter: NoteFilter };
 
 // --- Stats ---

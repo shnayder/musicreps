@@ -30,7 +30,20 @@ function loadScope(spec: ScopeSpec): ScopeState {
     if (enabled.size === 0) {
       for (const d of spec.defaultEnabled) enabled.add(d);
     }
-    return { kind: 'groups', enabledGroups: enabled };
+    // Load skipped groups.
+    let skipped = new Set<number>();
+    const savedSkipped = localStorage.getItem(spec.storageKey + '_skipped');
+    if (savedSkipped) {
+      try {
+        skipped = new Set(JSON.parse(savedSkipped));
+      } catch (_) { /* expected */ }
+    }
+    for (const idx of skipped) {
+      if (idx < 0 || idx >= groupCount) skipped.delete(idx);
+    }
+    // Skipped groups must not be enabled.
+    for (const idx of skipped) enabled.delete(idx);
+    return { kind: 'groups', enabledGroups: enabled, skippedGroups: skipped };
   }
 
   if (spec.kind === 'note-filter') {
@@ -54,6 +67,10 @@ function saveScope(spec: ScopeSpec, scope: ScopeState): void {
       spec.storageKey,
       JSON.stringify([...scope.enabledGroups]),
     );
+    localStorage.setItem(
+      spec.storageKey + '_skipped',
+      JSON.stringify([...scope.skippedGroups]),
+    );
   } else if (spec.kind === 'note-filter' && scope.kind === 'note-filter') {
     try {
       localStorage.setItem(spec.storageKey, scope.noteFilter);
@@ -67,6 +84,8 @@ function saveScope(spec: ScopeSpec, scope: ScopeState): void {
 
 export type ScopeActions = {
   toggleGroup: (index: number) => void;
+  /** Toggle skip status for a group. Skipping disables and dims the group. */
+  toggleSkip: (index: number) => void;
   setNoteFilter: (filter: NoteFilter) => void;
   /** Replace scope state directly (e.g., applying recommendations). */
   setScope: (scope: ScopeState) => void;
@@ -92,7 +111,37 @@ export function useScopeState(
       } else {
         next.add(index);
       }
-      const updated: ScopeState = { kind: 'groups', enabledGroups: next };
+      const updated: ScopeState = {
+        kind: 'groups',
+        enabledGroups: next,
+        skippedGroups: prev.skippedGroups,
+      };
+      saveScope(spec, updated);
+      return updated;
+    });
+  }, [spec]);
+
+  const toggleSkip = useCallback((index: number) => {
+    setScopeRaw((prev) => {
+      if (prev.kind !== 'groups') return prev;
+      const nextSkipped = new Set(prev.skippedGroups);
+      const nextEnabled = new Set(prev.enabledGroups);
+      if (nextSkipped.has(index)) {
+        // Unskip: remove from skipped, leave disabled
+        nextSkipped.delete(index);
+      } else {
+        // Skip: prevent skipping the last non-skipped group
+        const groupCount =
+          (spec as Extract<ScopeSpec, { kind: 'groups' }>).groups.length;
+        if (nextSkipped.size + 1 >= groupCount) return prev;
+        nextSkipped.add(index);
+        nextEnabled.delete(index);
+      }
+      const updated: ScopeState = {
+        kind: 'groups',
+        enabledGroups: nextEnabled,
+        skippedGroups: nextSkipped,
+      };
       saveScope(spec, updated);
       return updated;
     });
@@ -109,5 +158,5 @@ export function useScopeState(
     });
   }, [spec]);
 
-  return [scope, { toggleGroup, setNoteFilter, setScope }];
+  return [scope, { toggleGroup, toggleSkip, setNoteFilter, setScope }];
 }
