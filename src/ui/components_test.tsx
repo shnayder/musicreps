@@ -569,7 +569,7 @@ describe('TabbedIdle', () => {
 });
 
 describe('PracticeCard', () => {
-  it('renders mastery zone with label and detail', () => {
+  it('renders status line and start button', () => {
     const html = render(
       <PracticeCard
         statusLabel='Strong'
@@ -577,7 +577,6 @@ describe('PracticeCard', () => {
       />,
     );
     assert.ok(html.includes('practice-card'));
-    assert.ok(html.includes('practice-zone-mastery'));
     assert.ok(html.includes('practice-status-label'));
     assert.ok(html.includes('Strong'));
     assert.ok(html.includes('12 of 14 fluent'));
@@ -585,7 +584,7 @@ describe('PracticeCard', () => {
     assert.ok(html.includes('start-btn'));
   });
 
-  it('shows Practice Settings header when recommendation present', () => {
+  it('shows recommendation with accept button', () => {
     const html = render(
       <PracticeCard
         recommendation='start A string'
@@ -596,10 +595,9 @@ describe('PracticeCard', () => {
     assert.ok(html.includes('suggestion-card-header'));
     assert.ok(html.includes('suggestion-card-text'));
     assert.ok(html.includes('suggestion-card-accept'));
-    assert.ok(html.includes('Practice Settings'));
   });
 
-  it('shows scope controls in setup zone', () => {
+  it('shows scope controls', () => {
     const html = render(
       <PracticeCard
         recommendation='start D string'
@@ -607,18 +605,9 @@ describe('PracticeCard', () => {
         scope={<div class='mock-scope' />}
       />,
     );
-    assert.ok(html.includes('practice-zone-setup'));
     assert.ok(html.includes('practice-scope'));
     assert.ok(html.includes('mock-scope'));
     assert.ok(html.includes('suggestion-card-text'));
-  });
-
-  it('shows mastery message', () => {
-    const html = render(
-      <PracticeCard mastery="Looks like you've got this!" />,
-    );
-    assert.ok(html.includes('mastery-message'));
-    assert.ok(html.includes("Looks like you've got this!"));
   });
 });
 
