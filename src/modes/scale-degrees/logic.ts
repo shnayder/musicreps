@@ -1,7 +1,7 @@
 // Pure logic for Scale Degrees mode.
 // No DOM, no hooks — just data in, data out.
 // Bidirectional: forward (degree in key → note), reverse (note in key → degree).
-// 168 items: 12 keys × 7 degrees × 2 directions.
+// 144 items: 12 keys × 6 degrees × 2 directions (1st excluded).
 
 import {
   displayNote,
@@ -16,10 +16,12 @@ import {
 
 export const DEGREE_LABELS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th'];
 
+/** Degrees included in this mode (1st excluded — too easy). */
+export const ACTIVE_DEGREES = [2, 3, 4, 5, 6, 7];
+
 /** Degree groups for scope selection, ordered by importance. */
 export const DEGREE_GROUPS = [
-  { degrees: [1, 5], label: '1st,5th' },
-  { degrees: [4], label: '4th' },
+  { degrees: [4, 5], label: '4th,5th' },
   { degrees: [3, 7], label: '3rd,7th' },
   { degrees: [2, 6], label: '2nd,6th' },
 ];
@@ -28,7 +30,7 @@ export const DEGREE_GROUPS = [
  * Get all item IDs belonging to a degree group.
  * Item ID format: "key:degree:dir" (e.g. "D:5:fwd").
  *
- * @example getItemIdsForGroup(0) → ["C:1:fwd","C:1:rev","C:5:fwd","C:5:rev",...]
+ * @example getItemIdsForGroup(0) → ["C:4:fwd","C:4:rev","C:5:fwd","C:5:rev",...]
  */
 export function getItemIdsForGroup(groupIndex: number): string[] {
   const degrees = DEGREE_GROUPS[groupIndex].degrees;
@@ -42,10 +44,10 @@ export function getItemIdsForGroup(groupIndex: number): string[] {
   return items;
 }
 
-/** All 168 item IDs: 12 keys × 7 degrees × 2 directions. */
+/** All 144 item IDs: 12 keys × 6 degrees × 2 directions (1st excluded). */
 export const ALL_ITEMS: string[] = [];
 for (const key of MAJOR_KEYS) {
-  for (let d = 1; d <= 7; d++) {
+  for (const d of ACTIVE_DEGREES) {
     ALL_ITEMS.push(key.root + ':' + d + ':fwd');
     ALL_ITEMS.push(key.root + ':' + d + ':rev');
   }
@@ -94,7 +96,7 @@ export function getQuestion(itemId: string): Question {
  * Check the user's answer.
  *
  * Forward: user enters a note name. Correct if it matches the scale degree note.
- * Reverse: user enters a degree number (1–7). Correct if it matches the degree.
+ * Reverse: user enters a degree number (2–7). Correct if it matches the degree.
  */
 export function checkAnswer(
   q: Question,
@@ -120,14 +122,14 @@ export function checkAnswer(
 
 /**
  * Get the pair of item IDs (fwd + rev) for a stats grid cell.
- * Grid rows are keys, columns are degrees.
+ * Grid rows are keys, columns are degrees 2–7.
  *
- * @example getGridItemId("D", 4) → ["D:5:fwd", "D:5:rev"]
+ * @example getGridItemId("D", 3) → ["D:5:fwd", "D:5:rev"]
  */
 export function getGridItemId(
   keyRoot: string,
   colIdx: number,
 ): string[] {
-  const d = colIdx + 1;
+  const d = ACTIVE_DEGREES[colIdx];
   return [keyRoot + ':' + d + ':fwd', keyRoot + ':' + d + ':rev'];
 }

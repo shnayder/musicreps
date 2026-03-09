@@ -511,7 +511,6 @@ export const DIATONIC_CHORDS: DiatonicChord[] = [
 
 export const ROMAN_NUMERALS = DIATONIC_CHORDS.map((c) => c.numeral);
 export const DEGREE_LABELS: [string, string][] = [
-  ['1', '1st'],
   ['2', '2nd'],
   ['3', '3rd'],
   ['4', '4th'],

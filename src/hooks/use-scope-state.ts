@@ -20,6 +20,16 @@ function loadScope(spec: ScopeSpec): ScopeState {
         enabled = new Set(JSON.parse(saved));
       } catch (_) { /* expected */ }
     }
+    // Drop indices beyond the current group count (groups may have been
+    // removed between releases — stale localStorage shouldn't crash).
+    const groupCount = spec.groups.length;
+    for (const idx of enabled) {
+      if (idx < 0 || idx >= groupCount) enabled.delete(idx);
+    }
+    // If all saved groups were invalid, fall back to defaults.
+    if (enabled.size === 0) {
+      for (const d of spec.defaultEnabled) enabled.add(d);
+    }
     return { kind: 'groups', enabledGroups: enabled };
   }
 

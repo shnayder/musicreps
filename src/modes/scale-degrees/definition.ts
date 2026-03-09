@@ -10,6 +10,7 @@ import {
 } from '../../music-data.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
+  ACTIVE_DEGREES,
   ALL_GROUP_INDICES,
   ALL_ITEMS,
   checkAnswer,
@@ -40,11 +41,11 @@ export const SCALE_DEGREES_DEF: ModeDefinition<Question> = {
         displayNote(q.noteName),
   checkAnswer,
   validateInput: (q, input) =>
-    q.dir === 'fwd' ? isValidNoteInput(input) : /^[1-7]$/.test(input),
+    q.dir === 'fwd' ? isValidNoteInput(input) : /^[2-7]$/.test(input),
   getDirection: (q) => q.dir,
   getUseFlats: (q) => rootUsesFlats(q.keyRoot),
 
-  inputPlaceholder: (q) => q.dir === 'fwd' ? 'Note name' : 'Degree (1\u20137)',
+  inputPlaceholder: (q) => q.dir === 'fwd' ? 'Note name' : 'Degree (2\u20137)',
   buttons: {
     kind: 'bidirectional',
     fwd: { kind: 'note' },
@@ -70,7 +71,7 @@ export const SCALE_DEGREES_DEF: ModeDefinition<Question> = {
 
   stats: {
     kind: 'grid',
-    colLabels: DEGREE_LABELS,
+    colLabels: ACTIVE_DEGREES.map((d) => DEGREE_LABELS[d - 1]),
     getItemId: getGridItemId,
     notes: GRID_NOTES,
   },

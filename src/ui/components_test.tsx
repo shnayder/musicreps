@@ -149,16 +149,17 @@ describe('KeysigButtons', () => {
 });
 
 describe('DegreeButtons', () => {
-  it('renders 7 degree buttons', () => {
+  it('renders 6 degree buttons (1st excluded)', () => {
     const html = render(<DegreeButtons />);
     assert.ok(html.includes('answer-buttons-degrees'));
     const count = (html.match(/answer-btn-degree/g) || []).length;
-    assert.equal(count, 7);
+    assert.equal(count, 6);
   });
 
-  it('shows ordinal labels', () => {
+  it('shows ordinal labels (2nd–7th)', () => {
     const html = render(<DegreeButtons />);
-    assert.ok(html.includes('1st'));
+    assert.ok(!html.includes('>1st<'));
+    assert.ok(html.includes('2nd'));
     assert.ok(html.includes('7th'));
   });
 });
