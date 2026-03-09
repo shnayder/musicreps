@@ -90,13 +90,26 @@ type GroupResult = {
 // Heatmap color (inline computation, same as item-model diagnostic)
 // ---------------------------------------------------------------------------
 
-const SPEED_HSL: [number, number, number][] = [
-  [44, 65, 58], // needs work
-  [54, 45, 52],
-  [68, 30, 46],
-  [90, 38, 38],
-  [122, 46, 33], // automatic
+// Two color scales to compare — toggle SPEED_HSL_ALT to see the shifted version.
+const SPEED_HSL_ORIGINAL: [number, number, number][] = [
+  [44, 65, 58], // needs work (speed ≤ 0.2)
+  [54, 45, 52], // > 0.2
+  [68, 30, 46], // > 0.4
+  [90, 38, 38], // > 0.6
+  [122, 46, 33], // automatic (> 0.8)
 ];
+
+// Shifted: green reserved for truly automatic (> 0.9). The "fast but not
+// instant" range (0.7-0.9) is yellow-green instead of green.
+const SPEED_HSL_SHIFTED: [number, number, number][] = [
+  [40, 60, 58], // needs work (speed ≤ 0.3)
+  [48, 50, 52], // > 0.3
+  [60, 40, 46], // > 0.55
+  [80, 35, 40], // > 0.75 — "fast but figuring it out"
+  [125, 48, 33], // > 0.9 — "just know it"
+];
+
+const SPEED_HSL = SPEED_HSL_SHIFTED;
 const FRESHNESS_FLOOR = 0.25;
 const NEUTRAL_L = 78;
 const NO_DATA_COLOR = 'hsl(30, 4%, 85%)';
@@ -106,13 +119,13 @@ function getSpeedFreshnessColor(
   freshness: number | null,
 ): string {
   if (speedScore === null || freshness === null) return NO_DATA_COLOR;
-  const level = speedScore > 0.8
+  const level = speedScore > 0.9
     ? 4
-    : speedScore > 0.6
+    : speedScore > 0.75
     ? 3
-    : speedScore > 0.4
+    : speedScore > 0.55
     ? 2
-    : speedScore > 0.2
+    : speedScore > 0.3
     ? 1
     : 0;
   const [h, s, l] = SPEED_HSL[level];
@@ -530,9 +543,9 @@ const SCENARIOS: GroupScenario[] = [
     unseenCount: 4,
   },
   {
-    name: 'nearly-fluent',
+    name: 'fast-not-automatic',
     description:
-      '10 items at ~1500ms (auto ~0.6-0.7), 2 fast items. Near the fluent/automatic boundary.',
+      '10 items at ~1400-1550ms (speed ~0.85, auto ~0.75-0.85), 2 truly fast. Quick to figure out but not instant.',
     items: [
       ...Array.from({ length: 10 }, (_, i) => ({
         label: `near-fluent-${i + 1}`,
@@ -652,6 +665,19 @@ const SCENARIOS: GroupScenario[] = [
       },
     ],
     unseenCount: 2,
+  },
+  {
+    name: 'mastered-then-away',
+    description:
+      '12 items that were all fast (~1100ms) with high stability, but 3 weeks without practice. True "review" scenario.',
+    items: Array.from({ length: 12 }, (_, i) => ({
+      label: `was-auto-${i + 1}`,
+      ewmaMs: 1050 + (i % 4) * 50, // 1050–1200ms, all fast
+      stabilityHours: 60 + i * 10, // 60–170h stability
+      lastCorrectHoursAgo: 500 + i * 10, // ~3 weeks ago
+      sampleCount: 12 + i,
+    })),
+    unseenCount: 0,
   },
 ];
 
@@ -820,6 +846,70 @@ function colorCell(color: string): string {
   return `<div class="color-swatch" style="background:${color}"></div>`;
 }
 
+/**
+ * Build the "practice card" preview — what the user might see on the practice
+ * tab for this group. Stacked progress bar + concise action-oriented text.
+ */
+function practiceCardPreview(result: GroupResult): string {
+  const { fluent, working, unseen, total, items } = result;
+
+  // Per-item bar: sort by automaticity (unseen last), use actual heatmap colors
+  const sorted = items.slice().sort((a, b) => {
+    const av = a.automaticity ?? -1;
+    const bv = b.automaticity ?? -1;
+    return bv - av; // highest first (green on left)
+  });
+  const sliceWidth = total > 0 ? 100 / total : 0;
+  const bar = `<div class="progress-bar">` +
+    sorted
+      .map(
+        (item) =>
+          `<div class="bar-slice" style="width:${sliceWidth}%;background:${item.heatmapColor}"></div>`,
+      )
+      .join('') +
+    `</div>`;
+
+  // Count items that were truly fast (speed ≥ 0.8, would be automatic with
+  // full freshness) but freshness has dropped. This is "you had this, got rusty."
+  let decayedCount = 0;
+  for (const item of items) {
+    if (
+      !item.unseen &&
+      item.speedScore !== null && item.speedScore >= 0.8 &&
+      item.freshness !== null && item.freshness < 0.7
+    ) {
+      decayedCount++;
+    }
+  }
+
+  const seen = fluent + working;
+  // "Few unseen" = within the p10 margin (wouldn't dominate the percentile).
+  const fewUnseen = unseen <= Math.ceil(total * 0.1);
+  const mostlyAutomatic = seen > 0 && fluent / seen >= 0.9;
+  // "Not seriously started" — tried it briefly but hasn't committed.
+  const notStarted = seen < 5;
+
+  // Action text
+  let actionText: string;
+  if (notStarted) {
+    actionText = ''; // not started — bar is mostly grey, speaks for itself
+  } else if (fewUnseen && mostlyAutomatic) {
+    actionText = ''; // you're good
+  } else if (fewUnseen && decayedCount > seen / 2) {
+    actionText = 'Review';
+  } else {
+    actionText = 'Keep learning';
+  }
+
+  return `<div class="practice-card-preview">
+    <div class="practice-card-label">Practice tab preview</div>
+    <div class="practice-card-content">
+      ${bar}
+      <span class="practice-card-text">${escapeHtml(actionText)}</span>
+    </div>
+  </div>`;
+}
+
 function miniHeatmap(items: ItemResult[]): string {
   return items
     .map(
@@ -900,6 +990,7 @@ function generateReviewHTML(
         <span class="scenario-desc">${escapeHtml(scenario.description)}</span>
       </div>
 
+      ${practiceCardPreview(result)}
       ${summaryHtml}
       ${heatmapHtml}
 
@@ -994,6 +1085,25 @@ function generateReviewHTML(
     font-size: 0.72rem; font-weight: bold; color: #fff;
     white-space: nowrap;
   }
+  .practice-card-preview {
+    margin-bottom: 0.75rem; padding: 0.6rem 0.75rem;
+    background: #fdfdfd; border: 2px solid #4a90d9; border-radius: 6px;
+  }
+  .practice-card-label {
+    font-size: 0.7rem; color: #4a90d9; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem;
+  }
+  .practice-card-content {
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .progress-bar {
+    display: flex; height: 12px; border-radius: 3px; overflow: hidden;
+    flex: 0 0 140px; background: #e8e8e8;
+  }
+  .bar-slice { min-width: 1px; }
+  .practice-card-text {
+    font-size: 0.9rem; color: #333;
+  }
   .scenario-notes { margin-top: 0.5rem; }
   .scenario-notes textarea {
     width: 100%; min-height: 40px; resize: vertical;
@@ -1046,20 +1156,20 @@ function generateReviewHTML(
   <p style="margin:0 0 0.5rem;"><strong>Status label</strong> \u2014 from level automaticity: Automatic (\u22650.8), Fluent (\u22650.5), Developing (\u22650.2), Learning (&lt;0.2), Not started (0 seen).</p>
   <h3 style="margin-top:0.75rem;">Heatmap color encoding</h3>
   <div class="legend-row">${
-    colorCell('hsl(122,46%,33%)')
-  }<span>Speed &gt; 0.8 (automatic)</span></div>
+    colorCell('hsl(125,48%,33%)')
+  }<span>Speed &gt; 0.9 (just know it)</span></div>
   <div class="legend-row">${
-    colorCell('hsl(90,38%,38%)')
-  }<span>Speed &gt; 0.6</span></div>
+    colorCell('hsl(80,35%,40%)')
+  }<span>Speed &gt; 0.75 (fast, figuring it out)</span></div>
   <div class="legend-row">${
-    colorCell('hsl(68,30%,46%)')
-  }<span>Speed &gt; 0.4</span></div>
+    colorCell('hsl(60,40%,46%)')
+  }<span>Speed &gt; 0.55</span></div>
   <div class="legend-row">${
-    colorCell('hsl(54,45%,52%)')
-  }<span>Speed &gt; 0.2</span></div>
+    colorCell('hsl(48,50%,52%)')
+  }<span>Speed &gt; 0.3</span></div>
   <div class="legend-row">${
-    colorCell('hsl(44,65%,58%)')
-  }<span>Speed \u2264 0.2 (needs work)</span></div>
+    colorCell('hsl(40,60%,58%)')
+  }<span>Speed \u2264 0.3 (needs work)</span></div>
   <div class="legend-row">${
     colorCell(NO_DATA_COLOR)
   }<span>No data (unseen)</span></div>
