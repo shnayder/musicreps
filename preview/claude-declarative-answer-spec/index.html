@@ -1442,6 +1442,14 @@ button {
   opacity: 0.5;
   pointer-events: none;
 }
+.answer-input-wrong {
+  border-color: var(--color-error) !important;
+  opacity: 1;
+}
+.answer-input-correct {
+  border-color: var(--color-correct) !important;
+  opacity: 1;
+}
 .answer-input-shake {
   animation: input-shake 0.3s ease-in-out;
 }
@@ -2049,7 +2057,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="17db96 declarative-answer-spec"></div>
+  <div class="home-screen" id="home-screen" data-version="809d52 declarative-answer-spec"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6477,6 +6485,11 @@ button {
         const next = engineRoundTimerExpired(prev);
         if (next.answered) {
           setTimerLastQuestion(true);
+          lastQuestionCapRef.current = setTimeout(() => {
+            if (stateRef.current.phase === "active") {
+              transitionToRoundCompleteRef.current();
+            }
+          }, LAST_QUESTION_CAP_MS);
           return { ...next, hintText: HINT_CONTINUE };
         } else {
           setTimerLastQuestion(true);
@@ -6637,6 +6650,7 @@ button {
             nextQuestionRef.current();
             break;
           case "continue":
+            if (e3.target instanceof HTMLButtonElement) break;
             e3.preventDefault();
             continueQuiz();
             break;
