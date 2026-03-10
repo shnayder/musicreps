@@ -218,9 +218,10 @@ export function PracticeCard(
     <div class='practice-card'>
       {statusLabel && (
         <div class='practice-status'>
-          <span class='practice-status-prefix'>Status</span>
-          <span class='practice-status-label'>{statusLabel}</span>
-          <span class='practice-status-detail'>{statusDetail || ''}</span>
+          <span class='practice-status-label'>{statusLabel}:</span>
+          {statusDetail && (
+            <span class='practice-status-detail'>{statusDetail}</span>
+          )}
         </div>
       )}
       {recBlock}
