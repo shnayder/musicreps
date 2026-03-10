@@ -2144,7 +2144,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="dc85fb recommendations-review"></div>
+  <div class="home-screen" id="home-screen" data-version="f6bc19 recommendations-review"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -8013,9 +8013,11 @@ button {
     ] }) : null;
     return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
       statusLabel && /* @__PURE__ */ u3("div", { class: "practice-status", children: [
-        /* @__PURE__ */ u3("span", { class: "practice-status-prefix", children: "Status" }),
-        /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel }),
-        /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" })
+        /* @__PURE__ */ u3("span", { class: "practice-status-label", children: [
+          statusLabel,
+          ":"
+        ] }),
+        statusDetail && /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail })
       ] }),
       recBlock,
       scope && /* @__PURE__ */ u3("div", { class: "practice-scope", children: scope }),

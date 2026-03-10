@@ -3796,9 +3796,11 @@ button {
     ] }) : null;
     return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
       statusLabel && /* @__PURE__ */ u3("div", { class: "practice-status", children: [
-        /* @__PURE__ */ u3("span", { class: "practice-status-prefix", children: "Status" }),
-        /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel }),
-        /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" })
+        /* @__PURE__ */ u3("span", { class: "practice-status-label", children: [
+          statusLabel,
+          ":"
+        ] }),
+        statusDetail && /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail })
       ] }),
       recBlock,
       scope && /* @__PURE__ */ u3("div", { class: "practice-scope", children: scope }),
