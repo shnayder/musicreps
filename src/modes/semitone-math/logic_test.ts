@@ -2,7 +2,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ALL_ITEMS,
-  checkAnswer,
   DISTANCE_GROUPS,
   getGridItemId,
   getItemIdsForGroup,
@@ -166,51 +165,28 @@ describe('getQuestion edge cases', () => {
 });
 
 // ---------------------------------------------------------------------------
-// checkAnswer
+// Expected values (used by answer spec)
 // ---------------------------------------------------------------------------
 
-describe('checkAnswer', () => {
-  it('correct note name passes (C+4 = E)', () => {
+describe('getQuestion expected values', () => {
+  it('answer.name is the expected note value', () => {
     const q = getQuestion('C+4');
-    assert.equal(checkAnswer(q, 'e').correct, true);
+    assert.equal(q.answer.name, 'E');
   });
 
-  it('wrong note name fails', () => {
-    const q = getQuestion('C+4');
-    assert.equal(checkAnswer(q, 'f').correct, false);
-  });
-
-  it('accepts enharmonic equivalents (C+1: c# or db both accepted)', () => {
+  it('C+1 answer.name is C#', () => {
     const q = getQuestion('C+1');
-    assert.equal(checkAnswer(q, 'c#').correct, true);
-    assert.equal(checkAnswer(q, 'db').correct, true);
-    assert.equal(checkAnswer(q, 'd').correct, false);
+    assert.equal(q.answer.name, 'C#');
   });
 
-  it('correctAnswer uses sharps for addition', () => {
-    const q = getQuestion('C+1');
-    const result = checkAnswer(q, 'x');
-    // C + 1 = C#/Db — ascending uses sharps
-    assert.ok(
-      result.correctAnswer.includes('\u266F'),
-      `expected sharp, got: ${result.correctAnswer}`,
-    );
-  });
-
-  it('correctAnswer uses flats for subtraction', () => {
+  it('D-1 answer.name is C#', () => {
     const q = getQuestion('D-1');
-    const result = checkAnswer(q, 'x');
-    // D - 1 = C#/Db — descending uses flats
-    assert.ok(
-      result.correctAnswer.includes('\u266D'),
-      `expected flat, got: ${result.correctAnswer}`,
-    );
+    assert.equal(q.answer.name, 'C#');
   });
 
-  it('natural note answer needs no accidental', () => {
-    const q = getQuestion('C+4'); // C + 4 = E
-    const result = checkAnswer(q, 'x');
-    assert.equal(result.correctAnswer, 'E');
+  it('useFlats=false for addition, true for subtraction', () => {
+    assert.equal(getQuestion('C+3').useFlats, false);
+    assert.equal(getQuestion('D-1').useFlats, true);
   });
 });
 

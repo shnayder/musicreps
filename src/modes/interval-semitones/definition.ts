@@ -10,7 +10,6 @@ import {
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_ITEMS,
-  checkAnswer,
   getQuestion,
   getStatsRows,
   type Question,
@@ -27,7 +26,17 @@ export const INTERVAL_SEMITONES_DEF: ModeDefinition<Question> = {
   allItems: ALL_ITEMS,
   getQuestion,
   getPromptText: (q) => q.dir === 'fwd' ? q.name : String(q.num),
-  checkAnswer,
+  answer: {
+    kind: 'bidirectional',
+    fwd: {
+      getExpectedValue: (q) => String(q.num),
+      comparison: 'integer',
+    },
+    rev: {
+      getExpectedValue: (q) => q.abbrev,
+      comparison: 'interval',
+    },
+  },
   validateInput: (q, input) =>
     q.dir === 'fwd'
       ? isValidNumberInput(input, 1, 12)

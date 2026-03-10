@@ -233,6 +233,15 @@ export function isValidNoteInput(input: string): boolean {
   return VALID_NOTE_INPUTS.has(input.toLowerCase());
 }
 
+/** Resolve raw keyboard input to canonical note name (e.g., "cs" → "C#").
+ *  Returns null if input doesn't match any note. */
+export function resolveNoteInput(input: string): string | null {
+  for (const note of NOTES) {
+    if (noteMatchesInput(note, input)) return note.name;
+  }
+  return null;
+}
+
 /** Check if input is a valid integer in [min, max]. */
 export function isValidNumberInput(
   input: string,

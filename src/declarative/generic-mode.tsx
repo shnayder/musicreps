@@ -31,7 +31,13 @@ import { useModeLifecycle } from '../hooks/use-mode-lifecycle.ts';
 import { useRoundSummary } from '../hooks/use-round-summary.ts';
 import { usePracticeSummary } from '../hooks/use-practice-summary.ts';
 
-import { displayNote } from '../music-data.ts';
+import {
+  displayNote,
+  intervalMatchesInput,
+  INTERVALS,
+  resolveNoteInput,
+  spelledNoteMatchesSemitone,
+} from '../music-data.ts';
 import {
   type ButtonFeedback,
   DegreeButtons,
@@ -62,7 +68,9 @@ import {
 import { BUTTON_PROVIDER, SpeedCheck } from '../ui/speed-check.tsx';
 
 import type {
+  AnswerSpec,
   ButtonsDef,
+  ComparisonStrategy,
   ModeController,
   ModeDefinition,
   SequentialEntryResult,
@@ -87,17 +95,76 @@ function getHintType(buttons: ButtonsDef): KeyboardHintType {
 }
 
 // ---------------------------------------------------------------------------
+// Answer specification helpers
+// ---------------------------------------------------------------------------
+
+/** Resolve the correct AnswerSpec for a question (handles bidirectional). */
+function resolveAnswerSpec<Q>(
+  def: ModeDefinition<Q>,
+  q: Q,
+): AnswerSpec<Q> {
+  const spec = def.answer!;
+  if ('kind' in spec && spec.kind === 'bidirectional') {
+    const dir = def.getDirection!(q);
+    return dir === 'fwd' ? spec.fwd : spec.rev;
+  }
+  return spec as AnswerSpec<Q>;
+}
+
+/** Check correctness using the declared comparison strategy. */
+export function checkCorrectness(
+  strategy: ComparisonStrategy,
+  expected: string,
+  input: string,
+): boolean {
+  switch (strategy) {
+    case 'exact':
+      return input === expected;
+    case 'integer':
+      return parseInt(input, 10) === parseInt(expected, 10);
+    case 'note-enharmonic': {
+      // resolveNoteInput handles 's' → '#', solfège, case normalization
+      const resolved = resolveNoteInput(input) ?? input;
+      return spelledNoteMatchesSemitone(expected, resolved);
+    }
+    case 'interval': {
+      const iv = INTERVALS.find((i) => i.abbrev === expected);
+      return iv ? intervalMatchesInput(iv, input) : false;
+    }
+  }
+}
+
+/** Convert an answer value to the canonical button value for feedback. */
+export function toButtonValue(
+  strategy: ComparisonStrategy,
+  value: string,
+): string {
+  if (strategy === 'note-enharmonic') return resolveNoteInput(value) ?? value;
+  return value;
+}
+
+/** Default display text for the correct answer. */
+function defaultDisplayAnswer(
+  strategy: ComparisonStrategy,
+  expected: string,
+): string {
+  return strategy === 'note-enharmonic' ? displayNote(expected) : expected;
+}
+
+// ---------------------------------------------------------------------------
 // AnswerInput — text field for keyboard answers
 // ---------------------------------------------------------------------------
 
 function AnswerInput(
-  { onSubmit, disabled, placeholder, onInvalid }: {
+  { onSubmit, disabled, placeholder, onInvalid, feedbackCorrect }: {
     /** Returns true if accepted, false if rejected (input is preserved). */
     onSubmit: (input: string) => boolean;
     disabled?: boolean;
     placeholder?: string;
     /** Called when user submits empty/whitespace-only input. */
     onInvalid?: () => void;
+    /** Tri-state feedback: true = correct (green), false = wrong (red), null/undefined = none. */
+    feedbackCorrect?: boolean | null;
   },
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -111,9 +178,10 @@ function AnswerInput(
     };
   }, []);
 
-  // Auto-focus on mount and when re-enabled
+  // Auto-focus and clear input when re-enabled (new question)
   useEffect(() => {
     if (!disabled && inputRef.current) {
+      inputRef.current.value = '';
       inputRef.current.focus();
     }
   }, [disabled]);
@@ -142,16 +210,19 @@ function AnswerInput(
         return;
       }
       const accepted = onSubmit(value);
-      if (accepted) {
-        if (inputRef.current) inputRef.current.value = '';
-      } else {
+      if (!accepted) {
         triggerShake();
       }
+      // Text stays visible for both correct and incorrect answers;
+      // cleared when re-enabled (new question) via the useEffect above.
     },
     [onSubmit, onInvalid, triggerShake],
   );
 
-  const cls = 'answer-input' + (shake ? ' answer-input-shake' : '');
+  let cls = 'answer-input';
+  if (shake) cls += ' answer-input-shake';
+  if (feedbackCorrect === false) cls += ' answer-input-wrong';
+  else if (feedbackCorrect === true) cls += ' answer-input-correct';
   const label = placeholder ?? 'Type answer, press Enter';
 
   return (
@@ -335,6 +406,15 @@ export function GenericMode<Q>(
   const [seqCorrectAnswer, setSeqCorrectAnswer] = useState<string>('');
   const seqSubmitRef = useRef<(input: string) => void>(() => {});
 
+  // --- Answer spec feedback ref ---
+  const lastAnswerRef = useRef<
+    {
+      expected: string;
+      comparison: ComparisonStrategy;
+      normalizedInput: string;
+    } | null
+  >(null);
+
   // --- Engine config ---
   const getEnabledItemsRef = useRef<() => string[]>(
     () => def.allItems,
@@ -363,7 +443,18 @@ export function GenericMode<Q>(
         return { correct: isCorrect, correctAnswer };
       }
       const q = currentQRef.current!;
-      return def.checkAnswer!(q, input);
+      const spec = resolveAnswerSpec(def, q);
+      const expected = spec.getExpectedValue(q);
+      const normalized = spec.normalizeInput?.(input) ?? input;
+      const correct = checkCorrectness(spec.comparison, expected, normalized);
+      const display = spec.getDisplayAnswer?.(q) ??
+        defaultDisplayAnswer(spec.comparison, expected);
+      lastAnswerRef.current = {
+        expected,
+        comparison: spec.comparison,
+        normalizedInput: normalized,
+      };
+      return { correct, correctAnswer: display };
     },
 
     onAnswer: (itemId, result) => {
@@ -701,12 +792,17 @@ export function GenericMode<Q>(
                       narrowing={ctrl.narrowing}
                       hideAccidentalsOverride={ctrl.hideAccidentals}
                       feedback={engine.state.feedbackCorrect !== null &&
-                          engine.state.feedbackUserInput &&
-                          engine.state.feedbackDisplayAnswer
+                          lastAnswerRef.current
                         ? {
                           correct: engine.state.feedbackCorrect,
-                          userInput: engine.state.feedbackUserInput,
-                          displayAnswer: engine.state.feedbackDisplayAnswer,
+                          userInput: toButtonValue(
+                            lastAnswerRef.current.comparison,
+                            lastAnswerRef.current.normalizedInput,
+                          ),
+                          displayAnswer: toButtonValue(
+                            lastAnswerRef.current.comparison,
+                            lastAnswerRef.current.expected,
+                          ),
                         }
                         : null}
                     />
@@ -721,6 +817,7 @@ export function GenericMode<Q>(
                       onSubmit={handleSubmit}
                       disabled={engine.state.answered}
                       placeholder={placeholder}
+                      feedbackCorrect={engine.state.feedbackCorrect}
                     />
                     <KeyboardHint type={getHintType(activeButtons)} />
                     <FeedbackDisplay
@@ -732,6 +829,9 @@ export function GenericMode<Q>(
                       onNext={engine.state.answered
                         ? engine.nextQuestion
                         : undefined}
+                      label={engine.state.roundTimerExpired
+                        ? 'Continue'
+                        : 'Next'}
                     />
                   </>
                 }

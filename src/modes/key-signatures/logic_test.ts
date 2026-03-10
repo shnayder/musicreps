@@ -2,7 +2,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ALL_ITEMS,
-  checkAnswer,
   getItemIdsForGroup,
   getQuestion,
   getStatsRows,
@@ -71,52 +70,15 @@ describe('getQuestion', () => {
   });
 });
 
-describe('checkAnswer fwd', () => {
-  it('correct when sig label matches (D major → "2#")', () => {
+describe('getQuestion expected values', () => {
+  it('fwd: sigLabel is the expected signature answer', () => {
     const q = getQuestion('D:fwd');
-    const result = checkAnswer(q, '2#');
-    assert.equal(result.correct, true);
-    assert.equal(result.correctAnswer, '2#');
+    assert.equal(q.sigLabel, '2#');
   });
 
-  it('wrong when sig label is different', () => {
-    const q = getQuestion('D:fwd');
-    const result = checkAnswer(q, '3#');
-    assert.equal(result.correct, false);
-    assert.equal(result.correctAnswer, '2#');
-  });
-
-  it('wrong when sig label is completely wrong', () => {
-    const q = getQuestion('D:fwd');
-    const result = checkAnswer(q, '0');
-    assert.equal(result.correct, false);
-  });
-});
-
-describe('checkAnswer rev', () => {
-  it('correct when note matches the key root (D major)', () => {
-    const q = getQuestion('D:rev');
-    const result = checkAnswer(q, 'D');
-    assert.equal(result.correct, true);
-  });
-
-  it('wrong when note does not match (D major, input E)', () => {
-    const q = getQuestion('D:rev');
-    const result = checkAnswer(q, 'E');
-    assert.equal(result.correct, false);
-  });
-
-  it('correct for Eb:rev when input is "Eb"', () => {
+  it('rev: root is the expected note answer', () => {
     const q = getQuestion('Eb:rev');
-    const result = checkAnswer(q, 'Eb');
-    assert.equal(result.correct, true);
-  });
-
-  it('wrong for Eb:rev when input is "D#" (enharmonic mismatch for reverse dir)', () => {
-    // The reverse check uses spelledNoteMatchesSemitone, so D# (same semitone as Eb) should be correct
-    const q = getQuestion('Eb:rev');
-    const result = checkAnswer(q, 'D#');
-    assert.equal(result.correct, true);
+    assert.equal(q.root, 'Eb');
   });
 });
 

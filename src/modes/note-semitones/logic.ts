@@ -3,12 +3,7 @@
 // Bidirectional: forward (note → semitone number), reverse (number → note).
 
 import type { StatsTableRow } from '../../types.ts';
-import {
-  displayNote,
-  noteMatchesInput,
-  NOTES,
-  pickRandomAccidental,
-} from '../../music-data.ts';
+import { displayNote, NOTES, pickRandomAccidental } from '../../music-data.ts';
 import { buildBidirectionalIds } from '../../mode-utils.ts';
 
 // ---------------------------------------------------------------------------
@@ -44,38 +39,6 @@ export function getQuestion(itemId: string): Question {
     noteNum: note.num,
     dir: dir as 'fwd' | 'rev',
     accidentalChoice: pickRandomAccidental(note.displayName),
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Answer checking
-// ---------------------------------------------------------------------------
-
-/**
- * Check the user's answer against the expected answer for a question.
- *
- * Forward: user enters a semitone number (0–11). Correct if it matches note.num.
- * Reverse: user enters a note name. Correct if it matches the note (any enharmonic).
- *
- * @returns { correct: boolean, correctAnswer: string } where correctAnswer is
- *   the display-formatted expected answer.
- */
-export function checkAnswer(
-  q: Question,
-  input: string,
-): { correct: boolean; correctAnswer: string } {
-  if (q.dir === 'fwd') {
-    const correct = parseInt(input, 10) === q.noteNum;
-    return {
-      correct,
-      correctAnswer: String(q.noteNum),
-    };
-  }
-  const note = NOTES.find((n) => n.name === q.noteName)!;
-  const correct = noteMatchesInput(note, input);
-  return {
-    correct,
-    correctAnswer: displayNote(q.accidentalChoice),
   };
 }
 

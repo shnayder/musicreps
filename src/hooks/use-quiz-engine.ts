@@ -38,6 +38,7 @@ const IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === 'function' &&
   globalThis.matchMedia('(pointer: coarse)').matches;
 
 const HINT_ADVANCE = IS_TOUCH_PRIMARY ? '' : 'Space for next';
+const HINT_CONTINUE = IS_TOUCH_PRIMARY ? '' : 'Space to continue';
 
 // ---------------------------------------------------------------------------
 // Config type — what the mode provides to the engine
@@ -197,8 +198,17 @@ export function useQuizEngine(
     setState((prev) => {
       const next = engineRoundTimerExpired(prev);
       if (next.answered) {
-        // User is on feedback screen — transition now
-        setTimeout(() => transitionToRoundCompleteRef.current(), 0);
+        // User is on feedback screen — update hint to "continue" and
+        // let them advance manually via the button / Space.
+        setTimerLastQuestion(true);
+        // Cap the last question at 30 seconds — if the user walks away,
+        // end the round automatically, even from the feedback screen.
+        lastQuestionCapRef.current = setTimeout(() => {
+          if (stateRef.current.phase === 'active') {
+            transitionToRoundCompleteRef.current();
+          }
+        }, LAST_QUESTION_CAP_MS);
+        return { ...next, hintText: HINT_CONTINUE };
       } else {
         setTimerLastQuestion(true);
         // Cap the last question at 30 seconds — if the user walks away,
@@ -311,13 +321,14 @@ export function useQuizEngine(
       );
     }
 
-    // Handle timer expiry — transition to round-complete after brief delay
+    // Handle timer expiry — clear the last-question cap timer (user answered
+    // in time) and update the hint so the user can advance manually.
     if (stateRef.current.roundTimerExpired) {
-      setTimeout(() => {
-        if (stateRef.current.phase === 'active') {
-          transitionToRoundCompleteRef.current();
-        }
-      }, 600);
+      if (lastQuestionCapRef.current) {
+        clearTimeout(lastQuestionCapRef.current);
+        lastQuestionCapRef.current = null;
+      }
+      setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
     }
   }, [computeProgress]);
 
@@ -398,6 +409,8 @@ export function useQuizEngine(
           nextQuestionRef.current();
           break;
         case 'continue':
+          // If a button is focused, let its native click fire instead
+          if (e.target instanceof HTMLButtonElement) break;
           e.preventDefault();
           continueQuiz();
           break;

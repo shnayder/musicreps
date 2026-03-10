@@ -7,7 +7,6 @@ import {
   displayNote,
   keySignatureLabel,
   MAJOR_KEYS,
-  spelledNoteMatchesSemitone,
 } from '../../music-data.ts';
 
 // ---------------------------------------------------------------------------
@@ -71,37 +70,6 @@ export function getQuestion(itemId: string): Question {
     root: key.root,
     dir: dir as 'fwd' | 'rev',
     sigLabel: keySignatureLabel(key),
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Answer checking
-// ---------------------------------------------------------------------------
-
-/**
- * Check the user's answer against the expected answer.
- *
- * Forward: user enters a signature label (e.g. "2#", "3b", "0").
- *   Correct if it matches keySignatureLabel(key).
- * Reverse: user enters a note name (the key root).
- *   Correct if the spelled note matches the key root's semitone.
- */
-export function checkAnswer(
-  q: Question,
-  input: string,
-): { correct: boolean; correctAnswer: string } {
-  const key = MAJOR_KEYS.find((k) => k.root === q.root)!;
-  if (q.dir === 'fwd') {
-    const expected = keySignatureLabel(key);
-    return {
-      correct: input === expected,
-      correctAnswer: expected,
-    };
-  }
-  const correct = spelledNoteMatchesSemitone(q.root, input);
-  return {
-    correct,
-    correctAnswer: displayNote(q.root),
   };
 }
 

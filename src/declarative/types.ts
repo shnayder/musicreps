@@ -106,6 +106,37 @@ export type NoStatsDef = { kind: 'none' };
 export type StatsDef = GridStatsDef | TableStatsDef | NoStatsDef;
 
 // ---------------------------------------------------------------------------
+// Answer specification — how the framework checks correctness + button feedback
+// ---------------------------------------------------------------------------
+
+/** How the framework checks correctness and normalizes for button feedback. */
+export type ComparisonStrategy =
+  | 'exact' // string ===
+  | 'integer' // parseInt() ===
+  | 'note-enharmonic' // spelledNoteMatchesSemitone (any enharmonic ok)
+  | 'interval'; // intervalMatchesInput (primary + alt abbrevs)
+
+/** Declarative answer spec: what the correct answer is and how to check it. */
+export type AnswerSpec<Q> = {
+  getExpectedValue: (q: Q) => string;
+  comparison: ComparisonStrategy;
+  /** Override display text for feedback. Defaults: displayNote(expected) for
+   *  note-enharmonic, expected for others. */
+  getDisplayAnswer?: (q: Q) => string;
+  /** Normalize raw user input before comparison and button matching.
+   *  E.g., "4" → "IV" for numeral input, "vii" → "vii°". */
+  normalizeInput?: (input: string) => string;
+};
+
+export type BidirectionalAnswerSpec<Q> = {
+  kind: 'bidirectional';
+  fwd: AnswerSpec<Q>;
+  rev: AnswerSpec<Q>;
+};
+
+export type AnswerSpecDef<Q> = AnswerSpec<Q> | BidirectionalAnswerSpec<Q>;
+
+// ---------------------------------------------------------------------------
 // Sequential response — modes that collect multiple inputs before evaluating
 // ---------------------------------------------------------------------------
 
@@ -243,9 +274,9 @@ type ModeDefinitionBase<Q> = {
 /**
  * Everything needed to create a fully functional quiz mode.
  *
- * Uses a discriminated union: single-answer modes must provide `checkAnswer`,
+ * Uses a discriminated union: single-answer modes must provide `answer`,
  * sequential modes must provide `sequential`. This prevents runtime crashes
- * from accidentally omitting `checkAnswer` on a non-sequential mode.
+ * from accidentally omitting `answer` on a non-sequential mode.
  *
  * @typeParam Q - The question type returned by getQuestion.
  */
@@ -253,17 +284,14 @@ export type ModeDefinition<Q = unknown> =
   & ModeDefinitionBase<Q>
   & (
     | {
-      /** Check user's answer against the correct answer. */
-      checkAnswer: (q: Q, input: string) => {
-        correct: boolean;
-        correctAnswer: string;
-      };
+      /** Declarative answer spec: what the correct answer is and how to check it. */
+      answer: AnswerSpecDef<Q>;
       sequential?: undefined;
     }
     | {
       /** When present, GenericMode collects multiple inputs before scoring.
-       *  Replaces the single-answer checkAnswer flow. */
+       *  Replaces the single-answer flow. */
       sequential: SequentialDef<Q>;
-      checkAnswer?: undefined;
+      answer?: undefined;
     }
   );

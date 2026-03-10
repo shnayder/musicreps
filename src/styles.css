@@ -1425,6 +1425,14 @@ button {
   opacity: 0.5;
   pointer-events: none;
 }
+.answer-input-wrong {
+  border-color: var(--color-error) !important;
+  opacity: 1;
+}
+.answer-input-correct {
+  border-color: var(--color-correct) !important;
+  opacity: 1;
+}
 .answer-input-shake {
   animation: input-shake 0.3s ease-in-out;
 }

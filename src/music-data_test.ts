@@ -32,6 +32,7 @@ import {
   parseSpelledNote,
   pickAccidentalName,
   pickRandomAccidental,
+  resolveNoteInput,
   ROMAN_NUMERALS,
   rootUsesFlats,
   setUseSolfege,
@@ -294,6 +295,46 @@ describe('noteMatchesInput with s→# normalization', () => {
     assert.ok(noteMatchesInput(NOTES[1], 'c#'));
     assert.ok(noteMatchesInput(NOTES[1], 'db'));
     assert.ok(noteMatchesInput(NOTES[10], 'bb'));
+  });
+});
+
+describe('resolveNoteInput', () => {
+  it('resolves lowercase natural notes to canonical names', () => {
+    assert.equal(resolveNoteInput('c'), 'C');
+    assert.equal(resolveNoteInput('d'), 'D');
+    assert.equal(resolveNoteInput('g'), 'G');
+  });
+
+  it('resolves s→# alias to canonical sharp name', () => {
+    assert.equal(resolveNoteInput('cs'), 'C#');
+    assert.equal(resolveNoteInput('fs'), 'F#');
+    assert.equal(resolveNoteInput('as'), 'A#');
+  });
+
+  it('resolves # input to canonical sharp name', () => {
+    assert.equal(resolveNoteInput('c#'), 'C#');
+    assert.equal(resolveNoteInput('f#'), 'F#');
+  });
+
+  it('resolves flat input to canonical sharp name', () => {
+    assert.equal(resolveNoteInput('db'), 'C#');
+    assert.equal(resolveNoteInput('eb'), 'D#');
+    assert.equal(resolveNoteInput('bb'), 'A#');
+  });
+
+  it('returns null for numbers', () => {
+    assert.equal(resolveNoteInput('5'), null);
+    assert.equal(resolveNoteInput('0'), null);
+    assert.equal(resolveNoteInput('11'), null);
+  });
+
+  it('returns null for intervals', () => {
+    assert.equal(resolveNoteInput('m3'), null);
+    assert.equal(resolveNoteInput('P5'), null);
+  });
+
+  it('returns null for empty string', () => {
+    assert.equal(resolveNoteInput(''), null);
   });
 });
 

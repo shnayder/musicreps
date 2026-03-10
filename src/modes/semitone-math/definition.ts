@@ -2,15 +2,16 @@
 // "C + 3 = ?" → user answers with a note name.
 
 import {
+  displayNote,
   isValidNoteInput,
   MODE_BEFORE_AFTER,
   MODE_DESCRIPTIONS,
+  pickAccidentalName,
 } from '../../music-data.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,
   ALL_ITEMS,
-  checkAnswer,
   DISTANCE_GROUPS,
   getGridItemId,
   getItemIdsForGroup,
@@ -30,7 +31,12 @@ export const SEMITONE_MATH_DEF: ModeDefinition<Question> = {
   allItems: ALL_ITEMS,
   getQuestion,
   getPromptText: (q) => q.promptText,
-  checkAnswer,
+  answer: {
+    getExpectedValue: (q) => q.answer.name,
+    comparison: 'note-enharmonic',
+    getDisplayAnswer: (q) =>
+      displayNote(pickAccidentalName(q.answer.displayName, q.useFlats)),
+  },
   validateInput: (_q, input) => isValidNoteInput(input),
   getUseFlats: (q) => q.useFlats,
 

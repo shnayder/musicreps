@@ -141,15 +141,6 @@ export function getQuestion(
   return fb.parseFretboardItem(itemId);
 }
 
-export function checkAnswer(
-  instrument: Instrument,
-  currentNote: string,
-  input: string,
-): { correct: boolean; correctAnswer: string } {
-  const fb = getHelpers(instrument);
-  return fb.checkFretboardAnswer(currentNote, input);
-}
-
 // ---------------------------------------------------------------------------
 // Label formatting
 // ---------------------------------------------------------------------------

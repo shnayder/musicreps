@@ -99,6 +99,55 @@ describe('NoteButtons', () => {
   });
 });
 
+describe('NoteButtons keyboard feedback', () => {
+  it('highlights wrong + reveal buttons when userInput is normalized from keyboard', () => {
+    // Simulates what GenericMode does: resolveNoteInput("cs") → "C#"
+    const html = render(
+      <NoteButtons
+        feedback={{ correct: false, userInput: 'C#', displayAnswer: 'D' }}
+      />,
+    );
+    const btnCS = html.match(/<button[^>]*data-note="C#"[^>]*>/);
+    assert.ok(btnCS, 'C# button should exist');
+    assert.ok(btnCS[0].includes('btn-feedback-wrong'));
+    const btnD = html.match(/<button[^>]*data-note="D"[^>]*>/);
+    assert.ok(btnD, 'D button should exist');
+    assert.ok(btnD[0].includes('btn-feedback-reveal'));
+  });
+
+  it('reveals correct button when displayAnswer is canonical note name (diatonic chords)', () => {
+    // Diatonic chords "V in Bb = F major". GenericMode normalizes
+    // "F major" → "F" (canonical) before passing to NoteButtons.
+    const html = render(
+      <NoteButtons
+        feedback={{ correct: false, userInput: 'B', displayAnswer: 'F' }}
+      />,
+    );
+    const btnB = html.match(/<button[^>]*data-note="B"[^>]*>/);
+    assert.ok(btnB, 'B button should exist');
+    assert.ok(btnB[0].includes('btn-feedback-wrong'));
+    const btnF = html.match(/<button[^>]*data-note="F"[^>]*>/);
+    assert.ok(btnF, 'F button should exist');
+    assert.ok(btnF[0].includes('btn-feedback-reveal'));
+  });
+
+  it('reveals correct button via enharmonic normalization', () => {
+    // Note-semitones: correct answer was "E♭" (random flat choice).
+    // GenericMode normalizes to canonical "D#".
+    const html = render(
+      <NoteButtons
+        feedback={{ correct: false, userInput: 'D', displayAnswer: 'D#' }}
+      />,
+    );
+    const btnD = html.match(/<button[^>]*data-note="D"[^>]*>/);
+    assert.ok(btnD, 'D button should exist');
+    assert.ok(btnD[0].includes('btn-feedback-wrong'));
+    const btnDS = html.match(/<button[^>]*data-note="D#"[^>]*>/);
+    assert.ok(btnDS, 'D# button should exist');
+    assert.ok(btnDS[0].includes('btn-feedback-reveal'));
+  });
+});
+
 describe('PianoNoteButtons', () => {
   it('renders accidentals and naturals rows', () => {
     const html = render(<PianoNoteButtons />);

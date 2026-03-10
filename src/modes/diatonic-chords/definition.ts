@@ -14,12 +14,12 @@ import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,
   ALL_ITEMS,
-  checkAnswer,
   CHORD_GROUPS,
   getGridItemId,
   getItemIdsForGroup,
   getQuestion,
   GRID_NOTES,
+  normalizeNumeralInput,
   type Question,
 } from './logic.ts';
 
@@ -39,9 +39,24 @@ export const DIATONIC_CHORDS_DEF: ModeDefinition<Question> = {
         displayNote(q.keyRoot) + ' major'
       : displayNote(q.rootNote) + q.chord.qualityLabel +
         ' in ' + displayNote(q.keyRoot) + ' major',
-  checkAnswer,
+  answer: {
+    kind: 'bidirectional',
+    fwd: {
+      getExpectedValue: (q) => q.rootNote,
+      comparison: 'note-enharmonic',
+      getDisplayAnswer: (q) => displayNote(q.rootNote) + ' ' + q.chord.quality,
+    },
+    rev: {
+      getExpectedValue: (q) => q.chord.numeral,
+      comparison: 'exact',
+      normalizeInput: normalizeNumeralInput,
+    },
+  },
   validateInput: (q, input) =>
-    q.dir === 'fwd' ? isValidNoteInput(input) : isValidNumeralInput(input),
+    q.dir === 'fwd'
+      ? isValidNoteInput(input)
+      : isValidNumeralInput(input) || /^[1-7]$/.test(input) ||
+        input === 'vii',
   getDirection: (q) => q.dir,
   getUseFlats: (q) => rootUsesFlats(q.keyRoot),
 

@@ -6,7 +6,6 @@ import type { Note } from '../../types.ts';
 import {
   displayNote,
   noteAdd,
-  noteMatchesInput,
   NOTES,
   noteSub,
   pickAccidentalName,
@@ -93,30 +92,6 @@ export function getQuestion(itemId: string): Question {
     answer,
     useFlats,
     promptText: promptNoteName + ' ' + op + ' ' + semitones,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Answer checking
-// ---------------------------------------------------------------------------
-
-/**
- * Check whether the user's note name matches the expected answer.
- * Accepts any enharmonic equivalent (e.g. both "C#" and "Db" for the same pitch).
- *
- * @returns { correct, correctAnswer } where correctAnswer uses flats for
- *   subtraction and sharps for addition.
- */
-export function checkAnswer(
-  q: Question,
-  input: string,
-): { correct: boolean; correctAnswer: string } {
-  const correct = noteMatchesInput(q.answer, input);
-  return {
-    correct,
-    correctAnswer: displayNote(
-      pickAccidentalName(q.answer.displayName, q.useFlats),
-    ),
   };
 }
 
