@@ -221,7 +221,6 @@ function PreviewApp() {
         <FeedbackDisplay
           text={feedbackCorrect.text}
           className={feedbackCorrect.className}
-          time={feedbackCorrect.time}
           correct={feedbackCorrect.correct}
           onNext={() => {}}
         />

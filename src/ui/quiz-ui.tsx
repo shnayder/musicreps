@@ -16,10 +16,9 @@ export function TextPrompt({ text }: { text: string }) {
 // ---------------------------------------------------------------------------
 
 export function FeedbackDisplay(
-  { text, className, time, hint, correct, onNext, label = 'Next' }: {
+  { text, className, hint, correct, onNext, label = 'Next' }: {
     text: string;
     className: string;
-    time?: string;
     hint?: string;
     correct?: boolean | null;
     onNext?: () => void;
@@ -32,7 +31,6 @@ export function FeedbackDisplay(
   return (
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
-      {time ? <div class='time-display'>{time}</div> : null}
       <button
         type='button'
         class={btnCls}

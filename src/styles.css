@@ -1607,11 +1607,7 @@ button {
 .incorrect {
   color: var(--color-error-text);
 }
-.time-display {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  margin-top: var(--space-3);
-}
+
 .hint {
   color: var(--color-text-muted);
   font-size: var(--text-base);

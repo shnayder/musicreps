@@ -398,7 +398,6 @@ function generateReviewHTML(name: string, session: Session): void {
   table { border-collapse: collapse; }
   th, td { padding: .25rem .5rem; vertical-align: top; text-align: center; }
   th {
-    position: sticky; top: 72px; z-index: 5;
     background: #e8e8e8; font-size: .75rem;
     white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis;
   }

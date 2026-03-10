@@ -5,7 +5,6 @@ export const feedbackCorrect = {
   className: 'feedback correct',
   correct: true as const,
   displayAnswer: 'D#',
-  time: '0.82s',
   hint: 'Space for next',
 };
 

@@ -410,7 +410,6 @@ export function SpeedTapMode(
                     <FeedbackDisplay
                       text={engine.state.feedbackText}
                       className={engine.state.feedbackClass}
-                      time={engine.state.timeDisplayText || undefined}
                       hint={engine.state.hintText || undefined}
                       correct={engine.state.feedbackCorrect}
                       onNext={engine.state.answered

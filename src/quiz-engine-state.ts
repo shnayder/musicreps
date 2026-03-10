@@ -33,7 +33,7 @@ export function initialEngineState(): EngineState {
     feedbackCorrect: null,
     feedbackDisplayAnswer: null,
     feedbackUserInput: null,
-    timeDisplayText: '',
+
     hintText: '',
 
     // Mastery message
@@ -86,7 +86,7 @@ export function engineNextQuestion(
     feedbackCorrect: null,
     feedbackDisplayAnswer: null,
     feedbackUserInput: null,
-    timeDisplayText: '',
+
     hintText: '',
     answersEnabled: true,
   };
@@ -109,7 +109,7 @@ export function engineSubmitAnswer(
     feedbackCorrect: isCorrect,
     feedbackDisplayAnswer: correctAnswer,
     feedbackUserInput: userInput ?? null,
-    timeDisplayText: '',
+
     hintText,
     roundAnswered: state.roundAnswered + 1,
     roundCorrect: state.roundCorrect + (isCorrect ? 1 : 0),
@@ -181,7 +181,7 @@ export function engineCalibrationIntro(
     hintText: hintOverride !== undefined
       ? hintOverride
       : 'We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.',
-    timeDisplayText: '',
+
     calibrationBaseline: null,
   };
 }
@@ -217,7 +217,7 @@ export function engineCalibrationResults(
     feedbackText: 'Speed Check Complete',
     feedbackClass: 'feedback',
     hintText: '',
-    timeDisplayText: '',
+
     calibrationBaseline: baseline,
   };
 }
