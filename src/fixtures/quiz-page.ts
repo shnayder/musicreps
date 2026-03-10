@@ -191,7 +191,8 @@ export function quizLastQuestionAwaiting(itemId: string): FixtureDetail {
 }
 
 // ---------------------------------------------------------------------------
-// Quiz active: answered the last question (feedback + "Last question")
+// Quiz active: answered the last question (feedback + "Continue" button)
+// The user must manually press Continue to see round-complete.
 // ---------------------------------------------------------------------------
 
 export function quizLastQuestionAnswered(itemId: string): FixtureDetail {
@@ -210,7 +211,7 @@ export function quizLastQuestionAnswered(itemId: string): FixtureDetail {
       feedbackClass: feedbackWrong.className,
       feedbackCorrect: feedbackWrong.correct,
       feedbackDisplayAnswer: feedbackWrong.displayAnswer,
-      hintText: feedbackWrong.hint,
+      hintText: 'Space to continue',
     },
     timerPct: timerExpired.pct,
     timerText: timerExpired.text,

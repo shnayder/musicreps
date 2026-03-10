@@ -194,6 +194,7 @@ describe('fixture engine state validity', () => {
     assert.equal(es.answered, true);
     assert.equal(es.roundTimerExpired, true);
     assert.equal(es.feedbackCorrect, false);
+    assert.equal(es.hintText, 'Space to continue');
     assert.equal(fixture.timerLastQuestion, true);
   });
 
