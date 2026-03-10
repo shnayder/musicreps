@@ -136,7 +136,7 @@ describe('getQuestion expected values', () => {
     assert.equal(q.currentNote, 'E');
   });
 
-  it('accidental position has sharp name', () => {
+  it('position 5-1 has natural note F', () => {
     const q = getQuestion(GUITAR, '5-1');
     assert.equal(q.currentNote, 'F');
   });

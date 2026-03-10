@@ -49,7 +49,7 @@ describe('checkCorrectness — note-enharmonic', () => {
     assert.equal(checkCorrectness('note-enharmonic', 'Eb', 'D#'), true);
   });
 
-  it('matches # notation for sharp', () => {
+  it('matches s→# alias notation for sharp', () => {
     assert.equal(checkCorrectness('note-enharmonic', 'Eb', 'ds'), true);
   });
 

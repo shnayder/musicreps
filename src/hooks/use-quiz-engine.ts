@@ -201,6 +201,13 @@ export function useQuizEngine(
         // User is on feedback screen — update hint to "continue" and
         // let them advance manually via the button / Space.
         setTimerLastQuestion(true);
+        // Cap the last question at 30 seconds — if the user walks away,
+        // end the round automatically, even from the feedback screen.
+        lastQuestionCapRef.current = setTimeout(() => {
+          if (stateRef.current.phase === 'active') {
+            transitionToRoundCompleteRef.current();
+          }
+        }, LAST_QUESTION_CAP_MS);
         return { ...next, hintText: HINT_CONTINUE };
       } else {
         setTimerLastQuestion(true);
@@ -402,6 +409,8 @@ export function useQuizEngine(
           nextQuestionRef.current();
           break;
         case 'continue':
+          // If a button is focused, let its native click fire instead
+          if (e.target instanceof HTMLButtonElement) break;
           e.preventDefault();
           continueQuiz();
           break;
