@@ -12,6 +12,7 @@
 import { useCallback, useMemo, useRef } from 'preact/hooks';
 import type {
   AdaptiveSelector,
+  GroupStatus,
   RecommendationResult,
   ScopeState,
 } from '../types.ts';
@@ -51,12 +52,12 @@ export type GroupScopeSpec = {
 export type GroupScopeResult = {
   /** Raw scope state (for reading `.kind`). */
   scope: ScopeState;
-  /** Scope mutation actions (toggleGroup, setScope, toggleSkip, etc.). */
+  /** Scope mutation actions (toggleGroup, setScope, skipGroup, etc.). */
   scopeActions: ScopeActions;
   /** Currently enabled group indices. */
   enabledGroups: ReadonlySet<number>;
-  /** Currently skipped group indices. */
-  skippedGroups: ReadonlySet<number>;
+  /** Currently skipped group indices with skip reason. */
+  skippedGroups: ReadonlyMap<number, GroupStatus>;
   /** All item IDs in enabled groups (memoized). */
   enabledItems: string[];
   /** Human-readable label for the active scope, e.g. "1–2, 3–4 semitones". */
@@ -84,7 +85,7 @@ export type GroupScopeResult = {
 // Hook
 // ---------------------------------------------------------------------------
 
-const EMPTY_SKIPPED: ReadonlySet<number> = new Set();
+const EMPTY_SKIPPED: ReadonlyMap<number, GroupStatus> = new Map();
 
 export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   // --- Scope state (persisted to localStorage) ---
@@ -105,9 +106,8 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
     ? scope.enabledGroups
     : new Set(spec.defaultEnabled);
 
-  const skippedGroups: ReadonlySet<number> = scope.kind === 'groups'
-    ? scope.skippedGroups
-    : EMPTY_SKIPPED;
+  const skippedGroups: ReadonlyMap<number, GroupStatus> =
+    scope.kind === 'groups' ? scope.skippedGroups : EMPTY_SKIPPED;
 
   // Active indices = all indices minus skipped (for recommendations).
   const activeGroupIndices = useMemo(

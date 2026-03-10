@@ -3,7 +3,12 @@
 // note filter in localStorage.
 
 import { useCallback, useState } from 'preact/hooks';
-import type { NoteFilter, ScopeSpec, ScopeState } from '../types.ts';
+import type {
+  GroupStatus,
+  NoteFilter,
+  ScopeSpec,
+  ScopeState,
+} from '../types.ts';
 
 // ---------------------------------------------------------------------------
 // Load / save helpers (extracted from mode-controller.ts lines 47-120)
@@ -30,19 +35,37 @@ function loadScope(spec: ScopeSpec): ScopeState {
     if (enabled.size === 0) {
       for (const d of spec.defaultEnabled) enabled.add(d);
     }
-    // Load skipped groups.
-    let skipped = new Set<number>();
+    // Load skipped groups (Map<number, GroupStatus>).
+    const skipped = new Map<number, GroupStatus>();
     const savedSkipped = localStorage.getItem(spec.storageKey + '_skipped');
     if (savedSkipped) {
       try {
-        skipped = new Set(JSON.parse(savedSkipped));
+        const parsed = JSON.parse(savedSkipped);
+        if (Array.isArray(parsed)) {
+          if (
+            parsed.length > 0 && Array.isArray(parsed[0]) &&
+            parsed[0].length === 2
+          ) {
+            // New format: [[index, reason], ...]
+            for (const [idx, reason] of parsed) {
+              if (reason === 'mastered' || reason === 'deferred') {
+                skipped.set(idx, reason);
+              }
+            }
+          } else {
+            // Old format: [index, ...] — migrate with 'deferred' default
+            for (const idx of parsed) {
+              if (typeof idx === 'number') skipped.set(idx, 'deferred');
+            }
+          }
+        }
       } catch (_) { /* expected */ }
     }
-    for (const idx of skipped) {
+    for (const idx of skipped.keys()) {
       if (idx < 0 || idx >= groupCount) skipped.delete(idx);
     }
     // Skipped groups must not be enabled.
-    for (const idx of skipped) enabled.delete(idx);
+    for (const idx of skipped.keys()) enabled.delete(idx);
     return { kind: 'groups', enabledGroups: enabled, skippedGroups: skipped };
   }
 
@@ -69,7 +92,7 @@ function saveScope(spec: ScopeSpec, scope: ScopeState): void {
     );
     localStorage.setItem(
       spec.storageKey + '_skipped',
-      JSON.stringify([...scope.skippedGroups]),
+      JSON.stringify([...scope.skippedGroups.entries()]),
     );
   } else if (spec.kind === 'note-filter' && scope.kind === 'note-filter') {
     try {
@@ -84,8 +107,10 @@ function saveScope(spec: ScopeSpec, scope: ScopeState): void {
 
 export type ScopeActions = {
   toggleGroup: (index: number) => void;
-  /** Toggle skip status for a group. Skipping disables and dims the group. */
-  toggleSkip: (index: number) => void;
+  /** Skip a group with a reason. Removes it from enabled groups. */
+  skipGroup: (index: number, reason: GroupStatus) => void;
+  /** Unskip a group (removes from skipped map; does not re-enable). */
+  unskipGroup: (index: number) => void;
   setNoteFilter: (filter: NoteFilter) => void;
   /** Replace scope state directly (e.g., applying recommendations). */
   setScope: (scope: ScopeState) => void;
@@ -121,25 +146,39 @@ export function useScopeState(
     });
   }, [spec]);
 
-  const toggleSkip = useCallback((index: number) => {
+  const skipGroup = useCallback((index: number, reason: GroupStatus) => {
     setScopeRaw((prev) => {
       if (prev.kind !== 'groups') return prev;
-      const nextSkipped = new Set(prev.skippedGroups);
+      // Prevent skipping the last non-skipped group.
+      const groupCount =
+        (spec as Extract<ScopeSpec, { kind: 'groups' }>).groups.length;
+      if (
+        prev.skippedGroups.size + (prev.skippedGroups.has(index) ? 0 : 1) >=
+          groupCount
+      ) return prev;
+      const nextSkipped = new Map(prev.skippedGroups);
+      nextSkipped.set(index, reason);
       const nextEnabled = new Set(prev.enabledGroups);
-      if (nextSkipped.has(index)) {
-        // Unskip: remove from skipped, leave disabled
-        nextSkipped.delete(index);
-      } else {
-        // Skip: prevent skipping the last non-skipped group
-        const groupCount =
-          (spec as Extract<ScopeSpec, { kind: 'groups' }>).groups.length;
-        if (nextSkipped.size + 1 >= groupCount) return prev;
-        nextSkipped.add(index);
-        nextEnabled.delete(index);
-      }
+      nextEnabled.delete(index);
       const updated: ScopeState = {
         kind: 'groups',
         enabledGroups: nextEnabled,
+        skippedGroups: nextSkipped,
+      };
+      saveScope(spec, updated);
+      return updated;
+    });
+  }, [spec]);
+
+  const unskipGroup = useCallback((index: number) => {
+    setScopeRaw((prev) => {
+      if (prev.kind !== 'groups') return prev;
+      if (!prev.skippedGroups.has(index)) return prev;
+      const nextSkipped = new Map(prev.skippedGroups);
+      nextSkipped.delete(index);
+      const updated: ScopeState = {
+        kind: 'groups',
+        enabledGroups: prev.enabledGroups,
         skippedGroups: nextSkipped,
       };
       saveScope(spec, updated);
@@ -158,5 +197,11 @@ export function useScopeState(
     });
   }, [spec]);
 
-  return [scope, { toggleGroup, toggleSkip, setNoteFilter, setScope }];
+  return [scope, {
+    toggleGroup,
+    skipGroup,
+    unskipGroup,
+    setNoteFilter,
+    setScope,
+  }];
 }

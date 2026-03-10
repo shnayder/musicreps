@@ -274,13 +274,16 @@ export type ScopeSpec =
     storageKey: string;
   };
 
+/** Why a group was skipped: user claims mastery vs. deferred for later. */
+export type GroupStatus = 'mastered' | 'deferred';
+
 /** Runtime state: what the user has currently selected. */
 export type ScopeState =
   | { kind: 'none' }
   | {
     kind: 'groups';
     enabledGroups: ReadonlySet<number>;
-    skippedGroups: ReadonlySet<number>;
+    skippedGroups: ReadonlyMap<number, GroupStatus>;
   }
   | { kind: 'note-filter'; noteFilter: NoteFilter };
 

@@ -657,7 +657,8 @@ export function GenericMode<Q>(
                 onToggle={groupScopeResult.scopeActions.toggleGroup}
                 selector={learner.selector}
                 skipped={groupScopeResult.skippedGroups}
-                onToggleSkip={groupScopeResult.scopeActions.toggleSkip}
+                onSkip={groupScopeResult.scopeActions.skipGroup}
+                onUnskip={groupScopeResult.scopeActions.unskipGroup}
               />
             )
             : undefined}
