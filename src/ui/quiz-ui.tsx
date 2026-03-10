@@ -62,14 +62,12 @@ export type KeyboardHintType =
   | 'number-1-12'
   | null;
 
-const NOTE_HINT_LETTER =
-  'Keyboard: C D E, c d e, C#, fs (=F#), Db, bb (=Bb) \u2014 Enter to confirm';
-const NOTE_HINT_SOLFEGE =
-  'Keyboard: do re mi, Do Re Mi, do#, reb \u2014 Enter to confirm';
+const NOTE_HINT_LETTER = 'C D E, c d e, C#, fs (=F#), Db, bb (=Bb)';
+const NOTE_HINT_SOLFEGE = 'do re mi, Do Re Mi, do#, reb';
 
 const HINT_TEXT: Record<string, string> = {
-  'number-0-11': 'Keyboard: 0\u20139, 10, 11 \u2014 Enter to confirm',
-  'number-1-12': 'Keyboard: 1\u20139, 10, 11, 12 \u2014 Enter to confirm',
+  'number-0-11': '0\u20139, 10, 11',
+  'number-1-12': '1\u20139, 10, 11, 12',
 };
 
 export function KeyboardHint(
