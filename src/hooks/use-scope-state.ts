@@ -171,9 +171,16 @@ export function useScopeState(
   }, [spec]);
 
   const unskipGroup = useCallback((index: number) => {
+    console.log('[REC-DEBUG] unskipGroup called for index:', index);
     setScopeRaw((prev) => {
-      if (prev.kind !== 'groups') return prev;
-      if (!prev.skippedGroups.has(index)) return prev;
+      if (prev.kind !== 'groups') {
+        console.log('[REC-DEBUG] unskip: not groups scope, returning prev');
+        return prev;
+      }
+      if (!prev.skippedGroups.has(index)) {
+        console.log('[REC-DEBUG] unskip: index not in skippedGroups, returning prev');
+        return prev;
+      }
       const nextSkipped = new Map(prev.skippedGroups);
       nextSkipped.delete(index);
       const updated: ScopeState = {
@@ -181,6 +188,9 @@ export function useScopeState(
         enabledGroups: prev.enabledGroups,
         skippedGroups: nextSkipped,
       };
+      console.log('[REC-DEBUG] unskip: new state created',
+        'skipped:', [...nextSkipped.keys()],
+        'enabled:', [...prev.enabledGroups]);
       saveScope(spec, updated);
       return updated;
     });
