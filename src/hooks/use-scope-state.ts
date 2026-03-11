@@ -178,7 +178,9 @@ export function useScopeState(
         return prev;
       }
       if (!prev.skippedGroups.has(index)) {
-        console.log('[REC-DEBUG] unskip: index not in skippedGroups, returning prev');
+        console.log(
+          '[REC-DEBUG] unskip: index not in skippedGroups, returning prev',
+        );
         return prev;
       }
       const nextSkipped = new Map(prev.skippedGroups);
@@ -188,9 +190,13 @@ export function useScopeState(
         enabledGroups: prev.enabledGroups,
         skippedGroups: nextSkipped,
       };
-      console.log('[REC-DEBUG] unskip: new state created',
-        'skipped:', [...nextSkipped.keys()],
-        'enabled:', [...prev.enabledGroups]);
+      console.log(
+        '[REC-DEBUG] unskip: new state created',
+        'skipped:',
+        [...nextSkipped.keys()],
+        'enabled:',
+        [...prev.enabledGroups],
+      );
       saveScope(spec, updated);
       return updated;
     });

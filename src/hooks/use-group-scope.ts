@@ -113,8 +113,12 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   const activeGroupIndices = useMemo(
     () => {
       const result = spec.allGroupIndices.filter((i) => !skippedGroups.has(i));
-      console.log('[REC-DEBUG] activeGroupIndices recomputed:', result,
-        'skipped:', [...skippedGroups.keys()]);
+      console.log(
+        '[REC-DEBUG] activeGroupIndices recomputed:',
+        result,
+        'skipped:',
+        [...skippedGroups.keys()],
+      );
       return result;
     },
     [spec.allGroupIndices, skippedGroups],
@@ -144,10 +148,15 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
       { expansionThreshold: 0.7 },
       { sortUnstarted: (a, b) => a.string - b.string },
     );
-    console.log('[REC-DEBUG] recommendation recomputed:',
-      'consolidate:', result.consolidateIndices,
-      'work:', result.consolidateWorkingCount,
-      'expand:', result.expandIndex);
+    console.log(
+      '[REC-DEBUG] recommendation recomputed:',
+      'consolidate:',
+      result.consolidateIndices,
+      'work:',
+      result.consolidateWorkingCount,
+      'expand:',
+      result.expandIndex,
+    );
     return result;
   }, [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]);
 
@@ -156,7 +165,10 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
       recommendation,
       (i: number) => spec.groups[i].label,
     );
-    console.log('[REC-DEBUG] recommendationText recomputed:', JSON.stringify(text));
+    console.log(
+      '[REC-DEBUG] recommendationText recomputed:',
+      JSON.stringify(text),
+    );
     return text;
   }, [recommendation]);
 
