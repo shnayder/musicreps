@@ -2064,7 +2064,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="76f844 quiz-state-cleanup"></div>
+  <div class="home-screen" id="home-screen" data-version="ae85b7 quiz-state-cleanup"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6445,6 +6445,7 @@ button {
     selectorRef.current = selector;
     const roundTimerRef = A2(null);
     const roundTimerStartRef = A2(null);
+    const roundDurationSnapshotRef = A2(null);
     const lastQuestionCapRef = A2(null);
     const computeProgress = q2(() => {
       const items = configRef.current.getEnabledItems();
@@ -6474,7 +6475,8 @@ button {
     const transitionToRoundCompleteRef = A2(null);
     const nextQuestionRef = A2(null);
     const transitionToRoundComplete = q2(() => {
-      const roundDurationMs = roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0;
+      const roundDurationMs = roundDurationSnapshotRef.current ?? (roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0);
+      roundDurationSnapshotRef.current = null;
       stopRoundTimer();
       setState((prev) => {
         const s3 = engineRoundComplete(prev);
@@ -6487,6 +6489,7 @@ button {
       setState((prev) => {
         const next = engineRoundTimerExpired(prev);
         if (next.answered) {
+          roundDurationSnapshotRef.current = roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0;
           setTimerLastQuestion(true);
           return { ...next, hintText: HINT_CONTINUE };
         } else {
@@ -6503,6 +6506,7 @@ button {
     const startRoundTimer = q2(() => {
       if (roundTimerRef.current) clearInterval(roundTimerRef.current);
       roundTimerStartRef.current = Date.now();
+      roundDurationSnapshotRef.current = null;
       setTimerPct(100);
       setTimerText(formatRoundTime(ROUND_DURATION_MS));
       setTimerWarning(false);
@@ -6585,6 +6589,7 @@ button {
           clearTimeout(lastQuestionCapRef.current);
           lastQuestionCapRef.current = null;
         }
+        roundDurationSnapshotRef.current = roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0;
         setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
       }
     }, [computeProgress]);
