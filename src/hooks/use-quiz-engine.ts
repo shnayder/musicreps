@@ -143,6 +143,7 @@ export function useQuizEngine(
 
   const roundTimerRef = useRef<number | null>(null);
   const roundTimerStartRef = useRef<number | null>(null);
+  const roundDurationSnapshotRef = useRef<number | null>(null);
   const lastQuestionCapRef = useRef<number | null>(null);
 
   // --- Compute progress ---
@@ -181,9 +182,13 @@ export function useQuizEngine(
   const nextQuestionRef = useRef<() => void>(null!);
 
   const transitionToRoundComplete = useCallback(() => {
-    const roundDurationMs = roundTimerStartRef.current
-      ? Date.now() - roundTimerStartRef.current
-      : 0;
+    // Use snapshot captured when the last answer was submitted, so feedback
+    // screen dwell time is excluded from the displayed round duration.
+    const roundDurationMs = roundDurationSnapshotRef.current ??
+      (roundTimerStartRef.current
+        ? Date.now() - roundTimerStartRef.current
+        : 0);
+    roundDurationSnapshotRef.current = null;
     stopRoundTimer();
     setState((prev) => {
       const s = engineRoundComplete(prev);
@@ -198,8 +203,11 @@ export function useQuizEngine(
     setState((prev) => {
       const next = engineRoundTimerExpired(prev);
       if (next.answered) {
-        // User is on feedback screen — update hint to "continue" and
-        // let them advance manually via the button / Space.
+        // User is on feedback screen — round is effectively over.
+        // Snapshot duration now so feedback dwell time is excluded.
+        roundDurationSnapshotRef.current = roundTimerStartRef.current
+          ? Date.now() - roundTimerStartRef.current
+          : 0;
         setTimerLastQuestion(true);
         return { ...next, hintText: HINT_CONTINUE };
       } else {
@@ -219,6 +227,7 @@ export function useQuizEngine(
   const startRoundTimer = useCallback(() => {
     if (roundTimerRef.current) clearInterval(roundTimerRef.current);
     roundTimerStartRef.current = Date.now();
+    roundDurationSnapshotRef.current = null;
 
     setTimerPct(100);
     setTimerText(formatRoundTime(ROUND_DURATION_MS));
@@ -315,12 +324,15 @@ export function useQuizEngine(
     }
 
     // Handle timer expiry — clear the last-question cap timer (user answered
-    // in time) and update the hint so the user can advance manually.
+    // in time) and snapshot round duration so feedback dwell time is excluded.
     if (stateRef.current.roundTimerExpired) {
       if (lastQuestionCapRef.current) {
         clearTimeout(lastQuestionCapRef.current);
         lastQuestionCapRef.current = null;
       }
+      roundDurationSnapshotRef.current = roundTimerStartRef.current
+        ? Date.now() - roundTimerStartRef.current
+        : 0;
       setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
     }
   }, [computeProgress]);
