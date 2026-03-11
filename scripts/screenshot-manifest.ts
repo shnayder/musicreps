@@ -6,6 +6,7 @@ import type { FixtureDetail } from '../src/fixtures/quiz-page.ts';
 import {
   quizActive,
   quizCorrectFeedback,
+  quizFeedbackTimerExpired,
   quizFeedbackTimerLow,
   quizLastQuestionAnswered,
   quizLastQuestionAwaiting,
@@ -145,6 +146,11 @@ export function buildManifest(): ScreenshotEntry[] {
     name: 'design-feedback-timer-low',
     modeId: 'semitoneMath',
     fixture: quizFeedbackTimerLow(defaultItems.semitoneMath),
+  });
+  entries.push({
+    name: 'design-feedback-timer-expired',
+    modeId: 'semitoneMath',
+    fixture: quizFeedbackTimerExpired(defaultItems.semitoneMath),
   });
   entries.push({
     name: 'design-last-question-awaiting',

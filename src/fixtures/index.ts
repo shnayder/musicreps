@@ -12,6 +12,7 @@ export { goodRound, roughRound } from './round-complete.ts';
 export {
   quizActive,
   quizCorrectFeedback,
+  quizFeedbackTimerExpired,
   quizFeedbackTimerLow,
   quizLastQuestionAnswered,
   quizLastQuestionAwaiting,

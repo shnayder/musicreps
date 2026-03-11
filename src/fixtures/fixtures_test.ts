@@ -8,6 +8,7 @@ import { defaultItems } from './items.ts';
 import {
   quizActive,
   quizCorrectFeedback,
+  quizFeedbackTimerExpired,
   quizFeedbackTimerLow,
   quizLastQuestionAnswered,
   quizLastQuestionAwaiting,
@@ -187,6 +188,18 @@ describe('fixture engine state validity', () => {
     assert.equal(fixture.timerPct, 0);
   });
 
+  it('quizFeedbackTimerExpired produces feedback with expired timer (answered first)', () => {
+    const fixture = quizFeedbackTimerExpired(testItemId);
+    const es = fixture.engineState!;
+    assert.equal(es.phase, 'active');
+    assert.equal(es.answered, true);
+    assert.equal(es.feedbackCorrect, true);
+    assert.equal(es.roundTimerExpired, true);
+    assert.equal(es.hintText, 'Space to continue');
+    assert.equal(fixture.timerLastQuestion, true);
+    assert.equal(fixture.timerPct, 0);
+  });
+
   it('quizLastQuestionAnswered produces feedback with expired timer', () => {
     const fixture = quizLastQuestionAnswered(testItemId);
     const es = fixture.engineState!;
@@ -205,6 +218,7 @@ describe('fixture engine state validity', () => {
         quizCorrectFeedback(testItemId),
         quizWrongFeedback(testItemId),
         quizFeedbackTimerLow(testItemId),
+        quizFeedbackTimerExpired(testItemId),
         quizLastQuestionAwaiting(testItemId),
         quizLastQuestionAnswered(testItemId),
         quizRoundComplete(),

@@ -24,6 +24,7 @@ export type ComponentCaptureOptions = {
   outDir: string;
   imgType?: 'png' | 'jpeg';
   quality?: number; // JPEG quality (ignored for PNG)
+  hasTouch?: boolean; // true → pointer: coarse (phone), false → pointer: fine (desktop)
 };
 
 /**
@@ -34,7 +35,7 @@ export type ComponentCaptureOptions = {
 export async function captureComponents(
   opts: ComponentCaptureOptions,
 ): Promise<void> {
-  const { entries, outDir, imgType = 'png', quality } = opts;
+  const { entries, outDir, imgType = 'png', quality, hasTouch } = opts;
   if (entries.length === 0) return;
 
   // Ensure output directory (including comp/ subdirectory) exists
@@ -44,6 +45,7 @@ export async function captureComponents(
   const context = await browser.newContext({
     viewport: VIEWPORT,
     deviceScaleFactor: 1,
+    ...(hasTouch !== undefined ? { hasTouch } : {}),
   });
   const page = await context.newPage();
 

@@ -25,9 +25,9 @@ export function FeedbackDisplay(
     label?: string;
   },
 ) {
-  let btnCls = 'next-btn';
-  if (correct === true) btnCls += ' next-btn-correct';
-  else if (correct === false) btnCls += ' next-btn-wrong';
+  let btnCls = 'next-btn page-action-btn page-action-primary';
+  if (correct === true) btnCls += ' page-action-correct';
+  else if (correct === false) btnCls += ' page-action-wrong';
   return (
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>

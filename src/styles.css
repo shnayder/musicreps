@@ -63,6 +63,7 @@
   --text-lg: 1.3rem;
   --text-xl: 1.5rem;
   --text-2xl: 2rem;
+  --text-3xl: 3rem;
 
   /* Font families */
   --font-display: 'DM Serif Display', Georgia, serif;
@@ -567,8 +568,14 @@ body {
   display: block;
 }
 
-.quiz-session {
-  position: relative;
+.quiz-session-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.quiz-session-header-content {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Element-level visibility (replaces inline style="display: none;") */
@@ -991,9 +998,8 @@ button {
 }
 .quiz-countdown-bar {
   flex: 1;
-  height: 4px;
+  height: 6px;
   background: var(--color-surface-alt);
-  margin-left: calc(-1 * var(--space-5));
 }
 .quiz-countdown-fill {
   height: 100%;
@@ -1006,7 +1012,7 @@ button {
   background: var(--color-recommended);
 }
 .quiz-info-time {
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
   color: var(--color-text-muted);
   white-space: nowrap;
@@ -1014,42 +1020,51 @@ button {
 
 /* --- Quiz session info — single compact row --- */
 .quiz-session-info {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  padding: 0 var(--space-6) var(--space-2) 0;
+  padding-bottom: var(--space-2);
 }
 .quiz-info-context {
   flex: 1;
 }
 .quiz-info-last-question {
   color: var(--color-recommended);
-  font-weight: 500;
+  font-weight: 600;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .quiz-info-count {
   font-variant-numeric: tabular-nums;
 }
 .quiz-header-close {
-  position: absolute;
-  top: var(--space-3);
-  right: 0;
   background: none;
   border: none;
-  font-size: var(--text-xl);
+  font-size: var(--size-close-btn);
   color: var(--color-text-light);
   cursor: pointer;
-  padding: 0 var(--space-2);
+  padding: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   line-height: 1;
   margin: 0;
   border-radius: var(--radius-sm);
   transition: color 0.15s ease, background 0.15s ease;
-  z-index: 1;
 }
 .quiz-header-close:hover {
   color: var(--color-text);
   background: var(--color-surface-hover);
+}
+.quiz-header-close:active {
+  background: var(--color-surface-pressed);
 }
 
 /* --- Progress bar (build-time template only) --- */
@@ -1135,6 +1150,17 @@ button {
   font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+.round-complete-count {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-brand);
+  line-height: 1;
+}
+.round-complete-count-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
   margin-bottom: var(--space-3);
 }
 .round-complete-stats {
@@ -1156,47 +1182,9 @@ button {
   color: var(--color-text-muted);
 }
 .round-stat-line {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-text);
   line-height: 1.6;
-}
-.round-complete-actions {
-  display: flex;
-  gap: var(--space-3);
-  justify-content: center;
-  padding-bottom: var(--space-4);
-}
-.round-complete-continue {
-  padding: var(--space-3) var(--space-5);
-  background: var(--color-brand);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  font-weight: 600;
-  cursor: pointer;
-}
-.round-complete-continue:hover {
-  opacity: 0.9;
-}
-.round-complete-continue:active {
-  opacity: 0.8;
-  transform: scale(0.98);
-}
-.round-complete-stop {
-  padding: var(--space-3) var(--space-5);
-  background: none;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  cursor: pointer;
-}
-.round-complete-stop:hover {
-  background: var(--color-surface-hover);
-}
-.round-complete-stop:active {
-  background: var(--color-surface-pressed);
 }
 /* --- Note buttons (piano-style layout) --- */
 .note-buttons {
@@ -1614,13 +1602,9 @@ button {
   margin-top: var(--space-5);
 }
 
-/* --- Next button (explicit advance during feedback) --- */
-.next-btn {
-  display: block;
-  margin: var(--space-4) auto var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  background: var(--color-brand);
-  color: white;
+/* --- Page-action buttons (shared base for next/continue/stop) --- */
+.page-action-btn {
+  padding: var(--space-3) var(--space-5);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--text-base);
@@ -1630,23 +1614,58 @@ button {
   min-height: 48px;
 }
 @media (hover: hover) {
-  .next-btn:hover {
+  .page-action-btn:hover {
     opacity: 0.9;
   }
 }
-.next-btn:active {
+.page-action-btn:active {
   opacity: 0.8;
   transform: scale(0.98);
 }
-.next-btn-correct {
-  background: var(--color-success);
-}
-.next-btn-wrong {
-  background: var(--color-error);
-}
-.next-btn:focus-visible {
+.page-action-btn:focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
+}
+.page-action-primary {
+  background: var(--color-brand);
+  color: white;
+}
+.page-action-secondary {
+  background: none;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  font-weight: 400;
+}
+@media (hover: hover) {
+  .page-action-secondary:hover {
+    opacity: 1;
+    background: var(--color-surface-hover);
+  }
+}
+.page-action-secondary:active {
+  opacity: 1;
+  background: var(--color-surface-pressed);
+}
+.page-action-correct {
+  background: var(--color-success);
+}
+.page-action-wrong {
+  background: var(--color-error);
+}
+.page-action-row {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  margin: var(--space-4) auto var(--space-2);
+}
+.page-action-row > .page-action-btn {
+  flex: 1;
+}
+
+/* --- Next button (positioning only — visual treatment via page-action-btn) --- */
+.next-btn {
+  display: block;
+  margin: var(--space-4) auto var(--space-2);
 }
 
 /* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
@@ -1942,15 +1961,6 @@ button {
   outline-offset: -2px;
 }
 
-/* Round-complete buttons */
-.round-complete-continue:focus-visible {
-  outline-color: white;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
-}
-.round-complete-stop:focus-visible {
-  outline-offset: -2px;
-}
-
 /* Back button, close buttons */
 .mode-close-btn:focus-visible,
 .quiz-header-close:focus-visible {
@@ -2022,7 +2032,8 @@ button {
     padding: 0 var(--space-4) var(--space-4);
   }
 
-  .next-btn {
+  .next-btn,
+  .page-action-row {
     width: 80%;
   }
 

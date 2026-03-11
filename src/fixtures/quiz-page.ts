@@ -199,6 +199,32 @@ export function quizLastQuestionAnswered(itemId: string): FixtureDetail {
 }
 
 // ---------------------------------------------------------------------------
+// Quiz active: feedback showing when timer expires ("Time is up" + Continue)
+// The user answered, then the round timer ran out while on the feedback screen.
+// ---------------------------------------------------------------------------
+
+export function quizFeedbackTimerExpired(itemId: string): FixtureDetail {
+  const s = buildActiveState(itemId, {
+    correct: true,
+    correctAnswer: feedbackCorrect.displayAnswer,
+    masteredCount: sessionLateRound.fluent,
+    totalEnabledCount: sessionLateRound.total,
+    questionCount: 18,
+  });
+  return {
+    engineState: {
+      ...s,
+      roundTimerExpired: true,
+      hintText: 'Space to continue',
+    },
+    timerPct: timerExpired.pct,
+    timerText: timerExpired.text,
+    timerWarning: timerExpired.warning,
+    timerLastQuestion: timerExpired.lastQuestion,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Round complete: good round
 // ---------------------------------------------------------------------------
 

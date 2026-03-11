@@ -139,6 +139,7 @@ async function waitForServer(timeoutMs = 10_000): Promise<void> {
 async function captureStates(
   entries: ScreenshotEntry[],
   outDir: string,
+  hasTouch = true,
 ): Promise<void> {
   mkdirSync(outDir, { recursive: true });
 
@@ -153,6 +154,7 @@ async function captureStates(
     const context = await browser.newContext({
       viewport: VIEWPORT,
       deviceScaleFactor: 1,
+      hasTouch,
     });
     const page = await context.newPage();
 
@@ -277,6 +279,7 @@ async function captureSessionStates(
   outDir: string,
   appManifestMap: Map<string, ScreenshotEntry>,
   compManifestMap: Map<string, ComponentEntry>,
+  hasTouch = true,
 ): Promise<void> {
   const appNames = stateNames.filter((s) => !isComponentName(s));
   const compNames = stateNames.filter((s) => isComponentName(s));
@@ -288,7 +291,7 @@ async function captureSessionStates(
       if (!entry) throw new Error(`State "${s}" no longer in manifest`);
       return entry;
     });
-    await captureStates(appEntries, outDir);
+    await captureStates(appEntries, outDir, hasTouch);
   }
 
   // Capture component states (file://, no server)
@@ -298,7 +301,7 @@ async function captureSessionStates(
       if (!entry) throw new Error(`Component "${s}" no longer in manifest`);
       return entry;
     });
-    await captureComponents({ entries: compEntries, outDir });
+    await captureComponents({ entries: compEntries, outDir, hasTouch });
   }
 }
 
@@ -620,9 +623,11 @@ Component names use the comp/ prefix (e.g. comp/buttons, comp/tabs).
 
 async function main() {
   const args = process.argv.slice(2);
+  const touchMode = !args.includes('--no-touch');
+  const filteredArgs = args.filter((a) => a !== '--no-touch');
 
   // --list-states: print all valid state names (app + component)
-  if (args.includes('--list-states')) {
+  if (filteredArgs.includes('--list-states')) {
     const manifest = buildManifest();
     for (const entry of manifest) console.log(entry.name);
     const compEntries = buildComponentManifest();
@@ -630,7 +635,7 @@ async function main() {
     return;
   }
 
-  const command = args[0];
+  const command = filteredArgs[0];
   if (!command || command === '--help' || command === '-h') usage();
 
   const manifest = buildManifest();
@@ -641,12 +646,12 @@ async function main() {
 
   switch (command) {
     case 'new': {
-      const sessionName = args[1];
+      const sessionName = filteredArgs[1];
       if (!sessionName) {
         console.error('Error: session name required.\n');
         usage();
       }
-      const stateNames = args.slice(2);
+      const stateNames = filteredArgs.slice(2);
       if (stateNames.length === 0) {
         console.error('Error: at least one state name required.\n');
         usage();
@@ -673,7 +678,13 @@ async function main() {
       writeSession(sessionName, session);
 
       const outDir = path.join(dir, 'v1');
-      await captureSessionStates(stateNames, outDir, manifestMap, compMap);
+      await captureSessionStates(
+        stateNames,
+        outDir,
+        manifestMap,
+        compMap,
+        touchMode,
+      );
 
       generateReviewHTML(sessionName, session);
       const reviewPath = path.join(dir, 'review.html');
@@ -684,7 +695,7 @@ async function main() {
 
     case 'capture': {
       // Determine session name: explicit arg, or most recent
-      let sessionName = args[1];
+      let sessionName = filteredArgs[1];
       if (!sessionName) {
         const sessions = listSessions();
         if (sessions.length === 0) {
@@ -708,7 +719,13 @@ async function main() {
       const nextVer = `v${nextNum}`;
 
       const outDir = path.join(sessionDir(sessionName), nextVer);
-      await captureSessionStates(session.states, outDir, manifestMap, compMap);
+      await captureSessionStates(
+        session.states,
+        outDir,
+        manifestMap,
+        compMap,
+        touchMode,
+      );
 
       session.versions.push(nextVer);
       writeSession(sessionName, session);
@@ -721,7 +738,7 @@ async function main() {
     }
 
     case 'view': {
-      let sessionName = args[1];
+      let sessionName = filteredArgs[1];
       if (!sessionName) {
         const sessions = listSessions();
         if (sessions.length === 0) {

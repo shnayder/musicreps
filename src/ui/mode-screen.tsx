@@ -365,33 +365,37 @@ export function QuizSession(
 ) {
   return (
     <div class='quiz-session'>
-      <div class='quiz-countdown-row'>
-        <div
-          class={'quiz-countdown-bar' +
-            (isWarning ? ' round-timer-warning' : '') +
-            (isLastQuestion ? ' last-question' : '')}
-        >
-          <div
-            class='quiz-countdown-fill'
-            style={{ width: `${timerPct ?? 100}%` }}
+      <div class='quiz-session-header'>
+        <div class='quiz-session-header-content'>
+          <div class='quiz-countdown-row'>
+            <div
+              class={'quiz-countdown-bar' +
+                (isWarning ? ' round-timer-warning' : '') +
+                (isLastQuestion ? ' last-question' : '')}
+            >
+              <div
+                class='quiz-countdown-fill'
+                style={{ width: `${timerPct ?? 100}%` }}
+              />
+            </div>
+            <span class='quiz-info-time'>{timeLeft || ''}</span>
+          </div>
+          <SessionInfo
+            context={context}
+            count={count}
+            lastQuestion={lastQuestion}
           />
         </div>
-        <span class='quiz-info-time'>{timeLeft || ''}</span>
+        <button
+          type='button'
+          tabIndex={0}
+          class='quiz-header-close'
+          aria-label='Stop quiz'
+          onClick={onClose}
+        >
+          {'\u00D7' /* × close button */}
+        </button>
       </div>
-      <SessionInfo
-        context={context}
-        count={count}
-        lastQuestion={lastQuestion}
-      />
-      <button
-        type='button'
-        tabIndex={0}
-        class='quiz-header-close'
-        aria-label='Stop quiz'
-        onClick={onClose}
-      >
-        {'\u00D7' /* × close button */}
-      </button>
     </div>
   );
 }
@@ -455,19 +459,26 @@ export function QuizArea(
 // ---------------------------------------------------------------------------
 
 export function RoundCompleteInfo(
-  { context, heading, correct, median }: {
+  { context, heading, count, correct }: {
     context?: string;
     heading?: string;
+    count?: number;
     correct?: string;
-    median?: string;
   },
 ) {
   return (
     <div class='round-complete'>
       <div class='round-complete-heading'>{heading || ''}</div>
+      {count != null && (
+        <>
+          <div class='round-complete-count'>{count}</div>
+          <div class='round-complete-count-label'>
+            {count === 1 ? 'question answered' : 'questions answered'}
+          </div>
+        </>
+      )}
       <div class='round-complete-stats'>
         <div class='round-stat-line round-stat-correct'>{correct || ''}</div>
-        <div class='round-stat-line round-stat-median'>{median || ''}</div>
       </div>
       {context
         ? (
@@ -493,24 +504,27 @@ export function RoundCompleteActions(
   },
 ) {
   return (
-    <div class='round-complete-actions'>
-      <button
-        type='button'
-        tabIndex={0}
-        class='round-complete-continue'
-        onClick={onContinue}
-      >
-        Keep Going
-      </button>
-      <button
-        type='button'
-        tabIndex={0}
-        class='round-complete-stop'
-        onClick={onStop}
-      >
-        Stop
-      </button>
-    </div>
+    <>
+      <div class='page-action-row'>
+        <button
+          type='button'
+          tabIndex={0}
+          class='page-action-btn page-action-primary'
+          onClick={onContinue}
+        >
+          Keep Going
+        </button>
+        <button
+          type='button'
+          tabIndex={0}
+          class='page-action-btn page-action-secondary'
+          onClick={onStop}
+        >
+          Stop
+        </button>
+      </div>
+      <div class='hint' style={{ visibility: 'hidden' }}>&nbsp;</div>
+    </>
   );
 }
 

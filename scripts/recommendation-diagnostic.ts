@@ -262,6 +262,7 @@ function analyzeScenario(
 async function captureRound(
   roundDir: string,
   onlyPatterns: string[] | null,
+  hasTouch = true,
 ): Promise<SerializedRow[]> {
   let scenarios = SCENARIOS;
   if (onlyPatterns) {
@@ -292,6 +293,7 @@ async function captureRound(
     const context = await browser.newContext({
       viewport: VIEWPORT,
       deviceScaleFactor: 3,
+      hasTouch,
     });
     const page = await context.newPage();
 
@@ -887,6 +889,8 @@ function stripFlags(args: string[]): string[] {
   while (i < args.length) {
     if (args[i] === '--only') {
       i += 2; // skip flag + value
+    } else if (args[i] === '--no-touch') {
+      i++; // skip boolean flag
     } else {
       result.push(args[i]);
       i++;
@@ -898,6 +902,7 @@ function stripFlags(args: string[]): string[] {
 async function main() {
   const rawArgs = process.argv.slice(2);
   const onlyPatterns = parseOnlyFlag(rawArgs);
+  const touchMode = !rawArgs.includes('--no-touch');
   const args = stripFlags(rawArgs);
 
   const command = args[0] || 'new';
@@ -921,7 +926,7 @@ async function main() {
       writeSessionFile(sessionName, session);
 
       const roundDir = path.join(dir, roundName);
-      await captureRound(roundDir, onlyPatterns);
+      await captureRound(roundDir, onlyPatterns, touchMode);
 
       generateReviewHTML(sessionName, session);
       const reviewPath = path.join(dir, 'review.html');
@@ -955,7 +960,7 @@ async function main() {
       const roundName = `round-${nextNum}`;
 
       const roundDir = path.join(sessionDir(sessionName), roundName);
-      await captureRound(roundDir, onlyPatterns);
+      await captureRound(roundDir, onlyPatterns, touchMode);
 
       session.rounds.push(roundName);
       writeSessionFile(sessionName, session);
@@ -1018,7 +1023,7 @@ async function main() {
         writeSessionFile(sessionName, session);
 
         const roundDir = path.join(dir, roundName);
-        await captureRound(roundDir, onlyPatterns);
+        await captureRound(roundDir, onlyPatterns, touchMode);
 
         generateReviewHTML(sessionName, session);
         const reviewPath = path.join(dir, 'review.html');

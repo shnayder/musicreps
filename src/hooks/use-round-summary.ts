@@ -4,7 +4,6 @@
 import { useMemo } from 'preact/hooks';
 import type { AdaptiveSelector, ItemStats } from '../types.ts';
 import type { QuizEngineHandle } from './use-quiz-engine.ts';
-import { computeMedian } from '../adaptive.ts';
 
 // ---------------------------------------------------------------------------
 // Stats selector — minimal adapter from AdaptiveSelector to StatsSelector
@@ -40,10 +39,8 @@ export function useStatsSelector(
 export type RoundSummary = {
   /** Context line: "practicing label . X / Y fluent". */
   roundContext: string;
-  /** Accuracy line: "8 / 10 correct . 42s". */
+  /** Accuracy line: "8 correct . 42s". */
   roundCorrect: string;
-  /** Median line: "1.2s median response time" or empty. */
-  roundMedian: string;
   /** Answer count: "5 answers". */
   countText: string;
 };
@@ -73,25 +70,15 @@ export function useRoundSummary(
   const roundCorrect = useMemo(() => {
     const s = engine.state;
     const dur = Math.round((s.roundDurationMs || 0) / 1000);
-    return s.roundCorrect + ' / ' + s.roundAnswered + ' correct \u00B7 ' +
-      dur + 's';
+    return s.roundCorrect + ' correct \u00B7 ' + dur + 's';
   }, [
     engine.state.roundCorrect,
-    engine.state.roundAnswered,
     engine.state.roundDurationMs,
   ]);
-
-  const roundMedian = useMemo(() => {
-    const times = engine.state.roundResponseTimes;
-    const median = computeMedian(times);
-    return median !== null
-      ? (median / 1000).toFixed(1) + 's median response time'
-      : '';
-  }, [engine.state.roundResponseTimes]);
 
   const answerCount = engine.state.roundAnswered;
   const countText = answerCount +
     (answerCount === 1 ? ' answer' : ' answers');
 
-  return { roundContext, roundCorrect, roundMedian, countText };
+  return { roundContext, roundCorrect, countText };
 }

@@ -2,7 +2,7 @@
 // Still needed for: (1) full-bleed flex layout during quiz (phase-active/
 // phase-round-complete/phase-calibration), (2) navigation's Escape key check
 // (reads phase class), (3) focus management (moves focus to .start-btn on
-// idle, .round-complete-continue on round-complete). Child visibility is now
+// idle, .page-action-primary on round-complete). Child visibility is now
 // handled by Preact conditional rendering, not CSS phase rules.
 
 import { useEffect } from 'preact/hooks';
@@ -31,7 +31,7 @@ const PHASE_CLASSES = [
 /** Default focus targets: idle → Start Quiz, round-complete → Keep Going. */
 export const PHASE_FOCUS_TARGETS: Partial<Record<EnginePhase, string>> = {
   idle: '.start-btn',
-  'round-complete': '.round-complete-continue',
+  'round-complete': '.page-action-primary',
 };
 
 export function usePhaseClass(

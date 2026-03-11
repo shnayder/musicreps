@@ -364,7 +364,7 @@ export function SpeedTapMode(
               isWarning={engine.timerWarning}
               isLastQuestion={engine.timerLastQuestion}
               lastQuestion={engine.state.roundTimerExpired
-                ? 'Last question'
+                ? (engine.state.answered ? 'Time is up' : 'Last question')
                 : ''}
               onClose={engine.stop}
             />
@@ -396,8 +396,8 @@ export function SpeedTapMode(
                 <RoundCompleteInfo
                   context={round.roundContext}
                   heading='Round complete'
+                  count={engine.state.roundAnswered}
                   correct={round.roundCorrect}
-                  median={round.roundMedian}
                 />
               </QuizArea>
             )

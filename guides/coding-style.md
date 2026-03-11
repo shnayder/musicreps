@@ -179,3 +179,8 @@ preserves anything you might need to recover.
   readability and tuning. Code outside `:root` references `var(--color-*)`.
 - **No inline styles** — use CSS classes. Visibility controlled by conditional
   rendering (`{show && <Component />}`) or CSS class toggling in JSX
+- **Structure over offsets** — if you need padding, margins, or z-index to
+  prevent overlap, the DOM structure is probably wrong. Restructure so the
+  layout engine enforces the relationship (e.g. flex siblings instead of
+  absolute + padding reserves). Correct by construction beats coordinated magic
+  numbers.
