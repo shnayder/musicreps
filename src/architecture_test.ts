@@ -122,6 +122,7 @@ const DISPLAY = new Set([
   'src/stats-display.ts',
   'src/mode-ui-state.ts',
   'src/quiz-fretboard-state.ts',
+  'src/staff-render.ts',
 ]);
 
 const BUILD_TIME = new Set([

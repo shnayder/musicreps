@@ -265,6 +265,17 @@ type ModeDefinitionBase<Q> = {
   scope: ScopeDef;
   stats: StatsDef;
 
+  // --- Built-in prompt types ---
+  /** Return ABC notation string for staff rendering.
+   *  When provided, GenericMode renders an abcjs staff instead of text prompt. */
+  getAbcNotation?: (q: Q) => string;
+
+  // --- Built-in keyboard input ---
+  /** Keyboard input mode. Defaults to 'text' (text field + Enter).
+   *  'note' — adaptive key handler with accidentals (waits for #/b).
+   *  'note-natural' — immediate note submission, no accidentals. */
+  keyboardInput?: 'text' | 'note' | 'note-natural';
+
   // --- Optional controller hook ---
   /** Preact hook returning imperative rendering + lifecycle hooks.
    *  Called inside GenericMode — may use useRef, useState, etc. */

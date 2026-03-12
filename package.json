@@ -10,6 +10,7 @@
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
     "@capacitor/ios": "^8.1.0",
+    "abcjs": "^6.6.2",
     "preact": "^10.28.4"
   }
 }

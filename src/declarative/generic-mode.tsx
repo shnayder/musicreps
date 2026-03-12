@@ -10,6 +10,7 @@
 // `useController` hook that can override prompt rendering, stats rendering,
 // engine lifecycle hooks, and keyboard handling.
 
+import type { ComponentChildren } from 'preact';
 import {
   useCallback,
   useEffect,
@@ -66,6 +67,8 @@ import {
   type KeyboardHintType,
 } from '../ui/quiz-ui.tsx';
 import { BUTTON_PROVIDER, SpeedCheck } from '../ui/speed-check.tsx';
+import { createAdaptiveKeyHandler } from '../quiz-engine.ts';
+import { ensureAbcjs, renderStaff } from '../staff-render.ts';
 
 import type {
   AnswerSpec,
@@ -350,6 +353,83 @@ function ResponseButtons(
 }
 
 // ---------------------------------------------------------------------------
+// Built-in staff prompt hook
+// ---------------------------------------------------------------------------
+
+/** Renders an abcjs staff when `getAbcNotation` is provided. No-ops otherwise. */
+function useStaffPrompt<Q>(
+  getAbcNotation: ((q: Q) => string) | undefined,
+): {
+  renderPrompt: ((q: Q) => ComponentChildren) | undefined;
+  onStop: (() => void) | undefined;
+} {
+  const staffRef = useRef<HTMLDivElement>(null);
+  const currentAbcRef = useRef<string | null>(null);
+
+  // Lazy-load abcjs when staff rendering is configured
+  useEffect(() => {
+    if (getAbcNotation) ensureAbcjs();
+  }, [!!getAbcNotation]);
+
+  if (!getAbcNotation) return { renderPrompt: undefined, onStop: undefined };
+
+  return {
+    renderPrompt: (q: Q) => {
+      const abc = getAbcNotation(q);
+      currentAbcRef.current = abc;
+      // Schedule render after Preact commits the ref
+      requestAnimationFrame(() => {
+        if (staffRef.current && currentAbcRef.current) {
+          renderStaff(staffRef.current, currentAbcRef.current);
+        }
+      });
+      return <div class='staff-display' ref={staffRef} />;
+    },
+    onStop: () => {
+      if (staffRef.current) staffRef.current.textContent = '';
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Built-in note keyboard input hook
+// ---------------------------------------------------------------------------
+
+/** Wires up createAdaptiveKeyHandler for 'note' or 'note-natural' input. */
+function useNoteKeyboard(
+  keyboardInput: 'text' | 'note' | 'note-natural' | undefined,
+): {
+  handleKey:
+    | ((
+      e: KeyboardEvent,
+      ctx: { submitAnswer: (input: string) => void },
+    ) => boolean | void)
+    | undefined;
+  reset: (() => void) | undefined;
+} {
+  const submitRef = useRef<(input: string) => void>(() => {});
+
+  const handler = useMemo(() => {
+    if (!keyboardInput || keyboardInput === 'text') return null;
+    const allowAccidentals = keyboardInput === 'note';
+    return createAdaptiveKeyHandler(
+      (note: string) => submitRef.current(note),
+      () => allowAccidentals,
+    );
+  }, [keyboardInput]);
+
+  if (!handler) return { handleKey: undefined, reset: undefined };
+
+  return {
+    handleKey: (e, ctx) => {
+      submitRef.current = ctx.submitAnswer;
+      return handler.handleKey(e);
+    },
+    reset: () => handler.reset(),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // GenericMode component
 // ---------------------------------------------------------------------------
 
@@ -385,11 +465,41 @@ export function GenericMode<Q>(
     ? useGroupScope(groupScopeSpec)
     : null;
 
+  // --- Built-in prompt + keyboard hooks (no-op when not configured) ---
+  const staff = useStaffPrompt(def.getAbcNotation);
+  const noteKb = useNoteKeyboard(def.keyboardInput);
+
   // --- Controller (optional — for modes with custom rendering/hooks) ---
   const enabledGroups = groupScopeResult?.enabledGroups ?? EMPTY_GROUPS;
-  const ctrl: ModeController<Q> = def.useController
+  const userCtrl: ModeController<Q> = def.useController
     ? def.useController(enabledGroups)
     : {};
+
+  // Compose built-in hooks with user controller (controller takes precedence)
+  const ctrl: ModeController<Q> = {
+    ...userCtrl,
+    renderPrompt: userCtrl.renderPrompt ?? staff.renderPrompt,
+    handleKey: userCtrl.handleKey ?? noteKb.handleKey,
+    onStart: (noteKb.reset || userCtrl.onStart)
+      ? () => {
+        noteKb.reset?.();
+        userCtrl.onStart?.();
+      }
+      : undefined,
+    onStop: (staff.onStop || noteKb.reset || userCtrl.onStop)
+      ? () => {
+        staff.onStop?.();
+        noteKb.reset?.();
+        userCtrl.onStop?.();
+      }
+      : undefined,
+    deactivateCleanup: (noteKb.reset || userCtrl.deactivateCleanup)
+      ? () => {
+        noteKb.reset?.();
+        userCtrl.deactivateCleanup?.();
+      }
+      : undefined,
+  };
   const ctrlRef = useRef(ctrl);
   ctrlRef.current = ctrl;
 

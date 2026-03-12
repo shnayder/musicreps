@@ -225,6 +225,36 @@ export function SplitNoteButtons(
 }
 
 // ---------------------------------------------------------------------------
+// Natural note buttons (7-note grid, no accidentals)
+// ---------------------------------------------------------------------------
+
+export function NaturalNoteButtons(
+  { onAnswer, hidden }: {
+    onAnswer?: (note: string) => void;
+    hidden?: boolean;
+  },
+) {
+  const cls = 'answer-buttons answer-buttons-naturals' +
+    (hidden ? ' answer-group-hidden' : '');
+  return (
+    <div class={cls}>
+      {NATURAL_NOTES.map((n) => (
+        <button
+          type='button'
+          tabIndex={0}
+          key={n}
+          class='answer-btn answer-btn-note'
+          data-note={n}
+          onClick={onAnswer ? () => onAnswer(n) : undefined}
+        >
+          {displayNote(n)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Piano-layout note buttons (fretboard modes)
 // ---------------------------------------------------------------------------
 

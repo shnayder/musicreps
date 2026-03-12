@@ -9,6 +9,7 @@ import {
   intervalAnswerButtons,
   keysigAnswerButtons,
   modeScreen,
+  naturalNoteButtons,
   noteAnswerButtons,
   notesToggleHTML,
   numberButtons,
@@ -89,6 +90,16 @@ ${
       </div>
       ${fretboardSVG()}
       ${noteAnswerButtons({ hidden: true })}`,
+    })
+  }
+
+  <!-- Note Reading mode -->
+${
+    modeScreen('noteReading', {
+      modeName: 'Note Reading',
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `<div class="staff-display"></div>
+      ${naturalNoteButtons()}`,
     })
   }
 
