@@ -2064,7 +2064,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="ae85b7 quiz-state-cleanup"></div>
+  <div class="home-screen" id="home-screen" data-version="0190d0 quiz-state-cleanup"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6489,7 +6489,7 @@ button {
       setState((prev) => {
         const next = engineRoundTimerExpired(prev);
         if (next.answered) {
-          roundDurationSnapshotRef.current = roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0;
+          roundDurationSnapshotRef.current = ROUND_DURATION_MS;
           setTimerLastQuestion(true);
           return { ...next, hintText: HINT_CONTINUE };
         } else {
@@ -6589,7 +6589,11 @@ button {
           clearTimeout(lastQuestionCapRef.current);
           lastQuestionCapRef.current = null;
         }
-        roundDurationSnapshotRef.current = roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0;
+        const elapsed = roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0;
+        roundDurationSnapshotRef.current = Math.min(
+          elapsed,
+          ROUND_DURATION_MS + LAST_QUESTION_CAP_MS
+        );
         setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
       }
     }, [computeProgress]);
