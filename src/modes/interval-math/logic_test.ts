@@ -66,8 +66,8 @@ describe('ALL_ITEMS', () => {
 // ---------------------------------------------------------------------------
 
 describe('DISTANCE_GROUPS', () => {
-  it('has 6 groups', () => {
-    assert.equal(DISTANCE_GROUPS.length, 6);
+  it('has 5 groups', () => {
+    assert.equal(DISTANCE_GROUPS.length, 5);
   });
 
   it('each group has distances and label', () => {
@@ -87,9 +87,9 @@ describe('DISTANCE_GROUPS', () => {
     assert.deepEqual(DISTANCE_GROUPS[0].distances, [1, 2]);
   });
 
-  it('last group contains only distance 11 (M7)', () => {
+  it('last group contains distances 9, 10, and 11 (M6 m7 M7)', () => {
     const last = DISTANCE_GROUPS[DISTANCE_GROUPS.length - 1];
-    assert.deepEqual(last.distances, [11]);
+    assert.deepEqual(last.distances, [9, 10, 11]);
   });
 });
 
@@ -117,17 +117,19 @@ describe('getItemIdsForGroup', () => {
     assert.equal(ids.length, 48);
   });
 
-  it('group 5 contains only M7 items', () => {
-    const ids = getItemIdsForGroup(5);
+  it('group 4 contains M6, m7, and M7 items', () => {
+    const ids = getItemIdsForGroup(4);
+    assert.ok(ids.includes('C+M6'));
+    assert.ok(ids.includes('C-M6'));
+    assert.ok(ids.includes('C+m7'));
+    assert.ok(ids.includes('C-m7'));
     assert.ok(ids.includes('C+M7'));
     assert.ok(ids.includes('C-M7'));
-    assert.ok(!ids.includes('C+m7'));
-    assert.ok(!ids.includes('C+M6'));
   });
 
-  it('group 5 has 24 items (12 notes × 1 interval × 2 dirs)', () => {
-    const ids = getItemIdsForGroup(5);
-    assert.equal(ids.length, 24);
+  it('group 4 has 72 items (12 notes × 3 intervals × 2 dirs)', () => {
+    const ids = getItemIdsForGroup(4);
+    assert.equal(ids.length, 72);
   });
 });
 

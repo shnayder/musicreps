@@ -23,8 +23,7 @@ export const DISTANCE_GROUPS = [
   { distances: [3, 4], label: '\u00B13\u20134' },
   { distances: [5, 6], label: '\u00B15\u20136' },
   { distances: [7, 8], label: '\u00B17\u20138' },
-  { distances: [9, 10], label: '\u00B19\u201310' },
-  { distances: [11], label: '\u00B111' },
+  { distances: [9, 10, 11], label: '\u00B19\u201311' },
 ];
 
 /**

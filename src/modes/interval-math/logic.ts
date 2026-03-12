@@ -29,8 +29,7 @@ export const DISTANCE_GROUPS = [
   { distances: [3, 4], label: 'm3 M3' },
   { distances: [5, 6], label: 'P4 TT' },
   { distances: [7, 8], label: 'P5 m6' },
-  { distances: [9, 10], label: 'M6 m7' },
-  { distances: [11], label: 'M7' },
+  { distances: [9, 10, 11], label: 'M6 m7 M7' },
 ];
 
 /**
