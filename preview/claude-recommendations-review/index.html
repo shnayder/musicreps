@@ -2144,7 +2144,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="ed002a recommendations-review"></div>
+  <div class="home-screen" id="home-screen" data-version="a61225 recommendations-review"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6357,9 +6357,18 @@ button {
       });
     }, [spec]);
     const unskipGroup = q2((index) => {
+      console.log("[REC-DEBUG] unskipGroup called for index:", index);
       setScopeRaw((prev) => {
-        if (prev.kind !== "groups") return prev;
-        if (!prev.skippedGroups.has(index)) return prev;
+        if (prev.kind !== "groups") {
+          console.log("[REC-DEBUG] unskip: not groups scope, returning prev");
+          return prev;
+        }
+        if (!prev.skippedGroups.has(index)) {
+          console.log(
+            "[REC-DEBUG] unskip: index not in skippedGroups, returning prev"
+          );
+          return prev;
+        }
         const nextSkipped = new Map(prev.skippedGroups);
         nextSkipped.delete(index);
         const updated = {
@@ -6367,6 +6376,13 @@ button {
           enabledGroups: prev.enabledGroups,
           skippedGroups: nextSkipped
         };
+        console.log(
+          "[REC-DEBUG] unskip: new state created",
+          "skipped:",
+          [...nextSkipped.keys()],
+          "enabled:",
+          [...prev.enabledGroups]
+        );
         saveScope(spec, updated);
         return updated;
       });
@@ -6408,7 +6424,16 @@ button {
     const enabledGroups = scope.kind === "groups" ? scope.enabledGroups : new Set(spec.defaultEnabled);
     const skippedGroups = scope.kind === "groups" ? scope.skippedGroups : EMPTY_SKIPPED;
     const activeGroupIndices = T2(
-      () => spec.allGroupIndices.filter((i3) => !skippedGroups.has(i3)),
+      () => {
+        const result = spec.allGroupIndices.filter((i3) => !skippedGroups.has(i3));
+        console.log(
+          "[REC-DEBUG] activeGroupIndices recomputed:",
+          result,
+          "skipped:",
+          [...skippedGroups.keys()]
+        );
+        return result;
+      },
       [spec.allGroupIndices, skippedGroups]
     );
     const enabledItems = T2(() => {
@@ -6423,19 +6448,34 @@ button {
       [enabledGroups, spec.formatLabel]
     );
     const recommendation = T2(() => {
-      return computeRecommendations(
+      const result = computeRecommendations(
         spec.selector,
         activeGroupIndices,
         spec.getItemIdsForGroup,
         { expansionThreshold: 0.7 },
         { sortUnstarted: (a3, b) => a3.string - b.string }
       );
+      console.log(
+        "[REC-DEBUG] recommendation recomputed:",
+        "consolidate:",
+        result.consolidateIndices,
+        "work:",
+        result.consolidateWorkingCount,
+        "expand:",
+        result.expandIndex
+      );
+      return result;
     }, [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]);
     const recommendationText = T2(() => {
-      return buildRecommendationText(
+      const text = buildRecommendationText(
         recommendation,
         (i3) => spec.groups[i3].label
       );
+      console.log(
+        "[REC-DEBUG] recommendationText recomputed:",
+        JSON.stringify(text)
+      );
+      return text;
     }, [recommendation]);
     const applyRecommendation = q2(() => {
       if (recommendation.enabled) {
