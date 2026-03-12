@@ -38,14 +38,14 @@ function buildGraph(): DepGraph {
     const deps: string[] = [];
 
     for (const d of mod.dependencies ?? []) {
-      for (const key of ['code', 'type']) {
-        const val = d[key];
-        if (
-          val && typeof val === 'object' && 'specifier' in val &&
-          val.specifier.startsWith(FILE_PREFIX + 'src/')
-        ) {
-          deps.push(val.specifier.slice(FILE_PREFIX.length));
-        }
+      // Only track runtime ("code") edges — type-only imports are erased at
+      // compile time and don't represent real architectural dependencies.
+      const val = d.code;
+      if (
+        val && typeof val === 'object' && 'specifier' in val &&
+        val.specifier.startsWith(FILE_PREFIX + 'src/')
+      ) {
+        deps.push(val.specifier.slice(FILE_PREFIX.length));
       }
     }
 
@@ -109,6 +109,7 @@ const FOUNDATION = new Set([
   'src/types.ts',
   'src/music-data.ts',
   'src/adaptive.ts',
+  'src/app-config.ts',
   'src/deadline.ts',
   'src/recommendations.ts',
 ]);
