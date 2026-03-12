@@ -855,15 +855,36 @@
         </div>
         <div class="showcase-row" style="margin-top: 0.5rem">
           <span class="anno">empty</span>
-          <span class="anno" style="margin-left: 1.4rem">active (focus)</span>
+          <span class="anno" style="margin-left: 1.4rem">active (accent)</span>
           <span class="anno" style="margin-left: 0.3rem">correct</span>
           <span class="anno" style="margin-left: 0.8rem">wrong</span>
         </div>
         <div class="anno-block">
           3rem &times; 2.5rem &middot; border: 2px &middot; border-radius:
           var(--radius-sm)<br>
-          active: focus-bg + focus border &middot; correct: success-bg &middot;
-          wrong: error-bg
+          active: accent underline &middot; correct: success border &middot;
+          wrong: error border
+        </div>
+      </div>
+    </div>
+    <div class="showcase">
+      <div class="showcase-label">Correct answer alignment</div>
+      <div class="showcase-body">
+        <div class="chord-slots-container" style="display: inline-flex">
+          <div class="chord-slots">
+            <span class="chord-slot wrong">D</span>
+            <span class="chord-slot correct">E</span>
+            <span class="chord-slot wrong">G</span>
+          </div>
+          <div class="chord-correct-row">
+            <span class="chord-correct-note">C</span>
+            <span class="chord-correct-note">E</span>
+            <span class="chord-correct-note">G</span>
+          </div>
+        </div>
+        <div class="anno-block">
+          Correct notes aligned under input slots with matching min-width,
+          padding, and gap for easy comparison.
         </div>
       </div>
     </div>

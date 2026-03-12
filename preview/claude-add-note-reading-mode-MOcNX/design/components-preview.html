@@ -36,6 +36,8 @@
   --color-recommended-text: hsl(44, 80%, 25%);
   --color-highlight: #eab308;
   /* UI accents */
+  --color-accent: hsl(220, 65%, 50%);
+  --color-accent-muted: hsl(220, 40%, 65%);
   --color-toggle-active: hsl(0, 0%, 32%);
   /* Text (warm neutrals) */
   --color-text: hsl(30, 5%, 20%);
@@ -76,6 +78,7 @@
   --text-lg: 1.3rem;
   --text-xl: 1.5rem;
   --text-2xl: 2rem;
+  --text-3xl: 3rem;
 
   /* Font families */
   --font-display: 'DM Serif Display', Georgia, serif;
@@ -129,14 +132,14 @@ body {
 .home-screen {
   display: flex;
   flex-direction: column;
-  padding: var(--space-5);
+  padding: 0 var(--space-5) var(--space-5);
 }
 .home-screen.hidden {
   display: none;
 }
 .home-header {
   text-align: left;
-  padding: var(--space-6) 0 var(--space-4);
+  padding: var(--space-3) 0 var(--space-4);
 }
 .home-title {
   font-family: var(--font-display);
@@ -201,7 +204,7 @@ body {
   border: 1px solid var(--color-border-lighter);
   border-left: 3px solid var(--color-brand);
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-3);
+  margin: 0 0 var(--space-3);
   cursor: pointer;
   position: relative;
 }
@@ -573,15 +576,21 @@ body {
 /* --- Mode screens --- */
 .mode-screen {
   display: none;
-  padding-top: var(--space-3);
+  padding-top: 0;
   flex: 1;
 }
 .mode-screen.mode-active {
   display: block;
 }
 
-.quiz-session {
-  position: relative;
+.quiz-session-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.quiz-session-header-content {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Element-level visibility (replaces inline style="display: none;") */
@@ -655,26 +664,20 @@ body {
   display: flex;
   align-items: baseline;
   gap: var(--space-2);
-  margin-bottom: 0;
+  margin-bottom: var(--space-3);
 }
 .practice-status:empty,
 .practice-status-label:empty {
   display: none;
 }
-.practice-status-prefix {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-muted);
-}
 .practice-status-label {
-  font-weight: 500;
+  font-weight: 600;
   font-size: var(--text-sm);
   color: var(--color-text);
 }
 .practice-status-detail {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  display: block;
 }
 .practice-status-detail:empty {
   display: none;
@@ -858,6 +861,99 @@ body {
   color: white;
   border-color: var(--color-toggle-active);
 }
+
+/* --- Group progress toggles (vertical list with bars) --- */
+.group-progress-toggles {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  padding: 0 var(--space-4);
+}
+.group-progress-toggles.has-skip {
+  grid-template-columns: auto 1fr auto;
+}
+.group-progress-toggles .distance-toggle {
+  height: 28px;
+  font-size: var(--text-sm);
+  padding: 0 var(--space-3);
+}
+.group-progress-toggles .distance-toggle.skipped {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+.group-progress-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.group-progress-bar.skipped {
+  opacity: 0.3;
+}
+.group-bar-slice {
+  flex: 1;
+  min-width: 0;
+}
+.group-skip-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.group-skip-btn:hover,
+.group-skip-btn.open {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+.group-skip-menu-wrap {
+  position: relative;
+}
+.group-skip-menu {
+  position: absolute;
+  right: -1px;
+  top: calc(100% + 2px);
+  z-index: 100;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  padding: var(--space-1) 0;
+  min-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.group-skip-menu button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: transparent;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+}
+.group-skip-menu button:hover {
+  background: var(--color-surface-hover);
+}
+.group-skip-menu .menu-check {
+  width: 16px;
+  text-align: center;
+}
+
 .notes-toggles {
   display: flex;
   flex-direction: row;
@@ -1004,9 +1100,8 @@ button {
 }
 .quiz-countdown-bar {
   flex: 1;
-  height: 4px;
+  height: 6px;
   background: var(--color-surface-alt);
-  margin-left: calc(-1 * var(--space-5));
 }
 .quiz-countdown-fill {
   height: 100%;
@@ -1019,7 +1114,7 @@ button {
   background: var(--color-recommended);
 }
 .quiz-info-time {
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
   color: var(--color-text-muted);
   white-space: nowrap;
@@ -1027,42 +1122,51 @@ button {
 
 /* --- Quiz session info — single compact row --- */
 .quiz-session-info {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  padding: 0 var(--space-6) var(--space-2) 0;
+  padding-bottom: var(--space-2);
 }
 .quiz-info-context {
   flex: 1;
 }
 .quiz-info-last-question {
   color: var(--color-recommended);
-  font-weight: 500;
+  font-weight: 600;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .quiz-info-count {
   font-variant-numeric: tabular-nums;
 }
 .quiz-header-close {
-  position: absolute;
-  top: var(--space-3);
-  right: 0;
   background: none;
   border: none;
-  font-size: var(--text-xl);
+  font-size: var(--size-close-btn);
   color: var(--color-text-light);
   cursor: pointer;
-  padding: 0 var(--space-2);
+  padding: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   line-height: 1;
   margin: 0;
   border-radius: var(--radius-sm);
   transition: color 0.15s ease, background 0.15s ease;
-  z-index: 1;
 }
 .quiz-header-close:hover {
   color: var(--color-text);
   background: var(--color-surface-hover);
+}
+.quiz-header-close:active {
+  background: var(--color-surface-pressed);
 }
 
 /* --- Progress bar (build-time template only) --- */
@@ -1110,7 +1214,9 @@ button {
   padding: 0 var(--space-5);
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  min-height: calc(
+    100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+  );
 }
 .mode-screen.phase-active .mode-top-bar,
 .mode-screen.phase-round-complete .mode-top-bar,
@@ -1146,6 +1252,17 @@ button {
   font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+.round-complete-count {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-brand);
+  line-height: 1;
+}
+.round-complete-count-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
   margin-bottom: var(--space-3);
 }
 .round-complete-stats {
@@ -1167,47 +1284,9 @@ button {
   color: var(--color-text-muted);
 }
 .round-stat-line {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-text);
   line-height: 1.6;
-}
-.round-complete-actions {
-  display: flex;
-  gap: var(--space-3);
-  justify-content: center;
-  padding-bottom: var(--space-4);
-}
-.round-complete-continue {
-  padding: var(--space-3) var(--space-5);
-  background: var(--color-brand);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  font-weight: 600;
-  cursor: pointer;
-}
-.round-complete-continue:hover {
-  opacity: 0.9;
-}
-.round-complete-continue:active {
-  opacity: 0.8;
-  transform: scale(0.98);
-}
-.round-complete-stop {
-  padding: var(--space-3) var(--space-5);
-  background: none;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  cursor: pointer;
-}
-.round-complete-stop:hover {
-  background: var(--color-surface-hover);
-}
-.round-complete-stop:active {
-  background: var(--color-surface-pressed);
 }
 /* --- Note buttons (piano-style layout) --- */
 .note-buttons {
@@ -1275,6 +1354,9 @@ button {
   cursor: pointer;
   padding: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1308,6 +1390,75 @@ button {
 }
 .note-btn.hidden {
   display: none;
+}
+
+/* --- Split note buttons (base note + accidental two-step input) --- */
+.split-note-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 400px;
+  margin: var(--space-3) auto;
+}
+.split-note-row-base {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+  width: 100%;
+}
+.split-note-row-accidentals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  width: 60%;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.split-note-row-accidentals.split-note-acc-hidden {
+  opacity: 0.3;
+  pointer-events: none;
+}
+.split-note-btn {
+  min-width: 0;
+  height: 48px;
+  font-size: var(--text-md);
+  font-weight: 500;
+  border: 1.5px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, border-color 0.1s, opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.split-note-btn:active {
+  background: var(--color-surface-pressed);
+  transform: scale(0.97);
+}
+.split-note-btn:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+@media (hover: hover) {
+  .split-note-btn:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-text);
+  }
+}
+.split-note-pending {
+  border-color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+.split-note-dimmed {
+  opacity: 0.4;
+}
+.split-note-acc {
+  background: var(--color-surface-accent);
 }
 
 /* --- Quiz prompt (text modes) --- */
@@ -1364,6 +1515,14 @@ button {
   opacity: 0.5;
   pointer-events: none;
 }
+.answer-input-wrong {
+  border-color: var(--color-error) !important;
+  opacity: 1;
+}
+.answer-input-correct {
+  border-color: var(--color-correct) !important;
+  opacity: 1;
+}
 .answer-input-shake {
   animation: input-shake 0.3s ease-in-out;
 }
@@ -1389,6 +1548,9 @@ button {
   cursor: pointer;
   padding: 0 var(--space-2);
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   transition:
     background 0.15s ease,
@@ -1535,24 +1697,19 @@ button {
 .incorrect {
   color: var(--color-error-text);
 }
-.time-display {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  margin-top: var(--space-3);
-}
+
 .hint {
   color: var(--color-text-muted);
   font-size: var(--text-base);
   margin-top: var(--space-5);
 }
+.hint-spacer {
+  visibility: hidden;
+}
 
-/* --- Next button (explicit advance during feedback) --- */
-.next-btn {
-  display: block;
-  margin: var(--space-4) auto var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  background: var(--color-brand);
-  color: white;
+/* --- Page-action buttons (shared base for next/continue/stop) --- */
+.page-action-btn {
+  padding: var(--space-3) var(--space-5);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--text-base);
@@ -1562,23 +1719,58 @@ button {
   min-height: 48px;
 }
 @media (hover: hover) {
-  .next-btn:hover {
+  .page-action-btn:hover {
     opacity: 0.9;
   }
 }
-.next-btn:active {
+.page-action-btn:active {
   opacity: 0.8;
   transform: scale(0.98);
 }
-.next-btn-correct {
-  background: var(--color-success);
-}
-.next-btn-wrong {
-  background: var(--color-error);
-}
-.next-btn:focus-visible {
+.page-action-btn:focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
+}
+.page-action-primary {
+  background: var(--color-brand);
+  color: white;
+}
+.page-action-secondary {
+  background: none;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  font-weight: 400;
+}
+@media (hover: hover) {
+  .page-action-secondary:hover {
+    opacity: 1;
+    background: var(--color-surface-hover);
+  }
+}
+.page-action-secondary:active {
+  opacity: 1;
+  background: var(--color-surface-pressed);
+}
+.page-action-correct {
+  background: var(--color-success);
+}
+.page-action-wrong {
+  background: var(--color-error);
+}
+.page-action-row {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  margin: var(--space-4) auto var(--space-2);
+}
+.page-action-row > .page-action-btn {
+  flex: 1;
+}
+
+/* --- Next button (positioning only — visual treatment via page-action-btn) --- */
+.next-btn {
+  display: block;
+  margin: var(--space-4) auto var(--space-2);
 }
 
 /* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
@@ -1792,40 +1984,64 @@ button {
   height: auto;
 }
 
-/* --- Chord spelling slots --- */
-.chord-slots {
+/* --- Sequential response slots (chord spelling, etc.) --- */
+.seq-slots {
   display: flex;
   justify-content: center;
   gap: var(--space-3);
   margin: var(--space-4) 0;
   min-height: 2.5rem;
 }
-.chord-slot {
+.seq-slot {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
+  min-width: 2.5rem;
+  padding: 0 0.25rem;
   height: 2.5rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-md);
+  border: none;
+  border-bottom: 2px solid var(--color-border);
+  border-radius: 0;
+  font-size: var(--text-lg);
   font-weight: 600;
-  background: var(--color-surface);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  background: transparent;
+  color: var(--color-text-muted);
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
-.chord-slot.active {
-  border-color: var(--color-focus);
-  background: var(--color-focus-bg);
+.seq-slot.active {
+  border-bottom-color: var(--color-accent);
 }
-.chord-slot.correct {
-  border-color: var(--color-success);
-  background: var(--color-success-bg);
+.seq-slot.filled {
+  border-bottom-color: var(--color-text);
+  color: var(--color-text);
+}
+.seq-slot.correct {
+  border-bottom-color: var(--color-success);
   color: var(--color-success-text);
 }
-.chord-slot.wrong {
-  border-color: var(--color-error);
-  background: var(--color-error-bg);
+.seq-slot.wrong {
+  border-bottom-color: var(--color-error);
   color: var(--color-error-text);
+}
+.seq-slots-container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.seq-correct-row {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+.seq-correct-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  padding: 0 0.25rem;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-success-text);
 }
 
 /* --- Focus-visible (keyboard navigation) --- */
@@ -1865,16 +2081,8 @@ button {
 
 /* Answer buttons */
 .answer-btn:focus-visible,
-.note-btn:focus-visible {
-  outline-offset: -2px;
-}
-
-/* Round-complete buttons */
-.round-complete-continue:focus-visible {
-  outline-color: white;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
-}
-.round-complete-stop:focus-visible {
+.note-btn:focus-visible,
+.split-note-btn:focus-visible {
   outline-offset: -2px;
 }
 
@@ -1946,10 +2154,11 @@ button {
   /* .quiz-controls margin-top:auto pushes controls toward the bottom;
      extra padding so they clear the screen edge on mobile. */
   .quiz-area {
-    padding-bottom: var(--space-4);
+    padding: 0 var(--space-4) var(--space-4);
   }
 
-  .next-btn {
+  .next-btn,
+  .page-action-row {
     width: 80%;
   }
 
@@ -2010,7 +2219,7 @@ button {
   <div id="preview-root"></div>
   <script>
 (() => {
-  // node_modules/preact/dist/preact.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/dist/preact.module.js
   var n;
   var l;
   var u;
@@ -2075,13 +2284,13 @@ button {
     I.__r = 0;
   }
   function P(n2, l3, u4, t3, i3, r3, o3, e3, f4, c3, s3) {
-    var a3, h2, y3, d3, w3, g2, _2, m3 = t3 && t3.__k || v, b = l3.length;
-    for (f4 = A(u4, l3, m3, f4, b), a3 = 0; a3 < b; a3++) null != (y3 = u4.__k[a3]) && (h2 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g2 = z(n2, y3, h2, i3, r3, o3, e3, f4, c3, s3), d3 = y3.__e, y3.ref && h2.ref != y3.ref && (h2.ref && D(h2.ref, null, y3), s3.push(y3.ref, y3.__c || d3, y3)), null == w3 && null != d3 && (w3 = d3), (_2 = !!(4 & y3.__u)) || h2.__k === y3.__k ? f4 = H(y3, f4, n2, _2) : "function" == typeof y3.type && void 0 !== g2 ? f4 = g2 : d3 && (f4 = d3.nextSibling), y3.__u &= -7);
+    var a3, h3, y3, d3, w3, g2, _2, m3 = t3 && t3.__k || v, b = l3.length;
+    for (f4 = A(u4, l3, m3, f4, b), a3 = 0; a3 < b; a3++) null != (y3 = u4.__k[a3]) && (h3 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g2 = z(n2, y3, h3, i3, r3, o3, e3, f4, c3, s3), d3 = y3.__e, y3.ref && h3.ref != y3.ref && (h3.ref && D(h3.ref, null, y3), s3.push(y3.ref, y3.__c || d3, y3)), null == w3 && null != d3 && (w3 = d3), (_2 = !!(4 & y3.__u)) || h3.__k === y3.__k ? f4 = H(y3, f4, n2, _2) : "function" == typeof y3.type && void 0 !== g2 ? f4 = g2 : d3 && (f4 = d3.nextSibling), y3.__u &= -7);
     return u4.__e = w3, f4;
   }
   function A(n2, l3, u4, t3, i3) {
-    var r3, o3, e3, f4, c3, s3 = u4.length, a3 = s3, h2 = 0;
-    for (n2.__k = new Array(i3), r3 = 0; r3 < i3; r3++) null != (o3 = l3[r3]) && "boolean" != typeof o3 && "function" != typeof o3 ? ("string" == typeof o3 || "number" == typeof o3 || "bigint" == typeof o3 || o3.constructor == String ? o3 = n2.__k[r3] = m(null, o3, null, null, null) : d(o3) ? o3 = n2.__k[r3] = m(k, { children: o3 }, null, null, null) : void 0 === o3.constructor && o3.__b > 0 ? o3 = n2.__k[r3] = m(o3.type, o3.props, o3.key, o3.ref ? o3.ref : null, o3.__v) : n2.__k[r3] = o3, f4 = r3 + h2, o3.__ = n2, o3.__b = n2.__b + 1, e3 = null, -1 != (c3 = o3.__i = T(o3, u4, f4, a3)) && (a3--, (e3 = u4[c3]) && (e3.__u |= 2)), null == e3 || null == e3.__v ? (-1 == c3 && (i3 > s3 ? h2-- : i3 < s3 && h2++), "function" != typeof o3.type && (o3.__u |= 4)) : c3 != f4 && (c3 == f4 - 1 ? h2-- : c3 == f4 + 1 ? h2++ : (c3 > f4 ? h2-- : h2++, o3.__u |= 4))) : n2.__k[r3] = null;
+    var r3, o3, e3, f4, c3, s3 = u4.length, a3 = s3, h3 = 0;
+    for (n2.__k = new Array(i3), r3 = 0; r3 < i3; r3++) null != (o3 = l3[r3]) && "boolean" != typeof o3 && "function" != typeof o3 ? ("string" == typeof o3 || "number" == typeof o3 || "bigint" == typeof o3 || o3.constructor == String ? o3 = n2.__k[r3] = m(null, o3, null, null, null) : d(o3) ? o3 = n2.__k[r3] = m(k, { children: o3 }, null, null, null) : void 0 === o3.constructor && o3.__b > 0 ? o3 = n2.__k[r3] = m(o3.type, o3.props, o3.key, o3.ref ? o3.ref : null, o3.__v) : n2.__k[r3] = o3, f4 = r3 + h3, o3.__ = n2, o3.__b = n2.__b + 1, e3 = null, -1 != (c3 = o3.__i = T(o3, u4, f4, a3)) && (a3--, (e3 = u4[c3]) && (e3.__u |= 2)), null == e3 || null == e3.__v ? (-1 == c3 && (i3 > s3 ? h3-- : i3 < s3 && h3++), "function" != typeof o3.type && (o3.__u |= 4)) : c3 != f4 && (c3 == f4 - 1 ? h3-- : c3 == f4 + 1 ? h3++ : (c3 > f4 ? h3-- : h3++, o3.__u |= 4))) : n2.__k[r3] = null;
     if (a3) for (r3 = 0; r3 < s3; r3++) null != (e3 = u4[r3]) && 0 == (2 & e3.__u) && (e3.__e == t3 && (t3 = S(e3)), E(e3, e3));
     return t3;
   }
@@ -2137,27 +2346,27 @@ button {
     };
   }
   function z(n2, u4, t3, i3, r3, o3, e3, f4, c3, s3) {
-    var a3, h2, p3, y3, _2, m3, b, S2, C3, M2, $2, I2, A3, H2, L, T3 = u4.type;
+    var a3, h3, p3, y3, _2, m3, b, S2, C3, M2, $2, I2, A3, H2, L, T3 = u4.type;
     if (void 0 !== u4.constructor) return null;
     128 & t3.__u && (c3 = !!(32 & t3.__u), o3 = [f4 = u4.__e = t3.__e]), (a3 = l.__b) && a3(u4);
     n: if ("function" == typeof T3) try {
-      if (S2 = u4.props, C3 = "prototype" in T3 && T3.prototype.render, M2 = (a3 = T3.contextType) && i3[a3.__c], $2 = a3 ? M2 ? M2.props.value : a3.__ : i3, t3.__c ? b = (h2 = u4.__c = t3.__c).__ = h2.__E : (C3 ? u4.__c = h2 = new T3(S2, $2) : (u4.__c = h2 = new x(S2, $2), h2.constructor = T3, h2.render = G), M2 && M2.sub(h2), h2.state || (h2.state = {}), h2.__n = i3, p3 = h2.__d = true, h2.__h = [], h2._sb = []), C3 && null == h2.__s && (h2.__s = h2.state), C3 && null != T3.getDerivedStateFromProps && (h2.__s == h2.state && (h2.__s = w({}, h2.__s)), w(h2.__s, T3.getDerivedStateFromProps(S2, h2.__s))), y3 = h2.props, _2 = h2.state, h2.__v = u4, p3) C3 && null == T3.getDerivedStateFromProps && null != h2.componentWillMount && h2.componentWillMount(), C3 && null != h2.componentDidMount && h2.__h.push(h2.componentDidMount);
+      if (S2 = u4.props, C3 = "prototype" in T3 && T3.prototype.render, M2 = (a3 = T3.contextType) && i3[a3.__c], $2 = a3 ? M2 ? M2.props.value : a3.__ : i3, t3.__c ? b = (h3 = u4.__c = t3.__c).__ = h3.__E : (C3 ? u4.__c = h3 = new T3(S2, $2) : (u4.__c = h3 = new x(S2, $2), h3.constructor = T3, h3.render = G), M2 && M2.sub(h3), h3.state || (h3.state = {}), h3.__n = i3, p3 = h3.__d = true, h3.__h = [], h3._sb = []), C3 && null == h3.__s && (h3.__s = h3.state), C3 && null != T3.getDerivedStateFromProps && (h3.__s == h3.state && (h3.__s = w({}, h3.__s)), w(h3.__s, T3.getDerivedStateFromProps(S2, h3.__s))), y3 = h3.props, _2 = h3.state, h3.__v = u4, p3) C3 && null == T3.getDerivedStateFromProps && null != h3.componentWillMount && h3.componentWillMount(), C3 && null != h3.componentDidMount && h3.__h.push(h3.componentDidMount);
       else {
-        if (C3 && null == T3.getDerivedStateFromProps && S2 !== y3 && null != h2.componentWillReceiveProps && h2.componentWillReceiveProps(S2, $2), u4.__v == t3.__v || !h2.__e && null != h2.shouldComponentUpdate && false === h2.shouldComponentUpdate(S2, h2.__s, $2)) {
-          u4.__v != t3.__v && (h2.props = S2, h2.state = h2.__s, h2.__d = false), u4.__e = t3.__e, u4.__k = t3.__k, u4.__k.some(function(n3) {
+        if (C3 && null == T3.getDerivedStateFromProps && S2 !== y3 && null != h3.componentWillReceiveProps && h3.componentWillReceiveProps(S2, $2), u4.__v == t3.__v || !h3.__e && null != h3.shouldComponentUpdate && false === h3.shouldComponentUpdate(S2, h3.__s, $2)) {
+          u4.__v != t3.__v && (h3.props = S2, h3.state = h3.__s, h3.__d = false), u4.__e = t3.__e, u4.__k = t3.__k, u4.__k.some(function(n3) {
             n3 && (n3.__ = u4);
-          }), v.push.apply(h2.__h, h2._sb), h2._sb = [], h2.__h.length && e3.push(h2);
+          }), v.push.apply(h3.__h, h3._sb), h3._sb = [], h3.__h.length && e3.push(h3);
           break n;
         }
-        null != h2.componentWillUpdate && h2.componentWillUpdate(S2, h2.__s, $2), C3 && null != h2.componentDidUpdate && h2.__h.push(function() {
-          h2.componentDidUpdate(y3, _2, m3);
+        null != h3.componentWillUpdate && h3.componentWillUpdate(S2, h3.__s, $2), C3 && null != h3.componentDidUpdate && h3.__h.push(function() {
+          h3.componentDidUpdate(y3, _2, m3);
         });
       }
-      if (h2.context = $2, h2.props = S2, h2.__P = n2, h2.__e = false, I2 = l.__r, A3 = 0, C3) h2.state = h2.__s, h2.__d = false, I2 && I2(u4), a3 = h2.render(h2.props, h2.state, h2.context), v.push.apply(h2.__h, h2._sb), h2._sb = [];
+      if (h3.context = $2, h3.props = S2, h3.__P = n2, h3.__e = false, I2 = l.__r, A3 = 0, C3) h3.state = h3.__s, h3.__d = false, I2 && I2(u4), a3 = h3.render(h3.props, h3.state, h3.context), v.push.apply(h3.__h, h3._sb), h3._sb = [];
       else do {
-        h2.__d = false, I2 && I2(u4), a3 = h2.render(h2.props, h2.state, h2.context), h2.state = h2.__s;
-      } while (h2.__d && ++A3 < 25);
-      h2.state = h2.__s, null != h2.getChildContext && (i3 = w(w({}, i3), h2.getChildContext())), C3 && !p3 && null != h2.getSnapshotBeforeUpdate && (m3 = h2.getSnapshotBeforeUpdate(y3, _2)), H2 = null != a3 && a3.type === k && null == a3.key ? q(a3.props.children) : a3, f4 = P(n2, d(H2) ? H2 : [H2], u4, t3, i3, r3, o3, e3, f4, c3, s3), h2.base = u4.__e, u4.__u &= -161, h2.__h.length && e3.push(h2), b && (h2.__E = h2.__ = null);
+        h3.__d = false, I2 && I2(u4), a3 = h3.render(h3.props, h3.state, h3.context), h3.state = h3.__s;
+      } while (h3.__d && ++A3 < 25);
+      h3.state = h3.__s, null != h3.getChildContext && (i3 = w(w({}, i3), h3.getChildContext())), C3 && !p3 && null != h3.getSnapshotBeforeUpdate && (m3 = h3.getSnapshotBeforeUpdate(y3, _2)), H2 = null != a3 && a3.type === k && null == a3.key ? q(a3.props.children) : a3, f4 = P(n2, d(H2) ? H2 : [H2], u4, t3, i3, r3, o3, e3, f4, c3, s3), h3.base = u4.__e, u4.__u &= -161, h3.__h.length && e3.push(h3), b && (h3.__E = h3.__ = null);
     } catch (n3) {
       if (u4.__v = null, c3 || null != o3) if (n3.then) {
         for (u4.__u |= c3 ? 160 : 128; f4 && 8 == f4.nodeType && f4.nextSibling; ) f4 = f4.nextSibling;
@@ -2191,7 +2400,7 @@ button {
     return "object" != typeof n2 || null == n2 || n2.__b > 0 ? n2 : d(n2) ? n2.map(q) : w({}, n2);
   }
   function B(u4, t3, i3, r3, o3, e3, f4, c3, s3) {
-    var a3, h2, v3, y3, w3, _2, m3, b = i3.props || p, k3 = t3.props, x2 = t3.type;
+    var a3, h3, v3, y3, w3, _2, m3, b = i3.props || p, k3 = t3.props, x2 = t3.type;
     if ("svg" == x2 ? o3 = "http://www.w3.org/2000/svg" : "math" == x2 ? o3 = "http://www.w3.org/1998/Math/MathML" : o3 || (o3 = "http://www.w3.org/1999/xhtml"), null != e3) {
       for (a3 = 0; a3 < e3.length; a3++) if ((w3 = e3[a3]) && "setAttribute" in w3 == !!x2 && (x2 ? w3.localName == x2 : 3 == w3.nodeType)) {
         u4 = w3, e3[a3] = null;
@@ -2206,8 +2415,8 @@ button {
     else {
       if (e3 = e3 && n.call(u4.childNodes), !c3 && null != e3) for (b = {}, a3 = 0; a3 < u4.attributes.length; a3++) b[(w3 = u4.attributes[a3]).name] = w3.value;
       for (a3 in b) w3 = b[a3], "dangerouslySetInnerHTML" == a3 ? v3 = w3 : "children" == a3 || a3 in k3 || "value" == a3 && "defaultValue" in k3 || "checked" == a3 && "defaultChecked" in k3 || F(u4, a3, null, w3, o3);
-      for (a3 in k3) w3 = k3[a3], "children" == a3 ? y3 = w3 : "dangerouslySetInnerHTML" == a3 ? h2 = w3 : "value" == a3 ? _2 = w3 : "checked" == a3 ? m3 = w3 : c3 && "function" != typeof w3 || b[a3] === w3 || F(u4, a3, w3, b[a3], o3);
-      if (h2) c3 || v3 && (h2.__html == v3.__html || h2.__html == u4.innerHTML) || (u4.innerHTML = h2.__html), t3.__k = [];
+      for (a3 in k3) w3 = k3[a3], "children" == a3 ? y3 = w3 : "dangerouslySetInnerHTML" == a3 ? h3 = w3 : "value" == a3 ? _2 = w3 : "checked" == a3 ? m3 = w3 : c3 && "function" != typeof w3 || b[a3] === w3 || F(u4, a3, w3, b[a3], o3);
+      if (h3) c3 || v3 && (h3.__html == v3.__html || h3.__html == u4.innerHTML) || (u4.innerHTML = h3.__html), t3.__k = [];
       else if (v3 && (u4.innerHTML = ""), P("template" == t3.type ? u4.content : u4, d(y3) ? y3 : [y3], t3, i3, r3, "foreignObject" == x2 ? "http://www.w3.org/1999/xhtml" : o3, e3, f4, e3 ? e3[0] : i3.__k && S(i3, 0), c3, s3), null != e3) for (a3 = e3.length; a3--; ) g(e3[a3]);
       c3 || (a3 = "value", "progress" == x2 && null == _2 ? u4.removeAttribute("value") : null != _2 && (_2 !== u4[a3] || "progress" == x2 && !_2 || "option" == x2 && _2 != b[a3]) && F(u4, a3, _2, b[a3], o3), a3 = "checked", null != m3 && m3 != u4[a3] && F(u4, a3, m3, b[a3], o3));
     }
@@ -2261,7 +2470,7 @@ button {
     return n2.__v.__b - l3.__v.__b;
   }, I.__r = 0, f = /(PointerCapture)$|Capture$/i, c = 0, s = O(false), a = O(true), h = 0;
 
-  // node_modules/preact/hooks/dist/hooks.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/hooks/dist/hooks.module.js
   var t2;
   var r2;
   var u2;
@@ -2280,6 +2489,43 @@ button {
     var u4 = r2.__H || (r2.__H = { __: [], __h: [] });
     return n2 >= u4.__.length && u4.__.push({}), u4.__[n2];
   }
+  function d2(n2) {
+    return o2 = 1, h2(D2, n2);
+  }
+  function h2(n2, u4, i3) {
+    var o3 = p2(t2++, 2);
+    if (o3.t = n2, !o3.__c && (o3.__ = [i3 ? i3(u4) : D2(void 0, u4), function(n3) {
+      var t3 = o3.__N ? o3.__N[0] : o3.__[0], r3 = o3.t(t3, n3);
+      t3 !== r3 && (o3.__N = [r3, o3.__[1]], o3.__c.setState({}));
+    }], o3.__c = r2, !r2.__f)) {
+      var f4 = function(n3, t3, r3) {
+        if (!o3.__c.__H) return true;
+        var u5 = o3.__c.__H.__.filter(function(n4) {
+          return n4.__c;
+        });
+        if (u5.every(function(n4) {
+          return !n4.__N;
+        })) return !c3 || c3.call(this, n3, t3, r3);
+        var i4 = o3.__c.props !== n3;
+        return u5.some(function(n4) {
+          if (n4.__N) {
+            var t4 = n4.__[0];
+            n4.__ = n4.__N, n4.__N = void 0, t4 !== n4.__[0] && (i4 = true);
+          }
+        }), c3 && c3.call(this, n3, t3, r3) || i4;
+      };
+      r2.__f = true;
+      var c3 = r2.shouldComponentUpdate, e3 = r2.componentWillUpdate;
+      r2.componentWillUpdate = function(n3, t3, r3) {
+        if (this.__e) {
+          var u5 = c3;
+          c3 = void 0, f4(n3, t3, r3), c3 = u5;
+        }
+        e3 && e3.call(this, n3, t3, r3);
+      }, r2.shouldComponentUpdate = f4;
+    }
+    return o3.__N || o3.__;
+  }
   function y2(n2, u4) {
     var i3 = p2(t2++, 3);
     !c2.__s && C2(i3.__H, u4) && (i3.__ = n2, i3.u = u4, r2.__H.__h.push(i3));
@@ -2292,6 +2538,11 @@ button {
   function T2(n2, r3) {
     var u4 = p2(t2++, 7);
     return C2(u4.__H, r3) && (u4.__ = n2(), u4.__H = r3, u4.__h = n2), u4.__;
+  }
+  function q2(n2, t3) {
+    return o2 = 8, T2(function() {
+      return n2;
+    }, t3);
   }
   function j2() {
     for (var n2; n2 = f2.shift(); ) {
@@ -2361,6 +2612,9 @@ button {
     return !n2 || n2.length !== t3.length || t3.some(function(t4, r3) {
       return t4 !== n2[r3];
     });
+  }
+  function D2(n2, t3) {
+    return "function" == typeof t3 ? t3(n2) : t3;
   }
 
   // src/music-data.ts
@@ -2446,7 +2700,6 @@ button {
   ];
   var ROMAN_NUMERALS = DIATONIC_CHORDS.map((c3) => c3.numeral);
   var DEGREE_LABELS = [
-    ["1", "1st"],
     ["2", "2nd"],
     ["3", "3rd"],
     ["4", "4th"],
@@ -2618,7 +2871,6 @@ button {
     className: "feedback correct",
     correct: true,
     displayAnswer: "D#",
-    time: "0.82s",
     hint: "Space for next"
   };
   var feedbackWrong = {
@@ -2655,21 +2907,19 @@ button {
   var goodRound = {
     context: "+1 to +5 \xB7 12 / 18 fluent",
     heading: "Round complete",
-    correct: "16 / 18 correct \xB7 63s",
-    median: "0.9s median response time"
+    correct: "16 correct \xB7 63s"
   };
   var roughRound = {
     context: "all distances \xB7 3 / 24 fluent",
     heading: "Round complete",
-    correct: "5 / 9 correct \xB7 62s",
-    median: "2.8s median response time"
+    correct: "5 correct \xB7 62s"
   };
 
   // src/fixtures/heatmap-scenarios.ts
   var HOUR = 36e5;
   var DAY = 24 * HOUR;
 
-  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
   var f3 = 0;
   function u3(e3, t3, n2, o3, i3, u4) {
     t3 || (t3 = {});
@@ -2688,7 +2938,9 @@ button {
     }
     if (!feedback.correct) {
       if (buttonValue === feedback.userInput) return " btn-feedback-wrong";
-      if (buttonLabel === feedback.displayAnswer) return " btn-feedback-reveal";
+      if (buttonValue === feedback.displayAnswer || buttonLabel === feedback.displayAnswer) {
+        return " btn-feedback-reveal";
+      }
     }
     return "";
   }
@@ -2916,11 +3168,11 @@ button {
     const c3 = heatmapColors();
     if (speedScore === null || freshness === null) return c3.none;
     const level = speedScore > 0.8 ? 4 : speedScore > 0.6 ? 3 : speedScore > 0.4 ? 2 : speedScore > 0.2 ? 1 : 0;
-    const [h2, s3, l3] = SPEED_HSL[level];
+    const [h3, s3, l3] = SPEED_HSL[level];
     const f4 = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * Math.max(0, Math.min(1, freshness));
     const fadedS = Math.round(s3 * f4);
     const fadedL = Math.round(l3 + (NEUTRAL_L - l3) * (1 - f4));
-    return `hsl(${h2}, ${fadedS}%, ${fadedL}%)`;
+    return `hsl(${h3}, ${fadedS}%, ${fadedL}%)`;
   }
   function getStatsCellColor(selector, itemId) {
     const speedScore = selector.getSpeedScore?.(itemId) ?? null;
@@ -2955,8 +3207,8 @@ button {
     html += '<div class="legend-bar-group">';
     html += '<div class="legend-gradient-bar">';
     for (let i3 = SPEED_HSL.length - 1; i3 >= 0; i3--) {
-      const [h2, s3, l3] = SPEED_HSL[i3];
-      html += `<div class="legend-bar-swatch" style="background:hsl(${h2}, ${s3}%, ${l3}%)"></div>`;
+      const [h3, s3, l3] = SPEED_HSL[i3];
+      html += `<div class="legend-bar-swatch" style="background:hsl(${h3}, ${s3}%, ${l3}%)"></div>`;
     }
     html += "</div>";
     html += '<div class="legend-axis-labels"><span>Automatic</span><span>Hesitant</span></div>';
@@ -3067,6 +3319,150 @@ button {
       )) })
     ] });
   }
+  var CLOSE_EVENT = "groupskipmenu:close";
+  function GroupSkipMenu({ index, label, currentStatus, onSkip, onUnskip }) {
+    const [open, setOpen] = d2(false);
+    const idRef = A2(index);
+    idRef.current = index;
+    const openMenu = q2(() => {
+      document.dispatchEvent(
+        new CustomEvent(CLOSE_EVENT, { detail: index })
+      );
+      setOpen(true);
+    }, [index]);
+    y2(() => {
+      if (!open) return;
+      const onKey = (e3) => {
+        if (e3.key === "Escape") setOpen(false);
+      };
+      const onClick = () => setOpen(false);
+      const onOtherMenu = (e3) => {
+        if (e3.detail !== idRef.current) setOpen(false);
+      };
+      const rafId = requestAnimationFrame(() => {
+        document.addEventListener("click", onClick);
+        document.addEventListener("keydown", onKey);
+        document.addEventListener(CLOSE_EVENT, onOtherMenu);
+      });
+      return () => {
+        cancelAnimationFrame(rafId);
+        document.removeEventListener("click", onClick);
+        document.removeEventListener("keydown", onKey);
+        document.removeEventListener(CLOSE_EVENT, onOtherMenu);
+      };
+    }, [open]);
+    const select = q2(
+      (status) => {
+        if (status === "learn") onUnskip(index);
+        else onSkip(index, status);
+        setOpen(false);
+      },
+      [index, onSkip, onUnskip]
+    );
+    const items = [
+      { key: "learn", label: "Learn this" },
+      { key: "mastered", label: "I know this" },
+      { key: "deferred", label: "Skip for now" }
+    ];
+    return /* @__PURE__ */ u3("div", { class: "group-skip-menu-wrap", children: [
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "group-skip-btn" + (open ? " open" : ""),
+          title: `Options for ${label}`,
+          "aria-label": `Options for ${label}`,
+          "aria-expanded": open,
+          onClick: (e3) => {
+            e3.stopPropagation();
+            if (open) setOpen(false);
+            else openMenu();
+          },
+          children: "\u22EF"
+        }
+      ),
+      open && /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "group-skip-menu",
+          onClick: (e3) => e3.stopPropagation(),
+          children: items.map((item) => /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              onClick: () => select(item.key),
+              children: [
+                /* @__PURE__ */ u3("span", { class: "menu-check", children: item.key === currentStatus ? "\u2713" : "" }),
+                item.label
+              ]
+            },
+            item.key
+          ))
+        }
+      )
+    ] });
+  }
+  function GroupProgressToggles({ groups, active, onToggle, selector, skipped, onSkip, onUnskip }) {
+    const hasMenu = !!(onSkip && onUnskip);
+    return /* @__PURE__ */ u3(
+      "div",
+      {
+        class: "group-progress-toggles" + (hasMenu ? " has-skip" : ""),
+        children: groups.map((g2, i3) => {
+          const isSkipped = skipped?.has(i3) ?? false;
+          const skipReason = skipped?.get(i3);
+          const currentStatus = skipReason ?? "learn";
+          const items = g2.itemIds.map((id) => {
+            const sp = selector.getSpeedScore(id);
+            const fr = selector.getFreshness(id);
+            const auto = sp !== null && fr !== null ? sp * fr : null;
+            return { id, auto, color: getSpeedFreshnessColor(sp, fr) };
+          });
+          items.sort((a3, b) => (b.auto ?? -1) - (a3.auto ?? -1));
+          return /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(
+              "button",
+              {
+                type: "button",
+                tabIndex: 0,
+                class: "distance-toggle" + (active.has(i3) ? " active" : "") + (isSkipped ? " skipped" : ""),
+                "aria-pressed": active.has(i3),
+                "data-group": String(i3),
+                disabled: isSkipped,
+                onClick: () => onToggle(i3),
+                children: g2.label
+              }
+            ),
+            /* @__PURE__ */ u3(
+              "div",
+              {
+                class: "group-progress-bar" + (isSkipped ? " skipped" : ""),
+                children: items.map((item) => /* @__PURE__ */ u3(
+                  "div",
+                  {
+                    class: "group-bar-slice",
+                    style: `background:${item.color}`
+                  },
+                  item.id
+                ))
+              }
+            ),
+            hasMenu && /* @__PURE__ */ u3(
+              GroupSkipMenu,
+              {
+                index: i3,
+                label: g2.label,
+                currentStatus,
+                onSkip,
+                onUnskip
+              }
+            )
+          ] }, i3);
+        })
+      }
+    );
+  }
   function StringToggles({ stringNames, active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
       /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Strings" }),
@@ -3153,13 +3549,12 @@ button {
   function TextPrompt({ text }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: text });
   }
-  function FeedbackDisplay({ text, className, time, hint, correct, onNext }) {
-    let btnCls = "next-btn";
-    if (correct === true) btnCls += " next-btn-correct";
-    else if (correct === false) btnCls += " next-btn-wrong";
+  function FeedbackDisplay({ text, className, hint, correct, onNext, label = "Next" }) {
+    let btnCls = "next-btn page-action-btn page-action-primary";
+    if (correct === true) btnCls += " page-action-correct";
+    else if (correct === false) btnCls += " page-action-wrong";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
-      time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
       /* @__PURE__ */ u3(
         "button",
         {
@@ -3167,7 +3562,7 @@ button {
           class: btnCls,
           onClick: onNext,
           style: onNext ? void 0 : { visibility: "hidden" },
-          children: "Next"
+          children: label
         }
       ),
       /* @__PURE__ */ u3(
@@ -3402,7 +3797,6 @@ button {
     const statusLabel = props.statusLabel ?? (props.summary ? props.summary.statusLabel : void 0);
     const statusDetail = props.statusDetail ?? (props.summary ? props.summary.statusDetail : void 0);
     const recommendation = props.recommendation ?? (props.summary && props.summary.recommendationText ? props.summary.recommendationText : void 0);
-    const mastery = props.mastery ?? (props.summary && props.summary.showMastery ? props.summary.masteryText : void 0);
     const onApplyRecommendation = props.onApplyRecommendation;
     const { scope, onStart } = props;
     const scopeDisabled = props.scopeValid === false;
@@ -3423,12 +3817,14 @@ button {
         ) : null
       ] })
     ] }) : null;
-    const masteryBlock = mastery ? /* @__PURE__ */ u3("div", { class: "mastery-message mastery-visible", children: mastery }) : null;
-    const hasSetupContent = scope || recommendation;
-    const setupZone = /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-setup", children: [
-      hasSetupContent ? /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Practice Settings" }) : null,
+    return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
+      statusLabel && /* @__PURE__ */ u3("div", { class: "practice-status", children: [
+        /* @__PURE__ */ u3("span", { class: "practice-status-prefix", children: "Status" }),
+        /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel }),
+        /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" })
+      ] }),
       recBlock,
-      scope ? /* @__PURE__ */ u3("div", { class: "practice-scope", children: /* @__PURE__ */ u3("div", { class: "settings-row", children: scope }) }) : null,
+      scope && /* @__PURE__ */ u3("div", { class: "practice-scope", children: scope }),
       /* @__PURE__ */ u3("div", { class: "practice-zone-action", children: /* @__PURE__ */ u3(
         StartButton,
         {
@@ -3437,18 +3833,6 @@ button {
           validationMessage
         }
       ) })
-    ] });
-    return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
-      /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-mastery", children: [
-        /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Mastery" }),
-        /* @__PURE__ */ u3("div", { class: "practice-status", children: statusLabel ? /* @__PURE__ */ u3(k, { children: [
-          /* @__PURE__ */ u3("span", { class: "practice-status-prefix", children: "Status" }),
-          /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel })
-        ] }) : null }),
-        /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" }),
-        masteryBlock
-      ] }),
-      setupZone
     ] });
   }
   function Recommendation({ text, onApply }) {
@@ -3497,31 +3881,33 @@ button {
     lastQuestion,
     onClose
   }) {
-    return /* @__PURE__ */ u3("div", { class: "quiz-session", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-countdown-row", children: [
+    return /* @__PURE__ */ u3("div", { class: "quiz-session", children: /* @__PURE__ */ u3("div", { class: "quiz-session-header", children: [
+      /* @__PURE__ */ u3("div", { class: "quiz-session-header-content", children: [
+        /* @__PURE__ */ u3("div", { class: "quiz-countdown-row", children: [
+          /* @__PURE__ */ u3(
+            "div",
+            {
+              class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
+              children: /* @__PURE__ */ u3(
+                "div",
+                {
+                  class: "quiz-countdown-fill",
+                  style: { width: `${timerPct ?? 100}%` }
+                }
+              )
+            }
+          ),
+          /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" })
+        ] }),
         /* @__PURE__ */ u3(
-          "div",
+          SessionInfo,
           {
-            class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
-            children: /* @__PURE__ */ u3(
-              "div",
-              {
-                class: "quiz-countdown-fill",
-                style: { width: `${timerPct ?? 100}%` }
-              }
-            )
+            context,
+            count,
+            lastQuestion
           }
-        ),
-        /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" })
+        )
       ] }),
-      /* @__PURE__ */ u3(
-        SessionInfo,
-        {
-          context,
-          count,
-          lastQuestion
-        }
-      ),
       /* @__PURE__ */ u3(
         "button",
         {
@@ -3533,7 +3919,7 @@ button {
           children: "\xD7"
         }
       )
-    ] });
+    ] }) });
   }
   function SessionInfo({ context, count, lastQuestion }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-session-info", children: [
@@ -3554,13 +3940,14 @@ button {
     }
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children });
   }
-  function RoundCompleteInfo({ context, heading, correct, median }) {
+  function RoundCompleteInfo({ context, heading, count, correct }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
-      /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: [
-        /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }),
-        /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-median", children: median || "" })
+      count != null && /* @__PURE__ */ u3(k, { children: [
+        /* @__PURE__ */ u3("div", { class: "round-complete-count", children: count }),
+        /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "question answered" : "questions answered" })
       ] }),
+      /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }) }),
       context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
         /* @__PURE__ */ u3("div", { class: "round-complete-overall-label", children: "Overall" }),
         /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
@@ -3568,27 +3955,30 @@ button {
     ] });
   }
   function RoundCompleteActions({ onContinue, onStop }) {
-    return /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
-      /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "round-complete-continue",
-          onClick: onContinue,
-          children: "Keep Going"
-        }
-      ),
-      /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "round-complete-stop",
-          onClick: onStop,
-          children: "Stop"
-        }
-      )
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3("div", { class: "page-action-row", children: [
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "page-action-btn page-action-primary",
+            onClick: onContinue,
+            children: "Keep Going"
+          }
+        ),
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "page-action-btn page-action-secondary",
+            onClick: onStop,
+            children: "Stop"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ u3("div", { class: "hint hint-spacer", children: "\xA0" })
     ] });
   }
 
@@ -3646,6 +4036,10 @@ button {
   }
   function PreviewApp() {
     const sel = mockSelector();
+    const groupSel = {
+      getSpeedScore: sel.getSpeedScore,
+      getFreshness: sel.getFreshness
+    };
     return /* @__PURE__ */ u3("div", { children: [
       /* @__PURE__ */ u3("h2", { children: "Answer Buttons" }),
       /* @__PURE__ */ u3(Section, { title: "Note Buttons (Grid)", children: /* @__PURE__ */ u3(NoteButtons, {}) }),
@@ -3699,6 +4093,43 @@ button {
           }
         }
       ) }),
+      /* @__PURE__ */ u3(Section, { title: "GroupProgressToggles (active groups)", children: /* @__PURE__ */ u3(
+        GroupProgressToggles,
+        {
+          groups: [
+            { label: "1\u20133", itemIds: ["C+1", "C+2", "C+3"] },
+            { label: "4\u20136", itemIds: ["C+4", "C+5", "C+6"] },
+            { label: "7\u20139", itemIds: ["D+1", "D+2", "D+3"] }
+          ],
+          active: /* @__PURE__ */ new Set([0, 1]),
+          onToggle: () => {
+          },
+          selector: groupSel,
+          onSkip: () => {
+          },
+          onUnskip: () => {
+          }
+        }
+      ) }),
+      /* @__PURE__ */ u3(Section, { title: "GroupProgressToggles (with skipped)", children: /* @__PURE__ */ u3(
+        GroupProgressToggles,
+        {
+          groups: [
+            { label: "1\u20133", itemIds: ["C+1", "C+2", "C+3"] },
+            { label: "4\u20136", itemIds: ["C+4", "C+5", "C+6"] },
+            { label: "7\u20139", itemIds: ["D+1", "D+2", "D+3"] }
+          ],
+          active: /* @__PURE__ */ new Set([0]),
+          onToggle: () => {
+          },
+          selector: groupSel,
+          skipped: /* @__PURE__ */ new Map([[1, "mastered"], [2, "deferred"]]),
+          onSkip: () => {
+          },
+          onUnskip: () => {
+          }
+        }
+      ) }),
       /* @__PURE__ */ u3(Section, { title: "Note Filter", children: /* @__PURE__ */ u3(NoteFilter, { mode: "natural", onChange: () => {
       } }) }),
       /* @__PURE__ */ u3(Section, { title: "Notes Toggles", children: /* @__PURE__ */ u3(
@@ -3717,7 +4148,6 @@ button {
         {
           text: feedbackCorrect.text,
           className: feedbackCorrect.className,
-          time: feedbackCorrect.time,
           correct: feedbackCorrect.correct,
           onNext: () => {
           }
@@ -3797,8 +4227,8 @@ button {
         {
           context: goodRound.context,
           heading: goodRound.heading,
-          correct: goodRound.correct,
-          median: goodRound.median
+          count: 18,
+          correct: goodRound.correct
         }
       ) }) }),
       /* @__PURE__ */ u3(Section, { title: "RoundComplete \u2014 Rough", children: /* @__PURE__ */ u3(QuizArea, { controls: /* @__PURE__ */ u3(RoundCompleteActions, {}), children: /* @__PURE__ */ u3(
@@ -3806,8 +4236,8 @@ button {
         {
           context: roughRound.context,
           heading: roughRound.heading,
-          correct: roughRound.correct,
-          median: roughRound.median
+          count: 9,
+          correct: roughRound.correct
         }
       ) }) }),
       /* @__PURE__ */ u3(Section, { title: "PracticeCard (no scope)", children: /* @__PURE__ */ u3(
