@@ -80,6 +80,7 @@
   --text-lg: 1.3rem;
   --text-xl: 1.5rem;
   --text-2xl: 2rem;
+  --text-3xl: 3rem;
 
   /* Font families */
   --font-display: 'DM Serif Display', Georgia, serif;
@@ -584,8 +585,14 @@ body {
   display: block;
 }
 
-.quiz-session {
-  position: relative;
+.quiz-session-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.quiz-session-header-content {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Element-level visibility (replaces inline style="display: none;") */
@@ -1008,9 +1015,8 @@ button {
 }
 .quiz-countdown-bar {
   flex: 1;
-  height: 4px;
+  height: 6px;
   background: var(--color-surface-alt);
-  margin-left: calc(-1 * var(--space-5));
 }
 .quiz-countdown-fill {
   height: 100%;
@@ -1023,7 +1029,7 @@ button {
   background: var(--color-recommended);
 }
 .quiz-info-time {
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
   color: var(--color-text-muted);
   white-space: nowrap;
@@ -1031,42 +1037,51 @@ button {
 
 /* --- Quiz session info — single compact row --- */
 .quiz-session-info {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  padding: 0 var(--space-6) var(--space-2) 0;
+  padding-bottom: var(--space-2);
 }
 .quiz-info-context {
   flex: 1;
 }
 .quiz-info-last-question {
   color: var(--color-recommended);
-  font-weight: 500;
+  font-weight: 600;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .quiz-info-count {
   font-variant-numeric: tabular-nums;
 }
 .quiz-header-close {
-  position: absolute;
-  top: var(--space-3);
-  right: 0;
   background: none;
   border: none;
-  font-size: var(--text-xl);
+  font-size: var(--size-close-btn);
   color: var(--color-text-light);
   cursor: pointer;
-  padding: 0 var(--space-2);
+  padding: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   line-height: 1;
   margin: 0;
   border-radius: var(--radius-sm);
   transition: color 0.15s ease, background 0.15s ease;
-  z-index: 1;
 }
 .quiz-header-close:hover {
   color: var(--color-text);
   background: var(--color-surface-hover);
+}
+.quiz-header-close:active {
+  background: var(--color-surface-pressed);
 }
 
 /* --- Progress bar (build-time template only) --- */
@@ -1152,6 +1167,17 @@ button {
   font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+.round-complete-count {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-brand);
+  line-height: 1;
+}
+.round-complete-count-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
   margin-bottom: var(--space-3);
 }
 .round-complete-stats {
@@ -1173,47 +1199,9 @@ button {
   color: var(--color-text-muted);
 }
 .round-stat-line {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-text);
   line-height: 1.6;
-}
-.round-complete-actions {
-  display: flex;
-  gap: var(--space-3);
-  justify-content: center;
-  padding-bottom: var(--space-4);
-}
-.round-complete-continue {
-  padding: var(--space-3) var(--space-5);
-  background: var(--color-brand);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  font-weight: 600;
-  cursor: pointer;
-}
-.round-complete-continue:hover {
-  opacity: 0.9;
-}
-.round-complete-continue:active {
-  opacity: 0.8;
-  transform: scale(0.98);
-}
-.round-complete-stop {
-  padding: var(--space-3) var(--space-5);
-  background: none;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  cursor: pointer;
-}
-.round-complete-stop:hover {
-  background: var(--color-surface-hover);
-}
-.round-complete-stop:active {
-  background: var(--color-surface-pressed);
 }
 /* --- Note buttons (piano-style layout) --- */
 .note-buttons {
@@ -1442,6 +1430,14 @@ button {
   opacity: 0.5;
   pointer-events: none;
 }
+.answer-input-wrong {
+  border-color: var(--color-error) !important;
+  opacity: 1;
+}
+.answer-input-correct {
+  border-color: var(--color-correct) !important;
+  opacity: 1;
+}
 .answer-input-shake {
   animation: input-shake 0.3s ease-in-out;
 }
@@ -1616,24 +1612,19 @@ button {
 .incorrect {
   color: var(--color-error-text);
 }
-.time-display {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  margin-top: var(--space-3);
-}
+
 .hint {
   color: var(--color-text-muted);
   font-size: var(--text-base);
   margin-top: var(--space-5);
 }
+.hint-spacer {
+  visibility: hidden;
+}
 
-/* --- Next button (explicit advance during feedback) --- */
-.next-btn {
-  display: block;
-  margin: var(--space-4) auto var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  background: var(--color-brand);
-  color: white;
+/* --- Page-action buttons (shared base for next/continue/stop) --- */
+.page-action-btn {
+  padding: var(--space-3) var(--space-5);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--text-base);
@@ -1643,23 +1634,58 @@ button {
   min-height: 48px;
 }
 @media (hover: hover) {
-  .next-btn:hover {
+  .page-action-btn:hover {
     opacity: 0.9;
   }
 }
-.next-btn:active {
+.page-action-btn:active {
   opacity: 0.8;
   transform: scale(0.98);
 }
-.next-btn-correct {
-  background: var(--color-success);
-}
-.next-btn-wrong {
-  background: var(--color-error);
-}
-.next-btn:focus-visible {
+.page-action-btn:focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
+}
+.page-action-primary {
+  background: var(--color-brand);
+  color: white;
+}
+.page-action-secondary {
+  background: none;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  font-weight: 400;
+}
+@media (hover: hover) {
+  .page-action-secondary:hover {
+    opacity: 1;
+    background: var(--color-surface-hover);
+  }
+}
+.page-action-secondary:active {
+  opacity: 1;
+  background: var(--color-surface-pressed);
+}
+.page-action-correct {
+  background: var(--color-success);
+}
+.page-action-wrong {
+  background: var(--color-error);
+}
+.page-action-row {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  margin: var(--space-4) auto var(--space-2);
+}
+.page-action-row > .page-action-btn {
+  flex: 1;
+}
+
+/* --- Next button (positioning only — visual treatment via page-action-btn) --- */
+.next-btn {
+  display: block;
+  margin: var(--space-4) auto var(--space-2);
 }
 
 /* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
@@ -1955,15 +1981,6 @@ button {
   outline-offset: -2px;
 }
 
-/* Round-complete buttons */
-.round-complete-continue:focus-visible {
-  outline-color: white;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
-}
-.round-complete-stop:focus-visible {
-  outline-offset: -2px;
-}
-
 /* Back button, close buttons */
 .mode-close-btn:focus-visible,
 .quiz-header-close:focus-visible {
@@ -2035,7 +2052,8 @@ button {
     padding: 0 var(--space-4) var(--space-4);
   }
 
-  .next-btn {
+  .next-btn,
+  .page-action-row {
     width: 80%;
   }
 
@@ -2049,7 +2067,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#776"></div>
+  <div class="home-screen" id="home-screen" data-version="#795"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -2363,21 +2381,21 @@ button {
         </div>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -2639,21 +2657,21 @@ button {
         </div>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -2863,21 +2881,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -2965,21 +2983,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-num" data-num="11">11</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3067,21 +3085,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-num" data-num="12">12</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3168,21 +3186,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3269,21 +3287,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3387,21 +3405,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3497,21 +3515,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="7">7th</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3607,21 +3625,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="vii°">vii°</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3709,21 +3727,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -4156,6 +4174,12 @@ button {
   );
   function isValidNoteInput(input) {
     return VALID_NOTE_INPUTS.has(input.toLowerCase());
+  }
+  function resolveNoteInput(input) {
+    for (const note of NOTES) {
+      if (noteMatchesInput(note, input)) return note.name;
+    }
+    return null;
   }
   function isValidNumberInput(input, min, max) {
     if (!/^\d{1,2}$/.test(input)) return false;
@@ -6249,7 +6273,6 @@ button {
       feedbackCorrect: null,
       feedbackDisplayAnswer: null,
       feedbackUserInput: null,
-      timeDisplayText: "",
       hintText: "",
       // Mastery message
       masteryText: "",
@@ -6288,7 +6311,6 @@ button {
       feedbackCorrect: null,
       feedbackDisplayAnswer: null,
       feedbackUserInput: null,
-      timeDisplayText: "",
       hintText: "",
       answersEnabled: true
     };
@@ -6303,7 +6325,6 @@ button {
       feedbackCorrect: isCorrect,
       feedbackDisplayAnswer: correctAnswer,
       feedbackUserInput: userInput ?? null,
-      timeDisplayText: "",
       hintText,
       roundAnswered: state.roundAnswered + 1,
       roundCorrect: state.roundCorrect + (isCorrect ? 1 : 0)
@@ -6351,7 +6372,6 @@ button {
       feedbackText: "Quick Speed Check",
       feedbackClass: "feedback",
       hintText: hintOverride !== void 0 ? hintOverride : "We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.",
-      timeDisplayText: "",
       calibrationBaseline: null
     };
   }
@@ -6406,6 +6426,7 @@ button {
   var LAST_QUESTION_CAP_MS = 3e4;
   var IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
   var HINT_ADVANCE = IS_TOUCH_PRIMARY ? "" : "Space for next";
+  var HINT_CONTINUE = IS_TOUCH_PRIMARY ? "" : "Space to continue";
   function formatRoundTime(ms) {
     const totalSec = Math.max(0, Math.ceil(ms / 1e3));
     const min = Math.floor(totalSec / 60);
@@ -6427,6 +6448,7 @@ button {
     selectorRef.current = selector;
     const roundTimerRef = A2(null);
     const roundTimerStartRef = A2(null);
+    const roundDurationSnapshotRef = A2(null);
     const lastQuestionCapRef = A2(null);
     const computeProgress = q2(() => {
       const items = configRef.current.getEnabledItems();
@@ -6456,7 +6478,8 @@ button {
     const transitionToRoundCompleteRef = A2(null);
     const nextQuestionRef = A2(null);
     const transitionToRoundComplete = q2(() => {
-      const roundDurationMs = roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0;
+      const roundDurationMs = roundDurationSnapshotRef.current ?? (roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0);
+      roundDurationSnapshotRef.current = null;
       stopRoundTimer();
       setState((prev) => {
         const s3 = engineRoundComplete(prev);
@@ -6469,7 +6492,9 @@ button {
       setState((prev) => {
         const next = engineRoundTimerExpired(prev);
         if (next.answered) {
-          setTimeout(() => transitionToRoundCompleteRef.current(), 0);
+          roundDurationSnapshotRef.current = ROUND_DURATION_MS;
+          setTimerLastQuestion(true);
+          return { ...next, hintText: HINT_CONTINUE };
         } else {
           setTimerLastQuestion(true);
           lastQuestionCapRef.current = setTimeout(() => {
@@ -6484,6 +6509,7 @@ button {
     const startRoundTimer = q2(() => {
       if (roundTimerRef.current) clearInterval(roundTimerRef.current);
       roundTimerStartRef.current = Date.now();
+      roundDurationSnapshotRef.current = null;
       setTimerPct(100);
       setTimerText(formatRoundTime(ROUND_DURATION_MS));
       setTimerWarning(false);
@@ -6562,11 +6588,16 @@ button {
         );
       }
       if (stateRef.current.roundTimerExpired) {
-        setTimeout(() => {
-          if (stateRef.current.phase === "active") {
-            transitionToRoundCompleteRef.current();
-          }
-        }, 600);
+        if (lastQuestionCapRef.current) {
+          clearTimeout(lastQuestionCapRef.current);
+          lastQuestionCapRef.current = null;
+        }
+        const elapsed = roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0;
+        roundDurationSnapshotRef.current = Math.min(
+          elapsed,
+          ROUND_DURATION_MS + LAST_QUESTION_CAP_MS
+        );
+        setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
       }
     }, [computeProgress]);
     const start = q2(() => {
@@ -6629,6 +6660,7 @@ button {
             nextQuestionRef.current();
             break;
           case "continue":
+            if (e3.target instanceof HTMLButtonElement) break;
             e3.preventDefault();
             continueQuiz();
             break;
@@ -6706,7 +6738,7 @@ button {
   ];
   var PHASE_FOCUS_TARGETS = {
     idle: ".start-btn",
-    "round-complete": ".round-complete-continue"
+    "round-complete": ".page-action-primary"
   };
   function usePhaseClass(container, phase, focusTargets) {
     y2(() => {
@@ -6764,20 +6796,14 @@ button {
     const roundCorrect = T2(() => {
       const s3 = engine.state;
       const dur = Math.round((s3.roundDurationMs || 0) / 1e3);
-      return s3.roundCorrect + " / " + s3.roundAnswered + " correct \xB7 " + dur + "s";
+      return s3.roundCorrect + " correct \xB7 " + dur + "s";
     }, [
       engine.state.roundCorrect,
-      engine.state.roundAnswered,
       engine.state.roundDurationMs
     ]);
-    const roundMedian = T2(() => {
-      const times = engine.state.roundResponseTimes;
-      const median = computeMedian(times);
-      return median !== null ? (median / 1e3).toFixed(1) + "s median response time" : "";
-    }, [engine.state.roundResponseTimes]);
     const answerCount = engine.state.roundAnswered;
     const countText = answerCount + (answerCount === 1 ? " answer" : " answers");
-    return { roundContext, roundCorrect, roundMedian, countText };
+    return { roundContext, roundCorrect, countText };
   }
 
   // src/hooks/use-practice-summary.ts
@@ -6826,7 +6852,9 @@ button {
     }
     if (!feedback.correct) {
       if (buttonValue === feedback.userInput) return " btn-feedback-wrong";
-      if (buttonLabel === feedback.displayAnswer) return " btn-feedback-reveal";
+      if (buttonValue === feedback.displayAnswer || buttonLabel === feedback.displayAnswer) {
+        return " btn-feedback-reveal";
+      }
     }
     return "";
   }
@@ -7562,31 +7590,33 @@ button {
     lastQuestion,
     onClose
   }) {
-    return /* @__PURE__ */ u3("div", { class: "quiz-session", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-countdown-row", children: [
+    return /* @__PURE__ */ u3("div", { class: "quiz-session", children: /* @__PURE__ */ u3("div", { class: "quiz-session-header", children: [
+      /* @__PURE__ */ u3("div", { class: "quiz-session-header-content", children: [
+        /* @__PURE__ */ u3("div", { class: "quiz-countdown-row", children: [
+          /* @__PURE__ */ u3(
+            "div",
+            {
+              class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
+              children: /* @__PURE__ */ u3(
+                "div",
+                {
+                  class: "quiz-countdown-fill",
+                  style: { width: `${timerPct ?? 100}%` }
+                }
+              )
+            }
+          ),
+          /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" })
+        ] }),
         /* @__PURE__ */ u3(
-          "div",
+          SessionInfo,
           {
-            class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
-            children: /* @__PURE__ */ u3(
-              "div",
-              {
-                class: "quiz-countdown-fill",
-                style: { width: `${timerPct ?? 100}%` }
-              }
-            )
+            context,
+            count,
+            lastQuestion
           }
-        ),
-        /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" })
+        )
       ] }),
-      /* @__PURE__ */ u3(
-        SessionInfo,
-        {
-          context,
-          count,
-          lastQuestion
-        }
-      ),
       /* @__PURE__ */ u3(
         "button",
         {
@@ -7598,7 +7628,7 @@ button {
           children: "\xD7"
         }
       )
-    ] });
+    ] }) });
   }
   function SessionInfo({ context, count, lastQuestion }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-session-info", children: [
@@ -7619,13 +7649,14 @@ button {
     }
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children });
   }
-  function RoundCompleteInfo({ context, heading, correct, median }) {
+  function RoundCompleteInfo({ context, heading, count, correct }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
-      /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: [
-        /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }),
-        /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-median", children: median || "" })
+      count != null && /* @__PURE__ */ u3(k, { children: [
+        /* @__PURE__ */ u3("div", { class: "round-complete-count", children: count }),
+        /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "question answered" : "questions answered" })
       ] }),
+      /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }) }),
       context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
         /* @__PURE__ */ u3("div", { class: "round-complete-overall-label", children: "Overall" }),
         /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
@@ -7633,27 +7664,30 @@ button {
     ] });
   }
   function RoundCompleteActions({ onContinue, onStop }) {
-    return /* @__PURE__ */ u3("div", { class: "round-complete-actions", children: [
-      /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "round-complete-continue",
-          onClick: onContinue,
-          children: "Keep Going"
-        }
-      ),
-      /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "round-complete-stop",
-          onClick: onStop,
-          children: "Stop"
-        }
-      )
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3("div", { class: "page-action-row", children: [
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "page-action-btn page-action-primary",
+            onClick: onContinue,
+            children: "Keep Going"
+          }
+        ),
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "page-action-btn page-action-secondary",
+            onClick: onStop,
+            children: "Stop"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ u3("div", { class: "hint hint-spacer", children: "\xA0" })
     ] });
   }
   function PracticeTab({
@@ -7881,13 +7915,12 @@ button {
   }
 
   // src/ui/quiz-ui.tsx
-  function FeedbackDisplay({ text, className, time, hint, correct, onNext }) {
-    let btnCls = "next-btn";
-    if (correct === true) btnCls += " next-btn-correct";
-    else if (correct === false) btnCls += " next-btn-wrong";
+  function FeedbackDisplay({ text, className, hint, correct, onNext, label = "Next" }) {
+    let btnCls = "next-btn page-action-btn page-action-primary";
+    if (correct === true) btnCls += " page-action-correct";
+    else if (correct === false) btnCls += " page-action-wrong";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
-      time ? /* @__PURE__ */ u3("div", { class: "time-display", children: time }) : null,
       /* @__PURE__ */ u3(
         "button",
         {
@@ -7895,7 +7928,7 @@ button {
           class: btnCls,
           onClick: onNext,
           style: onNext ? void 0 : { visibility: "hidden" },
-          children: "Next"
+          children: label
         }
       ),
       /* @__PURE__ */ u3(
@@ -7908,11 +7941,11 @@ button {
       )
     ] });
   }
-  var NOTE_HINT_LETTER = "Keyboard: C D E, c d e, C#, fs (=F#), Db, bb (=Bb) \u2014 Enter to confirm";
-  var NOTE_HINT_SOLFEGE = "Keyboard: do re mi, Do Re Mi, do#, reb \u2014 Enter to confirm";
+  var NOTE_HINT_LETTER = "C D E, c d e, C#, fs (=F#), Db, bb (=Bb)";
+  var NOTE_HINT_SOLFEGE = "do re mi, Do Re Mi, do#, reb";
   var HINT_TEXT = {
-    "number-0-11": "Keyboard: 0\u20139, 10, 11 \u2014 Enter to confirm",
-    "number-1-12": "Keyboard: 1\u20139, 10, 11, 12 \u2014 Enter to confirm"
+    "number-0-11": "0\u20139, 10, 11",
+    "number-1-12": "1\u20139, 10, 11, 12"
   };
   function KeyboardHint({ type }) {
     if (!type) return null;
@@ -7933,7 +7966,38 @@ button {
         return null;
     }
   }
-  function AnswerInput({ onSubmit, disabled, placeholder, onInvalid }) {
+  function resolveAnswerSpec(def, q3) {
+    const spec = def.answer;
+    if ("kind" in spec && spec.kind === "bidirectional") {
+      const dir = def.getDirection(q3);
+      return dir === "fwd" ? spec.fwd : spec.rev;
+    }
+    return spec;
+  }
+  function checkCorrectness(strategy, expected, input) {
+    switch (strategy) {
+      case "exact":
+        return input === expected;
+      case "integer":
+        return parseInt(input, 10) === parseInt(expected, 10);
+      case "note-enharmonic": {
+        const resolved = resolveNoteInput(input) ?? input;
+        return spelledNoteMatchesSemitone(expected, resolved);
+      }
+      case "interval": {
+        const iv = INTERVALS.find((i3) => i3.abbrev === expected);
+        return iv ? intervalMatchesInput(iv, input) : false;
+      }
+    }
+  }
+  function toButtonValue(strategy, value) {
+    if (strategy === "note-enharmonic") return resolveNoteInput(value) ?? value;
+    return value;
+  }
+  function defaultDisplayAnswer(strategy, expected) {
+    return strategy === "note-enharmonic" ? displayNote(expected) : expected;
+  }
+  function AnswerInput({ onSubmit, disabled, placeholder, onInvalid, feedbackCorrect }) {
     const inputRef = A2(null);
     const [shake, setShake] = d2(false);
     const shakeTimerRef = A2(null);
@@ -7944,6 +8008,7 @@ button {
     }, []);
     y2(() => {
       if (!disabled && inputRef.current) {
+        inputRef.current.value = "";
         inputRef.current.focus();
       }
     }, [disabled]);
@@ -7967,15 +8032,16 @@ button {
           return;
         }
         const accepted = onSubmit(value);
-        if (accepted) {
-          if (inputRef.current) inputRef.current.value = "";
-        } else {
+        if (!accepted) {
           triggerShake();
         }
       },
       [onSubmit, onInvalid, triggerShake]
     );
-    const cls = "answer-input" + (shake ? " answer-input-shake" : "");
+    let cls = "answer-input";
+    if (shake) cls += " answer-input-shake";
+    if (feedbackCorrect === false) cls += " answer-input-wrong";
+    else if (feedbackCorrect === true) cls += " answer-input-correct";
     const label = placeholder ?? "Type answer, press Enter";
     return /* @__PURE__ */ u3(
       "input",
@@ -8111,6 +8177,7 @@ button {
     const [seqCorrectAnswer, setSeqCorrectAnswer] = d2("");
     const seqSubmitRef = A2(() => {
     });
+    const lastAnswerRef = A2(null);
     const getEnabledItemsRef = A2(
       () => def.allItems
     );
@@ -8132,7 +8199,17 @@ button {
           return { correct: isCorrect, correctAnswer };
         }
         const q3 = currentQRef.current;
-        return def.checkAnswer(q3, input);
+        const spec = resolveAnswerSpec(def, q3);
+        const expected = spec.getExpectedValue(q3);
+        const normalized = spec.normalizeInput?.(input) ?? input;
+        const correct = checkCorrectness(spec.comparison, expected, normalized);
+        const display = spec.getDisplayAnswer?.(q3) ?? defaultDisplayAnswer(spec.comparison, expected);
+        lastAnswerRef.current = {
+          expected,
+          comparison: spec.comparison,
+          normalizedInput: normalized
+        };
+        return { correct, correctAnswer: display };
       },
       onAnswer: (itemId, result) => {
         ctrlRef.current.onAnswer?.(itemId, result);
@@ -8311,7 +8388,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            lastQuestion: engine.state.roundTimerExpired ? engine.state.answered ? "Time is up" : "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -8341,8 +8418,8 @@ button {
               {
                 context: round.roundContext,
                 heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
+                count: engine.state.roundAnswered,
+                correct: round.roundCorrect
               }
             )
           }
@@ -8382,7 +8459,6 @@ button {
                 {
                   text: engine.state.feedbackText,
                   className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
                   hint: engine.state.hintText || void 0,
                   correct: engine.state.feedbackCorrect,
                   onNext: engine.state.answered ? engine.nextQuestion : void 0
@@ -8404,10 +8480,16 @@ button {
                   useFlats,
                   narrowing: ctrl.narrowing,
                   hideAccidentalsOverride: ctrl.hideAccidentals,
-                  feedback: engine.state.feedbackCorrect !== null && engine.state.feedbackUserInput && engine.state.feedbackDisplayAnswer ? {
+                  feedback: engine.state.feedbackCorrect !== null && lastAnswerRef.current ? {
                     correct: engine.state.feedbackCorrect,
-                    userInput: engine.state.feedbackUserInput,
-                    displayAnswer: engine.state.feedbackDisplayAnswer
+                    userInput: toButtonValue(
+                      lastAnswerRef.current.comparison,
+                      lastAnswerRef.current.normalizedInput
+                    ),
+                    displayAnswer: toButtonValue(
+                      lastAnswerRef.current.comparison,
+                      lastAnswerRef.current.expected
+                    )
                   } : null
                 }
               ),
@@ -8424,7 +8506,8 @@ button {
                 {
                   onSubmit: handleSubmit,
                   disabled: engine.state.answered,
-                  placeholder
+                  placeholder,
+                  feedbackCorrect: engine.state.feedbackCorrect
                 }
               ),
               /* @__PURE__ */ u3(KeyboardHint, { type: getHintType(activeButtons) }),
@@ -8433,10 +8516,10 @@ button {
                 {
                   text: engine.state.feedbackText,
                   className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
                   hint: engine.state.hintText || void 0,
                   correct: engine.state.feedbackCorrect,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
+                  onNext: engine.state.answered ? engine.nextQuestion : void 0,
+                  label: engine.state.roundTimerExpired ? "Continue" : "Next"
                 }
               )
             ] }),
@@ -8488,21 +8571,6 @@ button {
       accidentalChoice: pickRandomAccidental(note.displayName)
     };
   }
-  function checkAnswer(q3, input) {
-    if (q3.dir === "fwd") {
-      const correct2 = parseInt(input, 10) === q3.noteNum;
-      return {
-        correct: correct2,
-        correctAnswer: String(q3.noteNum)
-      };
-    }
-    const note = NOTES.find((n2) => n2.name === q3.noteName);
-    const correct = noteMatchesInput(note, input);
-    return {
-      correct,
-      correctAnswer: displayNote(q3.accidentalChoice)
-    };
-  }
   function getStatsRows() {
     return NOTES.map((note) => ({
       label: displayNote(note.name),
@@ -8524,7 +8592,18 @@ button {
     allItems: ALL_ITEMS,
     getQuestion,
     getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.accidentalChoice) : String(q3.noteNum),
-    checkAnswer,
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => String(q3.noteNum),
+        comparison: "integer"
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.noteName,
+        comparison: "note-enharmonic",
+        getDisplayAnswer: (q3) => displayNote(q3.accidentalChoice)
+      }
+    },
     validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 0, 11) : isValidNoteInput(input),
     getDirection: (q3) => q3.dir,
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "0\u201311" : "Note name",
@@ -8556,18 +8635,6 @@ button {
       dir
     };
   }
-  function checkAnswer2(q3, input) {
-    if (q3.dir === "fwd") {
-      const correct2 = parseInt(input, 10) === q3.num;
-      return {
-        correct: correct2,
-        correctAnswer: String(q3.num)
-      };
-    }
-    const interval = INTERVALS.find((i3) => i3.abbrev === q3.abbrev);
-    const correct = intervalMatchesInput(interval, input);
-    return { correct, correctAnswer: q3.abbrev };
-  }
   function getStatsRows2() {
     return INTERVALS.map((interval) => ({
       label: interval.abbrev,
@@ -8589,7 +8656,17 @@ button {
     allItems: ALL_ITEMS2,
     getQuestion: getQuestion2,
     getPromptText: (q3) => q3.dir === "fwd" ? q3.name : String(q3.num),
-    checkAnswer: checkAnswer2,
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => String(q3.num),
+        comparison: "integer"
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.abbrev,
+        comparison: "interval"
+      }
+    },
     validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 1, 12) : isValidIntervalInput(input),
     getDirection: (q3) => q3.dir,
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "1\u201312" : "Interval (e.g. P5)",
@@ -8652,15 +8729,6 @@ button {
       promptText: promptNoteName + " " + op + " " + semitones
     };
   }
-  function checkAnswer3(q3, input) {
-    const correct = noteMatchesInput(q3.answer, input);
-    return {
-      correct,
-      correctAnswer: displayNote(
-        pickAccidentalName(q3.answer.displayName, q3.useFlats)
-      )
-    };
-  }
   var GRID_COL_LABELS = Array.from(
     { length: 11 },
     (_3, i3) => String(i3 + 1)
@@ -8681,7 +8749,11 @@ button {
     allItems: ALL_ITEMS3,
     getQuestion: getQuestion3,
     getPromptText: (q3) => q3.promptText,
-    checkAnswer: checkAnswer3,
+    answer: {
+      getExpectedValue: (q3) => q3.answer.name,
+      comparison: "note-enharmonic",
+      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
+    },
     validateInput: (_q, input) => isValidNoteInput(input),
     getUseFlats: (q3) => q3.useFlats,
     inputPlaceholder: "Note name",
@@ -8757,15 +8829,6 @@ button {
       promptText: promptNoteName + " " + op + " " + interval.abbrev
     };
   }
-  function checkAnswer4(q3, input) {
-    const correct = noteMatchesInput(q3.answer, input);
-    return {
-      correct,
-      correctAnswer: displayNote(
-        pickAccidentalName(q3.answer.displayName, q3.useFlats)
-      )
-    };
-  }
   var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
   function getGridItemId2(noteName, colIdx) {
     const abbrev = MATH_INTERVALS[colIdx].abbrev;
@@ -8783,7 +8846,11 @@ button {
     allItems: ALL_ITEMS4,
     getQuestion: getQuestion4,
     getPromptText: (q3) => q3.promptText,
-    checkAnswer: checkAnswer4,
+    answer: {
+      getExpectedValue: (q3) => q3.answer.name,
+      comparison: "note-enharmonic",
+      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
+    },
     validateInput: (_q, input) => isValidNoteInput(input),
     getUseFlats: (q3) => q3.useFlats,
     inputPlaceholder: "Note name",
@@ -8841,21 +8908,6 @@ button {
       sigLabel: keySignatureLabel(key)
     };
   }
-  function checkAnswer5(q3, input) {
-    const key = MAJOR_KEYS.find((k3) => k3.root === q3.root);
-    if (q3.dir === "fwd") {
-      const expected = keySignatureLabel(key);
-      return {
-        correct: input === expected,
-        correctAnswer: expected
-      };
-    }
-    const correct = spelledNoteMatchesSemitone(q3.root, input);
-    return {
-      correct,
-      correctAnswer: displayNote(q3.root)
-    };
-  }
   function getStatsRows3() {
     return MAJOR_KEYS.map((key) => ({
       label: displayNote(key.root) + " major",
@@ -8877,7 +8929,17 @@ button {
     allItems: ALL_ITEMS5,
     getQuestion: getQuestion5,
     getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " major" : q3.sigLabel + " major",
-    checkAnswer: checkAnswer5,
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => keySignatureLabel(MAJOR_KEYS.find((k3) => k3.root === q3.root)),
+        comparison: "exact"
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.root,
+        comparison: "note-enharmonic"
+      }
+    },
     validateInput: (q3, input) => q3.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
     getDirection: (q3) => q3.dir,
     getUseFlats: (q3) => rootUsesFlats(q3.root),
@@ -8948,20 +9010,6 @@ button {
     const noteName = getScaleDegreeNote(keyRoot, degree);
     return { keyRoot, degree, dir, noteName };
   }
-  function checkAnswer6(q3, input) {
-    if (q3.dir === "fwd") {
-      const correct = spelledNoteMatchesSemitone(q3.noteName, input);
-      return {
-        correct,
-        correctAnswer: displayNote(q3.noteName)
-      };
-    }
-    const expectedDegree = String(q3.degree);
-    return {
-      correct: input === expectedDegree,
-      correctAnswer: DEGREE_LABELS2[q3.degree - 1]
-    };
-  }
   function getGridItemId3(keyRoot, colIdx) {
     const d3 = ACTIVE_DEGREES[colIdx];
     return [keyRoot + ":" + d3 + ":fwd", keyRoot + ":" + d3 + ":rev"];
@@ -8978,7 +9026,18 @@ button {
     allItems: ALL_ITEMS6,
     getQuestion: getQuestion6,
     getPromptText: (q3) => q3.dir === "fwd" ? DEGREE_LABELS2[q3.degree - 1] + " of " + displayNote(q3.keyRoot) + " major" : displayNote(q3.keyRoot) + " major: " + displayNote(q3.noteName),
-    checkAnswer: checkAnswer6,
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => q3.noteName,
+        comparison: "note-enharmonic"
+      },
+      rev: {
+        getExpectedValue: (q3) => String(q3.degree),
+        comparison: "exact",
+        getDisplayAnswer: (q3) => DEGREE_LABELS2[q3.degree - 1]
+      }
+    },
     validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : /^[2-7]$/.test(input),
     getDirection: (q3) => q3.dir,
     getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
@@ -9049,20 +9108,11 @@ button {
     const rootNote = getScaleDegreeNote(keyRoot, degree);
     return { keyRoot, degree, chord, dir, rootNote };
   }
-  function checkAnswer7(q3, input) {
-    if (q3.dir === "fwd") {
-      const correct = spelledNoteMatchesSemitone(q3.rootNote, input);
-      const fullAnswer = displayNote(q3.rootNote) + " " + q3.chord.quality;
-      return {
-        correct,
-        correctAnswer: fullAnswer
-      };
-    }
-    const expectedNumeral = q3.chord.numeral;
-    return {
-      correct: input === expectedNumeral,
-      correctAnswer: expectedNumeral
-    };
+  function normalizeNumeralInput(input) {
+    const num = parseInt(input, 10);
+    if (num >= 1 && num <= 7) return ROMAN_NUMERALS[num - 1];
+    if (input === "vii") return "vii\xB0";
+    return input;
   }
   function getGridItemId4(keyRoot, colIdx) {
     const d3 = colIdx + 1;
@@ -9080,8 +9130,20 @@ button {
     allItems: ALL_ITEMS7,
     getQuestion: getQuestion7,
     getPromptText: (q3) => q3.dir === "fwd" ? q3.chord.numeral + " in " + displayNote(q3.keyRoot) + " major" : displayNote(q3.rootNote) + q3.chord.qualityLabel + " in " + displayNote(q3.keyRoot) + " major",
-    checkAnswer: checkAnswer7,
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input),
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => q3.rootNote,
+        comparison: "note-enharmonic",
+        getDisplayAnswer: (q3) => displayNote(q3.rootNote) + " " + q3.chord.quality
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.chord.numeral,
+        comparison: "exact",
+        normalizeInput: normalizeNumeralInput
+      }
+    },
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input) || /^[1-7]$/.test(input) || input === "vii",
     getDirection: (q3) => q3.dir,
     getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
@@ -9360,10 +9422,6 @@ button {
     const fb = getHelpers(instrument);
     return fb.parseFretboardItem(itemId);
   }
-  function checkAnswer8(instrument, currentNote, input) {
-    const fb = getHelpers(instrument);
-    return fb.checkFretboardAnswer(currentNote, input);
-  }
   function formatLabel(instrument, enabledGroups) {
     const groups = getGroups(instrument);
     if (enabledGroups.size === groups.length) return "all groups";
@@ -9398,7 +9456,10 @@ button {
       allItems,
       getQuestion: (itemId) => getQuestion8(instrument, itemId),
       getPromptText: () => "Name this note",
-      checkAnswer: (_q, input) => checkAnswer8(instrument, _q.currentNote, input),
+      answer: {
+        getExpectedValue: (q3) => q3.currentNote,
+        comparison: "note-enharmonic"
+      },
       validateInput: (_q, input) => isValidNoteInput(input),
       buttons: { kind: "piano-note" },
       scope: {
@@ -9903,7 +9964,7 @@ button {
             count: round.countText,
             isWarning: engine.timerWarning,
             isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? "Last question" : "",
+            lastQuestion: engine.state.roundTimerExpired ? engine.state.answered ? "Time is up" : "Last question" : "",
             onClose: engine.stop
           }
         ),
@@ -9933,8 +9994,8 @@ button {
               {
                 context: round.roundContext,
                 heading: "Round complete",
-                correct: round.roundCorrect,
-                median: round.roundMedian
+                count: engine.state.roundAnswered,
+                correct: round.roundCorrect
               }
             )
           }
@@ -9950,10 +10011,10 @@ button {
                 {
                   text: engine.state.feedbackText,
                   className: engine.state.feedbackClass,
-                  time: engine.state.timeDisplayText || void 0,
                   hint: engine.state.hintText || void 0,
                   correct: engine.state.feedbackCorrect,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
+                  onNext: engine.state.answered ? engine.nextQuestion : void 0,
+                  label: engine.state.roundTimerExpired ? "Continue" : "Next"
                 }
               )
             ] }),
