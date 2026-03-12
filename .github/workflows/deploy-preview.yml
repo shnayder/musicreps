@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'claude/**'
+      - 'codex/**'
   pull_request:
     types: [opened]
     branches:
@@ -120,7 +121,8 @@ jobs:
   comment-on-open:
     if: >-
       github.event_name == 'pull_request' &&
-      startsWith(github.event.pull_request.head.ref, 'claude/')
+      (startsWith(github.event.pull_request.head.ref, 'claude/') ||
+      startsWith(github.event.pull_request.head.ref, 'codex/'))
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
