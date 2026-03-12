@@ -1608,6 +1608,9 @@ button {
   font-size: var(--text-base);
   margin-top: var(--space-5);
 }
+.hint-spacer {
+  visibility: hidden;
+}
 
 /* --- Page-action buttons (shared base for next/continue/stop) --- */
 .page-action-btn {

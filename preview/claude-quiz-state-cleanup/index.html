@@ -1618,6 +1618,9 @@ button {
   font-size: var(--text-base);
   margin-top: var(--space-5);
 }
+.hint-spacer {
+  visibility: hidden;
+}
 
 /* --- Page-action buttons (shared base for next/continue/stop) --- */
 .page-action-btn {
@@ -2064,7 +2067,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="0190d0 quiz-state-cleanup"></div>
+  <div class="home-screen" id="home-screen" data-version="7bc58a quiz-state-cleanup"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -2378,21 +2381,21 @@ button {
         </div>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -2654,21 +2657,21 @@ button {
         </div>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -2878,21 +2881,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -2980,21 +2983,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-num" data-num="11">11</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3082,21 +3085,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-num" data-num="12">12</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3183,21 +3186,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3284,21 +3287,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3402,21 +3405,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3512,21 +3515,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="7">7th</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3622,21 +3625,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="vii°">vii°</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -3724,21 +3727,21 @@ button {
         <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
       </div>
       <div class="feedback"></div>
-      <div class="time-display"></div>
       <div class="hint"></div>
       <div class="round-complete">
         <div class="round-complete-heading"></div>
+        <div class="round-complete-count"></div>
+        <div class="round-complete-count-label"></div>
         <div class="round-complete-stats">
           <div class="round-stat-line round-stat-correct"></div>
-          <div class="round-stat-line round-stat-median"></div>
         </div>
         <div class="round-complete-overall">
           <div class="round-complete-overall-label">Overall</div>
           <div class="round-complete-context"></div>
         </div>
-        <div class="round-complete-actions">
-          <button tabindex="0" class="round-complete-continue">Keep Going</button>
-          <button tabindex="0" class="round-complete-stop">Stop</button>
+        <div class="page-action-row">
+          <button tabindex="0" class="page-action-btn page-action-primary">Keep Going</button>
+          <button tabindex="0" class="page-action-btn page-action-secondary">Stop</button>
         </div>
       </div>
     </div>
@@ -7684,7 +7687,7 @@ button {
           }
         )
       ] }),
-      /* @__PURE__ */ u3("div", { class: "hint", style: { visibility: "hidden" }, children: "\xA0" })
+      /* @__PURE__ */ u3("div", { class: "hint hint-spacer", children: "\xA0" })
     ] });
   }
   function PracticeTab({
