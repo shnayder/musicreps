@@ -666,26 +666,20 @@ body {
   display: flex;
   align-items: baseline;
   gap: var(--space-2);
-  margin-bottom: 0;
+  margin-bottom: var(--space-3);
 }
 .practice-status:empty,
 .practice-status-label:empty {
   display: none;
 }
-.practice-status-prefix {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-muted);
-}
 .practice-status-label {
-  font-weight: 500;
+  font-weight: 600;
   font-size: var(--text-sm);
   color: var(--color-text);
 }
 .practice-status-detail {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  display: block;
 }
 .practice-status-detail:empty {
   display: none;
@@ -869,6 +863,99 @@ body {
   color: white;
   border-color: var(--color-toggle-active);
 }
+
+/* --- Group progress toggles (vertical list with bars) --- */
+.group-progress-toggles {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  padding: 0 var(--space-4);
+}
+.group-progress-toggles.has-skip {
+  grid-template-columns: auto 1fr auto;
+}
+.group-progress-toggles .distance-toggle {
+  height: 28px;
+  font-size: var(--text-sm);
+  padding: 0 var(--space-3);
+}
+.group-progress-toggles .distance-toggle.skipped {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+.group-progress-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.group-progress-bar.skipped {
+  opacity: 0.3;
+}
+.group-bar-slice {
+  flex: 1;
+  min-width: 0;
+}
+.group-skip-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.group-skip-btn:hover,
+.group-skip-btn.open {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+.group-skip-menu-wrap {
+  position: relative;
+}
+.group-skip-menu {
+  position: absolute;
+  right: -1px;
+  top: calc(100% + 2px);
+  z-index: 100;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  padding: var(--space-1) 0;
+  min-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.group-skip-menu button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: transparent;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+}
+.group-skip-menu button:hover {
+  background: var(--color-surface-hover);
+}
+.group-skip-menu .menu-check {
+  width: 16px;
+  text-align: center;
+}
+
 .notes-toggles {
   display: flex;
   flex-direction: row;
@@ -2067,7 +2154,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#795"></div>
+  <div class="home-screen" id="home-screen" data-version="#811"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -3750,7 +3837,7 @@ button {
 
   <script>
 (() => {
-  // node_modules/preact/dist/preact.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/dist/preact.module.js
   var n;
   var l;
   var u;
@@ -5033,7 +5120,7 @@ button {
     return btn;
   }
 
-  // node_modules/preact/hooks/dist/hooks.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/hooks/dist/hooks.module.js
   var t2;
   var r2;
   var u2;
@@ -5184,7 +5271,7 @@ button {
     return "function" == typeof t3 ? t3(n2) : t3;
   }
 
-  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
   var f3 = 0;
   function u3(e3, t3, n2, o3, i3, u4) {
     t3 || (t3 = {});
@@ -5687,18 +5774,19 @@ button {
       storage.setLastSelected(selected);
       return selected;
     }
-    function getRecall(itemId) {
+    function getRecall(itemId, nowMs) {
       const stats = storage.getStats(itemId);
       if (!stats || stats.stability == null || stats.lastCorrectAt == null) {
         return null;
       }
-      const elapsedHours = (Date.now() - stats.lastCorrectAt) / 36e5;
+      const now = nowMs ?? Date.now();
+      const elapsedHours = (now - stats.lastCorrectAt) / 36e5;
       return computeRecall(stats.stability, elapsedHours);
     }
-    function getAutomaticity(itemId) {
+    function getAutomaticity(itemId, nowMs) {
       const stats = storage.getStats(itemId);
       if (!stats) return null;
-      const recall = getRecall(itemId);
+      const recall = getRecall(itemId, nowMs);
       const speed = computeSpeedScore(stats.ewma, scaledConfig(itemId));
       return computeAutomaticityForDisplay(recall, speed, true);
     }
@@ -5709,20 +5797,21 @@ button {
       if (speed == null && stats.sampleCount > 0) return 0;
       return speed;
     }
-    function getFreshness(itemId) {
+    function getFreshness(itemId, nowMs) {
       const stats = storage.getStats(itemId);
       if (!stats) return null;
       return computeFreshness(
         stats.stability ?? null,
-        stats.lastCorrectAt ?? null
+        stats.lastCorrectAt ?? null,
+        nowMs
       );
     }
-    function getLevelAutomaticity(itemIds, percentile = 0.1) {
+    function getLevelAutomaticity(itemIds, percentile = 0.1, nowMs) {
       if (itemIds.length === 0) return { level: 0, seen: 0 };
       let seen = 0;
       const values = [];
       for (let i3 = 0; i3 < itemIds.length; i3++) {
-        const auto = getAutomaticity(itemIds[i3]);
+        const auto = getAutomaticity(itemIds[i3], nowMs);
         if (auto !== null) {
           seen++;
           values.push(auto);
@@ -5735,14 +5824,14 @@ button {
       const index = Math.min(values.length - 1, Math.max(0, rawIndex));
       return { level: values[index], seen };
     }
-    function getStringRecommendations(stringIndices, getItemIds) {
+    function getStringRecommendations(stringIndices, getItemIds, nowMs) {
       const results = stringIndices.map((s3) => {
         const items = getItemIds(s3);
         let workingCount = 0;
         let unseenCount = 0;
         let fluentCount = 0;
         for (const id of items) {
-          const auto = getAutomaticity(id);
+          const auto = getAutomaticity(id, nowMs);
           if (auto === null) {
             unseenCount++;
           } else if (auto > cfg.automaticityThreshold) {
@@ -5760,7 +5849,7 @@ button {
         };
       });
       results.sort(
-        (a3, b) => b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount)
+        (a3, b) => b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount) || a3.string - b.string
       );
       return results;
     }
@@ -5929,75 +6018,188 @@ button {
   }
 
   // src/recommendations.ts
-  function computeRecommendations(selector, allIndices, getItemIds, config, options) {
-    const sortUnstarted = options && options.sortUnstarted;
-    const recs = selector.getStringRecommendations(allIndices, getItemIds);
-    const started = recs.filter((r3) => r3.unseenCount < r3.totalCount);
-    const unstarted = recs.filter((r3) => r3.unseenCount === r3.totalCount);
-    if (started.length === 0) {
-      if (unstarted.length > 0) {
-        const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
-        const first = sorted[0];
-        return {
-          recommended: /* @__PURE__ */ new Set([first.string]),
-          enabled: /* @__PURE__ */ new Set([first.string]),
-          consolidateIndices: [],
-          consolidateWorkingCount: 0,
-          expandIndex: first.string,
-          expandNewCount: first.totalCount
-        };
+  function workCount(r3) {
+    return r3.workingCount + r3.unseenCount;
+  }
+  function classifyGroups(recs) {
+    const started = [];
+    const unstarted = [];
+    for (const r3 of recs) {
+      if (r3.unseenCount < r3.totalCount) {
+        started.push(r3);
+      } else {
+        unstarted.push(r3);
       }
+    }
+    return { started, unstarted };
+  }
+  function freshStartResult(unstarted, sortFn) {
+    if (unstarted.length > 0) {
+      const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
+      const first = sorted[0];
       return {
-        recommended: /* @__PURE__ */ new Set(),
-        enabled: null,
+        recommended: /* @__PURE__ */ new Set([first.string]),
+        enabled: /* @__PURE__ */ new Set([first.string]),
         consolidateIndices: [],
         consolidateWorkingCount: 0,
-        expandIndex: null,
-        expandNewCount: 0
+        expandIndex: first.string,
+        expandNewCount: first.totalCount
       };
     }
-    const startedItemIds = started.flatMap((r3) => getItemIds(r3.string));
-    const { level } = selector.getLevelAutomaticity(startedItemIds);
-    const startedByWork = [...started].sort(
-      (a3, b) => b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount)
+    return {
+      recommended: /* @__PURE__ */ new Set(),
+      enabled: null,
+      consolidateIndices: [],
+      consolidateWorkingCount: 0,
+      expandIndex: null,
+      expandNewCount: 0
+    };
+  }
+  function checkReviewMode(started, hasUnstarted) {
+    if (hasUnstarted) return null;
+    const totalFluent = started.reduce((s3, r3) => s3 + r3.fluentCount, 0);
+    const totalItems = started.reduce((s3, r3) => s3 + r3.totalCount, 0);
+    if (totalItems === 0 || totalFluent / totalItems < 0.8) return null;
+    const allIndices = started.map((r3) => r3.string);
+    const allWork = started.reduce((s3, r3) => s3 + workCount(r3), 0);
+    return {
+      recommended: new Set(allIndices),
+      enabled: new Set(allIndices),
+      consolidateIndices: allIndices,
+      consolidateWorkingCount: allWork,
+      expandIndex: null,
+      expandNewCount: 0,
+      reviewMode: true
+    };
+  }
+  function selectConsolidation(started) {
+    const sorted = [...started].sort(
+      (a3, b) => workCount(b) - workCount(a3) || a3.string - b.string
     );
-    const workCounts = startedByWork.map((r3) => r3.workingCount + r3.unseenCount);
-    const medianWork = workCounts[Math.floor(workCounts.length / 2)];
-    const recommended = /* @__PURE__ */ new Set();
-    const enabled = /* @__PURE__ */ new Set();
-    const consolidateIndices = [];
-    let consolidateWorkingCount = 0;
-    for (const r3 of startedByWork) {
-      if (r3.workingCount + r3.unseenCount > medianWork) {
-        recommended.add(r3.string);
-        enabled.add(r3.string);
-        consolidateIndices.push(r3.string);
-        consolidateWorkingCount += r3.workingCount + r3.unseenCount;
+    const medianWork = workCount(sorted[Math.floor(sorted.length / 2)]);
+    const indices = [];
+    let totalWork = 0;
+    for (const r3 of sorted) {
+      if (workCount(r3) > medianWork) {
+        indices.push(r3.string);
+        totalWork += workCount(r3);
       }
     }
-    if (enabled.size === 0) {
-      const r3 = startedByWork[0];
-      recommended.add(r3.string);
-      enabled.add(r3.string);
-      consolidateIndices.push(r3.string);
-      consolidateWorkingCount += r3.workingCount + r3.unseenCount;
+    if (indices.length === 0) {
+      const r3 = sorted[0];
+      indices.push(r3.string);
+      totalWork = workCount(r3);
     }
+    return { indices, totalWork };
+  }
+  function capConsolidation(indices, getWork, maxWork) {
+    if (indices.length <= 1) {
+      return { indices, totalWork: indices.length > 0 ? getWork(indices[0]) : 0 };
+    }
+    const sorted = [...indices].sort(
+      (a3, b) => getWork(b) - getWork(a3) || a3 - b
+    );
+    const kept = [];
+    let keptWork = 0;
+    for (const idx of sorted) {
+      const w3 = getWork(idx);
+      if (kept.length > 0 && keptWork + w3 > maxWork) break;
+      kept.push(idx);
+      keptWork += w3;
+    }
+    return { indices: kept, totalWork: keptWork };
+  }
+  function selectExpansion(level, threshold, unstarted, sortFn) {
+    if (level < threshold || unstarted.length === 0) return null;
+    const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
+    return { index: sorted[0].string, count: sorted[0].totalCount };
+  }
+  function detectStaleGroups(indices, getItemIds, getSpeedScore, getFreshness) {
+    const stale = [];
+    for (const idx of indices) {
+      const ids = getItemIds(idx);
+      let speedSum = 0;
+      let freshSum = 0;
+      let count = 0;
+      for (const id of ids) {
+        const sp = getSpeedScore(id);
+        const fr = getFreshness(id);
+        if (sp !== null && fr !== null) {
+          speedSum += sp;
+          freshSum += fr;
+          count++;
+        }
+      }
+      if (count > 0 && speedSum / count >= 0.5 && freshSum / count < 0.5) {
+        stale.push(idx);
+      }
+    }
+    return stale.length > 0 ? stale : void 0;
+  }
+  function computeRecommendations(selector, allIndices, getItemIds, config, options) {
+    const nowMs = Date.now();
+    const sortFn = options?.sortUnstarted;
+    const recs = selector.getStringRecommendations(
+      allIndices,
+      getItemIds,
+      nowMs
+    );
+    const { started, unstarted } = classifyGroups(recs);
+    if (started.length === 0) return freshStartResult(unstarted, sortFn);
+    const review = checkReviewMode(started, unstarted.length > 0);
+    if (review) return review;
+    let { indices, totalWork } = selectConsolidation(started);
+    const maxWork = config.maxWorkItems ?? 30;
+    if (totalWork > maxWork && indices.length > 1) {
+      const workByIndex = new Map(recs.map((r3) => [r3.string, workCount(r3)]));
+      const capped = capConsolidation(
+        indices,
+        (idx) => workByIndex.get(idx) ?? 0,
+        maxWork
+      );
+      indices = capped.indices;
+      totalWork = capped.totalWork;
+    }
+    const recommended = new Set(indices);
+    const enabled = new Set(indices);
+    const startedItemIds = started.flatMap((r3) => getItemIds(r3.string));
+    const { level } = selector.getLevelAutomaticity(
+      startedItemIds,
+      void 0,
+      nowMs
+    );
+    const expansion = selectExpansion(
+      level,
+      config.expansionThreshold,
+      unstarted,
+      sortFn
+    );
     let expandIndex = null;
     let expandNewCount = 0;
-    if (level >= config.expansionThreshold && unstarted.length > 0) {
-      const sorted = sortUnstarted ? [...unstarted].sort(sortUnstarted) : unstarted;
-      expandIndex = sorted[0].string;
-      expandNewCount = sorted[0].totalCount;
+    if (expansion) {
+      expandIndex = expansion.index;
+      expandNewCount = expansion.count;
       recommended.add(expandIndex);
       enabled.add(expandIndex);
+    }
+    let staleIndices;
+    if (selector.getSpeedScore && selector.getFreshness) {
+      const getFresh = (id) => selector.getFreshness(id, nowMs);
+      staleIndices = detectStaleGroups(
+        indices,
+        getItemIds,
+        selector.getSpeedScore,
+        getFresh
+      );
     }
     return {
       recommended,
       enabled,
-      consolidateIndices,
-      consolidateWorkingCount,
+      consolidateIndices: indices,
+      consolidateWorkingCount: totalWork,
       expandIndex,
-      expandNewCount
+      expandNewCount,
+      staleIndices
     };
   }
 
@@ -6040,12 +6242,16 @@ button {
   }
   function buildRecommendationText(result, getGroupLabel, extraParts) {
     if (result.recommended.size === 0) return "";
+    if (result.reviewMode) {
+      return "review all \u2014 polish across " + result.consolidateIndices.length + " group" + (result.consolidateIndices.length !== 1 ? "s" : "");
+    }
     const parts = [];
     if (result.consolidateIndices.length > 0) {
       const labels = result.consolidateIndices.slice().sort((a3, b) => a3 - b).map(getGroupLabel);
-      parts.push(
-        "solidify " + labels.join(", ") + " \u2014 " + result.consolidateWorkingCount + " item" + (result.consolidateWorkingCount !== 1 ? "s" : "") + " to work on"
-      );
+      const allStale = result.staleIndices !== void 0 && result.staleIndices.length === result.consolidateIndices.length && result.consolidateIndices.length > 0;
+      const verb = allStale ? "refresh" : "solidify";
+      const suffix = allStale ? "skills getting stale" : result.consolidateWorkingCount + " item" + (result.consolidateWorkingCount !== 1 ? "s" : "") + " to work on";
+      parts.push(verb + " " + labels.join(", ") + " \u2014 " + suffix);
     }
     if (result.expandIndex !== null) {
       parts.push(
@@ -6078,7 +6284,7 @@ button {
       statusDetail = total + " " + opts.itemNoun + " to learn";
     } else {
       statusLabel = statusLabelFromLevel(level);
-      statusDetail = fluent + " of " + total + " " + opts.itemNoun + " fluent";
+      statusDetail = fluent + "/" + total + " " + opts.itemNoun + " fluent";
     }
     const hasRec = opts.recommendation !== null && opts.recommendation.recommended.size > 0;
     return {
@@ -6111,7 +6317,32 @@ button {
       if (enabled.size === 0) {
         for (const d3 of spec.defaultEnabled) enabled.add(d3);
       }
-      return { kind: "groups", enabledGroups: enabled };
+      const skipped = /* @__PURE__ */ new Map();
+      const savedSkipped = localStorage.getItem(spec.storageKey + "_skipped");
+      if (savedSkipped) {
+        try {
+          const parsed = JSON.parse(savedSkipped);
+          if (Array.isArray(parsed)) {
+            if (parsed.length > 0 && Array.isArray(parsed[0]) && parsed[0].length === 2) {
+              for (const [idx, reason] of parsed) {
+                if (typeof idx === "number" && Number.isInteger(idx) && (reason === "mastered" || reason === "deferred")) {
+                  skipped.set(idx, reason);
+                }
+              }
+            } else {
+              for (const idx of parsed) {
+                if (typeof idx === "number") skipped.set(idx, "deferred");
+              }
+            }
+          }
+        } catch (_3) {
+        }
+      }
+      for (const idx of skipped.keys()) {
+        if (idx < 0 || idx >= groupCount) skipped.delete(idx);
+      }
+      for (const idx of skipped.keys()) enabled.delete(idx);
+      return { kind: "groups", enabledGroups: enabled, skippedGroups: skipped };
     }
     if (spec.kind === "note-filter") {
       let noteFilter = "natural";
@@ -6128,6 +6359,10 @@ button {
       localStorage.setItem(
         spec.storageKey,
         JSON.stringify([...scope.enabledGroups])
+      );
+      localStorage.setItem(
+        spec.storageKey + "_skipped",
+        JSON.stringify([...scope.skippedGroups.entries()])
       );
     } else if (spec.kind === "note-filter" && scope.kind === "note-filter") {
       try {
@@ -6151,7 +6386,44 @@ button {
         } else {
           next.add(index);
         }
-        const updated = { kind: "groups", enabledGroups: next };
+        const updated = {
+          kind: "groups",
+          enabledGroups: next,
+          skippedGroups: prev.skippedGroups
+        };
+        saveScope(spec, updated);
+        return updated;
+      });
+    }, [spec]);
+    const skipGroup = q2((index, reason) => {
+      setScopeRaw((prev) => {
+        if (prev.kind !== "groups") return prev;
+        const groupCount = spec.groups.length;
+        if (prev.skippedGroups.size + (prev.skippedGroups.has(index) ? 0 : 1) >= groupCount) return prev;
+        const nextSkipped = new Map(prev.skippedGroups);
+        nextSkipped.set(index, reason);
+        const nextEnabled = new Set(prev.enabledGroups);
+        nextEnabled.delete(index);
+        const updated = {
+          kind: "groups",
+          enabledGroups: nextEnabled,
+          skippedGroups: nextSkipped
+        };
+        saveScope(spec, updated);
+        return updated;
+      });
+    }, [spec]);
+    const unskipGroup = q2((index) => {
+      setScopeRaw((prev) => {
+        if (prev.kind !== "groups") return prev;
+        if (!prev.skippedGroups.has(index)) return prev;
+        const nextSkipped = new Map(prev.skippedGroups);
+        nextSkipped.delete(index);
+        const updated = {
+          kind: "groups",
+          enabledGroups: prev.enabledGroups,
+          skippedGroups: nextSkipped
+        };
         saveScope(spec, updated);
         return updated;
       });
@@ -6166,10 +6438,17 @@ button {
         return prev;
       });
     }, [spec]);
-    return [scope, { toggleGroup, setNoteFilter, setScope }];
+    return [scope, {
+      toggleGroup,
+      skipGroup,
+      unskipGroup,
+      setNoteFilter,
+      setScope
+    }];
   }
 
   // src/hooks/use-group-scope.ts
+  var EMPTY_SKIPPED = /* @__PURE__ */ new Map();
   function useGroupScope(spec) {
     const [scope, scopeActions] = useScopeState({
       kind: "groups",
@@ -6184,6 +6463,11 @@ button {
       sortUnstarted: (a3, b) => a3.string - b.string
     });
     const enabledGroups = scope.kind === "groups" ? scope.enabledGroups : new Set(spec.defaultEnabled);
+    const skippedGroups = scope.kind === "groups" ? scope.skippedGroups : EMPTY_SKIPPED;
+    const activeGroupIndices = T2(
+      () => spec.allGroupIndices.filter((i3) => !skippedGroups.has(i3)),
+      [spec.allGroupIndices, skippedGroups]
+    );
     const enabledItems = T2(() => {
       const items = [];
       for (const g2 of enabledGroups) {
@@ -6195,29 +6479,29 @@ button {
       () => spec.formatLabel(enabledGroups),
       [enabledGroups, spec.formatLabel]
     );
-    const recommendation = T2(() => {
-      return computeRecommendations(
+    const recommendation = T2(
+      () => computeRecommendations(
         spec.selector,
-        spec.allGroupIndices,
+        activeGroupIndices,
         spec.getItemIdsForGroup,
         { expansionThreshold: 0.7 },
         { sortUnstarted: (a3, b) => a3.string - b.string }
-      );
-    }, [spec.selector, spec.allGroupIndices, spec.getItemIdsForGroup]);
-    const recommendationText = T2(() => {
-      return buildRecommendationText(
-        recommendation,
-        (i3) => spec.groups[i3].label
-      );
-    }, [recommendation]);
+      ),
+      [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]
+    );
+    const recommendationText = T2(
+      () => buildRecommendationText(recommendation, (i3) => spec.groups[i3].label),
+      [recommendation]
+    );
     const applyRecommendation = q2(() => {
       if (recommendation.enabled) {
         scopeActions.setScope({
           kind: "groups",
-          enabledGroups: recommendation.enabled
+          enabledGroups: recommendation.enabled,
+          skippedGroups
         });
       }
-    }, [recommendation, scopeActions]);
+    }, [recommendation, scopeActions, skippedGroups]);
     const enabledItemsRef = A2(enabledItems);
     enabledItemsRef.current = enabledItems;
     const practicingLabelRef = A2(practicingLabel);
@@ -6231,6 +6515,7 @@ button {
       scope,
       scopeActions,
       enabledGroups,
+      skippedGroups,
       enabledItems,
       practicingLabel,
       recommendation,
@@ -7134,24 +7419,264 @@ button {
     ] });
   }
 
+  // src/stats-display.ts
+  var _heatmapColors = null;
+  function cssVar(name) {
+    try {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(
+        name
+      ).trim();
+      if (val) return val;
+    } catch (_3) {
+    }
+    return "";
+  }
+  function heatmapColors() {
+    if (!_heatmapColors) {
+      _heatmapColors = {
+        none: cssVar("--heatmap-none") || "hsl(30, 4%, 85%)",
+        level: [
+          cssVar("--heatmap-1") || "hsl(44, 65%, 58%)",
+          cssVar("--heatmap-2") || "hsl(54, 45%, 52%)",
+          cssVar("--heatmap-3") || "hsl(68, 30%, 46%)",
+          cssVar("--heatmap-4") || "hsl(90, 38%, 38%)",
+          cssVar("--heatmap-5") || "hsl(122, 46%, 33%)"
+        ]
+      };
+    }
+    return _heatmapColors;
+  }
+  function heatmapNeedsLightText(color) {
+    const m3 = color && color.match(/,\s*(\d+)%\s*\)/);
+    return m3 ? parseInt(m3[1], 10) <= 50 : false;
+  }
+  var SPEED_HSL = [
+    [44, 65, 58],
+    // heatmap-1: needs work
+    [54, 45, 52],
+    // heatmap-2
+    [68, 30, 46],
+    // heatmap-3
+    [90, 38, 38],
+    // heatmap-4
+    [122, 46, 33]
+    // heatmap-5: automatic
+  ];
+  var FRESHNESS_FLOOR = 0.25;
+  var NEUTRAL_L = 78;
+  function getSpeedFreshnessColor(speedScore, freshness) {
+    const c3 = heatmapColors();
+    if (speedScore === null || freshness === null) return c3.none;
+    const level = speedScore > 0.8 ? 4 : speedScore > 0.6 ? 3 : speedScore > 0.4 ? 2 : speedScore > 0.2 ? 1 : 0;
+    const [h3, s3, l3] = SPEED_HSL[level];
+    const f4 = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * Math.max(0, Math.min(1, freshness));
+    const fadedS = Math.round(s3 * f4);
+    const fadedL = Math.round(l3 + (NEUTRAL_L - l3) * (1 - f4));
+    return `hsl(${h3}, ${fadedS}%, ${fadedL}%)`;
+  }
+  function getStatsCellColor(selector, itemId) {
+    const speedScore = selector.getSpeedScore?.(itemId) ?? null;
+    const freshness = selector.getFreshness?.(itemId) ?? null;
+    return getSpeedFreshnessColor(speedScore, freshness);
+  }
+  function getStatsCellColorMerged(selector, itemIds) {
+    if (typeof itemIds === "string") {
+      return getStatsCellColor(selector, itemIds);
+    }
+    let speedSum = 0, speedCount = 0, freshSum = 0, freshCount = 0;
+    for (let i3 = 0; i3 < itemIds.length; i3++) {
+      const sp = selector.getSpeedScore?.(itemIds[i3]) ?? null;
+      const fr = selector.getFreshness?.(itemIds[i3]) ?? null;
+      if (sp !== null) {
+        speedSum += sp;
+        speedCount++;
+      }
+      if (fr !== null) {
+        freshSum += fr;
+        freshCount++;
+      }
+    }
+    const avgSpeed = speedCount > 0 ? speedSum / speedCount : null;
+    const avgFresh = freshCount > 0 ? freshSum / freshCount : null;
+    return getSpeedFreshnessColor(avgSpeed, avgFresh);
+  }
+  function buildStatsLegend() {
+    let html = '<div class="heatmap-legend active">';
+    html += '<div class="legend-section">';
+    html += '<div class="legend-section-title">Speed</div>';
+    html += '<div class="legend-bar-group">';
+    html += '<div class="legend-gradient-bar">';
+    for (let i3 = SPEED_HSL.length - 1; i3 >= 0; i3--) {
+      const [h3, s3, l3] = SPEED_HSL[i3];
+      html += `<div class="legend-bar-swatch" style="background:hsl(${h3}, ${s3}%, ${l3}%)"></div>`;
+    }
+    html += "</div>";
+    html += '<div class="legend-axis-labels"><span>Automatic</span><span>Hesitant</span></div>';
+    html += "</div>";
+    html += "</div>";
+    const baseL = SPEED_HSL[3][2];
+    html += '<div class="legend-section">';
+    html += '<div class="legend-section-title">Last practiced</div>';
+    html += '<div class="legend-bar-group">';
+    html += '<div class="legend-gradient-bar">';
+    for (let i3 = 0; i3 < 5; i3++) {
+      const fVal = 1 - i3 / 4;
+      const f4 = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * fVal;
+      const fadedL = Math.round(baseL + (NEUTRAL_L - baseL) * (1 - f4));
+      html += `<div class="legend-bar-swatch" style="background:hsl(0, 0%, ${fadedL}%)"></div>`;
+    }
+    html += "</div>";
+    html += '<div class="legend-axis-labels"><span>Recent</span><span>Long ago</span></div>';
+    html += "</div>";
+    html += "</div>";
+    html += "</div>";
+    return html;
+  }
+
   // src/ui/scope.tsx
-  function GroupToggles({ labels, active, onToggle }) {
-    return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
-      /* @__PURE__ */ u3("span", { class: "toggle-group-label", children: "Groups" }),
-      /* @__PURE__ */ u3("div", { class: "distance-toggles", children: labels.map((label, i3) => /* @__PURE__ */ u3(
+  var CLOSE_EVENT = "groupskipmenu:close";
+  function GroupSkipMenu({ index, label, currentStatus, onSkip, onUnskip }) {
+    const [open, setOpen] = d2(false);
+    const idRef = A2(index);
+    idRef.current = index;
+    const openMenu = q2(() => {
+      document.dispatchEvent(
+        new CustomEvent(CLOSE_EVENT, { detail: index })
+      );
+      setOpen(true);
+    }, [index]);
+    y2(() => {
+      if (!open) return;
+      const onKey = (e3) => {
+        if (e3.key === "Escape") setOpen(false);
+      };
+      const onClick = () => setOpen(false);
+      const onOtherMenu = (e3) => {
+        if (e3.detail !== idRef.current) setOpen(false);
+      };
+      const rafId = requestAnimationFrame(() => {
+        document.addEventListener("click", onClick);
+        document.addEventListener("keydown", onKey);
+        document.addEventListener(CLOSE_EVENT, onOtherMenu);
+      });
+      return () => {
+        cancelAnimationFrame(rafId);
+        document.removeEventListener("click", onClick);
+        document.removeEventListener("keydown", onKey);
+        document.removeEventListener(CLOSE_EVENT, onOtherMenu);
+      };
+    }, [open]);
+    const select = q2(
+      (status) => {
+        if (status === "learn") onUnskip(index);
+        else onSkip(index, status);
+        setOpen(false);
+      },
+      [index, onSkip, onUnskip]
+    );
+    const items = [
+      { key: "learn", label: "Learn this" },
+      { key: "mastered", label: "I know this" },
+      { key: "deferred", label: "Skip for now" }
+    ];
+    return /* @__PURE__ */ u3("div", { class: "group-skip-menu-wrap", children: [
+      /* @__PURE__ */ u3(
         "button",
         {
           type: "button",
           tabIndex: 0,
-          class: "distance-toggle" + (active.has(i3) ? " active" : ""),
-          "aria-pressed": active.has(i3),
-          "data-group": String(i3),
-          onClick: () => onToggle(i3),
-          children: label
-        },
-        i3
-      )) })
+          class: "group-skip-btn" + (open ? " open" : ""),
+          title: `Options for ${label}`,
+          "aria-label": `Options for ${label}`,
+          "aria-expanded": open,
+          onClick: (e3) => {
+            e3.stopPropagation();
+            if (open) setOpen(false);
+            else openMenu();
+          },
+          children: "\u22EF"
+        }
+      ),
+      open && /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "group-skip-menu",
+          onClick: (e3) => e3.stopPropagation(),
+          children: items.map((item) => /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              onClick: () => select(item.key),
+              children: [
+                /* @__PURE__ */ u3("span", { class: "menu-check", children: item.key === currentStatus ? "\u2713" : "" }),
+                item.label
+              ]
+            },
+            item.key
+          ))
+        }
+      )
     ] });
+  }
+  function GroupProgressToggles({ groups, active, onToggle, selector, skipped, onSkip, onUnskip }) {
+    const hasMenu = !!(onSkip && onUnskip);
+    return /* @__PURE__ */ u3(
+      "div",
+      {
+        class: "group-progress-toggles" + (hasMenu ? " has-skip" : ""),
+        children: groups.map((g2, i3) => {
+          const isSkipped = skipped?.has(i3) ?? false;
+          const skipReason = skipped?.get(i3);
+          const currentStatus = skipReason ?? "learn";
+          const items = g2.itemIds.map((id) => {
+            const sp = selector.getSpeedScore(id);
+            const fr = selector.getFreshness(id);
+            const auto = sp !== null && fr !== null ? sp * fr : null;
+            return { id, auto, color: getSpeedFreshnessColor(sp, fr) };
+          });
+          items.sort((a3, b) => (b.auto ?? -1) - (a3.auto ?? -1));
+          return /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(
+              "button",
+              {
+                type: "button",
+                tabIndex: 0,
+                class: "distance-toggle" + (active.has(i3) ? " active" : "") + (isSkipped ? " skipped" : ""),
+                "aria-pressed": active.has(i3),
+                "data-group": String(i3),
+                disabled: isSkipped,
+                onClick: () => onToggle(i3),
+                children: g2.label
+              }
+            ),
+            /* @__PURE__ */ u3(
+              "div",
+              {
+                class: "group-progress-bar" + (isSkipped ? " skipped" : ""),
+                children: items.map((item) => /* @__PURE__ */ u3(
+                  "div",
+                  {
+                    class: "group-bar-slice",
+                    style: `background:${item.color}`
+                  },
+                  item.id
+                ))
+              }
+            ),
+            hasMenu && /* @__PURE__ */ u3(
+              GroupSkipMenu,
+              {
+                index: i3,
+                label: g2.label,
+                currentStatus,
+                onSkip,
+                onUnskip
+              }
+            )
+          ] }, i3);
+        })
+      }
+    );
   }
   function NoteFilter({ mode, onChange }) {
     const naturalActive = mode === "natural" || mode === "all";
@@ -7513,7 +8038,6 @@ button {
     const statusLabel = props.statusLabel ?? (props.summary ? props.summary.statusLabel : void 0);
     const statusDetail = props.statusDetail ?? (props.summary ? props.summary.statusDetail : void 0);
     const recommendation = props.recommendation ?? (props.summary && props.summary.recommendationText ? props.summary.recommendationText : void 0);
-    const mastery = props.mastery ?? (props.summary && props.summary.showMastery ? props.summary.masteryText : void 0);
     const onApplyRecommendation = props.onApplyRecommendation;
     const { scope, onStart } = props;
     const scopeDisabled = props.scopeValid === false;
@@ -7534,12 +8058,14 @@ button {
         ) : null
       ] })
     ] }) : null;
-    const masteryBlock = mastery ? /* @__PURE__ */ u3("div", { class: "mastery-message mastery-visible", children: mastery }) : null;
-    const hasSetupContent = scope || recommendation;
-    const setupZone = /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-setup", children: [
-      hasSetupContent ? /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Practice Settings" }) : null,
+    return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
+      statusLabel && /* @__PURE__ */ u3("div", { class: "practice-status", children: [
+        /* @__PURE__ */ u3("span", { class: "practice-status-prefix", children: "Status" }),
+        /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel }),
+        /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" })
+      ] }),
       recBlock,
-      scope ? /* @__PURE__ */ u3("div", { class: "practice-scope", children: /* @__PURE__ */ u3("div", { class: "settings-row", children: scope }) }) : null,
+      scope && /* @__PURE__ */ u3("div", { class: "practice-scope", children: scope }),
       /* @__PURE__ */ u3("div", { class: "practice-zone-action", children: /* @__PURE__ */ u3(
         StartButton,
         {
@@ -7548,18 +8074,6 @@ button {
           validationMessage
         }
       ) })
-    ] });
-    return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
-      /* @__PURE__ */ u3("div", { class: "practice-zone practice-zone-mastery", children: [
-        /* @__PURE__ */ u3("div", { class: "practice-section-header", children: "Mastery" }),
-        /* @__PURE__ */ u3("div", { class: "practice-status", children: statusLabel ? /* @__PURE__ */ u3(k, { children: [
-          /* @__PURE__ */ u3("span", { class: "practice-status-prefix", children: "Status" }),
-          /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel })
-        ] }) : null }),
-        /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail || "" }),
-        masteryBlock
-      ] }),
-      setupZone
     ] });
   }
   function StartButton({ onStart, disabled, validationMessage }) {
@@ -7731,120 +8245,6 @@ button {
         ] })
       }
     );
-  }
-
-  // src/stats-display.ts
-  var _heatmapColors = null;
-  function cssVar(name) {
-    try {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(
-        name
-      ).trim();
-      if (val) return val;
-    } catch (_3) {
-    }
-    return "";
-  }
-  function heatmapColors() {
-    if (!_heatmapColors) {
-      _heatmapColors = {
-        none: cssVar("--heatmap-none") || "hsl(30, 4%, 85%)",
-        level: [
-          cssVar("--heatmap-1") || "hsl(44, 65%, 58%)",
-          cssVar("--heatmap-2") || "hsl(54, 45%, 52%)",
-          cssVar("--heatmap-3") || "hsl(68, 30%, 46%)",
-          cssVar("--heatmap-4") || "hsl(90, 38%, 38%)",
-          cssVar("--heatmap-5") || "hsl(122, 46%, 33%)"
-        ]
-      };
-    }
-    return _heatmapColors;
-  }
-  function heatmapNeedsLightText(color) {
-    const m3 = color && color.match(/,\s*(\d+)%\s*\)/);
-    return m3 ? parseInt(m3[1], 10) <= 50 : false;
-  }
-  var SPEED_HSL = [
-    [44, 65, 58],
-    // heatmap-1: needs work
-    [54, 45, 52],
-    // heatmap-2
-    [68, 30, 46],
-    // heatmap-3
-    [90, 38, 38],
-    // heatmap-4
-    [122, 46, 33]
-    // heatmap-5: automatic
-  ];
-  var FRESHNESS_FLOOR = 0.25;
-  var NEUTRAL_L = 78;
-  function getSpeedFreshnessColor(speedScore, freshness) {
-    const c3 = heatmapColors();
-    if (speedScore === null || freshness === null) return c3.none;
-    const level = speedScore > 0.8 ? 4 : speedScore > 0.6 ? 3 : speedScore > 0.4 ? 2 : speedScore > 0.2 ? 1 : 0;
-    const [h3, s3, l3] = SPEED_HSL[level];
-    const f4 = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * Math.max(0, Math.min(1, freshness));
-    const fadedS = Math.round(s3 * f4);
-    const fadedL = Math.round(l3 + (NEUTRAL_L - l3) * (1 - f4));
-    return `hsl(${h3}, ${fadedS}%, ${fadedL}%)`;
-  }
-  function getStatsCellColor(selector, itemId) {
-    const speedScore = selector.getSpeedScore?.(itemId) ?? null;
-    const freshness = selector.getFreshness?.(itemId) ?? null;
-    return getSpeedFreshnessColor(speedScore, freshness);
-  }
-  function getStatsCellColorMerged(selector, itemIds) {
-    if (typeof itemIds === "string") {
-      return getStatsCellColor(selector, itemIds);
-    }
-    let speedSum = 0, speedCount = 0, freshSum = 0, freshCount = 0;
-    for (let i3 = 0; i3 < itemIds.length; i3++) {
-      const sp = selector.getSpeedScore?.(itemIds[i3]) ?? null;
-      const fr = selector.getFreshness?.(itemIds[i3]) ?? null;
-      if (sp !== null) {
-        speedSum += sp;
-        speedCount++;
-      }
-      if (fr !== null) {
-        freshSum += fr;
-        freshCount++;
-      }
-    }
-    const avgSpeed = speedCount > 0 ? speedSum / speedCount : null;
-    const avgFresh = freshCount > 0 ? freshSum / freshCount : null;
-    return getSpeedFreshnessColor(avgSpeed, avgFresh);
-  }
-  function buildStatsLegend() {
-    let html = '<div class="heatmap-legend active">';
-    html += '<div class="legend-section">';
-    html += '<div class="legend-section-title">Speed</div>';
-    html += '<div class="legend-bar-group">';
-    html += '<div class="legend-gradient-bar">';
-    for (let i3 = SPEED_HSL.length - 1; i3 >= 0; i3--) {
-      const [h3, s3, l3] = SPEED_HSL[i3];
-      html += `<div class="legend-bar-swatch" style="background:hsl(${h3}, ${s3}%, ${l3}%)"></div>`;
-    }
-    html += "</div>";
-    html += '<div class="legend-axis-labels"><span>Automatic</span><span>Hesitant</span></div>';
-    html += "</div>";
-    html += "</div>";
-    const baseL = SPEED_HSL[3][2];
-    html += '<div class="legend-section">';
-    html += '<div class="legend-section-title">Last practiced</div>';
-    html += '<div class="legend-bar-group">';
-    html += '<div class="legend-gradient-bar">';
-    for (let i3 = 0; i3 < 5; i3++) {
-      const fVal = 1 - i3 / 4;
-      const f4 = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * fVal;
-      const fadedL = Math.round(baseL + (NEUTRAL_L - baseL) * (1 - f4));
-      html += `<div class="legend-bar-swatch" style="background:hsl(0, 0%, ${fadedL}%)"></div>`;
-    }
-    html += "</div>";
-    html += '<div class="legend-axis-labels"><span>Recent</span><span>Long ago</span></div>';
-    html += "</div>";
-    html += "</div>";
-    html += "</div>";
-    return html;
   }
 
   // src/ui/stats.tsx
@@ -8319,6 +8719,7 @@ button {
     })();
     const phase = engine.state.phase;
     const isIdle = phase === "idle";
+    const groupScope = def.scope.kind === "groups" ? def.scope : null;
     const activeButtons = def.buttons.kind === "bidirectional" ? dir === "fwd" ? def.buttons.fwd : def.buttons.rev : def.buttons;
     const inactiveButtons = def.buttons.kind === "bidirectional" ? dir === "fwd" ? def.buttons.rev : def.buttons.fwd : null;
     return /* @__PURE__ */ u3(k, { children: [
@@ -8341,12 +8742,19 @@ button {
           onApplyRecommendation: ps.summary.showRecommendationButton && groupScopeResult ? groupScopeResult.applyRecommendation : void 0,
           scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
           validationMessage: "Select at least one group",
-          scope: groupScopeResult && def.scope.kind === "groups" ? /* @__PURE__ */ u3(
-            GroupToggles,
+          scope: groupScopeResult && groupScope ? /* @__PURE__ */ u3(
+            GroupProgressToggles,
             {
-              labels: def.scope.groups.map((g2) => g2.label),
+              groups: groupScope.allGroupIndices.map((i3) => ({
+                label: groupScope.groups[i3].label,
+                itemIds: groupScope.getItemIdsForGroup(i3)
+              })),
               active: groupScopeResult.enabledGroups,
-              onToggle: groupScopeResult.scopeActions.toggleGroup
+              onToggle: groupScopeResult.scopeActions.toggleGroup,
+              selector: learner.selector,
+              skipped: groupScopeResult.skippedGroups,
+              onSkip: groupScopeResult.scopeActions.skipGroup,
+              onUnskip: groupScopeResult.scopeActions.unskipGroup
             }
           ) : void 0,
           statsContent: /* @__PURE__ */ u3(k, { children: [
