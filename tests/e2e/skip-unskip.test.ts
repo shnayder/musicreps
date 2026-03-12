@@ -371,8 +371,14 @@ describe('skip/unskip — guitar fretboard real data (E2E)', () => {
 // ---------------------------------------------------------------------------
 
 const GUITAR_GROUP_LABELS = [
-  'E e', 'A', 'D', 'G', 'B',
-  'E A \u266F\u266D', 'D G \u266F\u266D', 'B e \u266F\u266D',
+  'E e',
+  'A',
+  'D',
+  'G',
+  'B',
+  'E A \u266F\u266D',
+  'D G \u266F\u266D',
+  'B e \u266F\u266D',
 ];
 
 describe('per-group recommendation diagnostic (real data)', () => {
@@ -402,7 +408,9 @@ describe('per-group recommendation diagnostic (real data)', () => {
 
       try {
         // 1. Initial recommendation text
-        const initialText = await page.textContent(`${MODE} .suggestion-card-text`);
+        const initialText = await page.textContent(
+          `${MODE} .suggestion-card-text`,
+        );
 
         // 2. Skip the group
         await page
@@ -410,7 +418,9 @@ describe('per-group recommendation diagnostic (real data)', () => {
           .click();
         await page.getByRole('menuitem', { name: 'I know this' }).click();
         await page.waitForTimeout(300);
-        const afterSkipText = await page.textContent(`${MODE} .suggestion-card-text`);
+        const afterSkipText = await page.textContent(
+          `${MODE} .suggestion-card-text`,
+        );
 
         // 3. Unskip the group
         await page
@@ -418,7 +428,9 @@ describe('per-group recommendation diagnostic (real data)', () => {
           .click();
         await page.getByRole('menuitem', { name: 'Learn this' }).click();
         await page.waitForTimeout(300);
-        const afterUnskipText = await page.textContent(`${MODE} .suggestion-card-text`);
+        const afterUnskipText = await page.textContent(
+          `${MODE} .suggestion-card-text`,
+        );
 
         // Log all three for diagnostic
         console.log(`\n=== Group ${groupIdx} "${label}" ===`);
@@ -433,9 +445,9 @@ describe('per-group recommendation diagnostic (real data)', () => {
           afterUnskipText,
           initialText,
           `group ${groupIdx} "${label}": rec text after unskip should match initial.\n` +
-          `  initial:      ${JSON.stringify(initialText)}\n` +
-          `  after skip:   ${JSON.stringify(afterSkipText)}\n` +
-          `  after unskip: ${JSON.stringify(afterUnskipText)}`,
+            `  initial:      ${JSON.stringify(initialText)}\n` +
+            `  after skip:   ${JSON.stringify(afterSkipText)}\n` +
+            `  after unskip: ${JSON.stringify(afterUnskipText)}`,
         );
       } finally {
         await page.context().close();

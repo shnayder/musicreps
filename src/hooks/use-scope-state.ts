@@ -48,7 +48,10 @@ function loadScope(spec: ScopeSpec): ScopeState {
           ) {
             // New format: [[index, reason], ...]
             for (const [idx, reason] of parsed) {
-              if (reason === 'mastered' || reason === 'deferred') {
+              if (
+                typeof idx === 'number' && Number.isInteger(idx) &&
+                (reason === 'mastered' || reason === 'deferred')
+              ) {
                 skipped.set(idx, reason);
               }
             }

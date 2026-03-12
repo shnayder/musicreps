@@ -1,6 +1,7 @@
 // Scope control components: toggle groups for selecting practice scope.
 // Used in idle screens to let users pick strings, distance groups, note types.
 
+import { Fragment } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import type { GroupStatus } from '../types.ts';
 import { displayNote } from '../music-data.ts';
@@ -78,12 +79,13 @@ function GroupSkipMenu(
       if ((e as CustomEvent).detail !== idRef.current) setOpen(false);
     };
     // Use rAF so the click that opened the menu doesn't immediately close it.
-    requestAnimationFrame(() => {
+    const rafId = requestAnimationFrame(() => {
       document.addEventListener('click', onClick);
       document.addEventListener('keydown', onKey);
       document.addEventListener(CLOSE_EVENT, onOtherMenu);
     });
     return () => {
+      cancelAnimationFrame(rafId);
       document.removeEventListener('click', onClick);
       document.removeEventListener('keydown', onKey);
       document.removeEventListener(CLOSE_EVENT, onOtherMenu);
@@ -113,6 +115,7 @@ function GroupSkipMenu(
         class={'group-skip-btn' + (open ? ' open' : '')}
         title={`Options for ${label}`}
         aria-label={`Options for ${label}`}
+        aria-expanded={open}
         onClick={(e: MouseEvent) => {
           e.stopPropagation();
           if (open) setOpen(false);
@@ -124,14 +127,12 @@ function GroupSkipMenu(
       {open && (
         <div
           class='group-skip-menu'
-          role='menu'
           onClick={(e: MouseEvent) => e.stopPropagation()}
         >
           {items.map((item) => (
             <button
               type='button'
               key={item.key}
-              role='menuitem'
               onClick={() => select(item.key)}
             >
               <span class='menu-check'>
@@ -177,15 +178,14 @@ export function GroupProgressToggles(
           const sp = selector.getSpeedScore(id);
           const fr = selector.getFreshness(id);
           const auto = (sp !== null && fr !== null) ? sp * fr : null;
-          return { auto, color: getSpeedFreshnessColor(sp, fr) };
+          return { id, auto, color: getSpeedFreshnessColor(sp, fr) };
         });
         items.sort((a, b) => (b.auto ?? -1) - (a.auto ?? -1));
         return (
-          <>
+          <Fragment key={i}>
             <button
               type='button'
               tabIndex={0}
-              key={`btn-${i}`}
               class={'distance-toggle' +
                 (active.has(i) ? ' active' : '') +
                 (isSkipped ? ' skipped' : '')}
@@ -198,19 +198,17 @@ export function GroupProgressToggles(
             </button>
             <div
               class={'group-progress-bar' + (isSkipped ? ' skipped' : '')}
-              key={`bar-${i}`}
             >
-              {items.map((item, j) => (
+              {items.map((item) => (
                 <div
                   class='group-bar-slice'
-                  key={j}
+                  key={item.id}
                   style={`background:${item.color}`}
                 />
               ))}
             </div>
             {hasMenu && (
               <GroupSkipMenu
-                key={`menu-${i}`}
                 index={i}
                 label={g.label}
                 currentStatus={currentStatus}
@@ -218,7 +216,7 @@ export function GroupProgressToggles(
                 onUnskip={onUnskip}
               />
             )}
-          </>
+          </Fragment>
         );
       })}
     </div>

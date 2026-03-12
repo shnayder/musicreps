@@ -2,11 +2,11 @@
 // Custom lint rule: check for overly long functions using TypeScript AST
 // Run as: deno run --allow-read scripts/lint-function-length.ts
 
-import ts from "npm:typescript@5.3.3";
+import ts from 'npm:typescript@5.3.3';
 
 const MAX_FUNCTION_LINES = 100;
 const EXCLUSIONS = new Set([
-  "main.ts", // Build script with multiple top-level commands
+  'main.ts', // Build script with multiple top-level commands
 ]);
 
 interface FunctionInfo {
@@ -18,7 +18,7 @@ interface FunctionInfo {
 
 function getFunctionName(node: ts.Node): string | null {
   if (ts.isFunctionDeclaration(node)) {
-    return node.name?.getText() ?? "<anonymous>";
+    return node.name?.getText() ?? '<anonymous>';
   }
   if (ts.isVariableStatement(node)) {
     const declaration = node.declarationList.declarations[0];
@@ -49,8 +49,7 @@ function findFunctions(content: string, filePath: string): FunctionInfo[] {
 
   function visit(node: ts.Node) {
     // Check if this is a function-like node
-    const isFunctionLike =
-      ts.isFunctionDeclaration(node) ||
+    const isFunctionLike = ts.isFunctionDeclaration(node) ||
       ts.isArrowFunction(node) ||
       ts.isFunctionExpression(node) ||
       ts.isMethodDeclaration(node);
@@ -120,9 +119,9 @@ async function checkDirectory(dir: string): Promise<boolean> {
     // Skip excluded directories
     if (
       entry.isDirectory &&
-      (entry.name === "node_modules" ||
-        entry.name === "docs" ||
-        entry.name === ".git")
+      (entry.name === 'node_modules' ||
+        entry.name === 'docs' ||
+        entry.name === '.git')
     ) {
       continue;
     }
@@ -131,8 +130,8 @@ async function checkDirectory(dir: string): Promise<boolean> {
       const dirViolations = await checkDirectory(path);
       hasViolations = hasViolations || dirViolations;
     } else if (
-      (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx")) &&
-      !entry.name.endsWith("_test.ts") && // Skip test files
+      (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) &&
+      !entry.name.endsWith('_test.ts') && // Skip test files
       !EXCLUSIONS.has(entry.name)
     ) {
       const fileViolations = await checkFile(path);
@@ -144,7 +143,7 @@ async function checkDirectory(dir: string): Promise<boolean> {
 }
 
 // Main
-const hasViolations = await checkDirectory("src");
+const hasViolations = await checkDirectory('src');
 
 if (hasViolations) {
   console.error(
@@ -152,5 +151,5 @@ if (hasViolations) {
   );
   Deno.exit(1);
 } else {
-  console.log("✓ All functions are within the line limit");
+  console.log('✓ All functions are within the line limit');
 }
