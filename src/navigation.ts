@@ -101,8 +101,6 @@ export function createNavigation(): {
     // so the quiz engine handles Escape independently in other phases.
     document.addEventListener('keydown', function (e: KeyboardEvent): void {
       if (e.key !== 'Escape' || !currentModeId) return;
-      // Don't interfere with open modals (e.g. settings)
-      if (document.querySelector('.settings-overlay.open')) return;
       // Only navigate home when the quiz is idle (not running/calibrating)
       const modeScreen = document.getElementById('mode-' + currentModeId);
       if (modeScreen && !modeScreen.classList.contains('phase-idle')) return;

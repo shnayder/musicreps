@@ -10,6 +10,8 @@ import {
 } from '../music-data.ts';
 import type { Track } from '../music-data.ts';
 import { SkillIcon } from './icons.tsx';
+import type { SettingsController } from '../settings.ts';
+import type { AppConfig } from '../app-config.ts';
 
 // ---------------------------------------------------------------------------
 // localStorage persistence for selected tracks
@@ -176,13 +178,16 @@ function OtherTracks(
 // ---------------------------------------------------------------------------
 
 export function HomeScreen(
-  { onSelectMode, onOpenSettings, version }: {
+  { onSelectMode, settings, appConfig, version }: {
     onSelectMode: (modeId: string) => void;
-    onOpenSettings: () => void;
+    settings: SettingsController;
+    appConfig: AppConfig;
     version: string;
   },
 ) {
   const [selected, setSelected] = useState(loadSelectedTracks);
+  const [showSettings, setShowSettings] = useState(false);
+  const [useSolfege, setUseSolfege] = useState(settings.getUseSolfege());
 
   const handleToggle = useCallback((id: string) => {
     // Can't deselect alwaysSelected tracks
@@ -200,6 +205,105 @@ export function HomeScreen(
 
   const selectedTracks = TRACKS.filter((t) => selected.has(t.id));
   const deselectedTracks = TRACKS.filter((t) => !selected.has(t.id));
+
+  if (showSettings) {
+    return (
+      <div class='settings-page'>
+        <div class='settings-page-header'>
+          <button
+            type='button'
+            class='text-link settings-back-btn'
+            onClick={() => setShowSettings(false)}
+          >
+            &larr; Back
+          </button>
+          <h1 class='settings-page-title'>Settings</h1>
+        </div>
+
+        <section class='settings-section'>
+          <h2 class='settings-section-title'>General</h2>
+          <div class='settings-field'>
+            <div class='settings-label'>Note names</div>
+            <div class='settings-toggle-group'>
+              <button
+                type='button'
+                class={`settings-toggle-btn${useSolfege ? '' : ' active'}`}
+                aria-pressed={!useSolfege}
+                onClick={() => {
+                  settings.setUseSolfege(false);
+                  setUseSolfege(false);
+                }}
+              >
+                A B C
+              </button>
+              <button
+                type='button'
+                class={`settings-toggle-btn${useSolfege ? ' active' : ''}`}
+                aria-pressed={useSolfege}
+                onClick={() => {
+                  settings.setUseSolfege(true);
+                  setUseSolfege(true);
+                }}
+              >
+                Do Re Mi
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class='settings-section'>
+          <h2 class='settings-section-title'>About</h2>
+          <div class='settings-link-list'>
+            {appConfig.contactEmail && (
+              <a
+                class='text-link'
+                href={`mailto:${appConfig.contactEmail}`}
+              >
+                Contact: {appConfig.contactEmail}
+              </a>
+            )}
+            {appConfig.supportUrl && (
+              <a
+                class='text-link'
+                href={appConfig.supportUrl}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                Support
+              </a>
+            )}
+            <div class='settings-meta'>Build number: {version}</div>
+          </div>
+        </section>
+
+        <section class='settings-section'>
+          <h2 class='settings-section-title'>Legal</h2>
+          <div class='settings-link-list'>
+            {appConfig.termsUrl && (
+              <a
+                class='text-link'
+                href={appConfig.termsUrl}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                Terms &amp; conditions
+              </a>
+            )}
+            {appConfig.privacyUrl && (
+              <a
+                class='text-link'
+                href={appConfig.privacyUrl}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                Privacy policy
+              </a>
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div class='home-content'>
@@ -237,7 +341,8 @@ export function HomeScreen(
           role='button'
           onClick={(e: Event) => {
             e.preventDefault();
-            onOpenSettings();
+            setUseSolfege(settings.getUseSolfege());
+            setShowSettings(true);
           }}
         >
           Settings
