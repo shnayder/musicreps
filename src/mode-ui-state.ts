@@ -82,6 +82,13 @@ export function buildRecommendationText(
 ): string {
   if (result.recommended.size === 0) return '';
 
+  // Review mode: simple text for polishing across all groups
+  if (result.reviewMode) {
+    return 'review all \u2014 polish across ' +
+      result.consolidateIndices.length + ' group' +
+      (result.consolidateIndices.length !== 1 ? 's' : '');
+  }
+
   const parts: string[] = [];
 
   if (result.consolidateIndices.length > 0) {
@@ -89,12 +96,17 @@ export function buildRecommendationText(
       .slice()
       .sort((a, b) => a - b)
       .map(getGroupLabel);
-    parts.push(
-      'solidify ' + labels.join(', ') +
-        ' \u2014 ' + result.consolidateWorkingCount + ' item' +
+    // Use "refresh" when all consolidation groups are stale
+    const allStale = result.staleIndices !== undefined &&
+      result.staleIndices.length === result.consolidateIndices.length &&
+      result.consolidateIndices.length > 0;
+    const verb = allStale ? 'refresh' : 'solidify';
+    const suffix = allStale
+      ? 'skills getting stale'
+      : result.consolidateWorkingCount + ' item' +
         (result.consolidateWorkingCount !== 1 ? 's' : '') +
-        ' to work on',
-    );
+        ' to work on';
+    parts.push(verb + ' ' + labels.join(', ') + ' \u2014 ' + suffix);
   }
 
   if (result.expandIndex !== null) {
@@ -155,7 +167,7 @@ export function computePracticeSummary(opts: {
     statusDetail = total + ' ' + opts.itemNoun + ' to learn';
   } else {
     statusLabel = statusLabelFromLevel(level);
-    statusDetail = fluent + ' of ' + total + ' ' + opts.itemNoun + ' fluent';
+    statusDetail = fluent + '/' + total + ' ' + opts.itemNoun + ' fluent';
   }
 
   const hasRec = opts.recommendation !== null &&

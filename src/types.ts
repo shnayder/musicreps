@@ -108,17 +108,19 @@ export interface AdaptiveSelector {
   selectNext(validItems: string[]): string;
   getStats(itemId: string): ItemStats | null;
   getWeight(itemId: string): number;
-  getRecall(itemId: string): number | null;
-  getAutomaticity(itemId: string): number | null;
+  getRecall(itemId: string, nowMs?: number): number | null;
+  getAutomaticity(itemId: string, nowMs?: number): number | null;
   getSpeedScore(itemId: string): number | null;
-  getFreshness(itemId: string): number | null;
+  getFreshness(itemId: string, nowMs?: number): number | null;
   getLevelAutomaticity(
     itemIds: string[],
     percentile?: number,
+    nowMs?: number,
   ): { level: number; seen: number };
   getStringRecommendations(
     stringIndices: number[],
     getItemIds: (index: number) => string[],
+    nowMs?: number,
   ): StringRecommendation[];
   checkAllAutomatic(items: string[]): boolean;
   checkNeedsReview(items: string[]): boolean;
@@ -165,6 +167,10 @@ export type RecommendationResult = {
   consolidateWorkingCount: number;
   expandIndex: number | null;
   expandNewCount: number;
+  /** True when most items are fluent and no unstarted groups remain. */
+  reviewMode?: boolean;
+  /** Consolidation group indices where items are fast but stale. */
+  staleIndices?: number[];
 };
 
 // ---------------------------------------------------------------------------
@@ -270,10 +276,17 @@ export type ScopeSpec =
     storageKey: string;
   };
 
+/** Why a group was skipped: user claims mastery vs. deferred for later. */
+export type GroupStatus = 'mastered' | 'deferred';
+
 /** Runtime state: what the user has currently selected. */
 export type ScopeState =
   | { kind: 'none' }
-  | { kind: 'groups'; enabledGroups: ReadonlySet<number> }
+  | {
+    kind: 'groups';
+    enabledGroups: ReadonlySet<number>;
+    skippedGroups: ReadonlyMap<number, GroupStatus>;
+  }
   | { kind: 'note-filter'; noteFilter: NoteFilter };
 
 // --- Stats ---

@@ -111,18 +111,50 @@ mean "not automatic yet."
 
 ## Group-Level Rollup
 
-A group's status is derived from its items' automaticity:
+A group's status serves two different jobs:
 
-- **Fluent count** — items with automaticity > 0.8
-- **Working count** — items seen but automaticity ≤ 0.8
-- **Unseen count** — items never attempted
+1. **Expansion gating** (internal) — should the system suggest new material?
+2. **Status display** (user-facing) — how am I doing in this group?
+
+These need different metrics. A conservative gate that's strict about unseen
+items is right for gating but misleading as a status display.
+
+### Expansion gating: level automaticity (p10)
 
 **Level automaticity** = 10th percentile of per-item automaticity values
 (unseen items contribute 0). This compresses the group's distribution into one
 number that reflects the weakest items. For 12 items the 2nd lowest value; for
 48 items the 5th lowest.
 
-**Skill-level status label** — derived from level automaticity:
+This is deliberately strict: unseen items contribute 0, so you can't expand
+until you've covered the group. It gates expansion but is NOT shown to users.
+
+### Status display: per-group practice card
+
+Each group shows a **mini progress bar** using the actual per-item heatmap
+colors (sorted by automaticity, highest first) plus a short **action cue**:
+
+| State | Condition | Text |
+|-------|-----------|------|
+| Not started | seen < 5 items | *(none — grey bar speaks for itself)* |
+| You're good | few unseen AND ≥90% of seen items automatic | *(none — green bar)* |
+| Review | few unseen AND >50% of non-automatic items are decayed | "Review" |
+| Keep learning | everything else | "Keep learning" |
+
+Where:
+- **"Few unseen"** = unseen ≤ ceil(total × 0.1), matching the p10 margin
+- **"Decayed"** = speed score ≥ 0.8 (was fast enough to be automatic) AND
+  freshness < 0.7 (hasn't practiced recently). This distinguishes "was fast,
+  got rusty" from "fast but not instant yet."
+- **"Not started"** threshold (5 items) distinguishes "tried it for 30 seconds"
+  from "actively learning." May refine later using total trial count.
+
+The progress bar uses the same heatmap colors as the progress tab, so there's
+one visual language. No separate label needed — the bar IS the status.
+
+### Mode-level status label
+
+Derived from level automaticity (used in the mode header, not per-group):
 
 | Label | Level automaticity | Meaning |
 |-------|-------------------|---------|
@@ -131,10 +163,6 @@ number that reflects the weakest items. For 12 items the 2nd lowest value; for
 | Developing | 0.2–0.49 | Making progress |
 | Fluent | 0.5–0.79 | Most items fast |
 | Automatic | ≥ 0.8 | Nearly complete |
-
-This matches the heatmap — both use automaticity. The percentile metric means
-a few unseen or weak items will keep the status honest even when most items are
-fast.
 
 ## Recommendation Algorithm
 
@@ -195,10 +223,11 @@ Three diagnostic scripts visualize the algorithm at each layer:
 
 ## Out of scope
 
-- Reworking progress pages to visually separate levels/groups
 - Cross-skill recommendations (recommend which skill to practice)
 - Skill-level rollup (levels → skill status)
 - Custom drill mode (user-selected subset of items)
+- Transfer model for unseen items (estimating automaticity from practiced items
+  in the same group)
 
 ## Resolved decisions
 
@@ -218,16 +247,43 @@ Three diagnostic scripts visualize the algorithm at each layer:
   what the user intuitively expects ("I'm fast at these, what's next?") and
   aligns with the app's core value proposition.
 
+- **Level automaticity for gating, not display**: p10 is the right metric for
+  expansion gating (conservative, penalizes unseen items) but wrong for status
+  display (shows "Learning" after multiple sessions if 2 items happen to be
+  unseen). Per-group status uses the progress bar + action cue instead.
+
+- **Heatmap green reserved for truly automatic**: The color scale should
+  visually distinguish "I just know it" (instant retrieval, speed > 0.9) from
+  "I can quickly figure it out" (fast algorithm, speed 0.75–0.9). Both feel
+  "fast" but represent different cognitive states. Green is earned at > 0.9;
+  the 0.75–0.9 range gets a yellow-green that communicates "fast but not
+  instant." — Rationale: the app's core promise is automaticity. The visual
+  should push toward truly instant responses, not reward "pretty fast."
+
+- **No transfer model for now**: For modes with hundreds of items (semitone
+  math, chord spelling), a model estimating unseen items from practiced ones
+  is cognitively plausible (algorithmic speedup transfers across items) but
+  adds complexity. Item-specific automaticity (instant retrieval) transfers
+  less than general algorithmic speed. Defer to a future iteration; for now,
+  unseen items show as grey and contribute 0 to group metrics.
+
 ## Implementation status
 
 ### Done
 - Diagnostic tooling for all three layers
 - Unified item and group metrics on automaticity (speed × freshness)
 - Level automaticity (10th percentile) replaces consolidation ratio for
-  status labels and expansion gating
-- Status labels: Not started / Learning / Developing / Fluent / Automatic
+  mode-level status labels and expansion gating
+- Mode-level status labels: Not started / Learning / Developing / Fluent /
+  Automatic
+- Per-group practice card prototype in group-model diagnostic (progress bar +
+  action cue heuristic)
+- Shifted heatmap color scale prototype (green at > 0.9, yellow-green at
+  0.75–0.9)
 
 ### Next
+- Implement per-group practice card in the app (practice tab rework)
+- Ship shifted heatmap color scale to the app's `stats-display.ts`
 - Code cleanup: rename `recall` → `freshness` throughout the codebase
   (`computeRecall` → `computeFreshness`, `getRecall` → `getFreshness`,
   `recallThreshold` → `freshnessThreshold`, `recallClass`, etc.) to match the

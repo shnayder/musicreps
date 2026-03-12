@@ -207,6 +207,79 @@ export function returnedAfterBreak(
 }
 
 // ---------------------------------------------------------------------------
+// Group-aware scenarios
+// ---------------------------------------------------------------------------
+// Per-group state profiles for scenarios where different groups are in
+// different learning stages (e.g. first groups mastered, later ones starting).
+
+export type GroupItemProfile = {
+  itemIds: string[];
+  state: 'unseen' | 'slow-fresh' | 'mixed' | 'fast-fresh' | 'fast-stale';
+  /** Fraction of items seen (default 1.0). */
+  seenFraction?: number;
+};
+
+export function perGroupScenario(
+  namespace: string,
+  groups: GroupItemProfile[],
+): Record<string, string> {
+  const now = Date.now();
+  const result: Record<string, string> = {};
+
+  for (const group of groups) {
+    if (group.state === 'unseen') continue;
+    const { itemIds, state } = group;
+    const fraction = group.seenFraction ?? 1.0;
+    const seenCount = Math.max(1, Math.floor(itemIds.length * fraction));
+
+    for (let i = 0; i < seenCount; i++) {
+      const h = hashIndex(i);
+      let ewma: number, stability: number, age: number, samples: number;
+
+      switch (state) {
+        case 'slow-fresh':
+          ewma = 3000 + h * 3000; // 3000-6000ms
+          stability = 4 + h * 8; // 4-12 hours
+          age = HOUR * (1 + h * 4); // 1-5 hours ago
+          samples = 3 + Math.floor(h * 5);
+          break;
+        case 'mixed':
+          ewma = 1500 + h * 2500; // 1500-4000ms
+          stability = 12 + h * 40; // 12-52 hours
+          age = HOUR * (4 + h * 20); // 4-24 hours ago
+          samples = 8 + Math.floor(h * 15);
+          break;
+        case 'fast-fresh':
+          ewma = 800 + h * 600; // 800-1400ms
+          stability = 48 + h * 200; // 48-248 hours
+          age = HOUR * (2 + h * 12); // 2-14 hours ago
+          samples = 20 + Math.floor(h * 30);
+          break;
+        case 'fast-stale':
+          ewma = 800 + h * 500; // 800-1300ms (was fast)
+          stability = 80 + h * 150; // 80-230 hours
+          age = DAY * (50 + h * 40); // 50-90 days ago
+          samples = 25 + Math.floor(h * 35);
+          break;
+      }
+
+      const stats = makeStats({
+        recentTimes: [ewma * 0.95, ewma, ewma * 1.05],
+        ewma,
+        sampleCount: samples,
+        lastSeen: now - age,
+        stability,
+        lastCorrectAt: now - age,
+      });
+      const [key, value] = statsEntry(namespace, itemIds[i], stats);
+      result[key] = value;
+    }
+  }
+
+  return result;
+}
+
+// ---------------------------------------------------------------------------
 // Convenience: build item IDs for common modes
 // ---------------------------------------------------------------------------
 

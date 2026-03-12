@@ -93,12 +93,14 @@ export function generateLocalStorageData(
   namespace: string,
   groupStats: Record<number, GroupSpec>,
   now: number = Date.now(),
+  getItemIds?: (groupIndex: number) => string[],
 ): Record<string, string> {
+  const getIds = getItemIds ?? getItemIdsForGroup;
   const result: Record<string, string> = {};
 
   for (const [groupIdxStr, spec] of Object.entries(groupStats)) {
     const groupIdx = Number(groupIdxStr);
-    const itemIds = getItemIdsForGroup(groupIdx);
+    const itemIds = getIds(groupIdx);
     let itemOffset = 0;
 
     // Fluent items

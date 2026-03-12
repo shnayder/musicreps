@@ -28,6 +28,7 @@ import {
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from './stats.tsx';
 import {
+  GroupProgressToggles,
   GroupToggles,
   NoteFilter,
   NotesToggles,
@@ -135,6 +136,11 @@ function mockSelector(): StatsSelector {
 
 function PreviewApp() {
   const sel = mockSelector();
+  // Narrow selector for GroupProgressToggles (requires non-optional methods).
+  const groupSel = {
+    getSpeedScore: sel.getSpeedScore!,
+    getFreshness: sel.getFreshness!,
+  };
 
   return (
     <div>
@@ -200,6 +206,38 @@ function PreviewApp() {
           stringNames={['E', 'A', 'D', 'G', 'B', 'e']}
           active={new Set([0, 1, 2])}
           onToggle={() => {}}
+        />
+      </Section>
+      <Section title='GroupProgressToggles (active groups)'>
+        <GroupProgressToggles
+          groups={[
+            { label: '1–3', itemIds: ['C+1', 'C+2', 'C+3'] },
+            { label: '4–6', itemIds: ['C+4', 'C+5', 'C+6'] },
+            { label: '7–9', itemIds: ['D+1', 'D+2', 'D+3'] },
+          ]}
+          active={new Set([0, 1])}
+          onToggle={() => {}}
+          selector={groupSel}
+          onSkip={() => {}}
+          onUnskip={() => {}}
+        />
+      </Section>
+      <Section title='GroupProgressToggles (with skipped)'>
+        <GroupProgressToggles
+          groups={[
+            { label: '1–3', itemIds: ['C+1', 'C+2', 'C+3'] },
+            { label: '4–6', itemIds: ['C+4', 'C+5', 'C+6'] },
+            { label: '7–9', itemIds: ['D+1', 'D+2', 'D+3'] },
+          ]}
+          active={new Set([0])}
+          onToggle={() => {}}
+          selector={groupSel}
+          skipped={new Map([[1, 'mastered'], [2, 'deferred']]) as ReadonlyMap<
+            number,
+            'mastered' | 'deferred'
+          >}
+          onSkip={() => {}}
+          onUnskip={() => {}}
         />
       </Section>
       <Section title='Note Filter'>

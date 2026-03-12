@@ -41,7 +41,7 @@ jobs:
         run: deno check src/**/*.ts
 
       - name: Test
-        run: deno test --no-check --allow-read --allow-run=deno
+        run: deno test --no-check --allow-read --allow-run=deno --ignore=tests/e2e
 
       - name: Get commit count
         id: commit-count

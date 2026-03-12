@@ -12,6 +12,7 @@
 import { useCallback, useMemo, useRef } from 'preact/hooks';
 import type {
   AdaptiveSelector,
+  GroupStatus,
   RecommendationResult,
   ScopeState,
 } from '../types.ts';
@@ -51,10 +52,12 @@ export type GroupScopeSpec = {
 export type GroupScopeResult = {
   /** Raw scope state (for reading `.kind`). */
   scope: ScopeState;
-  /** Scope mutation actions (toggleGroup, setScope, etc.). */
+  /** Scope mutation actions (toggleGroup, setScope, skipGroup, etc.). */
   scopeActions: ScopeActions;
   /** Currently enabled group indices. */
   enabledGroups: ReadonlySet<number>;
+  /** Currently skipped group indices with skip reason. */
+  skippedGroups: ReadonlyMap<number, GroupStatus>;
   /** All item IDs in enabled groups (memoized). */
   enabledItems: string[];
   /** Human-readable label for the active scope, e.g. "1–2, 3–4 semitones". */
@@ -82,6 +85,8 @@ export type GroupScopeResult = {
 // Hook
 // ---------------------------------------------------------------------------
 
+const EMPTY_SKIPPED: ReadonlyMap<number, GroupStatus> = new Map();
+
 export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   // --- Scope state (persisted to localStorage) ---
   const [scope, scopeActions] = useScopeState({
@@ -101,6 +106,15 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
     ? scope.enabledGroups
     : new Set(spec.defaultEnabled);
 
+  const skippedGroups: ReadonlyMap<number, GroupStatus> =
+    scope.kind === 'groups' ? scope.skippedGroups : EMPTY_SKIPPED;
+
+  // Active indices = all indices minus skipped (for recommendations).
+  const activeGroupIndices = useMemo(
+    () => spec.allGroupIndices.filter((i) => !skippedGroups.has(i)),
+    [spec.allGroupIndices, skippedGroups],
+  );
+
   // --- Enabled items (derived from scope) ---
   const enabledItems = useMemo(() => {
     const items: string[] = [];
@@ -117,31 +131,32 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   );
 
   // --- Recommendations ---
-  const recommendation = useMemo((): RecommendationResult => {
-    return computeRecommendations(
-      spec.selector,
-      spec.allGroupIndices,
-      spec.getItemIdsForGroup,
-      { expansionThreshold: 0.7 },
-      { sortUnstarted: (a, b) => a.string - b.string },
-    );
-  }, [spec.selector, spec.allGroupIndices, spec.getItemIdsForGroup]);
+  const recommendation = useMemo(
+    (): RecommendationResult =>
+      computeRecommendations(
+        spec.selector,
+        activeGroupIndices,
+        spec.getItemIdsForGroup,
+        { expansionThreshold: 0.7 },
+        { sortUnstarted: (a, b) => a.string - b.string },
+      ),
+    [spec.selector, activeGroupIndices, spec.getItemIdsForGroup],
+  );
 
-  const recommendationText = useMemo(() => {
-    return buildRecommendationText(
-      recommendation,
-      (i: number) => spec.groups[i].label,
-    );
-  }, [recommendation]);
+  const recommendationText = useMemo(
+    () => buildRecommendationText(recommendation, (i) => spec.groups[i].label),
+    [recommendation],
+  );
 
   const applyRecommendation = useCallback(() => {
     if (recommendation.enabled) {
       scopeActions.setScope({
         kind: 'groups',
         enabledGroups: recommendation.enabled,
+        skippedGroups,
       });
     }
-  }, [recommendation, scopeActions]);
+  }, [recommendation, scopeActions, skippedGroups]);
 
   // --- Stable ref-backed functions for engineConfig ---
   const enabledItemsRef = useRef(enabledItems);
@@ -160,6 +175,7 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
     scope,
     scopeActions,
     enabledGroups,
+    skippedGroups,
     enabledItems,
     practicingLabel,
     recommendation,

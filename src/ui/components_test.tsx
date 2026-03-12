@@ -18,7 +18,12 @@ import {
 import { SequentialSlots } from './sequential-slots.tsx';
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid } from './stats.tsx';
-import { GroupToggles, NoteFilter, StringToggles } from './scope.tsx';
+import {
+  GroupProgressToggles,
+  GroupToggles,
+  NoteFilter,
+  StringToggles,
+} from './scope.tsx';
 import { CountdownBar, FeedbackDisplay, TextPrompt } from './quiz-ui.tsx';
 import { SkillIcon } from './icons.tsx';
 import {
@@ -306,6 +311,75 @@ describe('NoteFilter', () => {
   });
 });
 
+describe('GroupProgressToggles', () => {
+  const mockSel = {
+    getSpeedScore: () => 0.7,
+    getFreshness: () => 0.6,
+  };
+  const groups = [
+    { label: 'G1', itemIds: ['a', 'b'] },
+    { label: 'G2', itemIds: ['c'] },
+  ];
+
+  it('renders correct number of progress bar slices', () => {
+    const html = render(
+      <GroupProgressToggles
+        groups={groups}
+        active={new Set([0, 1])}
+        onToggle={() => {}}
+        selector={mockSel}
+      />,
+    );
+    const slices = (html.match(/group-bar-slice/g) || []).length;
+    assert.equal(slices, 3); // 2 items in G1 + 1 in G2
+  });
+
+  it('marks skipped group toggle as disabled', () => {
+    const html = render(
+      <GroupProgressToggles
+        groups={groups}
+        active={new Set([0])}
+        onToggle={() => {}}
+        selector={mockSel}
+        skipped={new Map([[1, 'deferred']])}
+        onSkip={() => {}}
+        onUnskip={() => {}}
+      />,
+    );
+    // The skipped toggle should have disabled attribute and skipped class
+    assert.ok(html.includes('skipped'));
+    assert.ok(html.includes('disabled'));
+  });
+
+  it('renders skip menu when onSkip/onUnskip provided', () => {
+    const html = render(
+      <GroupProgressToggles
+        groups={groups}
+        active={new Set([0, 1])}
+        onToggle={() => {}}
+        selector={mockSel}
+        onSkip={() => {}}
+        onUnskip={() => {}}
+      />,
+    );
+    assert.ok(html.includes('group-skip-btn'));
+    assert.ok(html.includes('has-skip'));
+  });
+
+  it('omits skip menu when onSkip/onUnskip not provided', () => {
+    const html = render(
+      <GroupProgressToggles
+        groups={groups}
+        active={new Set([0, 1])}
+        onToggle={() => {}}
+        selector={mockSel}
+      />,
+    );
+    assert.ok(!html.includes('group-skip-btn'));
+    assert.ok(!html.includes('has-skip'));
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Quiz UI components
 // ---------------------------------------------------------------------------
@@ -565,7 +639,7 @@ describe('TabbedIdle', () => {
 });
 
 describe('PracticeCard', () => {
-  it('renders mastery zone with label and detail', () => {
+  it('renders status line and start button', () => {
     const html = render(
       <PracticeCard
         statusLabel='Strong'
@@ -573,7 +647,6 @@ describe('PracticeCard', () => {
       />,
     );
     assert.ok(html.includes('practice-card'));
-    assert.ok(html.includes('practice-zone-mastery'));
     assert.ok(html.includes('practice-status-label'));
     assert.ok(html.includes('Strong'));
     assert.ok(html.includes('12 of 14 fluent'));
@@ -581,7 +654,7 @@ describe('PracticeCard', () => {
     assert.ok(html.includes('start-btn'));
   });
 
-  it('shows Practice Settings header when recommendation present', () => {
+  it('shows recommendation with accept button', () => {
     const html = render(
       <PracticeCard
         recommendation='start A string'
@@ -592,10 +665,9 @@ describe('PracticeCard', () => {
     assert.ok(html.includes('suggestion-card-header'));
     assert.ok(html.includes('suggestion-card-text'));
     assert.ok(html.includes('suggestion-card-accept'));
-    assert.ok(html.includes('Practice Settings'));
   });
 
-  it('shows scope controls in setup zone', () => {
+  it('shows scope controls', () => {
     const html = render(
       <PracticeCard
         recommendation='start D string'
@@ -603,18 +675,9 @@ describe('PracticeCard', () => {
         scope={<div class='mock-scope' />}
       />,
     );
-    assert.ok(html.includes('practice-zone-setup'));
     assert.ok(html.includes('practice-scope'));
     assert.ok(html.includes('mock-scope'));
     assert.ok(html.includes('suggestion-card-text'));
-  });
-
-  it('shows mastery message', () => {
-    const html = render(
-      <PracticeCard mastery="Looks like you've got this!" />,
-    );
-    assert.ok(html.includes('mastery-message'));
-    assert.ok(html.includes("Looks like you've got this!"));
   });
 });
 

@@ -1014,6 +1014,22 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].fluentCount, 0);
   });
 
+  it('getStringRecommendations breaks ties deterministically by string index', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // Three groups with identical work counts (all unseen, 1 item each).
+    // Without tie-breaking, order could be arbitrary. With tie-breaking,
+    // equal-work groups sort by string index ascending.
+    const recs = selector.getStringRecommendations(
+      [5, 2, 8],
+      (s) => [`${s}-0`],
+    );
+    // All have work=1 (1 unseen). Tie-break → sorted by string: 2, 5, 8.
+    assert.equal(recs[0].string, 2);
+    assert.equal(recs[1].string, 5);
+    assert.equal(recs[2].string, 8);
+  });
+
   it('updateConfig changes config used by selector', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);

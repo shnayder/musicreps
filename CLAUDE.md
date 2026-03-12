@@ -19,6 +19,12 @@ deno task ok                                     # All checks + build
 tests, and build in sequence — any failure stops the chain. Don't push broken
 code by accident.
 
+**Run `deno task iterate capture` after UI changes.** When a `deno task iterate`
+session is active, capture a new version after every round of UI changes so the
+user can visually review diffs. Create a new session
+(`deno task iterate new <name> <states...>`) at the start of a UI task if none
+exists for the relevant states.
+
 **The HTML template lives in `src/build-template.ts`** — the single source of
 truth for the page structure. **Version is derived from git at build time** (see
 `getVersion()` in `main.ts`) — no manual bumps needed. `main.ts` handles both
