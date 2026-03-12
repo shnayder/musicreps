@@ -104,6 +104,58 @@ export function createFretboardDef(
 }
 
 // ---------------------------------------------------------------------------
+// Fretboard prompt renderer (highlighted position SVG)
+// ---------------------------------------------------------------------------
+
+function renderFretboardPrompt(
+  q: Question,
+  quizFbRef: { current: HTMLDivElement | null },
+  svgHTML: string,
+) {
+  const el = quizFbRef.current;
+  if (el) {
+    clearAll(el);
+    setCircleFill(el, q.currentString, q.currentFret, FB_QUIZ_HL);
+  }
+  return (
+    <div
+      ref={quizFbRef}
+      // deno-lint-ignore react-no-danger
+      dangerouslySetInnerHTML={{ __html: svgHTML }}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Fretboard stats renderer (heatmap SVG)
+// ---------------------------------------------------------------------------
+
+function renderFretboardStats(
+  selector: Parameters<NonNullable<ModeController<Question>['renderStats']>>[0],
+  instrument: Instrument,
+  svgHTML: string,
+  progressFbRef: { current: HTMLDivElement | null },
+) {
+  return (
+    <div
+      ref={(el: HTMLDivElement | null) => {
+        progressFbRef.current = el;
+        if (!el) return;
+        for (let s = 0; s < instrument.stringCount; s++) {
+          for (let f = 0; f < instrument.fretCount; f++) {
+            const itemId = s + '-' + f;
+            const color = getStatsCellColor(selector, itemId);
+            setCircleFill(el, s, f, color);
+          }
+        }
+      }}
+      // deno-lint-ignore react-no-danger
+      dangerouslySetInnerHTML={{ __html: svgHTML }}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Controller hook — SVG prompt, heatmap stats, keyboard narrowing
 // ---------------------------------------------------------------------------
 
@@ -158,26 +210,8 @@ function useFretboardController(
   );
 
   // --- Prompt: SVG fretboard with highlighted position ---
-  const currentQRef = useRef<Question | null>(null);
-
   const renderPrompt = useCallback(
-    (q: Question) => {
-      currentQRef.current = q;
-      // Imperative highlight happens in onAnswer/onStart/onStop + effect below.
-      // We schedule the highlight after render via a microtask.
-      const el = quizFbRef.current;
-      if (el) {
-        clearAll(el);
-        setCircleFill(el, q.currentString, q.currentFret, FB_QUIZ_HL);
-      }
-      return (
-        <div
-          ref={quizFbRef}
-          // deno-lint-ignore react-no-danger
-          dangerouslySetInnerHTML={{ __html: svgHTML }}
-        />
-      );
-    },
+    (q: Question) => renderFretboardPrompt(q, quizFbRef, svgHTML),
     [svgHTML],
   );
 
@@ -187,26 +221,7 @@ function useFretboardController(
       selector: Parameters<
         NonNullable<ModeController<Question>['renderStats']>
       >[0],
-    ) => {
-      // Render SVG + apply heatmap colors after mount
-      return (
-        <div
-          ref={(el: HTMLDivElement | null) => {
-            progressFbRef.current = el;
-            if (!el) return;
-            for (let s = 0; s < instrument.stringCount; s++) {
-              for (let f = 0; f < instrument.fretCount; f++) {
-                const itemId = s + '-' + f;
-                const color = getStatsCellColor(selector, itemId);
-                setCircleFill(el, s, f, color);
-              }
-            }
-          }}
-          // deno-lint-ignore react-no-danger
-          dangerouslySetInnerHTML={{ __html: svgHTML }}
-        />
-      );
-    },
+    ) => renderFretboardStats(selector, instrument, svgHTML, progressFbRef),
     [svgHTML, instrument],
   );
 

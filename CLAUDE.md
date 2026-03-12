@@ -126,6 +126,13 @@ at build time. Key patterns:
   heatmap colors via `getComputedStyle` with hardcoded fallbacks for tests.
 - **Build System** — esbuild bundles `src/app.ts` (entry point) into a single
   IIFE. The HTML template is shared via `assembleHTML()` in `build-template.ts`.
+- **Function Length** — max 100 lines per function
+  (`scripts/lint-function-length.ts`). Prefer small, clear, obviously correct
+  functions that do one thing and can be tested independently. Extract helpers,
+  sub-components, and custom hooks rather than writing giant monolithic
+  functions. When a function grows past the limit, look for: standalone pure
+  helpers, sub-components for JSX branches, custom hooks for related state, and
+  standalone callbacks that close over refs.
 
 See [guides/architecture.md](guides/architecture.md) for module dependency
 graph, algorithm details, and step-by-step "adding a new quiz mode" checklist.

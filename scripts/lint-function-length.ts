@@ -7,6 +7,8 @@ import ts from 'npm:typescript@5.3.3';
 const MAX_FUNCTION_LINES = 100;
 const EXCLUSIONS = new Set([
   'main.ts', // Build script with multiple top-level commands
+  'preview.tsx', // Component gallery — each section is trivial
+  'build-template.ts', // HTML template assembly — declarative data
 ]);
 
 interface FunctionInfo {
