@@ -11,13 +11,15 @@ export function computeRecommendations(
     getStringRecommendations(
       indices: number[],
       getItemIds: (index: number) => string[],
+      nowMs?: number,
     ): StringRecommendation[];
     getLevelAutomaticity(
       itemIds: string[],
       percentile?: number,
+      nowMs?: number,
     ): { level: number; seen: number };
     getSpeedScore?(id: string): number | null;
-    getFreshness?(id: string): number | null;
+    getFreshness?(id: string, nowMs?: number): number | null;
   },
   allIndices: number[],
   getItemIds: (index: number) => string[],
@@ -30,7 +32,8 @@ export function computeRecommendations(
   },
 ): RecommendationResult {
   const sortUnstarted = options && options.sortUnstarted;
-  const recs = selector.getStringRecommendations(allIndices, getItemIds);
+  const nowMs = Date.now();
+  const recs = selector.getStringRecommendations(allIndices, getItemIds, nowMs);
 
   const started = recs.filter((r) => r.unseenCount < r.totalCount);
   const unstarted = recs.filter((r) => r.unseenCount === r.totalCount);
@@ -63,7 +66,7 @@ export function computeRecommendations(
 
   // Expansion gate: level automaticity of all started items
   const startedItemIds = started.flatMap((r) => getItemIds(r.string));
-  const { level } = selector.getLevelAutomaticity(startedItemIds);
+  const { level } = selector.getLevelAutomaticity(startedItemIds, undefined, nowMs);
 
   // Review mode: all groups started, ≥80% fluent → recommend all for review
   if (unstarted.length === 0) {
@@ -89,7 +92,8 @@ export function computeRecommendations(
 
   const startedByWork = [...started].sort(
     (a, b) =>
-      (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount),
+      (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount) ||
+      a.string - b.string,
   );
 
   const workCounts = startedByWork.map((r) => r.workingCount + r.unseenCount);
@@ -124,7 +128,7 @@ export function computeRecommendations(
         const r = startedByWork.find((s) => s.string === idx)!;
         return { idx, work: r.workingCount + r.unseenCount };
       })
-      .sort((a, b) => b.work - a.work);
+      .sort((a, b) => b.work - a.work || a.idx - b.idx);
 
     // Rebuild: take groups until cap reached, always keep at least one
     const keptIndices: number[] = [];
@@ -171,7 +175,7 @@ export function computeRecommendations(
       let count = 0;
       for (const id of ids) {
         const sp = selector.getSpeedScore!(id);
-        const fr = selector.getFreshness!(id);
+        const fr = selector.getFreshness!(id, nowMs);
         if (sp !== null && fr !== null) {
           speedSum += sp;
           freshSum += fr;

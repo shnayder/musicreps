@@ -379,6 +379,24 @@ describe('computeRecommendations', () => {
     assert.equal(result.consolidateIndices.length, 1);
   });
 
+  it('cap tie-break is deterministic when work counts are equal', () => {
+    const data = {
+      0: { workingCount: 13, unseenCount: 0, fluentCount: 0, totalCount: 13 },
+      1: { workingCount: 13, unseenCount: 0, fluentCount: 0, totalCount: 13 },
+      2: { workingCount: 12, unseenCount: 0, fluentCount: 0, totalCount: 12 },
+      3: { workingCount: 12, unseenCount: 0, fluentCount: 0, totalCount: 12 },
+      4: { workingCount: 12, unseenCount: 0, fluentCount: 0, totalCount: 12 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [4, 3, 2, 1, 0],
+      makeGetItemIds(data),
+      { expansionThreshold: 0.7, maxWorkItems: 13 },
+      {},
+    );
+    assert.deepStrictEqual(result.consolidateIndices, [0]);
+  });
+
   it('cap does not trim when under limit', () => {
     // 3 groups: work = 12, 10, 8. Sorted by work desc: [12, 10, 8].
     // Median work = 10 (middle). Groups above median: group 0 (work=12).
@@ -529,5 +547,53 @@ describe('computeRecommendations', () => {
       !result.recommended.has(1),
       'should not expand below threshold',
     );
+  });
+
+  it('uses a single timestamp across selector calls', () => {
+    const calls: Array<{ fn: string; nowMs: number | undefined }> = [];
+    const selector = {
+      getStringRecommendations(
+        indices: number[],
+        _getItemIds: (i: number) => string[],
+        nowMs?: number,
+      ) {
+        calls.push({ fn: 'getStringRecommendations', nowMs });
+        return indices.map((i) => ({
+          string: i,
+          workingCount: 1,
+          unseenCount: 0,
+          fluentCount: 0,
+          totalCount: 1,
+        }));
+      },
+      getLevelAutomaticity(
+        _itemIds: string[],
+        _percentile?: number,
+        nowMs?: number,
+      ) {
+        calls.push({ fn: 'getLevelAutomaticity', nowMs });
+        return { level: 0, seen: 1 };
+      },
+      getSpeedScore(_id: string) {
+        return 1;
+      },
+      getFreshness(_id: string, nowMs?: number) {
+        calls.push({ fn: 'getFreshness', nowMs });
+        return 1;
+      },
+    };
+
+    computeRecommendations(
+      selector,
+      [0],
+      (i) => [`item-${i}`],
+      config,
+      {},
+    );
+
+    assert.ok(calls.length >= 3);
+    const nowValues = calls.map((c) => c.nowMs);
+    assert.ok(nowValues.every((value) => value != null));
+    assert.equal(new Set(nowValues).size, 1);
   });
 });

@@ -955,6 +955,20 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[1].fluentCount, 2); // fast + just answered = fluent
   });
 
+  it('getStringRecommendations tie-breaks equal work by string index', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    const recs = selector.getStringRecommendations(
+      [3, 2, 1, 0],
+      (s) => [`${s}-0`],
+    );
+
+    assert.deepStrictEqual(
+      recs.map((r) => r.string),
+      [0, 1, 2, 3],
+    );
+  });
+
   it('getStringRecommendations separates unseen from working items', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);

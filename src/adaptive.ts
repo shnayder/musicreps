@@ -378,19 +378,19 @@ export function createAdaptiveSelector(
     return selected;
   }
 
-  function getRecall(itemId: string): number | null {
+  function getRecall(itemId: string, nowMs: number = Date.now()): number | null {
     const stats = storage.getStats(itemId);
     if (!stats || stats.stability == null || stats.lastCorrectAt == null) {
       return null;
     }
-    const elapsedHours = (Date.now() - stats.lastCorrectAt) / 3600000;
+    const elapsedHours = (nowMs - stats.lastCorrectAt) / 3600000;
     return computeRecall(stats.stability, elapsedHours);
   }
 
-  function getAutomaticity(itemId: string): number | null {
+  function getAutomaticity(itemId: string, nowMs: number = Date.now()): number | null {
     const stats = storage.getStats(itemId);
     if (!stats) return null;
-    const recall = getRecall(itemId);
+    const recall = getRecall(itemId, nowMs);
     const speed = computeSpeedScore(stats.ewma, scaledConfig(itemId));
     return computeAutomaticityForDisplay(recall, speed, true);
   }
@@ -404,12 +404,13 @@ export function createAdaptiveSelector(
     return speed;
   }
 
-  function getFreshness(itemId: string): number | null {
+  function getFreshness(itemId: string, nowMs: number = Date.now()): number | null {
     const stats = storage.getStats(itemId);
     if (!stats) return null;
     return computeFreshness(
       stats.stability ?? null,
       stats.lastCorrectAt ?? null,
+      nowMs,
     );
   }
 
@@ -420,12 +421,13 @@ export function createAdaptiveSelector(
   function getLevelAutomaticity(
     itemIds: string[],
     percentile: number = 0.1,
+    nowMs: number = Date.now(),
   ): { level: number; seen: number } {
     if (itemIds.length === 0) return { level: 0, seen: 0 };
     let seen = 0;
     const values: number[] = [];
     for (let i = 0; i < itemIds.length; i++) {
-      const auto = getAutomaticity(itemIds[i]);
+      const auto = getAutomaticity(itemIds[i], nowMs);
       if (auto !== null) {
         seen++;
         values.push(auto);
@@ -449,6 +451,7 @@ export function createAdaptiveSelector(
   function getStringRecommendations(
     stringIndices: number[],
     getItemIds: (index: number) => string[],
+    nowMs: number = Date.now(),
   ): StringRecommendation[] {
     const results = stringIndices.map((s) => {
       const items = getItemIds(s);
@@ -456,7 +459,7 @@ export function createAdaptiveSelector(
       let unseenCount = 0;
       let fluentCount = 0;
       for (const id of items) {
-        const auto = getAutomaticity(id);
+        const auto = getAutomaticity(id, nowMs);
         if (auto === null) {
           unseenCount++;
         } else if (auto > cfg.automaticityThreshold) {
@@ -474,7 +477,8 @@ export function createAdaptiveSelector(
       };
     });
     results.sort((a, b) =>
-      (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount)
+      (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount) ||
+      a.string - b.string
     );
     return results;
   }
