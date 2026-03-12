@@ -8,7 +8,8 @@
     "npm:esbuild@~0.27.3": "0.27.3",
     "npm:playwright@^1.52.0": "1.58.2",
     "npm:preact-render-to-string@^6.6.6": "6.6.6_preact@10.28.4",
-    "npm:preact@^10.28.4": "10.28.4"
+    "npm:preact@^10.28.4": "10.28.4",
+    "npm:typescript@5.3.3": "5.3.3"
   },
   "npm": {
     "@capacitor/cli@8.1.0": {
@@ -671,6 +672,10 @@
     },
     "tslib@2.8.1": {
       "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="
+    },
+    "typescript@5.3.3": {
+      "integrity": "sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==",
+      "bin": true
     },
     "undici-types@7.10.0": {
       "integrity": "sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag=="
