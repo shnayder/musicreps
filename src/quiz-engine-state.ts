@@ -188,7 +188,7 @@ export function engineCalibrationIntro(
 
 /**
  * Transition: calibration trials are running.
- * Buttons enabled for tapping; trial counter shown in timeDisplay.
+ * Buttons enabled for tapping; trial counter shown in prompt.
  */
 export function engineCalibrating(
   state: EngineState,

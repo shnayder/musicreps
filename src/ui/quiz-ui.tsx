@@ -12,7 +12,7 @@ export function TextPrompt({ text }: { text: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// FeedbackDisplay — correct/incorrect feedback, time, and hint
+// FeedbackDisplay — correct/incorrect feedback and hint
 // ---------------------------------------------------------------------------
 
 export function FeedbackDisplay(

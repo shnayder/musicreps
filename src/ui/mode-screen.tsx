@@ -523,7 +523,7 @@ export function RoundCompleteActions(
           Stop
         </button>
       </div>
-      <div class='hint' style={{ visibility: 'hidden' }}>&nbsp;</div>
+      <div class='hint hint-spacer'>&nbsp;</div>
     </>
   );
 }
