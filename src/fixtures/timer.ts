@@ -14,6 +14,15 @@ export const timerWarning = {
   lastQuestion: false,
 };
 
+/** 1 second left — bar nearly empty, warning color. */
+export const timerAlmostExpired = {
+  pct: 2,
+  text: '0:01',
+  warning: true,
+  lastQuestion: false,
+};
+
+/** Timer hit 0:00 — "Last question" shown, awaiting answer. */
 export const timerExpired = {
   pct: 0,
   text: '0:00',

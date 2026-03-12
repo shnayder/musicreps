@@ -330,26 +330,22 @@ describe('FeedbackDisplay', () => {
     assert.ok(html.includes('Correct!'));
   });
 
-  it('renders time and hint when provided', () => {
+  it('renders hint when provided', () => {
     const html = render(
       <FeedbackDisplay
         text='Wrong'
         className='feedback incorrect'
-        time='1.2s'
         hint='Try again'
       />,
     );
-    assert.ok(html.includes('time-display'));
-    assert.ok(html.includes('1.2s'));
     assert.ok(html.includes('hint'));
     assert.ok(html.includes('Try again'));
   });
 
-  it('omits time when not provided; hint always present but hidden', () => {
+  it('hint always present but hidden when not provided', () => {
     const html = render(
       <FeedbackDisplay text='X' className='feedback' />,
     );
-    assert.ok(!html.includes('time-display'));
     // hint div is always rendered to reserve space (prevents layout jump)
     const hintDivMatch = html.match(
       /<div[^>]*class="[^"]*\bhint\b[^"]*"[^>]*>/,
@@ -393,7 +389,7 @@ describe('FeedbackDisplay', () => {
     );
   });
 
-  it('adds next-btn-correct class when correct=true', () => {
+  it('adds page-action-correct class when correct=true', () => {
     const html = render(
       <FeedbackDisplay
         text='Correct!'
@@ -402,10 +398,10 @@ describe('FeedbackDisplay', () => {
         onNext={() => {}}
       />,
     );
-    assert.ok(html.includes('next-btn-correct'));
+    assert.ok(html.includes('page-action-correct'));
   });
 
-  it('adds next-btn-wrong class when correct=false', () => {
+  it('adds page-action-wrong class when correct=false', () => {
     const html = render(
       <FeedbackDisplay
         text='Wrong'
@@ -414,15 +410,15 @@ describe('FeedbackDisplay', () => {
         onNext={() => {}}
       />,
     );
-    assert.ok(html.includes('next-btn-wrong'));
+    assert.ok(html.includes('page-action-wrong'));
   });
 
   it('no color class when correct is null', () => {
     const html = render(
       <FeedbackDisplay text='X' className='feedback' correct={null} />,
     );
-    assert.ok(!html.includes('next-btn-correct'));
-    assert.ok(!html.includes('next-btn-wrong'));
+    assert.ok(!html.includes('page-action-correct'));
+    assert.ok(!html.includes('page-action-wrong'));
   });
 });
 
@@ -747,13 +743,13 @@ describe('QuizArea', () => {
 });
 
 describe('RoundCompleteInfo', () => {
-  it('renders heading, stats, and context', () => {
+  it('renders heading, count, stats, and context', () => {
     const html = render(
       <RoundCompleteInfo
         context='Round 1 complete'
         heading='Great job!'
-        correct='8 correct (80%)'
-        median='Median: 425ms'
+        count={10}
+        correct='8 correct'
       />,
     );
     assert.ok(html.includes('round-complete'));
@@ -761,19 +757,20 @@ describe('RoundCompleteInfo', () => {
     assert.ok(html.includes('Round 1 complete'));
     assert.ok(html.includes('round-complete-heading'));
     assert.ok(html.includes('Great job!'));
+    assert.ok(html.includes('round-complete-count'));
+    assert.ok(html.includes('>10<'));
+    assert.ok(html.includes('questions answered'));
     assert.ok(html.includes('round-stat-correct'));
-    assert.ok(html.includes('8 correct (80%)'));
-    assert.ok(html.includes('round-stat-median'));
-    assert.ok(html.includes('Median: 425ms'));
+    assert.ok(html.includes('8 correct'));
   });
 });
 
 describe('RoundCompleteActions', () => {
   it('renders keep-going and stop buttons', () => {
     const html = render(<RoundCompleteActions />);
-    assert.ok(html.includes('round-complete-continue'));
+    assert.ok(html.includes('page-action-primary'));
     assert.ok(html.includes('Keep Going'));
-    assert.ok(html.includes('round-complete-stop'));
+    assert.ok(html.includes('page-action-secondary'));
     assert.ok(html.includes('Stop'));
   });
 });

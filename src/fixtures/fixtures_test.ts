@@ -8,6 +8,10 @@ import { defaultItems } from './items.ts';
 import {
   quizActive,
   quizCorrectFeedback,
+  quizFeedbackTimerExpired,
+  quizFeedbackTimerLow,
+  quizLastQuestionAnswered,
+  quizLastQuestionAwaiting,
   quizRoundComplete,
   quizWrongFeedback,
   speedCheckIntro,
@@ -163,12 +167,60 @@ describe('fixture engine state validity', () => {
     assert.equal(es.currentItemId, null);
   });
 
+  it('quizFeedbackTimerLow produces feedback with timer warning', () => {
+    const fixture = quizFeedbackTimerLow(testItemId);
+    const es = fixture.engineState!;
+    assert.equal(es.phase, 'active');
+    assert.equal(es.answered, true);
+    assert.equal(es.feedbackCorrect, true);
+    assert.equal(fixture.timerWarning, true);
+    assert.equal(fixture.timerPct, 2);
+    assert.equal(fixture.timerLastQuestion, false);
+  });
+
+  it('quizLastQuestionAwaiting produces expired timer awaiting answer', () => {
+    const fixture = quizLastQuestionAwaiting(testItemId);
+    const es = fixture.engineState!;
+    assert.equal(es.phase, 'active');
+    assert.equal(es.answered, false);
+    assert.equal(es.roundTimerExpired, true);
+    assert.equal(fixture.timerLastQuestion, true);
+    assert.equal(fixture.timerPct, 0);
+  });
+
+  it('quizFeedbackTimerExpired produces feedback with expired timer (answered first)', () => {
+    const fixture = quizFeedbackTimerExpired(testItemId);
+    const es = fixture.engineState!;
+    assert.equal(es.phase, 'active');
+    assert.equal(es.answered, true);
+    assert.equal(es.feedbackCorrect, true);
+    assert.equal(es.roundTimerExpired, true);
+    assert.equal(es.hintText, 'Space to continue');
+    assert.equal(fixture.timerLastQuestion, true);
+    assert.equal(fixture.timerPct, 0);
+  });
+
+  it('quizLastQuestionAnswered produces feedback with expired timer', () => {
+    const fixture = quizLastQuestionAnswered(testItemId);
+    const es = fixture.engineState!;
+    assert.equal(es.phase, 'active');
+    assert.equal(es.answered, true);
+    assert.equal(es.roundTimerExpired, true);
+    assert.equal(es.feedbackCorrect, false);
+    assert.equal(es.hintText, 'Space to continue');
+    assert.equal(fixture.timerLastQuestion, true);
+  });
+
   it('all fixture builders include timer data', () => {
     for (
       const fixture of [
         quizActive(testItemId),
         quizCorrectFeedback(testItemId),
         quizWrongFeedback(testItemId),
+        quizFeedbackTimerLow(testItemId),
+        quizFeedbackTimerExpired(testItemId),
+        quizLastQuestionAwaiting(testItemId),
+        quizLastQuestionAnswered(testItemId),
         quizRoundComplete(),
       ]
     ) {

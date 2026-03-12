@@ -1,6 +1,12 @@
 // Page-level quiz fixtures: compose leaf fixtures into full EngineState +
 // timer overrides. Used by take-screenshots.ts to inject state via
 // __fixture__ events.
+//
+// IMPORTANT: composites should use buildActiveState (which runs real engine
+// transitions) and only override fields the engine can't produce — timer
+// state (external to EngineState), roundTimerExpired, and hintText when it
+// differs from the default. Do NOT redundantly re-set feedback fields that
+// engineSubmitAnswer already computed; that masks bugs.
 
 import type { EngineState } from '../types.ts';
 import type { SpeedCheckFixture } from '../ui/speed-check.tsx';
@@ -13,7 +19,7 @@ import {
   initialEngineState,
 } from '../quiz-engine-state.ts';
 import { feedbackCorrect, feedbackWrong } from './feedback.ts';
-import { timerMidRound } from './timer.ts';
+import { timerAlmostExpired, timerExpired, timerMidRound } from './timer.ts';
 import { sessionEarlyRound, sessionLateRound } from './session.ts';
 // Round-complete data is in round-complete.ts; used by preview.tsx directly.
 
@@ -90,23 +96,14 @@ export function quizActive(itemId: string): FixtureDetail {
 // ---------------------------------------------------------------------------
 
 export function quizCorrectFeedback(itemId: string): FixtureDetail {
-  const s = buildActiveState(itemId, {
-    correct: true,
-    correctAnswer: feedbackCorrect.displayAnswer,
-    masteredCount: sessionEarlyRound.fluent,
-    totalEnabledCount: sessionEarlyRound.total,
-    questionCount: 14,
-  });
   return {
-    engineState: {
-      ...s,
-      feedbackText: feedbackCorrect.text,
-      feedbackClass: feedbackCorrect.className,
-      feedbackCorrect: feedbackCorrect.correct,
-      feedbackDisplayAnswer: feedbackCorrect.displayAnswer,
-      timeDisplayText: feedbackCorrect.time,
-      hintText: feedbackCorrect.hint,
-    },
+    engineState: buildActiveState(itemId, {
+      correct: true,
+      correctAnswer: feedbackCorrect.displayAnswer,
+      masteredCount: sessionEarlyRound.fluent,
+      totalEnabledCount: sessionEarlyRound.total,
+      questionCount: 14,
+    }),
     timerPct: 55,
     timerText: '0:28',
     timerWarning: false,
@@ -119,26 +116,111 @@ export function quizCorrectFeedback(itemId: string): FixtureDetail {
 // ---------------------------------------------------------------------------
 
 export function quizWrongFeedback(itemId: string): FixtureDetail {
+  return {
+    engineState: buildActiveState(itemId, {
+      correct: false,
+      correctAnswer: feedbackWrong.displayAnswer,
+      masteredCount: sessionLateRound.fluent,
+      totalEnabledCount: sessionLateRound.total,
+      questionCount: 22,
+    }),
+    timerPct: 38,
+    timerText: '0:18',
+    timerWarning: false,
+    timerLastQuestion: false,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Quiz active: correct feedback with 1s left (timer warning)
+// ---------------------------------------------------------------------------
+
+export function quizFeedbackTimerLow(itemId: string): FixtureDetail {
+  return {
+    engineState: buildActiveState(itemId, {
+      correct: true,
+      correctAnswer: feedbackCorrect.displayAnswer,
+      masteredCount: sessionLateRound.fluent,
+      totalEnabledCount: sessionLateRound.total,
+      questionCount: 18,
+    }),
+    timerPct: timerAlmostExpired.pct,
+    timerText: timerAlmostExpired.text,
+    timerWarning: timerAlmostExpired.warning,
+    timerLastQuestion: timerAlmostExpired.lastQuestion,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Quiz active: timer expired, awaiting answer ("Last question" shown)
+// ---------------------------------------------------------------------------
+
+export function quizLastQuestionAwaiting(itemId: string): FixtureDetail {
+  const s = buildActiveState(itemId, {
+    masteredCount: sessionLateRound.fluent,
+    totalEnabledCount: sessionLateRound.total,
+    questionCount: 19,
+  });
+  return {
+    engineState: { ...s, roundTimerExpired: true },
+    timerPct: timerExpired.pct,
+    timerText: timerExpired.text,
+    timerWarning: timerExpired.warning,
+    timerLastQuestion: timerExpired.lastQuestion,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Quiz active: answered the last question (feedback + "Continue" button)
+// The user must manually press Continue to see round-complete.
+// hintText overridden because the engine sets it via a separate setState
+// call in submitAnswer, not via engineSubmitAnswer.
+// ---------------------------------------------------------------------------
+
+export function quizLastQuestionAnswered(itemId: string): FixtureDetail {
   const s = buildActiveState(itemId, {
     correct: false,
     correctAnswer: feedbackWrong.displayAnswer,
     masteredCount: sessionLateRound.fluent,
     totalEnabledCount: sessionLateRound.total,
-    questionCount: 22,
+    questionCount: 19,
   });
   return {
     engineState: {
       ...s,
-      feedbackText: feedbackWrong.text,
-      feedbackClass: feedbackWrong.className,
-      feedbackCorrect: feedbackWrong.correct,
-      feedbackDisplayAnswer: feedbackWrong.displayAnswer,
-      hintText: feedbackWrong.hint,
+      roundTimerExpired: true,
+      hintText: 'Space to continue',
     },
-    timerPct: 38,
-    timerText: '0:18',
-    timerWarning: false,
-    timerLastQuestion: false,
+    timerPct: timerExpired.pct,
+    timerText: timerExpired.text,
+    timerWarning: timerExpired.warning,
+    timerLastQuestion: timerExpired.lastQuestion,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Quiz active: feedback showing when timer expires ("Time is up" + Continue)
+// The user answered, then the round timer ran out while on the feedback screen.
+// ---------------------------------------------------------------------------
+
+export function quizFeedbackTimerExpired(itemId: string): FixtureDetail {
+  const s = buildActiveState(itemId, {
+    correct: true,
+    correctAnswer: feedbackCorrect.displayAnswer,
+    masteredCount: sessionLateRound.fluent,
+    totalEnabledCount: sessionLateRound.total,
+    questionCount: 18,
+  });
+  return {
+    engineState: {
+      ...s,
+      roundTimerExpired: true,
+      hintText: 'Space to continue',
+    },
+    timerPct: timerExpired.pct,
+    timerText: timerExpired.text,
+    timerWarning: timerExpired.warning,
+    timerLastQuestion: timerExpired.lastQuestion,
   };
 }
 
@@ -171,9 +253,6 @@ export function quizRoundComplete(
       variant === 'good' ? 900 : 2800,
     ),
   };
-  // The RoundComplete component reads derived state from useRoundSummary,
-  // not directly from engineState, but the engine phase drives visibility.
-  // We store the display data so the screenshot script can verify.
   return {
     engineState: s,
     timerPct: 0,

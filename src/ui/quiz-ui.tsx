@@ -12,27 +12,25 @@ export function TextPrompt({ text }: { text: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// FeedbackDisplay — correct/incorrect feedback, time, and hint
+// FeedbackDisplay — correct/incorrect feedback and hint
 // ---------------------------------------------------------------------------
 
 export function FeedbackDisplay(
-  { text, className, time, hint, correct, onNext, label = 'Next' }: {
+  { text, className, hint, correct, onNext, label = 'Next' }: {
     text: string;
     className: string;
-    time?: string;
     hint?: string;
     correct?: boolean | null;
     onNext?: () => void;
     label?: string;
   },
 ) {
-  let btnCls = 'next-btn';
-  if (correct === true) btnCls += ' next-btn-correct';
-  else if (correct === false) btnCls += ' next-btn-wrong';
+  let btnCls = 'next-btn page-action-btn page-action-primary';
+  if (correct === true) btnCls += ' page-action-correct';
+  else if (correct === false) btnCls += ' page-action-wrong';
   return (
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
-      {time ? <div class='time-display'>{time}</div> : null}
       <button
         type='button'
         class={btnCls}

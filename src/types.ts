@@ -208,7 +208,7 @@ export type EngineState = {
   feedbackDisplayAnswer: string | null;
   /** Raw input value the user submitted (button value or typed text). */
   feedbackUserInput: string | null;
-  timeDisplayText: string;
+
   hintText: string;
 
   masteryText: string;

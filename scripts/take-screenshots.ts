@@ -46,6 +46,7 @@ const onlyIdx = args.indexOf('--only');
 const onlyPatterns = onlyIdx >= 0 && args[onlyIdx + 1]
   ? args[onlyIdx + 1].split(',')
   : null;
+const touchMode = !args.includes('--no-touch');
 const DEVICE_SCALE_FACTOR = ciMode ? 1 : 3;
 const IMG_EXT = ciMode ? 'jpg' : 'png';
 const IMG_TYPE = ciMode ? ('jpeg' as const) : ('png' as const);
@@ -255,6 +256,7 @@ async function main() {
       const context = await browser.newContext({
         viewport: VIEWPORT,
         deviceScaleFactor: DEVICE_SCALE_FACTOR,
+        hasTouch: touchMode,
       });
       const page = await context.newPage();
 
@@ -396,6 +398,7 @@ async function main() {
       outDir: OUT_DIR,
       imgType: IMG_TYPE,
       ...(ciMode ? { quality: 80 } : {}),
+      hasTouch: touchMode,
     });
   }
 

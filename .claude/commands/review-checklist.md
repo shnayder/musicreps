@@ -25,9 +25,8 @@ N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       (`createXHelpers({ notes, intervals, ... })`)
 - [ ] State transitions are immutable: `{ ...state, field: newValue }`, not
       `state.field = newValue`
-- [ ] Quiz mode interface respected: declarative `answer` spec (or
-      `sequential`), `getQuestion()`, `handleKey()`, plus
-      `onStart`/`onStop`/`onActivate`/`onDeactivate` hooks
+- [ ] Quiz mode interface respected: `getEnabledItems()`, `checkAnswer()`,
+      `handleKey()`, plus `onStart`/`onStop`/`onActivate`/`onDeactivate` hooks
 - [ ] New behavior integrates with existing abstractions (state machine phases,
       declarative `render()`) rather than introducing parallel mechanisms
       (shadow booleans, imperative DOM overrides)

@@ -41,7 +41,7 @@ describe('initialEngineState', () => {
     const s = initialEngineState();
     assert.equal(s.feedbackText, '');
     assert.equal(s.feedbackClass, 'feedback');
-    assert.equal(s.timeDisplayText, '');
+
     assert.equal(s.hintText, '');
     assert.equal(s.masteryText, '');
     assert.equal(s.showMastery, false);
@@ -123,13 +123,12 @@ describe('engineNextQuestion', () => {
       ...engineStart(initialEngineState()),
       feedbackText: 'Correct!',
       feedbackClass: 'feedback correct',
-      timeDisplayText: '500 ms',
       hintText: 'Tap anywhere',
     };
     const s = engineNextQuestion(withFeedback, 'item-3', 10000);
     assert.equal(s.feedbackText, '');
     assert.equal(s.feedbackClass, 'feedback');
-    assert.equal(s.timeDisplayText, '');
+
     assert.equal(s.hintText, '');
   });
 
@@ -166,11 +165,6 @@ describe('engineSubmitAnswer', () => {
     const s = engineSubmitAnswer(active, true, 'C');
     assert.equal(s.answered, true);
     assert.equal(s.answersEnabled, false);
-  });
-
-  it('clears time display', () => {
-    const s = engineSubmitAnswer(active, true, 'C');
-    assert.equal(s.timeDisplayText, '');
   });
 
   it('shows hint text (default)', () => {
@@ -659,18 +653,5 @@ describe('engineRouteKey in round-complete', () => {
 
   it('other keys return ignore', () => {
     assert.deepEqual(engineRouteKey(roundComplete, 'c'), { action: 'ignore' });
-  });
-});
-
-describe('engineSubmitAnswer time format', () => {
-  const active = engineNextQuestion(
-    engineStart(initialEngineState()),
-    'item-1',
-    1000,
-  );
-
-  it('clears time display', () => {
-    const s = engineSubmitAnswer(active, true, 'C');
-    assert.equal(s.timeDisplayText, '');
   });
 });

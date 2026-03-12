@@ -221,7 +221,6 @@ function PreviewApp() {
         <FeedbackDisplay
           text={feedbackCorrect.text}
           className={feedbackCorrect.className}
-          time={feedbackCorrect.time}
           correct={feedbackCorrect.correct}
           onNext={() => {}}
         />
@@ -304,8 +303,8 @@ function PreviewApp() {
           <RoundCompleteInfo
             context={goodRound.context}
             heading={goodRound.heading}
+            count={18}
             correct={goodRound.correct}
-            median={goodRound.median}
           />
         </QuizArea>
       </Section>
@@ -314,8 +313,8 @@ function PreviewApp() {
           <RoundCompleteInfo
             context={roughRound.context}
             heading={roughRound.heading}
+            count={9}
             correct={roughRound.correct}
-            median={roughRound.median}
           />
         </QuizArea>
       </Section>

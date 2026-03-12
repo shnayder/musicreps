@@ -143,6 +143,7 @@ export function useQuizEngine(
 
   const roundTimerRef = useRef<number | null>(null);
   const roundTimerStartRef = useRef<number | null>(null);
+  const roundDurationSnapshotRef = useRef<number | null>(null);
   const lastQuestionCapRef = useRef<number | null>(null);
 
   // --- Compute progress ---
@@ -181,9 +182,13 @@ export function useQuizEngine(
   const nextQuestionRef = useRef<() => void>(null!);
 
   const transitionToRoundComplete = useCallback(() => {
-    const roundDurationMs = roundTimerStartRef.current
-      ? Date.now() - roundTimerStartRef.current
-      : 0;
+    // Use snapshot captured when the last answer was submitted, so feedback
+    // screen dwell time is excluded from the displayed round duration.
+    const roundDurationMs = roundDurationSnapshotRef.current ??
+      (roundTimerStartRef.current
+        ? Date.now() - roundTimerStartRef.current
+        : 0);
+    roundDurationSnapshotRef.current = null;
     stopRoundTimer();
     setState((prev) => {
       const s = engineRoundComplete(prev);
@@ -198,16 +203,11 @@ export function useQuizEngine(
     setState((prev) => {
       const next = engineRoundTimerExpired(prev);
       if (next.answered) {
-        // User is on feedback screen — update hint to "continue" and
-        // let them advance manually via the button / Space.
+        // User is on feedback screen — round is effectively over.
+        // Use ROUND_DURATION_MS (not Date.now()) because the setInterval
+        // callback can fire late when the browser tab is backgrounded.
+        roundDurationSnapshotRef.current = ROUND_DURATION_MS;
         setTimerLastQuestion(true);
-        // Cap the last question at 30 seconds — if the user walks away,
-        // end the round automatically, even from the feedback screen.
-        lastQuestionCapRef.current = setTimeout(() => {
-          if (stateRef.current.phase === 'active') {
-            transitionToRoundCompleteRef.current();
-          }
-        }, LAST_QUESTION_CAP_MS);
         return { ...next, hintText: HINT_CONTINUE };
       } else {
         setTimerLastQuestion(true);
@@ -226,6 +226,7 @@ export function useQuizEngine(
   const startRoundTimer = useCallback(() => {
     if (roundTimerRef.current) clearInterval(roundTimerRef.current);
     roundTimerStartRef.current = Date.now();
+    roundDurationSnapshotRef.current = null;
 
     setTimerPct(100);
     setTimerText(formatRoundTime(ROUND_DURATION_MS));
@@ -322,12 +323,21 @@ export function useQuizEngine(
     }
 
     // Handle timer expiry — clear the last-question cap timer (user answered
-    // in time) and update the hint so the user can advance manually.
+    // in time) and snapshot round duration so feedback dwell time is excluded.
+    // Cap to ROUND_DURATION_MS + LAST_QUESTION_CAP_MS in case the browser
+    // was backgrounded and Date.now() jumped forward.
     if (stateRef.current.roundTimerExpired) {
       if (lastQuestionCapRef.current) {
         clearTimeout(lastQuestionCapRef.current);
         lastQuestionCapRef.current = null;
       }
+      const elapsed = roundTimerStartRef.current
+        ? Date.now() - roundTimerStartRef.current
+        : 0;
+      roundDurationSnapshotRef.current = Math.min(
+        elapsed,
+        ROUND_DURATION_MS + LAST_QUESTION_CAP_MS,
+      );
       setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
     }
   }, [computeProgress]);
