@@ -111,16 +111,7 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
 
   // Active indices = all indices minus skipped (for recommendations).
   const activeGroupIndices = useMemo(
-    () => {
-      const result = spec.allGroupIndices.filter((i) => !skippedGroups.has(i));
-      console.log(
-        '[REC-DEBUG] activeGroupIndices recomputed:',
-        result,
-        'skipped:',
-        [...skippedGroups.keys()],
-      );
-      return result;
-    },
+    () => spec.allGroupIndices.filter((i) => !skippedGroups.has(i)),
     [spec.allGroupIndices, skippedGroups],
   );
 
@@ -140,37 +131,22 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   );
 
   // --- Recommendations ---
-  const recommendation = useMemo((): RecommendationResult => {
-    const result = computeRecommendations(
-      spec.selector,
-      activeGroupIndices,
-      spec.getItemIdsForGroup,
-      { expansionThreshold: 0.7 },
-      { sortUnstarted: (a, b) => a.string - b.string },
-    );
-    console.log(
-      '[REC-DEBUG] recommendation recomputed:',
-      'consolidate:',
-      result.consolidateIndices,
-      'work:',
-      result.consolidateWorkingCount,
-      'expand:',
-      result.expandIndex,
-    );
-    return result;
-  }, [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]);
+  const recommendation = useMemo(
+    (): RecommendationResult =>
+      computeRecommendations(
+        spec.selector,
+        activeGroupIndices,
+        spec.getItemIdsForGroup,
+        { expansionThreshold: 0.7 },
+        { sortUnstarted: (a, b) => a.string - b.string },
+      ),
+    [spec.selector, activeGroupIndices, spec.getItemIdsForGroup],
+  );
 
-  const recommendationText = useMemo(() => {
-    const text = buildRecommendationText(
-      recommendation,
-      (i: number) => spec.groups[i].label,
-    );
-    console.log(
-      '[REC-DEBUG] recommendationText recomputed:',
-      JSON.stringify(text),
-    );
-    return text;
-  }, [recommendation]);
+  const recommendationText = useMemo(
+    () => buildRecommendationText(recommendation, (i) => spec.groups[i].label),
+    [recommendation],
+  );
 
   const applyRecommendation = useCallback(() => {
     if (recommendation.enabled) {

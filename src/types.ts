@@ -108,17 +108,19 @@ export interface AdaptiveSelector {
   selectNext(validItems: string[]): string;
   getStats(itemId: string): ItemStats | null;
   getWeight(itemId: string): number;
-  getRecall(itemId: string): number | null;
-  getAutomaticity(itemId: string): number | null;
+  getRecall(itemId: string, nowMs?: number): number | null;
+  getAutomaticity(itemId: string, nowMs?: number): number | null;
   getSpeedScore(itemId: string): number | null;
-  getFreshness(itemId: string): number | null;
+  getFreshness(itemId: string, nowMs?: number): number | null;
   getLevelAutomaticity(
     itemIds: string[],
     percentile?: number,
+    nowMs?: number,
   ): { level: number; seen: number };
   getStringRecommendations(
     stringIndices: number[],
     getItemIds: (index: number) => string[],
+    nowMs?: number,
   ): StringRecommendation[];
   checkAllAutomatic(items: string[]): boolean;
   checkNeedsReview(items: string[]): boolean;
