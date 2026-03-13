@@ -4,9 +4,9 @@ const config: CapacitorConfig = {
   appId: "com.musicreps.app",
   appName: "Music Reps",
   webDir: "docs",
-  ...(process.env.CAP_DEV && {
+  ...(process.env.CAP_DEV_PORT && {
     server: {
-      url: `http://192.168.4.45:${process.env.CAP_DEV}`,
+      url: `http://${process.env.CAP_DEV_HOST ?? "localhost"}:${process.env.CAP_DEV_PORT}`,
       cleartext: true,
     },
   }),
