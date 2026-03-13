@@ -31,7 +31,7 @@ export const NOTE_READING_DEF: ModeDefinition<Question> = {
   getPromptText: () => 'Name this note',
   answer: {
     getExpectedValue: (q) => q.letter,
-    comparison: 'exact',
+    comparison: 'note-enharmonic',
   },
 
   buttons: { kind: 'piano-note', hideAccidentals: true },
