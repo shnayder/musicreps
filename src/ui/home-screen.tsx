@@ -336,18 +336,16 @@ export function HomeScreen(
       </div>
 
       <div class='home-footer'>
-        <a
+        <button
+          type='button'
           class='home-settings-btn text-link'
-          href='#settings'
-          role='button'
-          onClick={(e: Event) => {
-            e.preventDefault();
+          onClick={() => {
             setUseSolfege(settings.getUseSolfege());
             setShowSettings(true);
           }}
         >
           Settings
-        </a>
+        </button>
         <span class='version'>{version}</span>
       </div>
     </div>

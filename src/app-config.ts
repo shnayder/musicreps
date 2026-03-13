@@ -10,7 +10,9 @@ function safeUrl(raw: string): string {
   if (!raw) return '';
   try {
     const url = new URL(raw);
-    return url.protocol === 'https:' || url.protocol === 'http:' ? raw : '';
+    return url.protocol === 'https:' || url.protocol === 'http:'
+      ? url.href
+      : '';
   } catch {
     return '';
   }

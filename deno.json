@@ -36,15 +36,15 @@
     ]
   },
   "tasks": {
-    "build": "deno run --allow-read --allow-write --allow-run --allow-env main.ts --build",
-    "dev": "deno run --watch --allow-net --allow-read --allow-run --allow-env main.ts",
+    "build": "deno run --allow-read --allow-write --allow-run --allow-env=BUILD_NUMBER,APP_CONTACT_EMAIL,APP_SUPPORT_URL,APP_TERMS_URL,APP_PRIVACY_URL main.ts --build",
+    "dev": "deno run --watch --allow-net --allow-read --allow-run --allow-env=BUILD_NUMBER,APP_CONTACT_EMAIL,APP_SUPPORT_URL,APP_TERMS_URL,APP_PRIVACY_URL main.ts",
     "test": "deno test --no-check --allow-read --allow-run=deno --ignore=tests/e2e",
     "lint": "deno lint",
     "lint:functions": "deno run -A scripts/lint-function-length.ts",
     "fmt": "deno fmt --check",
     "fmt:fix": "deno fmt",
     "check": "deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null)",
-    "ok": "deno lint && deno task lint:functions && deno fmt --check && deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null) && deno test --no-check --allow-read --allow-run=deno --ignore=tests/e2e && deno run --allow-read --allow-write --allow-run --allow-env main.ts --build",
+    "ok": "deno lint && deno task lint:functions && deno fmt --check && deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null) && deno test --no-check --allow-read --allow-run=deno --ignore=tests/e2e && deno run --allow-read --allow-write --allow-run --allow-env=BUILD_NUMBER,APP_CONTACT_EMAIL,APP_SUPPORT_URL,APP_TERMS_URL,APP_PRIVACY_URL main.ts --build",
     "screenshots": "npx tsx scripts/take-screenshots.ts",
     "screenshots:baseline": "npx tsx scripts/take-screenshots.ts --dir screenshots/baseline",
     "screenshots:review": "npx tsx scripts/build-screenshot-review.ts",
