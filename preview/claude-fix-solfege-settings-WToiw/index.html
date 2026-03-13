@@ -2144,7 +2144,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="9641a8 fix-solfege-settings-WToiw"></div>
+  <div class="home-screen" id="home-screen" data-version="ac7623 fix-solfege-settings-WToiw"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -4670,15 +4670,26 @@ button {
     return null;
   }
   var _useSolfege = false;
+  var _notationVersion = 0;
+  var _notationListeners = /* @__PURE__ */ new Set();
   function getUseSolfege() {
     return _useSolfege;
   }
+  function getNotationVersion() {
+    return _notationVersion;
+  }
+  function subscribeNotation(cb) {
+    _notationListeners.add(cb);
+    return () => _notationListeners.delete(cb);
+  }
   function setUseSolfege(v3) {
     _useSolfege = v3;
+    _notationVersion++;
     try {
       localStorage.setItem("fretboard_notation", v3 ? "solfege" : "letter");
     } catch (_3) {
     }
+    for (const cb of _notationListeners) cb();
   }
   try {
     _useSolfege = localStorage.getItem("fretboard_notation") === "solfege";
@@ -6501,14 +6512,30 @@ button {
     }];
   }
 
+  // src/hooks/use-notation-version.ts
+  function useNotationVersion() {
+    const [v3, setV] = d3(getNotationVersion);
+    y2(() => subscribeNotation(() => setV(getNotationVersion())), []);
+    return v3;
+  }
+
   // src/hooks/use-group-scope.ts
   var EMPTY_SKIPPED = /* @__PURE__ */ new Map();
+  function useStableGetter(value) {
+    const ref = A2(value);
+    ref.current = value;
+    return q2(() => ref.current, []);
+  }
+  function resolveLabel(label) {
+    return typeof label === "function" ? label() : label;
+  }
   function useGroupScope(spec) {
+    const notationVersion = useNotationVersion();
     const [scope, scopeActions] = useScopeState({
       kind: "groups",
       groups: spec.groups.map((g2, i3) => ({
         index: i3,
-        label: typeof g2.label === "function" ? g2.label() : g2.label,
+        label: resolveLabel(g2.label),
         itemIds: spec.getItemIdsForGroup(i3)
       })),
       defaultEnabled: spec.defaultEnabled,
@@ -6531,7 +6558,7 @@ button {
     }, [enabledGroups, spec.getItemIdsForGroup]);
     const practicingLabel = T2(
       () => spec.formatLabel(enabledGroups),
-      [enabledGroups, spec.formatLabel]
+      [enabledGroups, spec.formatLabel, notationVersion]
     );
     const recommendation = T2(
       () => computeRecommendations(
@@ -6544,11 +6571,11 @@ button {
       [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]
     );
     const recommendationText = T2(
-      () => buildRecommendationText(recommendation, (i3) => {
-        const lbl = spec.groups[i3].label;
-        return typeof lbl === "function" ? lbl() : lbl;
-      }),
-      [recommendation]
+      () => buildRecommendationText(
+        recommendation,
+        (i3) => resolveLabel(spec.groups[i3].label)
+      ),
+      [recommendation, notationVersion]
     );
     const applyRecommendation = q2(() => {
       if (recommendation.enabled) {
@@ -6559,15 +6586,6 @@ button {
         });
       }
     }, [recommendation, scopeActions, skippedGroups]);
-    const enabledItemsRef = A2(enabledItems);
-    enabledItemsRef.current = enabledItems;
-    const practicingLabelRef = A2(practicingLabel);
-    practicingLabelRef.current = practicingLabel;
-    const getEnabledItems = q2(() => enabledItemsRef.current, []);
-    const getPracticingLabel2 = q2(
-      () => practicingLabelRef.current,
-      []
-    );
     return {
       scope,
       scopeActions,
@@ -6578,8 +6596,8 @@ button {
       recommendation,
       recommendationText,
       applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel: getPracticingLabel2
+      getEnabledItems: useStableGetter(enabledItems),
+      getPracticingLabel: useStableGetter(practicingLabel)
     };
   }
 
