@@ -52,6 +52,11 @@ jobs:
 
       - name: Build
         run: deno task build
+        env:
+          APP_CONTACT_EMAIL: preview@example.com
+          APP_SUPPORT_URL: https://github.com/shnayder/musicreps/issues
+          APP_TERMS_URL: https://example.com/terms
+          APP_PRIVACY_URL: https://example.com/privacy
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -66,6 +71,11 @@ jobs:
 
       - name: Capture screenshots
         run: npx tsx scripts/take-screenshots.ts --ci
+        env:
+          APP_CONTACT_EMAIL: preview@example.com
+          APP_SUPPORT_URL: https://github.com/shnayder/musicreps/issues
+          APP_TERMS_URL: https://example.com/terms
+          APP_PRIVACY_URL: https://example.com/privacy
 
       - name: Deploy preview
         run: bash scripts/deploy-gh-pages.sh preview "${{ github.ref_name }}"
