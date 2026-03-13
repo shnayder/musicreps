@@ -318,3 +318,33 @@ export type PracticeSummaryState = {
   showMastery: boolean;
   enabledItemCount: number;
 };
+
+// --- Settings controller ---
+
+export type SettingsController = {
+  getUseSolfege: () => boolean;
+  setUseSolfege: (useSolfege: boolean) => void;
+};
+
+// --- Fixture types ---
+
+/** Describes a fixture state for the speed-check calibration screen. */
+export type SpeedCheckFixture = {
+  phase: 'intro' | 'running' | 'results';
+  /** Baseline value in ms (for 'results' phase). Defaults to 0. */
+  baseline?: number;
+  /** Trial progress text (for 'running' phase). Defaults to ''. */
+  trialProgress?: string;
+  /** Which button to highlight green (for 'running' phase). */
+  targetNote?: string;
+};
+
+/** Shape dispatched via __fixture__ custom event. */
+export type FixtureDetail = {
+  engineState?: Partial<EngineState>;
+  timerPct?: number;
+  timerText?: string;
+  timerWarning?: boolean;
+  timerLastQuestion?: boolean;
+  calibration?: SpeedCheckFixture;
+};

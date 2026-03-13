@@ -8,8 +8,7 @@
 // differs from the default. Do NOT redundantly re-set feedback fields that
 // engineSubmitAnswer already computed; that masks bugs.
 
-import type { EngineState } from '../types.ts';
-import type { SpeedCheckFixture } from '../ui/speed-check.tsx';
+import type { EngineState, FixtureDetail } from '../types.ts';
 import {
   engineNextQuestion,
   engineRoundComplete,
@@ -22,16 +21,6 @@ import { feedbackCorrect, feedbackWrong } from './feedback.ts';
 import { timerAlmostExpired, timerExpired, timerMidRound } from './timer.ts';
 import { sessionEarlyRound, sessionLateRound } from './session.ts';
 // Round-complete data is in round-complete.ts; used by preview.tsx directly.
-
-/** Shape dispatched via __fixture__ custom event. */
-export type FixtureDetail = {
-  engineState?: Partial<EngineState>;
-  timerPct?: number;
-  timerText?: string;
-  timerWarning?: boolean;
-  timerLastQuestion?: boolean;
-  calibration?: SpeedCheckFixture;
-};
 
 // ---------------------------------------------------------------------------
 // Helpers

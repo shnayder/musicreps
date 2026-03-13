@@ -1,11 +1,7 @@
 // Global settings data helpers.
 
 import { getUseSolfege, setUseSolfege } from './music-data.ts';
-
-export type SettingsController = {
-  getUseSolfege: () => boolean;
-  setUseSolfege: (useSolfege: boolean) => void;
-};
+import type { SettingsController } from './types.ts';
 
 export function createSettingsController(
   options: { onNotationChange?: () => void },
