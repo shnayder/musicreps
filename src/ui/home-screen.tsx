@@ -10,7 +10,7 @@ import {
 } from '../music-data.ts';
 import type { Track } from '../music-data.ts';
 import { SkillIcon } from './icons.tsx';
-import type { SettingsController } from '../settings.ts';
+import type { SettingsController } from '../types.ts';
 import type { AppConfig } from '../app-config.ts';
 
 // ---------------------------------------------------------------------------
@@ -187,7 +187,7 @@ export function HomeScreen(
 ) {
   const [selected, setSelected] = useState(loadSelectedTracks);
   const [showSettings, setShowSettings] = useState(false);
-  const [useSolfege, setUseSolfege] = useState(settings.getUseSolfege());
+  const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
 
   const handleToggle = useCallback((id: string) => {
     // Can't deselect alwaysSelected tracks

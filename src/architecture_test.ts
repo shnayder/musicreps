@@ -109,6 +109,7 @@ const FOUNDATION = new Set([
   'src/types.ts',
   'src/music-data.ts',
   'src/adaptive.ts',
+  'src/app-config.ts',
   'src/deadline.ts',
   'src/recommendations.ts',
 ]);

@@ -11,8 +11,7 @@ import type {
   EngineState,
 } from '../types.ts';
 import { isCalibrationPhase } from '../types.ts';
-import type { FixtureDetail } from '../fixtures/quiz-page.ts';
-import type { SpeedCheckFixture } from '../ui/speed-check.tsx';
+import type { FixtureDetail, SpeedCheckFixture } from '../types.ts';
 import {
   engineCalibrationIntro,
   engineContinueRound,

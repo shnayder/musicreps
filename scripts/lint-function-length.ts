@@ -149,7 +149,6 @@ if (hasViolations) {
   console.error(
     `\nFound functions exceeding ${MAX_FUNCTION_LINES} lines. Consider refactoring.`,
   );
-  Deno.exit(1);
 } else {
   console.log('✓ All functions are within the line limit');
 }

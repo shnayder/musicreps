@@ -9,21 +9,7 @@ import {
   pickCalibrationButton,
 } from '../quiz-engine.ts';
 import { computeMedian } from '../adaptive.ts';
-
-// ---------------------------------------------------------------------------
-// Fixture type (used by useQuizEngine for fixture injection)
-// ---------------------------------------------------------------------------
-
-/** Describes a fixture state for deterministic screenshots. */
-export type SpeedCheckFixture = {
-  phase: 'intro' | 'running' | 'results';
-  /** Baseline value in ms (for 'results' phase). Defaults to 0. */
-  baseline?: number;
-  /** Trial progress text (for 'running' phase). Defaults to ''. */
-  trialProgress?: string;
-  /** Which button to highlight green (for 'running' phase). */
-  targetNote?: string;
-};
+import type { SpeedCheckFixture } from '../types.ts';
 
 // ---------------------------------------------------------------------------
 // Provider type
