@@ -13,13 +13,13 @@ import {
   engineUpdateProgress,
 } from '../quiz-engine-state.ts';
 import { LAST_QUESTION_CAP_MS } from './use-round-timer.ts';
-import { HINT_CONTINUE, ROUND_DURATION_MS } from './use-round-transitions.ts';
+import {
+  HINT_CONTINUE,
+  IS_TOUCH_PRIMARY,
+  ROUND_DURATION_MS,
+} from './use-round-transitions.ts';
 import type { RoundTimerHandle } from './use-round-timer.ts';
 import type { QuizEngineConfig } from './quiz-engine-types.ts';
-
-/** True when the primary pointer is coarse (phone/tablet). */
-const IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === 'function' &&
-  globalThis.matchMedia('(pointer: coarse)').matches;
 
 const HINT_ADVANCE = IS_TOUCH_PRIMARY ? '' : 'Space for next';
 

@@ -3,7 +3,7 @@
 
 import { useCallback, useRef, useState } from 'preact/hooks';
 
-const ROUND_DURATION_MS = 60000;
+export const ROUND_DURATION_MS = 60000;
 const TIMER_TICK_MS = 200;
 export const LAST_QUESTION_CAP_MS = 30000;
 

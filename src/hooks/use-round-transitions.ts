@@ -8,9 +8,11 @@ import {
   engineRoundTimerExpired,
 } from '../quiz-engine-state.ts';
 import type { RoundTimerHandle } from './use-round-timer.ts';
-import { LAST_QUESTION_CAP_MS, useRoundTimer } from './use-round-timer.ts';
-
-const ROUND_DURATION_MS = 60000;
+import {
+  LAST_QUESTION_CAP_MS,
+  ROUND_DURATION_MS,
+  useRoundTimer,
+} from './use-round-timer.ts';
 
 /** True when the primary pointer is coarse (phone/tablet). */
 const IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === 'function' &&
@@ -68,4 +70,4 @@ export function useRoundTransitions(
   return { timer, transitionToRoundCompleteRef };
 }
 
-export { HINT_CONTINUE, ROUND_DURATION_MS };
+export { HINT_CONTINUE, IS_TOUCH_PRIMARY, ROUND_DURATION_MS };

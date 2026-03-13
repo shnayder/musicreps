@@ -83,16 +83,18 @@ export function createSettingsModal(
     });
   }
 
+  const boundTrapFocus = (e: KeyboardEvent) => trapFocus(modal, e);
+
   function open(): void {
     updateToggleState();
     overlay.classList.add('open');
     previousFocus = document.activeElement as HTMLElement | null;
     (closeBtn as HTMLElement).focus();
-    modal.addEventListener('keydown', (e) => trapFocus(modal, e));
+    modal.addEventListener('keydown', boundTrapFocus);
   }
 
   function close(): void {
-    modal.removeEventListener('keydown', (e) => trapFocus(modal, e));
+    modal.removeEventListener('keydown', boundTrapFocus);
     overlay.classList.remove('open');
     if (previousFocus) {
       previousFocus.focus();
