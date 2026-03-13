@@ -77,54 +77,88 @@ export const MODE_NAMES: Record<string, string> = {
 };
 
 // Before/after contrast text — shown on skill cards to communicate value.
+// Functions so that displayNote() is called at render time, respecting the
+// current solfège setting.
+const d = displayNote; // short alias for readability below
 export const MODE_BEFORE_AFTER: Record<
   string,
-  { before: string; after: string }
+  { before: () => string; after: () => string }
 > = {
   fretboard: {
-    before: '\u201C7th fret, G string\u2026 G, G#, A\u2026 D?\u201D',
-    after: '\u201C7th fret, G string. D.\u201D',
+    before: () =>
+      `\u201C7th fret, ${d('G')} string\u2026 ${d('G')}, ${d('G#')}, ${
+        d('A')
+      }\u2026 ${d('D')}?\u201D`,
+    after: () => `\u201C7th fret, ${d('G')} string. ${d('D')}.\u201D`,
   },
   ukulele: {
-    before: '\u201C5th fret, C string\u2026 C, D, E\u2026 E?\u201D',
-    after: '\u201C5th fret, C string. E.\u201D',
+    before: () =>
+      `\u201C5th fret, ${d('C')} string\u2026 ${d('C')}, ${d('D')}, ${
+        d('E')
+      }\u2026 ${d('E')}?\u201D`,
+    after: () => `\u201C5th fret, ${d('C')} string. ${d('E')}.\u201D`,
   },
   speedTap: {
-    before:
-      '\u201CAll the C\u2019s\u2026 8th fret E, 3rd fret A\u2026 um\u2026\u201D',
-    after: '\u201CC\u2019s. 8, 3, 10, 5, 1, 8.\u201D',
+    before: () =>
+      `\u201CAll the ${d('C')}\u2019s\u2026 8th fret ${d('E')}, 3rd fret ${
+        d('A')
+      }\u2026 um\u2026\u201D`,
+    after: () => `\u201C${d('C')}\u2019s. 8, 3, 10, 5, 1, 8.\u201D`,
   },
   noteSemitones: {
-    before: '\u201CG#\u2026 F is 5, so G is\u2026 7, so G# is 8.\u201D',
-    after: '\u201CG#. 8.\u201D',
+    before: () =>
+      `\u201C${d('G#')}\u2026 ${d('F')} is 5, so ${d('G')} is\u2026 7, so ${
+        d('G#')
+      } is 8.\u201D`,
+    after: () => `\u201C${d('G#')}. 8.\u201D`,
   },
   intervalSemitones: {
-    before: '\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D',
-    after: '\u201CM6. 9 semitones.\u201D',
+    before: () =>
+      '\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D',
+    after: () => '\u201CM6. 9 semitones.\u201D',
   },
   semitoneMath: {
-    before: '\u201CF# + 4\u2026 G, G#, A, A#\u2026 is that Bb?\u201D',
-    after: '\u201CF# + 4. Bb.\u201D',
+    before: () =>
+      `\u201C${d('F#')} + 4\u2026 ${d('G')}, ${d('G#')}, ${d('A')}, ${
+        d('A#')
+      }\u2026 is that ${d('Bb')}?\u201D`,
+    after: () => `\u201C${d('F#')} + 4. ${d('Bb')}.\u201D`,
   },
   intervalMath: {
-    before: '\u201CC + m6\u2026 minor 6th is 8 semitones\u2026 Ab?\u201D',
-    after: '\u201CC + m6. Ab.\u201D',
+    before: () =>
+      `\u201C${d('C')} + m6\u2026 minor 6th is 8 semitones\u2026 ${
+        d('Ab')
+      }?\u201D`,
+    after: () => `\u201C${d('C')} + m6. ${d('Ab')}.\u201D`,
   },
   keySignatures: {
-    before: '\u201C3 flats\u2026 Bb, Eb, Ab\u2026 so Eb major?\u201D',
-    after: '\u201C3 flats: Eb major.\u201D',
+    before: () =>
+      `\u201C3 flats\u2026 ${d('Bb')}, ${d('Eb')}, ${d('Ab')}\u2026 so ${
+        d('Eb')
+      } major?\u201D`,
+    after: () => `\u201C3 flats: ${d('Eb')} major.\u201D`,
   },
   scaleDegrees: {
-    before: '\u201C5th degree of Bb\u2026 Bb, C, D, Eb, F\u2026 F?\u201D',
-    after: '\u201C5th of Bb. F.\u201D',
+    before: () =>
+      `\u201C5th degree of ${d('Bb')}\u2026 ${d('Bb')}, ${d('C')}, ${d('D')}, ${
+        d('Eb')
+      }, ${d('F')}\u2026 ${d('F')}?\u201D`,
+    after: () => `\u201C5th of ${d('Bb')}. ${d('F')}.\u201D`,
   },
   diatonicChords: {
-    before: '\u201CIV in G\u2026 G, A, B, C\u2026 so C major?\u201D',
-    after: '\u201CIV in G. C major.\u201D',
+    before: () =>
+      `\u201CIV in ${d('G')}\u2026 ${d('G')}, ${d('A')}, ${d('B')}, ${
+        d('C')
+      }\u2026 so ${d('C')} major?\u201D`,
+    after: () => `\u201CIV in ${d('G')}. ${d('C')} major.\u201D`,
   },
   chordSpelling: {
-    before: '\u201CFm7\u2026 F, Ab, C\u2026 what\u2019s the 7th\u2026 Eb\u201D',
-    after: '\u201CFm7. F Ab C Eb.\u201D',
+    before: () =>
+      `\u201C${d('F')}m7\u2026 ${d('F')}, ${d('Ab')}, ${
+        d('C')
+      }\u2026 what\u2019s the 7th\u2026 ${d('Eb')}\u201D`,
+    after: () =>
+      `\u201C${d('F')}m7. ${d('F')} ${d('Ab')} ${d('C')} ${d('Eb')}.\u201D`,
   },
 };
 
@@ -228,16 +262,31 @@ const VALID_NOTE_INPUTS: ReadonlySet<string> = new Set(
   }),
 );
 
-/** Check if input is a valid note name (case-insensitive). */
+/** Check if input is a valid note name (case-insensitive).
+ *  In solfège mode, also accepts solfège syllables (do, re, mi, …). */
 export function isValidNoteInput(input: string): boolean {
-  return VALID_NOTE_INPUTS.has(input.toLowerCase());
+  if (VALID_NOTE_INPUTS.has(input.toLowerCase())) return true;
+  if (_useSolfege) {
+    const letter = resolveSolfegeToLetter(input);
+    if (letter && VALID_NOTE_INPUTS.has(letter.toLowerCase())) return true;
+  }
+  return false;
 }
 
 /** Resolve raw keyboard input to canonical note name (e.g., "cs" → "C#").
+ *  In solfège mode, also resolves solfège syllables (do → C, re# → D#).
  *  Returns null if input doesn't match any note. */
 export function resolveNoteInput(input: string): string | null {
   for (const note of NOTES) {
     if (noteMatchesInput(note, input)) return note.name;
+  }
+  if (_useSolfege) {
+    const letter = resolveSolfegeToLetter(input);
+    if (letter) {
+      for (const note of NOTES) {
+        if (noteMatchesInput(note, letter)) return note.name;
+      }
+    }
   }
   return null;
 }
@@ -741,6 +790,36 @@ export const SOLFEGE_MAP: Record<string, string> = {
   A: 'La',
   B: 'Si',
 };
+
+/** Reverse mapping: lowercase solfège syllable → letter name.
+ *  Includes both "so" and "sol" for G. */
+const REVERSE_SOLFEGE: Record<string, string> = {};
+for (const [letter, syl] of Object.entries(SOLFEGE_MAP)) {
+  REVERSE_SOLFEGE[syl.toLowerCase()] = letter;
+}
+REVERSE_SOLFEGE['so'] = 'G'; // common short form
+
+/**
+ * Convert solfège input (e.g. "do#", "mib", "sol") to letter notation
+ * (e.g. "C#", "Eb", "G"). Returns null if unrecognised.
+ */
+export function resolveSolfegeToLetter(input: string): string | null {
+  const lower = input.toLowerCase();
+  // Try full input as syllable (no accidental)
+  if (REVERSE_SOLFEGE[lower]) return REVERSE_SOLFEGE[lower];
+  // Try stripping trailing accidental
+  if (lower.endsWith('#') || lower.endsWith('b') || lower.endsWith('s')) {
+    const syl = lower.slice(0, -1);
+    const letter = REVERSE_SOLFEGE[syl];
+    if (letter) {
+      const acc = lower[lower.length - 1] === 's'
+        ? '#'
+        : lower[lower.length - 1];
+      return letter + acc;
+    }
+  }
+  return null;
+}
 
 let _useSolfege = false;
 

@@ -69,7 +69,7 @@ export type NoScopeDef = { kind: 'none' };
 
 export type GroupScopeDef = {
   kind: 'groups';
-  groups: Array<{ label: string }>;
+  groups: Array<{ label: string | (() => string) }>;
   getItemIdsForGroup: (index: number) => string[];
   allGroupIndices: number[];
   storageKey: string;
@@ -230,7 +230,10 @@ type ModeDefinitionBase<Q> = {
   name: string;
   namespace: string;
   description: string;
-  beforeAfter: { before: string; after: string };
+  beforeAfter: {
+    before: string | (() => string);
+    after: string | (() => string);
+  };
   itemNoun: string;
 
   // --- Item space ---

@@ -27,7 +27,7 @@ import { type ScopeActions, useScopeState } from './use-scope-state.ts';
 /** Configuration for a group-based scope hook. */
 export type GroupScopeSpec = {
   /** Raw group array from mode logic (must have a `.label` property). */
-  groups: Array<{ label: string }>;
+  groups: Array<{ label: string | (() => string) }>;
   /** Map group index → item IDs (from mode logic). */
   getItemIdsForGroup: (index: number) => string[];
   /** All valid group indices, e.g. `[0, 1, 2, ...]` (from mode logic). */
@@ -93,7 +93,7 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
     kind: 'groups',
     groups: spec.groups.map((g, i) => ({
       index: i,
-      label: g.label,
+      label: typeof g.label === 'function' ? g.label() : g.label,
       itemIds: spec.getItemIdsForGroup(i),
     })),
     defaultEnabled: spec.defaultEnabled,
@@ -144,7 +144,11 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   );
 
   const recommendationText = useMemo(
-    () => buildRecommendationText(recommendation, (i) => spec.groups[i].label),
+    () =>
+      buildRecommendationText(recommendation, (i) => {
+        const lbl = spec.groups[i].label;
+        return typeof lbl === 'function' ? lbl() : lbl;
+      }),
     [recommendation],
   );
 
