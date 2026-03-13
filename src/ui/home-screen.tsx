@@ -210,14 +210,15 @@ export function HomeScreen(
     return (
       <div class='settings-page'>
         <div class='settings-page-header'>
+          <h1 class='settings-page-title'>Settings</h1>
           <button
             type='button'
-            class='text-link settings-back-btn'
+            class='settings-close-btn'
+            aria-label='Close'
             onClick={() => setShowSettings(false)}
           >
-            &larr; Back
+            &times;
           </button>
-          <h1 class='settings-page-title'>Settings</h1>
         </div>
 
         <section class='settings-section'>
