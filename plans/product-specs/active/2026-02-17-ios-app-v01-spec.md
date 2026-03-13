@@ -26,8 +26,8 @@ behavior before adding payments.
 
 Apple Developer account ($99/year), Xcode, CocoaPods. Hard blockers — do first.
 
-- [ ] Enroll in Apple Developer Program (individual, instant–48hr approval)
-  - decide individual vs org
+- [x] Enroll in Apple Developer Program (individual, instant–48hr approval)
+  - decide individual vs org (individual for now)
 - [x] Install Xcode 15+ (12 GB, install iOS Simulator runtime)
 - [x] Install CocoaPods (`brew install cocoapods`)
 - [ ] Choose bundle ID (see Open Questions)

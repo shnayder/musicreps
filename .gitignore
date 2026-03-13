@@ -16,5 +16,5 @@ ios/App/Pods/
 ios/App/build/
 ios/App/output/
 ios/DerivedData/
-ios/xcuserdata/
+**/xcuserdata/
 ios/capacitor-cordova-ios-plugins/
