@@ -8,7 +8,6 @@ import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,
   ALL_ITEMS,
-  checkAnswer,
   getGridItemId,
   getItemIdsForGroup,
   getQuestion,
@@ -30,7 +29,10 @@ export const NOTE_READING_DEF: ModeDefinition<Question> = {
 
   getQuestion,
   getPromptText: () => 'Name this note',
-  checkAnswer: (q, input) => checkAnswer(q, input),
+  answer: {
+    getExpectedValue: (q) => q.letter,
+    comparison: 'exact',
+  },
 
   buttons: { kind: 'piano-note', hideAccidentals: true },
   getAbcNotation: (q) => q.abc,
