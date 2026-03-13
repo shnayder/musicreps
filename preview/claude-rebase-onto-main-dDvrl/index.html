@@ -483,23 +483,31 @@ body {
 .settings-page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 .settings-page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
 }
 .settings-page-title {
   margin: 0;
-  flex: 1;
-  text-align: right;
   font-weight: 600;
   font-size: var(--text-xl);
 }
-.settings-back-btn {
-  font-size: var(--text-sm);
+.settings-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-xl);
+  line-height: 1;
+  padding: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
 }
 .settings-section {
   border-top: 1px solid var(--color-border-lighter);
@@ -513,7 +521,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-2);
 }
 .settings-meta {
   font-size: var(--text-sm);
@@ -2137,7 +2144,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="b980a0 rebase-onto-main-dDvrl"></div>
+  <div class="home-screen" id="home-screen" data-version="88fc97 rebase-onto-main-dDvrl"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -5393,16 +5400,17 @@ button {
     if (showSettings) {
       return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
         /* @__PURE__ */ u3("div", { class: "settings-page-header", children: [
+          /* @__PURE__ */ u3("h1", { class: "settings-page-title", children: "Settings" }),
           /* @__PURE__ */ u3(
             "button",
             {
               type: "button",
-              class: "text-link settings-back-btn",
+              class: "settings-close-btn",
+              "aria-label": "Close",
               onClick: () => setShowSettings(false),
-              children: "\u2190 Back"
+              children: "\xD7"
             }
-          ),
-          /* @__PURE__ */ u3("h1", { class: "settings-page-title", children: "Settings" })
+          )
         ] }),
         /* @__PURE__ */ u3("section", { class: "settings-section", children: [
           /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "General" }),
