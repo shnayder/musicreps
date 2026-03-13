@@ -2174,7 +2174,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="d4faa4 add-note-reading-mode-MOcNX"></div>
+  <div class="home-screen" id="home-screen" data-version="8c57d3 add-note-reading-mode-MOcNX"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -34265,7 +34265,7 @@ ${abcNote}`;
     getPromptText: () => "Name this note",
     answer: {
       getExpectedValue: (q3) => q3.letter,
-      comparison: "exact"
+      comparison: "note-enharmonic"
     },
     buttons: { kind: "piano-note", hideAccidentals: true },
     getAbcNotation: (q3) => q3.abc,
