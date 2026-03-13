@@ -187,7 +187,7 @@ export function HomeScreen(
 ) {
   const [selected, setSelected] = useState(loadSelectedTracks);
   const [showSettings, setShowSettings] = useState(false);
-  const [useSolfege, setUseSolfege] = useState(settings.getUseSolfege());
+  const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
 
   const handleToggle = useCallback((id: string) => {
     // Can't deselect alwaysSelected tracks
