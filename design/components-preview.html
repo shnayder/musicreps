@@ -2703,6 +2703,11 @@ button {
     A: "La",
     B: "Si"
   };
+  var REVERSE_SOLFEGE = {};
+  for (const [letter, syl] of Object.entries(SOLFEGE_MAP)) {
+    REVERSE_SOLFEGE[syl.toLowerCase()] = letter;
+  }
+  REVERSE_SOLFEGE["so"] = "G";
   var _useSolfege = false;
   try {
     _useSolfege = localStorage.getItem("fretboard_notation") === "solfege";
@@ -3695,9 +3700,9 @@ button {
         )
       ] }),
       beforeAfter && /* @__PURE__ */ u3("div", { class: "mode-before-after", children: [
-        /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: beforeAfter.before }),
+        /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before }),
         /* @__PURE__ */ u3("span", { class: "mode-ba-arrow", children: "\u2192" }),
-        /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: beforeAfter.after })
+        /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after })
       ] })
     ] });
   }
