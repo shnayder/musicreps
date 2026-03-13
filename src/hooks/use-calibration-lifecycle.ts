@@ -4,7 +4,7 @@
 import { useCallback, useState } from 'preact/hooks';
 import type { EngineState } from '../types.ts';
 import { engineCalibrationIntro, engineStop } from '../quiz-engine-state.ts';
-import type { SpeedCheckFixture } from '../ui/speed-check.tsx';
+import type { SpeedCheckFixture } from '../types.ts';
 import type { RoundTimerHandle } from './use-round-timer.ts';
 import type { QuizEngineConfig } from './quiz-engine-types.ts';
 

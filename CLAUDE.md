@@ -17,7 +17,9 @@ deno task ok                                     # All checks + build
 
 **Run `deno task ok` before pushing.** It runs lint, format check, type check,
 tests, and build in sequence — any failure stops the chain. Don't push broken
-code by accident.
+code by accident. If you hit `UnknownIssuer` TLS errors or npm resolution
+failures, see the **Web sandbox** section in
+[guides/development.md](guides/development.md#web-sandbox-is_sandboxyes).
 
 **Run `deno task iterate capture` after UI changes.** When a `deno task iterate`
 session is active, capture a new version after every round of UI changes so the

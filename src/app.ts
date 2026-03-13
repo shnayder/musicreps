@@ -10,10 +10,11 @@ declare global {
 import { h, render } from 'preact';
 import { GUITAR, UKULELE } from './music-data.ts';
 import { createNavigation } from './navigation.ts';
-import { createSettingsModal } from './settings.ts';
+import { createSettingsController } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
 import type { ModeHandle } from './types.ts';
 import { HomeScreen } from './ui/home-screen.tsx';
+import { APP_CONFIG } from './app-config.ts';
 
 // Declarative mode definitions + GenericMode
 import { GenericMode } from './declarative/generic-mode.tsx';
@@ -115,8 +116,8 @@ registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);
 
 nav.init();
 
-// Settings modal — re-render on notation change
-const settings = createSettingsModal({
+// Settings state controller — re-render on notation change
+const settings = createSettingsController({
   onNotationChange(): void {
     document.querySelectorAll('.mode-screen.mode-active').forEach(
       (el: Element) => {
@@ -133,7 +134,8 @@ homeRoot.textContent = '';
 render(
   h(HomeScreen, {
     onSelectMode: (modeId: string) => nav.switchTo(modeId),
-    onOpenSettings: () => settings.open(),
+    settings,
+    appConfig: APP_CONFIG,
     version,
   }),
   homeRoot,

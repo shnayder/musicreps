@@ -9,17 +9,7 @@ import {
   pickCalibrationButton,
 } from '../quiz-engine.ts';
 import { computeMedian } from '../adaptive.ts';
-
-// ---------------------------------------------------------------------------
-// Fixture type (used by useQuizEngine for fixture injection)
-// ---------------------------------------------------------------------------
-
-export type SpeedCheckFixture = {
-  phase: 'intro' | 'running' | 'results';
-  baseline?: number;
-  trialProgress?: string;
-  targetNote?: string;
-};
+import type { SpeedCheckFixture } from '../types.ts';
 
 // ---------------------------------------------------------------------------
 // Provider type
