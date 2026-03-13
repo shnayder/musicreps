@@ -822,20 +822,35 @@ export function resolveSolfegeToLetter(input: string): string | null {
 }
 
 let _useSolfege = false;
+let _notationVersion = 0;
+const _notationListeners = new Set<() => void>();
 
 /** Get current notation mode. */
 export function getUseSolfege() {
   return _useSolfege;
 }
 
+/** Monotonically increasing counter, bumped on each notation change. */
+export function getNotationVersion(): number {
+  return _notationVersion;
+}
+
+/** Subscribe to notation changes. Returns unsubscribe function. */
+export function subscribeNotation(cb: () => void): () => void {
+  _notationListeners.add(cb);
+  return () => _notationListeners.delete(cb);
+}
+
 /** Set notation mode and persist to localStorage. */
 export function setUseSolfege(v: boolean) {
   _useSolfege = v;
+  _notationVersion++;
   try {
     localStorage.setItem('fretboard_notation', v ? 'solfege' : 'letter');
   } catch (_) {
     /* expected */
   }
+  for (const cb of _notationListeners) cb();
 }
 
 // Load notation preference on module evaluation
