@@ -2,7 +2,7 @@
 // both take-screenshots.ts and ui-iterate.ts.
 
 import { defaultItems } from '../src/fixtures/items.ts';
-import type { FixtureDetail } from '../src/fixtures/quiz-page.ts';
+import type { FixtureDetail } from '../src/types.ts';
 import {
   quizActive,
   quizCorrectFeedback,
