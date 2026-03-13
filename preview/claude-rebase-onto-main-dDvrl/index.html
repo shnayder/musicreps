@@ -2144,7 +2144,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="88fc97 rebase-onto-main-dDvrl"></div>
+  <div class="home-screen" id="home-screen" data-version="d2c4fb rebase-onto-main-dDvrl"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -5530,13 +5530,11 @@ button {
       ] }),
       /* @__PURE__ */ u3("div", { class: "home-footer", children: [
         /* @__PURE__ */ u3(
-          "a",
+          "button",
           {
+            type: "button",
             class: "home-settings-btn text-link",
-            href: "#settings",
-            role: "button",
-            onClick: (e3) => {
-              e3.preventDefault();
+            onClick: () => {
               setUseSolfege2(settings2.getUseSolfege());
               setShowSettings(true);
             },
@@ -5553,7 +5551,7 @@ button {
     if (!raw) return "";
     try {
       const url = new URL(raw);
-      return url.protocol === "https:" || url.protocol === "http:" ? raw : "";
+      return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
     } catch {
       return "";
     }
