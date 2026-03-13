@@ -14,14 +14,10 @@ import { computeMedian } from '../adaptive.ts';
 // Fixture type (used by useQuizEngine for fixture injection)
 // ---------------------------------------------------------------------------
 
-/** Describes a fixture state for deterministic screenshots. */
 export type SpeedCheckFixture = {
   phase: 'intro' | 'running' | 'results';
-  /** Baseline value in ms (for 'results' phase). Defaults to 0. */
   baseline?: number;
-  /** Trial progress text (for 'running' phase). Defaults to ''. */
   trialProgress?: string;
-  /** Which button to highlight green (for 'running' phase). */
   targetNote?: string;
 };
 
@@ -29,17 +25,12 @@ export type SpeedCheckFixture = {
 // Provider type
 // ---------------------------------------------------------------------------
 
-/** Describes a speed check interaction type for measuring motor baseline. */
 export type SpeedCheckProvider = {
-  /** Provider key for localStorage (e.g., "button"). */
   key: string;
-  /** Intro explanation text shown before trials start. */
   introText: string;
-  /** Instruction text shown during trials. */
   trialText: string;
 };
 
-/** Default button-highlight provider: tap the green button as fast as you can. */
 export const BUTTON_PROVIDER: SpeedCheckProvider = {
   key: 'button',
   introText: 'Tap the highlighted button as quickly as you can. ' +
@@ -60,15 +51,8 @@ const PAUSE_MS = 400;
 // BaselineInfo — progress tab inline component
 // ---------------------------------------------------------------------------
 
-/**
- * Shows the motor baseline in the progress tab with a run/rerun button.
- * Uses "label: value / explanation" hierarchy with the number emphasized.
- */
 export function BaselineInfo(
-  { baseline, onRun }: {
-    baseline: number | null;
-    onRun: () => void;
-  },
+  { baseline, onRun }: { baseline: number | null; onRun: () => void },
 ) {
   const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
   const tag = baseline
@@ -101,47 +85,36 @@ export function BaselineInfo(
 }
 
 // ---------------------------------------------------------------------------
-// SpeedCheck — full calibration lifecycle component
+// Trial loop hook — manages the trial state machine
 // ---------------------------------------------------------------------------
 
-/**
- * Self-contained speed check (calibration) component.
- * Manages intro → trial loop → results internally.
- * Renders NoteButtons for trials and handles click + keyboard input.
- *
- * @param provider   Provider config (intro/trial text).
- * @param onComplete Called with the computed baseline (ms) when done.
- * @param onCancel   Called when the user cancels (Escape key).
- * @param fixture    Optional fixture data for deterministic screenshots.
- *                   When provided, skips trial loop and renders frozen state.
- */
-export function SpeedCheck(
-  { provider, onComplete, onCancel, fixture }: {
-    provider: SpeedCheckProvider;
-    onComplete: (baseline: number) => void;
-    onCancel: () => void;
-    fixture?: SpeedCheckFixture;
-  },
+type TrialState = {
+  active: boolean;
+  trialIndex: number;
+  startTime: number;
+  times: number[];
+  prevBtn: HTMLElement | null;
+  targetNote: string | null;
+  trialTimeout: number | null;
+};
+
+function useTrialLoop(
+  buttonsRef: { current: HTMLDivElement | null },
+  onDone: (median: number) => void,
 ) {
-  const [phase, setPhase] = useState<'intro' | 'running' | 'results'>(
-    fixture?.phase ?? 'intro',
-  );
-  const [baseline, setBaseline] = useState(fixture?.baseline ?? 0);
-  const [trialProgress, setTrialProgress] = useState(
-    fixture?.trialProgress ?? '',
-  );
-  const buttonsRef = useRef<HTMLDivElement>(null);
-  const trialRef = useRef({
+  const trialRef = useRef<TrialState>({
     active: false,
     trialIndex: 0,
     startTime: 0,
-    times: [] as number[],
-    prevBtn: null as HTMLElement | null,
-    targetNote: null as string | null,
-    trialTimeout: null as number | null,
+    times: [],
+    prevBtn: null,
+    targetNote: null,
+    trialTimeout: null,
   });
+  const [trialProgress, setTrialProgress] = useState('');
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
-  // Clean up on unmount.
   useEffect(() => {
     return () => {
       trialRef.current.active = false;
@@ -151,50 +124,34 @@ export function SpeedCheck(
     };
   }, []);
 
-  // --- Present next trial ---
   const presentNextTrial = useCallback(() => {
     const state = trialRef.current;
     if (!state.active || !buttonsRef.current) return;
-
     const buttons = Array.from(
       buttonsRef.current.querySelectorAll<HTMLElement>('.answer-btn-note'),
     );
     if (buttons.length === 0) return;
-
-    // Remove previous highlight.
     for (
       const el of buttonsRef.current.querySelectorAll('.calibration-target')
     ) {
       el.classList.remove('calibration-target');
     }
-
-    // Pick next target (weighted ~35% toward accidentals).
     const btn = pickCalibrationButton(buttons, state.prevBtn);
     btn.classList.add('calibration-target');
     state.prevBtn = btn;
     state.targetNote = btn.dataset.note || null;
     state.startTime = performance.now();
-
     setTrialProgress((state.trialIndex + 1) + ' / ' + TOTAL_TRIALS);
   }, []);
 
-  // --- Handle trial response (click or keyboard) ---
   const handleTrialResponse = useCallback((note: string) => {
     const state = trialRef.current;
     if (!state.active || !state.targetNote) return;
-    if (note !== state.targetNote) return; // Wrong button — ignore.
-
+    if (note !== state.targetNote) return;
     const elapsed = performance.now() - state.startTime;
-
-    // Skip warmup trials (first 2).
-    if (state.trialIndex >= WARMUP_TRIALS) {
-      state.times.push(elapsed);
-    }
-
+    if (state.trialIndex >= WARMUP_TRIALS) state.times.push(elapsed);
     state.trialIndex++;
     state.targetNote = null;
-
-    // Remove highlight.
     if (buttonsRef.current) {
       for (
         const el of buttonsRef.current.querySelectorAll('.calibration-target')
@@ -202,15 +159,10 @@ export function SpeedCheck(
         el.classList.remove('calibration-target');
       }
     }
-
     if (state.trialIndex >= TOTAL_TRIALS) {
-      // All trials done — compute median baseline.
       state.active = false;
-      const median = computeMedian(state.times) ?? 500;
-      setBaseline(Math.round(median));
-      setPhase('results');
+      onDoneRef.current(computeMedian(state.times) ?? 500);
     } else {
-      // Pause before next trial.
       state.trialTimeout = setTimeout(
         () => presentNextTrial(),
         PAUSE_MS,
@@ -218,46 +170,7 @@ export function SpeedCheck(
     }
   }, [presentNextTrial]);
 
-  // --- Keyboard: Escape to cancel; note keys during trials ---
-  useEffect(() => {
-    if (fixture) return; // Fixture mode — no keyboard handling.
-
-    function onKeyDown(e: KeyboardEvent) {
-      // Escape cancels at any point.
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        trialRef.current.active = false;
-        if (trialRef.current.trialTimeout) {
-          clearTimeout(trialRef.current.trialTimeout);
-        }
-        onCancel();
-        return;
-      }
-
-      if (phase !== 'running') return;
-
-      const state = trialRef.current;
-      if (!state.active || !state.targetNote) return;
-
-      // Match the base letter of the target note. For calibration we skip
-      // the accidental delay — pressing 'C' matches both C and C#. This
-      // gives an accurate motor-speed measurement.
-      const key = e.key.toUpperCase();
-      if (key === state.targetNote[0]) {
-        e.preventDefault();
-        handleTrialResponse(state.targetNote);
-      }
-    }
-
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [fixture, phase, handleTrialResponse, onCancel]);
-
-  // --- Start trials when phase becomes 'running' ---
-  useEffect(() => {
-    if (fixture) return; // Fixture mode — no trial loop.
-    if (phase !== 'running') return;
-
+  const startTrials = useCallback(() => {
     const state = trialRef.current;
     state.active = true;
     state.trialIndex = 0;
@@ -265,71 +178,59 @@ export function SpeedCheck(
     state.times = [];
     state.prevBtn = null;
     state.targetNote = null;
-
-    // Small delay to let buttons render before first trial.
     const timeout = setTimeout(() => presentNextTrial(), 300);
     return () => {
       clearTimeout(timeout);
       state.active = false;
       if (state.trialTimeout) clearTimeout(state.trialTimeout);
     };
-  }, [fixture, phase, presentNextTrial]);
+  }, [presentNextTrial]);
 
-  // --- Fixture: highlight target button for 'running' screenshots ---
-  useEffect(() => {
-    if (!fixture || fixture.phase !== 'running' || !fixture.targetNote) return;
-    if (!buttonsRef.current) return;
-    const btn = buttonsRef.current.querySelector(
-      `.answer-btn-note[data-note="${fixture.targetNote}"]`,
-    ) as HTMLElement | null;
-    if (btn) btn.classList.add('calibration-target');
-    return () => {
-      if (btn) btn.classList.remove('calibration-target');
-    };
-  }, [fixture]);
+  return {
+    trialRef,
+    trialProgress,
+    handleTrialResponse,
+    startTrials,
+    setTrialProgress,
+  };
+}
 
-  // --- Render: Intro ---
-  if (phase === 'intro') {
-    return (
-      <>
-        <div class='quiz-content calibration-results'>
-          <p>{provider.introText}</p>
-        </div>
-        <div class='quiz-controls'>
-          <button
-            type='button'
-            tabIndex={0}
-            class='calibration-action-btn'
-            onClick={() => setPhase('running')}
-          >
-            Start
-          </button>
-        </div>
-      </>
-    );
-  }
+// ---------------------------------------------------------------------------
+// SpeedCheckIntro — intro phase sub-component
+// ---------------------------------------------------------------------------
 
-  // --- Render: Running (trial loop) ---
-  if (phase === 'running') {
-    return (
-      <>
-        <div class='quiz-content'>
-          <div class='quiz-prompt'>{provider.trialText}</div>
-        </div>
-        <div class='quiz-controls'>
-          <div ref={buttonsRef}>
-            <NoteButtons
-              onAnswer={handleTrialResponse}
-              calibrationActive
-            />
-          </div>
-          <div class='calibration-progress'>{trialProgress}</div>
-        </div>
-      </>
-    );
-  }
+function SpeedCheckIntro(
+  { text, onStart }: { text: string; onStart: () => void },
+) {
+  return (
+    <>
+      <div class='quiz-content calibration-results'>
+        <p>{text}</p>
+      </div>
+      <div class='quiz-controls'>
+        <button
+          type='button'
+          tabIndex={0}
+          class='calibration-action-btn'
+          onClick={onStart}
+        >
+          Start
+        </button>
+      </div>
+    </>
+  );
+}
 
-  // --- Render: Results ---
+// ---------------------------------------------------------------------------
+// SpeedCheckResults — results phase sub-component
+// ---------------------------------------------------------------------------
+
+function SpeedCheckResults(
+  { baseline, onComplete }: {
+    baseline: number;
+    onComplete: (baseline: number) => void;
+  },
+) {
   const thresholds = getCalibrationThresholds(baseline);
   return (
     <>
@@ -350,11 +251,9 @@ export function SpeedCheck(
               <tr key={t.label}>
                 <td>{t.label}</td>
                 <td>
-                  {
-                    t.maxMs !== null
-                      ? (t.maxMs / 1000).toFixed(1) + 's'
-                      : '\u2014' /* \u2014 = — (em dash) */
-                  }
+                  {t.maxMs !== null
+                    ? (t.maxMs / 1000).toFixed(1) + 's'
+                    : '\u2014'}
                 </td>
                 <td>{t.meaning}</td>
               </tr>
@@ -374,4 +273,105 @@ export function SpeedCheck(
       </div>
     </>
   );
+}
+
+// ---------------------------------------------------------------------------
+// SpeedCheck — full calibration lifecycle component
+// ---------------------------------------------------------------------------
+
+export function SpeedCheck(
+  { provider, onComplete, onCancel, fixture }: {
+    provider: SpeedCheckProvider;
+    onComplete: (baseline: number) => void;
+    onCancel: () => void;
+    fixture?: SpeedCheckFixture;
+  },
+) {
+  const [phase, setPhase] = useState<'intro' | 'running' | 'results'>(
+    fixture?.phase ?? 'intro',
+  );
+  const [baseline, setBaseline] = useState(fixture?.baseline ?? 0);
+  const buttonsRef = useRef<HTMLDivElement>(null);
+
+  const trials = useTrialLoop(buttonsRef, (median) => {
+    setBaseline(Math.round(median));
+    setPhase('results');
+  });
+
+  if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
+
+  // Keyboard: Escape to cancel; note keys during trials
+  useEffect(() => {
+    if (fixture) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        trials.trialRef.current.active = false;
+        if (trials.trialRef.current.trialTimeout) {
+          clearTimeout(trials.trialRef.current.trialTimeout);
+        }
+        onCancel();
+        return;
+      }
+      if (phase !== 'running') return;
+      const state = trials.trialRef.current;
+      if (!state.active || !state.targetNote) return;
+      const key = e.key.toUpperCase();
+      if (key === state.targetNote[0]) {
+        e.preventDefault();
+        trials.handleTrialResponse(state.targetNote);
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [fixture, phase, trials.handleTrialResponse, onCancel]);
+
+  // Start trials when phase becomes 'running'
+  useEffect(() => {
+    if (fixture || phase !== 'running') return;
+    return trials.startTrials();
+  }, [fixture, phase, trials.startTrials]);
+
+  // Fixture: highlight target button for 'running' screenshots
+  useEffect(() => {
+    if (!fixture || fixture.phase !== 'running' || !fixture.targetNote) return;
+    if (!buttonsRef.current) return;
+    const btn = buttonsRef.current.querySelector(
+      `.answer-btn-note[data-note="${fixture.targetNote}"]`,
+    ) as HTMLElement | null;
+    if (btn) btn.classList.add('calibration-target');
+    return () => {
+      if (btn) btn.classList.remove('calibration-target');
+    };
+  }, [fixture]);
+
+  if (phase === 'intro') {
+    return (
+      <SpeedCheckIntro
+        text={provider.introText}
+        onStart={() => setPhase('running')}
+      />
+    );
+  }
+
+  if (phase === 'running') {
+    return (
+      <>
+        <div class='quiz-content'>
+          <div class='quiz-prompt'>{provider.trialText}</div>
+        </div>
+        <div class='quiz-controls'>
+          <div ref={buttonsRef}>
+            <NoteButtons
+              onAnswer={trials.handleTrialResponse}
+              calibrationActive
+            />
+          </div>
+          <div class='calibration-progress'>{trials.trialProgress}</div>
+        </div>
+      </>
+    );
+  }
+
+  return <SpeedCheckResults baseline={baseline} onComplete={onComplete} />;
 }

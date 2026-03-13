@@ -257,6 +257,262 @@ export function computeMedian(values: number[]): number | null {
 }
 
 // ---------------------------------------------------------------------------
+// Standalone functions extracted from the selector (pure, testable)
+// ---------------------------------------------------------------------------
+
+/** Scale config timing thresholds for multi-response items. */
+export function scaleConfigForResponseCount(
+  cfg: AdaptiveConfig,
+  responseCount: number,
+): AdaptiveConfig {
+  if (responseCount <= 1) return cfg;
+  return {
+    ...cfg,
+    minTime: cfg.minTime * responseCount,
+    automaticityTarget: cfg.automaticityTarget * responseCount,
+    maxResponseTime: cfg.maxResponseTime * responseCount,
+    selfCorrectionThreshold: cfg.selfCorrectionThreshold * responseCount,
+  };
+}
+
+/** Record a correct response, updating EWMA, stability, and sample count. */
+export function recordCorrectResponse(
+  storage: StorageAdapter,
+  cfg: AdaptiveConfig,
+  itemCfg: AdaptiveConfig,
+  itemId: string,
+  clamped: number,
+  now: number,
+): void {
+  const existing = storage.getStats(itemId);
+  const elapsedHours = existing?.lastCorrectAt
+    ? (now - existing.lastCorrectAt) / 3600000
+    : null;
+  if (existing) {
+    storage.saveStats(itemId, {
+      recentTimes: [...existing.recentTimes, clamped].slice(
+        -cfg.maxStoredTimes,
+      ),
+      ewma: computeEwma(existing.ewma, clamped, cfg.ewmaAlpha),
+      sampleCount: existing.sampleCount + 1,
+      lastSeen: now,
+      stability: updateStability(
+        existing.stability ?? null,
+        clamped,
+        elapsedHours,
+        itemCfg,
+      ),
+      lastCorrectAt: now,
+    });
+  } else {
+    storage.saveStats(itemId, {
+      recentTimes: [clamped],
+      ewma: clamped,
+      sampleCount: 1,
+      lastSeen: now,
+      stability: cfg.initialStability,
+      lastCorrectAt: now,
+    });
+  }
+}
+
+/** Record a wrong response, reducing stability without touching EWMA. */
+export function recordWrongResponse(
+  storage: StorageAdapter,
+  cfg: AdaptiveConfig,
+  itemCfg: AdaptiveConfig,
+  itemId: string,
+  now: number,
+): void {
+  const existing = storage.getStats(itemId);
+  if (existing) {
+    storage.saveStats(itemId, {
+      ...existing,
+      lastSeen: now,
+      stability: computeStabilityAfterWrong(existing.stability ?? null, cfg),
+    });
+  } else {
+    storage.saveStats(itemId, {
+      recentTimes: [],
+      ewma: itemCfg.maxResponseTime,
+      sampleCount: 0,
+      lastSeen: now,
+      stability: cfg.initialStability,
+      lastCorrectAt: null,
+    });
+  }
+}
+
+/**
+ * Compute "level automaticity" — the p-th percentile of per-item
+ * automaticity values (unseen items contribute 0).
+ */
+export function computeLevelAutomaticity(
+  getAutomaticity: (id: string, nowMs?: number) => number | null,
+  itemIds: string[],
+  percentile: number = 0.1,
+  nowMs?: number,
+): { level: number; seen: number } {
+  if (itemIds.length === 0) return { level: 0, seen: 0 };
+  let seen = 0;
+  const values: number[] = [];
+  for (let i = 0; i < itemIds.length; i++) {
+    const auto = getAutomaticity(itemIds[i], nowMs);
+    if (auto !== null) {
+      seen++;
+      values.push(auto);
+    } else {
+      values.push(0);
+    }
+  }
+  values.sort((a, b) => a - b);
+  const rawIndex = Math.ceil(values.length * percentile) - 1;
+  const index = Math.min(values.length - 1, Math.max(0, rawIndex));
+  return { level: values[index], seen };
+}
+
+/**
+ * Recommend groups to review, sorted by needsWork descending.
+ */
+export function computeStringRecommendations(
+  getAutomaticity: (id: string, nowMs?: number) => number | null,
+  threshold: number,
+  stringIndices: number[],
+  getItemIds: (index: number) => string[],
+  nowMs?: number,
+): StringRecommendation[] {
+  const results = stringIndices.map((s) => {
+    const items = getItemIds(s);
+    let workingCount = 0;
+    let unseenCount = 0;
+    let fluentCount = 0;
+    for (const id of items) {
+      const auto = getAutomaticity(id, nowMs);
+      if (auto === null) {
+        unseenCount++;
+      } else if (auto > threshold) {
+        fluentCount++;
+      } else {
+        workingCount++;
+      }
+    }
+    return {
+      string: s,
+      workingCount,
+      unseenCount,
+      fluentCount,
+      totalCount: items.length,
+    };
+  });
+  results.sort((a, b) =>
+    (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount) ||
+    a.string - b.string
+  );
+  return results;
+}
+
+/**
+ * Check if all items have automaticity above the given threshold.
+ */
+export function checkAllItemsAutomatic(
+  getAutomaticity: (id: string) => number | null,
+  items: string[],
+  threshold: number,
+): boolean {
+  for (const id of items) {
+    const auto = getAutomaticity(id);
+    if (auto === null || auto <= threshold) return false;
+  }
+  return items.length > 0;
+}
+
+/**
+ * Check if previously-automatic material needs review.
+ * Returns true only when ALL items had high prior skill but at least one
+ * item's automaticity has since dropped below the automatic threshold.
+ */
+export function checkItemsNeedReview(
+  storage: StorageAdapter,
+  getAutomaticity: (id: string) => number | null,
+  cfg: AdaptiveConfig,
+  getResponseCount: (id: string) => number,
+  items: string[],
+): boolean {
+  if (items.length === 0) return false;
+  let hasDecayedItem = false;
+  for (const id of items) {
+    const stats = storage.getStats(id);
+    if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) {
+      return false;
+    }
+    const speed = computeSpeedScore(stats.ewma, cfg, getResponseCount(id));
+    if (speed == null || speed < 0.5) return false;
+    const auto = getAutomaticity(id);
+    if (auto !== null && auto <= cfg.automaticityThreshold) {
+      hasDecayedItem = true;
+    }
+  }
+  return hasDecayedItem;
+}
+
+// ---------------------------------------------------------------------------
+// Per-item metric helpers (used by selector factory methods)
+// ---------------------------------------------------------------------------
+
+function getItemRecall(
+  storage: StorageAdapter,
+  itemId: string,
+  nowMs?: number,
+): number | null {
+  const stats = storage.getStats(itemId);
+  if (!stats || stats.stability == null || stats.lastCorrectAt == null) {
+    return null;
+  }
+  const now = nowMs ?? Date.now();
+  return computeRecall(stats.stability, (now - stats.lastCorrectAt) / 3600000);
+}
+
+function getItemAutomaticity(
+  storage: StorageAdapter,
+  scaledCfg: AdaptiveConfig,
+  getRecall: (itemId: string, nowMs?: number) => number | null,
+  itemId: string,
+  nowMs?: number,
+): number | null {
+  const stats = storage.getStats(itemId);
+  if (!stats) return null;
+  const recall = getRecall(itemId, nowMs);
+  const speed = computeSpeedScore(stats.ewma, scaledCfg);
+  return computeAutomaticityForDisplay(recall, speed, true);
+}
+
+function getItemSpeedScore(
+  storage: StorageAdapter,
+  scaledCfg: AdaptiveConfig,
+  itemId: string,
+): number | null {
+  const stats = storage.getStats(itemId);
+  if (!stats) return null;
+  const speed = computeSpeedScore(stats.ewma, scaledCfg);
+  if (speed == null && stats.sampleCount > 0) return 0;
+  return speed;
+}
+
+function getItemFreshness(
+  storage: StorageAdapter,
+  itemId: string,
+  nowMs?: number,
+): number | null {
+  const stats = storage.getStats(itemId);
+  if (!stats) return null;
+  return computeFreshness(
+    stats.stability ?? null,
+    stats.lastCorrectAt ?? null,
+    nowMs,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Selector factory (storage-injected — works with localStorage or Map)
 // ---------------------------------------------------------------------------
 
@@ -266,97 +522,22 @@ export function createAdaptiveSelector(
   randomFn: () => number = Math.random,
   responseCountFn: ((itemId: string) => number) | null = null,
 ): AdaptiveSelector {
-  function getResponseCount(itemId: string): number {
-    return responseCountFn ? responseCountFn(itemId) : 1;
-  }
-
-  function scaledConfig(itemId: string): AdaptiveConfig {
-    const rc = getResponseCount(itemId);
-    if (rc <= 1) return cfg;
-    return {
-      ...cfg,
-      minTime: cfg.minTime * rc,
-      automaticityTarget: cfg.automaticityTarget * rc,
-      maxResponseTime: cfg.maxResponseTime * rc,
-      selfCorrectionThreshold: cfg.selfCorrectionThreshold * rc,
-    };
-  }
+  const getResponseCount = (itemId: string): number =>
+    responseCountFn ? responseCountFn(itemId) : 1;
+  const scaledCfg = (itemId: string): AdaptiveConfig =>
+    scaleConfigForResponseCount(cfg, getResponseCount(itemId));
 
   function recordResponse(
     itemId: string,
     timeMs: number,
     correct: boolean = true,
   ): void {
-    const itemCfg = scaledConfig(itemId);
+    const itemCfg = scaledCfg(itemId);
     const clamped = Math.min(timeMs, itemCfg.maxResponseTime);
-    const existing = storage.getStats(itemId);
     const now = Date.now();
-
     if (correct) {
-      const elapsedHours = existing && existing.lastCorrectAt
-        ? (now - existing.lastCorrectAt) / 3600000
-        : null;
-      if (existing) {
-        const newEwma = computeEwma(existing.ewma, clamped, cfg.ewmaAlpha);
-        const newTimes = [...existing.recentTimes, clamped].slice(
-          -cfg.maxStoredTimes,
-        );
-        const newStability = updateStability(
-          existing.stability ?? null,
-          clamped,
-          elapsedHours,
-          itemCfg,
-        );
-        storage.saveStats(itemId, {
-          recentTimes: newTimes,
-          ewma: newEwma,
-          sampleCount: existing.sampleCount + 1,
-          lastSeen: now,
-          stability: newStability,
-          lastCorrectAt: now,
-        });
-      } else {
-        storage.saveStats(itemId, {
-          recentTimes: [clamped],
-          ewma: clamped,
-          sampleCount: 1,
-          lastSeen: now,
-          stability: cfg.initialStability,
-          lastCorrectAt: now,
-        });
-      }
-    } else {
-      // Wrong answer: reduce stability, update lastSeen, don't touch EWMA
-      if (existing) {
-        const newStability = computeStabilityAfterWrong(
-          existing.stability ?? null,
-          cfg,
-        );
-        storage.saveStats(itemId, {
-          ...existing,
-          lastSeen: now,
-          stability: newStability,
-        });
-      } else {
-        // First interaction is wrong: create minimal stats
-        storage.saveStats(itemId, {
-          recentTimes: [],
-          ewma: itemCfg.maxResponseTime,
-          sampleCount: 0,
-          lastSeen: now,
-          stability: cfg.initialStability,
-          lastCorrectAt: null,
-        });
-      }
-    }
-  }
-
-  function getWeight(itemId: string): number {
-    return computeWeight(storage.getStats(itemId), scaledConfig(itemId));
-  }
-
-  function getStats(itemId: string): ItemStats | null {
-    return storage.getStats(itemId);
+      recordCorrectResponse(storage, cfg, itemCfg, itemId, clamped, now);
+    } else recordWrongResponse(storage, cfg, itemCfg, itemId, now);
   }
 
   function selectNext(validItems: string[]): string {
@@ -367,170 +548,33 @@ export function createAdaptiveSelector(
       storage.setLastSelected(validItems[0]);
       return validItems[0];
     }
-
     const lastSelected = storage.getLastSelected();
     const weights = validItems.map((id) =>
       id === lastSelected ? 0 : getWeight(id)
     );
-
     const selected = selectWeighted(validItems, weights, randomFn());
     storage.setLastSelected(selected);
     return selected;
   }
 
+  function getStats(itemId: string): ItemStats | null {
+    return storage.getStats(itemId);
+  }
+
+  function getWeight(itemId: string): number {
+    return computeWeight(storage.getStats(itemId), scaledCfg(itemId));
+  }
+
   function getRecall(itemId: string, nowMs?: number): number | null {
-    const stats = storage.getStats(itemId);
-    if (!stats || stats.stability == null || stats.lastCorrectAt == null) {
-      return null;
-    }
-    const now = nowMs ?? Date.now();
-    const elapsedHours = (now - stats.lastCorrectAt) / 3600000;
-    return computeRecall(stats.stability, elapsedHours);
+    return getItemRecall(storage, itemId, nowMs);
   }
 
-  function getAutomaticity(itemId: string, nowMs?: number): number | null {
-    const stats = storage.getStats(itemId);
-    if (!stats) return null;
-    const recall = getRecall(itemId, nowMs);
-    const speed = computeSpeedScore(stats.ewma, scaledConfig(itemId));
-    return computeAutomaticityForDisplay(recall, speed, true);
-  }
-
-  function getSpeedScore(itemId: string): number | null {
-    const stats = storage.getStats(itemId);
-    if (!stats) return null;
-    const speed = computeSpeedScore(stats.ewma, scaledConfig(itemId));
-    // Show "needs work" for seen-but-no-speed items
-    if (speed == null && stats.sampleCount > 0) return 0;
-    return speed;
-  }
-
-  function getFreshness(itemId: string, nowMs?: number): number | null {
-    const stats = storage.getStats(itemId);
-    if (!stats) return null;
-    return computeFreshness(
-      stats.stability ?? null,
-      stats.lastCorrectAt ?? null,
-      nowMs,
-    );
-  }
-
-  /**
-   * Compute "level automaticity" — the p-th percentile of per-item
-   * automaticity values (unseen items contribute 0).
-   */
-  function getLevelAutomaticity(
-    itemIds: string[],
-    percentile: number = 0.1,
-    nowMs?: number,
-  ): { level: number; seen: number } {
-    if (itemIds.length === 0) return { level: 0, seen: 0 };
-    let seen = 0;
-    const values: number[] = [];
-    for (let i = 0; i < itemIds.length; i++) {
-      const auto = getAutomaticity(itemIds[i], nowMs);
-      if (auto !== null) {
-        seen++;
-        values.push(auto);
-      } else {
-        values.push(0);
-      }
-    }
-    values.sort((a, b) => a - b);
-    const rawIndex = Math.ceil(values.length * percentile) - 1;
-    const index = Math.min(values.length - 1, Math.max(0, rawIndex));
-    return { level: values[index], seen };
-  }
-
-  /**
-   * Recommend strings to review, sorted by needsWork descending.
-   *
-   * - unseenCount: items with no recall data (never answered correctly)
-   * - workingCount: items seen but automaticity <= threshold (not yet automatic)
-   * - fluentCount: items with automaticity > threshold (truly automatic)
-   */
-  function getStringRecommendations(
-    stringIndices: number[],
-    getItemIds: (index: number) => string[],
-    nowMs?: number,
-  ): StringRecommendation[] {
-    const results = stringIndices.map((s) => {
-      const items = getItemIds(s);
-      let workingCount = 0;
-      let unseenCount = 0;
-      let fluentCount = 0;
-      for (const id of items) {
-        const auto = getAutomaticity(id, nowMs);
-        if (auto === null) {
-          unseenCount++;
-        } else if (auto > cfg.automaticityThreshold) {
-          fluentCount++;
-        } else {
-          workingCount++;
-        }
-      }
-      return {
-        string: s,
-        workingCount,
-        unseenCount,
-        fluentCount,
-        totalCount: items.length,
-      };
-    });
-    // Sort by work descending, with deterministic tie-break on string index.
-    results.sort((a, b) =>
-      (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount) ||
-      a.string - b.string
-    );
-    return results;
-  }
-
-  /**
-   * Check if all items have automaticity > automaticityThreshold.
-   * This is the "fully automatic" bar — both fast AND recently practiced.
-   * Matches the "Automatic (>80%)" band in the stats heatmap.
-   */
-  function checkAllAutomatic(items: string[]): boolean {
-    for (const id of items) {
-      const auto = getAutomaticity(id);
-      if (auto === null || auto <= cfg.automaticityThreshold) return false;
-    }
-    return items.length > 0;
-  }
-
-  /**
-   * Check if previously-automatic material needs review.
-   * Returns true only when ALL items had high prior skill (speedScore >= 0.5,
-   * i.e. answering at or below the automaticity target, with at least 2
-   * correct answers as evidence) but at least one item's automaticity has
-   * since dropped below the automatic threshold.
-   */
-  function checkNeedsReview(items: string[]): boolean {
-    if (items.length === 0) return false;
-    let hasDecayedItem = false;
-    for (const id of items) {
-      const stats = storage.getStats(id);
-      if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) {
-        return false;
-      }
-      const rc = getResponseCount(id);
-      const speed = computeSpeedScore(stats.ewma, cfg, rc);
-      if (speed == null || speed < 0.5) return false;
-      const auto = getAutomaticity(id);
-      if (auto !== null && auto <= cfg.automaticityThreshold) {
-        hasDecayedItem = true;
-      }
-    }
-    return hasDecayedItem;
-  }
-
-  function updateConfig(newCfg: Partial<AdaptiveConfig>): void {
-    cfg = { ...cfg, ...newCfg };
-  }
-
-  function getConfig(): AdaptiveConfig {
-    return cfg;
-  }
+  const getAutomaticity = (itemId: string, nowMs?: number): number | null =>
+    getItemAutomaticity(storage, scaledCfg(itemId), getRecall, itemId, nowMs);
+  const getSpeedScore = (itemId: string): number | null =>
+    getItemSpeedScore(storage, scaledCfg(itemId), itemId);
+  const getFreshness = (itemId: string, nowMs?: number): number | null =>
+    getItemFreshness(storage, itemId, nowMs);
 
   return {
     recordResponse,
@@ -541,12 +585,30 @@ export function createAdaptiveSelector(
     getAutomaticity,
     getSpeedScore,
     getFreshness,
-    getLevelAutomaticity,
-    getStringRecommendations,
-    checkAllAutomatic,
-    checkNeedsReview,
-    updateConfig,
-    getConfig,
+    getLevelAutomaticity: (itemIds, percentile, nowMs) =>
+      computeLevelAutomaticity(getAutomaticity, itemIds, percentile, nowMs),
+    getStringRecommendations: (stringIndices, getItemIds, nowMs) =>
+      computeStringRecommendations(
+        getAutomaticity,
+        cfg.automaticityThreshold,
+        stringIndices,
+        getItemIds,
+        nowMs,
+      ),
+    checkAllAutomatic: (items) =>
+      checkAllItemsAutomatic(getAutomaticity, items, cfg.automaticityThreshold),
+    checkNeedsReview: (items) =>
+      checkItemsNeedReview(
+        storage,
+        getAutomaticity,
+        cfg,
+        getResponseCount,
+        items,
+      ),
+    updateConfig: (newCfg: Partial<AdaptiveConfig>) => {
+      cfg = { ...cfg, ...newCfg };
+    },
+    getConfig: () => cfg,
   };
 }
 

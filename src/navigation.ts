@@ -8,6 +8,27 @@ type ModeController = {
   name: string;
 };
 
+/** Set up global navigation listeners (back buttons, Escape key). */
+function initNavigationListeners(
+  getCurrentModeId: () => string | null,
+  navigateHome: () => void,
+): void {
+  // Mode back buttons (one per mode screen)
+  document.querySelectorAll('.mode-close-btn').forEach((btn) => {
+    btn.addEventListener('click', () => navigateHome());
+  });
+
+  // Escape key navigates home when idle on a mode screen.
+  document.addEventListener('keydown', (e) => {
+    const modeId = getCurrentModeId();
+    if (e.key !== 'Escape' || !modeId) return;
+    if (document.querySelector('.settings-overlay.open')) return;
+    const modeScreen = document.getElementById('mode-' + modeId);
+    if (modeScreen && !modeScreen.classList.contains('phase-idle')) return;
+    navigateHome();
+  });
+}
+
 export function createNavigation(): {
   registerMode: (id: string, modeController: ModeController) => void;
   switchTo: (modeId: string) => void;
@@ -17,8 +38,7 @@ export function createNavigation(): {
   const LAST_MODE_KEY = 'fretboard_lastMode';
   const modes: Record<string, ModeController> = {};
   let currentModeId: string | null = null;
-
-  const homeScreen: HTMLElement | null = document.getElementById('home-screen');
+  const homeScreen = document.getElementById('home-screen');
 
   function registerMode(id: string, modeController: ModeController): void {
     modes[id] = modeController;
@@ -26,19 +46,13 @@ export function createNavigation(): {
 
   function navigateHome(): void {
     const previousModeId = currentModeId;
-
-    // Stop quiz if active in current mode
     if (currentModeId && modes[currentModeId]) {
       modes[currentModeId].deactivate();
       const currentScreen = document.getElementById('mode-' + currentModeId);
       if (currentScreen) currentScreen.classList.remove('mode-active');
     }
     currentModeId = null;
-
-    // Show home screen
     if (homeScreen) homeScreen.classList.remove('hidden');
-
-    // Focus the mode button the user came from
     requestAnimationFrame(() => {
       if (previousModeId && homeScreen) {
         const btn = homeScreen.querySelector(
@@ -51,24 +65,16 @@ export function createNavigation(): {
 
   function switchTo(modeId: string): void {
     if (!modes[modeId]) return;
-
-    // Hide home screen
     if (homeScreen) homeScreen.classList.add('hidden');
-
-    // Deactivate current mode
     if (currentModeId && modes[currentModeId]) {
       modes[currentModeId].deactivate();
       const currentScreen = document.getElementById('mode-' + currentModeId);
       if (currentScreen) currentScreen.classList.remove('mode-active');
     }
-
-    // Activate new mode
     currentModeId = modeId;
     const newScreen = document.getElementById('mode-' + modeId);
     if (newScreen) newScreen.classList.add('mode-active');
     modes[modeId].activate();
-
-    // Focus the start button
     requestAnimationFrame(() => {
       if (newScreen) {
         const target = newScreen.querySelector('.start-btn') as
@@ -77,44 +83,12 @@ export function createNavigation(): {
         if (target) target.focus();
       }
     });
-
-    // Persist
     localStorage.setItem(LAST_MODE_KEY, modeId);
   }
 
   function init(): void {
-    // Home screen mode buttons are handled by Preact HomeScreen component
-    // via onSelectMode prop — no DOM query needed here.
-
-    // Mode back buttons (one per mode screen)
-    document.querySelectorAll('.mode-close-btn').forEach(
-      function (btn: Element): void {
-        btn.addEventListener('click', function (): void {
-          navigateHome();
-        });
-      },
-    );
-
-    // Escape key navigates home when idle on a mode screen.
-    // During active quiz/calibration the container has phase-active,
-    // phase-calibration, or phase-round-complete — we only act on phase-idle
-    // so the quiz engine handles Escape independently in other phases.
-    document.addEventListener('keydown', function (e: KeyboardEvent): void {
-      if (e.key !== 'Escape' || !currentModeId) return;
-      // Don't interfere with open modals (e.g. settings)
-      if (document.querySelector('.settings-overlay.open')) return;
-      // Only navigate home when the quiz is idle (not running/calibrating)
-      const modeScreen = document.getElementById('mode-' + currentModeId);
-      if (modeScreen && !modeScreen.classList.contains('phase-idle')) return;
-      navigateHome();
-    });
-
-    // Initialize all registered modes
-    for (const id of Object.keys(modes)) {
-      modes[id].init();
-    }
-
-    // Always start on home screen
+    initNavigationListeners(() => currentModeId, navigateHome);
+    for (const id of Object.keys(modes)) modes[id].init();
     navigateHome();
   }
 

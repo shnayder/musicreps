@@ -10,21 +10,16 @@ const NOTE_NAME_SET = new Set(NOTE_NAMES);
 
 /** Delay (ms) before auto-submitting when multiple completions remain. */
 export const PENDING_DELAY_AMBIGUOUS = 600;
-/** Delay (ms) before auto-submitting when input is unambiguous (single match).
- *  Currently all note letters and buffered digits produce multiple matches,
- *  so this branch doesn't fire — kept for clarity and future input types. */
+/** Delay (ms) before auto-submitting when input is unambiguous (single match). */
 export const PENDING_DELAY_UNAMBIGUOUS = 400;
 
 /**
  * Map from flat spelling (e.g. "Db") to its button name (e.g. "C#").
- * Built from NOTES.accepts so we highlight the enharmonic button when the
- * user might follow a letter with 'b'.
  */
 const FLAT_TO_BUTTON: Record<string, string> = {};
 for (const note of NOTES) {
   for (const a of note.accepts) {
     if (a.endsWith('b') && a.length === 2) {
-      // 'db' → 'C#' — capitalize the flat spelling for lookup
       FLAT_TO_BUTTON[a[0].toUpperCase() + 'b'] = note.name;
     }
   }
@@ -32,10 +27,6 @@ for (const note of NOTES) {
 
 /**
  * Compute the set of button note names matching a pending keyboard note.
- * Includes the natural note, its sharp (if present), and the enharmonic
- * button reachable via flat spelling (e.g. pending "A" → {A, A#, G#}
- * because the user might type Ab which maps to the G# button).
- * Returns null when there is no pending note.
  */
 export function noteNarrowingSet(
   pendingNote: string | null,
@@ -52,8 +43,6 @@ export function noteNarrowingSet(
 
 /**
  * Compute the set of number button strings matching a pending digit.
- * For digit 1 in 0-11: {1, 10, 11}. For digit 1 in 1-12: {1, 10, 11, 12}.
- * Returns null when there is no pending digit.
  */
 export function numberNarrowingSet(
   pendingDigit: number | null,
@@ -65,7 +54,6 @@ export function numberNarrowingSet(
   if (pendingDigit >= start && pendingDigit <= end) {
     matches.add(String(pendingDigit));
   }
-  // Multi-digit completions (pendingDigit * 10 + d)
   for (let d = 0; d <= 9; d++) {
     const num = pendingDigit * 10 + d;
     if (num > end) break;
@@ -74,109 +62,150 @@ export function numberNarrowingSet(
   return matches;
 }
 
+// ---------------------------------------------------------------------------
+// PendingNoteManager — shared pending-note + accidental resolution
+// ---------------------------------------------------------------------------
+
+type PendingNoteState = {
+  pendingNote: string | null;
+  pendingTimeout: number | null;
+};
+
 /**
- * Create a keyboard handler for note input (C D E F G A B + #/s/b for accidentals).
- * Used by any mode where the answer is a note name.
- *
- * The handler keeps an internal timeout to allow a short window after a note key
- * is pressed for an accidental key (`#` / `b`) to be entered. Callers should
- * invoke `reset()` when the quiz stops and before restarting to clear any pending
- * note and prevent stale input from being submitted after the quiz has ended.
+ * Manages the pending-note-with-accidental pattern shared by both
+ * letter and solfège key handlers. Handles timeout, accidental keys
+ * (#/s/b), and Enter to commit immediately.
  */
+function createPendingNoteManager(
+  submitAnswer: (note: string) => void,
+  allowAccidentals: () => boolean,
+  onPendingChange?: (pendingNote: string | null) => void,
+) {
+  const state: PendingNoteState = { pendingNote: null, pendingTimeout: null };
+
+  function setPending(note: string | null): void {
+    state.pendingNote = note;
+    onPendingChange?.(note);
+  }
+
+  function reset(): void {
+    if (state.pendingTimeout) clearTimeout(state.pendingTimeout);
+    setPending(null);
+    state.pendingTimeout = null;
+  }
+
+  function submitPending(): void {
+    if (state.pendingNote) {
+      if (state.pendingTimeout) clearTimeout(state.pendingTimeout);
+      const note = state.pendingNote;
+      setPending(null);
+      state.pendingTimeout = null;
+      submitAnswer(note);
+    }
+  }
+
+  /** Handle Enter to commit pending note. Returns true if handled. */
+  function handleEnter(e: KeyboardEvent): boolean {
+    if (e.key !== 'Enter' || !state.pendingNote) return false;
+    e.preventDefault();
+    submitPending();
+    return true;
+  }
+
+  /** Handle accidental keys after a pending note. Returns true if handled. */
+  function handleAccidental(e: KeyboardEvent): boolean {
+    if (!state.pendingNote || !allowAccidentals()) return false;
+    const key = e.key.toLowerCase();
+
+    if (
+      e.key === '#' || e.key === 's' || e.key === 'S' ||
+      (e.shiftKey && e.key === '3')
+    ) {
+      e.preventDefault();
+      if (state.pendingTimeout) clearTimeout(state.pendingTimeout);
+      const note = state.pendingNote;
+      setPending(null);
+      state.pendingTimeout = null;
+      submitAnswer(note + '#');
+      return true;
+    }
+    if (key === 'b') {
+      e.preventDefault();
+      if (state.pendingTimeout) clearTimeout(state.pendingTimeout);
+      const note = state.pendingNote;
+      setPending(null);
+      state.pendingTimeout = null;
+      submitAnswer(note + 'b');
+      return true;
+    }
+    return false;
+  }
+
+  /** Set a pending note with auto-submit timeout. */
+  function setPendingWithTimeout(note: string): void {
+    if (state.pendingTimeout) clearTimeout(state.pendingTimeout);
+    if (!allowAccidentals()) {
+      submitAnswer(note);
+      return;
+    }
+    setPending(note);
+    const delay = noteNarrowingSet(note)!.size > 1
+      ? PENDING_DELAY_AMBIGUOUS
+      : PENDING_DELAY_UNAMBIGUOUS;
+    state.pendingTimeout = setTimeout(() => {
+      const n = state.pendingNote!;
+      setPending(null);
+      state.pendingTimeout = null;
+      submitAnswer(n);
+    }, delay);
+  }
+
+  return {
+    state,
+    reset,
+    submitPending,
+    handleEnter,
+    handleAccidental,
+    setPendingWithTimeout,
+    getPendingNote: () => state.pendingNote,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Note key handler (letter mode: C D E F G A B)
+// ---------------------------------------------------------------------------
+
 export function createNoteKeyHandler(
   submitAnswer: (note: string) => void,
   allowAccidentals: () => boolean = () => true,
   onPendingChange?: (pendingNote: string | null) => void,
 ): NoteKeyHandler {
-  let pendingNote: string | null = null;
-  let pendingTimeout: number | null = null;
-
-  function setPending(note: string | null): void {
-    pendingNote = note;
-    onPendingChange?.(note);
-  }
-
-  function reset(): void {
-    if (pendingTimeout) clearTimeout(pendingTimeout);
-    setPending(null);
-    pendingTimeout = null;
-  }
+  const pm = createPendingNoteManager(
+    submitAnswer,
+    allowAccidentals,
+    onPendingChange,
+  );
 
   function handleKey(e: KeyboardEvent): boolean {
+    if (pm.handleEnter(e)) return true;
+    if (pm.handleAccidental(e)) return true;
+
     const key = e.key.toUpperCase();
-
-    // Enter commits the pending note immediately (skip pending wait)
-    if (e.key === 'Enter' && pendingNote) {
-      e.preventDefault();
-      if (pendingTimeout) clearTimeout(pendingTimeout);
-      const note = pendingNote;
-      setPending(null);
-      pendingTimeout = null;
-      submitAnswer(note);
-      return true;
-    }
-
-    // Handle #/s for sharps or b for flats after a pending note
-    if (pendingNote && allowAccidentals()) {
-      if (
-        e.key === '#' || e.key === 's' || e.key === 'S' ||
-        (e.shiftKey && e.key === '3')
-      ) {
-        e.preventDefault();
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-        const note = pendingNote;
-        setPending(null);
-        pendingTimeout = null;
-        submitAnswer(note + '#');
-        return true;
-      }
-      if (e.key === 'b' || e.key === 'B') {
-        e.preventDefault();
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-        const note = pendingNote;
-        setPending(null);
-        pendingTimeout = null;
-        submitAnswer(note + 'b');
-        return true;
-      }
-    }
-
     if ('CDEFGAB'.includes(key)) {
       e.preventDefault();
-      if (pendingTimeout) clearTimeout(pendingTimeout);
-
-      if (!allowAccidentals()) {
-        submitAnswer(key);
-      } else {
-        setPending(key);
-        const delay = noteNarrowingSet(key)!.size > 1
-          ? PENDING_DELAY_AMBIGUOUS
-          : PENDING_DELAY_UNAMBIGUOUS;
-        pendingTimeout = setTimeout(() => {
-          const note = pendingNote!;
-          setPending(null);
-          pendingTimeout = null;
-          submitAnswer(note);
-        }, delay);
-      }
+      pm.setPendingWithTimeout(key);
       return true;
     }
-
     return false;
   }
 
-  function getPendingNote(): string | null {
-    return pendingNote;
-  }
-
-  return { handleKey, reset, getPendingNote };
+  return { handleKey, reset: pm.reset, getPendingNote: pm.getPendingNote };
 }
 
-/**
- * Create a keyboard handler for solfège input (Do Re Mi Fa Sol La Si + #/b).
- * Case-insensitive. Buffers two characters to identify the syllable, then
- * waits for an optional accidental. All syllables are unambiguous after 2 chars.
- */
+// ---------------------------------------------------------------------------
+// Solfège key handler (Do Re Mi Fa Sol La Si)
+// ---------------------------------------------------------------------------
+
 export function createSolfegeKeyHandler(
   submitAnswer: (note: string) => void,
   allowAccidentals: () => boolean = () => true,
@@ -193,47 +222,19 @@ export function createSolfegeKeyHandler(
   };
   const FIRST_CHARS = new Set(['d', 'r', 'm', 'f', 's', 'l']);
 
-  let buffer: string = '';
-  let pendingNote: string | null = null;
-  let pendingTimeout: number | null = null;
-
-  function setPending(note: string | null): void {
-    pendingNote = note;
-    onPendingChange?.(note);
-  }
-
-  function reset(): void {
-    buffer = '';
-    if (pendingTimeout) clearTimeout(pendingTimeout);
-    pendingTimeout = null;
-    setPending(null);
-  }
-
-  function submitPending(): void {
-    if (pendingNote) {
-      if (pendingTimeout) clearTimeout(pendingTimeout);
-      const note = pendingNote;
-      setPending(null);
-      pendingTimeout = null;
-      submitAnswer(note);
-    }
-  }
+  const pm = createPendingNoteManager(
+    submitAnswer,
+    allowAccidentals,
+    onPendingChange,
+  );
+  let buffer = '';
 
   function handleKey(e: KeyboardEvent): boolean {
     const key = e.key.toLowerCase();
 
-    // Enter commits the pending note immediately (skip pending wait)
+    // Enter commits pending or clears partial buffer
     if (e.key === 'Enter') {
-      if (pendingNote) {
-        e.preventDefault();
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-        const note = pendingNote;
-        setPending(null);
-        pendingTimeout = null;
-        submitAnswer(note);
-        return true;
-      }
-      // Clear partial syllable buffer without submitting
+      if (pm.handleEnter(e)) return true;
       if (buffer.length > 0) {
         buffer = '';
         return true;
@@ -241,33 +242,10 @@ export function createSolfegeKeyHandler(
       return false;
     }
 
-    // Handle accidental after resolved syllable
-    if (pendingNote && allowAccidentals()) {
-      if (e.key === '#' || (e.shiftKey && e.key === '3')) {
-        e.preventDefault();
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-        const note = pendingNote;
-        setPending(null);
-        pendingTimeout = null;
-        submitAnswer(note + '#');
-        return true;
-      }
-      // 'b' is flat (no solfège syllable starts with 'b')
-      if (key === 'b') {
-        e.preventDefault();
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-        const note = pendingNote;
-        setPending(null);
-        pendingTimeout = null;
-        submitAnswer(note + 'b');
-        return true;
-      }
-    }
+    if (pm.handleAccidental(e)) return true;
 
-    // Submit any pending note before starting new input
-    if (pendingNote && FIRST_CHARS.has(key)) {
-      submitPending();
-    }
+    // Submit pending before starting new input
+    if (pm.state.pendingNote && FIRST_CHARS.has(key)) pm.submitPending();
 
     // Continue building syllable
     if (buffer.length > 0) {
@@ -276,22 +254,8 @@ export function createSolfegeKeyHandler(
       const note = SOLFEGE_TO_NOTE[buffer];
       if (note) {
         buffer = '';
-        if (!allowAccidentals()) {
-          submitAnswer(note);
-        } else {
-          setPending(note);
-          const delay = noteNarrowingSet(note)!.size > 1
-            ? PENDING_DELAY_AMBIGUOUS
-            : PENDING_DELAY_UNAMBIGUOUS;
-          pendingTimeout = setTimeout(() => {
-            const n = pendingNote!;
-            setPending(null);
-            pendingTimeout = null;
-            submitAnswer(n);
-          }, delay);
-        }
+        pm.setPendingWithTimeout(note);
       } else if (buffer.length >= 2) {
-        // Invalid pair — reset
         buffer = '';
       }
       return true;
@@ -300,8 +264,7 @@ export function createSolfegeKeyHandler(
     // Start new syllable
     if (FIRST_CHARS.has(key)) {
       e.preventDefault();
-      // Submit any pending note first
-      submitPending();
+      pm.submitPending();
       buffer = key;
       return true;
     }
@@ -309,17 +272,18 @@ export function createSolfegeKeyHandler(
     return false;
   }
 
-  function getPendingNote(): string | null {
-    return pendingNote;
+  function reset(): void {
+    buffer = '';
+    pm.reset();
   }
 
-  return { handleKey, reset, getPendingNote };
+  return { handleKey, reset, getPendingNote: pm.getPendingNote };
 }
 
-/**
- * Adaptive key handler: delegates to letter or solfège handler based on
- * current notation mode. Drop-in replacement for createNoteKeyHandler.
- */
+// ---------------------------------------------------------------------------
+// Adaptive key handler (delegates to letter or solfège based on setting)
+// ---------------------------------------------------------------------------
+
 export function createAdaptiveKeyHandler(
   submitAnswer: (note: string) => void,
   allowAccidentals: () => boolean = () => true,
@@ -354,10 +318,10 @@ export function createAdaptiveKeyHandler(
   };
 }
 
-/**
- * Update all note button labels in a container to reflect current notation mode.
- * Handles .answer-btn-note, .note-btn, .split-note-base, and .string-toggle elements.
- */
+// ---------------------------------------------------------------------------
+// Note button label refresh
+// ---------------------------------------------------------------------------
+
 export function refreshNoteButtonLabels(container: HTMLElement): void {
   container.querySelectorAll<HTMLButtonElement>('.answer-btn-note').forEach(
     function (btn) {
@@ -387,10 +351,10 @@ export function refreshNoteButtonLabels(container: HTMLElement): void {
   );
 }
 
-/**
- * Build human-readable threshold descriptions from a motor baseline.
- * Used by the calibration results screen.
- */
+// ---------------------------------------------------------------------------
+// Calibration helpers
+// ---------------------------------------------------------------------------
+
 export function getCalibrationThresholds(
   baseline: number,
 ): { label: string; maxMs: number | null; meaning: string }[] {
@@ -419,31 +383,20 @@ export function getCalibrationThresholds(
   ];
 }
 
-/**
- * Pick a random calibration button, weighted toward accidentals ~35% of the time.
- * Shared helper for mode getCalibrationTrialConfig implementations.
- */
 export function pickCalibrationButton(
   buttons: HTMLElement[],
   prevBtn: HTMLElement | null,
   rng?: () => number,
 ): HTMLElement {
   const rand = rng || Math.random;
-  const sharpBtns = buttons.filter((b) => {
-    const note = b.dataset.note;
-    return note && note.includes('#');
-  });
-  const naturalBtns = buttons.filter((b) => {
-    const note = b.dataset.note;
-    return note && !note.includes('#');
-  });
-
-  // ~35% chance of sharp if available
+  const sharpBtns = buttons.filter((b) => b.dataset.note?.includes('#'));
+  const naturalBtns = buttons.filter((b) =>
+    b.dataset.note && !b.dataset.note.includes('#')
+  );
   const useSharp = sharpBtns.length > 0 && rand() < 0.35;
   const pool = useSharp
     ? sharpBtns
     : (naturalBtns.length > 0 ? naturalBtns : buttons);
-
   let btn;
   do {
     btn = pool[Math.floor(rand() * pool.length)];

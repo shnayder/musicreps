@@ -3,21 +3,18 @@
 
 import { getUseSolfege, setUseSolfege } from './music-data.ts';
 
-export function createSettingsModal(
-  options: { onNotationChange?: () => void },
-): {
-  open: () => void;
-  close: () => void;
+// ---------------------------------------------------------------------------
+// DOM construction
+// ---------------------------------------------------------------------------
+
+function buildSettingsDOM(): {
+  overlay: HTMLDivElement;
+  modal: HTMLDivElement;
 } {
-  const onNotationChange: () => void = options.onNotationChange ||
-    function (): void {};
-
-  // --- Build modal DOM ---
-
-  const overlay: HTMLDivElement = document.createElement('div');
+  const overlay = document.createElement('div');
   overlay.className = 'settings-overlay';
 
-  const modal: HTMLDivElement = document.createElement('div');
+  const modal = document.createElement('div');
   modal.className = 'settings-modal';
   modal.setAttribute('role', 'dialog');
   modal.setAttribute('aria-modal', 'true');
@@ -32,27 +29,52 @@ export function createSettingsModal(
     '<div class="settings-toggle-group">' +
     '<button tabindex="0" class="settings-toggle-btn" data-notation="letter">A B C</button>' +
     '<button tabindex="0" class="settings-toggle-btn" data-notation="solfege">Do Re Mi</button>' +
-    '</div>' +
-    '</div>' +
-    '</div>';
+    '</div></div></div>';
 
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
+  return { overlay, modal };
+}
 
-  // --- Refs ---
+// ---------------------------------------------------------------------------
+// Focus trap
+// ---------------------------------------------------------------------------
 
-  const closeBtn: Element = modal.querySelector('.settings-close-btn')!;
-  const toggleBtns: NodeListOf<HTMLElement> = modal.querySelectorAll<
-    HTMLElement
-  >('.settings-toggle-btn');
+function trapFocus(modal: HTMLElement, e: KeyboardEvent): void {
+  if (e.key !== 'Tab') return;
+  const focusable = modal.querySelectorAll<HTMLElement>(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+  );
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
 
-  // --- State ---
+// ---------------------------------------------------------------------------
+// Factory
+// ---------------------------------------------------------------------------
 
+export function createSettingsModal(
+  options: { onNotationChange?: () => void },
+): { open: () => void; close: () => void } {
+  const onNotationChange = options.onNotationChange || (() => {});
+  const { overlay, modal } = buildSettingsDOM();
+  const closeBtn = modal.querySelector('.settings-close-btn')!;
+  const toggleBtns = modal.querySelectorAll<HTMLElement>(
+    '.settings-toggle-btn',
+  );
   let previousFocus: HTMLElement | null = null;
 
   function updateToggleState(): void {
-    const current: string = getUseSolfege() ? 'solfege' : 'letter';
-    toggleBtns.forEach(function (btn: HTMLElement): void {
+    const current = getUseSolfege() ? 'solfege' : 'letter';
+    toggleBtns.forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.notation === current);
       btn.setAttribute(
         'aria-pressed',
@@ -61,39 +83,18 @@ export function createSettingsModal(
     });
   }
 
-  // --- Focus trap ---
-
-  function trapFocus(e: KeyboardEvent): void {
-    if (e.key !== 'Tab') return;
-    const focusable = modal.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    );
-    if (focusable.length === 0) return;
-
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  }
-
-  // --- Open / Close ---
+  const boundTrapFocus = (e: KeyboardEvent) => trapFocus(modal, e);
 
   function open(): void {
     updateToggleState();
     overlay.classList.add('open');
     previousFocus = document.activeElement as HTMLElement | null;
     (closeBtn as HTMLElement).focus();
-    modal.addEventListener('keydown', trapFocus);
+    modal.addEventListener('keydown', boundTrapFocus);
   }
 
   function close(): void {
-    modal.removeEventListener('keydown', trapFocus);
+    modal.removeEventListener('keydown', boundTrapFocus);
     overlay.classList.remove('open');
     if (previousFocus) {
       previousFocus.focus();
@@ -101,21 +102,17 @@ export function createSettingsModal(
     }
   }
 
-  // --- Event handlers ---
-
   closeBtn.addEventListener('click', close);
-  overlay.addEventListener('click', function (e: MouseEvent): void {
+  overlay.addEventListener('click', (e) => {
     if (e.target === overlay) close();
   });
-  document.addEventListener('keydown', function (e: KeyboardEvent): void {
-    if (e.key === 'Escape' && overlay.classList.contains('open')) {
-      close();
-    }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) close();
   });
 
-  toggleBtns.forEach(function (btn: HTMLElement): void {
-    btn.addEventListener('click', function (): void {
-      const wantSolfege: boolean = btn.dataset.notation === 'solfege';
+  toggleBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const wantSolfege = btn.dataset.notation === 'solfege';
       if (wantSolfege !== getUseSolfege()) {
         setUseSolfege(wantSolfege);
         updateToggleState();
@@ -124,5 +121,5 @@ export function createSettingsModal(
     });
   });
 
-  return { open: open, close: close };
+  return { open, close };
 }
