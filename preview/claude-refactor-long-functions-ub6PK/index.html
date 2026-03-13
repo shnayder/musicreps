@@ -2154,7 +2154,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="6b4ffb refactor-long-functions-ub6PK"></div>
+  <div class="home-screen" id="home-screen" data-version="84f727 refactor-long-functions-ub6PK"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -4792,15 +4792,16 @@ button {
         );
       });
     }
+    const boundTrapFocus = (e3) => trapFocus(modal, e3);
     function open() {
       updateToggleState();
       overlay.classList.add("open");
       previousFocus = document.activeElement;
       closeBtn.focus();
-      modal.addEventListener("keydown", (e3) => trapFocus(modal, e3));
+      modal.addEventListener("keydown", boundTrapFocus);
     }
     function close() {
-      modal.removeEventListener("keydown", (e3) => trapFocus(modal, e3));
+      modal.removeEventListener("keydown", boundTrapFocus);
       overlay.classList.remove("open");
       if (previousFocus) {
         previousFocus.focus();
@@ -6761,7 +6762,6 @@ button {
   }
 
   // src/hooks/use-round-transitions.ts
-  var ROUND_DURATION_MS2 = 6e4;
   var IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
   var HINT_CONTINUE = IS_TOUCH_PRIMARY ? "" : "Space to continue";
   function useRoundTransitions(stateRef, setState) {
@@ -6771,7 +6771,7 @@ button {
       setState((prev) => {
         const next = engineRoundTimerExpired(prev);
         if (next.answered) {
-          timer.roundDurationSnapshotRef.current = ROUND_DURATION_MS2;
+          timer.roundDurationSnapshotRef.current = ROUND_DURATION_MS;
           timer.setTimerLastQuestion(true);
           return { ...next, hintText: HINT_CONTINUE };
         } else {
@@ -6891,8 +6891,7 @@ button {
   }
 
   // src/hooks/use-engine-actions.ts
-  var IS_TOUCH_PRIMARY2 = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
-  var HINT_ADVANCE = IS_TOUCH_PRIMARY2 ? "" : "Space for next";
+  var HINT_ADVANCE = IS_TOUCH_PRIMARY ? "" : "Space for next";
   function computeProgress(configRef, selectorRef) {
     const items = configRef.current.getEnabledItems();
     let mastered = 0;
@@ -6941,7 +6940,7 @@ button {
       const elapsed = timer.roundTimerStartRef.current ? Date.now() - timer.roundTimerStartRef.current : 0;
       timer.roundDurationSnapshotRef.current = Math.min(
         elapsed,
-        ROUND_DURATION_MS2 + LAST_QUESTION_CAP_MS
+        ROUND_DURATION_MS + LAST_QUESTION_CAP_MS
       );
       setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
     }
