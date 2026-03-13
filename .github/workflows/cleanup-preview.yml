@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Only run for claude/* branches in this repo (not forks)
+    # Only run for claude/* or codex/* branches in this repo (not forks)
     if: >-
-      (github.event_name == 'delete' && startsWith(github.event.ref, 'claude/')) ||
-      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'claude/'))
+      (github.event_name == 'delete' && (startsWith(github.event.ref, 'claude/') || startsWith(github.event.ref, 'codex/'))) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && (startsWith(github.event.pull_request.head.ref, 'claude/') || startsWith(github.event.pull_request.head.ref, 'codex/')))
     steps:
       - name: Checkout (for deploy script)
         uses: actions/checkout@v4

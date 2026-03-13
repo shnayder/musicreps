@@ -19,7 +19,7 @@ export {
   quizRoundComplete,
   quizWrongFeedback,
 } from './quiz-page.ts';
-export type { FixtureDetail } from './quiz-page.ts';
+export type { FixtureDetail } from '../types.ts';
 export { idleConsolidating, idleReadyToExpand } from './idle-page.ts';
 export { defaultItems } from './items.ts';
 export {

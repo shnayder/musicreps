@@ -2,7 +2,7 @@
 // Extracted to avoid circular imports.
 
 import type { CheckAnswerResult, EngineState } from '../types.ts';
-import type { SpeedCheckFixture } from '../ui/speed-check.tsx';
+import type { SpeedCheckFixture } from '../types.ts';
 
 export type QuizEngineConfig = {
   getEnabledItems: () => string[];

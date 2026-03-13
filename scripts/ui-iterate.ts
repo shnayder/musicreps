@@ -23,7 +23,7 @@ import {
 } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import type { FixtureDetail } from '../src/fixtures/quiz-page.ts';
+import type { FixtureDetail } from '../src/types.ts';
 import {
   buildManifest,
   ENGINE_MODES,
@@ -92,6 +92,7 @@ function startServer(): { proc: ChildProcess; portReady: Promise<number> } {
       '--allow-net',
       '--allow-read',
       '--allow-run',
+      '--allow-env=BUILD_NUMBER,APP_CONTACT_EMAIL,APP_SUPPORT_URL,APP_TERMS_URL,APP_PRIVACY_URL',
       'main.ts',
       `--port=${PREFERRED_PORT}`,
     ],
