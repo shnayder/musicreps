@@ -63,6 +63,7 @@ function startServer(): { proc: ChildProcess; portReady: Promise<number> } {
       '--allow-net',
       '--allow-read',
       '--allow-run',
+      '--allow-env',
       'main.ts',
       `--port=${PREFERRED_PORT}`,
     ],
