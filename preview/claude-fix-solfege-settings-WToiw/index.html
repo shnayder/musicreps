@@ -479,45 +479,59 @@ body {
   color: var(--color-text);
   font-weight: 600;
 }
-/* --- Settings page --- */
-.settings-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
+/* --- Settings modal --- */
+.settings-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-overlay);
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
 }
-.settings-page-header {
+.settings-overlay.open {
+  display: flex;
+}
+.settings-modal {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  width: 280px;
+  max-width: 90vw;
+  overflow: hidden;
+}
+.settings-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
 }
-.settings-page-title {
-  margin: 0;
-  flex: 1;
-  text-align: right;
+.settings-title {
   font-weight: 600;
-  font-size: var(--text-xl);
-}
-.settings-back-btn {
-  font-size: var(--text-sm);
-}
-.settings-section {
-  border-top: 1px solid var(--color-border-lighter);
-  padding-top: var(--space-4);
-}
-.settings-section-title {
-  margin: 0 0 var(--space-3);
   font-size: var(--text-base);
 }
-.settings-link-list {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-2);
+.settings-close-btn {
+  background: none;
+  border: none;
+  font-size: var(--text-xl);
+  cursor: pointer;
+  color: var(--color-text);
+  padding: 0;
+  line-height: 1;
+  opacity: 0.6;
 }
-.settings-meta {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+.settings-close-btn:hover {
+  opacity: 1;
+}
+.settings-close-btn:active {
+  opacity: 0.4;
+}
+.settings-body {
+  padding: var(--space-5);
 }
 .settings-field {
   display: flex;
@@ -2060,7 +2074,10 @@ button {
   outline-offset: -2px;
 }
 
-/* Settings page */
+/* Settings modal */
+.settings-close-btn:focus-visible {
+  outline-offset: 2px;
+}
 .settings-toggle-btn:focus-visible {
   outline-offset: -2px;
 }
@@ -2137,7 +2154,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="5c6e7f fix-solfege-settings-WToiw"></div>
+  <div class="home-screen" id="home-screen" data-version="704405 fix-solfege-settings-WToiw"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -4747,6 +4764,7 @@ button {
       );
       document.addEventListener("keydown", function(e3) {
         if (e3.key !== "Escape" || !currentModeId) return;
+        if (document.querySelector(".settings-overlay.open")) return;
         const modeScreen = document.getElementById("mode-" + currentModeId);
         if (modeScreen && !modeScreen.classList.contains("phase-idle")) return;
         navigateHome();
@@ -4760,18 +4778,83 @@ button {
   }
 
   // src/settings.ts
-  function createSettingsController(options) {
+  function createSettingsModal(options) {
     const onNotationChange = options.onNotationChange || function() {
     };
-    function setNotation(useSolfege) {
-      if (useSolfege === getUseSolfege()) return;
-      setUseSolfege(useSolfege);
-      onNotationChange();
+    const overlay = document.createElement("div");
+    overlay.className = "settings-overlay";
+    const modal = document.createElement("div");
+    modal.className = "settings-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-label", "Settings");
+    modal.innerHTML = '<div class="settings-header"><span class="settings-title">Settings</span><button tabindex="0" class="settings-close-btn" aria-label="Close">\xD7</button></div><div class="settings-body"><div class="settings-field"><div class="settings-label">Note names</div><div class="settings-toggle-group"><button tabindex="0" class="settings-toggle-btn" data-notation="letter">A B C</button><button tabindex="0" class="settings-toggle-btn" data-notation="solfege">Do Re Mi</button></div></div></div>';
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    const closeBtn = modal.querySelector(".settings-close-btn");
+    const toggleBtns = modal.querySelectorAll(".settings-toggle-btn");
+    let previousFocus = null;
+    function updateToggleState() {
+      const current = getUseSolfege() ? "solfege" : "letter";
+      toggleBtns.forEach(function(btn) {
+        btn.classList.toggle("active", btn.dataset.notation === current);
+        btn.setAttribute(
+          "aria-pressed",
+          String(btn.dataset.notation === current)
+        );
+      });
     }
-    return {
-      getUseSolfege,
-      setUseSolfege: setNotation
-    };
+    function trapFocus(e3) {
+      if (e3.key !== "Tab") return;
+      const focusable = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e3.shiftKey && document.activeElement === first) {
+        e3.preventDefault();
+        last.focus();
+      } else if (!e3.shiftKey && document.activeElement === last) {
+        e3.preventDefault();
+        first.focus();
+      }
+    }
+    function open() {
+      updateToggleState();
+      overlay.classList.add("open");
+      previousFocus = document.activeElement;
+      closeBtn.focus();
+      modal.addEventListener("keydown", trapFocus);
+    }
+    function close() {
+      modal.removeEventListener("keydown", trapFocus);
+      overlay.classList.remove("open");
+      if (previousFocus) {
+        previousFocus.focus();
+        previousFocus = null;
+      }
+    }
+    closeBtn.addEventListener("click", close);
+    overlay.addEventListener("click", function(e3) {
+      if (e3.target === overlay) close();
+    });
+    document.addEventListener("keydown", function(e3) {
+      if (e3.key === "Escape" && overlay.classList.contains("open")) {
+        close();
+      }
+    });
+    toggleBtns.forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        const wantSolfege = btn.dataset.notation === "solfege";
+        if (wantSolfege !== getUseSolfege()) {
+          setUseSolfege(wantSolfege);
+          updateToggleState();
+          onNotationChange();
+        }
+      });
+    });
+    return { open, close };
   }
 
   // src/quiz-engine.ts
@@ -5439,10 +5522,8 @@ button {
       ))
     ] });
   }
-  function HomeScreen({ onSelectMode, settings: settings2, appConfig, version: version2 }) {
+  function HomeScreen({ onSelectMode, onOpenSettings, version: version2 }) {
     const [selected, setSelected] = d3(loadSelectedTracks);
-    const [showSettings, setShowSettings] = d3(false);
-    const [useSolfege, setUseSolfege2] = d3(() => settings2.getUseSolfege());
     const handleToggle = q2((id) => {
       const track = TRACKS.find((t3) => t3.id === id);
       if (track?.alwaysSelected) return;
@@ -5456,111 +5537,6 @@ button {
     }, []);
     const selectedTracks = TRACKS.filter((t3) => selected.has(t3.id));
     const deselectedTracks = TRACKS.filter((t3) => !selected.has(t3.id));
-    if (showSettings) {
-      return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
-        /* @__PURE__ */ u3("div", { class: "settings-page-header", children: [
-          /* @__PURE__ */ u3(
-            "button",
-            {
-              type: "button",
-              class: "text-link settings-back-btn",
-              onClick: () => setShowSettings(false),
-              children: "\u2190 Back"
-            }
-          ),
-          /* @__PURE__ */ u3("h1", { class: "settings-page-title", children: "Settings" })
-        ] }),
-        /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-          /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "General" }),
-          /* @__PURE__ */ u3("div", { class: "settings-field", children: [
-            /* @__PURE__ */ u3("div", { class: "settings-label", children: "Note names" }),
-            /* @__PURE__ */ u3("div", { class: "settings-toggle-group", children: [
-              /* @__PURE__ */ u3(
-                "button",
-                {
-                  type: "button",
-                  class: `settings-toggle-btn${useSolfege ? "" : " active"}`,
-                  "aria-pressed": !useSolfege,
-                  onClick: () => {
-                    settings2.setUseSolfege(false);
-                    setUseSolfege2(false);
-                  },
-                  children: "A B C"
-                }
-              ),
-              /* @__PURE__ */ u3(
-                "button",
-                {
-                  type: "button",
-                  class: `settings-toggle-btn${useSolfege ? " active" : ""}`,
-                  "aria-pressed": useSolfege,
-                  onClick: () => {
-                    settings2.setUseSolfege(true);
-                    setUseSolfege2(true);
-                  },
-                  children: "Do Re Mi"
-                }
-              )
-            ] })
-          ] })
-        ] }),
-        /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-          /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "About" }),
-          /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
-            appConfig.contactEmail && /* @__PURE__ */ u3(
-              "a",
-              {
-                class: "text-link",
-                href: `mailto:${appConfig.contactEmail}`,
-                children: [
-                  "Contact: ",
-                  appConfig.contactEmail
-                ]
-              }
-            ),
-            appConfig.supportUrl && /* @__PURE__ */ u3(
-              "a",
-              {
-                class: "text-link",
-                href: appConfig.supportUrl,
-                target: "_blank",
-                rel: "noopener noreferrer",
-                children: "Support"
-              }
-            ),
-            /* @__PURE__ */ u3("div", { class: "settings-meta", children: [
-              "Build number: ",
-              version2
-            ] })
-          ] })
-        ] }),
-        /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-          /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "Legal" }),
-          /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
-            appConfig.termsUrl && /* @__PURE__ */ u3(
-              "a",
-              {
-                class: "text-link",
-                href: appConfig.termsUrl,
-                target: "_blank",
-                rel: "noopener noreferrer",
-                children: "Terms & conditions"
-              }
-            ),
-            appConfig.privacyUrl && /* @__PURE__ */ u3(
-              "a",
-              {
-                class: "text-link",
-                href: appConfig.privacyUrl,
-                target: "_blank",
-                rel: "noopener noreferrer",
-                children: "Privacy policy"
-              }
-            )
-          ] })
-        ] })
-      ] });
-    }
     return /* @__PURE__ */ u3("div", { class: "home-content", children: [
       /* @__PURE__ */ u3("div", { class: "home-header", children: [
         /* @__PURE__ */ u3("h1", { class: "home-title", children: "Music Reps" }),
@@ -5595,8 +5571,7 @@ button {
             role: "button",
             onClick: (e3) => {
               e3.preventDefault();
-              setUseSolfege2(settings2.getUseSolfege());
-              setShowSettings(true);
+              onOpenSettings();
             },
             children: "Settings"
           }
@@ -5605,23 +5580,6 @@ button {
       ] })
     ] });
   }
-
-  // src/app-config.ts
-  function safeUrl(raw) {
-    if (!raw) return "";
-    try {
-      const url = new URL(raw);
-      return url.protocol === "https:" || url.protocol === "http:" ? raw : "";
-    } catch {
-      return "";
-    }
-  }
-  var APP_CONFIG = {
-    contactEmail: "preview@example.com",
-    supportUrl: safeUrl("https://github.com/shnayder/musicreps/issues"),
-    termsUrl: safeUrl("https://example.com/terms"),
-    privacyUrl: safeUrl("https://example.com/privacy")
-  };
 
   // src/adaptive.ts
   var DEFAULT_CONFIG = {
@@ -10617,7 +10575,7 @@ button {
   registerDeclarativeMode(CHORD_SPELLING_DEF);
   registerPreactMode("speedTap", "Speed Tap", SpeedTapMode);
   nav.init();
-  var settings = createSettingsController({
+  var settings = createSettingsModal({
     onNotationChange() {
       document.querySelectorAll(".mode-screen.mode-active").forEach(
         (el) => {
@@ -10632,8 +10590,7 @@ button {
   J(
     _(HomeScreen, {
       onSelectMode: (modeId) => nav.switchTo(modeId),
-      settings,
-      appConfig: APP_CONFIG,
+      onOpenSettings: () => settings.open(),
       version
     }),
     homeRoot
