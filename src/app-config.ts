@@ -18,4 +18,3 @@ export const APP_CONFIG: AppConfig = {
   termsUrl: __APP_TERMS_URL__,
   privacyUrl: __APP_PRIVACY_URL__,
 };
-
