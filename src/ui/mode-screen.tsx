@@ -41,7 +41,10 @@ export function ModeTopBar(
     modeId?: string;
     title: string;
     description?: string;
-    beforeAfter?: { before: string; after: string };
+    beforeAfter?: {
+      before: string | (() => string);
+      after: string | (() => string);
+    };
     onBack?: () => void;
     showBack?: boolean;
   },
@@ -68,9 +71,17 @@ export function ModeTopBar(
       </div>
       {beforeAfter && (
         <div class='mode-before-after'>
-          <span class='mode-ba-before'>{beforeAfter.before}</span>
+          <span class='mode-ba-before'>
+            {typeof beforeAfter.before === 'function'
+              ? beforeAfter.before()
+              : beforeAfter.before}
+          </span>
           <span class='mode-ba-arrow'>&rarr;</span>
-          <span class='mode-ba-after'>{beforeAfter.after}</span>
+          <span class='mode-ba-after'>
+            {typeof beforeAfter.after === 'function'
+              ? beforeAfter.after()
+              : beforeAfter.after}
+          </span>
         </div>
       )}
     </div>

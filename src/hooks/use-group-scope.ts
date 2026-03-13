@@ -19,6 +19,7 @@ import type {
 import { computeRecommendations } from '../recommendations.ts';
 import { buildRecommendationText } from '../mode-ui-state.ts';
 import { type ScopeActions, useScopeState } from './use-scope-state.ts';
+import { useNotationVersion } from './use-notation-version.ts';
 
 // ---------------------------------------------------------------------------
 // Spec & result types
@@ -27,7 +28,7 @@ import { type ScopeActions, useScopeState } from './use-scope-state.ts';
 /** Configuration for a group-based scope hook. */
 export type GroupScopeSpec = {
   /** Raw group array from mode logic (must have a `.label` property). */
-  groups: Array<{ label: string }>;
+  groups: Array<{ label: string | (() => string) }>;
   /** Map group index → item IDs (from mode logic). */
   getItemIdsForGroup: (index: number) => string[];
   /** All valid group indices, e.g. `[0, 1, 2, ...]` (from mode logic). */
@@ -87,13 +88,28 @@ export type GroupScopeResult = {
 
 const EMPTY_SKIPPED: ReadonlyMap<number, GroupStatus> = new Map();
 
+/** Ref-backed stable getter — identity never changes, always reads current. */
+function useStableGetter<T>(value: T): () => T {
+  const ref = useRef(value);
+  ref.current = value;
+  return useCallback(() => ref.current, []);
+}
+
+/** Resolve a group label that may be a string or a function. */
+function resolveLabel(label: string | (() => string)): string {
+  return typeof label === 'function' ? label() : label;
+}
+
 export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
+  // Track notation changes so labels re-evaluate when solfège toggles.
+  const notationVersion = useNotationVersion();
+
   // --- Scope state (persisted to localStorage) ---
   const [scope, scopeActions] = useScopeState({
     kind: 'groups',
     groups: spec.groups.map((g, i) => ({
       index: i,
-      label: g.label,
+      label: resolveLabel(g.label),
       itemIds: spec.getItemIdsForGroup(i),
     })),
     defaultEnabled: spec.defaultEnabled,
@@ -125,9 +141,10 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   }, [enabledGroups, spec.getItemIdsForGroup]);
 
   // --- Practicing label ---
+  // notationVersion ensures re-evaluation when solfège/letter toggles.
   const practicingLabel = useMemo(
     () => spec.formatLabel(enabledGroups),
-    [enabledGroups, spec.formatLabel],
+    [enabledGroups, spec.formatLabel, notationVersion],
   );
 
   // --- Recommendations ---
@@ -144,8 +161,12 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   );
 
   const recommendationText = useMemo(
-    () => buildRecommendationText(recommendation, (i) => spec.groups[i].label),
-    [recommendation],
+    () =>
+      buildRecommendationText(
+        recommendation,
+        (i) => resolveLabel(spec.groups[i].label),
+      ),
+    [recommendation, notationVersion],
   );
 
   const applyRecommendation = useCallback(() => {
@@ -158,19 +179,6 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
     }
   }, [recommendation, scopeActions, skippedGroups]);
 
-  // --- Stable ref-backed functions for engineConfig ---
-  const enabledItemsRef = useRef(enabledItems);
-  enabledItemsRef.current = enabledItems;
-
-  const practicingLabelRef = useRef(practicingLabel);
-  practicingLabelRef.current = practicingLabel;
-
-  const getEnabledItems = useCallback(() => enabledItemsRef.current, []);
-  const getPracticingLabel = useCallback(
-    () => practicingLabelRef.current,
-    [],
-  );
-
   return {
     scope,
     scopeActions,
@@ -181,7 +189,7 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
     recommendation,
     recommendationText,
     applyRecommendation,
-    getEnabledItems,
-    getPracticingLabel,
+    getEnabledItems: useStableGetter(enabledItems),
+    getPracticingLabel: useStableGetter(practicingLabel),
   };
 }

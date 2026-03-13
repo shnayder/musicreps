@@ -706,7 +706,9 @@ function IdlePracticeView<Q>(
         ? (
           <GroupProgressToggles
             groups={groupScope.allGroupIndices.map((i) => ({
-              label: groupScope.groups[i].label,
+              label: typeof groupScope.groups[i].label === 'function'
+                ? groupScope.groups[i].label()
+                : groupScope.groups[i].label,
               itemIds: groupScope.getItemIdsForGroup(i),
             }))}
             active={groupScopeResult.enabledGroups}
