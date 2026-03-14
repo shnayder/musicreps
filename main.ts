@@ -240,7 +240,13 @@ if (import.meta.main) {
     const html = stamp(assembleHTML(css, js));
     const docsDir = resolve('./docs');
     await Deno.mkdir(docsDir, { recursive: true });
-    for (const name of ['apple-touch-icon.png', 'favicon-32x32.png']) {
+    for (
+      const name of [
+        'apple-touch-icon.png',
+        'favicon-32x32.png',
+        'manifest.json',
+      ]
+    ) {
       await Deno.copyFile(resolve(`./static/${name}`), `${docsDir}/${name}`);
     }
     await Deno.writeTextFile(`${docsDir}/index.html`, html);
@@ -275,6 +281,17 @@ if (import.meta.main) {
           headers: { 'content-type': 'application/javascript' },
         });
       }
+      // Serve static assets (icons, manifest, etc.)
+      const staticPath = resolve(`./static${url.pathname}`);
+      try {
+        const data = await Deno.readFile(staticPath);
+        const ct = url.pathname.endsWith('.json')
+          ? 'application/json'
+          : url.pathname.endsWith('.png')
+          ? 'image/png'
+          : 'application/octet-stream';
+        return new Response(data, { headers: { 'content-type': ct } });
+      } catch { /* fall through */ }
       if (url.pathname === '/preview') {
         const css = await Deno.readTextFile(resolve('./src/styles.css'));
         const pJs = await bundleJS('./src/ui/preview.tsx');
