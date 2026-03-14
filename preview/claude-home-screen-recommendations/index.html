@@ -2175,7 +2175,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="5bde85 home-screen-recommendations"></div>
+  <div class="home-screen" id="home-screen" data-version="eb0070 home-screen-recommendations"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -5337,16 +5337,21 @@ button {
     }
   }
   function loadAccordionState() {
+    const trackIds = new Set(TRACKS.map((t3) => t3.id));
     try {
       const raw = localStorage.getItem(ACCORDION_KEY);
       if (raw) {
         const obj = JSON.parse(raw);
-        if (obj && typeof obj === "object") return obj;
+        if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+          const state2 = {};
+          for (const id of trackIds) state2[id] = obj[id] !== false;
+          return state2;
+        }
       }
     } catch (_3) {
     }
     const state = {};
-    for (const t3 of TRACKS) state[t3.id] = true;
+    for (const id of trackIds) state[id] = true;
     return state;
   }
   function saveAccordionState(state) {
@@ -5388,7 +5393,7 @@ button {
             {
               type: "button",
               class: `skill-card-star${isStarred ? " starred" : ""}`,
-              "aria-label": isStarred ? "Unstar skill" : "Star skill",
+              "aria-label": isStarred ? `Unstar ${name}` : `Star ${name}`,
               "aria-pressed": isStarred,
               onClick: (e3) => {
                 e3.stopPropagation();
@@ -5444,7 +5449,7 @@ button {
             {
               type: "button",
               class: "skill-card-star starred",
-              "aria-label": "Unstar skill",
+              "aria-label": `Unstar ${name}`,
               "aria-pressed": true,
               onClick: (e3) => {
                 e3.stopPropagation();
