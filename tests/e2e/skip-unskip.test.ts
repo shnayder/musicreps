@@ -12,58 +12,13 @@
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { type Browser, chromium, type Page, webkit } from 'playwright';
-import { type ChildProcess, spawn } from 'node:child_process';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { type ChildProcess } from 'node:child_process';
 import {
   generateLocalStorageData,
 } from '../../src/fixtures/recommendation-scenarios.ts';
 import { GUITAR } from '../../src/music-data.ts';
 import { getItemIdsForGroup as guitarGetItemIds } from '../../src/modes/fretboard/logic.ts';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = path.resolve(__dirname, '../..');
-
-// ---------------------------------------------------------------------------
-// Dev server helper (same pattern as scripts/take-screenshots.ts)
-// ---------------------------------------------------------------------------
-
-function startServer(
-  port: number,
-): { proc: ChildProcess; portReady: Promise<number> } {
-  const proc = spawn(
-    'deno',
-    [
-      'run',
-      '--allow-net',
-      '--allow-read',
-      '--allow-run',
-      '--allow-env=BUILD_NUMBER',
-      'main.ts',
-      `--port=${port}`,
-    ],
-    { cwd: PROJECT_ROOT, stdio: 'pipe' },
-  );
-  const portReady = new Promise<number>((resolve, reject) => {
-    const timeout = setTimeout(
-      () => reject(new Error('Server did not start within 10s')),
-      10_000,
-    );
-    proc.stderr?.on('data', (d: Buffer) => {
-      const msg = d.toString();
-      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
-      if (m) {
-        clearTimeout(timeout);
-        resolve(parseInt(m[1], 10));
-      }
-    });
-    proc.on('exit', (code) => {
-      clearTimeout(timeout);
-      if (code) reject(new Error(`Server exited with code ${code}`));
-    });
-  });
-  return { proc, portReady };
-}
+import { startServer } from './helpers/server.ts';
 
 // ---------------------------------------------------------------------------
 // Shared infrastructure
