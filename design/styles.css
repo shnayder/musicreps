@@ -418,6 +418,9 @@ body {
   color: var(--color-text);
   font-weight: 600;
 }
+.skill-card-progress {
+  margin-top: var(--space-2);
+}
 .home-mode-name {
   font-size: var(--text-base);
   font-weight: 600;
