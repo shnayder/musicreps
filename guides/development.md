@@ -228,6 +228,7 @@ Build output goes to `docs/` (GitHub Pages source directory):
 - `docs/sw.js` — service worker (network-first cache strategy)
 - `docs/favicon-32x32.png` — browser tab icon
 - `docs/apple-touch-icon.png` — iOS home screen icon
+- `docs/manifest.json` — web app manifest (PWA installability)
 - `docs/design/` — design reference pages (copied from `guides/design/`)
 
 After building, commit the changed files. The service worker ensures users get
