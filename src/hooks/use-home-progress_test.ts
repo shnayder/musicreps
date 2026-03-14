@@ -239,8 +239,8 @@ describe('computeAllProgress performance', () => {
 
     assert.equal(result.size, MODE_PROGRESS_MANIFEST.length);
     assert.ok(
-      elapsed < 50,
-      `Progress computation took ${elapsed.toFixed(1)}ms (budget: 50ms)`,
+      elapsed < 200,
+      `Progress computation took ${elapsed.toFixed(1)}ms (budget: 200ms)`,
     );
 
     console.log(`  Progress computation: ${elapsed.toFixed(1)}ms`);

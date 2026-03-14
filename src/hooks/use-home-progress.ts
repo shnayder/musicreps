@@ -12,7 +12,10 @@ import {
   MODE_PROGRESS_MANIFEST,
   type ModeProgressEntry,
 } from '../mode-progress-manifest.ts';
-import { getStatsCellColorMerged } from '../stats-display.ts';
+import {
+  getSpeedFreshnessColor,
+  getStatsCellColorMerged,
+} from '../stats-display.ts';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -99,9 +102,9 @@ export function computeProgressForMode(
     }];
   }
 
-  // All groups skipped → single grey segment
+  // All groups skipped → single "unseen" segment
   if (segments.length === 0) {
-    return { groupColors: ['hsl(30, 0%, 90%)'] };
+    return { groupColors: [getSpeedFreshnessColor(null, null)] };
   }
 
   segments.sort((a, b) => b.auto - a.auto);

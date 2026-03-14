@@ -81,9 +81,9 @@ try {
 
 function SkillProgressBar({ colors }: { colors: string[] }) {
   return (
-    <div class='skill-progress-bar'>
+    <div class='group-progress-bar'>
       {colors.map((color, i) => (
-        <div class='skill-bar-segment' key={i} style={`background:${color}`} />
+        <div class='group-bar-slice' key={i} style={`background:${color}`} />
       ))}
     </div>
   );

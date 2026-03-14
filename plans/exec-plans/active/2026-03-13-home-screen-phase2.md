@@ -261,5 +261,5 @@ quiz session (write a summary record to localStorage alongside per-item data).
 | `src/mode-progress-manifest.ts` | **NEW** — mode metadata registry |
 | `src/mode-progress-manifest_test.ts` | **NEW** — structure + perf tests |
 | `src/hooks/use-home-progress.ts` | **NEW** — progress computation hook |
-| `src/ui/home-screen.tsx` | Add progress bar + status label to both card types |
-| `src/styles.css` | Add `.skill-progress-bar`, `.skill-bar-segment`, `.skill-status-label` |
+| `src/ui/home-screen.tsx` | Add progress bar to both card types (label deferred — cluttered cards) |
+| `src/styles.css` | Reuse `.group-progress-bar` / `.group-bar-slice` for skill cards |
