@@ -48,7 +48,7 @@ import { ALL_ITEMS as SPEED_TAP_ITEMS } from './modes/speed-tap/logic.ts';
 export type ModeProgressEntry = {
   modeId: string;
   namespace: string;
-  groups: Array<{ label: string; getItemIds: () => string[] }> | null;
+  groups: Array<{ label: string; getItemIds: () => string[] }>;
   allItemIds: () => string[];
 };
 
@@ -91,13 +91,13 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
   {
     modeId: 'noteSemitones',
     namespace: 'noteSemitones',
-    groups: null,
+    groups: [{ label: 'All', getItemIds: () => NOTE_SEMI_ITEMS }],
     allItemIds: () => NOTE_SEMI_ITEMS,
   },
   {
     modeId: 'intervalSemitones',
     namespace: 'intervalSemitones',
-    groups: null,
+    groups: [{ label: 'All', getItemIds: () => INT_SEMI_ITEMS }],
     allItemIds: () => INT_SEMI_ITEMS,
   },
   {
@@ -139,7 +139,7 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
   {
     modeId: 'speedTap',
     namespace: 'speedTap',
-    groups: null,
+    groups: [{ label: 'All', getItemIds: () => SPEED_TAP_ITEMS }],
     allItemIds: () => SPEED_TAP_ITEMS,
   },
 ];

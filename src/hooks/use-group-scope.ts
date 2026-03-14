@@ -17,6 +17,7 @@ import type {
   ScopeState,
 } from '../types.ts';
 import { computeRecommendations } from '../recommendations.ts';
+import { DEFAULT_CONFIG } from '../adaptive.ts';
 import { buildRecommendationText } from '../mode-ui-state.ts';
 import { type ScopeActions, useScopeState } from './use-scope-state.ts';
 import { useNotationVersion } from './use-notation-version.ts';
@@ -154,7 +155,7 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
         spec.selector,
         activeGroupIndices,
         spec.getItemIdsForGroup,
-        { expansionThreshold: 0.7 },
+        { expansionThreshold: DEFAULT_CONFIG.expansionThreshold },
         { sortUnstarted: (a, b) => a.string - b.string },
       ),
     [spec.selector, activeGroupIndices, spec.getItemIdsForGroup],

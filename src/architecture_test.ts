@@ -158,6 +158,7 @@ function classifyLayer(file: string): Layer {
   if (file.startsWith('src/modes/')) return 'mode-component';
   if (file === 'src/mode-utils.ts') return 'mode-logic';
   if (file === 'src/mode-progress-manifest.ts') return 'mode-logic';
+  if (file === 'src/home-recommendations.ts') return 'mode-logic';
   return 'app'; // fallback for unknown files
 }
 
