@@ -36,9 +36,8 @@ describe('MODE_PROGRESS_MANIFEST', () => {
     }
   });
 
-  it('group-based modes have matching group item counts', () => {
+  it('every mode has at least one group with items', () => {
     for (const entry of MODE_PROGRESS_MANIFEST) {
-      if (entry.groups === null) continue;
       assert.ok(
         entry.groups.length > 0,
         `${entry.modeId} has empty groups array`,
@@ -55,36 +54,26 @@ describe('MODE_PROGRESS_MANIFEST', () => {
   });
 
   it('expected group counts per mode', () => {
-    const expected: Record<string, number | null> = {
+    const expected: Record<string, number> = {
       fretboard: 8, // 5 natural + 3 accidental groups for guitar
       ukulele: 6, // 4 natural + 2 accidental groups for ukulele
-      noteSemitones: null,
-      intervalSemitones: null,
+      noteSemitones: 1, // single-group mode
+      intervalSemitones: 1, // single-group mode
       semitoneMath: 5, // distance groups
       intervalMath: 5, // distance groups
       keySignatures: 5, // key groups
       scaleDegrees: 3, // degree groups
       diatonicChords: 3, // chord groups
       chordSpelling: 7, // spelling groups (groups 0-6)
-      speedTap: null,
+      speedTap: 1, // single-group mode
     };
 
     for (const entry of MODE_PROGRESS_MANIFEST) {
-      const exp = expected[entry.modeId];
-      if (exp === null) {
-        assert.equal(
-          entry.groups,
-          null,
-          `${entry.modeId} should have no groups`,
-        );
-      } else {
-        assert.ok(entry.groups !== null, `${entry.modeId} should have groups`);
-        assert.equal(
-          entry.groups!.length,
-          exp,
-          `${entry.modeId} group count`,
-        );
-      }
+      assert.equal(
+        entry.groups.length,
+        expected[entry.modeId],
+        `${entry.modeId} group count`,
+      );
     }
   });
 });
