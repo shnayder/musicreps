@@ -79,7 +79,8 @@ describe('navigation lifecycle (E2E)', () => {
     await page.waitForTimeout(300);
 
     // Home should be visible again
-    const homeBack = await page.locator('#home-screen:not(.hidden)').isVisible();
+    const homeBack = await page.locator('#home-screen:not(.hidden)')
+      .isVisible();
     assert.ok(homeBack, 'home screen should be visible after back');
 
     // Mode should no longer be active
@@ -97,7 +98,8 @@ describe('navigation lifecycle (E2E)', () => {
     await page.waitForTimeout(300);
 
     // Should be back at home
-    const homeVisible = await page.locator('#home-screen:not(.hidden)').isVisible();
+    const homeVisible = await page.locator('#home-screen:not(.hidden)')
+      .isVisible();
     assert.ok(homeVisible, 'should return to home on Escape from idle');
   });
 
@@ -121,7 +123,10 @@ describe('navigation lifecycle (E2E)', () => {
     const modeStillActive = await page
       .locator('#mode-noteSemitones.mode-active')
       .isVisible();
-    assert.ok(modeStillActive, 'mode should still be active after Escape during quiz');
+    assert.ok(
+      modeStillActive,
+      'mode should still be active after Escape during quiz',
+    );
 
     // Home should still be hidden
     const homeHidden = await page.locator('#home-screen.hidden').count();
@@ -174,7 +179,10 @@ describe('navigation lifecycle (E2E)', () => {
       );
     } else {
       // No toggles visible — skip this assertion (mode may have no groups loaded)
-      assert.ok(true, 'no group toggles found — skipping scope preservation test');
+      assert.ok(
+        true,
+        'no group toggles found — skipping scope preservation test',
+      );
     }
   });
 });

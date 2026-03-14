@@ -116,7 +116,10 @@ describe('learner data persistence (E2E)', () => {
         }
         return result;
       });
-      assert.ok(keys.length > 0, `should have adaptive keys, found: ${keys.length}`);
+      assert.ok(
+        keys.length > 0,
+        `should have adaptive keys, found: ${keys.length}`,
+      );
 
       // Verify the shape of one entry
       const firstValue = await page.evaluate((key) => {
@@ -198,7 +201,11 @@ describe('notation preference persistence (E2E)', () => {
       const storedNotation = await page.evaluate(() =>
         localStorage.getItem('fretboard_notation')
       );
-      assert.equal(storedNotation, 'solfege', 'notation should persist as solfege');
+      assert.equal(
+        storedNotation,
+        'solfege',
+        'notation should persist as solfege',
+      );
     } finally {
       await page.context().close();
     }
@@ -224,7 +231,10 @@ describe('corrupt localStorage recovery (E2E)', () => {
       // Should show the practice tab (mode loaded successfully)
       const startBtn = page.locator('#mode-semitoneMath .start-btn');
       const visible = await startBtn.isVisible().catch(() => false);
-      assert.ok(visible, 'start button should be visible (mode recovered from corrupt data)');
+      assert.ok(
+        visible,
+        'start button should be visible (mode recovered from corrupt data)',
+      );
     } finally {
       await page.context().close();
     }

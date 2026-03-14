@@ -90,7 +90,10 @@ describe('quiz flow — note semitones (E2E)', () => {
     const nextBtnClass = await nextBtn.getAttribute('class') ?? '';
     const hasFeedback = nextBtnClass.includes('page-action-correct') ||
       nextBtnClass.includes('page-action-wrong');
-    assert.ok(hasFeedback, `Next button should have feedback class: ${nextBtnClass}`);
+    assert.ok(
+      hasFeedback,
+      `Next button should have feedback class: ${nextBtnClass}`,
+    );
 
     // Question count should show "1"
     const count = await page.textContent(`${MODE} .quiz-info-count`);
@@ -133,7 +136,10 @@ describe('quiz flow — note semitones (E2E)', () => {
 
     // Should have shake animation class
     const cls = await input.getAttribute('class') ?? '';
-    assert.ok(cls.includes('answer-input-shake'), `should have shake class: ${cls}`);
+    assert.ok(
+      cls.includes('answer-input-shake'),
+      `should have shake class: ${cls}`,
+    );
   });
 
   it('stop quiz with Escape returns to idle', async () => {
@@ -217,7 +223,10 @@ describe('round complete flow (E2E)', () => {
     const count = await page.textContent(`${MODE} .round-complete-count`);
     assert.ok(count, 'should show question count');
     const countNum = parseInt(count!, 10);
-    assert.ok(countNum > 0, `should have answered at least 1 question, got ${countNum}`);
+    assert.ok(
+      countNum > 0,
+      `should have answered at least 1 question, got ${countNum}`,
+    );
 
     // Click Stop
     await page.click(`${MODE} .page-action-secondary`);

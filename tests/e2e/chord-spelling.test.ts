@@ -178,7 +178,10 @@ describe('chord spelling — button input (E2E)', () => {
       // Should see feedback (Next button visible after all notes collected)
       const nextBtn = page.locator(`${MODE} .next-btn`);
       const nextVisible = await nextBtn.isVisible().catch(() => false);
-      assert.ok(nextVisible, 'Next button should appear after all notes submitted');
+      assert.ok(
+        nextVisible,
+        'Next button should appear after all notes submitted',
+      );
 
       // Sequential slots should show results
       const evaluatedSlots = page.locator(`${MODE} .seq-slot`);
@@ -188,7 +191,10 @@ describe('chord spelling — button input (E2E)', () => {
         `should have ${noteCount} evaluated slots, got ${evaluatedCount}`,
       );
     } else {
-      assert.ok(true, 'not enough buttons visible — skipping button input test');
+      assert.ok(
+        true,
+        'not enough buttons visible — skipping button input test',
+      );
     }
 
     // Cleanup
