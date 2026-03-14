@@ -2211,7 +2211,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="d4f1f0 playwright-testing-strategy-rebase"></div>
+  <div class="home-screen" id="home-screen" data-version="f6d40d playwright-testing-strategy-rebase"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7057,6 +7057,14 @@ button {
   var ROUND_DURATION_MS = 6e4;
   var TIMER_TICK_MS = 200;
   var LAST_QUESTION_CAP_MS = 3e4;
+  function getEffectiveRoundMs() {
+    if (typeof globalThis.location === "undefined") return ROUND_DURATION_MS;
+    const p3 = new URLSearchParams(globalThis.location.search).get("roundMs");
+    if (!p3) return ROUND_DURATION_MS;
+    const n2 = parseInt(p3, 10);
+    return n2 > 0 ? n2 : ROUND_DURATION_MS;
+  }
+  var effectiveRoundMs = getEffectiveRoundMs();
   function formatRoundTime(ms) {
     const totalSec = Math.max(0, Math.ceil(ms / 1e3));
     const min = Math.floor(totalSec / 60);
@@ -7094,13 +7102,13 @@ button {
       roundTimerStartRef.current = Date.now();
       roundDurationSnapshotRef.current = null;
       setTimerPct(100);
-      setTimerText(formatRoundTime(ROUND_DURATION_MS));
+      setTimerText(formatRoundTime(effectiveRoundMs));
       setTimerWarning(false);
       setTimerLastQuestion(false);
       roundTimerRef.current = setInterval(() => {
         const elapsed = Date.now() - roundTimerStartRef.current;
-        const remaining = ROUND_DURATION_MS - elapsed;
-        const pct = Math.max(0, remaining / ROUND_DURATION_MS * 100);
+        const remaining = effectiveRoundMs - elapsed;
+        const pct = Math.max(0, remaining / effectiveRoundMs * 100);
         setTimerPct(pct);
         setTimerText(formatRoundTime(remaining));
         setTimerWarning(remaining <= 1e4 && remaining > 0);
@@ -7141,7 +7149,7 @@ button {
       setState((prev) => {
         const next = engineRoundTimerExpired(prev);
         if (next.answered) {
-          timer.roundDurationSnapshotRef.current = ROUND_DURATION_MS;
+          timer.roundDurationSnapshotRef.current = effectiveRoundMs;
           timer.setTimerLastQuestion(true);
           return { ...next, hintText: HINT_CONTINUE };
         } else {
@@ -7310,7 +7318,7 @@ button {
       const elapsed = timer.roundTimerStartRef.current ? Date.now() - timer.roundTimerStartRef.current : 0;
       timer.roundDurationSnapshotRef.current = Math.min(
         elapsed,
-        ROUND_DURATION_MS + LAST_QUESTION_CAP_MS
+        effectiveRoundMs + LAST_QUESTION_CAP_MS
       );
       setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
     }
