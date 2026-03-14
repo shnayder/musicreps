@@ -593,11 +593,12 @@ function loadInitialTab(): HomeTab {
 // ---------------------------------------------------------------------------
 
 export function HomeScreen(
-  { onSelectMode, settings, appConfig, version }: {
+  { onSelectMode, settings, appConfig, version, isNativeApp }: {
     onSelectMode: (modeId: string) => void;
     settings: SettingsController;
     appConfig: AppConfig;
     version: string;
+    isNativeApp?: boolean;
   },
 ) {
   const progress = useHomeProgress();
@@ -647,13 +648,15 @@ export function HomeScreen(
 
   return (
     <div class='home-content'>
-      <div class='home-header'>
-        <h1 class='home-title'>Music Reps</h1>
-        <p class='home-tagline'>
-          Instant recall for music fundamentals. You know the
-          theory&#x2009;&mdash;&#x2009;now make it automatic.
-        </p>
-      </div>
+      {!isNativeApp && (
+        <div class='home-header'>
+          <h1 class='home-title'>Music Reps</h1>
+          <p class='home-tagline'>
+            Instant recall for music fundamentals. You know the
+            theory&#x2009;&mdash;&#x2009;now make it automatic.
+          </p>
+        </div>
+      )}
 
       <HomeScreenTabs
         tab={tab}

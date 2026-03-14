@@ -127,6 +127,8 @@ const settings = createSettingsController({
   },
 });
 
+const isNativeApp = !!window.Capacitor;
+
 // Mount Preact home screen — replaces static build-time HTML
 const homeRoot = document.getElementById('home-screen')!;
 const version = homeRoot.dataset.version || '';
@@ -137,12 +139,13 @@ render(
     settings,
     appConfig: APP_CONFIG,
     version,
+    isNativeApp,
   }),
   homeRoot,
 );
 
 // Register service worker for cache busting on iOS home screen
 // Skip in Capacitor — app runs from local files, no SW needed
-if ('serviceWorker' in navigator && !window.Capacitor) {
+if ('serviceWorker' in navigator && !isNativeApp) {
   navigator.serviceWorker.register('sw.js');
 }

@@ -2143,6 +2143,14 @@ button {
   }
 }
 
+/* Standalone / native app — no decorative side borders */
+@media (display-mode: standalone) {
+  body {
+    border-left: none;
+    border-right: none;
+  }
+}
+
 /* Mobile layout */
 @media (max-width: 599px) {
   body {
