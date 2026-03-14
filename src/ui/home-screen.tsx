@@ -1,5 +1,5 @@
-// Home screen: track-based skill tree with before/after contrast cards.
-// Replaces the static build-time button list with a Preact component.
+// Home screen: tabbed view with Active (starred) and All Skills tabs.
+// Active tab shows starred skills; All Skills tab shows track accordions.
 
 import { useCallback, useState } from 'preact/hooks';
 import {
@@ -14,78 +14,73 @@ import type { SettingsController } from '../types.ts';
 import type { AppConfig } from '../app-config.ts';
 
 // ---------------------------------------------------------------------------
-// localStorage persistence for selected tracks
+// localStorage persistence for starred skills
 // ---------------------------------------------------------------------------
 
-const STORAGE_KEY = 'selectedTracks';
+const STARRED_KEY = 'starredSkills';
+const ACCORDION_KEY = 'trackAccordionState';
+const TAB_KEY = 'homeTab';
 
-function loadSelectedTracks(): Set<string> {
-  const allIds = new Set(TRACKS.map((t) => t.id));
-  const alwaysIds = TRACKS.filter((t) => t.alwaysSelected).map((t) => t.id);
-
+function loadStarredSkills(): Set<string> {
+  const allModeIds = new Set(TRACKS.flatMap((t) => t.skills));
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STARRED_KEY);
     if (raw) {
       const arr = JSON.parse(raw);
-      if (Array.isArray(arr) && arr.length > 0) {
-        // Sanitize: keep only known track IDs, ensure alwaysSelected present
-        const loaded = new Set(arr.filter((id: string) => allIds.has(id)));
-        for (const id of alwaysIds) loaded.add(id);
-        if (loaded.size > 0) return loaded;
+      if (Array.isArray(arr)) {
+        return new Set(arr.filter((id: string) => allModeIds.has(id)));
       }
     }
   } catch (_) { /* expected */ }
-  // Default: all tracks selected
-  return new Set(allIds);
+  return new Set();
 }
 
-function saveSelectedTracks(selected: Set<string>): void {
+function saveStarredSkills(starred: Set<string>): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...selected]));
+    localStorage.setItem(STARRED_KEY, JSON.stringify([...starred]));
   } catch (_) { /* expected */ }
 }
 
-// ---------------------------------------------------------------------------
-// TrackChips — pill buttons for track selection
-// ---------------------------------------------------------------------------
-
-function TrackChips(
-  { tracks, selected, onToggle }: {
-    tracks: Track[];
-    selected: Set<string>;
-    onToggle: (id: string) => void;
-  },
-) {
-  return (
-    <div class='track-chips'>
-      {tracks.map((track) => {
-        const isActive = selected.has(track.id);
-        const cls = `track-chip track-${track.id}${isActive ? ' active' : ''}`;
-        return (
-          <button
-            type='button'
-            key={track.id}
-            class={cls}
-            onClick={() => onToggle(track.id)}
-            aria-pressed={isActive}
-            disabled={track.alwaysSelected}
-          >
-            {track.label}
-          </button>
-        );
-      })}
-    </div>
-  );
+function loadAccordionState(): Record<string, boolean> {
+  const trackIds = new Set(TRACKS.map((t) => t.id));
+  try {
+    const raw = localStorage.getItem(ACCORDION_KEY);
+    if (raw) {
+      const obj = JSON.parse(raw);
+      if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        const state: Record<string, boolean> = {};
+        for (const id of trackIds) state[id] = obj[id] !== false;
+        return state;
+      }
+    }
+  } catch (_) { /* expected */ }
+  // Default: all expanded
+  const state: Record<string, boolean> = {};
+  for (const id of trackIds) state[id] = true;
+  return state;
 }
 
+function saveAccordionState(state: Record<string, boolean>): void {
+  try {
+    localStorage.setItem(ACCORDION_KEY, JSON.stringify(state));
+  } catch (_) { /* expected */ }
+}
+
+// Clean up legacy selectedTracks key (one-time migration)
+try {
+  localStorage.removeItem('selectedTracks');
+} catch (_) { /* expected */ }
+
 // ---------------------------------------------------------------------------
-// SkillCard — a single mode button with before/after contrast
+// SkillCard — a single mode button with before/after contrast and star toggle
 // ---------------------------------------------------------------------------
 
 function SkillCard(
-  { modeId, trackId, onSelectMode }: {
+  { modeId, trackId, isStarred, onToggleStar, onSelectMode }: {
     modeId: string;
     trackId: string;
+    isStarred: boolean;
+    onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
   },
 ) {
@@ -93,15 +88,38 @@ function SkillCard(
   const desc = MODE_DESCRIPTIONS[modeId] || '';
   const ba = MODE_BEFORE_AFTER[modeId];
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onSelectMode(modeId);
+      }
+    },
+    [modeId, onSelectMode],
+  );
+
   return (
-    <button
-      type='button'
+    <div
       class='home-mode-btn skill-card'
       data-mode={modeId}
       data-track={trackId}
+      role='button'
       tabIndex={0}
       onClick={() => onSelectMode(modeId)}
+      onKeyDown={handleKeyDown}
     >
+      <button
+        type='button'
+        class={`skill-card-star${isStarred ? ' starred' : ''}`}
+        aria-label={isStarred ? `Unstar ${name}` : `Star ${name}`}
+        aria-pressed={isStarred}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleStar(modeId);
+        }}
+      >
+        {isStarred ? '\u2605' : '\u2606'}
+      </button>
       <span class='skill-card-header'>
         <SkillIcon modeId={modeId} />
         <span class='skill-card-header-text'>
@@ -111,39 +129,127 @@ function SkillCard(
       </span>
       {ba && (
         <div class='skill-card-ba'>
-          <span class='skill-card-before'>
-            {typeof ba.before === 'function' ? ba.before() : ba.before}
-          </span>
+          <span class='skill-card-before'>{ba.before()}</span>
           <span class='skill-card-arrow'>&rarr;</span>
-          <span class='skill-card-after'>
-            {typeof ba.after === 'function' ? ba.after() : ba.after}
-          </span>
+          <span class='skill-card-after'>{ba.after()}</span>
         </div>
       )}
-    </button>
+    </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// TrackSkillsList — track header + its skill cards in order
+// ActiveSkillCard — full card for the Active Skills section (with track pill)
 // ---------------------------------------------------------------------------
 
-function TrackSkillsList(
-  { track, onSelectMode }: {
-    track: Track;
+function ActiveSkillCard(
+  { modeId, trackLabel, onToggleStar, onSelectMode }: {
+    modeId: string;
+    trackLabel: string;
+    onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
   },
 ) {
+  const name = MODE_NAMES[modeId] || modeId;
+  const desc = MODE_DESCRIPTIONS[modeId] || '';
+  const ba = MODE_BEFORE_AFTER[modeId];
+  const track = TRACKS.find((t) => t.skills.includes(modeId));
+  const trackId = track?.id || 'core';
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onSelectMode(modeId);
+      }
+    },
+    [modeId, onSelectMode],
+  );
+
   return (
-    <div class='track-skills-list'>
-      <div class={`home-group-label track-group-${track.id}`}>
-        {track.label}
-      </div>
-      {track.skills.map((modeId) => (
-        <SkillCard
+    <div
+      class='home-mode-btn skill-card active-skill-card'
+      data-mode={modeId}
+      data-track={trackId}
+      role='button'
+      tabIndex={0}
+      onClick={() => onSelectMode(modeId)}
+      onKeyDown={handleKeyDown}
+    >
+      <button
+        type='button'
+        class='skill-card-star starred'
+        aria-label={`Unstar ${name}`}
+        aria-pressed
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleStar(modeId);
+        }}
+      >
+        {'\u2605'}
+      </button>
+      <span class='skill-card-header'>
+        <SkillIcon modeId={modeId} />
+        <span class='skill-card-header-text'>
+          <span class={`active-skill-track-pill pill-${trackId}`}>
+            {trackLabel}
+          </span>
+          <span class='home-mode-name'>{name}</span>
+          <span class='home-mode-desc'>{desc}</span>
+        </span>
+      </span>
+      {ba && (
+        <div class='skill-card-ba'>
+          <span class='skill-card-before'>
+            {ba.before()}
+          </span>
+          <span class='skill-card-arrow'>&rarr;</span>
+          <span class='skill-card-after'>
+            {ba.after()}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ActiveSkillsList — content for the Active tab (no wrapper/header)
+// ---------------------------------------------------------------------------
+
+function ActiveSkillsList(
+  { starred, onToggleStar, onSelectMode }: {
+    starred: Set<string>;
+    onToggleStar: (modeId: string) => void;
+    onSelectMode: (modeId: string) => void;
+  },
+) {
+  // Order starred skills by track definition order
+  const orderedStarred: { modeId: string; trackLabel: string }[] = [];
+  for (const track of TRACKS) {
+    for (const modeId of track.skills) {
+      if (starred.has(modeId)) {
+        orderedStarred.push({ modeId, trackLabel: track.label });
+      }
+    }
+  }
+
+  if (orderedStarred.length === 0) {
+    return (
+      <p class='active-skills-empty'>
+        Star skills in the <strong>All Skills</strong> tab to add them here.
+      </p>
+    );
+  }
+
+  return (
+    <div class='active-skills-list'>
+      {orderedStarred.map(({ modeId, trackLabel }) => (
+        <ActiveSkillCard
           key={modeId}
           modeId={modeId}
-          trackId={track.id}
+          trackLabel={trackLabel}
+          onToggleStar={onToggleStar}
           onSelectMode={onSelectMode}
         />
       ))}
@@ -152,34 +258,241 @@ function TrackSkillsList(
 }
 
 // ---------------------------------------------------------------------------
-// OtherTracks — collapsed <details> for deselected tracks
+// TrackAccordion — collapsible track section
 // ---------------------------------------------------------------------------
 
-function OtherTracks(
-  { tracks, onSelectMode }: {
-    tracks: Track[];
+function TrackAccordion(
+  { track, isExpanded, starred, onToggleExpand, onToggleStar, onSelectMode }: {
+    track: Track;
+    isExpanded: boolean;
+    starred: Set<string>;
+    onToggleExpand: (trackId: string) => void;
+    onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
   },
 ) {
-  if (tracks.length === 0) return null;
-
   return (
-    <details class='home-other-skills'>
-      <summary>Other skills</summary>
-      {tracks.map((track) => (
-        <TrackSkillsList
-          key={track.id}
-          track={track}
-          onSelectMode={onSelectMode}
-        />
-      ))}
-    </details>
+    <div class='track-accordion'>
+      <button
+        type='button'
+        class={`track-accordion-header track-group-${track.id}`}
+        aria-expanded={isExpanded}
+        onClick={() => onToggleExpand(track.id)}
+      >
+        <span class='track-accordion-chevron'>
+          {isExpanded ? '\u25BE' : '\u25B8'}
+        </span>
+        {track.label}
+      </button>
+      {isExpanded && (
+        <div class='track-accordion-body'>
+          {track.skills.map((modeId) => (
+            <SkillCard
+              key={modeId}
+              modeId={modeId}
+              trackId={track.id}
+              isStarred={starred.has(modeId)}
+              onToggleStar={onToggleStar}
+              onSelectMode={onSelectMode}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// HomeScreen — top-level component
+// SettingsPage — settings screen (extracted for function length limit)
 // ---------------------------------------------------------------------------
+
+function SettingsAboutLegal(
+  { appConfig, version }: { appConfig: AppConfig; version: string },
+) {
+  return (
+    <div>
+      <section class='settings-section'>
+        <h2 class='settings-section-title'>About</h2>
+        <div class='settings-link-list'>
+          {appConfig.contactEmail && (
+            <a class='text-link' href={`mailto:${appConfig.contactEmail}`}>
+              Contact: {appConfig.contactEmail}
+            </a>
+          )}
+          {appConfig.supportUrl && (
+            <a
+              class='text-link'
+              href={appConfig.supportUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              Support
+            </a>
+          )}
+          <div class='settings-meta'>Build number: {version}</div>
+        </div>
+      </section>
+
+      <section class='settings-section'>
+        <h2 class='settings-section-title'>Legal</h2>
+        <div class='settings-link-list'>
+          {appConfig.termsUrl && (
+            <a
+              class='text-link'
+              href={appConfig.termsUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              Terms &amp; conditions
+            </a>
+          )}
+          {appConfig.privacyUrl && (
+            <a
+              class='text-link'
+              href={appConfig.privacyUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              Privacy policy
+            </a>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function SettingsPage(
+  { settings, appConfig, version, useSolfege, setUseSolfege, onClose }: {
+    settings: SettingsController;
+    appConfig: AppConfig;
+    version: string;
+    useSolfege: boolean;
+    setUseSolfege: (v: boolean) => void;
+    onClose: () => void;
+  },
+) {
+  return (
+    <div class='settings-page'>
+      <div class='settings-page-header'>
+        <h1 class='settings-page-title'>Settings</h1>
+        <button
+          type='button'
+          class='settings-close-btn'
+          aria-label='Close'
+          onClick={onClose}
+        >
+          &times;
+        </button>
+      </div>
+
+      <section class='settings-section'>
+        <h2 class='settings-section-title'>General</h2>
+        <div class='settings-field'>
+          <div class='settings-label'>Note names</div>
+          <div class='settings-toggle-group'>
+            <button
+              type='button'
+              class={`settings-toggle-btn${useSolfege ? '' : ' active'}`}
+              aria-pressed={!useSolfege}
+              onClick={() => {
+                settings.setUseSolfege(false);
+                setUseSolfege(false);
+              }}
+            >
+              A B C
+            </button>
+            <button
+              type='button'
+              class={`settings-toggle-btn${useSolfege ? ' active' : ''}`}
+              aria-pressed={useSolfege}
+              onClick={() => {
+                settings.setUseSolfege(true);
+                setUseSolfege(true);
+              }}
+            >
+              Do Re Mi
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <SettingsAboutLegal appConfig={appConfig} version={version} />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AllSkillsList — content for the All Skills tab
+// ---------------------------------------------------------------------------
+
+function AllSkillsList(
+  { accordion, starred, onToggleExpand, onToggleStar, onSelectMode }: {
+    accordion: Record<string, boolean>;
+    starred: Set<string>;
+    onToggleExpand: (trackId: string) => void;
+    onToggleStar: (modeId: string) => void;
+    onSelectMode: (modeId: string) => void;
+  },
+) {
+  return (
+    <div class='home-modes'>
+      <p class='all-skills-hint'>
+        Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
+        {' '}
+        list.
+      </p>
+      {TRACKS.map((track) => (
+        <TrackAccordion
+          key={track.id}
+          track={track}
+          isExpanded={accordion[track.id] !== false}
+          starred={starred}
+          onToggleExpand={onToggleExpand}
+          onToggleStar={onToggleStar}
+          onSelectMode={onSelectMode}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// HomeScreen — top-level component with Active / All Skills tabs
+// ---------------------------------------------------------------------------
+
+type HomeTab = 'active' | 'all';
+
+function HomeScreenTabs(
+  { tab, starredCount, onChangeTab }: {
+    tab: HomeTab;
+    starredCount: number;
+    onChangeTab: (t: HomeTab) => void;
+  },
+) {
+  return (
+    <div class='home-tabs' role='tablist'>
+      <button
+        type='button'
+        role='tab'
+        class={`home-tab${tab === 'active' ? ' active' : ''}`}
+        aria-selected={tab === 'active'}
+        onClick={() => onChangeTab('active')}
+      >
+        Active{starredCount > 0 ? ` (${starredCount})` : ''}
+      </button>
+      <button
+        type='button'
+        role='tab'
+        class={`home-tab${tab === 'all' ? ' active' : ''}`}
+        aria-selected={tab === 'all'}
+        onClick={() => onChangeTab('all')}
+      >
+        All Skills
+      </button>
+    </div>
+  );
+}
 
 export function HomeScreen(
   { onSelectMode, settings, appConfig, version }: {
@@ -189,124 +502,53 @@ export function HomeScreen(
     version: string;
   },
 ) {
-  const [selected, setSelected] = useState(loadSelectedTracks);
+  const [starred, setStarred] = useState(loadStarredSkills);
+  const [accordion, setAccordion] = useState(loadAccordionState);
   const [showSettings, setShowSettings] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
+  const [tab, setTab] = useState<HomeTab>(() => {
+    try {
+      const saved = localStorage.getItem(TAB_KEY);
+      if (saved === 'active' || saved === 'all') return saved;
+    } catch (_) { /* expected */ }
+    return loadStarredSkills().size > 0 ? 'active' : 'all';
+  });
 
-  const handleToggle = useCallback((id: string) => {
-    // Can't deselect alwaysSelected tracks
-    const track = TRACKS.find((t) => t.id === id);
-    if (track?.alwaysSelected) return;
-
-    setSelected((prev) => {
+  const handleToggleStar = useCallback((modeId: string) => {
+    setStarred((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      saveSelectedTracks(next);
+      if (next.has(modeId)) next.delete(modeId);
+      else next.add(modeId);
+      saveStarredSkills(next);
       return next;
     });
   }, []);
 
-  const selectedTracks = TRACKS.filter((t) => selected.has(t.id));
-  const deselectedTracks = TRACKS.filter((t) => !selected.has(t.id));
+  const handleChangeTab = useCallback((t: HomeTab) => {
+    setTab(t);
+    try {
+      localStorage.setItem(TAB_KEY, t);
+    } catch (_) { /* expected */ }
+  }, []);
+
+  const handleToggleExpand = useCallback((trackId: string) => {
+    setAccordion((prev) => {
+      const next = { ...prev, [trackId]: !prev[trackId] };
+      saveAccordionState(next);
+      return next;
+    });
+  }, []);
 
   if (showSettings) {
     return (
-      <div class='settings-page'>
-        <div class='settings-page-header'>
-          <h1 class='settings-page-title'>Settings</h1>
-          <button
-            type='button'
-            class='settings-close-btn'
-            aria-label='Close'
-            onClick={() => setShowSettings(false)}
-          >
-            &times;
-          </button>
-        </div>
-
-        <section class='settings-section'>
-          <h2 class='settings-section-title'>General</h2>
-          <div class='settings-field'>
-            <div class='settings-label'>Note names</div>
-            <div class='settings-toggle-group'>
-              <button
-                type='button'
-                class={`settings-toggle-btn${useSolfege ? '' : ' active'}`}
-                aria-pressed={!useSolfege}
-                onClick={() => {
-                  settings.setUseSolfege(false);
-                  setUseSolfege(false);
-                }}
-              >
-                A B C
-              </button>
-              <button
-                type='button'
-                class={`settings-toggle-btn${useSolfege ? ' active' : ''}`}
-                aria-pressed={useSolfege}
-                onClick={() => {
-                  settings.setUseSolfege(true);
-                  setUseSolfege(true);
-                }}
-              >
-                Do Re Mi
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section class='settings-section'>
-          <h2 class='settings-section-title'>About</h2>
-          <div class='settings-link-list'>
-            {appConfig.contactEmail && (
-              <a
-                class='text-link'
-                href={`mailto:${appConfig.contactEmail}`}
-              >
-                Contact: {appConfig.contactEmail}
-              </a>
-            )}
-            {appConfig.supportUrl && (
-              <a
-                class='text-link'
-                href={appConfig.supportUrl}
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                Support
-              </a>
-            )}
-            <div class='settings-meta'>Build number: {version}</div>
-          </div>
-        </section>
-
-        <section class='settings-section'>
-          <h2 class='settings-section-title'>Legal</h2>
-          <div class='settings-link-list'>
-            {appConfig.termsUrl && (
-              <a
-                class='text-link'
-                href={appConfig.termsUrl}
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                Terms &amp; conditions
-              </a>
-            )}
-            {appConfig.privacyUrl && (
-              <a
-                class='text-link'
-                href={appConfig.privacyUrl}
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                Privacy policy
-              </a>
-            )}
-          </div>
-        </section>
-      </div>
+      <SettingsPage
+        settings={settings}
+        appConfig={appConfig}
+        version={version}
+        useSolfege={useSolfege}
+        setUseSolfege={setUseSolfege}
+        onClose={() => setShowSettings(false)}
+      />
     );
   }
 
@@ -320,24 +562,29 @@ export function HomeScreen(
         </p>
       </div>
 
-      <div class='track-selection-header'>Select tracks</div>
-      <TrackChips
-        tracks={TRACKS}
-        selected={selected}
-        onToggle={handleToggle}
+      <HomeScreenTabs
+        tab={tab}
+        starredCount={starred.size}
+        onChangeTab={handleChangeTab}
       />
 
-      <div class='home-modes'>
-        {selectedTracks.map((track) => (
-          <TrackSkillsList
-            key={track.id}
-            track={track}
+      {tab === 'active'
+        ? (
+          <ActiveSkillsList
+            starred={starred}
+            onToggleStar={handleToggleStar}
             onSelectMode={onSelectMode}
           />
-        ))}
-
-        <OtherTracks tracks={deselectedTracks} onSelectMode={onSelectMode} />
-      </div>
+        )
+        : (
+          <AllSkillsList
+            accordion={accordion}
+            starred={starred}
+            onToggleExpand={handleToggleExpand}
+            onToggleStar={handleToggleStar}
+            onSelectMode={onSelectMode}
+          />
+        )}
 
       <div class='home-footer'>
         <button

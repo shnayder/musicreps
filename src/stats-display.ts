@@ -22,11 +22,11 @@ function heatmapColors() {
     _heatmapColors = {
       none: cssVar('--heatmap-none') || 'hsl(30, 4%, 85%)',
       level: [
-        cssVar('--heatmap-1') || 'hsl(44, 65%, 58%)',
-        cssVar('--heatmap-2') || 'hsl(54, 45%, 52%)',
-        cssVar('--heatmap-3') || 'hsl(68, 30%, 46%)',
-        cssVar('--heatmap-4') || 'hsl(90, 38%, 38%)',
-        cssVar('--heatmap-5') || 'hsl(122, 46%, 33%)',
+        cssVar('--heatmap-1') || 'hsl(40, 60%, 58%)',
+        cssVar('--heatmap-2') || 'hsl(48, 50%, 52%)',
+        cssVar('--heatmap-3') || 'hsl(60, 40%, 46%)',
+        cssVar('--heatmap-4') || 'hsl(80, 35%, 40%)',
+        cssVar('--heatmap-5') || 'hsl(125, 48%, 33%)',
       ],
     };
   }
@@ -45,12 +45,13 @@ export function heatmapNeedsLightText(color: string): boolean {
 // --- Speed x Freshness combined encoding ---
 
 // HSL parameters for each speed level (hue, sat%, light%)
+// Green reserved for truly automatic (>0.9); "fast but not instant" is yellow-green.
 const SPEED_HSL: [number, number, number][] = [
-  [44, 65, 58], // heatmap-1: needs work
-  [54, 45, 52], // heatmap-2
-  [68, 30, 46], // heatmap-3
-  [90, 38, 38], // heatmap-4
-  [122, 46, 33], // heatmap-5: automatic
+  [40, 60, 58], // heatmap-1: needs work
+  [48, 50, 52], // heatmap-2
+  [60, 40, 46], // heatmap-3
+  [80, 35, 40], // heatmap-4: fast but figuring it out
+  [125, 48, 33], // heatmap-5: automatic
 ];
 
 const FRESHNESS_FLOOR = 0.25;
@@ -66,13 +67,13 @@ export function getSpeedFreshnessColor(
 ): string {
   const c = heatmapColors();
   if (speedScore === null || freshness === null) return c.none;
-  const level = speedScore > 0.8
+  const level = speedScore > 0.9
     ? 4
-    : speedScore > 0.6
+    : speedScore > 0.75
     ? 3
-    : speedScore > 0.4
+    : speedScore > 0.55
     ? 2
-    : speedScore > 0.2
+    : speedScore > 0.3
     ? 1
     : 0;
   const [h, s, l] = SPEED_HSL[level];

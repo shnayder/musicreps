@@ -11,8 +11,8 @@ import {
 
 // Heatmap palette (matches fallback values in stats-display.ts)
 const NONE = 'hsl(30, 4%, 85%)';
-const L1 = 'hsl(44, 65%, 58%)';
-const L5 = 'hsl(122, 46%, 33%)';
+const L1 = 'hsl(40, 60%, 58%)';
+const L5 = 'hsl(125, 48%, 33%)';
 
 // ---------------------------------------------------------------------------
 // getAutomaticityColor (legacy, still exported)
@@ -46,10 +46,10 @@ describe('getSpeedFreshnessColor', () => {
   });
 
   it('returns vivid green for high speed + high freshness', () => {
-    const color = getSpeedFreshnessColor(0.9, 1.0);
-    // Should be close to hsl(122, 46%, 33%) — the automatic level at full freshness
-    assert.ok(color.startsWith('hsl(122,'));
-    assert.ok(color.includes('46%')); // full saturation
+    const color = getSpeedFreshnessColor(0.95, 1.0);
+    // Should be close to hsl(125, 48%, 33%) — the automatic level at full freshness
+    assert.ok(color.startsWith('hsl(125,'));
+    assert.ok(color.includes('48%')); // full saturation
   });
 
   it('returns desaturated color for low freshness', () => {
@@ -63,12 +63,12 @@ describe('getSpeedFreshnessColor', () => {
 
   it('returns gold hue for low speed', () => {
     const color = getSpeedFreshnessColor(0.1, 1.0);
-    assert.ok(color.startsWith('hsl(44,'));
+    assert.ok(color.startsWith('hsl(40,'));
   });
 
   it('returns green hue for high speed', () => {
-    const color = getSpeedFreshnessColor(0.9, 1.0);
-    assert.ok(color.startsWith('hsl(122,'));
+    const color = getSpeedFreshnessColor(0.95, 1.0);
+    assert.ok(color.startsWith('hsl(125,'));
   });
 });
 
@@ -79,13 +79,13 @@ describe('getSpeedFreshnessColor', () => {
 describe('getStatsCellColor', () => {
   it('returns combined color when speedScore and freshness available', () => {
     const selector = {
-      getSpeedScore: () => 0.9,
+      getSpeedScore: () => 0.95,
       getFreshness: () => 0.8,
       getAutomaticity: () => 0.9,
       getStats: () => null,
     };
     const color = getStatsCellColor(selector, 'test');
-    assert.ok(color.startsWith('hsl(122,')); // high speed = green
+    assert.ok(color.startsWith('hsl(125,')); // high speed = green
   });
 
   it('returns grey when no data', () => {
@@ -156,8 +156,8 @@ describe('getStatsCellColorMerged', () => {
     };
     const color = getStatsCellColorMerged(selector, ['C+3', 'C-3']);
     // average speed = 0.8, average freshness = 0.8
-    // speed 0.8 is NOT >0.8 so level 3 (hue 90)
-    assert.ok(color.startsWith('hsl(90,'));
+    // speed 0.8 is >0.75 so level 3 (hue 80)
+    assert.ok(color.startsWith('hsl(80,'));
   });
 
   it('uses only available items when one is unseen', () => {
@@ -176,8 +176,8 @@ describe('getStatsCellColorMerged', () => {
       getStats: () => null,
     };
     const color = getStatsCellColorMerged(selector, ['C+3', 'C-3']);
-    // Only C+3 has data: speed=0.9 (>0.8 → level 4, hue 122), freshness=1.0
-    assert.ok(color.startsWith('hsl(122,'));
+    // Only C+3 has data: speed=0.9 (>0.75 → level 3, hue 80), freshness=1.0
+    assert.ok(color.startsWith('hsl(80,'));
   });
 });
 
@@ -210,13 +210,13 @@ describe('buildStatsLegend', () => {
 
   it('speed bar starts with green (fast) and ends with gold (slow)', () => {
     const html = buildStatsLegend();
-    // First swatch in speed bar should be hsl(122,...) (green/fast)
+    // First swatch in speed bar should be hsl(125,...) (green/fast)
     const barMatch = html.match(/legend-gradient-bar">(.*?)<\/div>\s*<\/div>/s);
     assert.ok(barMatch, 'should find gradient bar');
     const firstSwatch = barMatch![1];
     assert.ok(
       firstSwatch.startsWith(
-        '<div class="legend-bar-swatch" style="background:hsl(122,',
+        '<div class="legend-bar-swatch" style="background:hsl(125,',
       ),
     );
   });
@@ -228,14 +228,14 @@ describe('buildStatsLegend', () => {
 
 describe('heatmapNeedsLightText', () => {
   it('returns true for dark background (L <= 50)', () => {
-    assert.ok(heatmapNeedsLightText('hsl(122, 46%, 33%)'));
-    assert.ok(heatmapNeedsLightText('hsl(90, 38%, 38%)'));
-    assert.ok(heatmapNeedsLightText('hsl(68, 30%, 46%)'));
-    assert.ok(heatmapNeedsLightText('hsl(54, 45%, 50%)'));
+    assert.ok(heatmapNeedsLightText('hsl(125, 48%, 33%)'));
+    assert.ok(heatmapNeedsLightText('hsl(80, 35%, 40%)'));
+    assert.ok(heatmapNeedsLightText('hsl(60, 40%, 46%)'));
+    assert.ok(heatmapNeedsLightText('hsl(48, 50%, 50%)'));
   });
 
   it('returns false for light background (L > 50)', () => {
-    assert.ok(!heatmapNeedsLightText('hsl(44, 65%, 58%)'));
+    assert.ok(!heatmapNeedsLightText('hsl(40, 60%, 58%)'));
     assert.ok(!heatmapNeedsLightText('hsl(30, 4%, 85%)'));
     assert.ok(!heatmapNeedsLightText('hsl(122, 12%, 70%)'));
   });

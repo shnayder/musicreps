@@ -56,7 +56,7 @@ import {
 // UI constants and DOM helpers (not pure logic — kept in mode file)
 // ---------------------------------------------------------------------------
 
-const FB_TAP_CORRECT = 'hsl(122, 46%, 33%)';
+const FB_TAP_CORRECT = 'hsl(125, 48%, 33%)';
 
 function setCircleFill(
   root: HTMLElement,
