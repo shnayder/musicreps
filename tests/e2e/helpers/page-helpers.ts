@@ -62,22 +62,22 @@ export async function waitForFeedback(
   return text ?? '';
 }
 
-/** Press Space and wait for the prompt text to change (next question). */
+/** Press Space and wait for the question count to increment (next question). */
 export async function advanceToNext(
   page: Page,
   modeId: string,
 ): Promise<void> {
-  // Capture current prompt to detect change
-  const promptSel = `#mode-${modeId} .quiz-prompt`;
-  const before = await page.textContent(promptSel);
+  // Use question count (monotonically increasing) instead of prompt text,
+  // which can repeat if the adaptive selector draws the same item twice.
+  const countSel = `#mode-${modeId} .quiz-info-count`;
+  const before = await page.textContent(countSel);
   await page.keyboard.press('Space');
-  // Wait for prompt text to differ (new question)
   await page.waitForFunction(
     ({ sel, prev }) => {
       const el = document.querySelector(sel);
       return el && el.textContent !== prev;
     },
-    { sel: promptSel, prev: before },
+    { sel: countSel, prev: before },
     { timeout: 5000 },
   );
 }
