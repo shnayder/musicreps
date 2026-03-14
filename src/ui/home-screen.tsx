@@ -82,14 +82,25 @@ function SkillCard(
   const desc = MODE_DESCRIPTIONS[modeId] || '';
   const ba = MODE_BEFORE_AFTER[modeId];
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onSelectMode(modeId);
+      }
+    },
+    [modeId, onSelectMode],
+  );
+
   return (
-    <button
-      type='button'
+    <div
       class='home-mode-btn skill-card'
       data-mode={modeId}
       data-track={trackId}
+      role='button'
       tabIndex={0}
       onClick={() => onSelectMode(modeId)}
+      onKeyDown={handleKeyDown}
     >
       <button
         type='button'
@@ -117,7 +128,7 @@ function SkillCard(
           <span class='skill-card-after'>{ba.after}</span>
         </div>
       )}
-    </button>
+    </div>
   );
 }
 
@@ -139,14 +150,25 @@ function ActiveSkillCard(
   const track = TRACKS.find((t) => t.skills.includes(modeId));
   const trackId = track?.id || 'core';
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onSelectMode(modeId);
+      }
+    },
+    [modeId, onSelectMode],
+  );
+
   return (
-    <button
-      type='button'
+    <div
       class='home-mode-btn skill-card active-skill-card'
       data-mode={modeId}
       data-track={trackId}
+      role='button'
       tabIndex={0}
       onClick={() => onSelectMode(modeId)}
+      onKeyDown={handleKeyDown}
     >
       <button
         type='button'
@@ -181,7 +203,7 @@ function ActiveSkillCard(
           </span>
         </div>
       )}
-    </button>
+    </div>
   );
 }
 

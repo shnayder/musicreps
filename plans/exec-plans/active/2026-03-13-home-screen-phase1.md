@@ -245,8 +245,21 @@ section navigate to the mode. Order matches track definition order.
 
 ### What was done
 
-(To be filled in after implementation.)
+Implemented all 5 steps as planned. Key components: `TrackAccordion` (collapsible
+per-track sections), `SkillCard` (with star toggle), `ActiveSkillCard` (with
+track pill above title), `ActiveSkills` (ordered starred skills section with
+background). Extracted `SettingsPage` and `SettingsAboutLegal` from `HomeScreen`
+to stay under 100-line function limit.
 
 ### Deviations from plan
 
-(To be filled in after implementation.)
+- Used `<div role="button">` instead of `<button>` for skill cards to avoid
+  invalid nested `<button>` elements (star button inside card).
+- Removed card chevrons entirely (rather than repositioning) after UI review.
+- Active skill cards show full content (description + before/after) instead of
+  the originally planned compact format, with a pill-style track label above
+  the title.
+- Active Skills section uses a subtle background (`--color-surface`) for visual
+  separation instead of just whitespace.
+- "Music theory" track color bumped from near-gray to warm brown for better
+  visual identity.
