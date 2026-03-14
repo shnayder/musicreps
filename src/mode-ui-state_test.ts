@@ -134,19 +134,14 @@ describe('statusLabelFromLevel', () => {
     assert.equal(statusLabelFromLevel(1.0), 'Automatic');
   });
 
-  it('returns Fluent for >= 0.5', () => {
-    assert.equal(statusLabelFromLevel(0.5), 'Fluent');
-    assert.equal(statusLabelFromLevel(0.79), 'Fluent');
+  it('returns Getting faster for >= 0.2', () => {
+    assert.equal(statusLabelFromLevel(0.2), 'Getting faster');
+    assert.equal(statusLabelFromLevel(0.79), 'Getting faster');
   });
 
-  it('returns Developing for >= 0.2', () => {
-    assert.equal(statusLabelFromLevel(0.2), 'Developing');
-    assert.equal(statusLabelFromLevel(0.49), 'Developing');
-  });
-
-  it('returns Learning for < 0.2', () => {
-    assert.equal(statusLabelFromLevel(0), 'Learning');
-    assert.equal(statusLabelFromLevel(0.19), 'Learning');
+  it('returns Slow for < 0.2', () => {
+    assert.equal(statusLabelFromLevel(0), 'Slow');
+    assert.equal(statusLabelFromLevel(0.19), 'Slow');
   });
 });
 
@@ -336,8 +331,8 @@ describe('computePracticeSummary', () => {
       showMastery: false,
     });
     // Level automaticity: values = [0.9, 0.8, 0.6, 0.3, 0] sorted = [0, 0.3, 0.6, 0.8, 0.9]
-    // p=0.1: index = ceil(5*0.1)-1 = ceil(0.5)-1 = 0 → level = 0 → "Learning"
-    assert.equal(result.statusLabel, 'Learning');
+    // p=0.1: index = ceil(5*0.1)-1 = ceil(0.5)-1 = 0 → level = 0 → "Slow"
+    assert.equal(result.statusLabel, 'Slow');
     assert.equal(result.statusDetail, '3/5 positions fluent');
   });
 

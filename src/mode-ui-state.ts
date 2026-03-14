@@ -63,9 +63,8 @@ export function computeLevelAutomaticity(
 /** Compute the status label from level automaticity. */
 export function statusLabelFromLevel(level: number): string {
   if (level >= 0.8) return 'Automatic';
-  if (level >= 0.5) return 'Fluent';
-  if (level >= 0.2) return 'Developing';
-  return 'Learning';
+  if (level >= 0.2) return 'Getting faster';
+  return 'Slow';
 }
 
 /**

@@ -2,9 +2,13 @@
 
 ## Context
 
-The home screen (Phase 1) shows skill cards with starring and accordion
-sections, but no progress information. Users can't tell which skills need
-attention without entering each mode. Phase 2 adds:
+The home screen (Phase 1) has a tabbed interface: **Active** tab (starred
+skills as `ActiveSkillCard`) and **All Skills** tab (track accordions with
+`SkillCard`). Phase 1 also reorganized tracks ("Music theory", "Reading music",
+"Guitar", "Ukulele") and made `MODE_BEFORE_AFTER` values functions for solfège.
+
+Users can't tell which skills need attention without entering each mode. Phase 2
+adds:
 
 - A per-group **progress bar** on each skill card (colored segments)
 - A **status label** ("Not started" / "Slow" / "Getting faster" / "Automatic")
@@ -32,13 +36,12 @@ Automatic. "Not started" (seen === 0) stays as-is.
 | `src/fixtures/recommendation-scenarios.ts:286-291` | Change `'Learning' \|\| 'Developing'` → `'Slow' \|\| 'Getting faster'` |
 | `src/fixtures/recommendation-scenarios.ts:316-322` | Change `'Developing' \|\| 'Fluent' \|\| 'Automatic'` → `'Getting faster' \|\| 'Automatic'` |
 
-**Verify:** `deno task test` — all label assertions pass. Check that
-`PracticeCard` in `src/ui/mode-screen.tsx` renders the label from
-`statusLabel` prop (it does — no change needed there, it's just a string).
+**Verify:** `deno task test` — all label assertions pass. `PracticeCard` in
+`src/ui/mode-screen.tsx` renders labels from `statusLabel` prop (just a
+string — no change needed there).
 
 **Note:** `src/ui/preview.tsx` uses custom mock labels ('Strong', 'Solid',
-'Ready to start') that don't match either old or new labels — leave them as-is
-since they're preview-only fixtures.
+'Ready to start') — leave as-is (preview-only fixtures).
 
 ---
 
@@ -60,7 +63,7 @@ type ModeProgressEntry = {
 };
 ```
 
-Build the manifest array by importing from each mode's logic file:
+Build the manifest by importing from each mode's logic file:
 - `key-signatures/logic.ts` → KEY_GROUPS, getItemIdsForGroup
 - `scale-degrees/logic.ts` → DEGREE_GROUPS, getItemIdsForGroup
 - `diatonic-chords/logic.ts` → DEGREE_GROUPS, getItemIdsForGroup
@@ -69,7 +72,7 @@ Build the manifest array by importing from each mode's logic file:
 - `chord-spelling/logic.ts` → SPELLING_GROUPS, getItemIdsForGroup
 - `fretboard/logic.ts` → getGroups(GUITAR), getItemIdsForGroup, getAllItems
 - `fretboard/logic.ts` → getGroups(UKULELE), getItemIdsForGroup, getAllItems
-  (use GUITAR/UKULELE from `music-data.ts`)
+  (use GUITAR/UKULELE instrument objects from `music-data.ts`)
 - `note-semitones/logic.ts` → ALL_ITEMS (no groups → null)
 - `interval-semitones/logic.ts` → ALL_ITEMS (no groups → null)
 - `speed-tap` → ALL_ITEMS from its logic (no groups → null)
@@ -131,8 +134,13 @@ of these — no adapter needed.
 
 **Changes to `src/ui/home-screen.tsx`:**
 
+Phase 1 established a tabbed layout: `ActiveSkillsList` (Active tab) renders
+`ActiveSkillCard` components, and `AllSkillsList` (All Skills tab) renders
+`SkillCard` components inside `TrackAccordion`s. Both card types need progress.
+
 1. Import and call `useHomeProgress()` in `HomeScreen`
-2. Pass `progress?: ModeProgress` to `SkillCard` and `ActiveSkillCard`
+2. Thread `progressMap` down through `ActiveSkillsList` → `ActiveSkillCard`
+   and `AllSkillsList` → `TrackAccordion` → `SkillCard`
 3. Add a small `SkillProgressBar` component:
 
 ```tsx
@@ -147,12 +155,11 @@ function SkillProgressBar({ colors }: { colors: string[] }) {
 }
 ```
 
-4. Render `SkillProgressBar` and status label inside both card components, below
-   the header area and above the before/after text (matching spec: "bar at
-   bottom of card")
+4. Render `SkillProgressBar` and status label inside both `SkillCard` and
+   `ActiveSkillCard`, between the header and the before/after text
 
-**Status label placement:** Small text next to or below the progress bar. Use
-the `.skill-status-label` class.
+**Note:** Both card types are `<div role='button'>` (not `<button>`) with
+keyboard handlers — Phase 1 change. Adding children is straightforward.
 
 ---
 
@@ -204,12 +211,13 @@ quiz session (write a summary record to localStorage alongside per-item data).
 ## Step 7: Verify end-to-end
 
 - `deno task ok` passes
-- Progress bars appear on both SkillCard (accordion) and ActiveSkillCard
-  (starred section)
+- Progress bars appear on both `ActiveSkillCard` (Active tab) and `SkillCard`
+  (All Skills tab, inside track accordions)
 - "Not started" shows all-grey segments
 - Practicing a mode and returning to home shows updated colors
 - Status labels match spec thresholds
 - Visual style matches in-mode `.group-progress-bar`
+- Both tabs render progress correctly when switching between them
 
 ---
 
@@ -228,13 +236,18 @@ quiz session (write a summary record to localStorage alongside per-item data).
    calibration mode, not a learning progression. Include it in the manifest with
    `groups: null` — shows a single-segment bar. Fine for now.
 
-4. **Function length.** `SkillCard` and `ActiveSkillCard` are ~40 lines each.
-   Adding progress bar rendering adds ~5-10 lines — safely under 100. The
-   `SkillProgressBar` extraction keeps things clean.
+4. **Function length.** `SkillCard` and `ActiveSkillCard` are ~50 lines each
+   (after Phase 1 added keyboard handlers and star toggles). Adding progress bar
+   rendering adds ~5-10 lines — should stay under 100 with `SkillProgressBar`
+   extracted.
 
 5. **Fretboard factory pattern.** Guitar and ukulele share logic via the
    instrument object. The manifest needs both GUITAR and UKULELE from
    `music-data.ts` — clean imports, no issue.
+
+6. **Prop threading through tabs.** `progressMap` must pass through
+   `HomeScreen` → `ActiveSkillsList` / `AllSkillsList` → cards. Three levels of
+   prop passing is acceptable; no need for context.
 
 ---
 
@@ -248,5 +261,5 @@ quiz session (write a summary record to localStorage alongside per-item data).
 | `src/mode-progress-manifest.ts` | **NEW** — mode metadata registry |
 | `src/mode-progress-manifest_test.ts` | **NEW** — structure + perf tests |
 | `src/hooks/use-home-progress.ts` | **NEW** — progress computation hook |
-| `src/ui/home-screen.tsx` | Add progress bar + status label to cards |
-| `src/styles.css` | Add `.skill-progress-bar`, `.skill-bar-segment`, `.skill-status-label` |
+| `src/ui/home-screen.tsx` | Add progress bar to both card types (label deferred — cluttered cards) |
+| `src/styles.css` | Reuse `.group-progress-bar` / `.group-bar-slice` for skill cards |

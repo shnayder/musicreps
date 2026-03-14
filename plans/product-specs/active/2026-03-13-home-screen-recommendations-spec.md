@@ -377,9 +377,8 @@ Recommendations operate only within the user's starred set. The system does not
 suggest starring new skills or recommend unstarred skills. The user decides when
 to add new skills to their active set.
 
-Rationale: starring is an explicit declaration of intent. Recommending unstarred
-skills crosses from "help me with what I chose" into "tell me what to choose" —
-valuable eventually, but a separate feature.
+Rationale: starring is an explicit declaration of intent. Recommending new skills is a separate feature, which will
+require tracking prerequisites and ultimate user goals. 
 
 ### Cold start
 
@@ -396,9 +395,9 @@ labels, but every skill card is still tappable. If the user wants to work on
 Semitone Math instead of the recommended Key Signatures review, they just tap
 it.
 
-Future: "I already know this" and "Not interested" marks on individual levels
-within a skill. These would tell the recommendation engine to skip those levels
-when computing consolidation needs and expansion gates. Not part of this phase.
+To handle: "I already know this" and "Not interested" marks on individual levels
+within a skill. These tell the recommendation engine to skip those levels
+when computing consolidation needs and expansion gates. 
 
 ### Resolved questions
 

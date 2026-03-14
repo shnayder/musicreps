@@ -283,10 +283,10 @@ export const SCENARIOS: RecommendationScenario[] = [
             : `consolidateIndices = [${o.recommendation.consolidateIndices}]`,
       },
       {
-        label: 'Status is "Learning" or "Developing"',
+        label: 'Status is "Slow" or "Getting faster"',
         check: (o) =>
-          o.practiceSummary.statusLabel === 'Learning' ||
-            o.practiceSummary.statusLabel === 'Developing'
+          o.practiceSummary.statusLabel === 'Slow' ||
+            o.practiceSummary.statusLabel === 'Getting faster'
             ? null
             : `statusLabel = "${o.practiceSummary.statusLabel}"`,
       },
@@ -313,10 +313,9 @@ export const SCENARIOS: RecommendationScenario[] = [
             : `expandIndex = ${o.recommendation.expandIndex}, expected null`,
       },
       {
-        label: 'Status is "Developing" or higher',
+        label: 'Status is "Getting faster" or "Automatic"',
         check: (o) =>
-          o.practiceSummary.statusLabel === 'Developing' ||
-            o.practiceSummary.statusLabel === 'Fluent' ||
+          o.practiceSummary.statusLabel === 'Getting faster' ||
             o.practiceSummary.statusLabel === 'Automatic'
             ? null
             : `statusLabel = "${o.practiceSummary.statusLabel}"`,

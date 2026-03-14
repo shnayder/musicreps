@@ -12,6 +12,10 @@ import type { Track } from '../music-data.ts';
 import { SkillIcon } from './icons.tsx';
 import type { SettingsController } from '../types.ts';
 import type { AppConfig } from '../app-config.ts';
+import {
+  type ModeProgress,
+  useHomeProgress,
+} from '../hooks/use-home-progress.ts';
 
 // ---------------------------------------------------------------------------
 // localStorage persistence for starred skills
@@ -72,16 +76,31 @@ try {
 } catch (_) { /* expected */ }
 
 // ---------------------------------------------------------------------------
+// SkillProgressBar — colored segments showing per-group progress
+// ---------------------------------------------------------------------------
+
+function SkillProgressBar({ colors }: { colors: string[] }) {
+  return (
+    <div class='group-progress-bar'>
+      {colors.map((color, i) => (
+        <div class='group-bar-slice' key={i} style={`background:${color}`} />
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // SkillCard — a single mode button with before/after contrast and star toggle
 // ---------------------------------------------------------------------------
 
 function SkillCard(
-  { modeId, trackId, isStarred, onToggleStar, onSelectMode }: {
+  { modeId, trackId, isStarred, onToggleStar, onSelectMode, progress }: {
     modeId: string;
     trackId: string;
     isStarred: boolean;
     onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
+    progress?: ModeProgress;
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
@@ -134,6 +153,11 @@ function SkillCard(
           <span class='skill-card-after'>{ba.after()}</span>
         </div>
       )}
+      {progress && (
+        <div class='skill-card-progress'>
+          <SkillProgressBar colors={progress.groupColors} />
+        </div>
+      )}
     </div>
   );
 }
@@ -143,11 +167,12 @@ function SkillCard(
 // ---------------------------------------------------------------------------
 
 function ActiveSkillCard(
-  { modeId, trackLabel, onToggleStar, onSelectMode }: {
+  { modeId, trackLabel, onToggleStar, onSelectMode, progress }: {
     modeId: string;
     trackLabel: string;
     onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
+    progress?: ModeProgress;
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
@@ -209,6 +234,11 @@ function ActiveSkillCard(
           </span>
         </div>
       )}
+      {progress && (
+        <div class='skill-card-progress'>
+          <SkillProgressBar colors={progress.groupColors} />
+        </div>
+      )}
     </div>
   );
 }
@@ -218,10 +248,11 @@ function ActiveSkillCard(
 // ---------------------------------------------------------------------------
 
 function ActiveSkillsList(
-  { starred, onToggleStar, onSelectMode }: {
+  { starred, onToggleStar, onSelectMode, progress }: {
     starred: Set<string>;
     onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
+    progress: Map<string, ModeProgress>;
   },
 ) {
   // Order starred skills by track definition order
@@ -251,6 +282,7 @@ function ActiveSkillsList(
           trackLabel={trackLabel}
           onToggleStar={onToggleStar}
           onSelectMode={onSelectMode}
+          progress={progress.get(modeId)}
         />
       ))}
     </div>
@@ -262,13 +294,22 @@ function ActiveSkillsList(
 // ---------------------------------------------------------------------------
 
 function TrackAccordion(
-  { track, isExpanded, starred, onToggleExpand, onToggleStar, onSelectMode }: {
+  {
+    track,
+    isExpanded,
+    starred,
+    onToggleExpand,
+    onToggleStar,
+    onSelectMode,
+    progress,
+  }: {
     track: Track;
     isExpanded: boolean;
     starred: Set<string>;
     onToggleExpand: (trackId: string) => void;
     onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
+    progress: Map<string, ModeProgress>;
   },
 ) {
   return (
@@ -294,6 +335,7 @@ function TrackAccordion(
               isStarred={starred.has(modeId)}
               onToggleStar={onToggleStar}
               onSelectMode={onSelectMode}
+              progress={progress.get(modeId)}
             />
           ))}
         </div>
@@ -427,13 +469,15 @@ function SettingsPage(
 // ---------------------------------------------------------------------------
 
 function AllSkillsList(
-  { accordion, starred, onToggleExpand, onToggleStar, onSelectMode }: {
-    accordion: Record<string, boolean>;
-    starred: Set<string>;
-    onToggleExpand: (trackId: string) => void;
-    onToggleStar: (modeId: string) => void;
-    onSelectMode: (modeId: string) => void;
-  },
+  { accordion, starred, onToggleExpand, onToggleStar, onSelectMode, progress }:
+    {
+      accordion: Record<string, boolean>;
+      starred: Set<string>;
+      onToggleExpand: (trackId: string) => void;
+      onToggleStar: (modeId: string) => void;
+      onSelectMode: (modeId: string) => void;
+      progress: Map<string, ModeProgress>;
+    },
 ) {
   return (
     <div class='home-modes'>
@@ -451,6 +495,7 @@ function AllSkillsList(
           onToggleExpand={onToggleExpand}
           onToggleStar={onToggleStar}
           onSelectMode={onSelectMode}
+          progress={progress}
         />
       ))}
     </div>
@@ -494,6 +539,59 @@ function HomeScreenTabs(
   );
 }
 
+function HomeTabContent(
+  {
+    tab,
+    starred,
+    accordion,
+    progress,
+    onToggleStar,
+    onToggleExpand,
+    onSelectMode,
+  }: {
+    tab: HomeTab;
+    starred: Set<string>;
+    accordion: Record<string, boolean>;
+    progress: Map<string, ModeProgress>;
+    onToggleStar: (modeId: string) => void;
+    onToggleExpand: (trackId: string) => void;
+    onSelectMode: (modeId: string) => void;
+  },
+) {
+  if (tab === 'active') {
+    return (
+      <ActiveSkillsList
+        starred={starred}
+        onToggleStar={onToggleStar}
+        onSelectMode={onSelectMode}
+        progress={progress}
+      />
+    );
+  }
+  return (
+    <AllSkillsList
+      accordion={accordion}
+      starred={starred}
+      onToggleExpand={onToggleExpand}
+      onToggleStar={onToggleStar}
+      onSelectMode={onSelectMode}
+      progress={progress}
+    />
+  );
+}
+
+function loadInitialTab(): HomeTab {
+  try {
+    const saved = localStorage.getItem(TAB_KEY);
+    if (saved === 'active' || saved === 'all') return saved;
+  } catch (_) { /* expected */ }
+  return loadStarredSkills().size > 0 ? 'active' : 'all';
+}
+
+// ---------------------------------------------------------------------------
+// HomeScreen — top-level component
+// ---------------------------------------------------------------------------
+
 export function HomeScreen(
   { onSelectMode, settings, appConfig, version }: {
     onSelectMode: (modeId: string) => void;
@@ -502,17 +600,12 @@ export function HomeScreen(
     version: string;
   },
 ) {
+  const progress = useHomeProgress();
   const [starred, setStarred] = useState(loadStarredSkills);
   const [accordion, setAccordion] = useState(loadAccordionState);
   const [showSettings, setShowSettings] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
-  const [tab, setTab] = useState<HomeTab>(() => {
-    try {
-      const saved = localStorage.getItem(TAB_KEY);
-      if (saved === 'active' || saved === 'all') return saved;
-    } catch (_) { /* expected */ }
-    return loadStarredSkills().size > 0 ? 'active' : 'all';
-  });
+  const [tab, setTab] = useState<HomeTab>(loadInitialTab);
 
   const handleToggleStar = useCallback((modeId: string) => {
     setStarred((prev) => {
@@ -568,23 +661,15 @@ export function HomeScreen(
         onChangeTab={handleChangeTab}
       />
 
-      {tab === 'active'
-        ? (
-          <ActiveSkillsList
-            starred={starred}
-            onToggleStar={handleToggleStar}
-            onSelectMode={onSelectMode}
-          />
-        )
-        : (
-          <AllSkillsList
-            accordion={accordion}
-            starred={starred}
-            onToggleExpand={handleToggleExpand}
-            onToggleStar={handleToggleStar}
-            onSelectMode={onSelectMode}
-          />
-        )}
+      <HomeTabContent
+        tab={tab}
+        starred={starred}
+        accordion={accordion}
+        progress={progress}
+        onToggleStar={handleToggleStar}
+        onToggleExpand={handleToggleExpand}
+        onSelectMode={onSelectMode}
+      />
 
       <div class='home-footer'>
         <button
