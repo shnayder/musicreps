@@ -141,9 +141,9 @@ describe('navigation lifecycle (E2E)', () => {
     // Navigate to semitone math (has groups)
     await navigateToMode(page, 'semitoneMath');
 
-    // Toggle off a group (click first toggle that's on)
+    // Toggle off a group (click first active toggle)
     const firstToggle = page.locator(
-      '#mode-semitoneMath .group-toggle.group-toggle-active',
+      '#mode-semitoneMath .distance-toggle.active',
     ).first();
     const toggleExists = await firstToggle.isVisible().catch(() => false);
 
@@ -170,15 +170,15 @@ describe('navigation lifecycle (E2E)', () => {
 
       // The toggle we turned off should still be off
       const toggleAfter = page.locator(
-        `#mode-semitoneMath .group-toggle:has-text("${toggleLabel?.trim()}")`,
+        `#mode-semitoneMath .distance-toggle:has-text("${toggleLabel?.trim()}")`,
       );
       const toggleAfterClass = await toggleAfter.getAttribute('class') ?? '';
       assert.ok(
-        !toggleAfterClass.includes('group-toggle-active'),
+        !toggleAfterClass.includes('active'),
         `toggle "${toggleLabel?.trim()}" should still be inactive after mode switch`,
       );
     } else {
-      // No toggles visible — skip this assertion (mode may have no groups loaded)
+      // No toggles visible — skip this assertion
       assert.ok(
         true,
         'no group toggles found — skipping scope preservation test',

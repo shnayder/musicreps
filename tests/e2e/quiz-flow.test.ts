@@ -96,9 +96,13 @@ describe('quiz flow — note semitones (E2E)', () => {
       `Next button should have feedback class: ${nextBtnClass}`,
     );
 
-    // Question count should show "1"
+    // Question count should show "1 answer"
     const count = await page.textContent(`${MODE} .quiz-info-count`);
-    assert.equal(count?.trim(), '1', 'should show count 1 after first answer');
+    assert.equal(
+      count?.trim(),
+      '1 answer',
+      'should show count after first answer',
+    );
 
     // Advance to next question
     await advanceToNext(page, MODE_ID);
@@ -112,8 +116,12 @@ describe('quiz flow — note semitones (E2E)', () => {
     const input = page.locator(`${MODE} .answer-input`);
     await input.waitFor({ state: 'visible', timeout: 3000 });
 
-    // Type a valid answer and press Enter
-    await input.fill('0');
+    // Read placeholder to determine valid input type.
+    // Forward direction shows "0–11", reverse shows a note name hint.
+    const placeholder = (await input.getAttribute('placeholder')) ?? '';
+    const answer = /\d/.test(placeholder) ? '0' : 'C';
+
+    await input.fill(answer);
     await input.press('Enter');
 
     // Should see feedback (Next button visible)

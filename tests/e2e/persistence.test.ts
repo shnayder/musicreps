@@ -54,11 +54,12 @@ describe('scope persistence across reload (E2E)', () => {
       await navigateToMode(page, 'semitoneMath');
 
       // Verify group 0's toggle is inactive (not in enabled list)
-      const toggles = page.locator('#mode-semitoneMath .group-toggle');
+      const toggles = page.locator('#mode-semitoneMath .distance-toggle');
       const firstToggle = toggles.first();
+      await firstToggle.waitFor({ state: 'visible', timeout: 3000 });
       const firstClass = await firstToggle.getAttribute('class') ?? '';
       assert.ok(
-        !firstClass.includes('group-toggle-active'),
+        !firstClass.includes('active'),
         'first group toggle should be inactive initially',
       );
 
@@ -68,9 +69,10 @@ describe('scope persistence across reload (E2E)', () => {
       await navigateToMode(page, 'semitoneMath');
 
       // Verify group 0 is still inactive
+      await toggles.first().waitFor({ state: 'visible', timeout: 3000 });
       const firstClassAfter = await toggles.first().getAttribute('class') ?? '';
       assert.ok(
-        !firstClassAfter.includes('group-toggle-active'),
+        !firstClassAfter.includes('active'),
         'first group toggle should still be inactive after reload',
       );
     } finally {
@@ -179,20 +181,21 @@ describe('notation preference persistence (E2E)', () => {
       });
 
       await navigateToMode(page, 'noteSemitones');
+      await startQuiz(page, 'noteSemitones');
 
-      // Check that note buttons show solfège labels
-      // In note-semitones reverse direction, buttons show note names.
-      // The keyboard hint should mention solfège.
+      // Keyboard hint should show solfège labels during active quiz
       const hint = await page.textContent(
         '#mode-noteSemitones .keyboard-hint',
       );
-      // Solfège hint contains "do re mi"
-      if (hint) {
-        assert.ok(
-          hint.includes('do') || hint.includes('Do'),
-          `keyboard hint should show solfège: "${hint}"`,
-        );
-      }
+      assert.ok(
+        hint && (hint.includes('do') || hint.includes('Do')),
+        `keyboard hint should show solfège: "${hint}"`,
+      );
+
+      await page.keyboard.press('Escape');
+      await page.waitForSelector('#mode-noteSemitones.phase-idle', {
+        timeout: 3000,
+      });
 
       // Reload and verify persistence
       await page.goto(baseUrl);
