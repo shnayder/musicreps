@@ -104,7 +104,8 @@ async function runSkipUnskipTests(
   await page
     .locator(`${modeSelector} [aria-label="Options for ${targetLabel}"]`)
     .click();
-  await page.getByRole('menuitem', { name: 'I know this' }).click();
+  await page.locator('.group-skip-menu button', { hasText: 'I know this' })
+    .click();
   await page.waitForTimeout(300);
 
   const afterSkipText = await page.textContent(
@@ -120,7 +121,8 @@ async function runSkipUnskipTests(
   await page
     .locator(`${modeSelector} [aria-label="Options for ${targetLabel}"]`)
     .click();
-  await page.getByRole('menuitem', { name: 'Learn this' }).click();
+  await page.locator('.group-skip-menu button', { hasText: 'Learn this' })
+    .click();
   await page.waitForTimeout(300);
 
   const afterUnskipText = await page.textContent(
@@ -137,18 +139,15 @@ async function runSkipUnskipTests(
 // Test: Semitone Math
 // ---------------------------------------------------------------------------
 
-// 6 semitone-math groups. Groups 0–2 have high work (above median),
-// groups 3–5 have low work. This produces 3 recommended consolidation groups.
-//
-// Sorted work: [38, 33, 28, 3, 3, 2], median = work[3] = 3
-// Groups with work > 3: groups 0, 1, 2 → recommended
+// 5 semitone-math groups (±1–2, ±3–4, ±5–6, ±7–8, ±9–11).
+// Groups 0–1 have high work, groups 2–4 are mostly fluent.
+// This should produce a recommendation including groups 0 and 1.
 const SEMITONE_STATS = {
   0: { fluentCount: 20, workingCount: 20, unseenCount: 8, totalCount: 48 },
   1: { fluentCount: 15, workingCount: 25, unseenCount: 8, totalCount: 48 },
-  2: { fluentCount: 10, workingCount: 30, unseenCount: 8, totalCount: 48 },
+  2: { fluentCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
   3: { fluentCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
-  4: { fluentCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
-  5: { fluentCount: 22, workingCount: 2, unseenCount: 0, totalCount: 24 },
+  4: { fluentCount: 22, workingCount: 2, unseenCount: 0, totalCount: 24 },
 };
 
 describe('skip/unskip — semitone math (E2E)', () => {
@@ -163,7 +162,7 @@ describe('skip/unskip — semitone math (E2E)', () => {
       'semitoneMath',
       storageData,
       'semitoneMath_enabledGroups',
-      [0, 1, 2, 3, 4, 5],
+      [0, 1, 2, 3, 4],
     );
   });
 
@@ -171,12 +170,33 @@ describe('skip/unskip — semitone math (E2E)', () => {
     await page?.context().close();
   });
 
-  // Target: group 2 = "±5–6"
-  const TARGET = '\u00B15\u20136'; // ±5–6
   const MODE = '#mode-semitoneMath';
 
   it('skip/unskip cycle preserves recommendations', async () => {
-    await runSkipUnskipTests(page, MODE, TARGET);
+    // Read the recommendation to find which group to target
+    const recText = await page.textContent(
+      `${MODE} .suggestion-card-text`,
+    );
+    assert.ok(recText, 'should have recommendation text');
+
+    // Find a group label that appears in the recommendation.
+    // The ⋯ menu buttons have aria-label="Options for <label>".
+    const menuButtons = page.locator(
+      `${MODE} [aria-label^="Options for"]`,
+    );
+    const count = await menuButtons.count();
+    let target = '';
+    for (let i = 0; i < count; i++) {
+      const label = (await menuButtons.nth(i).getAttribute('aria-label'))
+        ?.replace('Options for ', '') ?? '';
+      if (label && recText.includes(label)) {
+        target = label;
+        break;
+      }
+    }
+    assert.ok(target, `should find a group in recommendation: "${recText}"`);
+
+    await runSkipUnskipTests(page, MODE, target);
   });
 });
 
@@ -285,9 +305,9 @@ describe('skip/unskip — guitar fretboard real data (E2E)', () => {
     const recText = await page.textContent(`${MODE} .suggestion-card-text`);
     assert.ok(recText, 'should have recommendation text');
 
-    // With this data, the recommendation should be:
-    // "solidify E e, D G ♯♭, B e ♯♭ — 29 items to work on"
-    const target = 'B e \u266F\u266D'; // B e ♯♭
+    // With this data + work cap, recommendation is:
+    // "solidify E e, D G ♯♭ — 25 items to work on"
+    const target = 'D G \u266F\u266D'; // D G ♯♭
     assert.ok(
       recText.includes(target),
       `recommendation should include ${target}: "${recText}"`,
