@@ -1,6 +1,5 @@
 // Shared dev-server helper for E2E tests and scripts.
-// Spawns a Deno dev server on the requested port (with auto-increment fallback)
-// and resolves once it's listening.
+// Spawns a Deno dev server on the requested port and resolves once it's listening.
 
 import { type ChildProcess, spawn } from 'node:child_process';
 import path from 'node:path';
@@ -36,6 +35,8 @@ export function startServer(
       if (m) {
         clearTimeout(timeout);
         resolve(parseInt(m[1], 10));
+      } else {
+        process.stderr.write(msg);
       }
     });
     proc.on('exit', (code) => {
