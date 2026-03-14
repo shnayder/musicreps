@@ -11,6 +11,7 @@ import { type Browser, chromium, type Page } from 'playwright';
 import { type ChildProcess } from 'node:child_process';
 import { startServer } from './helpers/server.ts';
 import {
+  advanceToNext,
   createTestPage,
   navigateToMode,
   seedLocalStorage,
@@ -99,10 +100,8 @@ describe('quiz flow — note semitones (E2E)', () => {
     const count = await page.textContent(`${MODE} .quiz-info-count`);
     assert.equal(count?.trim(), '1', 'should show count 1 after first answer');
 
-    // Press Space to advance
-    await page.keyboard.press('Space');
-    // Wait for new prompt (different from previous)
-    await page.waitForTimeout(500);
+    // Advance to next question
+    await advanceToNext(page, MODE_ID);
     // Quiz should still be active
     const isActive = await page.locator(`${MODE}.phase-active`).isVisible();
     assert.ok(isActive, 'quiz should still be in active phase');
@@ -124,8 +123,7 @@ describe('quiz flow — note semitones (E2E)', () => {
 
   it('invalid text input shows shake', async () => {
     // Advance to next question first
-    await page.keyboard.press('Space');
-    await page.waitForTimeout(300);
+    await advanceToNext(page, MODE_ID);
 
     const input = page.locator(`${MODE} .answer-input`);
     await input.waitFor({ state: 'visible', timeout: 3000 });
