@@ -1,5 +1,5 @@
-// Home screen: track-based skill tree with accordion sections and starring.
-// Replaces the static build-time button list with a Preact component.
+// Home screen: tabbed view with Active (starred) and All Skills tabs.
+// Active tab shows starred skills; All Skills tab shows track accordions.
 
 import { useCallback, useState } from 'preact/hooks';
 import {
@@ -19,6 +19,7 @@ import type { AppConfig } from '../app-config.ts';
 
 const STARRED_KEY = 'starredSkills';
 const ACCORDION_KEY = 'trackAccordionState';
+const TAB_KEY = 'homeTab';
 
 function loadStarredSkills(): Set<string> {
   const allModeIds = new Set(TRACKS.flatMap((t) => t.skills));
@@ -213,10 +214,10 @@ function ActiveSkillCard(
 }
 
 // ---------------------------------------------------------------------------
-// ActiveSkills — starred skills section at top
+// ActiveSkillsList — content for the Active tab (no wrapper/header)
 // ---------------------------------------------------------------------------
 
-function ActiveSkills(
+function ActiveSkillsList(
   { starred, onToggleStar, onSelectMode }: {
     starred: Set<string>;
     onToggleStar: (modeId: string) => void;
@@ -233,24 +234,25 @@ function ActiveSkills(
     }
   }
 
+  if (orderedStarred.length === 0) {
+    return (
+      <p class='active-skills-empty'>
+        Star skills in the <strong>All Skills</strong> tab to add them here.
+      </p>
+    );
+  }
+
   return (
-    <div class='active-skills'>
-      <div class='home-group-label active-skills-label'>Active Skills</div>
-      {orderedStarred.length === 0
-        ? (
-          <p class='active-skills-empty'>
-            Star skills you're working on &mdash; they'll appear here.
-          </p>
-        )
-        : orderedStarred.map(({ modeId, trackLabel }) => (
-          <ActiveSkillCard
-            key={modeId}
-            modeId={modeId}
-            trackLabel={trackLabel}
-            onToggleStar={onToggleStar}
-            onSelectMode={onSelectMode}
-          />
-        ))}
+    <div class='active-skills-list'>
+      {orderedStarred.map(({ modeId, trackLabel }) => (
+        <ActiveSkillCard
+          key={modeId}
+          modeId={modeId}
+          trackLabel={trackLabel}
+          onToggleStar={onToggleStar}
+          onSelectMode={onSelectMode}
+        />
+      ))}
     </div>
   );
 }
@@ -421,8 +423,78 @@ function SettingsPage(
 }
 
 // ---------------------------------------------------------------------------
-// HomeScreen — top-level component
+// AllSkillsList — content for the All Skills tab
 // ---------------------------------------------------------------------------
+
+function AllSkillsList(
+  { accordion, starred, onToggleExpand, onToggleStar, onSelectMode }: {
+    accordion: Record<string, boolean>;
+    starred: Set<string>;
+    onToggleExpand: (trackId: string) => void;
+    onToggleStar: (modeId: string) => void;
+    onSelectMode: (modeId: string) => void;
+  },
+) {
+  return (
+    <div class='home-modes'>
+      {starred.size === 0 && (
+        <p class='all-skills-hint'>
+          Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
+          {' '}
+          list.
+        </p>
+      )}
+      {TRACKS.map((track) => (
+        <TrackAccordion
+          key={track.id}
+          track={track}
+          isExpanded={accordion[track.id] !== false}
+          starred={starred}
+          onToggleExpand={onToggleExpand}
+          onToggleStar={onToggleStar}
+          onSelectMode={onSelectMode}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// HomeScreen — top-level component with Active / All Skills tabs
+// ---------------------------------------------------------------------------
+
+type HomeTab = 'active' | 'all';
+
+function HomeScreenTabs(
+  { tab, starredCount, onChangeTab }: {
+    tab: HomeTab;
+    starredCount: number;
+    onChangeTab: (t: HomeTab) => void;
+  },
+) {
+  return (
+    <div class='home-tabs' role='tablist'>
+      <button
+        type='button'
+        role='tab'
+        class={`home-tab${tab === 'active' ? ' active' : ''}`}
+        aria-selected={tab === 'active'}
+        onClick={() => onChangeTab('active')}
+      >
+        Active{starredCount > 0 ? ` (${starredCount})` : ''}
+      </button>
+      <button
+        type='button'
+        role='tab'
+        class={`home-tab${tab === 'all' ? ' active' : ''}`}
+        aria-selected={tab === 'all'}
+        onClick={() => onChangeTab('all')}
+      >
+        All Skills
+      </button>
+    </div>
+  );
+}
 
 export function HomeScreen(
   { onSelectMode, settings, appConfig, version }: {
@@ -436,6 +508,13 @@ export function HomeScreen(
   const [accordion, setAccordion] = useState(loadAccordionState);
   const [showSettings, setShowSettings] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
+  const [tab, setTab] = useState<HomeTab>(() => {
+    try {
+      const saved = localStorage.getItem(TAB_KEY);
+      if (saved === 'active' || saved === 'all') return saved;
+    } catch (_) { /* expected */ }
+    return loadStarredSkills().size > 0 ? 'active' : 'all';
+  });
 
   const handleToggleStar = useCallback((modeId: string) => {
     setStarred((prev) => {
@@ -445,6 +524,13 @@ export function HomeScreen(
       saveStarredSkills(next);
       return next;
     });
+  }, []);
+
+  const handleChangeTab = useCallback((t: HomeTab) => {
+    setTab(t);
+    try {
+      localStorage.setItem(TAB_KEY, t);
+    } catch (_) { /* expected */ }
   }, []);
 
   const handleToggleExpand = useCallback((trackId: string) => {
@@ -478,25 +564,29 @@ export function HomeScreen(
         </p>
       </div>
 
-      <ActiveSkills
-        starred={starred}
-        onToggleStar={handleToggleStar}
-        onSelectMode={onSelectMode}
+      <HomeScreenTabs
+        tab={tab}
+        starredCount={starred.size}
+        onChangeTab={handleChangeTab}
       />
 
-      <div class='home-modes'>
-        {TRACKS.map((track) => (
-          <TrackAccordion
-            key={track.id}
-            track={track}
-            isExpanded={accordion[track.id] !== false}
+      {tab === 'active'
+        ? (
+          <ActiveSkillsList
+            starred={starred}
+            onToggleStar={handleToggleStar}
+            onSelectMode={onSelectMode}
+          />
+        )
+        : (
+          <AllSkillsList
+            accordion={accordion}
             starred={starred}
             onToggleExpand={handleToggleExpand}
             onToggleStar={handleToggleStar}
             onSelectMode={onSelectMode}
           />
-        ))}
-      </div>
+        )}
 
       <div class='home-footer'>
         <button

@@ -151,6 +151,39 @@ body {
   color: var(--color-text-muted);
   line-height: 1.4;
 }
+/* --- Home tabs (Active / All Skills) --- */
+.home-tabs {
+  display: flex;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+  border-bottom: 2px solid var(--color-border-lighter);
+}
+.home-tab {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.home-tab:hover {
+  color: var(--color-text);
+}
+.home-tab.active {
+  color: var(--color-brand);
+  border-bottom-color: var(--color-brand);
+}
+.home-tab:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
 .home-modes {
   flex: 1;
 }
@@ -279,21 +312,23 @@ body {
 .skill-card-star.starred {
   color: var(--color-star);
 }
-/* --- Active Skills section --- */
-.active-skills {
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4) var(--space-4);
-  margin-bottom: var(--space-5);
-}
-.active-skills-label {
-  margin-top: 0;
+/* --- Active Skills tab content --- */
+.active-skills-list {
+  margin-top: var(--space-4);
 }
 .active-skills-empty {
   font-size: var(--text-sm);
   color: var(--color-text-light);
   font-style: italic;
-  margin: var(--space-2) 0 0;
+  margin: var(--space-6) 0;
+  text-align: center;
+}
+.all-skills-hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+  font-style: italic;
+  margin: var(--space-4) 0 0;
+  text-align: center;
 }
 .active-skill-track-pill {
   display: inline-block;

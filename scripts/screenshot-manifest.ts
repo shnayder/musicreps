@@ -84,13 +84,20 @@ export function buildManifest(): ScreenshotEntry[] {
   // Home screen (before any mode is selected)
   entries.push({ name: 'home', modeId: 'home' });
 
-  // Home screen with starred skills
+  // Home screen with starred skills (Active tab — default when starred)
   entries.push({
     name: 'home-starred',
     modeId: 'home',
     localStorageData: {
       starredSkills: JSON.stringify(['fretboard', 'keySignatures']),
     },
+  });
+
+  // Home screen: Active tab with nothing starred
+  entries.push({
+    name: 'home-active-empty',
+    modeId: 'home',
+    localStorageData: { homeTab: 'active' },
   });
 
   // All modes: idle + quiz (+ reverse quiz for bidirectional modes)
