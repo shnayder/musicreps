@@ -54,6 +54,8 @@
   --color-track-reading: hsl(260, 30%, 50%);
   --color-track-guitar: hsl(25, 55%, 45%);
   --color-track-ukulele: hsl(185, 40%, 38%);
+  /* Star (gold, recommendation tone) */
+  --color-star: hsl(40, 70%, 45%);
 
   /* Heatmap scale (gold → green, matches palette: attention → mastered) */
   --heatmap-none: hsl(30, 4%, 85%);
@@ -227,6 +229,17 @@ body {
   cursor: pointer;
   text-align: left;
 }
+.track-accordion-header:hover {
+  color: var(--color-text);
+}
+.track-accordion-header:active {
+  opacity: 0.8;
+}
+.track-accordion-header:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
 .track-accordion-header::after {
   content: '';
   flex: 1;
@@ -261,8 +274,16 @@ body {
 .skill-card-star:hover {
   color: var(--color-text-muted);
 }
+.skill-card-star:active {
+  transform: scale(0.9);
+}
+.skill-card-star:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
 .skill-card-star.starred {
-  color: hsl(40, 70%, 45%);
+  color: var(--color-star);
 }
 /* --- Active Skills section --- */
 .active-skills {
