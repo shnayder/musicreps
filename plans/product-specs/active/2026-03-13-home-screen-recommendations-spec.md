@@ -291,3 +291,135 @@ mode. This requires:
    sections. If performance becomes an issue, precompute incrementally as the
    user practices.
 
+## Phase 3: Cross-Skill Recommendations
+
+### Overview
+
+Surface 2–3 recommended skills at the top of the Active Skills section, each
+with a short action cue explaining why. The recommendation engine decides which
+starred skills most need attention right now, reorders them to the top, and
+labels them. The remaining starred skills appear below in their normal order.
+
+### Recommendation types
+
+Each recommended skill gets a brief cue. Three types, in priority order:
+
+| Type | When | Cue | Why this priority |
+|------|------|-----|-------------------|
+| **Review** | Skill has groups with decayed items (was fast, got stale) | "Review" | Time-sensitive — freshness keeps dropping |
+| **Get faster** | Skill has groups in progress with working items | "Get faster" | Active learning — user has momentum here |
+| **Learn next level** | Skill's current groups are consolidated, next group is ready to unlock | "Learn next level" | Expansion — user is ready to progress |
+
+Priority order reflects urgency: review is time-sensitive (decay continues
+without action), active learning has momentum worth sustaining, and expansion
+can wait.
+
+### Algorithm
+
+The cross-skill recommendation works within the starred skill set:
+
+1. **Collect candidates.** For each starred skill, run the existing per-mode
+   `computeRecommendations()` to get its consolidation targets, expansion
+   readiness, and stale groups.
+
+2. **Classify each skill.**
+   - **Review**: has stale groups (items with speed ≥ 0.5 but freshness < 0.5).
+   - **Get faster**: has consolidation targets (groups with working items above
+     the median).
+   - **Learn next level**: expansion gate is open (level automaticity ≥
+     threshold) and there's an unstarted group to unlock.
+   - **Not started**: no items seen yet. Eligible for "Learn next level" as a
+     first recommendation if nothing else needs attention.
+   - **Automatic / no action**: all groups mastered, nothing stale. No
+     recommendation needed.
+
+3. **Rank and cap.** Select up to 3 recommendations using priority order
+   (Review > Get faster > Learn next level). Within a priority tier, break ties
+   by staleness (most decayed first for Review) or by amount of work remaining
+   (most working items first for Get faster).
+
+4. **Reorder Active section.** Recommended skills float to the top of the
+   Active Skills list with their cue label. Remaining starred skills follow in
+   their normal order (by track, then position within track).
+
+### Layout
+
+```
+┌─────────────────────────────────┐
+│  Active Skills                  │
+│  ┌───────────────────────────┐  │
+│  │ ★ Key Signatures          │  │
+│  │   Reading music · Review  │  │
+│  │   [████████░░▒▒▒▒░░░░░░] │  │
+│  │                           │  │
+│  │ ★ Guitar Fretboard        │  │
+│  │   Guitar · Get faster     │  │
+│  │   [████████████░░░░░░░░░] │  │
+│  │                           │  │
+│  │ ★ Interval ↔ Semitones    │  │
+│  │   Music theory            │  │
+│  │   [████████████████████░] │  │
+│  │                           │  │
+│  │ ★ Semitone Math           │  │
+│  │   Music theory            │  │
+│  │   [░░░░░░░░░░░░░░░░░░░░] │  │
+│  └───────────────────────────┘  │
+└─────────────────────────────────┘
+```
+
+In this example, Key Signatures and Guitar Fretboard are recommended (with
+cues). Interval ↔ Semitones and Semitone Math are starred but not recommended —
+they appear in normal order below.
+
+### Scope: starred skills only
+
+Recommendations operate only within the user's starred set. The system does not
+suggest starring new skills or recommend unstarred skills. The user decides when
+to add new skills to their active set.
+
+Rationale: starring is an explicit declaration of intent. Recommending unstarred
+skills crosses from "help me with what I chose" into "tell me what to choose" —
+valuable eventually, but a separate feature.
+
+### Cold start
+
+When a user has starred skills but hasn't practiced any of them, all are "not
+started." The system recommends the first starred skill in definition order
+(by track, then position within track) with "Learn next level." This implicitly
+encodes a v0.1 dependency awareness — skills are defined in a logical
+progression within each track.
+
+### User overrides
+
+Nothing is enforced. Recommendations reorder the Active section and add cue
+labels, but every skill card is still tappable. If the user wants to work on
+Semitone Math instead of the recommended Key Signatures review, they just tap
+it.
+
+Future: "I already know this" and "Not interested" marks on individual levels
+within a skill. These would tell the recommendation engine to skip those levels
+when computing consolidation needs and expansion gates. Not part of this phase.
+
+### Resolved questions
+
+1. **Cue label styling.** Prototype with `ui-iterate`. Use the same
+   recommendation color as within-skill recommendations for visual consistency.
+   Start with a top-of-card bar (e.g., "Review this").
+
+2. **Recommendation staleness.** Recompute on home screen mount and tab switch
+   (Phase 1 cleanup is splitting Active / All Skills into separate tabs).
+
+3. **Multiple recommendation types per skill.** Show highest-priority cue only.
+
+4. **"All done" state.** Show a green-toned message (short, encouraging — not a
+   recommendation, just an acknowledgment). If all starred skills are in this
+   state, suggest starring new skills.
+
+### Design constraint: unified classification logic
+
+The classification logic (thresholds, labels, cue text) must be shared between
+the home screen recommendations and the within-skill status display. Same code,
+same language, same thresholds. If "Review" means freshness < 0.5 on the home
+screen, it must mean the same thing on the practice tab inside a mode. No
+divergent constants.
+
