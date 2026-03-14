@@ -437,13 +437,11 @@ function AllSkillsList(
 ) {
   return (
     <div class='home-modes'>
-      {starred.size === 0 && (
-        <p class='all-skills-hint'>
-          Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
-          {' '}
-          list.
-        </p>
-      )}
+      <p class='all-skills-hint'>
+        Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
+        {' '}
+        list.
+      </p>
       {TRACKS.map((track) => (
         <TrackAccordion
           key={track.id}
