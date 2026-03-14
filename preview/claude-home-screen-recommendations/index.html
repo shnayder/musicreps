@@ -431,17 +431,6 @@ body {
 .skill-card-progress {
   margin-top: var(--space-2);
 }
-.skill-progress-bar {
-  display: flex;
-  height: 8px;
-  border-radius: 4px;
-  overflow: hidden;
-  background: var(--color-surface);
-}
-.skill-bar-segment {
-  flex: 1;
-  min-width: 0;
-}
 .home-mode-name {
   font-size: var(--text-base);
   font-weight: 600;
@@ -2225,7 +2214,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="e0af90 home-screen-recommendations"></div>
+  <div class="home-screen" id="home-screen" data-version="16b801 home-screen-recommendations"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6658,7 +6647,7 @@ button {
       }];
     }
     if (segments.length === 0) {
-      return { groupColors: ["hsl(30, 0%, 90%)"] };
+      return { groupColors: [getSpeedFreshnessColor(null, null)] };
     }
     segments.sort((a3, b) => b.auto - a3.auto);
     return { groupColors: segments.map((s3) => s3.color) };
@@ -6763,7 +6752,7 @@ button {
   } catch (_3) {
   }
   function SkillProgressBar({ colors }) {
-    return /* @__PURE__ */ u3("div", { class: "skill-progress-bar", children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "skill-bar-segment", style: `background:${color}` }, i3)) });
+    return /* @__PURE__ */ u3("div", { class: "group-progress-bar", children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `background:${color}` }, i3)) });
   }
   function SkillCard({ modeId, trackId, isStarred, onToggleStar, onSelectMode, progress }) {
     const name = MODE_NAMES[modeId] || modeId;
