@@ -1,11 +1,25 @@
-// useRoundTimer — manages the 60-second round countdown timer.
+// useRoundTimer — manages the round countdown timer.
 // Extracted from useQuizEngine for clarity and testability.
+//
+// Override duration with ?roundMs=N in the URL (useful for manual testing
+// and E2E tests). Falls back to the default 60 seconds.
 
 import { useCallback, useRef, useState } from 'preact/hooks';
 
 export const ROUND_DURATION_MS = 60000;
 const TIMER_TICK_MS = 200;
 export const LAST_QUESTION_CAP_MS = 30000;
+
+/** Read ?roundMs=N from the URL, if present and valid. */
+function getEffectiveRoundMs(): number {
+  if (typeof globalThis.location === 'undefined') return ROUND_DURATION_MS;
+  const p = new URLSearchParams(globalThis.location.search).get('roundMs');
+  if (!p) return ROUND_DURATION_MS;
+  const n = parseInt(p, 10);
+  return n > 0 ? n : ROUND_DURATION_MS;
+}
+
+export const effectiveRoundMs = getEffectiveRoundMs();
 
 function formatRoundTime(ms: number): string {
   const totalSec = Math.max(0, Math.ceil(ms / 1000));
@@ -67,14 +81,14 @@ export function useRoundTimer(
     roundDurationSnapshotRef.current = null;
 
     setTimerPct(100);
-    setTimerText(formatRoundTime(ROUND_DURATION_MS));
+    setTimerText(formatRoundTime(effectiveRoundMs));
     setTimerWarning(false);
     setTimerLastQuestion(false);
 
     roundTimerRef.current = setInterval(() => {
       const elapsed = Date.now() - roundTimerStartRef.current!;
-      const remaining = ROUND_DURATION_MS - elapsed;
-      const pct = Math.max(0, (remaining / ROUND_DURATION_MS) * 100);
+      const remaining = effectiveRoundMs - elapsed;
+      const pct = Math.max(0, (remaining / effectiveRoundMs) * 100);
 
       setTimerPct(pct);
       setTimerText(formatRoundTime(remaining));

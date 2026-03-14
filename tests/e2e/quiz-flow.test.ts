@@ -172,9 +172,14 @@ describe('quiz flow — note semitones (E2E)', () => {
 
 describe('round complete flow (E2E)', () => {
   let page: Page;
+  const ROUND_MS = 5000; // 5s round for fast testing
 
   before(async () => {
-    page = await setupQuizPage();
+    // Use ?roundMs= to shorten the round timer
+    const roundUrl = `${baseUrl}?roundMs=${ROUND_MS}`;
+    page = await createTestPage(browser, roundUrl);
+    await seedLocalStorage(page, roundUrl, buildMotorBaseline(250));
+    await navigateToMode(page, MODE_ID);
   });
 
   after(async () => {
@@ -184,13 +189,9 @@ describe('round complete flow (E2E)', () => {
   it('answering until round complete shows stats, then stop returns to idle', async () => {
     await startQuiz(page, MODE_ID);
 
-    // Answer questions rapidly until round completes (timer expires after 60s).
-    // We'll answer by clicking buttons quickly. The round should eventually
-    // end when the timer expires and we answer the last question.
-    // To speed this up, just answer many questions — the round-complete
-    // phase will appear after the timer runs out.
+    // Answer questions until the round timer (5s) expires.
     const startTime = Date.now();
-    const maxWaitMs = 75_000; // 75s max (60s timer + buffer)
+    const maxWaitMs = ROUND_MS + 40_000; // generous buffer
 
     while (Date.now() - startTime < maxWaitMs) {
       // Check if round is complete

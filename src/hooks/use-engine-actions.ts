@@ -12,12 +12,8 @@ import {
   engineUpdateMasteryAfterAnswer,
   engineUpdateProgress,
 } from '../quiz-engine-state.ts';
-import { LAST_QUESTION_CAP_MS } from './use-round-timer.ts';
-import {
-  HINT_CONTINUE,
-  IS_TOUCH_PRIMARY,
-  ROUND_DURATION_MS,
-} from './use-round-transitions.ts';
+import { effectiveRoundMs, LAST_QUESTION_CAP_MS } from './use-round-timer.ts';
+import { HINT_CONTINUE, IS_TOUCH_PRIMARY } from './use-round-transitions.ts';
 import type { RoundTimerHandle } from './use-round-timer.ts';
 import type { QuizEngineConfig } from './quiz-engine-types.ts';
 
@@ -91,7 +87,7 @@ function processSubmitAnswer(
       : 0;
     timer.roundDurationSnapshotRef.current = Math.min(
       elapsed,
-      ROUND_DURATION_MS + LAST_QUESTION_CAP_MS,
+      effectiveRoundMs + LAST_QUESTION_CAP_MS,
     );
     setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
   }
