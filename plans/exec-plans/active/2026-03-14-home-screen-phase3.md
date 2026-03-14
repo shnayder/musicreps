@@ -20,7 +20,63 @@ MODE_PROGRESS_MANIFEST (per-mode: namespace, groups, getItemIds)
   → rankAndCap(classifications) → top 3
 ```
 
+## Prerequisite: Normalize no-group modes to one-group modes
+
+### Problem
+
+Three modes (`noteSemitones`, `intervalSemitones`, `speedTap`) have
+`groups: null` in `MODE_PROGRESS_MANIFEST`. This forces every consumer to
+branch on `groups !== null`, and `computeRecommendations()` can't run on them
+at all — requiring a separate classification path.
+
+### Solution
+
+Treat every mode as having at least one group. A "no-group" mode is simply a
+one-group mode where the single group contains all items. This eliminates all
+`null` branching and lets `computeRecommendations()` handle every mode
+uniformly.
+
+### Changes
+
+**`src/mode-progress-manifest.ts`:**
+1. Change type: `groups: Array<{ label: string; getItemIds: () => string[] }>`
+   (remove `| null`)
+2. Replace the 3 `groups: null` entries with single-element arrays:
+   ```
+   groups: [{ label: 'All', getItemIds: () => NOTE_SEMI_ITEMS }]
+   ```
+
+**`src/hooks/use-home-progress.ts`:**
+- Remove `groups !== null` checks (lines ~84, ~119)
+
+**`src/hooks/use-home-progress_test.ts`:**
+- Remove "non-group mode" special case (line ~120)
+- Single-group modes naturally produce one color segment
+
+**`src/mode-progress-manifest_test.ts`:**
+- Remove `groups === null` / `groups !== null` assertions (lines ~41, ~78, ~81)
+- All modes now have `groups.length >= 1`
+
+**Not changed:**
+- `ScopeDef` (`NoScopeDef` / `GroupScopeDef`) stays as-is — this controls
+  whether the in-mode UI shows group toggles, which is a separate concern.
+  A one-group mode still uses `NoScopeDef` (no toggles to show).
+- `generic-mode.tsx` `groupScopeResult: ... | null` stays — it's about whether
+  the mode UI has group scope controls, not about the data model.
+
+**Follow-up (not this phase):** One-group modes could show a single-segment
+progress bar on their practice tab, fixing the current gap where they show no
+progress bar at all.
+
 ## Steps
+
+### Step 0: Normalize no-group modes (prerequisite)
+
+Apply the changes above. Run `deno task ok` to verify nothing breaks. This
+unblocks all subsequent steps by removing `null` branching.
+
+**Files:** `src/mode-progress-manifest.ts`, `src/hooks/use-home-progress.ts`,
+`src/hooks/use-home-progress_test.ts`, `src/mode-progress-manifest_test.ts`
 
 ### Step 1: Create `computeSkillRecommendation()` pure function
 
@@ -33,7 +89,7 @@ SkillRecommendationType = 'review' | 'get-faster' | 'learn-next' | 'not-started'
 SkillRecommendation = { modeId, type, urgency, cueLabel }
 ```
 
-**Logic for modes with groups (6 modes):**
+**Logic (uniform for all modes, since all now have groups):**
 
 1. Build `activeIndices` = all group indices minus skipped
 2. Run `computeRecommendations()` with the mode's selector
@@ -44,15 +100,6 @@ SkillRecommendation = { modeId, type, urgency, cueLabel }
    - Expansion gate open, no consolidation work → "learn-next"
    - All automatic, nothing stale → "automatic"
    - No items seen → "not-started"
-
-**Logic for no-group modes (noteSemitones, intervalSemitones, speedTap):**
-
-These can't run `computeRecommendations` (it operates on group indices).
-Classify from level automaticity + freshness directly:
-- No items seen → "not-started"
-- Has items with speed ≥ 0.5, freshness < 0.5 → "review"
-- Level auto < 0.8 → "get-faster"
-- Level auto ≥ 0.8 → "automatic"
 
 **Cue labels:**
 
@@ -70,7 +117,7 @@ Classify from level automaticity + freshness directly:
 - Mode with expansion ready → "learn-next"
 - No items seen → "not-started"
 - All automatic → "automatic"
-- No-group mode with partial progress → correct classification
+- Single-group mode (e.g. noteSemitones) → correct classification via same path
 - Skipped groups excluded from computation
 
 ### Step 2: Create `rankSkillRecommendations()` pure function
@@ -171,14 +218,7 @@ Extract hardcoded thresholds into named constants.
 
 ## Risks and Tricky Parts
 
-### 1. No-group modes
-
-`noteSemitones`, `intervalSemitones`, `speedTap` have `groups: null` in the
-manifest. Need a separate classification path that bypasses
-`computeRecommendations` and works from level automaticity + freshness directly.
-This is the most novel code — needs thorough testing.
-
-### 2. Stale detection scope
+### 1. Stale detection scope
 
 `computeRecommendations` runs `detectStaleGroups` only on **consolidation**
 group indices (groups above median work), not all started groups. A group below
@@ -193,23 +233,32 @@ Options:
 Recommend (a) — keeps `computeRecommendations` unchanged and makes the
 home-screen logic explicit about its broader scope.
 
-### 3. Performance
+### 2. Performance
 
-Running `computeRecommendations` for ~8 modes with groups on every tab switch.
+Running `computeRecommendations` for all 11 modes on every tab switch.
 Phase 2 validated that creating 11 selectors + reading localStorage is fast.
 `computeRecommendations` adds pure math on already-loaded data — should be
 minimal overhead. Add to Phase 2's perf test to verify.
 
-### 4. Cold start edge case
+### 3. Cold start edge case
 
 Multiple starred, all not-started. The "first in definition order" logic
 requires traversing `TRACKS` to find ordering. `ActiveSkillsList` already does
 this — reuse that ordering.
 
+### 4. Single-group mode edge cases
+
+After normalization, single-group modes (noteSemitones, intervalSemitones,
+speedTap) will run through `computeRecommendations` with one group. Verify
+that the algorithm behaves sensibly: no consolidation (only one group), no
+expansion (no next group to unlock), classification falls to "get-faster" or
+"automatic" based on that single group's state. Add specific test cases.
+
 ## Step Summary
 
 | Step | What | Files | Tests |
 |------|------|-------|-------|
+| 0 | Normalize no-group → one-group | `mode-progress-manifest.ts`, `use-home-progress.ts`, tests | Update existing tests |
 | 1 | `computeSkillRecommendation()` | `src/home-recommendations.ts` (new) | `src/home-recommendations_test.ts` (new) |
 | 2 | `rankSkillRecommendations()` | `src/home-recommendations.ts` | `src/home-recommendations_test.ts` |
 | 3 | Extend `useHomeProgress` hook | `src/hooks/use-home-progress.ts` | Update existing tests |
