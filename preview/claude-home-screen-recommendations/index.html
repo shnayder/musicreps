@@ -2175,7 +2175,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="eb0070 home-screen-recommendations"></div>
+  <div class="home-screen" id="home-screen" data-version="d028d6 home-screen-recommendations"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -3923,8 +3923,8 @@ button {
     I.__r = 0;
   }
   function P(n2, l3, u4, t3, i3, r3, o3, e3, f4, c3, s3) {
-    var a3, h3, y3, d3, w3, g2, _3, m3 = t3 && t3.__k || v, b = l3.length;
-    for (f4 = A(u4, l3, m3, f4, b), a3 = 0; a3 < b; a3++) null != (y3 = u4.__k[a3]) && (h3 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g2 = z(n2, y3, h3, i3, r3, o3, e3, f4, c3, s3), d3 = y3.__e, y3.ref && h3.ref != y3.ref && (h3.ref && D(h3.ref, null, y3), s3.push(y3.ref, y3.__c || d3, y3)), null == w3 && null != d3 && (w3 = d3), (_3 = !!(4 & y3.__u)) || h3.__k === y3.__k ? f4 = H(y3, f4, n2, _3) : "function" == typeof y3.type && void 0 !== g2 ? f4 = g2 : d3 && (f4 = d3.nextSibling), y3.__u &= -7);
+    var a3, h3, y3, d4, w3, g2, _3, m3 = t3 && t3.__k || v, b = l3.length;
+    for (f4 = A(u4, l3, m3, f4, b), a3 = 0; a3 < b; a3++) null != (y3 = u4.__k[a3]) && (h3 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g2 = z(n2, y3, h3, i3, r3, o3, e3, f4, c3, s3), d4 = y3.__e, y3.ref && h3.ref != y3.ref && (h3.ref && D(h3.ref, null, y3), s3.push(y3.ref, y3.__c || d4, y3)), null == w3 && null != d4 && (w3 = d4), (_3 = !!(4 & y3.__u)) || h3.__k === y3.__k ? f4 = H(y3, f4, n2, _3) : "function" == typeof y3.type && void 0 !== g2 ? f4 = g2 : d4 && (f4 = d4.nextSibling), y3.__u &= -7);
     return u4.__e = w3, f4;
   }
   function A(n2, l3, u4, t3, i3) {
@@ -4168,50 +4168,51 @@ button {
     diatonicChords: "Diatonic Chords",
     chordSpelling: "Chord Spelling"
   };
+  var d2 = displayNote;
   var MODE_BEFORE_AFTER = {
     fretboard: {
-      before: "\u201C7th fret, G string\u2026 G, G#, A\u2026 D?\u201D",
-      after: "\u201C7th fret, G string. D.\u201D"
+      before: () => `\u201C7th fret, ${d2("G")} string\u2026 ${d2("G")}, ${d2("G#")}, ${d2("A")}\u2026 ${d2("D")}?\u201D`,
+      after: () => `\u201C7th fret, ${d2("G")} string. ${d2("D")}.\u201D`
     },
     ukulele: {
-      before: "\u201C5th fret, C string\u2026 C, D, E\u2026 E?\u201D",
-      after: "\u201C5th fret, C string. E.\u201D"
+      before: () => `\u201C5th fret, ${d2("C")} string\u2026 ${d2("C")}, ${d2("D")}, ${d2("E")}\u2026 ${d2("E")}?\u201D`,
+      after: () => `\u201C5th fret, ${d2("C")} string. ${d2("E")}.\u201D`
     },
     speedTap: {
-      before: "\u201CAll the C\u2019s\u2026 8th fret E, 3rd fret A\u2026 um\u2026\u201D",
-      after: "\u201CC\u2019s. 8, 3, 10, 5, 1, 8.\u201D"
+      before: () => `\u201CAll the ${d2("C")}\u2019s\u2026 8th fret ${d2("E")}, 3rd fret ${d2("A")}\u2026 um\u2026\u201D`,
+      after: () => `\u201C${d2("C")}\u2019s. 8, 3, 10, 5, 1, 8.\u201D`
     },
     noteSemitones: {
-      before: "\u201CG#\u2026 F is 5, so G is\u2026 7, so G# is 8.\u201D",
-      after: "\u201CG#. 8.\u201D"
+      before: () => `\u201C${d2("G#")}\u2026 ${d2("F")} is 5, so ${d2("G")} is\u2026 7, so ${d2("G#")} is 8.\u201D`,
+      after: () => `\u201C${d2("G#")}. 8.\u201D`
     },
     intervalSemitones: {
-      before: "\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D",
-      after: "\u201CM6. 9 semitones.\u201D"
+      before: () => "\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D",
+      after: () => "\u201CM6. 9 semitones.\u201D"
     },
     semitoneMath: {
-      before: "\u201CF# + 4\u2026 G, G#, A, A#\u2026 is that Bb?\u201D",
-      after: "\u201CF# + 4. Bb.\u201D"
+      before: () => `\u201C${d2("F#")} + 4\u2026 ${d2("G")}, ${d2("G#")}, ${d2("A")}, ${d2("A#")}\u2026 is that ${d2("Bb")}?\u201D`,
+      after: () => `\u201C${d2("F#")} + 4. ${d2("Bb")}.\u201D`
     },
     intervalMath: {
-      before: "\u201CC + m6\u2026 minor 6th is 8 semitones\u2026 Ab?\u201D",
-      after: "\u201CC + m6. Ab.\u201D"
+      before: () => `\u201C${d2("C")} + m6\u2026 minor 6th is 8 semitones\u2026 ${d2("Ab")}?\u201D`,
+      after: () => `\u201C${d2("C")} + m6. ${d2("Ab")}.\u201D`
     },
     keySignatures: {
-      before: "\u201C3 flats\u2026 Bb, Eb, Ab\u2026 so Eb major?\u201D",
-      after: "\u201C3 flats: Eb major.\u201D"
+      before: () => `\u201C3 flats\u2026 ${d2("Bb")}, ${d2("Eb")}, ${d2("Ab")}\u2026 so ${d2("Eb")} major?\u201D`,
+      after: () => `\u201C3 flats: ${d2("Eb")} major.\u201D`
     },
     scaleDegrees: {
-      before: "\u201C5th degree of Bb\u2026 Bb, C, D, Eb, F\u2026 F?\u201D",
-      after: "\u201C5th of Bb. F.\u201D"
+      before: () => `\u201C5th degree of ${d2("Bb")}\u2026 ${d2("Bb")}, ${d2("C")}, ${d2("D")}, ${d2("Eb")}, ${d2("F")}\u2026 ${d2("F")}?\u201D`,
+      after: () => `\u201C5th of ${d2("Bb")}. ${d2("F")}.\u201D`
     },
     diatonicChords: {
-      before: "\u201CIV in G\u2026 G, A, B, C\u2026 so C major?\u201D",
-      after: "\u201CIV in G. C major.\u201D"
+      before: () => `\u201CIV in ${d2("G")}\u2026 ${d2("G")}, ${d2("A")}, ${d2("B")}, ${d2("C")}\u2026 so ${d2("C")} major?\u201D`,
+      after: () => `\u201CIV in ${d2("G")}. ${d2("C")} major.\u201D`
     },
     chordSpelling: {
-      before: "\u201CFm7\u2026 F, Ab, C\u2026 what\u2019s the 7th\u2026 Eb\u201D",
-      after: "\u201CFm7. F Ab C Eb.\u201D"
+      before: () => `\u201C${d2("F")}m7\u2026 ${d2("F")}, ${d2("Ab")}, ${d2("C")}\u2026 what\u2019s the 7th\u2026 ${d2("Eb")}\u201D`,
+      after: () => `\u201C${d2("F")}m7. ${d2("F")} ${d2("Ab")} ${d2("C")} ${d2("Eb")}.\u201D`
     }
   };
   var TRACKS = [
@@ -4284,11 +4285,24 @@ button {
     })
   );
   function isValidNoteInput(input) {
-    return VALID_NOTE_INPUTS.has(input.toLowerCase());
+    if (VALID_NOTE_INPUTS.has(input.toLowerCase())) return true;
+    if (_useSolfege) {
+      const letter = resolveSolfegeToLetter(input);
+      if (letter && VALID_NOTE_INPUTS.has(letter.toLowerCase())) return true;
+    }
+    return false;
   }
   function resolveNoteInput(input) {
     for (const note of NOTES) {
       if (noteMatchesInput(note, input)) return note.name;
+    }
+    if (_useSolfege) {
+      const letter = resolveSolfegeToLetter(input);
+      if (letter) {
+        for (const note of NOTES) {
+          if (noteMatchesInput(note, letter)) return note.name;
+        }
+      }
     }
     return null;
   }
@@ -4671,16 +4685,45 @@ button {
     A: "La",
     B: "Si"
   };
+  var REVERSE_SOLFEGE = {};
+  for (const [letter, syl] of Object.entries(SOLFEGE_MAP)) {
+    REVERSE_SOLFEGE[syl.toLowerCase()] = letter;
+  }
+  REVERSE_SOLFEGE["so"] = "G";
+  function resolveSolfegeToLetter(input) {
+    const lower = input.toLowerCase();
+    if (REVERSE_SOLFEGE[lower]) return REVERSE_SOLFEGE[lower];
+    if (lower.endsWith("#") || lower.endsWith("b") || lower.endsWith("s")) {
+      const syl = lower.slice(0, -1);
+      const letter = REVERSE_SOLFEGE[syl];
+      if (letter) {
+        const acc = lower[lower.length - 1] === "s" ? "#" : lower[lower.length - 1];
+        return letter + acc;
+      }
+    }
+    return null;
+  }
   var _useSolfege = false;
+  var _notationVersion = 0;
+  var _notationListeners = /* @__PURE__ */ new Set();
   function getUseSolfege() {
     return _useSolfege;
   }
+  function getNotationVersion() {
+    return _notationVersion;
+  }
+  function subscribeNotation(cb) {
+    _notationListeners.add(cb);
+    return () => _notationListeners.delete(cb);
+  }
   function setUseSolfege(v3) {
     _useSolfege = v3;
+    _notationVersion++;
     try {
       localStorage.setItem("fretboard_notation", v3 ? "solfege" : "letter");
     } catch (_3) {
     }
+    for (const cb of _notationListeners) cb();
   }
   try {
     _useSolfege = localStorage.getItem("fretboard_notation") === "solfege";
@@ -5063,7 +5106,7 @@ button {
     var u4 = r2.__H || (r2.__H = { __: [], __h: [] });
     return n2 >= u4.__.length && u4.__.push({}), u4.__[n2];
   }
-  function d2(n2) {
+  function d3(n2) {
     return o2 = 1, h2(D2, n2);
   }
   function h2(n2, u4, i3) {
@@ -5467,9 +5510,9 @@ button {
             ] })
           ] }),
           ba && /* @__PURE__ */ u3("div", { class: "skill-card-ba", children: [
-            /* @__PURE__ */ u3("span", { class: "skill-card-before", children: ba.before }),
+            /* @__PURE__ */ u3("span", { class: "skill-card-before", children: typeof ba.before === "function" ? ba.before() : ba.before }),
             /* @__PURE__ */ u3("span", { class: "skill-card-arrow", children: "\u2192" }),
-            /* @__PURE__ */ u3("span", { class: "skill-card-after", children: ba.after })
+            /* @__PURE__ */ u3("span", { class: "skill-card-after", children: typeof ba.after === "function" ? ba.after() : ba.after })
           ] })
         ]
       }
@@ -5631,10 +5674,10 @@ button {
     ] });
   }
   function HomeScreen({ onSelectMode, settings: settings2, appConfig, version: version2 }) {
-    const [starred, setStarred] = d2(loadStarredSkills);
-    const [accordion, setAccordion] = d2(loadAccordionState);
-    const [showSettings, setShowSettings] = d2(false);
-    const [useSolfege, setUseSolfege2] = d2(() => settings2.getUseSolfege());
+    const [starred, setStarred] = d3(loadStarredSkills);
+    const [accordion, setAccordion] = d3(loadAccordionState);
+    const [showSettings, setShowSettings] = d3(false);
+    const [useSolfege, setUseSolfege2] = d3(() => settings2.getUseSolfege());
     const handleToggleStar = q2((modeId) => {
       setStarred((prev) => {
         const next = new Set(prev);
@@ -6498,7 +6541,7 @@ button {
         if (idx < 0 || idx >= groupCount) enabled.delete(idx);
       }
       if (enabled.size === 0) {
-        for (const d3 of spec.defaultEnabled) enabled.add(d3);
+        for (const d4 of spec.defaultEnabled) enabled.add(d4);
       }
       const skipped = /* @__PURE__ */ new Map();
       const savedSkipped = localStorage.getItem(spec.storageKey + "_skipped");
@@ -6555,7 +6598,7 @@ button {
     }
   }
   function useScopeState(spec) {
-    const [scope, setScopeRaw] = d2(() => loadScope(spec));
+    const [scope, setScopeRaw] = d3(() => loadScope(spec));
     const setScope = q2((next) => {
       setScopeRaw(next);
       saveScope(spec, next);
@@ -6630,14 +6673,30 @@ button {
     }];
   }
 
+  // src/hooks/use-notation-version.ts
+  function useNotationVersion() {
+    const [v3, setV] = d3(getNotationVersion);
+    y2(() => subscribeNotation(() => setV(getNotationVersion())), []);
+    return v3;
+  }
+
   // src/hooks/use-group-scope.ts
   var EMPTY_SKIPPED = /* @__PURE__ */ new Map();
+  function useStableGetter(value) {
+    const ref = A2(value);
+    ref.current = value;
+    return q2(() => ref.current, []);
+  }
+  function resolveLabel(label) {
+    return typeof label === "function" ? label() : label;
+  }
   function useGroupScope(spec) {
+    const notationVersion = useNotationVersion();
     const [scope, scopeActions] = useScopeState({
       kind: "groups",
       groups: spec.groups.map((g2, i3) => ({
         index: i3,
-        label: g2.label,
+        label: resolveLabel(g2.label),
         itemIds: spec.getItemIdsForGroup(i3)
       })),
       defaultEnabled: spec.defaultEnabled,
@@ -6660,7 +6719,7 @@ button {
     }, [enabledGroups, spec.getItemIdsForGroup]);
     const practicingLabel = T2(
       () => spec.formatLabel(enabledGroups),
-      [enabledGroups, spec.formatLabel]
+      [enabledGroups, spec.formatLabel, notationVersion]
     );
     const recommendation = T2(
       () => computeRecommendations(
@@ -6673,8 +6732,11 @@ button {
       [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]
     );
     const recommendationText = T2(
-      () => buildRecommendationText(recommendation, (i3) => spec.groups[i3].label),
-      [recommendation]
+      () => buildRecommendationText(
+        recommendation,
+        (i3) => resolveLabel(spec.groups[i3].label)
+      ),
+      [recommendation, notationVersion]
     );
     const applyRecommendation = q2(() => {
       if (recommendation.enabled) {
@@ -6685,15 +6747,6 @@ button {
         });
       }
     }, [recommendation, scopeActions, skippedGroups]);
-    const enabledItemsRef = A2(enabledItems);
-    enabledItemsRef.current = enabledItems;
-    const practicingLabelRef = A2(practicingLabel);
-    practicingLabelRef.current = practicingLabel;
-    const getEnabledItems = q2(() => enabledItemsRef.current, []);
-    const getPracticingLabel2 = q2(
-      () => practicingLabelRef.current,
-      []
-    );
     return {
       scope,
       scopeActions,
@@ -6704,8 +6757,8 @@ button {
       recommendation,
       recommendationText,
       applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel: getPracticingLabel2
+      getEnabledItems: useStableGetter(enabledItems),
+      getPracticingLabel: useStableGetter(practicingLabel)
     };
   }
 
@@ -6899,10 +6952,10 @@ button {
     return min + ":" + (sec < 10 ? "0" : "") + sec;
   }
   function useRoundTimer(onExpiry) {
-    const [timerPct, setTimerPct] = d2(100);
-    const [timerText, setTimerText] = d2("");
-    const [timerWarning, setTimerWarning] = d2(false);
-    const [timerLastQuestion, setTimerLastQuestion] = d2(false);
+    const [timerPct, setTimerPct] = d3(100);
+    const [timerText, setTimerText] = d3("");
+    const [timerWarning, setTimerWarning] = d3(false);
+    const [timerLastQuestion, setTimerLastQuestion] = d3(false);
     const roundTimerRef = A2(null);
     const roundTimerStartRef = A2(null);
     const roundDurationSnapshotRef = A2(null);
@@ -7071,7 +7124,7 @@ button {
 
   // src/hooks/use-calibration-lifecycle.ts
   function useCalibrationLifecycle(timer, setState, configRef) {
-    const [calibrationFixture, setCalibrationFixture] = d2();
+    const [calibrationFixture, setCalibrationFixture] = d3();
     const stop = q2(() => {
       timer.stopRoundTimer();
       setState(engineStop);
@@ -7216,7 +7269,7 @@ button {
 
   // src/hooks/use-quiz-engine.ts
   function useQuizEngine(config, selector, fixtureTarget) {
-    const [state, setState] = d2(initialEngineState);
+    const [state, setState] = d3(initialEngineState);
     const stateRef = A2(state);
     stateRef.current = state;
     const configRef = A2(config);
@@ -7350,7 +7403,7 @@ button {
 
   // src/hooks/use-practice-summary.ts
   function usePracticeSummary(opts) {
-    const [activeTab, setActiveTab] = d2(
+    const [activeTab, setActiveTab] = d3(
       "practice"
     );
     const summary = T2(
@@ -7438,7 +7491,7 @@ button {
     // ♯
   ];
   function SplitNoteButtons({ onAnswer, sequential, pendingNote, answered }) {
-    const [pendingBase, setPendingBase] = d2(null);
+    const [pendingBase, setPendingBase] = d3(null);
     const onAnswerRef = A2(onAnswer);
     onAnswerRef.current = onAnswer;
     y2(() => {
@@ -7793,7 +7846,7 @@ button {
   // src/ui/scope.tsx
   var CLOSE_EVENT = "groupskipmenu:close";
   function GroupSkipMenu({ index, label, currentStatus, onSkip, onUnskip }) {
-    const [open, setOpen] = d2(false);
+    const [open, setOpen] = d3(false);
     const idRef = A2(index);
     idRef.current = index;
     const openMenu = q2(() => {
@@ -8025,7 +8078,7 @@ button {
       targetNote: null,
       trialTimeout: null
     });
-    const [trialProgress, setTrialProgress] = d2("");
+    const [trialProgress, setTrialProgress] = d3("");
     const onDoneRef = A2(onDone);
     onDoneRef.current = onDone;
     y2(() => {
@@ -8149,10 +8202,10 @@ button {
     ] });
   }
   function SpeedCheck({ provider, onComplete, onCancel, fixture }) {
-    const [phase, setPhase] = d2(
+    const [phase, setPhase] = d3(
       fixture?.phase ?? "intro"
     );
-    const [baseline, setBaseline] = d2(fixture?.baseline ?? 0);
+    const [baseline, setBaseline] = d3(fixture?.baseline ?? 0);
     const buttonsRef = A2(null);
     const trials = useTrialLoop(buttonsRef, (median) => {
       setBaseline(Math.round(median));
@@ -8247,9 +8300,9 @@ button {
         )
       ] }),
       beforeAfter && /* @__PURE__ */ u3("div", { class: "mode-before-after", children: [
-        /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: beforeAfter.before }),
+        /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before }),
         /* @__PURE__ */ u3("span", { class: "mode-ba-arrow", children: "\u2192" }),
-        /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: beforeAfter.after })
+        /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after })
       ] })
     ] });
   }
@@ -8636,10 +8689,10 @@ button {
 
   // src/declarative/use-sequential-input.ts
   function useSequentialInput(def, currentQRef, submitRef) {
-    const [seqEntries, setSeqEntries] = d2([]);
+    const [seqEntries, setSeqEntries] = d3([]);
     const seqEntriesRef = A2([]);
-    const [seqEvaluated, setSeqEvaluated] = d2(null);
-    const [seqCorrectAnswer, setSeqCorrectAnswer] = d2("");
+    const [seqEvaluated, setSeqEvaluated] = d3(null);
+    const [seqCorrectAnswer, setSeqCorrectAnswer] = d3("");
     const prevItemRef = A2(null);
     const resetAll = q2(() => {
       seqEntriesRef.current = [];
@@ -8771,7 +8824,7 @@ button {
   }
   function AnswerInput({ onSubmit, disabled, placeholder, onInvalid, feedbackCorrect }) {
     const inputRef = A2(null);
-    const [shake, setShake] = d2(false);
+    const [shake, setShake] = d3(false);
     const shakeTimerRef = A2(null);
     y2(() => {
       return () => {
@@ -9145,7 +9198,7 @@ button {
           GroupProgressToggles,
           {
             groups: groupScope.allGroupIndices.map((i3) => ({
-              label: groupScope.groups[i3].label,
+              label: typeof groupScope.groups[i3].label === "function" ? groupScope.groups[i3].label() : groupScope.groups[i3].label,
               itemIds: groupScope.getItemIdsForGroup(i3)
             })),
             active: groupScopeResult.enabledGroups,
@@ -9534,9 +9587,9 @@ button {
     const distances = DISTANCE_GROUPS[groupIndex].distances;
     const items = [];
     for (const note of NOTES) {
-      for (const d3 of distances) {
-        items.push(note.name + "+" + d3);
-        items.push(note.name + "-" + d3);
+      for (const d4 of distances) {
+        items.push(note.name + "+" + d4);
+        items.push(note.name + "-" + d4);
       }
     }
     return items;
@@ -9819,18 +9872,18 @@ button {
     const degrees = DEGREE_GROUPS[groupIndex].degrees;
     const items = [];
     for (const key of MAJOR_KEYS) {
-      for (const d3 of degrees) {
-        items.push(key.root + ":" + d3 + ":fwd");
-        items.push(key.root + ":" + d3 + ":rev");
+      for (const d4 of degrees) {
+        items.push(key.root + ":" + d4 + ":fwd");
+        items.push(key.root + ":" + d4 + ":rev");
       }
     }
     return items;
   }
   var ALL_ITEMS6 = [];
   for (const key of MAJOR_KEYS) {
-    for (const d3 of ACTIVE_DEGREES) {
-      ALL_ITEMS6.push(key.root + ":" + d3 + ":fwd");
-      ALL_ITEMS6.push(key.root + ":" + d3 + ":rev");
+    for (const d4 of ACTIVE_DEGREES) {
+      ALL_ITEMS6.push(key.root + ":" + d4 + ":fwd");
+      ALL_ITEMS6.push(key.root + ":" + d4 + ":rev");
     }
   }
   var ALL_GROUP_INDICES4 = DEGREE_GROUPS.map((_3, i3) => i3);
@@ -9847,8 +9900,8 @@ button {
     return { keyRoot, degree, dir, noteName };
   }
   function getGridItemId3(keyRoot, colIdx) {
-    const d3 = ACTIVE_DEGREES[colIdx];
-    return [keyRoot + ":" + d3 + ":fwd", keyRoot + ":" + d3 + ":rev"];
+    const d4 = ACTIVE_DEGREES[colIdx];
+    return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
   }
 
   // src/modes/scale-degrees/definition.ts
@@ -9894,12 +9947,12 @@ button {
       formatLabel: (groups) => {
         if (groups.size === DEGREE_GROUPS.length) return "all degrees";
         const degrees = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => DEGREE_GROUPS[g2].degrees).sort((a3, b) => a3 - b);
-        return degrees.map((d3) => DEGREE_LABELS2[d3 - 1]).join(", ") + " degrees";
+        return degrees.map((d4) => DEGREE_LABELS2[d4 - 1]).join(", ") + " degrees";
       }
     },
     stats: {
       kind: "grid",
-      colLabels: ACTIVE_DEGREES.map((d3) => DEGREE_LABELS2[d3 - 1]),
+      colLabels: ACTIVE_DEGREES.map((d4) => DEGREE_LABELS2[d4 - 1]),
       getItemId: getGridItemId3,
       notes: GRID_NOTES
     }
@@ -9916,18 +9969,18 @@ button {
     const degrees = CHORD_GROUPS[groupIndex].degrees;
     const items = [];
     for (const key of MAJOR_KEYS) {
-      for (const d3 of degrees) {
-        items.push(key.root + ":" + d3 + ":fwd");
-        items.push(key.root + ":" + d3 + ":rev");
+      for (const d4 of degrees) {
+        items.push(key.root + ":" + d4 + ":fwd");
+        items.push(key.root + ":" + d4 + ":rev");
       }
     }
     return items;
   }
   var ALL_ITEMS7 = [];
   for (const key of MAJOR_KEYS) {
-    for (let d3 = 1; d3 <= 7; d3++) {
-      ALL_ITEMS7.push(key.root + ":" + d3 + ":fwd");
-      ALL_ITEMS7.push(key.root + ":" + d3 + ":rev");
+    for (let d4 = 1; d4 <= 7; d4++) {
+      ALL_ITEMS7.push(key.root + ":" + d4 + ":fwd");
+      ALL_ITEMS7.push(key.root + ":" + d4 + ":rev");
     }
   }
   var ALL_GROUP_INDICES5 = CHORD_GROUPS.map((_3, i3) => i3);
@@ -9951,8 +10004,8 @@ button {
     return input;
   }
   function getGridItemId4(keyRoot, colIdx) {
-    const d3 = colIdx + 1;
-    return [keyRoot + ":" + d3 + ":fwd", keyRoot + ":" + d3 + ":rev"];
+    const d4 = colIdx + 1;
+    return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
   }
 
   // src/modes/diatonic-chords/definition.ts
@@ -9998,7 +10051,7 @@ button {
       defaultEnabled: [0],
       formatLabel: (groups) => {
         if (groups.size === CHORD_GROUPS.length) return "all chords";
-        const numerals = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => CHORD_GROUPS[g2].degrees).sort((a3, b) => a3 - b).map((d3) => ROMAN_NUMERALS[d3 - 1]);
+        const numerals = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => CHORD_GROUPS[g2].degrees).sort((a3, b) => a3 - b).map((d4) => ROMAN_NUMERALS[d4 - 1]);
         return numerals.join(", ") + " chords";
       }
     },
@@ -10189,25 +10242,49 @@ button {
   // src/modes/fretboard/logic.ts
   var GUITAR_GROUPS = [
     // Naturals by string (E and e combined since same notes)
-    { label: "E e", strings: [5, 0], noteFilter: "natural" },
-    { label: "A", strings: [4], noteFilter: "natural" },
-    { label: "D", strings: [3], noteFilter: "natural" },
-    { label: "G", strings: [2], noteFilter: "natural" },
-    { label: "B", strings: [1], noteFilter: "natural" },
+    {
+      label: () => `${displayNote("E")} ${displayNote("e")}`,
+      strings: [5, 0],
+      noteFilter: "natural"
+    },
+    { label: () => displayNote("A"), strings: [4], noteFilter: "natural" },
+    { label: () => displayNote("D"), strings: [3], noteFilter: "natural" },
+    { label: () => displayNote("G"), strings: [2], noteFilter: "natural" },
+    { label: () => displayNote("B"), strings: [1], noteFilter: "natural" },
     // Accidentals by string pair
-    { label: "E A \u266F\u266D", strings: [5, 4], noteFilter: "sharps-flats" },
-    { label: "D G \u266F\u266D", strings: [3, 2], noteFilter: "sharps-flats" },
-    { label: "B e \u266F\u266D", strings: [1, 0], noteFilter: "sharps-flats" }
+    {
+      label: () => `${displayNote("E")} ${displayNote("A")} \u266F\u266D`,
+      strings: [5, 4],
+      noteFilter: "sharps-flats"
+    },
+    {
+      label: () => `${displayNote("D")} ${displayNote("G")} \u266F\u266D`,
+      strings: [3, 2],
+      noteFilter: "sharps-flats"
+    },
+    {
+      label: () => `${displayNote("B")} ${displayNote("e")} \u266F\u266D`,
+      strings: [1, 0],
+      noteFilter: "sharps-flats"
+    }
   ];
   var UKULELE_GROUPS = [
     // Naturals by string
-    { label: "G", strings: [3], noteFilter: "natural" },
-    { label: "C", strings: [2], noteFilter: "natural" },
-    { label: "E", strings: [1], noteFilter: "natural" },
-    { label: "A", strings: [0], noteFilter: "natural" },
+    { label: () => displayNote("G"), strings: [3], noteFilter: "natural" },
+    { label: () => displayNote("C"), strings: [2], noteFilter: "natural" },
+    { label: () => displayNote("E"), strings: [1], noteFilter: "natural" },
+    { label: () => displayNote("A"), strings: [0], noteFilter: "natural" },
     // Accidentals by string pair
-    { label: "G C \u266F\u266D", strings: [3, 2], noteFilter: "sharps-flats" },
-    { label: "E A \u266F\u266D", strings: [1, 0], noteFilter: "sharps-flats" }
+    {
+      label: () => `${displayNote("G")} ${displayNote("C")} \u266F\u266D`,
+      strings: [3, 2],
+      noteFilter: "sharps-flats"
+    },
+    {
+      label: () => `${displayNote("E")} ${displayNote("A")} \u266F\u266D`,
+      strings: [1, 0],
+      noteFilter: "sharps-flats"
+    }
   ];
   var GROUPS_BY_INSTRUMENT = {
     fretboard: GUITAR_GROUPS,
@@ -10261,7 +10338,11 @@ button {
   function formatLabel(instrument, enabledGroups) {
     const groups = getGroups(instrument);
     if (enabledGroups.size === groups.length) return "all groups";
-    const labels = Array.from(enabledGroups).sort((a3, b) => a3 - b).map((i3) => groups[i3]?.label ?? String(i3));
+    const labels = Array.from(enabledGroups).sort((a3, b) => a3 - b).map((i3) => {
+      const g2 = groups[i3];
+      if (!g2) return String(i3);
+      return typeof g2.label === "function" ? g2.label() : g2.label;
+    });
     return labels.join(", ");
   }
 
@@ -10366,7 +10447,7 @@ button {
     });
     const hasAccidentalsRef = A2(hasAccidentals);
     hasAccidentalsRef.current = hasAccidentals;
-    const [pendingNote, setPendingNote] = d2(null);
+    const [pendingNote, setPendingNote] = d3(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
@@ -10821,8 +10902,8 @@ button {
     const quizFbRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
-    const [progressText, setProgressText] = d2("");
-    const [currentDisplayName, setCurrentDisplayName] = d2("");
+    const [progressText, setProgressText] = d3("");
+    const [currentDisplayName, setCurrentDisplayName] = d3("");
     const colorErrorRef = A2("#d32f2f");
     y2(() => readCSSColor("--color-error", colorErrorRef), []);
     const svgHTML = T2(() => fretboardSVG({ tapTargets: true }), []);
