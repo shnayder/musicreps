@@ -36,11 +36,10 @@ and persistence will be invisible to the existing test suite.
 | **Full quiz flow** (start → answer → feedback → next → round-complete) | CRITICAL | Core UX. `GenericMode` + `useQuizEngine` + phase classes + timer interact in ways unit tests can't cover. Any change to `generic-mode.tsx` or `use-quiz-engine.ts` risks silent breakage. |
 | **Navigation lifecycle** (home ↔ mode, init/activate/deactivate, Escape) | HIGH | `navigation.ts` does direct DOM classList + focus manipulation. A regression breaks all 11 modes at once. |
 | **localStorage persistence & recovery across reloads** | HIGH | Scope state, learner model, motor baseline, notation all persist. Schema changes or corrupt data silently break modes. No automated testing of reload recovery. |
-| **Text input + Enter submission** (AnswerInput) | MEDIUM-HIGH | Primary keyboard path for 10 declarative modes. Involves text field focus management, Enter handling, shake animation on invalid input, disabled state during feedback. Unit-tested in isolation but not through real DOM. |
+| **Text input + Enter submission** (AnswerInput) | MEDIUM-HIGH | Primary input path for all 11 modes (textbox + Enter). Involves focus management, Enter handling, shake animation on invalid input, disabled state during feedback. Not tested through real DOM. |
 | **Round timer** (60s expiry, last-question mode, 30s cap) | MEDIUM-HIGH | `setInterval` with mutable refs, duration snapshotting, last-question timeout. Complex edge cases with no testing. |
 | **Settings/notation switching propagation** | MEDIUM | Toggling letter/solfège triggers `refreshNoteButtonLabels` (DOM queries). If selectors drift, buttons silently keep old labels. |
 | **Sequential input** (chord spelling) | MEDIUM | Only sequential mode. Multi-note collection, batch text parsing, per-entry evaluation — architecturally distinct from all other modes. |
-| **Fretboard keyboard narrowing** (pending delay + accidentals) | MEDIUM | Only fretboard modes use `createAdaptiveKeyHandler` with 600ms pending delay and accidental completion. Key handlers are well unit-tested, but the visual narrowing (button dimming) and integration with GenericMode's `ctrl.narrowing` are not. |
 | **Phase-to-CSS class sync + focus** | MEDIUM | `usePhaseClass` sets CSS classes; `PHASE_FOCUS_TARGETS` moves focus. Desync breaks UX. |
 | **Group toggle & recommendation application** | LOW-MEDIUM | Skip/unskip is tested. Toggling groups on/off and applying recommendations are not. |
 | **Calibration flow** | LOW | Three-phase calibration. Changes are rare. |
@@ -117,8 +116,6 @@ These 6 tests cover: `useQuizEngine`, `GenericMode` rendering branches,
 
 ### Not proposed as separate E2E suites (lower priority)
 
-- **Fretboard keyboard narrowing**: Key handlers are unit-tested. Visual
-  narrowing integration is lower priority (fretboard-specific).
 - **Settings/notation switching**: Could be 1–2 tests in persistence suite.
 - **Calibration flow**: Rare changes, well-covered by screenshots.
 - **Timer edge cases**: Timer refactoring (section 3) would make these
@@ -251,8 +248,7 @@ minimal value.
 - `src/hooks/use-quiz-engine.ts` — core engine hook (primary code under test for
   Suite 1)
 - `src/declarative/generic-mode.tsx` — renders all declarative modes
-- `src/quiz-engine.ts` — keyboard handlers (fretboard only; other modes use
-  AnswerInput text field + Enter)
+- `src/quiz-engine.ts` — calibration helpers, note display utilities
 - `src/fixtures/recommendation-scenarios.ts` — `generateLocalStorageData` to
   reuse in fixture builders
 
