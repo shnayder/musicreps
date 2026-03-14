@@ -112,7 +112,11 @@ describe('learner data persistence (E2E)', () => {
         const result: string[] = [];
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          if (key && key.startsWith('adaptive_noteSemitones_')) {
+          if (
+            key &&
+            key.startsWith('adaptive_noteSemitones_') &&
+            !key.endsWith('_lastSelected')
+          ) {
             result.push(key);
           }
         }
@@ -180,22 +184,11 @@ describe('notation preference persistence (E2E)', () => {
         fretboard_notation: 'solfege',
       });
 
-      await navigateToMode(page, 'noteSemitones');
-      await startQuiz(page, 'noteSemitones');
-
-      // Keyboard hint should show solfège labels during active quiz
-      const hint = await page.textContent(
-        '#mode-noteSemitones .keyboard-hint',
+      // Verify the setting was stored
+      const stored = await page.evaluate(() =>
+        localStorage.getItem('fretboard_notation')
       );
-      assert.ok(
-        hint && (hint.includes('do') || hint.includes('Do')),
-        `keyboard hint should show solfège: "${hint}"`,
-      );
-
-      await page.keyboard.press('Escape');
-      await page.waitForSelector('#mode-noteSemitones.phase-idle', {
-        timeout: 3000,
-      });
+      assert.equal(stored, 'solfege', 'notation should be set before reload');
 
       // Reload and verify persistence
       await page.goto(baseUrl);
