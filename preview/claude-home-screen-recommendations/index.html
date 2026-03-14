@@ -2154,7 +2154,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="eeb4e1 home-screen-recommendations"></div>
+  <div class="home-screen" id="home-screen" data-version="0582b8 home-screen-recommendations"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7647,11 +7647,11 @@ button {
       _heatmapColors = {
         none: cssVar("--heatmap-none") || "hsl(30, 4%, 85%)",
         level: [
-          cssVar("--heatmap-1") || "hsl(44, 65%, 58%)",
-          cssVar("--heatmap-2") || "hsl(54, 45%, 52%)",
-          cssVar("--heatmap-3") || "hsl(68, 30%, 46%)",
-          cssVar("--heatmap-4") || "hsl(90, 38%, 38%)",
-          cssVar("--heatmap-5") || "hsl(122, 46%, 33%)"
+          cssVar("--heatmap-1") || "hsl(40, 60%, 58%)",
+          cssVar("--heatmap-2") || "hsl(48, 50%, 52%)",
+          cssVar("--heatmap-3") || "hsl(60, 40%, 46%)",
+          cssVar("--heatmap-4") || "hsl(80, 35%, 40%)",
+          cssVar("--heatmap-5") || "hsl(125, 48%, 33%)"
         ]
       };
     }
@@ -7662,15 +7662,15 @@ button {
     return m3 ? parseInt(m3[1], 10) <= 50 : false;
   }
   var SPEED_HSL = [
-    [44, 65, 58],
+    [40, 60, 58],
     // heatmap-1: needs work
-    [54, 45, 52],
+    [48, 50, 52],
     // heatmap-2
-    [68, 30, 46],
+    [60, 40, 46],
     // heatmap-3
-    [90, 38, 38],
-    // heatmap-4
-    [122, 46, 33]
+    [80, 35, 40],
+    // heatmap-4: fast but figuring it out
+    [125, 48, 33]
     // heatmap-5: automatic
   ];
   var FRESHNESS_FLOOR = 0.25;
@@ -7678,7 +7678,7 @@ button {
   function getSpeedFreshnessColor(speedScore, freshness) {
     const c3 = heatmapColors();
     if (speedScore === null || freshness === null) return c3.none;
-    const level = speedScore > 0.8 ? 4 : speedScore > 0.6 ? 3 : speedScore > 0.4 ? 2 : speedScore > 0.2 ? 1 : 0;
+    const level = speedScore > 0.9 ? 4 : speedScore > 0.75 ? 3 : speedScore > 0.55 ? 2 : speedScore > 0.3 ? 1 : 0;
     const [h3, s3, l3] = SPEED_HSL[level];
     const f4 = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * Math.max(0, Math.min(1, freshness));
     const fadedS = Math.round(s3 * f4);
@@ -10513,7 +10513,7 @@ button {
   }
 
   // src/modes/speed-tap/speed-tap-mode.tsx
-  var FB_TAP_CORRECT = "hsl(122, 46%, 33%)";
+  var FB_TAP_CORRECT = "hsl(125, 48%, 33%)";
   function setCircleFill2(root, string, fret, color) {
     const circle = root.querySelector(
       'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
