@@ -128,9 +128,9 @@ function SkillCard(
       </span>
       {ba && (
         <div class='skill-card-ba'>
-          <span class='skill-card-before'>{ba.before}</span>
+          <span class='skill-card-before'>{ba.before()}</span>
           <span class='skill-card-arrow'>&rarr;</span>
-          <span class='skill-card-after'>{ba.after}</span>
+          <span class='skill-card-after'>{ba.after()}</span>
         </div>
       )}
     </div>
@@ -200,11 +200,11 @@ function ActiveSkillCard(
       {ba && (
         <div class='skill-card-ba'>
           <span class='skill-card-before'>
-            {typeof ba.before === 'function' ? ba.before() : ba.before}
+            {ba.before()}
           </span>
           <span class='skill-card-arrow'>&rarr;</span>
           <span class='skill-card-after'>
-            {typeof ba.after === 'function' ? ba.after() : ba.after}
+            {ba.after()}
           </span>
         </div>
       )}
