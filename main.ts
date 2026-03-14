@@ -205,6 +205,24 @@ async function copyDesignPages(css: string): Promise<void> {
 export { buildHTML, SERVICE_WORKER as sw };
 
 // ---------------------------------------------------------------------------
+// Static assets copied to docs/ at build time and served by the dev server
+// ---------------------------------------------------------------------------
+
+const STATIC_ASSETS = new Set([
+  'apple-touch-icon.png',
+  'favicon-32x32.png',
+  'icon-192x192.png',
+  'icon-512x512.png',
+  'manifest.json',
+]);
+
+function staticContentType(name: string): string {
+  if (name.endsWith('.json')) return 'application/json';
+  if (name.endsWith('.png')) return 'image/png';
+  return 'application/octet-stream';
+}
+
+// ---------------------------------------------------------------------------
 // Port selection (find first available port starting from preferred)
 // ---------------------------------------------------------------------------
 
@@ -240,13 +258,7 @@ if (import.meta.main) {
     const html = stamp(assembleHTML(css, js));
     const docsDir = resolve('./docs');
     await Deno.mkdir(docsDir, { recursive: true });
-    for (
-      const name of [
-        'apple-touch-icon.png',
-        'favicon-32x32.png',
-        'manifest.json',
-      ]
-    ) {
+    for (const name of STATIC_ASSETS) {
       await Deno.copyFile(resolve(`./static/${name}`), `${docsDir}/${name}`);
     }
     await Deno.writeTextFile(`${docsDir}/index.html`, html);
@@ -282,16 +294,12 @@ if (import.meta.main) {
         });
       }
       // Serve static assets (icons, manifest, etc.)
-      const staticPath = resolve(`./static${url.pathname}`);
-      try {
-        const data = await Deno.readFile(staticPath);
-        const ct = url.pathname.endsWith('.json')
-          ? 'application/json'
-          : url.pathname.endsWith('.png')
-          ? 'image/png'
-          : 'application/octet-stream';
+      const assetName = url.pathname.slice(1); // strip leading /
+      if (STATIC_ASSETS.has(assetName)) {
+        const data = await Deno.readFile(resolve(`./static/${assetName}`));
+        const ct = staticContentType(assetName);
         return new Response(data, { headers: { 'content-type': ct } });
-      } catch { /* fall through */ }
+      }
       if (url.pathname === '/preview') {
         const css = await Deno.readTextFile(resolve('./src/styles.css'));
         const pJs = await bundleJS('./src/ui/preview.tsx');

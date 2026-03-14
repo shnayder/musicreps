@@ -648,15 +648,15 @@ export function HomeScreen(
 
   return (
     <div class='home-content'>
-      {!isNativeApp && (
-        <div class='home-header'>
-          <h1 class='home-title'>Music Reps</h1>
+      <div class={`home-header${isNativeApp ? ' sr-only' : ''}`}>
+        <h1 class='home-title'>Music Reps</h1>
+        {!isNativeApp && (
           <p class='home-tagline'>
             Instant recall for music fundamentals. You know the
             theory&#x2009;&mdash;&#x2009;now make it automatic.
           </p>
-        </div>
-      )}
+        )}
+      </div>
 
       <HomeScreenTabs
         tab={tab}

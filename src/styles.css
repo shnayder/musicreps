@@ -2143,7 +2143,9 @@ button {
   }
 }
 
-/* Standalone / native app — no decorative side borders */
+/* PWA standalone mode — no decorative side borders.
+   Capacitor/native apps use a webview (not standalone), so this only
+   applies to home-screen-installed PWAs. */
 @media (display-mode: standalone) {
   body {
     border-left: none;

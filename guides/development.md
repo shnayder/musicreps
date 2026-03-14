@@ -227,7 +227,9 @@ Build output goes to `docs/` (GitHub Pages source directory):
 - `docs/index.html` — the single-page app
 - `docs/sw.js` — service worker (network-first cache strategy)
 - `docs/favicon-32x32.png` — browser tab icon
-- `docs/apple-touch-icon.png` — iOS home screen icon
+- `docs/apple-touch-icon.png` — iOS home screen icon (180x180)
+- `docs/icon-192x192.png` — PWA icon (192x192, Android installability)
+- `docs/icon-512x512.png` — PWA icon (512x512, splash screens)
 - `docs/manifest.json` — web app manifest (PWA installability)
 - `docs/design/` — design reference pages (copied from `guides/design/`)
 
