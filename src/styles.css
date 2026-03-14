@@ -43,17 +43,18 @@
   --color-overlay: rgba(0, 0, 0, 0.35);
 
   /* Track colors */
-  --color-track-core: hsl(30, 3%, 40%);
+  --color-track-core: hsl(30, 30%, 42%);
+  --color-track-reading: hsl(260, 30%, 50%);
   --color-track-guitar: hsl(25, 55%, 45%);
   --color-track-ukulele: hsl(185, 40%, 38%);
 
   /* Heatmap scale (gold → green, matches palette: attention → mastered) */
   --heatmap-none: hsl(30, 4%, 85%);
-  --heatmap-1: hsl(44, 65%, 58%);
-  --heatmap-2: hsl(54, 45%, 52%);
-  --heatmap-3: hsl(68, 30%, 46%);
-  --heatmap-4: hsl(90, 38%, 38%);
-  --heatmap-5: hsl(122, 46%, 33%);
+  --heatmap-1: hsl(40, 60%, 58%);
+  --heatmap-2: hsl(48, 50%, 52%);
+  --heatmap-3: hsl(60, 40%, 46%);
+  --heatmap-4: hsl(80, 35%, 40%);
+  --heatmap-5: hsl(125, 48%, 33%);
 
   /* Typography scale */
   --text-xs: 0.75rem;
@@ -163,6 +164,9 @@ body {
 .track-group-core {
   color: var(--color-track-core);
 }
+.track-group-reading {
+  color: var(--color-track-reading);
+}
 .track-group-guitar {
   color: var(--color-track-guitar);
 }
@@ -175,16 +179,13 @@ body {
   height: 1px;
   background: var(--color-border-lighter);
 }
-.track-skills-list:first-child .home-group-label {
-  margin-top: var(--space-4);
-}
 .home-mode-btn {
   display: flex;
   flex-direction: column;
   width: 100%;
   text-align: left;
   padding: var(--space-4) var(--space-4);
-  padding-right: 2rem;
+  padding-right: 3rem;
   background: var(--color-bg);
   border: 1px solid var(--color-border-lighter);
   border-left: 3px solid var(--color-brand);
@@ -194,14 +195,7 @@ body {
   position: relative;
 }
 .home-mode-btn::after {
-  content: '\203A';
-  position: absolute;
-  right: var(--space-4);
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: var(--text-base);
-  color: var(--color-text-light);
-  line-height: 1;
+  content: none;
 }
 .home-mode-btn:hover {
   background: var(--color-surface);
@@ -209,60 +203,100 @@ body {
 .home-mode-btn:active {
   background: var(--color-surface-pressed);
 }
-/* --- Track selection --- */
-.track-selection-header {
+/* --- Track accordion sections --- */
+.track-accordion {
+  margin-top: var(--space-2);
+}
+.track-accordion-header {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) 0;
+  background: none;
+  border: none;
   font-size: var(--text-sm);
   font-weight: 700;
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-2);
+  cursor: pointer;
+  text-align: left;
 }
-.track-selection-header::after {
+.track-accordion-header::after {
   content: '';
   flex: 1;
   height: 1px;
   background: var(--color-border-lighter);
 }
-.track-chips {
+.track-accordion-chevron {
+  font-size: 1em;
+  line-height: 1;
+}
+.track-accordion-body {
+  padding-bottom: var(--space-2);
+}
+/* --- Star toggle on skill cards --- */
+.skill-card-star {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 44px;
+  height: 44px;
   display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-.track-chip {
-  padding: var(--space-2) var(--space-4);
-  border-radius: 999px;
-  border: 1px solid var(--color-border-light);
-  background: var(--color-bg);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-muted);
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
   cursor: pointer;
-  margin: 0;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  font-size: var(--text-lg);
+  color: var(--color-text-light);
+  padding: 0;
+  z-index: 1;
 }
-.track-chip:hover:not(:disabled) {
-  background: var(--color-surface-hover);
+.skill-card-star:hover {
+  color: var(--color-text-muted);
 }
-.track-chip:disabled {
-  cursor: default;
+.skill-card-star.starred {
+  color: hsl(40, 70%, 45%);
 }
-.track-chip.active {
-  color: white;
-  border-color: transparent;
+/* --- Active Skills section --- */
+.active-skills {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  margin-bottom: var(--space-5);
 }
-.track-chip.active.track-core {
-  background: var(--color-track-core);
+.active-skills-label {
+  margin-top: 0;
 }
-.track-chip.active.track-guitar {
-  background: var(--color-track-guitar);
+.active-skills-empty {
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+  font-style: italic;
+  margin: var(--space-2) 0 0;
 }
-.track-chip.active.track-ukulele {
-  background: var(--color-track-ukulele);
+.active-skill-track-pill {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 1px var(--space-2);
+  border-radius: 999px;
+  margin-bottom: 1px;
 }
-.track-chip:focus-visible {
-  outline-offset: 2px;
+.pill-core {
+  color: var(--color-track-core);
+  background: hsla(30, 30%, 42%, 0.12);
+}
+.pill-reading {
+  color: var(--color-track-reading);
+  background: hsla(260, 30%, 50%, 0.12);
+}
+.pill-guitar {
+  color: var(--color-track-guitar);
+  background: hsla(25, 55%, 45%, 0.12);
+}
+.pill-ukulele {
+  color: var(--color-track-ukulele);
+  background: hsla(185, 40%, 38%, 0.12);
 }
 /* --- Skill cards (extends home-mode-btn) --- */
 .skill-card {
@@ -286,6 +320,10 @@ body {
   --skill-accent: var(--color-track-core);
   border-left-color: var(--color-track-core);
 }
+.skill-card[data-track='reading'] {
+  --skill-accent: var(--color-track-reading);
+  border-left-color: var(--color-track-reading);
+}
 .skill-card[data-track='guitar'] {
   --skill-accent: var(--color-track-guitar);
   border-left-color: var(--color-track-guitar);
@@ -293,9 +331,6 @@ body {
 .skill-card[data-track='ukulele'] {
   --skill-accent: var(--color-track-ukulele);
   border-left-color: var(--color-track-ukulele);
-}
-.skill-card::after {
-  color: var(--skill-accent);
 }
 .skill-card-ba {
   display: grid;
@@ -318,31 +353,6 @@ body {
 .skill-card-after {
   color: var(--color-text);
   font-weight: 600;
-}
-/* --- Other skills (collapsed section) --- */
-.home-other-skills {
-  margin-top: var(--space-5);
-}
-.home-other-skills summary {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  padding: var(--space-3) 0;
-  list-style: none;
-}
-.home-other-skills summary::-webkit-details-marker {
-  display: none;
-}
-.home-other-skills summary::before {
-  content: '\25B6';
-  display: inline-block;
-  font-size: 0.6em;
-  margin-right: var(--space-2);
-  transition: transform 0.15s ease;
-}
-.home-other-skills[open] summary::before {
-  transform: rotate(90deg);
 }
 .home-mode-name {
   font-size: var(--text-base);

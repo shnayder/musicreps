@@ -166,25 +166,27 @@ export const MODE_BEFORE_AFTER: Record<
 export type Track = {
   id: string;
   label: string;
-  alwaysSelected?: boolean;
   skills: string[];
 };
 
 export const TRACKS: Track[] = [
   {
     id: 'core',
-    label: 'Core',
-    alwaysSelected: true,
+    label: 'Music theory',
     skills: [
       'noteSemitones',
       'intervalSemitones',
       'semitoneMath',
       'intervalMath',
-      'keySignatures',
       'scaleDegrees',
       'diatonicChords',
       'chordSpelling',
     ],
+  },
+  {
+    id: 'reading',
+    label: 'Reading music',
+    skills: ['keySignatures'],
   },
   {
     id: 'guitar',
