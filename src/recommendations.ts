@@ -238,10 +238,16 @@ export function selectExpansion(
 // Step 8: detectStaleGroups
 // ---------------------------------------------------------------------------
 
+/** Speed score threshold for "was fast" in stale detection. */
+export const STALE_SPEED_THRESHOLD = 0.5;
+/** Freshness threshold for "has decayed" in stale detection. */
+export const STALE_FRESHNESS_THRESHOLD = 0.5;
+
 /**
  * Identify consolidation groups that are stale: items are fast (avg speed
- * score ≥ 0.5) but decayed (avg freshness < 0.5). These groups need
- * refreshing even though the learner was once proficient.
+ * score ≥ STALE_SPEED_THRESHOLD) but decayed (avg freshness <
+ * STALE_FRESHNESS_THRESHOLD). These groups need refreshing even though
+ * the learner was once proficient.
  */
 export function detectStaleGroups(
   indices: number[],
@@ -264,7 +270,11 @@ export function detectStaleGroups(
         count++;
       }
     }
-    if (count > 0 && speedSum / count >= 0.5 && freshSum / count < 0.5) {
+    if (
+      count > 0 &&
+      speedSum / count >= STALE_SPEED_THRESHOLD &&
+      freshSum / count < STALE_FRESHNESS_THRESHOLD
+    ) {
       stale.push(idx);
     }
   }

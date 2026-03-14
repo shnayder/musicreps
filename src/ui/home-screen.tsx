@@ -16,6 +16,7 @@ import {
   type ModeProgress,
   useHomeProgress,
 } from '../hooks/use-home-progress.ts';
+import type { SkillRecommendation } from '../home-recommendations.ts';
 
 // ---------------------------------------------------------------------------
 // localStorage persistence for starred skills
@@ -167,12 +168,22 @@ function SkillCard(
 // ---------------------------------------------------------------------------
 
 function ActiveSkillCard(
-  { modeId, trackLabel, onToggleStar, onSelectMode, progress }: {
+  {
+    modeId,
+    trackLabel,
+    onToggleStar,
+    onSelectMode,
+    progress,
+    cueLabel,
+    cueType,
+  }: {
     modeId: string;
     trackLabel: string;
     onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
     progress?: ModeProgress;
+    cueLabel?: string;
+    cueType?: string;
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
@@ -216,8 +227,19 @@ function ActiveSkillCard(
       <span class='skill-card-header'>
         <SkillIcon modeId={modeId} />
         <span class='skill-card-header-text'>
-          <span class={`active-skill-track-pill pill-${trackId}`}>
-            {trackLabel}
+          <span class='active-skill-meta'>
+            <span class={`active-skill-track-pill pill-${trackId}`}>
+              {trackLabel}
+            </span>
+            {cueLabel && (
+              <span
+                class={`skill-cue-label${
+                  cueType ? ` skill-cue-${cueType}` : ''
+                }`}
+              >
+                {cueLabel}
+              </span>
+            )}
           </span>
           <span class='home-mode-name'>{name}</span>
           <span class='home-mode-desc'>{desc}</span>
@@ -248,24 +270,15 @@ function ActiveSkillCard(
 // ---------------------------------------------------------------------------
 
 function ActiveSkillsList(
-  { starred, onToggleStar, onSelectMode, progress }: {
+  { starred, onToggleStar, onSelectMode, progress, recommendations }: {
     starred: Set<string>;
     onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
     progress: Map<string, ModeProgress>;
+    recommendations: SkillRecommendation[];
   },
 ) {
-  // Order starred skills by track definition order
-  const orderedStarred: { modeId: string; trackLabel: string }[] = [];
-  for (const track of TRACKS) {
-    for (const modeId of track.skills) {
-      if (starred.has(modeId)) {
-        orderedStarred.push({ modeId, trackLabel: track.label });
-      }
-    }
-  }
-
-  if (orderedStarred.length === 0) {
+  if (starred.size === 0) {
     return (
       <p class='active-skills-empty'>
         Star skills in the <strong>All Skills</strong> tab to add them here.
@@ -273,9 +286,58 @@ function ActiveSkillsList(
     );
   }
 
+  // Build lookup: modeId → recommendation
+  const recMap = new Map<string, SkillRecommendation>();
+  for (const rec of recommendations) recMap.set(rec.modeId, rec);
+
+  // Partition: recommended skills (in rank order) first, then remaining
+  // starred skills in definition order.
+  type Entry = {
+    modeId: string;
+    trackLabel: string;
+    rec?: SkillRecommendation;
+  };
+  const recommended: Entry[] = [];
+  const remaining: Entry[] = [];
+
+  const trackLabelFor = (modeId: string) =>
+    TRACKS.find((t) => t.skills.includes(modeId))?.label ?? '';
+
+  // Recommended skills in rank order
+  for (const rec of recommendations) {
+    if (starred.has(rec.modeId)) {
+      recommended.push({
+        modeId: rec.modeId,
+        trackLabel: trackLabelFor(rec.modeId),
+        rec,
+      });
+    }
+  }
+
+  // Remaining starred skills in definition order
+  for (const track of TRACKS) {
+    for (const modeId of track.skills) {
+      if (starred.has(modeId) && !recMap.has(modeId)) {
+        remaining.push({ modeId, trackLabel: track.label });
+      }
+    }
+  }
+
+  const ordered = [...recommended, ...remaining];
+
+  // "All done" state: starred skills exist but no recommendations
+  const allDone = recommendations.length === 0 && starred.size > 0;
+
   return (
     <div class='active-skills-list'>
-      {orderedStarred.map(({ modeId, trackLabel }) => (
+      {allDone && (
+        <p class='active-skills-done'>
+          All your starred skills are automatic. Nice work! Star new skills in
+          {' '}
+          <strong>All Skills</strong> to keep going.
+        </p>
+      )}
+      {ordered.map(({ modeId, trackLabel, rec }) => (
         <ActiveSkillCard
           key={modeId}
           modeId={modeId}
@@ -283,6 +345,8 @@ function ActiveSkillsList(
           onToggleStar={onToggleStar}
           onSelectMode={onSelectMode}
           progress={progress.get(modeId)}
+          cueLabel={rec?.cueLabel}
+          cueType={rec?.type}
         />
       ))}
     </div>
@@ -545,6 +609,7 @@ function HomeTabContent(
     starred,
     accordion,
     progress,
+    recommendations,
     onToggleStar,
     onToggleExpand,
     onSelectMode,
@@ -553,6 +618,7 @@ function HomeTabContent(
     starred: Set<string>;
     accordion: Record<string, boolean>;
     progress: Map<string, ModeProgress>;
+    recommendations: SkillRecommendation[];
     onToggleStar: (modeId: string) => void;
     onToggleExpand: (trackId: string) => void;
     onSelectMode: (modeId: string) => void;
@@ -565,6 +631,7 @@ function HomeTabContent(
         onToggleStar={onToggleStar}
         onSelectMode={onSelectMode}
         progress={progress}
+        recommendations={recommendations}
       />
     );
   }
@@ -600,8 +667,8 @@ export function HomeScreen(
     version: string;
   },
 ) {
-  const progress = useHomeProgress();
   const [starred, setStarred] = useState(loadStarredSkills);
+  const { progress, recommendations } = useHomeProgress(starred);
   const [accordion, setAccordion] = useState(loadAccordionState);
   const [showSettings, setShowSettings] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
@@ -666,6 +733,7 @@ export function HomeScreen(
         starred={starred}
         accordion={accordion}
         progress={progress}
+        recommendations={recommendations}
         onToggleStar={handleToggleStar}
         onToggleExpand={handleToggleExpand}
         onSelectMode={onSelectMode}
