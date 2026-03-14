@@ -50,14 +50,6 @@ jobs:
       - name: Test
         run: deno test --no-check --allow-read --allow-run=deno --ignore=tests/e2e
 
-      - name: Build
-        run: deno task build
-        env:
-          APP_CONTACT_EMAIL: preview@example.com
-          APP_SUPPORT_URL: https://github.com/shnayder/musicreps/issues
-          APP_TERMS_URL: https://example.com/terms
-          APP_PRIVACY_URL: https://example.com/privacy
-
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
@@ -68,6 +60,22 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: deno task e2e
+        env:
+          APP_CONTACT_EMAIL: preview@example.com
+          APP_SUPPORT_URL: https://github.com/shnayder/musicreps/issues
+          APP_TERMS_URL: https://example.com/terms
+          APP_PRIVACY_URL: https://example.com/privacy
+
+      - name: Build
+        run: deno task build
+        env:
+          APP_CONTACT_EMAIL: preview@example.com
+          APP_SUPPORT_URL: https://github.com/shnayder/musicreps/issues
+          APP_TERMS_URL: https://example.com/terms
+          APP_PRIVACY_URL: https://example.com/privacy
 
       - name: Capture screenshots
         run: npx tsx scripts/take-screenshots.ts --ci

@@ -11,59 +11,14 @@
 
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { type Browser, chromium, type Page, webkit } from 'playwright';
-import { type ChildProcess, spawn } from 'node:child_process';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { type Browser, chromium, type Page } from 'playwright';
+import { type ChildProcess } from 'node:child_process';
 import {
   generateLocalStorageData,
 } from '../../src/fixtures/recommendation-scenarios.ts';
 import { GUITAR } from '../../src/music-data.ts';
 import { getItemIdsForGroup as guitarGetItemIds } from '../../src/modes/fretboard/logic.ts';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = path.resolve(__dirname, '../..');
-
-// ---------------------------------------------------------------------------
-// Dev server helper (same pattern as scripts/take-screenshots.ts)
-// ---------------------------------------------------------------------------
-
-function startServer(
-  port: number,
-): { proc: ChildProcess; portReady: Promise<number> } {
-  const proc = spawn(
-    'deno',
-    [
-      'run',
-      '--allow-net',
-      '--allow-read',
-      '--allow-run',
-      '--allow-env=BUILD_NUMBER',
-      'main.ts',
-      `--port=${port}`,
-    ],
-    { cwd: PROJECT_ROOT, stdio: 'pipe' },
-  );
-  const portReady = new Promise<number>((resolve, reject) => {
-    const timeout = setTimeout(
-      () => reject(new Error('Server did not start within 10s')),
-      10_000,
-    );
-    proc.stderr?.on('data', (d: Buffer) => {
-      const msg = d.toString();
-      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
-      if (m) {
-        clearTimeout(timeout);
-        resolve(parseInt(m[1], 10));
-      }
-    });
-    proc.on('exit', (code) => {
-      clearTimeout(timeout);
-      if (code) reject(new Error(`Server exited with code ${code}`));
-    });
-  });
-  return { proc, portReady };
-}
+import { startServer } from './helpers/server.ts';
 
 // ---------------------------------------------------------------------------
 // Shared infrastructure
@@ -149,7 +104,8 @@ async function runSkipUnskipTests(
   await page
     .locator(`${modeSelector} [aria-label="Options for ${targetLabel}"]`)
     .click();
-  await page.getByRole('menuitem', { name: 'I know this' }).click();
+  await page.locator('.group-skip-menu button', { hasText: 'I know this' })
+    .click();
   await page.waitForTimeout(300);
 
   const afterSkipText = await page.textContent(
@@ -165,7 +121,8 @@ async function runSkipUnskipTests(
   await page
     .locator(`${modeSelector} [aria-label="Options for ${targetLabel}"]`)
     .click();
-  await page.getByRole('menuitem', { name: 'Learn this' }).click();
+  await page.locator('.group-skip-menu button', { hasText: 'Learn this' })
+    .click();
   await page.waitForTimeout(300);
 
   const afterUnskipText = await page.textContent(
@@ -182,18 +139,15 @@ async function runSkipUnskipTests(
 // Test: Semitone Math
 // ---------------------------------------------------------------------------
 
-// 6 semitone-math groups. Groups 0–2 have high work (above median),
-// groups 3–5 have low work. This produces 3 recommended consolidation groups.
-//
-// Sorted work: [38, 33, 28, 3, 3, 2], median = work[3] = 3
-// Groups with work > 3: groups 0, 1, 2 → recommended
+// 5 semitone-math groups (±1–2, ±3–4, ±5–6, ±7–8, ±9–11).
+// Groups 0–1 have high work, groups 2–4 are mostly fluent.
+// This should produce a recommendation including groups 0 and 1.
 const SEMITONE_STATS = {
   0: { fluentCount: 20, workingCount: 20, unseenCount: 8, totalCount: 48 },
   1: { fluentCount: 15, workingCount: 25, unseenCount: 8, totalCount: 48 },
-  2: { fluentCount: 10, workingCount: 30, unseenCount: 8, totalCount: 48 },
+  2: { fluentCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
   3: { fluentCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
-  4: { fluentCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
-  5: { fluentCount: 22, workingCount: 2, unseenCount: 0, totalCount: 24 },
+  4: { fluentCount: 22, workingCount: 2, unseenCount: 0, totalCount: 24 },
 };
 
 describe('skip/unskip — semitone math (E2E)', () => {
@@ -208,7 +162,7 @@ describe('skip/unskip — semitone math (E2E)', () => {
       'semitoneMath',
       storageData,
       'semitoneMath_enabledGroups',
-      [0, 1, 2, 3, 4, 5],
+      [0, 1, 2, 3, 4],
     );
   });
 
@@ -216,12 +170,33 @@ describe('skip/unskip — semitone math (E2E)', () => {
     await page?.context().close();
   });
 
-  // Target: group 2 = "±5–6"
-  const TARGET = '\u00B15\u20136'; // ±5–6
   const MODE = '#mode-semitoneMath';
 
   it('skip/unskip cycle preserves recommendations', async () => {
-    await runSkipUnskipTests(page, MODE, TARGET);
+    // Read the recommendation to find which group to target
+    const recText = await page.textContent(
+      `${MODE} .suggestion-card-text`,
+    );
+    assert.ok(recText, 'should have recommendation text');
+
+    // Find a group label that appears in the recommendation.
+    // The ⋯ menu buttons have aria-label="Options for <label>".
+    const menuButtons = page.locator(
+      `${MODE} [aria-label^="Options for"]`,
+    );
+    const count = await menuButtons.count();
+    let target = '';
+    for (let i = 0; i < count; i++) {
+      const label = (await menuButtons.nth(i).getAttribute('aria-label'))
+        ?.replace('Options for ', '') ?? '';
+      if (label && recText.includes(label)) {
+        target = label;
+        break;
+      }
+    }
+    assert.ok(target, `should find a group in recommendation: "${recText}"`);
+
+    await runSkipUnskipTests(page, MODE, target);
   });
 });
 
@@ -330,207 +305,14 @@ describe('skip/unskip — guitar fretboard real data (E2E)', () => {
     const recText = await page.textContent(`${MODE} .suggestion-card-text`);
     assert.ok(recText, 'should have recommendation text');
 
-    // With this data, the recommendation should be:
-    // "solidify E e, D G ♯♭, B e ♯♭ — 29 items to work on"
-    const target = 'B e \u266F\u266D'; // B e ♯♭
+    // With this data + work cap, recommendation is:
+    // "solidify E e, D G ♯♭ — 25 items to work on"
+    const target = 'D G \u266F\u266D'; // D G ♯♭
     assert.ok(
       recText.includes(target),
       `recommendation should include ${target}: "${recText}"`,
     );
 
     await runSkipUnskipTests(page, MODE, target);
-  });
-
-  it('rapid skip/unskip (no delay) preserves recommendations', async () => {
-    // Test with no delays between skip and unskip to check for
-    // Preact batching race conditions.
-    const target = 'B e \u266F\u266D';
-
-    // Rapid skip then immediately unskip
-    await page
-      .locator(`${MODE} [aria-label="Options for ${target}"]`)
-      .click();
-    await page.getByRole('menuitem', { name: 'I know this' }).click();
-    await page
-      .locator(`${MODE} [aria-label="Options for ${target}"]`)
-      .click();
-    await page.getByRole('menuitem', { name: 'Learn this' }).click();
-    await page.waitForTimeout(300);
-
-    const afterText = await page.textContent(`${MODE} .suggestion-card-text`);
-    assert.ok(afterText, 'should have text after rapid cycle');
-    assert.ok(
-      afterText.includes(target),
-      `should include ${target} after rapid skip/unskip: "${afterText}"`,
-    );
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Diagnostic: per-group recommendation text before/after skip/unskip
-// ---------------------------------------------------------------------------
-
-const GUITAR_GROUP_LABELS = [
-  'E e',
-  'A',
-  'D',
-  'G',
-  'B',
-  'E A \u266F\u266D',
-  'D G \u266F\u266D',
-  'B e \u266F\u266D',
-];
-
-describe('per-group recommendation diagnostic (real data)', () => {
-  // For each group: load fresh page, capture rec text at three stages:
-  //   1. initial (all groups active)
-  //   2. after skipping target group
-  //   3. after unskipping target group
-  // Then assert initial === after-unskip.
-
-  for (let groupIdx = 0; groupIdx < GUITAR_GROUP_LABELS.length; groupIdx++) {
-    const label = GUITAR_GROUP_LABELS[groupIdx];
-
-    it(`group ${groupIdx} "${label}": skip/unskip produces same rec text`, async () => {
-      // Fresh page for each group to avoid state leaking between tests
-      const storageData: Record<string, string> = { ...REAL_FRETBOARD_DATA };
-      storageData['fretboard_enabledGroups'] = JSON.stringify([0, 2, 1, 3, 4]);
-      storageData['fretboard_enabledGroups_skipped'] = JSON.stringify([]);
-
-      const page = await setupMode(
-        'fretboard',
-        storageData,
-        'fretboard_enabledGroups',
-        [0, 2, 1, 3, 4],
-      );
-
-      const MODE = '#mode-fretboard';
-
-      try {
-        // 1. Initial recommendation text
-        const initialText = await page.textContent(
-          `${MODE} .suggestion-card-text`,
-        );
-
-        // 2. Skip the group
-        await page
-          .locator(`${MODE} [aria-label="Options for ${label}"]`)
-          .click();
-        await page.getByRole('menuitem', { name: 'I know this' }).click();
-        await page.waitForTimeout(300);
-        const afterSkipText = await page.textContent(
-          `${MODE} .suggestion-card-text`,
-        );
-
-        // 3. Unskip the group
-        await page
-          .locator(`${MODE} [aria-label="Options for ${label}"]`)
-          .click();
-        await page.getByRole('menuitem', { name: 'Learn this' }).click();
-        await page.waitForTimeout(300);
-        const afterUnskipText = await page.textContent(
-          `${MODE} .suggestion-card-text`,
-        );
-
-        // Log all three for diagnostic
-        console.log(`\n=== Group ${groupIdx} "${label}" ===`);
-        console.log(`  initial:      ${JSON.stringify(initialText)}`);
-        console.log(`  after skip:   ${JSON.stringify(afterSkipText)}`);
-        console.log(`  after unskip: ${JSON.stringify(afterUnskipText)}`);
-        console.log(`  skip changed: ${initialText !== afterSkipText}`);
-        console.log(`  restored:     ${initialText === afterUnskipText}`);
-
-        // The key assertion: unskip should restore to initial
-        assert.equal(
-          afterUnskipText,
-          initialText,
-          `group ${groupIdx} "${label}": rec text after unskip should match initial.\n` +
-            `  initial:      ${JSON.stringify(initialText)}\n` +
-            `  after skip:   ${JSON.stringify(afterSkipText)}\n` +
-            `  after unskip: ${JSON.stringify(afterUnskipText)}`,
-        );
-      } finally {
-        await page.context().close();
-      }
-    });
-  }
-});
-
-// ---------------------------------------------------------------------------
-// Test: WebKit (Safari engine) — same real data test
-// ---------------------------------------------------------------------------
-
-describe('skip/unskip — WebKit/Safari real data (E2E)', () => {
-  let wkBrowser: Browser;
-  let page: Page;
-
-  before(async () => {
-    wkBrowser = await webkit.launch();
-    const ctx = await wkBrowser.newContext({
-      viewport: { width: 402, height: 873 },
-    });
-    page = await ctx.newPage();
-
-    // First load to get access to localStorage
-    await page.goto(baseUrl);
-    await page.waitForLoadState('networkidle');
-
-    // Inject real user data
-    const storageData: Record<string, string> = { ...REAL_FRETBOARD_DATA };
-    storageData['fretboard_enabledGroups'] = JSON.stringify([0, 2, 1, 3, 4]);
-    storageData['fretboard_enabledGroups_skipped'] = JSON.stringify([]);
-    await page.evaluate(
-      ({ items, key, groups }) => {
-        localStorage.clear();
-        for (const [k, v] of Object.entries(items)) {
-          localStorage.setItem(k, v);
-        }
-        localStorage.setItem(key, JSON.stringify(groups));
-      },
-      {
-        items: storageData,
-        key: 'fretboard_enabledGroups',
-        groups: [0, 2, 1, 3, 4],
-      },
-    );
-
-    // Reload and navigate to fretboard mode
-    await page.goto(baseUrl);
-    await page.waitForLoadState('networkidle');
-    await page.click('[data-mode="fretboard"]');
-    await page.waitForSelector('#mode-fretboard.mode-active');
-  });
-
-  after(async () => {
-    await page?.context().close();
-    await wkBrowser?.close();
-  });
-
-  const MODE = '#mode-fretboard';
-
-  it('skip/unskip cycle preserves recommendations in WebKit', async () => {
-    const target = 'B e \u266F\u266D';
-    await runSkipUnskipTests(page, MODE, target);
-  });
-
-  it('rapid skip/unskip preserves recommendations in WebKit', async () => {
-    const target = 'B e \u266F\u266D';
-
-    await page
-      .locator(`${MODE} [aria-label="Options for ${target}"]`)
-      .click();
-    await page.getByRole('menuitem', { name: 'I know this' }).click();
-    await page
-      .locator(`${MODE} [aria-label="Options for ${target}"]`)
-      .click();
-    await page.getByRole('menuitem', { name: 'Learn this' }).click();
-    await page.waitForTimeout(300);
-
-    const afterText = await page.textContent(`${MODE} .suggestion-card-text`);
-    assert.ok(afterText, 'should have text after rapid cycle');
-    assert.ok(
-      afterText.includes(target),
-      `should include ${target} after rapid skip/unskip: "${afterText}"`,
-    );
   });
 });

@@ -40,6 +40,15 @@
    lives on the home screen and mode components re-mount on entry, so labels are
    always fresh. Would matter if settings became accessible within a mode.
 
+1. LOW — Dead keyboard handler code in fretboard controller. All modes now use
+   the `AnswerInput` textbox + Enter as primary input. The fretboard controller
+   still wires `createAdaptiveKeyHandler` with 600ms pending delay, narrowing
+   state, `hasAccidentals` logic, and `hideAccidentals` — none of which are
+   needed. Removing the fretboard usage would also make `createNoteKeyHandler`,
+   `createSolfegeKeyHandler`, `createAdaptiveKeyHandler`, `noteNarrowingSet`,
+   `numberNarrowingSet`, and ~400 lines of their tests in `quiz-engine_test.ts`
+   dead code eligible for removal.
+
 ## Fixed (2026-02)
 
 1. ~~LOW — `formatElapsedTime` duplication~~ — removed with Speed Tap engine

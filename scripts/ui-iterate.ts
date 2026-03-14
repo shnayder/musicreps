@@ -35,6 +35,7 @@ import {
   isComponentName,
 } from './component-manifest.ts';
 import { captureComponents } from './capture-components.ts';
+import { startServer } from '../tests/e2e/helpers/server.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -80,44 +81,7 @@ function listSessions(): string[] {
     .map((d) => d.name);
 }
 
-// ---------------------------------------------------------------------------
-// Dev server (same pattern as take-screenshots.ts)
-// ---------------------------------------------------------------------------
-
-function startServer(): { proc: ChildProcess; portReady: Promise<number> } {
-  const proc = spawn(
-    'deno',
-    [
-      'run',
-      '--allow-net',
-      '--allow-read',
-      '--allow-run',
-      '--allow-env=BUILD_NUMBER,APP_CONTACT_EMAIL,APP_SUPPORT_URL,APP_TERMS_URL,APP_PRIVACY_URL',
-      'main.ts',
-      `--port=${PREFERRED_PORT}`,
-    ],
-    { cwd: ROOT, stdio: 'pipe' },
-  );
-  const portReady = new Promise<number>((resolve, reject) => {
-    const timeout = setTimeout(
-      () => reject(new Error('Server did not start within 10s')),
-      10_000,
-    );
-    proc.stderr?.on('data', (d: Buffer) => {
-      const msg = d.toString();
-      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
-      if (m) {
-        clearTimeout(timeout);
-        resolve(parseInt(m[1], 10));
-      } else if (!msg.includes('Listening on')) process.stderr.write(msg);
-    });
-    proc.on('exit', (code) => {
-      clearTimeout(timeout);
-      if (code) reject(new Error(`Server exited with code ${code}`));
-    });
-  });
-  return { proc, portReady };
-}
+// Dev server — uses shared helper from tests/e2e/helpers/server.ts
 
 async function waitForServer(timeoutMs = 10_000): Promise<void> {
   const start = Date.now();
@@ -145,7 +109,7 @@ async function captureStates(
   mkdirSync(outDir, { recursive: true });
 
   console.log('Starting dev server...');
-  const { proc: server, portReady } = startServer();
+  const { proc: server, portReady } = startServer(PREFERRED_PORT);
   try {
     const port = await portReady;
     BASE_URL = `http://localhost:${port}`;

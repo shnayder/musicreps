@@ -9,8 +9,8 @@ import {
 } from '../quiz-engine-state.ts';
 import type { RoundTimerHandle } from './use-round-timer.ts';
 import {
+  effectiveRoundMs,
   LAST_QUESTION_CAP_MS,
-  ROUND_DURATION_MS,
   useRoundTimer,
 } from './use-round-timer.ts';
 
@@ -36,7 +36,7 @@ export function useRoundTransitions(
     setState((prev) => {
       const next = engineRoundTimerExpired(prev);
       if (next.answered) {
-        timer.roundDurationSnapshotRef.current = ROUND_DURATION_MS;
+        timer.roundDurationSnapshotRef.current = effectiveRoundMs;
         timer.setTimerLastQuestion(true);
         return { ...next, hintText: HINT_CONTINUE };
       } else {
@@ -70,4 +70,4 @@ export function useRoundTransitions(
   return { timer, transitionToRoundCompleteRef };
 }
 
-export { HINT_CONTINUE, IS_TOUCH_PRIMARY, ROUND_DURATION_MS };
+export { HINT_CONTINUE, IS_TOUCH_PRIMARY };

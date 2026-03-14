@@ -10,7 +10,7 @@
 //   npx tsx scripts/take-screenshots.ts --only pat   # only names matching pat
 
 import { chromium } from 'playwright';
-import { ChildProcess, spawn } from 'child_process';
+import { ChildProcess } from 'child_process';
 import { mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -27,6 +27,7 @@ import {
   type ComponentEntry,
 } from './component-manifest.ts';
 import { captureComponents } from './capture-components.ts';
+import { startServer } from '../tests/e2e/helpers/server.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -50,48 +51,6 @@ const touchMode = !args.includes('--no-touch');
 const DEVICE_SCALE_FACTOR = ciMode ? 1 : 3;
 const IMG_EXT = ciMode ? 'jpg' : 'png';
 const IMG_TYPE = ciMode ? ('jpeg' as const) : ('png' as const);
-
-// ---------------------------------------------------------------------------
-// Dev server
-// ---------------------------------------------------------------------------
-
-function startServer(): { proc: ChildProcess; portReady: Promise<number> } {
-  const proc = spawn(
-    'deno',
-    [
-      'run',
-      '--allow-net',
-      '--allow-read',
-      '--allow-run',
-      '--allow-env=BUILD_NUMBER,APP_CONTACT_EMAIL,APP_SUPPORT_URL,APP_TERMS_URL,APP_PRIVACY_URL',
-      'main.ts',
-      `--port=${PREFERRED_PORT}`,
-    ],
-    {
-      cwd: path.resolve(__dirname, '..'),
-      stdio: 'pipe',
-    },
-  );
-  const portReady = new Promise<number>((resolve, reject) => {
-    const timeout = setTimeout(
-      () => reject(new Error('Server did not start within 10s')),
-      10_000,
-    );
-    proc.stderr?.on('data', (d: Buffer) => {
-      const msg = d.toString();
-      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
-      if (m) {
-        clearTimeout(timeout);
-        resolve(parseInt(m[1], 10));
-      } else if (!msg.includes('Listening on')) process.stderr.write(msg);
-    });
-    proc.on('exit', (code) => {
-      clearTimeout(timeout);
-      if (code) reject(new Error(`Server exited with code ${code}`));
-    });
-  });
-  return { proc, portReady };
-}
 
 // ---------------------------------------------------------------------------
 // Index HTML generation
@@ -247,7 +206,7 @@ async function main() {
   // --- Capture app screenshots (needs dev server) ---
   if (hasAppEntries) {
     console.log('Starting dev server...');
-    const { proc: server, portReady } = startServer();
+    const { proc: server, portReady } = startServer(PREFERRED_PORT);
     try {
       const port = await portReady;
       BASE_URL = `http://localhost:${port}`;
