@@ -189,11 +189,11 @@ to white on levels 3–5 (L ≤ 50%) via `heatmapNeedsLightText()`.
 | Token            | Value                | Meaning              |
 | ---------------- | -------------------- | -------------------- |
 | `--heatmap-none` | `hsl(30, 4%, 85%)`  | No data (unseen)     |
-| `--heatmap-1`    | `hsl(44, 65%, 58%)` | Needs work (<20%)    |
-| `--heatmap-2`    | `hsl(54, 45%, 52%)` | Fading (>20%)        |
-| `--heatmap-3`    | `hsl(68, 30%, 46%)` | Getting there (>40%) |
-| `--heatmap-4`    | `hsl(90, 38%, 38%)` | Solid (>60%)         |
-| `--heatmap-5`    | `hsl(122, 46%, 33%)`| Automatic (>80%)     |
+| `--heatmap-1`    | `hsl(40, 60%, 58%)` | Needs work (≤30%)    |
+| `--heatmap-2`    | `hsl(48, 50%, 52%)` | Fading (>30%)        |
+| `--heatmap-3`    | `hsl(60, 40%, 46%)` | Getting there (>55%) |
+| `--heatmap-4`    | `hsl(80, 35%, 40%)` | Solid (>75%)         |
+| `--heatmap-5`    | `hsl(125, 48%, 33%)`| Automatic (>90%)     |
 
 ### Fretboard SVG
 
@@ -204,7 +204,7 @@ fill color. No text inside circles; hover card shows note details.
 | -------------------------- | -------------------- | ------------------------------------- |
 | `.fb-pos` (default)        | `hsl(30, 5%, 90%)`   | Dormant position circles              |
 | `.fb-pos` (quiz highlight) | `hsl(50, 100%, 50%)` | Active question — vivid yellow        |
-| `.fb-pos` (tap correct)    | `hsl(122, 46%, 33%)` | Found position — matches heatmap-5    |
+| `.fb-pos` (tap correct)    | `hsl(125, 48%, 33%)` | Found position — matches heatmap-5    |
 | `.fb-string`               | `hsl(30, 8%, 72%)`   | String lines                          |
 | `.fb-fret`                 | `hsl(30, 5%, 82%)`   | Fret lines                            |
 | `.fb-nut`                  | `hsl(30, 8%, 48%)`   | Nut bar at fret 0                     |
