@@ -41,16 +41,21 @@ function saveStarredSkills(starred: Set<string>): void {
 }
 
 function loadAccordionState(): Record<string, boolean> {
+  const trackIds = new Set(TRACKS.map((t) => t.id));
   try {
     const raw = localStorage.getItem(ACCORDION_KEY);
     if (raw) {
       const obj = JSON.parse(raw);
-      if (obj && typeof obj === 'object') return obj;
+      if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        const state: Record<string, boolean> = {};
+        for (const id of trackIds) state[id] = obj[id] !== false;
+        return state;
+      }
     }
   } catch (_) { /* expected */ }
   // Default: all expanded
   const state: Record<string, boolean> = {};
-  for (const t of TRACKS) state[t.id] = true;
+  for (const id of trackIds) state[id] = true;
   return state;
 }
 
@@ -105,7 +110,7 @@ function SkillCard(
       <button
         type='button'
         class={`skill-card-star${isStarred ? ' starred' : ''}`}
-        aria-label={isStarred ? 'Unstar skill' : 'Star skill'}
+        aria-label={isStarred ? `Unstar ${name}` : `Star ${name}`}
         aria-pressed={isStarred}
         onClick={(e) => {
           e.stopPropagation();
@@ -173,7 +178,7 @@ function ActiveSkillCard(
       <button
         type='button'
         class='skill-card-star starred'
-        aria-label='Unstar skill'
+        aria-label={`Unstar ${name}`}
         aria-pressed
         onClick={(e) => {
           e.stopPropagation();
