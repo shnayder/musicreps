@@ -487,23 +487,31 @@ body {
 .settings-page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 .settings-page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
 }
 .settings-page-title {
   margin: 0;
-  flex: 1;
-  text-align: right;
   font-weight: 600;
   font-size: var(--text-xl);
 }
-.settings-back-btn {
-  font-size: var(--text-sm);
+.settings-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-xl);
+  line-height: 1;
+  padding: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
 }
 .settings-section {
   border-top: 1px solid var(--color-border-lighter);
@@ -517,7 +525,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-2);
 }
 .settings-meta {
   font-size: var(--text-sm);
@@ -2149,7 +2156,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="370465 splash-screen-home-iF6qt"></div>
+  <div class="home-screen" id="home-screen" data-version="88decd splash-screen-home-iF6qt"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -3897,8 +3904,8 @@ button {
     I.__r = 0;
   }
   function P(n2, l3, u4, t3, i3, r3, o3, e3, f4, c3, s3) {
-    var a3, h3, y3, d3, w3, g2, _3, m3 = t3 && t3.__k || v, b = l3.length;
-    for (f4 = A(u4, l3, m3, f4, b), a3 = 0; a3 < b; a3++) null != (y3 = u4.__k[a3]) && (h3 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g2 = z(n2, y3, h3, i3, r3, o3, e3, f4, c3, s3), d3 = y3.__e, y3.ref && h3.ref != y3.ref && (h3.ref && D(h3.ref, null, y3), s3.push(y3.ref, y3.__c || d3, y3)), null == w3 && null != d3 && (w3 = d3), (_3 = !!(4 & y3.__u)) || h3.__k === y3.__k ? f4 = H(y3, f4, n2, _3) : "function" == typeof y3.type && void 0 !== g2 ? f4 = g2 : d3 && (f4 = d3.nextSibling), y3.__u &= -7);
+    var a3, h3, y3, d4, w3, g2, _3, m3 = t3 && t3.__k || v, b = l3.length;
+    for (f4 = A(u4, l3, m3, f4, b), a3 = 0; a3 < b; a3++) null != (y3 = u4.__k[a3]) && (h3 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g2 = z(n2, y3, h3, i3, r3, o3, e3, f4, c3, s3), d4 = y3.__e, y3.ref && h3.ref != y3.ref && (h3.ref && D(h3.ref, null, y3), s3.push(y3.ref, y3.__c || d4, y3)), null == w3 && null != d4 && (w3 = d4), (_3 = !!(4 & y3.__u)) || h3.__k === y3.__k ? f4 = H(y3, f4, n2, _3) : "function" == typeof y3.type && void 0 !== g2 ? f4 = g2 : d4 && (f4 = d4.nextSibling), y3.__u &= -7);
     return u4.__e = w3, f4;
   }
   function A(n2, l3, u4, t3, i3) {
@@ -4142,50 +4149,51 @@ button {
     diatonicChords: "Diatonic Chords",
     chordSpelling: "Chord Spelling"
   };
+  var d2 = displayNote;
   var MODE_BEFORE_AFTER = {
     fretboard: {
-      before: "\u201C7th fret, G string\u2026 G, G#, A\u2026 D?\u201D",
-      after: "\u201C7th fret, G string. D.\u201D"
+      before: () => `\u201C7th fret, ${d2("G")} string\u2026 ${d2("G")}, ${d2("G#")}, ${d2("A")}\u2026 ${d2("D")}?\u201D`,
+      after: () => `\u201C7th fret, ${d2("G")} string. ${d2("D")}.\u201D`
     },
     ukulele: {
-      before: "\u201C5th fret, C string\u2026 C, D, E\u2026 E?\u201D",
-      after: "\u201C5th fret, C string. E.\u201D"
+      before: () => `\u201C5th fret, ${d2("C")} string\u2026 ${d2("C")}, ${d2("D")}, ${d2("E")}\u2026 ${d2("E")}?\u201D`,
+      after: () => `\u201C5th fret, ${d2("C")} string. ${d2("E")}.\u201D`
     },
     speedTap: {
-      before: "\u201CAll the C\u2019s\u2026 8th fret E, 3rd fret A\u2026 um\u2026\u201D",
-      after: "\u201CC\u2019s. 8, 3, 10, 5, 1, 8.\u201D"
+      before: () => `\u201CAll the ${d2("C")}\u2019s\u2026 8th fret ${d2("E")}, 3rd fret ${d2("A")}\u2026 um\u2026\u201D`,
+      after: () => `\u201C${d2("C")}\u2019s. 8, 3, 10, 5, 1, 8.\u201D`
     },
     noteSemitones: {
-      before: "\u201CG#\u2026 F is 5, so G is\u2026 7, so G# is 8.\u201D",
-      after: "\u201CG#. 8.\u201D"
+      before: () => `\u201C${d2("G#")}\u2026 ${d2("F")} is 5, so ${d2("G")} is\u2026 7, so ${d2("G#")} is 8.\u201D`,
+      after: () => `\u201C${d2("G#")}. 8.\u201D`
     },
     intervalSemitones: {
-      before: "\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D",
-      after: "\u201CM6. 9 semitones.\u201D"
+      before: () => "\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D",
+      after: () => "\u201CM6. 9 semitones.\u201D"
     },
     semitoneMath: {
-      before: "\u201CF# + 4\u2026 G, G#, A, A#\u2026 is that Bb?\u201D",
-      after: "\u201CF# + 4. Bb.\u201D"
+      before: () => `\u201C${d2("F#")} + 4\u2026 ${d2("G")}, ${d2("G#")}, ${d2("A")}, ${d2("A#")}\u2026 is that ${d2("Bb")}?\u201D`,
+      after: () => `\u201C${d2("F#")} + 4. ${d2("Bb")}.\u201D`
     },
     intervalMath: {
-      before: "\u201CC + m6\u2026 minor 6th is 8 semitones\u2026 Ab?\u201D",
-      after: "\u201CC + m6. Ab.\u201D"
+      before: () => `\u201C${d2("C")} + m6\u2026 minor 6th is 8 semitones\u2026 ${d2("Ab")}?\u201D`,
+      after: () => `\u201C${d2("C")} + m6. ${d2("Ab")}.\u201D`
     },
     keySignatures: {
-      before: "\u201C3 flats\u2026 Bb, Eb, Ab\u2026 so Eb major?\u201D",
-      after: "\u201C3 flats: Eb major.\u201D"
+      before: () => `\u201C3 flats\u2026 ${d2("Bb")}, ${d2("Eb")}, ${d2("Ab")}\u2026 so ${d2("Eb")} major?\u201D`,
+      after: () => `\u201C3 flats: ${d2("Eb")} major.\u201D`
     },
     scaleDegrees: {
-      before: "\u201C5th degree of Bb\u2026 Bb, C, D, Eb, F\u2026 F?\u201D",
-      after: "\u201C5th of Bb. F.\u201D"
+      before: () => `\u201C5th degree of ${d2("Bb")}\u2026 ${d2("Bb")}, ${d2("C")}, ${d2("D")}, ${d2("Eb")}, ${d2("F")}\u2026 ${d2("F")}?\u201D`,
+      after: () => `\u201C5th of ${d2("Bb")}. ${d2("F")}.\u201D`
     },
     diatonicChords: {
-      before: "\u201CIV in G\u2026 G, A, B, C\u2026 so C major?\u201D",
-      after: "\u201CIV in G. C major.\u201D"
+      before: () => `\u201CIV in ${d2("G")}\u2026 ${d2("G")}, ${d2("A")}, ${d2("B")}, ${d2("C")}\u2026 so ${d2("C")} major?\u201D`,
+      after: () => `\u201CIV in ${d2("G")}. ${d2("C")} major.\u201D`
     },
     chordSpelling: {
-      before: "\u201CFm7\u2026 F, Ab, C\u2026 what\u2019s the 7th\u2026 Eb\u201D",
-      after: "\u201CFm7. F Ab C Eb.\u201D"
+      before: () => `\u201C${d2("F")}m7\u2026 ${d2("F")}, ${d2("Ab")}, ${d2("C")}\u2026 what\u2019s the 7th\u2026 ${d2("Eb")}\u201D`,
+      after: () => `\u201C${d2("F")}m7. ${d2("F")} ${d2("Ab")} ${d2("C")} ${d2("Eb")}.\u201D`
     }
   };
   var TRACKS = [
@@ -4255,11 +4263,24 @@ button {
     })
   );
   function isValidNoteInput(input) {
-    return VALID_NOTE_INPUTS.has(input.toLowerCase());
+    if (VALID_NOTE_INPUTS.has(input.toLowerCase())) return true;
+    if (_useSolfege) {
+      const letter = resolveSolfegeToLetter(input);
+      if (letter && VALID_NOTE_INPUTS.has(letter.toLowerCase())) return true;
+    }
+    return false;
   }
   function resolveNoteInput(input) {
     for (const note of NOTES) {
       if (noteMatchesInput(note, input)) return note.name;
+    }
+    if (_useSolfege) {
+      const letter = resolveSolfegeToLetter(input);
+      if (letter) {
+        for (const note of NOTES) {
+          if (noteMatchesInput(note, letter)) return note.name;
+        }
+      }
     }
     return null;
   }
@@ -4642,16 +4663,45 @@ button {
     A: "La",
     B: "Si"
   };
+  var REVERSE_SOLFEGE = {};
+  for (const [letter, syl] of Object.entries(SOLFEGE_MAP)) {
+    REVERSE_SOLFEGE[syl.toLowerCase()] = letter;
+  }
+  REVERSE_SOLFEGE["so"] = "G";
+  function resolveSolfegeToLetter(input) {
+    const lower = input.toLowerCase();
+    if (REVERSE_SOLFEGE[lower]) return REVERSE_SOLFEGE[lower];
+    if (lower.endsWith("#") || lower.endsWith("b") || lower.endsWith("s")) {
+      const syl = lower.slice(0, -1);
+      const letter = REVERSE_SOLFEGE[syl];
+      if (letter) {
+        const acc = lower[lower.length - 1] === "s" ? "#" : lower[lower.length - 1];
+        return letter + acc;
+      }
+    }
+    return null;
+  }
   var _useSolfege = false;
+  var _notationVersion = 0;
+  var _notationListeners = /* @__PURE__ */ new Set();
   function getUseSolfege() {
     return _useSolfege;
   }
+  function getNotationVersion() {
+    return _notationVersion;
+  }
+  function subscribeNotation(cb) {
+    _notationListeners.add(cb);
+    return () => _notationListeners.delete(cb);
+  }
   function setUseSolfege(v3) {
     _useSolfege = v3;
+    _notationVersion++;
     try {
       localStorage.setItem("fretboard_notation", v3 ? "solfege" : "letter");
     } catch (_3) {
     }
+    for (const cb of _notationListeners) cb();
   }
   try {
     _useSolfege = localStorage.getItem("fretboard_notation") === "solfege";
@@ -4671,6 +4721,19 @@ button {
   }
 
   // src/navigation.ts
+  function initNavigationListeners(getCurrentModeId, navigateHome) {
+    document.querySelectorAll(".mode-close-btn").forEach((btn) => {
+      btn.addEventListener("click", () => navigateHome());
+    });
+    document.addEventListener("keydown", (e3) => {
+      const modeId = getCurrentModeId();
+      if (e3.key !== "Escape" || !modeId) return;
+      if (document.querySelector(".settings-overlay.open")) return;
+      const modeScreen = document.getElementById("mode-" + modeId);
+      if (modeScreen && !modeScreen.classList.contains("phase-idle")) return;
+      navigateHome();
+    });
+  }
   function createNavigation() {
     const LAST_MODE_KEY = "fretboard_lastMode";
     const modes = {};
@@ -4718,22 +4781,8 @@ button {
       localStorage.setItem(LAST_MODE_KEY, modeId);
     }
     function init() {
-      document.querySelectorAll(".mode-close-btn").forEach(
-        function(btn) {
-          btn.addEventListener("click", function() {
-            navigateHome();
-          });
-        }
-      );
-      document.addEventListener("keydown", function(e3) {
-        if (e3.key !== "Escape" || !currentModeId) return;
-        const modeScreen = document.getElementById("mode-" + currentModeId);
-        if (modeScreen && !modeScreen.classList.contains("phase-idle")) return;
-        navigateHome();
-      });
-      for (const id of Object.keys(modes)) {
-        modes[id].init();
-      }
+      initNavigationListeners(() => currentModeId, navigateHome);
+      for (const id of Object.keys(modes)) modes[id].init();
       navigateHome();
     }
     return { registerMode, switchTo, navigateHome, init };
@@ -4776,72 +4825,98 @@ button {
     if (flatButton) matches.add(flatButton);
     return matches;
   }
-  function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
-    let pendingNote = null;
-    let pendingTimeout = null;
+  function createPendingNoteManager(submitAnswer, allowAccidentals, onPendingChange) {
+    const state = { pendingNote: null, pendingTimeout: null };
     function setPending(note) {
-      pendingNote = note;
+      state.pendingNote = note;
       onPendingChange?.(note);
     }
     function reset() {
-      if (pendingTimeout) clearTimeout(pendingTimeout);
+      if (state.pendingTimeout) clearTimeout(state.pendingTimeout);
       setPending(null);
-      pendingTimeout = null;
+      state.pendingTimeout = null;
     }
-    function handleKey(e3) {
-      const key = e3.key.toUpperCase();
-      if (e3.key === "Enter" && pendingNote) {
-        e3.preventDefault();
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-        const note = pendingNote;
+    function submitPending() {
+      if (state.pendingNote) {
+        if (state.pendingTimeout) clearTimeout(state.pendingTimeout);
+        const note = state.pendingNote;
         setPending(null);
-        pendingTimeout = null;
+        state.pendingTimeout = null;
         submitAnswer(note);
+      }
+    }
+    function handleEnter(e3) {
+      if (e3.key !== "Enter" || !state.pendingNote) return false;
+      e3.preventDefault();
+      submitPending();
+      return true;
+    }
+    function handleAccidental(e3) {
+      if (!state.pendingNote || !allowAccidentals()) return false;
+      const key = e3.key.toLowerCase();
+      if (e3.key === "#" || e3.key === "s" || e3.key === "S" || e3.shiftKey && e3.key === "3") {
+        e3.preventDefault();
+        if (state.pendingTimeout) clearTimeout(state.pendingTimeout);
+        const note = state.pendingNote;
+        setPending(null);
+        state.pendingTimeout = null;
+        submitAnswer(note + "#");
         return true;
       }
-      if (pendingNote && allowAccidentals()) {
-        if (e3.key === "#" || e3.key === "s" || e3.key === "S" || e3.shiftKey && e3.key === "3") {
-          e3.preventDefault();
-          if (pendingTimeout) clearTimeout(pendingTimeout);
-          const note = pendingNote;
-          setPending(null);
-          pendingTimeout = null;
-          submitAnswer(note + "#");
-          return true;
-        }
-        if (e3.key === "b" || e3.key === "B") {
-          e3.preventDefault();
-          if (pendingTimeout) clearTimeout(pendingTimeout);
-          const note = pendingNote;
-          setPending(null);
-          pendingTimeout = null;
-          submitAnswer(note + "b");
-          return true;
-        }
-      }
-      if ("CDEFGAB".includes(key)) {
+      if (key === "b") {
         e3.preventDefault();
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-        if (!allowAccidentals()) {
-          submitAnswer(key);
-        } else {
-          setPending(key);
-          const delay = noteNarrowingSet(key).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
-          pendingTimeout = setTimeout(() => {
-            const note = pendingNote;
-            setPending(null);
-            pendingTimeout = null;
-            submitAnswer(note);
-          }, delay);
-        }
+        if (state.pendingTimeout) clearTimeout(state.pendingTimeout);
+        const note = state.pendingNote;
+        setPending(null);
+        state.pendingTimeout = null;
+        submitAnswer(note + "b");
         return true;
       }
       return false;
     }
-    function getPendingNote() {
-      return pendingNote;
+    function setPendingWithTimeout(note) {
+      if (state.pendingTimeout) clearTimeout(state.pendingTimeout);
+      if (!allowAccidentals()) {
+        submitAnswer(note);
+        return;
+      }
+      setPending(note);
+      const delay = noteNarrowingSet(note).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
+      state.pendingTimeout = setTimeout(() => {
+        const n2 = state.pendingNote;
+        setPending(null);
+        state.pendingTimeout = null;
+        submitAnswer(n2);
+      }, delay);
     }
-    return { handleKey, reset, getPendingNote };
+    return {
+      state,
+      reset,
+      submitPending,
+      handleEnter,
+      handleAccidental,
+      setPendingWithTimeout,
+      getPendingNote: () => state.pendingNote
+    };
+  }
+  function createNoteKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
+    const pm = createPendingNoteManager(
+      submitAnswer,
+      allowAccidentals,
+      onPendingChange
+    );
+    function handleKey(e3) {
+      if (pm.handleEnter(e3)) return true;
+      if (pm.handleAccidental(e3)) return true;
+      const key = e3.key.toUpperCase();
+      if ("CDEFGAB".includes(key)) {
+        e3.preventDefault();
+        pm.setPendingWithTimeout(key);
+        return true;
+      }
+      return false;
+    }
+    return { handleKey, reset: pm.reset, getPendingNote: pm.getPendingNote };
   }
   function createSolfegeKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
     const SOLFEGE_TO_NOTE = {
@@ -4854,87 +4929,31 @@ button {
       "si": "B"
     };
     const FIRST_CHARS = /* @__PURE__ */ new Set(["d", "r", "m", "f", "s", "l"]);
+    const pm = createPendingNoteManager(
+      submitAnswer,
+      allowAccidentals,
+      onPendingChange
+    );
     let buffer = "";
-    let pendingNote = null;
-    let pendingTimeout = null;
-    function setPending(note) {
-      pendingNote = note;
-      onPendingChange?.(note);
-    }
-    function reset() {
-      buffer = "";
-      if (pendingTimeout) clearTimeout(pendingTimeout);
-      pendingTimeout = null;
-      setPending(null);
-    }
-    function submitPending() {
-      if (pendingNote) {
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-        const note = pendingNote;
-        setPending(null);
-        pendingTimeout = null;
-        submitAnswer(note);
-      }
-    }
     function handleKey(e3) {
       const key = e3.key.toLowerCase();
       if (e3.key === "Enter") {
-        if (pendingNote) {
-          e3.preventDefault();
-          if (pendingTimeout) clearTimeout(pendingTimeout);
-          const note = pendingNote;
-          setPending(null);
-          pendingTimeout = null;
-          submitAnswer(note);
-          return true;
-        }
+        if (pm.handleEnter(e3)) return true;
         if (buffer.length > 0) {
           buffer = "";
           return true;
         }
         return false;
       }
-      if (pendingNote && allowAccidentals()) {
-        if (e3.key === "#" || e3.shiftKey && e3.key === "3") {
-          e3.preventDefault();
-          if (pendingTimeout) clearTimeout(pendingTimeout);
-          const note = pendingNote;
-          setPending(null);
-          pendingTimeout = null;
-          submitAnswer(note + "#");
-          return true;
-        }
-        if (key === "b") {
-          e3.preventDefault();
-          if (pendingTimeout) clearTimeout(pendingTimeout);
-          const note = pendingNote;
-          setPending(null);
-          pendingTimeout = null;
-          submitAnswer(note + "b");
-          return true;
-        }
-      }
-      if (pendingNote && FIRST_CHARS.has(key)) {
-        submitPending();
-      }
+      if (pm.handleAccidental(e3)) return true;
+      if (pm.state.pendingNote && FIRST_CHARS.has(key)) pm.submitPending();
       if (buffer.length > 0) {
         e3.preventDefault();
         buffer += key;
         const note = SOLFEGE_TO_NOTE[buffer];
         if (note) {
           buffer = "";
-          if (!allowAccidentals()) {
-            submitAnswer(note);
-          } else {
-            setPending(note);
-            const delay = noteNarrowingSet(note).size > 1 ? PENDING_DELAY_AMBIGUOUS : PENDING_DELAY_UNAMBIGUOUS;
-            pendingTimeout = setTimeout(() => {
-              const n2 = pendingNote;
-              setPending(null);
-              pendingTimeout = null;
-              submitAnswer(n2);
-            }, delay);
-          }
+          pm.setPendingWithTimeout(note);
         } else if (buffer.length >= 2) {
           buffer = "";
         }
@@ -4942,16 +4961,17 @@ button {
       }
       if (FIRST_CHARS.has(key)) {
         e3.preventDefault();
-        submitPending();
+        pm.submitPending();
         buffer = key;
         return true;
       }
       return false;
     }
-    function getPendingNote() {
-      return pendingNote;
+    function reset() {
+      buffer = "";
+      pm.reset();
     }
-    return { handleKey, reset, getPendingNote };
+    return { handleKey, reset, getPendingNote: pm.getPendingNote };
   }
   function createAdaptiveKeyHandler(submitAnswer, allowAccidentals = () => true, onPendingChange) {
     const letterHandler = createNoteKeyHandler(
@@ -5032,14 +5052,10 @@ button {
   }
   function pickCalibrationButton(buttons, prevBtn, rng) {
     const rand = rng || Math.random;
-    const sharpBtns = buttons.filter((b) => {
-      const note = b.dataset.note;
-      return note && note.includes("#");
-    });
-    const naturalBtns = buttons.filter((b) => {
-      const note = b.dataset.note;
-      return note && !note.includes("#");
-    });
+    const sharpBtns = buttons.filter((b) => b.dataset.note?.includes("#"));
+    const naturalBtns = buttons.filter(
+      (b) => b.dataset.note && !b.dataset.note.includes("#")
+    );
     const useSharp = sharpBtns.length > 0 && rand() < 0.35;
     const pool = useSharp ? sharpBtns : naturalBtns.length > 0 ? naturalBtns : buttons;
     let btn;
@@ -5068,7 +5084,7 @@ button {
     var u4 = r2.__H || (r2.__H = { __: [], __h: [] });
     return n2 >= u4.__.length && u4.__.push({}), u4.__[n2];
   }
-  function d2(n2) {
+  function d3(n2) {
     return o2 = 1, h2(D2, n2);
   }
   function h2(n2, u4, i3) {
@@ -5383,9 +5399,9 @@ button {
             ] })
           ] }),
           ba && /* @__PURE__ */ u3("div", { class: "skill-card-ba", children: [
-            /* @__PURE__ */ u3("span", { class: "skill-card-before", children: ba.before }),
+            /* @__PURE__ */ u3("span", { class: "skill-card-before", children: typeof ba.before === "function" ? ba.before() : ba.before }),
             /* @__PURE__ */ u3("span", { class: "skill-card-arrow", children: "\u2192" }),
-            /* @__PURE__ */ u3("span", { class: "skill-card-after", children: ba.after })
+            /* @__PURE__ */ u3("span", { class: "skill-card-after", children: typeof ba.after === "function" ? ba.after() : ba.after })
           ] })
         ]
       }
@@ -5420,9 +5436,9 @@ button {
     ] });
   }
   function HomeScreen({ onSelectMode, settings: settings2, appConfig, version: version2, isNativeApp: isNativeApp2 }) {
-    const [selected, setSelected] = d2(loadSelectedTracks);
-    const [showSettings, setShowSettings] = d2(false);
-    const [useSolfege, setUseSolfege2] = d2(() => settings2.getUseSolfege());
+    const [selected, setSelected] = d3(loadSelectedTracks);
+    const [showSettings, setShowSettings] = d3(false);
+    const [useSolfege, setUseSolfege2] = d3(() => settings2.getUseSolfege());
     const handleToggle = q2((id) => {
       const track = TRACKS.find((t3) => t3.id === id);
       if (track?.alwaysSelected) return;
@@ -5439,16 +5455,17 @@ button {
     if (showSettings) {
       return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
         /* @__PURE__ */ u3("div", { class: "settings-page-header", children: [
+          /* @__PURE__ */ u3("h1", { class: "settings-page-title", children: "Settings" }),
           /* @__PURE__ */ u3(
             "button",
             {
               type: "button",
-              class: "text-link settings-back-btn",
+              class: "settings-close-btn",
+              "aria-label": "Close",
               onClick: () => setShowSettings(false),
-              children: "\u2190 Back"
+              children: "\xD7"
             }
-          ),
-          /* @__PURE__ */ u3("h1", { class: "settings-page-title", children: "Settings" })
+          )
         ] }),
         /* @__PURE__ */ u3("section", { class: "settings-section", children: [
           /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "General" }),
@@ -5568,13 +5585,11 @@ button {
       ] }),
       /* @__PURE__ */ u3("div", { class: "home-footer", children: [
         /* @__PURE__ */ u3(
-          "a",
+          "button",
           {
+            type: "button",
             class: "home-settings-btn text-link",
-            href: "#settings",
-            role: "button",
-            onClick: (e3) => {
-              e3.preventDefault();
+            onClick: () => {
               setUseSolfege2(settings2.getUseSolfege());
               setShowSettings(true);
             },
@@ -5591,7 +5606,7 @@ button {
     if (!raw) return "";
     try {
       const url = new URL(raw);
-      return url.protocol === "https:" || url.protocol === "http:" ? raw : "";
+      return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
     } catch {
       return "";
     }
@@ -5732,85 +5747,177 @@ button {
     if (sorted.length % 2 === 1) return sorted[mid];
     return (sorted[mid - 1] + sorted[mid]) / 2;
   }
-  function createAdaptiveSelector(storage, cfg = DEFAULT_CONFIG, randomFn = Math.random, responseCountFn = null) {
-    function getResponseCount(itemId) {
-      return responseCountFn ? responseCountFn(itemId) : 1;
+  function scaleConfigForResponseCount(cfg, responseCount) {
+    if (responseCount <= 1) return cfg;
+    return {
+      ...cfg,
+      minTime: cfg.minTime * responseCount,
+      automaticityTarget: cfg.automaticityTarget * responseCount,
+      maxResponseTime: cfg.maxResponseTime * responseCount,
+      selfCorrectionThreshold: cfg.selfCorrectionThreshold * responseCount
+    };
+  }
+  function recordCorrectResponse(storage, cfg, itemCfg, itemId, clamped, now) {
+    const existing = storage.getStats(itemId);
+    const elapsedHours = existing?.lastCorrectAt ? (now - existing.lastCorrectAt) / 36e5 : null;
+    if (existing) {
+      storage.saveStats(itemId, {
+        recentTimes: [...existing.recentTimes, clamped].slice(
+          -cfg.maxStoredTimes
+        ),
+        ewma: computeEwma(existing.ewma, clamped, cfg.ewmaAlpha),
+        sampleCount: existing.sampleCount + 1,
+        lastSeen: now,
+        stability: updateStability(
+          existing.stability ?? null,
+          clamped,
+          elapsedHours,
+          itemCfg
+        ),
+        lastCorrectAt: now
+      });
+    } else {
+      storage.saveStats(itemId, {
+        recentTimes: [clamped],
+        ewma: clamped,
+        sampleCount: 1,
+        lastSeen: now,
+        stability: cfg.initialStability,
+        lastCorrectAt: now
+      });
     }
-    function scaledConfig(itemId) {
-      const rc = getResponseCount(itemId);
-      if (rc <= 1) return cfg;
-      return {
-        ...cfg,
-        minTime: cfg.minTime * rc,
-        automaticityTarget: cfg.automaticityTarget * rc,
-        maxResponseTime: cfg.maxResponseTime * rc,
-        selfCorrectionThreshold: cfg.selfCorrectionThreshold * rc
-      };
+  }
+  function recordWrongResponse(storage, cfg, itemCfg, itemId, now) {
+    const existing = storage.getStats(itemId);
+    if (existing) {
+      storage.saveStats(itemId, {
+        ...existing,
+        lastSeen: now,
+        stability: computeStabilityAfterWrong(existing.stability ?? null, cfg)
+      });
+    } else {
+      storage.saveStats(itemId, {
+        recentTimes: [],
+        ewma: itemCfg.maxResponseTime,
+        sampleCount: 0,
+        lastSeen: now,
+        stability: cfg.initialStability,
+        lastCorrectAt: null
+      });
     }
-    function recordResponse(itemId, timeMs, correct = true) {
-      const itemCfg = scaledConfig(itemId);
-      const clamped = Math.min(timeMs, itemCfg.maxResponseTime);
-      const existing = storage.getStats(itemId);
-      const now = Date.now();
-      if (correct) {
-        const elapsedHours = existing && existing.lastCorrectAt ? (now - existing.lastCorrectAt) / 36e5 : null;
-        if (existing) {
-          const newEwma = computeEwma(existing.ewma, clamped, cfg.ewmaAlpha);
-          const newTimes = [...existing.recentTimes, clamped].slice(
-            -cfg.maxStoredTimes
-          );
-          const newStability = updateStability(
-            existing.stability ?? null,
-            clamped,
-            elapsedHours,
-            itemCfg
-          );
-          storage.saveStats(itemId, {
-            recentTimes: newTimes,
-            ewma: newEwma,
-            sampleCount: existing.sampleCount + 1,
-            lastSeen: now,
-            stability: newStability,
-            lastCorrectAt: now
-          });
-        } else {
-          storage.saveStats(itemId, {
-            recentTimes: [clamped],
-            ewma: clamped,
-            sampleCount: 1,
-            lastSeen: now,
-            stability: cfg.initialStability,
-            lastCorrectAt: now
-          });
-        }
+  }
+  function computeLevelAutomaticity(getAutomaticity, itemIds, percentile = 0.1, nowMs) {
+    if (itemIds.length === 0) return { level: 0, seen: 0 };
+    let seen = 0;
+    const values = [];
+    for (let i3 = 0; i3 < itemIds.length; i3++) {
+      const auto = getAutomaticity(itemIds[i3], nowMs);
+      if (auto !== null) {
+        seen++;
+        values.push(auto);
       } else {
-        if (existing) {
-          const newStability = computeStabilityAfterWrong(
-            existing.stability ?? null,
-            cfg
-          );
-          storage.saveStats(itemId, {
-            ...existing,
-            lastSeen: now,
-            stability: newStability
-          });
-        } else {
-          storage.saveStats(itemId, {
-            recentTimes: [],
-            ewma: itemCfg.maxResponseTime,
-            sampleCount: 0,
-            lastSeen: now,
-            stability: cfg.initialStability,
-            lastCorrectAt: null
-          });
-        }
+        values.push(0);
       }
     }
-    function getWeight(itemId) {
-      return computeWeight(storage.getStats(itemId), scaledConfig(itemId));
+    values.sort((a3, b) => a3 - b);
+    const rawIndex = Math.ceil(values.length * percentile) - 1;
+    const index = Math.min(values.length - 1, Math.max(0, rawIndex));
+    return { level: values[index], seen };
+  }
+  function computeStringRecommendations(getAutomaticity, threshold, stringIndices, getItemIds, nowMs) {
+    const results = stringIndices.map((s3) => {
+      const items = getItemIds(s3);
+      let workingCount = 0;
+      let unseenCount = 0;
+      let fluentCount = 0;
+      for (const id of items) {
+        const auto = getAutomaticity(id, nowMs);
+        if (auto === null) {
+          unseenCount++;
+        } else if (auto > threshold) {
+          fluentCount++;
+        } else {
+          workingCount++;
+        }
+      }
+      return {
+        string: s3,
+        workingCount,
+        unseenCount,
+        fluentCount,
+        totalCount: items.length
+      };
+    });
+    results.sort(
+      (a3, b) => b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount) || a3.string - b.string
+    );
+    return results;
+  }
+  function checkAllItemsAutomatic(getAutomaticity, items, threshold) {
+    for (const id of items) {
+      const auto = getAutomaticity(id);
+      if (auto === null || auto <= threshold) return false;
     }
-    function getStats(itemId) {
-      return storage.getStats(itemId);
+    return items.length > 0;
+  }
+  function checkItemsNeedReview(storage, getAutomaticity, cfg, getResponseCount, items) {
+    if (items.length === 0) return false;
+    let hasDecayedItem = false;
+    for (const id of items) {
+      const stats = storage.getStats(id);
+      if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) {
+        return false;
+      }
+      const speed = computeSpeedScore(stats.ewma, cfg, getResponseCount(id));
+      if (speed == null || speed < 0.5) return false;
+      const auto = getAutomaticity(id);
+      if (auto !== null && auto <= cfg.automaticityThreshold) {
+        hasDecayedItem = true;
+      }
+    }
+    return hasDecayedItem;
+  }
+  function getItemRecall(storage, itemId, nowMs) {
+    const stats = storage.getStats(itemId);
+    if (!stats || stats.stability == null || stats.lastCorrectAt == null) {
+      return null;
+    }
+    const now = nowMs ?? Date.now();
+    return computeRecall(stats.stability, (now - stats.lastCorrectAt) / 36e5);
+  }
+  function getItemAutomaticity(storage, scaledCfg, getRecall, itemId, nowMs) {
+    const stats = storage.getStats(itemId);
+    if (!stats) return null;
+    const recall = getRecall(itemId, nowMs);
+    const speed = computeSpeedScore(stats.ewma, scaledCfg);
+    return computeAutomaticityForDisplay(recall, speed, true);
+  }
+  function getItemSpeedScore(storage, scaledCfg, itemId) {
+    const stats = storage.getStats(itemId);
+    if (!stats) return null;
+    const speed = computeSpeedScore(stats.ewma, scaledCfg);
+    if (speed == null && stats.sampleCount > 0) return 0;
+    return speed;
+  }
+  function getItemFreshness(storage, itemId, nowMs) {
+    const stats = storage.getStats(itemId);
+    if (!stats) return null;
+    return computeFreshness(
+      stats.stability ?? null,
+      stats.lastCorrectAt ?? null,
+      nowMs
+    );
+  }
+  function createAdaptiveSelector(storage, cfg = DEFAULT_CONFIG, randomFn = Math.random, responseCountFn = null) {
+    const getResponseCount = (itemId) => responseCountFn ? responseCountFn(itemId) : 1;
+    const scaledCfg = (itemId) => scaleConfigForResponseCount(cfg, getResponseCount(itemId));
+    function recordResponse(itemId, timeMs, correct = true) {
+      const itemCfg = scaledCfg(itemId);
+      const clamped = Math.min(timeMs, itemCfg.maxResponseTime);
+      const now = Date.now();
+      if (correct) {
+        recordCorrectResponse(storage, cfg, itemCfg, itemId, clamped, now);
+      } else recordWrongResponse(storage, cfg, itemCfg, itemId, now);
     }
     function selectNext(validItems) {
       if (validItems.length === 0) {
@@ -5828,116 +5935,18 @@ button {
       storage.setLastSelected(selected);
       return selected;
     }
+    function getStats(itemId) {
+      return storage.getStats(itemId);
+    }
+    function getWeight(itemId) {
+      return computeWeight(storage.getStats(itemId), scaledCfg(itemId));
+    }
     function getRecall(itemId, nowMs) {
-      const stats = storage.getStats(itemId);
-      if (!stats || stats.stability == null || stats.lastCorrectAt == null) {
-        return null;
-      }
-      const now = nowMs ?? Date.now();
-      const elapsedHours = (now - stats.lastCorrectAt) / 36e5;
-      return computeRecall(stats.stability, elapsedHours);
+      return getItemRecall(storage, itemId, nowMs);
     }
-    function getAutomaticity(itemId, nowMs) {
-      const stats = storage.getStats(itemId);
-      if (!stats) return null;
-      const recall = getRecall(itemId, nowMs);
-      const speed = computeSpeedScore(stats.ewma, scaledConfig(itemId));
-      return computeAutomaticityForDisplay(recall, speed, true);
-    }
-    function getSpeedScore(itemId) {
-      const stats = storage.getStats(itemId);
-      if (!stats) return null;
-      const speed = computeSpeedScore(stats.ewma, scaledConfig(itemId));
-      if (speed == null && stats.sampleCount > 0) return 0;
-      return speed;
-    }
-    function getFreshness(itemId, nowMs) {
-      const stats = storage.getStats(itemId);
-      if (!stats) return null;
-      return computeFreshness(
-        stats.stability ?? null,
-        stats.lastCorrectAt ?? null,
-        nowMs
-      );
-    }
-    function getLevelAutomaticity(itemIds, percentile = 0.1, nowMs) {
-      if (itemIds.length === 0) return { level: 0, seen: 0 };
-      let seen = 0;
-      const values = [];
-      for (let i3 = 0; i3 < itemIds.length; i3++) {
-        const auto = getAutomaticity(itemIds[i3], nowMs);
-        if (auto !== null) {
-          seen++;
-          values.push(auto);
-        } else {
-          values.push(0);
-        }
-      }
-      values.sort((a3, b) => a3 - b);
-      const rawIndex = Math.ceil(values.length * percentile) - 1;
-      const index = Math.min(values.length - 1, Math.max(0, rawIndex));
-      return { level: values[index], seen };
-    }
-    function getStringRecommendations(stringIndices, getItemIds, nowMs) {
-      const results = stringIndices.map((s3) => {
-        const items = getItemIds(s3);
-        let workingCount = 0;
-        let unseenCount = 0;
-        let fluentCount = 0;
-        for (const id of items) {
-          const auto = getAutomaticity(id, nowMs);
-          if (auto === null) {
-            unseenCount++;
-          } else if (auto > cfg.automaticityThreshold) {
-            fluentCount++;
-          } else {
-            workingCount++;
-          }
-        }
-        return {
-          string: s3,
-          workingCount,
-          unseenCount,
-          fluentCount,
-          totalCount: items.length
-        };
-      });
-      results.sort(
-        (a3, b) => b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount) || a3.string - b.string
-      );
-      return results;
-    }
-    function checkAllAutomatic(items) {
-      for (const id of items) {
-        const auto = getAutomaticity(id);
-        if (auto === null || auto <= cfg.automaticityThreshold) return false;
-      }
-      return items.length > 0;
-    }
-    function checkNeedsReview(items) {
-      if (items.length === 0) return false;
-      let hasDecayedItem = false;
-      for (const id of items) {
-        const stats = storage.getStats(id);
-        if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) {
-          return false;
-        }
-        const rc = getResponseCount(id);
-        const speed = computeSpeedScore(stats.ewma, cfg, rc);
-        if (speed == null || speed < 0.5) return false;
-        const auto = getAutomaticity(id);
-        if (auto !== null && auto <= cfg.automaticityThreshold) {
-          hasDecayedItem = true;
-        }
-      }
-      return hasDecayedItem;
-    }
-    function updateConfig(newCfg) {
-      cfg = { ...cfg, ...newCfg };
-    }
-    function getConfig() {
-      return cfg;
-    }
+    const getAutomaticity = (itemId, nowMs) => getItemAutomaticity(storage, scaledCfg(itemId), getRecall, itemId, nowMs);
+    const getSpeedScore = (itemId) => getItemSpeedScore(storage, scaledCfg(itemId), itemId);
+    const getFreshness = (itemId, nowMs) => getItemFreshness(storage, itemId, nowMs);
     return {
       recordResponse,
       selectNext,
@@ -5947,12 +5956,26 @@ button {
       getAutomaticity,
       getSpeedScore,
       getFreshness,
-      getLevelAutomaticity,
-      getStringRecommendations,
-      checkAllAutomatic,
-      checkNeedsReview,
-      updateConfig,
-      getConfig
+      getLevelAutomaticity: (itemIds, percentile, nowMs) => computeLevelAutomaticity(getAutomaticity, itemIds, percentile, nowMs),
+      getStringRecommendations: (stringIndices, getItemIds, nowMs) => computeStringRecommendations(
+        getAutomaticity,
+        cfg.automaticityThreshold,
+        stringIndices,
+        getItemIds,
+        nowMs
+      ),
+      checkAllAutomatic: (items) => checkAllItemsAutomatic(getAutomaticity, items, cfg.automaticityThreshold),
+      checkNeedsReview: (items) => checkItemsNeedReview(
+        storage,
+        getAutomaticity,
+        cfg,
+        getResponseCount,
+        items
+      ),
+      updateConfig: (newCfg) => {
+        cfg = { ...cfg, ...newCfg };
+      },
+      getConfig: () => cfg
     };
   }
   function createLocalStorageAdapter(namespace) {
@@ -6270,7 +6293,7 @@ button {
     }
     return { fluent, seen };
   }
-  function computeLevelAutomaticity(itemIds, getAutomaticity, percentile = 0.1) {
+  function computeLevelAutomaticity2(itemIds, getAutomaticity, percentile = 0.1) {
     if (itemIds.length === 0) return { level: 0, seen: 0 };
     let seen = 0;
     const values = [];
@@ -6327,7 +6350,7 @@ button {
       threshold
     );
     const total = opts.allItemIds.length;
-    const { level, seen } = computeLevelAutomaticity(
+    const { level, seen } = computeLevelAutomaticity2(
       opts.allItemIds,
       (id) => opts.selector.getAutomaticity(id)
     );
@@ -6369,7 +6392,7 @@ button {
         if (idx < 0 || idx >= groupCount) enabled.delete(idx);
       }
       if (enabled.size === 0) {
-        for (const d3 of spec.defaultEnabled) enabled.add(d3);
+        for (const d4 of spec.defaultEnabled) enabled.add(d4);
       }
       const skipped = /* @__PURE__ */ new Map();
       const savedSkipped = localStorage.getItem(spec.storageKey + "_skipped");
@@ -6426,7 +6449,7 @@ button {
     }
   }
   function useScopeState(spec) {
-    const [scope, setScopeRaw] = d2(() => loadScope(spec));
+    const [scope, setScopeRaw] = d3(() => loadScope(spec));
     const setScope = q2((next) => {
       setScopeRaw(next);
       saveScope(spec, next);
@@ -6501,14 +6524,30 @@ button {
     }];
   }
 
+  // src/hooks/use-notation-version.ts
+  function useNotationVersion() {
+    const [v3, setV] = d3(getNotationVersion);
+    y2(() => subscribeNotation(() => setV(getNotationVersion())), []);
+    return v3;
+  }
+
   // src/hooks/use-group-scope.ts
   var EMPTY_SKIPPED = /* @__PURE__ */ new Map();
+  function useStableGetter(value) {
+    const ref = A2(value);
+    ref.current = value;
+    return q2(() => ref.current, []);
+  }
+  function resolveLabel(label) {
+    return typeof label === "function" ? label() : label;
+  }
   function useGroupScope(spec) {
+    const notationVersion = useNotationVersion();
     const [scope, scopeActions] = useScopeState({
       kind: "groups",
       groups: spec.groups.map((g2, i3) => ({
         index: i3,
-        label: g2.label,
+        label: resolveLabel(g2.label),
         itemIds: spec.getItemIdsForGroup(i3)
       })),
       defaultEnabled: spec.defaultEnabled,
@@ -6531,7 +6570,7 @@ button {
     }, [enabledGroups, spec.getItemIdsForGroup]);
     const practicingLabel = T2(
       () => spec.formatLabel(enabledGroups),
-      [enabledGroups, spec.formatLabel]
+      [enabledGroups, spec.formatLabel, notationVersion]
     );
     const recommendation = T2(
       () => computeRecommendations(
@@ -6544,8 +6583,11 @@ button {
       [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]
     );
     const recommendationText = T2(
-      () => buildRecommendationText(recommendation, (i3) => spec.groups[i3].label),
-      [recommendation]
+      () => buildRecommendationText(
+        recommendation,
+        (i3) => resolveLabel(spec.groups[i3].label)
+      ),
+      [recommendation, notationVersion]
     );
     const applyRecommendation = q2(() => {
       if (recommendation.enabled) {
@@ -6556,15 +6598,6 @@ button {
         });
       }
     }, [recommendation, scopeActions, skippedGroups]);
-    const enabledItemsRef = A2(enabledItems);
-    enabledItemsRef.current = enabledItems;
-    const practicingLabelRef = A2(practicingLabel);
-    practicingLabelRef.current = practicingLabel;
-    const getEnabledItems = q2(() => enabledItemsRef.current, []);
-    const getPracticingLabel = q2(
-      () => practicingLabelRef.current,
-      []
-    );
     return {
       scope,
       scopeActions,
@@ -6575,8 +6608,8 @@ button {
       recommendation,
       recommendationText,
       applyRecommendation,
-      getEnabledItems,
-      getPracticingLabel
+      getEnabledItems: useStableGetter(enabledItems),
+      getPracticingLabel: useStableGetter(practicingLabel)
     };
   }
 
@@ -6759,46 +6792,27 @@ button {
     return { action: "ignore" };
   }
 
-  // src/hooks/use-quiz-engine.ts
+  // src/hooks/use-round-timer.ts
   var ROUND_DURATION_MS = 6e4;
   var TIMER_TICK_MS = 200;
   var LAST_QUESTION_CAP_MS = 3e4;
-  var IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
-  var HINT_ADVANCE = IS_TOUCH_PRIMARY ? "" : "Space for next";
-  var HINT_CONTINUE = IS_TOUCH_PRIMARY ? "" : "Space to continue";
   function formatRoundTime(ms) {
     const totalSec = Math.max(0, Math.ceil(ms / 1e3));
     const min = Math.floor(totalSec / 60);
     const sec = totalSec % 60;
     return min + ":" + (sec < 10 ? "0" : "") + sec;
   }
-  var FIXTURES_ENABLED = typeof globalThis.location !== "undefined" && new URLSearchParams(globalThis.location.search).has("fixtures");
-  function useQuizEngine(config, selector, fixtureTarget) {
-    const [state, setState] = d2(initialEngineState);
-    const [timerPct, setTimerPct] = d2(100);
-    const [timerText, setTimerText] = d2("");
-    const [timerWarning, setTimerWarning] = d2(false);
-    const [timerLastQuestion, setTimerLastQuestion] = d2(false);
-    const stateRef = A2(state);
-    stateRef.current = state;
-    const configRef = A2(config);
-    configRef.current = config;
-    const selectorRef = A2(selector);
-    selectorRef.current = selector;
+  function useRoundTimer(onExpiry) {
+    const [timerPct, setTimerPct] = d3(100);
+    const [timerText, setTimerText] = d3("");
+    const [timerWarning, setTimerWarning] = d3(false);
+    const [timerLastQuestion, setTimerLastQuestion] = d3(false);
     const roundTimerRef = A2(null);
     const roundTimerStartRef = A2(null);
     const roundDurationSnapshotRef = A2(null);
     const lastQuestionCapRef = A2(null);
-    const computeProgress = q2(() => {
-      const items = configRef.current.getEnabledItems();
-      let mastered = 0;
-      const threshold = selectorRef.current.getConfig().automaticityThreshold;
-      for (const id of items) {
-        const auto = selectorRef.current.getAutomaticity(id);
-        if (auto !== null && auto > threshold) mastered++;
-      }
-      return { masteredCount: mastered, totalEnabledCount: items.length };
-    }, []);
+    const onExpiryRef = A2(onExpiry);
+    onExpiryRef.current = onExpiry;
     const stopRoundTimer = q2(() => {
       if (roundTimerRef.current) {
         clearInterval(roundTimerRef.current);
@@ -6813,37 +6827,6 @@ button {
       setTimerText("");
       setTimerWarning(false);
       setTimerLastQuestion(false);
-    }, []);
-    const transitionToRoundCompleteRef = A2(null);
-    const nextQuestionRef = A2(null);
-    const transitionToRoundComplete = q2(() => {
-      const roundDurationMs = roundDurationSnapshotRef.current ?? (roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0);
-      roundDurationSnapshotRef.current = null;
-      stopRoundTimer();
-      setState((prev) => {
-        const s3 = engineRoundComplete(prev);
-        return { ...s3, roundDurationMs };
-      });
-    }, [stopRoundTimer]);
-    transitionToRoundCompleteRef.current = transitionToRoundComplete;
-    const handleRoundTimerExpiry = q2(() => {
-      if (stateRef.current.phase !== "active") return;
-      setState((prev) => {
-        const next = engineRoundTimerExpired(prev);
-        if (next.answered) {
-          roundDurationSnapshotRef.current = ROUND_DURATION_MS;
-          setTimerLastQuestion(true);
-          return { ...next, hintText: HINT_CONTINUE };
-        } else {
-          setTimerLastQuestion(true);
-          lastQuestionCapRef.current = setTimeout(() => {
-            if (stateRef.current.phase === "active") {
-              transitionToRoundCompleteRef.current();
-            }
-          }, LAST_QUESTION_CAP_MS);
-        }
-        return next;
-      });
     }, []);
     const startRoundTimer = q2(() => {
       if (roundTimerRef.current) clearInterval(roundTimerRef.current);
@@ -6866,125 +6849,67 @@ button {
           setTimerPct(0);
           setTimerText("0:00");
           setTimerWarning(false);
-          handleRoundTimerExpiry();
+          onExpiryRef.current();
         }
       }, TIMER_TICK_MS);
-    }, [handleRoundTimerExpiry]);
-    const nextQuestion = q2(() => {
-      if (stateRef.current.roundTimerExpired) {
-        transitionToRoundCompleteRef.current();
-        return;
-      }
-      const items = configRef.current.getEnabledItems();
-      if (items.length === 0) return;
-      const el = document.activeElement;
-      if (el instanceof HTMLElement && el.matches(".answer-btn, .note-btn")) {
-        el.blur();
-      }
-      const nextItemId = selectorRef.current.selectNext(items);
-      setState((prev) => engineNextQuestion(prev, nextItemId, Date.now()));
     }, []);
-    nextQuestionRef.current = nextQuestion;
-    const submitAnswer = q2((input) => {
-      const s3 = stateRef.current;
-      if (s3.phase !== "active" || s3.answered) return;
-      const responseTime = Date.now() - s3.questionStartTime;
-      const result = configRef.current.checkAnswer(s3.currentItemId, input);
-      selectorRef.current.recordResponse(
-        s3.currentItemId,
-        responseTime,
-        result.correct
-      );
+    return {
+      timerPct,
+      timerText,
+      timerWarning,
+      timerLastQuestion,
+      setTimerPct,
+      setTimerText,
+      setTimerWarning,
+      setTimerLastQuestion,
+      roundTimerStartRef,
+      roundDurationSnapshotRef,
+      lastQuestionCapRef,
+      startRoundTimer,
+      stopRoundTimer
+    };
+  }
+
+  // src/hooks/use-round-transitions.ts
+  var IS_TOUCH_PRIMARY = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(pointer: coarse)").matches;
+  var HINT_CONTINUE = IS_TOUCH_PRIMARY ? "" : "Space to continue";
+  function useRoundTransitions(stateRef, setState) {
+    const transitionToRoundCompleteRef = A2(null);
+    const handleRoundTimerExpiry = q2(() => {
+      if (stateRef.current.phase !== "active") return;
       setState((prev) => {
-        let next = engineSubmitAnswer(
-          prev,
-          result.correct,
-          result.correctAnswer,
-          HINT_ADVANCE,
-          input
-        );
-        next = {
-          ...next,
-          roundResponseTimes: [...next.roundResponseTimes, responseTime]
-        };
-        const allMastered = selectorRef.current.checkAllAutomatic(
-          configRef.current.getEnabledItems()
-        );
-        next = engineUpdateMasteryAfterAnswer(next, allMastered);
-        const progress = computeProgress();
-        next = engineUpdateProgress(
-          next,
-          progress.masteredCount,
-          progress.totalEnabledCount
-        );
-        return next;
-      });
-      if (configRef.current.onAnswer) {
-        configRef.current.onAnswer(
-          s3.currentItemId,
-          result,
-          responseTime
-        );
-      }
-      if (stateRef.current.roundTimerExpired) {
-        if (lastQuestionCapRef.current) {
-          clearTimeout(lastQuestionCapRef.current);
-          lastQuestionCapRef.current = null;
+        const next = engineRoundTimerExpired(prev);
+        if (next.answered) {
+          timer.roundDurationSnapshotRef.current = ROUND_DURATION_MS;
+          timer.setTimerLastQuestion(true);
+          return { ...next, hintText: HINT_CONTINUE };
+        } else {
+          timer.setTimerLastQuestion(true);
+          timer.lastQuestionCapRef.current = setTimeout(() => {
+            if (stateRef.current.phase === "active") {
+              transitionToRoundCompleteRef.current();
+            }
+          }, LAST_QUESTION_CAP_MS);
         }
-        const elapsed = roundTimerStartRef.current ? Date.now() - roundTimerStartRef.current : 0;
-        roundDurationSnapshotRef.current = Math.min(
-          elapsed,
-          ROUND_DURATION_MS + LAST_QUESTION_CAP_MS
-        );
-        setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
-      }
-    }, [computeProgress]);
-    const start = q2(() => {
-      if (configRef.current.onStart) configRef.current.onStart();
-      setState((prev) => {
-        let next = engineStart(prev);
-        const progress = computeProgress();
-        next = engineUpdateProgress(
-          next,
-          progress.masteredCount,
-          progress.totalEnabledCount
-        );
         return next;
       });
-      startRoundTimer();
-      setTimeout(() => nextQuestionRef.current(), 0);
-    }, [startRoundTimer, computeProgress]);
-    const continueQuiz = q2(() => {
-      setState(engineContinueRound);
-      startRoundTimer();
-      setTimeout(() => nextQuestionRef.current(), 0);
-    }, [startRoundTimer]);
-    const stop = q2(() => {
-      stopRoundTimer();
-      setState(engineStop);
-      setCalibrationFixture(void 0);
-      if (configRef.current.onStop) configRef.current.onStop();
-    }, [stopRoundTimer]);
-    const [calibrationFixture, setCalibrationFixture] = d2();
-    const startCalibration = q2(() => {
-      setCalibrationFixture(void 0);
-      setState(engineCalibrationIntro);
     }, []);
-    const endCalibration = q2(() => {
-      setCalibrationFixture(void 0);
-      setState(engineStop);
-    }, []);
-    const updateIdleMessage = q2(() => {
-      if (stateRef.current.phase !== "idle") return;
-      const items = configRef.current.getEnabledItems();
-      setState(
-        (prev) => engineUpdateIdleMessage(
-          prev,
-          selectorRef.current.checkAllAutomatic(items),
-          selectorRef.current.checkNeedsReview(items)
-        )
-      );
-    }, []);
+    const timer = useRoundTimer(handleRoundTimerExpiry);
+    const transitionToRoundComplete = q2(() => {
+      const roundDurationMs = timer.roundDurationSnapshotRef.current ?? (timer.roundTimerStartRef.current ? Date.now() - timer.roundTimerStartRef.current : 0);
+      timer.roundDurationSnapshotRef.current = null;
+      timer.stopRoundTimer();
+      setState((prev) => {
+        const s3 = engineRoundComplete(prev);
+        return { ...s3, roundDurationMs };
+      });
+    }, [timer.stopRoundTimer]);
+    transitionToRoundCompleteRef.current = transitionToRoundComplete;
+    return { timer, transitionToRoundCompleteRef };
+  }
+
+  // src/hooks/use-engine-keyboard.ts
+  function useEngineKeyboard(state, stateRef, configRef, stop, nextQuestionRef, continueQuiz, submitAnswer) {
     y2(() => {
       if (state.phase === "idle") return;
       function handleKeydown(e3) {
@@ -7005,9 +6930,7 @@ button {
             break;
           case "delegate":
             if (e3.target instanceof HTMLInputElement) break;
-            if (configRef.current.handleKey) {
-              configRef.current.handleKey(e3, { submitAnswer });
-            }
+            configRef.current.handleKey?.(e3, { submitAnswer });
             break;
           case "ignore":
             break;
@@ -7016,12 +6939,11 @@ button {
       document.addEventListener("keydown", handleKeydown);
       return () => document.removeEventListener("keydown", handleKeydown);
     }, [state.phase !== "idle", stop, continueQuiz, submitAnswer]);
-    y2(() => {
-      return () => {
-        if (roundTimerRef.current) clearInterval(roundTimerRef.current);
-        if (lastQuestionCapRef.current) clearTimeout(lastQuestionCapRef.current);
-      };
-    }, []);
+  }
+
+  // src/hooks/use-fixture-injection.ts
+  var FIXTURES_ENABLED = typeof globalThis.location !== "undefined" && new URLSearchParams(globalThis.location.search).has("fixtures");
+  function useFixtureInjection(fixtureTarget, setState, timer, setCalibrationFixture) {
     y2(() => {
       if (!FIXTURES_ENABLED || !fixtureTarget) return;
       const target = fixtureTarget;
@@ -7031,13 +6953,13 @@ button {
         if (detail.engineState) {
           setState((prev) => ({ ...prev, ...detail.engineState }));
         }
-        if (detail.timerPct !== void 0) setTimerPct(detail.timerPct);
-        if (detail.timerText !== void 0) setTimerText(detail.timerText);
+        if (detail.timerPct !== void 0) timer.setTimerPct(detail.timerPct);
+        if (detail.timerText !== void 0) timer.setTimerText(detail.timerText);
         if (detail.timerWarning !== void 0) {
-          setTimerWarning(detail.timerWarning);
+          timer.setTimerWarning(detail.timerWarning);
         }
         if (detail.timerLastQuestion !== void 0) {
-          setTimerLastQuestion(detail.timerLastQuestion);
+          timer.setTimerLastQuestion(detail.timerLastQuestion);
         }
         if (detail.calibration) {
           const calPhase = detail.calibration.phase === "results" ? "calibration-results" : detail.calibration.phase === "running" ? "calibrating" : "calibration-intro";
@@ -7049,22 +6971,207 @@ button {
       target.addEventListener("__fixture__", handleFixture);
       return () => target.removeEventListener("__fixture__", handleFixture);
     }, [fixtureTarget]);
+  }
+
+  // src/hooks/use-calibration-lifecycle.ts
+  function useCalibrationLifecycle(timer, setState, configRef) {
+    const [calibrationFixture, setCalibrationFixture] = d3();
+    const stop = q2(() => {
+      timer.stopRoundTimer();
+      setState(engineStop);
+      setCalibrationFixture(void 0);
+      configRef.current.onStop?.();
+    }, [timer.stopRoundTimer]);
+    const startCalibration = q2(() => {
+      setCalibrationFixture(void 0);
+      setState(engineCalibrationIntro);
+    }, []);
+    const endCalibration = q2(() => {
+      setCalibrationFixture(void 0);
+      setState(engineStop);
+    }, []);
     return {
-      state,
-      timerPct,
-      timerText,
-      timerWarning,
-      timerLastQuestion,
-      calibrating: isCalibrationPhase(state.phase),
       calibrationFixture,
-      start,
+      setCalibrationFixture,
       stop,
-      submitAnswer,
-      nextQuestion,
-      continueQuiz,
-      updateIdleMessage,
       startCalibration,
       endCalibration
+    };
+  }
+
+  // src/hooks/use-engine-actions.ts
+  var HINT_ADVANCE = IS_TOUCH_PRIMARY ? "" : "Space for next";
+  function computeProgress(configRef, selectorRef) {
+    const items = configRef.current.getEnabledItems();
+    let mastered = 0;
+    const threshold = selectorRef.current.getConfig().automaticityThreshold;
+    for (const id of items) {
+      const auto = selectorRef.current.getAutomaticity(id);
+      if (auto !== null && auto > threshold) mastered++;
+    }
+    return { masteredCount: mastered, totalEnabledCount: items.length };
+  }
+  function processSubmitAnswer(stateRef, configRef, selectorRef, setState, timer, input) {
+    const s3 = stateRef.current;
+    if (s3.phase !== "active" || s3.answered) return;
+    const responseTime = Date.now() - s3.questionStartTime;
+    const result = configRef.current.checkAnswer(s3.currentItemId, input);
+    selectorRef.current.recordResponse(
+      s3.currentItemId,
+      responseTime,
+      result.correct
+    );
+    setState((prev) => {
+      let next = engineSubmitAnswer(
+        prev,
+        result.correct,
+        result.correctAnswer,
+        HINT_ADVANCE,
+        input
+      );
+      next = {
+        ...next,
+        roundResponseTimes: [...next.roundResponseTimes, responseTime]
+      };
+      const allMastered = selectorRef.current.checkAllAutomatic(
+        configRef.current.getEnabledItems()
+      );
+      next = engineUpdateMasteryAfterAnswer(next, allMastered);
+      const p3 = computeProgress(configRef, selectorRef);
+      return engineUpdateProgress(next, p3.masteredCount, p3.totalEnabledCount);
+    });
+    configRef.current.onAnswer?.(s3.currentItemId, result, responseTime);
+    if (stateRef.current.roundTimerExpired) {
+      if (timer.lastQuestionCapRef.current) {
+        clearTimeout(timer.lastQuestionCapRef.current);
+        timer.lastQuestionCapRef.current = null;
+      }
+      const elapsed = timer.roundTimerStartRef.current ? Date.now() - timer.roundTimerStartRef.current : 0;
+      timer.roundDurationSnapshotRef.current = Math.min(
+        elapsed,
+        ROUND_DURATION_MS + LAST_QUESTION_CAP_MS
+      );
+      setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
+    }
+  }
+  function useEngineActions(stateRef, configRef, selectorRef, setState, timer, transitionToRoundCompleteRef) {
+    const nextQuestionRef = A2(null);
+    const nextQuestion = q2(() => {
+      if (stateRef.current.roundTimerExpired) {
+        transitionToRoundCompleteRef.current();
+        return;
+      }
+      const items = configRef.current.getEnabledItems();
+      if (items.length === 0) return;
+      const el = document.activeElement;
+      if (el instanceof HTMLElement && el.matches(".answer-btn, .note-btn")) {
+        el.blur();
+      }
+      const nextItemId = selectorRef.current.selectNext(items);
+      setState((prev) => engineNextQuestion(prev, nextItemId, Date.now()));
+    }, []);
+    nextQuestionRef.current = nextQuestion;
+    const submitAnswer = q2(
+      (input) => processSubmitAnswer(
+        stateRef,
+        configRef,
+        selectorRef,
+        setState,
+        timer,
+        input
+      ),
+      []
+    );
+    const start = q2(() => {
+      configRef.current.onStart?.();
+      setState((prev) => {
+        const next = engineStart(prev);
+        const p3 = computeProgress(configRef, selectorRef);
+        return engineUpdateProgress(next, p3.masteredCount, p3.totalEnabledCount);
+      });
+      timer.startRoundTimer();
+      setTimeout(() => nextQuestionRef.current(), 0);
+    }, [timer.startRoundTimer]);
+    const continueQuiz = q2(() => {
+      setState(engineContinueRound);
+      timer.startRoundTimer();
+      setTimeout(() => nextQuestionRef.current(), 0);
+    }, [timer.startRoundTimer]);
+    const updateIdleMessage = q2(() => {
+      if (stateRef.current.phase !== "idle") return;
+      const items = configRef.current.getEnabledItems();
+      setState(
+        (prev) => engineUpdateIdleMessage(
+          prev,
+          selectorRef.current.checkAllAutomatic(items),
+          selectorRef.current.checkNeedsReview(items)
+        )
+      );
+    }, []);
+    return {
+      nextQuestionRef,
+      start,
+      continueQuiz,
+      nextQuestion,
+      submitAnswer,
+      updateIdleMessage
+    };
+  }
+
+  // src/hooks/use-quiz-engine.ts
+  function useQuizEngine(config, selector, fixtureTarget) {
+    const [state, setState] = d3(initialEngineState);
+    const stateRef = A2(state);
+    stateRef.current = state;
+    const configRef = A2(config);
+    configRef.current = config;
+    const selectorRef = A2(selector);
+    selectorRef.current = selector;
+    const { timer, transitionToRoundCompleteRef } = useRoundTransitions(
+      stateRef,
+      setState
+    );
+    const actions = useEngineActions(
+      stateRef,
+      configRef,
+      selectorRef,
+      setState,
+      timer,
+      transitionToRoundCompleteRef
+    );
+    const cal = useCalibrationLifecycle(timer, setState, configRef);
+    useEngineKeyboard(
+      state,
+      stateRef,
+      configRef,
+      cal.stop,
+      actions.nextQuestionRef,
+      actions.continueQuiz,
+      actions.submitAnswer
+    );
+    y2(() => () => timer.stopRoundTimer(), []);
+    useFixtureInjection(
+      fixtureTarget,
+      setState,
+      timer,
+      cal.setCalibrationFixture
+    );
+    return {
+      state,
+      timerPct: timer.timerPct,
+      timerText: timer.timerText,
+      timerWarning: timer.timerWarning,
+      timerLastQuestion: timer.timerLastQuestion,
+      calibrating: isCalibrationPhase(state.phase),
+      calibrationFixture: cal.calibrationFixture,
+      start: actions.start,
+      stop: cal.stop,
+      submitAnswer: actions.submitAnswer,
+      nextQuestion: actions.nextQuestion,
+      continueQuiz: actions.continueQuiz,
+      updateIdleMessage: actions.updateIdleMessage,
+      startCalibration: cal.startCalibration,
+      endCalibration: cal.endCalibration
     };
   }
 
@@ -7147,7 +7254,7 @@ button {
 
   // src/hooks/use-practice-summary.ts
   function usePracticeSummary(opts) {
-    const [activeTab, setActiveTab] = d2(
+    const [activeTab, setActiveTab] = d3(
       "practice"
     );
     const summary = T2(
@@ -7235,7 +7342,7 @@ button {
     // ♯
   ];
   function SplitNoteButtons({ onAnswer, sequential, pendingNote, answered }) {
-    const [pendingBase, setPendingBase] = d2(null);
+    const [pendingBase, setPendingBase] = d3(null);
     const onAnswerRef = A2(onAnswer);
     onAnswerRef.current = onAnswer;
     y2(() => {
@@ -7590,7 +7697,7 @@ button {
   // src/ui/scope.tsx
   var CLOSE_EVENT = "groupskipmenu:close";
   function GroupSkipMenu({ index, label, currentStatus, onSkip, onUnskip }) {
-    const [open, setOpen] = d2(false);
+    const [open, setOpen] = d3(false);
     const idRef = A2(index);
     idRef.current = index;
     const openMenu = q2(() => {
@@ -7812,15 +7919,7 @@ button {
       )
     ] });
   }
-  function SpeedCheck({ provider, onComplete, onCancel, fixture }) {
-    const [phase, setPhase] = d2(
-      fixture?.phase ?? "intro"
-    );
-    const [baseline, setBaseline] = d2(fixture?.baseline ?? 0);
-    const [trialProgress, setTrialProgress] = d2(
-      fixture?.trialProgress ?? ""
-    );
-    const buttonsRef = A2(null);
+  function useTrialLoop(buttonsRef, onDone) {
     const trialRef = A2({
       active: false,
       trialIndex: 0,
@@ -7830,6 +7929,9 @@ button {
       targetNote: null,
       trialTimeout: null
     });
+    const [trialProgress, setTrialProgress] = d3("");
+    const onDoneRef = A2(onDone);
+    onDoneRef.current = onDone;
     y2(() => {
       return () => {
         trialRef.current.active = false;
@@ -7860,9 +7962,7 @@ button {
       if (!state.active || !state.targetNote) return;
       if (note !== state.targetNote) return;
       const elapsed = performance.now() - state.startTime;
-      if (state.trialIndex >= WARMUP_TRIALS) {
-        state.times.push(elapsed);
-      }
+      if (state.trialIndex >= WARMUP_TRIALS) state.times.push(elapsed);
       state.trialIndex++;
       state.targetNote = null;
       if (buttonsRef.current) {
@@ -7872,9 +7972,7 @@ button {
       }
       if (state.trialIndex >= TOTAL_TRIALS) {
         state.active = false;
-        const median = computeMedian(state.times) ?? 500;
-        setBaseline(Math.round(median));
-        setPhase("results");
+        onDoneRef.current(computeMedian(state.times) ?? 500);
       } else {
         state.trialTimeout = setTimeout(
           () => presentNextTrial(),
@@ -7882,33 +7980,7 @@ button {
         );
       }
     }, [presentNextTrial]);
-    y2(() => {
-      if (fixture) return;
-      function onKeyDown(e3) {
-        if (e3.key === "Escape") {
-          e3.preventDefault();
-          trialRef.current.active = false;
-          if (trialRef.current.trialTimeout) {
-            clearTimeout(trialRef.current.trialTimeout);
-          }
-          onCancel();
-          return;
-        }
-        if (phase !== "running") return;
-        const state = trialRef.current;
-        if (!state.active || !state.targetNote) return;
-        const key = e3.key.toUpperCase();
-        if (key === state.targetNote[0]) {
-          e3.preventDefault();
-          handleTrialResponse(state.targetNote);
-        }
-      }
-      document.addEventListener("keydown", onKeyDown);
-      return () => document.removeEventListener("keydown", onKeyDown);
-    }, [fixture, phase, handleTrialResponse, onCancel]);
-    y2(() => {
-      if (fixture) return;
-      if (phase !== "running") return;
+    const startTrials = q2(() => {
       const state = trialRef.current;
       state.active = true;
       state.trialIndex = 0;
@@ -7922,48 +7994,31 @@ button {
         state.active = false;
         if (state.trialTimeout) clearTimeout(state.trialTimeout);
       };
-    }, [fixture, phase, presentNextTrial]);
-    y2(() => {
-      if (!fixture || fixture.phase !== "running" || !fixture.targetNote) return;
-      if (!buttonsRef.current) return;
-      const btn = buttonsRef.current.querySelector(
-        `.answer-btn-note[data-note="${fixture.targetNote}"]`
-      );
-      if (btn) btn.classList.add("calibration-target");
-      return () => {
-        if (btn) btn.classList.remove("calibration-target");
-      };
-    }, [fixture]);
-    if (phase === "intro") {
-      return /* @__PURE__ */ u3(k, { children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-content calibration-results", children: /* @__PURE__ */ u3("p", { children: provider.introText }) }),
-        /* @__PURE__ */ u3("div", { class: "quiz-controls", children: /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "calibration-action-btn",
-            onClick: () => setPhase("running"),
-            children: "Start"
-          }
-        ) })
-      ] });
-    }
-    if (phase === "running") {
-      return /* @__PURE__ */ u3(k, { children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-content", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: provider.trialText }) }),
-        /* @__PURE__ */ u3("div", { class: "quiz-controls", children: [
-          /* @__PURE__ */ u3("div", { ref: buttonsRef, children: /* @__PURE__ */ u3(
-            NoteButtons,
-            {
-              onAnswer: handleTrialResponse,
-              calibrationActive: true
-            }
-          ) }),
-          /* @__PURE__ */ u3("div", { class: "calibration-progress", children: trialProgress })
-        ] })
-      ] });
-    }
+    }, [presentNextTrial]);
+    return {
+      trialRef,
+      trialProgress,
+      handleTrialResponse,
+      startTrials,
+      setTrialProgress
+    };
+  }
+  function SpeedCheckIntro({ text, onStart }) {
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3("div", { class: "quiz-content calibration-results", children: /* @__PURE__ */ u3("p", { children: text }) }),
+      /* @__PURE__ */ u3("div", { class: "quiz-controls", children: /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "calibration-action-btn",
+          onClick: onStart,
+          children: "Start"
+        }
+      ) })
+    ] });
+  }
+  function SpeedCheckResults({ baseline, onComplete }) {
     const thresholds = getCalibrationThresholds(baseline);
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: "quiz-content calibration-results", children: [
@@ -7997,6 +8052,82 @@ button {
       ) })
     ] });
   }
+  function SpeedCheck({ provider, onComplete, onCancel, fixture }) {
+    const [phase, setPhase] = d3(
+      fixture?.phase ?? "intro"
+    );
+    const [baseline, setBaseline] = d3(fixture?.baseline ?? 0);
+    const buttonsRef = A2(null);
+    const trials = useTrialLoop(buttonsRef, (median) => {
+      setBaseline(Math.round(median));
+      setPhase("results");
+    });
+    if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
+    y2(() => {
+      if (fixture) return;
+      function onKeyDown(e3) {
+        if (e3.key === "Escape") {
+          e3.preventDefault();
+          trials.trialRef.current.active = false;
+          if (trials.trialRef.current.trialTimeout) {
+            clearTimeout(trials.trialRef.current.trialTimeout);
+          }
+          onCancel();
+          return;
+        }
+        if (phase !== "running") return;
+        const state = trials.trialRef.current;
+        if (!state.active || !state.targetNote) return;
+        const key = e3.key.toUpperCase();
+        if (key === state.targetNote[0]) {
+          e3.preventDefault();
+          trials.handleTrialResponse(state.targetNote);
+        }
+      }
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
+    }, [fixture, phase, trials.handleTrialResponse, onCancel]);
+    y2(() => {
+      if (fixture || phase !== "running") return;
+      return trials.startTrials();
+    }, [fixture, phase, trials.startTrials]);
+    y2(() => {
+      if (!fixture || fixture.phase !== "running" || !fixture.targetNote) return;
+      if (!buttonsRef.current) return;
+      const btn = buttonsRef.current.querySelector(
+        `.answer-btn-note[data-note="${fixture.targetNote}"]`
+      );
+      if (btn) btn.classList.add("calibration-target");
+      return () => {
+        if (btn) btn.classList.remove("calibration-target");
+      };
+    }, [fixture]);
+    if (phase === "intro") {
+      return /* @__PURE__ */ u3(
+        SpeedCheckIntro,
+        {
+          text: provider.introText,
+          onStart: () => setPhase("running")
+        }
+      );
+    }
+    if (phase === "running") {
+      return /* @__PURE__ */ u3(k, { children: [
+        /* @__PURE__ */ u3("div", { class: "quiz-content", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: provider.trialText }) }),
+        /* @__PURE__ */ u3("div", { class: "quiz-controls", children: [
+          /* @__PURE__ */ u3("div", { ref: buttonsRef, children: /* @__PURE__ */ u3(
+            NoteButtons,
+            {
+              onAnswer: trials.handleTrialResponse,
+              calibrationActive: true
+            }
+          ) }),
+          /* @__PURE__ */ u3("div", { class: "calibration-progress", children: trials.trialProgress })
+        ] })
+      ] });
+    }
+    return /* @__PURE__ */ u3(SpeedCheckResults, { baseline, onComplete });
+  }
 
   // src/ui/mode-screen.tsx
   function ModeTopBar({ modeId, title, description, beforeAfter, onBack, showBack = true }) {
@@ -8020,9 +8151,9 @@ button {
         )
       ] }),
       beforeAfter && /* @__PURE__ */ u3("div", { class: "mode-before-after", children: [
-        /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: beforeAfter.before }),
+        /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before }),
         /* @__PURE__ */ u3("span", { class: "mode-ba-arrow", children: "\u2192" }),
-        /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: beforeAfter.after })
+        /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after })
       ] })
     ] });
   }
@@ -8407,6 +8538,67 @@ button {
     return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: text });
   }
 
+  // src/declarative/use-sequential-input.ts
+  function useSequentialInput(def, currentQRef, submitRef) {
+    const [seqEntries, setSeqEntries] = d3([]);
+    const seqEntriesRef = A2([]);
+    const [seqEvaluated, setSeqEvaluated] = d3(null);
+    const [seqCorrectAnswer, setSeqCorrectAnswer] = d3("");
+    const prevItemRef = A2(null);
+    const resetAll = q2(() => {
+      seqEntriesRef.current = [];
+      setSeqEntries([]);
+      setSeqEvaluated(null);
+      setSeqCorrectAnswer("");
+    }, []);
+    const handleSeqInput = q2((input) => {
+      if (!def.sequential || !currentQRef.current) return;
+      const q3 = currentQRef.current;
+      const expected = def.sequential.expectedCount(q3);
+      const raw = seqEntriesRef.current;
+      if (raw.length >= expected) return;
+      const newRaw = [...raw, input];
+      seqEntriesRef.current = newRaw;
+      setSeqEntries(newRaw.map((r3) => ({ display: displayNote(r3) })));
+      if (newRaw.length === expected) {
+        const result = def.sequential.evaluate(q3, newRaw);
+        setSeqEvaluated(result.perEntry);
+        setSeqCorrectAnswer(result.correctAnswer);
+        const sentinel = result.correct ? "__correct__" : "__wrong__";
+        submitRef.current(sentinel + ":" + result.correctAnswer);
+      }
+    }, [def]);
+    const handleSeqBatch = q2((text) => {
+      if (!def.sequential?.parseBatchInput || !currentQRef.current) return false;
+      const q3 = currentQRef.current;
+      const notes = def.sequential.parseBatchInput(text);
+      const expected = def.sequential.expectedCount(q3);
+      if (notes.length !== expected) return false;
+      seqEntriesRef.current = notes;
+      setSeqEntries(notes.map((r3) => ({ display: displayNote(r3) })));
+      const result = def.sequential.evaluate(q3, notes);
+      setSeqEvaluated(result.perEntry);
+      setSeqCorrectAnswer(result.correctAnswer);
+      const sentinel = result.correct ? "__correct__" : "__wrong__";
+      submitRef.current(sentinel + ":" + result.correctAnswer);
+      return true;
+    }, [def]);
+    const resetOnItemChange = q2((currentItemId) => {
+      if (currentItemId !== prevItemRef.current) {
+        prevItemRef.current = currentItemId;
+        resetAll();
+      }
+    }, [resetAll]);
+    return {
+      seqEntries,
+      seqEvaluated,
+      seqCorrectAnswer,
+      handleSeqInput,
+      handleSeqBatch,
+      resetOnItemChange
+    };
+  }
+
   // src/declarative/generic-mode.tsx
   function getHintType(buttons) {
     switch (buttons.kind) {
@@ -8451,9 +8643,39 @@ button {
   function defaultDisplayAnswer(strategy, expected) {
     return strategy === "note-enharmonic" ? displayNote(expected) : expected;
   }
+  function checkGenericAnswer(def, currentQRef, lastAnswerRef, isSequential, _itemId, input) {
+    if (isSequential) {
+      const sep = input.indexOf(":");
+      return {
+        correct: input.startsWith("__correct__"),
+        correctAnswer: sep >= 0 ? input.slice(sep + 1) : ""
+      };
+    }
+    const q3 = currentQRef.current;
+    const spec = resolveAnswerSpec(def, q3);
+    const expected = spec.getExpectedValue(q3);
+    const normalized = spec.normalizeInput?.(input) ?? input;
+    const correct = checkCorrectness(spec.comparison, expected, normalized);
+    const display = spec.getDisplayAnswer?.(q3) ?? defaultDisplayAnswer(spec.comparison, expected);
+    lastAnswerRef.current = {
+      expected,
+      comparison: spec.comparison,
+      normalizedInput: normalized
+    };
+    return { correct, correctAnswer: display };
+  }
+  function getInputPlaceholder(def, currentQ, isSequential) {
+    if (isSequential) {
+      const seq = def.sequential;
+      if (!seq.batchPlaceholder) return void 0;
+      return typeof seq.batchPlaceholder === "string" ? seq.batchPlaceholder : currentQ ? seq.batchPlaceholder(currentQ) : void 0;
+    }
+    if (!def.inputPlaceholder) return void 0;
+    return typeof def.inputPlaceholder === "string" ? def.inputPlaceholder : currentQ ? def.inputPlaceholder(currentQ) : void 0;
+  }
   function AnswerInput({ onSubmit, disabled, placeholder, onInvalid, feedbackCorrect }) {
     const inputRef = A2(null);
-    const [shake, setShake] = d2(false);
+    const [shake, setShake] = d3(false);
     const shakeTimerRef = A2(null);
     y2(() => {
       return () => {
@@ -8485,10 +8707,7 @@ button {
           onInvalid?.();
           return;
         }
-        const accepted = onSubmit(value);
-        if (!accepted) {
-          triggerShake();
-        }
+        if (!onSubmit(value)) triggerShake();
       },
       [onSubmit, onInvalid, triggerShake]
     );
@@ -8605,132 +8824,351 @@ button {
         );
     }
   }
+  function SequentialQuizArea({ def, engine, ctrl, currentQ, activeButtons, seq, placeholder, promptText }) {
+    return /* @__PURE__ */ u3(
+      QuizArea,
+      {
+        prompt: ctrl.renderPrompt ? void 0 : promptText,
+        controls: /* @__PURE__ */ u3(k, { children: [
+          /* @__PURE__ */ u3(
+            SequentialSlots,
+            {
+              expectedCount: currentQ && def.sequential ? def.sequential.expectedCount(currentQ) : 0,
+              entries: seq.entries,
+              evaluated: seq.evaluated,
+              correctTones: seq.correctAnswer ? seq.correctAnswer.split(" ") : null
+            }
+          ),
+          /* @__PURE__ */ u3(
+            ResponseButtons,
+            {
+              buttonsDef: activeButtons,
+              onAnswer: seq.handleInput,
+              sequential: true,
+              answered: engine.state.answered
+            }
+          ),
+          def.sequential?.parseBatchInput && /* @__PURE__ */ u3(
+            AnswerInput,
+            {
+              onSubmit: seq.handleBatch,
+              disabled: engine.state.answered,
+              placeholder
+            }
+          ),
+          /* @__PURE__ */ u3(
+            FeedbackDisplay,
+            {
+              text: engine.state.feedbackText,
+              className: engine.state.feedbackClass,
+              hint: engine.state.hintText || void 0,
+              correct: engine.state.feedbackCorrect,
+              onNext: engine.state.answered ? engine.nextQuestion : void 0
+            }
+          )
+        ] }),
+        children: currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null
+      }
+    );
+  }
+  function StandardQuizArea({
+    engine,
+    ctrl,
+    currentQ,
+    activeButtons,
+    inactiveButtons,
+    handleSubmit,
+    useFlats,
+    placeholder,
+    promptText,
+    lastAnswerRef
+  }) {
+    return /* @__PURE__ */ u3(
+      QuizArea,
+      {
+        prompt: ctrl.renderPrompt ? void 0 : promptText,
+        controls: /* @__PURE__ */ u3(k, { children: [
+          /* @__PURE__ */ u3(
+            ResponseButtons,
+            {
+              buttonsDef: activeButtons,
+              onAnswer: handleSubmit,
+              useFlats,
+              narrowing: ctrl.narrowing,
+              hideAccidentalsOverride: ctrl.hideAccidentals,
+              feedback: engine.state.feedbackCorrect !== null && lastAnswerRef.current ? {
+                correct: engine.state.feedbackCorrect,
+                userInput: toButtonValue(
+                  lastAnswerRef.current.comparison,
+                  lastAnswerRef.current.normalizedInput
+                ),
+                displayAnswer: toButtonValue(
+                  lastAnswerRef.current.comparison,
+                  lastAnswerRef.current.expected
+                )
+              } : null
+            }
+          ),
+          inactiveButtons && /* @__PURE__ */ u3(
+            ResponseButtons,
+            {
+              buttonsDef: inactiveButtons,
+              hidden: true,
+              onAnswer: handleSubmit
+            }
+          ),
+          /* @__PURE__ */ u3(
+            AnswerInput,
+            {
+              onSubmit: handleSubmit,
+              disabled: engine.state.answered,
+              placeholder,
+              feedbackCorrect: engine.state.feedbackCorrect
+            }
+          ),
+          /* @__PURE__ */ u3(KeyboardHint, { type: getHintType(activeButtons) }),
+          /* @__PURE__ */ u3(
+            FeedbackDisplay,
+            {
+              text: engine.state.feedbackText,
+              className: engine.state.feedbackClass,
+              hint: engine.state.hintText || void 0,
+              correct: engine.state.feedbackCorrect,
+              onNext: engine.state.answered ? engine.nextQuestion : void 0,
+              label: engine.state.roundTimerExpired ? "Continue" : "Next"
+            }
+          )
+        ] }),
+        children: currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null
+      }
+    );
+  }
+  function QuizActiveView({
+    def,
+    engine,
+    learner,
+    ctrl,
+    currentQ,
+    round,
+    practicingLabel,
+    handleSubmit,
+    seq,
+    activeButtons,
+    inactiveButtons,
+    promptText,
+    useFlats,
+    placeholder,
+    lastAnswerRef
+  }) {
+    const phase = engine.state.phase;
+    return /* @__PURE__ */ u3(k, { children: [
+      phase !== "round-complete" && /* @__PURE__ */ u3(
+        QuizSession,
+        {
+          timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
+          context: practicingLabel,
+          count: round.countText,
+          isWarning: engine.timerWarning,
+          isLastQuestion: engine.timerLastQuestion,
+          lastQuestion: engine.state.roundTimerExpired ? engine.state.answered ? "Time is up" : "Last question" : "",
+          onClose: engine.stop
+        }
+      ),
+      engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+        SpeedCheck,
+        {
+          provider: BUTTON_PROVIDER,
+          fixture: engine.calibrationFixture,
+          onComplete: (baseline) => {
+            learner.applyBaseline(baseline);
+            engine.endCalibration();
+          },
+          onCancel: engine.endCalibration
+        }
+      ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
+        QuizArea,
+        {
+          controls: /* @__PURE__ */ u3(
+            RoundCompleteActions,
+            {
+              onContinue: engine.continueQuiz,
+              onStop: engine.stop
+            }
+          ),
+          children: /* @__PURE__ */ u3(
+            RoundCompleteInfo,
+            {
+              context: round.roundContext,
+              heading: "Round complete",
+              count: engine.state.roundAnswered,
+              correct: round.roundCorrect
+            }
+          )
+        }
+      ) : def.sequential ? /* @__PURE__ */ u3(
+        SequentialQuizArea,
+        {
+          def,
+          engine,
+          ctrl,
+          currentQ,
+          activeButtons,
+          seq,
+          placeholder,
+          promptText
+        }
+      ) : /* @__PURE__ */ u3(
+        StandardQuizArea,
+        {
+          engine,
+          ctrl,
+          currentQ,
+          activeButtons,
+          inactiveButtons,
+          handleSubmit,
+          useFlats,
+          placeholder,
+          promptText,
+          lastAnswerRef
+        }
+      )
+    ] });
+  }
+  function IdlePracticeView({ def, engine, learner, ctrl, groupScopeResult, ps }) {
+    const groupScope = def.scope.kind === "groups" ? def.scope : null;
+    return /* @__PURE__ */ u3(
+      PracticeTab,
+      {
+        summary: ps.summary,
+        onStart: engine.start,
+        onApplyRecommendation: ps.summary.showRecommendationButton && groupScopeResult ? groupScopeResult.applyRecommendation : void 0,
+        scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
+        validationMessage: "Select at least one group",
+        scope: groupScopeResult && groupScope ? /* @__PURE__ */ u3(
+          GroupProgressToggles,
+          {
+            groups: groupScope.allGroupIndices.map((i3) => ({
+              label: typeof groupScope.groups[i3].label === "function" ? groupScope.groups[i3].label() : groupScope.groups[i3].label,
+              itemIds: groupScope.getItemIdsForGroup(i3)
+            })),
+            active: groupScopeResult.enabledGroups,
+            onToggle: groupScopeResult.scopeActions.toggleGroup,
+            selector: learner.selector,
+            skipped: groupScopeResult.skippedGroups,
+            onSkip: groupScopeResult.scopeActions.skipGroup,
+            onUnskip: groupScopeResult.scopeActions.unskipGroup
+          }
+        ) : void 0,
+        statsContent: /* @__PURE__ */ u3(k, { children: [
+          ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u3(k, { children: [
+            def.stats.kind === "grid" && /* @__PURE__ */ u3(
+              StatsGrid,
+              {
+                selector: ps.statsSel,
+                colLabels: def.stats.colLabels,
+                getItemId: def.stats.getItemId,
+                notes: def.stats.notes
+              }
+            ),
+            def.stats.kind === "table" && /* @__PURE__ */ u3(
+              StatsTable,
+              {
+                selector: ps.statsSel,
+                rows: def.stats.getRows(),
+                fwdHeader: def.stats.fwdHeader,
+                revHeader: def.stats.revHeader
+              }
+            )
+          ] }),
+          (def.stats.kind !== "none" || ctrl.renderStats) && /* @__PURE__ */ u3(StatsLegend, {})
+        ] }),
+        baseline: learner.motorBaseline,
+        onCalibrate: engine.startCalibration,
+        activeTab: ps.activeTab,
+        onTabSwitch: ps.setActiveTab
+      }
+    );
+  }
   var EMPTY_GROUPS = /* @__PURE__ */ new Set();
-  function GenericMode({ def, container, navigateHome, onMount }) {
-    const learner = useLearnerModel(def.namespace, def.allItems);
-    const groupScopeSpec = def.scope.kind === "groups" ? {
+  function useGenericEngine(def, ctrl, ctrlRef, groupScopeResult, learner, container) {
+    const currentQRef = A2(null);
+    const isSequential = !!def.sequential;
+    const seqSubmitRef = A2(() => {
+    });
+    const seqInput = useSequentialInput(def, currentQRef, seqSubmitRef);
+    const lastAnswerRef = A2(null);
+    const getEnabledItemsRef = A2(() => def.allItems);
+    const getPracticingLabelRef = A2(() => "all items");
+    if (groupScopeResult) {
+      getEnabledItemsRef.current = groupScopeResult.getEnabledItems;
+      getPracticingLabelRef.current = groupScopeResult.getPracticingLabel;
+    }
+    const engineConfig = T2(
+      () => buildGenericEngineConfig(
+        def,
+        getEnabledItemsRef,
+        getPracticingLabelRef,
+        currentQRef,
+        lastAnswerRef,
+        ctrlRef,
+        isSequential,
+        seqInput,
+        !!ctrl.handleKey
+      ),
+      [def, !!ctrl.handleKey, isSequential]
+    );
+    const engine = useQuizEngine(engineConfig, learner.selector, container);
+    seqSubmitRef.current = engine.submitAnswer;
+    return { engine, currentQRef, seqInput, lastAnswerRef, isSequential };
+  }
+  function resolveButtons(def, dir) {
+    if (def.buttons.kind === "bidirectional") {
+      return dir === "fwd" ? { active: def.buttons.fwd, inactive: def.buttons.rev } : { active: def.buttons.rev, inactive: def.buttons.fwd };
+    }
+    return { active: def.buttons, inactive: null };
+  }
+  function buildGroupScopeSpec(def, selector) {
+    if (def.scope.kind !== "groups") return null;
+    return {
       groups: def.scope.groups,
       getItemIdsForGroup: def.scope.getItemIdsForGroup,
       allGroupIndices: def.scope.allGroupIndices,
       storageKey: def.scope.storageKey,
       scopeLabel: def.scope.scopeLabel,
       defaultEnabled: def.scope.defaultEnabled,
-      selector: learner.selector,
+      selector,
       formatLabel: def.scope.formatLabel
-    } : null;
-    const groupScopeResult = groupScopeSpec ? useGroupScope(groupScopeSpec) : null;
-    const enabledGroups = groupScopeResult?.enabledGroups ?? EMPTY_GROUPS;
-    const ctrl = def.useController ? def.useController(enabledGroups) : {};
-    const ctrlRef = A2(ctrl);
-    ctrlRef.current = ctrl;
-    const currentQRef = A2(null);
-    const isSequential = !!def.sequential;
-    const [seqEntries, setSeqEntries] = d2([]);
-    const seqEntriesRef = A2([]);
-    const [seqEvaluated, setSeqEvaluated] = d2(null);
-    const [seqCorrectAnswer, setSeqCorrectAnswer] = d2("");
-    const seqSubmitRef = A2(() => {
-    });
-    const lastAnswerRef = A2(null);
-    const getEnabledItemsRef = A2(
-      () => def.allItems
-    );
-    const getPracticingLabelRef = A2(
-      () => "all items"
-    );
-    if (groupScopeResult) {
-      getEnabledItemsRef.current = groupScopeResult.getEnabledItems;
-      getPracticingLabelRef.current = groupScopeResult.getPracticingLabel;
-    }
-    const engineConfig = T2(() => ({
+    };
+  }
+  function buildGenericEngineConfig(def, getEnabledItemsRef, getPracticingLabelRef, currentQRef, lastAnswerRef, ctrlRef, isSequential, seqInput, hasHandleKey) {
+    return {
       getEnabledItems: () => getEnabledItemsRef.current(),
       getPracticingLabel: () => getPracticingLabelRef.current(),
-      checkAnswer: (_itemId, input) => {
-        if (isSequential) {
-          const sep = input.indexOf(":");
-          const isCorrect = input.startsWith("__correct__");
-          const correctAnswer = sep >= 0 ? input.slice(sep + 1) : "";
-          return { correct: isCorrect, correctAnswer };
-        }
-        const q3 = currentQRef.current;
-        const spec = resolveAnswerSpec(def, q3);
-        const expected = spec.getExpectedValue(q3);
-        const normalized = spec.normalizeInput?.(input) ?? input;
-        const correct = checkCorrectness(spec.comparison, expected, normalized);
-        const display = spec.getDisplayAnswer?.(q3) ?? defaultDisplayAnswer(spec.comparison, expected);
-        lastAnswerRef.current = {
-          expected,
-          comparison: spec.comparison,
-          normalizedInput: normalized
-        };
-        return { correct, correctAnswer: display };
-      },
-      onAnswer: (itemId, result) => {
-        ctrlRef.current.onAnswer?.(itemId, result);
-      },
-      onStart: () => {
-        ctrlRef.current.onStart?.();
-      },
+      checkAnswer: (itemId, input) => checkGenericAnswer(
+        def,
+        currentQRef,
+        lastAnswerRef,
+        isSequential,
+        itemId,
+        input
+      ),
+      onAnswer: (itemId, result) => ctrlRef.current.onAnswer?.(itemId, result),
+      onStart: () => ctrlRef.current.onStart?.(),
       onStop: () => {
-        if (isSequential) {
-          setSeqEntries([]);
-          setSeqEvaluated(null);
-          setSeqCorrectAnswer("");
-          seqEntriesRef.current = [];
-        }
+        if (isSequential) seqInput.resetOnItemChange(null);
         ctrlRef.current.onStop?.();
       },
-      handleKey: ctrl.handleKey ? (e3, ctx) => ctrlRef.current.handleKey(e3, ctx) : void 0
-    }), [def, !!ctrl.handleKey, isSequential]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    seqSubmitRef.current = engine.submitAnswer;
+      handleKey: hasHandleKey ? (e3, ctx) => ctrlRef.current.handleKey(e3, ctx) : void 0
+    };
+  }
+  function useGenericDerivedState(def, engine, learner, groupScopeResult, currentQRef, seqInput, isSequential, container, onMount, ctrl) {
     const currentQ = T2(() => {
       const id = engine.state.currentItemId;
-      if (!id || engine.state.phase === "idle") return null;
-      return def.getQuestion(id);
+      return !id || engine.state.phase === "idle" ? null : def.getQuestion(id);
     }, [engine.state.currentItemId, engine.state.phase, def]);
     currentQRef.current = currentQ;
-    const prevSeqItemRef = A2(null);
-    if (isSequential && engine.state.currentItemId !== prevSeqItemRef.current) {
-      prevSeqItemRef.current = engine.state.currentItemId;
-      seqEntriesRef.current = [];
-      setSeqEntries([]);
-      setSeqEvaluated(null);
-      setSeqCorrectAnswer("");
-    }
-    const handleSeqInput = q2((input) => {
-      if (!def.sequential || !currentQRef.current) return;
-      const q3 = currentQRef.current;
-      const expected = def.sequential.expectedCount(q3);
-      const raw = seqEntriesRef.current;
-      if (raw.length >= expected) return;
-      const newRaw = [...raw, input];
-      seqEntriesRef.current = newRaw;
-      setSeqEntries(newRaw.map((r3) => ({ display: displayNote(r3) })));
-      if (newRaw.length === expected) {
-        const result = def.sequential.evaluate(q3, newRaw);
-        setSeqEvaluated(result.perEntry);
-        setSeqCorrectAnswer(result.correctAnswer);
-        const sentinel = result.correct ? "__correct__" : "__wrong__";
-        seqSubmitRef.current(sentinel + ":" + result.correctAnswer);
-      }
-    }, [def]);
-    const handleSeqBatch = q2((text) => {
-      if (!def.sequential?.parseBatchInput || !currentQRef.current) return false;
-      const q3 = currentQRef.current;
-      const notes = def.sequential.parseBatchInput(text);
-      const expected = def.sequential.expectedCount(q3);
-      if (notes.length !== expected) return false;
-      seqEntriesRef.current = notes;
-      setSeqEntries(notes.map((r3) => ({ display: displayNote(r3) })));
-      const result = def.sequential.evaluate(q3, notes);
-      setSeqEvaluated(result.perEntry);
-      setSeqCorrectAnswer(result.correctAnswer);
-      const sentinel = result.correct ? "__correct__" : "__wrong__";
-      seqSubmitRef.current(sentinel + ":" + result.correctAnswer);
-      return true;
-    }, [def]);
-    const dir = currentQ && def.getDirection ? def.getDirection(currentQ) : "fwd";
+    if (isSequential) seqInput.resetOnItemChange(engine.state.currentItemId);
     usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
     const practicingLabel = groupScopeResult?.practicingLabel ?? "all items";
     const round = useRoundSummary(engine, practicingLabel);
@@ -8742,40 +9180,52 @@ button {
       recommendation: groupScopeResult?.recommendation ?? null,
       recommendationText: groupScopeResult?.recommendationText ?? ""
     });
-    const deactivateCleanup = ctrl.deactivateCleanup;
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+    useModeLifecycle(onMount, engine, learner, ctrl.deactivateCleanup);
+    const handleSubmit = q2((input) => {
+      if (def.validateInput && currentQRef.current && !def.validateInput(currentQRef.current, input)) return false;
+      engine.submitAnswer(input);
+      return true;
+    }, [engine.submitAnswer, def]);
+    return { currentQ, round, ps, practicingLabel, handleSubmit };
+  }
+  function buildSeqProps(seqInput) {
+    return {
+      entries: seqInput.seqEntries,
+      evaluated: seqInput.seqEvaluated,
+      correctAnswer: seqInput.seqCorrectAnswer,
+      handleInput: seqInput.handleSeqInput,
+      handleBatch: seqInput.handleSeqBatch
+    };
+  }
+  function GenericMode({ def, container, navigateHome, onMount }) {
+    const learner = useLearnerModel(def.namespace, def.allItems);
+    const groupScopeSpec = buildGroupScopeSpec(def, learner.selector);
+    const groupScopeResult = groupScopeSpec ? useGroupScope(groupScopeSpec) : null;
+    const enabledGroups = groupScopeResult?.enabledGroups ?? EMPTY_GROUPS;
+    const ctrl = def.useController ? def.useController(enabledGroups) : {};
+    const ctrlRef = A2(ctrl);
+    ctrlRef.current = ctrl;
+    const { engine, currentQRef, seqInput, lastAnswerRef, isSequential } = useGenericEngine(def, ctrl, ctrlRef, groupScopeResult, learner, container);
+    const { currentQ, round, ps, practicingLabel, handleSubmit } = useGenericDerivedState(
+      def,
+      engine,
+      learner,
+      groupScopeResult,
+      currentQRef,
+      seqInput,
+      isSequential,
+      container,
+      onMount,
+      ctrl
+    );
+    const dir = currentQ && def.getDirection ? def.getDirection(currentQ) : "fwd";
     const promptText = currentQ ? def.getPromptText(currentQ) : "";
     const useFlats = currentQ && def.getUseFlats ? def.getUseFlats(currentQ) : void 0;
-    const handleSubmit = q2(
-      (input) => {
-        if (def.validateInput && currentQRef.current) {
-          if (!def.validateInput(currentQRef.current, input)) {
-            return false;
-          }
-        }
-        engine.submitAnswer(input);
-        return true;
-      },
-      [engine.submitAnswer, def]
+    const { active: activeButtons, inactive: inactiveButtons } = resolveButtons(
+      def,
+      dir
     );
-    const placeholder = (() => {
-      if (isSequential) {
-        const seq = def.sequential;
-        if (!seq.batchPlaceholder) return void 0;
-        if (typeof seq.batchPlaceholder === "string") {
-          return seq.batchPlaceholder;
-        }
-        return currentQ ? seq.batchPlaceholder(currentQ) : void 0;
-      }
-      if (!def.inputPlaceholder) return void 0;
-      if (typeof def.inputPlaceholder === "string") return def.inputPlaceholder;
-      return currentQ ? def.inputPlaceholder(currentQ) : void 0;
-    })();
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
-    const groupScope = def.scope.kind === "groups" ? def.scope : null;
-    const activeButtons = def.buttons.kind === "bidirectional" ? dir === "fwd" ? def.buttons.fwd : def.buttons.rev : def.buttons;
-    const inactiveButtons = def.buttons.kind === "bidirectional" ? dir === "fwd" ? def.buttons.rev : def.buttons.fwd : null;
+    const isIdle = engine.state.phase === "idle";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(
         ModeTopBar,
@@ -8789,206 +9239,36 @@ button {
         }
       ),
       isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
+        IdlePracticeView,
         {
-          summary: ps.summary,
-          onStart: engine.start,
-          onApplyRecommendation: ps.summary.showRecommendationButton && groupScopeResult ? groupScopeResult.applyRecommendation : void 0,
-          scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
-          validationMessage: "Select at least one group",
-          scope: groupScopeResult && groupScope ? /* @__PURE__ */ u3(
-            GroupProgressToggles,
-            {
-              groups: groupScope.allGroupIndices.map((i3) => ({
-                label: groupScope.groups[i3].label,
-                itemIds: groupScope.getItemIdsForGroup(i3)
-              })),
-              active: groupScopeResult.enabledGroups,
-              onToggle: groupScopeResult.scopeActions.toggleGroup,
-              selector: learner.selector,
-              skipped: groupScopeResult.skippedGroups,
-              onSkip: groupScopeResult.scopeActions.skipGroup,
-              onUnskip: groupScopeResult.scopeActions.unskipGroup
-            }
-          ) : void 0,
-          statsContent: /* @__PURE__ */ u3(k, { children: [
-            ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u3(k, { children: [
-              def.stats.kind === "grid" && /* @__PURE__ */ u3(
-                StatsGrid,
-                {
-                  selector: ps.statsSel,
-                  colLabels: def.stats.colLabels,
-                  getItemId: def.stats.getItemId,
-                  notes: def.stats.notes
-                }
-              ),
-              def.stats.kind === "table" && /* @__PURE__ */ u3(
-                StatsTable,
-                {
-                  selector: ps.statsSel,
-                  rows: def.stats.getRows(),
-                  fwdHeader: def.stats.fwdHeader,
-                  revHeader: def.stats.revHeader
-                }
-              )
-            ] }),
-            (def.stats.kind !== "none" || ctrl.renderStats) && /* @__PURE__ */ u3(StatsLegend, {})
-          ] }),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
+          def,
+          engine,
+          learner,
+          ctrl,
+          groupScopeResult,
+          ps
         }
       ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? engine.state.answered ? "Time is up" : "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                count: engine.state.roundAnswered,
-                correct: round.roundCorrect
-              }
-            )
-          }
-        ) : isSequential ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: ctrl.renderPrompt ? void 0 : promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                SequentialSlots,
-                {
-                  expectedCount: currentQ && def.sequential ? def.sequential.expectedCount(currentQ) : 0,
-                  entries: seqEntries,
-                  evaluated: seqEvaluated,
-                  correctTones: seqCorrectAnswer ? seqCorrectAnswer.split(" ") : null
-                }
-              ),
-              /* @__PURE__ */ u3(
-                ResponseButtons,
-                {
-                  buttonsDef: activeButtons,
-                  onAnswer: handleSeqInput,
-                  sequential: true,
-                  answered: engine.state.answered
-                }
-              ),
-              def.sequential?.parseBatchInput && /* @__PURE__ */ u3(
-                AnswerInput,
-                {
-                  onSubmit: handleSeqBatch,
-                  disabled: engine.state.answered,
-                  placeholder
-                }
-              ),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  hint: engine.state.hintText || void 0,
-                  correct: engine.state.feedbackCorrect,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0
-                }
-              )
-            ] }),
-            children: currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: ctrl.renderPrompt ? void 0 : promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                ResponseButtons,
-                {
-                  buttonsDef: activeButtons,
-                  onAnswer: handleSubmit,
-                  useFlats,
-                  narrowing: ctrl.narrowing,
-                  hideAccidentalsOverride: ctrl.hideAccidentals,
-                  feedback: engine.state.feedbackCorrect !== null && lastAnswerRef.current ? {
-                    correct: engine.state.feedbackCorrect,
-                    userInput: toButtonValue(
-                      lastAnswerRef.current.comparison,
-                      lastAnswerRef.current.normalizedInput
-                    ),
-                    displayAnswer: toButtonValue(
-                      lastAnswerRef.current.comparison,
-                      lastAnswerRef.current.expected
-                    )
-                  } : null
-                }
-              ),
-              inactiveButtons && /* @__PURE__ */ u3(
-                ResponseButtons,
-                {
-                  buttonsDef: inactiveButtons,
-                  hidden: true,
-                  onAnswer: handleSubmit
-                }
-              ),
-              /* @__PURE__ */ u3(
-                AnswerInput,
-                {
-                  onSubmit: handleSubmit,
-                  disabled: engine.state.answered,
-                  placeholder,
-                  feedbackCorrect: engine.state.feedbackCorrect
-                }
-              ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: getHintType(activeButtons) }),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  hint: engine.state.hintText || void 0,
-                  correct: engine.state.feedbackCorrect,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0,
-                  label: engine.state.roundTimerExpired ? "Continue" : "Next"
-                }
-              )
-            ] }),
-            children: currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null
-          }
-        )
-      ] })
+      !isIdle && /* @__PURE__ */ u3(
+        QuizActiveView,
+        {
+          def,
+          engine,
+          learner,
+          ctrl,
+          currentQ,
+          round,
+          practicingLabel,
+          handleSubmit,
+          seq: buildSeqProps(seqInput),
+          activeButtons,
+          inactiveButtons,
+          promptText,
+          useFlats,
+          placeholder: getInputPlaceholder(def, currentQ, isSequential),
+          lastAnswerRef
+        }
+      )
     ] });
   }
 
@@ -9152,16 +9432,15 @@ button {
     { distances: [3, 4], label: "\xB13\u20134" },
     { distances: [5, 6], label: "\xB15\u20136" },
     { distances: [7, 8], label: "\xB17\u20138" },
-    { distances: [9, 10], label: "\xB19\u201310" },
-    { distances: [11], label: "\xB111" }
+    { distances: [9, 10, 11], label: "\xB19\u201311" }
   ];
   function getItemIdsForGroup(groupIndex) {
     const distances = DISTANCE_GROUPS[groupIndex].distances;
     const items = [];
     for (const note of NOTES) {
-      for (const d3 of distances) {
-        items.push(note.name + "+" + d3);
-        items.push(note.name + "-" + d3);
+      for (const d4 of distances) {
+        items.push(note.name + "+" + d4);
+        items.push(note.name + "-" + d4);
       }
     }
     return items;
@@ -9250,8 +9529,7 @@ button {
     { distances: [3, 4], label: "m3 M3" },
     { distances: [5, 6], label: "P4 TT" },
     { distances: [7, 8], label: "P5 m6" },
-    { distances: [9, 10], label: "M6 m7" },
-    { distances: [11], label: "M7" }
+    { distances: [9, 10, 11], label: "M6 m7 M7" }
   ];
   function getItemIdsForGroup2(groupIndex) {
     const distances = DISTANCE_GROUPS2[groupIndex].distances;
@@ -9445,18 +9723,18 @@ button {
     const degrees = DEGREE_GROUPS[groupIndex].degrees;
     const items = [];
     for (const key of MAJOR_KEYS) {
-      for (const d3 of degrees) {
-        items.push(key.root + ":" + d3 + ":fwd");
-        items.push(key.root + ":" + d3 + ":rev");
+      for (const d4 of degrees) {
+        items.push(key.root + ":" + d4 + ":fwd");
+        items.push(key.root + ":" + d4 + ":rev");
       }
     }
     return items;
   }
   var ALL_ITEMS6 = [];
   for (const key of MAJOR_KEYS) {
-    for (const d3 of ACTIVE_DEGREES) {
-      ALL_ITEMS6.push(key.root + ":" + d3 + ":fwd");
-      ALL_ITEMS6.push(key.root + ":" + d3 + ":rev");
+    for (const d4 of ACTIVE_DEGREES) {
+      ALL_ITEMS6.push(key.root + ":" + d4 + ":fwd");
+      ALL_ITEMS6.push(key.root + ":" + d4 + ":rev");
     }
   }
   var ALL_GROUP_INDICES4 = DEGREE_GROUPS.map((_3, i3) => i3);
@@ -9473,8 +9751,8 @@ button {
     return { keyRoot, degree, dir, noteName };
   }
   function getGridItemId3(keyRoot, colIdx) {
-    const d3 = ACTIVE_DEGREES[colIdx];
-    return [keyRoot + ":" + d3 + ":fwd", keyRoot + ":" + d3 + ":rev"];
+    const d4 = ACTIVE_DEGREES[colIdx];
+    return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
   }
 
   // src/modes/scale-degrees/definition.ts
@@ -9520,12 +9798,12 @@ button {
       formatLabel: (groups) => {
         if (groups.size === DEGREE_GROUPS.length) return "all degrees";
         const degrees = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => DEGREE_GROUPS[g2].degrees).sort((a3, b) => a3 - b);
-        return degrees.map((d3) => DEGREE_LABELS2[d3 - 1]).join(", ") + " degrees";
+        return degrees.map((d4) => DEGREE_LABELS2[d4 - 1]).join(", ") + " degrees";
       }
     },
     stats: {
       kind: "grid",
-      colLabels: ACTIVE_DEGREES.map((d3) => DEGREE_LABELS2[d3 - 1]),
+      colLabels: ACTIVE_DEGREES.map((d4) => DEGREE_LABELS2[d4 - 1]),
       getItemId: getGridItemId3,
       notes: GRID_NOTES
     }
@@ -9542,18 +9820,18 @@ button {
     const degrees = CHORD_GROUPS[groupIndex].degrees;
     const items = [];
     for (const key of MAJOR_KEYS) {
-      for (const d3 of degrees) {
-        items.push(key.root + ":" + d3 + ":fwd");
-        items.push(key.root + ":" + d3 + ":rev");
+      for (const d4 of degrees) {
+        items.push(key.root + ":" + d4 + ":fwd");
+        items.push(key.root + ":" + d4 + ":rev");
       }
     }
     return items;
   }
   var ALL_ITEMS7 = [];
   for (const key of MAJOR_KEYS) {
-    for (let d3 = 1; d3 <= 7; d3++) {
-      ALL_ITEMS7.push(key.root + ":" + d3 + ":fwd");
-      ALL_ITEMS7.push(key.root + ":" + d3 + ":rev");
+    for (let d4 = 1; d4 <= 7; d4++) {
+      ALL_ITEMS7.push(key.root + ":" + d4 + ":fwd");
+      ALL_ITEMS7.push(key.root + ":" + d4 + ":rev");
     }
   }
   var ALL_GROUP_INDICES5 = CHORD_GROUPS.map((_3, i3) => i3);
@@ -9577,8 +9855,8 @@ button {
     return input;
   }
   function getGridItemId4(keyRoot, colIdx) {
-    const d3 = colIdx + 1;
-    return [keyRoot + ":" + d3 + ":fwd", keyRoot + ":" + d3 + ":rev"];
+    const d4 = colIdx + 1;
+    return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
   }
 
   // src/modes/diatonic-chords/definition.ts
@@ -9624,7 +9902,7 @@ button {
       defaultEnabled: [0],
       formatLabel: (groups) => {
         if (groups.size === CHORD_GROUPS.length) return "all chords";
-        const numerals = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => CHORD_GROUPS[g2].degrees).sort((a3, b) => a3 - b).map((d3) => ROMAN_NUMERALS[d3 - 1]);
+        const numerals = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => CHORD_GROUPS[g2].degrees).sort((a3, b) => a3 - b).map((d4) => ROMAN_NUMERALS[d4 - 1]);
         return numerals.join(", ") + " chords";
       }
     },
@@ -9815,25 +10093,49 @@ button {
   // src/modes/fretboard/logic.ts
   var GUITAR_GROUPS = [
     // Naturals by string (E and e combined since same notes)
-    { label: "E e", strings: [5, 0], noteFilter: "natural" },
-    { label: "A", strings: [4], noteFilter: "natural" },
-    { label: "D", strings: [3], noteFilter: "natural" },
-    { label: "G", strings: [2], noteFilter: "natural" },
-    { label: "B", strings: [1], noteFilter: "natural" },
+    {
+      label: () => `${displayNote("E")} ${displayNote("e")}`,
+      strings: [5, 0],
+      noteFilter: "natural"
+    },
+    { label: () => displayNote("A"), strings: [4], noteFilter: "natural" },
+    { label: () => displayNote("D"), strings: [3], noteFilter: "natural" },
+    { label: () => displayNote("G"), strings: [2], noteFilter: "natural" },
+    { label: () => displayNote("B"), strings: [1], noteFilter: "natural" },
     // Accidentals by string pair
-    { label: "E A \u266F\u266D", strings: [5, 4], noteFilter: "sharps-flats" },
-    { label: "D G \u266F\u266D", strings: [3, 2], noteFilter: "sharps-flats" },
-    { label: "B e \u266F\u266D", strings: [1, 0], noteFilter: "sharps-flats" }
+    {
+      label: () => `${displayNote("E")} ${displayNote("A")} \u266F\u266D`,
+      strings: [5, 4],
+      noteFilter: "sharps-flats"
+    },
+    {
+      label: () => `${displayNote("D")} ${displayNote("G")} \u266F\u266D`,
+      strings: [3, 2],
+      noteFilter: "sharps-flats"
+    },
+    {
+      label: () => `${displayNote("B")} ${displayNote("e")} \u266F\u266D`,
+      strings: [1, 0],
+      noteFilter: "sharps-flats"
+    }
   ];
   var UKULELE_GROUPS = [
     // Naturals by string
-    { label: "G", strings: [3], noteFilter: "natural" },
-    { label: "C", strings: [2], noteFilter: "natural" },
-    { label: "E", strings: [1], noteFilter: "natural" },
-    { label: "A", strings: [0], noteFilter: "natural" },
+    { label: () => displayNote("G"), strings: [3], noteFilter: "natural" },
+    { label: () => displayNote("C"), strings: [2], noteFilter: "natural" },
+    { label: () => displayNote("E"), strings: [1], noteFilter: "natural" },
+    { label: () => displayNote("A"), strings: [0], noteFilter: "natural" },
     // Accidentals by string pair
-    { label: "G C \u266F\u266D", strings: [3, 2], noteFilter: "sharps-flats" },
-    { label: "E A \u266F\u266D", strings: [1, 0], noteFilter: "sharps-flats" }
+    {
+      label: () => `${displayNote("G")} ${displayNote("C")} \u266F\u266D`,
+      strings: [3, 2],
+      noteFilter: "sharps-flats"
+    },
+    {
+      label: () => `${displayNote("E")} ${displayNote("A")} \u266F\u266D`,
+      strings: [1, 0],
+      noteFilter: "sharps-flats"
+    }
   ];
   var GROUPS_BY_INSTRUMENT = {
     fretboard: GUITAR_GROUPS,
@@ -9887,7 +10189,11 @@ button {
   function formatLabel(instrument, enabledGroups) {
     const groups = getGroups(instrument);
     if (enabledGroups.size === groups.length) return "all groups";
-    const labels = Array.from(enabledGroups).sort((a3, b) => a3 - b).map((i3) => groups[i3]?.label ?? String(i3));
+    const labels = Array.from(enabledGroups).sort((a3, b) => a3 - b).map((i3) => {
+      const g2 = groups[i3];
+      if (!g2) return String(i3);
+      return typeof g2.label === "function" ? g2.label() : g2.label;
+    });
     return labels.join(", ");
   }
 
@@ -9938,6 +10244,39 @@ button {
       useController: (enabledGroups) => useFretboardController(instrument, groups, enabledGroups)
     };
   }
+  function renderFretboardPrompt(q3, quizFbRef, svgHTML) {
+    const el = quizFbRef.current;
+    if (el) {
+      clearAll(el);
+      setCircleFill(el, q3.currentString, q3.currentFret, FB_QUIZ_HL);
+    }
+    return /* @__PURE__ */ u3(
+      "div",
+      {
+        ref: quizFbRef,
+        dangerouslySetInnerHTML: { __html: svgHTML }
+      }
+    );
+  }
+  function renderFretboardStats(selector, instrument, svgHTML, progressFbRef) {
+    return /* @__PURE__ */ u3(
+      "div",
+      {
+        ref: (el) => {
+          progressFbRef.current = el;
+          if (!el) return;
+          for (let s3 = 0; s3 < instrument.stringCount; s3++) {
+            for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+              const itemId = s3 + "-" + f4;
+              const color = getStatsCellColor(selector, itemId);
+              setCircleFill(el, s3, f4, color);
+            }
+          }
+        },
+        dangerouslySetInnerHTML: { __html: svgHTML }
+      }
+    );
+  }
   function useFretboardController(instrument, groups, enabledGroups) {
     const quizFbRef = A2(null);
     const progressFbRef = A2(null);
@@ -9959,7 +10298,7 @@ button {
     });
     const hasAccidentalsRef = A2(hasAccidentals);
     hasAccidentalsRef.current = hasAccidentals;
-    const [pendingNote, setPendingNote] = d2(null);
+    const [pendingNote, setPendingNote] = d3(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
@@ -9972,45 +10311,12 @@ button {
       () => noteNarrowingSet(pendingNote),
       [pendingNote]
     );
-    const currentQRef = A2(null);
     const renderPrompt = q2(
-      (q3) => {
-        currentQRef.current = q3;
-        const el = quizFbRef.current;
-        if (el) {
-          clearAll(el);
-          setCircleFill(el, q3.currentString, q3.currentFret, FB_QUIZ_HL);
-        }
-        return /* @__PURE__ */ u3(
-          "div",
-          {
-            ref: quizFbRef,
-            dangerouslySetInnerHTML: { __html: svgHTML }
-          }
-        );
-      },
+      (q3) => renderFretboardPrompt(q3, quizFbRef, svgHTML),
       [svgHTML]
     );
     const renderStats = q2(
-      (selector) => {
-        return /* @__PURE__ */ u3(
-          "div",
-          {
-            ref: (el) => {
-              progressFbRef.current = el;
-              if (!el) return;
-              for (let s3 = 0; s3 < instrument.stringCount; s3++) {
-                for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-                  const itemId = s3 + "-" + f4;
-                  const color = getStatsCellColor(selector, itemId);
-                  setCircleFill(el, s3, f4, color);
-                }
-              }
-            },
-            dangerouslySetInnerHTML: { __html: svgHTML }
-          }
-        );
-      },
+      (selector) => renderFretboardStats(selector, instrument, svgHTML, progressFbRef),
       [svgHTML, instrument]
     );
     return {
@@ -10197,92 +10503,23 @@ button {
       c3.style.fill = "";
     });
   }
-  function SpeedTapMode({ container, navigateHome, onMount }) {
-    const [scope, scopeActions] = useScopeState({
-      kind: "note-filter",
-      storageKey: "speedTap_noteFilter"
-    });
-    const noteFilter = scope.kind === "note-filter" ? scope.noteFilter : "natural";
-    const learner = useLearnerModel("speedTap", ALL_ITEMS9);
-    const currentNoteRef = A2(null);
-    const targetPosRef = A2([]);
-    const foundPosRef = A2(/* @__PURE__ */ new Set());
-    const roundActiveRef = A2(false);
-    const wrongFlashTimeoutsRef = A2(
-      /* @__PURE__ */ new Set()
-    );
-    const quizFbRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const [progressText, setProgressText] = d2("");
-    const colorErrorRef = A2("#d32f2f");
-    y2(() => {
-      try {
-        const val = getComputedStyle(document.documentElement).getPropertyValue("--color-error").trim();
-        if (val) colorErrorRef.current = val;
-      } catch (_3) {
-      }
-    }, []);
-    const [currentDisplayName, setCurrentDisplayName] = d2("");
-    const svgHTML = T2(() => fretboardSVG({ tapTargets: true }), []);
-    const handleTap = q2((e3) => {
-      if (!roundActiveRef.current || !currentNoteRef.current) return;
-      const el = e3.target.closest(
-        ".fb-tap[data-string][data-fret]"
-      );
-      if (!el) return;
-      const s3 = parseInt(el.dataset.string);
-      const f4 = parseInt(el.dataset.fret);
-      const key = s3 + "-" + f4;
-      if (foundPosRef.current.has(key)) return;
-      const wrapper = quizFbRef.current;
-      if (!wrapper) return;
-      const tappedNote = getNoteAtPosition(s3, f4);
-      if (tappedNote === currentNoteRef.current) {
-        foundPosRef.current.add(key);
-        setCircleFill2(wrapper, s3, f4, FB_TAP_CORRECT);
-        setProgressText(
-          foundPosRef.current.size + " / " + targetPosRef.current.length
-        );
-        if (foundPosRef.current.size === targetPosRef.current.length) {
-          roundActiveRef.current = false;
-          engineSubmitRef.current("complete");
-        }
-      } else {
-        setCircleFill2(wrapper, s3, f4, colorErrorRef.current);
-        const timeout = setTimeout(() => {
-          wrongFlashTimeoutsRef.current.delete(timeout);
-          if (!foundPosRef.current.has(key)) {
-            setCircleFill2(wrapper, s3, f4, "");
-          }
-        }, 800);
-        wrongFlashTimeoutsRef.current.add(timeout);
-      }
-    }, []);
-    const engineConfig = T2(() => ({
+  function buildSpeedTapConfig(scope, currentNoteRef, quizFbRef, targetPosRef, foundPosRef, roundActiveRef, wrongFlashTimeoutsRef, colorError, setProgressText, setCurrentDisplayName) {
+    return {
       getEnabledItems: () => {
         const nf = scope.kind === "note-filter" ? scope.noteFilter : "natural";
         return getEnabledNotes(nf);
       },
-      checkAnswer: (_itemId, input) => {
-        const allFound = input === "complete";
-        return {
-          correct: allFound,
-          correctAnswer: displayNote(currentNoteRef.current)
-        };
-      },
+      checkAnswer: (_itemId, input) => ({
+        correct: input === "complete",
+        correctAnswer: displayNote(currentNoteRef.current)
+      }),
       onAnswer: (_itemId, result) => {
         roundActiveRef.current = false;
         if (!result.correct && quizFbRef.current) {
           for (const pos of targetPosRef.current) {
             const key = pos.string + "-" + pos.fret;
             if (!foundPosRef.current.has(key)) {
-              setCircleFill2(
-                quizFbRef.current,
-                pos.string,
-                pos.fret,
-                colorErrorRef.current
-              );
+              setCircleFill2(quizFbRef.current, pos.string, pos.fret, colorError);
             }
           }
         }
@@ -10304,45 +10541,297 @@ button {
         if (nf === "sharps-flats") return "sharps & flats";
         return "natural notes";
       },
-      getExpectedResponseCount: (itemId) => {
-        return getPositionsForNote(itemId).length;
-      }
-    }), [scope]);
-    const engine = useQuizEngine(engineConfig, learner.selector, container);
-    engineSubmitRef.current = engine.submitAnswer;
-    const prevItemRef = A2(null);
-    const currentItemId = engine.state.currentItemId;
-    if (currentItemId !== prevItemRef.current) {
-      prevItemRef.current = currentItemId;
-      if (currentItemId && engine.state.phase !== "idle") {
-        const note = NOTES.find((n2) => n2.name === currentItemId);
-        const name = note ? displayNote(pickRandomAccidental(note.displayName)) : displayNote(currentItemId);
-        const positions = getPositionsForNote(currentItemId);
-        currentNoteRef.current = currentItemId;
-        targetPosRef.current = positions;
-        foundPosRef.current = /* @__PURE__ */ new Set();
-        roundActiveRef.current = true;
-        setCurrentDisplayName(name);
-        setProgressText("0 / " + positions.length);
-      }
+      getExpectedResponseCount: (itemId) => getPositionsForNote(itemId).length
+    };
+  }
+  function syncQuestionState(itemId, phase, currentNoteRef, targetPosRef, foundPosRef, roundActiveRef, setCurrentDisplayName, setProgressText) {
+    if (itemId && phase !== "idle") {
+      const note = NOTES.find((n2) => n2.name === itemId);
+      const name = note ? displayNote(pickRandomAccidental(note.displayName)) : displayNote(itemId);
+      const positions = getPositionsForNote(itemId);
+      currentNoteRef.current = itemId;
+      targetPosRef.current = positions;
+      foundPosRef.current = /* @__PURE__ */ new Set();
+      roundActiveRef.current = true;
+      setCurrentDisplayName(name);
+      setProgressText("0 / " + positions.length);
     }
-    y2(() => {
-      const wrapper = quizFbRef.current;
-      if (!wrapper) return;
-      if (!currentItemId || engine.state.phase === "idle") {
-        clearAllCircles(wrapper);
-        return;
-      }
-      wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
-      wrongFlashTimeoutsRef.current.clear();
+  }
+  function buildSpeedTapStatsHTML(selector) {
+    let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
+    for (let i3 = 0; i3 < NOTES.length; i3++) {
+      html += "<th>" + displayNote(NOTES[i3].name) + "</th>";
+    }
+    html += "</tr></thead><tbody><tr>";
+    for (let j3 = 0; j3 < NOTES.length; j3++) {
+      html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, NOTES[j3].name) + '"></td>';
+    }
+    html += "</tr></tbody></table>" + buildStatsLegend();
+    return html;
+  }
+  function SpeedTapActiveView({
+    engine,
+    round,
+    practicingLabel,
+    learner,
+    progressText,
+    promptText,
+    svgHTML,
+    quizFbRef,
+    handleTap
+  }) {
+    const phase = engine.state.phase;
+    return /* @__PURE__ */ u3(k, { children: [
+      phase !== "round-complete" && /* @__PURE__ */ u3(
+        QuizSession,
+        {
+          timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
+          context: practicingLabel,
+          count: round.countText,
+          isWarning: engine.timerWarning,
+          isLastQuestion: engine.timerLastQuestion,
+          lastQuestion: engine.state.roundTimerExpired ? engine.state.answered ? "Time is up" : "Last question" : "",
+          onClose: engine.stop
+        }
+      ),
+      engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
+        SpeedCheck,
+        {
+          provider: BUTTON_PROVIDER,
+          fixture: engine.calibrationFixture,
+          onComplete: (baseline) => {
+            learner.applyBaseline(baseline);
+            engine.endCalibration();
+          },
+          onCancel: engine.endCalibration
+        }
+      ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
+        QuizArea,
+        {
+          controls: /* @__PURE__ */ u3(
+            RoundCompleteActions,
+            {
+              onContinue: engine.continueQuiz,
+              onStop: engine.stop
+            }
+          ),
+          children: /* @__PURE__ */ u3(
+            RoundCompleteInfo,
+            {
+              context: round.roundContext,
+              heading: "Round complete",
+              count: engine.state.roundAnswered,
+              correct: round.roundCorrect
+            }
+          )
+        }
+      ) : /* @__PURE__ */ u3(
+        QuizArea,
+        {
+          prompt: promptText,
+          controls: /* @__PURE__ */ u3(k, { children: [
+            /* @__PURE__ */ u3(NoteButtons, { hidden: true, onAnswer: () => {
+            } }),
+            /* @__PURE__ */ u3(
+              FeedbackDisplay,
+              {
+                text: engine.state.feedbackText,
+                className: engine.state.feedbackClass,
+                hint: engine.state.hintText || void 0,
+                correct: engine.state.feedbackCorrect,
+                onNext: engine.state.answered ? engine.nextQuestion : void 0,
+                label: engine.state.roundTimerExpired ? "Continue" : "Next"
+              }
+            )
+          ] }),
+          children: [
+            /* @__PURE__ */ u3("div", { class: "speed-tap-status", children: /* @__PURE__ */ u3("span", { class: "speed-tap-progress", children: progressText }) }),
+            /* @__PURE__ */ u3(
+              "div",
+              {
+                ref: quizFbRef,
+                onClick: handleTap,
+                dangerouslySetInnerHTML: { __html: svgHTML }
+              }
+            )
+          ]
+        }
+      )
+    ] });
+  }
+  function readCSSColor(prop, ref) {
+    try {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(
+        prop
+      ).trim();
+      if (val) ref.current = val;
+    } catch (_3) {
+    }
+  }
+  function resetFretboardCircles(quizFbRef, wrongFlashTimeoutsRef, currentItemId, phase) {
+    const wrapper = quizFbRef.current;
+    if (!wrapper) return;
+    if (!currentItemId || phase === "idle") {
       clearAllCircles(wrapper);
-    }, [currentItemId]);
+      return;
+    }
+    wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
+    wrongFlashTimeoutsRef.current.clear();
+    clearAllCircles(wrapper);
+  }
+  function getPracticingLabel(noteFilter) {
+    if (noteFilter === "all") return "all notes";
+    if (noteFilter === "sharps-flats") return "sharps & flats";
+    return "natural notes";
+  }
+  function SpeedTapIdleView({ noteFilter, scopeActions, learner, engine, ps, statsHTML }) {
+    return /* @__PURE__ */ u3(
+      PracticeTab,
+      {
+        summary: ps.summary,
+        onStart: engine.start,
+        scopeValid: noteFilter !== "none",
+        validationMessage: "Select at least one note type",
+        scope: /* @__PURE__ */ u3(
+          NoteFilter,
+          {
+            mode: noteFilter,
+            onChange: (f4) => scopeActions.setNoteFilter(f4)
+          }
+        ),
+        statsContent: /* @__PURE__ */ u3(
+          "div",
+          {
+            dangerouslySetInnerHTML: { __html: statsHTML }
+          }
+        ),
+        baseline: learner.motorBaseline,
+        onCalibrate: engine.startCalibration,
+        activeTab: ps.activeTab,
+        onTabSwitch: ps.setActiveTab
+      }
+    );
+  }
+  function handleFretboardTap(e3, roundActiveRef, currentNoteRef, foundPosRef, targetPosRef, quizFbRef, engineSubmitRef, wrongFlashTimeoutsRef, colorError, setProgressText) {
+    if (!roundActiveRef.current || !currentNoteRef.current) return;
+    const el = e3.target.closest(".fb-tap[data-string][data-fret]");
+    if (!el) return;
+    const s3 = parseInt(el.dataset.string);
+    const f4 = parseInt(el.dataset.fret);
+    const key = s3 + "-" + f4;
+    if (foundPosRef.current.has(key)) return;
+    const wrapper = quizFbRef.current;
+    if (!wrapper) return;
+    if (getNoteAtPosition(s3, f4) === currentNoteRef.current) {
+      foundPosRef.current.add(key);
+      setCircleFill2(wrapper, s3, f4, FB_TAP_CORRECT);
+      setProgressText(
+        foundPosRef.current.size + " / " + targetPosRef.current.length
+      );
+      if (foundPosRef.current.size === targetPosRef.current.length) {
+        roundActiveRef.current = false;
+        engineSubmitRef.current("complete");
+      }
+    } else {
+      setCircleFill2(wrapper, s3, f4, colorError);
+      const timeout = setTimeout(() => {
+        wrongFlashTimeoutsRef.current.delete(timeout);
+        if (!foundPosRef.current.has(key)) setCircleFill2(wrapper, s3, f4, "");
+      }, 800);
+      wrongFlashTimeoutsRef.current.add(timeout);
+    }
+  }
+  function useSpeedTapSpatial(scope) {
+    const currentNoteRef = A2(null);
+    const targetPosRef = A2([]);
+    const foundPosRef = A2(/* @__PURE__ */ new Set());
+    const roundActiveRef = A2(false);
+    const wrongFlashTimeoutsRef = A2(
+      /* @__PURE__ */ new Set()
+    );
+    const quizFbRef = A2(null);
+    const engineSubmitRef = A2(() => {
+    });
+    const [progressText, setProgressText] = d3("");
+    const [currentDisplayName, setCurrentDisplayName] = d3("");
+    const colorErrorRef = A2("#d32f2f");
+    y2(() => readCSSColor("--color-error", colorErrorRef), []);
+    const svgHTML = T2(() => fretboardSVG({ tapTargets: true }), []);
+    const handleTap = q2((e3) => {
+      handleFretboardTap(
+        e3,
+        roundActiveRef,
+        currentNoteRef,
+        foundPosRef,
+        targetPosRef,
+        quizFbRef,
+        engineSubmitRef,
+        wrongFlashTimeoutsRef,
+        colorErrorRef.current,
+        setProgressText
+      );
+    }, []);
+    const engineConfig = T2(
+      () => buildSpeedTapConfig(
+        scope,
+        currentNoteRef,
+        quizFbRef,
+        targetPosRef,
+        foundPosRef,
+        roundActiveRef,
+        wrongFlashTimeoutsRef,
+        colorErrorRef.current,
+        setProgressText,
+        setCurrentDisplayName
+      ),
+      [scope]
+    );
+    return {
+      progressText,
+      currentDisplayName,
+      svgHTML,
+      quizFbRef,
+      handleTap,
+      engineConfig,
+      engineSubmitRef,
+      wrongFlashTimeoutsRef,
+      syncOnItemChange: (itemId, phase) => syncQuestionState(
+        itemId,
+        phase,
+        currentNoteRef,
+        targetPosRef,
+        foundPosRef,
+        roundActiveRef,
+        setCurrentDisplayName,
+        setProgressText
+      ),
+      resetOnItemChange: (itemId, phase) => resetFretboardCircles(quizFbRef, wrongFlashTimeoutsRef, itemId, phase)
+    };
+  }
+  function SpeedTapMode({ container, navigateHome, onMount }) {
+    const [scope, scopeActions] = useScopeState({
+      kind: "note-filter",
+      storageKey: "speedTap_noteFilter"
+    });
+    const noteFilter = scope.kind === "note-filter" ? scope.noteFilter : "natural";
+    const learner = useLearnerModel("speedTap", ALL_ITEMS9);
+    const sp = useSpeedTapSpatial(scope);
+    const engine = useQuizEngine(sp.engineConfig, learner.selector, container);
+    sp.engineSubmitRef.current = engine.submitAnswer;
+    const prevItemRef = A2(null);
+    if (engine.state.currentItemId !== prevItemRef.current) {
+      prevItemRef.current = engine.state.currentItemId;
+      sp.syncOnItemChange(engine.state.currentItemId, engine.state.phase);
+    }
+    y2(
+      () => sp.resetOnItemChange(engine.state.currentItemId, engine.state.phase),
+      [engine.state.currentItemId]
+    );
     usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const practicingLabel = T2(() => {
-      if (noteFilter === "all") return "all notes";
-      if (noteFilter === "sharps-flats") return "sharps & flats";
-      return "natural notes";
-    }, [noteFilter]);
+    const practicingLabel = T2(() => getPracticingLabel(noteFilter), [
+      noteFilter
+    ]);
     const round = useRoundSummary(engine, practicingLabel);
     const ps = usePracticeSummary({
       allItems: ALL_ITEMS9,
@@ -10352,32 +10841,16 @@ button {
       recommendation: null,
       recommendationText: ""
     });
-    y2(() => {
-      return () => {
-        wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
-      };
+    y2(() => () => {
+      sp.wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
     }, []);
     useModeLifecycle(onMount, engine, learner);
-    const statsHTML = T2(() => {
-      let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
-      for (let i3 = 0; i3 < NOTES.length; i3++) {
-        html += "<th>" + displayNote(NOTES[i3].name) + "</th>";
-      }
-      html += "</tr></thead><tbody><tr>";
-      for (let j3 = 0; j3 < NOTES.length; j3++) {
-        const color = getStatsCellColor(learner.selector, NOTES[j3].name);
-        html += '<td class="stats-cell" style="background:' + color + '"></td>';
-      }
-      html += "</tr></tbody></table>";
-      html += buildStatsLegend();
-      return html;
-    }, [
+    const statsHTML = T2(() => buildSpeedTapStatsHTML(learner.selector), [
       learner.selector,
       engine.state.phase
     ]);
-    const promptText = currentDisplayName ? "Tap all " + currentDisplayName : "";
-    const phase = engine.state.phase;
-    const isIdle = phase === "idle";
+    const promptText = sp.currentDisplayName ? "Tap all " + sp.currentDisplayName : "";
+    const isIdle = engine.state.phase === "idle";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3(
         ModeTopBar,
@@ -10391,109 +10864,30 @@ button {
         }
       ),
       isIdle && /* @__PURE__ */ u3(
-        PracticeTab,
+        SpeedTapIdleView,
         {
-          summary: ps.summary,
-          onStart: engine.start,
-          scopeValid: noteFilter !== "none",
-          validationMessage: "Select at least one note type",
-          scope: /* @__PURE__ */ u3(
-            NoteFilter,
-            {
-              mode: noteFilter,
-              onChange: (f4) => scopeActions.setNoteFilter(f4)
-            }
-          ),
-          statsContent: /* @__PURE__ */ u3(
-            "div",
-            {
-              dangerouslySetInnerHTML: { __html: statsHTML }
-            }
-          ),
-          baseline: learner.motorBaseline,
-          onCalibrate: engine.startCalibration,
-          activeTab: ps.activeTab,
-          onTabSwitch: ps.setActiveTab
+          noteFilter,
+          scopeActions,
+          learner,
+          engine,
+          ps,
+          statsHTML
         }
       ),
-      !isIdle && /* @__PURE__ */ u3(k, { children: [
-        phase !== "round-complete" && /* @__PURE__ */ u3(
-          QuizSession,
-          {
-            timeLeft: engine.timerText,
-            timerPct: engine.timerPct,
-            context: practicingLabel,
-            count: round.countText,
-            isWarning: engine.timerWarning,
-            isLastQuestion: engine.timerLastQuestion,
-            lastQuestion: engine.state.roundTimerExpired ? engine.state.answered ? "Time is up" : "Last question" : "",
-            onClose: engine.stop
-          }
-        ),
-        engine.calibrating ? /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
-          SpeedCheck,
-          {
-            provider: BUTTON_PROVIDER,
-            fixture: engine.calibrationFixture,
-            onComplete: (baseline) => {
-              learner.applyBaseline(baseline);
-              engine.endCalibration();
-            },
-            onCancel: engine.endCalibration
-          }
-        ) }) : phase === "round-complete" ? /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            controls: /* @__PURE__ */ u3(
-              RoundCompleteActions,
-              {
-                onContinue: engine.continueQuiz,
-                onStop: engine.stop
-              }
-            ),
-            children: /* @__PURE__ */ u3(
-              RoundCompleteInfo,
-              {
-                context: round.roundContext,
-                heading: "Round complete",
-                count: engine.state.roundAnswered,
-                correct: round.roundCorrect
-              }
-            )
-          }
-        ) : /* @__PURE__ */ u3(
-          QuizArea,
-          {
-            prompt: promptText,
-            controls: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(NoteButtons, { hidden: true, onAnswer: () => {
-              } }),
-              /* @__PURE__ */ u3(
-                FeedbackDisplay,
-                {
-                  text: engine.state.feedbackText,
-                  className: engine.state.feedbackClass,
-                  hint: engine.state.hintText || void 0,
-                  correct: engine.state.feedbackCorrect,
-                  onNext: engine.state.answered ? engine.nextQuestion : void 0,
-                  label: engine.state.roundTimerExpired ? "Continue" : "Next"
-                }
-              )
-            ] }),
-            children: [
-              /* @__PURE__ */ u3("div", { class: "speed-tap-status", children: /* @__PURE__ */ u3("span", { class: "speed-tap-progress", children: progressText }) }),
-              /* @__PURE__ */ u3(
-                "div",
-                {
-                  ref: quizFbRef,
-                  onClick: handleTap,
-                  dangerouslySetInnerHTML: { __html: svgHTML }
-                }
-              )
-            ]
-          }
-        )
-      ] })
+      !isIdle && /* @__PURE__ */ u3(
+        SpeedTapActiveView,
+        {
+          engine,
+          round,
+          practicingLabel,
+          learner,
+          progressText: sp.progressText,
+          promptText,
+          svgHTML: sp.svgHTML,
+          quizFbRef: sp.quizFbRef,
+          handleTap: sp.handleTap
+        }
+      )
     ] });
   }
 

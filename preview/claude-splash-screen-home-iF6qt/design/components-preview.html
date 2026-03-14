@@ -481,23 +481,31 @@ body {
 .settings-page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 .settings-page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
 }
 .settings-page-title {
   margin: 0;
-  flex: 1;
-  text-align: right;
   font-weight: 600;
   font-size: var(--text-xl);
 }
-.settings-back-btn {
-  font-size: var(--text-sm);
+.settings-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-xl);
+  line-height: 1;
+  padding: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
 }
 .settings-section {
   border-top: 1px solid var(--color-border-lighter);
@@ -511,7 +519,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-2);
 }
 .settings-meta {
   font-size: var(--text-sm);
@@ -2704,6 +2711,11 @@ button {
     A: "La",
     B: "Si"
   };
+  var REVERSE_SOLFEGE = {};
+  for (const [letter, syl] of Object.entries(SOLFEGE_MAP)) {
+    REVERSE_SOLFEGE[syl.toLowerCase()] = letter;
+  }
+  REVERSE_SOLFEGE["so"] = "G";
   var _useSolfege = false;
   try {
     _useSolfege = localStorage.getItem("fretboard_notation") === "solfege";
@@ -3696,9 +3708,9 @@ button {
         )
       ] }),
       beforeAfter && /* @__PURE__ */ u3("div", { class: "mode-before-after", children: [
-        /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: beforeAfter.before }),
+        /* @__PURE__ */ u3("span", { class: "mode-ba-before", children: typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before }),
         /* @__PURE__ */ u3("span", { class: "mode-ba-arrow", children: "\u2192" }),
-        /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: beforeAfter.after })
+        /* @__PURE__ */ u3("span", { class: "mode-ba-after", children: typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after })
       ] })
     ] });
   }
