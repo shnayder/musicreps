@@ -106,6 +106,79 @@ the correct layer set in the test (`FOUNDATION`, `ENGINE`, `DISPLAY`, `APP`,
 `BUILD_TIME`, or `TOOL`). Files under `src/modes/`, `src/hooks/`, and `src/ui/`
 are classified by path automatically.
 
+### E2E tests
+
+Browser-level tests using Playwright that verify cross-cutting user flows. They
+run against a real dev server and exercise the full stack (HTML → CSS → JS →
+localStorage).
+
+#### Running
+
+```bash
+deno task e2e          # All 5 suites (~30s)
+deno task e2e:quiz     # Quiz lifecycle (start, answer, feedback, next, stop)
+deno task e2e:nav      # Navigation and mode switching
+deno task e2e:persist  # localStorage persistence across reloads
+deno task e2e:chord    # Chord spelling sequential input
+deno task e2e:skip     # Skip/unskip recommendations
+```
+
+Requires Playwright's Chromium: `npx playwright install chromium`.
+
+E2E tests also run in CI on every push to `claude/*` and `codex/*` branches.
+
+#### Test infrastructure
+
+Each suite lives in `tests/e2e/` and spawns its own Deno dev server on a
+dedicated port (8003–8007) to avoid conflicts. Shared helpers in
+`tests/e2e/helpers/`:
+
+- **`server.ts`** — starts a dev server subprocess, waits for `Listening on`
+  output, returns the actual port.
+- **`page-helpers.ts`** — `createTestPage`, `seedLocalStorage`,
+  `navigateToMode`, `startQuiz`, `advanceToNext`.
+- **`fixture-builders.ts`** — `buildMotorBaseline`, `buildEnabledGroups` for
+  seeding localStorage with known state.
+
+The `?roundMs=N` query parameter overrides the 60-second round timer (e.g.,
+`?roundMs=5000` for 5s rounds). Useful in both E2E tests and manual testing.
+
+#### What to E2E test
+
+- **Cross-cutting user flows** — quiz start → answer → feedback → next → stop.
+- **Navigation lifecycle** — mode switching, back button, menu interaction.
+- **Persistence** — localStorage survives reload, corrupt data doesn't crash.
+- **Scope changes** — enabling/disabling groups, skip/unskip recommendations.
+- **Multi-step input** — sequential answer entry (chord spelling).
+
+#### What NOT to E2E test
+
+- **Pure logic** — question generation, scoring, adaptive selection → unit tests.
+- **Visual appearance** — layout, colors, spacing → screenshot diffing.
+- **Exhaustive combinations** — every group × every direction → unit tests.
+  E2E tests should spot-check representative flows, not enumerate.
+- **Timing-sensitive internals** — EWMA values, exact scores → unit tests with
+  controlled inputs.
+
+#### Design principles
+
+- **Wait for DOM state, not timeouts.** Use `waitForSelector` with a state
+  (`'visible'`, `'hidden'`) instead of `waitForTimeout`. Timeouts are flaky
+  across machines.
+- **Be direction-agnostic.** Bidirectional modes pick a random direction each
+  question. Don't assume the prompt will be a note vs. a number — read the
+  placeholder or prompt text to determine which kind of answer to give.
+- **Find targets dynamically.** When the app's recommendation algorithm picks
+  which group to suggest, read the actual recommendation text instead of
+  hardcoding expected values. Algorithms change; tests shouldn't break.
+- **Seed known state.** Use `seedLocalStorage` + `buildMotorBaseline` to skip
+  calibration and start from a deterministic baseline. Don't rely on completing
+  calibration in-test.
+- **Each suite owns its server.** Dedicated ports prevent interference between
+  parallel or sequential runs. If adding a new suite, pick the next unused port.
+- **Clean up contexts.** Wrap each test's page in `try/finally` with
+  `page.context().close()` to avoid leaking browser contexts.
+
 ## Versioning
 
 A version identifier is displayed on the home screen (`<span class="version">`).
