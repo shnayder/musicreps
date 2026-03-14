@@ -168,6 +168,39 @@ body {
   color: var(--color-text-muted);
   line-height: 1.4;
 }
+/* --- Home tabs (Active / All Skills) --- */
+.home-tabs {
+  display: flex;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+  border-bottom: 2px solid var(--color-border-lighter);
+}
+.home-tab {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.home-tab:hover {
+  color: var(--color-text);
+}
+.home-tab.active {
+  color: var(--color-brand);
+  border-bottom-color: var(--color-brand);
+}
+.home-tab:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
 .home-modes {
   flex: 1;
 }
@@ -296,21 +329,23 @@ body {
 .skill-card-star.starred {
   color: var(--color-star);
 }
-/* --- Active Skills section --- */
-.active-skills {
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4) var(--space-4);
-  margin-bottom: var(--space-5);
-}
-.active-skills-label {
-  margin-top: 0;
+/* --- Active Skills tab content --- */
+.active-skills-list {
+  margin-top: var(--space-4);
 }
 .active-skills-empty {
   font-size: var(--text-sm);
   color: var(--color-text-light);
   font-style: italic;
-  margin: var(--space-2) 0 0;
+  margin: var(--space-6) 0;
+  text-align: center;
+}
+.all-skills-hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+  font-style: italic;
+  margin: var(--space-4) 0 0;
+  text-align: center;
 }
 .active-skill-track-pill {
   display: inline-block;
@@ -2176,7 +2211,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="461941 home-screen-recommendations"></div>
+  <div class="home-screen" id="home-screen" data-version="b11b11 home-screen-recommendations"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -5360,6 +5395,7 @@ button {
   // src/ui/home-screen.tsx
   var STARRED_KEY = "starredSkills";
   var ACCORDION_KEY = "trackAccordionState";
+  var TAB_KEY = "homeTab";
   function loadStarredSkills() {
     const allModeIds = new Set(TRACKS.flatMap((t3) => t3.skills));
     try {
@@ -5519,7 +5555,7 @@ button {
       }
     );
   }
-  function ActiveSkills({ starred, onToggleStar, onSelectMode }) {
+  function ActiveSkillsList({ starred, onToggleStar, onSelectMode }) {
     const orderedStarred = [];
     for (const track of TRACKS) {
       for (const modeId of track.skills) {
@@ -5528,19 +5564,23 @@ button {
         }
       }
     }
-    return /* @__PURE__ */ u3("div", { class: "active-skills", children: [
-      /* @__PURE__ */ u3("div", { class: "home-group-label active-skills-label", children: "Active Skills" }),
-      orderedStarred.length === 0 ? /* @__PURE__ */ u3("p", { class: "active-skills-empty", children: "Star skills you're working on \u2014 they'll appear here." }) : orderedStarred.map(({ modeId, trackLabel }) => /* @__PURE__ */ u3(
-        ActiveSkillCard,
-        {
-          modeId,
-          trackLabel,
-          onToggleStar,
-          onSelectMode
-        },
-        modeId
-      ))
-    ] });
+    if (orderedStarred.length === 0) {
+      return /* @__PURE__ */ u3("p", { class: "active-skills-empty", children: [
+        "Star skills in the ",
+        /* @__PURE__ */ u3("strong", { children: "All Skills" }),
+        " tab to add them here."
+      ] });
+    }
+    return /* @__PURE__ */ u3("div", { class: "active-skills-list", children: orderedStarred.map(({ modeId, trackLabel }) => /* @__PURE__ */ u3(
+      ActiveSkillCard,
+      {
+        modeId,
+        trackLabel,
+        onToggleStar,
+        onSelectMode
+      },
+      modeId
+    )) });
   }
   function TrackAccordion({ track, isExpanded, starred, onToggleExpand, onToggleStar, onSelectMode }) {
     return /* @__PURE__ */ u3("div", { class: "track-accordion", children: [
@@ -5674,11 +5714,70 @@ button {
       /* @__PURE__ */ u3(SettingsAboutLegal, { appConfig, version: version2 })
     ] });
   }
+  function AllSkillsList({ accordion, starred, onToggleExpand, onToggleStar, onSelectMode }) {
+    return /* @__PURE__ */ u3("div", { class: "home-modes", children: [
+      starred.size === 0 && /* @__PURE__ */ u3("p", { class: "all-skills-hint", children: [
+        "Tap the \u2606 on a skill to add it to your ",
+        /* @__PURE__ */ u3("strong", { children: "Active" }),
+        " ",
+        "list."
+      ] }),
+      TRACKS.map((track) => /* @__PURE__ */ u3(
+        TrackAccordion,
+        {
+          track,
+          isExpanded: accordion[track.id] !== false,
+          starred,
+          onToggleExpand,
+          onToggleStar,
+          onSelectMode
+        },
+        track.id
+      ))
+    ] });
+  }
+  function HomeScreenTabs({ tab, starredCount, onChangeTab }) {
+    return /* @__PURE__ */ u3("div", { class: "home-tabs", role: "tablist", children: [
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          role: "tab",
+          class: `home-tab${tab === "active" ? " active" : ""}`,
+          "aria-selected": tab === "active",
+          onClick: () => onChangeTab("active"),
+          children: [
+            "Active",
+            starredCount > 0 ? ` (${starredCount})` : ""
+          ]
+        }
+      ),
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          role: "tab",
+          class: `home-tab${tab === "all" ? " active" : ""}`,
+          "aria-selected": tab === "all",
+          onClick: () => onChangeTab("all"),
+          children: "All Skills"
+        }
+      )
+    ] });
+  }
   function HomeScreen({ onSelectMode, settings: settings2, appConfig, version: version2 }) {
     const [starred, setStarred] = d3(loadStarredSkills);
     const [accordion, setAccordion] = d3(loadAccordionState);
     const [showSettings, setShowSettings] = d3(false);
     const [useSolfege, setUseSolfege2] = d3(() => settings2.getUseSolfege());
+    const [tab, setTab] = d3(() => {
+      try {
+        const saved = localStorage.getItem(TAB_KEY);
+        if (saved === "active" || saved === "all") return saved;
+      } catch (_3) {
+      }
+      return loadStarredSkills().size > 0 ? "active" : "all";
+    });
     const handleToggleStar = q2((modeId) => {
       setStarred((prev) => {
         const next = new Set(prev);
@@ -5687,6 +5786,13 @@ button {
         saveStarredSkills(next);
         return next;
       });
+    }, []);
+    const handleChangeTab = q2((t3) => {
+      setTab(t3);
+      try {
+        localStorage.setItem(TAB_KEY, t3);
+      } catch (_3) {
+      }
     }, []);
     const handleToggleExpand = q2((trackId) => {
       setAccordion((prev) => {
@@ -5714,25 +5820,30 @@ button {
         /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Instant recall for music fundamentals. You know the theory\u2009\u2014\u2009now make it automatic." })
       ] }),
       /* @__PURE__ */ u3(
-        ActiveSkills,
+        HomeScreenTabs,
+        {
+          tab,
+          starredCount: starred.size,
+          onChangeTab: handleChangeTab
+        }
+      ),
+      tab === "active" ? /* @__PURE__ */ u3(
+        ActiveSkillsList,
         {
           starred,
           onToggleStar: handleToggleStar,
           onSelectMode
         }
-      ),
-      /* @__PURE__ */ u3("div", { class: "home-modes", children: TRACKS.map((track) => /* @__PURE__ */ u3(
-        TrackAccordion,
+      ) : /* @__PURE__ */ u3(
+        AllSkillsList,
         {
-          track,
-          isExpanded: accordion[track.id] !== false,
+          accordion,
           starred,
           onToggleExpand: handleToggleExpand,
           onToggleStar: handleToggleStar,
           onSelectMode
-        },
-        track.id
-      )) }),
+        }
+      ),
       /* @__PURE__ */ u3("div", { class: "home-footer", children: [
         /* @__PURE__ */ u3(
           "button",
