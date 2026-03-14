@@ -2175,7 +2175,7 @@ button {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="d028d6 home-screen-recommendations"></div>
+  <div class="home-screen" id="home-screen" data-version="899468 home-screen-recommendations"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -5453,9 +5453,9 @@ button {
             ] })
           ] }),
           ba && /* @__PURE__ */ u3("div", { class: "skill-card-ba", children: [
-            /* @__PURE__ */ u3("span", { class: "skill-card-before", children: ba.before }),
+            /* @__PURE__ */ u3("span", { class: "skill-card-before", children: ba.before() }),
             /* @__PURE__ */ u3("span", { class: "skill-card-arrow", children: "\u2192" }),
-            /* @__PURE__ */ u3("span", { class: "skill-card-after", children: ba.after })
+            /* @__PURE__ */ u3("span", { class: "skill-card-after", children: ba.after() })
           ] })
         ]
       }
@@ -5510,9 +5510,9 @@ button {
             ] })
           ] }),
           ba && /* @__PURE__ */ u3("div", { class: "skill-card-ba", children: [
-            /* @__PURE__ */ u3("span", { class: "skill-card-before", children: typeof ba.before === "function" ? ba.before() : ba.before }),
+            /* @__PURE__ */ u3("span", { class: "skill-card-before", children: ba.before() }),
             /* @__PURE__ */ u3("span", { class: "skill-card-arrow", children: "\u2192" }),
-            /* @__PURE__ */ u3("span", { class: "skill-card-after", children: typeof ba.after === "function" ? ba.after() : ba.after })
+            /* @__PURE__ */ u3("span", { class: "skill-card-after", children: ba.after() })
           ] })
         ]
       }
