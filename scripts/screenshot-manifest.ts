@@ -27,8 +27,14 @@ import {
   returnedAfterBreak,
   semitoneMathItemIds,
 } from '../src/fixtures/heatmap-scenarios.ts';
+import { generateLocalStorageData } from '../src/fixtures/recommendation-scenarios.ts';
 import { GUITAR, MODE_NAMES } from '../src/music-data.ts';
 import { getGroups, getItemIdsForGroup } from '../src/modes/fretboard/logic.ts';
+import { getItemIdsForGroup as semiMathGetGroup } from '../src/modes/semitone-math/logic.ts';
+import { getItemIdsForGroup as keySigGetGroup } from '../src/modes/key-signatures/logic.ts';
+import {
+  ALL_ITEMS as NOTE_SEMI_ITEMS,
+} from '../src/modes/note-semitones/logic.ts';
 
 // ---------------------------------------------------------------------------
 // Mode IDs & titles
@@ -80,6 +86,8 @@ export type ScreenshotEntry = {
 
 export function buildManifest(): ScreenshotEntry[] {
   const entries: ScreenshotEntry[] = [];
+  const guitarGroups = getGroups(GUITAR);
+  const gIds = guitarGroups.map((_, i) => getItemIdsForGroup(GUITAR, i));
 
   // Home screen (before any mode is selected)
   entries.push({ name: 'home', modeId: 'home' });
@@ -98,6 +106,104 @@ export function buildManifest(): ScreenshotEntry[] {
     name: 'home-active-empty',
     modeId: 'home',
     localStorageData: { homeTab: 'active' },
+  });
+
+  // Home screen: recommendations — mixed cue labels
+  // fretboard: stale (review), semitoneMath: working (get-faster),
+  // keySignatures: mastered g0 (learn-next), intervalMath: not started
+  entries.push({
+    name: 'home-recs-mixed',
+    modeId: 'home',
+    localStorageData: {
+      starredSkills: JSON.stringify([
+        'fretboard',
+        'semitoneMath',
+        'keySignatures',
+        'intervalMath',
+      ]),
+      // fretboard: groups 0-2 mastered but stale → "Review"
+      ...perGroupScenario('fretboard', [
+        { itemIds: gIds[0], state: 'fast-stale' },
+        { itemIds: gIds[1], state: 'fast-stale' },
+        { itemIds: gIds[2], state: 'fast-stale' },
+        ...gIds.slice(3).map((ids) => ({
+          itemIds: ids,
+          state: 'unseen' as const,
+        })),
+      ]),
+      // semitoneMath: g0 slow but fresh → "Get faster"
+      ...perGroupScenario('semitoneMath', [
+        {
+          itemIds: semiMathGetGroup(0),
+          state: 'slow-fresh',
+          seenFraction: 0.7,
+        },
+      ]),
+      // keySignatures: g0 mastered, rest unseen → "Learn next level"
+      ...generateLocalStorageData(
+        'keySignatures',
+        {
+          0: {
+            fluentCount: 10,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 10,
+          },
+        },
+        Date.now(),
+        keySigGetGroup,
+      ),
+      // intervalMath: no data → "not-started" (won't show cue unless cold-start)
+    },
+  });
+
+  // Home screen: all done — all starred skills fully automatic
+  // Use generateLocalStorageData with all-fluent specs so the recommendation
+  // engine classifies both as "automatic" → triggers "all done" message.
+  entries.push({
+    name: 'home-recs-all-done',
+    modeId: 'home',
+    localStorageData: {
+      starredSkills: JSON.stringify(['noteSemitones', 'keySignatures']),
+      ...generateLocalStorageData(
+        'noteSemitones',
+        {
+          0: {
+            fluentCount: 24,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 24,
+          },
+        },
+        Date.now(),
+        () => NOTE_SEMI_ITEMS,
+      ),
+      ...generateLocalStorageData(
+        'keySignatures',
+        {
+          0: { fluentCount: 6, workingCount: 0, unseenCount: 0, totalCount: 6 },
+          1: { fluentCount: 4, workingCount: 0, unseenCount: 0, totalCount: 4 },
+          2: { fluentCount: 4, workingCount: 0, unseenCount: 0, totalCount: 4 },
+          3: { fluentCount: 4, workingCount: 0, unseenCount: 0, totalCount: 4 },
+          4: { fluentCount: 6, workingCount: 0, unseenCount: 0, totalCount: 6 },
+        },
+        Date.now(),
+        keySigGetGroup,
+      ),
+    },
+  });
+
+  // Home screen: cold start — all starred but none started
+  entries.push({
+    name: 'home-recs-cold-start',
+    modeId: 'home',
+    localStorageData: {
+      starredSkills: JSON.stringify([
+        'semitoneMath',
+        'keySignatures',
+        'fretboard',
+      ]),
+    },
   });
 
   // All modes: idle + quiz (+ reverse quiz for bidirectional modes)
@@ -221,8 +327,6 @@ export function buildManifest(): ScreenshotEntry[] {
 
   // Progress tab: group-aware fretboard scenarios
   // Each scenario has different groups in different learning stages.
-  const guitarGroups = getGroups(GUITAR);
-  const gIds = guitarGroups.map((_, i) => getItemIdsForGroup(GUITAR, i));
   const unseen = (ids: string[]): GroupItemProfile => ({
     itemIds: ids,
     state: 'unseen',

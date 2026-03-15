@@ -28,6 +28,7 @@ import {
   DEFAULT_CONFIG,
   updateStability,
 } from '../src/adaptive.ts';
+import { statusLabelFromLevel } from '../src/mode-ui-state.ts';
 import type { AdaptiveConfig, ItemStats } from '../src/types.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -68,7 +69,7 @@ type StepSnapshot = {
   // Heatmap color
   heatmapColor: string;
   // Classification
-  status: 'unseen' | 'working' | 'solid' | 'automatic';
+  status: string; // 'Not started' | 'Hesitant' | 'Learning' | 'Solid' | 'Automatic'
   recallClass: 'unseen' | 'due' | 'mastered';
 };
 
@@ -80,7 +81,7 @@ type ProjectionPoint = {
   freshness: number | null;
   speedScore: number | null;
   heatmapColor: string;
-  status: 'unseen' | 'working' | 'solid' | 'automatic';
+  status: string; // 'Not started' | 'Hesitant' | 'Learning' | 'Solid' | 'Automatic'
 };
 
 type PatternResult = {
@@ -130,14 +131,9 @@ function getSpeedFreshnessColor(
 // Status classification
 // ---------------------------------------------------------------------------
 
-function classifyStatus(
-  speedScore: number | null,
-): 'unseen' | 'working' | 'solid' | 'automatic' {
-  if (speedScore === null) return 'unseen';
-  if (speedScore >= 0.9) return 'automatic';
-  if (speedScore >= 0.7) return 'solid';
-  if (speedScore > 0) return 'working';
-  return 'unseen';
+function classifyStatus(speedScore: number | null): string {
+  if (speedScore === null) return 'Not started';
+  return statusLabelFromLevel(speedScore);
 }
 
 function classifyRecall(
@@ -484,7 +480,7 @@ const PATTERNS: InteractionPattern[] = [
   {
     name: 'speed-plateau',
     description:
-      'Always correct but consistently slow (~3.5s) across sessions. High recall, but low speed score keeps status at working.',
+      'Always correct but consistently slow (~3.5s) across sessions. High recall, but low speed score keeps status at Hesitant.',
     events: [
       // Session 1
       { deltaHours: 0, responseMs: 3600, correct: true },
@@ -538,9 +534,10 @@ function generateSparkline(
 
   // Band backgrounds
   const bands = [
-    { y0: 0, y1: 0.7, color: 'rgba(255,200,150,0.15)' }, // working
-    { y0: 0.7, y1: 0.9, color: 'rgba(150,200,100,0.15)' }, // solid
-    { y0: 0.9, y1: 1.0, color: 'rgba(80,180,80,0.15)' }, // automatic
+    { y0: 0, y1: 0.3, color: 'rgba(255,180,130,0.15)' }, // Hesitant
+    { y0: 0.3, y1: 0.7, color: 'rgba(220,200,100,0.15)' }, // Learning
+    { y0: 0.7, y1: 0.9, color: 'rgba(150,200,100,0.15)' }, // Solid
+    { y0: 0.9, y1: 1.0, color: 'rgba(80,180,80,0.15)' }, // Automatic
   ];
 
   let svg =
@@ -562,7 +559,7 @@ function generateSparkline(
   }
 
   // Threshold lines
-  const thresholds = [0.7, 0.9];
+  const thresholds = [0.3, 0.7, 0.9];
   for (const t of thresholds) {
     const ty = PAD_Y + (1 - t) * (H - 2 * PAD_Y);
     svg +=
@@ -635,10 +632,11 @@ function deltaColor(hours: number): string {
 
 function statusBadge(status: string): string {
   const colors: Record<string, string> = {
-    unseen: '#888',
-    working: '#c63',
-    solid: '#6a4',
-    automatic: '#2a7',
+    'Not started': '#888',
+    'Hesitant': '#c63',
+    'Learning': '#b90',
+    'Solid': '#6a4',
+    'Automatic': '#2a7',
   };
   const color = colors[status] || '#888';
   return `<span class="status-badge" style="background:${color}">${status}</span>`;
@@ -866,12 +864,12 @@ function generateReviewHTML(
   <h3>Model overview</h3>
   <p style="margin:0 0 0.5rem;"><strong>EWMA</strong> — exponentially weighted moving average of response times (alpha=${cfg.ewmaAlpha}).</p>
   <p style="margin:0 0 0.5rem;"><strong>Stability</strong> — half-life in hours. P(recall) = 2<sup>&minus;t/S</sup> where t = hours since last correct.</p>
-  <p style="margin:0 0 0.5rem;"><strong>Speed score</strong> — maps EWMA to [0,1]. ${cfg.minTime}ms &rarr; 1.0, ${cfg.speedTarget}ms &rarr; 0.5. Speed &ge; 0.9 = automatic, &ge; 0.7 = solid, &gt; 0 = working.</p>
+  <p style="margin:0 0 0.5rem;"><strong>Speed score</strong> — maps EWMA to [0,1]. ${cfg.minTime}ms &rarr; 1.0, ${cfg.speedTarget}ms &rarr; 0.5. Status: &ge; 0.9 Automatic, &ge; 0.7 Solid, &ge; 0.3 Learning, &lt; 0.3 Hesitant.</p>
   <p style="margin:0 0 0.5rem;"><strong>Freshness</strong> — independent dimension. Fades heatmap color saturation as recall decays, but does not affect mastery status.</p>
   <h3 style="margin-top:0.75rem;">Heatmap color encoding</h3>
   <div class="legend-row">${
     colorCell('hsl(125,48%,33%)')
-  }<span>Speed &gt; 0.9 (automatic)</span></div>
+  }<span>Speed &gt; 0.9 — Automatic</span></div>
   <div class="legend-row">${
     colorCell('hsl(80,35%,40%)')
   }<span>Speed &gt; 0.75</span></div>
@@ -880,14 +878,16 @@ function generateReviewHTML(
   }<span>Speed &gt; 0.55</span></div>
   <div class="legend-row">${
     colorCell('hsl(48,50%,52%)')
-  }<span>Speed &gt; 0.3</span></div>
+  }<span>Speed &gt; 0.3 — Learning</span></div>
   <div class="legend-row">${
     colorCell('hsl(40,60%,58%)')
-  }<span>Speed &le; 0.3 (hesitant)</span></div>
-  <div class="legend-row">${colorCell(NO_DATA_COLOR)}<span>No data</span></div>
+  }<span>Speed &le; 0.3 — Hesitant</span></div>
+  <div class="legend-row">${
+    colorCell(NO_DATA_COLOR)
+  }<span>No data — Not started</span></div>
   <p style="margin:0.5rem 0 0; font-size:0.78rem; color:#666;">Freshness fades saturation &amp; lightness toward grey as recall decays.</p>
   <h3 style="margin-top:0.75rem;">Sparkline</h3>
-  <p style="margin:0; font-size:0.78rem; color:#666;">Green solid line = speed score. Orange dashed = projected decay. Background bands: working / solid / automatic.</p>
+  <p style="margin:0; font-size:0.78rem; color:#666;">Green solid line = speed score. Orange dashed = projected decay. Background bands: Hesitant / Learning / Solid / Automatic.</p>
 </div>
 </details>
 
