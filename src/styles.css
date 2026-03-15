@@ -89,7 +89,10 @@
   --size-content-inset: var(--space-5);
 }
 
-* {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
 html {
@@ -480,7 +483,7 @@ body {
   min-width: 44px;
   min-height: 44px;
   color: var(--color-text-light);
-  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0 0;
+  margin: calc(-1 * var(--space-2)) 0 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2143,14 +2146,16 @@ button {
   }
 }
 
-/* PWA standalone mode — no decorative side borders.
-   Capacitor/native apps use a webview (not standalone), so this only
-   applies to home-screen-installed PWAs. */
+/* Standalone / native app — no decorative side borders */
 @media (display-mode: standalone) {
   body {
     border-left: none;
     border-right: none;
   }
+}
+body.native-app {
+  border-left: none;
+  border-right: none;
 }
 
 /* Mobile layout */

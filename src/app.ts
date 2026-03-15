@@ -128,6 +128,7 @@ const settings = createSettingsController({
 });
 
 const isNativeApp = !!window.Capacitor;
+if (isNativeApp) document.body.classList.add('native-app');
 
 // Mount Preact home screen — replaces static build-time HTML
 const homeRoot = document.getElementById('home-screen')!;
