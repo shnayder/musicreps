@@ -154,7 +154,7 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
         spec.selector,
         activeGroupIndices,
         spec.getItemIdsForGroup,
-        { expansionThreshold: 0.7 },
+        {},
         { sortUnstarted: (a, b) => a.string - b.string },
       ),
     [spec.selector, activeGroupIndices, spec.getItemIdsForGroup],

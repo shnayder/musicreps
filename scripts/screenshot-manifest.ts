@@ -237,7 +237,7 @@ export function buildManifest(): ScreenshotEntry[] {
     [
       'fb-starting',
       [
-        { itemIds: gIds[0], state: 'slow-fresh', seenFraction: 0.35 },
+        { itemIds: gIds[0], state: 'working', seenFraction: 0.35 },
         ...gIds.slice(1).map(unseen),
       ],
       [0],
@@ -246,9 +246,9 @@ export function buildManifest(): ScreenshotEntry[] {
     [
       'fb-working',
       [
-        { itemIds: gIds[0], state: 'fast-fresh' },
+        { itemIds: gIds[0], state: 'automatic' },
         { itemIds: gIds[1], state: 'mixed' },
-        { itemIds: gIds[2], state: 'slow-fresh', seenFraction: 0.5 },
+        { itemIds: gIds[2], state: 'working', seenFraction: 0.5 },
         ...gIds.slice(3).map(unseen),
       ],
       [0, 1, 2],
@@ -257,10 +257,10 @@ export function buildManifest(): ScreenshotEntry[] {
     [
       'fb-mastered-working',
       [
-        { itemIds: gIds[0], state: 'fast-fresh' },
-        { itemIds: gIds[1], state: 'fast-fresh' },
+        { itemIds: gIds[0], state: 'automatic' },
+        { itemIds: gIds[1], state: 'automatic' },
         { itemIds: gIds[2], state: 'mixed' },
-        { itemIds: gIds[3], state: 'slow-fresh', seenFraction: 0.5 },
+        { itemIds: gIds[3], state: 'working', seenFraction: 0.5 },
         ...gIds.slice(4).map(unseen),
       ],
       [0, 1, 2, 3],
@@ -269,9 +269,9 @@ export function buildManifest(): ScreenshotEntry[] {
     [
       'fb-needs-review',
       [
-        { itemIds: gIds[0], state: 'fast-stale' },
-        { itemIds: gIds[1], state: 'fast-stale' },
-        { itemIds: gIds[2], state: 'fast-stale' },
+        { itemIds: gIds[0], state: 'stale' },
+        { itemIds: gIds[1], state: 'stale' },
+        { itemIds: gIds[2], state: 'stale' },
         ...gIds.slice(3).map(unseen),
       ],
       [0, 1, 2],
@@ -280,13 +280,13 @@ export function buildManifest(): ScreenshotEntry[] {
     [
       'fb-nearly-done',
       [
-        { itemIds: gIds[0], state: 'fast-fresh' },
-        { itemIds: gIds[1], state: 'fast-fresh' },
-        { itemIds: gIds[2], state: 'fast-fresh' },
-        { itemIds: gIds[3], state: 'fast-fresh' },
-        { itemIds: gIds[4], state: 'fast-fresh' },
-        { itemIds: gIds[5], state: 'fast-fresh' },
-        { itemIds: gIds[6], state: 'fast-fresh' },
+        { itemIds: gIds[0], state: 'automatic' },
+        { itemIds: gIds[1], state: 'automatic' },
+        { itemIds: gIds[2], state: 'automatic' },
+        { itemIds: gIds[3], state: 'automatic' },
+        { itemIds: gIds[4], state: 'automatic' },
+        { itemIds: gIds[5], state: 'automatic' },
+        { itemIds: gIds[6], state: 'automatic' },
         { itemIds: gIds[7], state: 'mixed' },
       ],
       [0, 1, 2, 3, 4, 5, 6, 7],

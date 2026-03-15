@@ -5,14 +5,13 @@
 //
 //   1. Classify groups into started (has any seen items) vs unstarted.
 //   2. If nothing started, recommend the first unstarted group (fresh start).
-//   3. If all started and ≥80% fluent, enter review mode (all groups active).
+//   3. If all started and ≥80% automatic, enter review mode (all groups active).
 //   4. Otherwise, select consolidation groups — those with above-median work
 //      (working + unseen items). If all are at the median, fall back to the
 //      highest-work group.
 //   5. Cap consolidation if total work exceeds maxWorkItems (default 30).
-//   6. If the learner's "level automaticity" (10th percentile of per-item
-//      automaticity across all started items) meets the expansion threshold,
-//      suggest one unstarted group for expansion.
+//   6. If all started levels are Solid (P10 speed ≥ 0.7) and Fresh (P10
+//      freshness ≥ 0.5), suggest one unstarted group for expansion.
 //   7. Detect stale groups — fast (speed ≥ 0.5) but decayed (freshness < 0.5).
 //
 // Each step is a named, exported, individually tested function.
@@ -35,15 +34,18 @@ export type RecommendationSelector = {
   getStringRecommendations(
     indices: number[],
     getItemIds: (index: number) => string[],
-    nowMs?: number,
   ): StringRecommendation[];
-  getLevelAutomaticity(
+  getLevelSpeed(
+    itemIds: string[],
+    percentile?: number,
+  ): { level: number; seen: number };
+  getLevelFreshness(
     itemIds: string[],
     percentile?: number,
     nowMs?: number,
   ): { level: number; seen: number };
-  getSpeedScore?(id: string): number | null;
-  getFreshness?(id: string, nowMs?: number): number | null;
+  getSpeedScore(id: string): number | null;
+  getFreshness(id: string, nowMs?: number): number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -117,18 +119,18 @@ export function freshStartResult(
 // ---------------------------------------------------------------------------
 
 /**
- * Detect review mode: all groups started and ≥80% of items are fluent.
+ * Detect review mode: all groups started and ≥80% of items are automatic.
  * Returns a RecommendationResult with all groups active, or null if
- * conditions aren't met (unstarted groups exist, or fluency too low).
+ * conditions aren't met (unstarted groups exist, or mastery too low).
  */
 export function checkReviewMode(
   started: StringRecommendation[],
   hasUnstarted: boolean,
 ): RecommendationResult | null {
   if (hasUnstarted) return null;
-  const totalFluent = started.reduce((s, r) => s + r.fluentCount, 0);
+  const totalAutomatic = started.reduce((s, r) => s + r.automaticCount, 0);
   const totalItems = started.reduce((s, r) => s + r.totalCount, 0);
-  if (totalItems === 0 || totalFluent / totalItems < 0.8) return null;
+  if (totalItems === 0 || totalAutomatic / totalItems < 0.8) return null;
   const allIndices = started.map((r) => r.string);
   const allWork = started.reduce((s, r) => s + workCount(r), 0);
   return {
@@ -215,16 +217,19 @@ export function capConsolidation(
 
 /**
  * Pick the next unstarted group for expansion, if the learner is ready.
- * Returns null when the level automaticity is below threshold or there are
+ * All started levels must be Solid (P10 speed ≥ 0.7) and Fresh (P10
+ * freshness ≥ 0.5). Returns null when conditions aren't met or there are
  * no unstarted groups remaining.
  */
 export function selectExpansion(
-  level: number,
-  threshold: number,
+  levelSpeed: number,
+  levelFreshness: number,
   unstarted: StringRecommendation[],
   sortFn?: GroupSortFn,
 ): { index: number; count: number } | null {
-  if (level < threshold || unstarted.length === 0) return null;
+  if (levelSpeed < 0.7 || levelFreshness < 0.5 || unstarted.length === 0) {
+    return null;
+  }
   const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
   return { index: sorted[0].string, count: sorted[0].totalCount };
 }
@@ -279,7 +284,7 @@ export function computeRecommendations(
   selector: RecommendationSelector,
   allIndices: number[],
   getItemIds: (index: number) => string[],
-  config: { expansionThreshold: number; maxWorkItems?: number },
+  config: { maxWorkItems?: number },
   options?: { sortUnstarted?: GroupSortFn },
 ): RecommendationResult {
   // Single timestamp for consistent freshness/recall across all calls.
@@ -289,14 +294,13 @@ export function computeRecommendations(
   const recs = selector.getStringRecommendations(
     allIndices,
     getItemIds,
-    nowMs,
   );
   const { started, unstarted } = classifyGroups(recs);
 
   // Fresh start: no items practiced yet.
   if (started.length === 0) return freshStartResult(unstarted, sortFn);
 
-  // Review mode: everything started and mostly fluent.
+  // Review mode: everything started and mostly automatic.
   const review = checkReviewMode(started, unstarted.length > 0);
   if (review) return review;
 
@@ -322,15 +326,18 @@ export function computeRecommendations(
   const enabled = new Set(indices);
 
   // Expansion: suggest one new group if the learner is ready.
+  // All started levels must be Solid (P10 speed ≥ 0.7) and Fresh (P10
+  // freshness ≥ 0.5).
   const startedItemIds = started.flatMap((r) => getItemIds(r.string));
-  const { level } = selector.getLevelAutomaticity(
+  const { level: levelSpeed } = selector.getLevelSpeed(startedItemIds);
+  const { level: levelFreshness } = selector.getLevelFreshness(
     startedItemIds,
     undefined,
     nowMs,
   );
   const expansion = selectExpansion(
-    level,
-    config.expansionThreshold,
+    levelSpeed,
+    levelFreshness,
     unstarted,
     sortFn,
   );
@@ -344,16 +351,13 @@ export function computeRecommendations(
   }
 
   // Stale detection: fast but decayed groups.
-  let staleIndices: number[] | undefined;
-  if (selector.getSpeedScore && selector.getFreshness) {
-    const getFresh = (id: string) => selector.getFreshness!(id, nowMs);
-    staleIndices = detectStaleGroups(
-      indices,
-      getItemIds,
-      selector.getSpeedScore,
-      getFresh,
-    );
-  }
+  const getFresh = (id: string) => selector.getFreshness(id, nowMs);
+  const staleIndices = detectStaleGroups(
+    indices,
+    getItemIds,
+    selector.getSpeedScore,
+    getFresh,
+  );
 
   return {
     recommended,

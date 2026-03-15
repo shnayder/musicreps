@@ -22,22 +22,22 @@ import {
 // ---------------------------------------------------------------------------
 
 export type ModeProgress = {
-  groupColors: string[]; // one HSL string per group, sorted descending by automaticity
+  groupColors: string[]; // one HSL string per group, sorted descending by speed
 };
 
 // ---------------------------------------------------------------------------
 // Pure computation (no hooks — testable)
 // ---------------------------------------------------------------------------
 
-/** Average automaticity across items (unseen → 0). Used for sort order. */
-function averageAutomaticity(
-  selector: Pick<AdaptiveSelector, 'getAutomaticity'>,
+/** Average speed score across items (unseen → 0). Used for sort order. */
+function averageSpeed(
+  selector: Pick<AdaptiveSelector, 'getSpeedScore'>,
   itemIds: string[],
 ): number {
   if (itemIds.length === 0) return 0;
   let sum = 0;
   for (const id of itemIds) {
-    sum += selector.getAutomaticity(id) ?? 0;
+    sum += selector.getSpeedScore(id) ?? 0;
   }
   return sum / itemIds.length;
 }
@@ -80,8 +80,8 @@ export function computeProgressForMode(
     : undefined;
   const selector = createAdaptiveSelector(storage, cfg);
 
-  // Compute per-group color + automaticity, then sort descending
-  type Segment = { color: string; auto: number };
+  // Compute per-group color + speed, then sort descending
+  type Segment = { color: string; speed: number };
   let segments: Segment[];
 
   if (entry.groups !== null) {
@@ -91,14 +91,14 @@ export function computeProgressForMode(
       const ids = entry.groups[i].getItemIds();
       segments.push({
         color: getStatsCellColorMerged(selector, ids),
-        auto: averageAutomaticity(selector, ids),
+        speed: averageSpeed(selector, ids),
       });
     }
   } else {
     const ids = entry.allItemIds();
     segments = [{
       color: getStatsCellColorMerged(selector, ids),
-      auto: averageAutomaticity(selector, ids),
+      speed: averageSpeed(selector, ids),
     }];
   }
 
@@ -107,7 +107,7 @@ export function computeProgressForMode(
     return { groupColors: [getSpeedFreshnessColor(null, null)] };
   }
 
-  segments.sort((a, b) => b.auto - a.auto);
+  segments.sort((a, b) => b.speed - a.speed);
   return { groupColors: segments.map((s) => s.color) };
 }
 

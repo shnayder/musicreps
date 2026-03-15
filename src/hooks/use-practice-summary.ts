@@ -29,7 +29,7 @@ export type PracticeSummaryHandle = {
  * Compute practice summary state + tab controls for a quiz mode.
  *
  * @param allItems All item IDs in the mode (not just enabled).
- * @param selector Adaptive selector (for automaticity lookups).
+ * @param selector Adaptive selector (for speed/freshness lookups).
  * @param engine Quiz engine handle (for mastery text and phase).
  * @param itemNoun "positions" for fretboard, "notes" for speed-tap, "items" for the rest.
  * @param recommendation Precomputed recommendation result (null for no-group modes).

@@ -140,14 +140,14 @@ async function runSkipUnskipTests(
 // ---------------------------------------------------------------------------
 
 // 5 semitone-math groups (±1–2, ±3–4, ±5–6, ±7–8, ±9–11).
-// Groups 0–1 have high work, groups 2–4 are mostly fluent.
+// Groups 0–1 have high work, groups 2–4 are mostly automatic.
 // This should produce a recommendation including groups 0 and 1.
 const SEMITONE_STATS = {
-  0: { fluentCount: 20, workingCount: 20, unseenCount: 8, totalCount: 48 },
-  1: { fluentCount: 15, workingCount: 25, unseenCount: 8, totalCount: 48 },
-  2: { fluentCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
-  3: { fluentCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
-  4: { fluentCount: 22, workingCount: 2, unseenCount: 0, totalCount: 24 },
+  0: { automaticCount: 20, workingCount: 20, unseenCount: 8, totalCount: 48 },
+  1: { automaticCount: 15, workingCount: 25, unseenCount: 8, totalCount: 48 },
+  2: { automaticCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
+  3: { automaticCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
+  4: { automaticCount: 22, workingCount: 2, unseenCount: 0, totalCount: 24 },
 };
 
 describe('skip/unskip — semitone math (E2E)', () => {
@@ -213,14 +213,14 @@ describe('skip/unskip — semitone math (E2E)', () => {
 // Sorted work: [11, 7, 7, 1, 1, 1, 1, 1], median = work[4] = 1
 // Groups with work > 1: groups 0, 6, 7 → recommended
 const GUITAR_STATS = {
-  0: { fluentCount: 5, workingCount: 9, unseenCount: 2, totalCount: 16 },
-  1: { fluentCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
-  2: { fluentCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
-  3: { fluentCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
-  4: { fluentCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
-  5: { fluentCount: 9, workingCount: 1, unseenCount: 0, totalCount: 10 },
-  6: { fluentCount: 3, workingCount: 5, unseenCount: 2, totalCount: 10 },
-  7: { fluentCount: 3, workingCount: 5, unseenCount: 2, totalCount: 10 },
+  0: { automaticCount: 5, workingCount: 9, unseenCount: 2, totalCount: 16 },
+  1: { automaticCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
+  2: { automaticCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
+  3: { automaticCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
+  4: { automaticCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
+  5: { automaticCount: 9, workingCount: 1, unseenCount: 0, totalCount: 10 },
+  6: { automaticCount: 3, workingCount: 5, unseenCount: 2, totalCount: 10 },
+  7: { automaticCount: 3, workingCount: 5, unseenCount: 2, totalCount: 10 },
 };
 
 describe('skip/unskip — guitar fretboard synthetic (E2E)', () => {

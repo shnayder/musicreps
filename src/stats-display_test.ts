@@ -2,7 +2,6 @@ import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
   buildStatsLegend,
-  getAutomaticityColor,
   getSpeedFreshnessColor,
   getStatsCellColor,
   getStatsCellColorMerged,
@@ -11,26 +10,6 @@ import {
 
 // Heatmap palette (matches fallback values in stats-display.ts)
 const NONE = 'hsl(30, 4%, 85%)';
-const L1 = 'hsl(40, 60%, 58%)';
-const L5 = 'hsl(125, 48%, 33%)';
-
-// ---------------------------------------------------------------------------
-// getAutomaticityColor (legacy, still exported)
-// ---------------------------------------------------------------------------
-
-describe('getAutomaticityColor', () => {
-  it('returns grey for null', () => {
-    assert.equal(getAutomaticityColor(null), NONE);
-  });
-
-  it('returns green for high automaticity (>0.8)', () => {
-    assert.equal(getAutomaticityColor(0.9), L5);
-  });
-
-  it('returns gold for low automaticity (<=0.2)', () => {
-    assert.equal(getAutomaticityColor(0.1), L1);
-  });
-});
 
 // ---------------------------------------------------------------------------
 // getSpeedFreshnessColor
@@ -73,7 +52,7 @@ describe('getSpeedFreshnessColor', () => {
 });
 
 // ---------------------------------------------------------------------------
-// getStatsCellColor (new: uses speedScore + freshness)
+// getStatsCellColor (uses speedScore + freshness)
 // ---------------------------------------------------------------------------
 
 describe('getStatsCellColor', () => {
@@ -81,7 +60,6 @@ describe('getStatsCellColor', () => {
     const selector = {
       getSpeedScore: () => 0.95,
       getFreshness: () => 0.8,
-      getAutomaticity: () => 0.9,
       getStats: () => null,
     };
     const color = getStatsCellColor(selector, 'test');
@@ -92,18 +70,8 @@ describe('getStatsCellColor', () => {
     const selector = {
       getSpeedScore: () => null,
       getFreshness: () => null,
-      getAutomaticity: () => null,
       getStats: () => null,
     };
-    assert.equal(getStatsCellColor(selector, 'test'), NONE);
-  });
-
-  it('falls back gracefully when getSpeedScore not on selector', () => {
-    const selector = {
-      getAutomaticity: () => null,
-      getStats: () => null,
-    };
-    // Without getSpeedScore/getFreshness, should return NONE
     assert.equal(getStatsCellColor(selector, 'test'), NONE);
   });
 });
@@ -117,7 +85,6 @@ describe('getStatsCellColorMerged', () => {
     const selector = {
       getSpeedScore: () => 0.9,
       getFreshness: () => 0.8,
-      getAutomaticity: () => 0.9,
       getStats: () => null,
     };
     assert.equal(
@@ -130,7 +97,6 @@ describe('getStatsCellColorMerged', () => {
     const selector = {
       getSpeedScore: () => null,
       getFreshness: () => null,
-      getAutomaticity: () => null,
       getStats: () => null,
     };
     assert.equal(
@@ -151,7 +117,6 @@ describe('getStatsCellColorMerged', () => {
     const selector = {
       getSpeedScore: (id: string) => speedData[id] ?? null,
       getFreshness: (id: string) => freshData[id] ?? null,
-      getAutomaticity: () => null,
       getStats: () => null,
     };
     const color = getStatsCellColorMerged(selector, ['C+3', 'C-3']);
@@ -172,7 +137,6 @@ describe('getStatsCellColorMerged', () => {
     const selector = {
       getSpeedScore: (id: string) => speedData[id] ?? null,
       getFreshness: (id: string) => freshData[id] ?? null,
-      getAutomaticity: () => null,
       getStats: () => null,
     };
     const color = getStatsCellColorMerged(selector, ['C+3', 'C-3']);

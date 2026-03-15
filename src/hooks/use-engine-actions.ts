@@ -29,10 +29,9 @@ function computeProgress(
 ): { masteredCount: number; totalEnabledCount: number } {
   const items = configRef.current.getEnabledItems();
   let mastered = 0;
-  const threshold = selectorRef.current.getConfig().automaticityThreshold;
   for (const id of items) {
-    const auto = selectorRef.current.getAutomaticity(id);
-    if (auto !== null && auto > threshold) mastered++;
+    const speed = selectorRef.current.getSpeedScore(id);
+    if (speed !== null && speed >= 0.9) mastered++;
   }
   return { masteredCount: mastered, totalEnabledCount: items.length };
 }

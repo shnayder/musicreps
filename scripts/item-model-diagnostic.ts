@@ -20,7 +20,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import {
-  computeAutomaticityForDisplay,
   computeEwma,
   computeFreshness,
   computeRecall,
@@ -66,11 +65,10 @@ type StepSnapshot = {
   recall: number | null;
   freshness: number | null;
   speedScore: number | null;
-  automaticity: number | null;
   // Heatmap color
   heatmapColor: string;
   // Classification
-  status: 'unseen' | 'needs-work' | 'fluent' | 'automatic';
+  status: 'unseen' | 'working' | 'solid' | 'automatic';
   recallClass: 'unseen' | 'due' | 'mastered';
 };
 
@@ -81,9 +79,8 @@ type ProjectionPoint = {
   recall: number | null;
   freshness: number | null;
   speedScore: number | null;
-  automaticity: number | null;
   heatmapColor: string;
-  status: 'unseen' | 'needs-work' | 'fluent' | 'automatic';
+  status: 'unseen' | 'working' | 'solid' | 'automatic';
 };
 
 type PatternResult = {
@@ -97,11 +94,11 @@ type PatternResult = {
 // ---------------------------------------------------------------------------
 
 const SPEED_HSL: [number, number, number][] = [
-  [44, 65, 58], // needs work
-  [54, 45, 52],
-  [68, 30, 46],
-  [90, 38, 38],
-  [122, 46, 33], // automatic
+  [40, 60, 58], // needs work (speed <= 0.3)
+  [48, 50, 52], // > 0.3
+  [60, 40, 46], // > 0.55
+  [80, 35, 40], // > 0.75
+  [125, 48, 33], // > 0.9 — automatic
 ];
 const FRESHNESS_FLOOR = 0.25;
 const NEUTRAL_L = 78;
@@ -112,13 +109,13 @@ function getSpeedFreshnessColor(
   freshness: number | null,
 ): string {
   if (speedScore === null || freshness === null) return NO_DATA_COLOR;
-  const level = speedScore > 0.8
+  const level = speedScore > 0.9
     ? 4
-    : speedScore > 0.6
+    : speedScore > 0.75
     ? 3
-    : speedScore > 0.4
+    : speedScore > 0.55
     ? 2
-    : speedScore > 0.2
+    : speedScore > 0.3
     ? 1
     : 0;
   const [h, s, l] = SPEED_HSL[level];
@@ -134,12 +131,13 @@ function getSpeedFreshnessColor(
 // ---------------------------------------------------------------------------
 
 function classifyStatus(
-  automaticity: number | null,
-): 'unseen' | 'needs-work' | 'fluent' | 'automatic' {
-  if (automaticity === null) return 'unseen';
-  if (automaticity > 0.8) return 'automatic';
-  if (automaticity > 0.4) return 'fluent';
-  return 'needs-work';
+  speedScore: number | null,
+): 'unseen' | 'working' | 'solid' | 'automatic' {
+  if (speedScore === null) return 'unseen';
+  if (speedScore >= 0.9) return 'automatic';
+  if (speedScore >= 0.7) return 'solid';
+  if (speedScore > 0) return 'working';
+  return 'unseen';
 }
 
 function classifyRecall(
@@ -147,7 +145,7 @@ function classifyRecall(
   hasSeen: boolean,
 ): 'unseen' | 'due' | 'mastered' {
   if (!hasSeen || recall === null) return 'unseen';
-  return recall < DEFAULT_CONFIG.recallThreshold ? 'due' : 'mastered';
+  return recall < DEFAULT_CONFIG.freshnessThreshold ? 'due' : 'mastered';
 }
 
 // ---------------------------------------------------------------------------
@@ -240,11 +238,6 @@ function replayPattern(
     );
     const speedScore = computeSpeedScore(stats.ewma, cfg);
     const hasSeen = stats.sampleCount > 0 || stats.lastSeen > 0;
-    const automaticity = computeAutomaticityForDisplay(
-      recall,
-      speedScore,
-      hasSeen,
-    );
     const heatmapColor = getSpeedFreshnessColor(speedScore, freshness);
 
     snapshots.push({
@@ -257,9 +250,8 @@ function replayPattern(
       recall,
       freshness,
       speedScore,
-      automaticity,
       heatmapColor,
-      status: classifyStatus(automaticity),
+      status: classifyStatus(hasSeen ? speedScore : null),
       recallClass: classifyRecall(recall, hasSeen),
     });
   }
@@ -285,11 +277,6 @@ function replayPattern(
       );
       const freshness = recall; // Same formula
       const speedScore = computeSpeedScore(stats.ewma, cfg);
-      const automaticity = computeAutomaticityForDisplay(
-        recall,
-        speedScore,
-        true,
-      );
       const heatmapColor = getSpeedFreshnessColor(speedScore, freshness);
 
       projection.push({
@@ -299,9 +286,8 @@ function replayPattern(
         recall,
         freshness,
         speedScore,
-        automaticity,
         heatmapColor,
-        status: classifyStatus(automaticity),
+        status: classifyStatus(speedScore),
       });
     }
   }
@@ -498,7 +484,7 @@ const PATTERNS: InteractionPattern[] = [
   {
     name: 'speed-plateau',
     description:
-      'Always correct but consistently slow (~3.5s) across sessions. High recall, low speed score limits automaticity.',
+      'Always correct but consistently slow (~3.5s) across sessions. High recall, but low speed score keeps status at working.',
     events: [
       // Session 1
       { deltaHours: 0, responseMs: 3600, correct: true },
@@ -536,25 +522,25 @@ function generateSparkline(
   const xScale = (W - 2 * PAD_X) / Math.max(totalSteps - 1, 1);
 
   for (let i = 0; i < snapshots.length; i++) {
-    const a = snapshots[i].automaticity ?? 0;
+    const s = snapshots[i].speedScore ?? 0;
     points.push({
       x: PAD_X + i * xScale,
-      y: PAD_Y + (1 - a) * (H - 2 * PAD_Y),
+      y: PAD_Y + (1 - s) * (H - 2 * PAD_Y),
     });
   }
   for (let i = 0; i < projection.length; i++) {
-    const a = projection[i].automaticity ?? 0;
+    const s = projection[i].speedScore ?? 0;
     points.push({
       x: PAD_X + (snapshots.length + i) * xScale,
-      y: PAD_Y + (1 - a) * (H - 2 * PAD_Y),
+      y: PAD_Y + (1 - s) * (H - 2 * PAD_Y),
     });
   }
 
   // Band backgrounds
   const bands = [
-    { y0: 0, y1: 0.4, color: 'rgba(255,200,150,0.15)' }, // needs-work
-    { y0: 0.4, y1: 0.8, color: 'rgba(150,200,100,0.15)' }, // fluent
-    { y0: 0.8, y1: 1.0, color: 'rgba(80,180,80,0.15)' }, // automatic
+    { y0: 0, y1: 0.7, color: 'rgba(255,200,150,0.15)' }, // working
+    { y0: 0.7, y1: 0.9, color: 'rgba(150,200,100,0.15)' }, // solid
+    { y0: 0.9, y1: 1.0, color: 'rgba(80,180,80,0.15)' }, // automatic
   ];
 
   let svg =
@@ -576,7 +562,7 @@ function generateSparkline(
   }
 
   // Threshold lines
-  const thresholds = [0.4, 0.8];
+  const thresholds = [0.7, 0.9];
   for (const t of thresholds) {
     const ty = PAD_Y + (1 - t) * (H - 2 * PAD_Y);
     svg +=
@@ -650,8 +636,8 @@ function deltaColor(hours: number): string {
 function statusBadge(status: string): string {
   const colors: Record<string, string> = {
     unseen: '#888',
-    'needs-work': '#c63',
-    fluent: '#6a4',
+    working: '#c63',
+    solid: '#6a4',
     automatic: '#2a7',
   };
   const color = colors[status] || '#888';
@@ -690,7 +676,6 @@ function generateReviewHTML(
         <td>${fmt(snap.stability, 1)}h</td>
         <td>${fmt(snap.recall)}</td>
         <td>${fmt(snap.speedScore)}</td>
-        <td>${fmt(snap.automaticity)}</td>
         <td>${colorCell(snap.heatmapColor)}</td>
         <td>${statusBadge(snap.status)}</td>
       </tr>`;
@@ -706,7 +691,6 @@ function generateReviewHTML(
           <td>${fmt(p.recall)}</td>
           <td>${fmt(p.freshness)}</td>
           <td>${fmt(p.speedScore)}</td>
-          <td>${fmt(p.automaticity)}</td>
           <td>${colorCell(p.heatmapColor)}</td>
           <td>${statusBadge(p.status)}</td>
         </tr>`;
@@ -736,7 +720,6 @@ function generateReviewHTML(
             <th>Stability</th>
             <th>Recall</th>
             <th>Speed</th>
-            <th>Automaticity</th>
             <th>Color</th>
             <th>Status</th>
           </tr>
@@ -757,7 +740,6 @@ function generateReviewHTML(
               <th>Recall</th>
               <th>Freshness</th>
               <th>Speed</th>
-              <th>Automaticity</th>
               <th>Color</th>
               <th>Status</th>
             </tr>
@@ -867,7 +849,7 @@ function generateReviewHTML(
 
 <div class="config-summary">
   <span>baseline=${cfg.minTime}ms</span>
-  <span>target=${cfg.automaticityTarget}ms</span>
+  <span>speedTarget=${cfg.speedTarget}ms</span>
   <span>alpha=${cfg.ewmaAlpha}</span>
   <span>initialStab=${cfg.initialStability}h</span>
   <span>maxStab=${cfg.maxStability}h</span>
@@ -875,8 +857,7 @@ function generateReviewHTML(
   <span>decayOnWrong=${cfg.stabilityDecayOnWrong}</span>
   <span>speedBonusMax=${cfg.speedBonusMax}</span>
   <span>selfCorrection&lt;${cfg.selfCorrectionThreshold}ms</span>
-  <span>recallThreshold=${cfg.recallThreshold}</span>
-  <span>automaticityThreshold=${cfg.automaticityThreshold}</span>
+  <span>freshnessThreshold=${cfg.freshnessThreshold}</span>
 </div>
 
 <details open>
@@ -885,28 +866,28 @@ function generateReviewHTML(
   <h3>Model overview</h3>
   <p style="margin:0 0 0.5rem;"><strong>EWMA</strong> — exponentially weighted moving average of response times (alpha=${cfg.ewmaAlpha}).</p>
   <p style="margin:0 0 0.5rem;"><strong>Stability</strong> — half-life in hours. P(recall) = 2<sup>&minus;t/S</sup> where t = hours since last correct.</p>
-  <p style="margin:0 0 0.5rem;"><strong>Speed score</strong> — maps EWMA to [0,1]. ${cfg.minTime}ms &rarr; 1.0, ${cfg.automaticityTarget}ms &rarr; 0.5.</p>
-  <p style="margin:0 0 0.5rem;"><strong>Automaticity</strong> = recall &times; speed score.</p>
+  <p style="margin:0 0 0.5rem;"><strong>Speed score</strong> — maps EWMA to [0,1]. ${cfg.minTime}ms &rarr; 1.0, ${cfg.speedTarget}ms &rarr; 0.5. Speed &ge; 0.9 = automatic, &ge; 0.7 = solid, &gt; 0 = working.</p>
+  <p style="margin:0 0 0.5rem;"><strong>Freshness</strong> — independent dimension. Fades heatmap color saturation as recall decays, but does not affect mastery status.</p>
   <h3 style="margin-top:0.75rem;">Heatmap color encoding</h3>
   <div class="legend-row">${
-    colorCell('hsl(122,46%,33%)')
-  }<span>Speed &gt; 0.8 (automatic)</span></div>
+    colorCell('hsl(125,48%,33%)')
+  }<span>Speed &gt; 0.9 (automatic)</span></div>
   <div class="legend-row">${
-    colorCell('hsl(90,38%,38%)')
-  }<span>Speed &gt; 0.6</span></div>
+    colorCell('hsl(80,35%,40%)')
+  }<span>Speed &gt; 0.75</span></div>
   <div class="legend-row">${
-    colorCell('hsl(68,30%,46%)')
-  }<span>Speed &gt; 0.4</span></div>
+    colorCell('hsl(60,40%,46%)')
+  }<span>Speed &gt; 0.55</span></div>
   <div class="legend-row">${
-    colorCell('hsl(54,45%,52%)')
-  }<span>Speed &gt; 0.2</span></div>
+    colorCell('hsl(48,50%,52%)')
+  }<span>Speed &gt; 0.3</span></div>
   <div class="legend-row">${
-    colorCell('hsl(44,65%,58%)')
-  }<span>Speed &le; 0.2 (needs work)</span></div>
+    colorCell('hsl(40,60%,58%)')
+  }<span>Speed &le; 0.3 (hesitant)</span></div>
   <div class="legend-row">${colorCell(NO_DATA_COLOR)}<span>No data</span></div>
   <p style="margin:0.5rem 0 0; font-size:0.78rem; color:#666;">Freshness fades saturation &amp; lightness toward grey as recall decays.</p>
   <h3 style="margin-top:0.75rem;">Sparkline</h3>
-  <p style="margin:0; font-size:0.78rem; color:#666;">Green solid line = actual automaticity. Orange dashed = projected decay. Background bands: needs-work / fluent / automatic.</p>
+  <p style="margin:0; font-size:0.78rem; color:#666;">Green solid line = speed score. Orange dashed = projected decay. Background bands: working / solid / automatic.</p>
 </div>
 </details>
 

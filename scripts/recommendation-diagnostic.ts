@@ -65,12 +65,13 @@ const DIAG_DIR = path.join(ROOT, 'screenshots', 'diagnostic');
 type SerializedRow = {
   name: string;
   description: string;
-  levelAutomaticity: number;
+  levelSpeed: number;
+  levelFreshness: number;
   medianWork: number;
   gateOpen: boolean;
   groupRecs: {
     index: number;
-    fluent: number;
+    automatic: number;
     working: number;
     unseen: number;
   }[];
@@ -158,7 +159,7 @@ function analyzeScenario(
     selector,
     ALL_GROUP_INDICES,
     getItemIdsForGroup,
-    { expansionThreshold: cfg.expansionThreshold },
+    {},
   );
 
   // Build recommendation text
@@ -187,8 +188,11 @@ function analyzeScenario(
   const started = recs.filter((r) => r.unseenCount < r.totalCount);
 
   const startedItemIds = started.flatMap((r) => getItemIdsForGroup(r.string));
-  const { level: levelAutomaticity } = selector.getLevelAutomaticity(
+  const { level: levelSpeed } = selector.getLevelSpeed(startedItemIds);
+  const { level: levelFreshness } = selector.getLevelFreshness(
     startedItemIds,
+    undefined,
+    Date.now(),
   );
 
   const workCounts = started
@@ -200,13 +204,14 @@ function analyzeScenario(
 
   const groupRecs = recs.map((r) => ({
     index: r.string,
-    fluent: r.fluentCount,
+    automatic: r.automaticCount,
     working: r.workingCount,
     unseen: r.unseenCount,
   }));
 
   return {
-    levelAutomaticity,
+    levelSpeed,
+    levelFreshness,
     medianWork,
     gateOpen: recommendation.expandIndex !== null,
     groupRecs,
@@ -442,16 +447,18 @@ function generateReviewHTML(sessionName: string, session: Session): void {
           (g) =>
             `<div class="group-row">` +
             `<span class="group-label">G${g.index}</span> ` +
-            `<span class="fluent">${g.fluent}F</span> ` +
+            `<span class="automatic">${g.automatic}A</span> ` +
             `<span class="working">${g.working}W</span> ` +
             `<span class="unseen">${g.unseen}U</span>` +
             `</div>`,
         )
         .join('\n');
 
-      const levelAuto = row.levelAutomaticity;
       const algorithmHtml =
-        `<div>Level: <strong>${levelAuto.toFixed(2)}</strong></div>` +
+        `<div>P10 speed: <strong>${row.levelSpeed.toFixed(2)}</strong></div>` +
+        `<div>P10 freshness: <strong>${
+          row.levelFreshness.toFixed(2)
+        }</strong></div>` +
         `<div>Median work: <strong>${row.medianWork}</strong></div>` +
         `<div>Gate: <strong class="${
           row.gateOpen ? 'gate-open' : 'gate-closed'
@@ -597,7 +604,7 @@ function generateReviewHTML(sessionName: string, session: Session): void {
   .group-stats-col { min-width: 120px; font-family: monospace; font-size: 0.8rem; }
   .group-row { white-space: nowrap; }
   .group-label { font-weight: bold; }
-  .fluent { color: #2a7; }
+  .automatic { color: #2a7; }
   .working { color: #c63; }
   .unseen { color: #888; }
   .algo-col { min-width: 120px; }
@@ -652,14 +659,14 @@ function generateReviewHTML(sessionName: string, session: Session): void {
 <details>
 <summary style="cursor:pointer; font-weight:bold; margin-bottom:0.5rem;">How it works</summary>
 <div class="howto">
-  <p>Each item is classified by its <strong>automaticity</strong> (speed &times; freshness):</p>
+  <p>Each item is classified by its <strong>speed score</strong>:</p>
   <ul>
-    <li><strong class="fluent">F (Fluent)</strong> &mdash; automaticity &gt; threshold (fast + fresh)</li>
-    <li><strong class="working">W (Working)</strong> &mdash; seen but automaticity &le; threshold (slow or decayed)</li>
+    <li><strong class="automatic">A (Automatic)</strong> &mdash; speed &ge; 0.9</li>
+    <li><strong class="working">W (Working)</strong> &mdash; seen but speed &lt; 0.9</li>
     <li><strong class="unseen">U (Unseen)</strong> &mdash; no data yet</li>
   </ul>
-  <p><strong>Level automaticity</strong> = 10th percentile of per-item automaticity (unseen &rarr; 0) across all started groups.<br>
-     <strong>Expansion gate</strong> opens when level &ge; 0.7 (<code>expansionThreshold</code>).<br>
+  <p><strong>Level speed</strong> = 10th percentile of per-item speed scores (unseen &rarr; 0) across all started groups.<br>
+     <strong>Expansion gate</strong> opens when P10 speed &ge; 0.7 AND P10 freshness &ge; 0.5.<br>
      Started groups with work (W + U) above the <strong>median</strong> are recommended for consolidation.<br>
      When the gate is open, one unstarted group is suggested for <strong>expansion</strong>.</p>
   <p style="font-size:0.8rem; color:#666;">
