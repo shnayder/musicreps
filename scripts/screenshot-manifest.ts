@@ -123,9 +123,9 @@ export function buildManifest(): ScreenshotEntry[] {
       ]),
       // fretboard: groups 0-2 mastered but stale → "Review"
       ...perGroupScenario('fretboard', [
-        { itemIds: gIds[0], state: 'fast-stale' },
-        { itemIds: gIds[1], state: 'fast-stale' },
-        { itemIds: gIds[2], state: 'fast-stale' },
+        { itemIds: gIds[0], state: 'stale' },
+        { itemIds: gIds[1], state: 'stale' },
+        { itemIds: gIds[2], state: 'stale' },
         ...gIds.slice(3).map((ids) => ({
           itemIds: ids,
           state: 'unseen' as const,
@@ -135,7 +135,7 @@ export function buildManifest(): ScreenshotEntry[] {
       ...perGroupScenario('semitoneMath', [
         {
           itemIds: semiMathGetGroup(0),
-          state: 'slow-fresh',
+          state: 'working',
           seenFraction: 0.7,
         },
       ]),
@@ -144,7 +144,7 @@ export function buildManifest(): ScreenshotEntry[] {
         'keySignatures',
         {
           0: {
-            fluentCount: 10,
+            automaticCount: 10,
             workingCount: 0,
             unseenCount: 0,
             totalCount: 10,
@@ -169,7 +169,7 @@ export function buildManifest(): ScreenshotEntry[] {
         'noteSemitones',
         {
           0: {
-            fluentCount: 24,
+            automaticCount: 24,
             workingCount: 0,
             unseenCount: 0,
             totalCount: 24,
@@ -181,11 +181,36 @@ export function buildManifest(): ScreenshotEntry[] {
       ...generateLocalStorageData(
         'keySignatures',
         {
-          0: { fluentCount: 6, workingCount: 0, unseenCount: 0, totalCount: 6 },
-          1: { fluentCount: 4, workingCount: 0, unseenCount: 0, totalCount: 4 },
-          2: { fluentCount: 4, workingCount: 0, unseenCount: 0, totalCount: 4 },
-          3: { fluentCount: 4, workingCount: 0, unseenCount: 0, totalCount: 4 },
-          4: { fluentCount: 6, workingCount: 0, unseenCount: 0, totalCount: 6 },
+          0: {
+            automaticCount: 6,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 6,
+          },
+          1: {
+            automaticCount: 4,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 4,
+          },
+          2: {
+            automaticCount: 4,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 4,
+          },
+          3: {
+            automaticCount: 4,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 4,
+          },
+          4: {
+            automaticCount: 6,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 6,
+          },
         },
         Date.now(),
         keySigGetGroup,

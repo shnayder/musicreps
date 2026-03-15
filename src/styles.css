@@ -165,23 +165,24 @@ body {
 }
 .home-tab {
   flex: 1;
-  padding: var(--space-3) var(--space-4);
-  font-size: var(--text-sm);
-  font-weight: 600;
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-base);
+  font-weight: 500;
   color: var(--color-text-muted);
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 .home-tab:hover {
   color: var(--color-text);
 }
 .home-tab.active {
-  color: var(--color-brand);
+  color: var(--color-brand-dark);
   border-bottom-color: var(--color-brand);
+  font-weight: 600;
 }
 .home-tab:focus-visible {
   outline: 2px solid var(--color-focus);
@@ -360,29 +361,39 @@ body {
   color: var(--color-track-ukulele);
   background: hsla(185, 40%, 38%, 0.12);
 }
-.active-skill-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
+.skill-rec-banner {
+  background: var(--color-recommended-bg);
+  border: 1px solid var(--color-recommended-border);
+  border-left: 3px solid var(--color-brand);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: none;
 }
-.skill-cue-label {
+.skill-rec-banner.track-accent-core {
+  border-left-color: var(--color-track-core);
+}
+.skill-rec-banner.track-accent-reading {
+  border-left-color: var(--color-track-reading);
+}
+.skill-rec-banner.track-accent-guitar {
+  border-left-color: var(--color-track-guitar);
+}
+.skill-rec-banner.track-accent-ukulele {
+  border-left-color: var(--color-track-ukulele);
+}
+.skill-rec-banner + .active-skill-card {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.skill-rec-header {
   font-size: var(--text-xs);
   font-weight: 600;
-  padding: 1px var(--space-2);
-  border-radius: 999px;
+  color: var(--color-recommended);
+  margin-bottom: var(--space-1);
 }
-.skill-cue-review {
-  color: var(--color-cue-review);
-  background: var(--color-cue-review-bg);
-}
-.skill-cue-get-faster {
-  color: var(--color-recommended-text);
-  background: var(--color-recommended-bg);
-}
-.skill-cue-learn-next {
-  color: var(--color-cue-learn);
-  background: var(--color-cue-learn-bg);
+.skill-rec-detail {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 .active-skills-done {
   font-size: var(--text-sm);

@@ -118,10 +118,11 @@ describe('computeSkillRecommendation', () => {
     );
     assert.equal(result.type, 'review');
     assert.equal(result.cueLabel, 'Review');
+    assert.equal(result.detail, 'Review Group 0');
     assert.ok(result.urgency > 0);
   });
 
-  it('returns get-faster when groups have working items', () => {
+  it('returns keep-practicing when groups have working items', () => {
     const entry = makeEntry('test', 3);
     const storage = createMemoryStorage();
     // Seed group 0 as slow (working, not automatic)
@@ -133,8 +134,8 @@ describe('computeSkillRecommendation', () => {
       NO_SKIPS,
       DEFAULT_CONFIG,
     );
-    assert.equal(result.type, 'get-faster');
-    assert.equal(result.cueLabel, 'Get faster');
+    assert.equal(result.type, 'keep-practicing');
+    assert.equal(result.cueLabel, 'Keep practicing');
   });
 
   it('returns learn-next when expansion gate is open', () => {
@@ -151,6 +152,7 @@ describe('computeSkillRecommendation', () => {
     );
     assert.equal(result.type, 'learn-next');
     assert.equal(result.cueLabel, 'Learn next level');
+    assert.equal(result.detail, 'Learn Group 1');
   });
 
   it('returns automatic when all groups mastered', () => {
@@ -170,7 +172,7 @@ describe('computeSkillRecommendation', () => {
     assert.equal(result.type, 'automatic');
   });
 
-  it('single-group mode classifies correctly', () => {
+  it('single-group mode omits level number in detail', () => {
     const entry = makeEntry('test', 1);
     const storage = createMemoryStorage();
     seedSlow(storage, entry.groups[0].getItemIds());
@@ -181,7 +183,8 @@ describe('computeSkillRecommendation', () => {
       NO_SKIPS,
       DEFAULT_CONFIG,
     );
-    assert.equal(result.type, 'get-faster');
+    assert.equal(result.type, 'keep-practicing');
+    assert.equal(result.detail, 'Keep practicing');
   });
 
   it('excludes skipped groups', () => {
@@ -201,7 +204,7 @@ describe('computeSkillRecommendation', () => {
     assert.equal(result.type, 'not-started');
   });
 
-  it('review takes priority over get-faster', () => {
+  it('review takes priority over keep-practicing', () => {
     const entry = makeEntry('test', 3);
     const storage = createMemoryStorage();
     // Group 0: stale. Group 1: slow (working).
@@ -232,26 +235,32 @@ describe('rankSkillRecommendations', () => {
   ): SkillRecommendation {
     const labels: Record<string, string> = {
       review: 'Review',
-      'get-faster': 'Get faster',
+      'keep-practicing': 'Keep practicing',
       'learn-next': 'Learn next level',
     };
-    return { modeId, type, urgency, cueLabel: labels[type] ?? '' };
+    return {
+      modeId,
+      type,
+      urgency,
+      cueLabel: labels[type] ?? '',
+      detail: labels[type] ?? '',
+    };
   }
 
   it('returns top 3 by priority', () => {
     const recs = [
       rec('modeA', 'learn-next'),
       rec('modeB', 'review', 2),
-      rec('modeC', 'get-faster', 5),
+      rec('modeC', 'keep-practicing', 5),
       rec('modeD', 'review', 3),
       rec('modeE', 'learn-next'),
     ];
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 3);
-    // Reviews first (higher urgency first), then get-faster
+    // Reviews first (higher urgency first), then keep-practicing
     assert.equal(result[0].modeId, 'modeD'); // review, urgency 3
     assert.equal(result[1].modeId, 'modeB'); // review, urgency 2
-    assert.equal(result[2].modeId, 'modeC'); // get-faster, urgency 5
+    assert.equal(result[2].modeId, 'modeC'); // keep-practicing, urgency 5
   });
 
   it('cold start: all not-started → first in definition order', () => {
@@ -293,7 +302,7 @@ describe('rankSkillRecommendations', () => {
     const recs = [
       rec('modeA', 'automatic'),
       rec('modeB', 'not-started'),
-      rec('modeC', 'get-faster', 5),
+      rec('modeC', 'keep-practicing', 5),
     ];
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 1);

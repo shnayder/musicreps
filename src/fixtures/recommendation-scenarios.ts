@@ -111,7 +111,7 @@ export function generateLocalStorageData(
       i++
     ) {
       const h = hashIndex(itemOffset + groupIdx * 100);
-      const ewma = 700 + h * 300; // 700-1000ms (fast — at or below minTime)
+      const ewma = 300 + h * 200; // 300-500ms (fast — at or below scaled minTime)
       const stats = makeStats({
         recentTimes: [ewma * 0.95, ewma, ewma * 1.05],
         ewma,

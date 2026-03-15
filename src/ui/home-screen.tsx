@@ -174,16 +174,12 @@ function ActiveSkillCard(
     onToggleStar,
     onSelectMode,
     progress,
-    cueLabel,
-    cueType,
   }: {
     modeId: string;
     trackLabel: string;
     onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
     progress?: ModeProgress;
-    cueLabel?: string;
-    cueType?: string;
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
@@ -227,19 +223,8 @@ function ActiveSkillCard(
       <span class='skill-card-header'>
         <SkillIcon modeId={modeId} />
         <span class='skill-card-header-text'>
-          <span class='active-skill-meta'>
-            <span class={`active-skill-track-pill pill-${trackId}`}>
-              {trackLabel}
-            </span>
-            {cueLabel && (
-              <span
-                class={`skill-cue-label${
-                  cueType ? ` skill-cue-${cueType}` : ''
-                }`}
-              >
-                {cueLabel}
-              </span>
-            )}
+          <span class={`active-skill-track-pill pill-${trackId}`}>
+            {trackLabel}
           </span>
           <span class='home-mode-name'>{name}</span>
           <span class='home-mode-desc'>{desc}</span>
@@ -337,18 +322,27 @@ function ActiveSkillsList(
           <strong>All Skills</strong> to keep going.
         </p>
       )}
-      {ordered.map(({ modeId, trackLabel, rec }) => (
-        <ActiveSkillCard
-          key={modeId}
-          modeId={modeId}
-          trackLabel={trackLabel}
-          onToggleStar={onToggleStar}
-          onSelectMode={onSelectMode}
-          progress={progress.get(modeId)}
-          cueLabel={rec?.cueLabel}
-          cueType={rec?.type}
-        />
-      ))}
+      {ordered.map(({ modeId, trackLabel, rec }) => {
+        const track = TRACKS.find((t) => t.skills.includes(modeId));
+        const trackId = track?.id || 'core';
+        return (
+          <div key={modeId}>
+            {rec?.detail && (
+              <div class={`skill-rec-banner track-accent-${trackId}`}>
+                <div class='skill-rec-header'>Suggestion</div>
+                <div class='skill-rec-detail'>{rec.detail}</div>
+              </div>
+            )}
+            <ActiveSkillCard
+              modeId={modeId}
+              trackLabel={trackLabel}
+              onToggleStar={onToggleStar}
+              onSelectMode={onSelectMode}
+              progress={progress.get(modeId)}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }

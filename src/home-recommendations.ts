@@ -21,7 +21,7 @@ export { STALE_FRESHNESS_THRESHOLD, STALE_SPEED_THRESHOLD };
 
 export type SkillRecommendationType =
   | 'review'
-  | 'get-faster'
+  | 'keep-practicing'
   | 'learn-next'
   | 'not-started'
   | 'automatic';
@@ -33,6 +33,8 @@ export type SkillRecommendation = {
   urgency: number;
   /** Short cue label for the card, or empty string if none. */
   cueLabel: string;
+  /** Specific detail with level info, e.g. "Review level 1, 3". */
+  detail: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -41,7 +43,7 @@ export type SkillRecommendation = {
 
 /** Build the "not-started" result for a mode. */
 function notStarted(modeId: string): SkillRecommendation {
-  return { modeId, type: 'not-started', urgency: 0, cueLabel: '' };
+  return { modeId, type: 'not-started', urgency: 0, cueLabel: '', detail: '' };
 }
 
 /**
@@ -83,57 +85,87 @@ export function computeSkillRecommendation(
   );
 
   // Broader stale detection: check ALL started groups, not just consolidation.
-  const staleCount = countStaleGroups(selector, allIndices, getItemIds);
+  const staleIndices = findStaleGroups(selector, allIndices, getItemIds);
 
-  return classifySkill(entry.modeId, result, staleCount);
+  return classifySkill(entry, result, staleIndices);
 }
 
-/** Count stale groups across all started groups. */
-function countStaleGroups(
+/** Find stale group indices across all started groups. */
+function findStaleGroups(
   selector: ReturnType<typeof createAdaptiveSelector>,
   allIndices: number[],
   getItemIds: (idx: number) => string[],
-): number {
+): number[] {
   const startedIndices = allIndices.filter((idx) => {
     const ids = getItemIds(idx);
     return ids.some((id) => selector.getSpeedScore(id) !== null);
   });
 
-  const stale = detectStaleGroups(
+  return detectStaleGroups(
     startedIndices,
     getItemIds,
     selector.getSpeedScore,
     (id) => selector.getFreshness(id),
-  );
-  return stale?.length ?? 0;
+  ) ?? [];
 }
 
-/** Classify a skill based on recommendation result and stale count. */
+/** Format group labels: "E A" or "E A, D G". */
+function groupLabelText(
+  indices: number[],
+  labels: string[],
+): string {
+  return indices.map((i) => labels[i] ?? `level ${i + 1}`).join(', ');
+}
+
+/** Classify a skill based on recommendation result and stale groups. */
 function classifySkill(
-  modeId: string,
+  entry: ModeProgressEntry,
   result: ReturnType<typeof computeRecommendations>,
-  staleCount: number,
+  staleIndices: number[],
 ): SkillRecommendation {
-  if (staleCount > 0) {
-    return { modeId, type: 'review', urgency: staleCount, cueLabel: 'Review' };
-  }
-  if (result.consolidateWorkingCount > 0 && !result.reviewMode) {
+  const modeId = entry.modeId;
+  const singleGroup = entry.groups.length <= 1;
+  const labels = entry.groups.map((g) => g.label);
+
+  if (staleIndices.length > 0) {
+    const detail = singleGroup
+      ? 'Review'
+      : `Review ${groupLabelText(staleIndices, labels)}`;
     return {
       modeId,
-      type: 'get-faster',
+      type: 'review',
+      urgency: staleIndices.length,
+      cueLabel: 'Review',
+      detail,
+    };
+  }
+  if (result.consolidateWorkingCount > 0 && !result.reviewMode) {
+    const detail = singleGroup
+      ? 'Keep practicing'
+      : `Keep practicing ${groupLabelText(result.consolidateIndices, labels)}`;
+    return {
+      modeId,
+      type: 'keep-practicing',
       urgency: result.consolidateWorkingCount,
-      cueLabel: 'Get faster',
+      cueLabel: 'Keep practicing',
+      detail,
     };
   }
   if (result.expandIndex !== null) {
+    const detail = singleGroup
+      ? 'Learn next level'
+      : `Learn ${
+        labels[result.expandIndex] ?? `level ${result.expandIndex + 1}`
+      }`;
     return {
       modeId,
       type: 'learn-next',
       urgency: 0,
       cueLabel: 'Learn next level',
+      detail,
     };
   }
-  return { modeId, type: 'automatic', urgency: 0, cueLabel: '' };
+  return { modeId, type: 'automatic', urgency: 0, cueLabel: '', detail: '' };
 }
 
 // ---------------------------------------------------------------------------
@@ -142,7 +174,7 @@ function classifySkill(
 
 const TYPE_PRIORITY: Record<SkillRecommendationType, number> = {
   'review': 0,
-  'get-faster': 1,
+  'keep-practicing': 1,
   'learn-next': 2,
   'not-started': 3,
   'automatic': 4,
@@ -164,7 +196,8 @@ export function rankSkillRecommendations(
   // Filter to actionable types.
   const actionable = recommendations.filter(
     (r) =>
-      r.type === 'review' || r.type === 'get-faster' || r.type === 'learn-next',
+      r.type === 'review' || r.type === 'keep-practicing' ||
+      r.type === 'learn-next',
   );
 
   if (actionable.length > 0) {
@@ -187,6 +220,7 @@ export function rankSkillRecommendations(
           ...rec,
           type: 'learn-next',
           cueLabel: 'Learn next level',
+          detail: 'Get started',
         }];
       }
     }
