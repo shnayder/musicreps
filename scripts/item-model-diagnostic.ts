@@ -388,7 +388,7 @@ const PATTERNS: InteractionPattern[] = [
   {
     name: 'cramming',
     description:
-      "One long session with many reps (1-min gaps), then nothing. Stability should barely grow.",
+      'One long session with many reps (1-min gaps), then nothing. Stability should barely grow.',
     events: [
       { deltaHours: 0, responseMs: 2500, correct: true },
       { deltaHours: M, responseMs: 2200, correct: true },
@@ -608,38 +608,50 @@ function generateSparkline(
 
   // Speed line (green, actual)
   if (snapshots.length > 1) {
-    svg +=
-      `<path d="${pathD(speedPts.slice(0, snapshots.length))}" fill="none" stroke="#2a7" stroke-width="1.5" stroke-linejoin="round"/>`;
+    svg += `<path d="${
+      pathD(speedPts.slice(0, snapshots.length))
+    }" fill="none" stroke="#2a7" stroke-width="1.5" stroke-linejoin="round"/>`;
   }
   // Speed line (green dashed, projected)
   if (projection.length > 0 && snapshots.length > 0) {
-    svg +=
-      `<path d="${pathD(speedPts.slice(snapshots.length - 1))}" fill="none" stroke="#2a7" stroke-width="1" stroke-dasharray="4,3" stroke-linejoin="round"/>`;
+    svg += `<path d="${
+      pathD(speedPts.slice(snapshots.length - 1))
+    }" fill="none" stroke="#2a7" stroke-width="1" stroke-dasharray="4,3" stroke-linejoin="round"/>`;
   }
 
   // Freshness line (blue, actual)
   if (snapshots.length > 1) {
-    svg +=
-      `<path d="${pathD(freshPts.slice(0, snapshots.length))}" fill="none" stroke="#36a" stroke-width="1.5" stroke-linejoin="round"/>`;
+    svg += `<path d="${
+      pathD(freshPts.slice(0, snapshots.length))
+    }" fill="none" stroke="#36a" stroke-width="1.5" stroke-linejoin="round"/>`;
   }
   // Freshness line (blue dashed, projected — this is the one that decays)
   if (projection.length > 0 && snapshots.length > 0) {
-    svg +=
-      `<path d="${pathD(freshPts.slice(snapshots.length - 1))}" fill="none" stroke="#36a" stroke-width="1.5" stroke-dasharray="4,3" stroke-linejoin="round"/>`;
+    svg += `<path d="${
+      pathD(freshPts.slice(snapshots.length - 1))
+    }" fill="none" stroke="#36a" stroke-width="1.5" stroke-dasharray="4,3" stroke-linejoin="round"/>`;
   }
 
   // Dots (speed = green, freshness = blue)
   for (let i = 0; i < speedPts.length; i++) {
     const inProjection = i >= snapshots.length;
     if (!inProjection) {
-      svg += `<circle cx="${speedPts[i].x.toFixed(1)}" cy="${speedPts[i].y.toFixed(1)}" r="2" fill="#2a7"/>`;
-      svg += `<circle cx="${freshPts[i].x.toFixed(1)}" cy="${freshPts[i].y.toFixed(1)}" r="2" fill="#36a"/>`;
+      svg += `<circle cx="${speedPts[i].x.toFixed(1)}" cy="${
+        speedPts[i].y.toFixed(1)
+      }" r="2" fill="#2a7"/>`;
+      svg += `<circle cx="${freshPts[i].x.toFixed(1)}" cy="${
+        freshPts[i].y.toFixed(1)
+      }" r="2" fill="#36a"/>`;
     }
   }
 
   // Legend
-  svg += `<text x="${W - 2}" y="10" text-anchor="end" font-size="8" fill="#2a7">speed</text>`;
-  svg += `<text x="${W - 2}" y="20" text-anchor="end" font-size="8" fill="#36a">fresh</text>`;
+  svg += `<text x="${
+    W - 2
+  }" y="10" text-anchor="end" font-size="8" fill="#2a7">speed</text>`;
+  svg += `<text x="${
+    W - 2
+  }" y="20" text-anchor="end" font-size="8" fill="#36a">fresh</text>`;
 
   svg += '</svg>';
   return svg;
@@ -678,16 +690,26 @@ function deltaColor(hours: number): string {
 }
 
 function freshnessBadge(freshness: number | null): string {
-  if (freshness === null) return '<span class="freshness-badge" style="background:#888">—</span>';
-  const label = freshness >= 0.8 ? 'Fresh'
-    : freshness >= 0.5 ? 'OK'
-    : freshness >= 0.3 ? 'Due'
+  if (freshness === null) {
+    return '<span class="freshness-badge" style="background:#888">—</span>';
+  }
+  const label = freshness >= 0.8
+    ? 'Fresh'
+    : freshness >= 0.5
+    ? 'OK'
+    : freshness >= 0.3
+    ? 'Due'
     : 'Stale';
-  const color = freshness >= 0.8 ? '#2a7'
-    : freshness >= 0.5 ? '#6a4'
-    : freshness >= 0.3 ? '#b90'
+  const color = freshness >= 0.8
+    ? '#2a7'
+    : freshness >= 0.5
+    ? '#6a4'
+    : freshness >= 0.3
+    ? '#b90'
     : '#c63';
-  return `<span class="freshness-badge" style="background:${color}">${label} ${(freshness * 100).toFixed(0)}%</span>`;
+  return `<span class="freshness-badge" style="background:${color}">${label} ${
+    (freshness * 100).toFixed(0)
+  }%</span>`;
 }
 
 function statusBadge(status: string): string {
