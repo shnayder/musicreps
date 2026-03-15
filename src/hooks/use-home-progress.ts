@@ -88,24 +88,14 @@ export function computeProgressForMode(
 
   // Compute per-group color + speed, then sort descending
   type Segment = { color: string; speed: number };
-  let segments: Segment[];
-
-  if (entry.groups !== null) {
-    segments = [];
-    for (let i = 0; i < entry.groups.length; i++) {
-      if (skippedGroups?.has(i)) continue;
-      const ids = entry.groups[i].getItemIds();
-      segments.push({
-        color: getStatsCellColorMerged(selector, ids),
-        speed: averageSpeed(selector, ids),
-      });
-    }
-  } else {
-    const ids = entry.allItemIds();
-    segments = [{
+  const segments: Segment[] = [];
+  for (let i = 0; i < entry.groups.length; i++) {
+    if (skippedGroups?.has(i)) continue;
+    const ids = entry.groups[i].getItemIds();
+    segments.push({
       color: getStatsCellColorMerged(selector, ids),
       speed: averageSpeed(selector, ids),
-    }];
+    });
   }
 
   // All groups skipped → single "unseen" segment

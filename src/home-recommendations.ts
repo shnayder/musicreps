@@ -182,7 +182,7 @@ const TYPE_PRIORITY: Record<SkillRecommendationType, number> = {
 
 /**
  * Rank skill recommendations and return the top N (default 3).
- * Priority: review > get-faster > learn-next. Within a tier, higher urgency
+ * Priority: review > keep-practicing > learn-next. Within a tier, higher urgency
  * wins. "not-started" and "automatic" are excluded unless cold-start applies.
  *
  * @param definitionOrder Mode IDs in definition order, used for cold-start
