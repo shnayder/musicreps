@@ -217,9 +217,9 @@ export function capConsolidation(
 
 /**
  * Pick the next unstarted group for expansion, if the learner is ready.
- * All started levels must be Solid (P10 speed ≥ 0.7) and Fresh (P10
- * freshness ≥ 0.5). Returns null when conditions aren't met or there are
- * no unstarted groups remaining.
+ * The gate checks global P10 across all started items (not per-group):
+ * P10 speed ≥ 0.7 (Solid) AND P10 freshness ≥ 0.5 (Fresh).
+ * Returns null when conditions aren't met or no unstarted groups remain.
  */
 export function selectExpansion(
   levelSpeed: number,
@@ -278,7 +278,7 @@ export function detectStaleGroups(
 /**
  * Compute which item groups to recommend and enable.
  * Orchestrates the pipeline steps above. Captures a single timestamp at
- * entry so all selector calls see consistent freshness/recall values.
+ * entry so all selector calls see consistent freshness values.
  */
 export function computeRecommendations(
   selector: RecommendationSelector,
@@ -287,7 +287,7 @@ export function computeRecommendations(
   config: { maxWorkItems?: number },
   options?: { sortUnstarted?: GroupSortFn },
 ): RecommendationResult {
-  // Single timestamp for consistent freshness/recall across all calls.
+  // Single timestamp for consistent freshness across all calls.
   const nowMs = Date.now();
   const sortFn = options?.sortUnstarted;
 
