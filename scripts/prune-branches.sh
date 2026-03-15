@@ -39,12 +39,12 @@ echo "=== Local branches merged into main ==="
 current_branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
 
 # Build grep pattern to exclude kept branches.
-# Escapes slashes and converts * globs to .* for grep.
-exclude_pattern="^\\*|main$"
+# Anchors each pattern to full branch name (after leading whitespace).
+exclude_pattern="^\\*"
 for keep in "${KEEP[@]}"; do
-  # Convert glob * to regex .*
+  # Convert glob * to regex .*, anchor to full line
   pattern=$(echo "$keep" | sed 's/\*/.\*/g')
-  exclude_pattern="$exclude_pattern|$pattern"
+  exclude_pattern="$exclude_pattern|^[[:space:]]*${pattern}$"
 done
 
 merged=$(git branch --merged main | grep -vE "$exclude_pattern" || true)

@@ -557,19 +557,24 @@ function generateSparkline(
   const xScale = (W - 2 * PAD_X) / Math.max(totalSteps - 1, 1);
   const yVal = (v: number) => PAD_Y + (1 - v) * (H - 2 * PAD_Y);
 
-  // Build speed + freshness point arrays
-  const speedPts: { x: number; y: number }[] = [];
-  const freshPts: { x: number; y: number }[] = [];
+  // Build speed + freshness point arrays (null = no data for that step)
+  type Pt = { x: number; y: number } | null;
+  const speedPts: Pt[] = [];
+  const freshPts: Pt[] = [];
 
   for (let i = 0; i < snapshots.length; i++) {
     const x = PAD_X + i * xScale;
-    speedPts.push({ x, y: yVal(snapshots[i].speedScore ?? 0) });
-    freshPts.push({ x, y: yVal(snapshots[i].freshness ?? 1) });
+    const sp = snapshots[i].speedScore;
+    const fr = snapshots[i].freshness;
+    speedPts.push(sp != null ? { x, y: yVal(sp) } : null);
+    freshPts.push(fr != null ? { x, y: yVal(fr) } : null);
   }
   for (let i = 0; i < projection.length; i++) {
     const x = PAD_X + (snapshots.length + i) * xScale;
-    speedPts.push({ x, y: yVal(projection[i].speedScore ?? 0) });
-    freshPts.push({ x, y: yVal(projection[i].freshness ?? 0) });
+    const sp = projection[i].speedScore;
+    const fr = projection[i].freshness;
+    speedPts.push(sp != null ? { x, y: yVal(sp) } : null);
+    freshPts.push(fr != null ? { x, y: yVal(fr) } : null);
   }
 
   let svg =
@@ -601,46 +606,70 @@ function generateSparkline(
       `<line x1="${divX}" y1="0" x2="${divX}" y2="${H}" stroke="#ccc" stroke-dasharray="3,3"/>`;
   }
 
-  const pathD = (pts: { x: number; y: number }[]) =>
-    pts.map((p, i) =>
-      `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`
-    ).join(' ');
+  // Build SVG path from nullable points, segmenting on nulls.
+  const pathD = (pts: Pt[]) => {
+    let d = '';
+    let needsMove = true;
+    for (const p of pts) {
+      if (p == null) {
+        needsMove = true;
+        continue;
+      }
+      const cmd = needsMove ? 'M' : 'L';
+      d += `${d ? ' ' : ''}${cmd}${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+      needsMove = false;
+    }
+    return d;
+  };
 
-  // Speed line (green, actual)
-  if (snapshots.length > 1) {
-    svg += `<path d="${
-      pathD(speedPts.slice(0, snapshots.length))
-    }" fill="none" stroke="#2a7" stroke-width="1.5" stroke-linejoin="round"/>`;
-  }
-  // Speed line (green dashed, projected)
+  const drawLine = (pts: Pt[], stroke: string, extra = '') => {
+    const d = pathD(pts);
+    if (d) {
+      svg +=
+        `<path d="${d}" fill="none" stroke="${stroke}" ${extra} stroke-linejoin="round"/>`;
+    }
+  };
+
+  // Speed line (green, actual + projected)
+  drawLine(
+    speedPts.slice(0, snapshots.length),
+    '#2a7',
+    'stroke-width="1.5"',
+  );
   if (projection.length > 0 && snapshots.length > 0) {
-    svg += `<path d="${
-      pathD(speedPts.slice(snapshots.length - 1))
-    }" fill="none" stroke="#2a7" stroke-width="1" stroke-dasharray="4,3" stroke-linejoin="round"/>`;
+    drawLine(
+      speedPts.slice(snapshots.length - 1),
+      '#2a7',
+      'stroke-width="1" stroke-dasharray="4,3"',
+    );
   }
 
-  // Freshness line (blue, actual)
-  if (snapshots.length > 1) {
-    svg += `<path d="${
-      pathD(freshPts.slice(0, snapshots.length))
-    }" fill="none" stroke="#36a" stroke-width="1.5" stroke-linejoin="round"/>`;
-  }
-  // Freshness line (blue dashed, projected — this is the one that decays)
+  // Freshness line (blue, actual + projected)
+  drawLine(
+    freshPts.slice(0, snapshots.length),
+    '#36a',
+    'stroke-width="1.5"',
+  );
   if (projection.length > 0 && snapshots.length > 0) {
-    svg += `<path d="${
-      pathD(freshPts.slice(snapshots.length - 1))
-    }" fill="none" stroke="#36a" stroke-width="1.5" stroke-dasharray="4,3" stroke-linejoin="round"/>`;
+    drawLine(
+      freshPts.slice(snapshots.length - 1),
+      '#36a',
+      'stroke-width="1.5" stroke-dasharray="4,3"',
+    );
   }
 
-  // Dots (speed = green, freshness = blue)
-  for (let i = 0; i < speedPts.length; i++) {
-    const inProjection = i >= snapshots.length;
-    if (!inProjection) {
-      svg += `<circle cx="${speedPts[i].x.toFixed(1)}" cy="${
-        speedPts[i].y.toFixed(1)
+  // Dots (speed = green, freshness = blue), actual only
+  for (let i = 0; i < snapshots.length; i++) {
+    const sp = speedPts[i];
+    const fr = freshPts[i];
+    if (sp) {
+      svg += `<circle cx="${sp.x.toFixed(1)}" cy="${
+        sp.y.toFixed(1)
       }" r="2" fill="#2a7"/>`;
-      svg += `<circle cx="${freshPts[i].x.toFixed(1)}" cy="${
-        freshPts[i].y.toFixed(1)
+    }
+    if (fr) {
+      svg += `<circle cx="${fr.x.toFixed(1)}" cy="${
+        fr.y.toFixed(1)
       }" r="2" fill="#36a"/>`;
     }
   }
