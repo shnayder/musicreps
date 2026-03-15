@@ -109,7 +109,7 @@ export function computeSpeedScore(
  */
 export function updateStability(
   oldStability: number | null,
-  _responseTimeMs: number,
+  responseTimeMs: number,
   elapsedHours: number | null,
   cfg: AdaptiveConfig,
 ): number {
@@ -130,7 +130,7 @@ export function updateStability(
   // Self-correction: fast answer after long gap means true half-life is long
   if (
     elapsedHours !== null && elapsedHours > 0 &&
-    _responseTimeMs < cfg.selfCorrectionThreshold
+    responseTimeMs < cfg.selfCorrectionThreshold
   ) {
     newStability = Math.max(newStability, elapsedHours * 1.5);
   }
