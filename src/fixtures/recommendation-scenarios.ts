@@ -111,7 +111,7 @@ export function generateLocalStorageData(
       i++
     ) {
       const h = hashIndex(itemOffset + groupIdx * 100);
-      const ewma = 1000 + h * 400; // 1000-1400ms (fast)
+      const ewma = 700 + h * 300; // 700-1000ms (fast — at or below minTime)
       const stats = makeStats({
         recentTimes: [ewma * 0.95, ewma, ewma * 1.05],
         ewma,
@@ -149,14 +149,14 @@ export function generateLocalStorageData(
 }
 
 // ---------------------------------------------------------------------------
-// Scenario definitions (all semitone-math: 6 groups, 264 items)
-// Group sizes: 0-4 = 48 items each, 5 = 24 items
+// Scenario definitions (all semitone-math: 5 groups, 264 items)
+// Group sizes: 0-3 = 48 items each, 4 = 72 items (±9–11)
 // ---------------------------------------------------------------------------
 
 export const SCENARIOS: RecommendationScenario[] = [
   {
     name: 'fresh-start',
-    description: 'All 6 groups unseen — brand new learner',
+    description: 'All 5 groups unseen — brand new learner',
     groupStats: {
       0: {
         automaticCount: 0,
@@ -185,14 +185,8 @@ export const SCENARIOS: RecommendationScenario[] = [
       4: {
         automaticCount: 0,
         workingCount: 0,
-        unseenCount: 48,
-        totalCount: 48,
-      },
-      5: {
-        automaticCount: 0,
-        workingCount: 0,
-        unseenCount: 24,
-        totalCount: 24,
+        unseenCount: 72,
+        totalCount: 72,
       },
     },
     checks: [
@@ -244,14 +238,8 @@ export const SCENARIOS: RecommendationScenario[] = [
       4: {
         automaticCount: 0,
         workingCount: 0,
-        unseenCount: 48,
-        totalCount: 48,
-      },
-      5: {
-        automaticCount: 0,
-        workingCount: 0,
-        unseenCount: 24,
-        totalCount: 24,
+        unseenCount: 72,
+        totalCount: 72,
       },
     },
     checks: [
@@ -303,14 +291,8 @@ export const SCENARIOS: RecommendationScenario[] = [
       4: {
         automaticCount: 0,
         workingCount: 0,
-        unseenCount: 48,
-        totalCount: 48,
-      },
-      5: {
-        automaticCount: 0,
-        workingCount: 0,
-        unseenCount: 24,
-        totalCount: 24,
+        unseenCount: 72,
+        totalCount: 72,
       },
     },
     checks: [
@@ -356,14 +338,8 @@ export const SCENARIOS: RecommendationScenario[] = [
       4: {
         automaticCount: 0,
         workingCount: 0,
-        unseenCount: 48,
-        totalCount: 48,
-      },
-      5: {
-        automaticCount: 0,
-        workingCount: 0,
-        unseenCount: 24,
-        totalCount: 24,
+        unseenCount: 72,
+        totalCount: 72,
       },
     },
     checks: [
@@ -415,14 +391,8 @@ export const SCENARIOS: RecommendationScenario[] = [
       4: {
         automaticCount: 0,
         workingCount: 0,
-        unseenCount: 48,
-        totalCount: 48,
-      },
-      5: {
-        automaticCount: 0,
-        workingCount: 0,
-        unseenCount: 24,
-        totalCount: 24,
+        unseenCount: 72,
+        totalCount: 72,
       },
     },
     checks: [
@@ -446,7 +416,7 @@ export const SCENARIOS: RecommendationScenario[] = [
 
   {
     name: 'nearly-done',
-    description: 'All 6 groups started, mostly automatic with few working',
+    description: 'All 5 groups started, mostly automatic with few working',
     groupStats: {
       0: {
         automaticCount: 46,
@@ -473,16 +443,10 @@ export const SCENARIOS: RecommendationScenario[] = [
         totalCount: 48,
       },
       4: {
-        automaticCount: 42,
+        automaticCount: 66,
         workingCount: 6,
         unseenCount: 0,
-        totalCount: 48,
-      },
-      5: {
-        automaticCount: 22,
-        workingCount: 2,
-        unseenCount: 0,
-        totalCount: 24,
+        totalCount: 72,
       },
     },
     checks: [
@@ -534,16 +498,10 @@ export const SCENARIOS: RecommendationScenario[] = [
         totalCount: 48,
       },
       4: {
-        automaticCount: 48,
+        automaticCount: 72,
         workingCount: 0,
         unseenCount: 0,
-        totalCount: 48,
-      },
-      5: {
-        automaticCount: 24,
-        workingCount: 0,
-        unseenCount: 0,
-        totalCount: 24,
+        totalCount: 72,
       },
     },
     checks: [

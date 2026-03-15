@@ -154,12 +154,13 @@ function analyzeScenario(
     }
   }
 
-  // Run recommendation algorithm
+  // Run recommendation algorithm (sort unstarted by index, matching use-group-scope)
   const recommendation = computeRecommendations(
     selector,
     ALL_GROUP_INDICES,
     getItemIdsForGroup,
     {},
+    { sortUnstarted: (a, b) => a.string - b.string },
   );
 
   // Build recommendation text
