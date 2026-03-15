@@ -288,18 +288,36 @@ describe('updateStability', () => {
     assert.ok(newS > 4, `new stability (${newS}) should be > old (4)`);
   });
 
-  it('grows more for fast answers than slow ones', () => {
-    const fast = updateStability(4, 1000, 4, cfg); // min time = fastest
-    const slow = updateStability(4, 8000, 4, cfg); // near max
+  it('grows more when freshness is low (item was due)', () => {
+    // elapsed = stability → freshness = 0.5 → growth = 1 + 0.9*0.5 = 1.45x
+    const atDue = updateStability(4, 2000, 4, cfg);
+    // elapsed << stability → freshness ≈ 1.0 → growth ≈ 1.0x
+    const fresh = updateStability(4, 2000, 0.1, cfg);
     assert.ok(
-      fast > slow,
-      `fast (${fast}) should grow more than slow (${slow})`,
+      atDue > fresh,
+      `due review (${atDue}) should grow more than fresh review (${fresh})`,
     );
+  });
+
+  it('barely grows for within-session reviews (freshness ≈ 1)', () => {
+    // 1 minute gap, stability = 4h → freshness ≈ 0.997
+    const newS = updateStability(4, 2000, 1 / 60, cfg);
+    assert.ok(
+      newS < 4.05,
+      `within-session growth (${newS}) should be minimal`,
+    );
+  });
+
+  it('speed does not affect stability growth', () => {
+    // Both above selfCorrectionThreshold to isolate speed from self-correction
+    const fast = updateStability(4, 1600, 4, cfg);
+    const slow = updateStability(4, 8000, 4, cfg);
+    assert.equal(fast, slow, 'speed should not affect stability growth');
   });
 
   it('self-corrects: fast answer after long gap boosts stability', () => {
     // Fast answer (1000ms) after 100 hours away, oldS=4
-    // Normal growth would be ~12h, but self-correction: 100 * 1.5 = 150h
+    // self-correction: 100 * 1.5 = 150h
     const newS = updateStability(4, 1000, 100, cfg);
     assert.ok(
       newS >= 150,
@@ -308,8 +326,6 @@ describe('updateStability', () => {
   });
 
   it('self-correction is capped at maxStability', () => {
-    // Fast answer after 720 hours — self-correction would give 1080h,
-    // but cap at maxStability (336h)
     const newS = updateStability(4, 1000, 720, cfg);
     assert.equal(newS, cfg.maxStability);
   });
@@ -317,7 +333,6 @@ describe('updateStability', () => {
   it('does NOT self-correct for medium speed answers', () => {
     // 3000ms is above selfCorrectionThreshold (1500ms) — no self-correction
     const newS = updateStability(4, 3000, 720, cfg);
-    // Should just be normal growth, not the large self-correction
     assert.ok(
       newS < 100,
       `medium speed stability (${newS}) should not self-correct`,
@@ -325,7 +340,6 @@ describe('updateStability', () => {
   });
 
   it('does NOT self-correct for slow answers after long gap', () => {
-    // Slow answer (7000ms) after 720 hours — they struggled, no correction
     const newS = updateStability(4, 7000, 720, cfg);
     assert.ok(
       newS < 100,
@@ -334,8 +348,7 @@ describe('updateStability', () => {
   });
 
   it('caps stability at maxStability even from normal growth', () => {
-    // Very high existing stability * growth should still cap
-    const newS = updateStability(300, 1000, 24, cfg);
+    const newS = updateStability(300, 2000, 300, cfg);
     assert.equal(newS, cfg.maxStability);
   });
 });
@@ -572,8 +585,15 @@ describe('createAdaptiveSelector', () => {
   it('recordResponse grows stability on subsequent correct answers', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
+    // First response sets initialStability
     selector.recordResponse('0-0', 2000);
     const s1 = selector.getStats('0-0')!.stability;
+    // Simulate time passing (stability = 4h, wait 4h → freshness ≈ 0.5)
+    const stats = selector.getStats('0-0')!;
+    storage.saveStats('0-0', {
+      ...stats,
+      lastCorrectAt: stats.lastCorrectAt! - 4 * 3600000,
+    });
     selector.recordResponse('0-0', 2000);
     const s2 = selector.getStats('0-0')!.stability;
     assert.ok(s2! > s1!, `stability should grow: ${s2} > ${s1}`);
@@ -582,9 +602,21 @@ describe('createAdaptiveSelector', () => {
   it('recordResponse with correct=false reduces stability', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
-    // Build up some stability
+    // Build up stability with time gaps
     selector.recordResponse('0-0', 2000);
+    // Simulate 4h gap to allow growth
+    const stats1 = selector.getStats('0-0')!;
+    storage.saveStats('0-0', {
+      ...stats1,
+      lastCorrectAt: stats1.lastCorrectAt! - 4 * 3600000,
+    });
     selector.recordResponse('0-0', 2000);
+    // Another 6h gap
+    const stats2 = selector.getStats('0-0')!;
+    storage.saveStats('0-0', {
+      ...stats2,
+      lastCorrectAt: stats2.lastCorrectAt! - 6 * 3600000,
+    });
     selector.recordResponse('0-0', 2000);
     const beforeWrong = selector.getStats('0-0')!.stability;
 

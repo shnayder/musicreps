@@ -75,10 +75,9 @@ export type AdaptiveConfig = {
   maxResponseTime: number;
   initialStability: number;
   maxStability: number;
-  stabilityGrowthBase: number;
+  stabilityGrowthMax: number;
   stabilityDecayOnWrong: number;
   freshnessThreshold: number;
-  speedBonusMax: number;
   selfCorrectionThreshold: number;
   speedTarget: number;
 };

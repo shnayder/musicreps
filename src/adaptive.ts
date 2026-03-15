@@ -21,10 +21,9 @@ export const DEFAULT_CONFIG: AdaptiveConfig = {
   // Forgetting model
   initialStability: 4, // hours — half-life after first correct answer
   maxStability: 336, // hours (14 days) — stability ceiling
-  stabilityGrowthBase: 2.0, // multiplier on each correct answer
+  stabilityGrowthMax: 0.9, // max additive growth factor (at freshness=0)
   stabilityDecayOnWrong: 0.3, // multiplier on wrong answer
   freshnessThreshold: 0.5, // freshness below this = "due" / "needs review"
-  speedBonusMax: 1.5, // fast answers grow stability up to this extra factor
   selfCorrectionThreshold: 1500, // ms — response time below this triggers self-correction
   speedTarget: 3000, // ms — response time at which speedScore ≈ 0.5
 };
@@ -102,34 +101,36 @@ export function computeSpeedScore(
 /**
  * Compute new stability after a correct answer.
  * - First correct: initialStability.
- * - Subsequent: grow by stabilityGrowthBase * speedFactor.
+ * - Subsequent: freshness-modulated growth. Low freshness (item was due)
+ *   provides stronger evidence of retention than high freshness (just saw it).
+ *   Formula: newStability = oldStability * (1 + growthMax * (1 - freshness))
  * - Self-correction: if fast answer after long gap, back-calculate
  *   that true stability must be at least elapsedHours * 1.5.
  */
 export function updateStability(
   oldStability: number | null,
-  responseTimeMs: number,
+  _responseTimeMs: number,
   elapsedHours: number | null,
   cfg: AdaptiveConfig,
 ): number {
   if (oldStability == null) {
     return cfg.initialStability;
   }
-  // Speed factor: fast answers grow stability more (0.5 to speedBonusMax)
-  const range = cfg.maxResponseTime - cfg.minTime;
-  const clamped = Math.max(
-    cfg.minTime,
-    Math.min(responseTimeMs, cfg.maxResponseTime),
-  );
-  const t = range > 0 ? (cfg.maxResponseTime - clamped) / range : 0.5;
-  const speedFactor = 0.5 + t * (cfg.speedBonusMax - 0.5);
 
-  let newStability = oldStability * cfg.stabilityGrowthBase * speedFactor;
+  // Freshness at review time: how much retention remained?
+  const freshness = (elapsedHours != null && elapsedHours > 0)
+    ? Math.pow(2, -elapsedHours / oldStability)
+    : 1; // within-session review = full freshness
+
+  // Growth is modulated by freshness: reviewing a due item (freshness ~0.5)
+  // grows more than reviewing a fresh item (freshness ~1.0).
+  const growthFactor = 1 + cfg.stabilityGrowthMax * (1 - freshness);
+  let newStability = oldStability * growthFactor;
 
   // Self-correction: fast answer after long gap means true half-life is long
   if (
     elapsedHours !== null && elapsedHours > 0 &&
-    responseTimeMs < cfg.selfCorrectionThreshold
+    _responseTimeMs < cfg.selfCorrectionThreshold
   ) {
     newStability = Math.max(newStability, elapsedHours * 1.5);
   }

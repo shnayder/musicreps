@@ -420,7 +420,7 @@ Per-item half-life forgetting curve: `P(recall) = 2^(-t/stability)`.
 
 - Each item tracks `stability` (half-life in hours) and `lastCorrectAt`
 - First correct answer: `stability = initialStability` (4 hours)
-- Subsequent correct: stability grows by `stabilityGrowthBase * speedFactor`
+- Subsequent correct: freshness-modulated growth `stability * (1 + growthMax * (1 - freshness))`
 - Wrong answer: stability reduced by `stabilityDecayOnWrong` (floored at
   `initialStability`)
 - **Self-correction**: fast answer after long gap → stability boosted to at
