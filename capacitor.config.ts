@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: 'com.musicreps.app',
   appName: 'Music Reps',
   webDir: 'docs',
+  ios: {
+    backgroundColor: '#ffffff',
+  },
   ...(process.env.CAP_DEV_PORT && {
     server: {
       url: `http://${
