@@ -308,4 +308,17 @@ describe('rankSkillRecommendations', () => {
     assert.equal(result.length, 1);
     assert.equal(result[0].modeId, 'modeC');
   });
+
+  it('mixed automatic + not-started recommends first not-started', () => {
+    const recs = [
+      rec('modeA', 'automatic'),
+      rec('modeC', 'not-started'),
+      rec('modeB', 'automatic'),
+    ];
+    const result = rankSkillRecommendations(recs, order);
+    assert.equal(result.length, 1);
+    assert.equal(result[0].modeId, 'modeC');
+    assert.equal(result[0].type, 'learn-next');
+    assert.equal(result[0].detail, 'Get started');
+  });
 });

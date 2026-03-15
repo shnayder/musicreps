@@ -209,12 +209,13 @@ export function rankSkillRecommendations(
     return actionable.slice(0, maxCount);
   }
 
-  // Cold start: all not-started → recommend first in definition order.
-  const allNotStarted = recommendations.every((r) => r.type === 'not-started');
-  if (allNotStarted && recommendations.length > 0) {
-    // Find the first not-started skill in definition order.
+  // Any not-started skills → recommend the first one in definition order.
+  // Covers both cold start (all not-started) and mixed (some automatic,
+  // some not-started) — avoids a misleading "all done" message.
+  const notStarted = recommendations.filter((r) => r.type === 'not-started');
+  if (notStarted.length > 0) {
     for (const modeId of definitionOrder) {
-      const rec = recommendations.find((r) => r.modeId === modeId);
+      const rec = notStarted.find((r) => r.modeId === modeId);
       if (rec) {
         return [{
           ...rec,

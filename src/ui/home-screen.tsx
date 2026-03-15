@@ -279,21 +279,24 @@ function ActiveSkillsList(
   // starred skills in definition order.
   type Entry = {
     modeId: string;
+    trackId: string;
     trackLabel: string;
     rec?: SkillRecommendation;
   };
   const recommended: Entry[] = [];
   const remaining: Entry[] = [];
 
-  const trackLabelFor = (modeId: string) =>
-    TRACKS.find((t) => t.skills.includes(modeId))?.label ?? '';
+  const trackFor = (modeId: string) =>
+    TRACKS.find((t) => t.skills.includes(modeId));
 
   // Recommended skills in rank order
   for (const rec of recommendations) {
     if (starred.has(rec.modeId)) {
+      const track = trackFor(rec.modeId);
       recommended.push({
         modeId: rec.modeId,
-        trackLabel: trackLabelFor(rec.modeId),
+        trackId: track?.id || 'core',
+        trackLabel: track?.label ?? '',
         rec,
       });
     }
@@ -303,7 +306,7 @@ function ActiveSkillsList(
   for (const track of TRACKS) {
     for (const modeId of track.skills) {
       if (starred.has(modeId) && !recMap.has(modeId)) {
-        remaining.push({ modeId, trackLabel: track.label });
+        remaining.push({ modeId, trackId: track.id, trackLabel: track.label });
       }
     }
   }
@@ -322,27 +325,23 @@ function ActiveSkillsList(
           <strong>All Skills</strong> to keep going.
         </p>
       )}
-      {ordered.map(({ modeId, trackLabel, rec }) => {
-        const track = TRACKS.find((t) => t.skills.includes(modeId));
-        const trackId = track?.id || 'core';
-        return (
-          <div key={modeId}>
-            {rec?.detail && (
-              <div class={`skill-rec-banner track-accent-${trackId}`}>
-                <div class='skill-rec-header'>Suggestion</div>
-                <div class='skill-rec-detail'>{rec.detail}</div>
-              </div>
-            )}
-            <ActiveSkillCard
-              modeId={modeId}
-              trackLabel={trackLabel}
-              onToggleStar={onToggleStar}
-              onSelectMode={onSelectMode}
-              progress={progress.get(modeId)}
-            />
-          </div>
-        );
-      })}
+      {ordered.map(({ modeId, trackId, trackLabel, rec }) => (
+        <div key={modeId}>
+          {rec?.detail && (
+            <div class={`skill-rec-banner track-accent-${trackId}`}>
+              <div class='skill-rec-header'>Suggestion</div>
+              <div class='skill-rec-detail'>{rec.detail}</div>
+            </div>
+          )}
+          <ActiveSkillCard
+            modeId={modeId}
+            trackLabel={trackLabel}
+            onToggleStar={onToggleStar}
+            onSelectMode={onSelectMode}
+            progress={progress.get(modeId)}
+          />
+        </div>
+      ))}
     </div>
   );
 }
