@@ -236,6 +236,10 @@ egress proxy instead — see
 [development.md](guides/development.md#github-api-access-web-environment) for
 the pattern.
 
+**Claude Code sandbox note:** `gh` CLI commands that hit the GitHub API (e.g.
+`gh pr create`, `gh pr view`) fail with TLS certificate errors inside the
+sandbox. Always run `gh` API commands with the sandbox disabled.
+
 ## PR Requirements
 
 All PRs that change code (not just docs/plans) follow this sequence:

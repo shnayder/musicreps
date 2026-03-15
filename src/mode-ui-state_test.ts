@@ -4,64 +4,71 @@ import { describe, it } from 'node:test';
 import * as assert from 'node:assert/strict';
 import {
   buildRecommendationText,
-  computeLevelAutomaticity,
+  computeLevelPercentile,
   computePracticeSummary,
-  countFluent,
+  countAutomatic,
   statusLabelFromLevel,
 } from './mode-ui-state.ts';
 import type { RecommendationResult } from './types.ts';
 
 // ---------------------------------------------------------------------------
-// countFluent
+// countAutomatic
 // ---------------------------------------------------------------------------
 
-describe('countFluent', () => {
+describe('countAutomatic', () => {
   it('returns zero for empty items', () => {
-    const result = countFluent([], () => null, 0.5);
-    assert.deepStrictEqual(result, { fluent: 0, seen: 0 });
+    const result = countAutomatic([], () => null);
+    assert.deepStrictEqual(result, { automatic: 0, seen: 0 });
   });
 
-  it('counts seen and fluent correctly', () => {
-    const autos: Record<string, number | null> = {
-      'a': 0.9,
+  it('counts seen and automatic correctly', () => {
+    const speeds: Record<string, number | null> = {
+      'a': 0.95,
       'b': 0.3,
       'c': null,
-      'd': 0.6,
+      'd': 0.91,
     };
-    const result = countFluent(
+    const result = countAutomatic(
       ['a', 'b', 'c', 'd'],
-      (id) => autos[id] ?? null,
-      0.5,
+      (id) => speeds[id] ?? null,
     );
     assert.equal(result.seen, 3);
-    assert.equal(result.fluent, 2); // a=0.9 and d=0.6 are > 0.5
+    assert.equal(result.automatic, 2); // a=0.95 and d=0.91 are >= 0.9
   });
 
-  it('uses threshold correctly (exact boundary is not fluent)', () => {
-    const result = countFluent(
+  it('uses threshold correctly (0.9 boundary is automatic)', () => {
+    const result = countAutomatic(
       ['a'],
-      () => 0.5,
-      0.5,
+      () => 0.9,
     );
-    assert.equal(result.fluent, 0); // 0.5 is not > 0.5
+    assert.equal(result.automatic, 1); // 0.9 >= 0.9
+    assert.equal(result.seen, 1);
+  });
+
+  it('below 0.9 is not automatic', () => {
+    const result = countAutomatic(
+      ['a'],
+      () => 0.89,
+    );
+    assert.equal(result.automatic, 0);
     assert.equal(result.seen, 1);
   });
 });
 
 // ---------------------------------------------------------------------------
-// computeLevelAutomaticity
+// computeLevelPercentile
 // ---------------------------------------------------------------------------
 
-describe('computeLevelAutomaticity', () => {
+describe('computeLevelPercentile', () => {
   it('returns 0 level and 0 seen for empty items', () => {
-    const result = computeLevelAutomaticity([], () => null);
+    const result = computeLevelPercentile(() => null, []);
     assert.deepStrictEqual(result, { level: 0, seen: 0 });
   });
 
-  it('treats unseen items (null) as automaticity 0', () => {
-    const result = computeLevelAutomaticity(
-      ['a', 'b', 'c'],
+  it('treats unseen items (null) as 0', () => {
+    const result = computeLevelPercentile(
       () => null,
+      ['a', 'b', 'c'],
     );
     assert.equal(result.level, 0);
     assert.equal(result.seen, 0);
@@ -69,53 +76,53 @@ describe('computeLevelAutomaticity', () => {
 
   it('picks 2nd lowest for 12 items at p=0.1', () => {
     // 12 items: ceil(12 * 0.1) - 1 = ceil(1.2) - 1 = 2 - 1 = 1 → index 1
-    const autos: Record<string, number | null> = {};
+    const values: Record<string, number | null> = {};
     for (let i = 0; i < 12; i++) {
-      autos[`item-${i}`] = 0.1 * i; // 0.0, 0.1, 0.2, ..., 1.1
+      values[`item-${i}`] = 0.1 * i; // 0.0, 0.1, 0.2, ..., 1.1
     }
-    const ids = Object.keys(autos);
-    const result = computeLevelAutomaticity(
+    const ids = Object.keys(values);
+    const result = computeLevelPercentile(
+      (id) => values[id] ?? null,
       ids,
-      (id) => autos[id] ?? null,
     );
     // sorted: 0.0, 0.1, 0.2, ... → index 1 = 0.1
     assert.ok(Math.abs(result.level - 0.1) < 0.001);
-    assert.equal(result.seen, 12); // item-0 has auto=0.0, non-null → seen
+    assert.equal(result.seen, 12); // item-0 has value=0.0, non-null → seen
   });
 
-  it('counts seen items correctly (non-null automaticity)', () => {
-    const autos: Record<string, number | null> = {
+  it('counts seen items correctly (non-null values)', () => {
+    const values: Record<string, number | null> = {
       'a': 0.9,
       'b': null,
       'c': 0.5,
       'd': null,
     };
-    const result = computeLevelAutomaticity(
+    const result = computeLevelPercentile(
+      (id) => values[id] ?? null,
       ['a', 'b', 'c', 'd'],
-      (id) => autos[id] ?? null,
     );
     assert.equal(result.seen, 2); // a and c
   });
 
   it('compresses unseen + slow items into low level', () => {
-    // 2 unseen + 4 slow (auto=0.1) + 6 fast (auto=0.9)
+    // 2 unseen + 4 slow (value=0.1) + 6 fast (value=0.9)
     const ids: string[] = [];
-    const autos: Record<string, number | null> = {};
+    const values: Record<string, number | null> = {};
     for (let i = 0; i < 2; i++) {
       ids.push(`unseen-${i}`);
-      autos[`unseen-${i}`] = null;
+      values[`unseen-${i}`] = null;
     }
     for (let i = 0; i < 4; i++) {
       ids.push(`slow-${i}`);
-      autos[`slow-${i}`] = 0.1;
+      values[`slow-${i}`] = 0.1;
     }
     for (let i = 0; i < 6; i++) {
       ids.push(`fast-${i}`);
-      autos[`fast-${i}`] = 0.9;
+      values[`fast-${i}`] = 0.9;
     }
-    const result = computeLevelAutomaticity(
+    const result = computeLevelPercentile(
+      (id) => values[id] ?? null,
       ids,
-      (id) => autos[id] ?? null,
     );
     // 12 items, p=0.1: index 1 → sorted: [0, 0, 0.1, 0.1, 0.1, 0.1, 0.9, ...]
     // index 1 = 0 (the second unseen item)
@@ -129,19 +136,24 @@ describe('computeLevelAutomaticity', () => {
 // ---------------------------------------------------------------------------
 
 describe('statusLabelFromLevel', () => {
-  it('returns Automatic for >= 0.8', () => {
-    assert.equal(statusLabelFromLevel(0.8), 'Automatic');
+  it('returns Automatic for >= 0.9', () => {
+    assert.equal(statusLabelFromLevel(0.9), 'Automatic');
     assert.equal(statusLabelFromLevel(1.0), 'Automatic');
   });
 
-  it('returns Getting faster for >= 0.2', () => {
-    assert.equal(statusLabelFromLevel(0.2), 'Getting faster');
-    assert.equal(statusLabelFromLevel(0.79), 'Getting faster');
+  it('returns Solid for >= 0.7', () => {
+    assert.equal(statusLabelFromLevel(0.7), 'Solid');
+    assert.equal(statusLabelFromLevel(0.89), 'Solid');
   });
 
-  it('returns Slow for < 0.2', () => {
-    assert.equal(statusLabelFromLevel(0), 'Slow');
-    assert.equal(statusLabelFromLevel(0.19), 'Slow');
+  it('returns Learning for >= 0.3', () => {
+    assert.equal(statusLabelFromLevel(0.3), 'Learning');
+    assert.equal(statusLabelFromLevel(0.69), 'Learning');
+  });
+
+  it('returns Hesitant for < 0.3', () => {
+    assert.equal(statusLabelFromLevel(0), 'Hesitant');
+    assert.equal(statusLabelFromLevel(0.29), 'Hesitant');
   });
 });
 
@@ -290,10 +302,22 @@ describe('buildRecommendationText', () => {
 // ---------------------------------------------------------------------------
 
 describe('computePracticeSummary', () => {
-  function makeSelector(autos: Record<string, number | null>) {
+  function makeSelector(speeds: Record<string, number | null>) {
     return {
-      getConfig: () => ({ automaticityThreshold: 0.5 }),
-      getAutomaticity: (id: string) => autos[id] ?? null,
+      getSpeedScore: (id: string) => speeds[id] ?? null,
+      getFreshness: () => 1.0 as number | null,
+      getRecall: () => null as number | null,
+      getStats: () => null,
+      getWeight: () => 1,
+      getLevelSpeed: () => ({ level: 0, seen: 0 }),
+      getLevelFreshness: () => ({ level: 0, seen: 0 }),
+      getStringRecommendations: () => [],
+      checkAllAutomatic: () => false,
+      checkNeedsReview: () => false,
+      recordResponse: () => {},
+      selectNext: () => '',
+      updateConfig: () => {},
+      getConfig: () => ({}) as ReturnType<typeof makeSelector>['getConfig'],
     };
   }
 
@@ -313,12 +337,12 @@ describe('computePracticeSummary', () => {
     assert.equal(result.showRecommendationButton, false);
   });
 
-  it('computes status from level automaticity', () => {
+  it('computes status from level speed', () => {
     const result = computePracticeSummary({
       allItemIds: ['a', 'b', 'c', 'd', 'e'],
       selector: makeSelector({
-        'a': 0.9,
-        'b': 0.8,
+        'a': 0.95,
+        'b': 0.85,
         'c': 0.6,
         'd': 0.3,
         'e': null,
@@ -330,17 +354,17 @@ describe('computePracticeSummary', () => {
       masteryText: '',
       showMastery: false,
     });
-    // Level automaticity: values = [0.9, 0.8, 0.6, 0.3, 0] sorted = [0, 0.3, 0.6, 0.8, 0.9]
-    // p=0.1: index = ceil(5*0.1)-1 = ceil(0.5)-1 = 0 → level = 0 → "Slow"
-    assert.equal(result.statusLabel, 'Slow');
-    assert.equal(result.statusDetail, '3/5 positions fluent');
+    // Level speed: values = [0.95, 0.85, 0.6, 0.3, 0] sorted = [0, 0.3, 0.6, 0.85, 0.95]
+    // p=0.1: index = ceil(5*0.1)-1 = ceil(0.5)-1 = 0 → level = 0 → "Hesitant"
+    assert.equal(result.statusLabel, 'Hesitant');
+    assert.equal(result.statusDetail, '1/5 positions automatic');
   });
 
   it('passes through mastery state', () => {
     const result = computePracticeSummary({
       allItemIds: ['a'],
       selector: makeSelector({
-        'a': 0.9,
+        'a': 0.95,
         // deno-lint-ignore no-explicit-any
       }) as any,
       itemNoun: 'items',

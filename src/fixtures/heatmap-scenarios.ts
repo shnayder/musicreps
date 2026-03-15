@@ -214,7 +214,7 @@ export function returnedAfterBreak(
 
 export type GroupItemProfile = {
   itemIds: string[];
-  state: 'unseen' | 'slow-fresh' | 'mixed' | 'fast-fresh' | 'fast-stale';
+  state: 'unseen' | 'working' | 'mixed' | 'automatic' | 'stale';
   /** Fraction of items seen (default 1.0). */
   seenFraction?: number;
 };
@@ -237,7 +237,7 @@ export function perGroupScenario(
       let ewma: number, stability: number, age: number, samples: number;
 
       switch (state) {
-        case 'slow-fresh':
+        case 'working':
           ewma = 3000 + h * 3000; // 3000-6000ms
           stability = 4 + h * 8; // 4-12 hours
           age = HOUR * (1 + h * 4); // 1-5 hours ago
@@ -249,13 +249,13 @@ export function perGroupScenario(
           age = HOUR * (4 + h * 20); // 4-24 hours ago
           samples = 8 + Math.floor(h * 15);
           break;
-        case 'fast-fresh':
+        case 'automatic':
           ewma = 800 + h * 600; // 800-1400ms
           stability = 48 + h * 200; // 48-248 hours
           age = HOUR * (2 + h * 12); // 2-14 hours ago
           samples = 20 + Math.floor(h * 30);
           break;
-        case 'fast-stale':
+        case 'stale':
           ewma = 800 + h * 500; // 800-1300ms (was fast)
           stability = 80 + h * 150; // 80-230 hours
           age = DAY * (50 + h * 40); // 50-90 days ago

@@ -23,7 +23,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import {
-  computeAutomaticityForDisplay,
   computeFreshness,
   computeSpeedScore,
   createAdaptiveSelector,
@@ -31,7 +30,7 @@ import {
   DEFAULT_CONFIG,
 } from '../src/adaptive.ts';
 import {
-  computeLevelAutomaticity,
+  computeLevelPercentile,
   statusLabelFromLevel,
 } from '../src/mode-ui-state.ts';
 import type { AdaptiveConfig, ItemStats } from '../src/types.ts';
@@ -68,18 +67,17 @@ type ItemResult = {
   recall: number | null;
   freshness: number | null;
   speedScore: number | null;
-  automaticity: number | null;
   heatmapColor: string;
-  statusClass: 'unseen' | 'needs-work' | 'fluent' | 'automatic';
+  statusClass: 'unseen' | 'working' | 'solid' | 'automatic';
 };
 
 type GroupResult = {
   scenario: GroupScenario;
   items: ItemResult[];
-  fluent: number;
+  automatic: number;
   working: number;
   unseen: number;
-  levelAutomaticity: number;
+  levelSpeed: number;
   seen: number;
   total: number;
   statusLabel: string;
@@ -320,7 +318,7 @@ const SCENARIOS: GroupScenario[] = [
   {
     name: 'mastered-but-slow',
     description:
-      '12 correct items, high recall, but ~3.5s EWMA. Speed-limited automaticity.',
+      '12 correct items, high recall, but ~3.5s EWMA. Speed-limited.',
     items: Array.from({ length: 12 }, (_, i) => ({
       label: `slow-${i + 1}`,
       ewmaMs: 3300 + (i % 4) * 100,
@@ -427,7 +425,7 @@ const SCENARIOS: GroupScenario[] = [
   {
     name: 'mixed-realistic',
     description:
-      '4 automatic + 3 fluent-speed + 2 slow + 3 unseen. Typical mid-practice group.',
+      '4 automatic + 3 solid-speed + 2 slow + 3 unseen. Typical mid-practice group.',
     items: [
       // Automatic (fast + high recall)
       {
@@ -458,23 +456,23 @@ const SCENARIOS: GroupScenario[] = [
         lastCorrectHoursAgo: 5,
         sampleCount: 9,
       },
-      // Fluent speed but not quite automatic
+      // Solid speed but not quite automatic
       {
-        label: 'fluent-1',
+        label: 'solid-1',
         ewmaMs: 1800,
         stabilityHours: 30,
         lastCorrectHoursAgo: 6,
         sampleCount: 7,
       },
       {
-        label: 'fluent-2',
+        label: 'solid-2',
         ewmaMs: 2000,
         stabilityHours: 24,
         lastCorrectHoursAgo: 8,
         sampleCount: 6,
       },
       {
-        label: 'fluent-3',
+        label: 'solid-3',
         ewmaMs: 1700,
         stabilityHours: 36,
         lastCorrectHoursAgo: 4,
@@ -545,10 +543,10 @@ const SCENARIOS: GroupScenario[] = [
   {
     name: 'fast-not-automatic',
     description:
-      '10 items at ~1400-1550ms (speed ~0.85, auto ~0.75-0.85), 2 truly fast. Quick to figure out but not instant.',
+      '10 items at ~1400-1550ms (speed ~0.85), 2 truly fast. Quick to figure out but not instant.',
     items: [
       ...Array.from({ length: 10 }, (_, i) => ({
-        label: `near-fluent-${i + 1}`,
+        label: `near-solid-${i + 1}`,
         ewmaMs: 1400 + (i % 4) * 75,
         stabilityHours: 30 + i * 5,
         lastCorrectHoursAgo: 3 + (i % 5),
@@ -727,7 +725,7 @@ function analyzeScenario(
 
   // Compute per-item results
   const items: ItemResult[] = [];
-  let fluentCount = 0;
+  let automaticCount = 0;
   let workingCount = 0;
   let unseenCount = 0;
 
@@ -743,23 +741,18 @@ function analyzeScenario(
       nowMs,
     );
     const speedScore = computeSpeedScore(stats.ewma, cfg);
-    const automaticity = computeAutomaticityForDisplay(
-      recall,
-      speedScore,
-      true,
-    );
     const heatmapColor = getSpeedFreshnessColor(speedScore, freshness);
 
-    const statusClass: 'unseen' | 'needs-work' | 'fluent' | 'automatic' =
-      automaticity === null
+    const statusClass: 'unseen' | 'working' | 'solid' | 'automatic' =
+      speedScore === null
         ? 'unseen'
-        : automaticity > 0.8
+        : speedScore >= 0.9
         ? 'automatic'
-        : automaticity > 0.4
-        ? 'fluent'
-        : 'needs-work';
+        : speedScore >= 0.7
+        ? 'solid'
+        : 'working';
 
-    if (statusClass === 'automatic') fluentCount++;
+    if (statusClass === 'automatic') automaticCount++;
     else workingCount++;
 
     items.push({
@@ -770,7 +763,6 @@ function analyzeScenario(
       recall,
       freshness,
       speedScore,
-      automaticity,
       heatmapColor,
       statusClass,
     });
@@ -786,19 +778,18 @@ function analyzeScenario(
       recall: null,
       freshness: null,
       speedScore: null,
-      automaticity: null,
       heatmapColor: NO_DATA_COLOR,
       statusClass: 'unseen',
     });
   }
 
   // Group-level aggregates
-  const seen = fluentCount + workingCount;
+  const seen = automaticCount + workingCount;
   const total = allItemIds.length;
 
-  const { level } = computeLevelAutomaticity(
+  const { level } = computeLevelPercentile(
+    (id) => selector.getSpeedScore(id),
     allItemIds,
-    (id) => selector.getAutomaticity(id),
   );
 
   let statusLabel: string;
@@ -808,16 +799,16 @@ function analyzeScenario(
     statusDetail = `${total} items to learn`;
   } else {
     statusLabel = statusLabelFromLevel(level);
-    statusDetail = `${fluentCount} of ${total} items fluent`;
+    statusDetail = `${automaticCount} of ${total} items automatic`;
   }
 
   return {
     scenario,
     items,
-    fluent: fluentCount,
+    automatic: automaticCount,
     working: workingCount,
     unseen: unseenCount,
-    levelAutomaticity: level,
+    levelSpeed: level,
     seen,
     total,
     statusLabel,
@@ -851,12 +842,12 @@ function colorCell(color: string): string {
  * tab for this group. Stacked progress bar + concise action-oriented text.
  */
 function practiceCardPreview(result: GroupResult): string {
-  const { fluent, working, unseen, total, items } = result;
+  const { automatic, working, unseen, total, items } = result;
 
-  // Per-item bar: sort by automaticity (unseen last), use actual heatmap colors
+  // Per-item bar: sort by speed score (unseen last), use actual heatmap colors
   const sorted = items.slice().sort((a, b) => {
-    const av = a.automaticity ?? -1;
-    const bv = b.automaticity ?? -1;
+    const av = a.speedScore ?? -1;
+    const bv = b.speedScore ?? -1;
     return bv - av; // highest first (green on left)
   });
   const sliceWidth = total > 0 ? 100 / total : 0;
@@ -882,10 +873,10 @@ function practiceCardPreview(result: GroupResult): string {
     }
   }
 
-  const seen = fluent + working;
+  const seen = automatic + working;
   // "Few unseen" = within the p10 margin (wouldn't dominate the percentile).
   const fewUnseen = unseen <= Math.ceil(total * 0.1);
-  const mostlyAutomatic = seen > 0 && fluent / seen >= 0.9;
+  const mostlyAutomatic = seen > 0 && automatic / seen >= 0.9;
   // "Not seriously started" — tried it briefly but hasn't committed.
   const notStarted = seen < 5;
 
@@ -924,8 +915,8 @@ function miniHeatmap(items: ItemResult[]): string {
 function statusBadge(statusClass: string): string {
   const colors: Record<string, string> = {
     unseen: '#888',
-    'needs-work': '#c63',
-    fluent: '#6a4',
+    working: '#c63',
+    solid: '#6a4',
     automatic: '#2a7',
   };
   const color = colors[statusClass] || '#888';
@@ -948,12 +939,12 @@ function generateReviewHTML(
         <span class="summary-status">${escapeHtml(result.statusLabel)}</span>
         <span class="summary-detail">${escapeHtml(result.statusDetail)}</span>
         <span class="summary-fwu">
-          <span class="fluent">${result.fluent}F</span>
+          <span class="automatic-count">${result.automatic}A</span>
           <span class="working">${result.working}W</span>
           <span class="unseen-count">${result.unseen}U</span>
         </span>
         <span class="summary-ratio">level: ${
-      result.levelAutomaticity.toFixed(2)
+      result.levelSpeed.toFixed(2)
     }</span>
       </div>`;
 
@@ -975,7 +966,6 @@ function generateReviewHTML(
       }</td>
         <td>${fmt(item.recall)}</td>
         <td>${fmt(item.speedScore)}</td>
-        <td>${fmt(item.automaticity)}</td>
         <td>${colorCell(item.heatmapColor)}</td>
         <td>${statusBadge(item.statusClass)}</td>
       </tr>`;
@@ -1002,7 +992,6 @@ function generateReviewHTML(
             <th>Stability</th>
             <th>Recall</th>
             <th>Speed</th>
-            <th>Automaticity</th>
             <th>Color</th>
             <th>Status</th>
           </tr>
@@ -1060,7 +1049,7 @@ function generateReviewHTML(
   .summary-status { font-weight: bold; font-size: 1rem; }
   .summary-detail { color: #555; }
   .summary-fwu { font-family: monospace; }
-  .fluent { color: #2a7; font-weight: bold; }
+  .automatic-count { color: #2a7; font-weight: bold; }
   .working { color: #c63; font-weight: bold; }
   .unseen-count { color: #888; font-weight: bold; }
   .summary-ratio { color: #666; font-size: 0.85rem; margin-left: auto; }
@@ -1137,23 +1126,22 @@ function generateReviewHTML(
 
 <div class="config-summary">
   <span>baseline=${cfg.minTime}ms</span>
-  <span>target=${cfg.automaticityTarget}ms</span>
+  <span>speedTarget=${cfg.speedTarget}ms</span>
   <span>alpha=${cfg.ewmaAlpha}</span>
   <span>initialStab=${cfg.initialStability}h</span>
   <span>maxStab=${cfg.maxStability}h</span>
-  <span>recallThreshold=${cfg.recallThreshold}</span>
-  <span>automaticityThreshold=${cfg.automaticityThreshold}</span>
+  <span>freshnessThreshold=${cfg.freshnessThreshold}</span>
 </div>
 
 <details open>
 <summary style="cursor:pointer; font-weight:bold; margin-bottom:0.5rem;">How it works</summary>
 <div class="legend-section">
   <h3>Group-level aggregation</h3>
-  <p style="margin:0 0 0.5rem;">Each item in the group has independent freshness (half-life model) and speed (EWMA). Automaticity = speed \u00d7 freshness. Group metrics aggregate these:</p>
-  <p style="margin:0 0 0.5rem;"><strong>F/W/U</strong> \u2014 Fluent (automaticity &gt; ${cfg.automaticityThreshold}), Working (automaticity \u2264 ${cfg.automaticityThreshold}), Unseen (no data). Per-item status uses finer scale: automatic (&gt;0.8), fluent (&gt;0.4), needs-work (\u22640.4).</p>
-  <p style="margin:0 0 0.5rem;"><strong>Level automaticity</strong> = 10th percentile of per-item automaticity values (unseen \u2192 0). Expansion gate opens at \u2265 ${cfg.expansionThreshold}.</p>
-  <p style="margin:0 0 0.5rem;"><strong>Fluent count</strong> \u2014 items with automaticity &gt; ${cfg.automaticityThreshold}. Automaticity = recall \u00d7 speed score.</p>
-  <p style="margin:0 0 0.5rem;"><strong>Status label</strong> \u2014 from level automaticity: Automatic (\u22650.8), Fluent (\u22650.5), Developing (\u22650.2), Learning (&lt;0.2), Not started (0 seen).</p>
+  <p style="margin:0 0 0.5rem;">Each item in the group has independent freshness (half-life model) and speed (EWMA). Speed and freshness are independent axes. Group metrics aggregate these:</p>
+  <p style="margin:0 0 0.5rem;"><strong>A/W/U</strong> \u2014 Automatic (speed \u2265 0.9), Working (speed &lt; 0.9), Unseen (no data). Per-item status uses finer scale: automatic (\u22650.9), solid (\u22650.7), working (&lt;0.7).</p>
+  <p style="margin:0 0 0.5rem;"><strong>Level speed</strong> = 10th percentile of per-item speed values (unseen \u2192 0). Expansion gate opens when P10 speed \u2265 0.7 AND P10 freshness \u2265 0.5.</p>
+  <p style="margin:0 0 0.5rem;"><strong>Automatic count</strong> \u2014 items with speed \u2265 0.9.</p>
+  <p style="margin:0 0 0.5rem;"><strong>Status label</strong> \u2014 from level speed: Automatic (\u22650.9), Solid (\u22650.7), Learning (\u22650.3), Hesitant (&lt;0.3), Not started (0 seen).</p>
   <h3 style="margin-top:0.75rem;">Heatmap color encoding</h3>
   <div class="legend-row">${
     colorCell('hsl(125,48%,33%)')

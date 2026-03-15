@@ -5,12 +5,13 @@
 //
 // Key concepts (see guides/architecture.md § "Consolidate Before Expanding"):
 //
-//   F (Fluent)   — automaticity > threshold (fast + fresh)
-//   W (Working)  — seen but automaticity ≤ threshold (slow or decayed)
-//   U (Unseen)   — no data yet
+//   Automatic (A) — speed ≥ 0.9
+//   Working (W)   — seen but speed < 0.9
+//   Unseen (U)    — no data yet
 //
-//   Level automaticity = 10th percentile of per-item automaticity (unseen → 0).
-//   Expansion gate opens when level >= 0.7 (expansionThreshold).
+//   Level speed = 10th percentile of per-item speed score (unseen → 0).
+//   Expansion gate opens when all started levels have P10 speed ≥ 0.7 (Solid)
+//   and P10 freshness ≥ 0.5 (Fresh).
 //   Groups above the median work count (W + U) are recommended for consolidation.
 //   One unstarted group is suggested for expansion when the gate is open.
 
@@ -54,7 +55,7 @@ function hashIndex(i: number): number {
 // ---------------------------------------------------------------------------
 
 export type GroupSpec = {
-  fluentCount: number;
+  automaticCount: number;
   workingCount: number;
   unseenCount: number;
   totalCount: number;
@@ -85,8 +86,8 @@ export type RecommendationScenario = {
  * Uses real getItemIdsForGroup() to map group indices to item IDs.
  *
  * Values are deterministic (hashIndex-based):
- * - Fluent: ewma ~1200ms, stability 48h, lastCorrectAt 2h ago → high automaticity
- * - Working: ewma ~3000ms, stability 4h, lastCorrectAt 24h ago → low automaticity
+ * - Automatic: ewma ~1200ms, stability 48h, lastCorrectAt 2h ago → speed ≥ 0.9
+ * - Working: ewma ~3000ms, stability 4h, lastCorrectAt 24h ago → speed < 0.9
  * - Unseen: no entry
  */
 export function generateLocalStorageData(
@@ -103,14 +104,14 @@ export function generateLocalStorageData(
     const itemIds = getIds(groupIdx);
     let itemOffset = 0;
 
-    // Fluent items
+    // Automatic items
     for (
       let i = 0;
-      i < spec.fluentCount && itemOffset < itemIds.length;
+      i < spec.automaticCount && itemOffset < itemIds.length;
       i++
     ) {
       const h = hashIndex(itemOffset + groupIdx * 100);
-      const ewma = 1000 + h * 400; // 1000-1400ms (fast)
+      const ewma = 700 + h * 300; // 700-1000ms (fast — at or below minTime)
       const stats = makeStats({
         recentTimes: [ewma * 0.95, ewma, ewma * 1.05],
         ewma,
@@ -148,21 +149,45 @@ export function generateLocalStorageData(
 }
 
 // ---------------------------------------------------------------------------
-// Scenario definitions (all semitone-math: 6 groups, 264 items)
-// Group sizes: 0-4 = 48 items each, 5 = 24 items
+// Scenario definitions (all semitone-math: 5 groups, 264 items)
+// Group sizes: 0-3 = 48 items each, 4 = 72 items (±9–11)
 // ---------------------------------------------------------------------------
 
 export const SCENARIOS: RecommendationScenario[] = [
   {
     name: 'fresh-start',
-    description: 'All 6 groups unseen — brand new learner',
+    description: 'All 5 groups unseen — brand new learner',
     groupStats: {
-      0: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      1: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      2: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      3: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      4: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      5: { fluentCount: 0, workingCount: 0, unseenCount: 24, totalCount: 24 },
+      0: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      1: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      2: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      3: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      4: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 72,
+        totalCount: 72,
+      },
     },
     checks: [
       {
@@ -184,18 +209,42 @@ export const SCENARIOS: RecommendationScenario[] = [
 
   {
     name: 'early-learning',
-    description: 'G0 partially learned (10F/15W/23U), rest unseen',
+    description: 'G0 partially learned (10A/15W/23U), rest unseen',
     groupStats: {
-      0: { fluentCount: 10, workingCount: 15, unseenCount: 23, totalCount: 48 },
-      1: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      2: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      3: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      4: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      5: { fluentCount: 0, workingCount: 0, unseenCount: 24, totalCount: 24 },
+      0: {
+        automaticCount: 10,
+        workingCount: 15,
+        unseenCount: 23,
+        totalCount: 48,
+      },
+      1: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      2: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      3: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      4: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 72,
+        totalCount: 72,
+      },
     },
     checks: [
       {
-        label: 'Blocks expansion (level auto low)',
+        label: 'Blocks expansion (level speed low)',
         check: (o) =>
           o.recommendation.expandIndex === null
             ? null
@@ -213,18 +262,42 @@ export const SCENARIOS: RecommendationScenario[] = [
 
   {
     name: 'struggling',
-    description: 'G0 struggling (5F/30W/13U) — mostly working, few fluent',
+    description: 'G0 struggling (5A/30W/13U) — mostly working, few automatic',
     groupStats: {
-      0: { fluentCount: 5, workingCount: 30, unseenCount: 13, totalCount: 48 },
-      1: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      2: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      3: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      4: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      5: { fluentCount: 0, workingCount: 0, unseenCount: 24, totalCount: 24 },
+      0: {
+        automaticCount: 5,
+        workingCount: 30,
+        unseenCount: 13,
+        totalCount: 48,
+      },
+      1: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      2: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      3: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      4: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 72,
+        totalCount: 72,
+      },
     },
     checks: [
       {
-        label: 'Blocks expansion (level auto low)',
+        label: 'Blocks expansion (level speed low)',
         check: (o) =>
           o.recommendation.expandIndex === null
             ? null
@@ -236,18 +309,42 @@ export const SCENARIOS: RecommendationScenario[] = [
   {
     name: 'ready-to-expand',
     description:
-      'G0 nearly all fluent (46F/2W/0U) — level auto high enough to expand',
+      'G0 nearly all automatic (46A/2W/0U) — level speed high enough to expand',
     groupStats: {
-      0: { fluentCount: 46, workingCount: 2, unseenCount: 0, totalCount: 48 },
-      1: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      2: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      3: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      4: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      5: { fluentCount: 0, workingCount: 0, unseenCount: 24, totalCount: 24 },
+      0: {
+        automaticCount: 46,
+        workingCount: 2,
+        unseenCount: 0,
+        totalCount: 48,
+      },
+      1: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      2: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      3: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      4: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 72,
+        totalCount: 72,
+      },
     },
     checks: [
       {
-        label: 'Opens expansion gate (high level auto)',
+        label: 'Opens expansion gate (high level speed)',
         check: (o) =>
           o.recommendation.expandIndex !== null
             ? null
@@ -265,14 +362,38 @@ export const SCENARIOS: RecommendationScenario[] = [
 
   {
     name: 'mid-progression',
-    description: 'G0 mostly fluent, G1 partially learned (18F/20W/10U)',
+    description: 'G0 mostly automatic, G1 partially learned (18A/20W/10U)',
     groupStats: {
-      0: { fluentCount: 40, workingCount: 8, unseenCount: 0, totalCount: 48 },
-      1: { fluentCount: 18, workingCount: 20, unseenCount: 10, totalCount: 48 },
-      2: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      3: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      4: { fluentCount: 0, workingCount: 0, unseenCount: 48, totalCount: 48 },
-      5: { fluentCount: 0, workingCount: 0, unseenCount: 24, totalCount: 24 },
+      0: {
+        automaticCount: 40,
+        workingCount: 8,
+        unseenCount: 0,
+        totalCount: 48,
+      },
+      1: {
+        automaticCount: 18,
+        workingCount: 20,
+        unseenCount: 10,
+        totalCount: 48,
+      },
+      2: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      3: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 48,
+        totalCount: 48,
+      },
+      4: {
+        automaticCount: 0,
+        workingCount: 0,
+        unseenCount: 72,
+        totalCount: 72,
+      },
     },
     checks: [
       {
@@ -283,10 +404,10 @@ export const SCENARIOS: RecommendationScenario[] = [
             : `consolidateIndices = [${o.recommendation.consolidateIndices}]`,
       },
       {
-        label: 'Status is "Slow" or "Getting faster"',
+        label: 'Status is "Hesitant" or "Learning"',
         check: (o) =>
-          o.practiceSummary.statusLabel === 'Slow' ||
-            o.practiceSummary.statusLabel === 'Getting faster'
+          o.practiceSummary.statusLabel === 'Hesitant' ||
+            o.practiceSummary.statusLabel === 'Learning'
             ? null
             : `statusLabel = "${o.practiceSummary.statusLabel}"`,
       },
@@ -295,14 +416,38 @@ export const SCENARIOS: RecommendationScenario[] = [
 
   {
     name: 'nearly-done',
-    description: 'All 6 groups started, mostly fluent with few working',
+    description: 'All 5 groups started, mostly automatic with few working',
     groupStats: {
-      0: { fluentCount: 46, workingCount: 2, unseenCount: 0, totalCount: 48 },
-      1: { fluentCount: 45, workingCount: 3, unseenCount: 0, totalCount: 48 },
-      2: { fluentCount: 44, workingCount: 4, unseenCount: 0, totalCount: 48 },
-      3: { fluentCount: 43, workingCount: 5, unseenCount: 0, totalCount: 48 },
-      4: { fluentCount: 42, workingCount: 6, unseenCount: 0, totalCount: 48 },
-      5: { fluentCount: 22, workingCount: 2, unseenCount: 0, totalCount: 24 },
+      0: {
+        automaticCount: 46,
+        workingCount: 2,
+        unseenCount: 0,
+        totalCount: 48,
+      },
+      1: {
+        automaticCount: 45,
+        workingCount: 3,
+        unseenCount: 0,
+        totalCount: 48,
+      },
+      2: {
+        automaticCount: 44,
+        workingCount: 4,
+        unseenCount: 0,
+        totalCount: 48,
+      },
+      3: {
+        automaticCount: 43,
+        workingCount: 5,
+        unseenCount: 0,
+        totalCount: 48,
+      },
+      4: {
+        automaticCount: 66,
+        workingCount: 6,
+        unseenCount: 0,
+        totalCount: 72,
+      },
     },
     checks: [
       {
@@ -313,9 +458,10 @@ export const SCENARIOS: RecommendationScenario[] = [
             : `expandIndex = ${o.recommendation.expandIndex}, expected null`,
       },
       {
-        label: 'Status is "Getting faster" or "Automatic"',
+        label: 'Status is "Learning", "Solid", or "Automatic"',
         check: (o) =>
-          o.practiceSummary.statusLabel === 'Getting faster' ||
+          o.practiceSummary.statusLabel === 'Learning' ||
+            o.practiceSummary.statusLabel === 'Solid' ||
             o.practiceSummary.statusLabel === 'Automatic'
             ? null
             : `statusLabel = "${o.practiceSummary.statusLabel}"`,
@@ -325,14 +471,38 @@ export const SCENARIOS: RecommendationScenario[] = [
 
   {
     name: 'fully-mastered',
-    description: 'All groups fully fluent, no working or unseen items',
+    description: 'All groups fully automatic, no working or unseen items',
     groupStats: {
-      0: { fluentCount: 48, workingCount: 0, unseenCount: 0, totalCount: 48 },
-      1: { fluentCount: 48, workingCount: 0, unseenCount: 0, totalCount: 48 },
-      2: { fluentCount: 48, workingCount: 0, unseenCount: 0, totalCount: 48 },
-      3: { fluentCount: 48, workingCount: 0, unseenCount: 0, totalCount: 48 },
-      4: { fluentCount: 48, workingCount: 0, unseenCount: 0, totalCount: 48 },
-      5: { fluentCount: 24, workingCount: 0, unseenCount: 0, totalCount: 24 },
+      0: {
+        automaticCount: 48,
+        workingCount: 0,
+        unseenCount: 0,
+        totalCount: 48,
+      },
+      1: {
+        automaticCount: 48,
+        workingCount: 0,
+        unseenCount: 0,
+        totalCount: 48,
+      },
+      2: {
+        automaticCount: 48,
+        workingCount: 0,
+        unseenCount: 0,
+        totalCount: 48,
+      },
+      3: {
+        automaticCount: 48,
+        workingCount: 0,
+        unseenCount: 0,
+        totalCount: 48,
+      },
+      4: {
+        automaticCount: 72,
+        workingCount: 0,
+        unseenCount: 0,
+        totalCount: 72,
+      },
     },
     checks: [
       {

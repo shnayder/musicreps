@@ -22,8 +22,8 @@ function emptyStorageFactory(): (ns: string) => StorageAdapter {
   return () => createMemoryStorage();
 }
 
-/** Seed a memory storage with fluent items (fast EWMA, high stability). */
-function seedFluent(
+/** Seed a memory storage with automatic items (fast EWMA, high stability). */
+function seedAutomatic(
   storage: StorageAdapter,
   itemIds: string[],
   now: number,
@@ -131,24 +131,24 @@ describe('computeProgressForMode', () => {
     assert.equal(result.groupColors.length, 5);
   });
 
-  it('sorts segments descending by automaticity', () => {
+  it('sorts segments descending by speed', () => {
     const entry = getModeProgress('keySignatures')!;
     const storage = createMemoryStorage();
     const now = Date.now();
 
-    // Seed group 0 (C G F) as fluent, group 2 (A Eb) as slow, rest empty.
+    // Seed group 0 (C G F) as automatic, group 2 (A Eb) as slow, rest empty.
     const g0Items = entry.groups![0].getItemIds();
     const g2Items = entry.groups![2].getItemIds();
-    seedFluent(storage, g0Items, now);
+    seedAutomatic(storage, g0Items, now);
     seedSlow(storage, g2Items, now);
 
     const result = computeProgressForMode(entry, storage, null);
 
-    // 5 segments total. Group 0 (fluent) should sort first, group 2 (slow)
+    // 5 segments total. Group 0 (automatic) should sort first, group 2 (slow)
     // should sort before groups 1/3/4 (unseen = 0 auto). Colors should be
-    // ordered descending: fluent color, slow color, then grey/grey/grey.
+    // ordered descending: automatic color, slow color, then grey/grey/grey.
     assert.equal(result.groupColors.length, 5);
-    // First color should differ from last (fluent vs grey)
+    // First color should differ from last (automatic vs grey)
     assert.notEqual(result.groupColors[0], result.groupColors[4]);
   });
 
@@ -174,7 +174,7 @@ describe('computeProgressForMode', () => {
     const entry = getModeProgress('noteSemitones')!;
     const storage = createMemoryStorage();
     const itemIds = entry.allItemIds();
-    seedFluent(storage, itemIds, Date.now());
+    seedAutomatic(storage, itemIds, Date.now());
 
     const withBaseline = computeProgressForMode(entry, storage, 500);
     const withoutBaseline = computeProgressForMode(entry, storage, null);
@@ -198,11 +198,11 @@ describe('computeAllProgress performance', () => {
       const storage = createMemoryStorage();
       const allItems = entry.allItemIds();
 
-      // Seed ~60% as fluent, ~20% as working, rest unseen
-      const fluentEnd = Math.floor(allItems.length * 0.6);
+      // Seed ~60% as automatic, ~20% as working, rest unseen
+      const automaticEnd = Math.floor(allItems.length * 0.6);
       const workingEnd = Math.floor(allItems.length * 0.8);
 
-      for (let i = 0; i < fluentEnd; i++) {
+      for (let i = 0; i < automaticEnd; i++) {
         storage.saveStats(allItems[i], {
           recentTimes: [800, 850, 900],
           ewma: 850,
@@ -212,7 +212,7 @@ describe('computeAllProgress performance', () => {
           lastCorrectAt: now - 3600_000,
         });
       }
-      for (let i = fluentEnd; i < workingEnd; i++) {
+      for (let i = automaticEnd; i < workingEnd; i++) {
         storage.saveStats(allItems[i], {
           recentTimes: [2800, 3000, 3200],
           ewma: 3000,

@@ -112,17 +112,14 @@ function mockSelector(): StatsSelector {
   });
 
   return {
-    getAutomaticity(id: string) {
-      return lookup[id] ?? null;
-    },
     getSpeedScore(id: string) {
       return lookup[id] ?? null;
     },
     getFreshness(id: string) {
       // Simulate varying freshness: items with data get 0.3–1.0
-      const auto = lookup[id];
-      if (auto == null) return null;
-      return 0.3 + auto * 0.7;
+      const speed = lookup[id];
+      if (speed == null) return null;
+      return 0.3 + speed * 0.7;
     },
     getStats(_id: string) {
       return null;
@@ -138,8 +135,8 @@ function PreviewApp() {
   const sel = mockSelector();
   // Narrow selector for GroupProgressToggles (requires non-optional methods).
   const groupSel = {
-    getSpeedScore: sel.getSpeedScore!,
-    getFreshness: sel.getFreshness!,
+    getSpeedScore: sel.getSpeedScore,
+    getFreshness: sel.getFreshness,
   };
 
   return (
@@ -359,7 +356,7 @@ function PreviewApp() {
       <Section title='PracticeCard (no scope)'>
         <PracticeCard
           statusLabel='Strong'
-          statusDetail='12 of 14 fluent'
+          statusDetail='12 of 14 automatic'
           recommendation='start A string — 5 new items'
           onApplyRecommendation={() => {}}
         />
@@ -367,7 +364,7 @@ function PreviewApp() {
       <Section title='PracticeCard (with scope toggles)'>
         <PracticeCard
           statusLabel='Solid'
-          statusDetail='24 of 26 fluent'
+          statusDetail='24 of 26 automatic'
           recommendation='start D string'
           onApplyRecommendation={() => {}}
           scope={
@@ -414,7 +411,7 @@ function PreviewApp() {
             practiceContent={
               <PracticeCard
                 statusLabel='Solid'
-                statusDetail='8 of 12 fluent'
+                statusDetail='8 of 12 automatic'
               />
             }
             progressContent={

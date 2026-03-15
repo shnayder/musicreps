@@ -27,27 +27,38 @@ function rec(
   string: number,
   working: number,
   unseen: number,
-  fluent: number,
+  automatic: number,
 ): StringRecommendation {
   return {
     string,
     workingCount: working,
     unseenCount: unseen,
-    fluentCount: fluent,
-    totalCount: working + unseen + fluent,
+    automaticCount: automatic,
+    totalCount: working + unseen + automatic,
   };
 }
 
-// Mock selector that returns pre-built data and computes level automaticity
-// from encoded item IDs: fluent items → 0.9, working → 0.3, unseen → 0.
+// Mock selector that returns pre-built data and computes level speed/freshness
+// from encoded item IDs: automatic items → 0.95 speed, working → 0.3, unseen → 0.
 function mockSelector(
   dataByIndex: Record<number, {
     workingCount: number;
     unseenCount: number;
-    fluentCount: number;
+    automaticCount: number;
     totalCount: number;
   }>,
 ): RecommendationSelector {
+  function itemSpeed(id: string): number {
+    const parts = id.split('-');
+    const groupIdx = parseInt(parts[1], 10);
+    const itemIdx = parseInt(parts[3], 10);
+    const d = dataByIndex[groupIdx];
+    if (!d) return 0;
+    if (itemIdx < d.automaticCount) return 0.95;
+    if (itemIdx < d.automaticCount + d.workingCount) return 0.3;
+    return 0; // unseen
+  }
+
   return {
     getStringRecommendations(
       indices: number[],
@@ -55,7 +66,7 @@ function mockSelector(
     ) {
       const results = indices.map((i) => {
         const d = dataByIndex[i] ??
-          { workingCount: 0, unseenCount: 0, fluentCount: 0, totalCount: 0 };
+          { workingCount: 0, unseenCount: 0, automaticCount: 0, totalCount: 0 };
         return { string: i, ...d };
       });
       results.sort((a, b) =>
@@ -64,30 +75,37 @@ function mockSelector(
       );
       return results;
     },
-    getLevelAutomaticity(
+    getLevelSpeed(
       itemIds: string[],
       percentile: number = 0.1,
     ): { level: number; seen: number } {
-      const values = itemIds.map((id) => {
-        const parts = id.split('-');
-        const groupIdx = parseInt(parts[1], 10);
-        const itemIdx = parseInt(parts[3], 10);
-        const d = dataByIndex[groupIdx];
-        if (!d) return 0;
-        if (itemIdx < d.fluentCount) return 0.9;
-        if (itemIdx < d.fluentCount + d.workingCount) return 0.3;
-        return 0; // unseen
-      });
+      const values = itemIds.map(itemSpeed);
       values.sort((a, b) => a - b);
       const index = Math.max(0, Math.ceil(values.length * percentile) - 1);
       const seen = values.filter((v) => v > 0).length;
       return { level: values[index], seen };
     },
+    getLevelFreshness(
+      itemIds: string[],
+      percentile: number = 0.1,
+    ): { level: number; seen: number } {
+      // Mock: all seen items have high freshness (1.0)
+      const values = itemIds.map((id) => itemSpeed(id) > 0 ? 1.0 : 0);
+      values.sort((a, b) => a - b);
+      const index = Math.max(0, Math.ceil(values.length * percentile) - 1);
+      const seen = values.filter((v) => v > 0).length;
+      return { level: values[index], seen };
+    },
+    getSpeedScore: (id: string) => {
+      const s = itemSpeed(id);
+      return s > 0 ? s : null;
+    },
+    getFreshness: () => 1.0,
   };
 }
 
 // Generate item IDs that encode group and item index so the mock
-// getLevelAutomaticity can decode them.
+// getLevelSpeed can decode them.
 function makeGetItemIds(
   dataByIndex: Record<number, { totalCount: number; [k: string]: number }>,
 ) {
@@ -98,7 +116,7 @@ function makeGetItemIds(
   };
 }
 
-const config = { expansionThreshold: 0.7 };
+const config = {};
 
 // ---------------------------------------------------------------------------
 // workCount
@@ -109,7 +127,7 @@ describe('workCount', () => {
     assert.equal(workCount(rec(0, 3, 5, 2)), 8);
   });
 
-  it('returns 0 when all fluent', () => {
+  it('returns 0 when all automatic', () => {
     assert.equal(workCount(rec(0, 0, 0, 10)), 0);
   });
 });
@@ -123,7 +141,7 @@ describe('classifyGroups', () => {
     const recs = [
       rec(0, 3, 5, 2), // started: unseen < total
       rec(1, 0, 10, 0), // unstarted: unseen === total
-      rec(2, 0, 0, 10), // started: unseen < total (all fluent)
+      rec(2, 0, 0, 10), // started: unseen < total (all automatic)
     ];
     const { started, unstarted } = classifyGroups(recs);
     assert.equal(started.length, 2);
@@ -174,7 +192,7 @@ describe('freshStartResult', () => {
 // ---------------------------------------------------------------------------
 
 describe('checkReviewMode', () => {
-  it('returns review result when ≥80% fluent and no unstarted', () => {
+  it('returns review result when ≥80% automatic and no unstarted', () => {
     const started = [rec(0, 1, 0, 9), rec(1, 1, 0, 9)]; // 18/20 = 90%
     const result = checkReviewMode(started, false);
     assert.ok(result);
@@ -183,7 +201,7 @@ describe('checkReviewMode', () => {
     assert.ok(result!.recommended.has(1));
   });
 
-  it('returns null when fluent ratio < 80%', () => {
+  it('returns null when automatic ratio < 80%', () => {
     const started = [rec(0, 5, 0, 5)]; // 50%
     assert.equal(checkReviewMode(started, false), null);
   });
@@ -269,9 +287,9 @@ describe('capConsolidation', () => {
 // ---------------------------------------------------------------------------
 
 describe('selectExpansion', () => {
-  it('returns first unstarted group when level meets threshold', () => {
+  it('returns first unstarted group when speed and freshness meet thresholds', () => {
     const unstarted = [rec(1, 0, 10, 0), rec(2, 0, 10, 0)];
-    const result = selectExpansion(0.8, 0.7, unstarted);
+    const result = selectExpansion(0.8, 0.6, unstarted);
     assert.ok(result);
     assert.equal(result!.index, 1);
     assert.equal(result!.count, 10);
@@ -281,25 +299,30 @@ describe('selectExpansion', () => {
     const unstarted = [rec(1, 0, 10, 0), rec(2, 0, 5, 0)];
     const result = selectExpansion(
       0.8,
-      0.7,
+      0.6,
       unstarted,
       (a, b) => a.totalCount - b.totalCount,
     );
     assert.equal(result!.index, 2);
   });
 
-  it('returns null when level below threshold', () => {
+  it('returns null when speed below threshold', () => {
     const unstarted = [rec(1, 0, 10, 0)];
-    assert.equal(selectExpansion(0.5, 0.7, unstarted), null);
+    assert.equal(selectExpansion(0.5, 0.6, unstarted), null);
+  });
+
+  it('returns null when freshness below threshold', () => {
+    const unstarted = [rec(1, 0, 10, 0)];
+    assert.equal(selectExpansion(0.8, 0.3, unstarted), null);
   });
 
   it('returns null when no unstarted groups', () => {
-    assert.equal(selectExpansion(0.8, 0.7, []), null);
+    assert.equal(selectExpansion(0.8, 0.6, []), null);
   });
 
-  it('expands at exact threshold', () => {
+  it('expands at exact speed threshold', () => {
     const unstarted = [rec(1, 0, 10, 0)];
-    const result = selectExpansion(0.7, 0.7, unstarted);
+    const result = selectExpansion(0.7, 0.5, unstarted);
     assert.ok(result);
   });
 });
@@ -349,8 +372,18 @@ describe('detectStaleGroups', () => {
 describe('computeRecommendations', () => {
   it('recommends first unstarted group on fresh start', () => {
     const data = {
-      0: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      0: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -365,8 +398,13 @@ describe('computeRecommendations', () => {
 
   it('uses sortUnstarted on fresh start', () => {
     const data = {
-      0: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 5, fluentCount: 0, totalCount: 5 },
+      0: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      1: { workingCount: 0, unseenCount: 5, automaticCount: 0, totalCount: 5 },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -381,8 +419,13 @@ describe('computeRecommendations', () => {
 
   it('recommends the single started item', () => {
     const data = {
-      0: { workingCount: 3, unseenCount: 5, fluentCount: 2, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      0: { workingCount: 3, unseenCount: 5, automaticCount: 2, totalCount: 10 },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -394,10 +437,15 @@ describe('computeRecommendations', () => {
     assert.ok(result.enabled!.has(0));
   });
 
-  it('does not expand when level automaticity below threshold', () => {
+  it('does not expand when level speed below threshold', () => {
     const data = {
-      0: { workingCount: 3, unseenCount: 2, fluentCount: 2, totalCount: 7 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      0: { workingCount: 3, unseenCount: 2, automaticCount: 2, totalCount: 7 },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -408,10 +456,20 @@ describe('computeRecommendations', () => {
     assert.ok(!result.recommended.has(1));
   });
 
-  it('expands when level automaticity meets threshold', () => {
+  it('expands when level speed meets threshold', () => {
     const data = {
-      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      0: {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 10,
+        totalCount: 10,
+      },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -425,9 +483,9 @@ describe('computeRecommendations', () => {
 
   it('recommends items above median work', () => {
     const data = {
-      0: { workingCount: 8, unseenCount: 2, fluentCount: 0, totalCount: 10 },
-      1: { workingCount: 1, unseenCount: 0, fluentCount: 9, totalCount: 10 },
-      2: { workingCount: 5, unseenCount: 3, fluentCount: 2, totalCount: 10 },
+      0: { workingCount: 8, unseenCount: 2, automaticCount: 0, totalCount: 10 },
+      1: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
+      2: { workingCount: 5, unseenCount: 3, automaticCount: 2, totalCount: 10 },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -441,9 +499,24 @@ describe('computeRecommendations', () => {
 
   it('uses sortUnstarted to pick expansion target', () => {
     const data = {
-      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
-      2: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      0: {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 10,
+        totalCount: 10,
+      },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      2: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -458,8 +531,18 @@ describe('computeRecommendations', () => {
 
   it('always recommends at least one item when data exists', () => {
     const data = {
-      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
+      0: {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 10,
+        totalCount: 10,
+      },
+      1: {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 10,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -471,30 +554,26 @@ describe('computeRecommendations', () => {
     assert.ok(result.enabled!.size >= 1);
   });
 
-  it('expands at exactly the threshold level', () => {
+  it('does not expand when all items are working (speed too low)', () => {
     const data = {
-      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      0: {
+        workingCount: 10,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
       [0, 1],
       makeGetItemIds(data),
-      { expansionThreshold: 0.9 },
-    );
-    assert.ok(result.recommended.has(1));
-  });
-
-  it('does not expand just below the threshold', () => {
-    const data = {
-      0: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
-    };
-    const result = computeRecommendations(
-      mockSelector(data),
-      [0, 1],
-      makeGetItemIds(data),
-      { expansionThreshold: 0.31 },
+      config,
     );
     assert.ok(!result.recommended.has(1));
   });
@@ -503,10 +582,20 @@ describe('computeRecommendations', () => {
 
   it('skipped group is excluded from recommendations', () => {
     const data = {
-      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
-      1: { workingCount: 5, unseenCount: 5, fluentCount: 0, totalCount: 10 },
-      2: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
-      3: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
+      1: { workingCount: 5, unseenCount: 5, automaticCount: 0, totalCount: 10 },
+      2: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      3: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -519,9 +608,24 @@ describe('computeRecommendations', () => {
 
   it('expansion skips past skipped group', () => {
     const data = {
-      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
-      2: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      0: {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 10,
+        totalCount: 10,
+      },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      2: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -537,17 +641,42 @@ describe('computeRecommendations', () => {
 
   it('caps work items: 5 groups × 10 working → ≤3 recommended', () => {
     const data = {
-      0: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
-      1: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
-      2: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
-      3: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
-      4: { workingCount: 10, unseenCount: 0, fluentCount: 0, totalCount: 10 },
+      0: {
+        workingCount: 10,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      1: {
+        workingCount: 10,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      2: {
+        workingCount: 10,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      3: {
+        workingCount: 10,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      4: {
+        workingCount: 10,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
       [0, 1, 2, 3, 4],
       makeGetItemIds(data),
-      { expansionThreshold: 0.7, maxWorkItems: 30 },
+      { maxWorkItems: 30 },
     );
     assert.ok(result.consolidateWorkingCount <= 30);
     assert.ok(result.consolidateIndices.length <= 3);
@@ -555,13 +684,18 @@ describe('computeRecommendations', () => {
 
   it('cap keeps at least one group even if it exceeds cap', () => {
     const data = {
-      0: { workingCount: 40, unseenCount: 0, fluentCount: 0, totalCount: 40 },
+      0: {
+        workingCount: 40,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 40,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
       [0],
       makeGetItemIds(data),
-      { expansionThreshold: 0.7, maxWorkItems: 30 },
+      { maxWorkItems: 30 },
     );
     assert.ok(result.recommended.has(0));
     assert.equal(result.consolidateIndices.length, 1);
@@ -569,10 +703,10 @@ describe('computeRecommendations', () => {
 
   // --- Review mode ---
 
-  it('triggers review mode when all started and ≥80% fluent', () => {
+  it('triggers review mode when all started and ≥80% automatic', () => {
     const data = {
-      0: { workingCount: 1, unseenCount: 0, fluentCount: 9, totalCount: 10 },
-      1: { workingCount: 1, unseenCount: 0, fluentCount: 9, totalCount: 10 },
+      0: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
+      1: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -585,10 +719,10 @@ describe('computeRecommendations', () => {
     assert.ok(result.recommended.has(1));
   });
 
-  it('does not trigger review mode when fluent ratio < 80%', () => {
+  it('does not trigger review mode when automatic ratio < 80%', () => {
     const data = {
-      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
-      1: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
+      0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
+      1: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -601,8 +735,13 @@ describe('computeRecommendations', () => {
 
   it('does not trigger review mode with unstarted groups', () => {
     const data = {
-      0: { workingCount: 1, unseenCount: 0, fluentCount: 9, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      0: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const result = computeRecommendations(
       mockSelector(data),
@@ -617,7 +756,7 @@ describe('computeRecommendations', () => {
 
   it('marks stale group (high speed + low freshness)', () => {
     const data = {
-      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
+      0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
     };
     const sel: RecommendationSelector = {
       ...mockSelector(data),
@@ -635,7 +774,7 @@ describe('computeRecommendations', () => {
 
   it('no stale when freshness is high', () => {
     const data = {
-      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
+      0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
     };
     const sel: RecommendationSelector = {
       ...mockSelector(data),
@@ -651,26 +790,28 @@ describe('computeRecommendations', () => {
     assert.equal(result.staleIndices, undefined);
   });
 
-  it('staleIndices undefined when selector lacks speed/freshness', () => {
-    const data = {
-      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
-    };
-    const result = computeRecommendations(
-      mockSelector(data),
-      [0],
-      makeGetItemIds(data),
-      config,
-    );
-    assert.equal(result.staleIndices, undefined);
-  });
-
   // --- Skip/unskip symmetry ---
 
   it('unskipped group reappears in recommendations', () => {
     const data = {
-      0: { workingCount: 0, unseenCount: 0, fluentCount: 10, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
-      2: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
+      0: {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 10,
+        totalCount: 10,
+      },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      2: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
     };
     const sel = mockSelector(data);
     const getIds = makeGetItemIds(data);
@@ -688,10 +829,10 @@ describe('computeRecommendations', () => {
 
   it('unskipped consolidation group reappears', () => {
     const data = {
-      0: { workingCount: 8, unseenCount: 2, fluentCount: 0, totalCount: 10 },
-      1: { workingCount: 7, unseenCount: 2, fluentCount: 1, totalCount: 10 },
-      2: { workingCount: 1, unseenCount: 0, fluentCount: 9, totalCount: 10 },
-      3: { workingCount: 1, unseenCount: 0, fluentCount: 9, totalCount: 10 },
+      0: { workingCount: 8, unseenCount: 2, automaticCount: 0, totalCount: 10 },
+      1: { workingCount: 7, unseenCount: 2, automaticCount: 1, totalCount: 10 },
+      2: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
+      3: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
     };
     const sel = mockSelector(data);
     const getIds = makeGetItemIds(data);
@@ -710,35 +851,14 @@ describe('computeRecommendations', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Timestamp consistency — all selector calls receive the same nowMs
+// Timestamp consistency — freshness calls receive consistent nowMs
 // ---------------------------------------------------------------------------
 
 describe('single-timestamp consistency', () => {
-  it('passes the same nowMs to getStringRecommendations and getLevelAutomaticity', () => {
-    const timestamps: number[] = [];
-    const data = {
-      0: { workingCount: 3, unseenCount: 2, fluentCount: 5, totalCount: 10 },
-      1: { workingCount: 0, unseenCount: 10, fluentCount: 0, totalCount: 10 },
-    };
-    const sel: RecommendationSelector = {
-      getStringRecommendations(indices, getIds, nowMs) {
-        timestamps.push(nowMs!);
-        return mockSelector(data).getStringRecommendations(indices, getIds);
-      },
-      getLevelAutomaticity(itemIds, percentile, nowMs) {
-        timestamps.push(nowMs!);
-        return mockSelector(data).getLevelAutomaticity(itemIds, percentile);
-      },
-    };
-    computeRecommendations(sel, [0, 1], makeGetItemIds(data), config);
-    assert.equal(timestamps.length, 2);
-    assert.equal(timestamps[0], timestamps[1]);
-  });
-
   it('passes nowMs to getFreshness for stale detection', () => {
     const freshnessTimestamps: number[] = [];
     const data = {
-      0: { workingCount: 5, unseenCount: 0, fluentCount: 5, totalCount: 10 },
+      0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
     };
     const sel: RecommendationSelector = {
       ...mockSelector(data),
@@ -804,7 +924,7 @@ function recText(
     selector,
     indices,
     getItemIds,
-    { expansionThreshold: 0.7 },
+    {},
     { sortUnstarted: (a, b) => a.string - b.string },
   );
   const text = buildRecommendationText(

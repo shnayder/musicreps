@@ -1,8 +1,6 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
-  computeAutomaticity,
-  computeAutomaticityForDisplay,
   computeEwma,
   computeFreshness,
   computeMedian,
@@ -224,8 +222,8 @@ describe('computeSpeedScore', () => {
     );
   });
 
-  it('returns ~0.5 at automaticityTarget', () => {
-    const score = computeSpeedScore(cfg.automaticityTarget, cfg);
+  it('returns ~0.5 at speedTarget', () => {
+    const score = computeSpeedScore(cfg.speedTarget, cfg);
     assert.ok(
       Math.abs(score! - 0.5) < 0.01,
       `at target should be ~0.5, got ${score}`,
@@ -271,60 +269,6 @@ describe('computeSpeedScore', () => {
     const withDefault = computeSpeedScore(2000, cfg);
     const withExplicit = computeSpeedScore(2000, cfg, 1);
     assert.equal(withDefault, withExplicit);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// computeAutomaticity
-// ---------------------------------------------------------------------------
-
-describe('computeAutomaticity', () => {
-  it('returns null when either input is null', () => {
-    assert.equal(computeAutomaticity(null, 0.8), null);
-    assert.equal(computeAutomaticity(0.8, null), null);
-  });
-
-  it('returns high value for fast + high recall', () => {
-    const auto = computeAutomaticity(1.0, 1.0);
-    assert.equal(auto, 1.0);
-  });
-
-  it('returns low value for slow even with perfect recall', () => {
-    const auto = computeAutomaticity(1.0, 0.1);
-    assert.ok(auto! < 0.15, `slow + recalled should be low: ${auto}`);
-  });
-
-  it('returns low value for fast but forgotten', () => {
-    const auto = computeAutomaticity(0.1, 1.0);
-    assert.ok(auto! < 0.15, `fast + forgotten should be low: ${auto}`);
-  });
-
-  it('returns moderate value for moderate speed + moderate recall', () => {
-    const auto = computeAutomaticity(0.5, 0.5);
-    assert.equal(auto, 0.25);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// computeAutomaticityForDisplay
-// ---------------------------------------------------------------------------
-
-describe('computeAutomaticityForDisplay', () => {
-  it('returns null for unseen items (hasSeen = false)', () => {
-    assert.equal(computeAutomaticityForDisplay(null, null, false), null);
-    assert.equal(computeAutomaticityForDisplay(null, 0.8, false), null);
-  });
-
-  it('returns 0 for seen items with incomplete data (hasSeen = true)', () => {
-    assert.equal(computeAutomaticityForDisplay(null, 0.8, true), 0);
-    assert.equal(computeAutomaticityForDisplay(0.8, null, true), 0);
-    assert.equal(computeAutomaticityForDisplay(null, null, true), 0);
-  });
-
-  it('returns computed value when both inputs are present', () => {
-    assert.equal(computeAutomaticityForDisplay(1.0, 1.0, true), 1.0);
-    assert.equal(computeAutomaticityForDisplay(0.5, 0.5, true), 0.25);
-    assert.equal(computeAutomaticityForDisplay(1.0, 1.0, false), 1.0);
   });
 });
 
@@ -676,27 +620,6 @@ describe('createAdaptiveSelector', () => {
     assert.equal(stats.stability, DEFAULT_CONFIG.initialStability);
   });
 
-  it('getAutomaticity returns null for unseen items', () => {
-    const storage = createMemoryStorage();
-    const selector = createAdaptiveSelector(storage);
-    assert.equal(selector.getAutomaticity('0-0'), null);
-  });
-
-  it('getAutomaticity returns 0 for wrong-only items', () => {
-    const storage = createMemoryStorage();
-    const selector = createAdaptiveSelector(storage);
-    selector.recordResponse('0-0', 3000, false);
-    assert.equal(selector.getAutomaticity('0-0'), 0);
-  });
-
-  it('getAutomaticity returns non-null after correct answer', () => {
-    const storage = createMemoryStorage();
-    const selector = createAdaptiveSelector(storage);
-    selector.recordResponse('0-0', 2000);
-    const auto = selector.getAutomaticity('0-0');
-    assert.ok(auto !== null && auto > 0, `should be positive, got ${auto}`);
-  });
-
   it('getRecall returns null for unseen items', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
@@ -720,7 +643,7 @@ describe('createAdaptiveSelector', () => {
   it('checkAllAutomatic returns true when all items are fast and recently answered', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
-    // Fast answers (1200ms) → speedScore ≈ 0.93, recall ≈ 1.0 → auto ≈ 0.93 > 0.8
+    // Fast answers (1200ms) → speedScore ≈ 0.93 ≥ 0.9
     selector.recordResponse('a', 1200);
     selector.recordResponse('b', 1200);
 
@@ -755,10 +678,10 @@ describe('createAdaptiveSelector', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
     // Recently answered (recall ≈ 1.0) but slow (4000ms → speedScore ≈ 0.35)
-    // → automaticity ≈ 0.35 < 0.8
+    // → speed ≈ 0.35 < 0.9
     selector.recordResponse('a', 4000);
 
-    // Recall is high (just answered), but automaticity is low (slow response)
+    // Recall is high (just answered), but speed is low (slow response)
     assert.ok(
       selector.getRecall('a')! > 0.9,
       'recall should be high for recently answered item',
@@ -766,11 +689,11 @@ describe('createAdaptiveSelector', () => {
     assert.equal(
       selector.checkAllAutomatic(['a']),
       false,
-      'automaticity check fails because speed is low',
+      'automatic check fails because speed is low',
     );
   });
 
-  it('checkNeedsReview returns true when all items were fast but automaticity decayed', () => {
+  it('checkNeedsReview returns true when all items were fast but freshness decayed', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
@@ -802,7 +725,7 @@ describe('createAdaptiveSelector', () => {
     selector.recordResponse('a', 1500);
     selector.recordResponse('b', 1500);
 
-    // Just answered — automaticity is high (fast + fresh)
+    // Just answered — speed is high and fresh
     assert.equal(selector.checkNeedsReview(['a', 'b']), false);
   });
 
@@ -881,38 +804,38 @@ describe('createAdaptiveSelector', () => {
     assert.equal(selector.checkNeedsReview(['a']), false);
   });
 
-  it('getLevelAutomaticity returns 0 for all unseen items', () => {
+  it('getLevelSpeed returns 0 for all unseen items', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
-    const result = selector.getLevelAutomaticity(['a', 'b', 'c']);
+    const result = selector.getLevelSpeed(['a', 'b', 'c']);
     assert.equal(result.level, 0);
     assert.equal(result.seen, 0);
   });
 
-  it('getLevelAutomaticity returns high level when all items are fast and recent', () => {
+  it('getLevelSpeed returns high level when all items are fast and recent', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
-    // Fast answers → high automaticity
+    // Fast answers → high speed score
     selector.recordResponse('a', 1200);
     selector.recordResponse('b', 1200);
     selector.recordResponse('c', 1200);
-    const result = selector.getLevelAutomaticity(['a', 'b', 'c']);
+    const result = selector.getLevelSpeed(['a', 'b', 'c']);
     assert.ok(result.level > 0.8, `level should be > 0.8, got ${result.level}`);
     assert.equal(result.seen, 3);
   });
 
-  it('getLevelAutomaticity reflects weakest items', () => {
+  it('getLevelSpeed reflects weakest items', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
     // 2 fast + 1 unseen → level should be 0 (unseen → 0)
     selector.recordResponse('a', 1200);
     selector.recordResponse('b', 1200);
-    const result = selector.getLevelAutomaticity(['a', 'b', 'c']);
+    const result = selector.getLevelSpeed(['a', 'b', 'c']);
     assert.equal(result.level, 0);
     assert.equal(result.seen, 2);
   });
 
-  it('getLevelAutomaticity picks correct percentile index', () => {
+  it('getLevelSpeed picks correct percentile index', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
     // 12 items: 10 fast + 2 unseen
@@ -921,7 +844,7 @@ describe('createAdaptiveSelector', () => {
       selector.recordResponse(`item-${i}`, 1200);
     }
     const ids = Array.from({ length: 12 }, (_, i) => `item-${i}`);
-    const result = selector.getLevelAutomaticity(ids);
+    const result = selector.getLevelSpeed(ids);
     // sorted: [0, 0, high, high, ...] → index 1 = 0
     assert.equal(result.level, 0);
     assert.equal(result.seen, 10);
@@ -931,7 +854,7 @@ describe('createAdaptiveSelector', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
-    // String 0: fast items answered recently → automaticity > 0.8 → fluent
+    // String 0: fast items answered recently → speed ≥ 0.9 → automatic
     selector.recordResponse('0-0', 1200);
     selector.recordResponse('0-1', 1200);
 
@@ -948,18 +871,18 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].string, 1);
     assert.equal(recs[0].unseenCount, 2);
     assert.equal(recs[0].workingCount, 0);
-    assert.equal(recs[0].fluentCount, 0);
+    assert.equal(recs[0].automaticCount, 0);
     assert.equal(recs[1].string, 0);
     assert.equal(recs[1].unseenCount, 0);
     assert.equal(recs[1].workingCount, 0);
-    assert.equal(recs[1].fluentCount, 2); // fast + just answered = fluent
+    assert.equal(recs[1].automaticCount, 2); // fast + just answered = automatic
   });
 
   it('getStringRecommendations separates unseen from working items', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
-    // String 0: item 0-0 answered fast and recently → fluent, item 0-1 unseen
+    // String 0: item 0-0 answered fast and recently → automatic, item 0-1 unseen
     selector.recordResponse('0-0', 1200);
 
     const recs = selector.getStringRecommendations(
@@ -968,7 +891,7 @@ describe('createAdaptiveSelector', () => {
     );
 
     assert.equal(recs[0].unseenCount, 1); // 0-1 unseen
-    assert.equal(recs[0].fluentCount, 1); // 0-0 fast + just answered
+    assert.equal(recs[0].automaticCount, 1); // 0-0 fast + just answered = automatic
     assert.equal(recs[0].workingCount, 0);
   });
 
@@ -977,7 +900,7 @@ describe('createAdaptiveSelector', () => {
     const selector = createAdaptiveSelector(storage);
 
     // Item was fast once but 100h ago with 4h stability → freshness ≈ 0
-    // speedScore ≈ 0.63, automaticity ≈ 0 → working
+    // speedScore ≈ 0.63, speed < 0.9 → working
     storage.saveStats('0-0', {
       recentTimes: [2000],
       ewma: 2000,
@@ -992,17 +915,16 @@ describe('createAdaptiveSelector', () => {
       (s) => [`${s}-0`, `${s}-1`],
     );
 
-    assert.equal(recs[0].workingCount, 1); // 0-0 seen but automaticity decayed
+    assert.equal(recs[0].workingCount, 1); // 0-0 seen but speed < 0.9
     assert.equal(recs[0].unseenCount, 1); // 0-1 never seen
-    assert.equal(recs[0].fluentCount, 0);
+    assert.equal(recs[0].automaticCount, 0);
   });
 
   it('getStringRecommendations classifies slow-but-recent items as working', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
-    // Slow answer (3500ms) just now → speedScore ≈ 0.38, recall ≈ 1.0
-    // automaticity ≈ 0.38 < 0.8 → working, not fluent
+    // Slow answer (3500ms) just now → speedScore ≈ 0.38 < 0.9 → working, not automatic
     selector.recordResponse('0-0', 3500);
 
     const recs = selector.getStringRecommendations(
@@ -1011,7 +933,7 @@ describe('createAdaptiveSelector', () => {
     );
 
     assert.equal(recs[0].workingCount, 1); // slow = not automatic
-    assert.equal(recs[0].fluentCount, 0);
+    assert.equal(recs[0].automaticCount, 0);
   });
 
   it('getStringRecommendations breaks ties deterministically by string index', () => {
@@ -1040,8 +962,8 @@ describe('createAdaptiveSelector', () => {
     assert.equal(selector.getConfig().minTime, 1500);
     // Other fields preserved
     assert.equal(
-      selector.getConfig().automaticityTarget,
-      original.automaticityTarget,
+      selector.getConfig().speedTarget,
+      original.speedTarget,
     );
   });
 
@@ -1050,7 +972,7 @@ describe('createAdaptiveSelector', () => {
     const selector = createAdaptiveSelector(storage);
     const cfg = selector.getConfig();
     assert.equal(cfg.minTime, DEFAULT_CONFIG.minTime);
-    assert.equal(cfg.automaticityTarget, DEFAULT_CONFIG.automaticityTarget);
+    assert.equal(cfg.speedTarget, DEFAULT_CONFIG.speedTarget);
   });
 });
 
@@ -1062,7 +984,7 @@ describe('deriveScaledConfig', () => {
   it('scales all timing thresholds proportionally', () => {
     const scaled = deriveScaledConfig(1500);
     assert.equal(scaled.minTime, 1500);
-    assert.equal(scaled.automaticityTarget, 4500);
+    assert.equal(scaled.speedTarget, 4500);
     assert.equal(scaled.selfCorrectionThreshold, 2250);
     assert.equal(scaled.maxResponseTime, 13500);
   });
@@ -1070,7 +992,7 @@ describe('deriveScaledConfig', () => {
   it('with baseline=1000 returns same as defaults', () => {
     const scaled = deriveScaledConfig(1000);
     assert.equal(scaled.minTime, DEFAULT_CONFIG.minTime);
-    assert.equal(scaled.automaticityTarget, DEFAULT_CONFIG.automaticityTarget);
+    assert.equal(scaled.speedTarget, DEFAULT_CONFIG.speedTarget);
     assert.equal(
       scaled.selfCorrectionThreshold,
       DEFAULT_CONFIG.selfCorrectionThreshold,
@@ -1081,7 +1003,7 @@ describe('deriveScaledConfig', () => {
   it('with baseline=700 (fast keyboard user) scales down', () => {
     const scaled = deriveScaledConfig(700);
     assert.equal(scaled.minTime, 700);
-    assert.equal(scaled.automaticityTarget, 2100);
+    assert.equal(scaled.speedTarget, 2100);
     assert.equal(scaled.selfCorrectionThreshold, 1050);
     assert.equal(scaled.maxResponseTime, 6300);
   });
@@ -1097,12 +1019,12 @@ describe('deriveScaledConfig', () => {
     const custom = {
       ...DEFAULT_CONFIG,
       minTime: 2000,
-      automaticityTarget: 6000,
+      speedTarget: 6000,
     };
     const scaled = deriveScaledConfig(1500, custom);
     // scale = 1500 / 1000 = 1.5
     assert.equal(scaled.minTime, 3000);
-    assert.equal(scaled.automaticityTarget, 9000);
+    assert.equal(scaled.speedTarget, 9000);
   });
 });
 
@@ -1134,7 +1056,7 @@ describe('createAdaptiveSelector with responseCountFn', () => {
     );
   });
 
-  it('getAutomaticity uses scaled config for speed score', () => {
+  it('getSpeedScore uses scaled config', () => {
     const storage = createMemoryStorage();
     // responseCount=3: effectiveTarget=9000, effectiveMin=3000
     const sel = createAdaptiveSelector(
@@ -1146,10 +1068,9 @@ describe('createAdaptiveSelector with responseCountFn', () => {
 
     // Record fast response (3000ms = scaled minTime → speedScore ≈ 1.0)
     sel.recordResponse('item1', 3000, true);
-    const auto = sel.getAutomaticity('item1');
-    assert.ok(auto !== null);
-    // With recall ~1.0 (just answered) and speed ~1.0, automaticity should be high
-    assert.ok(auto! > 0.8, `expected high automaticity, got ${auto}`);
+    const speed = sel.getSpeedScore('item1');
+    assert.ok(speed !== null);
+    assert.ok(speed! > 0.9, `expected high speed score, got ${speed}`);
   });
 
   it('checkNeedsReview works correctly with responseCountFn', () => {

@@ -77,12 +77,10 @@ export type AdaptiveConfig = {
   maxStability: number;
   stabilityGrowthBase: number;
   stabilityDecayOnWrong: number;
-  recallThreshold: number;
-  expansionThreshold: number;
+  freshnessThreshold: number;
   speedBonusMax: number;
   selfCorrectionThreshold: number;
-  automaticityTarget: number;
-  automaticityThreshold: number;
+  speedTarget: number;
 };
 
 export interface StorageAdapter {
@@ -99,7 +97,7 @@ export type StringRecommendation = {
   string: number;
   workingCount: number;
   unseenCount: number;
-  fluentCount: number;
+  automaticCount: number;
   totalCount: number;
 };
 
@@ -109,10 +107,13 @@ export interface AdaptiveSelector {
   getStats(itemId: string): ItemStats | null;
   getWeight(itemId: string): number;
   getRecall(itemId: string, nowMs?: number): number | null;
-  getAutomaticity(itemId: string, nowMs?: number): number | null;
   getSpeedScore(itemId: string): number | null;
   getFreshness(itemId: string, nowMs?: number): number | null;
-  getLevelAutomaticity(
+  getLevelSpeed(
+    itemIds: string[],
+    percentile?: number,
+  ): { level: number; seen: number };
+  getLevelFreshness(
     itemIds: string[],
     percentile?: number,
     nowMs?: number,
@@ -120,7 +121,6 @@ export interface AdaptiveSelector {
   getStringRecommendations(
     stringIndices: number[],
     getItemIds: (index: number) => string[],
-    nowMs?: number,
   ): StringRecommendation[];
   checkAllAutomatic(items: string[]): boolean;
   checkNeedsReview(items: string[]): boolean;
@@ -167,7 +167,7 @@ export type RecommendationResult = {
   consolidateWorkingCount: number;
   expandIndex: number | null;
   expandNewCount: number;
-  /** True when most items are fluent and no unstarted groups remain. */
+  /** True when most items are automatic and no unstarted groups remain. */
   reviewMode?: boolean;
   /** Consolidation group indices where items are fast but stale. */
   staleIndices?: number[];

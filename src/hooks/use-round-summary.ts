@@ -10,7 +10,6 @@ import type { QuizEngineHandle } from './use-quiz-engine.ts';
 // ---------------------------------------------------------------------------
 
 export type StatsViewSelector = {
-  getAutomaticity(id: string): number | null;
   getStats(id: string): ItemStats | null;
   getSpeedScore(id: string): number | null;
   getFreshness(id: string): number | null;
@@ -25,7 +24,6 @@ export function useStatsSelector(
   enginePhase: string,
 ): StatsViewSelector {
   return useMemo((): StatsViewSelector => ({
-    getAutomaticity: (id: string) => selector.getAutomaticity(id),
     getStats: (id: string) => selector.getStats(id),
     getSpeedScore: (id: string) => selector.getSpeedScore(id),
     getFreshness: (id: string) => selector.getFreshness(id),
@@ -37,7 +35,7 @@ export function useStatsSelector(
 // ---------------------------------------------------------------------------
 
 export type RoundSummary = {
-  /** Context line: "practicing label . X / Y fluent". */
+  /** Context line: "practicing label . X / Y automatic". */
   roundContext: string;
   /** Accuracy line: "8 correct . 42s". */
   roundCorrect: string;
@@ -59,7 +57,8 @@ export function useRoundSummary(
 ): RoundSummary {
   const roundContext = useMemo(() => {
     const s = engine.state;
-    const fluency = s.masteredCount + ' / ' + s.totalEnabledCount + ' fluent';
+    const fluency = s.masteredCount + ' / ' + s.totalEnabledCount +
+      ' automatic';
     return practicingLabel + ' \u00B7 ' + fluency;
   }, [
     engine.state.masteredCount,

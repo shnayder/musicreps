@@ -239,9 +239,12 @@ describe('NumeralButtons', () => {
 
 function mockSelector(): StatsSelector {
   return {
-    getAutomaticity(id: string) {
+    getSpeedScore(id: string) {
       if (id === 'C+1') return 0.9;
       if (id === 'C+2') return 0.5;
+      return null;
+    },
+    getFreshness(_id: string) {
       return null;
     },
     getStats() {
@@ -643,13 +646,13 @@ describe('PracticeCard', () => {
     const html = render(
       <PracticeCard
         statusLabel='Strong'
-        statusDetail='12 of 14 fluent'
+        statusDetail='12 of 14 automatic'
       />,
     );
     assert.ok(html.includes('practice-card'));
     assert.ok(html.includes('practice-status-label'));
     assert.ok(html.includes('Strong'));
-    assert.ok(html.includes('12 of 14 fluent'));
+    assert.ok(html.includes('12 of 14 automatic'));
     assert.ok(html.includes('practice-zone-action'));
     assert.ok(html.includes('start-btn'));
   });

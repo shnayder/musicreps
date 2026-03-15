@@ -9,7 +9,6 @@ import type { CheckAnswerResult, ItemStats, StatsTableRow } from '../types.ts';
 export type StatsSelector = {
   getSpeedScore(id: string): number | null;
   getFreshness(id: string): number | null;
-  getAutomaticity(id: string): number | null;
   getStats(id: string): ItemStats | null;
 };
 

@@ -69,7 +69,7 @@ function buildActiveState(
 export function quizActive(itemId: string): FixtureDetail {
   return {
     engineState: buildActiveState(itemId, {
-      masteredCount: sessionEarlyRound.fluent,
+      masteredCount: sessionEarlyRound.automatic,
       totalEnabledCount: sessionEarlyRound.total,
       questionCount: 7,
     }),
@@ -89,7 +89,7 @@ export function quizCorrectFeedback(itemId: string): FixtureDetail {
     engineState: buildActiveState(itemId, {
       correct: true,
       correctAnswer: feedbackCorrect.displayAnswer,
-      masteredCount: sessionEarlyRound.fluent,
+      masteredCount: sessionEarlyRound.automatic,
       totalEnabledCount: sessionEarlyRound.total,
       questionCount: 14,
     }),
@@ -109,7 +109,7 @@ export function quizWrongFeedback(itemId: string): FixtureDetail {
     engineState: buildActiveState(itemId, {
       correct: false,
       correctAnswer: feedbackWrong.displayAnswer,
-      masteredCount: sessionLateRound.fluent,
+      masteredCount: sessionLateRound.automatic,
       totalEnabledCount: sessionLateRound.total,
       questionCount: 22,
     }),
@@ -129,7 +129,7 @@ export function quizFeedbackTimerLow(itemId: string): FixtureDetail {
     engineState: buildActiveState(itemId, {
       correct: true,
       correctAnswer: feedbackCorrect.displayAnswer,
-      masteredCount: sessionLateRound.fluent,
+      masteredCount: sessionLateRound.automatic,
       totalEnabledCount: sessionLateRound.total,
       questionCount: 18,
     }),
@@ -146,7 +146,7 @@ export function quizFeedbackTimerLow(itemId: string): FixtureDetail {
 
 export function quizLastQuestionAwaiting(itemId: string): FixtureDetail {
   const s = buildActiveState(itemId, {
-    masteredCount: sessionLateRound.fluent,
+    masteredCount: sessionLateRound.automatic,
     totalEnabledCount: sessionLateRound.total,
     questionCount: 19,
   });
@@ -170,7 +170,7 @@ export function quizLastQuestionAnswered(itemId: string): FixtureDetail {
   const s = buildActiveState(itemId, {
     correct: false,
     correctAnswer: feedbackWrong.displayAnswer,
-    masteredCount: sessionLateRound.fluent,
+    masteredCount: sessionLateRound.automatic,
     totalEnabledCount: sessionLateRound.total,
     questionCount: 19,
   });
@@ -196,7 +196,7 @@ export function quizFeedbackTimerExpired(itemId: string): FixtureDetail {
   const s = buildActiveState(itemId, {
     correct: true,
     correctAnswer: feedbackCorrect.displayAnswer,
-    masteredCount: sessionLateRound.fluent,
+    masteredCount: sessionLateRound.automatic,
     totalEnabledCount: sessionLateRound.total,
     questionCount: 18,
   });
@@ -232,9 +232,9 @@ export function quizRoundComplete(
     questionCount: answered,
   };
   s = engineRoundComplete(s);
-  const fluent = variant === 'good' ? 12 : 3;
+  const automatic = variant === 'good' ? 12 : 3;
   const total = variant === 'good' ? 18 : 24;
-  s = engineUpdateProgress(s, fluent, total);
+  s = engineUpdateProgress(s, automatic, total);
   s = {
     ...s,
     roundDurationMs: variant === 'good' ? 63000 : 62000,

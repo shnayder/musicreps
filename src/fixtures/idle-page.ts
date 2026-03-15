@@ -4,7 +4,7 @@
 // practice card content for reference.
 
 export const idleConsolidating = {
-  statusLabel: 'Consolidating',
+  statusLabel: 'Learning',
   statusDetail: 'Master current groups before adding more',
   recommendationText:
     'solidify +1 to +3 \u2014 8 items to work on\nstart +4 to +6 \u2014 13 new items',
