@@ -84,30 +84,18 @@ export function getSpeedFreshnessColor(
   return `hsl(${h}, ${fadedS}%, ${fadedL}%)`;
 }
 
-// Keep legacy exports for any remaining references
-export function getAutomaticityColor(auto: number | null): string {
-  const c = heatmapColors();
-  if (auto === null) return c.none;
-  if (auto > 0.8) return c.level[4];
-  if (auto > 0.6) return c.level[3];
-  if (auto > 0.4) return c.level[2];
-  if (auto > 0.2) return c.level[1];
-  return c.level[0];
-}
-
 // --- Cell color functions (speed x freshness combined view) ---
 
 export function getStatsCellColor(
   selector: {
-    getSpeedScore?(id: string): number | null;
-    getFreshness?(id: string): number | null;
-    getAutomaticity(id: string): number | null;
+    getSpeedScore(id: string): number | null;
+    getFreshness(id: string): number | null;
     getStats(id: string): ItemStats | null;
   },
   itemId: string,
 ): string {
-  const speedScore = selector.getSpeedScore?.(itemId) ?? null;
-  const freshness = selector.getFreshness?.(itemId) ?? null;
+  const speedScore = selector.getSpeedScore(itemId);
+  const freshness = selector.getFreshness(itemId);
   return getSpeedFreshnessColor(speedScore, freshness);
 }
 
@@ -118,9 +106,8 @@ export function getStatsCellColor(
  */
 export function getStatsCellColorMerged(
   selector: {
-    getSpeedScore?(id: string): number | null;
-    getFreshness?(id: string): number | null;
-    getAutomaticity(id: string): number | null;
+    getSpeedScore(id: string): number | null;
+    getFreshness(id: string): number | null;
     getStats(id: string): ItemStats | null;
   },
   itemIds: string | string[],
@@ -133,8 +120,8 @@ export function getStatsCellColorMerged(
     freshSum = 0,
     freshCount = 0;
   for (let i = 0; i < itemIds.length; i++) {
-    const sp = selector.getSpeedScore?.(itemIds[i]) ?? null;
-    const fr = selector.getFreshness?.(itemIds[i]) ?? null;
+    const sp = selector.getSpeedScore(itemIds[i]);
+    const fr = selector.getFreshness(itemIds[i]);
     if (sp !== null) {
       speedSum += sp;
       speedCount++;

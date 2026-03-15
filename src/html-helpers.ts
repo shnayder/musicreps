@@ -305,7 +305,7 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
       <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
-        <div class="progress-text">0 / 0 fluent</div>
+        <div class="progress-text">0 / 0 automatic</div>
       </div>
     </div>
     <div class="quiz-area">

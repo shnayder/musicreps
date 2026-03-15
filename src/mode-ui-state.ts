@@ -6,65 +6,38 @@ import type {
   PracticeSummaryState,
   RecommendationResult,
 } from './types.ts';
+import { computeLevelPercentile } from './adaptive.ts';
 
 // ---------------------------------------------------------------------------
 // Practice summary computation
 // ---------------------------------------------------------------------------
 
-/** Count how many items have automaticity above threshold ("fluent"). */
-export function countFluent(
+/** Count how many items have speed score ≥ 0.9 ("automatic"). */
+export function countAutomatic(
   itemIds: string[],
-  getAutomaticity: (id: string) => number | null,
-  threshold: number,
-): { fluent: number; seen: number } {
-  let fluent = 0;
+  getSpeedScore: (id: string) => number | null,
+): { automatic: number; seen: number } {
+  let automatic = 0;
   let seen = 0;
   for (let i = 0; i < itemIds.length; i++) {
-    const auto = getAutomaticity(itemIds[i]);
-    if (auto !== null) {
+    const speed = getSpeedScore(itemIds[i]);
+    if (speed !== null) {
       seen++;
-      if (auto > threshold) fluent++;
+      if (speed >= 0.9) automatic++;
     }
   }
-  return { fluent, seen };
+  return { automatic, seen };
 }
 
-/**
- * Compute "level automaticity" — the p-th percentile of per-item automaticity
- * values (unseen items contribute 0). Compresses the group's item distribution
- * into one number that reflects the weakest items.
- *
- * For 12 items at p=0.1: index = ceil(1.2)-1 = 1 → 2nd lowest value.
- * For 48 items: index = ceil(4.8)-1 = 4 → 5th lowest.
- */
-export function computeLevelAutomaticity(
-  itemIds: string[],
-  getAutomaticity: (id: string) => number | null,
-  percentile: number = 0.1,
-): { level: number; seen: number } {
-  if (itemIds.length === 0) return { level: 0, seen: 0 };
-  let seen = 0;
-  const values: number[] = [];
-  for (let i = 0; i < itemIds.length; i++) {
-    const auto = getAutomaticity(itemIds[i]);
-    if (auto !== null) {
-      seen++;
-      values.push(auto);
-    } else {
-      values.push(0);
-    }
-  }
-  values.sort((a, b) => a - b);
-  const rawIndex = Math.ceil(values.length * percentile) - 1;
-  const index = Math.min(values.length - 1, Math.max(0, rawIndex));
-  return { level: values[index], seen };
-}
+// Re-export for consumers that import from mode-ui-state.
+export { computeLevelPercentile } from './adaptive.ts';
 
-/** Compute the status label from level automaticity. */
+/** Compute the status label from P10(speed). */
 export function statusLabelFromLevel(level: number): string {
-  if (level >= 0.8) return 'Automatic';
-  if (level >= 0.2) return 'Getting faster';
-  return 'Slow';
+  if (level >= 0.9) return 'Automatic';
+  if (level >= 0.7) return 'Solid';
+  if (level >= 0.3) return 'Learning';
+  return 'Hesitant';
 }
 
 /**
@@ -129,7 +102,7 @@ export function buildRecommendationText(
  * Compute the full practice summary state. Pure function — no DOM.
  *
  * @param allItemIds All items in the mode (not just enabled).
- * @param selector Adaptive selector (for automaticity lookups).
+ * @param selector Adaptive selector (for speed/freshness lookups).
  * @param itemNoun "positions" for fretboard, "items" for everything else.
  * @param recommendation Precomputed recommendation result (null for no-group modes).
  * @param recommendationText Precomputed recommendation text (from buildRecommendationText).
@@ -145,17 +118,15 @@ export function computePracticeSummary(opts: {
   masteryText: string;
   showMastery: boolean;
 }): PracticeSummaryState {
-  const threshold = opts.selector.getConfig().automaticityThreshold;
-  const { fluent } = countFluent(
+  const { automatic } = countAutomatic(
     opts.allItemIds,
-    (id) => opts.selector.getAutomaticity(id),
-    threshold,
+    (id) => opts.selector.getSpeedScore(id),
   );
   const total = opts.allItemIds.length;
 
-  const { level, seen } = computeLevelAutomaticity(
+  const { level, seen } = computeLevelPercentile(
+    (id) => opts.selector.getSpeedScore(id),
     opts.allItemIds,
-    (id) => opts.selector.getAutomaticity(id),
   );
 
   let statusLabel: string;
@@ -166,7 +137,7 @@ export function computePracticeSummary(opts: {
     statusDetail = total + ' ' + opts.itemNoun + ' to learn';
   } else {
     statusLabel = statusLabelFromLevel(level);
-    statusDetail = fluent + '/' + total + ' ' + opts.itemNoun + ' fluent';
+    statusDetail = automatic + '/' + total + ' ' + opts.itemNoun + ' automatic';
   }
 
   const hasRec = opts.recommendation !== null &&

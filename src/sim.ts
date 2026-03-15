@@ -4,7 +4,6 @@
 //        npx tsx src/sim.ts --initialStability=8 --stabilityGrowthBase=1.5
 
 import {
-  computeAutomaticity,
   computeRecall,
   computeSpeedScore,
   computeStabilityAfterWrong,
@@ -72,10 +71,10 @@ const cfgKeys = [
   'maxStability',
   'stabilityGrowthBase',
   'stabilityDecayOnWrong',
-  'recallThreshold',
+  'freshnessThreshold',
   'speedBonusMax',
   'selfCorrectionThreshold',
-  'automaticityTarget',
+  'speedTarget',
 ];
 for (const k of cfgKeys) {
   const def = (DEFAULT_CONFIG as any)[k];
@@ -399,10 +398,10 @@ for (const traj of trajectories) {
 }
 
 // ---------------------------------------------------------------------------
-// Table 5: Automaticity (heatmap values)
+// Table 5: Speed × freshness (heatmap values)
 // ---------------------------------------------------------------------------
 
-console.log('=== Table 5: Automaticity (recall * speedScore) ===');
+console.log('=== Table 5: Speed × freshness (recall * speedScore) ===');
 console.log('What the default heatmap shows. Green > 0.8, red < 0.2\n');
 
 const ewmaValues = [1000, 1500, 2000, 3000, 4500, 6000];
@@ -416,18 +415,17 @@ for (const e of ewmaValues) {
 }
 console.log('');
 
-// Automaticity grid
+// Speed × freshness grid
 const t5LabelW = 10;
 const t5Headers = [
-  pad('recall\\ewma', t5LabelW),
+  pad('fresh\\ewma', t5LabelW),
   ...ewmaValues.map((e) => e + 'ms'),
 ];
 const t5Rows = recallValues.map((r) => [
   pad(r.toFixed(1), t5LabelW),
   ...ewmaValues.map((e) => {
     const ss = computeSpeedScore(e, cfg)!;
-    const auto = computeAutomaticity(r, ss)!;
-    return auto.toFixed(2);
+    return (r * ss).toFixed(2);
   }),
 ]);
 printTable(t5Headers, t5Rows);

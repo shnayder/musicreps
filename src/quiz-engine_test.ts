@@ -13,8 +13,8 @@ import { getUseSolfege, setUseSolfege } from './music-data.ts';
 import { DEFAULT_CONFIG } from './adaptive.ts';
 
 describe('quiz-engine defaults', () => {
-  it('default automaticityTarget is 3000ms', () => {
-    assert.equal(DEFAULT_CONFIG.automaticityTarget, 3000);
+  it('default speedTarget is 3000ms', () => {
+    assert.equal(DEFAULT_CONFIG.speedTarget, 3000);
   });
 });
 
