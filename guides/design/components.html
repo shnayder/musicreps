@@ -451,6 +451,74 @@
     </section>
 
     <!-- ================================================================== -->
+    <section data-component="type-hierarchy">
+    <h2>Type Hierarchy Recipes</h2>
+    <p>
+      Content role &rarr; size + weight + color mapping. Each role has a
+      corresponding <code>.text-*</code> CSS class and <code>&lt;Text&gt;</code>
+      Preact component. Use these instead of ad-hoc font styling.
+    </p>
+
+    <div class="showcase">
+      <div class="showcase-label">Text roles</div>
+      <div class="showcase-body">
+        <div class="showcase-col" style="gap: 0.6rem">
+          <div>
+            <span class="text-section-header">Section Header</span>
+            <span class="anno">.text-section-header &mdash; base / 600 / text</span>
+          </div>
+          <div>
+            <span class="text-subsection-header">Subsection Header</span>
+            <span class="anno">.text-subsection-header &mdash; sm / 600 / muted</span>
+          </div>
+          <div>
+            <span class="text-label">Label</span>
+            <span class="anno">.text-label &mdash; sm / 500 / muted</span>
+          </div>
+          <div>
+            <span>Body text (default &mdash; no class needed)</span>
+            <span class="anno">base / 400 / text</span>
+          </div>
+          <div>
+            <span class="text-secondary">Secondary text</span>
+            <span class="anno">.text-secondary &mdash; sm / 400 / muted</span>
+          </div>
+          <div>
+            <span class="text-caption">Caption text</span>
+            <span class="anno">.text-caption &mdash; xs / 400 / light</span>
+          </div>
+          <div>
+            <span class="text-metric">42.5s</span>
+            <span class="anno">.text-metric &mdash; md / 600 / text</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>In Context &mdash; Metric Display Pattern</h3>
+    <p>
+      &ldquo;label: value / explanation&rdquo; &mdash; value is visually dominant,
+      label quiet, explanation smallest.
+    </p>
+    <div class="showcase">
+      <div class="showcase-label">Metric display (BaselineInfo style)</div>
+      <div class="showcase-body">
+        <div style="display: flex; flex-direction: column; gap: 0.25rem">
+          <div class="text-subsection-header">Speed check</div>
+          <div style="display: flex; align-items: baseline; gap: 0.5rem">
+            <span class="text-label">Response time</span>
+            <span class="text-metric">0.5s</span>
+          </div>
+          <div class="text-caption">
+            Timing thresholds are based on this measurement.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </section>
+
+    <!-- ================================================================== -->
     <section data-component="border-radius">
     <h2>Border Radius</h2>
     <p>Consistent rounding across component types.</p>
@@ -500,20 +568,20 @@
     <h2>Buttons</h2>
 
     <h3>Primary CTA</h3>
-    <p>One per screen. Sage brand fill, white text, subtle shadow.</p>
+    <p>
+      Sage brand fill, white text. Uses <code>ActionButton variant=&quot;primary&quot;</code>
+      (same component as all other action buttons).
+    </p>
     <div class="showcase">
-      <div class="showcase-label">Start Quiz variants</div>
+      <div class="showcase-label">Practice button (ActionButton primary)</div>
       <div class="showcase-body">
         <div class="showcase-row">
-          <button class="start-btn" style="margin: 0">Start Quiz</button>
+          <button class="page-action-btn page-action-primary" style="margin: 0">Practice</button>
           <span class="anno">default</span>
         </div>
-        <div class="anno-block">
-          background: var(--color-brand) &middot; border: 2px solid
-          var(--color-brand)<br>
-          font-weight: 600 &middot; border-radius: var(--radius-md) &middot; shadow: 0 2px
-          8px rgba(0,0,0,0.12)<br>
-          :hover &rarr; --color-brand-dark &middot; :active &rarr; scale(0.98)
+        <div class="showcase-row">
+          <button class="page-action-btn page-action-primary" style="margin: 0" disabled>Practice</button>
+          <span class="anno">disabled</span>
         </div>
       </div>
     </div>
@@ -622,6 +690,45 @@
           <button class="answer-btn">TT</button>
         </div>
         <div class="anno-block">grid-template-columns: repeat(3, 1fr)</div>
+      </div>
+    </div>
+
+    <h3>Action Buttons (Structural Recipe)</h3>
+    <p>
+      <code>ActionButton</code> component &mdash; encodes primary/secondary
+      variant recipes. Use for flow-initiating and flow-stopping buttons.
+      Not for answer, toggle, close, or small utility buttons.
+    </p>
+    <div class="showcase">
+      <div class="showcase-label">ActionButton variants</div>
+      <div class="showcase-body">
+        <div class="showcase-row">
+          <button class="page-action-btn page-action-primary">Practice</button>
+          <span class="anno">variant=&quot;primary&quot; &mdash; brand fill, white text</span>
+        </div>
+        <div class="showcase-row">
+          <button class="page-action-btn page-action-secondary">Stop</button>
+          <span class="anno">variant=&quot;secondary&quot; &mdash; outlined, muted</span>
+        </div>
+        <div class="showcase-row">
+          <div class="page-action-row" style="max-width: 320px">
+            <button class="page-action-btn page-action-primary" style="flex: 1">Keep Going</button>
+            <button class="page-action-btn page-action-secondary" style="flex: 1">Stop</button>
+          </div>
+          <span class="anno">paired in .page-action-row</span>
+        </div>
+        <div class="showcase-row">
+          <button class="page-action-btn page-action-primary" disabled>Disabled</button>
+          <span class="anno">disabled state</span>
+        </div>
+        <div class="anno-block">
+          Primary: background var(--color-brand) &middot; color: white &middot;
+          :hover &rarr; opacity 0.9<br>
+          Secondary: background: none &middot; border 1px var(--color-text-muted)
+          &middot; :hover &rarr; surface-hover bg<br>
+          Both: border-radius var(--radius-md) &middot; font-weight 600 &middot;
+          padding space-3 space-5
+        </div>
       </div>
     </div>
 

@@ -15,12 +15,13 @@
  *  10. ANSWER BUTTONS ........ Notes, split-notes, numbers, intervals, etc.
  *  11. BUTTON FEEDBACK ....... Correct/wrong/reveal, keyboard narrowing
  *  12. CALIBRATION ........... Speed check highlight, action buttons
- *  13. UTILITIES ............. SR-only, focus-visible, keyboard hint
- *  14. PAGE ACTIONS .......... Next, keep going, stop (shared base)
- *  15. STATS ................. Tables, grids, heatmap legend
- *  16. SEQUENTIAL SLOTS ...... Chord spelling multi-input
- *  17. REDUCED MOTION ........ prefers-reduced-motion overrides
- *  18. MOBILE LAYOUT ......... max-width: 599px overrides
+ *  13. TEXT ROLES ............ Type hierarchy recipe classes
+ *  14. UTILITIES ............. SR-only, focus-visible, keyboard hint
+ *  15. PAGE ACTIONS .......... Next, keep going, stop (shared base)
+ *  16. STATS ................. Tables, grids, heatmap legend
+ *  17. SEQUENTIAL SLOTS ...... Chord spelling multi-input
+ *  18. REDUCED MOTION ........ prefers-reduced-motion overrides
+ *  19. MOBILE LAYOUT ......... max-width: 599px overrides
  */
 
 /* ==========================================================================
@@ -452,10 +453,7 @@ body {
   color: var(--color-recommended);
   margin-bottom: var(--space-1);
 }
-.skill-rec-detail {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
+
 /* Banner reacts with card on hover/active. */
 .home-mode-btn:hover > .skill-rec-banner {
   background: var(--color-recommended-bg-hover);
@@ -703,11 +701,7 @@ body {
   flex-direction: column;
   gap: var(--space-3);
 }
-.settings-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-muted);
-}
+
 .settings-toggle-group {
   display: flex;
   gap: 0;
@@ -877,8 +871,6 @@ body {
 }
 .suggestion-card-text {
   flex: 1;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
   min-width: 0;
 }
 .suggestion-card-accept {
@@ -923,9 +915,6 @@ body {
   display: none;
 }
 .baseline-header {
-  font-weight: var(--font-semibold);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
   margin-bottom: var(--space-3);
 }
 .baseline-metric {
@@ -934,24 +923,10 @@ body {
   gap: var(--space-3);
   margin-bottom: var(--space-1);
 }
-.baseline-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-.baseline-value {
-  font-size: var(--text-md);
-  font-weight: var(--font-semibold);
-  color: var(--color-text);
-}
 .baseline-default-tag {
-  font-size: var(--text-sm);
-  font-weight: var(--font-normal);
   font-style: italic;
-  color: var(--color-text-light);
 }
 .baseline-explanation {
-  font-size: var(--text-xs);
-  color: var(--color-text-light);
   margin-bottom: var(--space-4);
 }
 .baseline-rerun-btn {
@@ -1239,42 +1214,8 @@ button {
 }
 
 /* --- Primary CTA (Practice) --- */
-.start-btn {
-  background: var(--color-brand);
-  color: white;
-  border: 2px solid var(--color-brand);
-  border-radius: var(--radius-md);
-  font-weight: var(--font-semibold);
-  font-size: var(--text-md);
-  padding: var(--space-4) var(--space-6);
-  box-shadow: var(--shadow-md);
-  transition:
-    background var(--duration-base) ease,
-    box-shadow var(--duration-base) ease,
-    transform var(--duration-fast) ease;
-}
-.start-btn:hover {
-  background: var(--color-brand-dark);
-  border-color: var(--color-brand-dark);
-  box-shadow: var(--shadow-hover);
-}
-.start-btn:active {
-  transform: scale(0.98);
-  box-shadow: var(--shadow-sm);
-}
-.start-btn:disabled {
-  background: var(--color-surface-alt);
-  border-color: var(--color-border-light);
-  color: var(--color-text-light);
-  box-shadow: none;
-  cursor: not-allowed;
-}
-.start-btn:disabled:hover {
-  background: var(--color-surface-alt);
-  border-color: var(--color-border-light);
-  box-shadow: none;
-  transform: none;
-}
+/* .start-btn — focus-target marker for phase transitions (use-phase-class.ts).
+   Visual treatment comes from .page-action-btn + .page-action-primary. */
 .start-validation-message {
   font-size: var(--text-xs);
   color: var(--color-error-text);
@@ -1471,9 +1412,6 @@ button {
   border-top: 1px solid var(--color-border-lighter);
 }
 .round-complete-overall-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-muted);
   margin-bottom: var(--space-2);
 }
 .round-complete-context {
@@ -1831,19 +1769,6 @@ button {
   margin: var(--space-6) auto 0;
   padding: var(--space-4) 2.5rem;
   font-size: var(--text-md);
-  font-weight: var(--font-semibold);
-  background: var(--color-brand);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background var(--duration-base) ease;
-}
-.calibration-action-btn:hover {
-  background: var(--color-brand-dark);
-}
-.calibration-action-btn:active {
-  background: var(--color-brand-dark);
 }
 .calibration-results {
   text-align: center;
@@ -1881,7 +1806,39 @@ button {
 }
 
 /* ==========================================================================
-   13. UTILITIES
+   13. TEXT ROLES (type hierarchy recipes)
+   ========================================================================== */
+.text-section-header {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+.text-subsection-header {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-muted);
+}
+.text-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-muted);
+}
+.text-secondary {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.text-caption {
+  font-size: var(--text-xs);
+  color: var(--color-text-light);
+}
+.text-metric {
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+
+/* ==========================================================================
+   14. UTILITIES
    ========================================================================== */
 .sr-only {
   position: absolute;
@@ -1918,7 +1875,7 @@ button {
 }
 
 /* ==========================================================================
-   14. PAGE ACTIONS
+   15. PAGE ACTIONS
    ========================================================================== */
 .page-action-btn {
   padding: var(--space-3) var(--space-5);
@@ -1942,6 +1899,17 @@ button {
 .page-action-btn:focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
+}
+.page-action-btn:disabled {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border-light);
+  color: var(--color-text-light);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.page-action-btn:disabled:hover {
+  background: var(--color-surface-alt);
+  transform: none;
 }
 .page-action-primary {
   background: var(--color-brand);
@@ -2018,7 +1986,7 @@ button {
 }
 
 /* ==========================================================================
-   15. STATS
+   16. STATS
    ========================================================================== */
 .heatmap-legend {
   display: none;
@@ -2077,9 +2045,6 @@ button {
   gap: var(--space-3);
 }
 .toggle-group-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  font-weight: var(--font-medium);
   flex-shrink: 0;
   min-width: 3.5rem;
 }
@@ -2179,7 +2144,7 @@ button {
 }
 
 /* ==========================================================================
-   16. SEQUENTIAL SLOTS
+   17. SEQUENTIAL SLOTS
    ========================================================================== */
 .seq-slots {
   display: flex;
@@ -2252,12 +2217,6 @@ button {
   outline: none;
 }
 /* Specific overrides for elements that need different focus styling */
-.start-btn:focus-visible {
-  outline-color: var(--color-brand-dark);
-  box-shadow:
-    var(--shadow-md),
-    0 0 0 4px rgba(209, 147, 27, 0.3);
-}
 .home-mode-btn:focus-visible {
   outline-offset: -2px;
 }
@@ -2307,7 +2266,7 @@ button {
 }
 
 /* ==========================================================================
-   17. REDUCED MOTION
+   18. REDUCED MOTION
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -2330,7 +2289,7 @@ body.native-app {
 }
 
 /* ==========================================================================
-   18. MOBILE LAYOUT
+   19. MOBILE LAYOUT
    ========================================================================== */
 @media (max-width: 599px) {
   body {

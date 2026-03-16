@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import type { GroupStatus } from '../types.ts';
 import { displayNote } from '../music-data.ts';
 import { getSpeedFreshnessColor } from '../stats-display.ts';
+import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
 // GroupToggles — distance group toggles (e.g., +1 to +3, +4 to +6)
@@ -20,7 +21,7 @@ export function GroupToggles(
 ) {
   return (
     <div class='toggle-group'>
-      <span class='toggle-group-label'>Groups</span>
+      <Text role='label' class='toggle-group-label'>Groups</Text>
       <div class='distance-toggles'>
         {labels.map((label, i) => (
           <button
@@ -236,7 +237,7 @@ export function StringToggles(
 ) {
   return (
     <div class='toggle-group'>
-      <span class='toggle-group-label'>Strings</span>
+      <Text role='label' class='toggle-group-label'>Strings</Text>
       <div class='string-toggles'>
         {stringNames.map((name, i) => (
           <button
@@ -284,7 +285,7 @@ export function NoteFilter(
 
   return (
     <div class='toggle-group'>
-      <span class='toggle-group-label'>Notes</span>
+      <Text role='label' class='toggle-group-label'>Notes</Text>
       <div class='notes-toggles'>
         <button
           type='button'
@@ -324,7 +325,7 @@ export function NotesToggles(
 ) {
   return (
     <div class='toggle-group'>
-      <span class='toggle-group-label'>Notes</span>
+      <Text role='label' class='toggle-group-label'>Notes</Text>
       <div class='notes-toggles'>
         {notes.map((n) => (
           <button

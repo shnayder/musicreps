@@ -17,6 +17,7 @@ import {
   useHomeProgress,
 } from '../hooks/use-home-progress.ts';
 import type { SkillRecommendation } from '../home-recommendations.ts';
+import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
 // localStorage persistence for starred skills
@@ -214,7 +215,7 @@ function ActiveSkillCard(
       {hasRec && (
         <div class={`skill-rec-banner track-accent-${trackId}`}>
           <div class='skill-rec-header'>Suggestion</div>
-          <div class='skill-rec-detail'>{rec!.detail}</div>
+          <Text role='secondary' as='div'>{rec!.detail}</Text>
         </div>
       )}
       <div class='skill-card-body'>
@@ -493,7 +494,7 @@ function SettingsPage(
       <section class='settings-section'>
         <h2 class='settings-section-title'>General</h2>
         <div class='settings-field'>
-          <div class='settings-label'>Note names</div>
+          <Text role='label' as='div'>Note names</Text>
           <div class='settings-toggle-group'>
             <button
               type='button'

@@ -183,13 +183,14 @@ standalone `Recommendation` component in `src/ui/mode-screen.tsx`. Compose.
 
 ### 5. Visual Regression Diffing (Lower Impact)
 
-**Status: TODO**
+**Status: Defer this until visual design is more baked.**
 
 `ui-iterate` captures multi-version screenshots but has no pixel diff. Adding
 `pixelmatch` to compute diff images between versions would turn "capture and
 review" into "capture, diff, and review."
 
 **Files:** `scripts/ui-iterate.ts`
+
 
 ---
 
@@ -218,7 +219,6 @@ branded-color text roles emerge, consider adding a `color` override prop to
 |-------|-------|------------------|
 | **A** | 1 (Spec template) + 2 (Review gate) + 3 (Recipe docs) | Process layer — closes the loop on principled design passes |
 | **B** | 4 (Component dedup) | Code quality |
-| **C** | 5 (Visual regression) | Tooling |
 
 Phase A is pure documentation — no code changes. B and C are independent.
 

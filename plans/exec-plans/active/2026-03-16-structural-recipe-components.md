@@ -433,7 +433,7 @@ import { Text } from './ui/text.tsx';
 Maps content role to the type hierarchy recipe. Use when an element's styling
 should match a standard text role. NOT for quiz prompts, answer button text,
 or one-off elements with their own sizing.
-```
+
 
 Also add the Type Hierarchy table from the design system review to the
 Typography Scale section, referencing the Text component roles.
@@ -488,3 +488,42 @@ These elements are deliberately NOT migrated:
   all source files to confirm no references remain.
 
 ## Implementation Notes (added after completion)
+
+### What was done
+
+- Created `ActionButton` component in `src/ui/action-button.tsx`
+- Created `Text` component in `src/ui/text.tsx`
+- Added `.text-*` CSS classes (section 13) for all 6 text roles
+- Migrated ActionButton call sites: RoundCompleteActions, SpeedCheckIntro,
+  SpeedCheckResults, FeedbackDisplay next button
+- Migrated Text call sites: baseline-header (subsection-header), toggle-group-label
+  ×4 (label), settings-label (label), practice-status-prefix (label),
+  round-complete-overall-label (subsection-header), baseline-value (metric),
+  baseline-default-tag (caption), baseline-explanation (caption),
+  suggestion-card-text ×2 (secondary), skill-rec-detail (secondary)
+- Cleaned dead CSS: `.settings-label`, `.skill-rec-detail`, `.baseline-label`,
+  `.baseline-value`
+- Stripped type-recipe properties from layout-only rules: `.baseline-header`,
+  `.baseline-explanation`, `.baseline-default-tag`, `.round-complete-overall-label`,
+  `.toggle-group-label`, `.calibration-action-btn`, `.suggestion-card-text`
+- Updated `guides/design/visual-design.md` with Type Hierarchy table and
+  Structural Components section
+
+### Deviations from plan
+
+- **suggestion-card-header** kept as plain `<div>` — uses `--color-recommended`
+  (not standard muted), so `<Text role='subsection-header'>` would override the
+  branded color via CSS cascade. Same reasoning as `.skill-rec-header` exclusion.
+- **suggestion-card-accept** kept as plain `<button>` — has recommendation-themed
+  styling (gold border, gold hover bg) that's completely different from
+  `.page-action-secondary`. Not an ActionButton variant.
+- **baseline-rerun-btn** kept as plain `<button>` — intentionally small/quiet
+  (xs font, sm radius, light border) vs full-size `.page-action-secondary`.
+  Using ActionButton would significantly change its appearance.
+- **StartButton** migrated to ActionButton (originally excluded) — user decided
+  the app doesn't need two different primary action button styles. `.start-btn`
+  CSS stripped to a comment (class retained as focus-target marker for
+  use-phase-class.ts). `.page-action-btn:disabled` upgraded to the desaturated
+  treatment (surface-alt bg, light text) from the old `.start-btn:disabled`.
+- **MetricDisplay** component deferred — would compose Text but only 1-2 use
+  sites currently. Not enough leverage to justify the abstraction yet.
