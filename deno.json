@@ -32,7 +32,8 @@
       "node_modules/",
       "guides/",
       "plans/",
-      "backlogs/"
+      "backlogs/",
+      "static/"
     ]
   },
   "tasks": {
