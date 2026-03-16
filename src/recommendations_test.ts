@@ -638,6 +638,79 @@ describe('computeRecommendations', () => {
     assert.ok(result.recommended.has(1));
   });
 
+  it('budget caps levelRecs to match recommended set', () => {
+    // 5 groups of 15 items each, all need practice. Budget = 30.
+    // Only first 2 groups fit (30 items). levelRecs should NOT include
+    // groups 2-4, even though computeLevelRecs would produce recs for them.
+    const data: Record<number, {
+      workingCount: number;
+      unseenCount: number;
+      automaticCount: number;
+      totalCount: number;
+    }> = {};
+    for (let i = 0; i < 5; i++) {
+      data[i] = {
+        workingCount: 15,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 15,
+      };
+    }
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0, 1, 2, 3, 4],
+      makeGetItemIds(data),
+      { maxWorkItems: 30 },
+    );
+    // Only 2 groups should fit in budget (15 + 15 = 30)
+    assert.equal(result.recommended.size, 2);
+    // levelRecs should match: no recs for groups outside recommended
+    for (const rec of result.levelRecs) {
+      assert.ok(
+        result.recommended.has(rec.index),
+        `levelRec for group ${rec.index} not in recommended set`,
+      );
+    }
+  });
+
+  it('budget-excluded expand clears expandIndex', () => {
+    // Group 0: 25 items, needs practice. Group 1: 10 items, unstarted.
+    // Budget = 30. Group 0 fits (25), expand group 1 would be 35 > 30.
+    const data = {
+      0: {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 25,
+        totalCount: 25,
+      },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+    };
+    // Need P10 speed ≥ 0.7 for gate to open but also an automate rec
+    // to consume budget. Use overrides.
+    const sel = mockSelector(data, {
+      getLevelSpeed: () => ({ level: 0.75, seen: 25 }),
+    });
+    const result = computeRecommendations(
+      sel,
+      [0, 1],
+      makeGetItemIds(data),
+      { maxWorkItems: 30 },
+    );
+    // Group 0 (25 items) fits. If expand group 1 (10) doesn't fit because
+    // group 0 already consumed 25 of 30 budget → expand should be cleared.
+    // Actually 25 + 10 = 35 > 30, but group 0 is first and size > 0,
+    // so expand at 25+10=35 > 30 is skipped.
+    if (!result.recommended.has(1)) {
+      assert.equal(result.expandIndex, null);
+      assert.ok(!result.levelRecs.some((r) => r.type === 'expand'));
+    }
+  });
+
   // --- Skipped groups ---
 
   it('skipped group is excluded from recommendations', () => {

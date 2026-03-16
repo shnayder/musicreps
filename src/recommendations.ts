@@ -306,11 +306,22 @@ export function computeRecommendations(
     }
   }
 
+  // Filter levelRecs to only include entries that fit in the budget.
+  // This keeps levelRecs consistent with recommended/enabled so that
+  // buildRecommendationText shows only what applyRecommendation applies.
+  const filteredRecs = levelRecs.filter((r) => recommended.has(r.index));
+
+  // Update expandIndex if it was excluded by budget.
+  if (expandIndex !== null && !recommended.has(expandIndex)) {
+    expandIndex = null;
+    expandNewCount = 0;
+  }
+
   return {
     recommended,
     enabled,
     expandIndex,
     expandNewCount,
-    levelRecs,
+    levelRecs: filteredRecs,
   };
 }
