@@ -310,17 +310,249 @@ version and previous. Include in review HTML with changed/unchanged badge.
 
 ---
 
+## 8. Structural Recipes — Built Into Components (High Impact)
+
+### Problem
+
+Items 1-3 above rely on documentation and review to ensure recipes are followed.
+That works, but it means every developer must remember to look up the type
+hierarchy, pick the right CSS class, and apply it correctly. The component
+system itself doesn't enforce recipes — you can render a `<div>` with any
+class you want.
+
+The question: which recipes can be built into the component system so you just
+say "secondary action button" or "subsection header" and get all the correct
+visual treatment automatically?
+
+### Current State
+
+The component system is **class-based with no variant abstraction**:
+
+- **Button components** (`NoteButtons`, `NumberButtons`, etc.) emit hardcoded CSS
+  class names. They take interaction props (`onAnswer`, `feedback`) but zero
+  styling props. The visual recipe is split between the component (which picks
+  the class) and CSS (which defines the class).
+
+- **Layout components** (`PracticeCard`, `ModeScreen`, `QuizArea`) are structural
+  shells. `RoundCompleteActions` hardcodes `page-action-primary` and
+  `page-action-secondary`. `StartButton` hardcodes `start-btn`. There's no way
+  to say "give me a secondary action button here."
+
+- **Text elements** emit per-component class names (`.baseline-header`,
+  `.suggestion-card-header`, `.round-complete-overall-label`) that all resolve to
+  the same CSS recipe (sm/600/muted). The recipe is correct in 3 of 4 cases, but
+  it's accidental — each component independently chose the right values.
+
+- **Mode definitions** (`ButtonsDef`) have no styling fields. A definition says
+  `{ kind: 'note' }`, not `{ kind: 'note', variant: 'secondary' }`.
+
+### What Can Be Structural
+
+Three categories, ordered by leverage:
+
+#### A. Action Button Component (High leverage, low effort)
+
+**Today:** 5+ places manually compose button classes for primary/secondary
+actions. `RoundCompleteActions` hardcodes both. `StartButton` hardcodes primary.
+`BaselineInfo` hardcodes secondary. `SpeedCheckIntro`/`SpeedCheckResults`
+hardcode primary for calibration.
+
+**Proposed:** Single `ActionButton` component with a `variant` prop:
+
+```tsx
+type ActionVariant = 'primary' | 'secondary';
+
+function ActionButton({ variant, label, onClick }: {
+  variant: ActionVariant;
+  label: string;
+  onClick: () => void;
+}) {
+  const cls = variant === 'primary'
+    ? 'page-action-btn page-action-primary'
+    : 'page-action-btn page-action-secondary';
+  return <button type="button" tabIndex={0} class={cls} onClick={onClick}>{label}</button>;
+}
+```
+
+All action buttons across the app use this. The recipe (filled green vs outlined
+muted, shadow, font weight, focus-visible, hover, active) is encoded once in
+CSS and bound to the component. You can't accidentally create a primary-looking
+button with secondary behavior.
+
+**What it replaces:** Manual class composition in `RoundCompleteActions`,
+`StartButton`, `BaselineInfo`, `SpeedCheckIntro`, `SpeedCheckResults`, and any
+future action buttons.
+
+**What it doesn't replace:** Answer buttons (`NoteButtons`, `NumberButtons`,
+etc.) — these are a different category with their own feedback/narrowing
+behavior. Toggle buttons — these have active/inactive state semantics.
+
+#### B. Text Role Component (High leverage, medium effort)
+
+**Today:** 15+ places emit text with per-component class names that all resolve
+to one of ~8 type hierarchy recipes. Examples:
+
+- `.baseline-header`, `.suggestion-card-header`, `.round-complete-overall-label`
+  → all subsection-header recipe (sm/600/muted)
+- `.toggle-group-label`, `.settings-label` → all label recipe (sm/500/muted)
+- `.baseline-explanation` → caption recipe (xs/400/light)
+
+Each component independently re-derives the same visual treatment.
+
+**Proposed:** `Text` component with a `role` prop:
+
+```tsx
+type TextRole =
+  | 'section-header'    // base/600/text
+  | 'subsection-header' // sm/600/muted
+  | 'label'             // sm/500/muted
+  | 'body'              // base/400/text
+  | 'secondary'         // sm/400/muted
+  | 'caption'           // xs/400/light
+  | 'metric';           // md/600/text
+
+function Text({ role, children, class: extra }: {
+  role: TextRole;
+  children: ComponentChildren;
+  class?: string;
+}) {
+  const cls = `text-${role}` + (extra ? ` ${extra}` : '');
+  return <span class={cls}>{children}</span>;
+}
+```
+
+CSS defines each role once:
+```css
+.text-subsection-header { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-muted); }
+.text-label             { font-size: var(--text-sm); font-weight: 500; color: var(--color-text-muted); }
+.text-caption           { font-size: var(--text-xs); font-weight: 400; color: var(--color-text-light); }
+```
+
+Then `BaselineInfo` changes from:
+```tsx
+<div class='baseline-header'>Speed check</div>
+<span class='baseline-label'>Response time</span>
+<div class='baseline-explanation'>Timing thresholds...</div>
+```
+to:
+```tsx
+<Text role='subsection-header'>Speed check</Text>
+<Text role='label'>Response time</Text>
+<Text role='caption'>Timing thresholds...</Text>
+```
+
+The visual treatment is now structural. You can't accidentally give a subsection
+header the wrong font size — the component enforces it.
+
+**Migration path:** Add `Text` component and the `.text-*` CSS classes. Migrate
+components incrementally — new code uses `<Text>`, old code keeps working until
+touched. No big-bang rewrite needed.
+
+**What it doesn't replace:** Page title and mode title — these are one-off
+elements that don't need abstraction. Quiz prompt text — this has its own
+sizing/animation behavior.
+
+#### C. Metric Display Component (Medium leverage, low effort)
+
+**Today:** The "label: value / explanation" pattern appears in:
+- `BaselineInfo` (speed-check.tsx) — "Response time: 1.0s / Timing thresholds..."
+- Round complete stats (mode-screen.tsx) — "This round: 8/10 / Overall: mastered"
+- Practice status (mode-screen.tsx) — status label + value
+
+Each independently arranges label/value/explanation with per-component classes.
+
+**Proposed:** `MetricDisplay` component:
+
+```tsx
+function MetricDisplay({ label, value, tag, explanation }: {
+  label: string;
+  value: string;
+  tag?: ComponentChildren;       // e.g., "(default)" badge
+  explanation?: string;
+}) {
+  return (
+    <div class='metric-display'>
+      <Text role='label'>{label}</Text>
+      <Text role='metric'>{value}{tag && <> {tag}</>}</Text>
+      {explanation && <Text role='caption'>{explanation}</Text>}
+    </div>
+  );
+}
+```
+
+This composes `Text` (item B above) and encodes the info hierarchy pattern:
+value visually dominant, label quiet, explanation smallest. Spacing between
+elements is defined once in `.metric-display` CSS.
+
+### What Should Stay Documentary (Not Structural)
+
+- **Answer button styling** — already uniform via CSS class. The variants are
+  feedback states (correct/wrong/reveal), not design variants. The component
+  already handles this through `feedback` and `narrowing` props.
+
+- **Toggle button styling** — has active/inactive/skipped/recommended states
+  that are toggle-specific semantics, not generic button variants.
+
+- **Elevation** — better as CSS tokens (`--shadow-sm/md/lg`) than as component
+  props. Elevation is a property of the CSS class, not something you typically
+  compose at the JSX level.
+
+- **Spacing rhythm** — spacing between sections is a CSS layout concern, not a
+  component concern. Tokenize via `--space-*` variables and enforce via review.
+
+### Why This Matters
+
+The documentary layer (items 1-3) establishes what the recipes ARE. The
+structural layer (this item) makes them the path of least resistance. Together:
+
+| Layer | Enforces | Catches errors |
+|-------|----------|----------------|
+| **Documentation** (visual-design.md) | Defines correct recipes | At spec-writing time |
+| **Components** (ActionButton, Text, MetricDisplay) | Makes correct recipes the default | At coding time (wrong variant = TypeScript error) |
+| **Review** (checklist) | Verifies recipes were applied correctly | At review time |
+
+Without components: developer reads guide → picks class → reviewer checks.
+With components: developer picks variant → component applies class → reviewer
+verifies variant choice. The "pick the right class name from memory" step
+disappears.
+
+### Implementation Sketch
+
+1. Add `ActionButton` component to `src/ui/buttons.tsx` (or new
+   `src/ui/action-button.tsx`). Migrate `RoundCompleteActions`, `StartButton`,
+   calibration buttons. ~30 min.
+
+2. Add `Text` component to new `src/ui/text.tsx`. Add `.text-*` CSS classes.
+   Migrate `BaselineInfo` as proof of concept. Leave other components for
+   incremental migration. ~1 hr.
+
+3. Add `MetricDisplay` to `src/ui/mode-screen.tsx` (composes `Text`). Migrate
+   `BaselineInfo` metric section. ~30 min.
+
+4. Update `visual-design.md` to reference the structural components alongside
+   the CSS recipes: "Use `<Text role='subsection-header'>` or apply class
+   `.text-subsection-header`."
+
+**Files:** `src/ui/buttons.tsx` or new `src/ui/action-button.tsx`,
+new `src/ui/text.tsx`, `src/ui/mode-screen.tsx`, `src/ui/speed-check.tsx`,
+`src/styles.css`, `guides/design/visual-design.md`
+
+---
+
 ## Recommended Sequencing
 
 | Phase | Items | What it achieves |
 |-------|-------|------------------|
-| **A** | 1 (Recipes) + 2 (Spec template) + 3 (Review gate) | Process layer — makes principled design passes possible |
-| **B** | 4 (Token completion) + 5 (CSS reorg) | Infrastructure — makes recipes reference concrete tokens |
-| **C** | 6 (Component dedup) | Code quality |
-| **D** | 7 (Visual regression) | Tooling |
+| **A** | 1 (Recipes) + 2 (Spec template) + 3 (Review gate) | Process layer — defines what correct looks like |
+| **B** | 8 (Structural recipes: ActionButton, Text, MetricDisplay) | Component layer — makes correct the default |
+| **C** | 4 (Token completion) + 5 (CSS reorg) | Infrastructure — tokenizes remaining raw values |
+| **D** | 6 (Component dedup) | Code quality |
+| **E** | 7 (Visual regression) | Tooling |
 
-Phase A is pure documentation — no code changes, but it transforms how design
-work gets done. Phase B is the CSS infrastructure that makes A enforceable.
+Phase A defines the recipes in documentation. Phase B encodes the highest-value
+recipes into components so they're structural, not just documentary. Phase C
+completes the CSS token system so recipes can reference tokens rather than raw
+values. Phases D-E are independent cleanup.
 
 ---
 
