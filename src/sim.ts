@@ -1,7 +1,7 @@
 #!/usr/bin/env npx tsx
 // Simulation tables for tuning forgetting model parameters.
 // Usage: npx tsx src/sim.ts
-//        npx tsx src/sim.ts --initialStability=8 --stabilityGrowthBase=1.5
+//        npx tsx src/sim.ts --initialStability=8 --stabilityGrowthMax=1.2
 
 import {
   computeRecall,
@@ -69,10 +69,9 @@ const cfgKeys = [
   'maxResponseTime',
   'initialStability',
   'maxStability',
-  'stabilityGrowthBase',
+  'stabilityGrowthMax',
   'stabilityDecayOnWrong',
   'freshnessThreshold',
-  'speedBonusMax',
   'selfCorrectionThreshold',
   'speedTarget',
 ];

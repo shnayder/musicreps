@@ -301,113 +301,94 @@ function replayPattern(
 const M = 1 / 60; // 1 minute in hours — within-session gap
 
 const PATTERNS: InteractionPattern[] = [
+  // --- Core session-frequency comparison ---
   {
-    name: 'steady-learner',
+    name: 'twice-daily',
     description:
-      'Moderate speed (~2s), 3 daily sessions. Gradual improvement within and across sessions.',
+      '2 sessions/day (~12h apart), 3 reps each. Eager learner, moderate speed.',
     events: [
-      // Session 1 — first encounter
+      // Day 1 morning
       { deltaHours: 0, responseMs: 2500, correct: true },
       { deltaHours: M, responseMs: 2200, correct: true },
       { deltaHours: M, responseMs: 2100, correct: true },
-      // Session 2 — next day
-      { deltaHours: 22, responseMs: 2300, correct: true },
+      // Day 1 evening
+      { deltaHours: 12, responseMs: 2200, correct: true },
       { deltaHours: M, responseMs: 2000, correct: true },
       { deltaHours: M, responseMs: 1900, correct: true },
-      // Session 3 — day after
-      { deltaHours: 24, responseMs: 2000, correct: true },
+      // Day 2 morning
+      { deltaHours: 12, responseMs: 2000, correct: true },
+      { deltaHours: M, responseMs: 1900, correct: true },
       { deltaHours: M, responseMs: 1800, correct: true },
+      // Day 2 evening
+      { deltaHours: 12, responseMs: 1900, correct: true },
       { deltaHours: M, responseMs: 1800, correct: true },
-    ],
-  },
-  {
-    name: 'getting-faster',
-    description:
-      'Starts at ~4s, improves to ~1.3s over 4 sessions across a week. Shows EWMA and speed score improvement.',
-    events: [
-      // Session 1
-      { deltaHours: 0, responseMs: 4200, correct: true },
-      { deltaHours: M, responseMs: 3800, correct: true },
-      { deltaHours: M, responseMs: 3500, correct: true },
-      // Session 2 — next day
-      { deltaHours: 20, responseMs: 3200, correct: true },
-      { deltaHours: M, responseMs: 2800, correct: true },
-      { deltaHours: M, responseMs: 2500, correct: true },
-      // Session 3 — 2 days later
-      { deltaHours: 48, responseMs: 2200, correct: true },
-      { deltaHours: M, responseMs: 1900, correct: true },
       { deltaHours: M, responseMs: 1700, correct: true },
-      // Session 4 — 3 days later
-      { deltaHours: 72, responseMs: 1600, correct: true },
-      { deltaHours: M, responseMs: 1400, correct: true },
-      { deltaHours: M, responseMs: 1300, correct: true },
-    ],
-  },
-  {
-    name: 'struggling',
-    description:
-      'Mix of correct/incorrect across sessions, slow responses. Shows stability decay on wrong answers and slow recovery.',
-    events: [
-      // Session 1 — first encounter, shaky
-      { deltaHours: 0, responseMs: 4500, correct: false },
-      { deltaHours: M, responseMs: 4000, correct: true },
-      { deltaHours: M, responseMs: 3800, correct: false },
-      { deltaHours: M, responseMs: 3500, correct: true },
-      // Session 2 — next day, still struggling
-      { deltaHours: 18, responseMs: 4200, correct: false },
-      { deltaHours: M, responseMs: 3800, correct: true },
-      { deltaHours: M, responseMs: 3500, correct: true },
-      // Session 3 — day after, slightly better
-      { deltaHours: 26, responseMs: 3600, correct: false },
-      { deltaHours: M, responseMs: 3200, correct: true },
-      { deltaHours: M, responseMs: 3000, correct: true },
-    ],
-  },
-  {
-    name: 'fast-mastery',
-    description:
-      'Quick correct answers (<1.5s), daily sessions. Shows speedBonus effect and self-correction on returning.',
-    events: [
-      // Session 1
-      { deltaHours: 0, responseMs: 1400, correct: true },
-      { deltaHours: M, responseMs: 1200, correct: true },
-      { deltaHours: M, responseMs: 1100, correct: true },
-      // Session 2 — next day
-      { deltaHours: 22, responseMs: 1300, correct: true },
-      { deltaHours: M, responseMs: 1100, correct: true },
-      // Session 3 — 2 days later
-      { deltaHours: 50, responseMs: 1200, correct: true },
-      { deltaHours: M, responseMs: 1100, correct: true },
-      // Session 4 — 4 days later (longer gap, tests self-correction)
-      { deltaHours: 96, responseMs: 1200, correct: true },
-    ],
-  },
-  {
-    name: 'returning-after-break',
-    description:
-      '3 sessions building mastery, then 5-day break, then return. Shows recall decay and recovery.',
-    events: [
-      // Session 1
-      { deltaHours: 0, responseMs: 2200, correct: true },
-      { deltaHours: M, responseMs: 1900, correct: true },
+      // Day 3 morning
+      { deltaHours: 12, responseMs: 1800, correct: true },
       { deltaHours: M, responseMs: 1700, correct: true },
-      // Session 2 — next day
-      { deltaHours: 23, responseMs: 1600, correct: true },
-      { deltaHours: M, responseMs: 1400, correct: true },
-      { deltaHours: M, responseMs: 1300, correct: true },
-      // Session 3 — day after
-      { deltaHours: 25, responseMs: 1300, correct: true },
-      { deltaHours: M, responseMs: 1200, correct: true },
-      // 5-day break
-      { deltaHours: 120, responseMs: 2400, correct: true },
-      { deltaHours: M, responseMs: 1900, correct: true },
       { deltaHours: M, responseMs: 1600, correct: true },
     ],
   },
   {
+    name: 'daily',
+    description:
+      '1 session/day (~24h apart), 3 reps each. Standard practice pace.',
+    events: [
+      // Day 1
+      { deltaHours: 0, responseMs: 2500, correct: true },
+      { deltaHours: M, responseMs: 2200, correct: true },
+      { deltaHours: M, responseMs: 2100, correct: true },
+      // Day 2
+      { deltaHours: 24, responseMs: 2200, correct: true },
+      { deltaHours: M, responseMs: 2000, correct: true },
+      { deltaHours: M, responseMs: 1900, correct: true },
+      // Day 3
+      { deltaHours: 24, responseMs: 2000, correct: true },
+      { deltaHours: M, responseMs: 1800, correct: true },
+      { deltaHours: M, responseMs: 1800, correct: true },
+      // Day 4
+      { deltaHours: 24, responseMs: 1900, correct: true },
+      { deltaHours: M, responseMs: 1700, correct: true },
+      { deltaHours: M, responseMs: 1700, correct: true },
+      // Day 5
+      { deltaHours: 24, responseMs: 1800, correct: true },
+      { deltaHours: M, responseMs: 1600, correct: true },
+      { deltaHours: M, responseMs: 1600, correct: true },
+    ],
+  },
+  {
+    name: 'every-other-day',
+    description:
+      '1 session every 2 days (~48h apart), 3 reps each. Casual pace, bigger gaps.',
+    events: [
+      // Day 1
+      { deltaHours: 0, responseMs: 2500, correct: true },
+      { deltaHours: M, responseMs: 2200, correct: true },
+      { deltaHours: M, responseMs: 2100, correct: true },
+      // Day 3
+      { deltaHours: 48, responseMs: 2400, correct: true },
+      { deltaHours: M, responseMs: 2100, correct: true },
+      { deltaHours: M, responseMs: 2000, correct: true },
+      // Day 5
+      { deltaHours: 48, responseMs: 2200, correct: true },
+      { deltaHours: M, responseMs: 2000, correct: true },
+      { deltaHours: M, responseMs: 1900, correct: true },
+      // Day 7
+      { deltaHours: 48, responseMs: 2100, correct: true },
+      { deltaHours: M, responseMs: 1900, correct: true },
+      { deltaHours: M, responseMs: 1800, correct: true },
+      // Day 9
+      { deltaHours: 48, responseMs: 2000, correct: true },
+      { deltaHours: M, responseMs: 1800, correct: true },
+      { deltaHours: M, responseMs: 1700, correct: true },
+    ],
+  },
+
+  // --- Behavioral scenarios ---
+  {
     name: 'cramming',
     description:
-      "One long session with many reps (1-min gaps), then nothing. Short-gap practice doesn't build lasting stability.",
+      'One long session with many reps (1-min gaps), then nothing. Stability should barely grow.',
     events: [
       { deltaHours: 0, responseMs: 2500, correct: true },
       { deltaHours: M, responseMs: 2200, correct: true },
@@ -423,27 +404,51 @@ const PATTERNS: InteractionPattern[] = [
     ],
   },
   {
-    name: 'spaced-practice',
+    name: 'struggling',
     description:
-      'One or two reps per session, sessions spread across days. Ideal for stability growth via spaced repetition.',
+      'Mix of correct/incorrect across daily sessions. Shows stability decay on wrong answers and slow recovery.',
     events: [
-      // Day 1
+      // Session 1 — first encounter, shaky
+      { deltaHours: 0, responseMs: 4500, correct: false },
+      { deltaHours: M, responseMs: 4000, correct: true },
+      { deltaHours: M, responseMs: 3800, correct: false },
+      { deltaHours: M, responseMs: 3500, correct: true },
+      // Session 2 — next day, still struggling
+      { deltaHours: 22, responseMs: 4200, correct: false },
+      { deltaHours: M, responseMs: 3800, correct: true },
+      { deltaHours: M, responseMs: 3500, correct: true },
+      // Session 3 — day after, slightly better
+      { deltaHours: 26, responseMs: 3600, correct: false },
+      { deltaHours: M, responseMs: 3200, correct: true },
+      { deltaHours: M, responseMs: 3000, correct: true },
+    ],
+  },
+  {
+    name: 'returning-after-break',
+    description:
+      '3 daily sessions building up, then 5-day break, then return. Tests self-correction and recovery.',
+    events: [
+      // Session 1
       { deltaHours: 0, responseMs: 2200, correct: true },
       { deltaHours: M, responseMs: 1900, correct: true },
-      // Day 2
-      { deltaHours: 24, responseMs: 1800, correct: true },
-      // Day 4 (skip a day)
-      { deltaHours: 48, responseMs: 1700, correct: true },
-      // Day 7
-      { deltaHours: 72, responseMs: 1500, correct: true },
-      // Day 14
-      { deltaHours: 168, responseMs: 1400, correct: true },
+      { deltaHours: M, responseMs: 1700, correct: true },
+      // Session 2 — next day
+      { deltaHours: 23, responseMs: 1600, correct: true },
+      { deltaHours: M, responseMs: 1400, correct: true },
+      { deltaHours: M, responseMs: 1300, correct: true },
+      // Session 3 — day after
+      { deltaHours: 25, responseMs: 1300, correct: true },
+      { deltaHours: M, responseMs: 1200, correct: true },
+      // 5-day break, fast answer (self-correction)
+      { deltaHours: 120, responseMs: 1300, correct: true },
+      { deltaHours: M, responseMs: 1200, correct: true },
+      { deltaHours: M, responseMs: 1100, correct: true },
     ],
   },
   {
     name: 'wrong-then-right',
     description:
-      'First session mostly wrong, gets it right by end. Next sessions improve. Shows recovery from initial errors.',
+      'First session mostly wrong, gets it right by end. Daily sessions improve. Shows recovery from errors.',
     events: [
       // Session 1 — rough start
       { deltaHours: 0, responseMs: 5000, correct: false },
@@ -460,9 +465,28 @@ const PATTERNS: InteractionPattern[] = [
     ],
   },
   {
+    name: 'speed-plateau',
+    description:
+      'Always correct but consistently slow (~3.5s) across daily sessions. Stability should still grow normally.',
+    events: [
+      // Session 1
+      { deltaHours: 0, responseMs: 3600, correct: true },
+      { deltaHours: M, responseMs: 3500, correct: true },
+      { deltaHours: M, responseMs: 3400, correct: true },
+      // Session 2 — next day
+      { deltaHours: 24, responseMs: 3600, correct: true },
+      { deltaHours: M, responseMs: 3500, correct: true },
+      { deltaHours: M, responseMs: 3400, correct: true },
+      // Session 3 — 2 days later
+      { deltaHours: 48, responseMs: 3500, correct: true },
+      { deltaHours: M, responseMs: 3500, correct: true },
+      { deltaHours: M, responseMs: 3400, correct: true },
+    ],
+  },
+  {
     name: 'decay-to-due',
     description:
-      'Item mastered over 3 daily sessions, then no practice. Projection shows when it flips from mastered to due.',
+      'Item practiced over 3 daily sessions, then no practice. Projection shows when freshness crosses 0.5.',
     events: [
       // Session 1
       { deltaHours: 0, responseMs: 1600, correct: true },
@@ -478,21 +502,38 @@ const PATTERNS: InteractionPattern[] = [
     ],
   },
   {
-    name: 'speed-plateau',
+    name: 'ideal-spaced',
     description:
-      'Always correct but consistently slow (~3.5s) across sessions. High recall, but low speed score keeps status at Hesitant.',
+      'Reviews right at the due point each time (freshness ≈ 0.5). Reference curve — should reach max in ~15 reviews.',
     events: [
-      // Session 1
-      { deltaHours: 0, responseMs: 3600, correct: true },
-      { deltaHours: M, responseMs: 3500, correct: true },
-      { deltaHours: M, responseMs: 3400, correct: true },
-      // Session 2 — next day
-      { deltaHours: 24, responseMs: 3600, correct: true },
-      { deltaHours: M, responseMs: 3500, correct: true },
-      { deltaHours: M, responseMs: 3400, correct: true },
-      // Session 3 — 2 days later
-      { deltaHours: 48, responseMs: 3500, correct: true },
-      { deltaHours: M, responseMs: 3500, correct: true },
+      // Review 1: first encounter
+      { deltaHours: 0, responseMs: 2000, correct: true },
+      // Review 2: after ~4h (stability = 4h, freshness ≈ 0.5)
+      { deltaHours: 4, responseMs: 2000, correct: true },
+      // Review 3: stability ~5.8h → wait ~5.8h
+      { deltaHours: 5.8, responseMs: 2000, correct: true },
+      // Review 4: stability ~8.4h → wait ~8.4h
+      { deltaHours: 8.4, responseMs: 2000, correct: true },
+      // Review 5: stability ~12.2h → wait ~12.2h
+      { deltaHours: 12.2, responseMs: 2000, correct: true },
+      // Review 6: stability ~17.7h → wait ~17.7h
+      { deltaHours: 17.7, responseMs: 2000, correct: true },
+      // Review 7: stability ~25.6h → wait ~25.6h
+      { deltaHours: 25.6, responseMs: 2000, correct: true },
+      // Review 8: stability ~37.1h → wait ~37.1h
+      { deltaHours: 37.1, responseMs: 2000, correct: true },
+      // Review 9: stability ~53.8h → wait ~53.8h
+      { deltaHours: 53.8, responseMs: 2000, correct: true },
+      // Review 10: stability ~78h → wait ~78h
+      { deltaHours: 78, responseMs: 2000, correct: true },
+      // Review 11: stability ~113h → wait ~113h
+      { deltaHours: 113, responseMs: 2000, correct: true },
+      // Review 12: stability ~164h → wait ~164h
+      { deltaHours: 164, responseMs: 2000, correct: true },
+      // Review 13: stability ~238h → wait ~238h
+      { deltaHours: 238, responseMs: 2000, correct: true },
+      // Review 14: stability ~336h (cap) → wait ~336h
+      { deltaHours: 336, responseMs: 2000, correct: true },
     ],
   },
 ];
@@ -506,50 +547,57 @@ function generateSparkline(
   projection: ProjectionPoint[],
 ): string {
   const W = 200;
-  const H = 60;
+  const H = 80;
   const PAD_X = 2;
   const PAD_Y = 4;
 
-  // Data points: snapshots then projection
-  const points: { x: number; y: number }[] = [];
   const totalSteps = snapshots.length + projection.length;
   if (totalSteps === 0) return '';
 
   const xScale = (W - 2 * PAD_X) / Math.max(totalSteps - 1, 1);
+  const yVal = (v: number) => PAD_Y + (1 - v) * (H - 2 * PAD_Y);
+
+  // Build speed + freshness point arrays (null = no data for that step)
+  type Pt = { x: number; y: number } | null;
+  const speedPts: Pt[] = [];
+  const freshPts: Pt[] = [];
 
   for (let i = 0; i < snapshots.length; i++) {
-    const s = snapshots[i].speedScore ?? 0;
-    points.push({
-      x: PAD_X + i * xScale,
-      y: PAD_Y + (1 - s) * (H - 2 * PAD_Y),
-    });
+    const x = PAD_X + i * xScale;
+    const sp = snapshots[i].speedScore;
+    const fr = snapshots[i].freshness;
+    speedPts.push(sp != null ? { x, y: yVal(sp) } : null);
+    freshPts.push(fr != null ? { x, y: yVal(fr) } : null);
   }
   for (let i = 0; i < projection.length; i++) {
-    const s = projection[i].speedScore ?? 0;
-    points.push({
-      x: PAD_X + (snapshots.length + i) * xScale,
-      y: PAD_Y + (1 - s) * (H - 2 * PAD_Y),
-    });
+    const x = PAD_X + (snapshots.length + i) * xScale;
+    const sp = projection[i].speedScore;
+    const fr = projection[i].freshness;
+    speedPts.push(sp != null ? { x, y: yVal(sp) } : null);
+    freshPts.push(fr != null ? { x, y: yVal(fr) } : null);
   }
-
-  // Band backgrounds
-  const bands = [
-    { y0: 0, y1: 0.3, color: 'rgba(255,180,130,0.15)' }, // Hesitant
-    { y0: 0.3, y1: 0.7, color: 'rgba(220,200,100,0.15)' }, // Learning
-    { y0: 0.7, y1: 0.9, color: 'rgba(150,200,100,0.15)' }, // Solid
-    { y0: 0.9, y1: 1.0, color: 'rgba(80,180,80,0.15)' }, // Automatic
-  ];
 
   let svg =
     `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
 
-  // Background bands
+  // Background bands (speed)
+  const bands = [
+    { y0: 0, y1: 0.3, color: 'rgba(255,180,130,0.10)' },
+    { y0: 0.3, y1: 0.7, color: 'rgba(220,200,100,0.10)' },
+    { y0: 0.7, y1: 0.9, color: 'rgba(150,200,100,0.10)' },
+    { y0: 0.9, y1: 1.0, color: 'rgba(80,180,80,0.10)' },
+  ];
   for (const b of bands) {
-    const ry = PAD_Y + (1 - b.y1) * (H - 2 * PAD_Y);
+    const ry = yVal(b.y1);
     const rh = (b.y1 - b.y0) * (H - 2 * PAD_Y);
     svg +=
       `<rect x="0" y="${ry}" width="${W}" height="${rh}" fill="${b.color}"/>`;
   }
+
+  // Freshness threshold at 0.5
+  const threshY = yVal(0.5);
+  svg +=
+    `<line x1="0" y1="${threshY}" x2="${W}" y2="${threshY}" stroke="#ddd" stroke-width="0.5" stroke-dasharray="2,2"/>`;
 
   // Divider between actual and projected
   if (projection.length > 0 && snapshots.length > 0) {
@@ -558,41 +606,81 @@ function generateSparkline(
       `<line x1="${divX}" y1="0" x2="${divX}" y2="${H}" stroke="#ccc" stroke-dasharray="3,3"/>`;
   }
 
-  // Threshold lines
-  const thresholds = [0.3, 0.7, 0.9];
-  for (const t of thresholds) {
-    const ty = PAD_Y + (1 - t) * (H - 2 * PAD_Y);
-    svg +=
-      `<line x1="0" y1="${ty}" x2="${W}" y2="${ty}" stroke="#ddd" stroke-width="0.5"/>`;
-  }
+  // Build SVG path from nullable points, segmenting on nulls.
+  const pathD = (pts: Pt[]) => {
+    let d = '';
+    let needsMove = true;
+    for (const p of pts) {
+      if (p == null) {
+        needsMove = true;
+        continue;
+      }
+      const cmd = needsMove ? 'M' : 'L';
+      d += `${d ? ' ' : ''}${cmd}${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+      needsMove = false;
+    }
+    return d;
+  };
 
-  // Actual line
-  if (snapshots.length > 1) {
-    const actualPoints = points.slice(0, snapshots.length);
-    const d = actualPoints.map((p, i) =>
-      `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`
-    ).join(' ');
-    svg +=
-      `<path d="${d}" fill="none" stroke="#2a7" stroke-width="1.5" stroke-linejoin="round"/>`;
-  }
+  const drawLine = (pts: Pt[], stroke: string, extra = '') => {
+    const d = pathD(pts);
+    if (d) {
+      svg +=
+        `<path d="${d}" fill="none" stroke="${stroke}" ${extra} stroke-linejoin="round"/>`;
+    }
+  };
 
-  // Projected line (dashed)
+  // Speed line (green, actual + projected)
+  drawLine(
+    speedPts.slice(0, snapshots.length),
+    '#2a7',
+    'stroke-width="1.5"',
+  );
   if (projection.length > 0 && snapshots.length > 0) {
-    const projPoints = points.slice(snapshots.length - 1); // start from last actual
-    const d = projPoints.map((p, i) =>
-      `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`
-    ).join(' ');
-    svg +=
-      `<path d="${d}" fill="none" stroke="#c63" stroke-width="1.5" stroke-dasharray="4,3" stroke-linejoin="round"/>`;
+    drawLine(
+      speedPts.slice(snapshots.length - 1),
+      '#2a7',
+      'stroke-width="1" stroke-dasharray="4,3"',
+    );
   }
 
-  // Dots
-  for (let i = 0; i < points.length; i++) {
-    const color = i < snapshots.length ? '#2a7' : '#c63';
-    svg += `<circle cx="${points[i].x.toFixed(1)}" cy="${
-      points[i].y.toFixed(1)
-    }" r="2" fill="${color}"/>`;
+  // Freshness line (blue, actual + projected)
+  drawLine(
+    freshPts.slice(0, snapshots.length),
+    '#36a',
+    'stroke-width="1.5"',
+  );
+  if (projection.length > 0 && snapshots.length > 0) {
+    drawLine(
+      freshPts.slice(snapshots.length - 1),
+      '#36a',
+      'stroke-width="1.5" stroke-dasharray="4,3"',
+    );
   }
+
+  // Dots (speed = green, freshness = blue), actual only
+  for (let i = 0; i < snapshots.length; i++) {
+    const sp = speedPts[i];
+    const fr = freshPts[i];
+    if (sp) {
+      svg += `<circle cx="${sp.x.toFixed(1)}" cy="${
+        sp.y.toFixed(1)
+      }" r="2" fill="#2a7"/>`;
+    }
+    if (fr) {
+      svg += `<circle cx="${fr.x.toFixed(1)}" cy="${
+        fr.y.toFixed(1)
+      }" r="2" fill="#36a"/>`;
+    }
+  }
+
+  // Legend
+  svg += `<text x="${
+    W - 2
+  }" y="10" text-anchor="end" font-size="8" fill="#2a7">speed</text>`;
+  svg += `<text x="${
+    W - 2
+  }" y="20" text-anchor="end" font-size="8" fill="#36a">fresh</text>`;
 
   svg += '</svg>';
   return svg;
@@ -628,6 +716,29 @@ function deltaColor(hours: number): string {
   if (hours < 30) return '#f0e4c8'; // overnight: warm amber
   if (hours < 72) return '#f0d4a8'; // multi-day: deeper amber
   return '#f0c4b0'; // long break: warm coral
+}
+
+function freshnessBadge(freshness: number | null): string {
+  if (freshness === null) {
+    return '<span class="freshness-badge" style="background:#888">—</span>';
+  }
+  const label = freshness >= 0.8
+    ? 'Fresh'
+    : freshness >= 0.5
+    ? 'OK'
+    : freshness >= 0.3
+    ? 'Due'
+    : 'Stale';
+  const color = freshness >= 0.8
+    ? '#2a7'
+    : freshness >= 0.5
+    ? '#6a4'
+    : freshness >= 0.3
+    ? '#b90'
+    : '#c63';
+  return `<span class="freshness-badge" style="background:${color}">${label} ${
+    (freshness * 100).toFixed(0)
+  }%</span>`;
 }
 
 function statusBadge(status: string): string {
@@ -676,6 +787,7 @@ function generateReviewHTML(
         <td>${fmt(snap.speedScore)}</td>
         <td>${colorCell(snap.heatmapColor)}</td>
         <td>${statusBadge(snap.status)}</td>
+        <td>${freshnessBadge(snap.freshness)}</td>
       </tr>`;
     }
 
@@ -691,6 +803,7 @@ function generateReviewHTML(
           <td>${fmt(p.speedScore)}</td>
           <td>${colorCell(p.heatmapColor)}</td>
           <td>${statusBadge(p.status)}</td>
+          <td>${freshnessBadge(p.freshness)}</td>
         </tr>`;
       }
     }
@@ -720,6 +833,7 @@ function generateReviewHTML(
             <th>Speed</th>
             <th>Color</th>
             <th>Status</th>
+            <th>Freshness</th>
           </tr>
         </thead>
         <tbody>${stepRows}
@@ -740,6 +854,7 @@ function generateReviewHTML(
               <th>Speed</th>
               <th>Color</th>
               <th>Status</th>
+              <th>Freshness</th>
             </tr>
           </thead>
           <tbody>${projRows}
@@ -807,7 +922,7 @@ function generateReviewHTML(
     width: 20px; height: 20px; border-radius: 3px;
     display: inline-block; border: 1px solid rgba(0,0,0,0.1);
   }
-  .status-badge {
+  .status-badge, .freshness-badge {
     display: inline-block; padding: 1px 6px; border-radius: 3px;
     font-size: 0.72rem; font-weight: bold; color: #fff;
     white-space: nowrap;
@@ -851,9 +966,8 @@ function generateReviewHTML(
   <span>alpha=${cfg.ewmaAlpha}</span>
   <span>initialStab=${cfg.initialStability}h</span>
   <span>maxStab=${cfg.maxStability}h</span>
-  <span>growthBase=${cfg.stabilityGrowthBase}</span>
+  <span>growthMax=${cfg.stabilityGrowthMax}</span>
   <span>decayOnWrong=${cfg.stabilityDecayOnWrong}</span>
-  <span>speedBonusMax=${cfg.speedBonusMax}</span>
   <span>selfCorrection&lt;${cfg.selfCorrectionThreshold}ms</span>
   <span>freshnessThreshold=${cfg.freshnessThreshold}</span>
 </div>
@@ -863,9 +977,9 @@ function generateReviewHTML(
 <div class="legend-section">
   <h3>Model overview</h3>
   <p style="margin:0 0 0.5rem;"><strong>EWMA</strong> — exponentially weighted moving average of response times (alpha=${cfg.ewmaAlpha}).</p>
-  <p style="margin:0 0 0.5rem;"><strong>Stability</strong> — half-life in hours. P(recall) = 2<sup>&minus;t/S</sup> where t = hours since last correct.</p>
-  <p style="margin:0 0 0.5rem;"><strong>Speed score</strong> — maps EWMA to [0,1]. ${cfg.minTime}ms &rarr; 1.0, ${cfg.speedTarget}ms &rarr; 0.5. Status: &ge; 0.9 Automatic, &ge; 0.7 Solid, &ge; 0.3 Learning, &lt; 0.3 Hesitant.</p>
-  <p style="margin:0 0 0.5rem;"><strong>Freshness</strong> — independent dimension. Fades heatmap color saturation as recall decays, but does not affect mastery status.</p>
+  <p style="margin:0 0 0.5rem;"><strong>Stability</strong> — half-life in hours. Freshness = 2<sup>&minus;t/S</sup> where t = hours since last correct. Growth is freshness-modulated: S &times; (1 + ${cfg.stabilityGrowthMax} &times; (1 &minus; freshness)). Reviewing a due item (freshness &asymp; 0.5) grows ~1.45&times;; reviewing a fresh item barely grows.</p>
+  <p style="margin:0 0 0.5rem;"><strong>Speed score</strong> — maps EWMA to [0,1]. ${cfg.minTime}ms &rarr; 1.0, ${cfg.speedTarget}ms &rarr; 0.5. Status: &ge; 0.9 Automatic, &ge; 0.7 Solid, &ge; 0.3 Learning, &lt; 0.3 Hesitant. Independent of stability.</p>
+  <p style="margin:0 0 0.5rem;"><strong>Freshness</strong> — predicted retention (0&ndash;1). Below ${cfg.freshnessThreshold} = &ldquo;due&rdquo;. Fades heatmap color toward grey. Does not affect speed status.</p>
   <h3 style="margin-top:0.75rem;">Heatmap color encoding</h3>
   <div class="legend-row">${
     colorCell('hsl(125,48%,33%)')
@@ -887,7 +1001,7 @@ function generateReviewHTML(
   }<span>No data — Not started</span></div>
   <p style="margin:0.5rem 0 0; font-size:0.78rem; color:#666;">Freshness fades saturation &amp; lightness toward grey as recall decays.</p>
   <h3 style="margin-top:0.75rem;">Sparkline</h3>
-  <p style="margin:0; font-size:0.78rem; color:#666;">Green solid line = speed score. Orange dashed = projected decay. Background bands: Hesitant / Learning / Solid / Automatic.</p>
+  <p style="margin:0; font-size:0.78rem; color:#666;">Green = speed score, blue = freshness. Dashed = projected. Dashed grey line = freshness threshold (0.5). Background bands: speed status levels.</p>
 </div>
 </details>
 

@@ -220,6 +220,17 @@ yet — it may default to pushing to `origin/main`.
 `git push` refuses if the local and remote branch names don't match — an extra
 safeguard against accidentally pushing to `main`.
 
+### Pruning stale branches
+
+`scripts/prune-branches.sh` removes stale remote-tracking refs and deletes
+local branches that have been merged into `main`. It always keeps `main`,
+`gh-pages`, `workstream/*`, and the current branch.
+
+```bash
+scripts/prune-branches.sh          # Preview (dry run)
+scripts/prune-branches.sh --do-it  # Actually delete
+```
+
 ## Deployment
 
 Build output goes to `docs/` (GitHub Pages source directory):
