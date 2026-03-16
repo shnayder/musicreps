@@ -86,38 +86,22 @@ but no template for **visual design work**. When redesigning a feature's
 appearance, there's no step that says "derive the correct design from principles
 before touching code."
 
-**Solution:** Add a Visual Design Spec template to `feature-process.md`:
+**Solution:** Create `guides/visual-design-spec.md` — a standalone template with
+process guidance. Reference it from `feature-process.md` in the "When to Write
+What" section (alongside design spec, implementation plan, bug fix plan).
 
-```markdown
-### Visual Design Spec
+The template should cover:
+- When to write one (redesigning appearance, layout cleanup, design system
+  alignment)
+- Content hierarchy derivation (list elements → assign text roles → derive
+  spacing)
+- Component composition (which ActionButton variants, Text roles, container
+  types)
+- Deviations from recipes (intentional departures with rationale)
+- Per-state layouts (principle #1: each state is a distinct design)
 
-Write when **redesigning or polishing a feature's visual appearance**.
-
-# {Feature} — Visual Design
-
-## Current State
-What it looks like now. Screenshot or description of issues.
-
-## Content Hierarchy
-List elements in interaction-priority order per state. For each element:
-- Content role (from type hierarchy — use `<Text role='...'>` or `.text-*` class)
-- Spacing relationship to neighbors
-
-## Component Composition
-Which existing structural components are used:
-- ActionButton variant (primary/secondary)
-- Text role (section-header/label/caption/metric/etc.)
-- Container type (card/section/inline)
-- Info hierarchy (label-value-explanation)
-
-## Deviations from Recipes
-Any intentional departures from standard recipes, with rationale.
-
-## States
-Describe each state independently (principle #1).
-```
-
-**Files:** `guides/feature-process.md`
+**Files:** new `guides/visual-design-spec.md`, update `guides/feature-process.md`
+to reference it
 
 ### 2. Design Review Gate (Medium Impact)
 
@@ -137,10 +121,28 @@ check whether they were used rather than checking raw CSS values.
 - [ ] **Elevation tokens used.** Shadows use `--shadow-sm/md/lg/hover`, not
       hardcoded rgba values.
 - [ ] **Info hierarchy pattern applied.** Metric displays use value dominant,
-      label quiet, explanation smallest (via Text roles or MetricDisplay).
+      label quiet, explanation smallest (via Text roles).
 - [ ] **Spacing follows rhythm.** Section gaps use `--space-5` or `--space-6`.
 
-**Files:** `.claude/commands/review-checklist.md`
+The current review checklist is a single monolithic list that applies to every
+change. As the design system matures, it makes sense to **split by change
+type** — a CSS-only visual change doesn't need the adaptive learning system
+checks, and a pure algorithm change doesn't need visual design checks. Proposed
+structure:
+
+| Checklist | Applies when | Covers |
+|-----------|-------------|--------|
+| **Core** (always) | Every change | Build, tests, code quality, docs |
+| **Visual design** | CSS or UI component changes | Tokens, text roles, button variants, elevation, spacing |
+| **Architecture** | New modules or pattern changes | State machine, DI, mode interface, build system |
+| **Algorithm** | Adaptive, recommendation, timing | EWMA, forgetting model, consolidate-before-expanding |
+| **Quiz mode** | New or modified mode | Item IDs, keyboard, localStorage, calibration |
+
+The reviewer picks which sections apply based on the diff. "N/A" disappears
+because you only run relevant sections.
+
+**Files:** `.claude/commands/review-checklist.md` (restructure)
+
 
 ### 3. Complete Recipe Documentation (Low Impact)
 
