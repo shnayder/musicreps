@@ -3,17 +3,11 @@
 
 import {
   computeRecommendations,
-  detectStaleGroups,
   type RecommendationSelector,
-  STALE_FRESHNESS_THRESHOLD,
-  STALE_SPEED_THRESHOLD,
 } from './recommendations.ts';
 import type { ModeProgressEntry } from './mode-progress-manifest.ts';
 import type { StorageAdapter } from './types.ts';
 import { createAdaptiveSelector, deriveScaledConfig } from './adaptive.ts';
-
-// Re-export for consumers that import from here.
-export { STALE_FRESHNESS_THRESHOLD, STALE_SPEED_THRESHOLD };
 
 // ---------------------------------------------------------------------------
 // Types
@@ -23,6 +17,7 @@ export type SkillRecommendationType =
   | 'review'
   | 'keep-practicing'
   | 'learn-next'
+  | 'automate'
   | 'not-started'
   | 'automatic';
 
@@ -46,10 +41,17 @@ function notStarted(modeId: string): SkillRecommendation {
   return { modeId, type: 'not-started', urgency: 0, cueLabel: '', detail: '' };
 }
 
+/** Format group labels: "E A" or "E A, D G". */
+function groupLabelText(
+  indices: number[],
+  labels: string[],
+): string {
+  return indices.map((i) => labels[i] ?? `level ${i + 1}`).join(', ');
+}
+
 /**
  * Classify a single skill's recommendation state.
- * Uses the same computeRecommendations pipeline as in-mode display, plus
- * broader stale detection across ALL started groups (not just consolidation).
+ * Uses the same computeRecommendations pipeline as in-mode display.
  */
 export function computeSkillRecommendation(
   entry: ModeProgressEntry,
@@ -84,78 +86,61 @@ export function computeSkillRecommendation(
     config,
   );
 
-  // Broader stale detection: check ALL started groups, not just consolidation.
-  const staleIndices = findStaleGroups(selector, allIndices, getItemIds);
-
-  return classifySkill(entry, result, staleIndices);
+  return classifySkill(entry, result);
 }
 
-/** Find stale group indices across all started groups. */
-function findStaleGroups(
-  selector: ReturnType<typeof createAdaptiveSelector>,
-  allIndices: number[],
-  getItemIds: (idx: number) => string[],
-): number[] {
-  const startedIndices = allIndices.filter((idx) => {
-    const ids = getItemIds(idx);
-    return ids.some((id) => selector.getSpeedScore(id) !== null);
-  });
-
-  return detectStaleGroups(
-    startedIndices,
-    getItemIds,
-    selector.getSpeedScore,
-    (id) => selector.getFreshness(id),
-  ) ?? [];
-}
-
-/** Format group labels: "E A" or "E A, D G". */
-function groupLabelText(
-  indices: number[],
-  labels: string[],
-): string {
-  return indices.map((i) => labels[i] ?? `level ${i + 1}`).join(', ');
-}
-
-/** Classify a skill based on recommendation result and stale groups. */
+/** Classify a skill based on its first levelRec type. */
 function classifySkill(
   entry: ModeProgressEntry,
   result: ReturnType<typeof computeRecommendations>,
-  staleIndices: number[],
 ): SkillRecommendation {
   const modeId = entry.modeId;
   const singleGroup = entry.groups.length <= 1;
   const labels = entry.groups.map((g) => g.label);
 
-  if (staleIndices.length > 0) {
+  if (result.levelRecs.length === 0) {
+    return { modeId, type: 'automatic', urgency: 0, cueLabel: '', detail: '' };
+  }
+
+  const firstType = result.levelRecs[0].type;
+
+  if (firstType === 'review') {
+    const reviewIndices = result.levelRecs
+      .filter((r) => r.type === 'review')
+      .map((r) => r.index);
     const detail = singleGroup
       ? 'Review'
-      : `Review ${groupLabelText(staleIndices, labels)}`;
+      : `Review ${groupLabelText(reviewIndices, labels)}`;
     return {
       modeId,
       type: 'review',
-      urgency: staleIndices.length,
+      urgency: reviewIndices.length,
       cueLabel: 'Review',
       detail,
     };
   }
-  if (result.consolidateWorkingCount > 0 && !result.reviewMode) {
+
+  if (firstType === 'practice') {
+    const practiceIndices = result.levelRecs
+      .filter((r) => r.type === 'practice')
+      .map((r) => r.index);
     const detail = singleGroup
       ? 'Keep practicing'
-      : `Keep practicing ${groupLabelText(result.consolidateIndices, labels)}`;
+      : `Keep practicing ${groupLabelText(practiceIndices, labels)}`;
     return {
       modeId,
       type: 'keep-practicing',
-      urgency: result.consolidateWorkingCount,
+      urgency: practiceIndices.length,
       cueLabel: 'Keep practicing',
       detail,
     };
   }
-  if (result.expandIndex !== null) {
+
+  if (firstType === 'expand') {
     const detail = singleGroup
       ? 'Learn next level'
       : `Learn ${
-        labels[result.expandIndex] ?? `level ${result.expandIndex + 1}`
+        labels[result.expandIndex!] ?? `level ${result.expandIndex! + 1}`
       }`;
     return {
       modeId,
@@ -165,6 +150,23 @@ function classifySkill(
       detail,
     };
   }
+
+  if (firstType === 'automate') {
+    const automateIndices = result.levelRecs
+      .filter((r) => r.type === 'automate')
+      .map((r) => r.index);
+    const detail = singleGroup
+      ? 'Almost there'
+      : `Almost there \u2014 ${groupLabelText(automateIndices, labels)}`;
+    return {
+      modeId,
+      type: 'automate',
+      urgency: automateIndices.length,
+      cueLabel: 'Almost there',
+      detail,
+    };
+  }
+
   return { modeId, type: 'automatic', urgency: 0, cueLabel: '', detail: '' };
 }
 
@@ -176,14 +178,16 @@ const TYPE_PRIORITY: Record<SkillRecommendationType, number> = {
   'review': 0,
   'keep-practicing': 1,
   'learn-next': 2,
-  'not-started': 3,
-  'automatic': 4,
+  'automate': 3,
+  'not-started': 4,
+  'automatic': 5,
 };
 
 /**
  * Rank skill recommendations and return the top N (default 3).
- * Priority: review > keep-practicing > learn-next. Within a tier, higher urgency
- * wins. "not-started" and "automatic" are excluded unless cold-start applies.
+ * Priority: review > keep-practicing > learn-next > automate.
+ * Within a tier, higher urgency wins. "not-started" and "automatic" are
+ * excluded unless cold-start applies.
  *
  * @param definitionOrder Mode IDs in definition order, used for cold-start
  *   tie-breaking when all skills are not-started.
@@ -197,7 +201,7 @@ export function rankSkillRecommendations(
   const actionable = recommendations.filter(
     (r) =>
       r.type === 'review' || r.type === 'keep-practicing' ||
-      r.type === 'learn-next',
+      r.type === 'learn-next' || r.type === 'automate',
   );
 
   if (actionable.length > 0) {

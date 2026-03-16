@@ -155,6 +155,37 @@ describe('computeSkillRecommendation', () => {
     assert.equal(result.detail, 'Learn Group 1');
   });
 
+  it('returns automate when levels are learned but not automatic', () => {
+    const entry = makeEntry('test', 1, 10);
+    const storage = createMemoryStorage();
+    // Seed items with speed that produces P10 in the "learned" range (0.7-0.9).
+    // Need most items fast but a few slightly below automatic.
+    const ids = entry.groups[0].getItemIds();
+    const now = Date.now();
+    for (let i = 0; i < ids.length; i++) {
+      // 8 items at ~800ms (automatic), 2 at ~1800ms (learned-ish)
+      const ewma = i < 8 ? 800 : 1800;
+      storage.saveStats(ids[i], {
+        recentTimes: [ewma],
+        ewma,
+        sampleCount: 10,
+        lastSeen: now - 3600_000,
+        stability: 168,
+        lastCorrectAt: now - 3600_000,
+      });
+    }
+    const result = computeSkillRecommendation(
+      entry,
+      storage,
+      null,
+      NO_SKIPS,
+      DEFAULT_CONFIG,
+    );
+    // With P10 in learned range (0.7 ≤ speed < 0.9), should get automate
+    assert.equal(result.type, 'automate');
+    assert.equal(result.cueLabel, 'Almost there');
+  });
+
   it('returns automatic when all groups mastered', () => {
     const entry = makeEntry('test', 2);
     const storage = createMemoryStorage();
@@ -237,6 +268,7 @@ describe('rankSkillRecommendations', () => {
       review: 'Review',
       'keep-practicing': 'Keep practicing',
       'learn-next': 'Learn next level',
+      'automate': 'Almost there',
     };
     return {
       modeId,
@@ -320,5 +352,16 @@ describe('rankSkillRecommendations', () => {
     assert.equal(result[0].modeId, 'modeC');
     assert.equal(result[0].type, 'learn-next');
     assert.equal(result[0].detail, 'Get started');
+  });
+
+  it('automate is actionable and ranked after learn-next', () => {
+    const recs = [
+      rec('modeA', 'automate', 2),
+      rec('modeB', 'learn-next'),
+    ];
+    const result = rankSkillRecommendations(recs, order);
+    assert.equal(result.length, 2);
+    assert.equal(result[0].modeId, 'modeB'); // learn-next before automate
+    assert.equal(result[1].modeId, 'modeA');
   });
 });

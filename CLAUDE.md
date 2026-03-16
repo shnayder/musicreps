@@ -121,8 +121,9 @@ at build time. Key patterns:
   spaced repetition.
 - **Motor Baseline** — per-provider calibration measuring physical response
   time. All timing thresholds scale proportionally (1x–9x baseline).
-- **Consolidate Before Expanding** — shared `computeRecommendations()` gates
-  progression to new item groups behind mastery of existing ones.
+- **Recommendation Pipeline (v4)** — shared `computeRecommendations()` computes
+  per-level status (speed/freshness) and emits prioritized recs (review →
+  practice → expand → automate) with an expansion gate.
 - **CSS Custom Properties** — color palette, heatmap scale, and semantic tokens
   defined as `--color-*` and `--heatmap-*` variables in `:root`. JS reads
   heatmap colors via `getComputedStyle` with hardcoded fallbacks for tests.

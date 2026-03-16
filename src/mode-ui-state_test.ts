@@ -170,130 +170,99 @@ describe('buildRecommendationText', () => {
     const result: RecommendationResult = {
       recommended: new Set<number>(),
       enabled: null,
-      consolidateIndices: [],
-      consolidateWorkingCount: 0,
       expandIndex: null,
       expandNewCount: 0,
+      levelRecs: [],
     };
     assert.equal(buildRecommendationText(result, label), '');
   });
 
-  it('builds consolidation text', () => {
+  it('builds review text', () => {
     const result: RecommendationResult = {
       recommended: new Set([0, 1]),
       enabled: null,
-      consolidateIndices: [1, 0],
-      consolidateWorkingCount: 5,
       expandIndex: null,
       expandNewCount: 0,
+      levelRecs: [
+        { index: 1, type: 'review' },
+        { index: 0, type: 'review' },
+      ],
     };
     const text = buildRecommendationText(result, label);
-    assert.equal(
-      text,
-      'solidify Group 0, Group 1 \u2014 5 items to work on',
-    );
+    assert.equal(text, 'review Group 0, Group 1');
+  });
+
+  it('builds practice text', () => {
+    const result: RecommendationResult = {
+      recommended: new Set([0]),
+      enabled: null,
+      expandIndex: null,
+      expandNewCount: 0,
+      levelRecs: [{ index: 0, type: 'practice' }],
+    };
+    const text = buildRecommendationText(result, label);
+    assert.equal(text, 'practice Group 0');
   });
 
   it('builds expand text', () => {
     const result: RecommendationResult = {
       recommended: new Set([2]),
       enabled: null,
-      consolidateIndices: [],
-      consolidateWorkingCount: 0,
       expandIndex: 2,
       expandNewCount: 8,
+      levelRecs: [{ index: 2, type: 'expand' }],
     };
     const text = buildRecommendationText(result, label);
     assert.equal(text, 'start Group 2 \u2014 8 new items');
   });
 
-  it('combines consolidation + expansion + extra parts', () => {
+  it('builds automate text', () => {
     const result: RecommendationResult = {
       recommended: new Set([0, 1]),
       enabled: null,
-      consolidateIndices: [0],
-      consolidateWorkingCount: 3,
-      expandIndex: 1,
+      expandIndex: null,
+      expandNewCount: 0,
+      levelRecs: [
+        { index: 0, type: 'automate' },
+        { index: 1, type: 'automate' },
+      ],
+    };
+    const text = buildRecommendationText(result, label);
+    assert.equal(text, 'automate Group 0, Group 1');
+  });
+
+  it('combines review + practice + expand + extra parts', () => {
+    const result: RecommendationResult = {
+      recommended: new Set([0, 1, 2]),
+      enabled: null,
+      expandIndex: 2,
       expandNewCount: 1,
+      levelRecs: [
+        { index: 0, type: 'review' },
+        { index: 1, type: 'practice' },
+        { index: 2, type: 'expand' },
+      ],
     };
     const text = buildRecommendationText(result, label, ['naturals first']);
-    assert.ok(text.includes('solidify Group 0'));
-    assert.ok(text.includes('start Group 1'));
+    assert.ok(text.includes('review Group 0'));
+    assert.ok(text.includes('practice Group 1'));
+    assert.ok(text.includes('start Group 2'));
     assert.ok(text.includes('naturals first'));
     assert.ok(text.includes('1 new item')); // singular
     assert.ok(!text.includes('1 new items')); // not plural
   });
 
-  it('builds review mode text', () => {
-    const result: RecommendationResult = {
-      recommended: new Set([0, 1, 2]),
-      enabled: new Set([0, 1, 2]),
-      consolidateIndices: [0, 1, 2],
-      consolidateWorkingCount: 6,
-      expandIndex: null,
-      expandNewCount: 0,
-      reviewMode: true,
-    };
-    const text = buildRecommendationText(result, label);
-    assert.equal(text, 'review all \u2014 polish across 3 groups');
-  });
-
-  it('builds review mode text singular', () => {
-    const result: RecommendationResult = {
-      recommended: new Set([0]),
-      enabled: new Set([0]),
-      consolidateIndices: [0],
-      consolidateWorkingCount: 2,
-      expandIndex: null,
-      expandNewCount: 0,
-      reviewMode: true,
-    };
-    const text = buildRecommendationText(result, label);
-    assert.equal(text, 'review all \u2014 polish across 1 group');
-  });
-
-  it('uses "refresh" when all consolidation groups are stale', () => {
-    const result: RecommendationResult = {
-      recommended: new Set([0, 1]),
-      enabled: null,
-      consolidateIndices: [0, 1],
-      consolidateWorkingCount: 5,
-      expandIndex: null,
-      expandNewCount: 0,
-      staleIndices: [0, 1],
-    };
-    const text = buildRecommendationText(result, label);
-    assert.ok(text.startsWith('refresh '));
-    assert.ok(text.includes('skills getting stale'));
-  });
-
-  it('uses "solidify" when only some groups are stale', () => {
-    const result: RecommendationResult = {
-      recommended: new Set([0, 1]),
-      enabled: null,
-      consolidateIndices: [0, 1],
-      consolidateWorkingCount: 5,
-      expandIndex: null,
-      expandNewCount: 0,
-      staleIndices: [0], // only 1 of 2 stale
-    };
-    const text = buildRecommendationText(result, label);
-    assert.ok(text.startsWith('solidify '));
-    assert.ok(text.includes('items to work on'));
-  });
-
-  it('uses singular for 1 item to work on', () => {
+  it('uses singular for 1 new item', () => {
     const result: RecommendationResult = {
       recommended: new Set([0]),
       enabled: null,
-      consolidateIndices: [0],
-      consolidateWorkingCount: 1,
-      expandIndex: null,
-      expandNewCount: 0,
+      expandIndex: 0,
+      expandNewCount: 1,
+      levelRecs: [{ index: 0, type: 'expand' }],
     };
     const text = buildRecommendationText(result, label);
-    assert.ok(text.includes('1 item to work on'));
-    assert.ok(!text.includes('1 items to work on'));
+    assert.ok(text.includes('1 new item'));
+    assert.ok(!text.includes('1 new items'));
   });
 });
 
@@ -381,10 +350,9 @@ describe('computePracticeSummary', () => {
     const rec: RecommendationResult = {
       recommended: new Set([0]),
       enabled: null,
-      consolidateIndices: [0],
-      consolidateWorkingCount: 3,
       expandIndex: null,
       expandNewCount: 0,
+      levelRecs: [{ index: 0, type: 'practice' }],
     };
     const result = computePracticeSummary({
       allItemIds: ['a'],
@@ -392,11 +360,11 @@ describe('computePracticeSummary', () => {
       selector: makeSelector({ 'a': 0.2 }) as any,
       itemNoun: 'items',
       recommendation: rec,
-      recommendationText: 'solidify Group 0',
+      recommendationText: 'practice Group 0',
       masteryText: '',
       showMastery: false,
     });
     assert.equal(result.showRecommendationButton, true);
-    assert.equal(result.recommendationText, 'solidify Group 0');
+    assert.equal(result.recommendationText, 'practice Group 0');
   });
 });

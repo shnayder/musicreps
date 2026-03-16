@@ -67,7 +67,6 @@ type SerializedRow = {
   description: string;
   levelSpeed: number;
   levelFreshness: number;
-  medianWork: number;
   gateOpen: boolean;
   groupRecs: {
     index: number;
@@ -75,10 +74,10 @@ type SerializedRow = {
     working: number;
     unseen: number;
   }[];
-  consolidateIndices: number[];
+  recommendedIndices: number[];
   expandIndex: number | null;
   expandNewCount: number;
-  consolidateWorkingCount: number;
+  levelRecs: { index: number; type: string }[];
   recommendationText: string;
   statusLabel: string;
   statusDetail: string;
@@ -196,13 +195,6 @@ function analyzeScenario(
     Date.now(),
   );
 
-  const workCounts = started
-    .map((r) => r.workingCount + r.unseenCount)
-    .sort((a, b) => b - a);
-  const medianWork = workCounts.length > 0
-    ? workCounts[Math.floor(workCounts.length / 2)]
-    : 0;
-
   const groupRecs = recs.map((r) => ({
     index: r.string,
     automatic: r.automaticCount,
@@ -213,13 +205,12 @@ function analyzeScenario(
   return {
     levelSpeed,
     levelFreshness,
-    medianWork,
     gateOpen: recommendation.expandIndex !== null,
     groupRecs,
-    consolidateIndices: [...recommendation.consolidateIndices],
+    recommendedIndices: [...recommendation.recommended],
     expandIndex: recommendation.expandIndex,
     expandNewCount: recommendation.expandNewCount,
-    consolidateWorkingCount: recommendation.consolidateWorkingCount,
+    levelRecs: recommendation.levelRecs,
     recommendationText,
     statusLabel: practiceSummary.statusLabel,
     statusDetail: practiceSummary.statusDetail,
@@ -332,16 +323,12 @@ async function captureRound(
       // --- 3. Run checks ---
       // Reconstruct RecommendationResult with Sets for check functions
       const recommendation = {
-        recommended: new Set(analysis.consolidateIndices),
+        recommended: new Set(analysis.recommendedIndices),
         enabled: null as Set<number> | null,
-        consolidateIndices: analysis.consolidateIndices,
-        consolidateWorkingCount: analysis.consolidateWorkingCount,
         expandIndex: analysis.expandIndex,
         expandNewCount: analysis.expandNewCount,
+        levelRecs: analysis.levelRecs,
       };
-      if (analysis.expandIndex !== null) {
-        recommendation.recommended.add(analysis.expandIndex);
-      }
 
       const output: ScenarioOutput = {
         recommendation,
@@ -460,22 +447,21 @@ function generateReviewHTML(sessionName: string, session: Session): void {
         `<div>P10 freshness: <strong>${
           row.levelFreshness.toFixed(2)
         }</strong></div>` +
-        `<div>Median work: <strong>${row.medianWork}</strong></div>` +
         `<div>Gate: <strong class="${
           row.gateOpen ? 'gate-open' : 'gate-closed'
         }">${row.gateOpen ? 'OPEN' : 'CLOSED'}</strong></div>`;
 
-      const consolidateLabels = row.consolidateIndices
+      const recommendedLabels = row.recommendedIndices
         .map((i) => `G${i}`)
         .join(', ');
-      const expandLabel = row.expandIndex !== null
-        ? `G${row.expandIndex}`
-        : 'none';
+      const levelRecLabels = row.levelRecs
+        .map((r) => `${r.type}(G${r.index})`)
+        .join(', ');
       const recHtml =
-        `<div>Consolidate: <strong>${
-          consolidateLabels || 'none'
+        `<div>Recommended: <strong>${
+          recommendedLabels || 'none'
         }</strong></div>` +
-        `<div>Expand: <strong>${expandLabel}</strong></div>` +
+        `<div>Recs: <strong>${levelRecLabels || 'none'}</strong></div>` +
         `<div class="rec-text">${
           escapeHtml(row.recommendationText || '(none)')
         }</div>`;
@@ -666,12 +652,12 @@ function generateReviewHTML(sessionName: string, session: Session): void {
     <li><strong class="working">W (Working)</strong> &mdash; seen but speed &lt; 0.9</li>
     <li><strong class="unseen">U (Unseen)</strong> &mdash; no data yet</li>
   </ul>
-  <p><strong>Level speed</strong> = 10th percentile of per-item speed scores (unseen &rarr; 0) across all started groups.<br>
-     <strong>Expansion gate</strong> opens when P10 speed &ge; 0.7 AND P10 freshness &ge; 0.5.<br>
-     Started groups with work (W + U) above the <strong>median</strong> are recommended for consolidation.<br>
-     When the gate is open, one unstarted group is suggested for <strong>expansion</strong>.</p>
+  <p><strong>Per-level status:</strong> P10 speed &rarr; Automatic (&ge;0.9) / Learned (&ge;0.7) / Learning (&ge;0.3) / Hesitant (&gt;0) / Starting (=0).<br>
+     <strong>Freshness:</strong> P10 freshness &lt; 0.5 &rarr; needs review.<br>
+     <strong>Recs priority:</strong> review &rarr; practice &rarr; expand &rarr; automate.<br>
+     <strong>Expansion gate</strong> opens when all started levels &ge; Learned AND none need review.</p>
   <p style="font-size:0.8rem; color:#666;">
-    See <a href="../../guides/architecture.md">guides/architecture.md</a> &sect; &ldquo;Consolidate Before Expanding&rdquo; for the full algorithm.
+    See <a href="../../guides/architecture.md">guides/architecture.md</a> &sect; &ldquo;Recommendation Pipeline (v4)&rdquo; for the full algorithm.
   </p>
 </div>
 </details>

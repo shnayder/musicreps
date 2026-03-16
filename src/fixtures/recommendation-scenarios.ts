@@ -3,17 +3,16 @@
 // soft checks. Used by scripts/recommendation-diagnostic.ts to generate an
 // HTML report showing how the recommendation algorithm behaves.
 //
-// Key concepts (see guides/architecture.md § "Consolidate Before Expanding"):
+// Key concepts (see guides/architecture.md § "Recommendation Pipeline (v4)"):
 //
 //   Automatic (A) — speed ≥ 0.9
 //   Working (W)   — seen but speed < 0.9
 //   Unseen (U)    — no data yet
 //
-//   Level speed = 10th percentile of per-item speed score (unseen → 0).
-//   Expansion gate opens when all started levels have P10 speed ≥ 0.7 (Solid)
-//   and P10 freshness ≥ 0.5 (Fresh).
-//   Groups above the median work count (W + U) are recommended for consolidation.
-//   One unstarted group is suggested for expansion when the gate is open.
+//   Per-level status: P10 speed → Automatic/Learned/Learning/Hesitant/Starting
+//   Per-level freshness: P10 freshness → Fresh (≥0.5) / Needs review (<0.5)
+//   Recs in priority order: review → practice → expand → automate
+//   Expansion gate: all started levels ≥ Learned (P10 speed ≥ 0.7), none stale.
 
 import type { ItemStats, RecommendationResult } from '../types.ts';
 import type { PracticeSummaryState } from '../types.ts';
@@ -251,11 +250,11 @@ export const SCENARIOS: RecommendationScenario[] = [
             : `expandIndex = ${o.recommendation.expandIndex}, expected null`,
       },
       {
-        label: 'Consolidates group 0',
+        label: 'Recommends group 0',
         check: (o) =>
-          o.recommendation.consolidateIndices.includes(0)
+          o.recommendation.recommended.has(0)
             ? null
-            : `consolidateIndices = [${o.recommendation.consolidateIndices}]`,
+            : `recommended does not include 0`,
       },
     ],
   },
@@ -397,11 +396,11 @@ export const SCENARIOS: RecommendationScenario[] = [
     },
     checks: [
       {
-        label: 'Consolidates G1 (most work)',
+        label: 'Recommends G1',
         check: (o) =>
-          o.recommendation.consolidateIndices.includes(1)
+          o.recommendation.recommended.has(1)
             ? null
-            : `consolidateIndices = [${o.recommendation.consolidateIndices}]`,
+            : `recommended does not include 1`,
       },
       {
         label: 'Status is "Hesitant" or "Learning"',

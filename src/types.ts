@@ -160,17 +160,18 @@ export interface DeadlineTracker {
 // Recommendations
 // ---------------------------------------------------------------------------
 
+export type LevelRecommendation = {
+  index: number;
+  type: 'review' | 'practice' | 'expand' | 'automate';
+};
+
 export type RecommendationResult = {
   recommended: Set<number>;
   enabled: Set<number> | null;
-  consolidateIndices: number[];
-  consolidateWorkingCount: number;
   expandIndex: number | null;
   expandNewCount: number;
-  /** True when most items are automatic and no unstarted groups remain. */
-  reviewMode?: boolean;
-  /** Consolidation group indices where items are fast but stale. */
-  staleIndices?: number[];
+  /** Per-level recommendations in priority order. */
+  levelRecs: LevelRecommendation[];
 };
 
 // ---------------------------------------------------------------------------
