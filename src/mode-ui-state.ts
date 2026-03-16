@@ -42,7 +42,8 @@ export function statusLabelFromLevel(level: number): string {
 
 /**
  * Build recommendation rationale text from a RecommendationResult.
- * Works for any group-based mode — caller provides group label function.
+ * Generates a unified string from `result.levelRecs` — same text shown
+ * in both in-skill suggestion card and home screen cue.
  *
  * @param getGroupLabel Maps a group/string index to a display label.
  * @param extraParts Additional suggestions (e.g., note filter for fretboard).
@@ -54,39 +55,38 @@ export function buildRecommendationText(
 ): string {
   if (result.recommended.size === 0) return '';
 
-  // Review mode: simple text for polishing across all groups
-  if (result.reviewMode) {
-    return 'review all \u2014 polish across ' +
-      result.consolidateIndices.length + ' group' +
-      (result.consolidateIndices.length !== 1 ? 's' : '');
-  }
-
   const parts: string[] = [];
 
-  if (result.consolidateIndices.length > 0) {
-    const labels = result.consolidateIndices
-      .slice()
-      .sort((a, b) => a - b)
-      .map(getGroupLabel);
-    // Use "refresh" when all consolidation groups are stale
-    const allStale = result.staleIndices !== undefined &&
-      result.staleIndices.length === result.consolidateIndices.length &&
-      result.consolidateIndices.length > 0;
-    const verb = allStale ? 'refresh' : 'solidify';
-    const suffix = allStale
-      ? 'skills getting stale'
-      : result.consolidateWorkingCount + ' item' +
-        (result.consolidateWorkingCount !== 1 ? 's' : '') +
-        ' to work on';
-    parts.push(verb + ' ' + labels.join(', ') + ' \u2014 ' + suffix);
+  // Group levelRecs by type, preserving priority order.
+  // Each index appears only under its first (highest-priority) type.
+  const seen = new Set<number>();
+  const byType: Record<string, number[]> = {};
+  for (const rec of result.levelRecs) {
+    if (seen.has(rec.index)) continue;
+    seen.add(rec.index);
+    if (!byType[rec.type]) byType[rec.type] = [];
+    byType[rec.type].push(rec.index);
   }
 
-  if (result.expandIndex !== null) {
+  // Emit each type in priority order.
+  if (byType['review']) {
+    const labels = byType['review'].sort((a, b) => a - b).map(getGroupLabel);
+    parts.push('review ' + labels.join(', '));
+  }
+  if (byType['practice']) {
+    const labels = byType['practice'].sort((a, b) => a - b).map(getGroupLabel);
+    parts.push('practice ' + labels.join(', '));
+  }
+  if (byType['expand'] && result.expandIndex !== null) {
     parts.push(
       'start ' + getGroupLabel(result.expandIndex) +
         ' \u2014 ' + result.expandNewCount + ' new item' +
         (result.expandNewCount !== 1 ? 's' : ''),
     );
+  }
+  if (byType['automate']) {
+    const labels = byType['automate'].sort((a, b) => a - b).map(getGroupLabel);
+    parts.push('automate ' + labels.join(', '));
   }
 
   if (extraParts) {

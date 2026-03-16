@@ -17,7 +17,6 @@ import { fileURLToPath } from 'url';
 import type { FixtureDetail } from '../src/types.ts';
 import {
   buildManifest,
-  ENGINE_MODES,
   MODE_IDS,
   MODE_TITLES,
   type ScreenshotEntry,
@@ -224,13 +223,11 @@ async function main() {
       await page.goto(`${BASE_URL}/?fixtures`);
       await page.waitForLoadState('networkidle');
 
-      // Seed motorBaseline for all engine modes to skip calibration
-      for (const ns of ENGINE_MODES) {
-        await page.evaluate(
-          (key) => localStorage.setItem(key, '500'),
-          `motorBaseline_${ns}`,
-        );
-      }
+      // Seed shared motor baseline to skip calibration for all modes.
+      // All button-based modes share the 'button' provider key.
+      await page.evaluate(
+        () => localStorage.setItem('motorBaseline_button', '500'),
+      );
 
       // Reload so app picks up seeded baselines
       await page.reload();

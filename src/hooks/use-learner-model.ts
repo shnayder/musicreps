@@ -61,13 +61,7 @@ export function useLearnerModel(
 
   // Load motor baseline on mount.
   useEffect(() => {
-    const baselineKey = 'motorBaseline_' + provider;
-    const legacyKey = 'motorBaseline_' + namespace;
-    let stored = localStorage.getItem(baselineKey);
-    if (!stored && legacyKey !== baselineKey) {
-      stored = localStorage.getItem(legacyKey);
-      if (stored) localStorage.setItem(baselineKey, stored); // migrate
-    }
+    const stored = localStorage.getItem('motorBaseline_' + provider);
     if (stored) {
       const parsed = parseInt(stored, 10);
       if (parsed > 0) {
@@ -75,7 +69,7 @@ export function useLearnerModel(
         model.selector.updateConfig(deriveScaledConfig(parsed, DEFAULT_CONFIG));
       }
     }
-  }, [model.selector, provider, namespace]);
+  }, [model.selector, provider]);
 
   return {
     selector: model.selector,

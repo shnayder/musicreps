@@ -23,6 +23,18 @@ terms here are what the **user sees**.
 | **level** | Levels within a skill -- corresponds to a set of items to learn, typically in order of progressive difficulty or relevance (first learn major chords, then add minor, then 7, then maj 7, etc), though could also be fairly arbitrary ordering (e.g. fretboard: you can learn E, then A, then D, or frets 1-3, then 3-5, then..., or some other sequence). There is a per-level fluency assessment which affects when the system recommends moving to subsequent levels. | `group` |  | |
 | **suggestion** | The app's suggestion for what to practice next within a skill — which item groups to enable. Shown as "Recommended: E string" with a "Use recommendation" button. | `computeRecommendations()` | The system recommends, not demands. The user can ignore it. | |
 
+### Recommendation types
+
+The recommendation pipeline produces per-level recs in priority order. These
+map to both in-skill suggestion text and home screen cue labels.
+
+| Type | Meaning | In-skill text | Home screen cue | When |
+|------|---------|---------------|-----------------|------|
+| **review** | Level's items are stale (P10 freshness < 0.5) | "review {levels}" | "Review" | Any started level needs review |
+| **practice** | Level is slow (Starting/Hesitant/Learning) | "practice {levels}" | "Keep practicing" | Any started level P10 speed < 0.7 |
+| **expand** | Ready to start a new level | "start {level} — N new items" | "Learn next level" | Expansion gate open + unstarted level available |
+| **automate** | Level is Learned but not yet Automatic | "automate {levels}" | "Almost there" | Any level with P10 speed 0.7–0.9 |
+
 ---
 
 ## Progress labels

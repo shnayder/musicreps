@@ -75,7 +75,7 @@ describe('computeAllProgress', () => {
     const result = computeAllProgress(emptyStorageFactory());
     for (const entry of MODE_PROGRESS_MANIFEST) {
       const progress = result.get(entry.modeId)!;
-      const expectedCount = entry.groups !== null ? entry.groups.length : 1;
+      const expectedCount = entry.groups.length;
       assert.equal(
         progress.groupColors.length,
         expectedCount,
@@ -117,7 +117,7 @@ describe('computeAllProgress', () => {
 // ---------------------------------------------------------------------------
 
 describe('computeProgressForMode', () => {
-  it('non-group mode has exactly one color segment', () => {
+  it('single-group mode has exactly one color segment', () => {
     const entry = getModeProgress('noteSemitones')!;
     const storage = createMemoryStorage();
     const result = computeProgressForMode(entry, storage, null);

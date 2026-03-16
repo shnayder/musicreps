@@ -204,14 +204,9 @@ describe('skip/unskip — semitone math (E2E)', () => {
 // Test: Guitar Fretboard (synthetic data)
 // ---------------------------------------------------------------------------
 
-// 8 guitar fretboard groups. Groups 0, 6, 7 have high work (above median),
-// groups 1–5 have low work. This produces 3 recommended consolidation groups,
-// matching the user's reported scenario.
-//
+// 8 guitar fretboard groups with mixed progress.
 // Group sizes: 0=16, 1-4=8 each, 5-7=10 each
-// Work: [11, 1, 1, 1, 1, 1, 7, 7]
-// Sorted work: [11, 7, 7, 1, 1, 1, 1, 1], median = work[4] = 1
-// Groups with work > 1: groups 0, 6, 7 → recommended
+// Under v4, groups with working items need review/practice; budget caps at 30.
 const GUITAR_STATS = {
   0: { automaticCount: 5, workingCount: 9, unseenCount: 2, totalCount: 16 },
   1: { automaticCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
@@ -245,12 +240,31 @@ describe('skip/unskip — guitar fretboard synthetic (E2E)', () => {
     await page?.context().close();
   });
 
-  // Target: group 7 = "B e ♯♭"
-  const TARGET = 'B e \u266F\u266D'; // B e ♯♭
   const MODE = '#mode-fretboard';
 
   it('skip/unskip cycle preserves recommendations', async () => {
-    await runSkipUnskipTests(page, MODE, TARGET);
+    // Dynamically find a group that appears in the recommendation.
+    const recText = await page.textContent(
+      `${MODE} .suggestion-card-text`,
+    );
+    assert.ok(recText, 'should have recommendation text');
+
+    const menuButtons = page.locator(
+      `${MODE} [aria-label^="Options for"]`,
+    );
+    const count = await menuButtons.count();
+    let target = '';
+    for (let i = 0; i < count; i++) {
+      const label = (await menuButtons.nth(i).getAttribute('aria-label'))
+        ?.replace('Options for ', '') ?? '';
+      if (label && recText.includes(label)) {
+        target = label;
+        break;
+      }
+    }
+    assert.ok(target, `should find a group in recommendation: "${recText}"`);
+
+    await runSkipUnskipTests(page, MODE, target);
   });
 });
 

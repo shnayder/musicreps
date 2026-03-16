@@ -24,11 +24,7 @@ import {
 import path from 'path';
 import { fileURLToPath } from 'url';
 import type { FixtureDetail } from '../src/types.ts';
-import {
-  buildManifest,
-  ENGINE_MODES,
-  type ScreenshotEntry,
-} from './screenshot-manifest.ts';
+import { buildManifest, type ScreenshotEntry } from './screenshot-manifest.ts';
 import {
   buildComponentManifest,
   type ComponentEntry,
@@ -127,13 +123,11 @@ async function captureStates(
     await page.goto(`${BASE_URL}/?fixtures`);
     await page.waitForLoadState('networkidle');
 
-    // Seed motorBaseline for all engine modes to skip calibration
-    for (const ns of ENGINE_MODES) {
-      await page.evaluate(
-        (key) => localStorage.setItem(key, '500'),
-        `motorBaseline_${ns}`,
-      );
-    }
+    // Seed shared motor baseline to skip calibration for all modes.
+    // All button-based modes share the 'button' provider key.
+    await page.evaluate(
+      () => localStorage.setItem('motorBaseline_button', '500'),
+    );
     await page.reload();
     await page.waitForLoadState('networkidle');
 
@@ -215,6 +209,7 @@ async function captureStates(
       const filePath = path.join(outDir, `${entry.name}.png`);
       await page.screenshot({ path: filePath, type: 'png' });
       console.log(`  ${entry.name}.png`);
+
       previousHadFixture = !!entry.fixture;
 
       // Clean up seeded localStorage for next entry

@@ -52,15 +52,17 @@ N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 
 ## Recommendation algorithm
 
-<!-- Full explanation: guides/architecture.md § Consolidate Before Expanding -->
+<!-- Full explanation: guides/architecture.md § Recommendation Pipeline (v4) -->
 
-- [ ] Consolidate-before-expanding pattern preserved: expansion to new
-      strings/groups gated behind `consolidationRatio >= expansionThreshold`
-- [ ] `expansionThreshold` default (0.7) not changed without justification
+- [ ] Recommendation pipeline (v4) preserved: per-level status classification
+      (P10 speed/freshness) drives prioritized recs (review → practice → expand
+      → automate)
+- [ ] Expansion gate: all started levels ≥ Learned (P10 speed ≥ 0.7) and none
+      need review (P10 freshness ≥ 0.5)
 - [ ] Distance group progression: groups unlock sequentially by semitone count
       (group 0 = distances 1,2; group 1 = distances 3,4; etc.)
-- [ ] `getStringRecommendations` / `getGroupRecommendations` return correct
-      shape: `{ dueCount, unseenCount, masteredCount, totalCount }`
+- [ ] `getStringRecommendations` returns correct shape:
+      `{ string, workingCount, unseenCount, automaticCount, totalCount }`
 
 ## Test coverage
 

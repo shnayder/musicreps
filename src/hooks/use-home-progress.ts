@@ -1,7 +1,8 @@
-// Hook: computes progress data for all modes on the home screen.
-// Returns a Map<modeId, ModeProgress> recomputed on mount and on navigate-home.
+// Hook: computes progress + recommendations for all modes on the home screen.
+// Returns progress (Map<modeId, ModeProgress>) and ranked recommendations,
+// recomputed on mount and on navigate-home.
 
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { AdaptiveSelector, StorageAdapter } from '../types.ts';
 import {
   createAdaptiveSelector,
@@ -16,6 +17,11 @@ import {
   getSpeedFreshnessColor,
   getStatsCellColorMerged,
 } from '../stats-display.ts';
+import {
+  computeSkillRecommendation,
+  rankSkillRecommendations,
+  type SkillRecommendation,
+} from '../home-recommendations.ts';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -82,24 +88,14 @@ export function computeProgressForMode(
 
   // Compute per-group color + speed, then sort descending
   type Segment = { color: string; speed: number };
-  let segments: Segment[];
-
-  if (entry.groups !== null) {
-    segments = [];
-    for (let i = 0; i < entry.groups.length; i++) {
-      if (skippedGroups?.has(i)) continue;
-      const ids = entry.groups[i].getItemIds();
-      segments.push({
-        color: getStatsCellColorMerged(selector, ids),
-        speed: averageSpeed(selector, ids),
-      });
-    }
-  } else {
-    const ids = entry.allItemIds();
-    segments = [{
+  const segments: Segment[] = [];
+  for (let i = 0; i < entry.groups.length; i++) {
+    if (skippedGroups?.has(i)) continue;
+    const ids = entry.groups[i].getItemIds();
+    segments.push({
       color: getStatsCellColorMerged(selector, ids),
       speed: averageSpeed(selector, ids),
-    }];
+    });
   }
 
   // All groups skipped → single "unseen" segment
@@ -119,9 +115,7 @@ export function computeAllProgress(
 ): Map<string, ModeProgress> {
   const result = new Map<string, ModeProgress>();
   for (const entry of MODE_PROGRESS_MANIFEST) {
-    const skipped = entry.groups !== null
-      ? getSkipped(entry.namespace)
-      : undefined;
+    const skipped = getSkipped(entry.namespace);
     result.set(
       entry.modeId,
       computeProgressForMode(
@@ -134,6 +128,49 @@ export function computeAllProgress(
   }
   return result;
 }
+
+// ---------------------------------------------------------------------------
+// Recommendation computation (pure, testable)
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute cross-skill recommendations for starred modes.
+ * Returns the ranked top-N recommendations.
+ */
+export function computeAllRecommendations(
+  starred: ReadonlySet<string>,
+  createStorage: (ns: string) => StorageAdapter = createLocalStorageAdapter,
+  motorBaseline: number | null = null,
+  getSkipped: (ns: string) => ReadonlySet<number> = loadSkippedGroups,
+  definitionOrder?: string[],
+): SkillRecommendation[] {
+  if (starred.size === 0) return [];
+
+  const config = {};
+  const perSkill: SkillRecommendation[] = [];
+
+  for (const entry of MODE_PROGRESS_MANIFEST) {
+    if (!starred.has(entry.modeId)) continue;
+    const skipped = getSkipped(entry.namespace);
+    perSkill.push(
+      computeSkillRecommendation(
+        entry,
+        createStorage(entry.namespace),
+        motorBaseline,
+        skipped,
+        config,
+      ),
+    );
+  }
+
+  const order = definitionOrder ??
+    MODE_PROGRESS_MANIFEST.map((e) => e.modeId);
+  return rankSkillRecommendations(perSkill, order);
+}
+
+// ---------------------------------------------------------------------------
+// localStorage helpers
+// ---------------------------------------------------------------------------
 
 /** Read motor baseline from localStorage (with NaN guard). */
 function readMotorBaseline(): number | null {
@@ -148,17 +185,27 @@ function readMotorBaseline(): number | null {
 }
 
 // ---------------------------------------------------------------------------
+// Combined result type
+// ---------------------------------------------------------------------------
+
+export type HomeData = {
+  progress: Map<string, ModeProgress>;
+  recommendations: SkillRecommendation[];
+};
+
+// ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
 /**
- * Computes progress data for all modes. Recomputes when the home screen
- * becomes visible (via MutationObserver on #home-screen class changes).
+ * Computes progress and recommendations for all modes.
+ * Recomputes when the home screen becomes visible or starred set changes.
  */
-export function useHomeProgress(): Map<string, ModeProgress> {
-  const [progress, setProgress] = useState<Map<string, ModeProgress>>(
-    () => computeAllProgress(createLocalStorageAdapter, readMotorBaseline()),
-  );
+export function useHomeProgress(
+  starred: ReadonlySet<string>,
+): HomeData {
+  // Refresh counter bumped when home screen becomes visible.
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const el = document.getElementById('home-screen');
@@ -166,9 +213,7 @@ export function useHomeProgress(): Map<string, ModeProgress> {
 
     const observer = new MutationObserver(() => {
       if (!el.classList.contains('hidden')) {
-        setProgress(
-          computeAllProgress(createLocalStorageAdapter, readMotorBaseline()),
-        );
+        setRefreshKey((k) => k + 1);
       }
     });
 
@@ -176,5 +221,23 @@ export function useHomeProgress(): Map<string, ModeProgress> {
     return () => observer.disconnect();
   }, []);
 
-  return progress;
+  // Recompute when refreshKey or starred changes.
+  // useMemo avoids recomputing on every render while still responding to
+  // the triggers we care about.
+  const starredKey = useMemo(() => [...starred].sort().join(','), [starred]);
+
+  return useMemo(() => {
+    const baseline = readMotorBaseline();
+    const progress = computeAllProgress(
+      createLocalStorageAdapter,
+      baseline,
+    );
+    const recommendations = computeAllRecommendations(
+      starred,
+      createLocalStorageAdapter,
+      baseline,
+    );
+    return { progress, recommendations };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey, starredKey]);
 }

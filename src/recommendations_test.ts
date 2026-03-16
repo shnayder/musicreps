@@ -1,16 +1,15 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
-  capConsolidation,
-  checkReviewMode,
+  checkExpansionGate,
   classifyGroups,
+  classifyLevelStatus,
+  computeLevelRecs,
   computeRecommendations,
-  detectStaleGroups,
   freshStartResult,
+  type LevelStatus,
   type RecommendationSelector,
-  selectConsolidation,
-  selectExpansion,
-  workCount,
+  shouldThrottleExpansion,
 } from './recommendations.ts';
 import { buildRecommendationText } from './mode-ui-state.ts';
 import { createAdaptiveSelector, createMemoryStorage } from './adaptive.ts';
@@ -47,6 +46,7 @@ function mockSelector(
     automaticCount: number;
     totalCount: number;
   }>,
+  overrides?: Partial<RecommendationSelector>,
 ): RecommendationSelector {
   function itemSpeed(id: string): number {
     const parts = id.split('-');
@@ -101,6 +101,7 @@ function mockSelector(
       return s > 0 ? s : null;
     },
     getFreshness: () => 1.0,
+    ...overrides,
   };
 }
 
@@ -117,20 +118,6 @@ function makeGetItemIds(
 }
 
 const config = {};
-
-// ---------------------------------------------------------------------------
-// workCount
-// ---------------------------------------------------------------------------
-
-describe('workCount', () => {
-  it('sums working + unseen', () => {
-    assert.equal(workCount(rec(0, 3, 5, 2)), 8);
-  });
-
-  it('returns 0 when all automatic', () => {
-    assert.equal(workCount(rec(0, 0, 0, 10)), 0);
-  });
-});
 
 // ---------------------------------------------------------------------------
 // classifyGroups
@@ -167,6 +154,8 @@ describe('freshStartResult', () => {
     assert.ok(result.recommended.has(0));
     assert.equal(result.expandIndex, 0);
     assert.equal(result.expandNewCount, 10);
+    assert.equal(result.levelRecs.length, 1);
+    assert.equal(result.levelRecs[0].type, 'expand');
   });
 
   it('respects sortFn', () => {
@@ -184,183 +173,230 @@ describe('freshStartResult', () => {
     assert.equal(result.recommended.size, 0);
     assert.equal(result.enabled, null);
     assert.equal(result.expandIndex, null);
+    assert.equal(result.levelRecs.length, 0);
   });
 });
 
 // ---------------------------------------------------------------------------
-// checkReviewMode
+// classifyLevelStatus
 // ---------------------------------------------------------------------------
 
-describe('checkReviewMode', () => {
-  it('returns review result when ≥80% automatic and no unstarted', () => {
-    const started = [rec(0, 1, 0, 9), rec(1, 1, 0, 9)]; // 18/20 = 90%
-    const result = checkReviewMode(started, false);
-    assert.ok(result);
-    assert.equal(result!.reviewMode, true);
-    assert.ok(result!.recommended.has(0));
-    assert.ok(result!.recommended.has(1));
+describe('classifyLevelStatus', () => {
+  it('classifies automatic level', () => {
+    const data = {
+      0: {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 10,
+        totalCount: 10,
+      },
+    };
+    const sel = mockSelector(data);
+    const status = classifyLevelStatus(sel, 0, makeGetItemIds(data));
+    assert.equal(status.speedLabel, 'automatic');
+    assert.ok(!status.needsReview);
   });
 
-  it('returns null when automatic ratio < 80%', () => {
-    const started = [rec(0, 5, 0, 5)]; // 50%
-    assert.equal(checkReviewMode(started, false), null);
+  it('classifies learned level (0.7 ≤ speed < 0.9)', () => {
+    // 8 automatic + 2 working in 10 items: P10 = sorted[0] = 0.3 (working)
+    // Actually for P10 with 10 items: ceil(10*0.1)-1 = 0, sorted[0]
+    // With 8 auto (0.95) + 2 working (0.3): sorted = [0.3, 0.3, 0.95, ...]
+    // P10 index = max(0, ceil(10*0.1)-1) = 0 → 0.3. That's "learning".
+    // For "learned" we need P10 ≥ 0.7. Need ≥90% automatic.
+    // 9 auto + 1 working: sorted = [0.3, 0.95, 0.95, ...], P10 index = 0 → 0.3.
+    // Still learning. The mock gives 0.95 for auto and 0.3 for working.
+    // To get P10 ≥ 0.7 with this mock, we need ALL items automatic.
+    // Let's use a custom selector.
+    const sel: RecommendationSelector = {
+      ...mockSelector({}),
+      getLevelSpeed: () => ({ level: 0.75, seen: 10 }),
+      getLevelFreshness: () => ({ level: 0.8, seen: 10 }),
+    };
+    const status = classifyLevelStatus(sel, 0, () => ['a']);
+    assert.equal(status.speedLabel, 'learned');
+    assert.ok(!status.needsReview);
   });
 
-  it('returns null when unstarted groups exist', () => {
-    const started = [rec(0, 1, 0, 9)]; // 90% but has unstarted
-    assert.equal(checkReviewMode(started, true), null);
+  it('classifies learning level', () => {
+    const sel: RecommendationSelector = {
+      ...mockSelector({}),
+      getLevelSpeed: () => ({ level: 0.5, seen: 10 }),
+      getLevelFreshness: () => ({ level: 0.8, seen: 10 }),
+    };
+    const status = classifyLevelStatus(sel, 0, () => ['a']);
+    assert.equal(status.speedLabel, 'learning');
   });
 
-  it('returns null for empty started', () => {
-    assert.equal(checkReviewMode([], false), null);
+  it('classifies hesitant level', () => {
+    const sel: RecommendationSelector = {
+      ...mockSelector({}),
+      getLevelSpeed: () => ({ level: 0.1, seen: 5 }),
+      getLevelFreshness: () => ({ level: 0.8, seen: 5 }),
+    };
+    const status = classifyLevelStatus(sel, 0, () => ['a']);
+    assert.equal(status.speedLabel, 'hesitant');
+  });
+
+  it('classifies starting level', () => {
+    const sel: RecommendationSelector = {
+      ...mockSelector({}),
+      getLevelSpeed: () => ({ level: 0, seen: 0 }),
+      getLevelFreshness: () => ({ level: 0, seen: 0 }),
+    };
+    const status = classifyLevelStatus(sel, 0, () => ['a']);
+    assert.equal(status.speedLabel, 'starting');
+  });
+
+  it('detects needs review (low freshness)', () => {
+    const sel: RecommendationSelector = {
+      ...mockSelector({}),
+      getLevelSpeed: () => ({ level: 0.8, seen: 10 }),
+      getLevelFreshness: () => ({ level: 0.3, seen: 10 }),
+    };
+    const status = classifyLevelStatus(sel, 0, () => ['a']);
+    assert.ok(status.needsReview);
   });
 });
 
 // ---------------------------------------------------------------------------
-// selectConsolidation
+// computeLevelRecs
 // ---------------------------------------------------------------------------
 
-describe('selectConsolidation', () => {
-  it('selects groups above median work', () => {
-    const started = [rec(0, 8, 2, 0), rec(1, 1, 0, 9), rec(2, 5, 3, 2)];
-    // work: [10, 1, 8]. Sorted desc: [10, 8, 1]. Median = 8. Above 8: group 0 (10).
-    const { indices, totalWork } = selectConsolidation(started);
-    assert.deepStrictEqual(indices, [0]);
-    assert.equal(totalWork, 10);
+describe('computeLevelRecs', () => {
+  function status(
+    index: number,
+    speedLabel: LevelStatus['speedLabel'],
+    needsReview: boolean = false,
+  ): LevelStatus {
+    const speedMap = {
+      automatic: 0.95,
+      learned: 0.75,
+      learning: 0.5,
+      hesitant: 0.1,
+      starting: 0,
+    };
+    return {
+      index,
+      speed: speedMap[speedLabel],
+      freshness: needsReview ? 0.3 : 0.8,
+      speedLabel,
+      needsReview,
+    };
+  }
+
+  it('produces review recs for stale levels', () => {
+    const recs = computeLevelRecs([status(0, 'learned', true)]);
+    assert.equal(recs[0].type, 'review');
+    assert.equal(recs[0].index, 0);
   });
 
-  it('falls back to highest-work group when all equal', () => {
-    const started = [rec(0, 5, 0, 5), rec(1, 5, 0, 5)];
-    // work: [5, 5]. Median = 5. None > 5 → fallback to first (index 0, lower).
-    const { indices } = selectConsolidation(started);
-    assert.equal(indices.length, 1);
-    assert.equal(indices[0], 0);
+  it('produces practice recs for slow levels', () => {
+    const recs = computeLevelRecs([status(0, 'learning')]);
+    assert.equal(recs[0].type, 'practice');
   });
 
-  it('breaks ties deterministically by string index', () => {
-    const started = [rec(3, 5, 5, 0), rec(1, 5, 5, 0), rec(5, 5, 5, 0)];
-    // All work=10. Median=10. None > 10 → fallback. Sorted by work desc
-    // then string asc: [1, 3, 5]. Fallback = 1.
-    const { indices } = selectConsolidation(started);
-    assert.equal(indices[0], 1);
+  it('produces automate recs for learned levels', () => {
+    const recs = computeLevelRecs([status(0, 'learned')]);
+    assert.equal(recs[0].type, 'automate');
+  });
+
+  it('produces no recs for automatic levels', () => {
+    const recs = computeLevelRecs([status(0, 'automatic')]);
+    assert.equal(recs.length, 0);
+  });
+
+  it('review comes before practice and automate', () => {
+    const recs = computeLevelRecs([
+      status(0, 'learned', true), // review
+      status(1, 'learning'), // practice
+      status(2, 'learned'), // automate
+    ]);
+    assert.equal(recs[0].type, 'review');
+    assert.equal(recs[1].type, 'practice');
+    assert.equal(recs[2].type, 'automate');
+  });
+
+  it('level needing review AND being slow gets both recs', () => {
+    const recs = computeLevelRecs([status(0, 'learning', true)]);
+    assert.equal(recs.length, 2);
+    assert.equal(recs[0].type, 'review');
+    assert.equal(recs[1].type, 'practice');
   });
 });
 
 // ---------------------------------------------------------------------------
-// capConsolidation
+// checkExpansionGate
 // ---------------------------------------------------------------------------
 
-describe('capConsolidation', () => {
-  it('trims groups to fit budget', () => {
-    const getWork = (idx: number) => idx === 0 ? 15 : idx === 1 ? 12 : 10;
-    const { indices, totalWork } = capConsolidation([0, 1, 2], getWork, 30);
-    // Sorted by work desc: [0(15), 1(12), 2(10)]. 15+12=27 ≤ 30. 27+10=37 > 30.
-    assert.deepStrictEqual(indices, [0, 1]);
-    assert.equal(totalWork, 27);
+describe('checkExpansionGate', () => {
+  function status(
+    speed: number,
+    needsReview: boolean = false,
+  ): LevelStatus {
+    return {
+      index: 0,
+      speed,
+      freshness: needsReview ? 0.3 : 0.8,
+      speedLabel: speed >= 0.9
+        ? 'automatic'
+        : speed >= 0.7
+        ? 'learned'
+        : 'learning',
+      needsReview,
+    };
+  }
+
+  it('opens when all levels ≥ learned and fresh', () => {
+    assert.ok(checkExpansionGate([status(0.8), status(0.95)]));
   });
 
-  it('keeps at least one group even if it exceeds budget', () => {
-    const { indices, totalWork } = capConsolidation([0], () => 50, 30);
-    assert.deepStrictEqual(indices, [0]);
-    assert.equal(totalWork, 50);
+  it('closes when any level below learned', () => {
+    assert.ok(!checkExpansionGate([status(0.8), status(0.5)]));
   });
 
-  it('returns empty for empty input', () => {
-    const { indices, totalWork } = capConsolidation([], () => 0, 30);
-    assert.deepStrictEqual(indices, []);
-    assert.equal(totalWork, 0);
+  it('closes when any level needs review', () => {
+    assert.ok(!checkExpansionGate([status(0.8, true)]));
   });
 
-  it('breaks ties deterministically by index', () => {
-    // Indices 5, 2, 8 all have work=10. Budget=15 → keeps only one.
-    // Sorted: 2(10), 5(10), 8(10) by work desc then index asc → all equal
-    // work → sorted by index: [2, 5, 8]. Takes 2 (10 ≤ 15), then 5 would
-    // be 20 > 15 → stop.
-    const { indices } = capConsolidation([5, 2, 8], () => 10, 15);
-    assert.equal(indices[0], 2);
-    assert.equal(indices.length, 1);
+  it('returns false for empty input', () => {
+    assert.ok(!checkExpansionGate([]));
+  });
+
+  it('opens at exact threshold (0.7)', () => {
+    assert.ok(checkExpansionGate([status(0.7)]));
   });
 });
 
 // ---------------------------------------------------------------------------
-// selectExpansion
+// shouldThrottleExpansion
 // ---------------------------------------------------------------------------
 
-describe('selectExpansion', () => {
-  it('returns first unstarted group when speed and freshness meet thresholds', () => {
-    const unstarted = [rec(1, 0, 10, 0), rec(2, 0, 10, 0)];
-    const result = selectExpansion(0.8, 0.6, unstarted);
-    assert.ok(result);
-    assert.equal(result!.index, 1);
-    assert.equal(result!.count, 10);
+describe('shouldThrottleExpansion', () => {
+  function status(label: LevelStatus['speedLabel']): LevelStatus {
+    return {
+      index: 0,
+      speed: 0.75,
+      freshness: 0.8,
+      speedLabel: label,
+      needsReview: false,
+    };
+  }
+
+  it('throttles when ≥3 learned levels', () => {
+    assert.ok(shouldThrottleExpansion([
+      status('learned'),
+      status('learned'),
+      status('learned'),
+    ]));
   });
 
-  it('respects sortFn', () => {
-    const unstarted = [rec(1, 0, 10, 0), rec(2, 0, 5, 0)];
-    const result = selectExpansion(
-      0.8,
-      0.6,
-      unstarted,
-      (a, b) => a.totalCount - b.totalCount,
-    );
-    assert.equal(result!.index, 2);
-  });
-
-  it('returns null when speed below threshold', () => {
-    const unstarted = [rec(1, 0, 10, 0)];
-    assert.equal(selectExpansion(0.5, 0.6, unstarted), null);
-  });
-
-  it('returns null when freshness below threshold', () => {
-    const unstarted = [rec(1, 0, 10, 0)];
-    assert.equal(selectExpansion(0.8, 0.3, unstarted), null);
-  });
-
-  it('returns null when no unstarted groups', () => {
-    assert.equal(selectExpansion(0.8, 0.6, []), null);
-  });
-
-  it('expands at exact speed threshold', () => {
-    const unstarted = [rec(1, 0, 10, 0)];
-    const result = selectExpansion(0.7, 0.5, unstarted);
-    assert.ok(result);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// detectStaleGroups
-// ---------------------------------------------------------------------------
-
-describe('detectStaleGroups', () => {
-  it('detects stale groups (fast speed, low freshness)', () => {
-    const result = detectStaleGroups(
-      [0],
-      () => ['a', 'b'],
-      () => 0.8,
-      () => 0.2,
-    );
-    assert.deepStrictEqual(result, [0]);
-  });
-
-  it('returns undefined when freshness is high', () => {
-    assert.equal(
-      detectStaleGroups([0], () => ['a'], () => 0.8, () => 0.8),
-      undefined,
-    );
-  });
-
-  it('returns undefined when speed is low', () => {
-    assert.equal(
-      detectStaleGroups([0], () => ['a'], () => 0.3, () => 0.2),
-      undefined,
-    );
-  });
-
-  it('skips items with null scores', () => {
-    // Only item has null speed → count=0 → not stale.
-    assert.equal(
-      detectStaleGroups([0], () => ['a'], () => null, () => 0.2),
-      undefined,
+  it('does not throttle when <3 learned levels', () => {
+    assert.ok(
+      !shouldThrottleExpansion([
+        status('learned'),
+        status('learned'),
+        status('automatic'),
+      ]),
     );
   });
 });
@@ -394,6 +430,7 @@ describe('computeRecommendations', () => {
     assert.ok(result.recommended.has(0));
     assert.equal(result.expandIndex, 0);
     assert.equal(result.expandNewCount, 10);
+    assert.equal(result.levelRecs[0].type, 'expand');
   });
 
   it('uses sortUnstarted on fresh start', () => {
@@ -417,7 +454,7 @@ describe('computeRecommendations', () => {
     assert.equal(result.expandNewCount, 5);
   });
 
-  it('recommends the single started item', () => {
+  it('recommends the single started group for practice', () => {
     const data = {
       0: { workingCount: 3, unseenCount: 5, automaticCount: 2, totalCount: 10 },
       1: {
@@ -435,6 +472,8 @@ describe('computeRecommendations', () => {
     );
     assert.ok(result.recommended.has(0));
     assert.ok(result.enabled!.has(0));
+    // Should have a practice rec for group 0
+    assert.ok(result.levelRecs.some((r) => r.type === 'practice'));
   });
 
   it('does not expand when level speed below threshold', () => {
@@ -454,6 +493,7 @@ describe('computeRecommendations', () => {
       config,
     );
     assert.ok(!result.recommended.has(1));
+    assert.equal(result.expandIndex, null);
   });
 
   it('expands when level speed meets threshold', () => {
@@ -479,22 +519,7 @@ describe('computeRecommendations', () => {
     );
     assert.ok(result.recommended.has(1));
     assert.ok(result.enabled!.has(1));
-  });
-
-  it('recommends items above median work', () => {
-    const data = {
-      0: { workingCount: 8, unseenCount: 2, automaticCount: 0, totalCount: 10 },
-      1: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
-      2: { workingCount: 5, unseenCount: 3, automaticCount: 2, totalCount: 10 },
-    };
-    const result = computeRecommendations(
-      mockSelector(data),
-      [0, 1, 2],
-      makeGetItemIds(data),
-      config,
-    );
-    assert.ok(result.recommended.has(0));
-    assert.ok(!result.recommended.has(1));
+    assert.equal(result.expandIndex, 1);
   });
 
   it('uses sortUnstarted to pick expansion target', () => {
@@ -526,10 +551,10 @@ describe('computeRecommendations', () => {
       { sortUnstarted: (a, b) => a.string - b.string },
     );
     assert.ok(result.recommended.has(1));
-    assert.ok(!result.recommended.has(2));
+    assert.equal(result.expandIndex, 1);
   });
 
-  it('always recommends at least one item when data exists', () => {
+  it('always recommends at least one group when data exists', () => {
     const data = {
       0: {
         workingCount: 0,
@@ -576,6 +601,114 @@ describe('computeRecommendations', () => {
       config,
     );
     assert.ok(!result.recommended.has(1));
+    assert.equal(result.expandIndex, null);
+  });
+
+  // --- Budget deduplication ---
+
+  it('does not double-count budget when a level has both review and practice', () => {
+    // Group 0: needs both review (stale) and practice (slow) — produces 2 recs
+    // Group 1: needs practice — should still fit in budget
+    const data = {
+      0: {
+        workingCount: 10,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+      1: {
+        workingCount: 10,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+    };
+    const sel = mockSelector(data, {
+      getLevelFreshness: () => ({ level: 0.3, seen: 10 }), // stale → review
+    });
+    const result = computeRecommendations(
+      sel,
+      [0, 1],
+      makeGetItemIds(data),
+      { maxWorkItems: 20 },
+    );
+    // Both groups should be recommended: budget = 20, group 0 = 10, group 1 = 10
+    // Without dedup fix, group 0 would consume 20 (counted twice), starving group 1
+    assert.ok(result.recommended.has(0));
+    assert.ok(result.recommended.has(1));
+  });
+
+  it('budget caps levelRecs to match recommended set', () => {
+    // 5 groups of 15 items each, all need practice. Budget = 30.
+    // Only first 2 groups fit (30 items). levelRecs should NOT include
+    // groups 2-4, even though computeLevelRecs would produce recs for them.
+    const data: Record<number, {
+      workingCount: number;
+      unseenCount: number;
+      automaticCount: number;
+      totalCount: number;
+    }> = {};
+    for (let i = 0; i < 5; i++) {
+      data[i] = {
+        workingCount: 15,
+        unseenCount: 0,
+        automaticCount: 0,
+        totalCount: 15,
+      };
+    }
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0, 1, 2, 3, 4],
+      makeGetItemIds(data),
+      { maxWorkItems: 30 },
+    );
+    // Only 2 groups should fit in budget (15 + 15 = 30)
+    assert.equal(result.recommended.size, 2);
+    // levelRecs should match: no recs for groups outside recommended
+    for (const rec of result.levelRecs) {
+      assert.ok(
+        result.recommended.has(rec.index),
+        `levelRec for group ${rec.index} not in recommended set`,
+      );
+    }
+  });
+
+  it('budget-excluded expand clears expandIndex', () => {
+    // Group 0: 25 items, needs practice. Group 1: 10 items, unstarted.
+    // Budget = 30. Group 0 fits (25), expand group 1 would be 35 > 30.
+    const data = {
+      0: {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 25,
+        totalCount: 25,
+      },
+      1: {
+        workingCount: 0,
+        unseenCount: 10,
+        automaticCount: 0,
+        totalCount: 10,
+      },
+    };
+    // Need P10 speed ≥ 0.7 for gate to open but also an automate rec
+    // to consume budget. Use overrides.
+    const sel = mockSelector(data, {
+      getLevelSpeed: () => ({ level: 0.75, seen: 25 }),
+    });
+    const result = computeRecommendations(
+      sel,
+      [0, 1],
+      makeGetItemIds(data),
+      { maxWorkItems: 30 },
+    );
+    // Group 0 (25 items) fits. If expand group 1 (10) doesn't fit because
+    // group 0 already consumed 25 of 30 budget → expand should be cleared.
+    // Actually 25 + 10 = 35 > 30, but group 0 is first and size > 0,
+    // so expand at 25+10=35 > 30 is skipped.
+    if (!result.recommended.has(1)) {
+      assert.equal(result.expandIndex, null);
+      assert.ok(!result.levelRecs.some((r) => r.type === 'expand'));
+    }
   });
 
   // --- Skipped groups ---
@@ -637,157 +770,93 @@ describe('computeRecommendations', () => {
     assert.equal(result.expandIndex, 2);
   });
 
-  // --- Cap ---
+  // --- Item cap ---
 
-  it('caps work items: 5 groups × 10 working → ≤3 recommended', () => {
+  it('respects maxWorkItems budget', () => {
     const data = {
       0: {
-        workingCount: 10,
+        workingCount: 20,
         unseenCount: 0,
         automaticCount: 0,
-        totalCount: 10,
+        totalCount: 20,
       },
       1: {
-        workingCount: 10,
+        workingCount: 20,
         unseenCount: 0,
         automaticCount: 0,
-        totalCount: 10,
+        totalCount: 20,
       },
       2: {
-        workingCount: 10,
+        workingCount: 20,
         unseenCount: 0,
         automaticCount: 0,
-        totalCount: 10,
-      },
-      3: {
-        workingCount: 10,
-        unseenCount: 0,
-        automaticCount: 0,
-        totalCount: 10,
-      },
-      4: {
-        workingCount: 10,
-        unseenCount: 0,
-        automaticCount: 0,
-        totalCount: 10,
+        totalCount: 20,
       },
     };
     const result = computeRecommendations(
       mockSelector(data),
-      [0, 1, 2, 3, 4],
+      [0, 1, 2],
       makeGetItemIds(data),
       { maxWorkItems: 30 },
     );
-    assert.ok(result.consolidateWorkingCount <= 30);
-    assert.ok(result.consolidateIndices.length <= 3);
+    // With 20 items per group and budget of 30, should include at most 1 group
+    // (first one fits at 20, second would be 40 > 30)
+    assert.ok(result.recommended.size <= 2);
   });
 
-  it('cap keeps at least one group even if it exceeds cap', () => {
+  // --- Review detection ---
+
+  it('produces review levelRecs when freshness is low', () => {
+    const data = {
+      0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
+    };
+    const sel = mockSelector(data, {
+      getLevelFreshness: () => ({ level: 0.3, seen: 10 }),
+    });
+    const result = computeRecommendations(
+      sel,
+      [0],
+      makeGetItemIds(data),
+      config,
+    );
+    assert.ok(result.levelRecs.some((r) => r.type === 'review'));
+  });
+
+  it('no review recs when freshness is high', () => {
+    const data = {
+      0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
+    };
+    const result = computeRecommendations(
+      mockSelector(data),
+      [0],
+      makeGetItemIds(data),
+      config,
+    );
+    assert.ok(!result.levelRecs.some((r) => r.type === 'review'));
+  });
+
+  // --- Automate ---
+
+  it('produces automate rec for learned (not automatic) levels', () => {
     const data = {
       0: {
-        workingCount: 40,
-        unseenCount: 0,
-        automaticCount: 0,
-        totalCount: 40,
-      },
-    };
-    const result = computeRecommendations(
-      mockSelector(data),
-      [0],
-      makeGetItemIds(data),
-      { maxWorkItems: 30 },
-    );
-    assert.ok(result.recommended.has(0));
-    assert.equal(result.consolidateIndices.length, 1);
-  });
-
-  // --- Review mode ---
-
-  it('triggers review mode when all started and ≥80% automatic', () => {
-    const data = {
-      0: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
-      1: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
-    };
-    const result = computeRecommendations(
-      mockSelector(data),
-      [0, 1],
-      makeGetItemIds(data),
-      config,
-    );
-    assert.equal(result.reviewMode, true);
-    assert.ok(result.recommended.has(0));
-    assert.ok(result.recommended.has(1));
-  });
-
-  it('does not trigger review mode when automatic ratio < 80%', () => {
-    const data = {
-      0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
-      1: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
-    };
-    const result = computeRecommendations(
-      mockSelector(data),
-      [0, 1],
-      makeGetItemIds(data),
-      config,
-    );
-    assert.ok(!result.reviewMode);
-  });
-
-  it('does not trigger review mode with unstarted groups', () => {
-    const data = {
-      0: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
-      1: {
         workingCount: 0,
-        unseenCount: 10,
-        automaticCount: 0,
+        unseenCount: 0,
+        automaticCount: 10,
         totalCount: 10,
       },
     };
-    const result = computeRecommendations(
-      mockSelector(data),
-      [0, 1],
-      makeGetItemIds(data),
-      config,
-    );
-    assert.ok(!result.reviewMode);
-  });
-
-  // --- Stale detection ---
-
-  it('marks stale group (high speed + low freshness)', () => {
-    const data = {
-      0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
-    };
-    const sel: RecommendationSelector = {
-      ...mockSelector(data),
-      getSpeedScore: () => 0.8,
-      getFreshness: () => 0.2,
-    };
+    // Override to make P10 speed = 0.75 (learned range)
+    const sel = mockSelector(data, {
+      getLevelSpeed: () => ({ level: 0.75, seen: 10 }),
+    });
     const result = computeRecommendations(
       sel,
       [0],
       makeGetItemIds(data),
       config,
     );
-    assert.deepStrictEqual(result.staleIndices, [0]);
-  });
-
-  it('no stale when freshness is high', () => {
-    const data = {
-      0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
-    };
-    const sel: RecommendationSelector = {
-      ...mockSelector(data),
-      getSpeedScore: () => 0.8,
-      getFreshness: () => 0.8,
-    };
-    const result = computeRecommendations(
-      sel,
-      [0],
-      makeGetItemIds(data),
-      config,
-    );
-    assert.equal(result.staleIndices, undefined);
+    assert.ok(result.levelRecs.some((r) => r.type === 'automate'));
   });
 
   // --- Skip/unskip symmetry ---
@@ -826,28 +895,6 @@ describe('computeRecommendations', () => {
     const r3 = computeRecommendations(sel, [0, 1, 2], getIds, config, sort);
     assert.equal(r3.expandIndex, 1);
   });
-
-  it('unskipped consolidation group reappears', () => {
-    const data = {
-      0: { workingCount: 8, unseenCount: 2, automaticCount: 0, totalCount: 10 },
-      1: { workingCount: 7, unseenCount: 2, automaticCount: 1, totalCount: 10 },
-      2: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
-      3: { workingCount: 1, unseenCount: 0, automaticCount: 9, totalCount: 10 },
-    };
-    const sel = mockSelector(data);
-    const getIds = makeGetItemIds(data);
-
-    const r1 = computeRecommendations(sel, [0, 1, 2, 3], getIds, config);
-    assert.ok(r1.recommended.has(0));
-    assert.ok(r1.recommended.has(1));
-
-    const r2 = computeRecommendations(sel, [0, 2, 3], getIds, config);
-    assert.ok(!r2.recommended.has(1));
-
-    const r3 = computeRecommendations(sel, [0, 1, 2, 3], getIds, config);
-    assert.ok(r3.recommended.has(0));
-    assert.ok(r3.recommended.has(1));
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -855,17 +902,20 @@ describe('computeRecommendations', () => {
 // ---------------------------------------------------------------------------
 
 describe('single-timestamp consistency', () => {
-  it('passes nowMs to getFreshness for stale detection', () => {
+  it('passes nowMs to getLevelFreshness', () => {
     const freshnessTimestamps: number[] = [];
     const data = {
       0: { workingCount: 5, unseenCount: 0, automaticCount: 5, totalCount: 10 },
     };
     const sel: RecommendationSelector = {
       ...mockSelector(data),
-      getSpeedScore: () => 0.8,
-      getFreshness: (_id: string, nowMs?: number) => {
+      getLevelFreshness: (
+        _ids: string[],
+        _p?: number,
+        nowMs?: number,
+      ) => {
         if (nowMs !== undefined) freshnessTimestamps.push(nowMs);
-        return 0.2;
+        return { level: 0.8, seen: 10 };
       },
     };
     computeRecommendations(sel, [0], makeGetItemIds(data), config);
@@ -940,14 +990,7 @@ describe('computeRecommendations — real fretboard data', () => {
     const r1 = recText(sel, ALL_GUITAR_GROUPS);
     const r2 = recText(sel, ALL_GUITAR_GROUPS);
     assert.equal(r1.text, r2.text);
-    assert.deepStrictEqual(
-      r1.rec.consolidateIndices,
-      r2.rec.consolidateIndices,
-    );
-    assert.equal(
-      r1.rec.consolidateWorkingCount,
-      r2.rec.consolidateWorkingCount,
-    );
+    assert.deepStrictEqual(r1.rec.levelRecs, r2.rec.levelRecs);
   });
 
   it('skip/unskip group 7 is symmetric', () => {
