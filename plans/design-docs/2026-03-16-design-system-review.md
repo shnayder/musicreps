@@ -36,9 +36,10 @@ infrastructure.
   (`--opacity-disabled/dimmed/pressed/subtle`), z-index (`--z-raised/popover`),
   font weights (`--font-normal/medium/semibold/bold`), touch target
   (`--size-touch-target`), plus one-off border-radius and font-size fixes.
-- CSS file reorganized with numbered 18-section TOC and consistent section
-  delimiters.
-- All replacements value-identical — zero visual changes.
+- CSS file reorganized with numbered 19-section TOC and consistent section
+  delimiters (section 13 added for text role classes).
+- Replacements value-identical except `14px` → `var(--text-sm)` on
+  `.group-skip-btn` (sub-pixel difference, imperceptible).
 
 ### Structural Recipe Components (was item 8)
 
@@ -61,17 +62,14 @@ infrastructure.
   intentionally different styling (gold-themed / deliberately small).
 - `MetricDisplay` deferred — only 1-2 use sites, not enough leverage yet.
 
-### Visual Design Recipes — Documentation (was item 1, partial)
+### Visual Design Recipes — Documentation (was item 1)
 
-**Partially done.** The Type Hierarchy table is now in `visual-design.md`
-alongside the Structural Components section. What remains:
-
-- Button variant taxonomy documentation (the table exists in this review but
-  hasn't been added to `visual-design.md`)
-- Elevation scale documentation (tokens exist, docs don't describe the semantic
-  levels)
-- Info hierarchy pattern elevated to a standalone recipe (currently described
-  only under Baseline Info)
+**Done.** Added to `visual-design.md`:
+- Type Hierarchy table with all text roles
+- Structural Components section (ActionButton, Text)
+- Button Variant Taxonomy table (all 8 categories)
+- Info Hierarchy Pattern as a standalone recipe
+- Elevation scale documented in Elevation (Shadows) section
 
 ---
 
@@ -79,85 +77,23 @@ alongside the Structural Components section. What remains:
 
 ### 1. Visual Design Spec Template (High Impact)
 
-**Status: TODO**
-
-`feature-process.md` has templates for product specs and implementation plans
-but no template for **visual design work**. When redesigning a feature's
-appearance, there's no step that says "derive the correct design from principles
-before touching code."
-
-**Solution:** Create `guides/visual-design-spec.md` — a standalone template with
-process guidance. Reference it from `feature-process.md` in the "When to Write
-What" section (alongside design spec, implementation plan, bug fix plan).
-
-The template should cover:
-- When to write one (redesigning appearance, layout cleanup, design system
-  alignment)
-- Content hierarchy derivation (list elements → assign text roles → derive
-  spacing)
-- Component composition (which ActionButton variants, Text roles, container
-  types)
-- Deviations from recipes (intentional departures with rationale)
-- Per-state layouts (principle #1: each state is a distinct design)
-
-**Files:** new `guides/visual-design-spec.md`, update `guides/feature-process.md`
-to reference it
+**Done.** Created `guides/visual-design-spec.md` with process guidance and
+template. Referenced from `guides/feature-process.md` in the "When to Write
+What" section.
 
 ### 2. Design Review Gate (Medium Impact)
 
-**Status: TODO**
-
-The review checklist checks "did you use tokens?" but not "is the visual
-hierarchy correct?" Now that structural components exist, the review gate should
-check whether they were used rather than checking raw CSS values.
-
-**Solution:** Add to the review checklist's Visual Design section:
-
-- [ ] **Text roles via structural component.** Text elements use `<Text>` or
-      `.text-*` classes for their content role. No ad-hoc font-size/weight/color
-      combinations for standard roles (subsection-header, label, caption, metric).
-- [ ] **Action buttons via ActionButton.** Primary/secondary flow actions use
-      `<ActionButton>` component, not manual class composition.
-- [ ] **Elevation tokens used.** Shadows use `--shadow-sm/md/lg/hover`, not
-      hardcoded rgba values.
-- [ ] **Info hierarchy pattern applied.** Metric displays use value dominant,
-      label quiet, explanation smallest (via Text roles).
-- [ ] **Spacing follows rhythm.** Section gaps use `--space-5` or `--space-6`.
-
-The current review checklist is a single monolithic list that applies to every
-change. As the design system matures, it makes sense to **split by change
-type** — a CSS-only visual change doesn't need the adaptive learning system
-checks, and a pure algorithm change doesn't need visual design checks. Proposed
-structure:
-
-| Checklist | Applies when | Covers |
-|-----------|-------------|--------|
-| **Core** (always) | Every change | Build, tests, code quality, docs |
-| **Visual design** | CSS or UI component changes | Tokens, text roles, button variants, elevation, spacing |
-| **Architecture** | New modules or pattern changes | State machine, DI, mode interface, build system |
-| **Algorithm** | Adaptive, recommendation, timing | EWMA, forgetting model, consolidate-before-expanding |
-| **Quiz mode** | New or modified mode | Item IDs, keyboard, localStorage, calibration |
-
-The reviewer picks which sections apply based on the diff. "N/A" disappears
-because you only run relevant sections.
-
-**Files:** `.claude/commands/review-checklist.md` (restructure)
+**Done.** Review checklist restructured by change type (Core, Visual Design,
+Architecture, Algorithm, Quiz Mode). Structural component checks added:
+Text roles, ActionButton usage, elevation tokens, info hierarchy pattern.
 
 
 ### 3. Complete Recipe Documentation (Low Impact)
 
-**Status: TODO**
-
-Finish the documentary layer in `visual-design.md`:
-
-- **Button variant taxonomy** — role → visual treatment → class/component
-  mapping. Currently in this review doc but not in the guide.
-- **Elevation scale** — semantic levels (flat/raised/card/popover) →
-  `--shadow-*` tokens → usage. Tokens exist, docs don't.
-- **Info hierarchy pattern** — elevate from Baseline Info subsection to a
-  standalone reusable recipe.
-
-**Files:** `guides/design/visual-design.md`
+**Done.** All three items added to `visual-design.md`:
+- Button Variant Taxonomy table (8 categories)
+- Elevation (Shadows) section with semantic levels and tokens
+- Info Hierarchy Pattern as a standalone section
 
 ---
 

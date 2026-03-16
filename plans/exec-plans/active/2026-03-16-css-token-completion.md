@@ -221,13 +221,14 @@ Add a table of contents comment block at the very top of the file (before
  *   9. QUIZ CONTENT .......... Prompt, round complete, feedback display
  *  10. ANSWER BUTTONS ........ Notes, split-notes, numbers, intervals, etc.
  *  11. BUTTON FEEDBACK ....... Correct/wrong/reveal, keyboard narrowing
- *  12. PAGE ACTIONS .......... Next, keep going, stop (shared base)
- *  13. STATS ................. Tables, grids, heatmap legend
- *  14. CALIBRATION ........... Speed check highlight, action buttons
- *  15. SEQUENTIAL SLOTS ...... Chord spelling multi-input
- *  16. UTILITIES ............. SR-only, focus-visible, keyboard hint
- *  17. REDUCED MOTION ........ prefers-reduced-motion overrides
- *  18. MOBILE LAYOUT ......... max-width: 599px overrides
+ *  12. CALIBRATION ........... Speed check highlight, action buttons
+ *  13. TEXT ROLES ............ Type hierarchy recipe classes
+ *  14. UTILITIES ............. SR-only, focus-visible, keyboard hint
+ *  15. PAGE ACTIONS .......... Next, keep going, stop (shared base)
+ *  16. STATS ................. Tables, grids, heatmap legend
+ *  17. SEQUENTIAL SLOTS ...... Chord spelling multi-input
+ *  18. REDUCED MOTION ........ prefers-reduced-motion overrides
+ *  19. MOBILE LAYOUT ......... max-width: 599px overrides
  */
 ```
 
@@ -292,9 +293,9 @@ Steps 1-7 can be one commit each or batched. Step 8 is a separate docs commit.
   succeeds).
 - The formatter (`deno fmt`) automatically broke long transition lines into
   multi-line format — this is expected and correct.
-- Two opacity values not in the plan were left literal as specified:
-  `.answer-input:disabled` (0.5) and `.page-action-btn:active` (0.8). These
-  could be tokenized in a follow-up if desired.
+- Two opacity values not in the plan were tokenized during implementation:
+  `.answer-input:disabled` → `var(--opacity-disabled)` and
+  `.page-action-btn:active` → `var(--opacity-pressed)`.
 - The `font-size: 14px` → `var(--text-sm)` replacement at `.group-skip-btn` is
   not value-identical (14px vs 0.85rem ≈ 13.6px at default root size), but the
   plan explicitly called for it. The difference is sub-pixel and imperceptible.

@@ -359,8 +359,8 @@ body {
   position: absolute;
   top: var(--space-2);
   right: var(--space-2);
-  width: 44px;
-  height: 44px;
+  width: var(--size-touch-target);
+  height: var(--size-touch-target);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -10,8 +10,7 @@ that don't apply — no need to mark N/A on irrelevant items.
 
 ### Build & tests
 
-- [ ] `deno task build` produces correct output
-- [ ] `deno task test` passes — all tests green
+- [ ] `deno task ok` passes — lint, format, type-check, tests, build
 - [ ] Version displays correctly in built output (derived from git at build
       time)
 

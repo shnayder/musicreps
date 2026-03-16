@@ -386,7 +386,7 @@ distinct visual treatment — don't reuse styles across roles. See
 
 | Variant | Role | Visual treatment | Class / component |
 |---------|------|-----------------|-------------------|
-| **Primary action** | Initiate flow (Practice, Keep Going, Start, Done) | Filled brand green, `--shadow-md`, white text, `--font-semibold` | `<ActionButton variant='primary'>` or `.start-btn` |
+| **Primary action** | Initiate flow (Practice, Keep Going, Start, Done) | Filled brand green, white text, `--font-semibold` | `<ActionButton variant='primary'>` |
 | **Secondary action** | Cancel / alternative (Stop) | Outlined, `--color-border`, muted text, `--font-normal` | `<ActionButton variant='secondary'>` |
 | **Small action** | Tertiary / utility (Redo speed check, Accept suggestion) | Outlined, smaller font, lighter border — visually quieter than secondary | `.baseline-rerun-btn`, `.suggestion-card-accept` |
 | **Answer** | Quiz response | White bg, 2px `--color-text-muted` border, equal visual weight across all options | `.answer-btn`, `.note-btn` |
