@@ -229,8 +229,14 @@ numbers — dropped for legibility at mobile sizes.
 | `--text-xl`   | 1.5rem   | Back button, feedback, close buttons             |
 | `--text-2xl`  | 2rem     | Home title, quiz prompts                         |
 
-Font weights: 400 (normal), 500 (medium — buttons/labels), 600 (semibold —
-headings, CTA).
+### Font Weights
+
+| Token             | Value | Usage                        |
+| ----------------- | ----- | ---------------------------- |
+| `--font-normal`   | 400   | Body text, descriptions      |
+| `--font-medium`   | 500   | Buttons, labels, toggles     |
+| `--font-semibold` | 600   | Headings, CTA, section titles|
+| `--font-bold`     | 700   | Track headings, round stats  |
 
 ### Font Families
 
@@ -260,6 +266,66 @@ woff2. No external font requests — fully offline-compatible.
 
 ---
 
+## Elevation (Shadows)
+
+4 elevation tokens for box-shadow. Use for physical-feeling depth, not for
+outlines or glows (those stay literal).
+
+| Token            | Value                              | Usage                          |
+| ---------------- | ---------------------------------- | ------------------------------ |
+| `--shadow-sm`    | `0 1px 4px rgba(0,0,0,0.1)`       | Pressed/active state           |
+| `--shadow-md`    | `0 2px 8px rgba(0,0,0,0.12)`      | Default elevation (CTA, cards) |
+| `--shadow-lg`    | `0 4px 12px rgba(0,0,0,0.12)`     | Popover, skip menu             |
+| `--shadow-hover` | `0 3px 12px rgba(0,0,0,0.18)`     | Hover lift                     |
+
+---
+
+## Transitions
+
+Duration tokens for transition timing. Easing functions (`ease`, `linear`) stay
+literal because CSS `transition` shorthand doesn't support variable substitution
+for the timing function alone.
+
+| Token               | Value  | Usage                                 |
+| ------------------- | ------ | ------------------------------------- |
+| `--duration-fast`   | 0.1s   | Transform scale, quick micro-feedback |
+| `--duration-base`   | 0.15s  | Color/background/border changes       |
+| `--duration-slow`   | 0.3s   | Progress bar width                    |
+| `--duration-linear` | 0.2s   | Countdown bar (linear easing)         |
+
+---
+
+## Opacity States
+
+Semantic opacity tokens for interactive states. `opacity: 1` resets and hover
+micro-interactions stay literal.
+
+| Token                | Value | Usage                                |
+| -------------------- | ----- | ------------------------------------ |
+| `--opacity-disabled` | 0.5   | Disabled buttons (note, answer)      |
+| `--opacity-dimmed`   | 0.4   | Skipped toggles, dimmed split-notes  |
+| `--opacity-pressed`  | 0.8   | Active/pressed state                 |
+| `--opacity-subtle`   | 0.3   | Skipped progress bars, hidden accidentals |
+
+---
+
+## Z-Index Scale
+
+| Token          | Value | Usage                       |
+| -------------- | ----- | --------------------------- |
+| `--z-raised`   | 1     | Stacking above siblings     |
+| `--z-popover`  | 100   | Skip menu, floating panels  |
+
+---
+
+## Touch Target
+
+| Token                | Value | Usage                                      |
+| -------------------- | ----- | ------------------------------------------ |
+| `--size-touch-target` | 44px  | WCAG AA minimum for close/nav buttons      |
+
+---
+
 ## Component Patterns
 
 ### Primary Button (Practice)
@@ -272,8 +338,8 @@ background: var(--color-brand);
 color: white;
 border: 2px solid var(--color-brand);
 border-radius: var(--radius-md);
-font-weight: 600;
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+font-weight: var(--font-semibold);
+box-shadow: var(--shadow-md);
 ```
 
 ### Secondary Buttons (Stop, Redo)
@@ -473,7 +539,7 @@ columns or answer-area widths.
 Darken background slightly. No layout shift.
 
 ```css
-transition: background 0.15s ease, border-color 0.15s ease;
+transition: background var(--duration-base) ease, border-color var(--duration-base) ease;
 ```
 
 ### Active / Pressed
@@ -493,10 +559,10 @@ Mouse/touch users see no outline (`:focus:not(:focus-visible)` removes it).
 
 ### Transitions
 
-- Color changes: `0.15s ease`
-- Layout/size: `0.1s ease` (transform scale)
-- Progress bar: `0.3s ease` (width)
-- Countdown bar: `0.2s linear`
+- Color changes: `var(--duration-base)` ease
+- Layout/size: `var(--duration-fast)` ease (transform scale)
+- Progress bar: `var(--duration-slow)` ease (width)
+- Countdown bar: `var(--duration-linear)` linear
 
 ---
 

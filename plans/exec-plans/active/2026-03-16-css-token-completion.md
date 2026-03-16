@@ -287,3 +287,17 @@ Steps 1-7 can be one commit each or batched. Step 8 is a separate docs commit.
   (if an iterate session exists for relevant states)
 
 ## Implementation Notes (added after completion)
+
+- All steps completed in a single pass. `deno task ok` passes (242 tests, build
+  succeeds).
+- The formatter (`deno fmt`) automatically broke long transition lines into
+  multi-line format — this is expected and correct.
+- Two opacity values not in the plan were left literal as specified:
+  `.answer-input:disabled` (0.5) and `.page-action-btn:active` (0.8). These
+  could be tokenized in a follow-up if desired.
+- The `font-size: 14px` → `var(--text-sm)` replacement at `.group-skip-btn` is
+  not value-identical (14px vs 0.85rem ≈ 13.6px at default root size), but the
+  plan explicitly called for it. The difference is sub-pixel and imperceptible.
+- Section 5 in the plan listed 6 shadow replacements but there were actually 5
+  unique shadow values to replace (the focus-visible one was a partial replace,
+  keeping the ring portion literal).
