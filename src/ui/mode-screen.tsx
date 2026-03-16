@@ -182,10 +182,7 @@ export function PracticeCard(
     statusDetail?: string;
     recommendation?: string;
     scope?: ComponentChildren;
-    onStart?: () => void;
     onApplyRecommendation?: () => void;
-    scopeValid?: boolean;
-    validationMessage?: string;
   },
 ) {
   // When summary is provided, map its fields; individual props override.
@@ -198,9 +195,7 @@ export function PracticeCard(
       ? props.summary.recommendationText
       : undefined);
   const onApplyRecommendation = props.onApplyRecommendation;
-  const { scope, onStart } = props;
-  const scopeDisabled = props.scopeValid === false;
-  const validationMessage = scopeDisabled ? props.validationMessage : undefined;
+  const { scope } = props;
 
   return (
     <div class='practice-card'>
@@ -219,13 +214,6 @@ export function PracticeCard(
         <Recommendation text={recommendation} onApply={onApplyRecommendation} />
       )}
       {scope && <div class='practice-scope'>{scope}</div>}
-      <div class='practice-zone-action'>
-        <StartButton
-          onStart={onStart}
-          disabled={scopeDisabled}
-          validationMessage={validationMessage}
-        />
-      </div>
     </div>
   );
 }
@@ -500,8 +488,8 @@ export function PracticeTab(
     onApplyRecommendation?: () => void;
     scope?: ComponentChildren;
     statsContent: ComponentChildren;
-    onCalibrate: () => void;
-    baseline: number | null;
+    onCalibrate?: () => void;
+    baseline?: number | null;
     activeTab: ModeTab;
     onTabSwitch: (tab: ModeTab) => void;
     scopeValid?: boolean;
@@ -530,7 +518,9 @@ export function PracticeTab(
       content: (
         <div>
           <div class='stats-container'>{statsContent}</div>
-          <BaselineInfo baseline={baseline} onRun={onCalibrate} />
+          {onCalibrate && (
+            <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
+          )}
         </div>
       ),
     },

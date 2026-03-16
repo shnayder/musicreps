@@ -812,7 +812,9 @@ body {
   flex: 1;
 }
 .mode-screen.mode-active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
 .quiz-session-header {
@@ -966,10 +968,11 @@ body {
   margin-bottom: 0;
 }
 
-/* --- Practice action zone (inside practice card) --- */
+/* --- Practice action zone (bottom-anchored, outside tabs) --- */
 .practice-zone-action {
   text-align: center;
-  margin-top: var(--space-5);
+  margin-top: auto;
+  padding: var(--space-5) 0 var(--space-4);
 }
 
 /* ==========================================================================
