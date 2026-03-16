@@ -203,9 +203,7 @@ function ActiveSkillCard(
 
   return (
     <div
-      class={`home-mode-btn skill-card active-skill-card${
-        hasRec ? ' has-rec' : ''
-      }`}
+      class='home-mode-btn skill-card active-skill-card'
       data-mode={modeId}
       data-track={trackId}
       role='button'
@@ -219,44 +217,46 @@ function ActiveSkillCard(
           <div class='skill-rec-detail'>{rec!.detail}</div>
         </div>
       )}
-      <button
-        type='button'
-        class='skill-card-star starred'
-        aria-label={`Unstar ${name}`}
-        aria-pressed
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleStar(modeId);
-        }}
-      >
-        {'\u2605'}
-      </button>
-      <span class='skill-card-header'>
-        <SkillIcon modeId={modeId} />
-        <span class='skill-card-header-text'>
-          <span class={`active-skill-track-pill pill-${trackId}`}>
-            {trackLabel}
+      <div class='skill-card-body'>
+        <button
+          type='button'
+          class='skill-card-star starred'
+          aria-label={`Unstar ${name}`}
+          aria-pressed
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleStar(modeId);
+          }}
+        >
+          {'\u2605'}
+        </button>
+        <span class='skill-card-header'>
+          <SkillIcon modeId={modeId} />
+          <span class='skill-card-header-text'>
+            <span class={`active-skill-track-pill pill-${trackId}`}>
+              {trackLabel}
+            </span>
+            <span class='home-mode-name'>{name}</span>
+            <span class='home-mode-desc'>{desc}</span>
           </span>
-          <span class='home-mode-name'>{name}</span>
-          <span class='home-mode-desc'>{desc}</span>
         </span>
-      </span>
-      {ba && (
-        <div class='skill-card-ba'>
-          <span class='skill-card-before'>
-            {ba.before()}
-          </span>
-          <span class='skill-card-arrow'>&rarr;</span>
-          <span class='skill-card-after'>
-            {ba.after()}
-          </span>
-        </div>
-      )}
-      {progress && (
-        <div class='skill-card-progress'>
-          <SkillProgressBar colors={progress.groupColors} />
-        </div>
-      )}
+        {ba && (
+          <div class='skill-card-ba'>
+            <span class='skill-card-before'>
+              {ba.before()}
+            </span>
+            <span class='skill-card-arrow'>&rarr;</span>
+            <span class='skill-card-after'>
+              {ba.after()}
+            </span>
+          </div>
+        )}
+        {progress && (
+          <div class='skill-card-progress'>
+            <SkillProgressBar colors={progress.groupColors} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

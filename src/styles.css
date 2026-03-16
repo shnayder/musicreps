@@ -357,14 +357,22 @@ body {
   color: var(--color-track-ukulele);
   background: hsla(185, 40%, 38%, 0.12);
 }
-/* Recommendation banner — now inside the card, not a sibling. */
+/* Active skill card: no padding on outer — banner and body handle their own. */
+.active-skill-card {
+  padding: 0;
+}
+.skill-card-body {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: var(--space-4);
+  padding-right: 3rem;
+}
+/* Recommendation banner inside active skill card. */
 .skill-rec-banner {
   background: var(--color-recommended-bg);
   border-bottom: 1px solid var(--color-recommended-border);
   padding: var(--space-2) var(--space-3);
-  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-3)
-    calc(-4px);
-  margin-right: -3rem;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .skill-rec-header {
@@ -378,10 +386,10 @@ body {
   color: var(--color-text-muted);
 }
 /* Banner reacts with card on hover/active. */
-.home-mode-btn.has-rec:hover > .skill-rec-banner {
+.home-mode-btn:hover > .skill-rec-banner {
   background: var(--color-recommended-bg-hover);
 }
-.home-mode-btn.has-rec:active > .skill-rec-banner {
+.home-mode-btn:active > .skill-rec-banner {
   background: var(--color-recommended-bg-pressed);
 }
 .active-skills-done {
