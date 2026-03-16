@@ -375,6 +375,11 @@ Before: `<div class='baseline-explanation'>...</div>` (already migrated above)
 Before: `<span class='suggestion-card-text'>{text}</span>`
 After: `<Text role='secondary'>{text}</Text>`
 
+Before: `<div class='skill-rec-detail'>{rec!.detail}</div>`
+After: `<Text role='secondary' as='div'>{rec!.detail}</Text>`
+
+(`.skill-rec-detail` is `text-sm / text-muted` — exact match for secondary.)
+
 ### Step 8: Clean up dead CSS
 
 After all migrations, audit the CSS for classes that are no longer referenced
@@ -452,6 +457,11 @@ These elements are deliberately NOT migrated:
 - **Quiz prompt text** — has its own responsive sizing (1.6rem on mobile).
 - **Stats table text** — data table content, not semantic text roles.
 - **Preview page headings** — dev-only page, not production UI.
+- **`.skill-rec-header`** — subsection-header-like but uses `--color-recommended`
+  instead of `--color-text-muted`, and `--text-xs` instead of `--text-sm`. It's
+  a recommendation-branded variant, not a standard text role.
+- **`.active-skills-done`** — success-themed card text with its own bg/padding.
+  A card pattern, not a text role.
 
 ## Files Modified
 
@@ -472,7 +482,8 @@ These elements are deliberately NOT migrated:
 - `deno task ok` after each step
 - Visual spot-check: compare Speed Check (intro, running, results),
   round-complete screen, practice card with recommendation, progress tab
-  baseline info. All should look identical.
+  baseline info, home screen Active tab with recommendation banners. All
+  should look identical.
 - Search for dead CSS: after step 8, grep for each removed class name across
   all source files to confirm no references remain.
 
