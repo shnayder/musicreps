@@ -48,6 +48,8 @@ import {
   StartButton,
   TabbedIdle,
 } from './mode-screen.tsx';
+import { ActionButton } from './action-button.tsx';
+import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
 // Preview scaffold
@@ -361,21 +363,25 @@ function PreviewApp() {
           onApplyRecommendation={() => {}}
         />
       </Section>
-      <Section title='PracticeCard (with scope toggles)'>
+      <Section title='PracticeCard (with group progress toggles)'>
         <PracticeCard
           statusLabel='Solid'
           statusDetail='24 of 26 automatic'
-          recommendation='start D string'
+          recommendation='solidify +4 to +6 — 3 items to work on'
           onApplyRecommendation={() => {}}
           scope={
-            <>
-              <StringToggles
-                stringNames={['E', 'A', 'D', 'G', 'B', 'e']}
-                active={new Set([0, 1])}
-                onToggle={() => {}}
-              />
-              <NoteFilter mode='natural' onChange={() => {}} />
-            </>
+            <GroupProgressToggles
+              groups={[
+                { label: '1–3', itemIds: ['C+1', 'C+2', 'C+3'] },
+                { label: '4–6', itemIds: ['C+4', 'C+5', 'C+6'] },
+                { label: '7–9', itemIds: ['D+1', 'D+2', 'D+3'] },
+              ]}
+              active={new Set([0, 1])}
+              onToggle={() => {}}
+              selector={groupSel}
+              onSkip={() => {}}
+              onUnskip={() => {}}
+            />
           }
         />
       </Section>
@@ -423,6 +429,62 @@ function PreviewApp() {
             }
           />
         </ModeScreen>
+      </Section>
+
+      <h2>Design Recipes</h2>
+      <Section title='ActionButton — Primary'>
+        <ActionButton variant='primary' onClick={() => {}}>
+          Practice
+        </ActionButton>
+      </Section>
+      <Section title='ActionButton — Secondary'>
+        <ActionButton variant='secondary' onClick={() => {}}>
+          Stop
+        </ActionButton>
+      </Section>
+      <Section title='ActionButton — Pair (as in round-complete)'>
+        <div class='page-action-row'>
+          <ActionButton variant='primary' onClick={() => {}}>
+            Keep Going
+          </ActionButton>
+          <ActionButton variant='secondary' onClick={() => {}}>
+            Stop
+          </ActionButton>
+        </div>
+      </Section>
+      <Section title='ActionButton — Disabled'>
+        <ActionButton variant='primary' onClick={() => {}} disabled>
+          Disabled
+        </ActionButton>
+      </Section>
+      <Section title='Text Roles'>
+        <div
+          style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
+        >
+          <Text role='section-header' as='div'>Section Header</Text>
+          <Text role='subsection-header' as='div'>Subsection Header</Text>
+          <Text role='label' as='div'>Label</Text>
+          <div>Body text (default — no Text component needed)</div>
+          <Text role='secondary' as='div'>Secondary text</Text>
+          <Text role='caption' as='div'>Caption text</Text>
+          <Text role='metric' as='div'>42.5s</Text>
+        </div>
+      </Section>
+      <Section title='Text Roles — In Context (metric display)'>
+        <div
+          style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
+        >
+          <Text role='subsection-header' as='div'>Speed check</Text>
+          <div
+            style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}
+          >
+            <Text role='label'>Response time</Text>
+            <Text role='metric'>0.5s</Text>
+          </div>
+          <Text role='caption' as='div'>
+            Timing thresholds are based on this measurement.
+          </Text>
+        </div>
       </Section>
 
       <h2>Fretboard</h2>

@@ -229,8 +229,14 @@ numbers — dropped for legibility at mobile sizes.
 | `--text-xl`   | 1.5rem   | Back button, feedback, close buttons             |
 | `--text-2xl`  | 2rem     | Home title, quiz prompts                         |
 
-Font weights: 400 (normal), 500 (medium — buttons/labels), 600 (semibold —
-headings, CTA).
+### Font Weights
+
+| Token             | Value | Usage                        |
+| ----------------- | ----- | ---------------------------- |
+| `--font-normal`   | 400   | Body text, descriptions      |
+| `--font-medium`   | 500   | Buttons, labels, toggles     |
+| `--font-semibold` | 600   | Headings, CTA, section titles|
+| `--font-bold`     | 700   | Track headings, round stats  |
 
 ### Font Families
 
@@ -242,6 +248,58 @@ headings, CTA).
 DM Serif Display is embedded as a base64 `@font-face` at build time
 (`main.ts` reads `src/DMSerifDisplay-latin.woff2`). Latin subset only, ~24KB
 woff2. No external font requests — fully offline-compatible.
+
+### Type Hierarchy
+
+Content role → size + weight + color recipe. Use `<Text role="...">` for
+structural enforcement (see Structural Components below), or apply the
+`.text-*` CSS class directly.
+
+| Role | Size | Weight | Color | CSS class / component |
+|------|------|--------|-------|-----------------------|
+| Page title | `--text-2xl` | 400 | `--color-text` | `.home-title` (one-off) |
+| Mode title | `--text-lg` | 600 | `--color-text` | `.mode-title` (one-off) |
+| Section header | `--text-base` | 600 | `--color-text` | `<Text role='section-header'>` |
+| Subsection header | `--text-sm` | 600 | `--color-text-muted` | `<Text role='subsection-header'>` |
+| Label | `--text-sm` | 500 | `--color-text-muted` | `<Text role='label'>` |
+| Body | `--text-base` | 400 | `--color-text` | (default — no class needed) |
+| Secondary | `--text-sm` | 400 | `--color-text-muted` | `<Text role='secondary'>` |
+| Caption | `--text-xs` | 400 | `--color-text-light` | `<Text role='caption'>` |
+| Metric value | `--text-md` | 600 | `--color-text` | `<Text role='metric'>` |
+
+### Structural Components
+
+Preact components that encode design recipes so the correct visual treatment
+is automatic. Prefer these over manual class composition.
+
+#### ActionButton
+
+```tsx
+import { ActionButton } from './ui/action-button.tsx';
+
+<ActionButton variant='primary' onClick={start}>Practice</ActionButton>
+<ActionButton variant='secondary' onClick={stop}>Stop</ActionButton>
+```
+
+Renders a `.page-action-btn` with the correct variant class. Use for all
+flow-initiating and flow-stopping buttons. NOT for answer buttons, toggles,
+close buttons, tabs, or small utility buttons (like baseline rerun).
+
+#### Text
+
+```tsx
+import { Text } from './ui/text.tsx';
+
+<Text role='subsection-header' as='div'>Speed check</Text>
+<Text role='label'>Response time</Text>
+<Text role='metric'>{value}</Text>
+<Text role='caption'>Explanation text</Text>
+```
+
+Maps content role to the type hierarchy recipe. Use when an element's styling
+should match a standard text role. NOT for quiz prompts, answer button text,
+branded text (recommendation headers use `--color-recommended`), or one-off
+elements with their own sizing.
 
 ---
 
@@ -260,61 +318,114 @@ woff2. No external font requests — fully offline-compatible.
 
 ---
 
-## Component Patterns
+## Elevation (Shadows)
 
-### Primary Button (Practice)
+4 elevation tokens for box-shadow. Use for physical-feeling depth, not for
+outlines or glows (those stay literal).
 
-Brand sage background, white text, subtle shadow, hover darkens. Uses
-`.start-btn` class applied via `modeScreen()` scaffold.
+| Token            | Value                              | Usage                          |
+| ---------------- | ---------------------------------- | ------------------------------ |
+| `--shadow-sm`    | `0 1px 4px rgba(0,0,0,0.1)`       | Pressed/active state           |
+| `--shadow-md`    | `0 2px 8px rgba(0,0,0,0.12)`      | Default elevation (CTA, cards) |
+| `--shadow-lg`    | `0 4px 12px rgba(0,0,0,0.12)`     | Popover, skip menu             |
+| `--shadow-hover` | `0 3px 12px rgba(0,0,0,0.18)`     | Hover lift                     |
 
-```css
-background: var(--color-brand);
-color: white;
-border: 2px solid var(--color-brand);
-border-radius: var(--radius-md);
-font-weight: 600;
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+---
+
+## Transitions
+
+Duration tokens for transition timing. Easing functions (`ease`, `linear`) stay
+literal because CSS `transition` shorthand doesn't support variable substitution
+for the timing function alone.
+
+| Token               | Value  | Usage                                 |
+| ------------------- | ------ | ------------------------------------- |
+| `--duration-fast`   | 0.1s   | Transform scale, quick micro-feedback |
+| `--duration-base`   | 0.15s  | Color/background/border changes       |
+| `--duration-slow`   | 0.3s   | Progress bar width                    |
+| `--duration-linear` | 0.2s   | Countdown bar (linear easing)         |
+
+---
+
+## Opacity States
+
+Semantic opacity tokens for interactive states. `opacity: 1` resets and hover
+micro-interactions stay literal.
+
+| Token                | Value | Usage                                |
+| -------------------- | ----- | ------------------------------------ |
+| `--opacity-disabled` | 0.5   | Disabled buttons (note, answer)      |
+| `--opacity-dimmed`   | 0.4   | Skipped toggles, dimmed split-notes  |
+| `--opacity-pressed`  | 0.8   | Active/pressed state                 |
+| `--opacity-subtle`   | 0.3   | Skipped progress bars, hidden accidentals |
+
+---
+
+## Z-Index Scale
+
+| Token          | Value | Usage                       |
+| -------------- | ----- | --------------------------- |
+| `--z-raised`   | 1     | Stacking above siblings     |
+| `--z-popover`  | 100   | Skip menu, floating panels  |
+
+---
+
+## Touch Target
+
+| Token                | Value | Usage                                      |
+| -------------------- | ----- | ------------------------------------------ |
+| `--size-touch-target` | 44px  | WCAG AA minimum for close/nav buttons      |
+
+---
+
+## Button Variant Taxonomy
+
+Every interactive element falls into one of these categories. Each has a
+distinct visual treatment — don't reuse styles across roles. See
+[layout-and-ia.md](layout-and-ia.md#one-interaction-grammar) (principle #14).
+
+| Variant | Role | Visual treatment | Class / component |
+|---------|------|-----------------|-------------------|
+| **Primary action** | Initiate flow (Practice, Keep Going, Start, Done) | Filled brand green, white text, `--font-semibold` | `<ActionButton variant='primary'>` |
+| **Secondary action** | Cancel / alternative (Stop) | Outlined, `--color-border`, muted text, `--font-normal` | `<ActionButton variant='secondary'>` |
+| **Small action** | Tertiary / utility (Redo speed check, Accept suggestion) | Outlined, smaller font, lighter border — visually quieter than secondary | `.baseline-rerun-btn`, `.suggestion-card-accept` |
+| **Answer** | Quiz response | White bg, 2px `--color-text-muted` border, equal visual weight across all options | `.answer-btn`, `.note-btn` |
+| **Toggle** | Multi-select filter (strings, groups, notes) | `--color-surface` inactive → `--color-toggle-active` active, 36px min size | `.string-toggle`, `.distance-toggle` |
+| **Tab** | View switching | Underline active, `--color-brand` indicator, no fill | `.mode-tab`, `.home-tab` |
+| **Text link** | Tertiary navigation | Muted text, underline on hover, no background | `.text-link` |
+| **Close** | Dismiss / navigate back | × icon, `--color-text-light`, `--size-touch-target` min size | `.mode-close-btn`, `.quiz-header-close` |
+
+**When to use ActionButton vs raw button:** Use `<ActionButton>` for
+primary/secondary flow actions (start, stop, continue, done). Use raw `<button>`
+with a specific class for everything else — answer buttons have feedback
+semantics, toggles have pressed state, tabs have ARIA roles, and small actions
+have intentionally quieter styling.
+
+---
+
+## Info Hierarchy Pattern
+
+When displaying a metric with context, use the **label: value / explanation**
+pattern. The value is visually dominant; the label is quieter; the explanation
+is smallest.
+
+```
+{label}         {value}         ← Text role: label + metric
+{explanation}                   ← Text role: caption
+[action]                        ← Small action button (optional)
 ```
 
-### Secondary Buttons (Stop, Redo)
+This pattern appears in:
+- **BaselineInfo** — "Response time: 0.5s / Timing thresholds are based on..."
+- **Round complete stats** — "This round: 8/10 correct"
+- **Practice status** — "Status: Building..."
 
-Outlined, not filled. `.stop-btn` has normal border; `.baseline-rerun-btn` has
-lighter border and muted text.
+Use `<Text role='label'>`, `<Text role='metric'>`, and `<Text role='caption'>`
+to encode the hierarchy structurally.
 
-### Answer / Note Buttons
+---
 
-White background, 2px muted border, hover/active/focus states. Accidental
-buttons use `--color-surface-accent` background.
-
-### Toggle Buttons (String, Distance)
-
-`--color-surface` inactive, `--color-toggle-active` active. 36px minimum size
-for touch targets. Transition and hover states.
-
-### Baseline Info (Speed Check)
-
-Appears at the bottom of the progress tab. Uses a "label: value / explanation"
-hierarchy pattern where the measured value is visually prominent.
-
-```
-Speed check                    (section header — sm, semibold, muted)
-Response time    0.5s          (label: sm muted, value: md semibold)
-                 (default)     (tag — italic, light, when uncalibrated)
-Timing thresholds are based    (explanation — xs, light)
-on this measurement.
-[Redo speed check]             (secondary button — outlined, xs)
-```
-
-The section header uses `--text-sm` semibold with `--color-text-muted` — a
-quieter version of `.practice-section-header` appropriate for this subordinate
-section at the bottom of the progress tab. The value
-(`--text-md`, semibold, `--color-text`) is the dominant element; the label
-(`--text-sm`, `--color-text-muted`) reads as a quiet annotation.
-
-**Info hierarchy pattern:** When displaying a metric with context, use
-"label: value / explanation" — value is visually dominant (larger, bolder),
-label is quieter, explanation is smallest. This pattern applies wherever a
-single number needs context (e.g., baseline, round stats).
+## Screen Patterns
 
 ### Home Screen
 
@@ -473,7 +584,7 @@ columns or answer-area widths.
 Darken background slightly. No layout shift.
 
 ```css
-transition: background 0.15s ease, border-color 0.15s ease;
+transition: background var(--duration-base) ease, border-color var(--duration-base) ease;
 ```
 
 ### Active / Pressed
@@ -493,10 +604,10 @@ Mouse/touch users see no outline (`:focus:not(:focus-visible)` removes it).
 
 ### Transitions
 
-- Color changes: `0.15s ease`
-- Layout/size: `0.1s ease` (transform scale)
-- Progress bar: `0.3s ease` (width)
-- Countdown bar: `0.2s linear`
+- Color changes: `var(--duration-base)` ease
+- Layout/size: `var(--duration-fast)` ease (transform scale)
+- Progress bar: `var(--duration-slow)` ease (width)
+- Countdown bar: `var(--duration-linear)` linear
 
 ---
 

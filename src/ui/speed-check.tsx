@@ -10,6 +10,8 @@ import {
 } from '../quiz-engine.ts';
 import { computeMedian } from '../adaptive.ts';
 import type { SpeedCheckFixture } from '../types.ts';
+import { ActionButton } from './action-button.tsx';
+import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
 // Provider type
@@ -47,21 +49,23 @@ export function BaselineInfo(
   const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
   const tag = baseline
     ? null
-    : <span class='baseline-default-tag'>(default)</span>;
+    : <Text role='caption' class='baseline-default-tag'>(default)</Text>;
   const btnLabel = baseline ? 'Redo speed check' : 'Run speed check';
   return (
     <div class='baseline-info'>
-      <div class='baseline-header'>Speed check</div>
+      <Text role='subsection-header' as='div' class='baseline-header'>
+        Speed check
+      </Text>
       <div class='baseline-metric'>
-        <span class='baseline-label'>Response time</span>
-        <span class='baseline-value'>
+        <Text role='label'>Response time</Text>
+        <Text role='metric'>
           {value}
           {tag && <>{tag}</>}
-        </span>
+        </Text>
       </div>
-      <div class='baseline-explanation'>
+      <Text role='caption' as='div' class='baseline-explanation'>
         Timing thresholds are based on this measurement.
-      </div>
+      </Text>
       <button
         type='button'
         tabIndex={0}
@@ -198,14 +202,13 @@ function SpeedCheckIntro(
         <p>{text}</p>
       </div>
       <div class='quiz-controls'>
-        <button
-          type='button'
-          tabIndex={0}
+        <ActionButton
+          variant='primary'
           class='calibration-action-btn'
           onClick={onStart}
         >
           Start
-        </button>
+        </ActionButton>
       </div>
     </>
   );
@@ -252,14 +255,13 @@ function SpeedCheckResults(
         </table>
       </div>
       <div class='quiz-controls'>
-        <button
-          type='button'
-          tabIndex={0}
+        <ActionButton
+          variant='primary'
           class='calibration-action-btn'
           onClick={() => onComplete(baseline)}
         >
           Done
-        </button>
+        </ActionButton>
       </div>
     </>
   );

@@ -239,7 +239,7 @@ export function tabbedIdleHTML(config: {
         </div>
         <div class="practice-zone practice-zone-setup">${setupHeader}${setupRec}${practiceScope}
           <div class="practice-zone-action">
-            <button tabindex="0" class="start-btn">Practice</button>
+            <button tabindex="0" class="page-action-btn page-action-primary start-btn">Practice</button>
           </div>
         </div>
       </div>

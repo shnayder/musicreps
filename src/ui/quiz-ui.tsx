@@ -2,6 +2,7 @@
 // Emits the same CSS class names as the build-time HTML in html-helpers.ts.
 
 import { getUseSolfege } from '../music-data.ts';
+import { ActionButton } from './action-button.tsx';
 
 // ---------------------------------------------------------------------------
 // TextPrompt — quiz question text
@@ -25,20 +26,20 @@ export function FeedbackDisplay(
     label?: string;
   },
 ) {
-  let btnCls = 'next-btn page-action-btn page-action-primary';
-  if (correct === true) btnCls += ' page-action-correct';
-  else if (correct === false) btnCls += ' page-action-wrong';
+  let extraCls = 'next-btn';
+  if (correct === true) extraCls += ' page-action-correct';
+  else if (correct === false) extraCls += ' page-action-wrong';
   return (
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
-      <button
-        type='button'
-        class={btnCls}
-        onClick={onNext}
+      <ActionButton
+        variant='primary'
+        class={extraCls}
+        onClick={onNext ?? (() => {})}
         style={onNext ? undefined : { visibility: 'hidden' }}
       >
         {label}
-      </button>
+      </ActionButton>
       <div
         class='hint'
         style={hint ? undefined : { visibility: 'hidden' }}

@@ -7,6 +7,8 @@ import { useMemo } from 'preact/hooks';
 import type { PracticeSummaryState } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
 import { BaselineInfo } from './speed-check.tsx';
+import { ActionButton } from './action-button.tsx';
+import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -207,7 +209,9 @@ export function PracticeCard(
       <div class='suggestion-card'>
         <div class='suggestion-card-header'>Suggestion</div>
         <div class='suggestion-card-body'>
-          <span class='suggestion-card-text'>{recommendation}</span>
+          <Text role='secondary' class='suggestion-card-text'>
+            {recommendation}
+          </Text>
           {onApplyRecommendation
             ? (
               <button
@@ -229,7 +233,7 @@ export function PracticeCard(
     <div class='practice-card'>
       {statusLabel && (
         <div class='practice-status'>
-          <span class='practice-status-prefix'>Status</span>
+          <Text role='label'>Status</Text>
           <span class='practice-status-label'>{statusLabel}</span>
           <span class='practice-status-detail'>{statusDetail || ''}</span>
         </div>
@@ -258,7 +262,7 @@ export function Recommendation(
     <div class='suggestion-card'>
       <div class='suggestion-card-header'>Suggestion</div>
       <div class='suggestion-card-body'>
-        <span class='suggestion-card-text'>{text}</span>
+        <Text role='secondary' class='suggestion-card-text'>{text}</Text>
         {onApply
           ? (
             <button
@@ -290,16 +294,15 @@ export function StartButton(
   const msgId = validationMessage ? 'start-validation-msg' : undefined;
   return (
     <>
-      <button
-        type='button'
-        tabIndex={0}
+      <ActionButton
+        variant='primary'
         class='start-btn'
-        onClick={onStart}
+        onClick={onStart ?? noop}
         disabled={disabled}
         aria-describedby={msgId}
       >
         Practice
-      </button>
+      </ActionButton>
       {validationMessage
         ? (
           <div id={msgId} class='start-validation-message'>
@@ -456,7 +459,13 @@ export function RoundCompleteInfo(
       {context
         ? (
           <div class='round-complete-overall'>
-            <div class='round-complete-overall-label'>Overall</div>
+            <Text
+              role='subsection-header'
+              as='div'
+              class='round-complete-overall-label'
+            >
+              Overall
+            </Text>
             <div class='round-complete-context'>{context}</div>
           </div>
         )
@@ -470,6 +479,8 @@ export function RoundCompleteInfo(
 // Rendered in .quiz-controls zone.
 // ---------------------------------------------------------------------------
 
+const noop = () => {};
+
 export function RoundCompleteActions(
   { onContinue, onStop }: {
     onContinue?: () => void;
@@ -479,22 +490,12 @@ export function RoundCompleteActions(
   return (
     <>
       <div class='page-action-row'>
-        <button
-          type='button'
-          tabIndex={0}
-          class='page-action-btn page-action-primary'
-          onClick={onContinue}
-        >
+        <ActionButton variant='primary' onClick={onContinue ?? noop}>
           Keep Going
-        </button>
-        <button
-          type='button'
-          tabIndex={0}
-          class='page-action-btn page-action-secondary'
-          onClick={onStop}
-        >
+        </ActionButton>
+        <ActionButton variant='secondary' onClick={onStop ?? noop}>
           Stop
-        </button>
+        </ActionButton>
       </div>
       <div class='hint hint-spacer'>&nbsp;</div>
     </>
