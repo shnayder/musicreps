@@ -249,6 +249,58 @@ DM Serif Display is embedded as a base64 `@font-face` at build time
 (`main.ts` reads `src/DMSerifDisplay-latin.woff2`). Latin subset only, ~24KB
 woff2. No external font requests — fully offline-compatible.
 
+### Type Hierarchy
+
+Content role → size + weight + color recipe. Use `<Text role="...">` for
+structural enforcement (see Structural Components below), or apply the
+`.text-*` CSS class directly.
+
+| Role | Size | Weight | Color | CSS class / component |
+|------|------|--------|-------|-----------------------|
+| Page title | `--text-2xl` | 400 | `--color-text` | `.home-title` (one-off) |
+| Mode title | `--text-lg` | 600 | `--color-text` | `.mode-title` (one-off) |
+| Section header | `--text-base` | 600 | `--color-text` | `<Text role='section-header'>` |
+| Subsection header | `--text-sm` | 600 | `--color-text-muted` | `<Text role='subsection-header'>` |
+| Label | `--text-sm` | 500 | `--color-text-muted` | `<Text role='label'>` |
+| Body | `--text-base` | 400 | `--color-text` | (default — no class needed) |
+| Secondary | `--text-sm` | 400 | `--color-text-muted` | `<Text role='secondary'>` |
+| Caption | `--text-xs` | 400 | `--color-text-light` | `<Text role='caption'>` |
+| Metric value | `--text-md` | 600 | `--color-text` | `<Text role='metric'>` |
+
+### Structural Components
+
+Preact components that encode design recipes so the correct visual treatment
+is automatic. Prefer these over manual class composition.
+
+#### ActionButton
+
+```tsx
+import { ActionButton } from './ui/action-button.tsx';
+
+<ActionButton variant='primary' onClick={start}>Practice</ActionButton>
+<ActionButton variant='secondary' onClick={stop}>Stop</ActionButton>
+```
+
+Renders a `.page-action-btn` with the correct variant class. Use for all
+flow-initiating and flow-stopping buttons. NOT for answer buttons, toggles,
+close buttons, tabs, or small utility buttons (like baseline rerun).
+
+#### Text
+
+```tsx
+import { Text } from './ui/text.tsx';
+
+<Text role='subsection-header' as='div'>Speed check</Text>
+<Text role='label'>Response time</Text>
+<Text role='metric'>{value}</Text>
+<Text role='caption'>Explanation text</Text>
+```
+
+Maps content role to the type hierarchy recipe. Use when an element's styling
+should match a standard text role. NOT for quiz prompts, answer button text,
+branded text (recommendation headers use `--color-recommended`), or one-off
+elements with their own sizing.
+
 ---
 
 ## Spacing Scale
@@ -326,61 +378,54 @@ micro-interactions stay literal.
 
 ---
 
-## Component Patterns
+## Button Variant Taxonomy
 
-### Primary Button (Practice)
+Every interactive element falls into one of these categories. Each has a
+distinct visual treatment — don't reuse styles across roles. See
+[layout-and-ia.md](layout-and-ia.md#one-interaction-grammar) (principle #14).
 
-Brand sage background, white text, subtle shadow, hover darkens. Uses
-`.start-btn` class applied via `modeScreen()` scaffold.
+| Variant | Role | Visual treatment | Class / component |
+|---------|------|-----------------|-------------------|
+| **Primary action** | Initiate flow (Practice, Keep Going, Start, Done) | Filled brand green, `--shadow-md`, white text, `--font-semibold` | `<ActionButton variant='primary'>` or `.start-btn` |
+| **Secondary action** | Cancel / alternative (Stop) | Outlined, `--color-border`, muted text, `--font-normal` | `<ActionButton variant='secondary'>` |
+| **Small action** | Tertiary / utility (Redo speed check, Accept suggestion) | Outlined, smaller font, lighter border — visually quieter than secondary | `.baseline-rerun-btn`, `.suggestion-card-accept` |
+| **Answer** | Quiz response | White bg, 2px `--color-text-muted` border, equal visual weight across all options | `.answer-btn`, `.note-btn` |
+| **Toggle** | Multi-select filter (strings, groups, notes) | `--color-surface` inactive → `--color-toggle-active` active, 36px min size | `.string-toggle`, `.distance-toggle` |
+| **Tab** | View switching | Underline active, `--color-brand` indicator, no fill | `.mode-tab`, `.home-tab` |
+| **Text link** | Tertiary navigation | Muted text, underline on hover, no background | `.text-link` |
+| **Close** | Dismiss / navigate back | × icon, `--color-text-light`, `--size-touch-target` min size | `.mode-close-btn`, `.quiz-header-close` |
 
-```css
-background: var(--color-brand);
-color: white;
-border: 2px solid var(--color-brand);
-border-radius: var(--radius-md);
-font-weight: var(--font-semibold);
-box-shadow: var(--shadow-md);
-```
+**When to use ActionButton vs raw button:** Use `<ActionButton>` for
+primary/secondary flow actions (start, stop, continue, done). Use raw `<button>`
+with a specific class for everything else — answer buttons have feedback
+semantics, toggles have pressed state, tabs have ARIA roles, and small actions
+have intentionally quieter styling.
 
-### Secondary Buttons (Stop, Redo)
+---
 
-Outlined, not filled. `.stop-btn` has normal border; `.baseline-rerun-btn` has
-lighter border and muted text.
+## Info Hierarchy Pattern
 
-### Answer / Note Buttons
-
-White background, 2px muted border, hover/active/focus states. Accidental
-buttons use `--color-surface-accent` background.
-
-### Toggle Buttons (String, Distance)
-
-`--color-surface` inactive, `--color-toggle-active` active. 36px minimum size
-for touch targets. Transition and hover states.
-
-### Baseline Info (Speed Check)
-
-Appears at the bottom of the progress tab. Uses a "label: value / explanation"
-hierarchy pattern where the measured value is visually prominent.
+When displaying a metric with context, use the **label: value / explanation**
+pattern. The value is visually dominant; the label is quieter; the explanation
+is smallest.
 
 ```
-Speed check                    (section header — sm, semibold, muted)
-Response time    0.5s          (label: sm muted, value: md semibold)
-                 (default)     (tag — italic, light, when uncalibrated)
-Timing thresholds are based    (explanation — xs, light)
-on this measurement.
-[Redo speed check]             (secondary button — outlined, xs)
+{label}         {value}         ← Text role: label + metric
+{explanation}                   ← Text role: caption
+[action]                        ← Small action button (optional)
 ```
 
-The section header uses `--text-sm` semibold with `--color-text-muted` — a
-quieter version of `.practice-section-header` appropriate for this subordinate
-section at the bottom of the progress tab. The value
-(`--text-md`, semibold, `--color-text`) is the dominant element; the label
-(`--text-sm`, `--color-text-muted`) reads as a quiet annotation.
+This pattern appears in:
+- **BaselineInfo** — "Response time: 0.5s / Timing thresholds are based on..."
+- **Round complete stats** — "This round: 8/10 correct"
+- **Practice status** — "Status: Building..."
 
-**Info hierarchy pattern:** When displaying a metric with context, use
-"label: value / explanation" — value is visually dominant (larger, bolder),
-label is quieter, explanation is smallest. This pattern applies wherever a
-single number needs context (e.g., baseline, round stats).
+Use `<Text role='label'>`, `<Text role='metric'>`, and `<Text role='caption'>`
+to encode the hierarchy structurally.
+
+---
+
+## Screen Patterns
 
 ### Home Screen
 

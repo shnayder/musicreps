@@ -174,6 +174,7 @@ Bidirectional modes track each direction as a separate item.
 | Guide                         | Contents                                                 |
 | ----------------------------- | -------------------------------------------------------- |
 | [vision.md](guides/vision.md) | Who it's for, what we're building, tone, skill lifecycle |
+| [brand.md](guides/brand.md)   | Core positioning, promise, messaging, visual tone        |
 
 **Enduring** — design values that should outlast any implementation:
 
@@ -188,18 +189,19 @@ Bidirectional modes track each direction as a separate item.
 | Guide                                                         | Contents                                                                       |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | [architecture.md](guides/architecture.md)                     | Module graph, build system, patterns, algorithms, DOM layout, adding new modes |
-| [visual-design.md](guides/design/visual-design.md)            | Color system, typography, spacing, component patterns                          |
+| [visual-design.md](guides/design/visual-design.md)            | Color system, typography, spacing, type hierarchy, button taxonomy, elevation  |
 | [coding-style.md](guides/coding-style.md)                     | Naming, file structure, DOM rules, testing patterns                            |
 | [accidental-conventions.md](guides/accidental-conventions.md) | Sharp/flat naming rules by mode, rule priority                                 |
 | [terminology.md](guides/terminology.md)                       | User-facing terms and their internal equivalents                               |
 
 **Process** — how to work on the codebase:
 
-| Guide                                                         | Contents                                                             |
-| ------------------------------------------------------------- | -------------------------------------------------------------------- |
-| [development.md](guides/development.md)                       | Commands, testing, versioning, branching, deployment, GitHub API     |
-| [feature-process.md](guides/feature-process.md)               | When/how to write plans, design spec + implementation plan templates |
-| [tech-debt-tracker.md](plans/exec-plans/tech-debt-tracker.md) | Technical debt tracking                                              |
+| Guide                                                         | Contents                                                                   |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| [development.md](guides/development.md)                       | Commands, testing, versioning, branching, deployment, GitHub API           |
+| [feature-process.md](guides/feature-process.md)               | When/how to write plans, design spec + implementation plan templates       |
+| [visual-design-spec.md](guides/visual-design-spec.md)         | Template for visual design work (layout, styling, design system alignment) |
+| [tech-debt-tracker.md](plans/exec-plans/tech-debt-tracker.md) | Technical debt tracking                                                    |
 
 The review checklist (`.claude/commands/review-checklist.md`) verifies these
 conventions — use `/review` to run it.
