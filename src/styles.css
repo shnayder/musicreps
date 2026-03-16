@@ -18,6 +18,8 @@
   --color-recommended: #d4a017;
   --color-recommended-bg: hsl(44, 70%, 96%);
   --color-recommended-border: hsl(44, 60%, 80%);
+  --color-recommended-bg-hover: hsl(44, 60%, 91%);
+  --color-recommended-bg-pressed: hsl(44, 50%, 85%);
   --color-recommended-text: hsl(44, 80%, 25%);
   --color-highlight: #eab308;
   /* UI accents */
@@ -388,6 +390,16 @@ body {
 .skill-rec-detail {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+}
+/* Entire card group (banner + card) reacts together on hover/active. */
+.skill-card-group {
+  cursor: pointer;
+}
+.skill-card-group:hover > .skill-rec-banner {
+  background: var(--color-recommended-bg-hover);
+}
+.skill-card-group:active > .skill-rec-banner {
+  background: var(--color-recommended-bg-pressed);
 }
 .active-skills-done {
   font-size: var(--text-sm);

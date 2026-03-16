@@ -326,7 +326,7 @@ function ActiveSkillsList(
         </p>
       )}
       {ordered.map(({ modeId, trackId, trackLabel, rec }) => (
-        <div key={modeId}>
+        <div key={modeId} class='skill-card-group'>
           {rec?.detail && (
             <div class={`skill-rec-banner track-accent-${trackId}`}>
               <div class='skill-rec-header'>Suggestion</div>
