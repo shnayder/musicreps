@@ -357,29 +357,15 @@ body {
   color: var(--color-track-ukulele);
   background: hsla(185, 40%, 38%, 0.12);
 }
+/* Recommendation banner — now inside the card, not a sibling. */
 .skill-rec-banner {
   background: var(--color-recommended-bg);
-  border: 1px solid var(--color-recommended-border);
-  border-left: 3px solid var(--color-brand);
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  border-bottom: 1px solid var(--color-recommended-border);
   padding: var(--space-2) var(--space-3);
-  border-bottom: none;
-}
-.skill-rec-banner.track-accent-core {
-  border-left-color: var(--color-track-core);
-}
-.skill-rec-banner.track-accent-reading {
-  border-left-color: var(--color-track-reading);
-}
-.skill-rec-banner.track-accent-guitar {
-  border-left-color: var(--color-track-guitar);
-}
-.skill-rec-banner.track-accent-ukulele {
-  border-left-color: var(--color-track-ukulele);
-}
-.skill-rec-banner + .active-skill-card {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-3)
+    calc(-4px);
+  margin-right: -3rem;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .skill-rec-header {
   font-size: var(--text-xs);
@@ -391,14 +377,11 @@ body {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
-/* Entire card group (banner + card) reacts together on hover/active. */
-.skill-card-group {
-  cursor: pointer;
-}
-.skill-card-group:hover > .skill-rec-banner {
+/* Banner reacts with card on hover/active. */
+.home-mode-btn.has-rec:hover > .skill-rec-banner {
   background: var(--color-recommended-bg-hover);
 }
-.skill-card-group:active > .skill-rec-banner {
+.home-mode-btn.has-rec:active > .skill-rec-banner {
   background: var(--color-recommended-bg-pressed);
 }
 .active-skills-done {

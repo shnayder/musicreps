@@ -174,12 +174,14 @@ function ActiveSkillCard(
     onToggleStar,
     onSelectMode,
     progress,
+    rec,
   }: {
     modeId: string;
     trackLabel: string;
     onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
     progress?: ModeProgress;
+    rec?: { detail: string };
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
@@ -187,6 +189,7 @@ function ActiveSkillCard(
   const ba = MODE_BEFORE_AFTER[modeId];
   const track = TRACKS.find((t) => t.skills.includes(modeId));
   const trackId = track?.id || 'core';
+  const hasRec = !!rec?.detail;
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -200,7 +203,9 @@ function ActiveSkillCard(
 
   return (
     <div
-      class='home-mode-btn skill-card active-skill-card'
+      class={`home-mode-btn skill-card active-skill-card${
+        hasRec ? ' has-rec' : ''
+      }`}
       data-mode={modeId}
       data-track={trackId}
       role='button'
@@ -208,6 +213,12 @@ function ActiveSkillCard(
       onClick={() => onSelectMode(modeId)}
       onKeyDown={handleKeyDown}
     >
+      {hasRec && (
+        <div class={`skill-rec-banner track-accent-${trackId}`}>
+          <div class='skill-rec-header'>Suggestion</div>
+          <div class='skill-rec-detail'>{rec!.detail}</div>
+        </div>
+      )}
       <button
         type='button'
         class='skill-card-star starred'
@@ -325,22 +336,16 @@ function ActiveSkillsList(
           <strong>All Skills</strong> to keep going.
         </p>
       )}
-      {ordered.map(({ modeId, trackId, trackLabel, rec }) => (
-        <div key={modeId} class='skill-card-group'>
-          {rec?.detail && (
-            <div class={`skill-rec-banner track-accent-${trackId}`}>
-              <div class='skill-rec-header'>Suggestion</div>
-              <div class='skill-rec-detail'>{rec.detail}</div>
-            </div>
-          )}
-          <ActiveSkillCard
-            modeId={modeId}
-            trackLabel={trackLabel}
-            onToggleStar={onToggleStar}
-            onSelectMode={onSelectMode}
-            progress={progress.get(modeId)}
-          />
-        </div>
+      {ordered.map(({ modeId, trackLabel, rec }) => (
+        <ActiveSkillCard
+          key={modeId}
+          modeId={modeId}
+          trackLabel={trackLabel}
+          onToggleStar={onToggleStar}
+          onSelectMode={onSelectMode}
+          progress={progress.get(modeId)}
+          rec={rec?.detail ? { detail: rec.detail } : undefined}
+        />
       ))}
     </div>
   );
