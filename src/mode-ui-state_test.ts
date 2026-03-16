@@ -252,6 +252,24 @@ describe('buildRecommendationText', () => {
     assert.ok(!text.includes('1 new items')); // not plural
   });
 
+  it('deduplicates groups across rec types (highest priority wins)', () => {
+    const result: RecommendationResult = {
+      recommended: new Set([0, 1]),
+      enabled: null,
+      expandIndex: null,
+      expandNewCount: 0,
+      levelRecs: [
+        { index: 0, type: 'review' },
+        { index: 1, type: 'review' },
+        { index: 0, type: 'practice' },
+        { index: 1, type: 'practice' },
+      ],
+    };
+    const text = buildRecommendationText(result, label);
+    // Each group should appear only once, under review (highest priority).
+    assert.equal(text, 'review Group 0, Group 1');
+  });
+
   it('uses singular for 1 new item', () => {
     const result: RecommendationResult = {
       recommended: new Set([0]),

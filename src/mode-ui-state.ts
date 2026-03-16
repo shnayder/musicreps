@@ -58,8 +58,12 @@ export function buildRecommendationText(
   const parts: string[] = [];
 
   // Group levelRecs by type, preserving priority order.
+  // Each index appears only under its first (highest-priority) type.
+  const seen = new Set<number>();
   const byType: Record<string, number[]> = {};
   for (const rec of result.levelRecs) {
+    if (seen.has(rec.index)) continue;
+    seen.add(rec.index);
     if (!byType[rec.type]) byType[rec.type] = [];
     byType[rec.type].push(rec.index);
   }
