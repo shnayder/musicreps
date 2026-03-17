@@ -373,10 +373,10 @@ motor response time (reaction + tap + device latency). A random button is
 highlighted green; user taps as fast as they can. The median becomes the **motor
 baseline**.
 
-All modes share a baseline via a **calibration provider** system. Modes declare
-a `calibrationProvider` (default `'button'`); the baseline is stored as
-`motorBaseline_{provider}`. Completing calibration in any mode makes it
-available to all modes sharing that provider.
+All modes share a baseline via a **motor task type** system. Modes declare a
+`motorTaskType` (default `'note-button'`); the baseline is stored as
+`motorBaseline_{taskType}`. Completing calibration in any mode makes it
+available to all modes sharing that task type.
 
 All timing thresholds scale proportionally:
 

@@ -429,10 +429,13 @@ export function SpeedCheck(
     setPhase('results');
   });
 
-  if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
-  if (fixture?.promptAnswer) {
-    trials.setPromptText(config.trialPrompt(fixture.promptAnswer));
-  }
+  // Apply fixture overrides to trial display state.
+  useEffect(() => {
+    if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
+    if (fixture?.promptAnswer) {
+      trials.setPromptText(config.trialPrompt(fixture.promptAnswer));
+    }
+  }, [fixture]);
 
   // Keyboard: Escape to cancel
   useEffect(() => {

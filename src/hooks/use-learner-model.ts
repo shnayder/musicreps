@@ -67,14 +67,18 @@ export function useLearnerModel(
 
   // Load motor baseline on mount.
   useEffect(() => {
-    const stored = localStorage.getItem(storageKey);
-    if (stored) {
-      const parsed = parseInt(stored, 10);
-      if (parsed > 0) {
-        baselineRef.current = parsed;
-        model.selector.updateConfig(deriveScaledConfig(parsed, DEFAULT_CONFIG));
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        const parsed = parseInt(stored, 10);
+        if (parsed > 0) {
+          baselineRef.current = parsed;
+          model.selector.updateConfig(
+            deriveScaledConfig(parsed, DEFAULT_CONFIG),
+          );
+        }
       }
-    }
+    } catch (_) { /* localStorage unavailable */ }
   }, [model.selector, storageKey]);
 
   return {
@@ -86,23 +90,27 @@ export function useLearnerModel(
 
     applyBaseline(baseline: number) {
       baselineRef.current = baseline;
-      localStorage.setItem(storageKey, String(baseline));
+      try {
+        localStorage.setItem(storageKey, String(baseline));
+      } catch (_) { /* localStorage unavailable */ }
       model.selector.updateConfig(
         deriveScaledConfig(baseline, DEFAULT_CONFIG),
       );
     },
 
     syncBaseline() {
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        const parsed = parseInt(stored, 10);
-        if (parsed > 0 && parsed !== baselineRef.current) {
-          baselineRef.current = parsed;
-          model.selector.updateConfig(
-            deriveScaledConfig(parsed, DEFAULT_CONFIG),
-          );
+      try {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          const parsed = parseInt(stored, 10);
+          if (parsed > 0 && parsed !== baselineRef.current) {
+            baselineRef.current = parsed;
+            model.selector.updateConfig(
+              deriveScaledConfig(parsed, DEFAULT_CONFIG),
+            );
+          }
         }
-      }
+      } catch (_) { /* localStorage unavailable */ }
     },
   };
 }
