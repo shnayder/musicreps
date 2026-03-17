@@ -2,12 +2,7 @@
 // Active tab shows starred skills; All Skills tab shows track accordions.
 
 import { useCallback, useState } from 'preact/hooks';
-import {
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
-  MODE_NAMES,
-  TRACKS,
-} from '../music-data.ts';
+import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../music-data.ts';
 import type { Track } from '../music-data.ts';
 import { SkillIcon } from './icons.tsx';
 import type { SettingsController } from '../types.ts';
@@ -107,7 +102,6 @@ function SkillCard(
 ) {
   const name = MODE_NAMES[modeId] || modeId;
   const desc = MODE_DESCRIPTIONS[modeId] || '';
-  const ba = MODE_BEFORE_AFTER[modeId];
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -148,13 +142,6 @@ function SkillCard(
           <span class='home-mode-desc'>{desc}</span>
         </span>
       </span>
-      {ba && (
-        <div class='skill-card-ba'>
-          <span class='skill-card-before'>{ba.before()}</span>
-          <span class='skill-card-arrow'>&rarr;</span>
-          <span class='skill-card-after'>{ba.after()}</span>
-        </div>
-      )}
       {progress && (
         <div class='skill-card-progress'>
           <SkillProgressBar colors={progress.groupColors} />
@@ -187,7 +174,6 @@ function ActiveSkillCard(
 ) {
   const name = MODE_NAMES[modeId] || modeId;
   const desc = MODE_DESCRIPTIONS[modeId] || '';
-  const ba = MODE_BEFORE_AFTER[modeId];
   const track = TRACKS.find((t) => t.skills.includes(modeId));
   const trackId = track?.id || 'core';
   const hasRec = !!rec?.detail;
@@ -241,17 +227,6 @@ function ActiveSkillCard(
             <span class='home-mode-desc'>{desc}</span>
           </span>
         </span>
-        {ba && (
-          <div class='skill-card-ba'>
-            <span class='skill-card-before'>
-              {ba.before()}
-            </span>
-            <span class='skill-card-arrow'>&rarr;</span>
-            <span class='skill-card-after'>
-              {ba.after()}
-            </span>
-          </div>
-        )}
         {progress && (
           <div class='skill-card-progress'>
             <SkillProgressBar colors={progress.groupColors} />

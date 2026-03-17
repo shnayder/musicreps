@@ -133,6 +133,274 @@ function mockSelector(): StatsSelector {
 // App
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// ColorContext — condensed full-app flow showing all color roles at once
+// ---------------------------------------------------------------------------
+
+/** Wrapper that forces mode-screen visibility and constrains height for preview. */
+function PreviewModeScreen(
+  { phase, children }: { phase: string; children: ComponentChildren },
+) {
+  return (
+    <div
+      class={`mode-screen phase-${phase}`}
+      style={{ display: 'block', minHeight: 0, margin: 0, padding: 0 }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function ColorContext(
+  { sel, groupSel }: {
+    sel: StatsSelector;
+    groupSel: {
+      getSpeedScore: (id: string) => number | null;
+      getFreshness: (id: string) => number | null;
+    };
+  },
+) {
+  return (
+    <div>
+      {/* Home-like card */}
+      <Section title='Home — Skill Card'>
+        <div
+          class='home-mode-btn skill-card'
+          style={{ pointerEvents: 'none' }}
+          data-track='core'
+        >
+          <span class='skill-card-header'>
+            <span class='skill-card-header-text'>
+              <span class='home-mode-name'>Semitone Math</span>
+              <span class='home-mode-desc'>
+                Transpose by semitones without counting
+              </span>
+            </span>
+          </span>
+          <div class='skill-card-progress'>
+            <div class='group-progress-bar'>
+              {[
+                'hsl(125, 48%, 33%)',
+                'hsl(80, 35%, 40%)',
+                'hsl(48, 50%, 52%)',
+                'hsl(40, 60%, 58%)',
+                'hsl(30, 4%, 85%)',
+              ].map((c, i) => (
+                <div
+                  class='group-bar-slice'
+                  key={i}
+                  style={`background:${c}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Idle — practice card with recommendation */}
+      <Section title='Idle — Practice + Recommendation'>
+        <ModeTopBar
+          modeId='semitoneMath'
+          title='Semitone Math'
+          description='Transpose by semitones without counting'
+        />
+        <TabbedIdle
+          activeTab='practice'
+          onTabSwitch={() => {}}
+          practiceContent={
+            <PracticeCard
+              statusLabel='Learning'
+              statusDetail='8 of 24 automatic'
+              recommendation='start ±3–4 — 12 new items'
+              onApplyRecommendation={() => {}}
+              scope={
+                <GroupProgressToggles
+                  groups={[
+                    { label: '±1–2', itemIds: ['C+1', 'C+2', 'C+3'] },
+                    { label: '±3–4', itemIds: ['C+4', 'C+5', 'C+6'] },
+                    { label: '±5–6', itemIds: ['D+1', 'D+2', 'D+3'] },
+                  ]}
+                  active={new Set([0, 1])}
+                  onToggle={() => {}}
+                  selector={groupSel}
+                  onSkip={() => {}}
+                  onUnskip={() => {}}
+                />
+              }
+            />
+          }
+          progressContent={
+            <StatsGrid
+              selector={sel}
+              colLabels={['+1', '+2', '+3']}
+              getItemId={(name, ci) => `${name}+${ci + 1}`}
+            />
+          }
+        />
+      </Section>
+
+      {/* Active quiz — question */}
+      <Section title='Active Quiz — Awaiting Answer'>
+        <PreviewModeScreen phase='active'>
+          <QuizSession
+            timeLeft='0:42'
+            timerPct={70}
+            context='±1–2 semitones'
+            count='5 answers'
+            isWarning={false}
+          />
+          <QuizArea
+            prompt='C + 5'
+            controls={<PianoNoteButtons />}
+          />
+        </PreviewModeScreen>
+      </Section>
+
+      {/* Active quiz — correct feedback */}
+      <Section title='Active Quiz — Correct'>
+        <PreviewModeScreen phase='active'>
+          <QuizSession
+            timeLeft='0:38'
+            timerPct={63}
+            context='±1–2 semitones'
+            count='6 answers'
+            isWarning={false}
+          />
+          <QuizArea
+            prompt='C + 5'
+            controls={
+              <>
+                <PianoNoteButtons
+                  feedback={{
+                    correct: true,
+                    userInput: 'F',
+                    displayAnswer: 'F',
+                  }}
+                />
+                <FeedbackDisplay
+                  text={feedbackCorrect.text}
+                  className={feedbackCorrect.className}
+                  correct={feedbackCorrect.correct}
+                  onNext={() => {}}
+                />
+              </>
+            }
+          />
+        </PreviewModeScreen>
+      </Section>
+
+      {/* Active quiz — wrong feedback */}
+      <Section title='Active Quiz — Wrong'>
+        <PreviewModeScreen phase='active'>
+          <QuizSession
+            timeLeft='0:31'
+            timerPct={52}
+            context='±1–2 semitones'
+            count='7 answers'
+            isWarning={false}
+          />
+          <QuizArea
+            prompt='D + 3'
+            controls={
+              <>
+                <PianoNoteButtons
+                  feedback={{
+                    correct: false,
+                    userInput: 'F#',
+                    displayAnswer: 'F',
+                  }}
+                />
+                <FeedbackDisplay
+                  text={feedbackWrong.text}
+                  className={feedbackWrong.className}
+                  hint={feedbackWrong.hint}
+                  correct={feedbackWrong.correct}
+                  onNext={() => {}}
+                />
+              </>
+            }
+          />
+        </PreviewModeScreen>
+      </Section>
+
+      {/* Timer warning */}
+      <Section title='Active Quiz — Timer Warning'>
+        <PreviewModeScreen phase='active'>
+          <QuizSession
+            timeLeft='0:08'
+            timerPct={13}
+            context='±1–2 semitones'
+            count='11 answers'
+            isWarning
+          />
+          <QuizArea
+            prompt='G - 2'
+            controls={<PianoNoteButtons />}
+          />
+        </PreviewModeScreen>
+      </Section>
+
+      {/* Round complete */}
+      <Section title='Round Complete'>
+        <PreviewModeScreen phase='round-complete'>
+          <QuizArea controls={<RoundCompleteActions />}>
+            <RoundCompleteInfo
+              context={goodRound.context}
+              heading={goodRound.heading}
+              count={18}
+              correct={goodRound.correct}
+            />
+          </QuizArea>
+        </PreviewModeScreen>
+      </Section>
+
+      {/* Heatmap grid */}
+      <Section title='Progress Heatmap'>
+        <StatsGrid
+          selector={sel}
+          colLabels={['+1', '+2', '+3', '+4', '+5', '+6']}
+          getItemId={(name, ci) => `${name}+${ci + 1}`}
+        />
+        <StatsLegend />
+      </Section>
+
+      {/* Fretboard with heatmap */}
+      <Section title='Fretboard — Progress Heatmap'>
+        <FretboardPreview
+          colorCircles={(root) => {
+            const mastery: Array<[number, number, string]> = [
+              [5, 0, 'hsl(125, 48%, 33%)'],
+              [5, 1, 'hsl(80, 35%, 40%)'],
+              [5, 2, 'hsl(125, 48%, 33%)'],
+              [5, 3, 'hsl(80, 35%, 40%)'],
+              [5, 5, 'hsl(125, 48%, 33%)'],
+              [5, 7, 'hsl(60, 40%, 46%)'],
+              [5, 8, 'hsl(80, 35%, 40%)'],
+              [5, 9, 'hsl(125, 48%, 33%)'],
+              [4, 0, 'hsl(80, 35%, 40%)'],
+              [4, 2, 'hsl(60, 40%, 46%)'],
+              [4, 3, 'hsl(125, 48%, 33%)'],
+              [4, 5, 'hsl(48, 50%, 52%)'],
+              [4, 7, 'hsl(60, 40%, 46%)'],
+              [4, 8, 'hsl(40, 60%, 58%)'],
+              [3, 0, 'hsl(60, 40%, 46%)'],
+              [3, 2, 'hsl(40, 60%, 58%)'],
+              [3, 3, 'hsl(48, 50%, 52%)'],
+              [3, 5, 'hsl(40, 60%, 58%)'],
+            ];
+            for (const [s, f, fill] of mastery) {
+              const c = root.querySelector(
+                `circle.fb-pos[data-string="${s}"][data-fret="${f}"]`,
+              ) as SVGElement | null;
+              if (c) c.style.fill = fill;
+            }
+          }}
+        />
+      </Section>
+    </div>
+  );
+}
+
 function PreviewApp() {
   const sel = mockSelector();
   // Narrow selector for GroupProgressToggles (requires non-optional methods).
@@ -143,6 +411,28 @@ function PreviewApp() {
 
   return (
     <div>
+      <h2>Color in Context</h2>
+      <p
+        style={{
+          color: 'var(--color-text-muted)',
+          fontSize: 'var(--text-sm)',
+          margin: '0 0 1rem',
+        }}
+      >
+        Full app flow — every color role visible at once. Change a{' '}
+        <code>--hue-*</code>{' '}
+        value and reload to see the effect across all states.
+      </p>
+      <ColorContext sel={sel} groupSel={groupSel} />
+
+      <hr
+        style={{
+          border: 'none',
+          borderTop: '2px solid var(--color-border-lighter)',
+          margin: '2rem 0',
+        }}
+      />
+
       <h2>Answer Buttons</h2>
       <Section title='Note Buttons (Grid)'>
         <NoteButtons />
@@ -291,14 +581,10 @@ function PreviewApp() {
           description='Transpose by semitones without counting'
         />
       </Section>
-      <Section title='ModeTopBar — with before/after'>
+      <Section title='ModeTopBar — with description'>
         <ModeTopBar
           title='Semitone Math'
           description='Transpose by semitones without counting'
-          beforeAfter={{
-            before: '\u201CF# + 4\u2026 G, G#, A, A#\u2026 Bb?\u201D',
-            after: '\u201CF# + 4. Bb.\u201D',
-          }}
         />
       </Section>
       <Section title='StartButton'>
@@ -406,10 +692,6 @@ function PreviewApp() {
           <ModeTopBar
             title='Demo Mode'
             description='Practice skill X until it becomes automatic'
-            beforeAfter={{
-              before: '\u201CX\u2026 um\u2026 Y?\u201D',
-              after: '\u201CX. Y.\u201D',
-            }}
           />
           <TabbedIdle
             activeTab='practice'

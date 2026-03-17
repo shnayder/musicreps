@@ -29,65 +29,142 @@
    ========================================================================== */
 
 :root {
-  /* Brand / Success (deep green — unified) */
-  --color-brand: #2e7d32;
-  --color-brand-dark: #1b5e20;
-  --color-brand-bg: #e8f5e9;
-  --color-success: #2e7d32;
-  --color-success-dark: #1b5e20;
-  --color-success-bg: #e8f5e9;
-  --color-success-text: #1b5e20;
+  /* ================================================================
+     PALETTE — raw color scales.
+     Change anchor hues to shift entire families in one place.
+     ================================================================ */
+
+  --for-hsl-previews-in-vscode: hsl(180, 3%, 20%); /* hsl(220, 79%, 31%);*/
+  --for-hsl-previews-in-vscode2: hsl(243, 100%, 22%); /* hsl(220, 79%, 31%);*/
+
+  /* Anchor hues — the main knobs for color exploration */
+  --hue-neutral: 240; /* try 220 for cool charcoal */
+  --hue-brand: 123; /* try 175 for teal */
+  --hue-success: 123; /* correct-answer feedback (split from brand) */
+  --hue-error: 4;
+  --hue-notice: 44; /* attention, recommendations, highlights */
+
+  /* Neutral scale — derived from --hue-neutral */
+  --neutral-0: #fff;
+  --neutral-100: hsl(var(--hue-neutral), 10%, 96%);
+  --neutral-150: hsl(var(--hue-neutral), 8%, 93%);
+  --neutral-200: hsl(var(--hue-neutral), 8%, 92%);
+  --neutral-250: hsl(var(--hue-neutral), 8%, 90%);
+  --neutral-300: hsl(var(--hue-neutral), 5%, 86%);
+  --neutral-350: hsl(var(--hue-neutral), 5%, 82%);
+  --neutral-400: hsl(var(--hue-neutral), 5%, 80%);
+  --neutral-450: hsl(var(--hue-neutral), 8%, 72%);
+  --neutral-500: hsl(var(--hue-neutral), 5%, 62%);
+  --neutral-550: hsl(var(--hue-neutral), 5%, 60%);
+  --neutral-600: hsl(var(--hue-neutral), 8%, 48%);
+  --neutral-650: hsl(var(--hue-neutral), 3%, 40%);
+  --neutral-700: hsl(var(--hue-neutral), 4%, 32%);
+  --neutral-800: hsl(var(--hue-neutral), 5%, 20%);
+  --neutral-850: hsl(var(--hue-neutral), 8%, 16%);
+  --neutral-900: hsl(var(--hue-neutral), 10%, 12%);
+  --neutral-950: hsl(var(--hue-neutral), 12%, 8%);
+
+  /* Brand scale — derived from --hue-brand */
+  --brand-100: hsl(var(--hue-brand), 39%, 93%);
+  --brand-600: hsl(var(--hue-brand), 46%, 34%);
+  --brand-800: hsl(var(--hue-brand), 55%, 24%);
+
+  /* Success scale — derived from --hue-success */
+  --success-100: hsl(var(--hue-success), 39%, 93%);
+  --success-600: hsl(var(--hue-success), 46%, 34%);
+  --success-800: hsl(var(--hue-success), 55%, 24%);
+
+  /* Error scale — derived from --hue-error */
+  --error-100: hsl(var(--hue-error), 100%, 96%);
+  --error-500: hsl(var(--hue-error), 90%, 58%);
+  --error-800: hsl(var(--hue-error), 66%, 47%);
+
+  /* Notice scale — derived from --hue-notice */
+  --notice-100: hsl(var(--hue-notice), 70%, 96%);
+  --notice-300: hsl(var(--hue-notice), 60%, 80%);
+  --notice-400: hsl(var(--hue-notice), 60%, 91%);
+  --notice-450: hsl(var(--hue-notice), 50%, 85%);
+  --notice-500: hsl(var(--hue-notice), 80%, 46%);
+  --notice-600: hsl(var(--hue-notice), 93%, 47%);
+  --notice-700: hsl(var(--hue-notice), 70%, 45%);
+  --notice-800: hsl(var(--hue-notice), 80%, 25%);
+
+  /* ================================================================
+     SEMANTIC TOKENS — map palette to meaning.
+     To switch light → dark, change these mappings (not the palette).
+     ================================================================ */
+
+  /* Brand */
+  --color-brand: var(--brand-600);
+  --color-brand-dark: var(--brand-800);
+  --color-brand-bg: var(--brand-100);
+  /* Success (correct answers — can diverge from brand) */
+  --color-success: var(--success-600);
+  --color-success-dark: var(--success-800);
+  --color-success-bg: var(--success-100);
+  --color-success-text: var(--success-800);
   /* Error */
-  --color-error: #f44336;
-  --color-error-bg: #ffebee;
-  --color-error-text: #c62828;
+  --color-error: var(--error-500);
+  --color-error-bg: var(--error-100);
+  --color-error-text: var(--error-800);
   /* Focus */
-  --color-focus: #2e7d32;
-  --color-focus-bg: #e8f5e9;
-  /* Gold accents (highlights, recommendations, achievements) */
-  --color-recommended: #d4a017;
-  --color-recommended-bg: hsl(44, 70%, 96%);
-  --color-recommended-border: hsl(44, 60%, 80%);
-  --color-recommended-bg-hover: hsl(44, 60%, 91%);
-  --color-recommended-bg-pressed: hsl(44, 50%, 85%);
-  --color-recommended-text: hsl(44, 80%, 25%);
-  --color-highlight: #eab308;
-  /* UI accents */
-  --color-accent: hsl(220, 65%, 50%);
-  --color-accent-muted: hsl(220, 40%, 65%);
-  --color-toggle-active: hsl(0, 0%, 32%);
-  /* Text (warm neutrals) */
-  --color-text: hsl(30, 5%, 20%);
-  --color-text-muted: hsl(30, 3%, 40%);
-  --color-text-light: hsl(30, 3%, 60%);
-  /* Surfaces & backgrounds (warm neutrals) */
-  --color-bg: #fff;
-  --color-surface: hsl(30, 10%, 96%);
-  --color-surface-hover: hsl(30, 8%, 93%);
-  --color-surface-alt: hsl(30, 8%, 92%);
-  --color-surface-pressed: hsl(30, 5%, 82%);
-  --color-surface-accent: hsl(30, 8%, 90%);
-  /* Borders (warm neutrals) */
-  --color-border: hsl(30, 5%, 60%);
-  --color-border-light: hsl(30, 5%, 80%);
-  --color-border-lighter: hsl(30, 5%, 86%);
+  --color-focus: var(--brand-600);
+  --color-focus-bg: var(--brand-100);
+  /* Notice / Recommendations */
+  --color-recommended: var(--notice-500);
+  --color-recommended-bg: var(--notice-100);
+  --color-recommended-border: var(--notice-300);
+  --color-recommended-bg-hover: var(--notice-400);
+  --color-recommended-bg-pressed: var(--notice-450);
+  --color-recommended-text: var(--notice-800);
+  --color-highlight: var(--notice-600);
+  /* UI accents — unified with brand (one accent, not five) */
+  --color-accent: var(--brand-600);
+  --color-accent-muted: hsl(var(--hue-brand), 30%, 55%);
+  --color-toggle-active: var(--neutral-700);
+  /* Text */
+  --color-text: var(--neutral-800);
+  --color-text-muted: var(--neutral-650);
+  --color-text-light: var(--neutral-550);
+  /* Surfaces & backgrounds */
+  --color-bg: var(--neutral-0);
+  --color-surface: var(--neutral-100);
+  --color-surface-hover: var(--neutral-150);
+  --color-surface-alt: var(--neutral-200);
+  --color-surface-pressed: var(--neutral-350);
+  --color-surface-accent: var(--neutral-250);
+  /* Borders */
+  --color-border: var(--neutral-550);
+  --color-border-light: var(--neutral-400);
+  --color-border-lighter: var(--neutral-300);
   /* Overlay */
   --color-overlay: rgba(0, 0, 0, 0.35);
 
-  /* Track colors */
-  --color-track-core: hsl(30, 30%, 42%);
-  --color-track-reading: hsl(260, 30%, 50%);
-  --color-track-guitar: hsl(25, 55%, 45%);
-  --color-track-ukulele: hsl(185, 40%, 38%);
-  /* Star (gold, recommendation tone) */
-  --color-star: hsl(40, 70%, 45%);
-  /* Heatmap scale (gold → green, matches palette: attention → mastered) */
-  --heatmap-none: hsl(30, 4%, 85%);
+  /* Track colors (independent hues) */
+  --color-track-core: var(--brand-600); /* hsl(307, 55%, 32%); */
+  --color-track-reading: var(--brand-600); /* hsl(260, 55%, 54%); */
+  --color-track-guitar: var(--brand-600); /* hsl(25, 55%, 45%); */
+  --color-track-ukulele: var(--brand-600); /* hsl(185, 55%, 38%); */
+  /* Star */
+  --color-star: var(--notice-700);
+
+  /* Heatmap scale (cross-hue: gold → green, not parameterized) */
+  --heatmap-none: var(--neutral-300);
   --heatmap-1: hsl(40, 60%, 58%);
   --heatmap-2: hsl(48, 50%, 52%);
   --heatmap-3: hsl(60, 40%, 46%);
   --heatmap-4: hsl(80, 35%, 40%);
   --heatmap-5: hsl(125, 48%, 33%);
+
+  /* Fretboard SVG — derived from neutral hue */
+  --fb-string: var(--neutral-450);
+  --fb-fret: var(--neutral-350);
+  --fb-nut: var(--neutral-600);
+  --fb-marker: var(--neutral-500);
+
+  /* ================================================================
+     NON-COLOR TOKENS
+     ================================================================ */
 
   /* Typography scale */
   --text-xs: 0.75rem;
@@ -807,6 +884,31 @@ body {
   display: block;
 }
 
+/* --- About tab --- */
+.about-tab {
+  padding: var(--space-3) 0;
+}
+.about-before-after {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.about-ba-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.about-ba-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+.about-ba-after {
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+
 /* ==========================================================================
    5. PRACTICE CARD
    ========================================================================== */
@@ -829,13 +931,18 @@ body {
 }
 .practice-status {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-1);
   margin-bottom: var(--space-3);
 }
 .practice-status:empty,
 .practice-status-label:empty {
   display: none;
+}
+.practice-status-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
 }
 .practice-status-label {
   font-weight: var(--font-semibold);
@@ -1165,16 +1272,16 @@ body {
 }
 /* SVG fretboard — new circle-based design */
 .fb-string {
-  stroke: hsl(30, 8%, 72%);
+  stroke: var(--fb-string);
 }
 .fb-fret {
-  stroke: hsl(30, 5%, 82%);
+  stroke: var(--fb-fret);
 }
 .fb-nut {
-  fill: hsl(30, 8%, 48%);
+  fill: var(--fb-nut);
 }
 .fb-marker {
-  fill: hsl(30, 5%, 62%);
+  fill: var(--fb-marker);
 }
 .fb-pos {
   fill: none;
@@ -1662,7 +1769,7 @@ button {
   opacity: 1;
 }
 .answer-input-correct {
-  border-color: var(--color-correct) !important;
+  border-color: var(--color-success) !important;
   opacity: 1;
 }
 .answer-input-shake {

@@ -568,19 +568,6 @@ describe('ModeTopBar', () => {
     assert.ok(html.includes('Some description'));
   });
 
-  it('renders before/after line when provided', () => {
-    const html = render(
-      <ModeTopBar
-        title='Test'
-        description='Short desc'
-        beforeAfter={{ before: 'slow way', after: 'fast way' }}
-      />,
-    );
-    assert.ok(html.includes('mode-before-after'));
-    assert.ok(html.includes('slow way'));
-    assert.ok(html.includes('fast way'));
-  });
-
   it('renders skill icon when modeId is provided', () => {
     const html = render(
       <ModeTopBar modeId='semitoneMath' title='Semitone Math' />,

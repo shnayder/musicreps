@@ -9,7 +9,7 @@ import {
 } from './stats-display.ts';
 
 // Heatmap palette (matches fallback values in stats-display.ts)
-const NONE = 'hsl(30, 4%, 85%)';
+const NONE = 'hsl(30, 5%, 86%)';
 
 // ---------------------------------------------------------------------------
 // getSpeedFreshnessColor

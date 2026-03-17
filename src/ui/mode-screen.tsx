@@ -39,14 +39,10 @@ export function ModeScreen(
 // ---------------------------------------------------------------------------
 
 export function ModeTopBar(
-  { modeId, title, description, beforeAfter, onBack, showBack = true }: {
+  { modeId, title, description, onBack, showBack = true }: {
     modeId?: string;
     title: string;
     description?: string;
-    beforeAfter?: {
-      before: string | (() => string);
-      after: string | (() => string);
-    };
     onBack?: () => void;
     showBack?: boolean;
   },
@@ -71,21 +67,6 @@ export function ModeTopBar(
           </button>
         )}
       </div>
-      {beforeAfter && (
-        <div class='mode-before-after'>
-          <span class='mode-ba-before'>
-            {typeof beforeAfter.before === 'function'
-              ? beforeAfter.before()
-              : beforeAfter.before}
-          </span>
-          <span class='mode-ba-arrow'>&rarr;</span>
-          <span class='mode-ba-after'>
-            {typeof beforeAfter.after === 'function'
-              ? beforeAfter.after()
-              : beforeAfter.after}
-          </span>
-        </div>
-      )}
     </div>
   );
 }
@@ -94,31 +75,38 @@ export function ModeTopBar(
 // TabbedIdle — practice/progress tab switching (WAI-ARIA Tabs pattern)
 // ---------------------------------------------------------------------------
 
+export type ModeTab = 'practice' | 'progress' | 'about';
+
 let tabbedIdCounter = 0;
 
-const TABS = ['practice', 'progress'] as const;
-const TAB_LABELS: Record<string, string> = {
+const TAB_LABELS: Record<ModeTab, string> = {
   practice: 'Practice',
   progress: 'Progress',
+  about: 'About',
 };
 
 export function TabbedIdle(
-  { activeTab, onTabSwitch, practiceContent, progressContent }: {
-    activeTab: 'practice' | 'progress';
-    onTabSwitch: (tab: 'practice' | 'progress') => void;
+  { activeTab, onTabSwitch, practiceContent, progressContent, aboutContent }: {
+    activeTab: ModeTab;
+    onTabSwitch: (tab: ModeTab) => void;
     practiceContent: ComponentChildren;
     progressContent: ComponentChildren;
+    aboutContent?: ComponentChildren;
   },
 ) {
   const prefix = useMemo(() => 'tabs-' + tabbedIdCounter++, []);
+  const tabs: ModeTab[] = aboutContent
+    ? ['practice', 'progress', 'about']
+    : ['practice', 'progress'];
 
-  function handleTabKeyDown(
-    e: KeyboardEvent,
-    current: 'practice' | 'progress',
-  ) {
+  function handleTabKeyDown(e: KeyboardEvent, current: ModeTab) {
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
-      const next = current === 'practice' ? 'progress' : 'practice';
+      const idx = tabs.indexOf(current);
+      const nextIdx = e.key === 'ArrowRight'
+        ? (idx + 1) % tabs.length
+        : (idx - 1 + tabs.length) % tabs.length;
+      const next = tabs[nextIdx];
       onTabSwitch(next);
       requestAnimationFrame(() => {
         const container = (e.currentTarget as HTMLElement).parentElement;
@@ -133,7 +121,7 @@ export function TabbedIdle(
   return (
     <>
       <div class='mode-tabs' role='tablist'>
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <button
             type='button'
             key={tab}
@@ -169,6 +157,17 @@ export function TabbedIdle(
       >
         {progressContent}
       </div>
+      {aboutContent && (
+        <div
+          id={prefix + '-panel-about'}
+          role='tabpanel'
+          aria-labelledby={prefix + '-tab-about'}
+          class={'tab-content tab-about' +
+            (activeTab === 'about' ? ' active' : '')}
+        >
+          {aboutContent}
+        </div>
+      )}
     </>
   );
 }
@@ -233,9 +232,13 @@ export function PracticeCard(
     <div class='practice-card'>
       {statusLabel && (
         <div class='practice-status'>
-          <Text role='label'>Status</Text>
-          <span class='practice-status-label'>{statusLabel}</span>
-          <span class='practice-status-detail'>{statusDetail || ''}</span>
+          <div class='practice-status-row'>
+            <Text role='label'>Status</Text>
+            <span class='practice-status-label'>{statusLabel}</span>
+          </div>
+          {statusDetail && (
+            <span class='practice-status-detail'>{statusDetail}</span>
+          )}
         </div>
       )}
       {recBlock}
@@ -519,6 +522,7 @@ export function PracticeTab(
     onTabSwitch,
     scopeValid,
     validationMessage,
+    aboutContent,
   }: {
     summary: PracticeSummaryState;
     onStart: () => void;
@@ -527,10 +531,11 @@ export function PracticeTab(
     statsContent: ComponentChildren;
     onCalibrate: () => void;
     baseline: number | null;
-    activeTab: 'practice' | 'progress';
-    onTabSwitch: (tab: 'practice' | 'progress') => void;
+    activeTab: ModeTab;
+    onTabSwitch: (tab: ModeTab) => void;
     scopeValid?: boolean;
     validationMessage?: string;
+    aboutContent?: ComponentChildren;
   },
 ) {
   return (
@@ -558,6 +563,7 @@ export function PracticeTab(
           />
         </div>
       }
+      aboutContent={aboutContent}
     />
   );
 }

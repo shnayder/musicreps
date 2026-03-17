@@ -34,6 +34,7 @@ import { usePracticeSummary } from '../../hooks/use-practice-summary.ts';
 
 import { NoteButtons } from '../../ui/buttons.tsx';
 import { NoteFilter } from '../../ui/scope.tsx';
+import { Text } from '../../ui/text.tsx';
 import {
   ModeTopBar,
   PracticeTab,
@@ -366,7 +367,27 @@ function SpeedTapIdleView(
       onCalibrate={engine.startCalibration}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
+      aboutContent={<SpeedTapAboutTab />}
     />
+  );
+}
+
+function SpeedTapAboutTab() {
+  const ba = MODE_BEFORE_AFTER.speedTap;
+  return (
+    <div class='about-tab'>
+      <Text role='subsection-header' as='div'>What you're training</Text>
+      <div class='about-before-after'>
+        <div class='about-ba-row'>
+          <Text role='label' as='span'>Before</Text>
+          <span class='about-ba-text'>{ba.before()}</span>
+        </div>
+        <div class='about-ba-row'>
+          <Text role='label' as='span'>After</Text>
+          <span class='about-ba-text about-ba-after'>{ba.after()}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -578,7 +599,6 @@ export function SpeedTapMode(
         modeId='speedTap'
         title='Speed Tap'
         description={MODE_DESCRIPTIONS.speedTap}
-        beforeAfter={MODE_BEFORE_AFTER.speedTap}
         onBack={navigateHome}
         showBack={isIdle}
       />
