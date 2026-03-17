@@ -75,7 +75,7 @@ describe('navigation lifecycle (E2E)', () => {
     assert.ok(homeHidden > 0, 'home screen should be hidden');
 
     // Click back/close button
-    await page.click('#mode-noteSemitones .mode-close-btn');
+    await page.click('#mode-noteSemitones .close-btn');
     await page.waitForTimeout(300);
 
     // Home should be visible again

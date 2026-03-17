@@ -21,11 +21,6 @@ import {
   MODE_TITLES,
   type ScreenshotEntry,
 } from './screenshot-manifest.ts';
-import {
-  buildComponentManifest,
-  type ComponentEntry,
-} from './component-manifest.ts';
-import { captureComponents } from './capture-components.ts';
 import { startServer } from '../tests/e2e/helpers/server.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -59,7 +54,6 @@ function generateIndexHTML(
   manifest: ScreenshotEntry[],
   outDir: string,
   imgExt: string,
-  componentEntries?: ComponentEntry[],
 ): void {
   // Split into mode groups, speed check, design moments, and progress tab
   const modeGroups = new Map<string, ScreenshotEntry[]>();
@@ -146,14 +140,6 @@ function generateIndexHTML(
       `<h2>Progress Tab</h2>\n<div class="shots">\n${shots}\n</div>\n`;
   }
 
-  // Components section
-  if (componentEntries && componentEntries.length > 0) {
-    const shots = componentEntries
-      .map((e) => shotHTML(e.name, e.name.replace('comp/', '')))
-      .join('\n');
-    sections += `<h2>Components</h2>\n<div class="shots">\n${shots}\n</div>\n`;
-  }
-
   const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Screenshots</title>
 <style>
@@ -187,23 +173,15 @@ async function main() {
     );
   }
 
-  // Build component manifest and apply --only filter
-  let compEntries = buildComponentManifest(onlyPatterns);
-
   // --list: print all names and exit (no browser needed)
   if (listMode) {
     for (const entry of manifest) console.log(entry.name);
-    for (const entry of compEntries) console.log(entry.name);
     return;
   }
 
   mkdirSync(OUT_DIR, { recursive: true });
 
-  const hasAppEntries = manifest.length > 0;
-  const hasCompEntries = compEntries.length > 0;
-
-  // --- Capture app screenshots (needs dev server) ---
-  if (hasAppEntries) {
+  if (manifest.length > 0) {
     console.log('Starting dev server...');
     const { proc: server, portReady } = startServer(PREFERRED_PORT);
     try {
@@ -347,21 +325,8 @@ async function main() {
     }
   }
 
-  // --- Capture component screenshots (file://, no server) ---
-  if (hasCompEntries) {
-    console.log('Capturing component screenshots...');
-    await captureComponents({
-      entries: compEntries,
-      outDir: OUT_DIR,
-      imgType: IMG_TYPE,
-      ...(ciMode ? { quality: 80 } : {}),
-      hasTouch: touchMode,
-    });
-  }
-
-  generateIndexHTML(manifest, OUT_DIR, IMG_EXT, compEntries);
-  const total = manifest.length + compEntries.length;
-  console.log(`\nDone! ${total} screenshots in ${OUT_DIR}`);
+  generateIndexHTML(manifest, OUT_DIR, IMG_EXT);
+  console.log(`\nDone! ${manifest.length} screenshots in ${OUT_DIR}`);
 }
 
 main().catch((err) => {

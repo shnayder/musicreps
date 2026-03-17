@@ -37,7 +37,7 @@ import {
   RoundCompleteInfo,
   SessionInfo,
   StartButton,
-  TabbedIdle,
+  Tabs,
 } from './mode-screen.tsx';
 
 // ---------------------------------------------------------------------------
@@ -547,7 +547,7 @@ describe('ModeTopBar', () => {
   it('renders close button and title', () => {
     const html = render(<ModeTopBar title='Semitone Math' />);
     assert.ok(html.includes('mode-top-bar'));
-    assert.ok(html.includes('mode-close-btn'));
+    assert.ok(html.includes('close-btn'));
     assert.ok(html.includes('mode-title'));
     assert.ok(html.includes('Semitone Math'));
     assert.ok(html.includes('\u00D7'));
@@ -557,7 +557,7 @@ describe('ModeTopBar', () => {
     const html = render(<ModeTopBar title='Test' showBack={false} />);
     assert.ok(html.includes('mode-top-bar'));
     assert.ok(html.includes('mode-title'));
-    assert.ok(!html.includes('mode-close-btn'));
+    assert.ok(!html.includes('close-btn'));
   });
 
   it('renders description as static paragraph', () => {
@@ -595,36 +595,62 @@ describe('SkillIcon', () => {
   });
 });
 
-describe('TabbedIdle', () => {
+describe('Tabs', () => {
+  const practiceTabs = [
+    {
+      id: 'practice',
+      label: 'Practice',
+      content: <div class='test-practice'>P</div>,
+    },
+    {
+      id: 'progress',
+      label: 'Progress',
+      content: <div class='test-progress'>G</div>,
+    },
+  ];
+
   it('renders tabs with practice active', () => {
     const html = render(
-      <TabbedIdle
+      <Tabs
+        tabs={practiceTabs}
         activeTab='practice'
         onTabSwitch={() => {}}
-        practiceContent={<div class='test-practice'>P</div>}
-        progressContent={<div class='test-progress'>G</div>}
       />,
     );
-    assert.ok(html.includes('mode-tabs'));
-    // Practice tab button has active class
-    assert.ok(html.includes('mode-tab active'));
-    // Practice content has active class
-    assert.ok(html.includes('tab-practice active'));
-    // Progress content does NOT have active class
-    assert.ok(!html.includes('tab-progress active'));
+    assert.ok(html.includes('tabs'));
+    assert.ok(html.includes('tab-btn active'));
+    assert.ok(html.includes('tab-panel active'));
+    assert.ok(html.includes('test-practice'));
   });
 
   it('renders tabs with progress active', () => {
     const html = render(
-      <TabbedIdle
+      <Tabs
+        tabs={practiceTabs}
         activeTab='progress'
         onTabSwitch={() => {}}
-        practiceContent={<div>P</div>}
-        progressContent={<div>G</div>}
       />,
     );
-    assert.ok(html.includes('tab-progress active'));
-    assert.ok(!html.includes('tab-practice active'));
+    // Progress panel active, practice panel not
+    const panels = html.match(/tab-panel[^"]*"/g) ?? [];
+    assert.ok(
+      panels.some((p) =>
+        p.includes('active') && html.includes('test-progress')
+      ),
+    );
+    assert.ok(html.includes('tab-btn active'));
+  });
+
+  it('wires up ARIA attributes', () => {
+    const html = render(
+      <Tabs tabs={practiceTabs} activeTab='practice' onTabSwitch={() => {}} />,
+    );
+    assert.ok(html.includes('role="tablist"'));
+    assert.ok(html.includes('role="tab"'));
+    assert.ok(html.includes('role="tabpanel"'));
+    assert.ok(html.includes('aria-selected="true"'));
+    assert.ok(html.includes('aria-controls='));
+    assert.ok(html.includes('aria-labelledby='));
   });
 });
 
@@ -736,7 +762,7 @@ describe('QuizSession', () => {
     assert.ok(html.includes('quiz-session-info'));
     assert.ok(html.includes('Natural notes'));
     assert.ok(html.includes('5 of 12'));
-    assert.ok(html.includes('quiz-header-close'));
+    assert.ok(html.includes('close-btn'));
   });
 });
 

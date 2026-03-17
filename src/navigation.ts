@@ -14,7 +14,7 @@ function initNavigationListeners(
   navigateHome: () => void,
 ): void {
   // Mode back buttons (one per mode screen)
-  document.querySelectorAll('.mode-close-btn').forEach((btn) => {
+  document.querySelectorAll('.close-btn').forEach((btn) => {
     btn.addEventListener('click', () => navigateHome());
   });
 

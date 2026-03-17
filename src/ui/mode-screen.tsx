@@ -11,6 +11,105 @@ import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
+// CloseButton — × dismiss button used in top bars and overlays
+// ---------------------------------------------------------------------------
+
+export function CloseButton(
+  { onClick, ariaLabel }: {
+    onClick?: () => void;
+    ariaLabel: string;
+  },
+) {
+  return (
+    <button
+      type='button'
+      class='close-btn'
+      aria-label={ariaLabel}
+      onClick={onClick}
+    >
+      {'\u00D7'}
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tabs — accessible tablist + panels (WAI-ARIA Tabs pattern)
+// ---------------------------------------------------------------------------
+
+export type TabDef<T extends string = string> = {
+  id: T;
+  label: ComponentChildren;
+  content: ComponentChildren;
+};
+
+let tabsIdCounter = 0;
+
+export function Tabs<T extends string>(
+  { tabs, activeTab, onTabSwitch, class: className = 'tabs' }: {
+    tabs: TabDef<T>[];
+    activeTab: T;
+    onTabSwitch: (tab: T) => void;
+    class?: string;
+  },
+) {
+  const prefix = useMemo(() => 'tabs-' + tabsIdCounter++, []);
+
+  function handleKeyDown(e: KeyboardEvent, current: T) {
+    const ids = tabs.map((t) => t.id);
+    const idx = ids.indexOf(current);
+    let nextIdx = idx;
+    if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + ids.length) % ids.length;
+    else if (e.key === 'ArrowRight') nextIdx = (idx + 1) % ids.length;
+    else if (e.key === 'Home') nextIdx = 0;
+    else if (e.key === 'End') nextIdx = ids.length - 1;
+    else return;
+    e.preventDefault();
+    const nextId = ids[nextIdx];
+    onTabSwitch(nextId);
+    requestAnimationFrame(() => {
+      (document.getElementById(
+        prefix + '-tab-' + nextId,
+      ) as HTMLElement | null)?.focus();
+    });
+  }
+
+  return (
+    <>
+      <div class={className} role='tablist'>
+        {tabs.map((tab) => (
+          <button
+            type='button'
+            key={tab.id}
+            id={prefix + '-tab-' + tab.id}
+            role='tab'
+            aria-selected={activeTab === tab.id}
+            aria-controls={prefix + '-panel-' + tab.id}
+            tabIndex={activeTab === tab.id ? 0 : -1}
+            class={'tab-btn' + (activeTab === tab.id ? ' active' : '')}
+            data-tab={tab.id}
+            onClick={() => onTabSwitch(tab.id)}
+            onKeyDown={(e) => handleKeyDown(e, tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      {tabs.map((tab) => (
+        <div
+          key={tab.id}
+          id={prefix + '-panel-' + tab.id}
+          role='tabpanel'
+          aria-labelledby={prefix + '-tab-' + tab.id}
+          class={'tab-panel' + (activeTab === tab.id ? ' active' : '')}
+        >
+          {tab.content}
+        </div>
+      ))}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Phase type
 // ---------------------------------------------------------------------------
 
@@ -56,15 +155,10 @@ export function ModeTopBar(
           {description && <p class='mode-description'>{description}</p>}
         </div>
         {showBack && (
-          <button
-            type='button'
-            tabIndex={0}
-            class='mode-close-btn'
-            aria-label='Back to home'
+          <CloseButton
+            ariaLabel='Back to home'
             onClick={onBack}
-          >
-            {'\u00D7' /* × close */}
-          </button>
+          />
         )}
       </div>
     </div>
@@ -72,105 +166,10 @@ export function ModeTopBar(
 }
 
 // ---------------------------------------------------------------------------
-// TabbedIdle — practice/progress tab switching (WAI-ARIA Tabs pattern)
+// ModeTab — tab IDs for mode screens
 // ---------------------------------------------------------------------------
 
 export type ModeTab = 'practice' | 'progress' | 'about';
-
-let tabbedIdCounter = 0;
-
-const TAB_LABELS: Record<ModeTab, string> = {
-  practice: 'Practice',
-  progress: 'Progress',
-  about: 'About',
-};
-
-export function TabbedIdle(
-  { activeTab, onTabSwitch, practiceContent, progressContent, aboutContent }: {
-    activeTab: ModeTab;
-    onTabSwitch: (tab: ModeTab) => void;
-    practiceContent: ComponentChildren;
-    progressContent: ComponentChildren;
-    aboutContent?: ComponentChildren;
-  },
-) {
-  const prefix = useMemo(() => 'tabs-' + tabbedIdCounter++, []);
-  const tabs: ModeTab[] = aboutContent
-    ? ['practice', 'progress', 'about']
-    : ['practice', 'progress'];
-
-  function handleTabKeyDown(e: KeyboardEvent, current: ModeTab) {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      const idx = tabs.indexOf(current);
-      const nextIdx = e.key === 'ArrowRight'
-        ? (idx + 1) % tabs.length
-        : (idx - 1 + tabs.length) % tabs.length;
-      const next = tabs[nextIdx];
-      onTabSwitch(next);
-      requestAnimationFrame(() => {
-        const container = (e.currentTarget as HTMLElement).parentElement;
-        const nextBtn = container?.querySelector(
-          '[data-tab="' + next + '"]',
-        ) as HTMLElement | null;
-        nextBtn?.focus();
-      });
-    }
-  }
-
-  return (
-    <>
-      <div class='mode-tabs' role='tablist'>
-        {tabs.map((tab) => (
-          <button
-            type='button'
-            key={tab}
-            id={prefix + '-tab-' + tab}
-            role='tab'
-            aria-selected={activeTab === tab}
-            aria-controls={prefix + '-panel-' + tab}
-            tabIndex={activeTab === tab ? 0 : -1}
-            class={'mode-tab' + (activeTab === tab ? ' active' : '')}
-            data-tab={tab}
-            onClick={() => onTabSwitch(tab)}
-            onKeyDown={(e) => handleTabKeyDown(e, tab)}
-          >
-            {TAB_LABELS[tab]}
-          </button>
-        ))}
-      </div>
-      <div
-        id={prefix + '-panel-practice'}
-        role='tabpanel'
-        aria-labelledby={prefix + '-tab-practice'}
-        class={'tab-content tab-practice' +
-          (activeTab === 'practice' ? ' active' : '')}
-      >
-        {practiceContent}
-      </div>
-      <div
-        id={prefix + '-panel-progress'}
-        role='tabpanel'
-        aria-labelledby={prefix + '-tab-progress'}
-        class={'tab-content tab-progress' +
-          (activeTab === 'progress' ? ' active' : '')}
-      >
-        {progressContent}
-      </div>
-      {aboutContent && (
-        <div
-          id={prefix + '-panel-about'}
-          role='tabpanel'
-          aria-labelledby={prefix + '-tab-about'}
-          class={'tab-content tab-about' +
-            (activeTab === 'about' ? ' active' : '')}
-        >
-          {aboutContent}
-        </div>
-      )}
-    </>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // PracticeCard — wraps practice zones (status, scope, action)
@@ -203,31 +202,6 @@ export function PracticeCard(
   const scopeDisabled = props.scopeValid === false;
   const validationMessage = scopeDisabled ? props.validationMessage : undefined;
 
-  const recBlock = recommendation
-    ? (
-      <div class='suggestion-card'>
-        <div class='suggestion-card-header'>Suggestion</div>
-        <div class='suggestion-card-body'>
-          <Text role='secondary' class='suggestion-card-text'>
-            {recommendation}
-          </Text>
-          {onApplyRecommendation
-            ? (
-              <button
-                type='button'
-                tabIndex={0}
-                class='suggestion-card-accept'
-                onClick={onApplyRecommendation}
-              >
-                Accept
-              </button>
-            )
-            : null}
-        </div>
-      </div>
-    )
-    : null;
-
   return (
     <div class='practice-card'>
       {statusLabel && (
@@ -241,7 +215,9 @@ export function PracticeCard(
           )}
         </div>
       )}
-      {recBlock}
+      {recommendation && (
+        <Recommendation text={recommendation} onApply={onApplyRecommendation} />
+      )}
       {scope && <div class='practice-scope'>{scope}</div>}
       <div class='practice-zone-action'>
         <StartButton
@@ -365,15 +341,10 @@ export function QuizSession(
             lastQuestion={lastQuestion}
           />
         </div>
-        <button
-          type='button'
-          tabIndex={0}
-          class='quiz-header-close'
-          aria-label='Stop quiz'
+        <CloseButton
+          ariaLabel='Stop quiz'
           onClick={onClose}
-        >
-          {'\u00D7' /* × close button */}
-        </button>
+        />
       </div>
     </div>
   );
@@ -506,7 +477,7 @@ export function RoundCompleteActions(
 }
 
 // ---------------------------------------------------------------------------
-// PracticeTab — composes TabbedIdle + PracticeCard + progress wrapper
+// PracticeTab — composes Tabs + PracticeCard
 // ---------------------------------------------------------------------------
 
 export function PracticeTab(
@@ -538,11 +509,11 @@ export function PracticeTab(
     aboutContent?: ComponentChildren;
   },
 ) {
-  return (
-    <TabbedIdle
-      activeTab={activeTab}
-      onTabSwitch={onTabSwitch}
-      practiceContent={
+  const tabs: TabDef<ModeTab>[] = [
+    {
+      id: 'practice',
+      label: 'Practice',
+      content: (
         <PracticeCard
           summary={summary}
           onStart={onStart}
@@ -551,19 +522,21 @@ export function PracticeTab(
           scopeValid={scopeValid}
           validationMessage={validationMessage}
         />
-      }
-      progressContent={
+      ),
+    },
+    {
+      id: 'progress',
+      label: 'Progress',
+      content: (
         <div>
-          <div class='stats-container'>
-            {statsContent}
-          </div>
-          <BaselineInfo
-            baseline={baseline}
-            onRun={onCalibrate}
-          />
+          <div class='stats-container'>{statsContent}</div>
+          <BaselineInfo baseline={baseline} onRun={onCalibrate} />
         </div>
-      }
-      aboutContent={aboutContent}
-    />
-  );
+      ),
+    },
+  ];
+  if (aboutContent) {
+    tabs.push({ id: 'about', label: 'About', content: aboutContent });
+  }
+  return <Tabs tabs={tabs} activeTab={activeTab} onTabSwitch={onTabSwitch} />;
 }

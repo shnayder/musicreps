@@ -1,9 +1,9 @@
 // Home screen: tabbed view with Active (starred) and All Skills tabs.
 // Active tab shows starred skills; All Skills tab shows track accordions.
 
-import { useCallback, useState } from 'preact/hooks';
+import type { ComponentChildren } from 'preact';
+import { useCallback, useMemo, useState } from 'preact/hooks';
 import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../music-data.ts';
-import type { Track } from '../music-data.ts';
 import { SkillIcon } from './icons.tsx';
 import type { SettingsController } from '../types.ts';
 import type { AppConfig } from '../app-config.ts';
@@ -13,6 +13,8 @@ import {
 } from '../hooks/use-home-progress.ts';
 import type { SkillRecommendation } from '../home-recommendations.ts';
 import { Text } from './text.tsx';
+import { CloseButton, Tabs } from './mode-screen.tsx';
+import { GroupProgressBar } from './scope.tsx';
 
 // ---------------------------------------------------------------------------
 // localStorage persistence for starred skills
@@ -73,15 +75,133 @@ try {
 } catch (_) { /* expected */ }
 
 // ---------------------------------------------------------------------------
-// SkillProgressBar — colored segments showing per-group progress
+// TrackPill — colored track label badge
 // ---------------------------------------------------------------------------
 
-function SkillProgressBar({ colors }: { colors: string[] }) {
+export function TrackPill(
+  { trackId, label }: { trackId: string; label: string },
+) {
+  return <span class={`active-skill-track-pill pill-${trackId}`}>{label}</span>;
+}
+
+// ---------------------------------------------------------------------------
+// SkillCardHeader — icon + name/desc block, with optional track pill
+// ---------------------------------------------------------------------------
+
+export function SkillCardHeader(
+  { modeId, trackId, trackLabel }: {
+    modeId: string;
+    trackId?: string;
+    trackLabel?: string;
+  },
+) {
+  const name = MODE_NAMES[modeId] || modeId;
+  const desc = MODE_DESCRIPTIONS[modeId] || '';
   return (
-    <div class='group-progress-bar'>
-      {colors.map((color, i) => (
-        <div class='group-bar-slice' key={i} style={`background:${color}`} />
+    <span class='skill-card-header'>
+      <SkillIcon modeId={modeId} />
+      <span class='skill-card-header-text'>
+        {trackId && trackLabel && (
+          <TrackPill trackId={trackId} label={trackLabel} />
+        )}
+        <span class='home-mode-name'>{name}</span>
+        <span class='home-mode-desc'>{desc}</span>
+      </span>
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SegmentedControl — exclusive multi-option picker (radio group pattern)
+// ---------------------------------------------------------------------------
+
+export type SegmentOption<T extends string> = { value: T; label: string };
+
+let segmentedControlCounter = 0;
+
+export function SegmentedControl<T extends string>(
+  { options, value, onChange, 'aria-labelledby': labelledBy }: {
+    options: SegmentOption<T>[];
+    value: T;
+    onChange: (value: T) => void;
+    'aria-labelledby'?: string;
+  },
+) {
+  const prefix = useMemo(() => 'sc-' + segmentedControlCounter++, []);
+
+  function handleKeyDown(e: KeyboardEvent, current: T) {
+    const vals = options.map((o) => o.value);
+    const idx = vals.indexOf(current);
+    let next = idx;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      next = (idx - 1 + vals.length) % vals.length;
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      next = (idx + 1) % vals.length;
+    } else if (e.key === 'Home') {
+      next = 0;
+    } else if (e.key === 'End') {
+      next = vals.length - 1;
+    } else {
+      return;
+    }
+    e.preventDefault();
+    onChange(vals[next]);
+    requestAnimationFrame(() => {
+      (document.getElementById(
+        prefix + '-' + vals[next],
+      ) as HTMLElement | null)?.focus();
+    });
+  }
+
+  return (
+    <div
+      class='segmented-control'
+      role='radiogroup'
+      aria-labelledby={labelledBy}
+    >
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          id={prefix + '-' + opt.value}
+          type='button'
+          role='radio'
+          aria-checked={value === opt.value}
+          tabIndex={value === opt.value ? 0 : -1}
+          class={'segmented-btn' + (value === opt.value ? ' active' : '')}
+          onClick={() => onChange(opt.value)}
+          onKeyDown={(e) => handleKeyDown(e, opt.value)}
+        >
+          {opt.label}
+        </button>
       ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SettingToggle — labelled SegmentedControl for settings fields
+// ---------------------------------------------------------------------------
+
+let settingToggleLabelCounter = 0;
+
+export function SettingToggle<T extends string>(
+  { label, options, value, onChange }: {
+    label: string;
+    options: SegmentOption<T>[];
+    value: T;
+    onChange: (value: T) => void;
+  },
+) {
+  const labelId = useMemo(() => 'stl-' + settingToggleLabelCounter++, []);
+  return (
+    <div class='settings-field'>
+      <Text role='label' as='div' id={labelId}>{label}</Text>
+      <SegmentedControl
+        options={options}
+        value={value}
+        onChange={onChange}
+        aria-labelledby={labelId}
+      />
     </div>
   );
 }
@@ -90,7 +210,7 @@ function SkillProgressBar({ colors }: { colors: string[] }) {
 // SkillCard — a single mode button with before/after contrast and star toggle
 // ---------------------------------------------------------------------------
 
-function SkillCard(
+export function SkillCard(
   { modeId, trackId, isStarred, onToggleStar, onSelectMode, progress }: {
     modeId: string;
     trackId: string;
@@ -101,7 +221,6 @@ function SkillCard(
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
-  const desc = MODE_DESCRIPTIONS[modeId] || '';
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -135,16 +254,10 @@ function SkillCard(
       >
         {isStarred ? '\u2605' : '\u2606'}
       </button>
-      <span class='skill-card-header'>
-        <SkillIcon modeId={modeId} />
-        <span class='skill-card-header-text'>
-          <span class='home-mode-name'>{name}</span>
-          <span class='home-mode-desc'>{desc}</span>
-        </span>
-      </span>
+      <SkillCardHeader modeId={modeId} />
       {progress && (
         <div class='skill-card-progress'>
-          <SkillProgressBar colors={progress.groupColors} />
+          <GroupProgressBar colors={progress.groupColors} />
         </div>
       )}
     </div>
@@ -173,7 +286,6 @@ function ActiveSkillCard(
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
-  const desc = MODE_DESCRIPTIONS[modeId] || '';
   const track = TRACKS.find((t) => t.skills.includes(modeId));
   const trackId = track?.id || 'core';
   const hasRec = !!rec?.detail;
@@ -217,19 +329,14 @@ function ActiveSkillCard(
         >
           {'\u2605'}
         </button>
-        <span class='skill-card-header'>
-          <SkillIcon modeId={modeId} />
-          <span class='skill-card-header-text'>
-            <span class={`active-skill-track-pill pill-${trackId}`}>
-              {trackLabel}
-            </span>
-            <span class='home-mode-name'>{name}</span>
-            <span class='home-mode-desc'>{desc}</span>
-          </span>
-        </span>
+        <SkillCardHeader
+          modeId={modeId}
+          trackId={trackId}
+          trackLabel={trackLabel}
+        />
         {progress && (
           <div class='skill-card-progress'>
-            <SkillProgressBar colors={progress.groupColors} />
+            <GroupProgressBar colors={progress.groupColors} />
           </div>
         )}
       </div>
@@ -328,56 +435,32 @@ function ActiveSkillsList(
 }
 
 // ---------------------------------------------------------------------------
-// TrackAccordion — collapsible track section
+// TrackSection — collapsible accordion section for a skill track
 // ---------------------------------------------------------------------------
 
-function TrackAccordion(
-  {
-    track,
-    isExpanded,
-    starred,
-    onToggleExpand,
-    onToggleStar,
-    onSelectMode,
-    progress,
-  }: {
-    track: Track;
+export function TrackSection(
+  { trackId, label, isExpanded, onToggle, children }: {
+    trackId: string;
+    label: string;
     isExpanded: boolean;
-    starred: Set<string>;
-    onToggleExpand: (trackId: string) => void;
-    onToggleStar: (modeId: string) => void;
-    onSelectMode: (modeId: string) => void;
-    progress: Map<string, ModeProgress>;
+    onToggle: () => void;
+    children: ComponentChildren;
   },
 ) {
   return (
     <div class='track-accordion'>
       <button
         type='button'
-        class={`track-accordion-header track-group-${track.id}`}
+        class={`track-accordion-header track-group-${trackId}`}
         aria-expanded={isExpanded}
-        onClick={() => onToggleExpand(track.id)}
+        onClick={onToggle}
       >
         <span class='track-accordion-chevron'>
           {isExpanded ? '\u25BE' : '\u25B8'}
         </span>
-        {track.label}
+        {label}
       </button>
-      {isExpanded && (
-        <div class='track-accordion-body'>
-          {track.skills.map((modeId) => (
-            <SkillCard
-              key={modeId}
-              modeId={modeId}
-              trackId={track.id}
-              isStarred={starred.has(modeId)}
-              onToggleStar={onToggleStar}
-              onSelectMode={onSelectMode}
-              progress={progress.get(modeId)}
-            />
-          ))}
-        </div>
-      )}
+      {isExpanded && <div class='track-accordion-body'>{children}</div>}
     </div>
   );
 }
@@ -456,45 +539,27 @@ function SettingsPage(
     <div class='settings-page'>
       <div class='settings-page-header'>
         <h1 class='settings-page-title'>Settings</h1>
-        <button
-          type='button'
-          class='settings-close-btn'
-          aria-label='Close'
+        <CloseButton
+          ariaLabel='Close'
           onClick={onClose}
-        >
-          &times;
-        </button>
+        />
       </div>
 
       <section class='settings-section'>
         <h2 class='settings-section-title'>General</h2>
-        <div class='settings-field'>
-          <Text role='label' as='div'>Note names</Text>
-          <div class='settings-toggle-group'>
-            <button
-              type='button'
-              class={`settings-toggle-btn${useSolfege ? '' : ' active'}`}
-              aria-pressed={!useSolfege}
-              onClick={() => {
-                settings.setUseSolfege(false);
-                setUseSolfege(false);
-              }}
-            >
-              A B C
-            </button>
-            <button
-              type='button'
-              class={`settings-toggle-btn${useSolfege ? ' active' : ''}`}
-              aria-pressed={useSolfege}
-              onClick={() => {
-                settings.setUseSolfege(true);
-                setUseSolfege(true);
-              }}
-            >
-              Do Re Mi
-            </button>
-          </div>
-        </div>
+        <SettingToggle
+          label='Note names'
+          options={[
+            { value: 'letter', label: 'A B C' },
+            { value: 'solfege', label: 'Do Re Mi' },
+          ]}
+          value={useSolfege ? 'solfege' : 'letter'}
+          onChange={(v) => {
+            const sol = v === 'solfege';
+            settings.setUseSolfege(sol);
+            setUseSolfege(sol);
+          }}
+        />
       </section>
 
       <SettingsAboutLegal appConfig={appConfig} version={version} />
@@ -525,16 +590,25 @@ function AllSkillsList(
         list.
       </p>
       {TRACKS.map((track) => (
-        <TrackAccordion
+        <TrackSection
           key={track.id}
-          track={track}
+          trackId={track.id}
+          label={track.label}
           isExpanded={accordion[track.id] !== false}
-          starred={starred}
-          onToggleExpand={onToggleExpand}
-          onToggleStar={onToggleStar}
-          onSelectMode={onSelectMode}
-          progress={progress}
-        />
+          onToggle={() => onToggleExpand(track.id)}
+        >
+          {track.skills.map((modeId) => (
+            <SkillCard
+              key={modeId}
+              modeId={modeId}
+              trackId={track.id}
+              isStarred={starred.has(modeId)}
+              onToggleStar={onToggleStar}
+              onSelectMode={onSelectMode}
+              progress={progress.get(modeId)}
+            />
+          ))}
+        </TrackSection>
       ))}
     </div>
   );
@@ -546,87 +620,111 @@ function AllSkillsList(
 
 type HomeTab = 'active' | 'all';
 
-function HomeScreenTabs(
-  { tab, starredCount, onChangeTab }: {
-    tab: HomeTab;
-    starredCount: number;
-    onChangeTab: (t: HomeTab) => void;
-  },
-) {
-  return (
-    <div class='home-tabs' role='tablist'>
-      <button
-        type='button'
-        role='tab'
-        class={`home-tab${tab === 'active' ? ' active' : ''}`}
-        aria-selected={tab === 'active'}
-        onClick={() => onChangeTab('active')}
-      >
-        Active{starredCount > 0 ? ` (${starredCount})` : ''}
-      </button>
-      <button
-        type='button'
-        role='tab'
-        class={`home-tab${tab === 'all' ? ' active' : ''}`}
-        aria-selected={tab === 'all'}
-        onClick={() => onChangeTab('all')}
-      >
-        All Skills
-      </button>
-    </div>
-  );
-}
-
-function HomeTabContent(
-  {
-    tab,
-    starred,
-    accordion,
-    progress,
-    recommendations,
-    onToggleStar,
-    onToggleExpand,
-    onSelectMode,
-  }: {
-    tab: HomeTab;
-    starred: Set<string>;
-    accordion: Record<string, boolean>;
-    progress: Map<string, ModeProgress>;
-    recommendations: SkillRecommendation[];
-    onToggleStar: (modeId: string) => void;
-    onToggleExpand: (trackId: string) => void;
-    onSelectMode: (modeId: string) => void;
-  },
-) {
-  if (tab === 'active') {
-    return (
-      <ActiveSkillsList
-        starred={starred}
-        onToggleStar={onToggleStar}
-        onSelectMode={onSelectMode}
-        progress={progress}
-        recommendations={recommendations}
-      />
-    );
-  }
-  return (
-    <AllSkillsList
-      accordion={accordion}
-      starred={starred}
-      onToggleExpand={onToggleExpand}
-      onToggleStar={onToggleStar}
-      onSelectMode={onSelectMode}
-      progress={progress}
-    />
-  );
-}
-
 function loadInitialTab(): HomeTab {
   try {
     const saved = localStorage.getItem(TAB_KEY);
     if (saved === 'active' || saved === 'all') return saved;
   } catch (_) { /* expected */ }
   return loadStarredSkills().size > 0 ? 'active' : 'all';
+}
+
+// ---------------------------------------------------------------------------
+// HomeHeader / HomeFooter — top/bottom chrome for the home screen
+// ---------------------------------------------------------------------------
+
+function HomeHeader({ isNativeApp }: { isNativeApp?: boolean }) {
+  return (
+    <div class={`home-header${isNativeApp ? ' sr-only' : ''}`}>
+      <h1 class='home-title'>Music Reps</h1>
+      {!isNativeApp && (
+        <p class='home-tagline'>
+          Instant recall for music fundamentals. You know the
+          theory&#x2009;&mdash;&#x2009;now make it automatic.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function HomeFooter(
+  { version, onSettings }: { version: string; onSettings: () => void },
+) {
+  return (
+    <div class='home-footer'>
+      <button
+        type='button'
+        class='home-settings-btn text-link'
+        onClick={onSettings}
+      >
+        Settings
+      </button>
+      <span class='version'>{version}</span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// HomeSkillTabs — Active / All Skills tabbed content
+// ---------------------------------------------------------------------------
+
+function HomeSkillTabs(
+  {
+    tab,
+    onChangeTab,
+    starred,
+    accordion,
+    onToggleStar,
+    onToggleExpand,
+    onSelectMode,
+    progress,
+    recommendations,
+  }: {
+    tab: HomeTab;
+    onChangeTab: (t: string) => void;
+    starred: Set<string>;
+    accordion: Record<string, boolean>;
+    onToggleStar: (modeId: string) => void;
+    onToggleExpand: (trackId: string) => void;
+    onSelectMode: (modeId: string) => void;
+    progress: Map<string, ModeProgress>;
+    recommendations: SkillRecommendation[];
+  },
+) {
+  return (
+    <Tabs
+      tabs={[
+        {
+          id: 'active',
+          label: `Active${starred.size > 0 ? ` (${starred.size})` : ''}`,
+          content: (
+            <ActiveSkillsList
+              starred={starred}
+              onToggleStar={onToggleStar}
+              onSelectMode={onSelectMode}
+              progress={progress}
+              recommendations={recommendations}
+            />
+          ),
+        },
+        {
+          id: 'all',
+          label: 'All Skills',
+          content: (
+            <AllSkillsList
+              accordion={accordion}
+              starred={starred}
+              onToggleExpand={onToggleExpand}
+              onToggleStar={onToggleStar}
+              onSelectMode={onSelectMode}
+              progress={progress}
+            />
+          ),
+        },
+      ]}
+      activeTab={tab}
+      onTabSwitch={onChangeTab}
+    />
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -652,14 +750,14 @@ export function HomeScreen(
   const handleToggleStar = useCallback((modeId: string) => {
     setStarred((prev) => {
       const next = new Set(prev);
-      if (next.has(modeId)) next.delete(modeId);
-      else next.add(modeId);
+      next.has(modeId) ? next.delete(modeId) : next.add(modeId);
       saveStarredSkills(next);
       return next;
     });
   }, []);
 
-  const handleChangeTab = useCallback((t: HomeTab) => {
+  const handleChangeTab = useCallback((t: string) => {
+    if (t !== 'active' && t !== 'all') return;
     setTab(t);
     try {
       localStorage.setItem(TAB_KEY, t);
@@ -689,46 +787,27 @@ export function HomeScreen(
 
   return (
     <div class='home-content'>
-      <div class={`home-header${isNativeApp ? ' sr-only' : ''}`}>
-        <h1 class='home-title'>Music Reps</h1>
-        {!isNativeApp && (
-          <p class='home-tagline'>
-            Instant recall for music fundamentals. You know the
-            theory&#x2009;&mdash;&#x2009;now make it automatic.
-          </p>
-        )}
-      </div>
+      <HomeHeader isNativeApp={isNativeApp} />
 
-      <HomeScreenTabs
+      <HomeSkillTabs
         tab={tab}
-        starredCount={starred.size}
         onChangeTab={handleChangeTab}
-      />
-
-      <HomeTabContent
-        tab={tab}
         starred={starred}
         accordion={accordion}
-        progress={progress}
-        recommendations={recommendations}
         onToggleStar={handleToggleStar}
         onToggleExpand={handleToggleExpand}
         onSelectMode={onSelectMode}
+        progress={progress}
+        recommendations={recommendations}
       />
 
-      <div class='home-footer'>
-        <button
-          type='button'
-          class='home-settings-btn text-link'
-          onClick={() => {
-            setUseSolfege(settings.getUseSolfege());
-            setShowSettings(true);
-          }}
-        >
-          Settings
-        </button>
-        <span class='version'>{version}</span>
-      </div>
+      <HomeFooter
+        version={version}
+        onSettings={() => {
+          setUseSolfege(settings.getUseSolfege());
+          setShowSettings(true);
+        }}
+      />
     </div>
   );
 }

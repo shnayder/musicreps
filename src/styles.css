@@ -299,14 +299,12 @@ body {
   color: var(--color-text-muted);
   line-height: 1.4;
 }
-/* --- Home tabs (Active / All Skills) --- */
-.home-tabs {
+/* --- Tabs --- */
+.tabs {
   display: flex;
-  gap: var(--space-1);
-  margin-top: var(--space-4);
   border-bottom: 2px solid var(--color-border-lighter);
 }
-.home-tab {
+.tab-btn {
   flex: 1;
   padding: var(--space-3) var(--space-5);
   font-size: var(--text-base);
@@ -314,22 +312,27 @@ body {
   color: var(--color-text-muted);
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
   cursor: pointer;
-  transition:
-    color var(--duration-base) ease,
-    border-color var(--duration-base) ease;
+  position: relative;
+  transition: color var(--duration-base) ease;
 }
-.home-tab:hover {
+.tab-btn:hover {
   color: var(--color-text);
 }
-.home-tab.active {
+.tab-btn.active {
   color: var(--color-brand-dark);
-  border-bottom-color: var(--color-brand);
   font-weight: var(--font-semibold);
 }
-.home-tab:focus-visible {
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-brand);
+}
+.tab-btn:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: -2px;
   border-radius: var(--radius-sm);
@@ -665,7 +668,7 @@ body {
   flex-shrink: 0;
   color: var(--color-text-muted);
 }
-.mode-close-btn {
+.close-btn {
   background: none;
   border: none;
   font-size: var(--size-close-btn);
@@ -674,19 +677,22 @@ body {
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
   color: var(--color-text-light);
-  margin: calc(-1 * var(--space-2)) 0 0 0;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
   line-height: 1;
+  transition:
+    color var(--duration-base) ease,
+    background var(--duration-base) ease;
 }
-.mode-close-btn:hover {
+.close-btn:hover {
   color: var(--color-text);
   background: var(--color-surface-hover);
 }
-.mode-close-btn:active {
+.close-btn:active {
   background: var(--color-surface-pressed);
 }
 .mode-top-bar-text {
@@ -742,20 +748,6 @@ body {
   font-weight: var(--font-semibold);
   font-size: var(--text-xl);
 }
-.settings-close-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: var(--text-xl);
-  line-height: 1;
-  padding: var(--space-2);
-  min-width: var(--size-touch-target);
-  min-height: var(--size-touch-target);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-muted);
-}
 .settings-section {
   border-top: 1px solid var(--color-border-lighter);
   padding-top: var(--space-4);
@@ -779,14 +771,14 @@ body {
   gap: var(--space-3);
 }
 
-.settings-toggle-group {
+.segmented-control {
   display: flex;
   gap: 0;
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--color-border);
 }
-.settings-toggle-btn {
+.segmented-btn {
   flex: 1;
   padding: var(--space-3) var(--space-4);
   border: none;
@@ -799,17 +791,17 @@ body {
     background var(--duration-base) ease,
     color var(--duration-base) ease;
 }
-.settings-toggle-btn + .settings-toggle-btn {
+.segmented-btn + .segmented-btn {
   border-left: 1px solid var(--color-border);
 }
-.settings-toggle-btn.active {
+.segmented-btn.active {
   background: var(--color-brand);
   color: white;
 }
-.settings-toggle-btn:hover:not(.active) {
+.segmented-btn:hover:not(.active) {
   background: var(--color-surface-hover);
 }
-.settings-toggle-btn:active {
+.segmented-btn:active {
   opacity: var(--opacity-pressed);
 }
 
@@ -847,40 +839,10 @@ body {
   display: none;
 }
 
-/* --- Mode tabs (Practice / Progress) --- */
-.mode-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 2px solid var(--color-border-lighter);
-  margin-bottom: var(--space-5);
-}
-.mode-tab {
-  flex: 1;
-  padding: var(--space-3) var(--space-5);
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  background: none;
-  font-size: var(--text-base);
-  font-weight: var(--font-medium);
-  color: var(--color-text-muted);
-  cursor: pointer;
-  transition:
-    color var(--duration-base) ease,
-    border-color var(--duration-base) ease;
-}
-.mode-tab:hover {
-  color: var(--color-text);
-}
-.mode-tab.active {
-  color: var(--color-brand-dark);
-  border-bottom-color: var(--color-brand);
-  font-weight: var(--font-semibold);
-}
-.tab-content {
+.tab-panel {
   display: none;
 }
-.tab-content.active {
+.tab-panel.active {
   display: block;
 }
 
@@ -1383,33 +1345,6 @@ button {
 }
 .quiz-info-count {
   font-variant-numeric: tabular-nums;
-}
-.quiz-header-close {
-  background: none;
-  border: none;
-  font-size: var(--size-close-btn);
-  color: var(--color-text-light);
-  cursor: pointer;
-  padding: var(--space-2);
-  min-width: var(--size-touch-target);
-  min-height: var(--size-touch-target);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  line-height: 1;
-  margin: 0;
-  border-radius: var(--radius-sm);
-  transition:
-    color var(--duration-base) ease,
-    background var(--duration-base) ease;
-}
-.quiz-header-close:hover {
-  color: var(--color-text);
-  background: var(--color-surface-hover);
-}
-.quiz-header-close:active {
-  background: var(--color-surface-pressed);
 }
 
 /* --- Progress bar (build-time template only) --- */
@@ -2340,11 +2275,6 @@ button {
   outline-color: white;
 }
 
-/* Tab buttons */
-.mode-tab:focus-visible {
-  outline-offset: -2px;
-}
-
 /* Answer buttons */
 .answer-btn:focus-visible,
 .note-btn:focus-visible,
@@ -2352,17 +2282,16 @@ button {
   outline-offset: -2px;
 }
 
-/* Back button, close buttons */
-.mode-close-btn:focus-visible,
-.quiz-header-close:focus-visible {
+/* Close buttons */
+.close-btn:focus-visible {
   outline-offset: -2px;
 }
 
 /* Settings page */
-.settings-toggle-btn:focus-visible {
+.segmented-btn:focus-visible {
   outline-offset: -2px;
 }
-.settings-toggle-btn.active:focus-visible {
+.segmented-btn.active:focus-visible {
   outline-color: white;
 }
 

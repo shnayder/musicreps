@@ -9,6 +9,22 @@ import { getSpeedFreshnessColor } from '../stats-display.ts';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
+// GroupProgressBar — segmented bar showing per-item mastery colors
+// ---------------------------------------------------------------------------
+
+export function GroupProgressBar(
+  { colors, disabled }: { colors: string[]; disabled?: boolean },
+) {
+  return (
+    <div class={'group-progress-bar' + (disabled ? ' skipped' : '')}>
+      {colors.map((color, i) => (
+        <div class='group-bar-slice' key={i} style={`background:${color}`} />
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // GroupToggles — distance group toggles (e.g., +1 to +3, +4 to +6)
 // ---------------------------------------------------------------------------
 
@@ -197,17 +213,10 @@ export function GroupProgressToggles(
             >
               {g.label}
             </button>
-            <div
-              class={'group-progress-bar' + (isSkipped ? ' skipped' : '')}
-            >
-              {items.map((item) => (
-                <div
-                  class='group-bar-slice'
-                  key={item.id}
-                  style={`background:${item.color}`}
-                />
-              ))}
-            </div>
+            <GroupProgressBar
+              colors={items.map((item) => item.color)}
+              disabled={isSkipped}
+            />
             {hasMenu && (
               <GroupSkipMenu
                 index={i}
