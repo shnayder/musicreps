@@ -2,8 +2,6 @@ name: Cleanup Preview
 
 on:
   delete:
-  pull_request:
-    types: [closed]
 
 concurrency:
   group: gh-pages-deploy
@@ -14,10 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Only run for claude/* or codex/* branches in this repo (not forks)
-    if: >-
-      (github.event_name == 'delete' && (startsWith(github.event.ref, 'claude/') || startsWith(github.event.ref, 'codex/'))) ||
-      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && (startsWith(github.event.pull_request.head.ref, 'claude/') || startsWith(github.event.pull_request.head.ref, 'codex/')))
+    if: startsWith(github.event.ref, 'claude/')
     steps:
       - name: Checkout (for deploy script)
         uses: actions/checkout@v4
@@ -25,10 +20,4 @@ jobs:
           ref: main
 
       - name: Cleanup preview
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BRANCH="${{ github.event.pull_request.head.ref }}"
-          else
-            BRANCH="${{ github.event.ref }}"
-          fi
-          bash scripts/deploy-gh-pages.sh cleanup "$BRANCH"
+        run: bash scripts/deploy-gh-pages.sh cleanup "${{ github.event.ref }}"
