@@ -117,9 +117,9 @@ async function captureStates(
     await page.waitForLoadState('networkidle');
 
     // Seed shared motor baseline to skip calibration for all modes.
-    // All button-based modes share the 'button' provider key.
+    // All note-button modes share the 'note-button' task type key.
     await page.evaluate(
-      () => localStorage.setItem('motorBaseline_button', '500'),
+      () => localStorage.setItem('motorBaseline_note-button', '500'),
     );
     await page.reload();
     await page.waitForLoadState('networkidle');

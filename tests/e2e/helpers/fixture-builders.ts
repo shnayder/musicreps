@@ -3,13 +3,13 @@
 
 /**
  * Build a motor baseline entry. Seeding this skips the calibration prompt.
- * The provider is 'button' for all current modes.
+ * The taskType is 'note-button' for all current modes.
  */
 export function buildMotorBaseline(
   value: number,
-  provider = 'button',
+  taskType = 'note-button',
 ): Record<string, string> {
-  return { [`motorBaseline_${provider}`]: String(value) };
+  return { [`motorBaseline_${taskType}`]: String(value) };
 }
 
 /**

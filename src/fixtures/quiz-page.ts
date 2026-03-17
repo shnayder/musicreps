@@ -264,7 +264,7 @@ export function speedCheckTesting(): FixtureDetail {
     calibration: {
       phase: 'running',
       trialProgress: '5 / 10',
-      targetNote: 'E',
+      promptAnswer: 'E',
     },
   };
 }

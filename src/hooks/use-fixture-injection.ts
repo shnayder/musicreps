@@ -38,12 +38,13 @@ export function useFixtureInjection(
       }
 
       if (detail.calibration) {
-        const calPhase = detail.calibration.phase === 'results'
-          ? 'calibration-results' as const
-          : detail.calibration.phase === 'running'
-          ? 'calibrating' as const
-          : 'calibration-intro' as const;
-        setState((prev) => ({ ...prev, phase: calPhase }));
+        // All fixture phases map to the single 'calibrating' engine phase.
+        // SpeedCheck's internal phase is driven by the fixture's phase field.
+        setState((prev) => ({
+          ...prev,
+          phase: 'calibrating' as const,
+          quizActive: true,
+        }));
         setCalibrationFixture(detail.calibration);
       }
 

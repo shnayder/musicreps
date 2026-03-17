@@ -392,7 +392,7 @@ All timing thresholds scale proportionally:
 | Heatmap orange          | < 6.0x            |
 
 Key functions: `deriveScaledConfig()`, `computeMedian()` in `adaptive.ts`;
-`getCalibrationThresholds()`, `pickCalibrationButton()` in `quiz-engine.ts`.
+`getCalibrationThresholds()`, `pickCalibrationNote()` in `quiz-engine.ts`.
 
 #### Response-count scaling (planned)
 

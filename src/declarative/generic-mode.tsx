@@ -65,8 +65,11 @@ import {
   KeyboardHint,
   type KeyboardHintType,
 } from '../ui/quiz-ui.tsx';
-import { Text } from '../ui/text.tsx';
-import { BUTTON_PROVIDER, SpeedCheck } from '../ui/speed-check.tsx';
+import {
+  IMPLEMENTED_TASK_TYPES,
+  NOTE_BUTTON_CONFIG,
+  SpeedCheck,
+} from '../ui/speed-check.tsx';
 
 import type {
   AnswerSpec,
@@ -601,7 +604,7 @@ function QuizActiveView<Q>(
 
   return (
     <>
-      {phase !== 'round-complete' && (
+      {phase !== 'round-complete' && !engine.calibrating && (
         <QuizSession
           timeLeft={engine.timerText}
           timerPct={engine.timerPct}
@@ -617,17 +620,15 @@ function QuizActiveView<Q>(
       )}
       {engine.calibrating
         ? (
-          <QuizArea>
-            <SpeedCheck
-              provider={BUTTON_PROVIDER}
-              fixture={engine.calibrationFixture}
-              onComplete={(baseline) => {
-                learner.applyBaseline(baseline);
-                engine.endCalibration();
-              }}
-              onCancel={engine.endCalibration}
-            />
-          </QuizArea>
+          <SpeedCheck
+            config={NOTE_BUTTON_CONFIG}
+            fixture={engine.calibrationFixture}
+            onComplete={(baseline) => {
+              learner.applyBaseline(baseline);
+              engine.endCalibration();
+            }}
+            onCancel={engine.endCalibration}
+          />
         )
         : phase === 'round-complete'
         ? (
@@ -693,6 +694,9 @@ function IdlePracticeView<Q>(
   },
 ) {
   const groupScope = def.scope.kind === 'groups' ? def.scope : null;
+  const hasSpeedCheck = IMPLEMENTED_TASK_TYPES.has(
+    def.motorTaskType ?? 'note-button',
+  );
   return (
     <PracticeTab
       summary={ps.summary}
@@ -746,8 +750,8 @@ function IdlePracticeView<Q>(
           {(def.stats.kind !== 'none' || ctrl.renderStats) && <StatsLegend />}
         </>
       }
-      baseline={learner.motorBaseline}
-      onCalibrate={engine.startCalibration}
+      baseline={hasSpeedCheck ? learner.motorBaseline : undefined}
+      onCalibrate={hasSpeedCheck ? engine.startCalibration : undefined}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
       aboutContent={<AboutTab beforeAfter={def.beforeAfter} />}
@@ -995,7 +999,11 @@ export function GenericMode<Q>(
     onMount: (handle: ModeHandle) => void;
   },
 ) {
-  const learner = useLearnerModel(def.namespace, def.allItems);
+  const learner = useLearnerModel(
+    def.namespace,
+    def.allItems,
+    def.motorTaskType,
+  );
   const groupScopeSpec = buildGroupScopeSpec(def, learner.selector);
   const groupScopeResult = groupScopeSpec
     ? useGroupScope(groupScopeSpec)

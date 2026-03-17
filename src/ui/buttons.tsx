@@ -67,21 +67,18 @@ function feedbackClass(
 // ---------------------------------------------------------------------------
 
 export function NoteButtons(
-  { onAnswer, hidden, useFlats, calibrationActive, narrowing, feedback }: {
+  { onAnswer, hidden, useFlats, narrowing, feedback }: {
     onAnswer?: (note: string) => void;
     hidden?: boolean;
     /** When set, accidental buttons show flats (true) or sharps (false). */
     useFlats?: boolean;
-    /** Add .calibration-active class (keeps buttons visible during calibration). */
-    calibrationActive?: boolean;
     /** Set of note names to highlight as keyboard matches; others dimmed. */
     narrowing?: ReadonlySet<string> | null;
     feedback?: ButtonFeedback | null;
   },
 ) {
   const cls = 'answer-buttons answer-buttons-notes' +
-    (hidden ? ' answer-group-hidden' : '') +
-    (calibrationActive ? ' calibration-active' : '');
+    (hidden ? ' answer-group-hidden' : '');
   return (
     <div class={cls}>
       {NOTE_NAMES.map((n) => {

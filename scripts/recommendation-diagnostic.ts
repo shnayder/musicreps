@@ -287,7 +287,7 @@ async function captureRound(
 
       await page.evaluate(
         (baseline: number) => {
-          localStorage.setItem('motorBaseline_button', String(baseline));
+          localStorage.setItem('motorBaseline_note-button', String(baseline));
         },
         MOTOR_BASELINE,
       );

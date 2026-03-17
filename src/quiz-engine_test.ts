@@ -7,7 +7,7 @@ import {
   getCalibrationThresholds,
   noteNarrowingSet,
   numberNarrowingSet,
-  pickCalibrationButton,
+  pickCalibrationNote,
 } from './quiz-engine.ts';
 import { getUseSolfege, setUseSolfege } from './music-data.ts';
 import { DEFAULT_CONFIG } from './adaptive.ts';
@@ -179,18 +179,23 @@ describe('getCalibrationThresholds', () => {
     assert.equal(thresholds.length, 5);
   });
 
-  it('scales thresholds from baseline at 1000ms', () => {
+  it('scales thresholds from baseline at 1000ms with v4 labels', () => {
     const thresholds = getCalibrationThresholds(1000);
     assert.equal(thresholds[0].label, 'Automatic');
     assert.equal(thresholds[0].maxMs, 1500); // 1.5x
-    assert.equal(thresholds[1].label, 'Good');
+    assert.equal(thresholds[0].colorToken, '--heatmap-5');
+    assert.equal(thresholds[1].label, 'Solid');
     assert.equal(thresholds[1].maxMs, 3000); // 3.0x
-    assert.equal(thresholds[2].label, 'Developing');
+    assert.equal(thresholds[1].colorToken, '--heatmap-4');
+    assert.equal(thresholds[2].label, 'Learning');
     assert.equal(thresholds[2].maxMs, 4500); // 4.5x
-    assert.equal(thresholds[3].label, 'Slow');
+    assert.equal(thresholds[2].colorToken, '--heatmap-3');
+    assert.equal(thresholds[3].label, 'Hesitant');
     assert.equal(thresholds[3].maxMs, 6000); // 6.0x
-    assert.equal(thresholds[4].label, 'Very slow');
+    assert.equal(thresholds[3].colorToken, '--heatmap-2');
+    assert.equal(thresholds[4].label, 'Starting');
     assert.equal(thresholds[4].maxMs, null);
+    assert.equal(thresholds[4].colorToken, '--heatmap-1');
   });
 
   it('scales proportionally for faster baseline', () => {
@@ -425,59 +430,59 @@ describe('createAdaptiveKeyHandler', () => {
   });
 });
 
-// --- pickCalibrationButton tests ---
+// --- pickCalibrationNote tests ---
 
-function makeBtn(note: string) {
-  return { dataset: { note }, textContent: note } as any;
-}
-
-describe('pickCalibrationButton', () => {
-  const C = makeBtn('C');
-  const D = makeBtn('D');
-  const Cs = makeBtn('C#');
-  const Fs = makeBtn('F#');
-
-  it('returns a button from the pool', () => {
-    const btn = pickCalibrationButton([C, D, Cs], null, () => 0.5);
-    assert.ok([C, D, Cs].includes(btn));
+describe('pickCalibrationNote', () => {
+  it('returns a valid note name', () => {
+    const note = pickCalibrationNote(null, () => 0.5);
+    const allNotes = [
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+      'A',
+      'B',
+      'C#',
+      'D#',
+      'F#',
+      'G#',
+      'A#',
+    ];
+    assert.ok(allNotes.includes(note), `${note} should be a valid note`);
   });
 
-  it('picks a sharp button when rng < 0.35', () => {
-    // rng returns 0.1 for the sharp/natural decision, 0 for index selection
+  it('picks a sharp note when rng < 0.35', () => {
     let call = 0;
     const rng = () => [0.1, 0][call++];
-    const btn = pickCalibrationButton([C, D, Cs, Fs], null, rng);
-    assert.ok([Cs, Fs].includes(btn), 'expected a sharp button');
+    const note = pickCalibrationNote(null, rng);
+    assert.ok(note.includes('#'), `expected a sharp note, got ${note}`);
   });
 
-  it('picks a natural button when rng >= 0.35', () => {
+  it('picks a natural note when rng >= 0.35', () => {
     let call = 0;
     const rng = () => [0.5, 0][call++];
-    const btn = pickCalibrationButton([C, D, Cs, Fs], null, rng);
-    assert.ok([C, D].includes(btn), 'expected a natural button');
+    const note = pickCalibrationNote(null, rng);
+    assert.ok(!note.includes('#'), `expected a natural note, got ${note}`);
   });
 
-  it('avoids repeating the previous button', () => {
-    // Pool has only naturals [C, D]; first rng call picks index 0 (= C = prevBtn),
-    // second picks index 1 (= D) to break the do-while
+  it('avoids repeating the previous note', () => {
+    // Pool is naturals; first rng picks index 0 (= C = prev), retry picks index 1 (= D)
     let call = 0;
-    const rng = () => [0.5, 0, 0.99][call++];
-    const btn = pickCalibrationButton([C, D], C, rng);
-    assert.equal(btn, D);
+    const rng = () => [0.5, 0, 0.99 / 7][call++];
+    const note = pickCalibrationNote('C', rng);
+    assert.notEqual(note, 'C');
   });
 
-  it('allows repeat when pool has only one button', () => {
-    const rng = () => 0.5;
-    const btn = pickCalibrationButton([C], C, rng);
-    assert.equal(btn, C);
-  });
-
-  it('falls back to all buttons when no naturals exist', () => {
-    // All sharps, rng >= 0.35 so it would pick naturals, but none exist
-    let call = 0;
-    const rng = () => [0.5, 0][call++];
-    const btn = pickCalibrationButton([Cs, Fs], null, rng);
-    assert.ok([Cs, Fs].includes(btn));
+  it('never returns same note consecutively in 100 trials', () => {
+    let prev: string | null = null;
+    for (let i = 0; i < 100; i++) {
+      const note = pickCalibrationNote(prev);
+      if (prev !== null) {
+        assert.notEqual(note, prev, `trial ${i}: got consecutive ${note}`);
+      }
+      prev = note;
+    }
   });
 });
 

@@ -242,7 +242,7 @@ describe('fixture engine state validity', () => {
     assert.ok(fixture.calibration);
     assert.equal(fixture.calibration!.phase, 'running');
     assert.equal(fixture.calibration!.trialProgress, '5 / 10');
-    assert.equal(fixture.calibration!.targetNote, 'E');
+    assert.equal(fixture.calibration!.promptAnswer, 'E');
   });
 
   it('speedCheckResults produces calibration fixture with results phase', () => {

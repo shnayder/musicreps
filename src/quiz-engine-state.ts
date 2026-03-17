@@ -6,7 +6,7 @@ import type { EngineState } from './types.ts';
 /** Create the initial (idle) engine state. */
 export function initialEngineState(): EngineState {
   return {
-    phase: 'idle', // 'idle' | 'active' | 'round-complete' | 'calibration-intro' | 'calibrating' | 'calibration-results'
+    phase: 'idle', // 'idle' | 'active' | 'round-complete' | 'calibrating'
     currentItemId: null,
     answered: false,
     questionStartTime: null,
@@ -39,9 +39,6 @@ export function initialEngineState(): EngineState {
     // Mastery message
     masteryText: '',
     showMastery: false,
-
-    // Calibration
-    calibrationBaseline: null,
 
     // UI visibility
     quizActive: false,
@@ -163,62 +160,17 @@ export function engineContinueRound(state: EngineState): EngineState {
 }
 
 /**
- * Transition: enter calibration intro screen.
- * Shows explanation and a Start button; quiz controls are hidden.
+ * Transition: enter calibration mode.
+ * SpeedCheck component manages its own internal phases (intro/running/results).
+ * The engine just knows calibration is active for keyboard routing.
  */
-export function engineCalibrationIntro(
-  state: EngineState,
-  hintOverride?: string,
-): EngineState {
-  return {
-    ...state,
-    phase: 'calibration-intro',
-    showMastery: false,
-    quizActive: true,
-    answersEnabled: false,
-    feedbackText: 'Quick Speed Check',
-    feedbackClass: 'feedback',
-    hintText: hintOverride !== undefined
-      ? hintOverride
-      : 'We\u2019ll measure your tap speed to set personalized targets. Tap each highlighted button as fast as you can \u2014 10 taps total.',
-
-    calibrationBaseline: null,
-  };
-}
-
-/**
- * Transition: calibration trials are running.
- * Buttons enabled for tapping; trial counter shown in prompt.
- */
-export function engineCalibrating(
-  state: EngineState,
-  hintOverride?: string,
-): EngineState {
+export function engineStartCalibration(state: EngineState): EngineState {
   return {
     ...state,
     phase: 'calibrating',
-    answersEnabled: true,
-    feedbackText: 'Speed check!',
-    hintText: hintOverride !== undefined
-      ? hintOverride
-      : 'Tap the highlighted button as fast as you can',
-  };
-}
-
-/** Transition: calibration complete, show results. */
-export function engineCalibrationResults(
-  state: EngineState,
-  baseline: number,
-): EngineState {
-  return {
-    ...state,
-    phase: 'calibration-results',
+    showMastery: false,
+    quizActive: true,
     answersEnabled: false,
-    feedbackText: 'Speed Check Complete',
-    feedbackClass: 'feedback',
-    hintText: '',
-
-    calibrationBaseline: baseline,
   };
 }
 

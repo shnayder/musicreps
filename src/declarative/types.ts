@@ -3,7 +3,12 @@
 // letting GenericMode handle all the shared hook composition + rendering.
 
 import type { ComponentChildren } from 'preact';
-import type { CheckAnswerResult, ItemStats, StatsTableRow } from '../types.ts';
+import type {
+  CheckAnswerResult,
+  ItemStats,
+  MotorTaskType,
+  StatsTableRow,
+} from '../types.ts';
 
 /** Minimal selector interface for stats rendering (color computation). */
 export type StatsSelector = {
@@ -228,6 +233,8 @@ type ModeDefinitionBase<Q> = {
   id: string;
   name: string;
   namespace: string;
+  /** Motor task type for speed check calibration. Defaults to 'note-button'. */
+  motorTaskType?: MotorTaskType;
   description: string;
   beforeAfter: {
     before: string | (() => string);

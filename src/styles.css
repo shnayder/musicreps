@@ -1798,22 +1798,28 @@ button {
 /* ==========================================================================
    12. CALIBRATION
    ========================================================================== */
-.calibration-target {
-  background: var(--color-success) !important;
-  border-color: var(--color-success-dark) !important;
-  color: white !important;
-  box-shadow: 0 0 12px rgba(76, 175, 80, 0.6);
+.speed-check-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-1) 0;
 }
-.calibration-progress {
+.speed-check-header-progress {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  margin-top: var(--space-3);
+  font-variant-numeric: tabular-nums;
 }
-.calibration-action-btn {
-  display: block;
-  margin: var(--space-6) auto 0;
-  padding: var(--space-4) 2.5rem;
-  font-size: var(--text-md);
+.heatmap-swatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+.calibration-task-label {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
 }
 .calibration-results {
   text-align: center;
@@ -1842,10 +1848,15 @@ button {
   font-weight: var(--font-semibold);
 }
 .calibration-thresholds td:first-child {
+  width: 1.5rem;
+  text-align: center;
+  padding: 0.35rem var(--space-2);
+}
+.calibration-thresholds td:nth-child(2) {
   font-weight: var(--font-semibold);
   white-space: nowrap;
 }
-.calibration-thresholds td:nth-child(2) {
+.calibration-thresholds td:nth-child(3) {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }

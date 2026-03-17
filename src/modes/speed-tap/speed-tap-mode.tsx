@@ -44,7 +44,6 @@ import {
   RoundCompleteInfo,
 } from '../../ui/mode-screen.tsx';
 import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
-import { BUTTON_PROVIDER, SpeedCheck } from '../../ui/speed-check.tsx';
 
 import {
   ALL_ITEMS,
@@ -191,7 +190,6 @@ type SpeedTapActiveProps = {
   engine: ReturnType<typeof useQuizEngine>;
   round: ReturnType<typeof useRoundSummary>;
   practicingLabel: string;
-  learner: ReturnType<typeof useLearnerModel>;
   progressText: string;
   promptText: string;
   svgHTML: string;
@@ -204,7 +202,6 @@ function SpeedTapActiveView(
     engine,
     round,
     practicingLabel,
-    learner,
     progressText,
     promptText,
     svgHTML,
@@ -215,7 +212,7 @@ function SpeedTapActiveView(
   const phase = engine.state.phase;
   return (
     <>
-      {phase !== 'round-complete' && (
+      {phase !== 'round-complete' && !engine.calibrating && (
         <QuizSession
           timeLeft={engine.timerText}
           timerPct={engine.timerPct}
@@ -229,21 +226,7 @@ function SpeedTapActiveView(
           onClose={engine.stop}
         />
       )}
-      {engine.calibrating
-        ? (
-          <QuizArea>
-            <SpeedCheck
-              provider={BUTTON_PROVIDER}
-              fixture={engine.calibrationFixture}
-              onComplete={(baseline) => {
-                learner.applyBaseline(baseline);
-                engine.endCalibration();
-              }}
-              onCancel={engine.endCalibration}
-            />
-          </QuizArea>
-        )
-        : phase === 'round-complete'
+      {phase === 'round-complete'
         ? (
           <QuizArea
             controls={
@@ -336,10 +319,9 @@ function getPracticingLabel(noteFilter: NoteFilterType): string {
 // ---------------------------------------------------------------------------
 
 function SpeedTapIdleView(
-  { noteFilter, scopeActions, learner, engine, ps, statsHTML }: {
+  { noteFilter, scopeActions, engine, ps, statsHTML }: {
     noteFilter: NoteFilterType;
     scopeActions: ReturnType<typeof useScopeState>[1];
-    learner: ReturnType<typeof useLearnerModel>;
     engine: ReturnType<typeof useQuizEngine>;
     ps: ReturnType<typeof usePracticeSummary>;
     statsHTML: string;
@@ -363,8 +345,6 @@ function SpeedTapIdleView(
           dangerouslySetInnerHTML={{ __html: statsHTML }}
         />
       }
-      baseline={learner.motorBaseline}
-      onCalibrate={engine.startCalibration}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
       aboutContent={<SpeedTapAboutTab />}
@@ -549,7 +529,7 @@ export function SpeedTapMode(
   const noteFilter: NoteFilterType = scope.kind === 'note-filter'
     ? scope.noteFilter
     : 'natural';
-  const learner = useLearnerModel('speedTap', ALL_ITEMS);
+  const learner = useLearnerModel('speedTap', ALL_ITEMS, 'fretboard-tap');
   const sp = useSpeedTapSpatial(scope);
 
   const engine = useQuizEngine(sp.engineConfig, learner.selector, container);
@@ -606,7 +586,6 @@ export function SpeedTapMode(
         <SpeedTapIdleView
           noteFilter={noteFilter}
           scopeActions={scopeActions}
-          learner={learner}
           engine={engine}
           ps={ps}
           statsHTML={statsHTML}
@@ -617,7 +596,6 @@ export function SpeedTapMode(
           engine={engine}
           round={round}
           practicingLabel={practicingLabel}
-          learner={learner}
           progressText={sp.progressText}
           promptText={promptText}
           svgHTML={sp.svgHTML}

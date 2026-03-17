@@ -1,15 +1,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  engineCalibrating,
-  engineCalibrationIntro,
-  engineCalibrationResults,
   engineContinueRound,
   engineNextQuestion,
   engineRoundComplete,
   engineRoundTimerExpired,
   engineRouteKey,
   engineStart,
+  engineStartCalibration,
   engineStop,
   engineSubmitAnswer,
   engineUpdateIdleMessage,
@@ -337,127 +335,27 @@ describe('engineUpdateMasteryAfterAnswer', () => {
   });
 });
 
-describe('engineCalibrationIntro', () => {
-  it('sets phase to calibration-intro', () => {
-    const s = engineCalibrationIntro(initialEngineState());
-    assert.equal(s.phase, 'calibration-intro');
+describe('engineStartCalibration', () => {
+  it('sets phase to calibrating', () => {
+    const s = engineStartCalibration(initialEngineState());
+    assert.equal(s.phase, 'calibrating');
   });
 
   it('hides mastery message', () => {
-    const s = engineCalibrationIntro(initialEngineState());
+    const s = engineStartCalibration(initialEngineState());
     assert.equal(s.showMastery, false);
   });
 
   it('shows quiz area but disables answers', () => {
-    const s = engineCalibrationIntro(initialEngineState());
+    const s = engineStartCalibration(initialEngineState());
     assert.equal(s.quizActive, true);
     assert.equal(s.answersEnabled, false);
-  });
-
-  it('sets default calibration heading and explanation (highlight mode)', () => {
-    const s = engineCalibrationIntro(initialEngineState());
-    assert.equal(s.feedbackText, 'Quick Speed Check');
-    assert.ok(s.hintText.includes('tap speed'));
-    assert.ok(s.hintText.includes('highlighted button'));
-  });
-
-  it('uses hintOverride when provided (search mode)', () => {
-    const override =
-      'Press the button shown in the prompt \u2014 10 rounds total.';
-    const s = engineCalibrationIntro(initialEngineState(), override);
-    assert.equal(s.feedbackText, 'Quick Speed Check');
-    assert.equal(s.hintText, override);
-  });
-
-  it('accepts empty string hintOverride without falling through to default', () => {
-    const s = engineCalibrationIntro(initialEngineState(), '');
-    assert.equal(s.hintText, '');
-  });
-});
-
-describe('engineCalibrating', () => {
-  it('sets phase to calibrating', () => {
-    const s = engineCalibrating(engineCalibrationIntro(initialEngineState()));
-    assert.equal(s.phase, 'calibrating');
-  });
-
-  it('enables answer buttons', () => {
-    const s = engineCalibrating(engineCalibrationIntro(initialEngineState()));
-    assert.equal(s.answersEnabled, true);
-  });
-
-  it('sets default trial instruction text (highlight mode)', () => {
-    const s = engineCalibrating(engineCalibrationIntro(initialEngineState()));
-    assert.equal(s.feedbackText, 'Speed check!');
-    assert.ok(s.hintText.includes('highlighted button'));
-  });
-
-  it('uses hintOverride when provided (search mode)', () => {
-    const override = 'Find and press the button';
-    const s = engineCalibrating(
-      engineCalibrationIntro(initialEngineState()),
-      override,
-    );
-    assert.equal(s.feedbackText, 'Speed check!');
-    assert.equal(s.hintText, override);
-  });
-
-  it('accepts empty string hintOverride without falling through to default', () => {
-    const s = engineCalibrating(
-      engineCalibrationIntro(initialEngineState()),
-      '',
-    );
-    assert.equal(s.hintText, '');
-  });
-});
-
-describe('engineCalibrationResults', () => {
-  it('sets phase to calibration-results', () => {
-    const intro = engineCalibrationIntro(initialEngineState());
-    const running = engineCalibrating(intro);
-    const s = engineCalibrationResults(running, 600);
-    assert.equal(s.phase, 'calibration-results');
-  });
-
-  it('stores baseline in state', () => {
-    const s = engineCalibrationResults(
-      engineCalibrating(engineCalibrationIntro(initialEngineState())),
-      750,
-    );
-    assert.equal(s.calibrationBaseline, 750);
-  });
-
-  it('disables answers and sets heading', () => {
-    const s = engineCalibrationResults(
-      engineCalibrating(engineCalibrationIntro(initialEngineState())),
-      600,
-    );
-    assert.equal(s.answersEnabled, false);
-    assert.equal(s.feedbackText, 'Speed Check Complete');
-    assert.equal(s.hintText, '');
   });
 });
 
 describe('engineStop from calibration', () => {
-  it('returns to idle from calibration-intro', () => {
-    const s = engineStop(engineCalibrationIntro(initialEngineState()));
-    assert.deepEqual(s, initialEngineState());
-  });
-
   it('returns to idle from calibrating', () => {
-    const s = engineStop(
-      engineCalibrating(engineCalibrationIntro(initialEngineState())),
-    );
-    assert.deepEqual(s, initialEngineState());
-  });
-
-  it('returns to idle from calibration-results', () => {
-    const s = engineStop(
-      engineCalibrationResults(
-        engineCalibrating(engineCalibrationIntro(initialEngineState())),
-        600,
-      ),
-    );
+    const s = engineStop(engineStartCalibration(initialEngineState()));
     assert.deepEqual(s, initialEngineState());
   });
 });
@@ -470,9 +368,7 @@ describe('engineRouteKey', () => {
     1000,
   );
   const answered = engineSubmitAnswer(active, true, 'C');
-  const calibIntro = engineCalibrationIntro(initialEngineState());
-  const calibRunning = engineCalibrating(calibIntro);
-  const calibResults = engineCalibrationResults(calibRunning, 600);
+  const calibrating = engineStartCalibration(initialEngineState());
 
   it('idle phase: all keys return ignore', () => {
     assert.deepEqual(engineRouteKey(idle, 'Escape'), { action: 'ignore' });
@@ -508,33 +404,15 @@ describe('engineRouteKey', () => {
     assert.deepEqual(engineRouteKey(active, ' '), { action: 'delegate' });
   });
 
-  it('calibration-intro + Escape returns stop', () => {
-    assert.deepEqual(engineRouteKey(calibIntro, 'Escape'), { action: 'stop' });
-  });
-
-  it('calibration-intro + other keys return ignore', () => {
-    assert.deepEqual(engineRouteKey(calibIntro, ' '), { action: 'ignore' });
-    assert.deepEqual(engineRouteKey(calibIntro, 'c'), { action: 'ignore' });
-  });
-
   it('calibrating + Escape returns stop', () => {
-    assert.deepEqual(engineRouteKey(calibRunning, 'Escape'), {
+    assert.deepEqual(engineRouteKey(calibrating, 'Escape'), {
       action: 'stop',
     });
   });
 
   it('calibrating + other keys return ignore', () => {
-    assert.deepEqual(engineRouteKey(calibRunning, 'c'), { action: 'ignore' });
-  });
-
-  it('calibration-results + Escape returns stop', () => {
-    assert.deepEqual(engineRouteKey(calibResults, 'Escape'), {
-      action: 'stop',
-    });
-  });
-
-  it('calibration-results + other keys return ignore', () => {
-    assert.deepEqual(engineRouteKey(calibResults, ' '), { action: 'ignore' });
+    assert.deepEqual(engineRouteKey(calibrating, 'c'), { action: 'ignore' });
+    assert.deepEqual(engineRouteKey(calibrating, ' '), { action: 'ignore' });
   });
 });
 
