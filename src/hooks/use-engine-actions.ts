@@ -7,6 +7,7 @@ import {
   engineContinueRound,
   engineNextQuestion,
   engineStart,
+  engineStop,
   engineSubmitAnswer,
   engineUpdateIdleMessage,
   engineUpdateMasteryAfterAnswer,
@@ -95,6 +96,8 @@ function processSubmitAnswer(
 export type EngineActionsHandle = {
   nextQuestionRef: { current: () => void };
   start: () => void;
+  /** Reset engine state to idle (no timer/callback cleanup). */
+  stopEngine: () => void;
   continueQuiz: () => void;
   nextQuestion: () => void;
   submitAnswer: (input: string) => void;
@@ -151,6 +154,10 @@ export function useEngineActions(
     setTimeout(() => nextQuestionRef.current(), 0);
   }, [timer.startRoundTimer]);
 
+  const stopEngine = useCallback(() => {
+    setState(engineStop);
+  }, []);
+
   const continueQuiz = useCallback(() => {
     setState(engineContinueRound);
     timer.startRoundTimer();
@@ -172,6 +179,7 @@ export function useEngineActions(
   return {
     nextQuestionRef,
     start,
+    stopEngine,
     continueQuiz,
     nextQuestion,
     submitAnswer,

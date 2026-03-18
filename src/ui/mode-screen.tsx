@@ -182,7 +182,10 @@ export function PracticeCard(
     statusDetail?: string;
     recommendation?: string;
     scope?: ComponentChildren;
+    onStart?: () => void;
     onApplyRecommendation?: () => void;
+    scopeValid?: boolean;
+    validationMessage?: string;
   },
 ) {
   // When summary is provided, map its fields; individual props override.
@@ -195,7 +198,9 @@ export function PracticeCard(
       ? props.summary.recommendationText
       : undefined);
   const onApplyRecommendation = props.onApplyRecommendation;
-  const { scope } = props;
+  const { scope, onStart } = props;
+  const scopeDisabled = props.scopeValid === false;
+  const validationMessage = scopeDisabled ? props.validationMessage : undefined;
 
   return (
     <div class='practice-card'>
@@ -214,6 +219,13 @@ export function PracticeCard(
         <Recommendation text={recommendation} onApply={onApplyRecommendation} />
       )}
       {scope && <div class='practice-scope'>{scope}</div>}
+      <div class='practice-zone-action'>
+        <StartButton
+          onStart={onStart}
+          disabled={scopeDisabled}
+          validationMessage={validationMessage}
+        />
+      </div>
     </div>
   );
 }

@@ -7,7 +7,6 @@ import {
   engineRoundTimerExpired,
   engineRouteKey,
   engineStart,
-  engineStartCalibration,
   engineStop,
   engineSubmitAnswer,
   engineUpdateIdleMessage,
@@ -335,31 +334,6 @@ describe('engineUpdateMasteryAfterAnswer', () => {
   });
 });
 
-describe('engineStartCalibration', () => {
-  it('sets phase to calibrating', () => {
-    const s = engineStartCalibration(initialEngineState());
-    assert.equal(s.phase, 'calibrating');
-  });
-
-  it('hides mastery message', () => {
-    const s = engineStartCalibration(initialEngineState());
-    assert.equal(s.showMastery, false);
-  });
-
-  it('shows quiz area but disables answers', () => {
-    const s = engineStartCalibration(initialEngineState());
-    assert.equal(s.quizActive, true);
-    assert.equal(s.answersEnabled, false);
-  });
-});
-
-describe('engineStop from calibration', () => {
-  it('returns to idle from calibrating', () => {
-    const s = engineStop(engineStartCalibration(initialEngineState()));
-    assert.deepEqual(s, initialEngineState());
-  });
-});
-
 describe('engineRouteKey', () => {
   const idle = initialEngineState();
   const active = engineNextQuestion(
@@ -368,8 +342,6 @@ describe('engineRouteKey', () => {
     1000,
   );
   const answered = engineSubmitAnswer(active, true, 'C');
-  const calibrating = engineStartCalibration(initialEngineState());
-
   it('idle phase: all keys return ignore', () => {
     assert.deepEqual(engineRouteKey(idle, 'Escape'), { action: 'ignore' });
     assert.deepEqual(engineRouteKey(idle, ' '), { action: 'ignore' });
@@ -402,17 +374,6 @@ describe('engineRouteKey', () => {
 
   it('active + unanswered + Space returns delegate (not next)', () => {
     assert.deepEqual(engineRouteKey(active, ' '), { action: 'delegate' });
-  });
-
-  it('calibrating + Escape returns stop', () => {
-    assert.deepEqual(engineRouteKey(calibrating, 'Escape'), {
-      action: 'stop',
-    });
-  });
-
-  it('calibrating + other keys return ignore', () => {
-    assert.deepEqual(engineRouteKey(calibrating, 'c'), { action: 'ignore' });
-    assert.deepEqual(engineRouteKey(calibrating, ' '), { action: 'ignore' });
   });
 });
 

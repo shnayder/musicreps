@@ -6,7 +6,7 @@ import type { EngineState } from './types.ts';
 /** Create the initial (idle) engine state. */
 export function initialEngineState(): EngineState {
   return {
-    phase: 'idle', // 'idle' | 'active' | 'round-complete' | 'calibrating'
+    phase: 'idle', // 'idle' | 'active' | 'round-complete'
     currentItemId: null,
     answered: false,
     questionStartTime: null,
@@ -160,23 +160,7 @@ export function engineContinueRound(state: EngineState): EngineState {
 }
 
 /**
- * Transition: enter calibration mode.
- * SpeedCheck component manages its own internal phases (intro/running/results).
- * The engine just knows calibration is active for keyboard routing.
- */
-export function engineStartCalibration(state: EngineState): EngineState {
-  return {
-    ...state,
-    phase: 'calibrating',
-    showMastery: false,
-    quizActive: true,
-    answersEnabled: false,
-  };
-}
-
-/**
  * Transition: stop the quiz (return to idle).
- * Works from any phase — quiz, calibration, or already idle.
  */
 export function engineStop(_state: EngineState): EngineState {
   return initialEngineState();

@@ -191,12 +191,7 @@ export type MotorTaskType =
 export type EnginePhase =
   | 'idle'
   | 'active'
-  | 'round-complete'
-  | 'calibrating';
-
-export function isCalibrationPhase(phase: EnginePhase): boolean {
-  return phase === 'calibrating';
-}
+  | 'round-complete';
 
 export type EngineState = {
   phase: EnginePhase;

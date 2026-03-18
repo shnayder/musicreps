@@ -212,7 +212,7 @@ function SpeedTapActiveView(
   const phase = engine.state.phase;
   return (
     <>
-      {phase !== 'round-complete' && !engine.calibrating && (
+      {phase !== 'round-complete' && (
         <QuizSession
           timeLeft={engine.timerText}
           timerPct={engine.timerPct}

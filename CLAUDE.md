@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Interactive music training app — fretboard note identification, interval math,
-and more. Multiple quiz modes accessed via hamburger menu.
+and more. Multiple quiz modes accessed from the home screen.
 
 ## Quick Start
 

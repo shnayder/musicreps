@@ -657,7 +657,7 @@ describe('Tabs', () => {
 });
 
 describe('PracticeCard', () => {
-  it('renders status line without start button (button is in PracticeTab)', () => {
+  it('renders status line and start button', () => {
     const html = render(
       <PracticeCard
         statusLabel='Strong'
@@ -668,7 +668,8 @@ describe('PracticeCard', () => {
     assert.ok(html.includes('practice-status-label'));
     assert.ok(html.includes('Strong'));
     assert.ok(html.includes('12 of 14 automatic'));
-    assert.ok(!html.includes('start-btn'));
+    assert.ok(html.includes('practice-zone-action'));
+    assert.ok(html.includes('start-btn'));
   });
 
   it('shows recommendation with accept button', () => {

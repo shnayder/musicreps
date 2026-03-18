@@ -4,7 +4,8 @@
 //   activate  → sync motor baseline + update idle message
 //   deactivate → stop engine (if running) + mode-specific cleanup
 //
-// engine.stop() resets to idle, which clears calibrating state automatically.
+// engine.stop() resets to idle. Calibration is a local overlay managed by the
+// mode component — cleared via the `onDeactivate` callback.
 // Modes pass any extra cleanup (noteHandler.reset, timeout clearing, etc.)
 // via the optional `onDeactivate` callback.
 

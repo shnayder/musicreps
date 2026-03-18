@@ -38,13 +38,8 @@ export function useFixtureInjection(
       }
 
       if (detail.calibration) {
-        // All fixture phases map to the single 'calibrating' engine phase.
+        // Calibration is a local overlay — the engine stays idle.
         // SpeedCheck's internal phase is driven by the fixture's phase field.
-        setState((prev) => ({
-          ...prev,
-          phase: 'calibrating' as const,
-          quizActive: true,
-        }));
         setCalibrationFixture(detail.calibration);
       }
 
