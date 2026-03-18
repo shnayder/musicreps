@@ -151,6 +151,11 @@ export function CommentBubble(
 // CommentArea — textarea rendered below the section frame
 // ---------------------------------------------------------------------------
 
+function autoSize(el: HTMLTextAreaElement) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
 export function CommentArea(
   { tabId, sectionTitle }: { tabId: string; sectionTitle: string },
 ) {
@@ -161,7 +166,9 @@ export function CommentArea(
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   function handleInput(e: Event) {
-    setComment(key, (e.target as HTMLTextAreaElement).value);
+    const ta = e.target as HTMLTextAreaElement;
+    setComment(key, ta.value);
+    autoSize(ta);
   }
 
   if (!hasComment) return null;
@@ -169,12 +176,15 @@ export function CommentArea(
   return (
     <div class='comment-area'>
       <textarea
-        ref={textareaRef}
+        ref={(el) => {
+          (textareaRef as { current: HTMLTextAreaElement | null }).current = el;
+          if (el) autoSize(el);
+        }}
         class='comment-textarea'
         placeholder='Design feedback...'
         value={text}
         onInput={handleInput}
-        rows={2}
+        rows={1}
       />
     </div>
   );

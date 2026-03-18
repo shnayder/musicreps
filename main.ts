@@ -229,8 +229,8 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
       padding: 0.4rem 0.5rem;
       font-family: inherit;
       font-size: 0.8rem;
-      resize: vertical;
-      min-height: 2.2rem;
+      resize: none;
+      overflow: hidden;
       background: hsl(45, 80%, 97%);
       color: hsl(45, 30%, 25%);
     }
