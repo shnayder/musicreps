@@ -1,4 +1,5 @@
-
+> **Superseded 2026-03-18.** Replaced by the home screen tracks/skills design
+> (see home-screen-recommendations-spec). Skill tree visualization not planned.
 
 # Goals
 - Show skills

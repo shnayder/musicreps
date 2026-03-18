@@ -1,3 +1,6 @@
+> **Superseded 2026-03-18.** Most items addressed by subsequent home screen and
+> layout work. Remaining items are outdated.
+
 # Layout and IA
 - home screen:
     1. page has a scroll bar even when screen is much larger than menu. 

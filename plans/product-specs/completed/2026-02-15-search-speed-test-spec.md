@@ -1,3 +1,6 @@
+> **Deferred 2026-03-18.** Never implemented — current calibration still uses
+> highlight-based motor speed test.
+
 # Search Speed Test — Design Spec
 
 ## Overview

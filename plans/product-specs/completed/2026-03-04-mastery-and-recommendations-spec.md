@@ -1,3 +1,6 @@
+> **Superseded 2026-03-18.** Core algorithm (speed × freshness, recommendations
+> pipeline v4) is implemented. Remaining diagnostic tooling deferred.
+
 # Mastery and Recommendations — Design Spec
 
 ## Overview

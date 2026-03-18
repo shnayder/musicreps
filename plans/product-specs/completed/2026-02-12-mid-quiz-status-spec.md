@@ -1,3 +1,6 @@
+> **Deferred 2026-03-18.** Partially implemented (session header, question
+> count). Remaining items (elapsed time, progress bar) deferred indefinitely.
+
 # Mid-Quiz Status — Design Spec
 
 ## Overview
