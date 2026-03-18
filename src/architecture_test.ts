@@ -124,6 +124,7 @@ const DISPLAY = new Set([
   'src/stats-display.ts',
   'src/mode-ui-state.ts',
   'src/quiz-fretboard-state.ts',
+  'src/dev-panel.ts',
 ]);
 
 const BUILD_TIME = new Set([
@@ -136,7 +137,6 @@ const APP = new Set([
   'src/app.ts',
   'src/navigation.ts',
   'src/settings.ts',
-  'src/dev-panel.ts',
 ]);
 
 const TOOL = new Set([

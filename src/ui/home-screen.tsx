@@ -4,6 +4,7 @@
 import type { ComponentChildren } from 'preact';
 import { useCallback, useMemo, useState } from 'preact/hooks';
 import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../music-data.ts';
+import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
 import { SkillIcon } from './icons.tsx';
 import type { SettingsController } from '../types.ts';
 import type { AppConfig } from '../app-config.ts';
@@ -568,6 +569,91 @@ function SettingsPage(
 }
 
 // ---------------------------------------------------------------------------
+// DevPage — dev stats page (same conditional-render pattern as SettingsPage)
+// ---------------------------------------------------------------------------
+
+function DevPage({ onClose }: { onClose: () => void }) {
+  const [data] = useState<DevPanelData>(getDevPanelData);
+  return (
+    <div class='settings-page'>
+      <div class='settings-page-header'>
+        <h1 class='settings-page-title'>Dev</h1>
+        <CloseButton ariaLabel='Close' onClick={onClose} />
+      </div>
+
+      <DevSection title='Global'>
+        <DevStatRow label='Total reps' value={data.totalReps} />
+        <DevStatRow label='Days active' value={data.daysActive} />
+      </DevSection>
+
+      <DevSection title='Per Mode'>
+        <DevTable
+          headers={['Mode', 'Reps', 'Items']}
+          rows={data.modeEfforts.map((m) => [
+            MODE_NAMES[m.id] || m.id,
+            String(m.totalReps),
+            `${m.itemsStarted}/${m.totalItems}`,
+          ])}
+        />
+      </DevSection>
+
+      {data.recentDays.length > 0 && (
+        <DevSection title='Recent Days'>
+          <DevTable
+            headers={['Date', 'Reps']}
+            rows={data.recentDays.map((d) => [d.date, String(d.count)])}
+          />
+        </DevSection>
+      )}
+    </div>
+  );
+}
+
+function DevSection(
+  { title, children }: { title: string; children: ComponentChildren },
+) {
+  return (
+    <section class='settings-section'>
+      <h2 class='settings-section-title'>{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function DevStatRow({ label, value }: { label: string; value: number }) {
+  return (
+    <div class='dev-stat-row'>
+      <span>{label}</span>
+      <span>{value}</span>
+    </div>
+  );
+}
+
+function DevTable(
+  { headers, rows }: { headers: string[]; rows: string[][] },
+) {
+  return (
+    <table class='dev-table'>
+      <thead>
+        <tr>
+          {headers.map((h, i) => <th key={i} class={i > 0 ? 'num' : ''}>{h}
+          </th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, ri) => (
+          <tr key={ri}>
+            {row.map((cell, ci) => (
+              <td key={ci} class={ci > 0 ? 'num' : ''}>{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // AllSkillsList — content for the All Skills tab
 // ---------------------------------------------------------------------------
 
@@ -750,11 +836,11 @@ function HomeSkillTabs(
 // ---------------------------------------------------------------------------
 
 export function HomeScreen(
-  { onSelectMode, settings, appConfig, onOpenDev, version, isNativeApp }: {
+  { onSelectMode, settings, appConfig, showDevLink, version, isNativeApp }: {
     onSelectMode: (modeId: string) => void;
     settings: SettingsController;
     appConfig: AppConfig;
-    onOpenDev?: () => void;
+    showDevLink?: boolean;
     version: string;
     isNativeApp?: boolean;
   },
@@ -763,6 +849,7 @@ export function HomeScreen(
   const { progress, recommendations } = useHomeProgress(starred);
   const [accordion, setAccordion] = useState(loadAccordionState);
   const [showSettings, setShowSettings] = useState(false);
+  const [showDev, setShowDev] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
   const [tab, setTab] = useState<HomeTab>(loadInitialTab);
 
@@ -803,6 +890,10 @@ export function HomeScreen(
     );
   }
 
+  if (showDev) {
+    return <DevPage onClose={() => setShowDev(false)} />;
+  }
+
   return (
     <div class='home-content'>
       <HomeHeader isNativeApp={isNativeApp} />
@@ -825,7 +916,7 @@ export function HomeScreen(
           setUseSolfege(settings.getUseSolfege());
           setShowSettings(true);
         }}
-        onOpenDev={onOpenDev}
+        onOpenDev={showDevLink ? () => setShowDev(true) : undefined}
       />
     </div>
   );

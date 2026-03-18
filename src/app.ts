@@ -128,10 +128,6 @@ registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);
 
 nav.init();
 
-// Dev panel
-import { createDevPanel } from './dev-panel.ts';
-const devPanel = createDevPanel();
-
 // Settings state controller — re-render on notation change
 const settings = createSettingsController({
   onNotationChange(): void {
@@ -155,7 +151,7 @@ render(
     onSelectMode: (modeId: string) => nav.switchTo(modeId),
     settings,
     appConfig: APP_CONFIG,
-    onOpenDev: () => devPanel.open(),
+    showDevLink: true,
     version,
     isNativeApp,
   }),

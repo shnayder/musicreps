@@ -1,8 +1,11 @@
-// Effort tracking: reads per-mode and global effort stats from localStorage.
+// Effort tracking: reads per-mode and global effort stats.
 // All data derives from existing adaptive_* keys (sampleCount per item)
 // plus a new effort_daily counter incremented on each response.
+//
+// Pure functions accept a StorageAdapter for testability; the module-level
+// convenience wrappers use localStorage.
 
-import type { ItemStats } from './types.ts';
+import type { StorageAdapter } from './types.ts';
 
 // ---------------------------------------------------------------------------
 // Mode registry — namespace + allItems for each mode
@@ -26,7 +29,7 @@ export function getRegisteredModes(): readonly ModeInfo[] {
 }
 
 // ---------------------------------------------------------------------------
-// Per-mode effort stats (reads existing adaptive_* localStorage keys)
+// Per-mode effort stats (reads from a StorageAdapter)
 // ---------------------------------------------------------------------------
 
 export type ModeEffort = {
@@ -37,22 +40,15 @@ export type ModeEffort = {
   totalItems: number;
 };
 
-function readItemStats(namespace: string, itemId: string): ItemStats | null {
-  const key = `adaptive_${namespace}_${itemId}`;
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-export function computeModeEffort(mode: ModeInfo): ModeEffort {
+/** Pure: compute effort for a mode from its StorageAdapter. */
+export function computeModeEffort(
+  mode: ModeInfo,
+  storage: StorageAdapter,
+): ModeEffort {
   let totalReps = 0;
   let itemsStarted = 0;
   for (const itemId of mode.allItems) {
-    const stats = readItemStats(mode.namespace, itemId);
+    const stats = storage.getStats(itemId);
     if (stats && stats.sampleCount > 0) {
       totalReps += stats.sampleCount;
       itemsStarted++;
@@ -67,10 +63,6 @@ export function computeModeEffort(mode: ModeInfo): ModeEffort {
   };
 }
 
-export function computeAllModeEfforts(): ModeEffort[] {
-  return modes.map(computeModeEffort);
-}
-
 // ---------------------------------------------------------------------------
 // Daily rep counter
 // ---------------------------------------------------------------------------
@@ -81,17 +73,30 @@ export type DailyReps = Record<string, number>;
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-export function getDailyReps(): DailyReps {
+/** Read/write interface for the daily reps store. */
+export type DailyRepsStore = {
+  read(): string | null;
+  write(json: string): void;
+};
+
+/** Default store backed by localStorage. */
+export function localDailyRepsStore(): DailyRepsStore {
+  return {
+    read: () => localStorage.getItem(DAILY_KEY),
+    write: (json) => localStorage.setItem(DAILY_KEY, json),
+  };
+}
+
+/** Parse raw JSON into a validated DailyReps record. */
+export function parseDailyReps(raw: string | null): DailyReps {
+  if (!raw) return {};
   try {
-    const raw = localStorage.getItem(DAILY_KEY);
-    if (!raw) return {};
     const parsed = JSON.parse(raw);
     if (
       typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)
     ) {
       return {};
     }
-    // Normalize: only keep YYYY-MM-DD keys with finite non-negative numbers
     const result: DailyReps = Object.create(null) as DailyReps;
     for (const key of Object.keys(parsed)) {
       if (!DATE_RE.test(key)) continue;
@@ -106,15 +111,29 @@ export function getDailyReps(): DailyReps {
   }
 }
 
-function saveDailyReps(data: DailyReps): void {
-  localStorage.setItem(DAILY_KEY, JSON.stringify(data));
+/** Read daily reps from a store. */
+export function getDailyReps(
+  store: DailyRepsStore = localDailyRepsStore(),
+): DailyReps {
+  return parseDailyReps(store.read());
 }
 
-export function incrementDailyReps(): void {
-  const today = new Date().toISOString().slice(0, 10);
-  const data = getDailyReps();
+function saveDailyReps(
+  data: DailyReps,
+  store: DailyRepsStore,
+): void {
+  store.write(JSON.stringify(data));
+}
+
+/** Increment today's rep count. */
+export function incrementDailyReps(
+  store: DailyRepsStore = localDailyRepsStore(),
+  now: Date = new Date(),
+): void {
+  const today = now.toISOString().slice(0, 10);
+  const data = getDailyReps(store);
   data[today] = (data[today] || 0) + 1;
-  saveDailyReps(data);
+  saveDailyReps(data, store);
 }
 
 // ---------------------------------------------------------------------------
@@ -127,19 +146,18 @@ export type GlobalEffort = {
   dailyReps: DailyReps;
 };
 
-export function computeGlobalEffort(): GlobalEffort {
-  const daily = getDailyReps();
-  const dates = Object.keys(daily).filter((d) => daily[d] > 0);
-  const totalFromDaily = dates.reduce((sum, d) => sum + daily[d], 0);
-
-  // Also sum from per-mode stats (more accurate for historical data
-  // before daily tracking was added)
-  const modeEfforts = computeAllModeEfforts();
+/** Pure: compute global effort from mode efforts and daily reps. */
+export function computeGlobalEffort(
+  modeEfforts: ModeEffort[],
+  dailyReps: DailyReps,
+): GlobalEffort {
+  const dates = Object.keys(dailyReps).filter((d) => dailyReps[d] > 0);
+  const totalFromDaily = dates.reduce((sum, d) => sum + dailyReps[d], 0);
   const totalFromModes = modeEfforts.reduce((s, m) => s + m.totalReps, 0);
 
   return {
     totalReps: Math.max(totalFromDaily, totalFromModes),
     daysActive: dates.length,
-    dailyReps: daily,
+    dailyReps,
   };
 }
