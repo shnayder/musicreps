@@ -18,12 +18,12 @@ import { cssVar, PreviewGrid, Section } from './preview-shared.tsx';
 // File-local sub-section components
 // ---------------------------------------------------------------------------
 
-function CloseButtonSection() {
+function CloseButtonSection({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Close Button</h2>
       <PreviewGrid>
-        <Section title='CloseButton'>
+        <Section title='CloseButton' tabId={tabId}>
           <CloseButton ariaLabel='Close' onClick={() => {}} />
         </Section>
       </PreviewGrid>
@@ -31,22 +31,22 @@ function CloseButtonSection() {
   );
 }
 
-function SkillCardHeaderSection() {
+function SkillCardHeaderSection({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Skill Card Header</h2>
       <PreviewGrid>
-        <Section title='SkillCardHeader — no pill'>
+        <Section title='SkillCardHeader — no pill' tabId={tabId}>
           <SkillCardHeader modeId='semitoneMath' />
         </Section>
-        <Section title='SkillCardHeader — with pill'>
+        <Section title='SkillCardHeader — with pill' tabId={tabId}>
           <SkillCardHeader
             modeId='semitoneMath'
             trackId='core'
             trackLabel='Core'
           />
         </Section>
-        <Section title='TrackPill variants'>
+        <Section title='TrackPill variants' tabId={tabId}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <TrackPill trackId='core' label='Core' />
             <TrackPill trackId='reading' label='Reading' />
@@ -59,12 +59,12 @@ function SkillCardHeaderSection() {
   );
 }
 
-function TrackSectionPreview() {
+function TrackSectionPreview({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Track Section</h2>
       <PreviewGrid>
-        <Section title='TrackSection — expanded'>
+        <Section title='TrackSection — expanded' tabId={tabId}>
           <TrackSection
             trackId='core'
             label='Core'
@@ -76,7 +76,7 @@ function TrackSectionPreview() {
             </div>
           </TrackSection>
         </Section>
-        <Section title='TrackSection — collapsed'>
+        <Section title='TrackSection — collapsed' tabId={tabId}>
           <TrackSection
             trackId='guitar'
             label='Guitar'
@@ -88,7 +88,7 @@ function TrackSectionPreview() {
             </div>
           </TrackSection>
         </Section>
-        <Section title='All track colors'>
+        <Section title='All track colors' tabId={tabId}>
           <div>
             {(['core', 'reading', 'guitar', 'ukulele'] as const).map((id) => (
               <TrackSection
@@ -108,7 +108,7 @@ function TrackSectionPreview() {
   );
 }
 
-function SegmentedControlSection() {
+function SegmentedControlSection({ tabId }: { tabId: string }) {
   const [val1, setVal1] = useState<'letter' | 'solfege'>('letter');
   const [val2, setVal2] = useState<'letter' | 'solfege'>('solfege');
   const noteOptions = [
@@ -119,21 +119,21 @@ function SegmentedControlSection() {
     <>
       <h2>Segmented Control</h2>
       <PreviewGrid>
-        <Section title='SegmentedControl — first selected'>
+        <Section title='SegmentedControl — first selected' tabId={tabId}>
           <SegmentedControl
             options={noteOptions}
             value={val1}
             onChange={setVal1}
           />
         </Section>
-        <Section title='SegmentedControl — second selected'>
+        <Section title='SegmentedControl — second selected' tabId={tabId}>
           <SegmentedControl
             options={noteOptions}
             value={val2}
             onChange={setVal2}
           />
         </Section>
-        <Section title='SettingToggle — with label'>
+        <Section title='SettingToggle — with label' tabId={tabId}>
           <SettingToggle
             label='Note names'
             options={noteOptions}
@@ -146,12 +146,12 @@ function SegmentedControlSection() {
   );
 }
 
-function TabsSection() {
+function TabsSection({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Tabs</h2>
       <PreviewGrid>
-        <Section title='2 tabs — first active'>
+        <Section title='2 tabs — first active' tabId={tabId}>
           <Tabs
             activeTab='practice'
             onTabSwitch={() => {}}
@@ -169,7 +169,7 @@ function TabsSection() {
             ]}
           />
         </Section>
-        <Section title='2 tabs — second active'>
+        <Section title='2 tabs — second active' tabId={tabId}>
           <Tabs
             activeTab='progress'
             onTabSwitch={() => {}}
@@ -187,7 +187,7 @@ function TabsSection() {
             ]}
           />
         </Section>
-        <Section title='3 tabs'>
+        <Section title='3 tabs' tabId={tabId}>
           <Tabs
             activeTab='about'
             onTabSwitch={() => {}}
@@ -215,22 +215,22 @@ function TabsSection() {
   );
 }
 
-function ActionButtonsSection() {
+function ActionButtonsSection({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Action Buttons</h2>
       <PreviewGrid>
-        <Section title='ActionButton — Primary'>
+        <Section title='ActionButton — Primary' tabId={tabId}>
           <ActionButton variant='primary' onClick={() => {}}>
             Practice
           </ActionButton>
         </Section>
-        <Section title='ActionButton — Secondary'>
+        <Section title='ActionButton — Secondary' tabId={tabId}>
           <ActionButton variant='secondary' onClick={() => {}}>
             Stop
           </ActionButton>
         </Section>
-        <Section title='ActionButton — Pair (round-complete)'>
+        <Section title='ActionButton — Pair (round-complete)' tabId={tabId}>
           <div class='page-action-row'>
             <ActionButton variant='primary' onClick={() => {}}>
               Keep Going
@@ -240,7 +240,7 @@ function ActionButtonsSection() {
             </ActionButton>
           </div>
         </Section>
-        <Section title='ActionButton — Disabled'>
+        <Section title='ActionButton — Disabled' tabId={tabId}>
           <ActionButton variant='primary' onClick={() => {}} disabled>
             Disabled
           </ActionButton>
@@ -250,12 +250,12 @@ function ActionButtonsSection() {
   );
 }
 
-function TypographySection() {
+function TypographySection({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Typography</h2>
       <PreviewGrid>
-        <Section title='Text roles'>
+        <Section title='Text roles' tabId={tabId}>
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
           >
@@ -268,7 +268,7 @@ function TypographySection() {
             <Text role='metric' as='div'>42.5s</Text>
           </div>
         </Section>
-        <Section title='Text roles — in context (metric display)'>
+        <Section title='Text roles — in context (metric display)' tabId={tabId}>
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
           >
@@ -298,12 +298,12 @@ const SPACE_TOKENS: Array<{ name: string; desc: string }> = [
   { name: '--space-6', desc: 'Large section gaps' },
 ];
 
-function SpacingSection() {
+function SpacingSection({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Spacing Scale</h2>
       <PreviewGrid>
-        <Section title='Spacing tokens'>
+        <Section title='Spacing tokens' tabId={tabId}>
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}
           >
@@ -370,12 +370,12 @@ const TYPE_TOKENS: Array<{ name: string; usage: string }> = [
   { name: '--text-2xl', usage: 'Home title, quiz prompts' },
 ];
 
-function TypeScaleSection() {
+function TypeScaleSection({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Type Scale</h2>
       <PreviewGrid>
-        <Section title='Size tokens'>
+        <Section title='Size tokens' tabId={tabId}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {TYPE_TOKENS.map(({ name, usage }) => {
               const val = cssVar(name);
@@ -431,9 +431,9 @@ const RADIUS_TOKENS: Array<{ name: string; usage: string }> = [
   { name: '--radius-lg', usage: 'Settings modal' },
 ];
 
-function RadiusSection() {
+function RadiusSection({ tabId }: { tabId: string }) {
   return (
-    <Section title='Radius tokens'>
+    <Section title='Radius tokens' tabId={tabId}>
       <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
         {RADIUS_TOKENS.map(({ name, usage }) => (
           <div
@@ -477,9 +477,9 @@ function RadiusSection() {
   );
 }
 
-function ShadowSection() {
+function ShadowSection({ tabId }: { tabId: string }) {
   return (
-    <Section title='Shadow / elevation'>
+    <Section title='Shadow / elevation' tabId={tabId}>
       <div
         style={{
           display: 'flex',
@@ -565,13 +565,13 @@ function ShadowSection() {
   );
 }
 
-function RadiusShadowSection() {
+function RadiusShadowSection({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Border Radius & Shadows</h2>
       <PreviewGrid>
-        <RadiusSection />
-        <ShadowSection />
+        <RadiusSection tabId={tabId} />
+        <ShadowSection tabId={tabId} />
       </PreviewGrid>
     </>
   );
@@ -581,19 +581,19 @@ function RadiusShadowSection() {
 // Exported tab component
 // ---------------------------------------------------------------------------
 
-export function DesignSystemTab({ tabId: _tabId }: { tabId: string }) {
+export function DesignSystemTab({ tabId }: { tabId: string }) {
   return (
     <div>
-      <CloseButtonSection />
-      <SkillCardHeaderSection />
-      <TrackSectionPreview />
-      <SegmentedControlSection />
-      <TabsSection />
-      <ActionButtonsSection />
-      <TypographySection />
-      <SpacingSection />
-      <TypeScaleSection />
-      <RadiusShadowSection />
+      <CloseButtonSection tabId={tabId} />
+      <SkillCardHeaderSection tabId={tabId} />
+      <TrackSectionPreview tabId={tabId} />
+      <SegmentedControlSection tabId={tabId} />
+      <TabsSection tabId={tabId} />
+      <ActionButtonsSection tabId={tabId} />
+      <TypographySection tabId={tabId} />
+      <SpacingSection tabId={tabId} />
+      <TypeScaleSection tabId={tabId} />
+      <RadiusShadowSection tabId={tabId} />
     </div>
   );
 }

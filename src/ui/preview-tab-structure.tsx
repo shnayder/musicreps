@@ -23,15 +23,15 @@ import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
 // File-local helpers
 // ---------------------------------------------------------------------------
 
-function QuizFlowComponents() {
+function QuizFlowComponents({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Quiz Flow</h2>
       <PreviewGrid>
-        <Section title='StartButton'>
+        <Section title='StartButton' tabId={tabId}>
           <StartButton />
         </Section>
-        <Section title='QuizArea'>
+        <Section title='QuizArea' tabId={tabId}>
           <QuizArea
             prompt='C + 5'
             controls={
@@ -42,7 +42,7 @@ function QuizFlowComponents() {
             }
           />
         </Section>
-        <Section title='RoundComplete — Good'>
+        <Section title='RoundComplete — Good' tabId={tabId}>
           <QuizArea controls={<RoundCompleteActions />}>
             <RoundCompleteInfo
               context={goodRound.context}
@@ -52,7 +52,7 @@ function QuizFlowComponents() {
             />
           </QuizArea>
         </Section>
-        <Section title='RoundComplete — Rough'>
+        <Section title='RoundComplete — Rough' tabId={tabId}>
           <QuizArea controls={<RoundCompleteActions />}>
             <RoundCompleteInfo
               context={roughRound.context}
@@ -68,26 +68,26 @@ function QuizFlowComponents() {
 }
 
 function IdleBasicComponents(
-  { groupSel }: { groupSel: GroupSel },
+  { groupSel, tabId }: { groupSel: GroupSel; tabId: string },
 ) {
   return (
     <PreviewGrid>
-      <Section title='ModeTopBar'>
+      <Section title='ModeTopBar' tabId={tabId}>
         <ModeTopBar title='Semitone Math' />
       </Section>
-      <Section title='ModeTopBar — with description'>
+      <Section title='ModeTopBar — with description' tabId={tabId}>
         <ModeTopBar
           title='Semitone Math'
           description='Transpose by semitones without counting'
         />
       </Section>
-      <Section title='Recommendation'>
+      <Section title='Recommendation' tabId={tabId}>
         <Recommendation
           text='solidify +1 to +3 — 3 items to work on'
           onApply={() => {}}
         />
       </Section>
-      <Section title='PracticeCard (no scope)'>
+      <Section title='PracticeCard (no scope)' tabId={tabId}>
         <PracticeCard
           statusLabel='Strong'
           statusDetail='12 of 14 automatic'
@@ -95,7 +95,7 @@ function IdleBasicComponents(
           onApplyRecommendation={() => {}}
         />
       </Section>
-      <Section title='PracticeCard (with group progress toggles)'>
+      <Section title='PracticeCard (with group progress toggles)' tabId={tabId}>
         <PracticeCard
           statusLabel='Solid'
           statusDetail='24 of 26 automatic'
@@ -122,11 +122,11 @@ function IdleBasicComponents(
 }
 
 function IdleComposedComponents(
-  { sel }: { sel: StatsSelector },
+  { sel, tabId }: { sel: StatsSelector; tabId: string },
 ) {
   return (
     <PreviewGrid>
-      <Section title='Tabs'>
+      <Section title='Tabs' tabId={tabId}>
         <Tabs
           activeTab='practice'
           onTabSwitch={() => {}}
@@ -150,7 +150,7 @@ function IdleComposedComponents(
           ]}
         />
       </Section>
-      <Section title='ModeScreen (idle, composed)'>
+      <Section title='ModeScreen (idle, composed)' tabId={tabId}>
         <ModeScreen id='preview-demo' phase='idle'>
           <ModeTopBar
             title='Demo Mode'
@@ -190,13 +190,13 @@ function IdleComposedComponents(
 }
 
 function IdleScreenComponents(
-  { sel, groupSel }: { sel: StatsSelector; groupSel: GroupSel },
+  { sel, groupSel, tabId }: { sel: StatsSelector; groupSel: GroupSel; tabId: string },
 ) {
   return (
     <>
       <h2>Idle Screen</h2>
-      <IdleBasicComponents groupSel={groupSel} />
-      <IdleComposedComponents sel={sel} />
+      <IdleBasicComponents groupSel={groupSel} tabId={tabId} />
+      <IdleComposedComponents sel={sel} tabId={tabId} />
     </>
   );
 }
@@ -206,7 +206,7 @@ function IdleScreenComponents(
 // ---------------------------------------------------------------------------
 
 export function StructureTab(
-  { sel, groupSel, tabId: _tabId }: {
+  { sel, groupSel, tabId }: {
     sel: StatsSelector;
     groupSel: GroupSel;
     tabId: string;
@@ -214,8 +214,8 @@ export function StructureTab(
 ) {
   return (
     <div>
-      <QuizFlowComponents />
-      <IdleScreenComponents sel={sel} groupSel={groupSel} />
+      <QuizFlowComponents tabId={tabId} />
+      <IdleScreenComponents sel={sel} groupSel={groupSel} tabId={tabId} />
     </div>
   );
 }

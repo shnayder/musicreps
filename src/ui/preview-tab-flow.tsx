@@ -32,11 +32,11 @@ import {
 // ---------------------------------------------------------------------------
 
 function FlowIdleSection(
-  { sel, groupSel }: { sel: StatsSelector; groupSel: GroupSel },
+  { sel, groupSel, tabId }: { sel: StatsSelector; groupSel: GroupSel; tabId: string },
 ) {
   return (
     <>
-      <Section title='Home — Skill Card'>
+      <Section title='Home — Skill Card' tabId={tabId}>
         <SkillCard
           modeId='semitoneMath'
           trackId='core'
@@ -55,7 +55,7 @@ function FlowIdleSection(
         />
       </Section>
 
-      <Section title='Idle — Practice + Recommendation'>
+      <Section title='Idle — Practice + Recommendation' tabId={tabId}>
         <ModeTopBar
           modeId='semitoneMath'
           title='Semitone Math'
@@ -109,10 +109,10 @@ function FlowIdleSection(
   );
 }
 
-function FlowQuizStates() {
+function FlowQuizStates({ tabId }: { tabId: string }) {
   return (
     <>
-      <Section title='Active Quiz — Awaiting Answer'>
+      <Section title='Active Quiz — Awaiting Answer' tabId={tabId}>
         <PreviewModeScreen phase='active'>
           <QuizSession
             timeLeft='0:42'
@@ -125,7 +125,7 @@ function FlowQuizStates() {
         </PreviewModeScreen>
       </Section>
 
-      <Section title='Active Quiz — Correct'>
+      <Section title='Active Quiz — Correct' tabId={tabId}>
         <PreviewModeScreen phase='active'>
           <QuizSession
             timeLeft='0:38'
@@ -157,7 +157,7 @@ function FlowQuizStates() {
         </PreviewModeScreen>
       </Section>
 
-      <Section title='Active Quiz — Wrong'>
+      <Section title='Active Quiz — Wrong' tabId={tabId}>
         <PreviewModeScreen phase='active'>
           <QuizSession
             timeLeft='0:31'
@@ -190,7 +190,7 @@ function FlowQuizStates() {
         </PreviewModeScreen>
       </Section>
 
-      <Section title='Active Quiz — Timer Warning'>
+      <Section title='Active Quiz — Timer Warning' tabId={tabId}>
         <PreviewModeScreen phase='active'>
           <QuizSession
             timeLeft='0:08'
@@ -206,10 +206,10 @@ function FlowQuizStates() {
   );
 }
 
-function FlowResultsSection({ sel }: { sel: StatsSelector }) {
+function FlowResultsSection({ sel, tabId }: { sel: StatsSelector; tabId: string }) {
   return (
     <>
-      <Section title='Round Complete'>
+      <Section title='Round Complete' tabId={tabId}>
         <PreviewModeScreen phase='round-complete'>
           <QuizArea controls={<RoundCompleteActions />}>
             <RoundCompleteInfo
@@ -222,7 +222,7 @@ function FlowResultsSection({ sel }: { sel: StatsSelector }) {
         </PreviewModeScreen>
       </Section>
 
-      <Section title='Progress Heatmap'>
+      <Section title='Progress Heatmap' tabId={tabId}>
         <StatsGrid
           selector={sel}
           colLabels={['+1', '+2', '+3', '+4', '+5', '+6']}
@@ -231,7 +231,7 @@ function FlowResultsSection({ sel }: { sel: StatsSelector }) {
         <StatsLegend />
       </Section>
 
-      <Section title='Fretboard — Progress Heatmap'>
+      <Section title='Fretboard — Progress Heatmap' tabId={tabId}>
         <FretboardPreview
           colorCircles={(root) => {
             const mastery: Array<[number, number, string]> = [
@@ -272,7 +272,7 @@ function FlowResultsSection({ sel }: { sel: StatsSelector }) {
 // ---------------------------------------------------------------------------
 
 export function FlowTab(
-  { sel, groupSel, tabId: _tabId }: {
+  { sel, groupSel, tabId }: {
     sel: StatsSelector;
     groupSel: GroupSel;
     tabId: string;
@@ -285,9 +285,9 @@ export function FlowTab(
         <code>--hue-*</code>{' '}
         value and reload to see the effect across all states.
       </p>
-      <FlowIdleSection sel={sel} groupSel={groupSel} />
-      <FlowQuizStates />
-      <FlowResultsSection sel={sel} />
+      <FlowIdleSection sel={sel} groupSel={groupSel} tabId={tabId} />
+      <FlowQuizStates tabId={tabId} />
+      <FlowResultsSection sel={sel} tabId={tabId} />
     </div>
   );
 }

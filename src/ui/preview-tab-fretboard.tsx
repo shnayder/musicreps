@@ -2,10 +2,10 @@
 
 import { FretboardPreview, PreviewGrid, Section } from './preview-shared.tsx';
 
-export function FretboardTab({ tabId: _tabId }: { tabId: string }) {
+export function FretboardTab({ tabId }: { tabId: string }) {
   return (
     <PreviewGrid>
-      <Section title='Fretboard — Quiz Active'>
+      <Section title='Fretboard — Quiz Active' tabId={tabId}>
         <FretboardPreview
           colorCircles={(root) => {
             const set = (s: number, f: number, fill: string) => {
@@ -19,7 +19,7 @@ export function FretboardTab({ tabId: _tabId }: { tabId: string }) {
           }}
         />
       </Section>
-      <Section title='Fretboard — Progress Heatmap'>
+      <Section title='Fretboard — Progress Heatmap' tabId={tabId}>
         <FretboardPreview
           colorCircles={(root) => {
             const mastery: Array<[number, number, string]> = [

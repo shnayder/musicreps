@@ -17,19 +17,19 @@ import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
 // File-local helpers
 // ---------------------------------------------------------------------------
 
-function StatsSection({ sel }: { sel: StatsSelector }) {
+function StatsSection({ sel, tabId }: { sel: StatsSelector; tabId: string }) {
   return (
     <>
       <h2>Stats</h2>
       <PreviewGrid>
-        <Section title='Progress Heatmap (StatsGrid)'>
+        <Section title='Progress Heatmap (StatsGrid)' tabId={tabId}>
           <StatsGrid
             selector={sel}
             colLabels={['+1', '+2', '+3', '+4', '+5', '+6']}
             getItemId={(name, ci) => `${name}+${ci + 1}`}
           />
         </Section>
-        <Section title='Bidirectional Table (StatsTable)'>
+        <Section title='Bidirectional Table (StatsTable)' tabId={tabId}>
           <StatsTable
             selector={sel}
             rows={NOTES.slice(0, 6).map((n) => ({
@@ -43,7 +43,7 @@ function StatsSection({ sel }: { sel: StatsSelector }) {
             revHeader='→ Note'
           />
         </Section>
-        <Section title='Stats Legend'>
+        <Section title='Stats Legend' tabId={tabId}>
           <StatsLegend />
         </Section>
       </PreviewGrid>
@@ -51,26 +51,26 @@ function StatsSection({ sel }: { sel: StatsSelector }) {
   );
 }
 
-function ScopeSection({ groupSel }: { groupSel: GroupSel }) {
+function ScopeSection({ groupSel, tabId }: { groupSel: GroupSel; tabId: string }) {
   return (
     <>
       <h2>Scope Controls</h2>
       <PreviewGrid>
-        <Section title='Group Toggles'>
+        <Section title='Group Toggles' tabId={tabId}>
           <GroupToggles
             labels={['+1 to +3', '+4 to +6', '+7 to +9', '+10 to +11']}
             active={new Set([0, 1])}
             onToggle={() => {}}
           />
         </Section>
-        <Section title='String Toggles'>
+        <Section title='String Toggles' tabId={tabId}>
           <StringToggles
             stringNames={['E', 'A', 'D', 'G', 'B', 'e']}
             active={new Set([0, 1, 2])}
             onToggle={() => {}}
           />
         </Section>
-        <Section title='GroupProgressToggles (active groups)'>
+        <Section title='GroupProgressToggles (active groups)' tabId={tabId}>
           <GroupProgressToggles
             groups={[
               { label: '1–3', itemIds: ['C+1', 'C+2', 'C+3'] },
@@ -84,7 +84,7 @@ function ScopeSection({ groupSel }: { groupSel: GroupSel }) {
             onUnskip={() => {}}
           />
         </Section>
-        <Section title='GroupProgressToggles (with skipped)'>
+        <Section title='GroupProgressToggles (with skipped)' tabId={tabId}>
           <GroupProgressToggles
             groups={[
               { label: '1–3', itemIds: ['C+1', 'C+2', 'C+3'] },
@@ -102,7 +102,7 @@ function ScopeSection({ groupSel }: { groupSel: GroupSel }) {
             onUnskip={() => {}}
           />
         </Section>
-        <Section title='GroupProgressBar'>
+        <Section title='GroupProgressBar' tabId={tabId}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <GroupProgressBar
               colors={['#4caf50', '#4caf50', '#ff9800', '#9e9e9e', '#9e9e9e']}
@@ -113,10 +113,10 @@ function ScopeSection({ groupSel }: { groupSel: GroupSel }) {
             />
           </div>
         </Section>
-        <Section title='Note Filter'>
+        <Section title='Note Filter' tabId={tabId}>
           <NoteFilter mode='natural' onChange={() => {}} />
         </Section>
-        <Section title='Notes Toggles'>
+        <Section title='Notes Toggles' tabId={tabId}>
           <NotesToggles
             notes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
             active={new Set(['C', 'D', 'E', 'F', 'G'])}
@@ -133,7 +133,7 @@ function ScopeSection({ groupSel }: { groupSel: GroupSel }) {
 // ---------------------------------------------------------------------------
 
 export function ScopeStatsTab(
-  { sel, groupSel, tabId: _tabId }: {
+  { sel, groupSel, tabId }: {
     sel: StatsSelector;
     groupSel: GroupSel;
     tabId: string;
@@ -141,8 +141,8 @@ export function ScopeStatsTab(
 ) {
   return (
     <div>
-      <StatsSection sel={sel} />
-      <ScopeSection groupSel={groupSel} />
+      <StatsSection sel={sel} tabId={tabId} />
+      <ScopeSection groupSel={groupSel} tabId={tabId} />
     </div>
   );
 }

@@ -11,15 +11,15 @@ import { CountdownBar, FeedbackDisplay, TextPrompt } from './quiz-ui.tsx';
 import { QuizSession, SessionInfo } from './mode-screen.tsx';
 import { PreviewGrid, Section } from './preview-shared.tsx';
 
-export function QuizUITab({ tabId: _tabId }: { tabId: string }) {
+export function QuizUITab({ tabId }: { tabId: string }) {
   return (
     <>
       <h2>Prompts & Feedback</h2>
       <PreviewGrid>
-        <Section title='Text Prompt'>
+        <Section title='Text Prompt' tabId={tabId}>
           <TextPrompt text='C + 5' />
         </Section>
-        <Section title='Feedback — Correct'>
+        <Section title='Feedback — Correct' tabId={tabId}>
           <FeedbackDisplay
             text={feedbackCorrect.text}
             className={feedbackCorrect.className}
@@ -27,7 +27,7 @@ export function QuizUITab({ tabId: _tabId }: { tabId: string }) {
             onNext={() => {}}
           />
         </Section>
-        <Section title='Feedback — Incorrect'>
+        <Section title='Feedback — Incorrect' tabId={tabId}>
           <FeedbackDisplay
             text={feedbackWrong.text}
             className={feedbackWrong.className}
@@ -39,13 +39,13 @@ export function QuizUITab({ tabId: _tabId }: { tabId: string }) {
       </PreviewGrid>
       <h2>Session Header & Timer</h2>
       <PreviewGrid>
-        <Section title='SessionInfo'>
+        <Section title='SessionInfo' tabId={tabId}>
           <SessionInfo
             context={sessionEarlyRound.context}
             count={sessionEarlyRound.count}
           />
         </Section>
-        <Section title='QuizSession (header)'>
+        <Section title='QuizSession (header)' tabId={tabId}>
           <QuizSession
             timeLeft='42s'
             context='Natural notes'
@@ -53,13 +53,13 @@ export function QuizUITab({ tabId: _tabId }: { tabId: string }) {
             isWarning={false}
           />
         </Section>
-        <Section title='Countdown Bar (mid-round)'>
+        <Section title='Countdown Bar (mid-round)' tabId={tabId}>
           <CountdownBar pct={timerMidRound.pct} />
         </Section>
-        <Section title='Countdown Bar — Warning'>
+        <Section title='Countdown Bar — Warning' tabId={tabId}>
           <CountdownBar pct={timerWarning.pct} warning />
         </Section>
-        <Section title='Countdown Bar — Last Question'>
+        <Section title='Countdown Bar — Last Question' tabId={tabId}>
           <CountdownBar pct={50} lastQuestion />
         </Section>
       </PreviewGrid>

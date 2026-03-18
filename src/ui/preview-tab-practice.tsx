@@ -83,11 +83,13 @@ function Phase1Components(
     customActive,
     toggleCustom,
     customItemCount,
+    tabId,
   }:
     & CustomState
     & {
       practiceMode: PracticeMode;
       setPracticeMode: (m: PracticeMode) => void;
+      tabId: string;
     },
 ) {
   return (
@@ -95,7 +97,7 @@ function Phase1Components(
       <h2>Phase 1: Individual Components</h2>
 
       <PreviewGrid>
-        <Section title='SkillHeader — with progress'>
+        <Section title='SkillHeader — with progress' tabId={tabId}>
           <SkillHeader
             modeId='fretboard'
             title='Guitar Fretboard'
@@ -103,7 +105,7 @@ function Phase1Components(
             onBack={() => {}}
           />
         </Section>
-        <Section title='SkillHeader — empty (new skill)'>
+        <Section title='SkillHeader — empty (new skill)' tabId={tabId}>
           <SkillHeader
             modeId='noteSemitones'
             title='Note ↔ Semitones'
@@ -114,19 +116,19 @@ function Phase1Components(
       </PreviewGrid>
 
       <PreviewGrid>
-        <Section title='SuggestionLines — mixed'>
+        <Section title='SuggestionLines — mixed' tabId={tabId}>
           <SuggestionLines lines={MOCK_SUGGESTION_LINES} />
         </Section>
-        <Section title='SuggestionLines — single'>
+        <Section title='SuggestionLines — single' tabId={tabId}>
           <SuggestionLines lines={MOCK_SUGGESTION_SINGLE} />
         </Section>
-        <Section title='SuggestionLines — review-heavy'>
+        <Section title='SuggestionLines — review-heavy' tabId={tabId}>
           <SuggestionLines lines={MOCK_SUGGESTION_REVIEW} />
         </Section>
       </PreviewGrid>
 
       <PreviewGrid>
-        <Section title='LevelToggles — custom mode'>
+        <Section title='LevelToggles — custom mode' tabId={tabId}>
           <LevelToggles
             labels={MOCK_LEVEL_LABELS}
             active={customActive}
@@ -136,10 +138,10 @@ function Phase1Components(
         </Section>
       </PreviewGrid>
 
-      <Phase1Cards />
+      <Phase1Cards tabId={tabId} />
 
       <PreviewGrid>
-        <Section title='PracticeConfig — toggle'>
+        <Section title='PracticeConfig — toggle' tabId={tabId}>
           <PracticeConfig
             mode={practiceMode}
             onModeChange={setPracticeMode}
@@ -159,10 +161,10 @@ function Phase1Components(
   );
 }
 
-function Phase1Cards() {
+function Phase1Cards({ tabId }: { tabId: string }) {
   return (
     <PreviewGrid>
-      <Section title='LevelProgressCard — review'>
+      <Section title='LevelProgressCard — review' tabId={tabId}>
         <LevelProgressCard
           label='E string'
           pill='Review'
@@ -170,7 +172,7 @@ function Phase1Cards() {
           status='normal'
         />
       </Section>
-      <Section title='LevelProgressCard — known'>
+      <Section title='LevelProgressCard — known' tabId={tabId}>
         <LevelProgressCard
           label='A string'
           pill='Learned'
@@ -178,14 +180,14 @@ function Phase1Cards() {
           status='known'
         />
       </Section>
-      <Section title='LevelProgressCard — skipped'>
+      <Section title='LevelProgressCard — skipped' tabId={tabId}>
         <LevelProgressCard
           label='D string'
           colors={MOCK_LEVEL_COLORS[2]}
           status='skipped'
         />
       </Section>
-      <Section title='LevelProgressCard — not started'>
+      <Section title='LevelProgressCard — not started' tabId={tabId}>
         <LevelProgressCard
           label='G string'
           colors={MOCK_LEVEL_COLORS[3]}
@@ -201,11 +203,11 @@ function Phase1Cards() {
 // ---------------------------------------------------------------------------
 
 function Phase2MultiLevel(
-  { customActive, toggleCustom, customItemCount }: CustomState,
+  { customActive, toggleCustom, customItemCount, tabId }: CustomState & { tabId: string },
 ) {
   return (
     <PreviewGrid>
-      <Section title='Suggested mode — multi-level'>
+      <Section title='Suggested mode — multi-level' tabId={tabId}>
         <div
           class='mode-screen phase-idle'
           style='display:flex;flex-direction:column;position:relative'
@@ -233,7 +235,7 @@ function Phase2MultiLevel(
         </div>
       </Section>
 
-      <Section title='Custom mode — multi-level'>
+      <Section title='Custom mode — multi-level' tabId={tabId}>
         <div
           class='mode-screen phase-idle'
           style='display:flex;flex-direction:column;position:relative'
@@ -271,10 +273,10 @@ function Phase2MultiLevel(
   );
 }
 
-function Phase2SingleAndProgress() {
+function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
   return (
     <PreviewGrid>
-      <Section title='Single-level skill'>
+      <Section title='Single-level skill' tabId={tabId}>
         <div
           class='mode-screen phase-idle'
           style='display:flex;flex-direction:column;position:relative'
@@ -296,7 +298,7 @@ function Phase2SingleAndProgress() {
         </div>
       </Section>
 
-      <Section title='Progress tab — level cards'>
+      <Section title='Progress tab — level cards' tabId={tabId}>
         <div style='padding: var(--space-3) var(--space-5)'>
           <LevelProgressCard
             label='E string'
@@ -340,7 +342,7 @@ function Phase2SingleAndProgress() {
 // ---------------------------------------------------------------------------
 
 export function PracticeRedesignTab(
-  { sel: _sel, groupSel: _groupSel, tabId: _tabId }: {
+  { sel: _sel, groupSel: _groupSel, tabId }: {
     sel: StatsSelector;
     groupSel: GroupSel;
     tabId: string;
@@ -373,14 +375,16 @@ export function PracticeRedesignTab(
         customActive={customActive}
         toggleCustom={toggleCustom}
         customItemCount={customItemCount}
+        tabId={tabId}
       />
       <h2>Phase 2: Assembled Layouts</h2>
       <Phase2MultiLevel
         customActive={customActive}
         toggleCustom={toggleCustom}
         customItemCount={customItemCount}
+        tabId={tabId}
       />
-      <Phase2SingleAndProgress />
+      <Phase2SingleAndProgress tabId={tabId} />
     </div>
   );
 }
