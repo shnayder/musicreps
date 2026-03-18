@@ -8,8 +8,7 @@
 //   deno task iterate list
 //
 // State names match the screenshot manifest (e.g. fretboard-idle,
-// semitoneMath-quiz, design-correct-feedback) or component manifest
-// (e.g. comp/buttons, comp/tabs). Use --list-states to see all.
+// semitoneMath-quiz, design-correct-feedback). Use --list-states to see all.
 
 import { chromium } from 'playwright';
 import { ChildProcess, spawn } from 'child_process';
@@ -25,12 +24,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import type { FixtureDetail } from '../src/types.ts';
 import { buildManifest, type ScreenshotEntry } from './screenshot-manifest.ts';
-import {
-  buildComponentManifest,
-  type ComponentEntry,
-  isComponentName,
-} from './component-manifest.ts';
-import { captureComponents } from './capture-components.ts';
 import { startServer } from '../tests/e2e/helpers/server.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -231,38 +224,21 @@ async function captureStates(
 }
 
 // ---------------------------------------------------------------------------
-// Partitioned capture: app states (dev server) + components (file://)
+// Capture session states via dev server
 // ---------------------------------------------------------------------------
 
 async function captureSessionStates(
   stateNames: string[],
   outDir: string,
   appManifestMap: Map<string, ScreenshotEntry>,
-  compManifestMap: Map<string, ComponentEntry>,
   hasTouch = true,
 ): Promise<void> {
-  const appNames = stateNames.filter((s) => !isComponentName(s));
-  const compNames = stateNames.filter((s) => isComponentName(s));
-
-  // Capture app states (needs dev server)
-  if (appNames.length > 0) {
-    const appEntries = appNames.map((s) => {
-      const entry = appManifestMap.get(s);
-      if (!entry) throw new Error(`State "${s}" no longer in manifest`);
-      return entry;
-    });
-    await captureStates(appEntries, outDir, hasTouch);
-  }
-
-  // Capture component states (file://, no server)
-  if (compNames.length > 0) {
-    const compEntries = compNames.map((s) => {
-      const entry = compManifestMap.get(s);
-      if (!entry) throw new Error(`Component "${s}" no longer in manifest`);
-      return entry;
-    });
-    await captureComponents({ entries: compEntries, outDir, hasTouch });
-  }
+  const appEntries = stateNames.map((s) => {
+    const entry = appManifestMap.get(s);
+    if (!entry) throw new Error(`State "${s}" no longer in manifest`);
+    return entry;
+  });
+  await captureStates(appEntries, outDir, hasTouch);
 }
 
 // ---------------------------------------------------------------------------
@@ -575,8 +551,7 @@ Commands:
 Options:
   --list-states   Print all valid state names and exit.
 
-State names match the screenshot or component manifest (run --list-states to see all).
-Component names use the comp/ prefix (e.g. comp/buttons, comp/tabs).
+State names match the screenshot manifest (run --list-states to see all).
 `);
   process.exit(1);
 }
@@ -586,12 +561,10 @@ async function main() {
   const touchMode = !args.includes('--no-touch');
   const filteredArgs = args.filter((a) => a !== '--no-touch');
 
-  // --list-states: print all valid state names (app + component)
+  // --list-states: print all valid state names
   if (filteredArgs.includes('--list-states')) {
     const manifest = buildManifest();
     for (const entry of manifest) console.log(entry.name);
-    const compEntries = buildComponentManifest();
-    for (const entry of compEntries) console.log(entry.name);
     return;
   }
 
@@ -600,9 +573,7 @@ async function main() {
 
   const manifest = buildManifest();
   const manifestMap = new Map(manifest.map((e) => [e.name, e]));
-  const compManifest = buildComponentManifest();
-  const compMap = new Map(compManifest.map((e) => [e.name, e]));
-  const allNames = new Set([...manifestMap.keys(), ...compMap.keys()]);
+  const allNames = new Set(manifestMap.keys());
 
   switch (command) {
     case 'new': {
@@ -642,7 +613,6 @@ async function main() {
         stateNames,
         outDir,
         manifestMap,
-        compMap,
         touchMode,
       );
 
@@ -683,7 +653,6 @@ async function main() {
         session.states,
         outDir,
         manifestMap,
-        compMap,
         touchMode,
       );
 

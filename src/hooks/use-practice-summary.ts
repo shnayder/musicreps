@@ -13,6 +13,7 @@ import { computePracticeSummary } from '../mode-ui-state.ts';
 import type { StatsViewSelector } from './use-round-summary.ts';
 import { useStatsSelector } from './use-round-summary.ts';
 import type { QuizEngineHandle } from './use-quiz-engine.ts';
+import type { ModeTab } from '../ui/mode-screen.tsx';
 
 // ---------------------------------------------------------------------------
 // Hook
@@ -20,8 +21,8 @@ import type { QuizEngineHandle } from './use-quiz-engine.ts';
 
 export type PracticeSummaryHandle = {
   summary: PracticeSummaryState;
-  activeTab: 'practice' | 'progress';
-  setActiveTab: (tab: 'practice' | 'progress') => void;
+  activeTab: ModeTab;
+  setActiveTab: (tab: ModeTab) => void;
   statsSel: StatsViewSelector;
 };
 
@@ -43,9 +44,7 @@ export function usePracticeSummary(opts: {
   recommendation: RecommendationResult | null;
   recommendationText: string;
 }): PracticeSummaryHandle {
-  const [activeTab, setActiveTab] = useState<'practice' | 'progress'>(
-    'practice',
-  );
+  const [activeTab, setActiveTab] = useState<ModeTab>('practice');
 
   const summary = useMemo(
     () =>

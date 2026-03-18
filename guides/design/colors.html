@@ -36,6 +36,36 @@
         margin: 0 0 1rem;
       }
 
+      /* Palette ramp rows */
+      .palette-section { margin-bottom: 1.5rem; }
+      .palette-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin-bottom: 0.35rem;
+        font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+      }
+      .palette-hue-note {
+        font-weight: 400;
+        color: var(--color-text-muted);
+      }
+      .palette-row {
+        display: flex;
+        gap: 2px;
+      }
+      .palette-cell {
+        flex: 1;
+        height: 44px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+        font-weight: 600;
+        font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+        border: 1px solid rgba(128, 128, 128, 0.15);
+      }
+
       .grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -164,19 +194,20 @@
     </div>
     <div style="margin-bottom: 1rem; font-size: 0.8rem">
       <a
-        href="components.html"
+        href="components-preview.html"
         style="color: var(--color-brand-dark); text-decoration: none"
-      >Design System (components, spacing, layout) &rarr;</a>
+      >Component Preview &rarr;</a>
     </div>
 
     <!-- ================================================================== -->
-    <h2>Palette Overview</h2>
+    <h2>Palette</h2>
     <p>
-      Three colors carry all the meaning: <strong>green</strong> (actions,
-      correctness, brand), <strong>gold</strong> (attention, recommendations,
-      achievements), <strong>red</strong> (errors only). Everything else is
-      warm neutral chrome.
+      Raw color scales derived from anchor hues. Change a
+      <code>--hue-*</code> value in <code>:root</code> to shift an entire
+      family.
     </p>
+
+    <div id="palette-ramps"></div>
 
     <!-- ================================================================== -->
     <h2>Brand / Success (Green)</h2>
@@ -294,6 +325,75 @@
       }
 
       function renderAll() {
+        // --- Palette ramps ---
+        (function () {
+          var ramps = [
+            {
+              name: 'neutral',
+              hueVar: '--hue-neutral',
+              steps: [
+                '0', '100', '150', '200', '250', '300', '350', '400',
+                '450', '500', '550', '600', '650', '700', '800', '850',
+                '900', '950',
+              ],
+            },
+            {
+              name: 'brand',
+              hueVar: '--hue-brand',
+              steps: ['100', '600', '800'],
+            },
+            {
+              name: 'success',
+              hueVar: '--hue-success',
+              steps: ['100', '600', '800'],
+            },
+            {
+              name: 'error',
+              hueVar: '--hue-error',
+              steps: ['100', '500', '800'],
+            },
+            {
+              name: 'notice',
+              hueVar: '--hue-notice',
+              steps: ['100', '300', '400', '450', '500', '600', '700', '800'],
+            },
+          ];
+
+          function perceivedLight(color) {
+            // Parse rgb from computed style
+            var el = document.createElement('div');
+            el.style.color = color;
+            document.body.appendChild(el);
+            var computed = getComputedStyle(el).color;
+            document.body.removeChild(el);
+            var m = computed.match(/(\d+)/g);
+            if (!m || m.length < 3) return 128;
+            return parseInt(m[0]) * 0.299 + parseInt(m[1]) * 0.587 +
+              parseInt(m[2]) * 0.114;
+          }
+
+          var container = document.getElementById('palette-ramps');
+          var html = '';
+          ramps.forEach(function (ramp) {
+            var hueVal = v(ramp.hueVar);
+            html += '<div class="palette-section">';
+            html += '<div class="palette-label">' + ramp.name +
+              ' <span class="palette-hue-note">' + ramp.hueVar + ': ' +
+              hueVal + '°</span></div>';
+            html += '<div class="palette-row">';
+            ramp.steps.forEach(function (step) {
+              var varName = '--' + ramp.name + '-' + step;
+              var val = v(varName);
+              var light = perceivedLight(val);
+              var textColor = light > 140 ? '#333' : '#eee';
+              html += '<div class="palette-cell" style="background:' + val +
+                ';color:' + textColor + ';">' + step + '</div>';
+            });
+            html += '</div></div>';
+          });
+          container.innerHTML = html;
+        })();
+
         // --- Brand / Success (unified green) ---
         renderSwatches('brand-colors', [
           {

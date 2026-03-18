@@ -49,6 +49,26 @@ into a single IIFE at build time. Tests import the same modules directly via
 | localStorage keys | `namespace_keyName`              | `semitoneMath_enabledGroups`, `motorBaseline_button`      |
 | Mode IDs          | `camelCase`                      | `fretboard`, `semitoneMath`, `keySignatures`              |
 
+## Component Extraction
+
+**Extract every logical UI concept as a named component**, even if it appears
+only once. A "logical concept" is a UI element that has a name in the design
+language — a pill, a tab button, a close button, a before/after row. The test:
+if you'd draw a box around it and label it on a wireframe, it should be a
+component.
+
+**Why this matters:** Named components can be rendered in isolation on a preview
+page (`preview.tsx`), which makes it possible to iterate on all their visual
+states at once without navigating the full app. They're also testable and
+composable in ways that inline JSX isn't.
+
+**Purely structural markup** (a generic `<section>` wrapper, a `<div>` for
+spacing) doesn't need extraction — only elements with semantic identity.
+
+**Duplication is a strong signal.** If the same JSX block appears in two
+places, it must be a component. If it appears once but renders a clearly named
+"thing" in the design, it should still be a component.
+
 ## Dead Code
 
 Remove dead code immediately — don't comment it out, don't leave unused

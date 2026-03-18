@@ -223,11 +223,11 @@ export function tabbedIdleHTML(config: {
     ? `\n          <div class="practice-section-header">Practice Settings</div>`
     : '';
   const setupRec = hasScope ? `\n          ${recBlock}` : '';
-  return `<div class="mode-tabs">
-      <button class="mode-tab active" data-tab="practice">Practice</button>
-      <button class="mode-tab" data-tab="progress">Progress</button>
+  return `<div class="tabs">
+      <button class="tab-btn active" data-tab="practice">Practice</button>
+      <button class="tab-btn" data-tab="progress">Progress</button>
     </div>
-    <div class="tab-content tab-practice active">
+    <div class="tab-panel tab-practice active">
       <div class="practice-card">
         <div class="practice-zone practice-zone-mastery">
           <div class="practice-section-header">Mastery</div>
@@ -244,7 +244,7 @@ export function tabbedIdleHTML(config: {
         </div>
       </div>
     </div>
-    <div class="tab-content tab-progress">
+    <div class="tab-panel tab-progress">
       ${config.progressContent || ''}
       <div class="stats-container"></div>
       <div class="baseline-info"></div>
@@ -280,14 +280,14 @@ interface ModeScreenOptions {
  * Each mode only specifies what's unique: idle HTML (tabs) and quiz-area content.
  *
  * DOM grouping:
- *   mode-tabs + tab-content — Practice/Progress tabs (idle)
+ *   .tabs + .tab-panel — Practice/Progress tabs (idle)
  *   quiz-session            — close button + counters + progress (active)
  *   quiz-area               — question + answer buttons + feedback (active)
  */
 export function modeScreen(id: string, opts: ModeScreenOptions): string {
   return `  <div class="mode-screen phase-idle" id="mode-${id}">
     <div class="mode-top-bar">
-      <button tabindex="0" class="mode-close-btn" aria-label="Back to home">\u00D7</button>
+      <button tabindex="0" class="close-btn" aria-label="Back to home">\u00D7</button>
       <h1 class="mode-title">${opts.modeName}</h1>
     </div>
     ${opts.idleHTML}
@@ -302,7 +302,7 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
         <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="quiz-header-close" aria-label="Stop quiz">\u00D7</button>
+      <button tabindex="0" class="close-btn" aria-label="Stop quiz">\u00D7</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>

@@ -65,6 +65,7 @@ import {
   KeyboardHint,
   type KeyboardHintType,
 } from '../ui/quiz-ui.tsx';
+import { Text } from '../ui/text.tsx';
 import { BUTTON_PROVIDER, SpeedCheck } from '../ui/speed-check.tsx';
 
 import type {
@@ -749,7 +750,44 @@ function IdlePracticeView<Q>(
       onCalibrate={engine.startCalibration}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
+      aboutContent={<AboutTab beforeAfter={def.beforeAfter} />}
     />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AboutTab — before/after contrast and future mode-specific info
+// ---------------------------------------------------------------------------
+
+function AboutTab(
+  { beforeAfter }: {
+    beforeAfter: {
+      before: string | (() => string);
+      after: string | (() => string);
+    };
+  },
+) {
+  const before = typeof beforeAfter.before === 'function'
+    ? beforeAfter.before()
+    : beforeAfter.before;
+  const after = typeof beforeAfter.after === 'function'
+    ? beforeAfter.after()
+    : beforeAfter.after;
+
+  return (
+    <div class='about-tab'>
+      <Text role='subsection-header' as='div'>What you're training</Text>
+      <div class='about-before-after'>
+        <div class='about-ba-row'>
+          <Text role='label' as='span'>Before</Text>
+          <span class='about-ba-text'>{before}</span>
+        </div>
+        <div class='about-ba-row'>
+          <Text role='label' as='span'>After</Text>
+          <span class='about-ba-text about-ba-after'>{after}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1004,7 +1042,6 @@ export function GenericMode<Q>(
         modeId={def.id}
         title={def.name}
         description={def.description}
-        beforeAfter={def.beforeAfter}
         onBack={navigateHome}
         showBack={isIdle}
       />

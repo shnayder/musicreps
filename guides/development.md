@@ -261,9 +261,6 @@ build-generated:
 
 - `guides/design/colors.html` — hand-written color palette reference.
 
-- `guides/design/components.html` — hand-written design system reference (CSS
-  tokens, spacing/typography scales, grid patterns, variant A/B panels).
-
 All pages link to `src/styles.css` so CSS changes are visible on refresh.
 Hand-written pages need no rebuild; build-generated pages require
 `deno task build`.

@@ -20,7 +20,7 @@ function cssVar(name: string): string {
 function heatmapColors() {
   if (!_heatmapColors) {
     _heatmapColors = {
-      none: cssVar('--heatmap-none') || 'hsl(30, 4%, 85%)',
+      none: cssVar('--heatmap-none') || 'hsl(30, 5%, 86%)',
       level: [
         cssVar('--heatmap-1') || 'hsl(40, 60%, 58%)',
         cssVar('--heatmap-2') || 'hsl(48, 50%, 52%)',

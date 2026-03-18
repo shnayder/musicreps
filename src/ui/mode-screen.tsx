@@ -11,6 +11,105 @@ import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
+// CloseButton — × dismiss button used in top bars and overlays
+// ---------------------------------------------------------------------------
+
+export function CloseButton(
+  { onClick, ariaLabel }: {
+    onClick?: () => void;
+    ariaLabel: string;
+  },
+) {
+  return (
+    <button
+      type='button'
+      class='close-btn'
+      aria-label={ariaLabel}
+      onClick={onClick}
+    >
+      {'\u00D7'}
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tabs — accessible tablist + panels (WAI-ARIA Tabs pattern)
+// ---------------------------------------------------------------------------
+
+export type TabDef<T extends string = string> = {
+  id: T;
+  label: ComponentChildren;
+  content: ComponentChildren;
+};
+
+let tabsIdCounter = 0;
+
+export function Tabs<T extends string>(
+  { tabs, activeTab, onTabSwitch, class: className = 'tabs' }: {
+    tabs: TabDef<T>[];
+    activeTab: T;
+    onTabSwitch: (tab: T) => void;
+    class?: string;
+  },
+) {
+  const prefix = useMemo(() => 'tabs-' + tabsIdCounter++, []);
+
+  function handleKeyDown(e: KeyboardEvent, current: T) {
+    const ids = tabs.map((t) => t.id);
+    const idx = ids.indexOf(current);
+    let nextIdx = idx;
+    if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + ids.length) % ids.length;
+    else if (e.key === 'ArrowRight') nextIdx = (idx + 1) % ids.length;
+    else if (e.key === 'Home') nextIdx = 0;
+    else if (e.key === 'End') nextIdx = ids.length - 1;
+    else return;
+    e.preventDefault();
+    const nextId = ids[nextIdx];
+    onTabSwitch(nextId);
+    requestAnimationFrame(() => {
+      (document.getElementById(
+        prefix + '-tab-' + nextId,
+      ) as HTMLElement | null)?.focus();
+    });
+  }
+
+  return (
+    <>
+      <div class={className} role='tablist'>
+        {tabs.map((tab) => (
+          <button
+            type='button'
+            key={tab.id}
+            id={prefix + '-tab-' + tab.id}
+            role='tab'
+            aria-selected={activeTab === tab.id}
+            aria-controls={prefix + '-panel-' + tab.id}
+            tabIndex={activeTab === tab.id ? 0 : -1}
+            class={'tab-btn' + (activeTab === tab.id ? ' active' : '')}
+            data-tab={tab.id}
+            onClick={() => onTabSwitch(tab.id)}
+            onKeyDown={(e) => handleKeyDown(e, tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      {tabs.map((tab) => (
+        <div
+          key={tab.id}
+          id={prefix + '-panel-' + tab.id}
+          role='tabpanel'
+          aria-labelledby={prefix + '-tab-' + tab.id}
+          class={'tab-panel' + (activeTab === tab.id ? ' active' : '')}
+        >
+          {tab.content}
+        </div>
+      ))}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Phase type
 // ---------------------------------------------------------------------------
 
@@ -35,18 +134,14 @@ export function ModeScreen(
 }
 
 // ---------------------------------------------------------------------------
-// ModeTopBar — close button + mode title + description + before/after
+// ModeTopBar — close button + mode title + description
 // ---------------------------------------------------------------------------
 
 export function ModeTopBar(
-  { modeId, title, description, beforeAfter, onBack, showBack = true }: {
+  { modeId, title, description, onBack, showBack = true }: {
     modeId?: string;
     title: string;
     description?: string;
-    beforeAfter?: {
-      before: string | (() => string);
-      after: string | (() => string);
-    };
     onBack?: () => void;
     showBack?: boolean;
   },
@@ -60,118 +155,21 @@ export function ModeTopBar(
           {description && <p class='mode-description'>{description}</p>}
         </div>
         {showBack && (
-          <button
-            type='button'
-            tabIndex={0}
-            class='mode-close-btn'
-            aria-label='Back to home'
+          <CloseButton
+            ariaLabel='Back to home'
             onClick={onBack}
-          >
-            {'\u00D7' /* × close */}
-          </button>
+          />
         )}
       </div>
-      {beforeAfter && (
-        <div class='mode-before-after'>
-          <span class='mode-ba-before'>
-            {typeof beforeAfter.before === 'function'
-              ? beforeAfter.before()
-              : beforeAfter.before}
-          </span>
-          <span class='mode-ba-arrow'>&rarr;</span>
-          <span class='mode-ba-after'>
-            {typeof beforeAfter.after === 'function'
-              ? beforeAfter.after()
-              : beforeAfter.after}
-          </span>
-        </div>
-      )}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// TabbedIdle — practice/progress tab switching (WAI-ARIA Tabs pattern)
+// ModeTab — tab IDs for mode screens
 // ---------------------------------------------------------------------------
 
-let tabbedIdCounter = 0;
-
-const TABS = ['practice', 'progress'] as const;
-const TAB_LABELS: Record<string, string> = {
-  practice: 'Practice',
-  progress: 'Progress',
-};
-
-export function TabbedIdle(
-  { activeTab, onTabSwitch, practiceContent, progressContent }: {
-    activeTab: 'practice' | 'progress';
-    onTabSwitch: (tab: 'practice' | 'progress') => void;
-    practiceContent: ComponentChildren;
-    progressContent: ComponentChildren;
-  },
-) {
-  const prefix = useMemo(() => 'tabs-' + tabbedIdCounter++, []);
-
-  function handleTabKeyDown(
-    e: KeyboardEvent,
-    current: 'practice' | 'progress',
-  ) {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      const next = current === 'practice' ? 'progress' : 'practice';
-      onTabSwitch(next);
-      requestAnimationFrame(() => {
-        const container = (e.currentTarget as HTMLElement).parentElement;
-        const nextBtn = container?.querySelector(
-          '[data-tab="' + next + '"]',
-        ) as HTMLElement | null;
-        nextBtn?.focus();
-      });
-    }
-  }
-
-  return (
-    <>
-      <div class='mode-tabs' role='tablist'>
-        {TABS.map((tab) => (
-          <button
-            type='button'
-            key={tab}
-            id={prefix + '-tab-' + tab}
-            role='tab'
-            aria-selected={activeTab === tab}
-            aria-controls={prefix + '-panel-' + tab}
-            tabIndex={activeTab === tab ? 0 : -1}
-            class={'mode-tab' + (activeTab === tab ? ' active' : '')}
-            data-tab={tab}
-            onClick={() => onTabSwitch(tab)}
-            onKeyDown={(e) => handleTabKeyDown(e, tab)}
-          >
-            {TAB_LABELS[tab]}
-          </button>
-        ))}
-      </div>
-      <div
-        id={prefix + '-panel-practice'}
-        role='tabpanel'
-        aria-labelledby={prefix + '-tab-practice'}
-        class={'tab-content tab-practice' +
-          (activeTab === 'practice' ? ' active' : '')}
-      >
-        {practiceContent}
-      </div>
-      <div
-        id={prefix + '-panel-progress'}
-        role='tabpanel'
-        aria-labelledby={prefix + '-tab-progress'}
-        class={'tab-content tab-progress' +
-          (activeTab === 'progress' ? ' active' : '')}
-      >
-        {progressContent}
-      </div>
-    </>
-  );
-}
+export type ModeTab = 'practice' | 'progress' | 'about';
 
 // ---------------------------------------------------------------------------
 // PracticeCard — wraps practice zones (status, scope, action)
@@ -204,41 +202,22 @@ export function PracticeCard(
   const scopeDisabled = props.scopeValid === false;
   const validationMessage = scopeDisabled ? props.validationMessage : undefined;
 
-  const recBlock = recommendation
-    ? (
-      <div class='suggestion-card'>
-        <div class='suggestion-card-header'>Suggestion</div>
-        <div class='suggestion-card-body'>
-          <Text role='secondary' class='suggestion-card-text'>
-            {recommendation}
-          </Text>
-          {onApplyRecommendation
-            ? (
-              <button
-                type='button'
-                tabIndex={0}
-                class='suggestion-card-accept'
-                onClick={onApplyRecommendation}
-              >
-                Accept
-              </button>
-            )
-            : null}
-        </div>
-      </div>
-    )
-    : null;
-
   return (
     <div class='practice-card'>
       {statusLabel && (
         <div class='practice-status'>
-          <Text role='label'>Status</Text>
-          <span class='practice-status-label'>{statusLabel}</span>
-          <span class='practice-status-detail'>{statusDetail || ''}</span>
+          <div class='practice-status-row'>
+            <Text role='label'>Status</Text>
+            <span class='practice-status-label'>{statusLabel}</span>
+          </div>
+          {statusDetail && (
+            <span class='practice-status-detail'>{statusDetail}</span>
+          )}
         </div>
       )}
-      {recBlock}
+      {recommendation && (
+        <Recommendation text={recommendation} onApply={onApplyRecommendation} />
+      )}
       {scope && <div class='practice-scope'>{scope}</div>}
       <div class='practice-zone-action'>
         <StartButton
@@ -362,15 +341,10 @@ export function QuizSession(
             lastQuestion={lastQuestion}
           />
         </div>
-        <button
-          type='button'
-          tabIndex={0}
-          class='quiz-header-close'
-          aria-label='Stop quiz'
+        <CloseButton
+          ariaLabel='Stop quiz'
           onClick={onClose}
-        >
-          {'\u00D7' /* × close button */}
-        </button>
+        />
       </div>
     </div>
   );
@@ -503,7 +477,7 @@ export function RoundCompleteActions(
 }
 
 // ---------------------------------------------------------------------------
-// PracticeTab — composes TabbedIdle + PracticeCard + progress wrapper
+// PracticeTab — composes Tabs + PracticeCard
 // ---------------------------------------------------------------------------
 
 export function PracticeTab(
@@ -519,6 +493,7 @@ export function PracticeTab(
     onTabSwitch,
     scopeValid,
     validationMessage,
+    aboutContent,
   }: {
     summary: PracticeSummaryState;
     onStart: () => void;
@@ -527,17 +502,18 @@ export function PracticeTab(
     statsContent: ComponentChildren;
     onCalibrate: () => void;
     baseline: number | null;
-    activeTab: 'practice' | 'progress';
-    onTabSwitch: (tab: 'practice' | 'progress') => void;
+    activeTab: ModeTab;
+    onTabSwitch: (tab: ModeTab) => void;
     scopeValid?: boolean;
     validationMessage?: string;
+    aboutContent?: ComponentChildren;
   },
 ) {
-  return (
-    <TabbedIdle
-      activeTab={activeTab}
-      onTabSwitch={onTabSwitch}
-      practiceContent={
+  const tabs: TabDef<ModeTab>[] = [
+    {
+      id: 'practice',
+      label: 'Practice',
+      content: (
         <PracticeCard
           summary={summary}
           onStart={onStart}
@@ -546,18 +522,21 @@ export function PracticeTab(
           scopeValid={scopeValid}
           validationMessage={validationMessage}
         />
-      }
-      progressContent={
+      ),
+    },
+    {
+      id: 'progress',
+      label: 'Progress',
+      content: (
         <div>
-          <div class='stats-container'>
-            {statsContent}
-          </div>
-          <BaselineInfo
-            baseline={baseline}
-            onRun={onCalibrate}
-          />
+          <div class='stats-container'>{statsContent}</div>
+          <BaselineInfo baseline={baseline} onRun={onCalibrate} />
         </div>
-      }
-    />
-  );
+      ),
+    },
+  ];
+  if (aboutContent) {
+    tabs.push({ id: 'about', label: 'About', content: aboutContent });
+  }
+  return <Tabs tabs={tabs} activeTab={activeTab} onTabSwitch={onTabSwitch} />;
 }

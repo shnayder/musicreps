@@ -127,49 +127,81 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
     /* Preview page overrides */
     body {
       display: block;
-      max-width: 720px;
-      padding: 2rem 1rem;
+      max-width: none;
+      padding: 1.5rem 2rem;
       min-height: auto;
       color: var(--color-text);
       line-height: 1.5;
     }
     h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
-    .subtitle { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
-    .page-nav { display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.8rem; }
+    .subtitle { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+    .page-nav { display: flex; gap: 1rem; margin-bottom: 0.75rem; font-size: 0.8rem; }
     .page-nav a { color: var(--color-brand-dark); text-decoration: none; }
     .page-nav a:hover { text-decoration: underline; }
+    /* Tab navigation */
+    .preview-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--color-border-lighter);
+      flex-wrap: wrap;
+    }
+    .preview-tab-btn {
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--color-text-light);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .preview-tab-btn:hover { color: var(--color-text); }
+    .preview-tab-btn.active {
+      color: var(--color-brand-dark);
+      border-bottom-color: var(--color-brand-dark);
+      font-weight: 600;
+    }
+    /* Within-tab section dividers */
     h2 {
-      font-size: 1.1rem;
-      margin: 2.5rem 0 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 2rem 0 1rem;
       padding-bottom: 0.25rem;
       border-bottom: 1px solid var(--color-border-lighter);
+      color: var(--color-text-light);
     }
-    .preview-section { margin-bottom: 1.5rem; }
+    h2:first-child { margin-top: 0; }
+    /* Component grid */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 1.25rem;
+    }
+    .preview-section { margin-bottom: 0; }
     .preview-section h3 {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
       color: var(--color-text-light);
       margin: 0 0 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
     .preview-frame {
-      max-width: 402px;
       border: 1px solid var(--color-border-light);
       border-radius: 8px;
       padding: var(--space-4);
       background: var(--color-bg);
     }
+    .tab-description {
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      margin: 0 0 1.5rem;
+    }
   </style>
 </head>
 <body>
-  <h1>Component Preview</h1>
-  <div class="subtitle">
-    Preact components rendered with mock data &mdash; edit
-    <code>src/ui/preview.tsx</code>, rebuild or refresh <code>/preview</code>.
-  </div>
-  <div class="page-nav">
-    <a href="components.html">Design System &rarr;</a>
-    <a href="colors.html">Colors &rarr;</a>
-  </div>
   <div id="preview-root"></div>
   <script>
 ${previewJs}
