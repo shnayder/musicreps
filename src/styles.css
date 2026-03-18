@@ -772,17 +772,16 @@ body {
 }
 
 .segmented-control {
-  display: flex;
-  gap: 0;
+  display: inline-flex;
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 .segmented-btn {
-  flex: 1;
   padding: var(--space-3) var(--space-4);
   border: none;
-  background: var(--color-surface);
+  background: transparent;
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);

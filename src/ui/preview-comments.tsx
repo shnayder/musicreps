@@ -82,7 +82,7 @@ export function CommentProvider(
   const setComment = useCallback((key: string, text: string) => {
     setStore((prev) => {
       const next = { ...prev };
-      if (text.trim()) next[key] = text;
+      if (text.length > 0) next[key] = text;
       else delete next[key];
       saveComments(next);
       return next;
@@ -126,11 +126,10 @@ export function CommentBubble(
 ) {
   const { store, setComment } = useComments();
   const key = commentKey(tabId, sectionTitle);
-  const text = store[key] || '';
-  const hasComment = text.trim().length > 0;
+  const isOpen = key in store;
 
   function handleClick() {
-    if (hasComment) return; // already visible via CommentArea
+    if (isOpen) return; // already visible via CommentArea
     // Seed with empty space to make CommentArea appear
     setComment(key, ' ');
   }
@@ -138,8 +137,8 @@ export function CommentBubble(
   return (
     <button
       type='button'
-      class={'comment-bubble-btn' + (hasComment ? ' has-comment' : '')}
-      title={hasComment ? 'Comment added' : 'Add comment'}
+      class={'comment-bubble-btn' + (isOpen ? ' has-comment' : '')}
+      title={isOpen ? 'Comment added' : 'Add comment'}
       onClick={handleClick}
     >
       {'\uD83D\uDCAC'}
@@ -161,17 +160,18 @@ export function CommentArea(
 ) {
   const { store, setComment } = useComments();
   const key = commentKey(tabId, sectionTitle);
-  const text = store[key] || '';
-  const hasComment = text.trim().length > 0;
+  const text = store[key] ?? '';
+  const visible = key in store;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   function handleInput(e: Event) {
     const ta = e.target as HTMLTextAreaElement;
+    // Remove from store when fully cleared
     setComment(key, ta.value);
     autoSize(ta);
   }
 
-  if (!hasComment) return null;
+  if (!visible) return null;
 
   return (
     <div class='comment-area'>
