@@ -4,6 +4,7 @@
 import { render } from 'preact';
 import { useState } from 'preact/hooks';
 import { type GroupSel, mockSelector } from './preview-shared.tsx';
+import { CommentProvider, CommentToolbar } from './preview-comments.tsx';
 import { FlowTab } from './preview-tab-flow.tsx';
 import { ButtonsTab } from './preview-tab-buttons.tsx';
 import { QuizUITab } from './preview-tab-quiz-ui.tsx';
@@ -70,49 +71,54 @@ function PreviewApp() {
   }
 
   return (
-    <div>
-      <h1>Component Preview</h1>
-      <div class='subtitle'>
-        Preact components with mock data — edit{' '}
-        <code>src/ui/preview.tsx</code>, rebuild or refresh{' '}
-        <code>/preview</code>.
+    <CommentProvider>
+      <div>
+        <h1>Component Preview</h1>
+        <div class='subtitle'>
+          Preact components with mock data — edit{' '}
+          <code>src/ui/preview.tsx</code>, rebuild or refresh{' '}
+          <code>/preview</code>.
+        </div>
+        <div class='page-nav'>
+          <a href='colors.html'>Colors &rarr;</a>
+        </div>
+        <div class='preview-tabs'>
+          {TABS.map((tab) => (
+            <button
+              key={tab}
+              type='button'
+              class={`preview-tab-btn${activeTab === tab ? ' active' : ''}`}
+              onClick={() => switchTab(tab)}
+            >
+              {TAB_LABELS[tab]}
+            </button>
+          ))}
+        </div>
+        <CommentToolbar tabId={activeTab} />
+        {activeTab === 'practice-redesign' && (
+          <PracticeRedesignTab
+            sel={sel}
+            groupSel={groupSel}
+            tabId={activeTab}
+          />
+        )}
+        {activeTab === 'flow' && (
+          <FlowTab sel={sel} groupSel={groupSel} tabId={activeTab} />
+        )}
+        {activeTab === 'buttons' && <ButtonsTab tabId={activeTab} />}
+        {activeTab === 'quiz-ui' && <QuizUITab tabId={activeTab} />}
+        {activeTab === 'scope-stats' && (
+          <ScopeStatsTab sel={sel} groupSel={groupSel} tabId={activeTab} />
+        )}
+        {activeTab === 'structure' && (
+          <StructureTab sel={sel} groupSel={groupSel} tabId={activeTab} />
+        )}
+        {activeTab === 'design-system' && (
+          <DesignSystemTab tabId={activeTab} />
+        )}
+        {activeTab === 'fretboard' && <FretboardTab tabId={activeTab} />}
       </div>
-      <div class='page-nav'>
-        <a href='colors.html'>Colors &rarr;</a>
-      </div>
-      <div class='preview-tabs'>
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            type='button'
-            class={`preview-tab-btn${activeTab === tab ? ' active' : ''}`}
-            onClick={() => switchTab(tab)}
-          >
-            {TAB_LABELS[tab]}
-          </button>
-        ))}
-      </div>
-      {activeTab === 'practice-redesign' && (
-        <PracticeRedesignTab
-          sel={sel}
-          groupSel={groupSel}
-          tabId={activeTab}
-        />
-      )}
-      {activeTab === 'flow' && (
-        <FlowTab sel={sel} groupSel={groupSel} tabId={activeTab} />
-      )}
-      {activeTab === 'buttons' && <ButtonsTab tabId={activeTab} />}
-      {activeTab === 'quiz-ui' && <QuizUITab tabId={activeTab} />}
-      {activeTab === 'scope-stats' && (
-        <ScopeStatsTab sel={sel} groupSel={groupSel} tabId={activeTab} />
-      )}
-      {activeTab === 'structure' && (
-        <StructureTab sel={sel} groupSel={groupSel} tabId={activeTab} />
-      )}
-      {activeTab === 'design-system' && <DesignSystemTab tabId={activeTab} />}
-      {activeTab === 'fretboard' && <FretboardTab tabId={activeTab} />}
-    </div>
+    </CommentProvider>
   );
 }
 

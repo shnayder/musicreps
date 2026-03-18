@@ -6,13 +6,14 @@ import { useEffect, useRef } from 'preact/hooks';
 import { NOTES } from '../music-data.ts';
 import { fretboardSVG } from '../html-helpers.ts';
 import type { StatsSelector } from './stats.tsx';
+import { CommentBubble } from './preview-comments.tsx';
 
 // ---------------------------------------------------------------------------
 // Preview scaffold
 // ---------------------------------------------------------------------------
 
 export function Section(
-  { title, children, tabId: _tabId }: {
+  { title, children, tabId }: {
     title: string;
     children: ComponentChildren;
     tabId?: string;
@@ -20,7 +21,10 @@ export function Section(
 ) {
   return (
     <section class='preview-section'>
-      <h3>{title}</h3>
+      <h3>
+        {title}
+        {tabId && <CommentBubble tabId={tabId} sectionTitle={title} />}
+      </h3>
       <div class='preview-frame'>{children}</div>
     </section>
   );

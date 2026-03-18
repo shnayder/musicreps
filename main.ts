@@ -199,6 +199,102 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
       font-size: var(--text-sm);
       margin: 0 0 1.5rem;
     }
+    /* Comment system */
+    .preview-section h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .comment-bubble-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+    .comment-bubble-btn {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 0;
+      opacity: 0.25;
+      transition: opacity 0.15s;
+      line-height: 1;
+    }
+    .preview-section:hover .comment-bubble-btn,
+    .comment-bubble-btn.has-comment {
+      opacity: 0.6;
+    }
+    .comment-bubble-btn.has-comment {
+      opacity: 1;
+    }
+    .comment-bubble-btn:hover {
+      opacity: 1;
+    }
+    .comment-popover {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 100;
+      background: white;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .comment-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--color-border-lighter);
+      border-radius: 4px;
+      padding: 0.4rem;
+      font-family: inherit;
+      font-size: 0.8rem;
+      resize: vertical;
+      min-height: 3rem;
+    }
+    .comment-textarea:focus {
+      outline: 2px solid var(--color-brand);
+      outline-offset: -1px;
+    }
+    .comment-close-btn {
+      align-self: flex-end;
+      border: none;
+      background: var(--color-brand);
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .comment-close-btn:hover { opacity: 0.9; }
+    .comment-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 1rem;
+      background: hsl(45, 80%, 95%);
+      border: 1px solid hsl(45, 60%, 80%);
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+    .comment-toolbar-count {
+      font-weight: 600;
+      color: hsl(45, 60%, 35%);
+    }
+    .comment-toolbar-btn {
+      border: 1px solid var(--color-border);
+      background: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .comment-toolbar-btn:hover { background: var(--color-surface-hover); }
+    .comment-toolbar-clear { color: var(--color-error-text); }
   </style>
 </head>
 <body>
