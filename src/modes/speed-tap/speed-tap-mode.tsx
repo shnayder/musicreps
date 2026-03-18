@@ -10,13 +10,8 @@ import {
   useState,
 } from 'preact/hooks';
 import type { ModeHandle, NoteFilter as NoteFilterType } from '../../types.ts';
-import {
-  displayNote,
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
-  NOTES,
-  pickRandomAccidental,
-} from '../../music-data.ts';
+import { displayNote, NOTES, pickRandomAccidental } from '../../music-data.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import { buildStatsLegend, getStatsCellColor } from '../../stats-display.ts';
 import { fretboardSVG } from '../../html-helpers.ts';
 

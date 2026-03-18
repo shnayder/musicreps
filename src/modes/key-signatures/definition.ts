@@ -7,10 +7,9 @@ import {
   isValidNoteInput,
   keySignatureLabel,
   MAJOR_KEYS,
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
   rootUsesFlats,
 } from '../../music-data.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,

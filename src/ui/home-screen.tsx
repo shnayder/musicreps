@@ -3,7 +3,7 @@
 
 import type { ComponentChildren } from 'preact';
 import { useCallback, useMemo, useState } from 'preact/hooks';
-import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../music-data.ts';
+import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
 import { SkillIcon } from './icons.tsx';
 import type { SettingsController } from '../types.ts';
 import type { AppConfig } from '../app-config.ts';

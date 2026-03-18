@@ -4,11 +4,8 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { Instrument } from '../../types.ts';
-import {
-  isValidNoteInput,
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
-} from '../../music-data.ts';
+import { isValidNoteInput } from '../../music-data.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,

@@ -2,11 +2,8 @@
 // Sequential response: user spells out all notes of a chord.
 // "Cm7" → C, Eb, G, Bb. Strict enharmonic spelling.
 
-import {
-  displayNote,
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
-} from '../../music-data.ts';
+import { displayNote } from '../../music-data.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,

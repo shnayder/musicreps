@@ -4,10 +4,9 @@
 import {
   displayNote,
   isValidNoteInput,
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
   rootUsesFlats,
 } from '../../music-data.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ACTIVE_DEGREES,

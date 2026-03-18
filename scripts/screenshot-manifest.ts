@@ -28,7 +28,8 @@ import {
   semitoneMathItemIds,
 } from '../src/fixtures/heatmap-scenarios.ts';
 import { generateLocalStorageData } from '../src/fixtures/recommendation-scenarios.ts';
-import { GUITAR, MODE_NAMES } from '../src/music-data.ts';
+import { GUITAR } from '../src/music-data.ts';
+import { MODE_NAMES } from '../src/mode-catalog.ts';
 import { getGroups, getItemIdsForGroup } from '../src/modes/fretboard/logic.ts';
 import { getItemIdsForGroup as semiMathGetGroup } from '../src/modes/semitone-math/logic.ts';
 import { getItemIdsForGroup as keySigGetGroup } from '../src/modes/key-signatures/logic.ts';
