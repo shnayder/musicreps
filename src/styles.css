@@ -976,6 +976,140 @@ body {
 }
 
 /* ==========================================================================
+   5b. SKILL HEADER + PRACTICE CONFIG (redesign)
+   ========================================================================== */
+
+/* --- Skill header: title + close + progress bar --- */
+.skill-header {
+  padding: var(--space-4) var(--space-5) var(--space-3);
+}
+.skill-header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.skill-header-row .mode-title {
+  flex: 1;
+}
+.skill-header-progress {
+  margin-top: var(--space-3);
+}
+
+/* --- Practice config: suggested/custom toggle --- */
+.practice-config {
+  padding: var(--space-3) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.practice-config-label {
+  margin-bottom: var(--space-1);
+}
+.practice-config-content {
+  margin-top: var(--space-2);
+}
+
+/* --- Suggestion lines (suggested mode) --- */
+.suggestion-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.suggestion-line {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+.suggestion-verb {
+  font-weight: var(--font-semibold);
+  color: var(--color-brand);
+}
+
+/* --- Level toggles (custom mode) --- */
+.level-toggles-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.level-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.level-toggles-count {
+  font-size: var(--text-sm);
+}
+
+/* --- Level progress card (progress tab) --- */
+.level-progress-card {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+.level-progress-card.skipped {
+  opacity: 0.5;
+}
+.level-progress-card.known {
+  border-color: var(--color-brand);
+}
+.level-progress-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.level-progress-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  flex: 1;
+}
+.level-progress-pill {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-recommended-bg);
+  color: var(--color-recommended-text);
+}
+.level-progress-actions {
+  display: flex;
+  gap: var(--space-1);
+}
+.level-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  transition:
+    background var(--duration-base) ease,
+    color var(--duration-base) ease;
+}
+.level-action-btn:hover {
+  background: var(--color-surface-hover);
+}
+.level-action-btn.known.active {
+  background: var(--color-brand);
+  color: white;
+  border-color: var(--color-brand);
+}
+.level-action-btn.skip.active {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border-color: var(--color-error-text);
+}
+
+/* ==========================================================================
    6. PROGRESS TAB
    ========================================================================== */
 .baseline-info {
