@@ -13,7 +13,7 @@ import type { MotorTaskType, SpeedCheckFixture } from '../types.ts';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { KeyboardHint } from './quiz-ui.tsx';
-import { resolveNoteInput } from '../music-data.ts';
+import { isValidNoteInput, resolveNoteInput } from '../music-data.ts';
 
 // ---------------------------------------------------------------------------
 // Motor task configuration
@@ -61,7 +61,7 @@ export const IMPLEMENTED_TASK_TYPES: ReadonlySet<MotorTaskType> = new Set([
 const TOTAL_TRIALS = 10;
 const WARMUP_TRIALS = 2;
 const PAUSE_MS = 400;
-const WRONG_FEEDBACK_MS = 300;
+const WRONG_FEEDBACK_MS = 800;
 
 // ---------------------------------------------------------------------------
 // CloseButton — reusable close button with proper touch target
@@ -219,6 +219,7 @@ function useTrialLoop(
         userInput: buttonValue,
         displayAnswer: state.targetNote,
       });
+      setPromptText('\u2717');
       feedbackTimerRef.current = setTimeout(() => {
         feedbackTimerRef.current = null;
         // Regenerate a new trial at the same index
@@ -232,7 +233,7 @@ function useTrialLoop(
     if (state.trialIndex >= WARMUP_TRIALS) state.times.push(elapsed);
     state.trialIndex++;
     state.targetNote = null;
-    setPromptText('');
+    setPromptText('\u2713');
     setFeedback(null);
     if (state.trialIndex >= TOTAL_TRIALS) {
       state.active = false;
@@ -284,9 +285,26 @@ function SpeedCheckInput(
   },
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [shake, setShake] = useState(false);
+  const shakeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (inputRef.current) inputRef.current.focus();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+    };
+  }, []);
+
+  const triggerShake = useCallback(() => {
+    setShake(true);
+    if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+    shakeTimerRef.current = setTimeout(() => {
+      setShake(false);
+      shakeTimerRef.current = null;
+    }, 400);
   }, []);
 
   const handleKeyDown = useCallback(
@@ -295,15 +313,19 @@ function SpeedCheckInput(
       e.preventDefault();
       e.stopPropagation();
       const value = inputRef.current?.value.trim() ?? '';
-      if (!value) return;
+      if (!value || !isValidNoteInput(value)) {
+        triggerShake();
+        return;
+      }
       onSubmit(value);
       if (inputRef.current) inputRef.current.value = '';
     },
-    [onSubmit],
+    [onSubmit, triggerShake],
   );
 
   let cls = 'answer-input';
   if (wrongFlash) cls += ' answer-input-wrong answer-input-shake';
+  else if (shake) cls += ' answer-input-shake';
 
   return (
     <input
