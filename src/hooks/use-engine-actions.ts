@@ -3,6 +3,7 @@
 
 import { useCallback, useRef } from 'preact/hooks';
 import type { AdaptiveSelector, EngineState } from '../types.ts';
+import { incrementDailyReps } from '../effort.ts';
 import {
   engineContinueRound,
   engineNextQuestion,
@@ -54,6 +55,7 @@ function processSubmitAnswer(
     responseTime,
     result.correct,
   );
+  incrementDailyReps();
 
   setState((prev) => {
     let next = engineSubmitAnswer(
