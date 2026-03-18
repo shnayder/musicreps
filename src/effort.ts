@@ -79,17 +79,28 @@ const DAILY_KEY = 'effort_daily';
 
 export type DailyReps = Record<string, number>;
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 export function getDailyReps(): DailyReps {
   try {
     const raw = localStorage.getItem(DAILY_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw);
     if (
-      typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+      typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)
     ) {
-      return parsed;
+      return {};
     }
-    return {};
+    // Normalize: only keep YYYY-MM-DD keys with finite non-negative numbers
+    const result: DailyReps = Object.create(null) as DailyReps;
+    for (const key of Object.keys(parsed)) {
+      if (!DATE_RE.test(key)) continue;
+      const val = parsed[key];
+      if (typeof val === 'number' && Number.isFinite(val) && val >= 0) {
+        result[key] = val;
+      }
+    }
+    return result;
   } catch {
     return {};
   }
