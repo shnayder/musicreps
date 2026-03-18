@@ -773,32 +773,36 @@ body {
 
 .segmented-control {
   display: inline-flex;
+  align-self: flex-start;
   border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--color-chrome-200);
+  padding: 2px;
+  gap: 2px;
 }
 .segmented-btn {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-4);
   border: none;
+  border-radius: calc(var(--radius-md) - 2px);
   background: transparent;
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
-  color: var(--color-text);
+  color: var(--color-text-muted);
   transition:
     background var(--duration-base) ease,
     color var(--duration-base) ease;
 }
 .segmented-btn + .segmented-btn {
-  border-left: 1px solid var(--color-border);
+  border-left: none;
 }
 .segmented-btn.active {
-  background: var(--color-brand);
-  color: white;
+  background: white;
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .segmented-btn:hover:not(.active) {
-  background: var(--color-surface-hover);
+  color: var(--color-text);
 }
 .segmented-btn:active {
   opacity: var(--opacity-pressed);
