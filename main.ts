@@ -205,85 +205,55 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
       align-items: center;
       gap: 0.4rem;
     }
-    .comment-bubble-wrap {
-      position: relative;
-      display: inline-flex;
-    }
     .comment-bubble-btn {
       border: none;
       background: none;
       cursor: pointer;
       font-size: 0.75rem;
       padding: 0;
-      opacity: 0.25;
+      opacity: 0.2;
       transition: opacity 0.15s;
       line-height: 1;
     }
-    .preview-section:hover .comment-bubble-btn,
-    .comment-bubble-btn.has-comment {
-      opacity: 0.6;
-    }
-    .comment-bubble-btn.has-comment {
-      opacity: 1;
-    }
-    .comment-bubble-btn:hover {
-      opacity: 1;
-    }
-    .comment-popover {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      z-index: 100;
-      background: white;
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
-      padding: 0.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      min-width: 280px;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
+    .preview-section:hover .comment-bubble-btn { opacity: 0.5; }
+    .comment-bubble-btn.has-comment { opacity: 1; }
+    .comment-bubble-btn:hover { opacity: 1; }
+    .comment-area {
+      margin-top: 0.4rem;
     }
     .comment-textarea {
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid var(--color-border-lighter);
+      border: 1px solid hsl(45, 60%, 75%);
       border-radius: 4px;
-      padding: 0.4rem;
+      padding: 0.4rem 0.5rem;
       font-family: inherit;
       font-size: 0.8rem;
       resize: vertical;
-      min-height: 3rem;
+      min-height: 2.2rem;
+      background: hsl(45, 80%, 97%);
+      color: hsl(45, 30%, 25%);
     }
     .comment-textarea:focus {
-      outline: 2px solid var(--color-brand);
+      outline: 2px solid hsl(45, 70%, 55%);
       outline-offset: -1px;
     }
-    .comment-close-btn {
-      align-self: flex-end;
-      border: none;
-      background: var(--color-brand);
-      color: white;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
-    .comment-close-btn:hover { opacity: 0.9; }
+    .comment-textarea::placeholder { color: hsl(45, 30%, 65%); }
     .comment-toolbar {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 0.5rem 0.75rem;
+      padding: 0.4rem 0.75rem;
       margin-bottom: 1rem;
       background: hsl(45, 80%, 95%);
       border: 1px solid hsl(45, 60%, 80%);
       border-radius: 6px;
       font-size: 0.8rem;
+      min-height: 2rem;
     }
     .comment-toolbar-count {
       font-weight: 600;
-      color: hsl(45, 60%, 35%);
+      color: hsl(45, 40%, 40%);
     }
     .comment-toolbar-btn {
       border: 1px solid var(--color-border);
@@ -293,7 +263,8 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
       font-size: 0.75rem;
       cursor: pointer;
     }
-    .comment-toolbar-btn:hover { background: var(--color-surface-hover); }
+    .comment-toolbar-btn:hover:not(:disabled) { background: var(--color-surface-hover); }
+    .comment-toolbar-btn:disabled { opacity: 0.35; cursor: default; }
     .comment-toolbar-clear { color: var(--color-error-text); }
   </style>
 </head>

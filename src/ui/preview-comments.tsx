@@ -5,7 +5,6 @@
 import type { ComponentChildren } from 'preact';
 import {
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -119,7 +118,7 @@ function useComments() {
 }
 
 // ---------------------------------------------------------------------------
-// CommentBubble — inline comment icon + expandable textarea
+// CommentBubble — icon in section header that toggles inline textarea
 // ---------------------------------------------------------------------------
 
 export function CommentBubble(
@@ -129,50 +128,55 @@ export function CommentBubble(
   const key = commentKey(tabId, sectionTitle);
   const text = store[key] || '';
   const hasComment = text.trim().length > 0;
-  const [open, setOpen] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    if (open && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [open]);
-
-  function handleInput(e: Event) {
-    const val = (e.target as HTMLTextAreaElement).value;
-    setComment(key, val);
+  function handleClick() {
+    if (hasComment) return; // already visible via CommentArea
+    // Seed with empty space to make CommentArea appear
+    setComment(key, ' ');
   }
 
   return (
-    <span class='comment-bubble-wrap'>
-      <button
-        type='button'
-        class={'comment-bubble-btn' + (hasComment ? ' has-comment' : '')}
-        title={hasComment ? 'Edit comment' : 'Add comment'}
-        onClick={() => setOpen(!open)}
-      >
-        {'\uD83D\uDCAC'}
-      </button>
-      {open && (
-        <div class='comment-popover'>
-          <textarea
-            ref={textareaRef}
-            class='comment-textarea'
-            placeholder='Design feedback...'
-            value={text}
-            onInput={handleInput}
-            rows={3}
-          />
-          <button
-            type='button'
-            class='comment-close-btn'
-            onClick={() => setOpen(false)}
-          >
-            Done
-          </button>
-        </div>
-      )}
-    </span>
+    <button
+      type='button'
+      class={'comment-bubble-btn' + (hasComment ? ' has-comment' : '')}
+      title={hasComment ? 'Comment added' : 'Add comment'}
+      onClick={handleClick}
+    >
+      {'\uD83D\uDCAC'}
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CommentArea — textarea rendered below the section frame
+// ---------------------------------------------------------------------------
+
+export function CommentArea(
+  { tabId, sectionTitle }: { tabId: string; sectionTitle: string },
+) {
+  const { store, setComment } = useComments();
+  const key = commentKey(tabId, sectionTitle);
+  const text = store[key] || '';
+  const hasComment = text.trim().length > 0;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function handleInput(e: Event) {
+    setComment(key, (e.target as HTMLTextAreaElement).value);
+  }
+
+  if (!hasComment) return null;
+
+  return (
+    <div class='comment-area'>
+      <textarea
+        ref={textareaRef}
+        class='comment-textarea'
+        placeholder='Design feedback...'
+        value={text}
+        onInput={handleInput}
+        rows={2}
+      />
+    </div>
   );
 }
 
@@ -200,17 +204,18 @@ export function CommentToolbar({ tabId }: { tabId: string }) {
     clearTab(tabId);
   }
 
-  if (count === 0) return null;
-
   return (
     <div class='comment-toolbar'>
       <span class='comment-toolbar-count'>
-        {count} comment{count !== 1 ? 's' : ''}
+        {count > 0
+          ? `${count} comment${count !== 1 ? 's' : ''}`
+          : 'No comments'}
       </span>
       <button
         type='button'
         class='comment-toolbar-btn'
         onClick={handleCopy}
+        disabled={count === 0}
       >
         {copied ? 'Copied!' : 'Copy all'}
       </button>
@@ -218,6 +223,7 @@ export function CommentToolbar({ tabId }: { tabId: string }) {
         type='button'
         class='comment-toolbar-btn comment-toolbar-clear'
         onClick={handleClear}
+        disabled={count === 0}
       >
         Clear all
       </button>

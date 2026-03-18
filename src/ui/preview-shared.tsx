@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import { NOTES } from '../music-data.ts';
 import { fretboardSVG } from '../html-helpers.ts';
 import type { StatsSelector } from './stats.tsx';
-import { CommentBubble } from './preview-comments.tsx';
+import { CommentArea, CommentBubble } from './preview-comments.tsx';
 
 // ---------------------------------------------------------------------------
 // Preview scaffold
@@ -26,6 +26,7 @@ export function Section(
         {tabId && <CommentBubble tabId={tabId} sectionTitle={title} />}
       </h3>
       <div class='preview-frame'>{children}</div>
+      {tabId && <CommentArea tabId={tabId} sectionTitle={title} />}
     </section>
   );
 }
