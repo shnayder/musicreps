@@ -15,6 +15,7 @@ import { refreshNoteButtonLabels } from './quiz-engine.ts';
 import type { ModeHandle } from './types.ts';
 import { HomeScreen } from './ui/home-screen.tsx';
 import { APP_CONFIG } from './app-config.ts';
+import { registerModeForEffort } from './effort.ts';
 
 // Declarative mode definitions + GenericMode
 import { GenericMode } from './declarative/generic-mode.tsx';
@@ -32,6 +33,7 @@ import { CHORD_SPELLING_DEF } from './modes/chord-spelling/definition.ts';
 
 // Hand-written modes (too specialized for GenericMode)
 import { SpeedTapMode } from './modes/speed-tap/speed-tap-mode.tsx';
+import { ALL_ITEMS as SPEED_TAP_ITEMS } from './modes/speed-tap/logic.ts';
 
 // Enable :active pseudo-class on iOS Safari. WebKit doesn't fire :active on
 // touch unless the document has a touchstart listener.
@@ -72,6 +74,11 @@ function registerPreactMode(id: string, name: string, Component: any) {
 // Declarative modes — GenericMode interprets the definition
 // deno-lint-ignore no-explicit-any
 function registerDeclarativeMode(def: ModeDefinition<any>) {
+  registerModeForEffort({
+    id: def.id,
+    namespace: def.namespace,
+    allItems: def.allItems,
+  });
   let handle: ModeHandle | null = null;
   const container = document.getElementById('mode-' + def.id)!;
   nav.registerMode(def.id, {
@@ -112,9 +119,18 @@ registerDeclarativeMode(DIATONIC_CHORDS_DEF);
 registerDeclarativeMode(CHORD_SPELLING_DEF);
 
 // Hand-written modes (too specialized for GenericMode)
+registerModeForEffort({
+  id: 'speedTap',
+  namespace: 'speedTap',
+  allItems: SPEED_TAP_ITEMS,
+});
 registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);
 
 nav.init();
+
+// Dev panel
+import { createDevPanel } from './dev-panel.ts';
+const devPanel = createDevPanel();
 
 // Settings state controller — re-render on notation change
 const settings = createSettingsController({
@@ -139,6 +155,7 @@ render(
     onSelectMode: (modeId: string) => nav.switchTo(modeId),
     settings,
     appConfig: APP_CONFIG,
+    onOpenDev: () => devPanel.open(),
     version,
     isNativeApp,
   }),

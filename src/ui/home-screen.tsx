@@ -647,17 +647,35 @@ function HomeHeader({ isNativeApp }: { isNativeApp?: boolean }) {
 }
 
 function HomeFooter(
-  { version, onSettings }: { version: string; onSettings: () => void },
+  { version, onSettings, onOpenDev }: {
+    version: string;
+    onSettings: () => void;
+    onOpenDev?: () => void;
+  },
 ) {
   return (
     <div class='home-footer'>
-      <button
-        type='button'
-        class='home-settings-btn text-link'
-        onClick={onSettings}
-      >
-        Settings
-      </button>
+      <span>
+        <button
+          type='button'
+          class='home-settings-btn text-link'
+          onClick={onSettings}
+        >
+          Settings
+        </button>
+        {onOpenDev && (
+          <>
+            {' \u00B7 '}
+            <button
+              type='button'
+              class='text-link'
+              onClick={onOpenDev}
+            >
+              Dev
+            </button>
+          </>
+        )}
+      </span>
       <span class='version'>{version}</span>
     </div>
   );
@@ -732,10 +750,11 @@ function HomeSkillTabs(
 // ---------------------------------------------------------------------------
 
 export function HomeScreen(
-  { onSelectMode, settings, appConfig, version, isNativeApp }: {
+  { onSelectMode, settings, appConfig, onOpenDev, version, isNativeApp }: {
     onSelectMode: (modeId: string) => void;
     settings: SettingsController;
     appConfig: AppConfig;
+    onOpenDev?: () => void;
     version: string;
     isNativeApp?: boolean;
   },
@@ -806,6 +825,7 @@ export function HomeScreen(
           setUseSolfege(settings.getUseSolfege());
           setShowSettings(true);
         }}
+        onOpenDev={onOpenDev}
       />
     </div>
   );

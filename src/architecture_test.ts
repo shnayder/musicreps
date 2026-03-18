@@ -112,6 +112,7 @@ const FOUNDATION = new Set([
   'src/app-config.ts',
   'src/deadline.ts',
   'src/recommendations.ts',
+  'src/effort.ts',
 ]);
 
 const ENGINE = new Set([
@@ -135,6 +136,7 @@ const APP = new Set([
   'src/app.ts',
   'src/navigation.ts',
   'src/settings.ts',
+  'src/dev-panel.ts',
 ]);
 
 const TOOL = new Set([
