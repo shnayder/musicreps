@@ -51,7 +51,7 @@ import {
   SplitNoteButtons,
 } from '../ui/buttons.tsx';
 import { SequentialSlots } from '../ui/sequential-slots.tsx';
-import { GroupProgressToggles } from '../ui/scope.tsx';
+import { getStatsCellColorMerged } from '../stats-display.ts';
 import {
   ModeTopBar,
   PracticeTab,
@@ -59,7 +59,15 @@ import {
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
+  StartButton,
 } from '../ui/mode-screen.tsx';
+import {
+  LevelProgressCard,
+  LevelToggles,
+  PracticeConfig,
+  SkillHeader,
+  SuggestionLines,
+} from '../ui/practice-config.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from '../ui/stats.tsx';
 import {
   FeedbackDisplay,
@@ -671,6 +679,105 @@ function QuizActiveView<Q>(
 // IdlePracticeView — rendered when the engine is idle
 // ---------------------------------------------------------------------------
 
+/** Resolve a group label that may be a string or a function. */
+function resolveGroupLabel(label: string | (() => string)): string {
+  return typeof label === 'function' ? label() : label;
+}
+
+/** Build practice content for multi-level modes (groups). */
+function GroupPracticeContent<Q>(
+  { def, engine, groupScopeResult }: {
+    def: ModeDefinition<Q>;
+    engine: ReturnType<typeof useQuizEngine>;
+    groupScopeResult: ReturnType<typeof useGroupScope>;
+  },
+) {
+  const groupScope = def.scope.kind === 'groups' ? def.scope : null;
+  if (!groupScope) return null;
+
+  const groupLabels = groupScope.allGroupIndices.map((i) =>
+    resolveGroupLabel(groupScope.groups[i].label)
+  );
+
+  const scopeDisabled = groupScopeResult.practiceMode === 'custom' &&
+    groupScopeResult.enabledGroups.size === 0;
+
+  return (
+    <>
+      <PracticeConfig
+        mode={groupScopeResult.practiceMode}
+        onModeChange={groupScopeResult.setPracticeMode}
+        suggestedContent={
+          <SuggestionLines lines={groupScopeResult.suggestionLines} />
+        }
+        customContent={
+          <LevelToggles
+            labels={groupLabels}
+            active={groupScopeResult.practiceMode === 'custom'
+              ? groupScopeResult.enabledGroups
+              : groupScopeResult.suggestedScope}
+            onToggle={groupScopeResult.scopeActions.toggleGroup}
+            itemCount={groupScopeResult.enabledItems.length}
+          />
+        }
+      />
+      <div class='practice-zone-action'>
+        <StartButton
+          onStart={engine.start}
+          disabled={scopeDisabled}
+          validationMessage={scopeDisabled
+            ? 'Select at least one group'
+            : undefined}
+        />
+      </div>
+    </>
+  );
+}
+
+/** Build level progress cards for the progress tab. */
+function LevelProgressCards<Q>(
+  { def, learner, groupScopeResult }: {
+    def: ModeDefinition<Q>;
+    learner: ReturnType<typeof useLearnerModel>;
+    groupScopeResult: ReturnType<typeof useGroupScope>;
+  },
+) {
+  const groupScope = def.scope.kind === 'groups' ? def.scope : null;
+  if (!groupScope) return null;
+  return (
+    <div class='level-progress-cards'>
+      {groupScope.allGroupIndices.map((i) => {
+        const itemIds = groupScope.getItemIdsForGroup(i);
+        const colors = itemIds.map((id) =>
+          getStatsCellColorMerged(learner.selector, id)
+        );
+        const skipReason = groupScopeResult.skippedGroups.get(i);
+        const status = skipReason === 'mastered'
+          ? 'known' as const
+          : skipReason === 'deferred'
+          ? 'skipped' as const
+          : 'normal' as const;
+        return (
+          <LevelProgressCard
+            key={i}
+            label={resolveGroupLabel(groupScope.groups[i].label)}
+            colors={colors}
+            status={status}
+            onToggleKnown={() =>
+              skipReason === 'mastered'
+                ? groupScopeResult.scopeActions.unskipGroup(i)
+                : groupScopeResult.scopeActions.skipGroup(i, 'mastered')}
+            onToggleSkip={() =>
+              skipReason === 'deferred'
+                ? groupScopeResult.scopeActions.unskipGroup(i)
+                : groupScopeResult.scopeActions.skipGroup(i, 'deferred')}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 function IdlePracticeView<Q>(
   { def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }: {
     def: ModeDefinition<Q>;
@@ -682,7 +789,8 @@ function IdlePracticeView<Q>(
     onCalibrate?: () => void;
   },
 ) {
-  const groupScope = def.scope.kind === 'groups' ? def.scope : null;
+  const hasGroups = def.scope.kind === 'groups' && groupScopeResult;
+
   return (
     <PracticeTab
       summary={ps.summary}
@@ -693,24 +801,19 @@ function IdlePracticeView<Q>(
         : undefined}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one group'
-      scope={groupScopeResult && groupScope
+      practiceContent={hasGroups
         ? (
-          <GroupProgressToggles
-            groups={groupScope.allGroupIndices.map((i) => ({
-              label: typeof groupScope.groups[i].label === 'function'
-                ? groupScope.groups[i].label()
-                : groupScope.groups[i].label,
-              itemIds: groupScope.getItemIdsForGroup(i),
-            }))}
-            active={groupScopeResult.enabledGroups}
-            onToggle={groupScopeResult.scopeActions.toggleGroup}
-            selector={learner.selector}
-            skipped={groupScopeResult.skippedGroups}
-            onSkip={groupScopeResult.scopeActions.skipGroup}
-            onUnskip={groupScopeResult.scopeActions.unskipGroup}
+          <GroupPracticeContent
+            def={def}
+            engine={engine}
+            groupScopeResult={groupScopeResult}
           />
         )
-        : undefined}
+        : (
+          <div class='practice-zone-action'>
+            <StartButton onStart={engine.start} />
+          </div>
+        )}
       statsContent={
         <>
           {ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : (
@@ -736,6 +839,15 @@ function IdlePracticeView<Q>(
           {(def.stats.kind !== 'none' || ctrl.renderStats) && <StatsLegend />}
         </>
       }
+      progressExtra={hasGroups
+        ? (
+          <LevelProgressCards
+            def={def}
+            learner={learner}
+            groupScopeResult={groupScopeResult}
+          />
+        )
+        : undefined}
       baseline={onCalibrate ? learner.motorBaseline : undefined}
       onCalibrate={onCalibrate}
       activeTab={ps.activeTab}
@@ -1055,6 +1167,43 @@ type GenericModeBodyProps<Q> = {
   navigateHome: () => void;
 };
 
+/** Compute progress colors for the SkillHeader progress bar. */
+function useProgressColors<Q>(
+  def: ModeDefinition<Q>,
+  learner: ReturnType<typeof useLearnerModel>,
+): string[] {
+  return useMemo(() => {
+    if (def.scope.kind !== 'groups') return [];
+    const scope = def.scope;
+    return scope.allGroupIndices.map((i) => {
+      const itemIds = scope.getItemIdsForGroup(i);
+      return getStatsCellColorMerged(learner.selector, itemIds);
+    });
+  }, [def, learner.selector]);
+}
+
+/** Render SkillHeader (idle) or minimal ModeTopBar (active/calibration). */
+function ModeHeader<Q>(
+  { def, isIdle, progressColors, navigateHome }: {
+    def: ModeDefinition<Q>;
+    isIdle: boolean;
+    progressColors: string[];
+    navigateHome: () => void;
+  },
+) {
+  if (isIdle) {
+    return (
+      <SkillHeader
+        modeId={def.id}
+        title={def.name}
+        progressColors={progressColors}
+        onBack={navigateHome}
+      />
+    );
+  }
+  return <ModeTopBar modeId={def.id} title={def.name} showBack={false} />;
+}
+
 function GenericModeBody<Q>(
   {
     def,
@@ -1074,9 +1223,7 @@ function GenericModeBody<Q>(
     navigateHome,
   }: GenericModeBodyProps<Q>,
 ) {
-  const dir = (currentQ && def.getDirection)
-    ? def.getDirection(currentQ)
-    : 'fwd';
+  const dir = currentQ && def.getDirection ? def.getDirection(currentQ) : 'fwd';
   const promptText = currentQ ? def.getPromptText(currentQ) : '';
   const useFlats = currentQ && def.getUseFlats
     ? def.getUseFlats(currentQ)
@@ -1086,15 +1233,15 @@ function GenericModeBody<Q>(
     dir,
   );
   const isIdle = engine.state.phase === 'idle' && !sc.speedCheck;
+  const progressColors = useProgressColors(def, learner);
 
   return (
     <>
-      <ModeTopBar
-        modeId={def.id}
-        title={def.name}
-        description={def.description}
-        onBack={navigateHome}
-        showBack={isIdle}
+      <ModeHeader
+        def={def}
+        isIdle={isIdle}
+        progressColors={progressColors}
+        navigateHome={navigateHome}
       />
       {sc.speedCheck
         ? (

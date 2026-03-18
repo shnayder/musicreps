@@ -494,6 +494,8 @@ export function PracticeTab(
     scopeValid,
     validationMessage,
     aboutContent,
+    practiceContent,
+    progressExtra,
   }: {
     summary: PracticeSummaryState;
     onStart: () => void;
@@ -507,13 +509,17 @@ export function PracticeTab(
     scopeValid?: boolean;
     validationMessage?: string;
     aboutContent?: ComponentChildren;
+    /** If provided, replaces the default PracticeCard in the practice tab. */
+    practiceContent?: ComponentChildren;
+    /** Extra content inserted above baseline in the progress tab. */
+    progressExtra?: ComponentChildren;
   },
 ) {
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
       label: 'Practice',
-      content: (
+      content: practiceContent ?? (
         <PracticeCard
           summary={summary}
           onStart={onStart}
@@ -530,6 +536,7 @@ export function PracticeTab(
       content: (
         <div>
           <div class='stats-container'>{statsContent}</div>
+          {progressExtra}
           {onCalibrate && (
             <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
           )}

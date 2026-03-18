@@ -3,11 +3,15 @@
 // LevelProgressCard, PracticeConfig.
 
 import type { ComponentChildren } from 'preact';
+import type { SuggestionLine } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
 import { CloseButton } from './mode-screen.tsx';
 import { GroupProgressBar } from './scope.tsx';
 import { SegmentedControl } from './segmented-control.tsx';
 import { Text } from './text.tsx';
+
+// Re-export so existing consumers can import from here.
+export type { SuggestionLine } from '../types.ts';
 
 // ---------------------------------------------------------------------------
 // ProgressBarLabeled — labeled progress bar with border, for skill header
@@ -64,10 +68,7 @@ export function SkillHeader(
 // SuggestionLines — renders structured recommendations as separate lines
 // ---------------------------------------------------------------------------
 
-export type SuggestionLine = {
-  verb: string;
-  levels: string[];
-};
+// SuggestionLine type is defined in types.ts and re-exported above.
 
 export function SuggestionLines(
   { lines }: { lines: SuggestionLine[] },

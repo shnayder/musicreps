@@ -174,6 +174,15 @@ export type RecommendationResult = {
 };
 
 // ---------------------------------------------------------------------------
+// Structured recommendation lines (for practice config UI)
+// ---------------------------------------------------------------------------
+
+export type SuggestionLine = {
+  verb: string;
+  levels: string[];
+};
+
+// ---------------------------------------------------------------------------
 // Motor task types (for speed check calibration)
 // ---------------------------------------------------------------------------
 
