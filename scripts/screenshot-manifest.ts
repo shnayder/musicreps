@@ -430,11 +430,20 @@ export function buildManifest(): ScreenshotEntry[] {
       ...perGroupScenario('fretboard', groups),
       fretboard_enabledGroups: JSON.stringify(enabledIndices),
     };
-    // Practice tab (default view)
+    // Practice tab — suggested mode (default)
     entries.push({
       name: `design-fretboard-practice-${label}`,
       modeId: 'fretboard',
       localStorageData: data,
+    });
+    // Practice tab — custom mode
+    entries.push({
+      name: `design-fretboard-custom-${label}`,
+      modeId: 'fretboard',
+      localStorageData: {
+        ...data,
+        fretboard_enabledGroups_practiceMode: 'custom',
+      },
     });
     // Progress tab
     entries.push({

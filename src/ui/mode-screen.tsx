@@ -477,6 +477,49 @@ export function RoundCompleteActions(
 }
 
 // ---------------------------------------------------------------------------
+// TabIcon — icon + label for mode navigation tabs
+// ---------------------------------------------------------------------------
+
+const TAB_ICONS: Record<string, string> = {
+  // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
+  practice:
+    '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>' +
+    '<path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+  // Bar chart
+  progress:
+    '<line x1="18" x2="18" y1="20" y2="10"/>' +
+    '<line x1="12" x2="12" y1="20" y2="4"/>' +
+    '<line x1="6" x2="6" y1="20" y2="14"/>',
+  // Info circle
+  about:
+    '<circle cx="12" cy="12" r="10"/>' +
+    '<path d="M12 16v-4"/><path d="M12 8h.01"/>',
+};
+
+function TabIcon({ icon, text }: { icon: string; text: string }) {
+  const paths = TAB_ICONS[icon] ?? '';
+  return (
+    <span class='tab-icon-label'>
+      <svg
+        xmlns='http://www.w3.org/2000/svg'
+        width='18'
+        height='18'
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        stroke-width='2'
+        stroke-linecap='round'
+        stroke-linejoin='round'
+        aria-hidden='true'
+        // deno-lint-ignore react-no-danger
+        dangerouslySetInnerHTML={{ __html: paths }}
+      />
+      <span>{text}</span>
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // PracticeTab — composes Tabs + PracticeCard
 // ---------------------------------------------------------------------------
 
@@ -518,7 +561,7 @@ export function PracticeTab(
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
-      label: 'Practice',
+      label: <TabIcon icon='practice' text='Practice' />,
       content: practiceContent ?? (
         <PracticeCard
           summary={summary}
@@ -532,7 +575,7 @@ export function PracticeTab(
     },
     {
       id: 'progress',
-      label: 'Progress',
+      label: <TabIcon icon='progress' text='Progress' />,
       content: (
         <div>
           <div class='stats-container'>{statsContent}</div>
@@ -545,7 +588,18 @@ export function PracticeTab(
     },
   ];
   if (aboutContent) {
-    tabs.push({ id: 'about', label: 'About', content: aboutContent });
+    tabs.push({
+      id: 'about',
+      label: <TabIcon icon='about' text='About' />,
+      content: aboutContent,
+    });
   }
-  return <Tabs tabs={tabs} activeTab={activeTab} onTabSwitch={onTabSwitch} />;
+  return (
+    <Tabs
+      tabs={tabs}
+      activeTab={activeTab}
+      onTabSwitch={onTabSwitch}
+      class='mode-nav'
+    />
+  );
 }

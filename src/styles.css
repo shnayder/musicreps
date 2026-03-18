@@ -338,6 +338,65 @@ body {
   border-radius: var(--radius-sm);
 }
 
+/* --- Mode navigation: bottom bar on mobile, top tabs on desktop --- */
+.tab-icon-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.tab-icon-label svg {
+  display: block;
+}
+.mode-nav {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border-lighter);
+  border-bottom: none;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.mode-nav .tab-btn {
+  font-size: var(--text-xs);
+  padding: var(--space-2) var(--space-3);
+}
+.mode-nav .tab-btn.active::after {
+  /* No underline — the icon color is enough for bottom nav */
+  display: none;
+}
+/* Reserve space for the fixed bottom nav so content isn't hidden behind it */
+.mode-nav + .tab-panel,
+.mode-nav ~ .tab-panel {
+  padding-bottom: 64px;
+}
+@media (min-width: 768px) {
+  .mode-nav {
+    position: static;
+    border-top: none;
+    border-bottom: 2px solid var(--color-border-lighter);
+    padding-bottom: 0;
+  }
+  .mode-nav .tab-btn {
+    font-size: var(--text-sm);
+    padding: var(--space-3) var(--space-5);
+  }
+  .mode-nav .tab-btn.active::after {
+    display: block;
+  }
+  .tab-icon-label {
+    flex-direction: row;
+    gap: var(--space-2);
+  }
+  .mode-nav + .tab-panel,
+  .mode-nav ~ .tab-panel {
+    padding-bottom: 0;
+  }
+}
+
 .home-modes {
   flex: 1;
 }
