@@ -104,7 +104,7 @@ type ModeProgress = {
    - Create `createLocalStorageAdapter(namespace)` from `adaptive.ts`
    - Create `createAdaptiveSelector(storage, scaledConfig)` — use
      `deriveScaledConfig` with motor baseline from
-     `localStorage.getItem('motorBaseline_button')`
+     `localStorage.getItem('motorBaseline_note-button')`
    - For each group: collect item IDs, call `getStatsCellColorMerged(selector,
      itemIds)` to get the segment color
    - Compute overall `computeLevelAutomaticity(allItemIds, getAutomaticity)` →

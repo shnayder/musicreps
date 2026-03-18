@@ -175,7 +175,7 @@ export function computeAllRecommendations(
 /** Read motor baseline from localStorage (with NaN guard). */
 function readMotorBaseline(): number | null {
   try {
-    const raw = localStorage.getItem('motorBaseline_button');
+    const raw = localStorage.getItem('motorBaseline_note-button');
     if (raw) {
       const n = Number(raw);
       if (!isNaN(n) && n > 0) return n;

@@ -26,6 +26,7 @@ export const CHORD_SPELLING_DEF: ModeDefinition<Question> = {
   id: 'chordSpelling',
   name: 'Chord Spelling',
   namespace: 'chordSpelling',
+  motorTaskType: 'chord-sequence',
   description: MODE_DESCRIPTIONS.chordSpelling,
   beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
   itemNoun: 'items',

@@ -500,8 +500,8 @@ export function PracticeTab(
     onApplyRecommendation?: () => void;
     scope?: ComponentChildren;
     statsContent: ComponentChildren;
-    onCalibrate: () => void;
-    baseline: number | null;
+    onCalibrate?: () => void;
+    baseline?: number | null;
     activeTab: ModeTab;
     onTabSwitch: (tab: ModeTab) => void;
     scopeValid?: boolean;
@@ -530,7 +530,9 @@ export function PracticeTab(
       content: (
         <div>
           <div class='stats-container'>{statsContent}</div>
-          <BaselineInfo baseline={baseline} onRun={onCalibrate} />
+          {onCalibrate && (
+            <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
+          )}
         </div>
       ),
     },

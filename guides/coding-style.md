@@ -46,7 +46,7 @@ into a single IIFE at build time. Tests import the same modules directly via
 | Constants         | `UPPER_SNAKE_CASE`               | `NOTES`, `INTERVALS`, `ALL_ITEMS`, `KEY_GROUPS`           |
 | Config objects    | `UPPER_SNAKE_CASE`               | `DEFAULT_CONFIG`, `SPEED_TAP_BASE_CONFIG`                 |
 | Local state       | `camelCase`                      | `enabledGroups`, `currentItem`, `recommendedGroups`       |
-| localStorage keys | `namespace_keyName`              | `semitoneMath_enabledGroups`, `motorBaseline_button`      |
+| localStorage keys | `namespace_keyName`              | `semitoneMath_enabledGroups`, `motorBaseline_note-button`      |
 | Mode IDs          | `camelCase`                      | `fretboard`, `semitoneMath`, `keySignatures`              |
 
 ## Component Extraction

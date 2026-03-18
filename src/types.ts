@@ -174,20 +174,24 @@ export type RecommendationResult = {
 };
 
 // ---------------------------------------------------------------------------
+// Motor task types (for speed check calibration)
+// ---------------------------------------------------------------------------
+
+export type MotorTaskType =
+  | 'note-button'
+  | 'number'
+  | 'chord-sequence'
+  | 'keysig'
+  | 'fretboard-tap';
+
+// ---------------------------------------------------------------------------
 // Quiz engine
 // ---------------------------------------------------------------------------
 
 export type EnginePhase =
   | 'idle'
   | 'active'
-  | 'round-complete'
-  | 'calibration-intro'
-  | 'calibrating'
-  | 'calibration-results';
-
-export function isCalibrationPhase(phase: EnginePhase): boolean {
-  return phase === 'calibrating' || phase.startsWith('calibration');
-}
+  | 'round-complete';
 
 export type EngineState = {
   phase: EnginePhase;
@@ -219,8 +223,6 @@ export type EngineState = {
 
   masteryText: string;
   showMastery: boolean;
-
-  calibrationBaseline: number | null;
 
   quizActive: boolean;
   answersEnabled: boolean;
@@ -335,8 +337,8 @@ export type SpeedCheckFixture = {
   baseline?: number;
   /** Trial progress text (for 'running' phase). Defaults to ''. */
   trialProgress?: string;
-  /** Which button to highlight green (for 'running' phase). */
-  targetNote?: string;
+  /** Answer shown in the prompt (for 'running' phase), e.g., 'E'. */
+  promptAnswer?: string;
 };
 
 /** Shape dispatched via __fixture__ custom event. */

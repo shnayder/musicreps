@@ -1,16 +1,18 @@
 // useQuizEngine — Preact hook wrapping the quiz engine lifecycle.
 // Composes extracted sub-hooks: round transitions, engine actions,
-// calibration lifecycle, keyboard routing, and fixture injection.
+// keyboard routing, and fixture injection.
 // Components render reactively from the returned state.
 
-import { useEffect, useRef, useState } from 'preact/hooks';
-import type { AdaptiveSelector, EngineState } from '../types.ts';
-import { isCalibrationPhase } from '../types.ts';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import type {
+  AdaptiveSelector,
+  EngineState,
+  SpeedCheckFixture,
+} from '../types.ts';
 import { initialEngineState } from '../quiz-engine-state.ts';
 import { useRoundTransitions } from './use-round-transitions.ts';
 import { useEngineKeyboard } from './use-engine-keyboard.ts';
 import { useFixtureInjection } from './use-fixture-injection.ts';
-import { useCalibrationLifecycle } from './use-calibration-lifecycle.ts';
 import { useEngineActions } from './use-engine-actions.ts';
 
 // Re-export types so existing consumers don't break
@@ -31,8 +33,11 @@ export function useQuizEngine(
   config: QuizEngineConfig,
   selector: AdaptiveSelector,
   fixtureTarget?: HTMLElement,
-): QuizEngineHandle {
+): QuizEngineHandle & { calibrationFixture: SpeedCheckFixture | undefined } {
   const [state, setState] = useState<EngineState>(initialEngineState);
+  const [calibrationFixture, setCalibrationFixture] = useState<
+    SpeedCheckFixture | undefined
+  >();
 
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -53,13 +58,19 @@ export function useQuizEngine(
     timer,
     transitionToRoundCompleteRef,
   );
-  const cal = useCalibrationLifecycle(timer, setState, configRef);
+
+  const stop = useCallback(() => {
+    timer.stopRoundTimer();
+    actions.stopEngine();
+    setCalibrationFixture(undefined);
+    configRef.current.onStop?.();
+  }, [timer.stopRoundTimer, actions.stopEngine]);
 
   useEngineKeyboard(
     state,
     stateRef,
     configRef,
-    cal.stop,
+    stop,
     actions.nextQuestionRef,
     actions.continueQuiz,
     actions.submitAnswer,
@@ -69,7 +80,7 @@ export function useQuizEngine(
     fixtureTarget,
     setState,
     timer,
-    cal.setCalibrationFixture,
+    setCalibrationFixture,
   );
 
   return {
@@ -78,15 +89,12 @@ export function useQuizEngine(
     timerText: timer.timerText,
     timerWarning: timer.timerWarning,
     timerLastQuestion: timer.timerLastQuestion,
-    calibrating: isCalibrationPhase(state.phase),
-    calibrationFixture: cal.calibrationFixture,
+    calibrationFixture,
     start: actions.start,
-    stop: cal.stop,
+    stop,
     submitAnswer: actions.submitAnswer,
     nextQuestion: actions.nextQuestion,
     continueQuiz: actions.continueQuiz,
     updateIdleMessage: actions.updateIdleMessage,
-    startCalibration: cal.startCalibration,
-    endCalibration: cal.endCalibration,
   };
 }

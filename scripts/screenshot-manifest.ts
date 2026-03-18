@@ -248,21 +248,23 @@ export function buildManifest(): ScreenshotEntry[] {
     }
   }
 
-  // Speed Check: fixture-based calibration captures
+  // Speed Check: fixture-based calibration captures.
+  // SpeedCheck is rendered by GenericMode (e.g. semitoneMath), not SpeedTap
+  // (SpeedTap uses fretboard-tap which is not yet in IMPLEMENTED_TASK_TYPES).
   entries.push(
     {
       name: 'speedCheck-intro',
-      modeId: 'speedTap',
+      modeId: 'semitoneMath',
       fixture: speedCheckIntro(),
     },
     {
       name: 'speedCheck-testing',
-      modeId: 'speedTap',
+      modeId: 'semitoneMath',
       fixture: speedCheckTesting(),
     },
     {
       name: 'speedCheck-results',
-      modeId: 'speedTap',
+      modeId: 'semitoneMath',
       fixture: speedCheckResults(),
     },
   );
