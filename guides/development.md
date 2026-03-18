@@ -265,6 +265,12 @@ All pages link to `src/styles.css` so CSS changes are visible on refresh.
 Hand-written pages need no rebuild; build-generated pages require
 `deno task build`.
 
+**Every new UI component must appear in the preview page.** The preview is the
+design system source of truth — it renders real components with mock data, not
+copies or approximations. When adding a component, add a Section for it in the
+relevant preview tab file (`src/ui/preview-tab-*.tsx`). If no tab fits, add a
+new one.
+
 **If you add new files to `docs/`**, no workflow changes are needed — the
 preview deploy workflow copies all files from `docs/` automatically.
 

@@ -496,7 +496,7 @@ const TAB_ICONS: Record<string, string> = {
     '<path d="M12 16v-4"/><path d="M12 8h.01"/>',
 };
 
-function TabIcon({ icon, text }: { icon: string; text: string }) {
+export function TabIcon({ icon, text }: { icon: string; text: string }) {
   const paths = TAB_ICONS[icon] ?? '';
   return (
     <span class='tab-icon-label'>

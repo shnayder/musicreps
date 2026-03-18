@@ -27,6 +27,11 @@ user can visually review diffs. Create a new session
 (`deno task iterate new <name> <states...>`) at the start of a UI task if none
 exists for the relevant states.
 
+**Every new UI component must appear in the component preview page**
+(`/preview`, source in `src/ui/preview-tab-*.tsx`). The preview renders real
+components with mock data — it is the design system source of truth. No copies
+or approximations.
+
 **The HTML template lives in `src/build-template.ts`** — the single source of
 truth for the page structure. **Version is derived from git at build time** (see
 `getVersion()` in `main.ts`) — no manual bumps needed. `main.ts` handles both
