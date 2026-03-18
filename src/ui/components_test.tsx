@@ -631,14 +631,16 @@ describe('Tabs', () => {
         onTabSwitch={() => {}}
       />,
     );
-    // Progress panel active, practice panel not
-    const panels = html.match(/tab-panel[^"]*"/g) ?? [];
-    assert.ok(
-      panels.some((p) =>
-        p.includes('active') && html.includes('test-progress')
-      ),
+    // Only the progress panel should have 'active'
+    const panels = [...html.matchAll(/class="tab-panel([^"]*)"/g)].map((m) =>
+      m[1]
     );
-    assert.ok(html.includes('tab-btn active'));
+    assert.strictEqual(panels.length, 2);
+    assert.ok(
+      !panels[0].includes('active'),
+      'practice panel should not be active',
+    );
+    assert.ok(panels[1].includes('active'), 'progress panel should be active');
   });
 
   it('wires up ARIA attributes', () => {

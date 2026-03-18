@@ -680,7 +680,7 @@ function HomeSkillTabs(
     recommendations,
   }: {
     tab: HomeTab;
-    onChangeTab: (t: string) => void;
+    onChangeTab: (t: HomeTab) => void;
     starred: Set<string>;
     accordion: Record<string, boolean>;
     onToggleStar: (modeId: string) => void;
@@ -756,8 +756,7 @@ export function HomeScreen(
     });
   }, []);
 
-  const handleChangeTab = useCallback((t: string) => {
-    if (t !== 'active' && t !== 'all') return;
+  const handleChangeTab = useCallback((t: HomeTab) => {
     setTab(t);
     try {
       localStorage.setItem(TAB_KEY, t);

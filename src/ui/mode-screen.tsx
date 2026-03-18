@@ -134,7 +134,7 @@ export function ModeScreen(
 }
 
 // ---------------------------------------------------------------------------
-// ModeTopBar — close button + mode title + description + before/after
+// ModeTopBar — close button + mode title + description
 // ---------------------------------------------------------------------------
 
 export function ModeTopBar(
