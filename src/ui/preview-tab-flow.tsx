@@ -32,7 +32,11 @@ import {
 // ---------------------------------------------------------------------------
 
 function FlowIdleSection(
-  { sel, groupSel, tabId }: { sel: StatsSelector; groupSel: GroupSel; tabId: string },
+  { sel, groupSel, tabId }: {
+    sel: StatsSelector;
+    groupSel: GroupSel;
+    tabId: string;
+  },
 ) {
   return (
     <>
@@ -206,7 +210,9 @@ function FlowQuizStates({ tabId }: { tabId: string }) {
   );
 }
 
-function FlowResultsSection({ sel, tabId }: { sel: StatsSelector; tabId: string }) {
+function FlowResultsSection(
+  { sel, tabId }: { sel: StatsSelector; tabId: string },
+) {
   return (
     <>
       <Section title='Round Complete' tabId={tabId}>

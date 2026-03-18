@@ -190,7 +190,11 @@ function IdleComposedComponents(
 }
 
 function IdleScreenComponents(
-  { sel, groupSel, tabId }: { sel: StatsSelector; groupSel: GroupSel; tabId: string },
+  { sel, groupSel, tabId }: {
+    sel: StatsSelector;
+    groupSel: GroupSel;
+    tabId: string;
+  },
 ) {
   return (
     <>

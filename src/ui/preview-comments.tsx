@@ -3,12 +3,7 @@
 // Comments persist in localStorage, with copy/clear at tab level.
 
 import type { ComponentChildren } from 'preact';
-import {
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/hooks';
+import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import { createContext } from 'preact';
 import { useContext } from 'preact/hooks';
 

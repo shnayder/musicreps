@@ -113,9 +113,7 @@ function PreviewApp() {
         {activeTab === 'structure' && (
           <StructureTab sel={sel} groupSel={groupSel} tabId={activeTab} />
         )}
-        {activeTab === 'design-system' && (
-          <DesignSystemTab tabId={activeTab} />
-        )}
+        {activeTab === 'design-system' && <DesignSystemTab tabId={activeTab} />}
         {activeTab === 'fretboard' && <FretboardTab tabId={activeTab} />}
       </div>
     </CommentProvider>

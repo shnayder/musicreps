@@ -10,6 +10,29 @@ import { SegmentedControl } from './segmented-control.tsx';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
+// ProgressBarLabeled — labeled progress bar with border, for skill header
+// and level progress cards. Distinct from the bare GroupProgressBar used
+// on home screen cards.
+// ---------------------------------------------------------------------------
+
+export function ProgressBarLabeled(
+  { label, colors, disabled }: {
+    label?: string;
+    colors: string[];
+    disabled?: boolean;
+  },
+) {
+  return (
+    <div class='progress-bar-labeled'>
+      {label && (
+        <Text role='caption' as='div' class='progress-bar-label'>{label}</Text>
+      )}
+      <GroupProgressBar colors={colors} disabled={disabled} />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // SkillHeader — title + close + progress bar (replaces ModeTopBar for idle)
 // ---------------------------------------------------------------------------
 
@@ -30,7 +53,7 @@ export function SkillHeader(
       </div>
       {progressColors && progressColors.length > 0 && (
         <div class='skill-header-progress'>
-          <GroupProgressBar colors={progressColors} />
+          <ProgressBarLabeled label='Progress' colors={progressColors} />
         </div>
       )}
     </div>
@@ -51,14 +74,14 @@ export function SuggestionLines(
 ) {
   if (lines.length === 0) return null;
   return (
-    <ul class='suggestion-lines'>
+    <div class='suggestion-lines'>
       {lines.map((line, i) => (
-        <li key={i} class='suggestion-line'>
+        <div key={i} class='suggestion-line'>
           <span class='suggestion-verb'>{line.verb}</span>{' '}
           {line.levels.join(', ')}
-        </li>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }
 
@@ -76,13 +99,16 @@ export function LevelToggles(
 ) {
   return (
     <div class='level-toggles-section'>
+      <Text role='secondary' as='div' class='level-toggles-header'>
+        Choose levels to practice
+      </Text>
       <div class='level-toggles'>
         {labels.map((label, i) => (
           <button
             type='button'
             tabIndex={0}
             key={i}
-            class={'distance-toggle' + (active.has(i) ? ' active' : '')}
+            class={'level-toggle-btn' + (active.has(i) ? ' active' : '')}
             aria-pressed={active.has(i)}
             onClick={() => onToggle(i)}
           >
@@ -141,7 +167,7 @@ export function LevelProgressCard(
           </button>
         </span>
       </div>
-      <GroupProgressBar colors={colors} disabled={st === 'skipped'} />
+      <ProgressBarLabeled colors={colors} disabled={st === 'skipped'} />
     </div>
   );
 }

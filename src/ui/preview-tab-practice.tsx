@@ -78,7 +78,6 @@ type CustomState = {
 
 function Phase1Components(
   {
-    practiceMode,
     setPracticeMode,
     customActive,
     toggleCustom,
@@ -87,7 +86,6 @@ function Phase1Components(
   }:
     & CustomState
     & {
-      practiceMode: PracticeMode;
       setPracticeMode: (m: PracticeMode) => void;
       tabId: string;
     },
@@ -141,9 +139,24 @@ function Phase1Components(
       <Phase1Cards tabId={tabId} />
 
       <PreviewGrid>
-        <Section title='PracticeConfig — toggle' tabId={tabId}>
+        <Section title='PracticeConfig — suggested' tabId={tabId}>
           <PracticeConfig
-            mode={practiceMode}
+            mode='suggested'
+            onModeChange={setPracticeMode}
+            suggestedContent={<SuggestionLines lines={MOCK_SUGGESTION_LINES} />}
+            customContent={
+              <LevelToggles
+                labels={MOCK_LEVEL_LABELS}
+                active={customActive}
+                onToggle={toggleCustom}
+                itemCount={customItemCount}
+              />
+            }
+          />
+        </Section>
+        <Section title='PracticeConfig — custom' tabId={tabId}>
+          <PracticeConfig
+            mode='custom'
             onModeChange={setPracticeMode}
             suggestedContent={<SuggestionLines lines={MOCK_SUGGESTION_LINES} />}
             customContent={
@@ -203,7 +216,9 @@ function Phase1Cards({ tabId }: { tabId: string }) {
 // ---------------------------------------------------------------------------
 
 function Phase2MultiLevel(
-  { customActive, toggleCustom, customItemCount, tabId }: CustomState & { tabId: string },
+  { customActive, toggleCustom, customItemCount, tabId }: CustomState & {
+    tabId: string;
+  },
 ) {
   return (
     <PreviewGrid>
@@ -348,7 +363,7 @@ export function PracticeRedesignTab(
     tabId: string;
   },
 ) {
-  const [practiceMode, setPracticeMode] = useState<PracticeMode>('suggested');
+  const [_practiceMode, setPracticeMode] = useState<PracticeMode>('suggested');
   const [customActive, setCustomActive] = useState<Set<number>>(
     new Set([0, 1]),
   );
@@ -370,7 +385,6 @@ export function PracticeRedesignTab(
   return (
     <div>
       <Phase1Components
-        practiceMode={practiceMode}
         setPracticeMode={setPracticeMode}
         customActive={customActive}
         toggleCustom={toggleCustom}

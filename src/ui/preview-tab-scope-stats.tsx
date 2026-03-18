@@ -51,7 +51,9 @@ function StatsSection({ sel, tabId }: { sel: StatsSelector; tabId: string }) {
   );
 }
 
-function ScopeSection({ groupSel, tabId }: { groupSel: GroupSel; tabId: string }) {
+function ScopeSection(
+  { groupSel, tabId }: { groupSel: GroupSel; tabId: string },
+) {
   return (
     <>
       <h2>Scope Controls</h2>
