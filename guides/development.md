@@ -601,17 +601,12 @@ Feature work:
 - git branch
 - git log
 
-### Limited stash usage (discouraged but permitted)
-- git stash push -u -m "agent: <reason>"
-- git stash list
-- git stash apply <stash-ref>
-- git stash drop <stash-ref>   # ONLY after successful apply and verification
-
 ---
 
 ## Strictly Disallowed Commands
 
 - git stash pop
+- git stash    // Let's not use stash at all. Temp commits or temp folders are always available.
 - git commit --amend
 - git rebase (any form)
 - git reset --hard
