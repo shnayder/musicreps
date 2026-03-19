@@ -104,17 +104,25 @@ function Phase1Components(
               {
                 id: 'practice' as ModeTab,
                 label: <TabIcon icon='practice' text='Practice' />,
-                content: <div style='padding:var(--space-4)'>Practice content</div>,
+                content: (
+                  <div style='padding:var(--space-4)'>Practice content</div>
+                ),
               },
               {
                 id: 'progress' as ModeTab,
                 label: <TabIcon icon='progress' text='Progress' />,
-                content: <div style='padding:var(--space-4)'>Progress content</div>,
+                content: (
+                  <div style='padding:var(--space-4)'>Progress content</div>
+                ),
               },
               {
                 id: 'about' as ModeTab,
                 label: <TabIcon icon='about' text='About' />,
-                content: <div style='padding:var(--space-4)'>About content</div>,
+                content: (
+                  <div style='padding:var(--space-4)'>
+                    About content
+                  </div>
+                ),
               },
             ]}
             activeTab={navTab}

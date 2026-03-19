@@ -482,17 +482,14 @@ export function RoundCompleteActions(
 
 const TAB_ICONS: Record<string, string> = {
   // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
-  practice:
-    '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>' +
+  practice: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>' +
     '<path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
   // Bar chart
-  progress:
-    '<line x1="18" x2="18" y1="20" y2="10"/>' +
+  progress: '<line x1="18" x2="18" y1="20" y2="10"/>' +
     '<line x1="12" x2="12" y1="20" y2="4"/>' +
     '<line x1="6" x2="6" y1="20" y2="14"/>',
   // Info circle
-  about:
-    '<circle cx="12" cy="12" r="10"/>' +
+  about: '<circle cx="12" cy="12" r="10"/>' +
     '<path d="M12 16v-4"/><path d="M12 8h.01"/>',
 };
 
