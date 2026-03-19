@@ -11,18 +11,18 @@ components and HTML helpers as production — rebuild (`deno task build`) or
 refresh the dev server after edits. Hand-written pages link directly to
 `src/styles.css` so CSS changes are visible on refresh with no rebuild.
 
-| Page                                               | Contents                                                                          | Source                                        |
-| -------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------- |
-| [components-preview.html](components-preview.html) | Preact UI components with mock data, plus token reference (spacing, type, radius) | **Build-generated** from `src/ui/preview.tsx` |
-| [colors.html](colors.html)                         | Color swatches, heatmap scale, semantic tokens                                    | Hand-written                                  |
+| Page                                               | Contents                                                                                       | Source                                        |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| [components-preview.html](components-preview.html) | Preact UI components with mock data, token reference (spacing, type, radius), live color system | **Build-generated** from `src/ui/preview.tsx` |
 
 **Component preview** (`components-preview.html`) is the primary tool for
 iterating on component design. It renders real Preact components (`NoteButtons`,
 `PracticeCard`, `StatsGrid`, `RoundComplete`, etc.) with shared fixture data
 from `src/fixtures/`, so changes to `src/ui/*.tsx` are immediately visible
-after a rebuild. The Design System tab also includes live token reference
-(spacing scale, type scale, border radius, shadows) read from `getComputedStyle`.
-Available at `localhost:8001/preview` during dev.
+after a rebuild. The **Colors** tab shows live palette ramps, semantic token
+swatches, pairings, heatmap scale, and component token reference — all read
+from `getComputedStyle`. The **Design System** tab includes spacing, type scale,
+border radius, and shadows. Available at `localhost:8001/preview` during dev.
 
 **Screenshots** replace the old static moments page. The Playwright script
 (`scripts/take-screenshots.ts`) captures deterministic screenshots by
@@ -37,6 +37,56 @@ principles, see [layout-and-ia.md](layout-and-ia.md).
 ---
 
 ## Color System
+
+### Three-Layer Token Architecture
+
+Colors use a three-layer architecture designed for dark mode readiness and
+systematic naming:
+
+**Layer 1: Primitives** — raw color scales derived from anchor hues
+(`--hue-neutral`, `--hue-brand`, `--hue-success`, `--hue-error`,
+`--hue-notice`). Change one hue to shift an entire family. Naming:
+`--{family}-{step}` (e.g., `--neutral-400`, `--brand-600`).
+
+**Layer 2: Semantic tokens** — map primitives to meaning. To switch
+light → dark, change these mappings (not the palette). Every color family
+follows a consistent modifier pattern:
+
+| Modifier | Purpose | Example |
+|----------|---------|---------|
+| *(base)* | Primary accent | `--color-brand`, `--color-error` |
+| `-bg` | Background tint | `--color-brand-bg` |
+| `-border` | Bordered elements | `--color-brand-border` |
+| `-text` | Text on `-bg` | `--color-brand-text` |
+| `-dark` | Darker variant | `--color-brand-dark` |
+
+Families: **brand**, **success**, **error**, **notice** (gold/attention),
+**accent**, **text** (trio), **surface** (5 levels), **border** (trio).
+`--color-on-brand`, `--color-on-success`, `--color-on-error` provide text
+colors for filled backgrounds (white in light mode, flips in dark mode).
+`--color-chrome` is the segmented control / toolbar fill.
+
+**Layer 3: Component tokens** — `--_` prefixed CSS private custom properties
+defined on component root selectors, always referencing semantic tokens:
+
+```css
+.component {
+  --_bg: var(--color-surface);
+  --_text: var(--color-text);
+  background: var(--_bg);
+  color: var(--_text);
+}
+.component.active { --_bg: var(--color-brand); --_text: var(--color-on-brand); }
+```
+
+Components with `--_` tokens: **ActionButton** (`.page-action-btn`),
+**AnswerButton** (`.answer-btn`), **Toggle** (`.string-toggle`,
+`.distance-toggle`, `.notes-toggle`, `.level-toggle-btn`),
+**SequentialSlot** (`.seq-slot`), **SkillCard** (`.skill-card` → `--_accent`).
+
+**Live reference:** The preview page's **Colors** tab (`localhost:8001/preview`)
+shows all palette ramps, semantic swatches, pairings, heatmap scale, and
+component token mapping tables with resolved values.
 
 ### Palette Model
 
@@ -88,7 +138,7 @@ bg, border, and text variants. Currently three families exist:
 | ------------- | -------------------- | ------- | --------- | -------- |
 | Brand/Success | `--color-brand`      | `-bg`   | —         | `-text`  |
 | Error         | `--color-error`      | `-bg`   | —         | `-text`  |
-| Recommended   | `--color-recommended`| `-bg`   | `-border` | `-text`  |
+| Recommended   | `--color-notice`| `-bg`   | `-border` | `-text`  |
 | Accent        | `--color-accent`     | —       | —         | `-muted` |
 
 When adding a new semantic color, follow this pattern: define the accent first,
@@ -132,10 +182,10 @@ card surfaces (suggestion card).
 | Token                       | Value                | Usage                                   |
 | --------------------------- | -------------------- | --------------------------------------- |
 | `--color-highlight`         | `#EAB308`            | Current fretboard question              |
-| `--color-recommended`       | `#D4A017`            | Accent: suggestion card header & border |
-| `--color-recommended-bg`    | `hsl(44, 70%, 96%)`  | Suggestion card background              |
-| `--color-recommended-border`| `hsl(44, 60%, 80%)`  | Suggestion card border                  |
-| `--color-recommended-text`  | `hsl(44, 80%, 25%)`  | Dark gold text on recommended surfaces  |
+| `--color-notice`       | `#D4A017`            | Accent: suggestion card header & border |
+| `--color-notice-bg`    | `hsl(44, 70%, 96%)`  | Suggestion card background              |
+| `--color-notice-border`| `hsl(44, 60%, 80%)`  | Suggestion card border                  |
+| `--color-notice-text`  | `hsl(44, 80%, 25%)`  | Dark gold text on recommended surfaces  |
 
 ### Error (Red)
 
@@ -164,7 +214,7 @@ Subtle warmth instead of pure grays — shifted `hsl(30, …)` for cohesion.
 | `--color-bg`              | `#fff`              | Page background, button default      |
 | `--color-surface`         | `hsl(30, 10%, 96%)` | Quiz card bg, toggles, table headers |
 | `--color-surface-hover`   | `hsl(30, 8%, 93%)`  | Button/nav hover state               |
-| `--color-surface-alt`     | `hsl(30, 8%, 92%)`  | Progress bar bg, countdown bg        |
+| `--color-surface-raised`     | `hsl(30, 8%, 92%)`  | Progress bar bg, countdown bg        |
 | `--color-surface-pressed` | `hsl(30, 5%, 82%)`  | Button `:active` state               |
 | `--color-surface-accent`  | `hsl(30, 8%, 90%)`  | Accidental note button bg            |
 
@@ -294,7 +344,7 @@ import { Text } from './ui/text.tsx';
 
 Maps content role to the type hierarchy recipe. Use when an element's styling
 should match a standard text role. NOT for quiz prompts, answer button text,
-branded text (recommendation headers use `--color-recommended`), or one-off
+branded text (recommendation headers use `--color-notice`), or one-off
 elements with their own sizing.
 
 ---

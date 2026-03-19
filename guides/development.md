@@ -259,11 +259,10 @@ build-generated:
   the primary tool for iterating on component design. Available at
   `localhost:8001/preview` during dev.
 
-- `guides/design/colors.html` — hand-written color palette reference.
+The **Colors** tab on the preview page shows live palette ramps, semantic token
+swatches, pairings, heatmap scale, and component token reference.
 
-All pages link to `src/styles.css` so CSS changes are visible on refresh.
-Hand-written pages need no rebuild; build-generated pages require
-`deno task build`.
+Build-generated pages require `deno task build` or a dev server refresh.
 
 **Every new UI component must appear in the preview page.** The preview is the
 design system source of truth — it renders real components with mock data, not
