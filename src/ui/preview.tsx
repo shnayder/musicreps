@@ -13,6 +13,7 @@ import { StructureTab } from './preview-tab-structure.tsx';
 import { DesignSystemTab } from './preview-tab-design-system.tsx';
 import { FretboardTab } from './preview-tab-fretboard.tsx';
 import { PracticeRedesignTab } from './preview-tab-practice.tsx';
+import { ColorsTab } from './preview-tab-colors.tsx';
 
 // ---------------------------------------------------------------------------
 // Tab navigation + PreviewApp
@@ -26,6 +27,7 @@ const TABS = [
   'scope-stats',
   'structure',
   'design-system',
+  'colors',
   'fretboard',
 ] as const;
 
@@ -39,6 +41,7 @@ const TAB_LABELS: Record<PreviewTab, string> = {
   'scope-stats': 'Scope & Stats',
   'structure': 'Screen Structure',
   'design-system': 'Design System',
+  'colors': 'Colors',
   'fretboard': 'Fretboard',
 };
 
@@ -80,7 +83,7 @@ function PreviewApp() {
           <code>/preview</code>.
         </div>
         <div class='page-nav'>
-          <a href='colors.html'>Colors &rarr;</a>
+          Colors are in the <b>Colors</b> tab below.
         </div>
         <div class='preview-tabs'>
           {TABS.map((tab) => (
@@ -114,6 +117,7 @@ function PreviewApp() {
           <StructureTab sel={sel} groupSel={groupSel} tabId={activeTab} />
         )}
         {activeTab === 'design-system' && <DesignSystemTab tabId={activeTab} />}
+        {activeTab === 'colors' && <ColorsTab tabId={activeTab} />}
         {activeTab === 'fretboard' && <FretboardTab tabId={activeTab} />}
       </div>
     </CommentProvider>

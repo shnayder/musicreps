@@ -266,6 +266,68 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
     .comment-toolbar-btn:hover:not(:disabled) { background: var(--color-surface-hover); }
     .comment-toolbar-btn:disabled { opacity: 0.35; cursor: default; }
     .comment-toolbar-clear { color: var(--color-error-text); }
+    /* Colors tab — palette ramps, swatch cards, heatmap strip */
+    .palette-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.35rem;
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+    }
+    .palette-hue-note { font-weight: 400; color: var(--color-text-muted); }
+    .palette-row { display: flex; gap: 2px; }
+    .palette-cell {
+      flex: 1;
+      height: 44px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+      border: 1px solid rgba(128, 128, 128, 0.15);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+    .swatch-card {
+      border: 1px solid var(--color-border-light);
+      border-radius: 6px;
+      overflow: hidden;
+      font-size: 0.8rem;
+    }
+    .swatch-color {
+      height: 48px;
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .swatch-info { padding: 0.4rem 0.6rem; }
+    .swatch-var {
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+      font-size: 0.75rem;
+      color: var(--color-text);
+      font-weight: 500;
+    }
+    .swatch-value {
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+      font-size: 0.7rem;
+      color: var(--color-text-light);
+    }
+    .swatch-note { font-size: 0.7rem; color: var(--color-text-muted); margin-top: 0.15rem; }
+    .heatmap-strip { display: flex; gap: 2px; margin: 0.5rem 0; }
+    .heatmap-step {
+      flex: 1;
+      height: 36px;
+      border-radius: 4px;
+      border: 1px solid var(--color-border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
