@@ -82,8 +82,8 @@
   /* Notice scale — derived from --hue-notice */
   --notice-100: hsl(var(--hue-notice), 70%, 96%);
   --notice-300: hsl(var(--hue-notice), 60%, 80%);
-  --notice-400: hsl(var(--hue-notice), 60%, 91%);
-  --notice-450: hsl(var(--hue-notice), 50%, 85%);
+  --notice-400: hsl(var(--hue-notice), 50%, 85%);
+  --notice-450: hsl(var(--hue-notice), 60%, 91%);
   --notice-500: hsl(var(--hue-notice), 80%, 46%);
   --notice-600: hsl(var(--hue-notice), 93%, 47%);
   --notice-700: hsl(var(--hue-notice), 70%, 45%);
@@ -106,17 +106,22 @@
   /* Error */
   --color-error: var(--error-500);
   --color-error-bg: var(--error-100);
+  --color-error-border: var(--error-500);
   --color-error-text: var(--error-800);
+  /* On-fill text (flips in dark mode) */
+  --color-on-brand: white;
+  --color-on-success: white;
+  --color-on-error: white;
   /* Focus */
   --color-focus: var(--brand-600);
   --color-focus-bg: var(--brand-100);
-  /* Notice / Recommendations */
-  --color-recommended: var(--notice-500);
-  --color-recommended-bg: var(--notice-100);
-  --color-recommended-border: var(--notice-300);
-  --color-recommended-bg-hover: var(--notice-400);
-  --color-recommended-bg-pressed: var(--notice-450);
-  --color-recommended-text: var(--notice-800);
+  /* Notice (attention, recommendations, highlights) */
+  --color-notice: var(--notice-500);
+  --color-notice-bg: var(--notice-100);
+  --color-notice-border: var(--notice-300);
+  --color-notice-bg-hover: var(--notice-400);
+  --color-notice-bg-pressed: var(--notice-450);
+  --color-notice-text: var(--notice-800);
   --color-highlight: var(--notice-600);
   /* UI accents — unified with brand (one accent, not five) */
   --color-accent: var(--brand-600);
@@ -130,13 +135,20 @@
   --color-bg: var(--neutral-0);
   --color-surface: var(--neutral-100);
   --color-surface-hover: var(--neutral-150);
-  --color-surface-alt: var(--neutral-200);
+  --color-surface-raised: var(--neutral-200);
   --color-surface-pressed: var(--neutral-350);
   --color-surface-accent: var(--neutral-250);
+  /* Chrome (segmented controls, toolbar fills) */
+  --color-chrome: var(--neutral-200);
   /* Borders */
   --color-border: var(--neutral-550);
   --color-border-light: var(--neutral-400);
   --color-border-lighter: var(--neutral-300);
+  /* Brand border (can diverge in dark mode) */
+  --color-brand-border: var(--brand-600);
+  --color-brand-text: var(--brand-800);
+  /* Success border */
+  --color-success-border: var(--success-600);
   /* Overlay */
   --color-overlay: rgba(0, 0, 0, 0.35);
 
@@ -581,24 +593,24 @@ body {
 }
 /* Recommendation banner inside active skill card. */
 .skill-rec-banner {
-  background: var(--color-recommended-bg);
-  border-bottom: 1px solid var(--color-recommended-border);
+  background: var(--color-notice-bg);
+  border-bottom: 1px solid var(--color-notice-border);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .skill-rec-header {
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
-  color: var(--color-recommended);
+  color: var(--color-notice);
   margin-bottom: var(--space-1);
 }
 
 /* Banner reacts with card on hover/active. */
 .home-mode-btn:hover > .skill-rec-banner {
-  background: var(--color-recommended-bg-hover);
+  background: var(--color-notice-bg-hover);
 }
 .home-mode-btn:active > .skill-rec-banner {
-  background: var(--color-recommended-bg-pressed);
+  background: var(--color-notice-bg-pressed);
 }
 .active-skills-done {
   font-size: var(--text-sm);
@@ -625,22 +637,22 @@ body {
 }
 .skill-icon {
   flex-shrink: 0;
-  color: var(--skill-accent);
+  color: var(--_accent);
 }
 .skill-card[data-track='core'] {
-  --skill-accent: var(--color-track-core);
+  --_accent: var(--color-track-core);
   border-left-color: var(--color-track-core);
 }
 .skill-card[data-track='reading'] {
-  --skill-accent: var(--color-track-reading);
+  --_accent: var(--color-track-reading);
   border-left-color: var(--color-track-reading);
 }
 .skill-card[data-track='guitar'] {
-  --skill-accent: var(--color-track-guitar);
+  --_accent: var(--color-track-guitar);
   border-left-color: var(--color-track-guitar);
 }
 .skill-card[data-track='ukulele'] {
-  --skill-accent: var(--color-track-ukulele);
+  --_accent: var(--color-track-ukulele);
   border-left-color: var(--color-track-ukulele);
 }
 .skill-card-ba {
@@ -835,7 +847,7 @@ body {
   align-self: flex-start;
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--color-chrome-200);
+  background: var(--color-chrome);
   padding: 2px;
   gap: 2px;
 }
@@ -983,9 +995,9 @@ body {
   display: none;
 }
 .suggestion-card {
-  background: var(--color-recommended-bg);
-  border: 1px solid var(--color-recommended-border);
-  border-left: 3px solid var(--color-recommended);
+  background: var(--color-notice-bg);
+  border: 1px solid var(--color-notice-border);
+  border-left: 3px solid var(--color-notice);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-3);
@@ -993,7 +1005,7 @@ body {
 .suggestion-card-header {
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
-  color: var(--color-recommended);
+  color: var(--color-notice);
   margin-bottom: var(--space-2);
 }
 .suggestion-card-body {
@@ -1010,16 +1022,16 @@ body {
   font-size: var(--text-xs);
   font-weight: var(--font-medium);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-recommended);
+  border: 1px solid var(--color-notice);
   border-radius: var(--radius-sm);
-  background: var(--color-recommended-bg);
-  color: var(--color-recommended-text);
+  background: var(--color-notice-bg);
+  color: var(--color-notice-text);
   cursor: pointer;
   flex-shrink: 0;
 }
 .suggestion-card-accept:hover {
-  background: var(--color-recommended);
-  color: white;
+  background: var(--color-notice);
+  color: var(--color-on-brand);
 }
 
 /* --- Practice scope (inside practice card) --- */
@@ -1084,9 +1096,9 @@ body {
 
 /* --- Suggestion lines (suggested mode) --- */
 .suggestion-lines {
-  background: var(--color-recommended-bg);
-  border: 1px solid var(--color-recommended-border);
-  border-left: 3px solid var(--color-recommended);
+  background: var(--color-notice-bg);
+  border: 1px solid var(--color-notice-border);
+  border-left: 3px solid var(--color-notice);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
   display: flex;
@@ -1095,12 +1107,12 @@ body {
 }
 .suggestion-line {
   font-size: var(--text-sm);
-  color: var(--color-recommended-text);
+  color: var(--color-notice-text);
   line-height: 1.5;
 }
 .suggestion-verb {
   font-weight: var(--font-semibold);
-  color: var(--color-recommended);
+  color: var(--color-notice);
 }
 
 /* --- Level toggles (custom mode) --- */
@@ -1140,7 +1152,7 @@ body {
 }
 .level-toggle-btn.active {
   background: var(--color-toggle-active);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
 .level-toggles-count {
@@ -1176,8 +1188,8 @@ body {
   font-weight: var(--font-medium);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
-  background: var(--color-recommended-bg);
-  color: var(--color-recommended-text);
+  background: var(--color-notice-bg);
+  color: var(--color-notice-text);
 }
 .level-progress-actions {
   display: flex;
@@ -1204,7 +1216,7 @@ body {
 }
 .level-action-btn.known.active {
   background: var(--color-brand);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-brand);
 }
 .level-action-btn.skip.active {
@@ -1298,7 +1310,7 @@ body {
 }
 .string-toggle.active {
   background: var(--color-toggle-active);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
 .distance-toggles {
@@ -1328,7 +1340,7 @@ body {
 }
 .distance-toggle.active {
   background: var(--color-toggle-active);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
 
@@ -1451,7 +1463,7 @@ body {
 }
 .notes-toggle.active {
   background: var(--color-toggle-active);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
 /* Constrain both width and height so the vertical SVG fits on screen.
@@ -1545,7 +1557,7 @@ button {
 .quiz-countdown-bar {
   flex: 1;
   height: 6px;
-  background: var(--color-surface-alt);
+  background: var(--color-surface-raised);
 }
 .quiz-countdown-fill {
   height: 100%;
@@ -1555,7 +1567,7 @@ button {
 }
 .round-timer-warning .quiz-countdown-fill,
 .last-question .quiz-countdown-fill {
-  background: var(--color-recommended);
+  background: var(--color-notice);
 }
 .quiz-info-time {
   font-size: var(--text-sm);
@@ -1578,7 +1590,7 @@ button {
   flex: 1;
 }
 .quiz-info-last-question {
-  color: var(--color-recommended);
+  color: var(--color-notice);
   font-weight: var(--font-semibold);
   position: absolute;
   left: 50%;
@@ -1593,7 +1605,7 @@ button {
   width: 100%;
   max-width: 300px;
   height: 20px;
-  background: var(--color-surface-alt);
+  background: var(--color-surface-raised);
   border-radius: var(--radius-md);
   margin: 0 auto var(--space-4);
   overflow: hidden;
@@ -1963,13 +1975,18 @@ button {
   }
 }
 
+/* --- Component tokens: AnswerButton --- */
 .answer-btn {
+  --_bg: var(--color-bg);
+  --_text: inherit;
+  --_border: var(--color-text-muted);
   height: 48px;
   font-size: var(--text-md);
   font-weight: var(--font-medium);
-  border: 2px solid var(--color-text-muted);
+  border: 2px solid var(--_border);
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  background: var(--_bg);
+  color: var(--_text);
   cursor: pointer;
   padding: 0 var(--space-2);
   margin: 0;
@@ -1984,17 +2001,17 @@ button {
 }
 @media (hover: hover) {
   .answer-btn:hover {
-    background: var(--color-surface-hover);
-    border-color: var(--color-text);
+    --_bg: var(--color-surface-hover);
+    --_border: var(--color-text);
   }
   .answer-btn:disabled:hover {
-    background: var(--color-bg);
-    border-color: var(--color-text-muted);
+    --_bg: var(--color-bg);
+    --_border: var(--color-text-muted);
     transform: none;
   }
 }
 .answer-btn:active {
-  background: var(--color-surface-pressed);
+  --_bg: var(--color-surface-pressed);
   transform: scale(0.97);
 }
 .answer-btn:disabled {
@@ -2006,21 +2023,21 @@ button {
    11. BUTTON FEEDBACK
    ========================================================================== */
 .btn-feedback-correct {
-  background: var(--color-success-bg) !important;
-  border-color: var(--color-success) !important;
-  color: var(--color-success-text) !important;
+  --_bg: var(--color-success-bg) !important;
+  --_border: var(--color-success) !important;
+  --_text: var(--color-success-text) !important;
   opacity: 1 !important;
 }
 .btn-feedback-wrong {
-  background: var(--color-error-bg) !important;
-  border-color: var(--color-error) !important;
-  color: var(--color-error-text) !important;
+  --_bg: var(--color-error-bg) !important;
+  --_border: var(--color-error) !important;
+  --_text: var(--color-error-text) !important;
   opacity: 1 !important;
 }
 .btn-feedback-reveal {
-  background: var(--color-success-bg) !important;
-  border-color: var(--color-success) !important;
-  color: var(--color-success-text) !important;
+  --_bg: var(--color-success-bg) !important;
+  --_border: var(--color-success) !important;
+  --_text: var(--color-success-text) !important;
   opacity: 1 !important;
 }
 
@@ -2171,15 +2188,22 @@ button {
 /* ==========================================================================
    15. PAGE ACTIONS
    ========================================================================== */
+/* --- Component tokens: ActionButton --- */
 .page-action-btn {
+  --_bg: var(--color-brand);
+  --_text: var(--color-on-brand);
+  --_border: transparent;
+  --_weight: var(--font-semibold);
   padding: var(--space-3) var(--space-5);
-  border: none;
+  border: 1px solid var(--_border);
   border-radius: var(--radius-md);
   font-size: var(--text-base);
-  font-weight: var(--font-semibold);
+  font-weight: var(--_weight);
   cursor: pointer;
   touch-action: manipulation;
   min-height: 48px;
+  background: var(--_bg);
+  color: var(--_text);
 }
 @media (hover: hover) {
   .page-action-btn:hover {
@@ -2195,41 +2219,40 @@ button {
   outline-offset: 2px;
 }
 .page-action-btn:disabled {
-  background: var(--color-surface-alt);
-  border-color: var(--color-border-light);
-  color: var(--color-text-light);
+  --_bg: var(--color-surface-raised);
+  --_text: var(--color-text-light);
+  --_border: var(--color-border-light);
   box-shadow: none;
   cursor: not-allowed;
 }
 .page-action-btn:disabled:hover {
-  background: var(--color-surface-alt);
   transform: none;
 }
 .page-action-primary {
-  background: var(--color-brand);
-  color: white;
+  --_bg: var(--color-brand);
+  --_text: var(--color-on-brand);
 }
 .page-action-secondary {
-  background: none;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  font-weight: var(--font-normal);
+  --_bg: transparent;
+  --_text: var(--color-text-muted);
+  --_border: var(--color-border);
+  --_weight: var(--font-normal);
 }
 @media (hover: hover) {
   .page-action-secondary:hover {
+    --_bg: var(--color-surface-hover);
     opacity: 1;
-    background: var(--color-surface-hover);
   }
 }
 .page-action-secondary:active {
+  --_bg: var(--color-surface-pressed);
   opacity: 1;
-  background: var(--color-surface-pressed);
 }
 .page-action-correct {
-  background: var(--color-success);
+  --_bg: var(--color-success);
 }
 .page-action-wrong {
-  background: var(--color-error);
+  --_bg: var(--color-error);
 }
 .page-action-row {
   display: flex;
@@ -2447,7 +2470,10 @@ button {
   margin: var(--space-4) 0;
   min-height: 2.5rem;
 }
+/* --- Component tokens: SequentialSlot --- */
 .seq-slot {
+  --_text: var(--color-text-muted);
+  --_border: var(--color-border);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2455,30 +2481,30 @@ button {
   padding: 0 0.25rem;
   height: 2.5rem;
   border: none;
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--_border);
   border-radius: 0;
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--_text);
   transition:
     border-color var(--duration-base) ease,
     color var(--duration-base) ease;
 }
 .seq-slot.active {
-  border-bottom-color: var(--color-accent);
+  --_border: var(--color-accent);
 }
 .seq-slot.filled {
-  border-bottom-color: var(--color-text);
-  color: var(--color-text);
+  --_border: var(--color-text);
+  --_text: var(--color-text);
 }
 .seq-slot.correct {
-  border-bottom-color: var(--color-success);
-  color: var(--color-success-text);
+  --_border: var(--color-success);
+  --_text: var(--color-success-text);
 }
 .seq-slot.wrong {
-  border-bottom-color: var(--color-error);
-  color: var(--color-error-text);
+  --_border: var(--color-error);
+  --_text: var(--color-error-text);
 }
 .seq-slots-container {
   display: inline-flex;
