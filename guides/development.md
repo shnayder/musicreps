@@ -576,3 +576,73 @@ No `GH_TOKEN` needed. Git push/pull work normally via the `origin` remote.
 **Read-only.** The proxy supports GET requests (list PRs, read comments) but
 not POST/PATCH (create PRs, post comments). Push the branch and create PRs
 manually or let CI handle it.
+
+# Git Safety Policy
+
+## Core Rule
+Only use Git operations that are **recoverable, non-destructive, and append-only**.  
+Never rewrite or implicitly discard state.
+
+Feature work:
+- make feature branches for all work. Never push directly to main.
+- merge from latest main as needed
+- PR back into main. No rebase.
+
+---
+
+## Allowed Commands
+
+- git status
+- git diff
+- git add <files>
+- git commit -m "<message>"
+- git switch -c <branch>
+- git checkout -b <branch>
+- git branch
+- git log
+
+### Limited stash usage (discouraged but permitted)
+- git stash push -u -m "agent: <reason>"
+- git stash list
+- git stash apply <stash-ref>
+- git stash drop <stash-ref>   # ONLY after successful apply and verification
+
+---
+
+## Strictly Disallowed Commands
+
+- git stash pop
+- git commit --amend
+- git rebase (any form)
+- git reset --hard
+- git clean -fd (or similar)
+- git push --force (or --force-with-lease)
+- git checkout <commit> (detached HEAD workflows)
+
+If these truly need to be run, describe what needs to be done and why, give the exact command you'd like to run, and escalate.
+
+## Failure / Recovery Protocol
+
+If the repo state is unclear or something fails, run these:
+
+- git status
+- git stash list
+- git reflog
+- git diff
+
+Do NOT:
+- reset
+- clean
+- force push
+- drop stashes blindly
+
+Escalate instead.
+
+---
+
+## Behavioral Constraints
+
+- Never assume hidden state (stash, index, reflog) is safe
+- Never delete or overwrite work implicitly
+- Prefer creating new commits over modifying existing ones
+- Prefer visible state (branches, commits) over hidden state (stash)
