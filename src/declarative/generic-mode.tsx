@@ -52,9 +52,11 @@ import {
 } from '../ui/buttons.tsx';
 import { SequentialSlots } from '../ui/sequential-slots.tsx';
 import {
+  CenteredContent,
   LayoutFooter,
   LayoutHeader,
   LayoutMain,
+  QuizStage,
   ScreenLayout,
 } from '../ui/screen-layout.tsx';
 import {
@@ -64,7 +66,6 @@ import {
 import {
   ModeTopBar,
   PracticeTab,
-  QuizArea,
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
@@ -432,10 +433,12 @@ function SequentialQuizArea<Q>(
     },
 ) {
   return (
-    <QuizArea
-      prompt={ctrl.renderPrompt ? undefined : promptText}
-      controls={
+    <QuizStage
+      prompt={
         <>
+          {ctrl.renderPrompt && currentQ
+            ? ctrl.renderPrompt(currentQ)
+            : <div class='quiz-prompt'>{promptText}</div>}
           <SequentialSlots
             expectedCount={currentQ && def.sequential
               ? def.sequential.expectedCount(currentQ)
@@ -446,6 +449,10 @@ function SequentialQuizArea<Q>(
               ? seq.correctAnswer.split(' ')
               : null}
           />
+        </>
+      }
+      response={
+        <>
           <ResponseButtons
             buttonsDef={activeButtons}
             onAnswer={seq.handleInput}
@@ -461,9 +468,7 @@ function SequentialQuizArea<Q>(
           )}
         </>
       }
-    >
-      {currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null}
-    </QuizArea>
+    />
   );
 }
 
@@ -503,9 +508,15 @@ function StandardQuizArea<Q>(
   },
 ) {
   return (
-    <QuizArea
-      prompt={ctrl.renderPrompt ? undefined : promptText}
-      controls={
+    <QuizStage
+      prompt={
+        <>
+          {ctrl.renderPrompt && currentQ
+            ? ctrl.renderPrompt(currentQ)
+            : <div class='quiz-prompt'>{promptText}</div>}
+        </>
+      }
+      response={
         <>
           <ResponseButtons
             buttonsDef={activeButtons}
@@ -544,9 +555,7 @@ function StandardQuizArea<Q>(
           <KeyboardHint type={getHintType(activeButtons)} />
         </>
       }
-    >
-      {currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null}
-    </QuizArea>
+    />
   );
 }
 
@@ -610,12 +619,14 @@ function QuizActiveView<Q>(
           <div />
         </LayoutHeader>
         <LayoutMain scrollable={false}>
-          <RoundCompleteInfo
-            context={round.roundContext}
-            heading='Round complete'
-            count={engine.state.roundAnswered}
-            correct={round.roundCorrect}
-          />
+          <CenteredContent>
+            <RoundCompleteInfo
+              context={round.roundContext}
+              heading='Round complete'
+              count={engine.state.roundAnswered}
+              correct={round.roundCorrect}
+            />
+          </CenteredContent>
         </LayoutMain>
         <LayoutFooter>
           <RoundCompleteActions

@@ -72,3 +72,42 @@ export function LayoutFooter(
   const cls = 'layout-footer' + (extra ? ' ' + extra : '');
   return <div class={cls}>{children}</div>;
 }
+
+// ---------------------------------------------------------------------------
+// Main content patterns — used inside LayoutMain
+// ---------------------------------------------------------------------------
+
+/**
+ * QuizStage — two-part prompt/response layout for active practice.
+ * Top (~60%): prompt/question, vertically centered.
+ * Bottom (~40%): response controls, vertically centered.
+ * Non-scrollable. Fills LayoutMain(scrollable=false).
+ */
+export function QuizStage(
+  { prompt, response }: {
+    prompt: ComponentChildren;
+    response: ComponentChildren;
+  },
+) {
+  return (
+    <div class='quiz-stage'>
+      <div class='quiz-stage-prompt'>{prompt}</div>
+      <div class='quiz-stage-response'>{response}</div>
+    </div>
+  );
+}
+
+/**
+ * CenteredContent — vertically centered content for info/instruction screens.
+ * Used by: round complete, speed check intro/results.
+ * Non-scrollable. Fills LayoutMain(scrollable=false).
+ */
+export function CenteredContent(
+  { children, class: extra }: {
+    children: ComponentChildren;
+    class?: string;
+  },
+) {
+  const cls = 'centered-content' + (extra ? ' ' + extra : '');
+  return <div class={cls}>{children}</div>;
+}

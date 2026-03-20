@@ -40,6 +40,7 @@ import {
 } from '../../ui/mode-screen.tsx';
 import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
 import {
+  CenteredContent,
   LayoutFooter,
   LayoutHeader,
   LayoutMain,
@@ -219,12 +220,14 @@ function SpeedTapActiveView(
           <div />
         </LayoutHeader>
         <LayoutMain scrollable={false}>
-          <RoundCompleteInfo
-            context={round.roundContext}
-            heading='Round complete'
-            count={engine.state.roundAnswered}
-            correct={round.roundCorrect}
-          />
+          <CenteredContent>
+            <RoundCompleteInfo
+              context={round.roundContext}
+              heading='Round complete'
+              count={engine.state.roundAnswered}
+              correct={round.roundCorrect}
+            />
+          </CenteredContent>
         </LayoutMain>
         <LayoutFooter>
           <RoundCompleteActions
