@@ -4,7 +4,20 @@
 import { useState } from 'preact/hooks';
 import type { StatsSelector } from './stats.tsx';
 import { ActionButton } from './action-button.tsx';
-import { type ModeTab, TabIcon, Tabs } from './mode-screen.tsx';
+import {
+  type ModeTab,
+  QuizArea,
+  QuizSession,
+  RoundCompleteActions,
+  RoundCompleteInfo,
+  type TabDef,
+  TabBar,
+  TabIcon,
+  Tabs,
+  useTabsPrefix,
+} from './mode-screen.tsx';
+import { FeedbackDisplay } from './quiz-ui.tsx';
+import { NoteButtons } from './buttons.tsx';
 import {
   LevelProgressCard,
   LevelToggles,
@@ -397,6 +410,220 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
 }
 
 // ---------------------------------------------------------------------------
+// Screen Layout — idle phase examples
+// ---------------------------------------------------------------------------
+
+/** Mode-nav tab bar used in idle-phase footer examples. */
+function ModeNavFooter() {
+  const prefix = useTabsPrefix();
+  const tabs: TabDef<ModeTab>[] = [
+    { id: 'practice', label: <TabIcon icon='practice' text='Practice' />, content: null },
+    { id: 'progress', label: <TabIcon icon='progress' text='Progress' />, content: null },
+    { id: 'about', label: <TabIcon icon='about' text='About' />, content: null },
+  ];
+  return (
+    <TabBar
+      tabs={tabs}
+      activeTab='practice'
+      onTabSwitch={() => {}}
+      prefix={prefix}
+      class='mode-nav'
+    />
+  );
+}
+
+function ScreenLayoutIdleExamples(
+  { customActive, toggleCustom, customItemCount, tabId }: CustomState & {
+    tabId: string;
+  },
+) {
+  return (
+    <PreviewGrid>
+      <Section title='Idle — suggested mode' tabId={tabId}>
+        <ScreenLayout class='preview-screen-layout'>
+          <LayoutHeader>
+            <SkillHeader
+              modeId='fretboard'
+              title='Guitar Fretboard'
+              progressColors={MOCK_PROGRESS_COLORS}
+            />
+          </LayoutHeader>
+          <LayoutMain>
+            <PracticeConfig
+              mode='suggested'
+              onModeChange={() => {}}
+              suggestedContent={
+                <SuggestionLines lines={MOCK_SUGGESTION_LINES} />
+              }
+              customContent={null}
+            />
+          </LayoutMain>
+          <LayoutFooter>
+            <div class='practice-zone-action'>
+              <ActionButton variant='primary' onClick={() => {}}>
+                Practice
+              </ActionButton>
+            </div>
+            <ModeNavFooter />
+          </LayoutFooter>
+        </ScreenLayout>
+      </Section>
+
+      <Section title='Idle — custom mode' tabId={tabId}>
+        <ScreenLayout class='preview-screen-layout'>
+          <LayoutHeader>
+            <SkillHeader
+              modeId='fretboard'
+              title='Guitar Fretboard'
+              progressColors={MOCK_PROGRESS_COLORS}
+            />
+          </LayoutHeader>
+          <LayoutMain>
+            <PracticeConfig
+              mode='custom'
+              onModeChange={() => {}}
+              suggestedContent={null}
+              customContent={
+                <LevelToggles
+                  labels={MOCK_LEVEL_LABELS}
+                  active={customActive}
+                  onToggle={toggleCustom}
+                  itemCount={customItemCount}
+                />
+              }
+            />
+          </LayoutMain>
+          <LayoutFooter>
+            <div class='practice-zone-action'>
+              <ActionButton variant='primary' onClick={() => {}}>
+                Practice
+              </ActionButton>
+            </div>
+            <ModeNavFooter />
+          </LayoutFooter>
+        </ScreenLayout>
+      </Section>
+
+      <Section title='Idle — single-level' tabId={tabId}>
+        <ScreenLayout class='preview-screen-layout'>
+          <LayoutHeader>
+            <SkillHeader
+              modeId='noteSemitones'
+              title='Note ↔ Semitones'
+              progressColors={MOCK_PROGRESS_COLORS.slice(0, 3)}
+            />
+          </LayoutHeader>
+          <LayoutMain>{null}</LayoutMain>
+          <LayoutFooter>
+            <div class='practice-zone-action'>
+              <ActionButton variant='primary' onClick={() => {}}>
+                Practice
+              </ActionButton>
+            </div>
+            <ModeNavFooter />
+          </LayoutFooter>
+        </ScreenLayout>
+      </Section>
+    </PreviewGrid>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Screen Layout — active phase examples
+// ---------------------------------------------------------------------------
+
+function ScreenLayoutActiveExamples({ tabId }: { tabId: string }) {
+  return (
+    <PreviewGrid>
+      <Section title='Active quiz — answering' tabId={tabId}>
+        <ScreenLayout class='preview-screen-layout'>
+          <LayoutHeader>
+            <QuizSession
+              timeLeft='1:23'
+              timerPct={72}
+              context='E string'
+              count='5 of 20'
+            />
+          </LayoutHeader>
+          <LayoutMain scrollable={false}>
+            <QuizArea
+              prompt='What note is on string 1, fret 3?'
+              controls={<NoteButtons onAnswer={() => {}} />}
+            />
+          </LayoutMain>
+          <LayoutFooter>
+            <FeedbackDisplay
+              text=''
+              className='feedback'
+            />
+          </LayoutFooter>
+        </ScreenLayout>
+      </Section>
+
+      <Section title='Active quiz — with feedback' tabId={tabId}>
+        <ScreenLayout class='preview-screen-layout'>
+          <LayoutHeader>
+            <QuizSession
+              timeLeft='1:18'
+              timerPct={65}
+              context='E string'
+              count='6 of 20'
+              lastQuestion='G'
+            />
+          </LayoutHeader>
+          <LayoutMain scrollable={false}>
+            <QuizArea
+              prompt='What note is on string 1, fret 5?'
+              controls={
+                <NoteButtons
+                  onAnswer={() => {}}
+                  feedback={{
+                    correct: true,
+                    userInput: 'A',
+                    displayAnswer: 'A',
+                  }}
+                />
+              }
+            />
+          </LayoutMain>
+          <LayoutFooter>
+            <FeedbackDisplay
+              text='Correct!'
+              className='feedback correct'
+              hint='A is fret 5 on string 1'
+              correct
+              onNext={() => {}}
+            />
+          </LayoutFooter>
+        </ScreenLayout>
+      </Section>
+
+      <Section title='Round complete' tabId={tabId}>
+        <ScreenLayout class='preview-screen-layout'>
+          <LayoutHeader>{null}</LayoutHeader>
+          <LayoutMain scrollable={false}>
+            <QuizArea>
+              <RoundCompleteInfo
+                context='E string · A string'
+                heading='Round Complete'
+                count={20}
+                correct='18 correct (90%)'
+              />
+            </QuizArea>
+          </LayoutMain>
+          <LayoutFooter>
+            <RoundCompleteActions
+              onContinue={() => {}}
+              onStop={() => {}}
+            />
+          </LayoutFooter>
+        </ScreenLayout>
+      </Section>
+    </PreviewGrid>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Exported tab component
 // ---------------------------------------------------------------------------
 
@@ -445,55 +672,13 @@ export function PracticeRedesignTab(
       <Phase2SingleAndProgress tabId={tabId} />
 
       <h2>Screen Layout</h2>
-      <PreviewGrid>
-        <Section title='ScreenLayout — idle (suggested)' tabId={tabId}>
-          <ScreenLayout class='preview-screen-layout'>
-            <LayoutHeader>
-              <SkillHeader
-                modeId='fretboard'
-                title='Guitar Fretboard'
-                progressColors={MOCK_PROGRESS_COLORS}
-              />
-            </LayoutHeader>
-            <LayoutMain>
-              <PracticeConfig
-                mode='suggested'
-                onModeChange={() => {}}
-                suggestedContent={
-                  <SuggestionLines lines={MOCK_SUGGESTION_LINES} />
-                }
-                customContent={null}
-              />
-            </LayoutMain>
-            <LayoutFooter>
-              <div class='practice-zone-action'>
-                <ActionButton variant='primary' onClick={() => {}}>
-                  Practice
-                </ActionButton>
-              </div>
-            </LayoutFooter>
-          </ScreenLayout>
-        </Section>
-        <Section title='ScreenLayout — active quiz' tabId={tabId}>
-          <ScreenLayout class='preview-screen-layout'>
-            <LayoutHeader>
-              <div style='padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-lighter)'>
-                Quiz header (countdown + close)
-              </div>
-            </LayoutHeader>
-            <LayoutMain scrollable={false}>
-              <div style='flex:1;display:flex;align-items:center;justify-content:center'>
-                Prompt + answer buttons
-              </div>
-            </LayoutMain>
-            <LayoutFooter>
-              <div style='padding:var(--space-3) var(--space-4);border-top:1px solid var(--color-border-lighter);text-align:center'>
-                Feedback + Next
-              </div>
-            </LayoutFooter>
-          </ScreenLayout>
-        </Section>
-      </PreviewGrid>
+      <ScreenLayoutIdleExamples
+        customActive={customActive}
+        toggleCustom={toggleCustom}
+        customItemCount={customItemCount}
+        tabId={tabId}
+      />
+      <ScreenLayoutActiveExamples tabId={tabId} />
     </div>
   );
 }
