@@ -1159,18 +1159,25 @@ type GenericModeBodyProps<Q> = {
   navigateHome: () => void;
 };
 
-/** Compute progress colors for the SkillHeader progress bar. */
+/** Compute progress colors for the SkillHeader progress bar.
+ *  Multi-level: one color per group (merged speed/freshness).
+ *  Single-level: one color per item (same as level progress cards). */
 function useProgressColors<Q>(
   def: ModeDefinition<Q>,
   learner: ReturnType<typeof useLearnerModel>,
 ): string[] {
   return useMemo(() => {
-    if (def.scope.kind !== 'groups') return [];
-    const scope = def.scope;
-    return scope.allGroupIndices.map((i) => {
-      const itemIds = scope.getItemIdsForGroup(i);
-      return getStatsCellColorMerged(learner.selector, itemIds);
-    });
+    if (def.scope.kind === 'groups') {
+      const scope = def.scope;
+      return scope.allGroupIndices.map((i) => {
+        const itemIds = scope.getItemIdsForGroup(i);
+        return getStatsCellColorMerged(learner.selector, itemIds);
+      });
+    }
+    // Single-level: per-item colors
+    return def.allItems.map((id) =>
+      getStatsCellColorMerged(learner.selector, id)
+    );
   }, [def, learner.selector]);
 }
 
