@@ -57,7 +57,10 @@ import {
   LayoutMain,
   ScreenLayout,
 } from '../ui/screen-layout.tsx';
-import { getStatsCellColorMerged } from '../stats-display.ts';
+import {
+  getSpeedFreshnessColor,
+  getStatsCellColorMerged,
+} from '../stats-display.ts';
 import {
   ModeTopBar,
   PracticeTab,
@@ -1174,10 +1177,15 @@ function useProgressColors<Q>(
         return getStatsCellColorMerged(learner.selector, itemIds);
       });
     }
-    // Single-level: per-item colors
-    return def.allItems.map((id) =>
-      getStatsCellColorMerged(learner.selector, id)
-    );
+    // Single-level: per-item colors, sorted descending by mastery
+    const items = def.allItems.map((id) => {
+      const sp = learner.selector.getSpeedScore(id);
+      const fr = learner.selector.getFreshness(id);
+      const auto = (sp !== null && fr !== null) ? sp * fr : null;
+      return { auto, color: getSpeedFreshnessColor(sp, fr) };
+    });
+    items.sort((a, b) => (b.auto ?? -1) - (a.auto ?? -1));
+    return items.map((item) => item.color);
   }, [def, learner.selector]);
 }
 
