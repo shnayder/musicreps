@@ -5,7 +5,7 @@ import { Fragment } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import type { GroupStatus } from '../types.ts';
 import { displayNote } from '../music-data.ts';
-import { getSpeedFreshnessColor } from '../stats-display.ts';
+import { progressBarColors } from '../stats-display.ts';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
@@ -191,13 +191,7 @@ export function GroupProgressToggles(
         const isSkipped = skipped?.has(i) ?? false;
         const skipReason = skipped?.get(i);
         const currentStatus: 'learn' | GroupStatus = skipReason ?? 'learn';
-        const items = g.itemIds.map((id) => {
-          const sp = selector.getSpeedScore(id);
-          const fr = selector.getFreshness(id);
-          const auto = (sp !== null && fr !== null) ? sp * fr : null;
-          return { id, auto, color: getSpeedFreshnessColor(sp, fr) };
-        });
-        items.sort((a, b) => (b.auto ?? -1) - (a.auto ?? -1));
+        const colors = progressBarColors(selector, g.itemIds);
         return (
           <Fragment key={i}>
             <button
@@ -214,7 +208,7 @@ export function GroupProgressToggles(
               {g.label}
             </button>
             <GroupProgressBar
-              colors={items.map((item) => item.color)}
+              colors={colors}
               disabled={isSkipped}
             />
             {hasMenu && (

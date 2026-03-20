@@ -58,8 +58,8 @@ import {
   ScreenLayout,
 } from '../ui/screen-layout.tsx';
 import {
-  getSpeedFreshnessColor,
   getStatsCellColorMerged,
+  progressBarColors,
 } from '../stats-display.ts';
 import {
   ModeTopBar,
@@ -748,9 +748,7 @@ function LevelProgressCards<Q>(
     <div class='level-progress-cards'>
       {groupScope.allGroupIndices.map((i) => {
         const itemIds = groupScope.getItemIdsForGroup(i);
-        const colors = itemIds.map((id) =>
-          getStatsCellColorMerged(learner.selector, id)
-        );
+        const colors = progressBarColors(learner.selector, itemIds);
         const skipReason = groupScopeResult.skippedGroups.get(i);
         const status = skipReason === 'mastered'
           ? 'known' as const
@@ -1164,7 +1162,7 @@ type GenericModeBodyProps<Q> = {
 
 /** Compute progress colors for the SkillHeader progress bar.
  *  Multi-level: one color per group (merged speed/freshness).
- *  Single-level: one color per item (same as level progress cards). */
+ *  Single-level: per-item sorted colors (via shared progressBarColors). */
 function useProgressColors<Q>(
   def: ModeDefinition<Q>,
   learner: ReturnType<typeof useLearnerModel>,
@@ -1177,15 +1175,7 @@ function useProgressColors<Q>(
         return getStatsCellColorMerged(learner.selector, itemIds);
       });
     }
-    // Single-level: per-item colors, sorted descending by mastery
-    const items = def.allItems.map((id) => {
-      const sp = learner.selector.getSpeedScore(id);
-      const fr = learner.selector.getFreshness(id);
-      const auto = (sp !== null && fr !== null) ? sp * fr : null;
-      return { auto, color: getSpeedFreshnessColor(sp, fr) };
-    });
-    items.sort((a, b) => (b.auto ?? -1) - (a.auto ?? -1));
-    return items.map((item) => item.color);
+    return progressBarColors(learner.selector, def.allItems);
   }, [def, learner.selector]);
 }
 
