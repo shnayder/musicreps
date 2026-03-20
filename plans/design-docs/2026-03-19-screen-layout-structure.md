@@ -25,6 +25,11 @@ Simple scrolling page. No fixed elements beyond the browser chrome.
 └──────────────────────┘
 ```
 
+**Problems:**
+- Tabs are not accessible once you scroll
+- Settings and current version only accessible after scrolling all the way
+  down (mostly a dev inconvenience)
+
 ### Mode screen — idle phase
 
 Currently the tallest and most complex layout. Content scrolls freely; nothing
@@ -47,55 +52,48 @@ is fixed except the bottom nav on mobile.
 ```
 
 **Problems:**
-- SkillHeader scrolls away — progress bar becomes invisible.
-- Action button ("Practice") is inline in content — not anchored. On long
-  practice configs it scrolls below the fold.
-- Bottom nav is fixed but the tab content doesn't know about it except via
-  `padding-bottom: 64px`.
-- The tab bar renders as part of the tab content in the DOM (inside the
-  `Tabs` component), making it hard to fix independently of content.
+- SkillHeader scrolls away — progress bar becomes invisible
+- Action button ("Practice") is inline in content — not anchored; scrolls
+  below the fold on long configs
+- Bottom nav and tab content don't coordinate well
+- Tab bar is part of the content DOM, hard to fix independently
 
 ### Mode screen — active quiz
 
-Full-viewport layout. No scrolling. Two-zone flex column: content area
-(centered prompt) and controls area (answer buttons, pinned to bottom).
+Full-viewport layout. No scrolling. Prompt area centered, controls at bottom.
 
 ```
 ┌──────────────────────┐
 │ QuizSession header    │ ← countdown bar + session info + close
 ├──────────────────────┤
 │                       │
-│   quiz-content        │ ← flex: 1, centered vertically
-│   (prompt, fretboard) │
+│   prompt / fretboard  │ ← centered vertically
+│   answer buttons      │
 │                       │
 ├──────────────────────┤
-│ quiz-controls         │ ← margin-top: auto (pinned to bottom)
-│  answer buttons       │
-│  text input           │
-│  feedback + next      │
+│ feedback + next       │ ← pinned to bottom
 └──────────────────────┘
 ```
 
-**This works well.** Clear zones, prompt is centered, controls are anchored.
-The `flex: 1` + `margin-top: auto` pattern is the right approach.
+The prompt + answer controls belong together in the main content area.
+Feedback and the "Next" action belong in the footer — they're the response
+to the user's action and the path forward.
 
 ### Mode screen — round complete
-
-Same two-zone structure as active quiz.
 
 ```
 ┌──────────────────────┐
 │                       │
-│  Round Complete       │ ← flex: 1, centered
+│  Round Complete       │ ← centered
 │  heading + count +    │
 │  stats                │
 │                       │
 ├──────────────────────┤
-│ Keep Going / Stop     │ ← margin-top: auto (pinned)
+│ Keep Going / Stop     │ ← pinned to bottom
 └──────────────────────┘
 ```
 
-**This also works well.** Same pattern as quiz.
+---
 
 ## Proposed Structure
 
@@ -108,52 +106,48 @@ Three layout zones that are consistent across all states.
 │ HEADER                │ ← always visible, not scrollable
 ├──────────────────────┤
 │                       │
-│ MAIN                  │ ← scrollable content area
-│                       │
+│ MAIN                  │ ← content area (scrollable for info/nav
+│                       │    screens; not scrollable during active
+│                       │    practice)
 ├──────────────────────┤
 │ FOOTER                │ ← always visible, not scrollable
 └──────────────────────┘
 ```
 
-- **Header**: fixed to top of viewport (or top of mode container). Contains
-  identity + navigation. Content varies by state but position is constant.
-- **Main**: scrollable content area between header and footer. Takes all
-  remaining space (`flex: 1; overflow-y: auto`).
-- **Footer**: fixed to bottom. Contains either navigation or primary action,
-  depending on state.
+- **Header**: fixed to top. Contains identity and/or navigation. Content
+  varies by state but position is constant.
+- **Main**: content area between header and footer. Takes all remaining space.
+  Scrollable for info screens (progress, about); not scrollable during active
+  practice (quiz, round complete).
+- **Footer**: fixed to bottom. Contains navigation, feedback, or primary
+  action depending on state.
 
 ### How each state uses the zones
 
 | State | Header | Main | Footer |
 |-------|--------|------|--------|
-| Home | Title + tagline | Skill cards | (none — or settings?) |
-| Idle | SkillHeader (title + progress) | Tab content (practice config, stats, about) | Bottom nav (mobile) |
-| Active quiz | QuizSession (countdown + info + close) | quiz-content (prompt, fretboard) | quiz-controls (buttons, feedback, next) |
-| Round complete | (empty or minimal) | Round stats | Keep Going / Stop |
+| Home | Title + tagline | Skill cards | Bottom nav: Active / All Skills / Settings tabs |
+| Idle | SkillHeader (title + progress) | Tab content (scrollable) | Action button above bottom nav (mobile) |
+| Active quiz | QuizSession (countdown + info + close) | Prompt + answer controls (not scrollable) | Feedback + next |
+| Round complete | (empty or minimal) | Round stats (not scrollable) | Keep Going / Stop |
 | Calibration | (minimal) | Speed check content | Speed check controls |
 
 ### Action button placement
 
-This is the key consistency question. Where does the primary action live?
+**Rule: primary action always in footer zone.**
 
-**Current:**
-- Idle: "Practice" button is inline in tab content, scrolls with it
-- Active: "Next" / answer buttons are in footer zone (via `margin-top: auto`)
-- Round complete: "Keep Going" / "Stop" are in footer zone
-
-**Proposed rule: primary action always in footer zone.**
-
-| State | Footer action |
-|-------|--------------|
-| Idle (practice tab) | "Practice" button |
-| Idle (progress tab) | Bottom nav only (no action) |
+| State | Footer content |
+|-------|---------------|
+| Idle (practice tab) | "Practice" button (above nav on mobile) |
+| Idle (progress tab) | Bottom nav only |
 | Idle (about tab) | Bottom nav only |
-| Active quiz — awaiting | Answer buttons + text input |
+| Active quiz — awaiting | (answer buttons are in main, not footer) |
 | Active quiz — feedback | Feedback display + "Next" |
 | Round complete | "Keep Going" / "Stop" |
 
-On mobile, the footer has two layers: the action area above, the nav bar below.
-On desktop, the nav is at the top (header), so the footer is just the action.
+On mobile, the footer can have two layers: the action area above, the nav bar
+below. On desktop, nav moves to the header area, so the footer is just the
+action.
 
 ```
 Mobile idle (practice tab):
@@ -171,71 +165,62 @@ Mobile active quiz:
 ┌──────────────────────┐
 │ QuizSession header    │ ← fixed top
 ├──────────────────────┤
-│ quiz-content          │ ← centered, no scroll
+│ quiz-content          │ ← centered, not scrollable
 │ (prompt / fretboard)  │
+│ answer buttons        │
 ├──────────────────────┤
-│ answer buttons        │ ← fixed bottom
-│ feedback + next       │
+│ feedback + next       │ ← fixed bottom
+└──────────────────────┘
+
+Home screen:
+┌──────────────────────┐
+│ Title + tagline       │ ← scrolls with content
+├──────────────────────┤
+│ Skill cards...        │ ← scrolls
+├──────────────────────┤
+│ ░ Active ░ All ░ ⚙ ░ │ ← fixed bottom nav
 └──────────────────────┘
 ```
 
-## Open Questions
+---
 
-### 1. Should the SkillHeader be fixed or scroll?
+## Decisions
 
-**Fixed**: progress bar always visible, consistent anchor. But takes ~60px of
-vertical space on a small screen.
+### 1. SkillHeader: fixed
 
-**Scrolls**: more room for content, but user loses progress context when
-scrolling through stats.
+Fixed to top. It's compact (~50px) and the progress bar provides always-visible
+context.
 
-**Recommendation**: fixed on mobile (it's only ~50px with the compact progress
-bar). On desktop where vertical space is plentiful, it can stay fixed too.
+### 2. "Practice" button: fixed in footer
 
-### 2. Should the "Practice" button be truly fixed or just at end of content?
+Always anchored above the bottom nav, not inline in scrollable content.
+Main content layout (what goes between header and footer) is a separate concern.
 
-If content is short (suggested mode — just 2 lines), the button is visible
-without scrolling anyway. If content is long (custom mode with 8 levels +
-item count), it might scroll below the fold.
+### 3. Bottom nav + action button: stacked (idle), hidden nav (quiz)
 
-**Recommendation**: start with fixed. If it causes problems with very short
-content (too much empty space between config and button), revisit.
+During idle: both the action button and nav bar are visible, stacked.
+During active quiz: nav bar hides; quiz has its own full-screen layout.
 
-### 3. How does the bottom nav interact with the action button on mobile?
+### 4. Home screen: add bottom nav
 
-Two options:
-- **Stacked**: action button sits directly above the nav bar. Both always visible.
-- **Replaced**: during active quiz, nav bar hides and action zone takes its place.
-
-**Recommendation**: stacked for idle (both visible), hidden nav during quiz
-(quiz has its own full-screen layout with no nav).
-
-### 4. What about the home screen?
-
-The home screen currently has no fixed header or footer. Should it get the same
-treatment?
-
-**Recommendation**: defer. The home screen layout is simpler and works fine as
-a scrolling page. Address if it becomes a problem.
+Move Active/All Skills tabs to a bottom nav bar. Add Settings as a third tab.
+Build number goes below settings content. No fixed header needed — title
+scrolls with content.
 
 ### 5. Tab content padding
 
-With fixed header + fixed footer, the main content area needs padding-top and
-padding-bottom to avoid content being hidden behind them. Currently this is
-done with `padding-bottom: 64px` on tab panels for the nav bar. Need a more
-systematic approach.
+Main content area needs to account for fixed header and footer heights so
+nothing is hidden behind them. Use a systematic approach rather than ad-hoc
+per-panel padding.
 
-**Recommendation**: use CSS custom properties for header/footer heights and
-apply padding via a `.main-content` wrapper rather than per-panel.
+---
 
-## Implementation Approach
+## Next Steps
 
-1. **Don't change the quiz/round-complete layouts.** They already work well
-   with the two-zone pattern.
-2. **Fix the idle layout.** Make SkillHeader + bottom nav fixed, main content
-   scrollable between them, action button in a fixed footer zone.
-3. **Use the same flex pattern** as quiz: outer container is `display: flex;
-   flex-direction: column; height: 100dvh`, header and footer are fixed-size,
-   main is `flex: 1; overflow-y: auto`.
-4. **CSS-only where possible.** The component structure is mostly right — this
-   is mainly about positioning, not restructuring.
+1. Implement the three-zone layout for the mode screen idle phase
+2. Move "Practice" button to fixed footer zone
+3. Restructure home screen: move tabs to bottom nav, add Settings tab
+4. Adjust active quiz layout: feedback + next in footer, prompt + controls
+   in main
+5. Design the main content area layout (internal structure within the main
+   zone) as a follow-on
