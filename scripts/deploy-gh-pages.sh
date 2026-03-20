@@ -26,10 +26,6 @@ if [ "$MODE" = "production" ]; then
 elif [ "$MODE" = "preview" ]; then
   mkdir -p /tmp/preview-build
   cp -r docs/* /tmp/preview-build/
-  # Stash screenshots if produced by take-screenshots.ts (images + index.html)
-  if [ -d screenshots ]; then
-    cp -r screenshots/ /tmp/preview-build/screenshots/
-  fi
 fi
 
 # --- Git setup ---
@@ -101,9 +97,6 @@ INDEXEOF
     [ "$dir" = "preview/*/" ] && continue
     name="$(basename "$dir")"
     echo "<li><a href=\"${name}/\">${name}</a></li>" >> preview/index.html
-    if [ -d "preview/${name}/screenshots" ]; then
-      echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/screenshots/index.html\">${name} — Screenshots</a></li>" >> preview/index.html
-    fi
     if [ -d "preview/${name}/design" ]; then
       echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/components-preview.html\">${name} — Component Preview</a></li>" >> preview/index.html
       echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/colors.html\">${name} — Color System</a></li>" >> preview/index.html
@@ -126,7 +119,9 @@ fi # end preview index regeneration
 if [ "$MODE" = "production" ]; then
   git add -A -- . ':!preview'
 else
-  git add -A
+  # Only stage the specific preview directory and index — avoid accidentally
+  # committing stray files (node_modules, screenshots, etc.)
+  git add -A -- "preview/${SAFE_NAME}" preview/index.html .nojekyll
 fi
 if git diff --cached --quiet; then
   echo "No changes to deploy."

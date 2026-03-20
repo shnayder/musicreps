@@ -46,6 +46,10 @@ deno task iterate capture [session]                   # capture next version
 deno task iterate view [session]                      # open review page
 deno task iterate list                                # list sessions
 deno task iterate --list-states                       # print valid state names
+
+# Visual history archive (outside repo, in Dropbox)
+npx tsx scripts/capture-visual-history.ts             # capture at HEAD (auto-skip)
+npx tsx scripts/capture-visual-history.ts --force     # force capture
 ```
 
 ## Build System
@@ -280,45 +284,13 @@ and deploys the output to `preview/<branch-name>/` on the `gh-pages` branch.
 - **PR comment:** the deploy workflow posts the preview URL on any associated
   PR.
 
-## Agent Screenshot Workflow
+## Screenshots
 
-The CI pipeline captures fixture-based screenshots on pushes to `claude/*/ui/*`
-branches. The script dispatches state fixtures to the running app (no clicking
-through quizzes), so screenshots are fully deterministic.
-
-### How it works
-
-1. `deploy-preview.yml` runs `take-screenshots.ts --ci` on `/ui/` branches
-2. The script opens the app with `?fixtures`, dispatches `__fixture__` events
-   to inject engine state, and captures after Preact re-renders
-3. CI uses `--ci` flag: 1x device scale, JPEG output (smaller, faster)
-4. Screenshots deploy to `preview/<branch>/screenshots/` on gh-pages
-
-### Branch requirement
-
-Screenshots only run on branches matching `*/ui/*` (e.g.,
-`claude/fix-buttons/ui/review`). Non-UI branches skip Playwright entirely.
-
-### Step-by-step
-
-```bash
-# 1. Push to a /ui/ branch
-git push -u origin claude/my-feature/ui/review
-
-# 2. Poll workflow status until complete (~2-3 min)
-curl -s "https://api.github.com/repos/shnayder/musicreps/actions/runs?branch=claude/my-feature/ui/review&per_page=1" \
-  | python3 -c "import sys,json; r=json.load(sys.stdin)['workflow_runs'][0]; print(r['status'], r['conclusion'] or '')"
-
-# 3. List available screenshots
-curl -s "https://api.github.com/repos/shnayder/musicreps/contents/preview/claude-my-feature-ui-review/screenshots?ref=gh-pages" \
-  | python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['name'].endswith(('.png','.jpg'))]"
-
-# 4. Download a specific screenshot
-curl -sL -o /tmp/screenshot.jpg \
-  "https://raw.githubusercontent.com/shnayder/musicreps/gh-pages/preview/claude-my-feature-ui-review/screenshots/fretboard-idle.jpg"
-```
-
-Then use `Read /tmp/screenshot.jpg` to view the image.
+The `take-screenshots.ts` script captures fixture-based screenshots locally. It
+dispatches state fixtures to the running app (no clicking through quizzes), so
+screenshots are fully deterministic. **Screenshots are not captured in CI** —
+preview deploys include only the built app. Use the visual history archive
+(above) or run the script locally for visual review.
 
 ### Available screenshots
 
@@ -400,6 +372,70 @@ list. Common ones: `<mode>-idle`, `<mode>-quiz`, `<mode>-quiz-rev`,
 Sessions live in `screenshots/iterate/<session-name>/` (gitignored). Each
 version's screenshots are in a `v1/`, `v2/`, etc. subdirectory. `session.json`
 tracks the state list and version history.
+
+## Visual History Archive
+
+A lightweight archive of key screenshots over time, stored **outside the repo**
+at `~/Dropbox/projects/musicreps-visual-history/`. Each snapshot captures a few
+representative screens with commit metadata — an easy way to see how the app
+looked at any point without checking out old commits.
+
+**Why outside the repo?** Binary files (images, screenshots) bloat git history
+permanently — even after deletion, the blobs stay in the object store. The CI
+preview system previously committed screenshots to `gh-pages` on every push,
+inflating the repo to 400+ MB. This archive avoids that by keeping images in
+Dropbox, where they sync without polluting git.
+
+### Capturing
+
+```bash
+# Normal: capture at HEAD (skips if no new commits since last snapshot)
+npx tsx scripts/capture-visual-history.ts
+
+# Force capture even if HEAD unchanged
+npx tsx scripts/capture-visual-history.ts --force
+
+# Backfill from an old gh-pages preview commit
+npx tsx scripts/capture-visual-history.ts \
+  --backfill-ghpages <gh-pages-commit> \
+  --preview <preview-dir-name> \
+  --note "description"
+```
+
+### Automatic weekly capture
+
+A launchd agent (`~/Library/LaunchAgents/com.musicreps.visual-history.plist`)
+runs the capture script every Monday at 10:17am. It skips automatically if HEAD
+hasn't changed since the last snapshot. Logs go to
+`/tmp/musicreps-visual-history.log`.
+
+```bash
+# Check agent status
+launchctl list | grep musicreps
+
+# Reload after editing the plist
+launchctl unload ~/Library/LaunchAgents/com.musicreps.visual-history.plist
+launchctl load ~/Library/LaunchAgents/com.musicreps.visual-history.plist
+```
+
+### Manifest
+
+`scripts/visual-history.json` lists which screenshots to capture. Edit this file
+to change the set of screens in future snapshots. Names must match entries from
+the screenshot manifest (`npx tsx scripts/take-screenshots.ts --list`).
+
+### Archive structure
+
+```
+~/Dropbox/projects/musicreps-visual-history/
+  index.md                        # Chronological table of all snapshots
+  2026-03-17_8fcb41bb/
+    home.jpg
+    fretboard-idle.jpg
+    semitoneMath-idle.jpg
+    ...
+    meta.json                     # {commit, date, subject, screenshots}
+```
 
 ## iOS App (Capacitor)
 
