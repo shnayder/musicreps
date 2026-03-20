@@ -52,7 +52,9 @@ import {
 } from '../ui/buttons.tsx';
 import { SequentialSlots } from '../ui/sequential-slots.tsx';
 import {
+  LayoutFooter,
   LayoutHeader,
+  LayoutMain,
   ScreenLayout,
 } from '../ui/screen-layout.tsx';
 import { getStatsCellColorMerged } from '../stats-display.ts';
@@ -455,13 +457,6 @@ function SequentialQuizArea<Q>(
               placeholder={placeholder}
             />
           )}
-          <FeedbackDisplay
-            text={engine.state.feedbackText}
-            className={engine.state.feedbackClass}
-            hint={engine.state.hintText || undefined}
-            correct={engine.state.feedbackCorrect}
-            onNext={engine.state.answered ? engine.nextQuestion : undefined}
-          />
         </>
       }
     >
@@ -545,14 +540,6 @@ function StandardQuizArea<Q>(
             feedbackCorrect={engine.state.feedbackCorrect}
           />
           <KeyboardHint type={getHintType(activeButtons)} />
-          <FeedbackDisplay
-            text={engine.state.feedbackText}
-            className={engine.state.feedbackClass}
-            hint={engine.state.hintText || undefined}
-            correct={engine.state.feedbackCorrect}
-            onNext={engine.state.answered ? engine.nextQuestion : undefined}
-            label={engine.state.roundTimerExpired ? 'Continue' : 'Next'}
-          />
         </>
       }
     >
@@ -614,9 +601,61 @@ function QuizActiveView<Q>(
 ) {
   const phase = engine.state.phase;
 
+  if (phase === 'round-complete') {
+    return (
+      <ScreenLayout>
+        <LayoutHeader>
+          <div />
+        </LayoutHeader>
+        <LayoutMain scrollable={false}>
+          <RoundCompleteInfo
+            context={round.roundContext}
+            heading='Round complete'
+            count={engine.state.roundAnswered}
+            correct={round.roundCorrect}
+          />
+        </LayoutMain>
+        <LayoutFooter>
+          <RoundCompleteActions
+            onContinue={engine.continueQuiz}
+            onStop={engine.stop}
+          />
+        </LayoutFooter>
+      </ScreenLayout>
+    );
+  }
+
+  const quizContent = def.sequential
+    ? (
+      <SequentialQuizArea
+        def={def}
+        engine={engine}
+        ctrl={ctrl}
+        currentQ={currentQ}
+        activeButtons={activeButtons}
+        seq={seq}
+        placeholder={placeholder}
+        promptText={promptText}
+      />
+    )
+    : (
+      <StandardQuizArea
+        engine={engine}
+        ctrl={ctrl}
+        currentQ={currentQ}
+        activeButtons={activeButtons}
+        inactiveButtons={inactiveButtons}
+        handleSubmit={handleSubmit}
+        useFlats={useFlats}
+        placeholder={placeholder}
+        promptText={promptText}
+        lastAnswerRef={lastAnswerRef}
+      />
+    );
+
   return (
-    <>
-      {phase !== 'round-complete' && (
+    <ScreenLayout>
+      <LayoutHeader>
         <QuizSession
           timeLeft={engine.timerText}
           timerPct={engine.timerPct}
@@ -629,53 +668,21 @@ function QuizActiveView<Q>(
             : ''}
           onClose={engine.stop}
         />
-      )}
-      {phase === 'round-complete'
-        ? (
-          <QuizArea
-            controls={
-              <RoundCompleteActions
-                onContinue={engine.continueQuiz}
-                onStop={engine.stop}
-              />
-            }
-          >
-            <RoundCompleteInfo
-              context={round.roundContext}
-              heading='Round complete'
-              count={engine.state.roundAnswered}
-              correct={round.roundCorrect}
-            />
-          </QuizArea>
-        )
-        : def.sequential
-        ? (
-          <SequentialQuizArea
-            def={def}
-            engine={engine}
-            ctrl={ctrl}
-            currentQ={currentQ}
-            activeButtons={activeButtons}
-            seq={seq}
-            placeholder={placeholder}
-            promptText={promptText}
-          />
-        )
-        : (
-          <StandardQuizArea
-            engine={engine}
-            ctrl={ctrl}
-            currentQ={currentQ}
-            activeButtons={activeButtons}
-            inactiveButtons={inactiveButtons}
-            handleSubmit={handleSubmit}
-            useFlats={useFlats}
-            placeholder={placeholder}
-            promptText={promptText}
-            lastAnswerRef={lastAnswerRef}
-          />
-        )}
-    </>
+      </LayoutHeader>
+      <LayoutMain scrollable={false}>
+        {quizContent}
+      </LayoutMain>
+      <LayoutFooter>
+        <FeedbackDisplay
+          text={engine.state.feedbackText}
+          className={engine.state.feedbackClass}
+          hint={engine.state.hintText || undefined}
+          correct={engine.state.feedbackCorrect}
+          onNext={engine.state.answered ? engine.nextQuestion : undefined}
+          label={engine.state.roundTimerExpired ? 'Continue' : 'Next'}
+        />
+      </LayoutFooter>
+    </ScreenLayout>
   );
 }
 
