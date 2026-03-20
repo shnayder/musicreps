@@ -312,12 +312,14 @@ body {
    3. HOME SCREEN
    ========================================================================== */
 .home-screen {
-  display: flex;
-  flex-direction: column;
-  padding: 0 var(--space-5) var(--space-5);
+  /* Outer container — ScreenLayout fills the viewport inside it */
 }
 .home-screen.hidden {
   display: none;
+}
+/* Home screen uses ScreenLayout; .home-content provides padding inside LayoutMain */
+.home-content {
+  padding: 0 var(--space-5) var(--space-5);
 }
 .home-header {
   text-align: left;

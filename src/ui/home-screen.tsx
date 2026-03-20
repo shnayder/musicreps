@@ -1,5 +1,6 @@
-// Home screen: tabbed view with Active (starred) and All Skills tabs.
-// Active tab shows starred skills; All Skills tab shows track accordions.
+// Home screen: tabbed view with Active (starred), All Skills, and Settings tabs.
+// Active tab shows starred skills; All Skills tab shows track accordions;
+// Settings tab shows inline settings panel.
 
 import type { ComponentChildren } from 'preact';
 import { useCallback, useState } from 'preact/hooks';
@@ -13,8 +14,16 @@ import {
 } from '../hooks/use-home-progress.ts';
 import type { SkillRecommendation } from '../home-recommendations.ts';
 import { Text } from './text.tsx';
-import { CloseButton, Tabs } from './mode-screen.tsx';
+import {
+  TabBar,
+  type TabDef,
+  TabIcon,
+  TabPanels,
+  useTabsPrefix,
+} from './mode-screen.tsx';
 import { GroupProgressBar } from './scope.tsx';
+import { ScreenLayout } from './screen-layout.tsx';
+import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
 // localStorage persistence for starred skills
@@ -380,7 +389,7 @@ export function TrackSection(
 }
 
 // ---------------------------------------------------------------------------
-// SettingsPage — settings screen (extracted for function length limit)
+// SettingsAboutLegal — about/legal links for settings panel
 // ---------------------------------------------------------------------------
 
 function SettingsAboutLegal(
@@ -439,26 +448,21 @@ function SettingsAboutLegal(
   );
 }
 
-function SettingsPage(
-  { settings, appConfig, version, useSolfege, setUseSolfege, onClose }: {
+// ---------------------------------------------------------------------------
+// SettingsPanel — inline settings content for the Settings tab
+// ---------------------------------------------------------------------------
+
+export function SettingsPanel(
+  { settings, appConfig, version, useSolfege, setUseSolfege }: {
     settings: SettingsController;
     appConfig: AppConfig;
     version: string;
     useSolfege: boolean;
     setUseSolfege: (v: boolean) => void;
-    onClose: () => void;
   },
 ) {
   return (
     <div class='settings-page'>
-      <div class='settings-page-header'>
-        <h1 class='settings-page-title'>Settings</h1>
-        <CloseButton
-          ariaLabel='Close'
-          onClick={onClose}
-        />
-      </div>
-
       <section class='settings-section'>
         <h2 class='settings-section-title'>General</h2>
         <SettingToggle
@@ -529,21 +533,23 @@ function AllSkillsList(
 }
 
 // ---------------------------------------------------------------------------
-// HomeScreen — top-level component with Active / All Skills tabs
+// HomeScreen — top-level component with bottom nav: Active / All Skills / Settings
 // ---------------------------------------------------------------------------
 
-type HomeTab = 'active' | 'all';
+export type HomeTab = 'active' | 'all' | 'settings';
 
 function loadInitialTab(): HomeTab {
   try {
     const saved = localStorage.getItem(TAB_KEY);
-    if (saved === 'active' || saved === 'all') return saved;
+    if (saved === 'active' || saved === 'all' || saved === 'settings') {
+      return saved;
+    }
   } catch (_) { /* expected */ }
   return loadStarredSkills().size > 0 ? 'active' : 'all';
 }
 
 // ---------------------------------------------------------------------------
-// HomeHeader / HomeFooter — top/bottom chrome for the home screen
+// HomeHeader — title + tagline that scrolls with content
 // ---------------------------------------------------------------------------
 
 function HomeHeader({ isNativeApp }: { isNativeApp?: boolean }) {
@@ -560,85 +566,89 @@ function HomeHeader({ isNativeApp }: { isNativeApp?: boolean }) {
   );
 }
 
-function HomeFooter(
-  { version, onSettings }: { version: string; onSettings: () => void },
-) {
-  return (
-    <div class='home-footer'>
-      <button
-        type='button'
-        class='home-settings-btn text-link'
-        onClick={onSettings}
-      >
-        Settings
-      </button>
-      <span class='version'>{version}</span>
-    </div>
-  );
-}
-
 // ---------------------------------------------------------------------------
-// HomeSkillTabs — Active / All Skills tabbed content
+// useHomeTabs — build tab definitions for the home screen bottom nav
 // ---------------------------------------------------------------------------
 
-function HomeSkillTabs(
+function useHomeTabs(
   {
-    tab,
-    onChangeTab,
     starred,
     accordion,
-    onToggleStar,
-    onToggleExpand,
-    onSelectMode,
     progress,
     recommendations,
+    settings,
+    appConfig,
+    version,
+    useSolfege,
+    setUseSolfege,
+    isNativeApp,
+    onSelectMode,
+    onToggleStar,
+    onToggleExpand,
   }: {
-    tab: HomeTab;
-    onChangeTab: (t: HomeTab) => void;
     starred: Set<string>;
     accordion: Record<string, boolean>;
-    onToggleStar: (modeId: string) => void;
-    onToggleExpand: (trackId: string) => void;
-    onSelectMode: (modeId: string) => void;
     progress: Map<string, ModeProgress>;
     recommendations: SkillRecommendation[];
+    settings: SettingsController;
+    appConfig: AppConfig;
+    version: string;
+    useSolfege: boolean;
+    setUseSolfege: (v: boolean) => void;
+    isNativeApp?: boolean;
+    onSelectMode: (modeId: string) => void;
+    onToggleStar: (modeId: string) => void;
+    onToggleExpand: (trackId: string) => void;
   },
-) {
-  return (
-    <Tabs
-      tabs={[
-        {
-          id: 'active',
-          label: `Active${starred.size > 0 ? ` (${starred.size})` : ''}`,
-          content: (
-            <ActiveSkillsList
-              starred={starred}
-              onToggleStar={onToggleStar}
-              onSelectMode={onSelectMode}
-              progress={progress}
-              recommendations={recommendations}
-            />
-          ),
-        },
-        {
-          id: 'all',
-          label: 'All Skills',
-          content: (
-            <AllSkillsList
-              accordion={accordion}
-              starred={starred}
-              onToggleExpand={onToggleExpand}
-              onToggleStar={onToggleStar}
-              onSelectMode={onSelectMode}
-              progress={progress}
-            />
-          ),
-        },
-      ]}
-      activeTab={tab}
-      onTabSwitch={onChangeTab}
-    />
-  );
+): TabDef<HomeTab>[] {
+  return [
+    {
+      id: 'active',
+      label: <TabIcon icon='active-skills' text='Active' />,
+      content: (
+        <>
+          <HomeHeader isNativeApp={isNativeApp} />
+          <ActiveSkillsList
+            starred={starred}
+            onToggleStar={onToggleStar}
+            onSelectMode={onSelectMode}
+            progress={progress}
+            recommendations={recommendations}
+          />
+        </>
+      ),
+    },
+    {
+      id: 'all',
+      label: <TabIcon icon='all-skills' text='All Skills' />,
+      content: (
+        <>
+          <HomeHeader isNativeApp={isNativeApp} />
+          <AllSkillsList
+            accordion={accordion}
+            starred={starred}
+            onToggleExpand={onToggleExpand}
+            onToggleStar={onToggleStar}
+            onSelectMode={onSelectMode}
+            progress={progress}
+          />
+        </>
+      ),
+    },
+    {
+      id: 'settings',
+      label: <TabIcon icon='settings' text='Settings' />,
+      content: (
+        <SettingsPanel
+          settings={settings}
+          appConfig={appConfig}
+          version={version}
+          useSolfege={useSolfege}
+          setUseSolfege={setUseSolfege}
+        />
+      ),
+    },
+  ];
 }
 
 // ---------------------------------------------------------------------------
@@ -657,9 +667,9 @@ export function HomeScreen(
   const [starred, setStarred] = useState(loadStarredSkills);
   const { progress, recommendations } = useHomeProgress(starred);
   const [accordion, setAccordion] = useState(loadAccordionState);
-  const [showSettings, setShowSettings] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
   const [tab, setTab] = useState<HomeTab>(loadInitialTab);
+  const prefix = useTabsPrefix();
 
   const handleToggleStar = useCallback((modeId: string) => {
     setStarred((prev) => {
@@ -672,10 +682,11 @@ export function HomeScreen(
 
   const handleChangeTab = useCallback((t: HomeTab) => {
     setTab(t);
+    if (t === 'settings') setUseSolfege(settings.getUseSolfege());
     try {
       localStorage.setItem(TAB_KEY, t);
     } catch (_) { /* expected */ }
-  }, []);
+  }, [settings]);
 
   const handleToggleExpand = useCallback((trackId: string) => {
     setAccordion((prev) => {
@@ -685,42 +696,38 @@ export function HomeScreen(
     });
   }, []);
 
-  if (showSettings) {
-    return (
-      <SettingsPage
-        settings={settings}
-        appConfig={appConfig}
-        version={version}
-        useSolfege={useSolfege}
-        setUseSolfege={setUseSolfege}
-        onClose={() => setShowSettings(false)}
-      />
-    );
-  }
+  const tabs = useHomeTabs({
+    starred,
+    accordion,
+    progress,
+    recommendations,
+    settings,
+    appConfig,
+    version,
+    useSolfege,
+    setUseSolfege,
+    isNativeApp,
+    onSelectMode,
+    onToggleStar: handleToggleStar,
+    onToggleExpand: handleToggleExpand,
+  });
 
   return (
-    <div class='home-content'>
-      <HomeHeader isNativeApp={isNativeApp} />
-
-      <HomeSkillTabs
-        tab={tab}
-        onChangeTab={handleChangeTab}
-        starred={starred}
-        accordion={accordion}
-        onToggleStar={handleToggleStar}
-        onToggleExpand={handleToggleExpand}
-        onSelectMode={onSelectMode}
-        progress={progress}
-        recommendations={recommendations}
-      />
-
-      <HomeFooter
-        version={version}
-        onSettings={() => {
-          setUseSolfege(settings.getUseSolfege());
-          setShowSettings(true);
-        }}
-      />
-    </div>
+    <ScreenLayout class='home-screen-layout'>
+      <LayoutMain>
+        <div class='home-content'>
+          <TabPanels tabs={tabs} activeTab={tab} prefix={prefix} />
+        </div>
+      </LayoutMain>
+      <LayoutFooter>
+        <TabBar
+          tabs={tabs}
+          activeTab={tab}
+          onTabSwitch={handleChangeTab}
+          prefix={prefix}
+          class='mode-nav'
+        />
+      </LayoutFooter>
+    </ScreenLayout>
   );
 }

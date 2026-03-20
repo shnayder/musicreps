@@ -7,6 +7,7 @@ import { Text } from './text.tsx';
 import { CloseButton, Tabs } from './mode-screen.tsx';
 import {
   SegmentedControl,
+  SettingsPanel,
   SettingToggle,
   SkillCardHeader,
   TrackPill,
@@ -578,6 +579,40 @@ function RadiusShadowSection({ tabId }: { tabId: string }) {
 }
 
 // ---------------------------------------------------------------------------
+// SettingsPanel — inline settings panel (used as home screen tab content)
+// ---------------------------------------------------------------------------
+
+function SettingsPanelSection({ tabId }: { tabId: string }) {
+  const [useSolfege, setUseSolfege] = useState(false);
+  const mockSettings = {
+    getUseSolfege: () => useSolfege,
+    setUseSolfege: (_v: boolean) => {},
+  };
+  const mockConfig = {
+    contactEmail: 'test@example.com',
+    supportUrl: 'https://example.com/support',
+    termsUrl: 'https://example.com/terms',
+    privacyUrl: 'https://example.com/privacy',
+  };
+  return (
+    <>
+      <h2>Settings Panel</h2>
+      <PreviewGrid>
+        <Section title='SettingsPanel — inline' tabId={tabId}>
+          <SettingsPanel
+            settings={mockSettings}
+            appConfig={mockConfig}
+            version='preview-1.0.0'
+            useSolfege={useSolfege}
+            setUseSolfege={setUseSolfege}
+          />
+        </Section>
+      </PreviewGrid>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Exported tab component
 // ---------------------------------------------------------------------------
 
@@ -589,6 +624,7 @@ export function DesignSystemTab({ tabId }: { tabId: string }) {
       <TrackSectionPreview tabId={tabId} />
       <SegmentedControlSection tabId={tabId} />
       <TabsSection tabId={tabId} />
+      <SettingsPanelSection tabId={tabId} />
       <ActionButtonsSection tabId={tabId} />
       <TypographySection tabId={tabId} />
       <SpacingSection tabId={tabId} />
