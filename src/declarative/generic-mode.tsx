@@ -1274,53 +1274,49 @@ function GenericModeBody<Q>(
 
   if (sc.speedCheck) {
     return (
-      <>
-        <ModeHeader
-          def={def}
-          isIdle={false}
-          progressColors={progressColors}
-          navigateHome={navigateHome}
-        />
-        <SpeedCheck
-          config={NOTE_BUTTON_CONFIG}
-          fixture={typeof sc.speedCheck === 'object'
-            ? sc.speedCheck
-            : undefined}
-          onComplete={(baseline) => {
-            learner.applyBaseline(baseline);
-            sc.setSpeedCheck(null);
-          }}
-          onCancel={() => sc.setSpeedCheck(null)}
-        />
-      </>
+      <ScreenLayout>
+        <LayoutHeader>
+          <ModeHeader
+            def={def}
+            isIdle={false}
+            progressColors={progressColors}
+            navigateHome={navigateHome}
+          />
+        </LayoutHeader>
+        <LayoutMain scrollable={false}>
+          <SpeedCheck
+            config={NOTE_BUTTON_CONFIG}
+            fixture={typeof sc.speedCheck === 'object'
+              ? sc.speedCheck
+              : undefined}
+            onComplete={(baseline) => {
+              learner.applyBaseline(baseline);
+              sc.setSpeedCheck(null);
+            }}
+            onCancel={() => sc.setSpeedCheck(null)}
+          />
+        </LayoutMain>
+      </ScreenLayout>
     );
   }
 
   return (
-    <>
-      <ModeHeader
-        def={def}
-        isIdle={false}
-        progressColors={progressColors}
-        navigateHome={navigateHome}
-      />
-      <QuizActiveView
-        def={def}
-        engine={engine}
-        ctrl={ctrl}
-        currentQ={currentQ}
-        round={round}
-        practicingLabel={practicingLabel}
-        handleSubmit={handleSubmit}
-        seq={buildSeqProps(seqInput)}
-        activeButtons={activeButtons}
-        inactiveButtons={inactiveButtons}
-        promptText={promptText}
-        useFlats={useFlats}
-        placeholder={getInputPlaceholder(def, currentQ, isSequential)}
-        lastAnswerRef={lastAnswerRef}
-      />
-    </>
+    <QuizActiveView
+      def={def}
+      engine={engine}
+      ctrl={ctrl}
+      currentQ={currentQ}
+      round={round}
+      practicingLabel={practicingLabel}
+      handleSubmit={handleSubmit}
+      seq={buildSeqProps(seqInput)}
+      activeButtons={activeButtons}
+      inactiveButtons={inactiveButtons}
+      promptText={promptText}
+      useFlats={useFlats}
+      placeholder={getInputPlaceholder(def, currentQ, isSequential)}
+      lastAnswerRef={lastAnswerRef}
+    />
   );
 }
 
