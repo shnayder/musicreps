@@ -38,6 +38,8 @@ export const DIATONIC_CHORDS_DEF: ModeDefinition<Question> = {
         displayNote(q.keyRoot) + ' major'
       : displayNote(q.rootNote) + q.chord.qualityLabel +
         ' in ' + displayNote(q.keyRoot) + ' major',
+  quizInstruction: (q) =>
+    q.dir === 'fwd' ? 'What chord root?' : 'What numeral?',
   answer: {
     kind: 'bidirectional',
     fwd: {

@@ -33,6 +33,8 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   getQuestion,
   getPromptText: (q) =>
     q.dir === 'fwd' ? displayNote(q.root) + ' major' : q.sigLabel + ' major',
+  quizInstruction: (q) =>
+    q.dir === 'fwd' ? 'What key signature?' : 'What key?',
   answer: {
     kind: 'bidirectional',
     fwd: {

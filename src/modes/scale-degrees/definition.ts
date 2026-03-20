@@ -37,6 +37,7 @@ export const SCALE_DEGREES_DEF: ModeDefinition<Question> = {
         displayNote(q.keyRoot) + ' major'
       : displayNote(q.keyRoot) + ' major: ' +
         displayNote(q.noteName),
+  quizInstruction: (q) => q.dir === 'fwd' ? 'What note?' : 'What degree?',
   answer: {
     kind: 'bidirectional',
     fwd: {

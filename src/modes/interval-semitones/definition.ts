@@ -22,6 +22,8 @@ export const INTERVAL_SEMITONES_DEF: ModeDefinition<Question> = {
   allItems: ALL_ITEMS,
   getQuestion,
   getPromptText: (q) => q.dir === 'fwd' ? q.name : String(q.num),
+  quizInstruction: (q) =>
+    q.dir === 'fwd' ? 'How many semitones?' : 'What interval?',
   answer: {
     kind: 'bidirectional',
     fwd: {

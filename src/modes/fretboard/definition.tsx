@@ -74,6 +74,7 @@ export function createFretboardDef(
 
     getQuestion: (itemId) => getQuestion(instrument, itemId),
     getPromptText: () => 'Name this note',
+    quizInstruction: 'What note is this?',
     answer: {
       getExpectedValue: (q) => q.currentNote,
       comparison: 'note-enharmonic',

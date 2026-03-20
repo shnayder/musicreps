@@ -31,6 +31,7 @@ export const CHORD_SPELLING_DEF: ModeDefinition<Question> = {
   allItems: ALL_ITEMS,
   getQuestion: (itemId) => parseItem(itemId),
   getPromptText: (q) => displayNote(q.rootName) + q.chordType.symbol,
+  quizInstruction: 'Spell this chord',
 
   // Sequential: collect N notes, then evaluate all at once
   sequential: {

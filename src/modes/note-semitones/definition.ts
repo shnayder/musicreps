@@ -27,6 +27,7 @@ export const NOTE_SEMITONES_DEF: ModeDefinition<Question> = {
   getQuestion,
   getPromptText: (q) =>
     q.dir === 'fwd' ? displayNote(q.accidentalChoice) : String(q.noteNum),
+  quizInstruction: (q) => q.dir === 'fwd' ? 'What number?' : 'What note?',
   answer: {
     kind: 'bidirectional',
     fwd: {

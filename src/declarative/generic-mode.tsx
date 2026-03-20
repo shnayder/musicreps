@@ -414,28 +414,41 @@ function ResponseButtons(
 // ---------------------------------------------------------------------------
 
 function SequentialQuizArea<Q>(
-  { def, engine, ctrl, currentQ, activeButtons, seq, placeholder, promptText }:
-    {
-      def: ModeDefinition<Q>;
-      engine: ReturnType<typeof useQuizEngine>;
-      ctrl: ModeController<Q>;
-      currentQ: Q | null;
-      activeButtons: ButtonsDef;
-      seq: {
-        entries: { display: string }[];
-        evaluated: SequentialEntryResult[] | null;
-        correctAnswer: string;
-        handleInput: (input: string) => void;
-        handleBatch: (text: string) => boolean;
-      };
-      placeholder?: string;
-      promptText: string;
-    },
+  {
+    def,
+    engine,
+    ctrl,
+    currentQ,
+    activeButtons,
+    seq,
+    placeholder,
+    promptText,
+    instruction,
+  }: {
+    def: ModeDefinition<Q>;
+    engine: ReturnType<typeof useQuizEngine>;
+    ctrl: ModeController<Q>;
+    currentQ: Q | null;
+    activeButtons: ButtonsDef;
+    seq: {
+      entries: { display: string }[];
+      evaluated: SequentialEntryResult[] | null;
+      correctAnswer: string;
+      handleInput: (input: string) => void;
+      handleBatch: (text: string) => boolean;
+    };
+    placeholder?: string;
+    promptText: string;
+    instruction?: string;
+  },
 ) {
   return (
     <QuizStage
       prompt={
         <>
+          {instruction && (
+            <div class='quiz-instruction'>{instruction}</div>
+          )}
           {ctrl.renderPrompt && currentQ
             ? ctrl.renderPrompt(currentQ)
             : <div class='quiz-prompt'>{promptText}</div>}
@@ -488,6 +501,7 @@ function StandardQuizArea<Q>(
     placeholder,
     promptText,
     lastAnswerRef,
+    instruction,
   }: {
     engine: ReturnType<typeof useQuizEngine>;
     ctrl: ModeController<Q>;
@@ -505,12 +519,16 @@ function StandardQuizArea<Q>(
         normalizedInput: string;
       } | null;
     };
+    instruction?: string;
   },
 ) {
   return (
     <QuizStage
       prompt={
         <>
+          {instruction && (
+            <div class='quiz-instruction'>{instruction}</div>
+          )}
           {ctrl.renderPrompt && currentQ
             ? ctrl.renderPrompt(currentQ)
             : <div class='quiz-prompt'>{promptText}</div>}
@@ -638,6 +656,12 @@ function QuizActiveView<Q>(
     );
   }
 
+  const instruction = currentQ && def.quizInstruction
+    ? (typeof def.quizInstruction === 'function'
+      ? def.quizInstruction(currentQ)
+      : def.quizInstruction)
+    : undefined;
+
   const quizContent = def.sequential
     ? (
       <SequentialQuizArea
@@ -649,6 +673,7 @@ function QuizActiveView<Q>(
         seq={seq}
         placeholder={placeholder}
         promptText={promptText}
+        instruction={instruction}
       />
     )
     : (
@@ -663,6 +688,7 @@ function QuizActiveView<Q>(
         placeholder={placeholder}
         promptText={promptText}
         lastAnswerRef={lastAnswerRef}
+        instruction={instruction}
       />
     );
 
