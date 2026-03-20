@@ -5,7 +5,7 @@
  * Usage:
  *   npx tsx scripts/capture-visual-history.ts                        # auto-skip if no new commits
  *   npx tsx scripts/capture-visual-history.ts --force                # capture even if HEAD unchanged
- *   npx tsx scripts/capture-visual-history.ts --backfill <commit> [--note "..."]
+ *   npx tsx scripts/capture-visual-history.ts --backfill-ghpages <gh-pages-commit> --preview <dir> [--note "..."]
  */
 
 import { execSync } from 'child_process';
@@ -14,6 +14,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
   unlinkSync,
   writeFileSync,
 } from 'fs';
@@ -263,7 +264,7 @@ function backfillFromGhPages(
 
   if (extracted.length === 0) {
     console.log('No screenshots found. Removing empty snapshot dir.');
-    execSync(`rm -rf "${snapshotDir}"`);
+    rmSync(snapshotDir, { recursive: true, force: true });
     return;
   }
 
