@@ -65,7 +65,6 @@ import {
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
-  StartButton,
 } from '../ui/mode-screen.tsx';
 import {
   LevelProgressCard,
@@ -697,9 +696,8 @@ function resolveGroupLabel(label: string | (() => string)): string {
 
 /** Build practice content for multi-level modes (groups). */
 function GroupPracticeContent<Q>(
-  { def, engine, groupScopeResult }: {
+  { def, groupScopeResult }: {
     def: ModeDefinition<Q>;
-    engine: ReturnType<typeof useQuizEngine>;
     groupScopeResult: ReturnType<typeof useGroupScope>;
   },
 ) {
@@ -709,9 +707,6 @@ function GroupPracticeContent<Q>(
   const groupLabels = groupScope.allGroupIndices.map((i) =>
     resolveGroupLabel(groupScope.groups[i].label)
   );
-
-  const scopeDisabled = groupScopeResult.practiceMode === 'custom' &&
-    groupScopeResult.enabledGroups.size === 0;
 
   return (
     <>
@@ -732,15 +727,6 @@ function GroupPracticeContent<Q>(
           />
         }
       />
-      <div class='practice-zone-action'>
-        <StartButton
-          onStart={engine.start}
-          disabled={scopeDisabled}
-          validationMessage={scopeDisabled
-            ? 'Select at least one group'
-            : undefined}
-        />
-      </div>
     </>
   );
 }
@@ -816,15 +802,10 @@ function IdlePracticeView<Q>(
         ? (
           <GroupPracticeContent
             def={def}
-            engine={engine}
             groupScopeResult={groupScopeResult}
           />
         )
-        : (
-          <div class='practice-zone-action'>
-            <StartButton onStart={engine.start} />
-          </div>
-        )}
+        : undefined}
       statsContent={
         <>
           {ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : (

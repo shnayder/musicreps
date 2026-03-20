@@ -22,8 +22,12 @@ import {
   useTabsPrefix,
 } from './mode-screen.tsx';
 import { GroupProgressBar } from './scope.tsx';
-import { ScreenLayout } from './screen-layout.tsx';
-import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
+import {
+  LayoutFooter,
+  LayoutHeader,
+  LayoutMain,
+  ScreenLayout,
+} from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
 // localStorage persistence for starred skills
@@ -502,11 +506,6 @@ function AllSkillsList(
 ) {
   return (
     <div class='home-modes'>
-      <p class='all-skills-hint'>
-        Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
-        {' '}
-        list.
-      </p>
       {TRACKS.map((track) => (
         <TrackSection
           key={track.id}
@@ -562,6 +561,10 @@ function HomeHeader({ isNativeApp }: { isNativeApp?: boolean }) {
           theory&#x2009;&mdash;&#x2009;now make it automatic.
         </p>
       )}
+      <p class='all-skills-hint'>
+        Tap the &#x2606; on a skill to add it to your{' '}
+        <strong>Active</strong> list.
+      </p>
     </div>
   );
 }
@@ -581,7 +584,6 @@ function useHomeTabs(
     version,
     useSolfege,
     setUseSolfege,
-    isNativeApp,
     onSelectMode,
     onToggleStar,
     onToggleExpand,
@@ -595,7 +597,6 @@ function useHomeTabs(
     version: string;
     useSolfege: boolean;
     setUseSolfege: (v: boolean) => void;
-    isNativeApp?: boolean;
     onSelectMode: (modeId: string) => void;
     onToggleStar: (modeId: string) => void;
     onToggleExpand: (trackId: string) => void;
@@ -607,7 +608,6 @@ function useHomeTabs(
       label: <TabIcon icon='active-skills' text='Active' />,
       content: (
         <>
-          <HomeHeader isNativeApp={isNativeApp} />
           <ActiveSkillsList
             starred={starred}
             onToggleStar={onToggleStar}
@@ -623,7 +623,6 @@ function useHomeTabs(
       label: <TabIcon icon='all-skills' text='All Skills' />,
       content: (
         <>
-          <HomeHeader isNativeApp={isNativeApp} />
           <AllSkillsList
             accordion={accordion}
             starred={starred}
@@ -706,7 +705,6 @@ export function HomeScreen(
     version,
     useSolfege,
     setUseSolfege,
-    isNativeApp,
     onSelectMode,
     onToggleStar: handleToggleStar,
     onToggleExpand: handleToggleExpand,
@@ -714,6 +712,9 @@ export function HomeScreen(
 
   return (
     <ScreenLayout class='home-screen-layout'>
+      <LayoutHeader>
+        <HomeHeader isNativeApp={isNativeApp} />
+      </LayoutHeader>
       <LayoutMain>
         <div class='home-content'>
           <TabPanels tabs={tabs} activeTab={tab} prefix={prefix} />

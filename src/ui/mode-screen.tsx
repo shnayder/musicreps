@@ -656,17 +656,21 @@ export function PracticeTab(
     });
   }
 
-  const showAction = activeTab === 'practice' && !practiceContent;
-
   return (
     <>
       <LayoutMain>
         <TabPanels tabs={tabs} activeTab={activeTab} prefix={prefix} />
       </LayoutMain>
       <LayoutFooter>
-        {showAction && (
+        {activeTab === 'practice' && (
           <div class='practice-zone-action'>
-            <StartButton onStart={onStart} />
+            <StartButton
+              onStart={onStart}
+              disabled={scopeValid === false}
+              validationMessage={scopeValid === false
+                ? validationMessage
+                : undefined}
+            />
           </div>
         )}
         <TabBar
