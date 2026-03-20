@@ -17,7 +17,12 @@ import {
   useRef,
   useState,
 } from 'preact/hooks';
-import type { ModeHandle, SpeedCheckFixture } from '../types.ts';
+import type {
+  AdaptiveSelector,
+  ModeHandle,
+  SpeedCheckFixture,
+  SuggestionLine,
+} from '../types.ts';
 
 import { useLearnerModel } from '../hooks/use-learner-model.ts';
 import { useGroupScope } from '../hooks/use-group-scope.ts';
@@ -446,9 +451,7 @@ function SequentialQuizArea<Q>(
     <QuizStage
       prompt={
         <>
-          {instruction && (
-            <div class='quiz-instruction'>{instruction}</div>
-          )}
+          {instruction && <div class='quiz-instruction'>{instruction}</div>}
           {ctrl.renderPrompt && currentQ
             ? ctrl.renderPrompt(currentQ)
             : <div class='quiz-prompt'>{promptText}</div>}
@@ -526,9 +529,7 @@ function StandardQuizArea<Q>(
     <QuizStage
       prompt={
         <>
-          {instruction && (
-            <div class='quiz-instruction'>{instruction}</div>
-          )}
+          {instruction && <div class='quiz-instruction'>{instruction}</div>}
           {ctrl.renderPrompt && currentQ
             ? ctrl.renderPrompt(currentQ)
             : <div class='quiz-prompt'>{promptText}</div>}
@@ -813,6 +814,22 @@ function LevelProgressCards<Q>(
   );
 }
 
+/** Compute a suggestion line for single-level (no groups) modes. */
+function singleLevelSuggestion(
+  selector: AdaptiveSelector,
+  allItems: string[],
+): SuggestionLine {
+  const anySeen = allItems.some((id) => selector.getStats(id) !== null);
+  if (!anySeen) return { verb: 'Start practicing', levels: [] };
+  if (selector.checkAllAutomatic(allItems)) {
+    return { verb: 'All items mastered', levels: [] };
+  }
+  if (selector.checkNeedsReview(allItems)) {
+    return { verb: 'Review', levels: [] };
+  }
+  return { verb: 'Keep practicing', levels: [] };
+}
+
 function IdlePracticeView<Q>(
   { def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }: {
     def: ModeDefinition<Q>;
@@ -825,6 +842,7 @@ function IdlePracticeView<Q>(
   },
 ) {
   const hasGroups = def.scope.kind === 'groups' && groupScopeResult;
+  const hasStats = def.stats.kind !== 'none' || !!ctrl.renderStats;
 
   return (
     <PracticeTab
@@ -843,9 +861,14 @@ function IdlePracticeView<Q>(
             groupScopeResult={groupScopeResult}
           />
         )
-        : undefined}
+        : (
+          <SuggestionLines
+            lines={[singleLevelSuggestion(learner.selector, def.allItems)]}
+          />
+        )}
       statsContent={
         <>
+          {hasStats && <Text role='subsection-header'>All items</Text>}
           {ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : (
             <>
               {def.stats.kind === 'grid' && (
@@ -866,16 +889,19 @@ function IdlePracticeView<Q>(
               )}
             </>
           )}
-          {(def.stats.kind !== 'none' || ctrl.renderStats) && <StatsLegend />}
+          {hasStats && <StatsLegend />}
         </>
       }
       progressExtra={hasGroups
         ? (
-          <LevelProgressCards
-            def={def}
-            learner={learner}
-            groupScopeResult={groupScopeResult}
-          />
+          <>
+            <Text role='subsection-header'>Levels</Text>
+            <LevelProgressCards
+              def={def}
+              learner={learner}
+              groupScopeResult={groupScopeResult}
+            />
+          </>
         )
         : undefined}
       baseline={onCalibrate ? learner.motorBaseline : undefined}
