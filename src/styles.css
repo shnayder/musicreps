@@ -311,9 +311,8 @@ body {
 /* ==========================================================================
    3. HOME SCREEN
    ========================================================================== */
-.home-screen {
-  /* Outer container — ScreenLayout fills the viewport inside it */
-}
+/* .home-screen: outer container — ScreenLayout fills the viewport inside it.
+   No styles needed; show/hide is on .home-screen.hidden below. */
 .home-screen.hidden {
   display: none;
 }
@@ -396,13 +395,9 @@ body {
 .tab-icon-label svg {
   display: block;
 }
+/* mode-nav is inside LayoutFooter — no position: fixed needed. */
 .mode-nav {
   display: flex;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
   background: var(--color-bg);
   border-top: 1px solid var(--color-border-lighter);
   border-bottom: none;
@@ -416,14 +411,10 @@ body {
   /* No underline — the icon color is enough for bottom nav */
   display: none;
 }
-/* Reserve space for the fixed bottom nav so content isn't hidden behind it */
-.mode-nav + .tab-panel,
-.mode-nav ~ .tab-panel {
-  padding-bottom: 64px;
-}
+/* Note: bottom nav padding is now handled by ScreenLayout / LayoutFooter.
+   No ad-hoc padding-bottom needed on tab panels. */
 @media (min-width: 768px) {
   .mode-nav {
-    position: static;
     border-top: none;
     border-bottom: 2px solid var(--color-border-lighter);
     padding-bottom: 0;
@@ -438,10 +429,6 @@ body {
   .tab-icon-label {
     flex-direction: row;
     gap: var(--space-2);
-  }
-  .mode-nav + .tab-panel,
-  .mode-nav ~ .tab-panel {
-    padding-bottom: 0;
   }
 }
 
