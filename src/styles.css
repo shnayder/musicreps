@@ -275,6 +275,40 @@ body {
 }
 
 /* ==========================================================================
+   2b. SCREEN LAYOUT — three-zone structure (header/main/footer)
+   Enforced by ScreenLayout, LayoutHeader, LayoutMain, LayoutFooter components.
+   ========================================================================== */
+
+.screen-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.layout-header {
+  flex-shrink: 0;
+}
+
+.layout-main {
+  flex: 1;
+  min-height: 0;
+}
+.layout-main-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.layout-main-fixed {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-footer {
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
    3. HOME SCREEN
    ========================================================================== */
 .home-screen {

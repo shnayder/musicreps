@@ -15,6 +15,12 @@ import {
   SuggestionLines,
 } from './practice-config.tsx';
 import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
+import {
+  LayoutFooter,
+  LayoutHeader,
+  LayoutMain,
+  ScreenLayout,
+} from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
 // Mock data constants
@@ -437,6 +443,57 @@ export function PracticeRedesignTab(
         tabId={tabId}
       />
       <Phase2SingleAndProgress tabId={tabId} />
+
+      <h2>Screen Layout</h2>
+      <PreviewGrid>
+        <Section title='ScreenLayout — idle (suggested)' tabId={tabId}>
+          <ScreenLayout class='preview-screen-layout'>
+            <LayoutHeader>
+              <SkillHeader
+                modeId='fretboard'
+                title='Guitar Fretboard'
+                progressColors={MOCK_PROGRESS_COLORS}
+              />
+            </LayoutHeader>
+            <LayoutMain>
+              <PracticeConfig
+                mode='suggested'
+                onModeChange={() => {}}
+                suggestedContent={
+                  <SuggestionLines lines={MOCK_SUGGESTION_LINES} />
+                }
+                customContent={null}
+              />
+            </LayoutMain>
+            <LayoutFooter>
+              <div class='practice-zone-action'>
+                <ActionButton variant='primary' onClick={() => {}}>
+                  Practice
+                </ActionButton>
+              </div>
+            </LayoutFooter>
+          </ScreenLayout>
+        </Section>
+        <Section title='ScreenLayout — active quiz' tabId={tabId}>
+          <ScreenLayout class='preview-screen-layout'>
+            <LayoutHeader>
+              <div style='padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-lighter)'>
+                Quiz header (countdown + close)
+              </div>
+            </LayoutHeader>
+            <LayoutMain scrollable={false}>
+              <div style='flex:1;display:flex;align-items:center;justify-content:center'>
+                Prompt + answer buttons
+              </div>
+            </LayoutMain>
+            <LayoutFooter>
+              <div style='padding:var(--space-3) var(--space-4);border-top:1px solid var(--color-border-lighter);text-align:center'>
+                Feedback + Next
+              </div>
+            </LayoutFooter>
+          </ScreenLayout>
+        </Section>
+      </PreviewGrid>
     </div>
   );
 }

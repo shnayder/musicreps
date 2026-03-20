@@ -199,6 +199,13 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
       font-size: var(--text-sm);
       margin: 0 0 1.5rem;
     }
+    /* ScreenLayout preview override — constrain to a phone-sized frame */
+    .preview-screen-layout {
+      height: 500px;
+      border: 1px solid var(--color-border-lighter);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
     /* Comment system */
     .preview-section h3 {
       display: flex;
