@@ -51,6 +51,10 @@ import {
   SplitNoteButtons,
 } from '../ui/buttons.tsx';
 import { SequentialSlots } from '../ui/sequential-slots.tsx';
+import {
+  LayoutHeader,
+  ScreenLayout,
+} from '../ui/screen-layout.tsx';
 import { getStatsCellColorMerged } from '../stats-display.ts';
 import {
   ModeTopBar,
@@ -1235,63 +1239,80 @@ function GenericModeBody<Q>(
   const isIdle = engine.state.phase === 'idle' && !sc.speedCheck;
   const progressColors = useProgressColors(def, learner);
 
+  if (isIdle) {
+    return (
+      <ScreenLayout>
+        <LayoutHeader>
+          <ModeHeader
+            def={def}
+            isIdle
+            progressColors={progressColors}
+            navigateHome={navigateHome}
+          />
+        </LayoutHeader>
+        <IdlePracticeView
+          def={def}
+          engine={engine}
+          learner={learner}
+          ctrl={ctrl}
+          groupScopeResult={groupScopeResult}
+          ps={ps}
+          onCalibrate={sc.hasSpeedCheck
+            ? () => sc.setSpeedCheck('active')
+            : undefined}
+        />
+      </ScreenLayout>
+    );
+  }
+
+  if (sc.speedCheck) {
+    return (
+      <>
+        <ModeHeader
+          def={def}
+          isIdle={false}
+          progressColors={progressColors}
+          navigateHome={navigateHome}
+        />
+        <SpeedCheck
+          config={NOTE_BUTTON_CONFIG}
+          fixture={typeof sc.speedCheck === 'object'
+            ? sc.speedCheck
+            : undefined}
+          onComplete={(baseline) => {
+            learner.applyBaseline(baseline);
+            sc.setSpeedCheck(null);
+          }}
+          onCancel={() => sc.setSpeedCheck(null)}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <ModeHeader
         def={def}
-        isIdle={isIdle}
+        isIdle={false}
         progressColors={progressColors}
         navigateHome={navigateHome}
       />
-      {sc.speedCheck
-        ? (
-          <SpeedCheck
-            config={NOTE_BUTTON_CONFIG}
-            fixture={typeof sc.speedCheck === 'object'
-              ? sc.speedCheck
-              : undefined}
-            onComplete={(baseline) => {
-              learner.applyBaseline(baseline);
-              sc.setSpeedCheck(null);
-            }}
-            onCancel={() => sc.setSpeedCheck(null)}
-          />
-        )
-        : (
-          <>
-            {engine.state.phase === 'idle' && (
-              <IdlePracticeView
-                def={def}
-                engine={engine}
-                learner={learner}
-                ctrl={ctrl}
-                groupScopeResult={groupScopeResult}
-                ps={ps}
-                onCalibrate={sc.hasSpeedCheck
-                  ? () => sc.setSpeedCheck('active')
-                  : undefined}
-              />
-            )}
-            {engine.state.phase !== 'idle' && (
-              <QuizActiveView
-                def={def}
-                engine={engine}
-                ctrl={ctrl}
-                currentQ={currentQ}
-                round={round}
-                practicingLabel={practicingLabel}
-                handleSubmit={handleSubmit}
-                seq={buildSeqProps(seqInput)}
-                activeButtons={activeButtons}
-                inactiveButtons={inactiveButtons}
-                promptText={promptText}
-                useFlats={useFlats}
-                placeholder={getInputPlaceholder(def, currentQ, isSequential)}
-                lastAnswerRef={lastAnswerRef}
-              />
-            )}
-          </>
-        )}
+      <QuizActiveView
+        def={def}
+        engine={engine}
+        ctrl={ctrl}
+        currentQ={currentQ}
+        round={round}
+        practicingLabel={practicingLabel}
+        handleSubmit={handleSubmit}
+        seq={buildSeqProps(seqInput)}
+        activeButtons={activeButtons}
+        inactiveButtons={inactiveButtons}
+        promptText={promptText}
+        useFlats={useFlats}
+        placeholder={getInputPlaceholder(def, currentQ, isSequential)}
+        lastAnswerRef={lastAnswerRef}
+      />
     </>
   );
 }

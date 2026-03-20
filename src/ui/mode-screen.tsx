@@ -9,6 +9,7 @@ import { SkillIcon } from './icons.tsx';
 import { BaselineInfo } from './speed-check.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
+import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
 // CloseButton — × dismiss button used in top bars and overlays
@@ -42,18 +43,30 @@ export type TabDef<T extends string = string> = {
   content: ComponentChildren;
 };
 
-let tabsIdCounter = 0;
+// ---------------------------------------------------------------------------
+// TabBar + TabPanels — split rendering for layout flexibility.
+// TabBar goes in footer (mobile) or header (desktop); panels go in main.
+// ---------------------------------------------------------------------------
 
-export function Tabs<T extends string>(
-  { tabs, activeTab, onTabSwitch, class: className = 'tabs' }: {
+export type TabsPrefix = string;
+
+let tabsPrefixCounter = 0;
+
+/** Generate a stable prefix for tab ARIA IDs. Call once per component. */
+export function useTabsPrefix(): TabsPrefix {
+  return useMemo(() => 'tabs-' + tabsPrefixCounter++, []);
+}
+
+/** Tab bar (the row of tab buttons). Place in footer or header. */
+export function TabBar<T extends string>(
+  { tabs, activeTab, onTabSwitch, prefix, class: className = 'tabs' }: {
     tabs: TabDef<T>[];
     activeTab: T;
     onTabSwitch: (tab: T) => void;
+    prefix: TabsPrefix;
     class?: string;
   },
 ) {
-  const prefix = useMemo(() => 'tabs-' + tabsIdCounter++, []);
-
   function handleKeyDown(e: KeyboardEvent, current: T) {
     const ids = tabs.map((t) => t.id);
     const idx = ids.indexOf(current);
@@ -74,26 +87,38 @@ export function Tabs<T extends string>(
   }
 
   return (
+    <div class={className} role='tablist'>
+      {tabs.map((tab) => (
+        <button
+          type='button'
+          key={tab.id}
+          id={prefix + '-tab-' + tab.id}
+          role='tab'
+          aria-selected={activeTab === tab.id}
+          aria-controls={prefix + '-panel-' + tab.id}
+          tabIndex={activeTab === tab.id ? 0 : -1}
+          class={'tab-btn' + (activeTab === tab.id ? ' active' : '')}
+          data-tab={tab.id}
+          onClick={() => onTabSwitch(tab.id)}
+          onKeyDown={(e) => handleKeyDown(e, tab.id)}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Tab panels (the content areas). Place in main content zone. */
+export function TabPanels<T extends string>(
+  { tabs, activeTab, prefix }: {
+    tabs: TabDef<T>[];
+    activeTab: T;
+    prefix: TabsPrefix;
+  },
+) {
+  return (
     <>
-      <div class={className} role='tablist'>
-        {tabs.map((tab) => (
-          <button
-            type='button'
-            key={tab.id}
-            id={prefix + '-tab-' + tab.id}
-            role='tab'
-            aria-selected={activeTab === tab.id}
-            aria-controls={prefix + '-panel-' + tab.id}
-            tabIndex={activeTab === tab.id ? 0 : -1}
-            class={'tab-btn' + (activeTab === tab.id ? ' active' : '')}
-            data-tab={tab.id}
-            onClick={() => onTabSwitch(tab.id)}
-            onKeyDown={(e) => handleKeyDown(e, tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
       {tabs.map((tab) => (
         <div
           key={tab.id}
@@ -105,6 +130,33 @@ export function Tabs<T extends string>(
           {tab.content}
         </div>
       ))}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tabs — composed TabBar + TabPanels (backward-compatible, renders together)
+// ---------------------------------------------------------------------------
+
+export function Tabs<T extends string>(
+  { tabs, activeTab, onTabSwitch, class: className = 'tabs' }: {
+    tabs: TabDef<T>[];
+    activeTab: T;
+    onTabSwitch: (tab: T) => void;
+    class?: string;
+  },
+) {
+  const prefix = useTabsPrefix();
+  return (
+    <>
+      <TabBar
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabSwitch={onTabSwitch}
+        prefix={prefix}
+        class={className}
+      />
+      <TabPanels tabs={tabs} activeTab={activeTab} prefix={prefix} />
     </>
   );
 }
@@ -555,6 +607,7 @@ export function PracticeTab(
     progressExtra?: ComponentChildren;
   },
 ) {
+  const prefix = useTabsPrefix();
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
@@ -591,12 +644,28 @@ export function PracticeTab(
       content: aboutContent,
     });
   }
+
+  const showAction = activeTab === 'practice' && !practiceContent;
+
   return (
-    <Tabs
-      tabs={tabs}
-      activeTab={activeTab}
-      onTabSwitch={onTabSwitch}
-      class='mode-nav'
-    />
+    <>
+      <LayoutMain>
+        <TabPanels tabs={tabs} activeTab={activeTab} prefix={prefix} />
+      </LayoutMain>
+      <LayoutFooter>
+        {showAction && (
+          <div class='practice-zone-action'>
+            <StartButton onStart={onStart} />
+          </div>
+        )}
+        <TabBar
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabSwitch={onTabSwitch}
+          prefix={prefix}
+          class='mode-nav'
+        />
+      </LayoutFooter>
+    </>
   );
 }
