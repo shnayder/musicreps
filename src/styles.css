@@ -237,6 +237,7 @@
 *::after {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 html {
   background: var(--color-surface);
@@ -1257,7 +1258,6 @@ body {
   display: block;
   margin: 0 auto;
   background: var(--color-bg);
-  touch-action: manipulation;
 }
 /* SVG fretboard — new circle-based design */
 .fb-string {
@@ -1563,7 +1563,6 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  touch-action: manipulation;
   transition:
     background var(--duration-base) ease,
     border-color var(--duration-base) ease,
@@ -1762,7 +1761,6 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  touch-action: manipulation;
   transition:
     background var(--duration-base) ease,
     border-color var(--duration-base) ease,
@@ -1964,7 +1962,6 @@ button {
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
   cursor: pointer;
-  touch-action: manipulation;
   min-height: 48px;
 }
 @media (hover: hover) {
