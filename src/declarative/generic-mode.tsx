@@ -870,9 +870,7 @@ function IdlePracticeView<Q>(
         )}
       statsContent={
         <>
-          {hasStats && (
-            <Text role='subsection-header' as='div'>All items</Text>
-          )}
+          {hasStats && <Text role='subsection-header' as='div'>All items</Text>}
           {ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : (
             <>
               {def.stats.kind === 'grid' && (
