@@ -658,8 +658,9 @@ function HomeHeader({ isNativeApp }: { isNativeApp?: boolean }) {
         </p>
       )}
       <p class='all-skills-hint'>
-        Tap the &#x2606; on a skill to add it to your{' '}
-        <strong>Active</strong> list.
+        Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
+        {' '}
+        list.
       </p>
     </div>
   );
