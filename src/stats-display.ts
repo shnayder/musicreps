@@ -144,9 +144,11 @@ type ProgressSelector = {
 };
 
 /**
- * Compute per-item progress bar colors, sorted descending by mastery.
- * Mastered items cluster left, unseen items right. Used by
- * GroupProgressBar everywhere (header, level cards, scope toggles).
+ * Compute per-item progress bar colors, sorted for visual monotonicity.
+ * Sort by speed descending, then freshness descending within the same
+ * speed level. This ensures same-hue items cluster together (hue encodes
+ * speed) and fresh items appear before stale ones within each cluster.
+ * Unseen items (null speed) sort last.
  */
 export function progressBarColors(
   selector: ProgressSelector,
@@ -155,10 +157,13 @@ export function progressBarColors(
   const items = itemIds.map((id) => {
     const sp = selector.getSpeedScore(id);
     const fr = selector.getFreshness(id);
-    const auto = (sp !== null && fr !== null) ? sp * fr : null;
-    return { auto, color: getSpeedFreshnessColor(sp, fr) };
+    return {
+      sp: sp ?? -1,
+      fr: fr ?? -1,
+      color: getSpeedFreshnessColor(sp, fr),
+    };
   });
-  items.sort((a, b) => (b.auto ?? -1) - (a.auto ?? -1));
+  items.sort((a, b) => a.sp !== b.sp ? b.sp - a.sp : b.fr - a.fr);
   return items.map((item) => item.color);
 }
 
