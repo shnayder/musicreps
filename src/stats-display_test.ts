@@ -244,10 +244,23 @@ describe('progressBarColors', () => {
       },
     };
     const colors = progressBarColors(selector, ['a', 'b', 'c']);
-    // Same hue (speed 0.8 → level 3 → hue 80), but different saturation
-    // b (fresh 1.0) first, c (0.6) second, a (0.3) third — all hue 80
+    assert.equal(colors.length, 3);
+    // Same hue (speed 0.8 → level 3 → hue 80), but different saturation.
+    // b (fresh 1.0) first, c (0.6) second, a (0.3) third — all hue 80.
     for (const c of colors) {
       assert.ok(c.startsWith('hsl(80,'), `all should be hue 80: ${c}`);
+    }
+    // Saturation should decrease with freshness (fresher = more vivid).
+    const sats = colors.map((c) => {
+      const m = c.match(/hsl\(\s*80,\s*(\d+)%/);
+      assert.ok(m, `should parse saturation: ${c}`);
+      return parseInt(m![1], 10);
+    });
+    for (let i = 1; i < sats.length; i++) {
+      assert.ok(
+        sats[i] <= sats[i - 1],
+        `sat[${i}]=${sats[i]} > sat[${i - 1}]=${sats[i - 1]}: not monotonic`,
+      );
     }
   });
 

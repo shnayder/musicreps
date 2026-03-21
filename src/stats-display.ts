@@ -67,15 +67,7 @@ export function getSpeedFreshnessColor(
 ): string {
   const c = heatmapColors();
   if (speedScore === null || freshness === null) return c.none;
-  const level = speedScore > 0.9
-    ? 4
-    : speedScore > 0.75
-    ? 3
-    : speedScore > 0.55
-    ? 2
-    : speedScore > 0.3
-    ? 1
-    : 0;
+  const level = speedLevel(speedScore);
   const [h, s, l] = SPEED_HSL[level];
   const f = FRESHNESS_FLOOR +
     (1 - FRESHNESS_FLOOR) * Math.max(0, Math.min(1, freshness));
@@ -143,11 +135,16 @@ type ProgressSelector = {
   getFreshness(id: string): number | null;
 };
 
+/** Map a speed score to a discrete level (0–4), matching getSpeedFreshnessColor. */
+function speedLevel(sp: number): number {
+  return sp > 0.9 ? 4 : sp > 0.75 ? 3 : sp > 0.55 ? 2 : sp > 0.3 ? 1 : 0;
+}
+
 /**
  * Compute per-item progress bar colors, sorted for visual monotonicity.
- * Sort by speed descending, then freshness descending within the same
- * speed level. This ensures same-hue items cluster together (hue encodes
- * speed) and fresh items appear before stale ones within each cluster.
+ * Sort by discrete speed level descending (determines hue), then freshness
+ * descending within the same level (determines saturation). This ensures
+ * same-hue items cluster together and the bar reads green→yellow→grey.
  * Unseen items (null speed) sort last.
  */
 export function progressBarColors(
@@ -158,12 +155,12 @@ export function progressBarColors(
     const sp = selector.getSpeedScore(id);
     const fr = selector.getFreshness(id);
     return {
-      sp: sp ?? -1,
+      level: sp !== null ? speedLevel(sp) : -1,
       fr: fr ?? -1,
       color: getSpeedFreshnessColor(sp, fr),
     };
   });
-  items.sort((a, b) => a.sp !== b.sp ? b.sp - a.sp : b.fr - a.fr);
+  items.sort((a, b) => a.level !== b.level ? b.level - a.level : b.fr - a.fr);
   return items.map((item) => item.color);
 }
 
