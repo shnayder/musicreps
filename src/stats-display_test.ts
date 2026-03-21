@@ -6,6 +6,7 @@ import {
   getStatsCellColor,
   getStatsCellColorMerged,
   heatmapNeedsLightText,
+  progressBarColors,
 } from './stats-display.ts';
 
 // Heatmap palette (matches fallback values in stats-display.ts)
@@ -207,5 +208,57 @@ describe('heatmapNeedsLightText', () => {
   it('returns false for empty/invalid color', () => {
     assert.ok(!heatmapNeedsLightText(''));
     assert.ok(!heatmapNeedsLightText('red'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// progressBarColors
+// ---------------------------------------------------------------------------
+
+describe('progressBarColors', () => {
+  it('sorts colors descending by speed * freshness', () => {
+    const selector = {
+      getSpeedScore(id: string) {
+        const scores: Record<string, number> = { a: 0.2, b: 0.9, c: 0.5 };
+        return scores[id] ?? null;
+      },
+      getFreshness(id: string) {
+        const scores: Record<string, number> = { a: 1.0, b: 1.0, c: 1.0 };
+        return scores[id] ?? null;
+      },
+    };
+    const colors = progressBarColors(selector, ['a', 'b', 'c']);
+    assert.equal(colors.length, 3);
+    // b (0.9*1.0=0.9) first, c (0.5*1.0=0.5) second, a (0.2*1.0=0.2) third
+    // Speed 0.9 → hue 80, speed 0.5 → hue 48, speed 0.2 → hue 40
+    assert.ok(
+      colors[0].includes('hsl(80,'),
+      `first should be hue 80 (speed 0.9): ${colors[0]}`,
+    );
+    assert.ok(
+      colors[2].includes('hsl(40,'),
+      `last should be hue 40 (speed 0.2): ${colors[2]}`,
+    );
+  });
+
+  it('puts unseen items last', () => {
+    const selector = {
+      getSpeedScore(id: string) {
+        if (id === 'seen') return 0.5;
+        return null;
+      },
+      getFreshness(id: string) {
+        if (id === 'seen') return 1.0;
+        return null;
+      },
+    };
+    const colors = progressBarColors(selector, ['unseen', 'seen']);
+    assert.equal(colors.length, 2);
+    // 'seen' should come first, 'unseen' (grey) last
+    assert.ok(!colors[0].includes('86%'), 'first should not be grey');
+    assert.ok(
+      colors[1].includes('86%'),
+      `last should be grey (unseen): ${colors[1]}`,
+    );
   });
 });
