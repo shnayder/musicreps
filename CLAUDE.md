@@ -16,9 +16,13 @@ deno task ok                                     # All checks + build
 ```
 
 **Run `deno task ok` before pushing.** It runs lint, format check, type check,
-tests, and build in sequence — any failure stops the chain. Don't push broken
-code by accident. If you hit `UnknownIssuer` TLS errors or npm resolution
-failures, see the **Web sandbox** section in
+tests, and build in sequence — any failure stops the chain. Use `/pr` to create
+PRs — it enforces the full sequence. Use `/check-ci` after pushing to verify CI
+passes before declaring success (CI also runs E2E tests via Playwright). Run
+`deno task prepush` locally if Playwright is available — it adds E2E tests.
+
+If you hit `UnknownIssuer` TLS errors or npm resolution failures, see the **Web
+sandbox** section in
 [guides/development.md](guides/development.md#web-sandbox-is_sandboxyes).
 
 **Run `deno task iterate capture` after UI changes.** When a `deno task iterate`
