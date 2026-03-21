@@ -33,7 +33,7 @@ Simple scrolling page. No fixed elements beyond the browser chrome.
 ### Mode screen — idle phase
 
 Currently the tallest and most complex layout. Content scrolls freely; nothing
-is fixed except the bottom nav on mobile.
+is fixed except the bottom nav on mobile.  (Though the practice tab isn't actually tall enough to scroll at the moment.)
 
 ```
 ┌──────────────────────┐
@@ -130,7 +130,7 @@ Three layout zones that are consistent across all states.
 | Idle | SkillHeader (title + progress) | Tab content (scrollable) | Action button above bottom nav (mobile) |
 | Active quiz | QuizSession (countdown + info + close) | Prompt + answer controls (not scrollable) | Feedback + next |
 | Round complete | (empty or minimal) | Round stats (not scrollable) | Keep Going / Stop |
-| Calibration | (minimal) | Speed check content | Speed check controls |
+| Calibration | Speed check title | Speed check content | nothing during speed check (auto-advances today), "done" button on final screen. |
 
 ### Action button placement
 
@@ -142,7 +142,7 @@ Three layout zones that are consistent across all states.
 | Idle (progress tab) | Bottom nav only |
 | Idle (about tab) | Bottom nav only |
 | Active quiz — awaiting | (answer buttons are in main, not footer) |
-| Active quiz — feedback | Feedback display + "Next" |
+| Active quiz — feedback | Feedback display + "Next"|
 | Round complete | "Keep Going" / "Stop" |
 
 On mobile, the footer can have two layers: the action area above, the nav bar
@@ -215,12 +215,61 @@ per-panel padding.
 
 ---
 
-## Next Steps
+## Main Content Patterns
 
-1. Implement the three-zone layout for the mode screen idle phase
-2. Move "Practice" button to fixed footer zone
-3. Restructure home screen: move tabs to bottom nav, add Settings tab
-4. Adjust active quiz layout: feedback + next in footer, prompt + controls
-   in main
-5. Design the main content area layout (internal structure within the main
-   zone) as a follow-on
+Three named patterns for content inside LayoutMain. Each is a component in
+`screen-layout.tsx`.
+
+### FlowContent (scrollable, top-to-bottom)
+
+For configuring, browsing, and reviewing — the user scans top to bottom,
+possibly scrolling. `LayoutMain(scrollable=true)` provides this by default.
+
+**Used by:**
+- Practice tab (idle) — practice config, suggestion lines, level toggles
+- Progress tab — stats heatmap, level cards, baseline info
+- About tab — skill description
+- Home screen — skill cards
+- Settings tab
+
+No dedicated component — LayoutMain with `scrollable=true` (the default)
+is sufficient.
+
+### QuizStage (non-scrollable, 60/40 split)
+
+For active practice interaction. Two vertically centered zones:
+- **Prompt** (flex: 3, ~60%) — instruction text + quiz prompt or fretboard
+- **Response** (flex: 2, ~40%) — answer buttons, text input, keyboard hint
+
+**Used by:** all active quiz states (standard, sequential, fretboard, speed tap)
+
+Component: `<QuizStage prompt={...} response={...} />`
+
+### CenteredContent (non-scrollable, vertically centered)
+
+For presenting immediate info or instructions — the user reads and takes a
+single action. Content is vertically and horizontally centered.
+
+**Used by:**
+- Round complete (heading + count + stats)
+- Speed check intro
+- Speed check results
+
+Component: `<CenteredContent>...</CenteredContent>`
+
+---
+
+## Implementation Status
+
+All items below are complete:
+
+1. Three-zone layout (ScreenLayout) wired into all phases
+2. Practice button in fixed footer
+3. Home screen bottom nav with Active/All/Settings tabs
+4. Quiz layout: feedback+next in footer, prompt+controls in main
+5. QuizStage component (60/40 split)
+6. CenteredContent component (round complete)
+7. Quiz instruction text on all modes
+8. Single-level suggestion lines
+9. Progress tab section headers
+10. Old ad-hoc CSS removed
