@@ -862,9 +862,11 @@ function IdlePracticeView<Q>(
           />
         )
         : (
-          <SuggestionLines
-            lines={[singleLevelSuggestion(learner.selector, def.allItems)]}
-          />
+          <div class='practice-config'>
+            <SuggestionLines
+              lines={[singleLevelSuggestion(learner.selector, def.allItems)]}
+            />
+          </div>
         )}
       statsContent={
         <>

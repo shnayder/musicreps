@@ -326,6 +326,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 0;
+  overflow: hidden;
   text-align: center;
   padding: var(--space-3);
 }
@@ -333,10 +334,9 @@ body {
   flex: 2;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
   min-height: 0;
-  padding: var(--space-3);
+  padding: 0 var(--space-3) var(--space-3);
 }
 
 /* CenteredContent: vertically centered info/instruction screens */
@@ -1974,10 +1974,10 @@ button {
   min-height: 2.5rem;
 }
 .quiz-instruction {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-light);
+  margin-bottom: var(--space-3);
 }
 .quiz-prompt {
   font-size: var(--text-2xl);
@@ -2442,6 +2442,11 @@ button {
 .stats-container {
   text-align: center;
   margin: var(--space-3) 0;
+}
+.stats-container > .text-subsection-header {
+  text-align: left;
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-3);
 }
 .stats-table {
   border-collapse: collapse;
