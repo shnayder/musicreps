@@ -2793,7 +2793,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="5334ee practice-screen-redesign"></div>
+  <div class="home-screen" id="home-screen" data-version="19d476 practice-screen-redesign"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7187,7 +7187,7 @@ body.native-app {
   function getSpeedFreshnessColor(speedScore, freshness) {
     const c3 = heatmapColors();
     if (speedScore === null || freshness === null) return c3.none;
-    const level = speedScore > 0.9 ? 4 : speedScore > 0.75 ? 3 : speedScore > 0.55 ? 2 : speedScore > 0.3 ? 1 : 0;
+    const level = speedLevel(speedScore);
     const [h3, s3, l3] = SPEED_HSL[level];
     const f4 = FRESHNESS_FLOOR + (1 - FRESHNESS_FLOOR) * Math.max(0, Math.min(1, freshness));
     const fadedS = Math.round(s3 * f4);
@@ -7220,17 +7220,20 @@ body.native-app {
     const avgFresh = freshCount > 0 ? freshSum / freshCount : null;
     return getSpeedFreshnessColor(avgSpeed, avgFresh);
   }
+  function speedLevel(sp) {
+    return sp > 0.9 ? 4 : sp > 0.75 ? 3 : sp > 0.55 ? 2 : sp > 0.3 ? 1 : 0;
+  }
   function progressBarColors(selector, itemIds) {
     const items = itemIds.map((id) => {
       const sp = selector.getSpeedScore(id);
       const fr = selector.getFreshness(id);
       return {
-        sp: sp ?? -1,
+        level: sp !== null ? speedLevel(sp) : -1,
         fr: fr ?? -1,
         color: getSpeedFreshnessColor(sp, fr)
       };
     });
-    items.sort((a3, b) => a3.sp !== b.sp ? b.sp - a3.sp : b.fr - a3.fr);
+    items.sort((a3, b) => a3.level !== b.level ? b.level - a3.level : b.fr - a3.fr);
     return items.map((item) => item.color);
   }
   function buildStatsLegend() {
