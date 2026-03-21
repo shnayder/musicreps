@@ -141,9 +141,15 @@ describe('navigation lifecycle (E2E)', () => {
     // Navigate to semitone math (has groups)
     await navigateToMode(page, 'semitoneMath');
 
+    // Switch to custom mode so group toggles are visible
+    await page.locator('#mode-semitoneMath .segmented-btn', {
+      hasText: 'Custom',
+    }).click();
+    await page.waitForTimeout(200);
+
     // Toggle off a group (click first active toggle)
     const firstToggle = page.locator(
-      '#mode-semitoneMath .distance-toggle.active',
+      '#mode-semitoneMath .level-toggle-btn.active',
     ).first();
     const toggleExists = await firstToggle.isVisible().catch(() => false);
 
@@ -168,9 +174,15 @@ describe('navigation lifecycle (E2E)', () => {
       await navigateToMode(page, 'semitoneMath');
       await page.waitForTimeout(300);
 
+      // Switch to custom mode again to check toggles
+      await page.locator('#mode-semitoneMath .segmented-btn', {
+        hasText: 'Custom',
+      }).click();
+      await page.waitForTimeout(200);
+
       // The toggle we turned off should still be off
       const toggleAfter = page.locator(
-        `#mode-semitoneMath .distance-toggle:has-text("${toggleLabel?.trim()}")`,
+        `#mode-semitoneMath .level-toggle-btn:has-text("${toggleLabel?.trim()}")`,
       );
       const toggleAfterClass = await toggleAfter.getAttribute('class') ?? '';
       assert.ok(
