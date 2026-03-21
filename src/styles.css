@@ -323,12 +323,26 @@ body {
   flex: 3;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
   min-height: 0;
-  overflow: hidden;
   text-align: center;
   padding: var(--space-3);
+}
+/* Instruction text must not shrink when fretboard/content is present */
+.quiz-stage-prompt > .quiz-instruction {
+  flex-shrink: 0;
+}
+/* Fretboard: wrapper fills remaining space, SVG contained within */
+.quiz-stage-prompt > div:has(> svg.fretboard) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.quiz-stage-prompt svg.fretboard {
+  max-height: 45dvh;
 }
 .quiz-stage-response {
   flex: 2;
