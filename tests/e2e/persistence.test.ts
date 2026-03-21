@@ -75,8 +75,9 @@ describe('scope persistence across reload (E2E)', () => {
         '#mode-semitoneMath .level-toggle-btn',
       );
       await reloadToggles.first().waitFor({ state: 'visible', timeout: 3000 });
-      const firstClassAfter = await reloadToggles.first().getAttribute('class') ??
-        '';
+      const firstClassAfter =
+        await reloadToggles.first().getAttribute('class') ??
+          '';
       assert.ok(
         !firstClassAfter.includes('active'),
         'first group toggle should still be inactive after reload',
