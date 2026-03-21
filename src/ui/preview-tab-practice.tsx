@@ -10,8 +10,8 @@ import {
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
-  type TabDef,
   TabBar,
+  type TabDef,
   TabIcon,
   Tabs,
   useTabsPrefix,
@@ -417,9 +417,21 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
 function ModeNavFooter() {
   const prefix = useTabsPrefix();
   const tabs: TabDef<ModeTab>[] = [
-    { id: 'practice', label: <TabIcon icon='practice' text='Practice' />, content: null },
-    { id: 'progress', label: <TabIcon icon='progress' text='Progress' />, content: null },
-    { id: 'about', label: <TabIcon icon='about' text='About' />, content: null },
+    {
+      id: 'practice',
+      label: <TabIcon icon='practice' text='Practice' />,
+      content: null,
+    },
+    {
+      id: 'progress',
+      label: <TabIcon icon='progress' text='Progress' />,
+      content: null,
+    },
+    {
+      id: 'about',
+      label: <TabIcon icon='about' text='About' />,
+      content: null,
+    },
   ];
   return (
     <TabBar
