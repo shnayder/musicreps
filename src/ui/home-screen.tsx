@@ -5,6 +5,7 @@
 import type { ComponentChildren } from 'preact';
 import { useCallback, useState } from 'preact/hooks';
 import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
+import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
 import { SkillIcon } from './icons.tsx';
 import type { SettingsController } from '../types.ts';
 import type { AppConfig } from '../app-config.ts';
@@ -15,6 +16,7 @@ import {
 import type { SkillRecommendation } from '../home-recommendations.ts';
 import { Text } from './text.tsx';
 import {
+  CloseButton,
   TabBar,
   type TabDef,
   TabIcon,
@@ -457,12 +459,13 @@ function SettingsAboutLegal(
 // ---------------------------------------------------------------------------
 
 export function SettingsPanel(
-  { settings, appConfig, version, useSolfege, setUseSolfege }: {
+  { settings, appConfig, version, useSolfege, setUseSolfege, onOpenDev }: {
     settings: SettingsController;
     appConfig: AppConfig;
     version: string;
     useSolfege: boolean;
     setUseSolfege: (v: boolean) => void;
+    onOpenDev?: () => void;
   },
 ) {
   return (
@@ -485,7 +488,100 @@ export function SettingsPanel(
       </section>
 
       <SettingsAboutLegal appConfig={appConfig} version={version} />
+
+      {onOpenDev && (
+        <section class='settings-section'>
+          <button type='button' class='text-link' onClick={onOpenDev}>
+            Dev panel
+          </button>
+        </section>
+      )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// DevPage — dev stats page (same conditional-render pattern as SettingsPage)
+// ---------------------------------------------------------------------------
+
+function DevPage({ onClose }: { onClose: () => void }) {
+  const [data] = useState<DevPanelData>(getDevPanelData);
+  return (
+    <div class='settings-page'>
+      <div class='settings-page-header'>
+        <h1 class='settings-page-title'>Dev</h1>
+        <CloseButton ariaLabel='Close' onClick={onClose} />
+      </div>
+
+      <DevSection title='Global'>
+        <DevStatRow label='Total reps' value={data.totalReps} />
+        <DevStatRow label='Days active' value={data.daysActive} />
+      </DevSection>
+
+      <DevSection title='Per Mode'>
+        <DevTable
+          headers={['Mode', 'Reps', 'Items']}
+          rows={data.modeEfforts.map((m) => [
+            MODE_NAMES[m.id] || m.id,
+            String(m.totalReps),
+            `${m.itemsStarted}/${m.totalItems}`,
+          ])}
+        />
+      </DevSection>
+
+      {data.recentDays.length > 0 && (
+        <DevSection title='Recent Days'>
+          <DevTable
+            headers={['Date', 'Reps']}
+            rows={data.recentDays.map((d) => [d.date, String(d.count)])}
+          />
+        </DevSection>
+      )}
+    </div>
+  );
+}
+
+function DevSection(
+  { title, children }: { title: string; children: ComponentChildren },
+) {
+  return (
+    <section class='settings-section'>
+      <h2 class='settings-section-title'>{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function DevStatRow({ label, value }: { label: string; value: number }) {
+  return (
+    <div class='dev-stat-row'>
+      <span>{label}</span>
+      <span>{value}</span>
+    </div>
+  );
+}
+
+function DevTable(
+  { headers, rows }: { headers: string[]; rows: string[][] },
+) {
+  return (
+    <table class='dev-table'>
+      <thead>
+        <tr>
+          {headers.map((h, i) => <th key={i} class={i > 0 ? 'num' : ''}>{h}
+          </th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, ri) => (
+          <tr key={ri}>
+            {row.map((cell, ci) => (
+              <td key={ci} class={ci > 0 ? 'num' : ''}>{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -562,9 +658,8 @@ function HomeHeader({ isNativeApp }: { isNativeApp?: boolean }) {
         </p>
       )}
       <p class='all-skills-hint'>
-        Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
-        {' '}
-        list.
+        Tap the &#x2606; on a skill to add it to your{' '}
+        <strong>Active</strong> list.
       </p>
     </div>
   );
@@ -588,6 +683,7 @@ function useHomeTabs(
     onSelectMode,
     onToggleStar,
     onToggleExpand,
+    onOpenDev,
   }: {
     starred: Set<string>;
     accordion: Record<string, boolean>;
@@ -601,6 +697,7 @@ function useHomeTabs(
     onSelectMode: (modeId: string) => void;
     onToggleStar: (modeId: string) => void;
     onToggleExpand: (trackId: string) => void;
+    onOpenDev?: () => void;
   },
 ): TabDef<HomeTab>[] {
   return [
@@ -645,6 +742,7 @@ function useHomeTabs(
           version={version}
           useSolfege={useSolfege}
           setUseSolfege={setUseSolfege}
+          onOpenDev={onOpenDev}
         />
       ),
     },
@@ -656,10 +754,11 @@ function useHomeTabs(
 // ---------------------------------------------------------------------------
 
 export function HomeScreen(
-  { onSelectMode, settings, appConfig, version, isNativeApp }: {
+  { onSelectMode, settings, appConfig, showDevLink, version, isNativeApp }: {
     onSelectMode: (modeId: string) => void;
     settings: SettingsController;
     appConfig: AppConfig;
+    showDevLink?: boolean;
     version: string;
     isNativeApp?: boolean;
   },
@@ -667,6 +766,7 @@ export function HomeScreen(
   const [starred, setStarred] = useState(loadStarredSkills);
   const { progress, recommendations } = useHomeProgress(starred);
   const [accordion, setAccordion] = useState(loadAccordionState);
+  const [showDev, setShowDev] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
   const [tab, setTab] = useState<HomeTab>(loadInitialTab);
   const prefix = useTabsPrefix();
@@ -709,7 +809,12 @@ export function HomeScreen(
     onSelectMode,
     onToggleStar: handleToggleStar,
     onToggleExpand: handleToggleExpand,
+    onOpenDev: showDevLink ? () => setShowDev(true) : undefined,
   });
+
+  if (showDev) {
+    return <DevPage onClose={() => setShowDev(false)} />;
+  }
 
   return (
     <ScreenLayout class='home-screen-layout'>

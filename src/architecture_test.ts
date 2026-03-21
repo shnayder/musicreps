@@ -113,6 +113,7 @@ const FOUNDATION = new Set([
   'src/app-config.ts',
   'src/deadline.ts',
   'src/recommendations.ts',
+  'src/effort.ts',
 ]);
 
 const ENGINE = new Set([
@@ -124,6 +125,7 @@ const DISPLAY = new Set([
   'src/stats-display.ts',
   'src/mode-ui-state.ts',
   'src/quiz-fretboard-state.ts',
+  'src/dev-panel.ts',
 ]);
 
 const BUILD_TIME = new Set([
