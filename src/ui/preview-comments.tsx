@@ -61,18 +61,25 @@ type CommentCtx = {
   store: CommentStore;
   setComment: (key: string, text: string) => void;
   clearTab: (tabId: string) => void;
+  openSections: ReadonlySet<string>;
+  toggleOpen: (key: string) => void;
 };
 
 const CommentContext = createContext<CommentCtx>({
   store: {},
   setComment: () => {},
   clearTab: () => {},
+  openSections: new Set(),
+  toggleOpen: () => {},
 });
 
 export function CommentProvider(
   { children }: { children: ComponentChildren },
 ) {
   const [store, setStore] = useState<CommentStore>(loadComments);
+  const [openSections, setOpenSections] = useState<ReadonlySet<string>>(
+    new Set(),
+  );
 
   const setComment = useCallback((key: string, text: string) => {
     setStore((prev) => {
@@ -94,11 +101,28 @@ export function CommentProvider(
       saveComments(next);
       return next;
     });
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      const prefix = tabId + '::';
+      for (const k of next) {
+        if (k.startsWith(prefix)) next.delete(k);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleOpen = useCallback((key: string) => {
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   }, []);
 
   const ctx = useMemo(
-    () => ({ store, setComment, clearTab }),
-    [store, setComment, clearTab],
+    () => ({ store, setComment, clearTab, openSections, toggleOpen }),
+    [store, setComment, clearTab, openSections, toggleOpen],
   );
 
   return (
@@ -119,22 +143,19 @@ function useComments() {
 export function CommentBubble(
   { tabId, sectionTitle }: { tabId: string; sectionTitle: string },
 ) {
-  const { store, setComment } = useComments();
+  const { store, openSections, toggleOpen } = useComments();
   const key = commentKey(tabId, sectionTitle);
-  const isOpen = key in store;
-
-  function handleClick() {
-    if (isOpen) return; // already visible via CommentArea
-    // Seed with empty space to make CommentArea appear
-    setComment(key, ' ');
-  }
+  const hasContent = !!store[key]?.trim();
 
   return (
     <button
       type='button'
-      class={'comment-bubble-btn' + (isOpen ? ' has-comment' : '')}
-      title={isOpen ? 'Comment added' : 'Add comment'}
-      onClick={handleClick}
+      class={'comment-bubble-btn' +
+        (hasContent ? ' has-comment' : '')}
+      title={openSections.has(key) || hasContent
+        ? 'Comment added'
+        : 'Add comment'}
+      onClick={() => toggleOpen(key)}
     >
       {'\uD83D\uDCAC'}
     </button>
@@ -153,10 +174,10 @@ function autoSize(el: HTMLTextAreaElement) {
 export function CommentArea(
   { tabId, sectionTitle }: { tabId: string; sectionTitle: string },
 ) {
-  const { store, setComment } = useComments();
+  const { store, setComment, openSections } = useComments();
   const key = commentKey(tabId, sectionTitle);
   const text = store[key] ?? '';
-  const visible = key in store;
+  const visible = openSections.has(key) || !!store[key]?.trim();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   function handleInput(e: Event) {

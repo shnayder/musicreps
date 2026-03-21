@@ -39,6 +39,15 @@ import {
   StartButton,
   Tabs,
 } from './mode-screen.tsx';
+import { SegmentedControl, SettingToggle } from './segmented-control.tsx';
+import {
+  CenteredContent,
+  LayoutFooter,
+  LayoutHeader,
+  LayoutMain,
+  QuizStage,
+  ScreenLayout,
+} from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
 // Helper
@@ -960,5 +969,154 @@ describe('SequentialSlots', () => {
     );
     assert.ok(html.includes('>D♯<'));
     assert.ok(html.includes('>F♯<'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SegmentedControl + SettingToggle
+// ---------------------------------------------------------------------------
+
+describe('SegmentedControl', () => {
+  it('renders radiogroup with correct aria attributes', () => {
+    const html = render(
+      <SegmentedControl
+        options={[
+          { value: 'a', label: 'Alpha' },
+          { value: 'b', label: 'Beta' },
+        ]}
+        value='a'
+        onChange={() => {}}
+      />,
+    );
+    assert.ok(html.includes('role="radiogroup"'));
+    assert.ok(html.includes('role="radio"'));
+    assert.ok(html.includes('aria-checked="true"'));
+    assert.ok(html.includes('aria-checked="false"'));
+    assert.ok(html.includes('segmented-control'));
+    assert.ok(html.includes('segmented-btn active'));
+    assert.ok(html.includes('Alpha'));
+    assert.ok(html.includes('Beta'));
+  });
+});
+
+describe('SettingToggle', () => {
+  it('renders label + segmented control with aria-labelledby linkage', () => {
+    const html = render(
+      <SettingToggle
+        label='Notation'
+        options={[
+          { value: 'letter', label: 'Letter' },
+          { value: 'solfege', label: 'Solfege' },
+        ]}
+        value='letter'
+        onChange={() => {}}
+      />,
+    );
+    assert.ok(html.includes('settings-field'));
+    assert.ok(html.includes('Notation'));
+    assert.ok(html.includes('aria-labelledby'));
+    // The label id and the radiogroup's aria-labelledby should match
+    const labelIdMatch = html.match(/id="(stl-\d+)"/);
+    assert.ok(labelIdMatch, 'label should have an id');
+    assert.ok(
+      html.includes(`aria-labelledby="${labelIdMatch![1]}"`),
+      'radiogroup should reference label id',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ScreenLayout components
+// ---------------------------------------------------------------------------
+
+describe('ScreenLayout', () => {
+  it('renders with screen-layout class', () => {
+    const html = render(
+      <ScreenLayout>
+        <div>content</div>
+      </ScreenLayout>,
+    );
+    assert.ok(html.includes('screen-layout'));
+    assert.ok(html.includes('content'));
+  });
+});
+
+describe('LayoutHeader', () => {
+  it('renders with layout-header class', () => {
+    const html = render(
+      <LayoutHeader>
+        <div>header</div>
+      </LayoutHeader>,
+    );
+    assert.ok(html.includes('layout-header'));
+    assert.ok(html.includes('header'));
+  });
+});
+
+describe('LayoutMain', () => {
+  it('renders with layout-main layout-main-scroll by default', () => {
+    const html = render(
+      <LayoutMain>
+        <div>main</div>
+      </LayoutMain>,
+    );
+    assert.ok(html.includes('layout-main'));
+    assert.ok(html.includes('layout-main-scroll'));
+  });
+
+  it('renders with layout-main-fixed when scrollable=false', () => {
+    const html = render(
+      <LayoutMain scrollable={false}>
+        <div>main</div>
+      </LayoutMain>,
+    );
+    assert.ok(html.includes('layout-main'));
+    assert.ok(html.includes('layout-main-fixed'));
+    assert.ok(!html.includes('layout-main-scroll'));
+  });
+});
+
+describe('LayoutFooter', () => {
+  it('returns null when children is falsy', () => {
+    const html = render(<LayoutFooter>{null}</LayoutFooter>);
+    assert.equal(html, '');
+  });
+
+  it('renders with layout-footer when children provided', () => {
+    const html = render(
+      <LayoutFooter>
+        <div>footer</div>
+      </LayoutFooter>,
+    );
+    assert.ok(html.includes('layout-footer'));
+    assert.ok(html.includes('footer'));
+  });
+});
+
+describe('QuizStage', () => {
+  it('renders prompt and response zones', () => {
+    const html = render(
+      <QuizStage
+        prompt={<div>question</div>}
+        response={<div>buttons</div>}
+      />,
+    );
+    assert.ok(html.includes('quiz-stage'));
+    assert.ok(html.includes('quiz-stage-prompt'));
+    assert.ok(html.includes('quiz-stage-response'));
+    assert.ok(html.includes('question'));
+    assert.ok(html.includes('buttons'));
+  });
+});
+
+describe('CenteredContent', () => {
+  it('renders with centered-content class', () => {
+    const html = render(
+      <CenteredContent>
+        <div>centered</div>
+      </CenteredContent>,
+    );
+    assert.ok(html.includes('centered-content'));
+    assert.ok(html.includes('centered'));
   });
 });

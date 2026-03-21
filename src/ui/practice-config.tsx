@@ -146,27 +146,30 @@ export function LevelProgressCard(
       <div class='level-progress-header'>
         <span class='level-progress-label'>{label}</span>
         {pill && <span class='level-progress-pill'>{pill}</span>}
-        <span class='level-progress-actions'>
-          <button
-            type='button'
-            class={'level-action-btn known' + (st === 'known' ? ' active' : '')}
-            aria-label={`Mark ${label} as known`}
-            aria-pressed={st === 'known'}
-            onClick={onToggleKnown}
-          >
-            {'\u2713'}
-          </button>
-          <button
-            type='button'
-            class={'level-action-btn skip' +
-              (st === 'skipped' ? ' active' : '')}
-            aria-label={`Skip ${label}`}
-            aria-pressed={st === 'skipped'}
-            onClick={onToggleSkip}
-          >
-            {'\u2717'}
-          </button>
-        </span>
+        {(onToggleKnown || onToggleSkip) && (
+          <span class='level-progress-actions'>
+            <button
+              type='button'
+              class={'level-action-btn known' +
+                (st === 'known' ? ' active' : '')}
+              aria-label={`Mark ${label} as known`}
+              aria-pressed={st === 'known'}
+              onClick={onToggleKnown}
+            >
+              {'\u2713'}
+            </button>
+            <button
+              type='button'
+              class={'level-action-btn skip' +
+                (st === 'skipped' ? ' active' : '')}
+              aria-label={`Skip ${label}`}
+              aria-pressed={st === 'skipped'}
+              onClick={onToggleSkip}
+            >
+              {'\u2717'}
+            </button>
+          </span>
+        )}
       </div>
       <ProgressBarLabeled colors={colors} disabled={st === 'skipped'} />
     </div>
