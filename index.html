@@ -103,8 +103,8 @@
   /* Notice scale — derived from --hue-notice */
   --notice-100: hsl(var(--hue-notice), 70%, 96%);
   --notice-300: hsl(var(--hue-notice), 60%, 80%);
-  --notice-400: hsl(var(--hue-notice), 60%, 91%);
-  --notice-450: hsl(var(--hue-notice), 50%, 85%);
+  --notice-400: hsl(var(--hue-notice), 50%, 85%);
+  --notice-450: hsl(var(--hue-notice), 60%, 91%);
   --notice-500: hsl(var(--hue-notice), 80%, 46%);
   --notice-600: hsl(var(--hue-notice), 93%, 47%);
   --notice-700: hsl(var(--hue-notice), 70%, 45%);
@@ -127,17 +127,22 @@
   /* Error */
   --color-error: var(--error-500);
   --color-error-bg: var(--error-100);
+  --color-error-border: var(--error-500);
   --color-error-text: var(--error-800);
+  /* On-fill text (flips in dark mode) */
+  --color-on-brand: white;
+  --color-on-success: white;
+  --color-on-error: white;
   /* Focus */
   --color-focus: var(--brand-600);
   --color-focus-bg: var(--brand-100);
-  /* Notice / Recommendations */
-  --color-recommended: var(--notice-500);
-  --color-recommended-bg: var(--notice-100);
-  --color-recommended-border: var(--notice-300);
-  --color-recommended-bg-hover: var(--notice-400);
-  --color-recommended-bg-pressed: var(--notice-450);
-  --color-recommended-text: var(--notice-800);
+  /* Notice (attention, recommendations, highlights) */
+  --color-notice: var(--notice-500);
+  --color-notice-bg: var(--notice-100);
+  --color-notice-border: var(--notice-300);
+  --color-notice-bg-hover: var(--notice-400);
+  --color-notice-bg-pressed: var(--notice-450);
+  --color-notice-text: var(--notice-800);
   --color-highlight: var(--notice-600);
   /* UI accents — unified with brand (one accent, not five) */
   --color-accent: var(--brand-600);
@@ -151,13 +156,20 @@
   --color-bg: var(--neutral-0);
   --color-surface: var(--neutral-100);
   --color-surface-hover: var(--neutral-150);
-  --color-surface-alt: var(--neutral-200);
+  --color-surface-raised: var(--neutral-200);
   --color-surface-pressed: var(--neutral-350);
   --color-surface-accent: var(--neutral-250);
+  /* Chrome (segmented controls, toolbar fills) */
+  --color-chrome: var(--neutral-200);
   /* Borders */
   --color-border: var(--neutral-550);
   --color-border-light: var(--neutral-400);
   --color-border-lighter: var(--neutral-300);
+  /* Brand border (can diverge in dark mode) */
+  --color-brand-border: var(--brand-600);
+  --color-brand-text: var(--brand-800);
+  /* Success border */
+  --color-success-border: var(--success-600);
   /* Overlay */
   --color-overlay: rgba(0, 0, 0, 0.35);
 
@@ -284,15 +296,106 @@ body {
 }
 
 /* ==========================================================================
-   3. HOME SCREEN
+   2b. SCREEN LAYOUT — three-zone structure (header/main/footer)
+   Enforced by ScreenLayout, LayoutHeader, LayoutMain, LayoutFooter components.
    ========================================================================== */
-.home-screen {
+
+.screen-layout {
   display: flex;
   flex-direction: column;
-  padding: 0 var(--space-5) var(--space-5);
+  height: 100dvh;
+  overflow: hidden;
 }
+
+.layout-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+
+.layout-main {
+  flex: 1;
+  min-height: 0;
+}
+.layout-main-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.layout-main-fixed {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-border-lighter);
+}
+
+/* --- Main content patterns --- */
+
+/* QuizStage: 60/40 prompt/response split, centered within each zone */
+.quiz-stage {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.quiz-stage-prompt {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  text-align: center;
+  padding: var(--space-3);
+}
+/* Instruction text must not shrink when fretboard/content is present */
+.quiz-stage-prompt > .quiz-instruction {
+  flex-shrink: 0;
+}
+/* Fretboard: wrapper fills remaining space, SVG contained within */
+.quiz-stage-prompt > div:has(> svg.fretboard) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.quiz-stage-prompt svg.fretboard {
+  max-height: 45dvh;
+}
+.quiz-stage-response {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* CenteredContent: vertically centered info/instruction screens */
+.centered-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+  text-align: center;
+  padding: var(--space-5);
+}
+
+/* ==========================================================================
+   3. HOME SCREEN
+   ========================================================================== */
+/* .home-screen: outer container — ScreenLayout fills the viewport inside it.
+   No styles needed; show/hide is on .home-screen.hidden below. */
 .home-screen.hidden {
   display: none;
+}
+/* Home screen uses ScreenLayout; .home-content provides padding inside LayoutMain */
+.home-content {
+  padding: 0 var(--space-5) var(--space-5);
 }
 .home-header {
   text-align: left;
@@ -357,6 +460,53 @@ body {
   outline: 2px solid var(--color-focus);
   outline-offset: -2px;
   border-radius: var(--radius-sm);
+}
+
+/* --- Mode navigation: bottom bar on mobile, top tabs on desktop --- */
+.tab-icon-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.tab-icon-label svg {
+  display: block;
+}
+/* mode-nav is inside LayoutFooter — no position: fixed needed. */
+.mode-nav {
+  display: flex;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border-lighter);
+  border-bottom: none;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.mode-nav .tab-btn {
+  font-size: var(--text-xs);
+  padding: var(--space-2) var(--space-3);
+}
+.mode-nav .tab-btn.active::after {
+  /* No underline — the icon color is enough for bottom nav */
+  display: none;
+}
+/* Note: bottom nav padding is now handled by ScreenLayout / LayoutFooter.
+   No ad-hoc padding-bottom needed on tab panels. */
+@media (min-width: 768px) {
+  .mode-nav {
+    border-top: none;
+    border-bottom: 2px solid var(--color-border-lighter);
+    padding-bottom: 0;
+  }
+  .mode-nav .tab-btn {
+    font-size: var(--text-sm);
+    padding: var(--space-3) var(--space-5);
+  }
+  .mode-nav .tab-btn.active::after {
+    display: block;
+  }
+  .tab-icon-label {
+    flex-direction: row;
+    gap: var(--space-2);
+  }
 }
 
 .home-modes {
@@ -543,24 +693,24 @@ body {
 }
 /* Recommendation banner inside active skill card. */
 .skill-rec-banner {
-  background: var(--color-recommended-bg);
-  border-bottom: 1px solid var(--color-recommended-border);
+  background: var(--color-notice-bg);
+  border-bottom: 1px solid var(--color-notice-border);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .skill-rec-header {
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
-  color: var(--color-recommended);
+  color: var(--color-notice);
   margin-bottom: var(--space-1);
 }
 
 /* Banner reacts with card on hover/active. */
 .home-mode-btn:hover > .skill-rec-banner {
-  background: var(--color-recommended-bg-hover);
+  background: var(--color-notice-bg-hover);
 }
 .home-mode-btn:active > .skill-rec-banner {
-  background: var(--color-recommended-bg-pressed);
+  background: var(--color-notice-bg-pressed);
 }
 .active-skills-done {
   font-size: var(--text-sm);
@@ -587,22 +737,22 @@ body {
 }
 .skill-icon {
   flex-shrink: 0;
-  color: var(--skill-accent);
+  color: var(--_accent);
 }
 .skill-card[data-track='core'] {
-  --skill-accent: var(--color-track-core);
+  --_accent: var(--color-track-core);
   border-left-color: var(--color-track-core);
 }
 .skill-card[data-track='reading'] {
-  --skill-accent: var(--color-track-reading);
+  --_accent: var(--color-track-reading);
   border-left-color: var(--color-track-reading);
 }
 .skill-card[data-track='guitar'] {
-  --skill-accent: var(--color-track-guitar);
+  --_accent: var(--color-track-guitar);
   border-left-color: var(--color-track-guitar);
 }
 .skill-card[data-track='ukulele'] {
-  --skill-accent: var(--color-track-ukulele);
+  --_accent: var(--color-track-ukulele);
   border-left-color: var(--color-track-ukulele);
 }
 .skill-card-ba {
@@ -793,34 +943,37 @@ body {
 }
 
 .segmented-control {
-  display: flex;
-  gap: 0;
+  display: inline-flex;
+  align-self: flex-start;
   border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  background: var(--color-chrome);
+  padding: 2px;
+  gap: 2px;
 }
 .segmented-btn {
-  flex: 1;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-4);
   border: none;
-  background: var(--color-surface);
+  border-radius: calc(var(--radius-md) - 2px);
+  background: transparent;
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
-  color: var(--color-text);
+  color: var(--color-text-muted);
   transition:
     background var(--duration-base) ease,
     color var(--duration-base) ease;
 }
 .segmented-btn + .segmented-btn {
-  border-left: 1px solid var(--color-border);
+  border-left: none;
 }
 .segmented-btn.active {
-  background: var(--color-brand);
-  color: white;
+  background: white;
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .segmented-btn:hover:not(.active) {
-  background: var(--color-surface-hover);
+  color: var(--color-text);
 }
 .segmented-btn:active {
   opacity: var(--opacity-pressed);
@@ -966,9 +1119,9 @@ body {
   display: none;
 }
 .suggestion-card {
-  background: var(--color-recommended-bg);
-  border: 1px solid var(--color-recommended-border);
-  border-left: 3px solid var(--color-recommended);
+  background: var(--color-notice-bg);
+  border: 1px solid var(--color-notice-border);
+  border-left: 3px solid var(--color-notice);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-3);
@@ -976,7 +1129,7 @@ body {
 .suggestion-card-header {
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
-  color: var(--color-recommended);
+  color: var(--color-notice);
   margin-bottom: var(--space-2);
 }
 .suggestion-card-body {
@@ -993,16 +1146,16 @@ body {
   font-size: var(--text-xs);
   font-weight: var(--font-medium);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-recommended);
+  border: 1px solid var(--color-notice);
   border-radius: var(--radius-sm);
-  background: var(--color-recommended-bg);
-  color: var(--color-recommended-text);
+  background: var(--color-notice-bg);
+  color: var(--color-notice-text);
   cursor: pointer;
   flex-shrink: 0;
 }
 .suggestion-card-accept:hover {
-  background: var(--color-recommended);
-  color: white;
+  background: var(--color-notice);
+  color: var(--color-on-brand);
 }
 
 /* --- Practice scope (inside practice card) --- */
@@ -1018,6 +1171,182 @@ body {
   text-align: center;
   margin-top: auto;
   padding: var(--space-5) 0 var(--space-4);
+}
+
+/* ==========================================================================
+   5b. SKILL HEADER + PRACTICE CONFIG (redesign)
+   ========================================================================== */
+
+/* --- Labeled progress bar (skill header + level cards) --- */
+.progress-bar-labeled {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+.progress-bar-label {
+  margin-bottom: var(--space-2);
+}
+
+/* --- Skill header: title + close + progress bar --- */
+.skill-header {
+  padding: var(--space-4) var(--space-5) var(--space-3);
+}
+.skill-header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.skill-header-row .mode-title {
+  flex: 1;
+}
+.skill-header-progress {
+  margin-top: var(--space-3);
+}
+
+/* --- Practice config: suggested/custom toggle --- */
+.practice-config {
+  padding: var(--space-3) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.practice-config-label {
+  margin-bottom: var(--space-1);
+}
+.practice-config-content {
+  margin-top: var(--space-2);
+}
+
+/* --- Suggestion lines (suggested mode) --- */
+.suggestion-lines {
+  background: var(--color-notice-bg);
+  border: 1px solid var(--color-notice-border);
+  border-left: 3px solid var(--color-notice);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.suggestion-line {
+  font-size: var(--text-sm);
+  color: var(--color-notice-text);
+  line-height: 1.5;
+}
+.suggestion-verb {
+  font-weight: var(--font-semibold);
+  color: var(--color-notice);
+}
+
+/* --- Level toggles (custom mode) --- */
+.level-toggles-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.level-toggles-header {
+  margin-bottom: calc(-1 * var(--space-2));
+}
+.level-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.level-toggle-btn {
+  min-width: 3.5rem;
+  text-align: center;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-border);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  padding: 0 0.5rem;
+  margin: 0;
+  transition:
+    background var(--duration-base) ease,
+    color var(--duration-base) ease,
+    border-color var(--duration-base) ease;
+}
+.level-toggle-btn:hover {
+  background: var(--color-surface-hover);
+}
+.level-toggle-btn.active {
+  background: var(--color-toggle-active);
+  color: var(--color-on-brand);
+  border-color: var(--color-toggle-active);
+}
+.level-toggles-count {
+  font-size: var(--text-sm);
+}
+
+/* --- Level progress card (progress tab) --- */
+.level-progress-card {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+.level-progress-card.skipped {
+  opacity: 0.5;
+}
+.level-progress-card.known {
+  border-color: var(--color-brand);
+}
+.level-progress-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.level-progress-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  flex: 1;
+}
+.level-progress-pill {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-notice-bg);
+  color: var(--color-notice-text);
+}
+.level-progress-actions {
+  display: flex;
+  gap: var(--space-1);
+}
+.level-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  transition:
+    background var(--duration-base) ease,
+    color var(--duration-base) ease;
+}
+.level-action-btn:hover {
+  background: var(--color-surface-hover);
+}
+.level-action-btn.known.active {
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  border-color: var(--color-brand);
+}
+.level-action-btn.skip.active {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border-color: var(--color-error-text);
 }
 
 /* ==========================================================================
@@ -1105,7 +1434,7 @@ body {
 }
 .string-toggle.active {
   background: var(--color-toggle-active);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
 .distance-toggles {
@@ -1135,7 +1464,7 @@ body {
 }
 .distance-toggle.active {
   background: var(--color-toggle-active);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
 
@@ -1258,7 +1587,7 @@ body {
 }
 .notes-toggle.active {
   background: var(--color-toggle-active);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
 /* Constrain both width and height so the vertical SVG fits on screen.
@@ -1352,7 +1681,7 @@ button {
 .quiz-countdown-bar {
   flex: 1;
   height: 6px;
-  background: var(--color-surface-alt);
+  background: var(--color-surface-raised);
 }
 .quiz-countdown-fill {
   height: 100%;
@@ -1362,7 +1691,7 @@ button {
 }
 .round-timer-warning .quiz-countdown-fill,
 .last-question .quiz-countdown-fill {
-  background: var(--color-recommended);
+  background: var(--color-notice);
 }
 .quiz-info-time {
   font-size: var(--text-sm);
@@ -1385,7 +1714,7 @@ button {
   flex: 1;
 }
 .quiz-info-last-question {
-  color: var(--color-recommended);
+  color: var(--color-notice);
   font-weight: var(--font-semibold);
   position: absolute;
   left: 50%;
@@ -1400,7 +1729,7 @@ button {
   width: 100%;
   max-width: 300px;
   height: 20px;
-  background: var(--color-surface-alt);
+  background: var(--color-surface-raised);
   border-radius: var(--radius-md);
   margin: 0 auto var(--space-4);
   overflow: hidden;
@@ -1702,6 +2031,12 @@ button {
   margin: var(--space-2) 0;
   min-height: 2.5rem;
 }
+.quiz-instruction {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-light);
+  margin-bottom: var(--space-3);
+}
 .quiz-prompt {
   font-size: var(--text-2xl);
   font-weight: var(--font-semibold);
@@ -1770,13 +2105,18 @@ button {
   }
 }
 
+/* --- Component tokens: AnswerButton --- */
 .answer-btn {
+  --_bg: var(--color-bg);
+  --_text: inherit;
+  --_border: var(--color-text-muted);
   height: 48px;
   font-size: var(--text-md);
   font-weight: var(--font-medium);
-  border: 2px solid var(--color-text-muted);
+  border: 2px solid var(--_border);
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  background: var(--_bg);
+  color: var(--_text);
   cursor: pointer;
   padding: 0 var(--space-2);
   margin: 0;
@@ -1791,17 +2131,17 @@ button {
 }
 @media (hover: hover) {
   .answer-btn:hover {
-    background: var(--color-surface-hover);
-    border-color: var(--color-text);
+    --_bg: var(--color-surface-hover);
+    --_border: var(--color-text);
   }
   .answer-btn:disabled:hover {
-    background: var(--color-bg);
-    border-color: var(--color-text-muted);
+    --_bg: var(--color-bg);
+    --_border: var(--color-text-muted);
     transform: none;
   }
 }
 .answer-btn:active {
-  background: var(--color-surface-pressed);
+  --_bg: var(--color-surface-pressed);
   transform: scale(0.97);
 }
 .answer-btn:disabled {
@@ -1813,21 +2153,21 @@ button {
    11. BUTTON FEEDBACK
    ========================================================================== */
 .btn-feedback-correct {
-  background: var(--color-success-bg) !important;
-  border-color: var(--color-success) !important;
-  color: var(--color-success-text) !important;
+  --_bg: var(--color-success-bg) !important;
+  --_border: var(--color-success) !important;
+  --_text: var(--color-success-text) !important;
   opacity: 1 !important;
 }
 .btn-feedback-wrong {
-  background: var(--color-error-bg) !important;
-  border-color: var(--color-error) !important;
-  color: var(--color-error-text) !important;
+  --_bg: var(--color-error-bg) !important;
+  --_border: var(--color-error) !important;
+  --_text: var(--color-error-text) !important;
   opacity: 1 !important;
 }
 .btn-feedback-reveal {
-  background: var(--color-success-bg) !important;
-  border-color: var(--color-success) !important;
-  color: var(--color-success-text) !important;
+  --_bg: var(--color-success-bg) !important;
+  --_border: var(--color-success) !important;
+  --_text: var(--color-success-text) !important;
   opacity: 1 !important;
 }
 
@@ -1978,15 +2318,22 @@ button {
 /* ==========================================================================
    15. PAGE ACTIONS
    ========================================================================== */
+/* --- Component tokens: ActionButton --- */
 .page-action-btn {
+  --_bg: var(--color-brand);
+  --_text: var(--color-on-brand);
+  --_border: transparent;
+  --_weight: var(--font-semibold);
   padding: var(--space-3) var(--space-5);
-  border: none;
+  border: 1px solid var(--_border);
   border-radius: var(--radius-md);
   font-size: var(--text-base);
-  font-weight: var(--font-semibold);
+  font-weight: var(--_weight);
   cursor: pointer;
   touch-action: manipulation;
   min-height: 48px;
+  background: var(--_bg);
+  color: var(--_text);
 }
 @media (hover: hover) {
   .page-action-btn:hover {
@@ -2002,41 +2349,40 @@ button {
   outline-offset: 2px;
 }
 .page-action-btn:disabled {
-  background: var(--color-surface-alt);
-  border-color: var(--color-border-light);
-  color: var(--color-text-light);
+  --_bg: var(--color-surface-raised);
+  --_text: var(--color-text-light);
+  --_border: var(--color-border-light);
   box-shadow: none;
   cursor: not-allowed;
 }
 .page-action-btn:disabled:hover {
-  background: var(--color-surface-alt);
   transform: none;
 }
 .page-action-primary {
-  background: var(--color-brand);
-  color: white;
+  --_bg: var(--color-brand);
+  --_text: var(--color-on-brand);
 }
 .page-action-secondary {
-  background: none;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  font-weight: var(--font-normal);
+  --_bg: transparent;
+  --_text: var(--color-text-muted);
+  --_border: var(--color-border);
+  --_weight: var(--font-normal);
 }
 @media (hover: hover) {
   .page-action-secondary:hover {
+    --_bg: var(--color-surface-hover);
     opacity: 1;
-    background: var(--color-surface-hover);
   }
 }
 .page-action-secondary:active {
+  --_bg: var(--color-surface-pressed);
   opacity: 1;
-  background: var(--color-surface-pressed);
 }
 .page-action-correct {
-  background: var(--color-success);
+  --_bg: var(--color-success);
 }
 .page-action-wrong {
-  background: var(--color-error);
+  --_bg: var(--color-error);
 }
 .page-action-row {
   display: flex;
@@ -2155,6 +2501,11 @@ button {
   text-align: center;
   margin: var(--space-3) 0;
 }
+.stats-container > .text-subsection-header {
+  text-align: left;
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-3);
+}
 .stats-table {
   border-collapse: collapse;
   margin: var(--space-3) auto;
@@ -2254,7 +2605,10 @@ button {
   margin: var(--space-4) 0;
   min-height: 2.5rem;
 }
+/* --- Component tokens: SequentialSlot --- */
 .seq-slot {
+  --_text: var(--color-text-muted);
+  --_border: var(--color-border);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2262,30 +2616,30 @@ button {
   padding: 0 0.25rem;
   height: 2.5rem;
   border: none;
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--_border);
   border-radius: 0;
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--_text);
   transition:
     border-color var(--duration-base) ease,
     color var(--duration-base) ease;
 }
 .seq-slot.active {
-  border-bottom-color: var(--color-accent);
+  --_border: var(--color-accent);
 }
 .seq-slot.filled {
-  border-bottom-color: var(--color-text);
-  color: var(--color-text);
+  --_border: var(--color-text);
+  --_text: var(--color-text);
 }
 .seq-slot.correct {
-  border-bottom-color: var(--color-success);
-  color: var(--color-success-text);
+  --_border: var(--color-success);
+  --_text: var(--color-success-text);
 }
 .seq-slot.wrong {
-  border-bottom-color: var(--color-error);
-  color: var(--color-error-text);
+  --_border: var(--color-error);
+  --_text: var(--color-error-text);
 }
 .seq-slots-container {
   display: inline-flex;
@@ -2439,7 +2793,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#930"></div>
+  <div class="home-screen" id="home-screen" data-version="#984"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -4406,109 +4760,6 @@ body.native-app {
     { name: "Octave", num: 12, abbrev: "P8" }
   ];
   var INTERVAL_ABBREVS = INTERVALS.map((i3) => i3.abbrev);
-  var MODE_DESCRIPTIONS = {
-    fretboard: "Stop hunting for notes on the fretboard",
-    ukulele: "Stop hunting for notes on the fretboard",
-    speedTap: "Know all positions of a note instantly",
-    noteSemitones: "The number system behind the chromatic scale",
-    intervalSemitones: "Know the size of every interval in semitones",
-    semitoneMath: "Transpose by semitones without counting",
-    intervalMath: "Transpose by interval without counting",
-    keySignatures: "See a key, know its sharps and flats instantly",
-    scaleDegrees: "Connect notes to their function in a key",
-    diatonicChords: "Know which chords belong in any key",
-    chordSpelling: "Know the notes in any chord"
-  };
-  var MODE_NAMES = {
-    fretboard: "Guitar Fretboard",
-    ukulele: "Ukulele Fretboard",
-    speedTap: "Speed Tap",
-    noteSemitones: "Note \u2194 Semitones",
-    intervalSemitones: "Interval \u2194 Semitones",
-    semitoneMath: "Semitone Math",
-    intervalMath: "Interval Math",
-    keySignatures: "Key Signatures",
-    scaleDegrees: "Scale Degrees",
-    diatonicChords: "Diatonic Chords",
-    chordSpelling: "Chord Spelling"
-  };
-  var d2 = displayNote;
-  var MODE_BEFORE_AFTER = {
-    fretboard: {
-      before: () => `\u201C7th fret, ${d2("G")} string\u2026 ${d2("G")}, ${d2("G#")}, ${d2("A")}\u2026 ${d2("D")}?\u201D`,
-      after: () => `\u201C7th fret, ${d2("G")} string. ${d2("D")}.\u201D`
-    },
-    ukulele: {
-      before: () => `\u201C5th fret, ${d2("C")} string\u2026 ${d2("C")}, ${d2("D")}, ${d2("E")}\u2026 ${d2("E")}?\u201D`,
-      after: () => `\u201C5th fret, ${d2("C")} string. ${d2("E")}.\u201D`
-    },
-    speedTap: {
-      before: () => `\u201CAll the ${d2("C")}\u2019s\u2026 8th fret ${d2("E")}, 3rd fret ${d2("A")}\u2026 um\u2026\u201D`,
-      after: () => `\u201C${d2("C")}\u2019s. 8, 3, 10, 5, 1, 8.\u201D`
-    },
-    noteSemitones: {
-      before: () => `\u201C${d2("G#")}\u2026 ${d2("F")} is 5, so ${d2("G")} is\u2026 7, so ${d2("G#")} is 8.\u201D`,
-      after: () => `\u201C${d2("G#")}. 8.\u201D`
-    },
-    intervalSemitones: {
-      before: () => "\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D",
-      after: () => "\u201CM6. 9 semitones.\u201D"
-    },
-    semitoneMath: {
-      before: () => `\u201C${d2("F#")} + 4\u2026 ${d2("G")}, ${d2("G#")}, ${d2("A")}, ${d2("A#")}\u2026 is that ${d2("Bb")}?\u201D`,
-      after: () => `\u201C${d2("F#")} + 4. ${d2("Bb")}.\u201D`
-    },
-    intervalMath: {
-      before: () => `\u201C${d2("C")} + m6\u2026 minor 6th is 8 semitones\u2026 ${d2("Ab")}?\u201D`,
-      after: () => `\u201C${d2("C")} + m6. ${d2("Ab")}.\u201D`
-    },
-    keySignatures: {
-      before: () => `\u201C3 flats\u2026 ${d2("Bb")}, ${d2("Eb")}, ${d2("Ab")}\u2026 so ${d2("Eb")} major?\u201D`,
-      after: () => `\u201C3 flats: ${d2("Eb")} major.\u201D`
-    },
-    scaleDegrees: {
-      before: () => `\u201C5th degree of ${d2("Bb")}\u2026 ${d2("Bb")}, ${d2("C")}, ${d2("D")}, ${d2("Eb")}, ${d2("F")}\u2026 ${d2("F")}?\u201D`,
-      after: () => `\u201C5th of ${d2("Bb")}. ${d2("F")}.\u201D`
-    },
-    diatonicChords: {
-      before: () => `\u201CIV in ${d2("G")}\u2026 ${d2("G")}, ${d2("A")}, ${d2("B")}, ${d2("C")}\u2026 so ${d2("C")} major?\u201D`,
-      after: () => `\u201CIV in ${d2("G")}. ${d2("C")} major.\u201D`
-    },
-    chordSpelling: {
-      before: () => `\u201C${d2("F")}m7\u2026 ${d2("F")}, ${d2("Ab")}, ${d2("C")}\u2026 what\u2019s the 7th\u2026 ${d2("Eb")}\u201D`,
-      after: () => `\u201C${d2("F")}m7. ${d2("F")} ${d2("Ab")} ${d2("C")} ${d2("Eb")}.\u201D`
-    }
-  };
-  var TRACKS = [
-    {
-      id: "core",
-      label: "Music theory",
-      skills: [
-        "noteSemitones",
-        "intervalSemitones",
-        "semitoneMath",
-        "intervalMath",
-        "scaleDegrees",
-        "diatonicChords",
-        "chordSpelling"
-      ]
-    },
-    {
-      id: "reading",
-      label: "Reading music",
-      skills: ["keySignatures"]
-    },
-    {
-      id: "guitar",
-      label: "Guitar",
-      skills: ["fretboard", "speedTap"]
-    },
-    {
-      id: "ukulele",
-      label: "Ukulele",
-      skills: ["ukulele"]
-    }
-  ];
   function noteByNum(num) {
     return NOTES[(num % 12 + 12) % 12];
   }
@@ -5377,7 +5628,7 @@ body.native-app {
     var u4 = r2.__H || (r2.__H = { __: [], __h: [] });
     return n2 >= u4.__.length && u4.__.push({}), u4.__[n2];
   }
-  function d3(n2) {
+  function d2(n2) {
     return o2 = 1, h2(D2, n2);
   }
   function h2(n2, u4, i3) {
@@ -5508,6 +5759,111 @@ body.native-app {
   function D2(n2, t3) {
     return "function" == typeof t3 ? t3(n2) : t3;
   }
+
+  // src/mode-catalog.ts
+  var MODE_DESCRIPTIONS = {
+    fretboard: "Stop hunting for notes on the fretboard",
+    ukulele: "Stop hunting for notes on the fretboard",
+    speedTap: "Know all positions of a note instantly",
+    noteSemitones: "The number system behind the chromatic scale",
+    intervalSemitones: "Know the size of every interval in semitones",
+    semitoneMath: "Transpose by semitones without counting",
+    intervalMath: "Transpose by interval without counting",
+    keySignatures: "See a key, know its sharps and flats instantly",
+    scaleDegrees: "Connect notes to their function in a key",
+    diatonicChords: "Know which chords belong in any key",
+    chordSpelling: "Know the notes in any chord"
+  };
+  var MODE_NAMES = {
+    fretboard: "Guitar Fretboard",
+    ukulele: "Ukulele Fretboard",
+    speedTap: "Speed Tap",
+    noteSemitones: "Note \u2194 Semitones",
+    intervalSemitones: "Interval \u2194 Semitones",
+    semitoneMath: "Semitone Math",
+    intervalMath: "Interval Math",
+    keySignatures: "Key Signatures",
+    scaleDegrees: "Scale Degrees",
+    diatonicChords: "Diatonic Chords",
+    chordSpelling: "Chord Spelling"
+  };
+  var d3 = displayNote;
+  var MODE_BEFORE_AFTER = {
+    fretboard: {
+      before: () => `\u201C7th fret, ${d3("G")} string\u2026 ${d3("G")}, ${d3("G#")}, ${d3("A")}\u2026 ${d3("D")}?\u201D`,
+      after: () => `\u201C7th fret, ${d3("G")} string. ${d3("D")}.\u201D`
+    },
+    ukulele: {
+      before: () => `\u201C5th fret, ${d3("C")} string\u2026 ${d3("C")}, ${d3("D")}, ${d3("E")}\u2026 ${d3("E")}?\u201D`,
+      after: () => `\u201C5th fret, ${d3("C")} string. ${d3("E")}.\u201D`
+    },
+    speedTap: {
+      before: () => `\u201CAll the ${d3("C")}\u2019s\u2026 8th fret ${d3("E")}, 3rd fret ${d3("A")}\u2026 um\u2026\u201D`,
+      after: () => `\u201C${d3("C")}\u2019s. 8, 3, 10, 5, 1, 8.\u201D`
+    },
+    noteSemitones: {
+      before: () => `\u201C${d3("G#")}\u2026 ${d3("F")} is 5, so ${d3("G")} is\u2026 7, so ${d3("G#")} is 8.\u201D`,
+      after: () => `\u201C${d3("G#")}. 8.\u201D`
+    },
+    intervalSemitones: {
+      before: () => "\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D",
+      after: () => "\u201CM6. 9 semitones.\u201D"
+    },
+    semitoneMath: {
+      before: () => `\u201C${d3("F#")} + 4\u2026 ${d3("G")}, ${d3("G#")}, ${d3("A")}, ${d3("A#")}\u2026 is that ${d3("Bb")}?\u201D`,
+      after: () => `\u201C${d3("F#")} + 4. ${d3("Bb")}.\u201D`
+    },
+    intervalMath: {
+      before: () => `\u201C${d3("C")} + m6\u2026 minor 6th is 8 semitones\u2026 ${d3("Ab")}?\u201D`,
+      after: () => `\u201C${d3("C")} + m6. ${d3("Ab")}.\u201D`
+    },
+    keySignatures: {
+      before: () => `\u201C3 flats\u2026 ${d3("Bb")}, ${d3("Eb")}, ${d3("Ab")}\u2026 so ${d3("Eb")} major?\u201D`,
+      after: () => `\u201C3 flats: ${d3("Eb")} major.\u201D`
+    },
+    scaleDegrees: {
+      before: () => `\u201C5th degree of ${d3("Bb")}\u2026 ${d3("Bb")}, ${d3("C")}, ${d3("D")}, ${d3("Eb")}, ${d3("F")}\u2026 ${d3("F")}?\u201D`,
+      after: () => `\u201C5th of ${d3("Bb")}. ${d3("F")}.\u201D`
+    },
+    diatonicChords: {
+      before: () => `\u201CIV in ${d3("G")}\u2026 ${d3("G")}, ${d3("A")}, ${d3("B")}, ${d3("C")}\u2026 so ${d3("C")} major?\u201D`,
+      after: () => `\u201CIV in ${d3("G")}. ${d3("C")} major.\u201D`
+    },
+    chordSpelling: {
+      before: () => `\u201C${d3("F")}m7\u2026 ${d3("F")}, ${d3("Ab")}, ${d3("C")}\u2026 what\u2019s the 7th\u2026 ${d3("Eb")}\u201D`,
+      after: () => `\u201C${d3("F")}m7. ${d3("F")} ${d3("Ab")} ${d3("C")} ${d3("Eb")}.\u201D`
+    }
+  };
+  var TRACKS = [
+    {
+      id: "core",
+      label: "Music theory",
+      skills: [
+        "noteSemitones",
+        "intervalSemitones",
+        "semitoneMath",
+        "intervalMath",
+        "scaleDegrees",
+        "diatonicChords",
+        "chordSpelling"
+      ]
+    },
+    {
+      id: "reading",
+      label: "Reading music",
+      skills: ["keySignatures"]
+    },
+    {
+      id: "guitar",
+      label: "Guitar",
+      skills: ["fretboard", "speedTap"]
+    },
+    {
+      id: "ukulele",
+      label: "Ukulele",
+      skills: ["ukulele"]
+    }
+  ];
 
   // src/adaptive.ts
   var DEFAULT_CONFIG = {
@@ -6864,6 +7220,16 @@ body.native-app {
     const avgFresh = freshCount > 0 ? freshSum / freshCount : null;
     return getSpeedFreshnessColor(avgSpeed, avgFresh);
   }
+  function progressBarColors(selector, itemIds) {
+    const items = itemIds.map((id) => {
+      const sp = selector.getSpeedScore(id);
+      const fr = selector.getFreshness(id);
+      const auto = sp !== null && fr !== null ? sp * fr : null;
+      return { auto, color: getSpeedFreshnessColor(sp, fr) };
+    });
+    items.sort((a3, b) => (b.auto ?? -1) - (a3.auto ?? -1));
+    return items.map((item) => item.color);
+  }
   function buildStatsLegend() {
     let html = '<div class="heatmap-legend active">';
     html += '<div class="legend-section">';
@@ -7254,7 +7620,7 @@ body.native-app {
     return null;
   }
   function useHomeProgress(starred) {
-    const [refreshKey, setRefreshKey] = d3(0);
+    const [refreshKey, setRefreshKey] = d2(0);
     y2(() => {
       const el = document.getElementById("home-screen");
       if (!el) return;
@@ -7340,7 +7706,7 @@ body.native-app {
     // ♯
   ];
   function SplitNoteButtons({ onAnswer, sequential, pendingNote, answered }) {
-    const [pendingBase, setPendingBase] = d3(null);
+    const [pendingBase, setPendingBase] = d2(null);
     const onAnswerRef = A2(onAnswer);
     onAnswerRef.current = onAnswer;
     y2(() => {
@@ -7694,9 +8060,9 @@ body.native-app {
       targetNote: null,
       trialTimeout: null
     });
-    const [trialProgress, setTrialProgress] = d3("");
-    const [promptText, setPromptText] = d3("");
-    const [feedback, setFeedback] = d3(null);
+    const [trialProgress, setTrialProgress] = d2("");
+    const [promptText, setPromptText] = d2("");
+    const [feedback, setFeedback] = d2(null);
     const feedbackTimerRef = A2(null);
     const onDoneRef = A2(onDone);
     onDoneRef.current = onDone;
@@ -7782,7 +8148,7 @@ body.native-app {
   }
   function SpeedCheckInput({ onSubmit, wrongFlash }) {
     const inputRef = A2(null);
-    const [shake, setShake] = d3(false);
+    const [shake, setShake] = d2(false);
     const shakeTimerRef = A2(null);
     y2(() => {
       if (inputRef.current) inputRef.current.focus();
@@ -7884,10 +8250,10 @@ body.native-app {
     ] });
   }
   function SpeedCheck({ config, onComplete, onCancel, fixture }) {
-    const [phase, setPhase] = d3(
+    const [phase, setPhase] = d2(
       fixture?.phase ?? "intro"
     );
-    const [baseline, setBaseline] = d3(fixture?.baseline ?? 0);
+    const [baseline, setBaseline] = d2(fixture?.baseline ?? 0);
     const trials = useTrialLoop(config, (median) => {
       setBaseline(Math.round(median));
       setPhase("results");
@@ -7964,6 +8330,35 @@ body.native-app {
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children: /* @__PURE__ */ u3(SpeedCheckResults, { baseline, onComplete }) });
   }
 
+  // src/ui/screen-layout.tsx
+  function ScreenLayout({ children, class: extra }) {
+    const cls = "screen-layout" + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3("div", { class: cls, children });
+  }
+  function LayoutHeader({ children, class: extra }) {
+    const cls = "layout-header" + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3("div", { class: cls, children });
+  }
+  function LayoutMain({ children, scrollable = true, class: extra }) {
+    const cls = "layout-main" + (scrollable ? " layout-main-scroll" : " layout-main-fixed") + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3("div", { class: cls, children });
+  }
+  function LayoutFooter({ children, class: extra }) {
+    if (!children) return null;
+    const cls = "layout-footer" + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3("div", { class: cls, children });
+  }
+  function QuizStage({ prompt, response }) {
+    return /* @__PURE__ */ u3("div", { class: "quiz-stage", children: [
+      /* @__PURE__ */ u3("div", { class: "quiz-stage-prompt", children: prompt }),
+      /* @__PURE__ */ u3("div", { class: "quiz-stage-response", children: response })
+    ] });
+  }
+  function CenteredContent({ children, class: extra }) {
+    const cls = "centered-content" + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3("div", { class: cls, children });
+  }
+
   // src/ui/mode-screen.tsx
   function CloseButton2({ onClick, ariaLabel }) {
     return /* @__PURE__ */ u3(
@@ -7977,9 +8372,11 @@ body.native-app {
       }
     );
   }
-  var tabsIdCounter = 0;
-  function Tabs({ tabs, activeTab, onTabSwitch, class: className = "tabs" }) {
-    const prefix = T2(() => "tabs-" + tabsIdCounter++, []);
+  var tabsPrefixCounter = 0;
+  function useTabsPrefix() {
+    return T2(() => "tabs-" + tabsPrefixCounter++, []);
+  }
+  function TabBar({ tabs, activeTab, onTabSwitch, prefix, class: className = "tabs" }) {
     function handleKeyDown(e3, current) {
       const ids = tabs.map((t3) => t3.id);
       const idx = ids.indexOf(current);
@@ -7998,36 +8395,36 @@ body.native-app {
         )?.focus();
       });
     }
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: className, role: "tablist", children: tabs.map((tab) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          id: prefix + "-tab-" + tab.id,
-          role: "tab",
-          "aria-selected": activeTab === tab.id,
-          "aria-controls": prefix + "-panel-" + tab.id,
-          tabIndex: activeTab === tab.id ? 0 : -1,
-          class: "tab-btn" + (activeTab === tab.id ? " active" : ""),
-          "data-tab": tab.id,
-          onClick: () => onTabSwitch(tab.id),
-          onKeyDown: (e3) => handleKeyDown(e3, tab.id),
-          children: tab.label
-        },
-        tab.id
-      )) }),
-      tabs.map((tab) => /* @__PURE__ */ u3(
-        "div",
-        {
-          id: prefix + "-panel-" + tab.id,
-          role: "tabpanel",
-          "aria-labelledby": prefix + "-tab-" + tab.id,
-          class: "tab-panel" + (activeTab === tab.id ? " active" : ""),
-          children: tab.content
-        },
-        tab.id
-      ))
-    ] });
+    return /* @__PURE__ */ u3("div", { class: className, role: "tablist", children: tabs.map((tab) => /* @__PURE__ */ u3(
+      "button",
+      {
+        type: "button",
+        id: prefix + "-tab-" + tab.id,
+        role: "tab",
+        "aria-selected": activeTab === tab.id,
+        "aria-controls": prefix + "-panel-" + tab.id,
+        tabIndex: activeTab === tab.id ? 0 : -1,
+        class: "tab-btn" + (activeTab === tab.id ? " active" : ""),
+        "data-tab": tab.id,
+        onClick: () => onTabSwitch(tab.id),
+        onKeyDown: (e3) => handleKeyDown(e3, tab.id),
+        children: tab.label
+      },
+      tab.id
+    )) });
+  }
+  function TabPanels({ tabs, activeTab, prefix }) {
+    return /* @__PURE__ */ u3(k, { children: tabs.map((tab) => /* @__PURE__ */ u3(
+      "div",
+      {
+        id: prefix + "-panel-" + tab.id,
+        role: "tabpanel",
+        "aria-labelledby": prefix + "-tab-" + tab.id,
+        class: "tab-panel" + (activeTab === tab.id ? " active" : ""),
+        children: tab.content
+      },
+      tab.id
+    )) });
   }
   function ModeTopBar({ modeId, title, description, onBack, showBack = true }) {
     return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: /* @__PURE__ */ u3("div", { class: "mode-top-bar-row", children: [
@@ -8050,9 +8447,7 @@ body.native-app {
     const statusDetail = props.statusDetail ?? (props.summary ? props.summary.statusDetail : void 0);
     const recommendation = props.recommendation ?? (props.summary && props.summary.recommendationText ? props.summary.recommendationText : void 0);
     const onApplyRecommendation = props.onApplyRecommendation;
-    const { scope, onStart } = props;
-    const scopeDisabled = props.scopeValid === false;
-    const validationMessage = scopeDisabled ? props.validationMessage : void 0;
+    const { scope } = props;
     return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
       statusLabel && /* @__PURE__ */ u3("div", { class: "practice-status", children: [
         /* @__PURE__ */ u3("div", { class: "practice-status-row", children: [
@@ -8062,15 +8457,7 @@ body.native-app {
         statusDetail && /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail })
       ] }),
       recommendation && /* @__PURE__ */ u3(Recommendation, { text: recommendation, onApply: onApplyRecommendation }),
-      scope && /* @__PURE__ */ u3("div", { class: "practice-scope", children: scope }),
-      /* @__PURE__ */ u3("div", { class: "practice-zone-action", children: /* @__PURE__ */ u3(
-        StartButton,
-        {
-          onStart,
-          disabled: scopeDisabled,
-          validationMessage
-        }
-      ) })
+      scope && /* @__PURE__ */ u3("div", { class: "practice-scope", children: scope })
     ] });
   }
   function Recommendation({ text, onApply }) {
@@ -8206,6 +8593,42 @@ body.native-app {
       /* @__PURE__ */ u3("div", { class: "hint hint-spacer", children: "\xA0" })
     ] });
   }
+  var TAB_ICONS = {
+    // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
+    practice: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+    // Bar chart
+    progress: '<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
+    // Info circle
+    about: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+    // Star — filled star for Active skills tab
+    "active-skills": '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    // Grid/list — four squares for All Skills tab
+    "all-skills": '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>',
+    // Gear — settings cog
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'
+  };
+  function TabIcon({ icon, text }) {
+    const paths = TAB_ICONS[icon] ?? "";
+    return /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
+      /* @__PURE__ */ u3(
+        "svg",
+        {
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "18",
+          height: "18",
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: "currentColor",
+          "stroke-width": "2",
+          "stroke-linecap": "round",
+          "stroke-linejoin": "round",
+          "aria-hidden": "true",
+          dangerouslySetInnerHTML: { __html: paths }
+        }
+      ),
+      /* @__PURE__ */ u3("span", { children: text })
+    ] });
+  }
   function PracticeTab({
     summary,
     onStart,
@@ -8218,179 +8641,69 @@ body.native-app {
     onTabSwitch,
     scopeValid,
     validationMessage,
-    aboutContent
+    aboutContent,
+    practiceContent,
+    progressExtra
   }) {
+    const prefix = useTabsPrefix();
     const tabs = [
       {
         id: "practice",
-        label: "Practice",
-        content: /* @__PURE__ */ u3(
+        label: /* @__PURE__ */ u3(TabIcon, { icon: "practice", text: "Practice" }),
+        content: practiceContent ?? /* @__PURE__ */ u3(
           PracticeCard,
           {
             summary,
-            onStart,
             onApplyRecommendation,
-            scope,
-            scopeValid,
-            validationMessage
+            scope
           }
         )
       },
       {
         id: "progress",
-        label: "Progress",
+        label: /* @__PURE__ */ u3(TabIcon, { icon: "progress", text: "Progress" }),
         content: /* @__PURE__ */ u3("div", { children: [
           /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent }),
+          progressExtra,
           onCalibrate && /* @__PURE__ */ u3(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate })
         ] })
       }
     ];
     if (aboutContent) {
-      tabs.push({ id: "about", label: "About", content: aboutContent });
+      tabs.push({
+        id: "about",
+        label: /* @__PURE__ */ u3(TabIcon, { icon: "about", text: "About" }),
+        content: aboutContent
+      });
     }
-    return /* @__PURE__ */ u3(Tabs, { tabs, activeTab, onTabSwitch });
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3(LayoutMain, { children: /* @__PURE__ */ u3(TabPanels, { tabs, activeTab, prefix }) }),
+      /* @__PURE__ */ u3(LayoutFooter, { children: [
+        activeTab === "practice" && /* @__PURE__ */ u3("div", { class: "practice-zone-action", children: /* @__PURE__ */ u3(
+          StartButton,
+          {
+            onStart,
+            disabled: scopeValid === false,
+            validationMessage: scopeValid === false ? validationMessage : void 0
+          }
+        ) }),
+        /* @__PURE__ */ u3(
+          TabBar,
+          {
+            tabs,
+            activeTab,
+            onTabSwitch,
+            prefix,
+            class: "mode-nav"
+          }
+        )
+      ] })
+    ] });
   }
 
   // src/ui/scope.tsx
   function GroupProgressBar({ colors, disabled }) {
     return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `background:${color}` }, i3)) });
-  }
-  var CLOSE_EVENT = "groupskipmenu:close";
-  function GroupSkipMenu({ index, label, currentStatus, onSkip, onUnskip }) {
-    const [open, setOpen] = d3(false);
-    const idRef = A2(index);
-    idRef.current = index;
-    const openMenu = q2(() => {
-      document.dispatchEvent(
-        new CustomEvent(CLOSE_EVENT, { detail: index })
-      );
-      setOpen(true);
-    }, [index]);
-    y2(() => {
-      if (!open) return;
-      const onKey = (e3) => {
-        if (e3.key === "Escape") setOpen(false);
-      };
-      const onClick = () => setOpen(false);
-      const onOtherMenu = (e3) => {
-        if (e3.detail !== idRef.current) setOpen(false);
-      };
-      const rafId = requestAnimationFrame(() => {
-        document.addEventListener("click", onClick);
-        document.addEventListener("keydown", onKey);
-        document.addEventListener(CLOSE_EVENT, onOtherMenu);
-      });
-      return () => {
-        cancelAnimationFrame(rafId);
-        document.removeEventListener("click", onClick);
-        document.removeEventListener("keydown", onKey);
-        document.removeEventListener(CLOSE_EVENT, onOtherMenu);
-      };
-    }, [open]);
-    const select = q2(
-      (status) => {
-        if (status === "learn") onUnskip(index);
-        else onSkip(index, status);
-        setOpen(false);
-      },
-      [index, onSkip, onUnskip]
-    );
-    const items = [
-      { key: "learn", label: "Learn this" },
-      { key: "mastered", label: "I know this" },
-      { key: "deferred", label: "Skip for now" }
-    ];
-    return /* @__PURE__ */ u3("div", { class: "group-skip-menu-wrap", children: [
-      /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "group-skip-btn" + (open ? " open" : ""),
-          title: `Options for ${label}`,
-          "aria-label": `Options for ${label}`,
-          "aria-expanded": open,
-          onClick: (e3) => {
-            e3.stopPropagation();
-            if (open) setOpen(false);
-            else openMenu();
-          },
-          children: "\u22EF"
-        }
-      ),
-      open && /* @__PURE__ */ u3(
-        "div",
-        {
-          class: "group-skip-menu",
-          onClick: (e3) => e3.stopPropagation(),
-          children: items.map((item) => /* @__PURE__ */ u3(
-            "button",
-            {
-              type: "button",
-              onClick: () => select(item.key),
-              children: [
-                /* @__PURE__ */ u3("span", { class: "menu-check", children: item.key === currentStatus ? "\u2713" : "" }),
-                item.label
-              ]
-            },
-            item.key
-          ))
-        }
-      )
-    ] });
-  }
-  function GroupProgressToggles({ groups, active, onToggle, selector, skipped, onSkip, onUnskip }) {
-    const hasMenu = !!(onSkip && onUnskip);
-    return /* @__PURE__ */ u3(
-      "div",
-      {
-        class: "group-progress-toggles" + (hasMenu ? " has-skip" : ""),
-        children: groups.map((g2, i3) => {
-          const isSkipped = skipped?.has(i3) ?? false;
-          const skipReason = skipped?.get(i3);
-          const currentStatus = skipReason ?? "learn";
-          const items = g2.itemIds.map((id) => {
-            const sp = selector.getSpeedScore(id);
-            const fr = selector.getFreshness(id);
-            const auto = sp !== null && fr !== null ? sp * fr : null;
-            return { id, auto, color: getSpeedFreshnessColor(sp, fr) };
-          });
-          items.sort((a3, b) => (b.auto ?? -1) - (a3.auto ?? -1));
-          return /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(
-              "button",
-              {
-                type: "button",
-                tabIndex: 0,
-                class: "distance-toggle" + (active.has(i3) ? " active" : "") + (isSkipped ? " skipped" : ""),
-                "aria-pressed": active.has(i3),
-                "data-group": String(i3),
-                disabled: isSkipped,
-                onClick: () => onToggle(i3),
-                children: g2.label
-              }
-            ),
-            /* @__PURE__ */ u3(
-              GroupProgressBar,
-              {
-                colors: items.map((item) => item.color),
-                disabled: isSkipped
-              }
-            ),
-            hasMenu && /* @__PURE__ */ u3(
-              GroupSkipMenu,
-              {
-                index: i3,
-                label: g2.label,
-                currentStatus,
-                onSkip,
-                onUnskip
-              }
-            )
-          ] }, i3);
-        })
-      }
-    );
   }
   function NoteFilter({ mode, onChange }) {
     const naturalActive = mode === "natural" || mode === "all";
@@ -8434,6 +8747,74 @@ body.native-app {
           }
         )
       ] })
+    ] });
+  }
+
+  // src/ui/segmented-control.tsx
+  var segmentedControlCounter = 0;
+  function SegmentedControl({ options, value, onChange, "aria-labelledby": labelledBy }) {
+    const prefix = T2(() => "sc-" + segmentedControlCounter++, []);
+    function handleKeyDown(e3, current) {
+      const vals = options.map((o3) => o3.value);
+      const idx = vals.indexOf(current);
+      let next = idx;
+      if (e3.key === "ArrowLeft" || e3.key === "ArrowUp") {
+        next = (idx - 1 + vals.length) % vals.length;
+      } else if (e3.key === "ArrowRight" || e3.key === "ArrowDown") {
+        next = (idx + 1) % vals.length;
+      } else if (e3.key === "Home") {
+        next = 0;
+      } else if (e3.key === "End") {
+        next = vals.length - 1;
+      } else {
+        return;
+      }
+      e3.preventDefault();
+      onChange(vals[next]);
+      requestAnimationFrame(() => {
+        document.getElementById(
+          prefix + "-" + vals[next]
+        )?.focus();
+      });
+    }
+    return /* @__PURE__ */ u3(
+      "div",
+      {
+        class: "segmented-control",
+        role: "radiogroup",
+        "aria-labelledby": labelledBy,
+        children: options.map((opt) => /* @__PURE__ */ u3(
+          "button",
+          {
+            id: prefix + "-" + opt.value,
+            type: "button",
+            role: "radio",
+            "aria-checked": value === opt.value,
+            tabIndex: value === opt.value ? 0 : -1,
+            class: "segmented-btn" + (value === opt.value ? " active" : ""),
+            onClick: () => onChange(opt.value),
+            onKeyDown: (e3) => handleKeyDown(e3, opt.value),
+            children: opt.label
+          },
+          opt.value
+        ))
+      }
+    );
+  }
+  var settingToggleLabelCounter = 0;
+  function SettingToggle({ label, options, value, onChange }) {
+    const labelId = T2(() => "stl-" + settingToggleLabelCounter++, []);
+    return /* @__PURE__ */ u3("div", { class: "settings-field", children: [
+      /* @__PURE__ */ u3(Text, { role: "label", as: "div", id: labelId, children: label }),
+      /* @__PURE__ */ u3(
+        SegmentedControl,
+        {
+          options,
+          value,
+          onChange,
+          "aria-labelledby": labelId
+        }
+      )
     ] });
   }
 
@@ -8502,72 +8883,6 @@ body.native-app {
         /* @__PURE__ */ u3("span", { class: "home-mode-name", children: name }),
         /* @__PURE__ */ u3("span", { class: "home-mode-desc", children: desc })
       ] })
-    ] });
-  }
-  var segmentedControlCounter = 0;
-  function SegmentedControl({ options, value, onChange, "aria-labelledby": labelledBy }) {
-    const prefix = T2(() => "sc-" + segmentedControlCounter++, []);
-    function handleKeyDown(e3, current) {
-      const vals = options.map((o3) => o3.value);
-      const idx = vals.indexOf(current);
-      let next = idx;
-      if (e3.key === "ArrowLeft" || e3.key === "ArrowUp") {
-        next = (idx - 1 + vals.length) % vals.length;
-      } else if (e3.key === "ArrowRight" || e3.key === "ArrowDown") {
-        next = (idx + 1) % vals.length;
-      } else if (e3.key === "Home") {
-        next = 0;
-      } else if (e3.key === "End") {
-        next = vals.length - 1;
-      } else {
-        return;
-      }
-      e3.preventDefault();
-      onChange(vals[next]);
-      requestAnimationFrame(() => {
-        document.getElementById(
-          prefix + "-" + vals[next]
-        )?.focus();
-      });
-    }
-    return /* @__PURE__ */ u3(
-      "div",
-      {
-        class: "segmented-control",
-        role: "radiogroup",
-        "aria-labelledby": labelledBy,
-        children: options.map((opt) => /* @__PURE__ */ u3(
-          "button",
-          {
-            id: prefix + "-" + opt.value,
-            type: "button",
-            role: "radio",
-            "aria-checked": value === opt.value,
-            tabIndex: value === opt.value ? 0 : -1,
-            class: "segmented-btn" + (value === opt.value ? " active" : ""),
-            onClick: () => onChange(opt.value),
-            onKeyDown: (e3) => handleKeyDown(e3, opt.value),
-            children: opt.label
-          },
-          opt.value
-        ))
-      }
-    );
-  }
-  var settingToggleLabelCounter = 0;
-  function SettingToggle({ label, options, value, onChange }) {
-    const labelId = T2(() => "stl-" + settingToggleLabelCounter++, []);
-    return /* @__PURE__ */ u3("div", { class: "settings-field", children: [
-      /* @__PURE__ */ u3(Text, { role: "label", as: "div", id: labelId, children: label }),
-      /* @__PURE__ */ u3(
-        SegmentedControl,
-        {
-          options,
-          value,
-          onChange,
-          "aria-labelledby": labelId
-        }
-      )
     ] });
   }
   function SkillCard({ modeId, trackId, isStarred, onToggleStar, onSelectMode, progress }) {
@@ -8801,18 +9116,8 @@ body.native-app {
       ] })
     ] });
   }
-  function SettingsPage({ settings: settings2, appConfig, version: version2, useSolfege, setUseSolfege: setUseSolfege2, onClose }) {
+  function SettingsPanel({ settings: settings2, appConfig, version: version2, useSolfege, setUseSolfege: setUseSolfege2, onOpenDev }) {
     return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
-      /* @__PURE__ */ u3("div", { class: "settings-page-header", children: [
-        /* @__PURE__ */ u3("h1", { class: "settings-page-title", children: "Settings" }),
-        /* @__PURE__ */ u3(
-          CloseButton2,
-          {
-            ariaLabel: "Close",
-            onClick: onClose
-          }
-        )
-      ] }),
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
         /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "General" }),
         /* @__PURE__ */ u3(
@@ -8832,11 +9137,12 @@ body.native-app {
           }
         )
       ] }),
-      /* @__PURE__ */ u3(SettingsAboutLegal, { appConfig, version: version2 })
+      /* @__PURE__ */ u3(SettingsAboutLegal, { appConfig, version: version2 }),
+      onOpenDev && /* @__PURE__ */ u3("section", { class: "settings-section", children: /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) })
     ] });
   }
   function DevPage({ onClose }) {
-    const [data] = d3(getDevPanelData);
+    const [data] = d2(getDevPanelData);
     return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
       /* @__PURE__ */ u3("div", { class: "settings-page-header", children: [
         /* @__PURE__ */ u3("h1", { class: "settings-page-title", children: "Dev" }),
@@ -8885,41 +9191,35 @@ body.native-app {
     ] });
   }
   function AllSkillsList({ accordion, starred, onToggleExpand, onToggleStar, onSelectMode, progress }) {
-    return /* @__PURE__ */ u3("div", { class: "home-modes", children: [
-      /* @__PURE__ */ u3("p", { class: "all-skills-hint", children: [
-        "Tap the \u2606 on a skill to add it to your ",
-        /* @__PURE__ */ u3("strong", { children: "Active" }),
-        " ",
-        "list."
-      ] }),
-      TRACKS.map((track) => /* @__PURE__ */ u3(
-        TrackSection,
-        {
-          trackId: track.id,
-          label: track.label,
-          isExpanded: accordion[track.id] !== false,
-          onToggle: () => onToggleExpand(track.id),
-          children: track.skills.map((modeId) => /* @__PURE__ */ u3(
-            SkillCard,
-            {
-              modeId,
-              trackId: track.id,
-              isStarred: starred.has(modeId),
-              onToggleStar,
-              onSelectMode,
-              progress: progress.get(modeId)
-            },
-            modeId
-          ))
-        },
-        track.id
-      ))
-    ] });
+    return /* @__PURE__ */ u3("div", { class: "home-modes", children: TRACKS.map((track) => /* @__PURE__ */ u3(
+      TrackSection,
+      {
+        trackId: track.id,
+        label: track.label,
+        isExpanded: accordion[track.id] !== false,
+        onToggle: () => onToggleExpand(track.id),
+        children: track.skills.map((modeId) => /* @__PURE__ */ u3(
+          SkillCard,
+          {
+            modeId,
+            trackId: track.id,
+            isStarred: starred.has(modeId),
+            onToggleStar,
+            onSelectMode,
+            progress: progress.get(modeId)
+          },
+          modeId
+        ))
+      },
+      track.id
+    )) });
   }
   function loadInitialTab() {
     try {
       const saved = localStorage.getItem(TAB_KEY);
-      if (saved === "active" || saved === "all") return saved;
+      if (saved === "active" || saved === "all" || saved === "settings") {
+        return saved;
+      }
     } catch (_3) {
     }
     return loadStarredSkills().size > 0 ? "active" : "all";
@@ -8927,95 +9227,85 @@ body.native-app {
   function HomeHeader({ isNativeApp: isNativeApp2 }) {
     return /* @__PURE__ */ u3("div", { class: `home-header${isNativeApp2 ? " sr-only" : ""}`, children: [
       /* @__PURE__ */ u3("h1", { class: "home-title", children: "Music Reps" }),
-      !isNativeApp2 && /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Instant recall for music fundamentals. You know the theory\u2009\u2014\u2009now make it automatic." })
+      !isNativeApp2 && /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Instant recall for music fundamentals. You know the theory\u2009\u2014\u2009now make it automatic." }),
+      /* @__PURE__ */ u3("p", { class: "all-skills-hint", children: [
+        "Tap the \u2606 on a skill to add it to your ",
+        /* @__PURE__ */ u3("strong", { children: "Active" }),
+        " ",
+        "list."
+      ] })
     ] });
   }
-  function HomeFooter({ version: version2, onSettings, onOpenDev }) {
-    return /* @__PURE__ */ u3("div", { class: "home-footer", children: [
-      /* @__PURE__ */ u3("span", { children: [
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            class: "home-settings-btn text-link",
-            onClick: onSettings,
-            children: "Settings"
-          }
-        ),
-        onOpenDev && /* @__PURE__ */ u3(k, { children: [
-          " \xB7 ",
-          /* @__PURE__ */ u3(
-            "button",
-            {
-              type: "button",
-              class: "text-link",
-              onClick: onOpenDev,
-              children: "Dev"
-            }
-          )
-        ] })
-      ] }),
-      /* @__PURE__ */ u3("span", { class: "version", children: version2 })
-    ] });
-  }
-  function HomeSkillTabs({
-    tab,
-    onChangeTab,
+  function useHomeTabs({
     starred,
     accordion,
+    progress,
+    recommendations,
+    settings: settings2,
+    appConfig,
+    version: version2,
+    useSolfege,
+    setUseSolfege: setUseSolfege2,
+    onSelectMode,
     onToggleStar,
     onToggleExpand,
-    onSelectMode,
-    progress,
-    recommendations
+    onOpenDev
   }) {
-    return /* @__PURE__ */ u3(
-      Tabs,
+    return [
       {
-        tabs: [
+        id: "active",
+        label: /* @__PURE__ */ u3(TabIcon, { icon: "active-skills", text: "Active" }),
+        content: /* @__PURE__ */ u3(k, { children: /* @__PURE__ */ u3(
+          ActiveSkillsList,
           {
-            id: "active",
-            label: `Active${starred.size > 0 ? ` (${starred.size})` : ""}`,
-            content: /* @__PURE__ */ u3(
-              ActiveSkillsList,
-              {
-                starred,
-                onToggleStar,
-                onSelectMode,
-                progress,
-                recommendations
-              }
-            )
-          },
-          {
-            id: "all",
-            label: "All Skills",
-            content: /* @__PURE__ */ u3(
-              AllSkillsList,
-              {
-                accordion,
-                starred,
-                onToggleExpand,
-                onToggleStar,
-                onSelectMode,
-                progress
-              }
-            )
+            starred,
+            onToggleStar,
+            onSelectMode,
+            progress,
+            recommendations
           }
-        ],
-        activeTab: tab,
-        onTabSwitch: onChangeTab
+        ) })
+      },
+      {
+        id: "all",
+        label: /* @__PURE__ */ u3(TabIcon, { icon: "all-skills", text: "All Skills" }),
+        content: /* @__PURE__ */ u3(k, { children: /* @__PURE__ */ u3(
+          AllSkillsList,
+          {
+            accordion,
+            starred,
+            onToggleExpand,
+            onToggleStar,
+            onSelectMode,
+            progress
+          }
+        ) })
+      },
+      {
+        id: "settings",
+        label: /* @__PURE__ */ u3(TabIcon, { icon: "settings", text: "Settings" }),
+        content: /* @__PURE__ */ u3(
+          SettingsPanel,
+          {
+            settings: settings2,
+            appConfig,
+            version: version2,
+            useSolfege,
+            setUseSolfege: setUseSolfege2,
+            onOpenDev
+          }
+        )
       }
-    );
+    ];
   }
   function HomeScreen({ onSelectMode, settings: settings2, appConfig, showDevLink, version: version2, isNativeApp: isNativeApp2 }) {
-    const [starred, setStarred] = d3(loadStarredSkills);
+    const [starred, setStarred] = d2(loadStarredSkills);
     const { progress, recommendations } = useHomeProgress(starred);
-    const [accordion, setAccordion] = d3(loadAccordionState);
-    const [showSettings, setShowSettings] = d3(false);
-    const [showDev, setShowDev] = d3(false);
-    const [useSolfege, setUseSolfege2] = d3(() => settings2.getUseSolfege());
-    const [tab, setTab] = d3(loadInitialTab);
+    const [accordion, setAccordion] = d2(loadAccordionState);
+    const [showDev, setShowDev] = d2(false);
+    const [useSolfege, setUseSolfege2] = d2(() => settings2.getUseSolfege());
+    const [tab, setTab] = d2(loadInitialTab);
+    const prefix = useTabsPrefix();
     const handleToggleStar = q2((modeId) => {
       setStarred((prev) => {
         const next = new Set(prev);
@@ -9026,11 +9316,12 @@ body.native-app {
     }, []);
     const handleChangeTab = q2((t3) => {
       setTab(t3);
+      if (t3 === "settings") setUseSolfege2(settings2.getUseSolfege());
       try {
         localStorage.setItem(TAB_KEY, t3);
       } catch (_3) {
       }
-    }, []);
+    }, [settings2]);
     const handleToggleExpand = q2((trackId) => {
       setAccordion((prev) => {
         const next = { ...prev, [trackId]: !prev[trackId] };
@@ -9038,49 +9329,37 @@ body.native-app {
         return next;
       });
     }, []);
-    if (showSettings) {
-      return /* @__PURE__ */ u3(
-        SettingsPage,
-        {
-          settings: settings2,
-          appConfig,
-          version: version2,
-          useSolfege,
-          setUseSolfege: setUseSolfege2,
-          onClose: () => setShowSettings(false)
-        }
-      );
-    }
+    const tabs = useHomeTabs({
+      starred,
+      accordion,
+      progress,
+      recommendations,
+      settings: settings2,
+      appConfig,
+      version: version2,
+      useSolfege,
+      setUseSolfege: setUseSolfege2,
+      onSelectMode,
+      onToggleStar: handleToggleStar,
+      onToggleExpand: handleToggleExpand,
+      onOpenDev: showDevLink ? () => setShowDev(true) : void 0
+    });
     if (showDev) {
       return /* @__PURE__ */ u3(DevPage, { onClose: () => setShowDev(false) });
     }
-    return /* @__PURE__ */ u3("div", { class: "home-content", children: [
-      /* @__PURE__ */ u3(HomeHeader, { isNativeApp: isNativeApp2 }),
-      /* @__PURE__ */ u3(
-        HomeSkillTabs,
+    return /* @__PURE__ */ u3(ScreenLayout, { class: "home-screen-layout", children: [
+      /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(HomeHeader, { isNativeApp: isNativeApp2 }) }),
+      /* @__PURE__ */ u3(LayoutMain, { children: /* @__PURE__ */ u3("div", { class: "home-content", children: /* @__PURE__ */ u3(TabPanels, { tabs, activeTab: tab, prefix }) }) }),
+      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+        TabBar,
         {
-          tab,
-          onChangeTab: handleChangeTab,
-          starred,
-          accordion,
-          onToggleStar: handleToggleStar,
-          onToggleExpand: handleToggleExpand,
-          onSelectMode,
-          progress,
-          recommendations
+          tabs,
+          activeTab: tab,
+          onTabSwitch: handleChangeTab,
+          prefix,
+          class: "mode-nav"
         }
-      ),
-      /* @__PURE__ */ u3(
-        HomeFooter,
-        {
-          version: version2,
-          onSettings: () => {
-            setUseSolfege2(settings2.getUseSolfege());
-            setShowSettings(true);
-          },
-          onOpenDev: showDevLink ? () => setShowDev(true) : void 0
-        }
-      )
+      ) })
     ] });
   }
 
@@ -9191,34 +9470,62 @@ body.native-app {
     if (level >= 0.3) return "Learning";
     return "Hesitant";
   }
-  function buildRecommendationText(result, getGroupLabel, extraParts) {
-    if (result.recommended.size === 0) return "";
-    const parts = [];
+  function groupRecsByType(levelRecs) {
     const seen = /* @__PURE__ */ new Set();
     const byType = {};
-    for (const rec of result.levelRecs) {
+    for (const rec of levelRecs) {
       if (seen.has(rec.index)) continue;
       seen.add(rec.index);
       if (!byType[rec.type]) byType[rec.type] = [];
       byType[rec.type].push(rec.index);
     }
+    return byType;
+  }
+  function buildRecommendationLines(result, getGroupLabel) {
+    if (result.recommended.size === 0) return [];
+    const byType = groupRecsByType(result.levelRecs);
+    const lines = [];
     if (byType["review"]) {
       const labels = byType["review"].sort((a3, b) => a3 - b).map(getGroupLabel);
-      parts.push("review " + labels.join(", "));
+      lines.push({ verb: "Review", levels: labels });
     }
     if (byType["practice"]) {
       const labels = byType["practice"].sort((a3, b) => a3 - b).map(getGroupLabel);
-      parts.push("practice " + labels.join(", "));
+      lines.push({ verb: "Practice", levels: labels });
     }
     if (byType["expand"] && result.expandIndex !== null) {
-      parts.push(
-        "start " + getGroupLabel(result.expandIndex) + " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "")
-      );
+      const suffix = " \u2014 " + result.expandNewCount + " new item" + (result.expandNewCount !== 1 ? "s" : "");
+      lines.push({
+        verb: "Start",
+        levels: [getGroupLabel(result.expandIndex) + suffix]
+      });
     }
     if (byType["automate"]) {
       const labels = byType["automate"].sort((a3, b) => a3 - b).map(getGroupLabel);
-      parts.push("automate " + labels.join(", "));
+      lines.push({ verb: "Keep practicing", levels: labels });
     }
+    return lines;
+  }
+  function flatVerb(line) {
+    switch (line.verb) {
+      case "Review":
+        return "review";
+      case "Practice":
+        return "practice";
+      case "Start":
+        return "start";
+      case "Keep practicing":
+        return "automate";
+      default:
+        return line.verb.toLowerCase();
+    }
+  }
+  function buildRecommendationText(result, getGroupLabel, extraParts) {
+    if (result.recommended.size === 0) return "";
+    const lines = buildRecommendationLines(result, getGroupLabel);
+    const parts = lines.map(
+      (line) => flatVerb(line) + " " + line.levels.join(", ")
+    );
     if (extraParts) {
       for (let i3 = 0; i3 < extraParts.length; i3++) {
         parts.push(extraParts[i3]);
@@ -9331,7 +9638,7 @@ body.native-app {
     }
   }
   function useScopeState(spec) {
-    const [scope, setScopeRaw] = d3(() => loadScope(spec));
+    const [scope, setScopeRaw] = d2(() => loadScope(spec));
     const setScope = q2((next) => {
       setScopeRaw(next);
       saveScope(spec, next);
@@ -9408,7 +9715,7 @@ body.native-app {
 
   // src/hooks/use-notation-version.ts
   function useNotationVersion() {
-    const [v3, setV] = d3(getNotationVersion);
+    const [v3, setV] = d2(getNotationVersion);
     y2(() => subscribeNotation(() => setV(getNotationVersion())), []);
     return v3;
   }
@@ -9423,8 +9730,57 @@ body.native-app {
   function resolveLabel(label) {
     return typeof label === "function" ? label() : label;
   }
+  function usePracticeMode(storageKey) {
+    const pmKey = storageKey + "_practiceMode";
+    const [mode, setModeRaw] = d2(() => {
+      try {
+        return localStorage.getItem(pmKey) === "custom" ? "custom" : "suggested";
+      } catch {
+        return "suggested";
+      }
+    });
+    const setMode = q2((m3) => {
+      setModeRaw(m3);
+      try {
+        localStorage.setItem(pmKey, m3);
+      } catch {
+      }
+    }, [pmKey]);
+    return [mode, setMode];
+  }
+  function useRecommendationData(spec, activeGroupIndices, notationVersion) {
+    const recommendation = T2(
+      () => computeRecommendations(
+        spec.selector,
+        activeGroupIndices,
+        spec.getItemIdsForGroup,
+        {},
+        { sortUnstarted: (a3, b) => a3.string - b.string }
+      ),
+      [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]
+    );
+    const getLabel = q2(
+      (i3) => resolveLabel(spec.groups[i3].label),
+      [spec.groups, notationVersion]
+    );
+    const suggestionLines = T2(
+      () => buildRecommendationLines(recommendation, getLabel),
+      [recommendation, getLabel]
+    );
+    const recommendationText = T2(
+      () => buildRecommendationText(recommendation, getLabel),
+      [recommendation, getLabel]
+    );
+    return {
+      recommendation,
+      suggestedScope: recommendation.recommended,
+      suggestionLines,
+      recommendationText
+    };
+  }
   function useGroupScope(spec) {
     const notationVersion = useNotationVersion();
+    const [practiceMode, setPracticeMode] = usePracticeMode(spec.storageKey);
     const [scope, scopeActions] = useScopeState({
       kind: "groups",
       groups: spec.groups.map((g2, i3) => ({
@@ -9437,49 +9793,32 @@ body.native-app {
       label: spec.scopeLabel,
       sortUnstarted: (a3, b) => a3.string - b.string
     });
-    const enabledGroups = scope.kind === "groups" ? scope.enabledGroups : new Set(spec.defaultEnabled);
+    const customGroups = scope.kind === "groups" ? scope.enabledGroups : new Set(spec.defaultEnabled);
     const skippedGroups = scope.kind === "groups" ? scope.skippedGroups : EMPTY_SKIPPED;
     const activeGroupIndices = T2(
       () => spec.allGroupIndices.filter((i3) => !skippedGroups.has(i3)),
       [spec.allGroupIndices, skippedGroups]
     );
+    const rec = useRecommendationData(spec, activeGroupIndices, notationVersion);
+    const enabledGroups = practiceMode === "suggested" && rec.suggestedScope.size > 0 ? rec.suggestedScope : customGroups;
     const enabledItems = T2(() => {
       const items = [];
-      for (const g2 of enabledGroups) {
-        items.push(...spec.getItemIdsForGroup(g2));
-      }
+      for (const g2 of enabledGroups) items.push(...spec.getItemIdsForGroup(g2));
       return items;
     }, [enabledGroups, spec.getItemIdsForGroup]);
     const practicingLabel = T2(
       () => spec.formatLabel(enabledGroups),
       [enabledGroups, spec.formatLabel, notationVersion]
     );
-    const recommendation = T2(
-      () => computeRecommendations(
-        spec.selector,
-        activeGroupIndices,
-        spec.getItemIdsForGroup,
-        {},
-        { sortUnstarted: (a3, b) => a3.string - b.string }
-      ),
-      [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]
-    );
-    const recommendationText = T2(
-      () => buildRecommendationText(
-        recommendation,
-        (i3) => resolveLabel(spec.groups[i3].label)
-      ),
-      [recommendation, notationVersion]
-    );
     const applyRecommendation = q2(() => {
-      if (recommendation.enabled) {
+      if (rec.recommendation.enabled) {
         scopeActions.setScope({
           kind: "groups",
-          enabledGroups: recommendation.enabled,
+          enabledGroups: rec.recommendation.enabled,
           skippedGroups
         });
       }
-    }, [recommendation, scopeActions, skippedGroups]);
+    }, [rec.recommendation, scopeActions, skippedGroups]);
     return {
       scope,
       scopeActions,
@@ -9487,11 +9826,15 @@ body.native-app {
       skippedGroups,
       enabledItems,
       practicingLabel,
-      recommendation,
-      recommendationText,
+      recommendation: rec.recommendation,
+      recommendationText: rec.recommendationText,
       applyRecommendation,
       getEnabledItems: useStableGetter(enabledItems),
-      getPracticingLabel: useStableGetter(practicingLabel)
+      getPracticingLabel: useStableGetter(practicingLabel),
+      practiceMode,
+      setPracticeMode,
+      suggestedScope: rec.suggestedScope,
+      suggestionLines: rec.suggestionLines
     };
   }
 
@@ -9673,10 +10016,10 @@ body.native-app {
     return min + ":" + (sec < 10 ? "0" : "") + sec;
   }
   function useRoundTimer(onExpiry) {
-    const [timerPct, setTimerPct] = d3(100);
-    const [timerText, setTimerText] = d3("");
-    const [timerWarning, setTimerWarning] = d3(false);
-    const [timerLastQuestion, setTimerLastQuestion] = d3(false);
+    const [timerPct, setTimerPct] = d2(100);
+    const [timerText, setTimerText] = d2("");
+    const [timerWarning, setTimerWarning] = d2(false);
+    const [timerLastQuestion, setTimerLastQuestion] = d2(false);
     const roundTimerRef = A2(null);
     const roundTimerStartRef = A2(null);
     const roundDurationSnapshotRef = A2(null);
@@ -9966,8 +10309,8 @@ body.native-app {
 
   // src/hooks/use-quiz-engine.ts
   function useQuizEngine(config, selector, fixtureTarget) {
-    const [state, setState] = d3(initialEngineState);
-    const [calibrationFixture, setCalibrationFixture] = d3();
+    const [state, setState] = d2(initialEngineState);
+    const [calibrationFixture, setCalibrationFixture] = d2();
     const stateRef = A2(state);
     stateRef.current = state;
     const configRef = A2(config);
@@ -10102,7 +10445,7 @@ body.native-app {
 
   // src/hooks/use-practice-summary.ts
   function usePracticeSummary(opts) {
-    const [activeTab, setActiveTab] = d3("practice");
+    const [activeTab, setActiveTab] = d2("practice");
     const summary = T2(
       () => computePracticeSummary({
         allItemIds: opts.allItems,
@@ -10155,6 +10498,106 @@ body.native-app {
         return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
       }) }),
       anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: t3 }, i3)) })
+    ] });
+  }
+
+  // src/ui/practice-config.tsx
+  function ProgressBarLabeled({ label, colors, disabled }) {
+    return /* @__PURE__ */ u3("div", { class: "progress-bar-labeled", children: [
+      label && /* @__PURE__ */ u3(Text, { role: "caption", as: "div", class: "progress-bar-label", children: label }),
+      /* @__PURE__ */ u3(GroupProgressBar, { colors, disabled })
+    ] });
+  }
+  function SkillHeader({ modeId, title, progressColors, onBack }) {
+    return /* @__PURE__ */ u3("div", { class: "skill-header", children: [
+      /* @__PURE__ */ u3("div", { class: "skill-header-row", children: [
+        modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
+        /* @__PURE__ */ u3("h1", { class: "mode-title", children: title }),
+        onBack && /* @__PURE__ */ u3(CloseButton2, { ariaLabel: "Back to home", onClick: onBack })
+      ] }),
+      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3("div", { class: "skill-header-progress", children: /* @__PURE__ */ u3(ProgressBarLabeled, { label: "Progress", colors: progressColors }) })
+    ] });
+  }
+  function SuggestionLines({ lines }) {
+    if (lines.length === 0) return null;
+    return /* @__PURE__ */ u3("div", { class: "suggestion-lines", children: lines.map((line, i3) => /* @__PURE__ */ u3("div", { class: "suggestion-line", children: [
+      /* @__PURE__ */ u3("span", { class: "suggestion-verb", children: line.verb }),
+      " ",
+      line.levels.join(", ")
+    ] }, i3)) });
+  }
+  function LevelToggles({ labels, active, onToggle, itemCount }) {
+    return /* @__PURE__ */ u3("div", { class: "level-toggles-section", children: [
+      /* @__PURE__ */ u3(Text, { role: "secondary", as: "div", class: "level-toggles-header", children: "Choose levels to practice" }),
+      /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: "level-toggle-btn" + (active.has(i3) ? " active" : ""),
+          "aria-pressed": active.has(i3),
+          onClick: () => onToggle(i3),
+          children: label
+        },
+        i3
+      )) }),
+      /* @__PURE__ */ u3(Text, { role: "secondary", as: "div", class: "level-toggles-count", children: [
+        itemCount,
+        " ",
+        itemCount === 1 ? "item" : "items",
+        " selected"
+      ] })
+    ] });
+  }
+  function LevelProgressCard({ label, pill, colors, status, onToggleKnown, onToggleSkip }) {
+    const st = status ?? "normal";
+    return /* @__PURE__ */ u3("div", { class: "level-progress-card" + (st !== "normal" ? " " + st : ""), children: [
+      /* @__PURE__ */ u3("div", { class: "level-progress-header", children: [
+        /* @__PURE__ */ u3("span", { class: "level-progress-label", children: label }),
+        pill && /* @__PURE__ */ u3("span", { class: "level-progress-pill", children: pill }),
+        (onToggleKnown || onToggleSkip) && /* @__PURE__ */ u3("span", { class: "level-progress-actions", children: [
+          /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              class: "level-action-btn known" + (st === "known" ? " active" : ""),
+              "aria-label": `Mark ${label} as known`,
+              "aria-pressed": st === "known",
+              onClick: onToggleKnown,
+              children: "\u2713"
+            }
+          ),
+          /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              class: "level-action-btn skip" + (st === "skipped" ? " active" : ""),
+              "aria-label": `Skip ${label}`,
+              "aria-pressed": st === "skipped",
+              onClick: onToggleSkip,
+              children: "\u2717"
+            }
+          )
+        ] })
+      ] }),
+      /* @__PURE__ */ u3(ProgressBarLabeled, { colors, disabled: st === "skipped" })
+    ] });
+  }
+  function PracticeConfig({ mode, onModeChange, suggestedContent, customContent }) {
+    return /* @__PURE__ */ u3("div", { class: "practice-config", children: [
+      /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "practice-config-label", children: "Practice setup" }),
+      /* @__PURE__ */ u3(
+        SegmentedControl,
+        {
+          options: [
+            { value: "suggested", label: "Suggested" },
+            { value: "custom", label: "Custom" }
+          ],
+          value: mode,
+          onChange: onModeChange
+        }
+      ),
+      /* @__PURE__ */ u3("div", { class: "practice-config-content", children: mode === "suggested" ? suggestedContent : customContent })
     ] });
   }
 
@@ -10227,10 +10670,10 @@ body.native-app {
 
   // src/declarative/use-sequential-input.ts
   function useSequentialInput(def, currentQRef, submitRef) {
-    const [seqEntries, setSeqEntries] = d3([]);
+    const [seqEntries, setSeqEntries] = d2([]);
     const seqEntriesRef = A2([]);
-    const [seqEvaluated, setSeqEvaluated] = d3(null);
-    const [seqCorrectAnswer, setSeqCorrectAnswer] = d3("");
+    const [seqEvaluated, setSeqEvaluated] = d2(null);
+    const [seqCorrectAnswer, setSeqCorrectAnswer] = d2("");
     const prevItemRef = A2(null);
     const resetAll = q2(() => {
       seqEntriesRef.current = [];
@@ -10362,7 +10805,7 @@ body.native-app {
   }
   function AnswerInput({ onSubmit, disabled, placeholder, onInvalid, feedbackCorrect }) {
     const inputRef = A2(null);
-    const [shake, setShake] = d3(false);
+    const [shake, setShake] = d2(false);
     const shakeTimerRef = A2(null);
     y2(() => {
       return () => {
@@ -10511,12 +10954,23 @@ body.native-app {
         );
     }
   }
-  function SequentialQuizArea({ def, engine, ctrl, currentQ, activeButtons, seq, placeholder, promptText }) {
+  function SequentialQuizArea({
+    def,
+    engine,
+    ctrl,
+    currentQ,
+    activeButtons,
+    seq,
+    placeholder,
+    promptText,
+    instruction
+  }) {
     return /* @__PURE__ */ u3(
-      QuizArea,
+      QuizStage,
       {
-        prompt: ctrl.renderPrompt ? void 0 : promptText,
-        controls: /* @__PURE__ */ u3(k, { children: [
+        prompt: /* @__PURE__ */ u3(k, { children: [
+          instruction && /* @__PURE__ */ u3("div", { class: "quiz-instruction", children: instruction }),
+          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: promptText }),
           /* @__PURE__ */ u3(
             SequentialSlots,
             {
@@ -10525,7 +10979,9 @@ body.native-app {
               evaluated: seq.evaluated,
               correctTones: seq.correctAnswer ? seq.correctAnswer.split(" ") : null
             }
-          ),
+          )
+        ] }),
+        response: /* @__PURE__ */ u3(k, { children: [
           /* @__PURE__ */ u3(
             ResponseButtons,
             {
@@ -10542,19 +10998,8 @@ body.native-app {
               disabled: engine.state.answered,
               placeholder
             }
-          ),
-          /* @__PURE__ */ u3(
-            FeedbackDisplay,
-            {
-              text: engine.state.feedbackText,
-              className: engine.state.feedbackClass,
-              hint: engine.state.hintText || void 0,
-              correct: engine.state.feedbackCorrect,
-              onNext: engine.state.answered ? engine.nextQuestion : void 0
-            }
           )
-        ] }),
-        children: currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null
+        ] })
       }
     );
   }
@@ -10568,13 +11013,17 @@ body.native-app {
     useFlats,
     placeholder,
     promptText,
-    lastAnswerRef
+    lastAnswerRef,
+    instruction
   }) {
     return /* @__PURE__ */ u3(
-      QuizArea,
+      QuizStage,
       {
-        prompt: ctrl.renderPrompt ? void 0 : promptText,
-        controls: /* @__PURE__ */ u3(k, { children: [
+        prompt: /* @__PURE__ */ u3(k, { children: [
+          instruction && /* @__PURE__ */ u3("div", { class: "quiz-instruction", children: instruction }),
+          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: promptText })
+        ] }),
+        response: /* @__PURE__ */ u3(k, { children: [
           /* @__PURE__ */ u3(
             ResponseButtons,
             {
@@ -10613,20 +11062,8 @@ body.native-app {
               feedbackCorrect: engine.state.feedbackCorrect
             }
           ),
-          /* @__PURE__ */ u3(KeyboardHint, { type: getHintType(activeButtons) }),
-          /* @__PURE__ */ u3(
-            FeedbackDisplay,
-            {
-              text: engine.state.feedbackText,
-              className: engine.state.feedbackClass,
-              hint: engine.state.hintText || void 0,
-              correct: engine.state.feedbackCorrect,
-              onNext: engine.state.answered ? engine.nextQuestion : void 0,
-              label: engine.state.roundTimerExpired ? "Continue" : "Next"
-            }
-          )
-        ] }),
-        children: currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null
+          /* @__PURE__ */ u3(KeyboardHint, { type: getHintType(activeButtons) })
+        ] })
       }
     );
   }
@@ -10647,8 +11084,59 @@ body.native-app {
     lastAnswerRef
   }) {
     const phase = engine.state.phase;
-    return /* @__PURE__ */ u3(k, { children: [
-      phase !== "round-complete" && /* @__PURE__ */ u3(
+    if (phase === "round-complete") {
+      return /* @__PURE__ */ u3(ScreenLayout, { children: [
+        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3("div", {}) }),
+        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(
+          RoundCompleteInfo,
+          {
+            context: round.roundContext,
+            heading: "Round complete",
+            count: engine.state.roundAnswered,
+            correct: round.roundCorrect
+          }
+        ) }) }),
+        /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+          RoundCompleteActions,
+          {
+            onContinue: engine.continueQuiz,
+            onStop: engine.stop
+          }
+        ) })
+      ] });
+    }
+    const instruction = currentQ && def.quizInstruction ? typeof def.quizInstruction === "function" ? def.quizInstruction(currentQ) : def.quizInstruction : void 0;
+    const quizContent = def.sequential ? /* @__PURE__ */ u3(
+      SequentialQuizArea,
+      {
+        def,
+        engine,
+        ctrl,
+        currentQ,
+        activeButtons,
+        seq,
+        placeholder,
+        promptText,
+        instruction
+      }
+    ) : /* @__PURE__ */ u3(
+      StandardQuizArea,
+      {
+        engine,
+        ctrl,
+        currentQ,
+        activeButtons,
+        inactiveButtons,
+        handleSubmit,
+        useFlats,
+        placeholder,
+        promptText,
+        lastAnswerRef,
+        instruction
+      }
+    );
+    return /* @__PURE__ */ u3(ScreenLayout, { children: [
+      /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
         QuizSession,
         {
           timeLeft: engine.timerText,
@@ -10660,58 +11148,83 @@ body.native-app {
           lastQuestion: engine.state.roundTimerExpired ? engine.state.answered ? "Time is up" : "Last question" : "",
           onClose: engine.stop
         }
-      ),
-      phase === "round-complete" ? /* @__PURE__ */ u3(
-        QuizArea,
+      ) }),
+      /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: quizContent }),
+      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+        FeedbackDisplay,
         {
-          controls: /* @__PURE__ */ u3(
-            RoundCompleteActions,
-            {
-              onContinue: engine.continueQuiz,
-              onStop: engine.stop
-            }
-          ),
-          children: /* @__PURE__ */ u3(
-            RoundCompleteInfo,
-            {
-              context: round.roundContext,
-              heading: "Round complete",
-              count: engine.state.roundAnswered,
-              correct: round.roundCorrect
-            }
-          )
+          text: engine.state.feedbackText,
+          className: engine.state.feedbackClass,
+          hint: engine.state.hintText || void 0,
+          correct: engine.state.feedbackCorrect,
+          onNext: engine.state.answered ? engine.nextQuestion : void 0,
+          label: engine.state.roundTimerExpired ? "Continue" : "Next"
         }
-      ) : def.sequential ? /* @__PURE__ */ u3(
-        SequentialQuizArea,
-        {
-          def,
-          engine,
-          ctrl,
-          currentQ,
-          activeButtons,
-          seq,
-          placeholder,
-          promptText
-        }
-      ) : /* @__PURE__ */ u3(
-        StandardQuizArea,
-        {
-          engine,
-          ctrl,
-          currentQ,
-          activeButtons,
-          inactiveButtons,
-          handleSubmit,
-          useFlats,
-          placeholder,
-          promptText,
-          lastAnswerRef
-        }
-      )
+      ) })
     ] });
   }
-  function IdlePracticeView({ def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }) {
+  function resolveGroupLabel(label) {
+    return typeof label === "function" ? label() : label;
+  }
+  function GroupPracticeContent({ def, groupScopeResult }) {
     const groupScope = def.scope.kind === "groups" ? def.scope : null;
+    if (!groupScope) return null;
+    const groupLabels = groupScope.allGroupIndices.map(
+      (i3) => resolveGroupLabel(groupScope.groups[i3].label)
+    );
+    return /* @__PURE__ */ u3(k, { children: /* @__PURE__ */ u3(
+      PracticeConfig,
+      {
+        mode: groupScopeResult.practiceMode,
+        onModeChange: groupScopeResult.setPracticeMode,
+        suggestedContent: /* @__PURE__ */ u3(SuggestionLines, { lines: groupScopeResult.suggestionLines }),
+        customContent: /* @__PURE__ */ u3(
+          LevelToggles,
+          {
+            labels: groupLabels,
+            active: groupScopeResult.practiceMode === "custom" ? groupScopeResult.enabledGroups : groupScopeResult.suggestedScope,
+            onToggle: groupScopeResult.scopeActions.toggleGroup,
+            itemCount: groupScopeResult.enabledItems.length
+          }
+        )
+      }
+    ) });
+  }
+  function LevelProgressCards({ def, learner, groupScopeResult }) {
+    const groupScope = def.scope.kind === "groups" ? def.scope : null;
+    if (!groupScope) return null;
+    return /* @__PURE__ */ u3("div", { class: "level-progress-cards", children: groupScope.allGroupIndices.map((i3) => {
+      const itemIds = groupScope.getItemIdsForGroup(i3);
+      const colors = progressBarColors(learner.selector, itemIds);
+      const skipReason = groupScopeResult.skippedGroups.get(i3);
+      const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
+      return /* @__PURE__ */ u3(
+        LevelProgressCard,
+        {
+          label: resolveGroupLabel(groupScope.groups[i3].label),
+          colors,
+          status,
+          onToggleKnown: () => skipReason === "mastered" ? groupScopeResult.scopeActions.unskipGroup(i3) : groupScopeResult.scopeActions.skipGroup(i3, "mastered"),
+          onToggleSkip: () => skipReason === "deferred" ? groupScopeResult.scopeActions.unskipGroup(i3) : groupScopeResult.scopeActions.skipGroup(i3, "deferred")
+        },
+        i3
+      );
+    }) });
+  }
+  function singleLevelSuggestion(selector, allItems) {
+    const anySeen = allItems.some((id) => selector.getStats(id) !== null);
+    if (!anySeen) return { verb: "Start practicing", levels: [] };
+    if (selector.checkAllAutomatic(allItems)) {
+      return { verb: "All items mastered", levels: [] };
+    }
+    if (selector.checkNeedsReview(allItems)) {
+      return { verb: "Review", levels: [] };
+    }
+    return { verb: "Keep practicing", levels: [] };
+  }
+  function IdlePracticeView({ def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }) {
+    const hasGroups = def.scope.kind === "groups" && groupScopeResult;
+    const hasStats = def.stats.kind !== "none" || !!ctrl.renderStats;
     return /* @__PURE__ */ u3(
       PracticeTab,
       {
@@ -10720,22 +11233,20 @@ body.native-app {
         onApplyRecommendation: ps.summary.showRecommendationButton && groupScopeResult ? groupScopeResult.applyRecommendation : void 0,
         scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
         validationMessage: "Select at least one group",
-        scope: groupScopeResult && groupScope ? /* @__PURE__ */ u3(
-          GroupProgressToggles,
+        practiceContent: hasGroups ? /* @__PURE__ */ u3(
+          GroupPracticeContent,
           {
-            groups: groupScope.allGroupIndices.map((i3) => ({
-              label: typeof groupScope.groups[i3].label === "function" ? groupScope.groups[i3].label() : groupScope.groups[i3].label,
-              itemIds: groupScope.getItemIdsForGroup(i3)
-            })),
-            active: groupScopeResult.enabledGroups,
-            onToggle: groupScopeResult.scopeActions.toggleGroup,
-            selector: learner.selector,
-            skipped: groupScopeResult.skippedGroups,
-            onSkip: groupScopeResult.scopeActions.skipGroup,
-            onUnskip: groupScopeResult.scopeActions.unskipGroup
+            def,
+            groupScopeResult
           }
-        ) : void 0,
+        ) : /* @__PURE__ */ u3("div", { class: "practice-config", children: /* @__PURE__ */ u3(
+          SuggestionLines,
+          {
+            lines: [singleLevelSuggestion(learner.selector, def.allItems)]
+          }
+        ) }),
         statsContent: /* @__PURE__ */ u3(k, { children: [
+          hasStats && /* @__PURE__ */ u3(Text, { role: "subsection-header", as: "div", children: "All items" }),
           ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u3(k, { children: [
             def.stats.kind === "grid" && /* @__PURE__ */ u3(
               StatsGrid,
@@ -10756,8 +11267,19 @@ body.native-app {
               }
             )
           ] }),
-          (def.stats.kind !== "none" || ctrl.renderStats) && /* @__PURE__ */ u3(StatsLegend, {})
+          hasStats && /* @__PURE__ */ u3(StatsLegend, {})
         ] }),
+        progressExtra: hasGroups ? /* @__PURE__ */ u3(k, { children: [
+          /* @__PURE__ */ u3(Text, { role: "subsection-header", children: "Levels" }),
+          /* @__PURE__ */ u3(
+            LevelProgressCards,
+            {
+              def,
+              learner,
+              groupScopeResult
+            }
+          )
+        ] }) : void 0,
         baseline: onCalibrate ? learner.motorBaseline : void 0,
         onCalibrate,
         activeTab: ps.activeTab,
@@ -10891,7 +11413,7 @@ body.native-app {
     };
   }
   function useSpeedCheckOverlay(engine, def, ctrl) {
-    const [speedCheck, setSpeedCheck] = d3(null);
+    const [speedCheck, setSpeedCheck] = d2(null);
     const hasSpeedCheck = IMPLEMENTED_TASK_TYPES.has(
       def.motorTaskType ?? "note-button"
     );
@@ -10912,6 +11434,32 @@ body.native-app {
       presentationPhase,
       deactivateCleanup
     };
+  }
+  function useProgressColors(def, learner) {
+    return T2(() => {
+      if (def.scope.kind === "groups") {
+        const scope = def.scope;
+        return scope.allGroupIndices.map((i3) => {
+          const itemIds = scope.getItemIdsForGroup(i3);
+          return getStatsCellColorMerged(learner.selector, itemIds);
+        });
+      }
+      return progressBarColors(learner.selector, def.allItems);
+    }, [def, learner.selector]);
+  }
+  function ModeHeader({ def, isIdle, progressColors, navigateHome }) {
+    if (isIdle) {
+      return /* @__PURE__ */ u3(
+        SkillHeader,
+        {
+          modeId: def.id,
+          title: def.name,
+          progressColors,
+          onBack: navigateHome
+        }
+      );
+    }
+    return /* @__PURE__ */ u3(ModeTopBar, { modeId: def.id, title: def.name, showBack: false });
   }
   function GenericModeBody({
     def,
@@ -10938,30 +11486,19 @@ body.native-app {
       dir
     );
     const isIdle = engine.state.phase === "idle" && !sc.speedCheck;
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: def.id,
-          title: def.name,
-          description: def.description,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      sc.speedCheck ? /* @__PURE__ */ u3(
-        SpeedCheck,
-        {
-          config: NOTE_BUTTON_CONFIG,
-          fixture: typeof sc.speedCheck === "object" ? sc.speedCheck : void 0,
-          onComplete: (baseline) => {
-            learner.applyBaseline(baseline);
-            sc.setSpeedCheck(null);
-          },
-          onCancel: () => sc.setSpeedCheck(null)
-        }
-      ) : /* @__PURE__ */ u3(k, { children: [
-        engine.state.phase === "idle" && /* @__PURE__ */ u3(
+    const progressColors = useProgressColors(def, learner);
+    if (isIdle) {
+      return /* @__PURE__ */ u3(ScreenLayout, { children: [
+        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
+          ModeHeader,
+          {
+            def,
+            isIdle: true,
+            progressColors,
+            navigateHome
+          }
+        ) }),
+        /* @__PURE__ */ u3(
           IdlePracticeView,
           {
             def,
@@ -10972,28 +11509,53 @@ body.native-app {
             ps,
             onCalibrate: sc.hasSpeedCheck ? () => sc.setSpeedCheck("active") : void 0
           }
-        ),
-        engine.state.phase !== "idle" && /* @__PURE__ */ u3(
-          QuizActiveView,
+        )
+      ] });
+    }
+    if (sc.speedCheck) {
+      return /* @__PURE__ */ u3(ScreenLayout, { children: [
+        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
+          ModeHeader,
           {
             def,
-            engine,
-            ctrl,
-            currentQ,
-            round,
-            practicingLabel,
-            handleSubmit,
-            seq: buildSeqProps(seqInput),
-            activeButtons,
-            inactiveButtons,
-            promptText,
-            useFlats,
-            placeholder: getInputPlaceholder(def, currentQ, isSequential),
-            lastAnswerRef
+            isIdle: false,
+            progressColors,
+            navigateHome
           }
-        )
-      ] })
-    ] });
+        ) }),
+        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(
+          SpeedCheck,
+          {
+            config: NOTE_BUTTON_CONFIG,
+            fixture: typeof sc.speedCheck === "object" ? sc.speedCheck : void 0,
+            onComplete: (baseline) => {
+              learner.applyBaseline(baseline);
+              sc.setSpeedCheck(null);
+            },
+            onCancel: () => sc.setSpeedCheck(null)
+          }
+        ) })
+      ] });
+    }
+    return /* @__PURE__ */ u3(
+      QuizActiveView,
+      {
+        def,
+        engine,
+        ctrl,
+        currentQ,
+        round,
+        practicingLabel,
+        handleSubmit,
+        seq: buildSeqProps(seqInput),
+        activeButtons,
+        inactiveButtons,
+        promptText,
+        useFlats,
+        placeholder: getInputPlaceholder(def, currentQ, isSequential),
+        lastAnswerRef
+      }
+    );
   }
   function GenericMode({ def, container, navigateHome, onMount }) {
     const learner = useLearnerModel(
@@ -11055,6 +11617,7 @@ body.native-app {
     allItems: ALL_ITEMS7,
     getQuestion: getQuestion7,
     getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.accidentalChoice) : String(q3.noteNum),
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What number?" : "What note?",
     answer: {
       kind: "bidirectional",
       fwd: {
@@ -11095,6 +11658,7 @@ body.native-app {
     allItems: ALL_ITEMS8,
     getQuestion: getQuestion8,
     getPromptText: (q3) => q3.dir === "fwd" ? q3.name : String(q3.num),
+    quizInstruction: (q3) => q3.dir === "fwd" ? "How many semitones?" : "What interval?",
     answer: {
       kind: "bidirectional",
       fwd: {
@@ -11134,6 +11698,7 @@ body.native-app {
     allItems: ALL_ITEMS4,
     getQuestion: getQuestion4,
     getPromptText: (q3) => q3.promptText,
+    quizInstruction: "What note?",
     answer: {
       getExpectedValue: (q3) => q3.answer.name,
       comparison: "note-enharmonic",
@@ -11175,6 +11740,7 @@ body.native-app {
     allItems: ALL_ITEMS5,
     getQuestion: getQuestion5,
     getPromptText: (q3) => q3.promptText,
+    quizInstruction: "What note?",
     answer: {
       getExpectedValue: (q3) => q3.answer.name,
       comparison: "note-enharmonic",
@@ -11216,6 +11782,7 @@ body.native-app {
     allItems: ALL_ITEMS,
     getQuestion,
     getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " major" : q3.sigLabel + " major",
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What key signature?" : "What key?",
     answer: {
       kind: "bidirectional",
       fwd: {
@@ -11269,6 +11836,7 @@ body.native-app {
     allItems: ALL_ITEMS2,
     getQuestion: getQuestion2,
     getPromptText: (q3) => q3.dir === "fwd" ? DEGREE_LABELS2[q3.degree - 1] + " of " + displayNote(q3.keyRoot) + " major" : displayNote(q3.keyRoot) + " major: " + displayNote(q3.noteName),
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What note?" : "What degree?",
     answer: {
       kind: "bidirectional",
       fwd: {
@@ -11323,6 +11891,7 @@ body.native-app {
     allItems: ALL_ITEMS3,
     getQuestion: getQuestion3,
     getPromptText: (q3) => q3.dir === "fwd" ? q3.chord.numeral + " in " + displayNote(q3.keyRoot) + " major" : displayNote(q3.rootNote) + q3.chord.qualityLabel + " in " + displayNote(q3.keyRoot) + " major",
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What chord root?" : "What numeral?",
     answer: {
       kind: "bidirectional",
       fwd: {
@@ -11508,6 +12077,7 @@ body.native-app {
       allItems,
       getQuestion: (itemId) => getQuestion6(instrument, itemId),
       getPromptText: () => "Name this note",
+      quizInstruction: "What note is this?",
       answer: {
         getExpectedValue: (q3) => q3.currentNote,
         comparison: "note-enharmonic"
@@ -11582,7 +12152,7 @@ body.native-app {
     });
     const hasAccidentalsRef = A2(hasAccidentals);
     hasAccidentalsRef.current = hasAccidentals;
-    const [pendingNote, setPendingNote] = d3(null);
+    const [pendingNote, setPendingNote] = d2(null);
     const noteHandler = T2(
       () => createAdaptiveKeyHandler(
         (note) => engineSubmitRef.current(note),
@@ -11640,6 +12210,7 @@ body.native-app {
     allItems: ALL_ITEMS6,
     getQuestion: (itemId) => parseItem(itemId),
     getPromptText: (q3) => displayNote(q3.rootName) + q3.chordType.symbol,
+    quizInstruction: "Spell this chord",
     // Sequential: collect N notes, then evaluate all at once
     sequential: {
       expectedCount: (q3) => q3.tones.length,
@@ -11760,8 +12331,29 @@ body.native-app {
     handleTap
   }) {
     const phase = engine.state.phase;
-    return /* @__PURE__ */ u3(k, { children: [
-      phase !== "round-complete" && /* @__PURE__ */ u3(
+    if (phase === "round-complete") {
+      return /* @__PURE__ */ u3(ScreenLayout, { children: [
+        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3("div", {}) }),
+        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(
+          RoundCompleteInfo,
+          {
+            context: round.roundContext,
+            heading: "Round complete",
+            count: engine.state.roundAnswered,
+            correct: round.roundCorrect
+          }
+        ) }) }),
+        /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+          RoundCompleteActions,
+          {
+            onContinue: engine.continueQuiz,
+            onStop: engine.stop
+          }
+        ) })
+      ] });
+    }
+    return /* @__PURE__ */ u3(ScreenLayout, { children: [
+      /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
         QuizSession,
         {
           timeLeft: engine.timerText,
@@ -11773,46 +12365,13 @@ body.native-app {
           lastQuestion: engine.state.roundTimerExpired ? engine.state.answered ? "Time is up" : "Last question" : "",
           onClose: engine.stop
         }
-      ),
-      phase === "round-complete" ? /* @__PURE__ */ u3(
-        QuizArea,
-        {
-          controls: /* @__PURE__ */ u3(
-            RoundCompleteActions,
-            {
-              onContinue: engine.continueQuiz,
-              onStop: engine.stop
-            }
-          ),
-          children: /* @__PURE__ */ u3(
-            RoundCompleteInfo,
-            {
-              context: round.roundContext,
-              heading: "Round complete",
-              count: engine.state.roundAnswered,
-              correct: round.roundCorrect
-            }
-          )
-        }
-      ) : /* @__PURE__ */ u3(
+      ) }),
+      /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(
         QuizArea,
         {
           prompt: promptText,
-          controls: /* @__PURE__ */ u3(k, { children: [
-            /* @__PURE__ */ u3(NoteButtons, { hidden: true, onAnswer: () => {
-            } }),
-            /* @__PURE__ */ u3(
-              FeedbackDisplay,
-              {
-                text: engine.state.feedbackText,
-                className: engine.state.feedbackClass,
-                hint: engine.state.hintText || void 0,
-                correct: engine.state.feedbackCorrect,
-                onNext: engine.state.answered ? engine.nextQuestion : void 0,
-                label: engine.state.roundTimerExpired ? "Continue" : "Next"
-              }
-            )
-          ] }),
+          controls: /* @__PURE__ */ u3(NoteButtons, { hidden: true, onAnswer: () => {
+          } }),
           children: [
             /* @__PURE__ */ u3("div", { class: "speed-tap-status", children: /* @__PURE__ */ u3("span", { class: "speed-tap-progress", children: progressText }) }),
             /* @__PURE__ */ u3(
@@ -11825,7 +12384,18 @@ body.native-app {
             )
           ]
         }
-      )
+      ) }),
+      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+        FeedbackDisplay,
+        {
+          text: engine.state.feedbackText,
+          className: engine.state.feedbackClass,
+          hint: engine.state.hintText || void 0,
+          correct: engine.state.feedbackCorrect,
+          onNext: engine.state.answered ? engine.nextQuestion : void 0,
+          label: engine.state.roundTimerExpired ? "Continue" : "Next"
+        }
+      ) })
     ] });
   }
   function readCSSColor(prop, ref) {
@@ -11936,8 +12506,8 @@ body.native-app {
     const quizFbRef = A2(null);
     const engineSubmitRef = A2(() => {
     });
-    const [progressText, setProgressText] = d3("");
-    const [currentDisplayName, setCurrentDisplayName] = d3("");
+    const [progressText, setProgressText] = d2("");
+    const [currentDisplayName, setCurrentDisplayName] = d2("");
     const colorErrorRef = A2("#d32f2f");
     y2(() => readCSSColor("--color-error", colorErrorRef), []);
     const svgHTML = T2(() => fretboardSVG({ tapTargets: true }), []);
@@ -12034,41 +12604,42 @@ body.native-app {
     ]);
     const promptText = sp.currentDisplayName ? "Tap all " + sp.currentDisplayName : "";
     const isIdle = engine.state.phase === "idle";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
-        ModeTopBar,
-        {
-          modeId: "speedTap",
-          title: "Speed Tap",
-          description: MODE_DESCRIPTIONS.speedTap,
-          onBack: navigateHome,
-          showBack: isIdle
-        }
-      ),
-      isIdle && /* @__PURE__ */ u3(
-        SpeedTapIdleView,
-        {
-          noteFilter,
-          scopeActions,
-          engine,
-          ps,
-          statsHTML
-        }
-      ),
-      !isIdle && /* @__PURE__ */ u3(
-        SpeedTapActiveView,
-        {
-          engine,
-          round,
-          practicingLabel,
-          progressText: sp.progressText,
-          promptText,
-          svgHTML: sp.svgHTML,
-          quizFbRef: sp.quizFbRef,
-          handleTap: sp.handleTap
-        }
-      )
-    ] });
+    if (isIdle) {
+      return /* @__PURE__ */ u3(ScreenLayout, { children: [
+        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
+          ModeTopBar,
+          {
+            modeId: "speedTap",
+            title: "Speed Tap",
+            description: MODE_DESCRIPTIONS.speedTap,
+            onBack: navigateHome
+          }
+        ) }),
+        /* @__PURE__ */ u3(
+          SpeedTapIdleView,
+          {
+            noteFilter,
+            scopeActions,
+            engine,
+            ps,
+            statsHTML
+          }
+        )
+      ] });
+    }
+    return /* @__PURE__ */ u3(
+      SpeedTapActiveView,
+      {
+        engine,
+        round,
+        practicingLabel,
+        progressText: sp.progressText,
+        promptText,
+        svgHTML: sp.svgHTML,
+        quizFbRef: sp.quizFbRef,
+        handleTap: sp.handleTap
+      }
+    );
   }
 
   // src/app.ts
