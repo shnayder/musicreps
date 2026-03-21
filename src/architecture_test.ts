@@ -108,6 +108,7 @@ type Layer =
 const FOUNDATION = new Set([
   'src/types.ts',
   'src/music-data.ts',
+  'src/mode-catalog.ts',
   'src/adaptive.ts',
   'src/app-config.ts',
   'src/deadline.ts',

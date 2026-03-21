@@ -46,15 +46,17 @@ describe('scope persistence across reload (E2E)', () => {
   it('disabled group stays disabled after reload', async () => {
     const page = await createTestPage(browser, baseUrl);
     try {
-      // Seed with all 6 semitone math groups enabled except group 0
+      // Seed with all 6 semitone math groups enabled except group 0,
+      // and practice mode set to 'custom' so toggles are visible.
       await seedLocalStorage(page, baseUrl, {
         ...buildMotorBaseline(250),
         ...buildEnabledGroups('semitoneMath_enabledGroups', [1, 2, 3, 4, 5]),
+        semitoneMath_enabledGroups_practiceMode: 'custom',
       });
       await navigateToMode(page, 'semitoneMath');
 
       // Verify group 0's toggle is inactive (not in enabled list)
-      const toggles = page.locator('#mode-semitoneMath .distance-toggle');
+      const toggles = page.locator('#mode-semitoneMath .level-toggle-btn');
       const firstToggle = toggles.first();
       await firstToggle.waitFor({ state: 'visible', timeout: 3000 });
       const firstClass = await firstToggle.getAttribute('class') ?? '';
@@ -68,9 +70,14 @@ describe('scope persistence across reload (E2E)', () => {
       await page.waitForLoadState('networkidle');
       await navigateToMode(page, 'semitoneMath');
 
-      // Verify group 0 is still inactive
-      await toggles.first().waitFor({ state: 'visible', timeout: 3000 });
-      const firstClassAfter = await toggles.first().getAttribute('class') ?? '';
+      // Verify group 0 is still inactive (custom mode persists too)
+      const reloadToggles = page.locator(
+        '#mode-semitoneMath .level-toggle-btn',
+      );
+      await reloadToggles.first().waitFor({ state: 'visible', timeout: 3000 });
+      const firstClassAfter =
+        await reloadToggles.first().getAttribute('class') ??
+          '';
       assert.ok(
         !firstClassAfter.includes('active'),
         'first group toggle should still be inactive after reload',

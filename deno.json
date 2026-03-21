@@ -46,6 +46,7 @@
     "fmt:fix": "deno fmt",
     "check": "deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null)",
     "ok": "deno lint && deno task lint:functions && deno fmt --check && deno check src/**/*.ts $(find src -name '*.tsx' 2>/dev/null) && deno test --no-check --allow-read --allow-run=deno --ignore=tests/e2e && deno run --allow-read --allow-write --allow-run --allow-env=BUILD_NUMBER,APP_CONTACT_EMAIL,APP_SUPPORT_URL,APP_TERMS_URL,APP_PRIVACY_URL main.ts --build",
+    "prepush": "deno task ok && deno task e2e",
     "screenshots": "npx tsx scripts/take-screenshots.ts",
     "screenshots:baseline": "npx tsx scripts/take-screenshots.ts --dir screenshots/baseline",
     "screenshots:review": "npx tsx scripts/build-screenshot-review.ts",

@@ -4,10 +4,9 @@
 import {
   displayNote,
   isValidNoteInput,
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
   pickAccidentalName,
 } from '../../music-data.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,
@@ -31,6 +30,7 @@ export const SEMITONE_MATH_DEF: ModeDefinition<Question> = {
   allItems: ALL_ITEMS,
   getQuestion,
   getPromptText: (q) => q.promptText,
+  quizInstruction: 'What note?',
   answer: {
     getExpectedValue: (q) => q.answer.name,
     comparison: 'note-enharmonic',

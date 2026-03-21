@@ -457,7 +457,7 @@ These elements are deliberately NOT migrated:
 - **Quiz prompt text** — has its own responsive sizing (1.6rem on mobile).
 - **Stats table text** — data table content, not semantic text roles.
 - **Preview page headings** — dev-only page, not production UI.
-- **`.skill-rec-header`** — subsection-header-like but uses `--color-recommended`
+- **`.skill-rec-header`** — subsection-header-like but uses `--color-notice`
   instead of `--color-text-muted`, and `--text-xs` instead of `--text-sm`. It's
   a recommendation-branded variant, not a standard text role.
 - **`.active-skills-done`** — success-themed card text with its own bg/padding.
@@ -511,7 +511,7 @@ These elements are deliberately NOT migrated:
 
 ### Deviations from plan
 
-- **suggestion-card-header** kept as plain `<div>` — uses `--color-recommended`
+- **suggestion-card-header** kept as plain `<div>` — uses `--color-notice`
   (not standard muted), so `<Text role='subsection-header'>` would override the
   branded color via CSS cascade. Same reasoning as `.skill-rec-header` exclusion.
 - **suggestion-card-accept** kept as plain `<button>` — has recommendation-themed

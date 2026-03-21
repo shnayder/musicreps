@@ -136,6 +136,32 @@ export function getStatsCellColorMerged(
   return getSpeedFreshnessColor(avgSpeed, avgFresh);
 }
 
+// --- Progress bar colors (sorted per-item) ---
+
+type ProgressSelector = {
+  getSpeedScore(id: string): number | null;
+  getFreshness(id: string): number | null;
+};
+
+/**
+ * Compute per-item progress bar colors, sorted descending by mastery.
+ * Mastered items cluster left, unseen items right. Used by
+ * GroupProgressBar everywhere (header, level cards, scope toggles).
+ */
+export function progressBarColors(
+  selector: ProgressSelector,
+  itemIds: string[],
+): string[] {
+  const items = itemIds.map((id) => {
+    const sp = selector.getSpeedScore(id);
+    const fr = selector.getFreshness(id);
+    const auto = (sp !== null && fr !== null) ? sp * fr : null;
+    return { auto, color: getSpeedFreshnessColor(sp, fr) };
+  });
+  items.sort((a, b) => (b.auto ?? -1) - (a.auto ?? -1));
+  return items.map((item) => item.color);
+}
+
 // --- Legend ---
 
 /**

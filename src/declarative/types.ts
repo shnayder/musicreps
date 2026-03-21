@@ -250,6 +250,8 @@ type ModeDefinitionBase<Q> = {
   getQuestion: (itemId: string) => Q;
   /** Generate prompt text from a question. */
   getPromptText: (q: Q) => string;
+  /** Instruction shown above the prompt during quiz (e.g., "What note is this?"). */
+  quizInstruction?: string | ((q: Q) => string);
 
   // --- Direction (for bidirectional modes) ---
   /** Get the direction of a question. Only needed for bidirectional answers. */

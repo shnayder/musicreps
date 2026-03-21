@@ -259,11 +259,16 @@ build-generated:
   the primary tool for iterating on component design. Available at
   `localhost:8001/preview` during dev.
 
-- `guides/design/colors.html` — hand-written color palette reference.
+The **Colors** tab on the preview page shows live palette ramps, semantic token
+swatches, pairings, heatmap scale, and component token reference.
 
-All pages link to `src/styles.css` so CSS changes are visible on refresh.
-Hand-written pages need no rebuild; build-generated pages require
-`deno task build`.
+Build-generated pages require `deno task build` or a dev server refresh.
+
+**Every new UI component must appear in the preview page.** The preview is the
+design system source of truth — it renders real components with mock data, not
+copies or approximations. When adding a component, add a Section for it in the
+relevant preview tab file (`src/ui/preview-tab-*.tsx`). If no tab fits, add a
+new one.
 
 **If you add new files to `docs/`**, no workflow changes are needed — the
 preview deploy workflow copies all files from `docs/` automatically.
@@ -571,3 +576,68 @@ No `GH_TOKEN` needed. Git push/pull work normally via the `origin` remote.
 **Read-only.** The proxy supports GET requests (list PRs, read comments) but
 not POST/PATCH (create PRs, post comments). Push the branch and create PRs
 manually or let CI handle it.
+
+# Git Safety Policy
+
+## Core Rule
+Only use Git operations that are **recoverable, non-destructive, and append-only**.  
+Never rewrite or implicitly discard state.
+
+Feature work:
+- make feature branches for all work. Never push directly to main.
+- merge from latest main as needed
+- PR back into main. No rebase.
+
+---
+
+## Allowed Commands
+
+- git status
+- git diff
+- git add <files>
+- git commit -m "<message>"
+- git switch -c <branch>
+- git checkout -b <branch>
+- git branch
+- git log
+
+---
+
+## Strictly Disallowed Commands
+
+- git stash pop
+- git stash    // Let's not use stash at all. Temp commits or temp folders are always available.
+- git commit --amend
+- git rebase (any form)
+- git reset --hard
+- git clean -fd (or similar)
+- git push --force (or --force-with-lease)
+- git checkout <commit> (detached HEAD workflows)
+
+If these truly need to be run, describe what needs to be done and why, give the exact command you'd like to run, and escalate.
+
+## Failure / Recovery Protocol
+
+If the repo state is unclear or something fails, run these:
+
+- git status
+- git stash list
+- git reflog
+- git diff
+
+Do NOT:
+- reset
+- clean
+- force push
+- drop stashes blindly
+
+Escalate instead.
+
+---
+
+## Behavioral Constraints
+
+- Never assume hidden state (stash, index, reflog) is safe
+- Never delete or overwrite work implicitly
+- Prefer creating new commits over modifying existing ones
+- Prefer visible state (branches, commits) over hidden state (stash)

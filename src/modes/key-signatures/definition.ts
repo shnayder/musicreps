@@ -7,10 +7,9 @@ import {
   isValidNoteInput,
   keySignatureLabel,
   MAJOR_KEYS,
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
   rootUsesFlats,
 } from '../../music-data.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,
@@ -34,6 +33,7 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   getQuestion,
   getPromptText: (q) =>
     q.dir === 'fwd' ? displayNote(q.root) + ' major' : q.sigLabel + ' major',
+  quizInstruction: (q) => q.dir === 'fwd' ? 'What key signature?' : 'What key?',
   answer: {
     kind: 'bidirectional',
     fwd: {

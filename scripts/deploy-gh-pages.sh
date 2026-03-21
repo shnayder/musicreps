@@ -106,7 +106,6 @@ INDEXEOF
     fi
     if [ -d "preview/${name}/design" ]; then
       echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/components-preview.html\">${name} — Component Preview</a></li>" >> preview/index.html
-      echo "<li style=\"padding-left:1.5rem;font-size:0.9rem\"><a href=\"${name}/design/colors.html\">${name} — Color System</a></li>" >> preview/index.html
     fi
   done
   echo "</ul></body></html>" >> preview/index.html

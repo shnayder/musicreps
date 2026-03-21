@@ -16,9 +16,13 @@ deno task ok                                     # All checks + build
 ```
 
 **Run `deno task ok` before pushing.** It runs lint, format check, type check,
-tests, and build in sequence — any failure stops the chain. Don't push broken
-code by accident. If you hit `UnknownIssuer` TLS errors or npm resolution
-failures, see the **Web sandbox** section in
+tests, and build in sequence — any failure stops the chain. Use `/pr` to create
+PRs — it enforces the full sequence. Use `/check-ci` after pushing to verify CI
+passes before declaring success (CI also runs E2E tests via Playwright). Run
+`deno task prepush` locally if Playwright is available — it adds E2E tests.
+
+If you hit `UnknownIssuer` TLS errors or npm resolution failures, see the **Web
+sandbox** section in
 [guides/development.md](guides/development.md#web-sandbox-is_sandboxyes).
 
 **Run `deno task iterate capture` after UI changes.** When a `deno task iterate`
@@ -26,6 +30,11 @@ session is active, capture a new version after every round of UI changes so the
 user can visually review diffs. Create a new session
 (`deno task iterate new <name> <states...>`) at the start of a UI task if none
 exists for the relevant states.
+
+**Every new UI component must appear in the component preview page**
+(`/preview`, source in `src/ui/preview-tab-*.tsx`). The preview renders real
+components with mock data — it is the design system source of truth. No copies
+or approximations.
 
 **The HTML template lives in `src/build-template.ts`** — the single source of
 truth for the page structure. **Version is derived from git at build time** (see

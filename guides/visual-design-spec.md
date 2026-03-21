@@ -71,7 +71,7 @@ Which existing patterns are composed:
 Any intentional departures from standard recipes, with rationale.
 
 Example: "Suggestion card header uses subsection-header sizing but
-`--color-recommended` instead of `--color-text-muted` — branded emphasis."
+`--color-notice` instead of `--color-text-muted` — branded emphasis."
 
 ## Resolved Decisions
 

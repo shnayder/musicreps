@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { MODE_BEFORE_AFTER } from './mode-catalog.ts';
 import {
   CHORD_ROOTS,
   CHORD_TYPES,
@@ -23,7 +24,6 @@ import {
   keySignatureLabel,
   LETTER_NAMES,
   MAJOR_KEYS,
-  MODE_BEFORE_AFTER,
   NATURAL_NOTES,
   noteAdd,
   noteByNum,
