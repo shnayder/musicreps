@@ -261,91 +261,137 @@ numbers — dropped for legibility at mobile sizes.
 
 ---
 
-## Typography Scale
+## Typography
 
-7 tokens consolidating 15+ previous `font-size` values:
+Three-layer system paralleling colors: **palette** (raw tokens) →
+**semantic roles** (what the text IS) → **component mapping** (where it's
+used). See `plans/design-docs/2026-03-21-typography-system-redesign.md` for
+the full design rationale.
 
-| Token         | Size     | Maps to                                          |
-| ------------- | -------- | ------------------------------------------------ |
-| `--text-xs`   | 0.75rem  | Legend labels, progress text, tiny stats         |
-| `--text-sm`   | 0.85rem  | Session stats, settings, table text, calibration |
-| `--text-base` | 1rem     | Body, buttons, nav items, hints                  |
-| `--text-md`   | 1.125rem | Answer buttons, note buttons, chord slots        |
-| `--text-lg`   | 1.3rem   | Mode title                                       |
-| `--text-xl`   | 1.5rem   | Back button, feedback, close buttons             |
-| `--text-2xl`  | 2rem     | Home title, quiz prompts                         |
+### Layer 1: Palette
 
-### Font Weights
+| Category | Tokens |
+|---|---|
+| Sizes | `--text-xs` (0.75rem) through `--text-3xl` (3rem) |
+| Weights | `--font-normal` (400), `--font-medium` (500), `--font-semibold` (600), `--font-bold` (700) |
+| Line heights | `--leading-none` (1), `--leading-tight` (1.2), `--leading-snug` (1.4), `--leading-normal` (1.5) |
+| Families | `--font-body` (system sans), `--font-display` (DM Serif Display, embedded) |
 
-| Token             | Value | Usage                        |
-| ----------------- | ----- | ---------------------------- |
-| `--font-normal`   | 400   | Body text, descriptions      |
-| `--font-medium`   | 500   | Buttons, labels, toggles     |
-| `--font-semibold` | 600   | Headings, CTA, section titles|
-| `--font-bold`     | 700   | Track headings, round stats  |
+### Layer 2: Semantic Roles (17 roles)
 
-### Font Families
+Each role defines 4 custom properties: `--type-{role}-size`, `-weight`,
+`-leading`, `-color`. Both `.text-*` classes and bespoke classes reference
+these — never palette tokens directly.
 
-| Token            | Value                                    | Usage      |
-| ---------------- | ---------------------------------------- | ---------- |
-| `--font-display` | `'DM Serif Display', Georgia, serif`     | Home title |
-| *(body)*         | `system-ui, -apple-system, sans-serif`   | Everything else |
+**Display** — big, high-emphasis hero text
 
-DM Serif Display is embedded as a base64 `@font-face` at build time
-(`main.ts` reads `src/DMSerifDisplay-latin.woff2`). Latin subset only, ~24KB
-woff2. No external font requests — fully offline-compatible.
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `display-brand` | 2xl | normal | tight | text |
 
-### Type Hierarchy
+`display-brand` also has `--type-display-brand-family: var(--font-display)`.
 
-Content role → size + weight + color recipe. Use `<Text role="...">` for
-structural enforcement (see Structural Components below), or apply the
-`.text-*` CSS class directly.
+**Heading** — structural hierarchy
 
-| Role | Size | Weight | Color | CSS class / component |
-|------|------|--------|-------|-----------------------|
-| Page title | `--text-2xl` | 400 | `--color-text` | `.home-title` (one-off) |
-| Mode title | `--text-lg` | 600 | `--color-text` | `.mode-title` (one-off) |
-| Section header | `--text-base` | 600 | `--color-text` | `<Text role='section-header'>` |
-| Subsection header | `--text-sm` | 600 | `--color-text-muted` | `<Text role='subsection-header'>` |
-| Label | `--text-sm` | 500 | `--color-text-muted` | `<Text role='label'>` |
-| Body | `--text-base` | 400 | `--color-text` | (default — no class needed) |
-| Secondary | `--text-sm` | 400 | `--color-text-muted` | `<Text role='secondary'>` |
-| Caption | `--text-xs` | 400 | `--color-text-light` | `<Text role='caption'>` |
-| Metric value | `--text-md` | 600 | `--color-text` | `<Text role='metric'>` |
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `heading-page` | lg | semibold | tight | text |
+| `heading-section` | base | semibold | tight | text |
+| `heading-subsection` | base | semibold | tight | muted |
+
+**Body** — readable content
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `body` | base | normal | normal | text |
+| `body-secondary` | sm | normal | snug | muted |
+
+**Label** — short functional identifiers
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `label` | sm | medium | none | muted |
+| `label-tag` | xs | semibold | none | muted |
+
+**Quiz** — drill-specific content text
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `quiz-instruction` | base | semibold | normal | muted |
+| `quiz-prompt` | 2xl | semibold | tight | text |
+| `quiz-response` | lg | semibold | none | text |
+| `quiz-feedback` | xl | normal | none | text |
+
+**Supporting** — tertiary/helper text
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `supporting` | xs | normal | snug | text-light |
+
+**Metric** — data values
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `metric-hero` | 3xl | bold | none | brand |
+| `metric-primary` | md | semibold | none | text |
+| `metric-info` | base | medium | none | text |
+
+**Status** — state communication
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `status` | sm | normal | snug | text |
+
+Status color variants: `.status-success`, `.status-error`, `.status-notice`,
+`.status-empty` (italic).
+
+### Intensity Tiers
+
+Roles at the same tier should have matched visual weight even when they
+differ in size, color, or weight. Like `color.error` and `color.info` at
+the same saturation — different hues, same intensity.
+
+| Tier | Roles | Characteristic |
+|------|-------|----------------|
+| Hero | `display-brand`, `metric-hero` | Largest, highest emphasis |
+| Primary | `heading-page`, `quiz-prompt`, `quiz-feedback` | Screen-level focal points |
+| Section | `heading-section`, `heading-subsection`, `metric-primary` | Organizes content |
+| Content | `body`, `body-secondary`, `label`, `quiz-instruction`, `metric-info`, `status` | Same visual weight, differentiated by weight/color |
+| Tertiary | `supporting`, `label-tag` | Smallest, lowest emphasis |
+
+When adding or adjusting a role, check that it sits at the right tier.
+Roles in the same tier should feel equally prominent when placed side by
+side — if one jumps out, its recipe is at the wrong tier.
+
+### Layer 3: Component Mapping
+
+Bespoke classes reference `--type-*` role properties for typography and add
+their own layout. **No typography overrides** — every bespoke class uses its
+role's recipe exactly.
 
 ### Structural Components
-
-Preact components that encode design recipes so the correct visual treatment
-is automatic. Prefer these over manual class composition.
 
 #### ActionButton
 
 ```tsx
-import { ActionButton } from './ui/action-button.tsx';
-
 <ActionButton variant='primary' onClick={start}>Practice</ActionButton>
 <ActionButton variant='secondary' onClick={stop}>Stop</ActionButton>
 ```
 
-Renders a `.page-action-btn` with the correct variant class. Use for all
-flow-initiating and flow-stopping buttons. NOT for answer buttons, toggles,
-close buttons, tabs, or small utility buttons (like baseline rerun).
+`.page-action-btn` with variant class. For flow-initiating/stopping buttons.
 
 #### Text
 
 ```tsx
-import { Text } from './ui/text.tsx';
-
-<Text role='subsection-header' as='div'>Speed check</Text>
+<Text role='heading-page' as='h1'>Guitar Fretboard</Text>
+<Text role='heading-subsection' as='div'>Speed check</Text>
 <Text role='label'>Response time</Text>
-<Text role='metric'>{value}</Text>
-<Text role='caption'>Explanation text</Text>
+<Text role='metric-primary'>{value}</Text>
+<Text role='supporting'>Explanation text</Text>
+<Text role='quiz-prompt'>C#</Text>
 ```
 
-Maps content role to the type hierarchy recipe. Use when an element's styling
-should match a standard text role. NOT for quiz prompts, answer button text,
-branded text (recommendation headers use `--color-notice`), or one-off
-elements with their own sizing.
+Maps content role to typography recipe. For all non-interactive content text.
 
 ---
 
