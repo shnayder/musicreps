@@ -344,6 +344,24 @@ these — never palette tokens directly.
 Status color variants: `.status-success`, `.status-error`, `.status-notice`,
 `.status-empty` (italic).
 
+### Intensity Tiers
+
+Roles at the same tier should have matched visual weight even when they
+differ in size, color, or weight. Like `color.error` and `color.info` at
+the same saturation — different hues, same intensity.
+
+| Tier | Roles | Characteristic |
+|------|-------|----------------|
+| Hero | `display-brand`, `metric-hero` | Largest, highest emphasis |
+| Primary | `heading-page`, `quiz-prompt`, `quiz-feedback` | Screen-level focal points |
+| Section | `heading-section`, `heading-subsection`, `metric-primary` | Organizes content |
+| Content | `body`, `body-secondary`, `label`, `quiz-instruction`, `metric-info`, `status` | Same visual weight, differentiated by weight/color |
+| Tertiary | `supporting`, `label-tag` | Smallest, lowest emphasis |
+
+When adding or adjusting a role, check that it sits at the right tier.
+Roles in the same tier should feel equally prominent when placed side by
+side — if one jumps out, its recipe is at the wrong tier.
+
 ### Layer 3: Component Mapping
 
 Bespoke classes reference `--type-*` role properties for typography and add
