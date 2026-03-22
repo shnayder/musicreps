@@ -1,18 +1,19 @@
 // InteractiveFretboard — reusable tappable fretboard component.
 // Renders a guitar fretboard SVG with tap targets. During collection,
 // tapped positions are highlighted. After evaluation, positions are
-// colored correct/wrong/missed.
+// colored correct/wrong/missed using the same palette as answer buttons.
 
 import { useCallback, useEffect, useMemo, useRef } from 'preact/hooks';
 import { fretboardSVG } from '../html-helpers.ts';
 import type { MultiTapEvalResult } from '../declarative/types.ts';
 
 // ---------------------------------------------------------------------------
-// Colors — read from CSS custom properties with hardcoded test fallbacks
+// Colors — read from CSS custom properties with hardcoded test fallbacks.
+// Uses the same semantic tokens as answer button feedback:
+//   correct → --color-success (dark green)
+//   wrong   → --color-error (red)
+//   missed  → --color-success-bg (light green, same as btn-feedback-reveal)
 // ---------------------------------------------------------------------------
-
-const TAP_SELECTED_FALLBACK = 'hsl(210, 60%, 50%)';
-const WARNING_FALLBACK = '#ff9800';
 
 function readCSSColor(prop: string, fallback: string): string {
   try {
@@ -99,10 +100,13 @@ export function InteractiveFretboard(
     clearAllCircles(root);
 
     if (evaluated) {
-      // After evaluation: show correct/wrong/missed
-      const colorOk = readCSSColor('--color-success', '#4caf50');
+      // After evaluation — same colors as answer button feedback:
+      //   correct taps → dark green (--color-success, like btn-feedback-correct)
+      //   wrong taps   → red (--color-error, like btn-feedback-wrong)
+      //   missed       → light green (--color-success-bg, like btn-feedback-reveal)
+      const colorOk = readCSSColor('--color-success', '#2e7d32');
       const colorBad = readCSSColor('--color-error', '#d32f2f');
-      const colorMissed = readCSSColor('--color-warning', WARNING_FALLBACK);
+      const colorMissed = readCSSColor('--color-success-bg', '#e8f5e9');
       const tappedSet = new Set(evaluated.perEntry.map((e) => e.positionKey));
       for (const entry of evaluated.perEntry) {
         setCircleFill(
@@ -120,7 +124,7 @@ export function InteractiveFretboard(
       // During collection: highlight tapped positions
       const colorSel = readCSSColor(
         '--color-tap-selected',
-        TAP_SELECTED_FALLBACK,
+        'hsl(210, 60%, 50%)',
       );
       for (const posKey of tappedPositions) {
         setCircleFill(root, posKey, colorSel);

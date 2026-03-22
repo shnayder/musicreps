@@ -18,6 +18,7 @@ import type {
 export type TapAction =
   | { kind: 'ignored' }
   | { kind: 'added'; progressText: string }
+  | { kind: 'removed'; progressText: string }
   | {
     kind: 'complete';
     progressText: string;
@@ -27,7 +28,8 @@ export type TapAction =
 
 /**
  * Process a tap against the current collection state (pure function).
- * Returns a TapAction describing what happened.
+ * Tapping a selected position deselects it; tapping an unselected position
+ * adds it; completing the set triggers evaluation.
  */
 export function processMultiTap<Q>(
   multiTap: MultiTapDef<Q>,
@@ -37,8 +39,18 @@ export function processMultiTap<Q>(
 ): TapAction {
   const targets = multiTap.getTargets(q);
 
-  // Reject duplicates and taps after collection is full
-  if (tapped.has(positionKey) || tapped.size >= targets.length) {
+  // Deselect: tapping an already-selected position removes it
+  if (tapped.has(positionKey)) {
+    const next = new Set(tapped);
+    next.delete(positionKey);
+    return {
+      kind: 'removed',
+      progressText: next.size + ' / ' + targets.length,
+    };
+  }
+
+  // Reject taps after collection is full (shouldn't happen with deselect)
+  if (tapped.size >= targets.length) {
     return { kind: 'ignored' };
   }
 
@@ -103,6 +115,15 @@ export function useMultiTapInput<Q>(
     );
 
     if (action.kind === 'ignored') return;
+
+    if (action.kind === 'removed') {
+      const next = new Set(tappedRef.current);
+      next.delete(positionKey);
+      tappedRef.current = next;
+      setTappedPositions(next);
+      setProgressText(action.progressText);
+      return;
+    }
 
     const next = new Set(tappedRef.current);
     next.add(positionKey);

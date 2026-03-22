@@ -47,6 +47,8 @@ function simulateTaps(
     const action = processMultiTap(def, q, tapped, tap);
     if (action.kind === 'added') {
       tapped.add(tap);
+    } else if (action.kind === 'removed') {
+      tapped.delete(tap);
     } else if (action.kind === 'complete') {
       tapped.add(tap);
       evaluated = action.result;
@@ -77,7 +79,7 @@ describe('processMultiTap', () => {
     }
   });
 
-  it('rejects duplicate taps', () => {
+  it('deselects an already-tapped position', () => {
     const def = makeDef(['0-0', '1-5']);
     const already = new Set(['0-0']);
     const action = processMultiTap(
@@ -86,7 +88,10 @@ describe('processMultiTap', () => {
       already,
       '0-0',
     );
-    assert.equal(action.kind, 'ignored');
+    assert.equal(action.kind, 'removed');
+    if (action.kind === 'removed') {
+      assert.equal(action.progressText, '0 / 2');
+    }
   });
 
   it('rejects taps when collection is full', () => {
@@ -138,12 +143,16 @@ describe('multi-tap collection (via simulateTaps)', () => {
     assert.ok(tapped.has('1-5'));
   });
 
-  it('rejects duplicate taps', () => {
+  it('deselects and reselects via double-tap', () => {
+    // tap 0-0, tap 0-0 again (deselect), tap 1-5
     const { tapped } = simulateTaps(
       ['0-0', '1-5', '2-3'],
       ['0-0', '0-0', '1-5'],
     );
-    assert.equal(tapped.size, 2);
+    // 0-0 was deselected, only 1-5 remains
+    assert.equal(tapped.size, 1);
+    assert.ok(!tapped.has('0-0'));
+    assert.ok(tapped.has('1-5'));
   });
 
   it('auto-submits correct sentinel when all targets found', () => {
