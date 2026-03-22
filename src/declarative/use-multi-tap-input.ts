@@ -4,7 +4,61 @@
 // Parallel to useSequentialInput but with set semantics (order doesn't matter).
 
 import { useCallback, useRef, useState } from 'preact/hooks';
-import type { ModeDefinition, MultiTapEvalResult } from './types.ts';
+import type {
+  ModeDefinition,
+  MultiTapDef,
+  MultiTapEvalResult,
+} from './types.ts';
+
+// ---------------------------------------------------------------------------
+// Pure collection logic — shared by hook and tests
+// ---------------------------------------------------------------------------
+
+/** Result of processing a single tap against the collection state. */
+export type TapAction =
+  | { kind: 'ignored' }
+  | { kind: 'added'; progressText: string }
+  | {
+    kind: 'complete';
+    progressText: string;
+    result: MultiTapEvalResult;
+    sentinel: string;
+  };
+
+/**
+ * Process a tap against the current collection state (pure function).
+ * Returns a TapAction describing what happened.
+ */
+export function processMultiTap<Q>(
+  multiTap: MultiTapDef<Q>,
+  q: Q,
+  tapped: ReadonlySet<string>,
+  positionKey: string,
+): TapAction {
+  const targets = multiTap.getTargets(q);
+
+  // Reject duplicates and taps after collection is full
+  if (tapped.has(positionKey) || tapped.size >= targets.length) {
+    return { kind: 'ignored' };
+  }
+
+  const next = new Set(tapped);
+  next.add(positionKey);
+  const progressText = next.size + ' / ' + targets.length;
+
+  if (next.size === targets.length) {
+    const result = multiTap.evaluate(q, [...next]);
+    const sentinel = (result.correct ? '__correct__' : '__wrong__') +
+      ':' + result.correctAnswer;
+    return { kind: 'complete', progressText, result, sentinel };
+  }
+
+  return { kind: 'added', progressText };
+}
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
 
 export type MultiTapInputHandle = {
   /** Set of tapped position keys (for rendering highlights). */
@@ -41,24 +95,24 @@ export function useMultiTapInput<Q>(
 
   const handleTap = useCallback((positionKey: string) => {
     if (!def.multiTap || !currentQRef.current) return;
-    const q = currentQRef.current;
-    const targets = def.multiTap.getTargets(q);
-    const tapped = tappedRef.current;
+    const action = processMultiTap(
+      def.multiTap,
+      currentQRef.current,
+      tappedRef.current,
+      positionKey,
+    );
 
-    // Reject duplicates and taps after evaluation
-    if (tapped.has(positionKey) || tapped.size >= targets.length) return;
+    if (action.kind === 'ignored') return;
 
-    const next = new Set(tapped);
+    const next = new Set(tappedRef.current);
     next.add(positionKey);
     tappedRef.current = next;
     setTappedPositions(next);
-    setProgressText(next.size + ' / ' + targets.length);
+    setProgressText(action.progressText);
 
-    if (next.size === targets.length) {
-      const result = def.multiTap.evaluate(q, [...next]);
-      setEvaluated(result);
-      const sentinel = result.correct ? '__correct__' : '__wrong__';
-      submitRef.current(sentinel + ':' + result.correctAnswer);
+    if (action.kind === 'complete') {
+      setEvaluated(action.result);
+      submitRef.current(action.sentinel);
     }
   }, [def]);
 

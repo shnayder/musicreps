@@ -1,19 +1,34 @@
-// Tests for useMultiTapInput logic — the multi-tap collection/evaluation hook.
-// These test the pure behavior: tap handling, de-duplication, auto-submission,
-// and reset. Follows the same pattern as the sequential input tests.
+// Tests for processMultiTap — the pure collection/evaluation logic shared by
+// useMultiTapInput. Tests the actual exported function, not a re-implementation.
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import type { MultiTapDef, MultiTapEvalResult } from './types.ts';
+import { processMultiTap } from './use-multi-tap-input.ts';
 
 // ---------------------------------------------------------------------------
-// Test helpers — simulate the hook's logic without Preact
+// Test helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Simulate multi-tap collection logic (mirrors useMultiTapInput internals).
- * Returns { tapped, evaluated, submissions } after processing all taps.
- */
+/** Create a simple multiTap spec for testing. */
+function makeDef(_targets: string[]): MultiTapDef<{ targets: string[] }> {
+  return {
+    getTargets: (q) => q.targets,
+    evaluate: (q, tapped) => {
+      const targetSet = new Set(q.targets);
+      const tappedSet = new Set(tapped);
+      const perEntry = tapped.map((pos) => ({
+        positionKey: pos,
+        correct: targetSet.has(pos),
+      }));
+      const missed = q.targets.filter((t) => !tappedSet.has(t));
+      const correct = perEntry.every((e) => e.correct) && missed.length === 0;
+      return { correct, correctAnswer: q.targets.join(' '), perEntry, missed };
+    },
+  };
+}
+
+/** Simulate a sequence of taps, returning final state. */
 function simulateTaps(
   targets: string[],
   taps: string[],
@@ -22,43 +37,22 @@ function simulateTaps(
   evaluated: MultiTapEvalResult | null;
   submissions: string[];
 } {
-  const multiTap: MultiTapDef<{ targets: string[] }> = {
-    getTargets: (q) => q.targets,
-    evaluate: (q, tapped) => {
-      const targetSet = new Set(q.targets);
-      const perEntry = tapped.map((pos) => ({
-        positionKey: pos,
-        correct: targetSet.has(pos),
-      }));
-      const tappedSet = new Set(tapped);
-      const missed = q.targets.filter((t) => !tappedSet.has(t));
-      const correct = perEntry.every((e) => e.correct) && missed.length === 0;
-      return {
-        correct,
-        correctAnswer: q.targets.join(' '),
-        perEntry,
-        missed,
-      };
-    },
-    getDisplayAnswer: (q) => q.targets.join(' '),
-  };
-
+  const def = makeDef(targets);
   const q = { targets };
   const tapped = new Set<string>();
   let evaluated: MultiTapEvalResult | null = null;
   const submissions: string[] = [];
 
   for (const tap of taps) {
-    // Skip duplicates and taps after evaluation
-    if (tapped.has(tap) || tapped.size >= targets.length) continue;
-
-    tapped.add(tap);
-
-    if (tapped.size === targets.length) {
-      evaluated = multiTap.evaluate(q, [...tapped]);
-      const sentinel = evaluated.correct ? '__correct__' : '__wrong__';
-      submissions.push(sentinel + ':' + evaluated.correctAnswer);
+    const action = processMultiTap(def, q, tapped, tap);
+    if (action.kind === 'added') {
+      tapped.add(tap);
+    } else if (action.kind === 'complete') {
+      tapped.add(tap);
+      evaluated = action.result;
+      submissions.push(action.sentinel);
     }
+    // 'ignored' → no state change
   }
 
   return { tapped, evaluated, submissions };
@@ -68,7 +62,75 @@ function simulateTaps(
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('multi-tap collection', () => {
+describe('processMultiTap', () => {
+  it('adds a valid tap', () => {
+    const def = makeDef(['0-0', '1-5']);
+    const action = processMultiTap(
+      def,
+      { targets: ['0-0', '1-5'] },
+      new Set(),
+      '0-0',
+    );
+    assert.equal(action.kind, 'added');
+    if (action.kind === 'added') {
+      assert.equal(action.progressText, '1 / 2');
+    }
+  });
+
+  it('rejects duplicate taps', () => {
+    const def = makeDef(['0-0', '1-5']);
+    const already = new Set(['0-0']);
+    const action = processMultiTap(
+      def,
+      { targets: ['0-0', '1-5'] },
+      already,
+      '0-0',
+    );
+    assert.equal(action.kind, 'ignored');
+  });
+
+  it('rejects taps when collection is full', () => {
+    const def = makeDef(['0-0']);
+    const full = new Set(['0-0']);
+    const action = processMultiTap(def, { targets: ['0-0'] }, full, '1-5');
+    assert.equal(action.kind, 'ignored');
+  });
+
+  it('completes with correct sentinel when all targets found', () => {
+    const def = makeDef(['0-0', '1-5']);
+    const partial = new Set(['0-0']);
+    const action = processMultiTap(
+      def,
+      { targets: ['0-0', '1-5'] },
+      partial,
+      '1-5',
+    );
+    assert.equal(action.kind, 'complete');
+    if (action.kind === 'complete') {
+      assert.equal(action.result.correct, true);
+      assert.ok(action.sentinel.startsWith('__correct__:'));
+    }
+  });
+
+  it('completes with wrong sentinel for wrong taps', () => {
+    const def = makeDef(['0-0', '1-5']);
+    const partial = new Set(['0-0']);
+    const action = processMultiTap(
+      def,
+      { targets: ['0-0', '1-5'] },
+      partial,
+      '2-3',
+    );
+    assert.equal(action.kind, 'complete');
+    if (action.kind === 'complete') {
+      assert.equal(action.result.correct, false);
+      assert.ok(action.sentinel.startsWith('__wrong__:'));
+      assert.deepEqual(action.result.missed, ['1-5']);
+    }
+  });
+});
+
+describe('multi-tap collection (via simulateTaps)', () => {
   it('collects taps into a set', () => {
     const { tapped } = simulateTaps(['0-0', '1-5', '2-3'], ['0-0', '1-5']);
     assert.equal(tapped.size, 2);
@@ -85,62 +147,31 @@ describe('multi-tap collection', () => {
   });
 
   it('auto-submits correct sentinel when all targets found', () => {
-    const targets = ['0-0', '1-5'];
     const { submissions, evaluated } = simulateTaps(
-      targets,
+      ['0-0', '1-5'],
       ['0-0', '1-5'],
     );
     assert.equal(submissions.length, 1);
     assert.ok(submissions[0].startsWith('__correct__:'));
-    assert.notEqual(evaluated, null);
     assert.equal(evaluated!.correct, true);
   });
 
-  it('auto-submits wrong sentinel when taps do not match targets', () => {
-    const targets = ['0-0', '1-5'];
-    const { submissions, evaluated } = simulateTaps(
-      targets,
-      ['0-0', '2-3'],
-    );
-    assert.equal(submissions.length, 1);
-    assert.ok(submissions[0].startsWith('__wrong__:'));
-    assert.equal(evaluated!.correct, false);
-    assert.equal(evaluated!.missed.length, 1);
-    assert.equal(evaluated!.missed[0], '1-5');
-  });
-
   it('ignores taps after evaluation', () => {
-    const targets = ['0-0', '1-5'];
     const { tapped, submissions } = simulateTaps(
-      targets,
+      ['0-0', '1-5'],
       ['0-0', '1-5', '3-7'],
     );
     assert.equal(tapped.size, 2);
     assert.equal(submissions.length, 1);
   });
 
-  it('handles single-target case', () => {
-    const { submissions, evaluated } = simulateTaps(['0-0'], ['0-0']);
-    assert.equal(submissions.length, 1);
-    assert.equal(evaluated!.correct, true);
-  });
-
-  it('evaluate shows per-entry results', () => {
-    const targets = ['0-0', '1-5', '2-3'];
-    const { evaluated } = simulateTaps(targets, ['0-0', '1-5', '2-3']);
-    assert.equal(evaluated!.perEntry.length, 3);
-    assert.ok(evaluated!.perEntry.every((e) => e.correct));
-    assert.equal(evaluated!.missed.length, 0);
-  });
-
   it('mixed correct and wrong taps produce correct per-entry results', () => {
     const targets = ['0-0', '1-5', '2-3'];
     const { evaluated } = simulateTaps(targets, ['0-0', '4-4', '2-3']);
     assert.equal(evaluated!.correct, false);
-    const results = evaluated!.perEntry;
-    assert.equal(results[0].correct, true); // 0-0 is a target
-    assert.equal(results[1].correct, false); // 4-4 is not a target
-    assert.equal(results[2].correct, true); // 2-3 is a target
-    assert.deepEqual(evaluated!.missed, ['1-5']); // missed target
+    assert.equal(evaluated!.perEntry[0].correct, true);
+    assert.equal(evaluated!.perEntry[1].correct, false);
+    assert.equal(evaluated!.perEntry[2].correct, true);
+    assert.deepEqual(evaluated!.missed, ['1-5']);
   });
 });

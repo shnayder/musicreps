@@ -209,11 +209,9 @@ export type MultiTapDef<Q> = {
   getTargets: (q: Q) => string[];
 
   /** Evaluate all tapped positions at once. Called after the user has
-   *  tapped exactly `getTargets(q).length` positions. */
+   *  tapped exactly `getTargets(q).length` positions.
+   *  Must return `correctAnswer` for engine feedback display. */
   evaluate: (q: Q, tapped: string[]) => MultiTapEvalResult;
-
-  /** Display answer for feedback after evaluation. */
-  getDisplayAnswer: (q: Q) => string;
 };
 
 // ---------------------------------------------------------------------------

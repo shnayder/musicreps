@@ -126,15 +126,15 @@ export function InteractiveFretboard(
         setCircleFill(root, posKey, colorSel);
       }
     }
-  }, [tappedPositions, evaluated]);
+  }, [tappedPositions, evaluated, svgHTML]);
 
   return (
-    <div class='speed-tap-fretboard'>
-      {progressText && (
-        <div class='speed-tap-status'>
-          <span class='speed-tap-progress'>{progressText}</span>
-        </div>
-      )}
+    <div class='interactive-fretboard'>
+      <div class='interactive-fretboard-status'>
+        <span class='interactive-fretboard-progress'>
+          {progressText || '\u00A0'}
+        </span>
+      </div>
       <div
         ref={wrapperRef}
         onClick={handleClick}

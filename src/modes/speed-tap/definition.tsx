@@ -5,7 +5,7 @@
 import { useCallback } from 'preact/hooks';
 import { displayNote, NOTES } from '../../music-data.ts';
 import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
-import { buildStatsLegend, getStatsCellColor } from '../../stats-display.ts';
+import { getStatsCellColor } from '../../stats-display.ts';
 import type {
   ModeController,
   ModeDefinition,
@@ -43,7 +43,7 @@ function useSpeedTapController(): ModeController<Question> {
         html += '<td class="stats-cell" style="background:' +
           getStatsCellColor(selector, NOTES[j].name) + '"></td>';
       }
-      html += '</tr></tbody></table>' + buildStatsLegend();
+      html += '</tr></tbody></table>';
       return (
         <div
           // deno-lint-ignore react-no-danger
@@ -78,7 +78,6 @@ export const SPEED_TAP_DEF: ModeDefinition<Question> = {
   multiTap: {
     getTargets: (q) => q.positions.map(positionKey),
     evaluate,
-    getDisplayAnswer: (q) => displayNote(q.note),
   },
 
   getExpectedResponseCount: (itemId) => getPositionsForNote(itemId).length,
