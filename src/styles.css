@@ -188,7 +188,14 @@
   --text-2xl: 2rem;
   --text-3xl: 3rem;
 
+  /* Line heights */
+  --leading-none: 1;
+  --leading-tight: 1.2;
+  --leading-snug: 1.4;
+  --leading-normal: 1.5;
+
   /* Font families */
+  --font-body: system-ui, -apple-system, sans-serif;
   --font-display: 'DM Serif Display', Georgia, serif;
 
   /* Spacing scale */
@@ -255,7 +262,7 @@ html {
   overscroll-behavior: none;
 }
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   max-width: 650px;
   margin: 0 auto;
   padding: 0 var(--space-5);
@@ -384,6 +391,7 @@ body {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
   font-weight: var(--font-normal);
+  line-height: var(--leading-tight);
   color: var(--color-text);
   margin: 0;
 }
@@ -400,7 +408,7 @@ body {
   margin: var(--space-3) 0 0;
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  line-height: 1.4;
+  line-height: var(--leading-snug);
 }
 /* --- Tabs --- */
 .tabs {
@@ -579,7 +587,7 @@ body {
 }
 .track-accordion-chevron {
   font-size: 1em;
-  line-height: 1;
+  line-height: var(--leading-none);
 }
 .track-accordion-body {
   padding-bottom: var(--space-2);
@@ -741,7 +749,7 @@ body {
   gap: var(--space-3);
   margin-top: var(--space-3);
   font-size: var(--text-xs);
-  line-height: 1.4;
+  line-height: var(--leading-snug);
 }
 .skill-card-before {
   text-align: right;
@@ -833,7 +841,7 @@ body {
   justify-content: center;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
-  line-height: 1;
+  line-height: var(--leading-none);
   transition:
     color var(--duration-base) ease,
     background var(--duration-base) ease;
@@ -853,12 +861,13 @@ body {
   margin: 0;
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
 }
 .mode-description {
   margin: var(--space-1) 0 0;
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  line-height: 1.3;
+  line-height: var(--leading-snug);
 }
 .mode-before-after {
   display: grid;
@@ -867,7 +876,7 @@ body {
   gap: var(--space-3);
   margin: var(--space-2) 0 0;
   font-size: var(--text-xs);
-  line-height: 1.4;
+  line-height: var(--leading-snug);
 }
 .mode-ba-before {
   text-align: right;
@@ -895,8 +904,9 @@ body {
 }
 .settings-page-title {
   margin: 0;
+  font-size: var(--text-lg);
   font-weight: var(--font-semibold);
-  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
 }
 .settings-section {
   border-top: 1px solid var(--color-border-lighter);
@@ -1043,7 +1053,7 @@ body {
 .about-ba-text {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  line-height: 1.5;
+  line-height: var(--leading-normal);
 }
 .about-ba-after {
   font-weight: var(--font-semibold);
@@ -1211,7 +1221,7 @@ body {
 .suggestion-line {
   font-size: var(--text-sm);
   color: var(--color-notice-text);
-  line-height: 1.5;
+  line-height: var(--leading-normal);
 }
 .suggestion-verb {
   font-weight: var(--font-semibold);
@@ -1490,7 +1500,7 @@ body {
   background: transparent;
   color: var(--color-text-muted);
   font-size: var(--text-sm);
-  line-height: 1;
+  line-height: var(--leading-none);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1794,7 +1804,7 @@ button {
   font-size: var(--text-3xl);
   font-weight: var(--font-bold);
   color: var(--color-brand);
-  line-height: 1;
+  line-height: var(--leading-none);
 }
 .round-complete-count-label {
   font-size: var(--text-sm);
@@ -1819,7 +1829,7 @@ button {
 .round-stat-line {
   font-size: var(--text-sm);
   color: var(--color-text);
-  line-height: 1.6;
+  line-height: var(--leading-normal);
 }
 /* ==========================================================================
    10. ANSWER BUTTONS
@@ -2013,12 +2023,14 @@ button {
 .quiz-instruction {
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
+  line-height: var(--leading-normal);
   color: var(--color-text-light);
   margin-bottom: var(--space-3);
 }
 .quiz-prompt {
   font-size: var(--text-2xl);
   font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
 }
 .quiz-prompt:empty {
   display: none;
@@ -2228,33 +2240,63 @@ button {
 /* ==========================================================================
    13. TEXT ROLES (type hierarchy recipes)
    ========================================================================== */
+.text-page-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
+.text-screen-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
 .text-section-header {
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
   color: var(--color-text);
 }
 .text-subsection-header {
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
   color: var(--color-text-muted);
 }
 .text-label {
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
+  line-height: var(--leading-none);
   color: var(--color-text-muted);
 }
 .text-secondary {
   font-size: var(--text-sm);
+  line-height: var(--leading-normal);
   color: var(--color-text-muted);
 }
 .text-caption {
   font-size: var(--text-xs);
+  line-height: var(--leading-normal);
   color: var(--color-text-light);
 }
 .text-metric {
   font-size: var(--text-md);
   font-weight: var(--font-semibold);
+  line-height: var(--leading-none);
   color: var(--color-text);
+}
+.text-prompt {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
+.text-instruction {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-normal);
+  color: var(--color-text-light);
 }
 
 /* ==========================================================================

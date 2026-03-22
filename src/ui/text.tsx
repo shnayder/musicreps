@@ -5,12 +5,16 @@
 import type { ComponentChildren } from 'preact';
 
 export type TextRole =
+  | 'page-title'
+  | 'screen-title'
   | 'section-header'
   | 'subsection-header'
   | 'label'
   | 'secondary'
   | 'caption'
-  | 'metric';
+  | 'metric'
+  | 'prompt'
+  | 'instruction';
 
 export function Text(
   { role, children, class: extra, as: Tag = 'span', ...rest }: {

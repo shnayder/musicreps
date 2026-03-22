@@ -254,22 +254,49 @@ function ActionButtonsSection({ tabId }: { tabId: string }) {
 function TypographySection({ tabId }: { tabId: string }) {
   return (
     <>
-      <h2>Typography</h2>
+      <h2>Typography — Type Hierarchy</h2>
       <PreviewGrid>
-        <Section title='Text roles' tabId={tabId}>
+        <Section title='All text roles' tabId={tabId}>
           <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
           >
+            <Text role='page-title' as='div'>Page Title</Text>
+            <Text role='screen-title' as='div'>Screen Title</Text>
+            <Text role='prompt' as='div'>Prompt</Text>
+            <Text role='instruction' as='div'>Instruction</Text>
             <Text role='section-header' as='div'>Section Header</Text>
             <Text role='subsection-header' as='div'>Subsection Header</Text>
             <Text role='label' as='div'>Label</Text>
-            <div>Body text (default — no Text component needed)</div>
+            <div>Body text (default — no role needed)</div>
             <Text role='secondary' as='div'>Secondary text</Text>
             <Text role='caption' as='div'>Caption text</Text>
             <Text role='metric' as='div'>42.5s</Text>
           </div>
         </Section>
-        <Section title='Text roles — in context (metric display)' tabId={tabId}>
+        <Section title='In context — mode header' tabId={tabId}>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
+          >
+            <Text role='screen-title' as='h1'>Guitar Fretboard</Text>
+            <Text role='secondary' as='p'>
+              Identify notes on the fretboard
+            </Text>
+          </div>
+        </Section>
+        <Section title='In context — quiz' tabId={tabId}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+          >
+            <Text role='instruction' as='div'>What note is this?</Text>
+            <Text role='prompt' as='div'>C#</Text>
+          </div>
+        </Section>
+        <Section title='In context — metric display' tabId={tabId}>
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
           >
@@ -363,12 +390,13 @@ function SpacingSection({ tabId }: { tabId: string }) {
 
 const TYPE_TOKENS: Array<{ name: string; usage: string }> = [
   { name: '--text-xs', usage: 'Legend labels, tiny annotations' },
-  { name: '--text-sm', usage: 'Session stats, settings, table text' },
+  { name: '--text-sm', usage: 'Descriptions, settings, table text' },
   { name: '--text-base', usage: 'Body, buttons, nav items' },
-  { name: '--text-md', usage: 'Answer buttons, note buttons' },
-  { name: '--text-lg', usage: 'Mode title, answer count' },
+  { name: '--text-md', usage: 'Answer buttons, metrics' },
+  { name: '--text-lg', usage: 'Screen titles' },
   { name: '--text-xl', usage: 'Feedback, close buttons' },
-  { name: '--text-2xl', usage: 'Home title, quiz prompts' },
+  { name: '--text-2xl', usage: 'Page title, quiz prompts' },
+  { name: '--text-3xl', usage: 'Round-complete count' },
 ];
 
 function TypeScaleSection({ tabId }: { tabId: string }) {
@@ -421,6 +449,161 @@ function TypeScaleSection({ tabId }: { tabId: string }) {
             })}
           </div>
         </Section>
+      </PreviewGrid>
+    </>
+  );
+}
+
+const WEIGHT_TOKENS: Array<{ name: string; value: string; usage: string }> = [
+  { name: '--font-normal', value: '400', usage: 'Body, descriptions' },
+  { name: '--font-medium', value: '500', usage: 'Buttons, labels, toggles' },
+  { name: '--font-semibold', value: '600', usage: 'Headings, CTA, titles' },
+  { name: '--font-bold', value: '700', usage: 'Track headings, round stats' },
+];
+
+const LEADING_TOKENS: Array<{ name: string; value: string; usage: string }> = [
+  { name: '--leading-none', value: '1', usage: 'Icons, buttons, inputs' },
+  { name: '--leading-tight', value: '1.2', usage: 'Headings, prompts' },
+  { name: '--leading-snug', value: '1.4', usage: 'Cards, descriptions' },
+  {
+    name: '--leading-normal',
+    value: '1.5',
+    usage: 'Body text, readable blocks',
+  },
+];
+
+function FontWeightSection({ tabId }: { tabId: string }) {
+  return (
+    <Section title='Font weight tokens' tabId={tabId}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {WEIGHT_TOKENS.map(({ name, value, usage }) => (
+          <div
+            key={name}
+            style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '0.6rem',
+            }}
+          >
+            <code
+              style={{
+                fontSize: '0.7rem',
+                minWidth: '8rem',
+                color: 'var(--color-text-light)',
+                flexShrink: 0,
+              }}
+            >
+              {name}
+            </code>
+            <span
+              style={{
+                fontWeight: value,
+                minWidth: '8rem',
+              }}
+            >
+              Music Reps Ag
+            </span>
+            <Text role='caption' as='span'>{usage}</Text>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function LineHeightSection({ tabId }: { tabId: string }) {
+  return (
+    <Section title='Line height tokens' tabId={tabId}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {LEADING_TOKENS.map(({ name, value, usage }) => (
+          <div
+            key={name}
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.6rem',
+            }}
+          >
+            <code
+              style={{
+                fontSize: '0.7rem',
+                minWidth: '8rem',
+                color: 'var(--color-text-light)',
+                flexShrink: 0,
+                paddingTop: '0.15rem',
+              }}
+            >
+              {name}
+            </code>
+            <div
+              style={{
+                lineHeight: value,
+                background: 'var(--color-surface)',
+                padding: '0 0.25rem',
+                borderRadius: '2px',
+                minWidth: '10rem',
+              }}
+            >
+              Two-line sample to show leading value
+            </div>
+            <Text role='caption' as='span' style={{ paddingTop: '0.15rem' }}>
+              {usage}
+            </Text>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function FontFamilySection({ tabId }: { tabId: string }) {
+  return (
+    <Section title='Font family tokens' tabId={tabId}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div>
+          <code
+            style={{
+              fontSize: '0.7rem',
+              color: 'var(--color-text-light)',
+            }}
+          >
+            --font-body
+          </code>
+          <div style={{ fontSize: 'var(--text-lg)' }}>
+            Music Reps — Ag 0–9 C# Bb
+          </div>
+        </div>
+        <div>
+          <code
+            style={{
+              fontSize: '0.7rem',
+              color: 'var(--color-text-light)',
+            }}
+          >
+            --font-display
+          </code>
+          <div
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-lg)',
+            }}
+          >
+            Music Reps — Ag 0–9 C# Bb
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function TypographyPaletteSection({ tabId }: { tabId: string }) {
+  return (
+    <>
+      <h2>Typography — Palette</h2>
+      <PreviewGrid>
+        <FontFamilySection tabId={tabId} />
+        <FontWeightSection tabId={tabId} />
+        <LineHeightSection tabId={tabId} />
       </PreviewGrid>
     </>
   );
@@ -627,8 +810,9 @@ export function DesignSystemTab({ tabId }: { tabId: string }) {
       <SettingsPanelSection tabId={tabId} />
       <ActionButtonsSection tabId={tabId} />
       <TypographySection tabId={tabId} />
-      <SpacingSection tabId={tabId} />
       <TypeScaleSection tabId={tabId} />
+      <TypographyPaletteSection tabId={tabId} />
+      <SpacingSection tabId={tabId} />
       <RadiusShadowSection tabId={tabId} />
     </div>
   );

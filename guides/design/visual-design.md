@@ -261,57 +261,85 @@ numbers — dropped for legibility at mobile sizes.
 
 ---
 
-## Typography Scale
+## Typography
 
-7 tokens consolidating 15+ previous `font-size` values:
+The typography system parallels the color system: a **palette** of raw tokens,
+a **semantic layer** of content roles, and **components** that reference roles.
+
+### Palette: Font Sizes
 
 | Token         | Size     | Maps to                                          |
 | ------------- | -------- | ------------------------------------------------ |
-| `--text-xs`   | 0.75rem  | Legend labels, progress text, tiny stats         |
-| `--text-sm`   | 0.85rem  | Session stats, settings, table text, calibration |
-| `--text-base` | 1rem     | Body, buttons, nav items, hints                  |
-| `--text-md`   | 1.125rem | Answer buttons, note buttons, chord slots        |
-| `--text-lg`   | 1.3rem   | Mode title                                       |
-| `--text-xl`   | 1.5rem   | Back button, feedback, close buttons             |
-| `--text-2xl`  | 2rem     | Home title, quiz prompts                         |
+| `--text-xs`   | 0.75rem  | Legend labels, progress text, tiny stats          |
+| `--text-sm`   | 0.85rem  | Session stats, settings, table text, descriptions |
+| `--text-base` | 1rem     | Body, buttons, nav items, hints                   |
+| `--text-md`   | 1.125rem | Answer buttons, note buttons, chord slots         |
+| `--text-lg`   | 1.3rem   | Screen titles                                     |
+| `--text-xl`   | 1.5rem   | Feedback, close buttons                           |
+| `--text-2xl`  | 2rem     | Page title, quiz prompts                          |
+| `--text-3xl`  | 3rem     | Round-complete count                              |
 
-### Font Weights
+### Palette: Font Weights
 
-| Token             | Value | Usage                        |
-| ----------------- | ----- | ---------------------------- |
-| `--font-normal`   | 400   | Body text, descriptions      |
-| `--font-medium`   | 500   | Buttons, labels, toggles     |
-| `--font-semibold` | 600   | Headings, CTA, section titles|
-| `--font-bold`     | 700   | Track headings, round stats  |
+| Token             | Value | Usage                         |
+| ----------------- | ----- | ----------------------------- |
+| `--font-normal`   | 400   | Body text, descriptions       |
+| `--font-medium`   | 500   | Buttons, labels, toggles      |
+| `--font-semibold` | 600   | Headings, CTA, section titles |
+| `--font-bold`     | 700   | Track headings, round stats   |
 
-### Font Families
+### Palette: Line Heights
 
-| Token            | Value                                    | Usage      |
-| ---------------- | ---------------------------------------- | ---------- |
-| `--font-display` | `'DM Serif Display', Georgia, serif`     | Home title |
-| *(body)*         | `system-ui, -apple-system, sans-serif`   | Everything else |
+| Token              | Value | Usage                                    |
+| ------------------ | ----- | ---------------------------------------- |
+| `--leading-none`   | 1     | Single-line: icons, buttons, inputs      |
+| `--leading-tight`  | 1.2   | Headings, prompts, titles                |
+| `--leading-snug`   | 1.4   | Compact multi-line: cards, descriptions  |
+| `--leading-normal` | 1.5   | Body text, readable blocks               |
+
+### Palette: Font Families
+
+| Token            | Value                                    | Usage          |
+| ---------------- | ---------------------------------------- | -------------- |
+| `--font-body`    | `system-ui, -apple-system, sans-serif`   | Everything     |
+| `--font-display` | `'DM Serif Display', Georgia, serif`     | Home title     |
 
 DM Serif Display is embedded as a base64 `@font-face` at build time
 (`main.ts` reads `src/DMSerifDisplay-latin.woff2`). Latin subset only, ~24KB
 woff2. No external font requests — fully offline-compatible.
 
-### Type Hierarchy
+### Semantic: Type Hierarchy
 
-Content role → size + weight + color recipe. Use `<Text role="...">` for
-structural enforcement (see Structural Components below), or apply the
-`.text-*` CSS class directly.
+Content role → size + weight + line-height + color recipe. Use
+`<Text role="...">` for structural enforcement (see Structural Components
+below), or apply the `.text-*` CSS class directly.
 
-| Role | Size | Weight | Color | CSS class / component |
-|------|------|--------|-------|-----------------------|
-| Page title | `--text-2xl` | 400 | `--color-text` | `.home-title` (one-off) |
-| Mode title | `--text-lg` | 600 | `--color-text` | `.mode-title` (one-off) |
-| Section header | `--text-base` | 600 | `--color-text` | `<Text role='section-header'>` |
-| Subsection header | `--text-sm` | 600 | `--color-text-muted` | `<Text role='subsection-header'>` |
-| Label | `--text-sm` | 500 | `--color-text-muted` | `<Text role='label'>` |
-| Body | `--text-base` | 400 | `--color-text` | (default — no class needed) |
-| Secondary | `--text-sm` | 400 | `--color-text-muted` | `<Text role='secondary'>` |
-| Caption | `--text-xs` | 400 | `--color-text-light` | `<Text role='caption'>` |
-| Metric value | `--text-md` | 600 | `--color-text` | `<Text role='metric'>` |
+| Role | Size | Weight | Line-height | Color | CSS class |
+|------|------|--------|-------------|-------|-----------|
+| Page title | `--text-2xl` | 400 | tight | `--color-text` | `.text-page-title` |
+| Screen title | `--text-lg` | 600 | tight | `--color-text` | `.text-screen-title` |
+| Prompt | `--text-2xl` | 600 | tight | `--color-text` | `.text-prompt` |
+| Instruction | `--text-base` | 600 | normal | `--color-text-light` | `.text-instruction` |
+| Section header | `--text-base` | 600 | tight | `--color-text` | `.text-section-header` |
+| Subsection header | `--text-sm` | 600 | tight | `--color-text-muted` | `.text-subsection-header` |
+| Label | `--text-sm` | 500 | none | `--color-text-muted` | `.text-label` |
+| Body | `--text-base` | 400 | normal | `--color-text` | (default — no class) |
+| Secondary | `--text-sm` | 400 | normal | `--color-text-muted` | `.text-secondary` |
+| Caption | `--text-xs` | 400 | normal | `--color-text-light` | `.text-caption` |
+| Metric | `--text-md` | 600 | none | `--color-text` | `.text-metric` |
+
+**Bespoke text classes** — some elements use dedicated CSS classes that follow
+a semantic role's recipe but add layout (margin, flex). These are documented
+here for reference:
+
+| Bespoke class | Follows role | Extra |
+|---|---|---|
+| `.home-title` | page-title | `font-family: var(--font-display)`, margin, brand underline |
+| `.mode-title` | screen-title | margin |
+| `.settings-page-title` | screen-title | margin |
+| `.quiz-prompt` | prompt | mobile size override, `:empty` rule |
+| `.quiz-instruction` | instruction | margin |
+| `.mode-description` | secondary | `--leading-snug` override, margin |
 
 ### Structural Components
 
@@ -336,16 +364,17 @@ close buttons, tabs, or small utility buttons (like baseline rerun).
 ```tsx
 import { Text } from './ui/text.tsx';
 
+<Text role='screen-title' as='h1'>Guitar Fretboard</Text>
 <Text role='subsection-header' as='div'>Speed check</Text>
 <Text role='label'>Response time</Text>
 <Text role='metric'>{value}</Text>
 <Text role='caption'>Explanation text</Text>
+<Text role='prompt'>C#</Text>
 ```
 
-Maps content role to the type hierarchy recipe. Use when an element's styling
-should match a standard text role. NOT for quiz prompts, answer button text,
-branded text (recommendation headers use `--color-notice`), or one-off
-elements with their own sizing.
+Maps content role to the type hierarchy recipe. Use for all non-interactive
+content text. NOT for answer button text, branded/colored text (suggestion
+headers use `--color-notice`), or feedback (dynamic color switching).
 
 ---
 
