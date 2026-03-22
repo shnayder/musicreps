@@ -382,7 +382,7 @@ function SpeedCheckResults(
   return (
     <>
       <div class='quiz-content calibration-results'>
-        <Text role='heading-section' as='h2'>Speed Check Complete</Text>
+        <Text role='heading-page' as='h2'>Speed Check Complete</Text>
         <div class='calibration-baseline'>
           {(baseline / 1000).toFixed(2)}s
         </div>
