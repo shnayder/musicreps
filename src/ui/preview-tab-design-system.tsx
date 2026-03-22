@@ -261,7 +261,7 @@ function TypographySection({ tabId }: { tabId: string }) {
             style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
           >
             <Text role='display-brand' as='div'>Display Brand</Text>
-            <Text role='display-hero' as='div'>Display Hero</Text>
+            <Text role='metric-hero' as='div'>99</Text>
             <Text role='heading-page' as='div'>Heading Page</Text>
             <Text role='heading-section' as='div'>Heading Section</Text>
             <Text role='heading-subsection' as='div'>Heading Subsection</Text>
@@ -274,7 +274,8 @@ function TypographySection({ tabId }: { tabId: string }) {
             <Text role='quiz-response' as='div'>Quiz Response</Text>
             <Text role='quiz-feedback' as='div'>Quiz Feedback</Text>
             <Text role='supporting' as='div'>Supporting</Text>
-            <Text role='metric' as='div'>42.5s</Text>
+            <Text role='metric-primary' as='div'>0.52s</Text>
+            <Text role='metric-info' as='div'>30 reps</Text>
             <Text role='status' as='div'>Status</Text>
           </div>
         </Section>
@@ -310,7 +311,7 @@ function TypographySection({ tabId }: { tabId: string }) {
               style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}
             >
               <Text role='label'>Response time</Text>
-              <Text role='metric'>0.5s</Text>
+              <Text role='metric-primary'>0.5s</Text>
             </div>
             <Text role='supporting' as='div'>
               Timing thresholds are based on this measurement.

@@ -7,7 +7,6 @@ import type { ComponentChildren } from 'preact';
 export type TextRole =
   // Display
   | 'display-brand'
-  | 'display-hero'
   // Heading
   | 'heading-page'
   | 'heading-section'
@@ -26,7 +25,9 @@ export type TextRole =
   // Supporting
   | 'supporting'
   // Metric
-  | 'metric'
+  | 'metric-hero'
+  | 'metric-primary'
+  | 'metric-info'
   // Status
   | 'status';
 

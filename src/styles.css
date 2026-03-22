@@ -259,11 +259,6 @@
   --type-display-brand-color: var(--color-text);
   --type-display-brand-family: var(--font-display);
 
-  --type-display-hero-size: var(--text-3xl);
-  --type-display-hero-weight: var(--font-bold);
-  --type-display-hero-leading: var(--leading-none);
-  --type-display-hero-color: var(--color-brand);
-
   /* -- Heading: structural hierarchy -- */
   --type-heading-page-size: var(--text-lg);
   --type-heading-page-weight: var(--font-semibold);
@@ -330,10 +325,20 @@
   --type-supporting-color: var(--color-text-light);
 
   /* -- Metric: data values -- */
-  --type-metric-size: var(--text-md);
-  --type-metric-weight: var(--font-semibold);
-  --type-metric-leading: var(--leading-none);
-  --type-metric-color: var(--color-text);
+  --type-metric-hero-size: var(--text-3xl);
+  --type-metric-hero-weight: var(--font-bold);
+  --type-metric-hero-leading: var(--leading-none);
+  --type-metric-hero-color: var(--color-brand);
+
+  --type-metric-primary-size: var(--text-md);
+  --type-metric-primary-weight: var(--font-semibold);
+  --type-metric-primary-leading: var(--leading-none);
+  --type-metric-primary-color: var(--color-text);
+
+  --type-metric-info-size: var(--text-base);
+  --type-metric-info-weight: var(--font-medium);
+  --type-metric-info-leading: var(--leading-none);
+  --type-metric-info-color: var(--color-text);
 
   /* -- Status: state communication -- */
   --type-status-size: var(--text-sm);
@@ -1795,9 +1800,9 @@ button {
   background: var(--color-notice);
 }
 .quiz-info-time {
-  font-size: var(--type-body-secondary-size);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1823,9 +1828,9 @@ button {
   transform: translateX(-50%);
 }
 .quiz-info-count {
-  font-size: var(--type-body-size);
-  font-weight: var(--type-heading-section-weight);
-  color: var(--type-body-color);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1918,10 +1923,10 @@ button {
   margin-bottom: var(--space-4);
 }
 .round-complete-count {
-  font-size: var(--type-display-hero-size);
-  font-weight: var(--type-display-hero-weight);
-  line-height: var(--type-display-hero-leading);
-  color: var(--type-display-hero-color);
+  font-size: var(--type-metric-hero-size);
+  font-weight: var(--type-metric-hero-weight);
+  line-height: var(--type-metric-hero-leading);
+  color: var(--type-metric-hero-color);
 }
 .round-complete-count-label {
   font-size: var(--type-body-secondary-size);
@@ -2303,8 +2308,9 @@ button {
   padding: var(--space-1) 0;
 }
 .speed-check-header-progress {
-  font-size: var(--text-base);
-  color: var(--color-text-muted);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
 }
 .heatmap-swatch {
@@ -2324,8 +2330,11 @@ button {
   margin: 0 auto;
 }
 .calibration-baseline {
-  font-size: var(--text-md);
-  font-weight: var(--font-semibold);
+  font-size: var(--type-metric-primary-size);
+  font-weight: var(--type-metric-primary-weight);
+  line-height: var(--type-metric-primary-leading);
+  color: var(--type-metric-primary-color);
+  font-variant-numeric: tabular-nums;
   margin: var(--space-3) 0 var(--space-5);
 }
 .calibration-thresholds {
@@ -2370,12 +2379,6 @@ button {
   font-weight: var(--type-display-brand-weight);
   line-height: var(--type-display-brand-leading);
   color: var(--type-display-brand-color);
-}
-.text-display-hero {
-  font-size: var(--type-display-hero-size);
-  font-weight: var(--type-display-hero-weight);
-  line-height: var(--type-display-hero-leading);
-  color: var(--type-display-hero-color);
 }
 
 /* -- Heading -- */
@@ -2461,11 +2464,27 @@ button {
 }
 
 /* -- Metric -- */
-.text-metric {
-  font-size: var(--type-metric-size);
-  font-weight: var(--type-metric-weight);
-  line-height: var(--type-metric-leading);
-  color: var(--type-metric-color);
+/* -- Metric -- */
+.text-metric-hero {
+  font-size: var(--type-metric-hero-size);
+  font-weight: var(--type-metric-hero-weight);
+  line-height: var(--type-metric-hero-leading);
+  color: var(--type-metric-hero-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-primary {
+  font-size: var(--type-metric-primary-size);
+  font-weight: var(--type-metric-primary-weight);
+  line-height: var(--type-metric-primary-leading);
+  color: var(--type-metric-primary-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-info {
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
+  font-variant-numeric: tabular-nums;
 }
 
 /* -- Status (+ color variants) -- */
@@ -2788,7 +2807,10 @@ button {
   margin: 0 0 var(--space-3) 0;
 }
 .speed-tap-progress {
-  font-weight: var(--font-medium);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  color: var(--type-metric-info-color);
+  font-variant-numeric: tabular-nums;
 }
 .speed-tap-stats {
   font-size: var(--text-xs);

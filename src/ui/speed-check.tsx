@@ -128,7 +128,7 @@ export function BaselineInfo(
       </Text>
       <div class='baseline-metric'>
         <Text role='label'>Response time for note input</Text>
-        <Text role='metric'>
+        <Text role='metric-primary'>
           {value}
           {tag && <>{tag}</>}
         </Text>
