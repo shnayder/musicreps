@@ -277,7 +277,7 @@ the full design rationale.
 | Line heights | `--leading-none` (1), `--leading-tight` (1.2), `--leading-snug` (1.4), `--leading-normal` (1.5) |
 | Families | `--font-body` (system sans), `--font-display` (DM Serif Display, embedded) |
 
-### Layer 2: Semantic Roles (16 roles)
+### Layer 2: Semantic Roles (17 roles)
 
 Each role defines 4 custom properties: `--type-{role}-size`, `-weight`,
 `-leading`, `-color`. Both `.text-*` classes and bespoke classes reference
@@ -288,7 +288,6 @@ these — never palette tokens directly.
 | Role | Size | Weight | Leading | Color |
 |------|------|--------|---------|-------|
 | `display-brand` | 2xl | normal | tight | text |
-| `display-hero` | 3xl | bold | none | brand |
 
 `display-brand` also has `--type-display-brand-family: var(--font-display)`.
 
@@ -298,7 +297,7 @@ these — never palette tokens directly.
 |------|------|--------|---------|-------|
 | `heading-page` | lg | semibold | tight | text |
 | `heading-section` | base | semibold | tight | text |
-| `heading-subsection` | sm | semibold | tight | muted |
+| `heading-subsection` | base | semibold | tight | muted |
 
 **Body** — readable content
 
@@ -318,7 +317,7 @@ these — never palette tokens directly.
 
 | Role | Size | Weight | Leading | Color |
 |------|------|--------|---------|-------|
-| `quiz-instruction` | base | semibold | normal | text-light |
+| `quiz-instruction` | base | semibold | normal | muted |
 | `quiz-prompt` | 2xl | semibold | tight | text |
 | `quiz-response` | lg | semibold | none | text |
 | `quiz-feedback` | xl | normal | none | text |
@@ -333,7 +332,9 @@ these — never palette tokens directly.
 
 | Role | Size | Weight | Leading | Color |
 |------|------|--------|---------|-------|
-| `metric` | md | semibold | none | text |
+| `metric-hero` | 3xl | bold | none | brand |
+| `metric-primary` | md | semibold | none | text |
+| `metric-info` | base | medium | none | text |
 
 **Status** — state communication
 
