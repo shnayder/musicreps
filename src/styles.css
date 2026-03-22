@@ -335,7 +335,7 @@
   --type-metric-primary-leading: var(--leading-none);
   --type-metric-primary-color: var(--color-text);
 
-  --type-metric-info-size: var(--text-sm);
+  --type-metric-info-size: var(--text-base);
   --type-metric-info-weight: var(--font-medium);
   --type-metric-info-leading: var(--leading-none);
   --type-metric-info-color: var(--color-text);
@@ -1813,8 +1813,9 @@ button {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  font-size: var(--type-body-secondary-size);
-  color: var(--type-body-secondary-color);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  color: var(--type-metric-info-color);
   padding-bottom: var(--space-2);
 }
 .quiz-info-context {
@@ -1828,9 +1829,6 @@ button {
   transform: translateX(-50%);
 }
 .quiz-info-count {
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
-  color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
 }
 
