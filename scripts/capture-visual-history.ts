@@ -87,7 +87,8 @@ function captureScreenshots(
 ): void {
   mkdirSync(outDir, { recursive: true });
   const only = wanted.join(',');
-  const cmd = `npx tsx scripts/take-screenshots.ts --ci --only "${only}" --dir "${outDir}"`;
+  const cmd =
+    `npx tsx scripts/take-screenshots.ts --ci --only "${only}" --dir "${outDir}"`;
   console.log(`Running: ${cmd}`);
   execSync(cmd, { cwd, stdio: 'inherit' });
 
@@ -250,7 +251,9 @@ function backfillFromGhPages(
 
   mkdirSync(snapshotDir, { recursive: true });
   console.log(
-    `Backfilling from gh-pages ${ghPagesCommit.slice(0, 8)} → ${previewName}...`,
+    `Backfilling from gh-pages ${
+      ghPagesCommit.slice(0, 8)
+    } → ${previewName}...`,
   );
 
   const extracted: string[] = [];
@@ -279,7 +282,9 @@ function backfillFromGhPages(
     screenshots: extracted,
   });
 
-  console.log(`Backfill snapshot saved to ${snapshotDir} (${extracted.length} images)`);
+  console.log(
+    `Backfill snapshot saved to ${snapshotDir} (${extracted.length} images)`,
+  );
   regenerateIndex(archiveDir);
 }
 
@@ -343,8 +348,8 @@ function getArg(args: string[], flag: string): string | null {
 function main(): void {
   const args = process.argv.slice(2);
   const config = loadConfig();
-  const rawDir = getArg(args, '--archive-dir')
-    ?? process.env.MUSICREPS_VISUAL_HISTORY_DIR;
+  const rawDir = getArg(args, '--archive-dir') ??
+    process.env.MUSICREPS_VISUAL_HISTORY_DIR;
   if (!rawDir) {
     console.error(
       'Archive directory required. Pass --archive-dir <path> or set MUSICREPS_VISUAL_HISTORY_DIR.',
@@ -367,7 +372,14 @@ function main(): void {
     }
     const note = getArg(args, '--note') ?? 'Backfilled from gh-pages';
     const sourceCommit = getArg(args, '--source-commit');
-    backfillFromGhPages(ghCommit, preview, note, sourceCommit, config, archiveDir);
+    backfillFromGhPages(
+      ghCommit,
+      preview,
+      note,
+      sourceCommit,
+      config,
+      archiveDir,
+    );
   } else {
     captureHead(force, config, archiveDir);
   }
