@@ -129,6 +129,8 @@
   --color-error-bg: var(--error-100);
   --color-error-border: var(--error-500);
   --color-error-text: var(--error-800);
+  --color-warning: #ff9800;
+  --color-tap-selected: hsl(210, 60%, 50%);
   /* On-fill text (flips in dark mode) */
   --color-on-brand: white;
   --color-on-success: white;
@@ -2793,7 +2795,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="40e5c7 speed-tap-refactor"></div>
+  <div class="home-screen" id="home-screen" data-version="37ae63 speed-tap-refactor"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -10767,7 +10769,16 @@ body.native-app {
   }
 
   // src/ui/interactive-fretboard.tsx
-  var TAP_SELECTED = "hsl(210, 60%, 50%)";
+  var TAP_SELECTED_FALLBACK = "hsl(210, 60%, 50%)";
+  var WARNING_FALLBACK = "#ff9800";
+  function readCSSColor(prop, fallback) {
+    try {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+      return val || fallback;
+    } catch (_3) {
+      return fallback;
+    }
+  }
   function setCircleFill(root, posKey, color) {
     const [s3, f4] = posKey.split("-");
     const circle = root.querySelector(
@@ -10807,19 +10818,29 @@ body.native-app {
       if (!root) return;
       clearAllCircles(root);
       if (evaluated) {
+        const colorOk = readCSSColor("--color-success", "#4caf50");
+        const colorBad = readCSSColor("--color-error", "#d32f2f");
+        const colorMissed = readCSSColor("--color-warning", WARNING_FALLBACK);
         const tappedSet = new Set(evaluated.perEntry.map((e3) => e3.positionKey));
         for (const entry of evaluated.perEntry) {
-          const color = entry.correct ? "var(--color-success)" : "var(--color-error)";
-          setCircleFill(root, entry.positionKey, color);
+          setCircleFill(
+            root,
+            entry.positionKey,
+            entry.correct ? colorOk : colorBad
+          );
         }
         for (const missed of evaluated.missed) {
           if (!tappedSet.has(missed)) {
-            setCircleFill(root, missed, "var(--color-warning, #ff9800)");
+            setCircleFill(root, missed, colorMissed);
           }
         }
       } else {
+        const colorSel = readCSSColor(
+          "--color-tap-selected",
+          TAP_SELECTED_FALLBACK
+        );
         for (const posKey of tappedPositions) {
-          setCircleFill(root, posKey, TAP_SELECTED);
+          setCircleFill(root, posKey, colorSel);
         }
       }
     }, [tappedPositions, evaluated]);
