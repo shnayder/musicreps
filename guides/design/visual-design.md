@@ -386,7 +386,7 @@ role's recipe exactly.
 <Text role='heading-page' as='h1'>Guitar Fretboard</Text>
 <Text role='heading-subsection' as='div'>Speed check</Text>
 <Text role='label'>Response time</Text>
-<Text role='metric'>{value}</Text>
+<Text role='metric-primary'>{value}</Text>
 <Text role='supporting'>Explanation text</Text>
 <Text role='quiz-prompt'>C#</Text>
 ```

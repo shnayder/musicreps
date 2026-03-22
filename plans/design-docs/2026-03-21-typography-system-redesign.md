@@ -1,5 +1,13 @@
 # Typography System Redesign
 
+> **Implementation deviations from this plan:**
+> - 17 roles (not 16): `display-hero` moved to `metric-hero`, metric expanded
+>   to 3 variants (hero, primary, info). 69 role properties (not 65).
+> - `heading-subsection` size changed from sm → base during visual review.
+> - `quiz-instruction` color changed from text-light → text-muted.
+> - `metric-info` size is base (not in original plan).
+> - See `guides/design/visual-design.md` for the authoritative role table.
+
 ## Context
 
 The current typography system has 11 text roles named by appearance/position
