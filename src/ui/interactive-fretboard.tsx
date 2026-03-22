@@ -8,11 +8,21 @@ import { fretboardSVG } from '../html-helpers.ts';
 import type { MultiTapEvalResult } from '../declarative/types.ts';
 
 // ---------------------------------------------------------------------------
-// Colors
+// Colors — read from CSS custom properties with hardcoded test fallbacks
 // ---------------------------------------------------------------------------
 
-/** Neutral highlight for tapped-but-not-yet-evaluated positions. */
-const TAP_SELECTED = 'hsl(210, 60%, 50%)';
+const TAP_SELECTED_FALLBACK = 'hsl(210, 60%, 50%)';
+const WARNING_FALLBACK = '#ff9800';
+
+function readCSSColor(prop: string, fallback: string): string {
+  try {
+    const val = getComputedStyle(document.documentElement)
+      .getPropertyValue(prop).trim();
+    return val || fallback;
+  } catch (_) {
+    return fallback; // expected in tests
+  }
+}
 
 // ---------------------------------------------------------------------------
 // SVG helpers (imperative DOM mutation for performance)
@@ -90,22 +100,30 @@ export function InteractiveFretboard(
 
     if (evaluated) {
       // After evaluation: show correct/wrong/missed
+      const colorOk = readCSSColor('--color-success', '#4caf50');
+      const colorBad = readCSSColor('--color-error', '#d32f2f');
+      const colorMissed = readCSSColor('--color-warning', WARNING_FALLBACK);
       const tappedSet = new Set(evaluated.perEntry.map((e) => e.positionKey));
       for (const entry of evaluated.perEntry) {
-        const color = entry.correct
-          ? 'var(--color-success)'
-          : 'var(--color-error)';
-        setCircleFill(root, entry.positionKey, color);
+        setCircleFill(
+          root,
+          entry.positionKey,
+          entry.correct ? colorOk : colorBad,
+        );
       }
       for (const missed of evaluated.missed) {
         if (!tappedSet.has(missed)) {
-          setCircleFill(root, missed, 'var(--color-warning, #ff9800)');
+          setCircleFill(root, missed, colorMissed);
         }
       }
     } else {
       // During collection: highlight tapped positions
+      const colorSel = readCSSColor(
+        '--color-tap-selected',
+        TAP_SELECTED_FALLBACK,
+      );
       for (const posKey of tappedPositions) {
-        setCircleFill(root, posKey, TAP_SELECTED);
+        setCircleFill(root, posKey, colorSel);
       }
     }
   }, [tappedPositions, evaluated]);
