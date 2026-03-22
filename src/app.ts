@@ -31,9 +31,7 @@ import { DIATONIC_CHORDS_DEF } from './modes/diatonic-chords/definition.ts';
 import { createFretboardDef } from './modes/fretboard/definition.tsx';
 import { CHORD_SPELLING_DEF } from './modes/chord-spelling/definition.ts';
 
-// Hand-written modes (too specialized for GenericMode)
-import { SpeedTapMode } from './modes/speed-tap/speed-tap-mode.tsx';
-import { ALL_ITEMS as SPEED_TAP_ITEMS } from './modes/speed-tap/logic.ts';
+import { SPEED_TAP_DEF } from './modes/speed-tap/definition.tsx';
 
 // Enable :active pseudo-class on iOS Safari. WebKit doesn't fire :active on
 // touch unless the document has a touchstart listener.
@@ -41,37 +39,7 @@ document.addEventListener('touchstart', () => {}, { passive: true });
 
 const nav = createNavigation();
 
-// --- Preact-based modes ---
-
-// deno-lint-ignore no-explicit-any
-function registerPreactMode(id: string, name: string, Component: any) {
-  let handle: ModeHandle | null = null;
-  const container = document.getElementById('mode-' + id)!;
-  nav.registerMode(id, {
-    name,
-    init() {
-      container.textContent = ''; // Clear build-time HTML before Preact takes over
-      render(
-        h(Component, {
-          container,
-          navigateHome: () => nav.navigateHome(),
-          onMount: (h: ModeHandle) => {
-            handle = h;
-          },
-        }),
-        container,
-      );
-    },
-    activate() {
-      handle?.activate();
-    },
-    deactivate() {
-      handle?.deactivate();
-    },
-  });
-}
-
-// Declarative modes — GenericMode interprets the definition
+// --- Declarative modes — GenericMode interprets each ModeDefinition ---
 // deno-lint-ignore no-explicit-any
 function registerDeclarativeMode(def: ModeDefinition<any>) {
   registerModeForEffort({
@@ -117,14 +85,7 @@ registerDeclarativeMode(KEY_SIGNATURES_DEF);
 registerDeclarativeMode(SCALE_DEGREES_DEF);
 registerDeclarativeMode(DIATONIC_CHORDS_DEF);
 registerDeclarativeMode(CHORD_SPELLING_DEF);
-
-// Hand-written modes (too specialized for GenericMode)
-registerModeForEffort({
-  id: 'speedTap',
-  namespace: 'speedTap',
-  allItems: SPEED_TAP_ITEMS,
-});
-registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);
+registerDeclarativeMode(SPEED_TAP_DEF);
 
 nav.init();
 

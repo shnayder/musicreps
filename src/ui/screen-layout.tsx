@@ -92,7 +92,8 @@ export function QuizStage(
   return (
     <div class='quiz-stage'>
       <div class='quiz-stage-prompt'>{prompt}</div>
-      <div class='quiz-stage-response'>{response}</div>
+      {response != null &&
+        <div class='quiz-stage-response'>{response}</div>}
     </div>
   );
 }
