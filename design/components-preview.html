@@ -86,6 +86,7 @@
 
   /* Success scale — derived from --hue-success */
   --success-100: hsl(var(--hue-success), 39%, 93%);
+  --success-300: hsl(var(--hue-success), 40%, 60%);
   --success-600: hsl(var(--hue-success), 46%, 34%);
   --success-800: hsl(var(--hue-success), 55%, 24%);
 
@@ -117,12 +118,14 @@
   --color-success: var(--success-600);
   --color-success-dark: var(--success-800);
   --color-success-bg: var(--success-100);
+  --color-success-reveal: var(--success-300);
   --color-success-text: var(--success-800);
   /* Error */
   --color-error: var(--error-500);
   --color-error-bg: var(--error-100);
   --color-error-border: var(--error-500);
   --color-error-text: var(--error-800);
+  --color-tap-selected: hsl(210, 60%, 50%);
   /* On-fill text (flips in dark mode) */
   --color-on-brand: white;
   --color-on-success: white;
@@ -450,8 +453,9 @@ body {
   text-align: center;
   padding: var(--space-3);
 }
-/* Instruction text must not shrink when fretboard/content is present */
-.quiz-stage-prompt > .quiz-instruction {
+/* Instruction + prompt text must not shrink when fretboard/content is present */
+.quiz-stage-prompt > .quiz-instruction,
+.quiz-stage-prompt > .quiz-prompt {
   flex-shrink: 0;
 }
 /* Fretboard: wrapper fills remaining space, SVG contained within */
@@ -2827,15 +2831,48 @@ button {
   padding: 0.2rem 0.4rem;
 }
 
-/* --- Speed Tap mode --- */
-.speed-tap-status {
+/* --- Interactive fretboard (multi-tap modes) --- */
+/* No response zone → prompt takes all of QuizStage. The fretboard fills
+   remaining space after fixed-height text elements. Every layer in the
+   flex chain participates so the browser computes the available height
+   and the SVG scales to fit via viewBox + preserveAspectRatio. No
+   viewport-unit hacks — the layout IS the constraint. */
+.quiz-stage-prompt:only-child {
+  flex: 1;
+}
+.interactive-fretboard {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.interactive-fretboard > div:last-child {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.interactive-fretboard .fretboard-wrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.interactive-fretboard .fretboard-container {
+  max-height: 85%;
+}
+.interactive-fretboard svg.fretboard {
+  max-height: 100%;
+}
+.interactive-fretboard-status {
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   gap: var(--space-6);
-  font-size: var(--text-lg);
   margin: 0 0 var(--space-3) 0;
 }
-.speed-tap-progress {
+.interactive-fretboard-progress {
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
   line-height: var(--type-metric-info-leading);
@@ -5975,6 +6012,7 @@ ${text}`).join("\n\n");
   // src/modes/speed-tap/logic.ts
   var noteNames = NOTES.map((n2) => n2.name);
   var ALL_ITEMS9 = NOTES.map((n2) => n2.name);
+  var ACCIDENTAL_NOTES = NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
 
   // src/mode-progress-manifest.ts
   function buildGroupEntries(groups, getIds) {

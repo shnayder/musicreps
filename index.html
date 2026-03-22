@@ -92,6 +92,7 @@
 
   /* Success scale — derived from --hue-success */
   --success-100: hsl(var(--hue-success), 39%, 93%);
+  --success-300: hsl(var(--hue-success), 40%, 60%);
   --success-600: hsl(var(--hue-success), 46%, 34%);
   --success-800: hsl(var(--hue-success), 55%, 24%);
 
@@ -123,12 +124,14 @@
   --color-success: var(--success-600);
   --color-success-dark: var(--success-800);
   --color-success-bg: var(--success-100);
+  --color-success-reveal: var(--success-300);
   --color-success-text: var(--success-800);
   /* Error */
   --color-error: var(--error-500);
   --color-error-bg: var(--error-100);
   --color-error-border: var(--error-500);
   --color-error-text: var(--error-800);
+  --color-tap-selected: hsl(210, 60%, 50%);
   /* On-fill text (flips in dark mode) */
   --color-on-brand: white;
   --color-on-success: white;
@@ -456,8 +459,9 @@ body {
   text-align: center;
   padding: var(--space-3);
 }
-/* Instruction text must not shrink when fretboard/content is present */
-.quiz-stage-prompt > .quiz-instruction {
+/* Instruction + prompt text must not shrink when fretboard/content is present */
+.quiz-stage-prompt > .quiz-instruction,
+.quiz-stage-prompt > .quiz-prompt {
   flex-shrink: 0;
 }
 /* Fretboard: wrapper fills remaining space, SVG contained within */
@@ -2833,15 +2837,48 @@ button {
   padding: 0.2rem 0.4rem;
 }
 
-/* --- Speed Tap mode --- */
-.speed-tap-status {
+/* --- Interactive fretboard (multi-tap modes) --- */
+/* No response zone → prompt takes all of QuizStage. The fretboard fills
+   remaining space after fixed-height text elements. Every layer in the
+   flex chain participates so the browser computes the available height
+   and the SVG scales to fit via viewBox + preserveAspectRatio. No
+   viewport-unit hacks — the layout IS the constraint. */
+.quiz-stage-prompt:only-child {
+  flex: 1;
+}
+.interactive-fretboard {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.interactive-fretboard > div:last-child {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.interactive-fretboard .fretboard-wrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.interactive-fretboard .fretboard-container {
+  max-height: 85%;
+}
+.interactive-fretboard svg.fretboard {
+  max-height: 100%;
+}
+.interactive-fretboard-status {
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   gap: var(--space-6);
-  font-size: var(--text-lg);
   margin: 0 0 var(--space-3) 0;
 }
-.speed-tap-progress {
+.interactive-fretboard-progress {
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
   line-height: var(--type-metric-info-leading);
@@ -3068,7 +3105,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1009"></div>
+  <div class="home-screen" id="home-screen" data-version="#1020"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7321,13 +7358,47 @@ body.native-app {
     }
     return positions;
   }
-  function getEnabledNotes(filter) {
-    if (filter === "none") return [];
-    if (filter === "natural") return NATURAL_NOTES.slice();
-    if (filter === "sharps-flats") {
-      return NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
-    }
-    return NOTES.map((n2) => n2.name);
+  function parseItem2(itemId) {
+    const noteData = NOTES.find((n2) => n2.name === itemId);
+    const name = noteData ? displayNote(pickRandomAccidental(noteData.displayName)) : displayNote(itemId);
+    return {
+      note: itemId,
+      displayName: name,
+      positions: getPositionsForNote(itemId)
+    };
+  }
+  function positionKey(pos) {
+    return pos.string + "-" + pos.fret;
+  }
+  function evaluate2(q3, tapped) {
+    const targetSet = new Set(q3.positions.map(positionKey));
+    const tappedSet = new Set(tapped);
+    const perEntry = tapped.map((pos) => ({
+      positionKey: pos,
+      correct: targetSet.has(pos)
+    }));
+    const missed = [...targetSet].filter((t3) => !tappedSet.has(t3));
+    const correct = perEntry.every((e3) => e3.correct) && missed.length === 0;
+    return {
+      correct,
+      correctAnswer: displayNote(q3.note),
+      perEntry,
+      missed
+    };
+  }
+  var ACCIDENTAL_NOTES = NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
+  var NOTE_GROUPS = [
+    { label: "Natural notes" },
+    { label: "Sharps & flats" }
+  ];
+  var ALL_GROUP_INDICES7 = [0, 1];
+  function getItemIdsForGroup8(index) {
+    return index === 0 ? NATURAL_NOTES.slice() : ACCIDENTAL_NOTES.slice();
+  }
+  function formatGroupLabel(enabledGroups) {
+    if (enabledGroups.size === 2) return "all notes";
+    if (enabledGroups.has(1)) return "sharps & flats";
+    return "natural notes";
   }
 
   // src/mode-progress-manifest.ts
@@ -8632,7 +8703,7 @@ body.native-app {
   function QuizStage({ prompt, response }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-stage", children: [
       /* @__PURE__ */ u3("div", { class: "quiz-stage-prompt", children: prompt }),
-      /* @__PURE__ */ u3("div", { class: "quiz-stage-response", children: response })
+      response != null && /* @__PURE__ */ u3("div", { class: "quiz-stage-response", children: response })
     ] });
   }
   function CenteredContent({ children, class: extra }) {
@@ -8829,18 +8900,6 @@ body.native-app {
       /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: count || "" })
     ] });
   }
-  function QuizArea({ prompt, controls, children }) {
-    if (controls !== void 0) {
-      return /* @__PURE__ */ u3("div", { class: "quiz-area", children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-content", children: [
-          prompt && /* @__PURE__ */ u3("div", { class: "quiz-prompt-row", children: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: prompt }) }),
-          children
-        ] }),
-        /* @__PURE__ */ u3("div", { class: "quiz-controls", children: controls })
-      ] });
-    }
-    return /* @__PURE__ */ u3("div", { class: "quiz-area", children });
-  }
   function RoundCompleteInfo({ context, heading, count, correct }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
@@ -8985,50 +9044,6 @@ body.native-app {
   // src/ui/scope.tsx
   function GroupProgressBar({ colors, disabled }) {
     return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `background:${color}` }, i3)) });
-  }
-  function NoteFilter({ mode, onChange }) {
-    const naturalActive = mode === "natural" || mode === "all";
-    const accActive = mode === "sharps-flats" || mode === "all";
-    function toggle(which) {
-      if (which === "natural") {
-        if (naturalActive && accActive) onChange("sharps-flats");
-        else if (naturalActive) onChange(accActive ? "sharps-flats" : "none");
-        else onChange(accActive ? "all" : "natural");
-      } else {
-        if (accActive && naturalActive) onChange("natural");
-        else if (accActive) onChange(naturalActive ? "natural" : "none");
-        else onChange(naturalActive ? "all" : "sharps-flats");
-      }
-    }
-    return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
-      /* @__PURE__ */ u3(Text, { role: "label", class: "toggle-group-label", children: "Notes" }),
-      /* @__PURE__ */ u3("div", { class: "notes-toggles", children: [
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "notes-toggle" + (naturalActive ? " active" : ""),
-            "aria-pressed": naturalActive,
-            "data-notes": "natural",
-            onClick: () => toggle("natural"),
-            children: "natural"
-          }
-        ),
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "notes-toggle" + (accActive ? " active" : ""),
-            "aria-pressed": accActive,
-            "data-notes": "sharps-flats",
-            onClick: () => toggle("sharps-flats"),
-            children: "sharps & flats"
-          }
-        )
-      ] })
-    ] });
   }
 
   // src/ui/segmented-control.tsx
@@ -10949,6 +10964,207 @@ body.native-app {
     return /* @__PURE__ */ u3("div", { dangerouslySetInnerHTML: { __html: html } });
   }
 
+  // src/fretboard.ts
+  var fretPositions = [
+    0,
+    56,
+    110,
+    163,
+    214,
+    264,
+    311,
+    358,
+    402,
+    445,
+    486,
+    526,
+    564,
+    600
+  ];
+  var MAX_FRET_COUNT = fretPositions.length - 1;
+  var PAD_X = 18;
+  var STRING_GAP = 50;
+  function stringX(stringIndex, stringCount) {
+    return PAD_X + (stringCount - 1 - stringIndex) * STRING_GAP;
+  }
+  function noteY(fret) {
+    return fret === 0 ? (fretPositions[0] + fretPositions[1]) / 2 : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
+  }
+  function svgWidth(stringCount) {
+    return (stringCount - 1) * STRING_GAP + PAD_X * 2;
+  }
+  var SVG_HEIGHT = fretPositions[fretPositions.length - 1];
+  function fretLines(width) {
+    return fretPositions.slice(2).map(
+      (y3) => `<line class="fb-fret" x1="0" y1="${y3}" x2="${width}" y2="${y3}" stroke-width="1"/>`
+    ).join("\n      ");
+  }
+  function stringLines(stringCount = 6) {
+    return Array.from({ length: stringCount }, (_3, i3) => {
+      const thickness = 1 + i3 * 0.4;
+      const x2 = stringX(i3, stringCount);
+      return `<line class="fb-string" x1="${x2}" y1="0" x2="${x2}" y2="${SVG_HEIGHT}" stroke-width="${thickness}"/>`;
+    }).join("\n      ");
+  }
+  function fretMarkerDots(stringCount = 6, markers = [3, 5, 7, 9, 12], fretCount = 13) {
+    const w3 = svgWidth(stringCount);
+    return markers.filter((fret) => fret < fretCount).map((fret) => {
+      const cy = noteY(fret);
+      if (fret === 12) {
+        let x1, x2;
+        if (stringCount <= 4) {
+          x1 = stringX(1, stringCount);
+          x2 = stringX(stringCount - 2, stringCount);
+        } else {
+          x1 = (stringX(1, stringCount) + stringX(2, stringCount)) / 2;
+          x2 = (stringX(stringCount - 3, stringCount) + stringX(stringCount - 2, stringCount)) / 2;
+        }
+        return `<circle class="fb-marker" cx="${x1}" cy="${cy}" r="4"/><circle class="fb-marker" cx="${x2}" cy="${cy}" r="4"/>`;
+      }
+      return `<circle class="fb-marker" cx="${w3 / 2}" cy="${cy}" r="4"/>`;
+    }).join("\n      ");
+  }
+  function positionCircles(stringCount = 6, fretCount = 13) {
+    if (fretCount > MAX_FRET_COUNT) {
+      throw new Error(
+        `fretCount ${fretCount} exceeds max ${MAX_FRET_COUNT} (fretPositions has ${fretPositions.length} entries)`
+      );
+    }
+    return Array.from(
+      { length: stringCount },
+      (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
+        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="14"/>`;
+      }).join("\n      ")
+    ).join("\n      ");
+  }
+  function tapTargetRects(stringCount = 6, fretCount = 13) {
+    const w3 = svgWidth(stringCount);
+    return Array.from(
+      { length: stringCount },
+      (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
+        const cx = stringX(string, stringCount);
+        const x2 = Math.max(0, cx - STRING_GAP / 2);
+        const right = Math.min(w3, cx + STRING_GAP / 2);
+        const y3 = fret === 0 ? 0 : fretPositions[fret];
+        const bottom = fretPositions[fret + 1] ?? fretPositions[fretPositions.length - 1];
+        return `<rect class="fb-tap" data-string="${string}" data-fret="${fret}" x="${x2}" y="${y3}" width="${right - x2}" height="${bottom - y3}"/>`;
+      }).join("\n      ")
+    ).join("\n      ");
+  }
+
+  // src/html-helpers.ts
+  function fretboardSVG(config = {}) {
+    const sc = config.stringCount ?? 6;
+    const fc = config.fretCount ?? 13;
+    const w3 = svgWidth(sc);
+    const markers = config.fretMarkers ?? [3, 5, 7, 9, 12];
+    const idAttr = config.id ? ` id="${config.id}"` : "";
+    return `<div class="fretboard-wrapper">
+      <div class="fretboard-container">
+        <svg class="fretboard"${idAttr} viewBox="0 0 ${w3} ${SVG_HEIGHT}">
+          <!-- Fret marker dots (inlays) -->
+          ${fretMarkerDots(sc, markers, fc)}
+          <!-- Nut (horizontal bar at top) -->
+          <rect class="fb-nut" x="0" y="${fretPositions[1] - 2}" width="${w3}" height="4" rx="1"/>
+          <!-- Frets (horizontal lines) -->
+          ${fretLines(w3)}
+          <!-- Strings (vertical lines) -->
+          ${stringLines(sc)}
+          <!-- Position circles -->
+          ${positionCircles(sc, fc)}
+          ${config.tapTargets ? "<!-- Tap targets -->\n          " + tapTargetRects(sc, fc) : ""}
+        </svg>
+      </div>
+    </div>`;
+  }
+
+  // src/ui/interactive-fretboard.tsx
+  function readCSSColor(prop, fallback) {
+    try {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+      return val || fallback;
+    } catch (_3) {
+      return fallback;
+    }
+  }
+  function setCircleFill(root, posKey, color) {
+    const [s3, f4] = posKey.split("-");
+    const circle = root.querySelector(
+      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
+    );
+    if (circle) circle.style.fill = color;
+  }
+  function clearAllCircles(root) {
+    root.querySelectorAll(".fb-pos").forEach((c3) => {
+      c3.style.fill = "";
+    });
+  }
+  function InteractiveFretboard({
+    onTap,
+    tappedPositions,
+    evaluated,
+    progressText,
+    stringCount = 6,
+    fretCount = 13
+  }) {
+    const wrapperRef = A2(null);
+    const svgHTML = T2(
+      () => fretboardSVG({ tapTargets: true, stringCount, fretCount }),
+      [stringCount, fretCount]
+    );
+    const handleClick = q2((e3) => {
+      const el = e3.target.closest(
+        ".fb-tap[data-string][data-fret]"
+      );
+      if (!el) return;
+      const s3 = el.dataset.string;
+      const f4 = el.dataset.fret;
+      onTap(s3 + "-" + f4);
+    }, [onTap]);
+    y2(() => {
+      const root = wrapperRef.current;
+      if (!root) return;
+      clearAllCircles(root);
+      if (evaluated) {
+        const colorOk = readCSSColor("--color-success", "#2e7d32");
+        const colorBad = readCSSColor("--color-error", "#d32f2f");
+        const colorMissed = readCSSColor("--color-success-reveal", "#66bb6a");
+        const tappedSet = new Set(evaluated.perEntry.map((e3) => e3.positionKey));
+        for (const entry of evaluated.perEntry) {
+          setCircleFill(
+            root,
+            entry.positionKey,
+            entry.correct ? colorOk : colorBad
+          );
+        }
+        for (const missed of evaluated.missed) {
+          if (!tappedSet.has(missed)) {
+            setCircleFill(root, missed, colorMissed);
+          }
+        }
+      } else {
+        const colorSel = readCSSColor(
+          "--color-tap-selected",
+          "hsl(210, 60%, 50%)"
+        );
+        for (const posKey of tappedPositions) {
+          setCircleFill(root, posKey, colorSel);
+        }
+      }
+    }, [tappedPositions, evaluated, svgHTML]);
+    return /* @__PURE__ */ u3("div", { class: "interactive-fretboard", children: [
+      /* @__PURE__ */ u3("div", { class: "interactive-fretboard-status", children: /* @__PURE__ */ u3("span", { class: "interactive-fretboard-progress", children: progressText || "\xA0" }) }),
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          ref: wrapperRef,
+          onClick: handleClick,
+          dangerouslySetInnerHTML: { __html: svgHTML }
+        }
+      )
+    ] });
+  }
+
   // src/declarative/use-sequential-input.ts
   function useSequentialInput(def, currentQRef, submitRef) {
     const [seqEntries, setSeqEntries] = d2([]);
@@ -11010,6 +11226,86 @@ body.native-app {
     };
   }
 
+  // src/declarative/use-multi-tap-input.ts
+  function processMultiTap(multiTap, q3, tapped, positionKey2) {
+    const targets = multiTap.getTargets(q3);
+    if (tapped.has(positionKey2)) {
+      const next2 = new Set(tapped);
+      next2.delete(positionKey2);
+      return {
+        kind: "removed",
+        progressText: next2.size + " / " + targets.length
+      };
+    }
+    if (tapped.size >= targets.length) {
+      return { kind: "ignored" };
+    }
+    const next = new Set(tapped);
+    next.add(positionKey2);
+    const progressText = next.size + " / " + targets.length;
+    if (next.size === targets.length) {
+      const result = multiTap.evaluate(q3, [...next]);
+      const sentinel = (result.correct ? "__correct__" : "__wrong__") + ":" + result.correctAnswer;
+      return { kind: "complete", progressText, result, sentinel };
+    }
+    return { kind: "added", progressText };
+  }
+  function useMultiTapInput(def, currentQRef, submitRef) {
+    const [tappedPositions, setTappedPositions] = d2(
+      /* @__PURE__ */ new Set()
+    );
+    const tappedRef = A2(/* @__PURE__ */ new Set());
+    const [evaluated, setEvaluated] = d2(null);
+    const [progressText, setProgressText] = d2("");
+    const prevItemRef = A2(null);
+    const resetAll = q2(() => {
+      tappedRef.current = /* @__PURE__ */ new Set();
+      setTappedPositions(/* @__PURE__ */ new Set());
+      setEvaluated(null);
+      setProgressText("");
+    }, []);
+    const handleTap = q2((positionKey2) => {
+      if (!def.multiTap || !currentQRef.current) return;
+      const action = processMultiTap(
+        def.multiTap,
+        currentQRef.current,
+        tappedRef.current,
+        positionKey2
+      );
+      if (action.kind === "ignored") return;
+      if (action.kind === "removed") {
+        const next2 = new Set(tappedRef.current);
+        next2.delete(positionKey2);
+        tappedRef.current = next2;
+        setTappedPositions(next2);
+        setProgressText(action.progressText);
+        return;
+      }
+      const next = new Set(tappedRef.current);
+      next.add(positionKey2);
+      tappedRef.current = next;
+      setTappedPositions(next);
+      setProgressText(action.progressText);
+      if (action.kind === "complete") {
+        setEvaluated(action.result);
+        submitRef.current(action.sentinel);
+      }
+    }, [def]);
+    const resetOnItemChange = q2((currentItemId) => {
+      if (currentItemId !== prevItemRef.current) {
+        prevItemRef.current = currentItemId;
+        resetAll();
+      }
+    }, [resetAll]);
+    return {
+      tappedPositions,
+      evaluated,
+      progressText,
+      handleTap,
+      resetOnItemChange
+    };
+  }
+
   // src/declarative/generic-mode.tsx
   function getHintType(buttons) {
     switch (buttons.kind) {
@@ -11054,8 +11350,8 @@ body.native-app {
   function defaultDisplayAnswer(strategy, expected) {
     return strategy === "note-enharmonic" ? displayNote(expected) : expected;
   }
-  function checkGenericAnswer(def, currentQRef, lastAnswerRef, isSequential, _itemId, input) {
-    if (isSequential) {
+  function checkGenericAnswer(def, currentQRef, lastAnswerRef, isSequential, isMultiTap, _itemId, input) {
+    if (isSequential || isMultiTap) {
       const sep = input.indexOf(":");
       return {
         correct: input.startsWith("__correct__"),
@@ -11233,6 +11529,8 @@ body.native-app {
             feedback
           }
         );
+      case "none":
+        return null;
     }
   }
   function SequentialQuizArea({
@@ -11281,6 +11579,27 @@ body.native-app {
             }
           )
         ] })
+      }
+    );
+  }
+  function MultiTapQuizArea({ multiTapInput, promptText, instruction }) {
+    return /* @__PURE__ */ u3(
+      QuizStage,
+      {
+        prompt: /* @__PURE__ */ u3(k, { children: [
+          instruction && /* @__PURE__ */ u3("div", { class: "quiz-instruction", children: instruction }),
+          /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: promptText }),
+          /* @__PURE__ */ u3(
+            InteractiveFretboard,
+            {
+              onTap: multiTapInput.handleTap,
+              tappedPositions: multiTapInput.tappedPositions,
+              evaluated: multiTapInput.evaluated,
+              progressText: multiTapInput.progressText
+            }
+          )
+        ] }),
+        response: null
       }
     );
   }
@@ -11357,6 +11676,7 @@ body.native-app {
     practicingLabel,
     handleSubmit,
     seq,
+    multiTapInput,
     activeButtons,
     inactiveButtons,
     promptText,
@@ -11387,7 +11707,14 @@ body.native-app {
       ] });
     }
     const instruction = currentQ && def.quizInstruction ? typeof def.quizInstruction === "function" ? def.quizInstruction(currentQ) : def.quizInstruction : void 0;
-    const quizContent = def.sequential ? /* @__PURE__ */ u3(
+    const quizContent = def.multiTap ? /* @__PURE__ */ u3(
+      MultiTapQuizArea,
+      {
+        multiTapInput,
+        promptText,
+        instruction
+      }
+    ) : def.sequential ? /* @__PURE__ */ u3(
       SequentialQuizArea,
       {
         def,
@@ -11590,9 +11917,13 @@ body.native-app {
   function useGenericEngine(def, ctrl, ctrlRef, groupScopeResult, learner, container) {
     const currentQRef = A2(null);
     const isSequential = !!def.sequential;
+    const isMultiTap = !!def.multiTap;
     const seqSubmitRef = A2(() => {
     });
     const seqInput = useSequentialInput(def, currentQRef, seqSubmitRef);
+    const mtSubmitRef = A2(() => {
+    });
+    const multiTapInput = useMultiTapInput(def, currentQRef, mtSubmitRef);
     const lastAnswerRef = A2(null);
     const getEnabledItemsRef = A2(() => def.allItems);
     const getPracticingLabelRef = A2(() => "all items");
@@ -11609,14 +11940,24 @@ body.native-app {
         lastAnswerRef,
         ctrlRef,
         isSequential,
+        isMultiTap,
         seqInput,
         !!ctrl.handleKey
       ),
-      [def, !!ctrl.handleKey, isSequential]
+      [def, !!ctrl.handleKey, isSequential, isMultiTap]
     );
     const engine = useQuizEngine(engineConfig, learner.selector, container);
     seqSubmitRef.current = engine.submitAnswer;
-    return { engine, currentQRef, seqInput, lastAnswerRef, isSequential };
+    mtSubmitRef.current = engine.submitAnswer;
+    if (ctrl.engineSubmitRef) ctrl.engineSubmitRef.current = engine.submitAnswer;
+    return {
+      engine,
+      currentQRef,
+      seqInput,
+      multiTapInput,
+      lastAnswerRef,
+      isSequential
+    };
   }
   function resolveButtons(def, dir) {
     if (def.buttons.kind === "bidirectional") {
@@ -11637,7 +11978,7 @@ body.native-app {
       formatLabel: def.scope.formatLabel
     };
   }
-  function buildGenericEngineConfig(def, getEnabledItemsRef, getPracticingLabelRef, currentQRef, lastAnswerRef, ctrlRef, isSequential, seqInput, hasHandleKey) {
+  function buildGenericEngineConfig(def, getEnabledItemsRef, getPracticingLabelRef, currentQRef, lastAnswerRef, ctrlRef, isSequential, isMultiTap, seqInput, hasHandleKey) {
     return {
       getEnabledItems: () => getEnabledItemsRef.current(),
       getPracticingLabel: () => getPracticingLabelRef.current(),
@@ -11646,6 +11987,7 @@ body.native-app {
         currentQRef,
         lastAnswerRef,
         isSequential,
+        isMultiTap,
         itemId,
         input
       ),
@@ -11658,13 +12000,14 @@ body.native-app {
       handleKey: hasHandleKey ? (e3, ctx) => ctrlRef.current.handleKey(e3, ctx) : void 0
     };
   }
-  function useGenericDerivedState(def, engine, learner, groupScopeResult, currentQRef, seqInput, isSequential, container, onMount, presentationPhase, deactivateCleanup) {
+  function useGenericDerivedState(def, engine, learner, groupScopeResult, currentQRef, seqInput, multiTapInput, isSequential, container, onMount, presentationPhase, deactivateCleanup) {
     const currentQ = T2(() => {
       const id = engine.state.currentItemId;
       return !id || engine.state.phase === "idle" ? null : def.getQuestion(id);
     }, [engine.state.currentItemId, engine.state.phase, def]);
     currentQRef.current = currentQ;
     if (isSequential) seqInput.resetOnItemChange(engine.state.currentItemId);
+    if (def.multiTap) multiTapInput.resetOnItemChange(engine.state.currentItemId);
     usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
     const practicingLabel = groupScopeResult?.practicingLabel ?? "all items";
     const round = useRoundSummary(engine, practicingLabel);
@@ -11755,6 +12098,7 @@ body.native-app {
     practicingLabel,
     handleSubmit,
     seqInput,
+    multiTapInput,
     isSequential,
     lastAnswerRef,
     navigateHome
@@ -11829,6 +12173,7 @@ body.native-app {
         practicingLabel,
         handleSubmit,
         seq: buildSeqProps(seqInput),
+        multiTapInput,
         activeButtons,
         inactiveButtons,
         promptText,
@@ -11842,7 +12187,8 @@ body.native-app {
     const learner = useLearnerModel(
       def.namespace,
       def.allItems,
-      def.motorTaskType
+      def.motorTaskType,
+      def.getExpectedResponseCount
     );
     const groupScopeSpec = buildGroupScopeSpec(def, learner.selector);
     const groupScopeResult = groupScopeSpec ? useGroupScope(groupScopeSpec) : null;
@@ -11850,7 +12196,21 @@ body.native-app {
     const ctrl = def.useController ? def.useController(enabledGroups) : {};
     const ctrlRef = A2(ctrl);
     ctrlRef.current = ctrl;
-    const { engine, currentQRef, seqInput, lastAnswerRef, isSequential } = useGenericEngine(def, ctrl, ctrlRef, groupScopeResult, learner, container);
+    const {
+      engine,
+      currentQRef,
+      seqInput,
+      multiTapInput,
+      lastAnswerRef,
+      isSequential
+    } = useGenericEngine(
+      def,
+      ctrl,
+      ctrlRef,
+      groupScopeResult,
+      learner,
+      container
+    );
     const sc = useSpeedCheckOverlay(engine, def, ctrl);
     const { currentQ, round, ps, practicingLabel, handleSubmit } = useGenericDerivedState(
       def,
@@ -11859,6 +12219,7 @@ body.native-app {
       groupScopeResult,
       currentQRef,
       seqInput,
+      multiTapInput,
       isSequential,
       container,
       onMount,
@@ -11880,6 +12241,7 @@ body.native-app {
         practicingLabel,
         handleSubmit,
         seqInput,
+        multiTapInput,
         isSequential,
         lastAnswerRef,
         navigateHome
@@ -12217,123 +12579,9 @@ body.native-app {
     }
   };
 
-  // src/fretboard.ts
-  var fretPositions = [
-    0,
-    56,
-    110,
-    163,
-    214,
-    264,
-    311,
-    358,
-    402,
-    445,
-    486,
-    526,
-    564,
-    600
-  ];
-  var MAX_FRET_COUNT = fretPositions.length - 1;
-  var PAD_X = 18;
-  var STRING_GAP = 50;
-  function stringX(stringIndex, stringCount) {
-    return PAD_X + (stringCount - 1 - stringIndex) * STRING_GAP;
-  }
-  function noteY(fret) {
-    return fret === 0 ? (fretPositions[0] + fretPositions[1]) / 2 : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
-  }
-  function svgWidth(stringCount) {
-    return (stringCount - 1) * STRING_GAP + PAD_X * 2;
-  }
-  var SVG_HEIGHT = fretPositions[fretPositions.length - 1];
-  function fretLines(width) {
-    return fretPositions.slice(2).map(
-      (y3) => `<line class="fb-fret" x1="0" y1="${y3}" x2="${width}" y2="${y3}" stroke-width="1"/>`
-    ).join("\n      ");
-  }
-  function stringLines(stringCount = 6) {
-    return Array.from({ length: stringCount }, (_3, i3) => {
-      const thickness = 1 + i3 * 0.4;
-      const x2 = stringX(i3, stringCount);
-      return `<line class="fb-string" x1="${x2}" y1="0" x2="${x2}" y2="${SVG_HEIGHT}" stroke-width="${thickness}"/>`;
-    }).join("\n      ");
-  }
-  function fretMarkerDots(stringCount = 6, markers = [3, 5, 7, 9, 12], fretCount = 13) {
-    const w3 = svgWidth(stringCount);
-    return markers.filter((fret) => fret < fretCount).map((fret) => {
-      const cy = noteY(fret);
-      if (fret === 12) {
-        let x1, x2;
-        if (stringCount <= 4) {
-          x1 = stringX(1, stringCount);
-          x2 = stringX(stringCount - 2, stringCount);
-        } else {
-          x1 = (stringX(1, stringCount) + stringX(2, stringCount)) / 2;
-          x2 = (stringX(stringCount - 3, stringCount) + stringX(stringCount - 2, stringCount)) / 2;
-        }
-        return `<circle class="fb-marker" cx="${x1}" cy="${cy}" r="4"/><circle class="fb-marker" cx="${x2}" cy="${cy}" r="4"/>`;
-      }
-      return `<circle class="fb-marker" cx="${w3 / 2}" cy="${cy}" r="4"/>`;
-    }).join("\n      ");
-  }
-  function positionCircles(stringCount = 6, fretCount = 13) {
-    if (fretCount > MAX_FRET_COUNT) {
-      throw new Error(
-        `fretCount ${fretCount} exceeds max ${MAX_FRET_COUNT} (fretPositions has ${fretPositions.length} entries)`
-      );
-    }
-    return Array.from(
-      { length: stringCount },
-      (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
-        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="14"/>`;
-      }).join("\n      ")
-    ).join("\n      ");
-  }
-  function tapTargetRects(stringCount = 6, fretCount = 13) {
-    const w3 = svgWidth(stringCount);
-    return Array.from(
-      { length: stringCount },
-      (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
-        const cx = stringX(string, stringCount);
-        const x2 = Math.max(0, cx - STRING_GAP / 2);
-        const right = Math.min(w3, cx + STRING_GAP / 2);
-        const y3 = fret === 0 ? 0 : fretPositions[fret];
-        const bottom = fretPositions[fret + 1] ?? fretPositions[fretPositions.length - 1];
-        return `<rect class="fb-tap" data-string="${string}" data-fret="${fret}" x="${x2}" y="${y3}" width="${right - x2}" height="${bottom - y3}"/>`;
-      }).join("\n      ")
-    ).join("\n      ");
-  }
-
-  // src/html-helpers.ts
-  function fretboardSVG(config = {}) {
-    const sc = config.stringCount ?? 6;
-    const fc = config.fretCount ?? 13;
-    const w3 = svgWidth(sc);
-    const markers = config.fretMarkers ?? [3, 5, 7, 9, 12];
-    const idAttr = config.id ? ` id="${config.id}"` : "";
-    return `<div class="fretboard-wrapper">
-      <div class="fretboard-container">
-        <svg class="fretboard"${idAttr} viewBox="0 0 ${w3} ${SVG_HEIGHT}">
-          <!-- Fret marker dots (inlays) -->
-          ${fretMarkerDots(sc, markers, fc)}
-          <!-- Nut (horizontal bar at top) -->
-          <rect class="fb-nut" x="0" y="${fretPositions[1] - 2}" width="${w3}" height="4" rx="1"/>
-          <!-- Frets (horizontal lines) -->
-          ${fretLines(w3)}
-          <!-- Strings (vertical lines) -->
-          ${stringLines(sc)}
-          <!-- Position circles -->
-          ${positionCircles(sc, fc)}
-          ${config.tapTargets ? "<!-- Tap targets -->\n          " + tapTargetRects(sc, fc) : ""}
-        </svg>
-      </div>
-    </div>`;
-  }
-
   // src/modes/fretboard/definition.tsx
   var FB_QUIZ_HL = "hsl(50, 100%, 50%)";
-  function setCircleFill(root, string, fret, color) {
+  function setCircleFill2(root, string, fret, color) {
     const circle = root.querySelector(
       'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
     );
@@ -12383,7 +12631,7 @@ body.native-app {
     const el = quizFbRef.current;
     if (el) {
       clearAll(el);
-      setCircleFill(el, q3.currentString, q3.currentFret, FB_QUIZ_HL);
+      setCircleFill2(el, q3.currentString, q3.currentFret, FB_QUIZ_HL);
     }
     return /* @__PURE__ */ u3(
       "div",
@@ -12404,7 +12652,7 @@ body.native-app {
             for (let f4 = 0; f4 < instrument.fretCount; f4++) {
               const itemId = s3 + "-" + f4;
               const color = getStatsCellColor(selector, itemId);
-              setCircleFill(el, s3, f4, color);
+              setCircleFill2(el, s3, f4, color);
             }
           }
         },
@@ -12461,7 +12709,7 @@ body.native-app {
         if (quizFbRef.current) {
           const q3 = getQuestion6(instrument, itemId);
           const color = result.correct ? "var(--color-success)" : "var(--color-error)";
-          setCircleFill(quizFbRef.current, q3.currentString, q3.currentFret, color);
+          setCircleFill2(quizFbRef.current, q3.currentString, q3.currentFret, color);
         }
       },
       onStart: () => noteHandler.reset(),
@@ -12522,437 +12770,66 @@ body.native-app {
     }
   };
 
-  // src/modes/speed-tap/speed-tap-mode.tsx
-  var FB_TAP_CORRECT = "hsl(125, 48%, 33%)";
-  function setCircleFill2(root, string, fret, color) {
-    const circle = root.querySelector(
-      'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
-    );
-    if (circle) circle.style.fill = color;
-  }
-  function clearAllCircles(root) {
-    root.querySelectorAll(".fb-pos").forEach((c3) => {
-      c3.style.fill = "";
-    });
-  }
-  function buildSpeedTapConfig(scope, currentNoteRef, quizFbRef, targetPosRef, foundPosRef, roundActiveRef, wrongFlashTimeoutsRef, colorError, setProgressText, setCurrentDisplayName) {
-    return {
-      getEnabledItems: () => {
-        const nf = scope.kind === "note-filter" ? scope.noteFilter : "natural";
-        return getEnabledNotes(nf);
-      },
-      checkAnswer: (_itemId, input) => ({
-        correct: input === "complete",
-        correctAnswer: displayNote(currentNoteRef.current)
-      }),
-      onAnswer: (_itemId, result) => {
-        roundActiveRef.current = false;
-        if (!result.correct && quizFbRef.current) {
-          for (const pos of targetPosRef.current) {
-            const key = pos.string + "-" + pos.fret;
-            if (!foundPosRef.current.has(key)) {
-              setCircleFill2(quizFbRef.current, pos.string, pos.fret, colorError);
-            }
-          }
+  // src/modes/speed-tap/definition.tsx
+  function useSpeedTapController() {
+    const renderStats = q2(
+      (selector) => {
+        let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
+        for (let i3 = 0; i3 < NOTES.length; i3++) {
+          html += "<th>" + displayNote(NOTES[i3].name) + "</th>";
         }
-      },
-      onStart: () => {
-      },
-      onStop: () => {
-        roundActiveRef.current = false;
-        wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
-        wrongFlashTimeoutsRef.current.clear();
-        currentNoteRef.current = null;
-        setProgressText("");
-        setCurrentDisplayName("");
-        if (quizFbRef.current) clearAllCircles(quizFbRef.current);
-      },
-      getPracticingLabel: () => {
-        const nf = scope.kind === "note-filter" ? scope.noteFilter : "natural";
-        if (nf === "all") return "all notes";
-        if (nf === "sharps-flats") return "sharps & flats";
-        return "natural notes";
-      },
-      getExpectedResponseCount: (itemId) => getPositionsForNote(itemId).length
-    };
-  }
-  function syncQuestionState(itemId, phase, currentNoteRef, targetPosRef, foundPosRef, roundActiveRef, setCurrentDisplayName, setProgressText) {
-    if (itemId && phase !== "idle") {
-      const note = NOTES.find((n2) => n2.name === itemId);
-      const name = note ? displayNote(pickRandomAccidental(note.displayName)) : displayNote(itemId);
-      const positions = getPositionsForNote(itemId);
-      currentNoteRef.current = itemId;
-      targetPosRef.current = positions;
-      foundPosRef.current = /* @__PURE__ */ new Set();
-      roundActiveRef.current = true;
-      setCurrentDisplayName(name);
-      setProgressText("0 / " + positions.length);
-    }
-  }
-  function buildSpeedTapStatsHTML(selector) {
-    let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
-    for (let i3 = 0; i3 < NOTES.length; i3++) {
-      html += "<th>" + displayNote(NOTES[i3].name) + "</th>";
-    }
-    html += "</tr></thead><tbody><tr>";
-    for (let j3 = 0; j3 < NOTES.length; j3++) {
-      html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, NOTES[j3].name) + '"></td>';
-    }
-    html += "</tr></tbody></table>" + buildStatsLegend();
-    return html;
-  }
-  function SpeedTapActiveView({
-    engine,
-    round,
-    practicingLabel,
-    progressText,
-    promptText,
-    svgHTML,
-    quizFbRef,
-    handleTap
-  }) {
-    const phase = engine.state.phase;
-    if (phase === "round-complete") {
-      return /* @__PURE__ */ u3(ScreenLayout, { children: [
-        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3("div", {}) }),
-        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(
-          RoundCompleteInfo,
-          {
-            context: round.roundContext,
-            heading: "Round complete",
-            count: engine.state.roundAnswered,
-            correct: round.roundCorrect
-          }
-        ) }) }),
-        /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
-          RoundCompleteActions,
-          {
-            onContinue: engine.continueQuiz,
-            onStop: engine.stop
-          }
-        ) })
-      ] });
-    }
-    return /* @__PURE__ */ u3(ScreenLayout, { children: [
-      /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
-        QuizSession,
-        {
-          timeLeft: engine.timerText,
-          timerPct: engine.timerPct,
-          context: practicingLabel,
-          count: round.countText,
-          isWarning: engine.timerWarning,
-          isLastQuestion: engine.timerLastQuestion,
-          lastQuestion: engine.state.roundTimerExpired ? engine.state.answered ? "Time is up" : "Last question" : "",
-          onClose: engine.stop
+        html += "</tr></thead><tbody><tr>";
+        for (let j3 = 0; j3 < NOTES.length; j3++) {
+          html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, NOTES[j3].name) + '"></td>';
         }
-      ) }),
-      /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(
-        QuizArea,
-        {
-          prompt: promptText,
-          controls: /* @__PURE__ */ u3(NoteButtons, { hidden: true, onAnswer: () => {
-          } }),
-          children: [
-            /* @__PURE__ */ u3("div", { class: "speed-tap-status", children: /* @__PURE__ */ u3("span", { class: "speed-tap-progress", children: progressText }) }),
-            /* @__PURE__ */ u3(
-              "div",
-              {
-                ref: quizFbRef,
-                onClick: handleTap,
-                dangerouslySetInnerHTML: { __html: svgHTML }
-              }
-            )
-          ]
-        }
-      ) }),
-      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
-        FeedbackDisplay,
-        {
-          text: engine.state.feedbackText,
-          className: engine.state.feedbackClass,
-          hint: engine.state.hintText || void 0,
-          correct: engine.state.feedbackCorrect,
-          onNext: engine.state.answered ? engine.nextQuestion : void 0,
-          label: engine.state.roundTimerExpired ? "Continue" : "Next"
-        }
-      ) })
-    ] });
-  }
-  function readCSSColor(prop, ref) {
-    try {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(
-        prop
-      ).trim();
-      if (val) ref.current = val;
-    } catch (_3) {
-    }
-  }
-  function resetFretboardCircles(quizFbRef, wrongFlashTimeoutsRef, currentItemId, phase) {
-    const wrapper = quizFbRef.current;
-    if (!wrapper) return;
-    if (!currentItemId || phase === "idle") {
-      clearAllCircles(wrapper);
-      return;
-    }
-    wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
-    wrongFlashTimeoutsRef.current.clear();
-    clearAllCircles(wrapper);
-  }
-  function getPracticingLabel(noteFilter) {
-    if (noteFilter === "all") return "all notes";
-    if (noteFilter === "sharps-flats") return "sharps & flats";
-    return "natural notes";
-  }
-  function SpeedTapIdleView({ noteFilter, scopeActions, engine, ps, statsHTML }) {
-    return /* @__PURE__ */ u3(
-      PracticeTab,
-      {
-        summary: ps.summary,
-        onStart: engine.start,
-        scopeValid: noteFilter !== "none",
-        validationMessage: "Select at least one note type",
-        scope: /* @__PURE__ */ u3(
-          NoteFilter,
-          {
-            mode: noteFilter,
-            onChange: (f4) => scopeActions.setNoteFilter(f4)
-          }
-        ),
-        statsContent: /* @__PURE__ */ u3(
+        html += "</tr></tbody></table>";
+        return /* @__PURE__ */ u3(
           "div",
           {
-            dangerouslySetInnerHTML: { __html: statsHTML }
+            dangerouslySetInnerHTML: { __html: html }
           }
-        ),
-        activeTab: ps.activeTab,
-        onTabSwitch: ps.setActiveTab,
-        aboutContent: /* @__PURE__ */ u3(SpeedTapAboutTab, {})
-      }
+        );
+      },
+      []
     );
+    return { renderStats };
   }
-  function SpeedTapAboutTab() {
-    const ba = MODE_BEFORE_AFTER.speedTap;
-    return /* @__PURE__ */ u3("div", { class: "about-tab", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "What you're training" }),
-      /* @__PURE__ */ u3("div", { class: "about-before-after", children: [
-        /* @__PURE__ */ u3("div", { class: "about-ba-row", children: [
-          /* @__PURE__ */ u3(Text, { role: "label", as: "span", children: "Before" }),
-          /* @__PURE__ */ u3("span", { class: "about-ba-text", children: ba.before() })
-        ] }),
-        /* @__PURE__ */ u3("div", { class: "about-ba-row", children: [
-          /* @__PURE__ */ u3(Text, { role: "label", as: "span", children: "After" }),
-          /* @__PURE__ */ u3("span", { class: "about-ba-text about-ba-after", children: ba.after() })
-        ] })
-      ] })
-    ] });
-  }
-  function handleFretboardTap(e3, roundActiveRef, currentNoteRef, foundPosRef, targetPosRef, quizFbRef, engineSubmitRef, wrongFlashTimeoutsRef, colorError, setProgressText) {
-    if (!roundActiveRef.current || !currentNoteRef.current) return;
-    const el = e3.target.closest(".fb-tap[data-string][data-fret]");
-    if (!el) return;
-    const s3 = parseInt(el.dataset.string);
-    const f4 = parseInt(el.dataset.fret);
-    const key = s3 + "-" + f4;
-    if (foundPosRef.current.has(key)) return;
-    const wrapper = quizFbRef.current;
-    if (!wrapper) return;
-    if (getNoteAtPosition(s3, f4) === currentNoteRef.current) {
-      foundPosRef.current.add(key);
-      setCircleFill2(wrapper, s3, f4, FB_TAP_CORRECT);
-      setProgressText(
-        foundPosRef.current.size + " / " + targetPosRef.current.length
-      );
-      if (foundPosRef.current.size === targetPosRef.current.length) {
-        roundActiveRef.current = false;
-        engineSubmitRef.current("complete");
-      }
-    } else {
-      setCircleFill2(wrapper, s3, f4, colorError);
-      const timeout = setTimeout(() => {
-        wrongFlashTimeoutsRef.current.delete(timeout);
-        if (!foundPosRef.current.has(key)) setCircleFill2(wrapper, s3, f4, "");
-      }, 800);
-      wrongFlashTimeoutsRef.current.add(timeout);
-    }
-  }
-  function useSpeedTapSpatial(scope) {
-    const currentNoteRef = A2(null);
-    const targetPosRef = A2([]);
-    const foundPosRef = A2(/* @__PURE__ */ new Set());
-    const roundActiveRef = A2(false);
-    const wrongFlashTimeoutsRef = A2(
-      /* @__PURE__ */ new Set()
-    );
-    const quizFbRef = A2(null);
-    const engineSubmitRef = A2(() => {
-    });
-    const [progressText, setProgressText] = d2("");
-    const [currentDisplayName, setCurrentDisplayName] = d2("");
-    const colorErrorRef = A2("#d32f2f");
-    y2(() => readCSSColor("--color-error", colorErrorRef), []);
-    const svgHTML = T2(() => fretboardSVG({ tapTargets: true }), []);
-    const handleTap = q2((e3) => {
-      handleFretboardTap(
-        e3,
-        roundActiveRef,
-        currentNoteRef,
-        foundPosRef,
-        targetPosRef,
-        quizFbRef,
-        engineSubmitRef,
-        wrongFlashTimeoutsRef,
-        colorErrorRef.current,
-        setProgressText
-      );
-    }, []);
-    const engineConfig = T2(
-      () => buildSpeedTapConfig(
-        scope,
-        currentNoteRef,
-        quizFbRef,
-        targetPosRef,
-        foundPosRef,
-        roundActiveRef,
-        wrongFlashTimeoutsRef,
-        colorErrorRef.current,
-        setProgressText,
-        setCurrentDisplayName
-      ),
-      [scope]
-    );
-    return {
-      progressText,
-      currentDisplayName,
-      svgHTML,
-      quizFbRef,
-      handleTap,
-      engineConfig,
-      engineSubmitRef,
-      wrongFlashTimeoutsRef,
-      syncOnItemChange: (itemId, phase) => syncQuestionState(
-        itemId,
-        phase,
-        currentNoteRef,
-        targetPosRef,
-        foundPosRef,
-        roundActiveRef,
-        setCurrentDisplayName,
-        setProgressText
-      ),
-      resetOnItemChange: (itemId, phase) => resetFretboardCircles(quizFbRef, wrongFlashTimeoutsRef, itemId, phase)
-    };
-  }
-  function SpeedTapMode({ container, navigateHome, onMount }) {
-    const [scope, scopeActions] = useScopeState({
-      kind: "note-filter",
-      storageKey: "speedTap_noteFilter"
-    });
-    const noteFilter = scope.kind === "note-filter" ? scope.noteFilter : "natural";
-    const learner = useLearnerModel("speedTap", ALL_ITEMS9, "fretboard-tap");
-    const sp = useSpeedTapSpatial(scope);
-    const engine = useQuizEngine(sp.engineConfig, learner.selector, container);
-    sp.engineSubmitRef.current = engine.submitAnswer;
-    const prevItemRef = A2(null);
-    if (engine.state.currentItemId !== prevItemRef.current) {
-      prevItemRef.current = engine.state.currentItemId;
-      sp.syncOnItemChange(engine.state.currentItemId, engine.state.phase);
-    }
-    y2(
-      () => sp.resetOnItemChange(engine.state.currentItemId, engine.state.phase),
-      [engine.state.currentItemId]
-    );
-    usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
-    const practicingLabel = T2(() => getPracticingLabel(noteFilter), [
-      noteFilter
-    ]);
-    const round = useRoundSummary(engine, practicingLabel);
-    const ps = usePracticeSummary({
-      allItems: ALL_ITEMS9,
-      selector: learner.selector,
-      engine,
-      itemNoun: "notes",
-      recommendation: null,
-      recommendationText: ""
-    });
-    y2(() => () => {
-      sp.wrongFlashTimeoutsRef.current.forEach((t3) => clearTimeout(t3));
-    }, []);
-    useModeLifecycle(onMount, engine, learner);
-    const statsHTML = T2(() => buildSpeedTapStatsHTML(learner.selector), [
-      learner.selector,
-      engine.state.phase
-    ]);
-    const promptText = sp.currentDisplayName ? "Tap all " + sp.currentDisplayName : "";
-    const isIdle = engine.state.phase === "idle";
-    if (isIdle) {
-      return /* @__PURE__ */ u3(ScreenLayout, { children: [
-        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
-          ModeTopBar,
-          {
-            modeId: "speedTap",
-            title: "Speed Tap",
-            description: MODE_DESCRIPTIONS.speedTap,
-            onBack: navigateHome
-          }
-        ) }),
-        /* @__PURE__ */ u3(
-          SpeedTapIdleView,
-          {
-            noteFilter,
-            scopeActions,
-            engine,
-            ps,
-            statsHTML
-          }
-        )
-      ] });
-    }
-    return /* @__PURE__ */ u3(
-      SpeedTapActiveView,
-      {
-        engine,
-        round,
-        practicingLabel,
-        progressText: sp.progressText,
-        promptText,
-        svgHTML: sp.svgHTML,
-        quizFbRef: sp.quizFbRef,
-        handleTap: sp.handleTap
-      }
-    );
-  }
+  var SPEED_TAP_DEF = {
+    id: "speedTap",
+    name: "Speed Tap",
+    namespace: "speedTap",
+    motorTaskType: "fretboard-tap",
+    description: MODE_DESCRIPTIONS.speedTap,
+    beforeAfter: MODE_BEFORE_AFTER.speedTap,
+    itemNoun: "notes",
+    allItems: ALL_ITEMS9,
+    getQuestion: parseItem2,
+    getPromptText: (q3) => "Tap all " + q3.displayName,
+    quizInstruction: "Find all positions",
+    multiTap: {
+      getTargets: (q3) => q3.positions.map(positionKey),
+      evaluate: evaluate2
+    },
+    getExpectedResponseCount: (itemId) => getPositionsForNote(itemId).length,
+    buttons: { kind: "none" },
+    scope: {
+      kind: "groups",
+      groups: NOTE_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup8,
+      allGroupIndices: ALL_GROUP_INDICES7,
+      storageKey: "speedTap_enabledGroups",
+      scopeLabel: "Notes",
+      defaultEnabled: [0],
+      formatLabel: formatGroupLabel
+    },
+    stats: { kind: "none" },
+    useController: () => useSpeedTapController()
+  };
 
   // src/app.ts
   document.addEventListener("touchstart", () => {
   }, { passive: true });
   var nav = createNavigation();
-  function registerPreactMode(id, name, Component) {
-    let handle = null;
-    const container = document.getElementById("mode-" + id);
-    nav.registerMode(id, {
-      name,
-      init() {
-        container.textContent = "";
-        J(
-          _(Component, {
-            container,
-            navigateHome: () => nav.navigateHome(),
-            onMount: (h3) => {
-              handle = h3;
-            }
-          }),
-          container
-        );
-      },
-      activate() {
-        handle?.activate();
-      },
-      deactivate() {
-        handle?.deactivate();
-      }
-    });
-  }
   function registerDeclarativeMode(def) {
     registerModeForEffort({
       id: def.id,
@@ -12995,12 +12872,7 @@ body.native-app {
   registerDeclarativeMode(SCALE_DEGREES_DEF);
   registerDeclarativeMode(DIATONIC_CHORDS_DEF);
   registerDeclarativeMode(CHORD_SPELLING_DEF);
-  registerModeForEffort({
-    id: "speedTap",
-    namespace: "speedTap",
-    allItems: ALL_ITEMS9
-  });
-  registerPreactMode("speedTap", "Speed Tap", SpeedTapMode);
+  registerDeclarativeMode(SPEED_TAP_DEF);
   nav.init();
   var settings = createSettingsController({
     onNotationChange() {
