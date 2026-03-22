@@ -263,118 +263,116 @@ numbers — dropped for legibility at mobile sizes.
 
 ## Typography
 
-The typography system parallels the color system: a **palette** of raw tokens,
-a **semantic layer** of content roles, and **components** that reference roles.
+Three-layer system paralleling colors: **palette** (raw tokens) →
+**semantic roles** (what the text IS) → **component mapping** (where it's
+used). See `plans/design-docs/2026-03-21-typography-system-redesign.md` for
+the full design rationale.
 
-### Palette: Font Sizes
+### Layer 1: Palette
 
-| Token         | Size     | Maps to                                          |
-| ------------- | -------- | ------------------------------------------------ |
-| `--text-xs`   | 0.75rem  | Legend labels, progress text, tiny stats          |
-| `--text-sm`   | 0.85rem  | Session stats, settings, table text, descriptions |
-| `--text-base` | 1rem     | Body, buttons, nav items, hints                   |
-| `--text-md`   | 1.125rem | Answer buttons, note buttons, chord slots         |
-| `--text-lg`   | 1.3rem   | Screen titles                                     |
-| `--text-xl`   | 1.5rem   | Feedback, close buttons                           |
-| `--text-2xl`  | 2rem     | Page title, quiz prompts                          |
-| `--text-3xl`  | 3rem     | Round-complete count                              |
+| Category | Tokens |
+|---|---|
+| Sizes | `--text-xs` (0.75rem) through `--text-3xl` (3rem) |
+| Weights | `--font-normal` (400), `--font-medium` (500), `--font-semibold` (600), `--font-bold` (700) |
+| Line heights | `--leading-none` (1), `--leading-tight` (1.2), `--leading-snug` (1.4), `--leading-normal` (1.5) |
+| Families | `--font-body` (system sans), `--font-display` (DM Serif Display, embedded) |
 
-### Palette: Font Weights
+### Layer 2: Semantic Roles (16 roles)
 
-| Token             | Value | Usage                         |
-| ----------------- | ----- | ----------------------------- |
-| `--font-normal`   | 400   | Body text, descriptions       |
-| `--font-medium`   | 500   | Buttons, labels, toggles      |
-| `--font-semibold` | 600   | Headings, CTA, section titles |
-| `--font-bold`     | 700   | Track headings, round stats   |
+Each role defines 4 custom properties: `--type-{role}-size`, `-weight`,
+`-leading`, `-color`. Both `.text-*` classes and bespoke classes reference
+these — never palette tokens directly.
 
-### Palette: Line Heights
+**Display** — big, high-emphasis hero text
 
-| Token              | Value | Usage                                    |
-| ------------------ | ----- | ---------------------------------------- |
-| `--leading-none`   | 1     | Single-line: icons, buttons, inputs      |
-| `--leading-tight`  | 1.2   | Headings, prompts, titles                |
-| `--leading-snug`   | 1.4   | Compact multi-line: cards, descriptions  |
-| `--leading-normal` | 1.5   | Body text, readable blocks               |
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `display-brand` | 2xl | normal | tight | text |
+| `display-hero` | 3xl | bold | none | brand |
 
-### Palette: Font Families
+`display-brand` also has `--type-display-brand-family: var(--font-display)`.
 
-| Token            | Value                                    | Usage          |
-| ---------------- | ---------------------------------------- | -------------- |
-| `--font-body`    | `system-ui, -apple-system, sans-serif`   | Everything     |
-| `--font-display` | `'DM Serif Display', Georgia, serif`     | Home title     |
+**Heading** — structural hierarchy
 
-DM Serif Display is embedded as a base64 `@font-face` at build time
-(`main.ts` reads `src/DMSerifDisplay-latin.woff2`). Latin subset only, ~24KB
-woff2. No external font requests — fully offline-compatible.
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `heading-page` | lg | semibold | tight | text |
+| `heading-section` | base | semibold | tight | text |
+| `heading-subsection` | sm | semibold | tight | muted |
 
-### Semantic: Type Hierarchy
+**Body** — readable content
 
-Content role → size + weight + line-height + color recipe. Use
-`<Text role="...">` for structural enforcement (see Structural Components
-below), or apply the `.text-*` CSS class directly.
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `body` | base | normal | normal | text |
+| `body-secondary` | sm | normal | snug | muted |
 
-| Role | Size | Weight | Line-height | Color | CSS class |
-|------|------|--------|-------------|-------|-----------|
-| Page title | `--text-2xl` | 400 | tight | `--color-text` | `.text-page-title` |
-| Screen title | `--text-lg` | 600 | tight | `--color-text` | `.text-screen-title` |
-| Prompt | `--text-2xl` | 600 | tight | `--color-text` | `.text-prompt` |
-| Instruction | `--text-base` | 600 | normal | `--color-text-light` | `.text-instruction` |
-| Section header | `--text-base` | 600 | tight | `--color-text` | `.text-section-header` |
-| Subsection header | `--text-sm` | 600 | tight | `--color-text-muted` | `.text-subsection-header` |
-| Label | `--text-sm` | 500 | none | `--color-text-muted` | `.text-label` |
-| Body | `--text-base` | 400 | normal | `--color-text` | (default — no class) |
-| Secondary | `--text-sm` | 400 | normal | `--color-text-muted` | `.text-secondary` |
-| Caption | `--text-xs` | 400 | normal | `--color-text-light` | `.text-caption` |
-| Metric | `--text-md` | 600 | none | `--color-text` | `.text-metric` |
+**Label** — short functional identifiers
 
-**Bespoke text classes** — some elements use dedicated CSS classes that follow
-a semantic role's recipe but add layout (margin, flex). These are documented
-here for reference:
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `label` | sm | medium | none | muted |
+| `label-tag` | xs | semibold | none | muted |
 
-| Bespoke class | Follows role | Extra |
-|---|---|---|
-| `.home-title` | page-title | `font-family: var(--font-display)`, margin, brand underline |
-| `.mode-title` | screen-title | margin |
-| `.settings-page-title` | screen-title | margin |
-| `.quiz-prompt` | prompt | mobile size override, `:empty` rule |
-| `.quiz-instruction` | instruction | margin |
-| `.mode-description` | secondary | `--leading-snug` override, margin |
+**Quiz** — drill-specific content text
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `quiz-instruction` | base | semibold | normal | text-light |
+| `quiz-prompt` | 2xl | semibold | tight | text |
+| `quiz-response` | lg | semibold | none | text |
+| `quiz-feedback` | xl | normal | none | text |
+
+**Supporting** — tertiary/helper text
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `supporting` | xs | normal | snug | text-light |
+
+**Metric** — data values
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `metric` | md | semibold | none | text |
+
+**Status** — state communication
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `status` | sm | normal | snug | text |
+
+Status color variants: `.status-success`, `.status-error`, `.status-notice`,
+`.status-empty` (italic).
+
+### Layer 3: Component Mapping
+
+Bespoke classes reference `--type-*` role properties for typography and add
+their own layout. **No typography overrides** — every bespoke class uses its
+role's recipe exactly.
 
 ### Structural Components
-
-Preact components that encode design recipes so the correct visual treatment
-is automatic. Prefer these over manual class composition.
 
 #### ActionButton
 
 ```tsx
-import { ActionButton } from './ui/action-button.tsx';
-
 <ActionButton variant='primary' onClick={start}>Practice</ActionButton>
 <ActionButton variant='secondary' onClick={stop}>Stop</ActionButton>
 ```
 
-Renders a `.page-action-btn` with the correct variant class. Use for all
-flow-initiating and flow-stopping buttons. NOT for answer buttons, toggles,
-close buttons, tabs, or small utility buttons (like baseline rerun).
+`.page-action-btn` with variant class. For flow-initiating/stopping buttons.
 
 #### Text
 
 ```tsx
-import { Text } from './ui/text.tsx';
-
-<Text role='screen-title' as='h1'>Guitar Fretboard</Text>
-<Text role='subsection-header' as='div'>Speed check</Text>
+<Text role='heading-page' as='h1'>Guitar Fretboard</Text>
+<Text role='heading-subsection' as='div'>Speed check</Text>
 <Text role='label'>Response time</Text>
 <Text role='metric'>{value}</Text>
-<Text role='caption'>Explanation text</Text>
-<Text role='prompt'>C#</Text>
+<Text role='supporting'>Explanation text</Text>
+<Text role='quiz-prompt'>C#</Text>
 ```
 
-Maps content role to the type hierarchy recipe. Use for all non-interactive
-content text. NOT for answer button text, branded/colored text (suggestion
-headers use `--color-notice`), or feedback (dynamic color switching).
+Maps content role to typography recipe. For all non-interactive content text.
 
 ---
 

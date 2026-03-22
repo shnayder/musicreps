@@ -260,25 +260,30 @@ function TypographySection({ tabId }: { tabId: string }) {
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
           >
-            <Text role='page-title' as='div'>Page Title</Text>
-            <Text role='screen-title' as='div'>Screen Title</Text>
-            <Text role='prompt' as='div'>Prompt</Text>
-            <Text role='instruction' as='div'>Instruction</Text>
-            <Text role='section-header' as='div'>Section Header</Text>
-            <Text role='subsection-header' as='div'>Subsection Header</Text>
+            <Text role='display-brand' as='div'>Display Brand</Text>
+            <Text role='display-hero' as='div'>Display Hero</Text>
+            <Text role='heading-page' as='div'>Heading Page</Text>
+            <Text role='heading-section' as='div'>Heading Section</Text>
+            <Text role='heading-subsection' as='div'>Heading Subsection</Text>
             <Text role='label' as='div'>Label</Text>
+            <Text role='label-tag' as='div'>Label Tag</Text>
             <div>Body text (default — no role needed)</div>
-            <Text role='secondary' as='div'>Secondary text</Text>
-            <Text role='caption' as='div'>Caption text</Text>
+            <Text role='body-secondary' as='div'>Body Secondary</Text>
+            <Text role='quiz-instruction' as='div'>Quiz Instruction</Text>
+            <Text role='quiz-prompt' as='div'>Quiz Prompt</Text>
+            <Text role='quiz-response' as='div'>Quiz Response</Text>
+            <Text role='quiz-feedback' as='div'>Quiz Feedback</Text>
+            <Text role='supporting' as='div'>Supporting</Text>
             <Text role='metric' as='div'>42.5s</Text>
+            <Text role='status' as='div'>Status</Text>
           </div>
         </Section>
         <Section title='In context — mode header' tabId={tabId}>
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
           >
-            <Text role='screen-title' as='h1'>Guitar Fretboard</Text>
-            <Text role='secondary' as='p'>
+            <Text role='heading-page' as='h1'>Guitar Fretboard</Text>
+            <Text role='body-secondary' as='p'>
               Identify notes on the fretboard
             </Text>
           </div>
@@ -292,22 +297,22 @@ function TypographySection({ tabId }: { tabId: string }) {
               gap: '0.5rem',
             }}
           >
-            <Text role='instruction' as='div'>What note is this?</Text>
-            <Text role='prompt' as='div'>C#</Text>
+            <Text role='quiz-instruction' as='div'>What note is this?</Text>
+            <Text role='quiz-prompt' as='div'>C#</Text>
           </div>
         </Section>
         <Section title='In context — metric display' tabId={tabId}>
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
           >
-            <Text role='subsection-header' as='div'>Speed check</Text>
+            <Text role='heading-subsection' as='div'>Speed check</Text>
             <div
               style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}
             >
               <Text role='label'>Response time</Text>
               <Text role='metric'>0.5s</Text>
             </div>
-            <Text role='caption' as='div'>
+            <Text role='supporting' as='div'>
               Timing thresholds are based on this measurement.
             </Text>
           </div>
@@ -377,7 +382,7 @@ function SpacingSection({ tabId }: { tabId: string }) {
                       borderRadius: '2px',
                     }}
                   />
-                  <Text role='caption'>{desc}</Text>
+                  <Text role='supporting'>{desc}</Text>
                 </div>
               );
             })}
@@ -441,7 +446,11 @@ function TypeScaleSection({ tabId }: { tabId: string }) {
                     {val}
                   </span>
                   <span style={{ fontSize: val }}>Ag 0–9 C#</span>
-                  <Text role='caption' as='span' style={{ marginLeft: 'auto' }}>
+                  <Text
+                    role='supporting'
+                    as='span'
+                    style={{ marginLeft: 'auto' }}
+                  >
                     {usage}
                   </Text>
                 </div>
@@ -503,7 +512,7 @@ function FontWeightSection({ tabId }: { tabId: string }) {
             >
               Music Reps Ag
             </span>
-            <Text role='caption' as='span'>{usage}</Text>
+            <Text role='supporting' as='span'>{usage}</Text>
           </div>
         ))}
       </div>
@@ -546,7 +555,7 @@ function LineHeightSection({ tabId }: { tabId: string }) {
             >
               Two-line sample to show leading value
             </div>
-            <Text role='caption' as='span' style={{ paddingTop: '0.15rem' }}>
+            <Text role='supporting' as='span' style={{ paddingTop: '0.15rem' }}>
               {usage}
             </Text>
           </div>
@@ -646,9 +655,9 @@ function RadiusSection({ tabId }: { tabId: string }) {
             >
               {name}
             </code>
-            <Text role='caption' as='span'>{cssVar(name)}</Text>
+            <Text role='supporting' as='span'>{cssVar(name)}</Text>
             <Text
-              role='caption'
+              role='supporting'
               as='span'
               style={{ textAlign: 'center', maxWidth: '80px' }}
             >
@@ -692,9 +701,9 @@ function ShadowSection({ tabId }: { tabId: string }) {
               justifyContent: 'center',
             }}
           >
-            <Text role='caption'>Flat</Text>
+            <Text role='supporting'>Flat</Text>
           </div>
-          <Text role='caption'>Cards, tables</Text>
+          <Text role='supporting'>Cards, tables</Text>
         </div>
         <div
           style={{
@@ -716,9 +725,9 @@ function ShadowSection({ tabId }: { tabId: string }) {
               justifyContent: 'center',
             }}
           >
-            <Text role='caption'>Low</Text>
+            <Text role='supporting'>Low</Text>
           </div>
-          <Text role='caption'>CTA button</Text>
+          <Text role='supporting'>CTA button</Text>
         </div>
         <div
           style={{
@@ -740,9 +749,9 @@ function ShadowSection({ tabId }: { tabId: string }) {
               justifyContent: 'center',
             }}
           >
-            <Text role='caption'>High</Text>
+            <Text role='supporting'>High</Text>
           </div>
-          <Text role='caption'>Modal, drawer</Text>
+          <Text role='supporting'>Modal, drawer</Text>
         </div>
       </div>
     </Section>
