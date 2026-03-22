@@ -29,7 +29,7 @@ export function ProgressBarLabeled(
   return (
     <div class='progress-bar-labeled'>
       {label && (
-        <Text role='supporting' as='div' class='progress-bar-label'>
+        <Text role='label' as='div' class='progress-bar-label'>
           {label}
         </Text>
       )}

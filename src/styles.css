@@ -335,7 +335,7 @@
   --type-metric-primary-leading: var(--leading-none);
   --type-metric-primary-color: var(--color-text);
 
-  --type-metric-info-size: var(--text-base);
+  --type-metric-info-size: var(--text-sm);
   --type-metric-info-weight: var(--font-medium);
   --type-metric-info-leading: var(--leading-none);
   --type-metric-info-color: var(--color-text);
