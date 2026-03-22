@@ -287,7 +287,7 @@
   --type-body-secondary-color: var(--color-text-muted);
 
   /* -- Label: short functional identifiers -- */
-  --type-label-size: var(--text-sm);
+  --type-label-size: var(--text-base);
   --type-label-weight: var(--font-medium);
   --type-label-leading: var(--leading-none);
   --type-label-color: var(--color-text-muted);
@@ -313,7 +313,7 @@
   --type-quiz-response-leading: var(--leading-none);
   --type-quiz-response-color: var(--color-text);
 
-  --type-quiz-feedback-size: var(--text-xl);
+  --type-quiz-feedback-size: var(--text-lg);
   --type-quiz-feedback-weight: var(--font-normal);
   --type-quiz-feedback-leading: var(--leading-none);
   --type-quiz-feedback-color: var(--color-text);
@@ -330,7 +330,7 @@
   --type-metric-hero-leading: var(--leading-none);
   --type-metric-hero-color: var(--color-brand);
 
-  --type-metric-primary-size: var(--text-md);
+  --type-metric-primary-size: var(--text-base);
   --type-metric-primary-weight: var(--font-semibold);
   --type-metric-primary-leading: var(--leading-none);
   --type-metric-primary-color: var(--color-text);
@@ -357,13 +357,13 @@
   --type-action-color: var(--color-on-brand);
 
   /* -- Answer: quiz answer buttons (note, number, interval) -- */
-  --type-answer-size: var(--text-md);
+  --type-answer-size: var(--text-base);
   --type-answer-weight: var(--font-medium);
   --type-answer-leading: var(--leading-none);
   --type-answer-color: var(--color-text);
 
   /* -- Control: tabs, toggles, segmented controls, small buttons -- */
-  --type-control-size: var(--text-sm);
+  --type-control-size: var(--text-base);
   --type-control-weight: var(--font-medium);
   --type-control-leading: var(--leading-none);
   --type-control-color: var(--color-text-muted);
