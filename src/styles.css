@@ -380,6 +380,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 html {
+  font-size: 106.25%; /* 17px base — aligns with Apple HIG body size */
   background: var(--color-surface);
   overscroll-behavior: none;
 }
