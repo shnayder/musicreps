@@ -101,12 +101,13 @@ export function InteractiveFretboard(
 
     if (evaluated) {
       // After evaluation — same colors as answer button feedback:
-      //   correct taps → dark green (--color-success, like btn-feedback-correct)
-      //   wrong taps   → red (--color-error, like btn-feedback-wrong)
-      //   missed       → light green (--color-success-bg, like btn-feedback-reveal)
+      //   correct taps → dark green (--color-success)
+      //   wrong taps   → red (--color-error)
+      //   missed       → medium green (--color-success-reveal, saturated
+      //                   enough to be visible on small fretboard circles)
       const colorOk = readCSSColor('--color-success', '#2e7d32');
       const colorBad = readCSSColor('--color-error', '#d32f2f');
-      const colorMissed = readCSSColor('--color-success-bg', '#e8f5e9');
+      const colorMissed = readCSSColor('--color-success-reveal', '#66bb6a');
       const tappedSet = new Set(evaluated.perEntry.map((e) => e.positionKey));
       for (const entry of evaluated.perEntry) {
         setCircleFill(
