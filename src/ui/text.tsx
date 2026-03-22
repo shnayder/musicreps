@@ -5,12 +5,31 @@
 import type { ComponentChildren } from 'preact';
 
 export type TextRole =
-  | 'section-header'
-  | 'subsection-header'
+  // Display
+  | 'display-brand'
+  // Heading
+  | 'heading-page'
+  | 'heading-section'
+  | 'heading-subsection'
+  // Body
+  | 'body'
+  | 'body-secondary'
+  // Label
   | 'label'
-  | 'secondary'
-  | 'caption'
-  | 'metric';
+  | 'label-tag'
+  // Quiz
+  | 'quiz-instruction'
+  | 'quiz-prompt'
+  | 'quiz-response'
+  | 'quiz-feedback'
+  // Supporting
+  | 'supporting'
+  // Metric
+  | 'metric-hero'
+  | 'metric-primary'
+  | 'metric-info'
+  // Status
+  | 'status';
 
 export function Text(
   { role, children, class: extra, as: Tag = 'span', ...rest }: {

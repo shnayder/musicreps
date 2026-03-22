@@ -225,6 +225,8 @@ async function main() {
 
       // Helper: capture screenshot
       async function capture(name: string) {
+        // Move mouse to top-left corner to clear any hover state
+        await page.mouse.move(0, 0);
         const filePath = path.join(OUT_DIR, `${name}.${IMG_EXT}`);
         await page.screenshot({
           path: filePath,

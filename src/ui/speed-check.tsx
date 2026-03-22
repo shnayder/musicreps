@@ -119,21 +119,21 @@ export function BaselineInfo(
   const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
   const tag = baseline
     ? null
-    : <Text role='caption' class='baseline-default-tag'>(default)</Text>;
+    : <Text role='supporting' class='baseline-default-tag'>(default)</Text>;
   const btnLabel = baseline ? 'Redo speed check' : 'Run speed check';
   return (
     <div class='baseline-info'>
-      <Text role='subsection-header' as='div' class='baseline-header'>
+      <Text role='heading-subsection' as='div' class='baseline-header'>
         Speed check
       </Text>
       <div class='baseline-metric'>
         <Text role='label'>Response time for note input</Text>
-        <Text role='metric'>
+        <Text role='metric-primary'>
           {value}
           {tag && <>{tag}</>}
         </Text>
       </div>
-      <Text role='caption' as='div' class='baseline-explanation'>
+      <Text role='supporting' as='div' class='baseline-explanation'>
         Timing thresholds are based on this measurement.
       </Text>
       <button
@@ -356,7 +356,7 @@ function SpeedCheckIntro(
   return (
     <>
       <div class='quiz-content calibration-results'>
-        <Text role='section-header' as='h2'>{title}</Text>
+        <Text role='heading-section' as='h2'>{title}</Text>
         <p>{text}</p>
       </div>
       <div class='quiz-controls'>
@@ -382,7 +382,7 @@ function SpeedCheckResults(
   return (
     <>
       <div class='quiz-content calibration-results'>
-        <Text role='section-header' as='h2'>Speed Check Complete</Text>
+        <Text role='heading-page' as='h2'>Speed Check Complete</Text>
         <div class='calibration-baseline'>
           {(baseline / 1000).toFixed(2)}s
         </div>

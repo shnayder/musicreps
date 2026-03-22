@@ -242,7 +242,7 @@ function ActiveSkillCard(
       {hasRec && (
         <div class={`skill-rec-banner track-accent-${trackId}`}>
           <div class='skill-rec-header'>Suggestion</div>
-          <Text role='secondary' as='div'>{rec!.detail}</Text>
+          <Text role='body-secondary' as='div'>{rec!.detail}</Text>
         </div>
       )}
       <div class='skill-card-body'>

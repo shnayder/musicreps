@@ -363,7 +363,7 @@ function SpeedTapAboutTab() {
   const ba = MODE_BEFORE_AFTER.speedTap;
   return (
     <div class='about-tab'>
-      <Text role='subsection-header' as='div'>What you're training</Text>
+      <Text role='heading-subsection' as='div'>What you're training</Text>
       <div class='about-before-after'>
         <div class='about-ba-row'>
           <Text role='label' as='span'>Before</Text>

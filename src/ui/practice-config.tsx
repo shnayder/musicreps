@@ -29,7 +29,9 @@ export function ProgressBarLabeled(
   return (
     <div class='progress-bar-labeled'>
       {label && (
-        <Text role='caption' as='div' class='progress-bar-label'>{label}</Text>
+        <Text role='label' as='div' class='progress-bar-label'>
+          {label}
+        </Text>
       )}
       <GroupProgressBar colors={colors} disabled={disabled} />
     </div>
@@ -100,7 +102,7 @@ export function LevelToggles(
 ) {
   return (
     <div class='level-toggles-section'>
-      <Text role='secondary' as='div' class='level-toggles-header'>
+      <Text role='body-secondary' as='div' class='level-toggles-header'>
         Choose levels to practice
       </Text>
       <div class='level-toggles'>
@@ -117,7 +119,7 @@ export function LevelToggles(
           </button>
         ))}
       </div>
-      <Text role='secondary' as='div' class='level-toggles-count'>
+      <Text role='body-secondary' as='div' class='level-toggles-count'>
         {itemCount} {itemCount === 1 ? 'item' : 'items'} selected
       </Text>
     </div>
@@ -192,7 +194,7 @@ export function PracticeConfig(
 ) {
   return (
     <div class='practice-config'>
-      <Text role='label' as='div' class='practice-config-label'>
+      <Text role='heading-section' as='div' class='practice-config-label'>
         Practice setup
       </Text>
       <SegmentedControl

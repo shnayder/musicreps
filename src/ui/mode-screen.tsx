@@ -281,7 +281,7 @@ export function Recommendation(
     <div class='suggestion-card'>
       <div class='suggestion-card-header'>Suggestion</div>
       <div class='suggestion-card-body'>
-        <Text role='secondary' class='suggestion-card-text'>{text}</Text>
+        <Text role='body-secondary' class='suggestion-card-text'>{text}</Text>
         {onApply
           ? (
             <button
@@ -474,7 +474,7 @@ export function RoundCompleteInfo(
         ? (
           <div class='round-complete-overall'>
             <Text
-              role='subsection-header'
+              role='heading-subsection'
               as='div'
               class='round-complete-overall-label'
             >
