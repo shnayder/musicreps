@@ -115,7 +115,6 @@
   --color-error-bg: var(--error-100);
   --color-error-border: var(--error-500);
   --color-error-text: var(--error-800);
-  --color-warning: #ff9800;
   --color-tap-selected: hsl(210, 60%, 50%);
   /* On-fill text (flips in dark mode) */
   --color-on-brand: white;
@@ -2822,11 +2821,25 @@ button {
 }
 
 /* --- Interactive fretboard (multi-tap modes) --- */
+/* The .interactive-fretboard wrapper fills the prompt zone. Its inner
+   fretboard-wrapper/fretboard-container/svg.fretboard inherit the
+   existing fretboard sizing rules (max-width, aspect ratio, etc.).
+   The `:only-child` rule on quiz-stage-prompt lets the fretboard fill
+   the full stage height when there is no response zone. */
+.quiz-stage-prompt:only-child {
+  flex: 1;
+}
+.interactive-fretboard {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .interactive-fretboard-status {
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   gap: var(--space-6);
-  font-size: var(--text-lg);
   margin: 0 0 var(--space-3) 0;
 }
 .interactive-fretboard-progress {
