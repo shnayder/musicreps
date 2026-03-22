@@ -2832,10 +2832,11 @@ button {
 }
 
 /* --- Interactive fretboard (multi-tap modes) --- */
-/* Interactive fretboard — fills the full quiz stage (no response zone).
-   Every layer in the chain must flex-fill so the SVG can grow:
-   .quiz-stage-prompt > .interactive-fretboard > div > .fretboard-wrapper
-     > .fretboard-container > svg.fretboard */
+/* No response zone → prompt takes all of QuizStage. The fretboard fills
+   remaining space after fixed-height text elements. Every layer in the
+   flex chain participates so the browser computes the available height
+   and the SVG scales to fit via viewBox + preserveAspectRatio. No
+   viewport-unit hacks — the layout IS the constraint. */
 .quiz-stage-prompt:only-child {
   flex: 1;
 }
@@ -2845,16 +2846,12 @@ button {
   display: flex;
   flex-direction: column;
 }
-/* The div holding dangerouslySetInnerHTML must flex-fill too */
 .interactive-fretboard > div:last-child {
   flex: 1;
   min-height: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
 }
-/* Override the default fretboard height caps — in multi-tap mode the
-   fretboard IS the main content, so it gets much more room. */
 .interactive-fretboard .fretboard-wrapper {
   flex: 1;
   min-height: 0;
@@ -2863,10 +2860,10 @@ button {
   justify-content: center;
 }
 .interactive-fretboard .fretboard-container {
-  max-height: none;
+  max-height: 100%;
 }
 .interactive-fretboard svg.fretboard {
-  max-height: 80dvh;
+  max-height: 100%;
 }
 .interactive-fretboard-status {
   flex-shrink: 0;
