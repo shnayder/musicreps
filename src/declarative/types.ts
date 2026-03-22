@@ -41,6 +41,7 @@ export type NumeralButtonsDef = { kind: 'numeral' };
 export type IntervalButtonsDef = { kind: 'interval' };
 export type KeysigButtonsDef = { kind: 'keysig' };
 export type SplitNoteButtonsDef = { kind: 'split-note' };
+export type NoButtonsDef = { kind: 'none' };
 
 /** Which tap/click buttons to show. Keyboard input goes through a text field. */
 export type ButtonsDef =
@@ -51,7 +52,8 @@ export type ButtonsDef =
   | NumeralButtonsDef
   | IntervalButtonsDef
   | KeysigButtonsDef
-  | SplitNoteButtonsDef;
+  | SplitNoteButtonsDef
+  | NoButtonsDef;
 
 // ---------------------------------------------------------------------------
 // Answer definition — which buttons to show (possibly direction-dependent)
@@ -179,6 +181,42 @@ export type SequentialDef<Q> = {
 };
 
 // ---------------------------------------------------------------------------
+// Multi-tap response — modes where user taps multiple targets (any order)
+// ---------------------------------------------------------------------------
+
+/** Per-position evaluation result for multi-tap feedback. */
+export type MultiTapEntryResult = {
+  positionKey: string;
+  correct: boolean;
+};
+
+/** Evaluation result from a multi-tap mode's evaluate. */
+export type MultiTapEvalResult = {
+  correct: boolean;
+  correctAnswer: string;
+  perEntry: MultiTapEntryResult[];
+  /** Positions the user missed (correct but not tapped). */
+  missed: string[];
+};
+
+/**
+ * Configuration for modes where the user taps multiple targets in any order.
+ * The mode says "here are the targets" and GenericMode handles collection,
+ * de-duplication, evaluation, and engine integration.
+ */
+export type MultiTapDef<Q> = {
+  /** All target position IDs for this question (unordered set). */
+  getTargets: (q: Q) => string[];
+
+  /** Evaluate all tapped positions at once. Called after the user has
+   *  tapped exactly `getTargets(q).length` positions. */
+  evaluate: (q: Q, tapped: string[]) => MultiTapEvalResult;
+
+  /** Display answer for feedback after evaluation. */
+  getDisplayAnswer: (q: Q) => string;
+};
+
+// ---------------------------------------------------------------------------
 // Mode controller — optional hook for imperative rendering + engine hooks
 // ---------------------------------------------------------------------------
 
@@ -209,6 +247,9 @@ export type ModeController<Q> = {
   narrowing?: ReadonlySet<string> | null;
   /** Dynamic hideAccidentals override for PianoNoteButtons. */
   hideAccidentals?: boolean;
+  /** Ref for GenericMode to inject the engine's submitAnswer function.
+   *  Required for controllers that submit programmatically (e.g., multi-tap). */
+  engineSubmitRef?: { current: (input: string) => void };
 };
 
 // ---------------------------------------------------------------------------
@@ -271,6 +312,12 @@ type ModeDefinitionBase<Q> = {
   /** Placeholder text for the answer text field. Can be static or per-question. */
   inputPlaceholder?: string | ((q: Q) => string);
 
+  // --- Response count scaling ---
+  /** Number of expected sub-responses per item (e.g., fretboard positions for
+   *  a note, tones in a chord). Used for speed-score scaling in the learner
+   *  model. If omitted, each item counts as 1 response. */
+  getExpectedResponseCount?: (itemId: string) => number;
+
   // --- UI configuration ---
   buttons: AnswerDef;
   scope: ScopeDef;
@@ -298,11 +345,20 @@ export type ModeDefinition<Q = unknown> =
       /** Declarative answer spec: what the correct answer is and how to check it. */
       answer: AnswerSpecDef<Q>;
       sequential?: undefined;
+      multiTap?: undefined;
     }
     | {
       /** When present, GenericMode collects multiple inputs before scoring.
        *  Replaces the single-answer flow. */
       sequential: SequentialDef<Q>;
       answer?: undefined;
+      multiTap?: undefined;
+    }
+    | {
+      /** When present, GenericMode collects taps on a spatial surface (e.g.,
+       *  fretboard) and evaluates all at once after the expected count. */
+      multiTap: MultiTapDef<Q>;
+      answer?: undefined;
+      sequential?: undefined;
     }
   );

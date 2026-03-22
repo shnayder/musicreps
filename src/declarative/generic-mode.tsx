@@ -88,6 +88,7 @@ import {
   KeyboardHint,
   type KeyboardHintType,
 } from '../ui/quiz-ui.tsx';
+import { InteractiveFretboard } from '../ui/interactive-fretboard.tsx';
 import { Text } from '../ui/text.tsx';
 import {
   IMPLEMENTED_TASK_TYPES,
@@ -104,6 +105,10 @@ import type {
   SequentialEntryResult,
 } from './types.ts';
 import { useSequentialInput } from './use-sequential-input.ts';
+import {
+  type MultiTapInputHandle,
+  useMultiTapInput,
+} from './use-multi-tap-input.ts';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -185,10 +190,12 @@ function checkGenericAnswer<Q>(
     } | null;
   },
   isSequential: boolean,
+  isMultiTap: boolean,
   _itemId: string,
   input: string,
 ): { correct: boolean; correctAnswer: string } {
-  if (isSequential) {
+  // Both sequential and multiTap use the same sentinel format.
+  if (isSequential || isMultiTap) {
     const sep = input.indexOf(':');
     return {
       correct: input.startsWith('__correct__'),
@@ -411,6 +418,8 @@ function ResponseButtons(
           feedback={feedback}
         />
       );
+    case 'none':
+      return null;
   }
 }
 
@@ -484,6 +493,39 @@ function SequentialQuizArea<Q>(
           )}
         </>
       }
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MultiTapQuizArea — quiz area for multi-tap (spatial set) modes
+// ---------------------------------------------------------------------------
+
+function MultiTapQuizArea(
+  { multiTapInput, promptText, instruction }: {
+    multiTapInput: MultiTapInputHandle;
+    promptText: string;
+    instruction?: string;
+  },
+) {
+  // Multi-tap modes render prompt text + interactive fretboard.
+  // The fretboard is rendered by GenericMode (not the controller) using
+  // shared multi-tap state from useMultiTapInput.
+  return (
+    <QuizStage
+      prompt={
+        <>
+          {instruction && <div class='quiz-instruction'>{instruction}</div>}
+          <div class='quiz-prompt'>{promptText}</div>
+          <InteractiveFretboard
+            onTap={multiTapInput.handleTap}
+            tappedPositions={multiTapInput.tappedPositions}
+            evaluated={multiTapInput.evaluated}
+            progressText={multiTapInput.progressText}
+          />
+        </>
+      }
+      response={null}
     />
   );
 }
@@ -597,6 +639,7 @@ type QuizActiveViewProps<Q> = {
     handleInput: (input: string) => void;
     handleBatch: (text: string) => boolean;
   };
+  multiTapInput: MultiTapInputHandle;
   activeButtons: ButtonsDef;
   inactiveButtons: ButtonsDef | null;
   promptText: string;
@@ -621,6 +664,7 @@ function QuizActiveView<Q>(
     practicingLabel,
     handleSubmit,
     seq,
+    multiTapInput,
     activeButtons,
     inactiveButtons,
     promptText,
@@ -663,7 +707,15 @@ function QuizActiveView<Q>(
       : def.quizInstruction)
     : undefined;
 
-  const quizContent = def.sequential
+  const quizContent = def.multiTap
+    ? (
+      <MultiTapQuizArea
+        multiTapInput={multiTapInput}
+        promptText={promptText}
+        instruction={instruction}
+      />
+    )
+    : def.sequential
     ? (
       <SequentialQuizArea
         def={def}
@@ -965,6 +1017,7 @@ type GenericEngineSetup<Q> = {
   engine: ReturnType<typeof useQuizEngine>;
   currentQRef: { current: Q | null };
   seqInput: ReturnType<typeof useSequentialInput>;
+  multiTapInput: MultiTapInputHandle;
   lastAnswerRef: {
     current: {
       expected: string;
@@ -985,8 +1038,11 @@ function useGenericEngine<Q>(
 ): GenericEngineSetup<Q> {
   const currentQRef = useRef<Q | null>(null);
   const isSequential = !!def.sequential;
+  const isMultiTap = !!def.multiTap;
   const seqSubmitRef = useRef<(input: string) => void>(() => {});
   const seqInput = useSequentialInput(def, currentQRef, seqSubmitRef);
+  const mtSubmitRef = useRef<(input: string) => void>(() => {});
+  const multiTapInput = useMultiTapInput(def, currentQRef, mtSubmitRef);
   const lastAnswerRef = useRef<
     {
       expected: string;
@@ -1011,16 +1067,26 @@ function useGenericEngine<Q>(
         lastAnswerRef,
         ctrlRef,
         isSequential,
+        isMultiTap,
         seqInput,
         !!ctrl.handleKey,
       ),
-    [def, !!ctrl.handleKey, isSequential],
+    [def, !!ctrl.handleKey, isSequential, isMultiTap],
   );
 
   const engine = useQuizEngine(engineConfig, learner.selector, container);
   seqSubmitRef.current = engine.submitAnswer;
+  mtSubmitRef.current = engine.submitAnswer;
+  if (ctrl.engineSubmitRef) ctrl.engineSubmitRef.current = engine.submitAnswer;
 
-  return { engine, currentQRef, seqInput, lastAnswerRef, isSequential };
+  return {
+    engine,
+    currentQRef,
+    seqInput,
+    multiTapInput,
+    lastAnswerRef,
+    isSequential,
+  };
 }
 
 function resolveButtons<Q>(
@@ -1066,6 +1132,7 @@ function buildGenericEngineConfig<Q>(
   },
   ctrlRef: { current: ModeController<Q> },
   isSequential: boolean,
+  isMultiTap: boolean,
   seqInput: ReturnType<typeof useSequentialInput>,
   hasHandleKey: boolean,
 ): QuizEngineConfig {
@@ -1078,6 +1145,7 @@ function buildGenericEngineConfig<Q>(
         currentQRef,
         lastAnswerRef,
         isSequential,
+        isMultiTap,
         itemId,
         input,
       ),
@@ -1100,6 +1168,7 @@ function useGenericDerivedState<Q>(
   groupScopeResult: ReturnType<typeof useGroupScope> | null,
   currentQRef: { current: Q | null },
   seqInput: ReturnType<typeof useSequentialInput>,
+  multiTapInput: MultiTapInputHandle,
   isSequential: boolean,
   container: HTMLElement,
   onMount: (handle: ModeHandle) => void,
@@ -1112,6 +1181,7 @@ function useGenericDerivedState<Q>(
   }, [engine.state.currentItemId, engine.state.phase, def]);
   currentQRef.current = currentQ;
   if (isSequential) seqInput.resetOnItemChange(engine.state.currentItemId);
+  if (def.multiTap) multiTapInput.resetOnItemChange(engine.state.currentItemId);
 
   usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
   const practicingLabel = groupScopeResult?.practicingLabel ?? 'all items';
@@ -1214,6 +1284,7 @@ type GenericModeBodyProps<Q> = {
   practicingLabel: string;
   handleSubmit: (input: string) => boolean;
   seqInput: ReturnType<typeof useSequentialInput>;
+  multiTapInput: MultiTapInputHandle;
   isSequential: boolean;
   lastAnswerRef: {
     current: {
@@ -1280,6 +1351,7 @@ function GenericModeBody<Q>(
     practicingLabel,
     handleSubmit,
     seqInput,
+    multiTapInput,
     isSequential,
     lastAnswerRef,
     navigateHome,
@@ -1361,6 +1433,7 @@ function GenericModeBody<Q>(
       practicingLabel={practicingLabel}
       handleSubmit={handleSubmit}
       seq={buildSeqProps(seqInput)}
+      multiTapInput={multiTapInput}
       activeButtons={activeButtons}
       inactiveButtons={inactiveButtons}
       promptText={promptText}
@@ -1387,6 +1460,7 @@ export function GenericMode<Q>(
     def.namespace,
     def.allItems,
     def.motorTaskType,
+    def.getExpectedResponseCount,
   );
   const groupScopeSpec = buildGroupScopeSpec(def, learner.selector);
   const groupScopeResult = groupScopeSpec
@@ -1399,8 +1473,21 @@ export function GenericMode<Q>(
   const ctrlRef = useRef(ctrl);
   ctrlRef.current = ctrl;
 
-  const { engine, currentQRef, seqInput, lastAnswerRef, isSequential } =
-    useGenericEngine(def, ctrl, ctrlRef, groupScopeResult, learner, container);
+  const {
+    engine,
+    currentQRef,
+    seqInput,
+    multiTapInput,
+    lastAnswerRef,
+    isSequential,
+  } = useGenericEngine(
+    def,
+    ctrl,
+    ctrlRef,
+    groupScopeResult,
+    learner,
+    container,
+  );
   const sc = useSpeedCheckOverlay(engine, def, ctrl);
 
   const { currentQ, round, ps, practicingLabel, handleSubmit } =
@@ -1411,6 +1498,7 @@ export function GenericMode<Q>(
       groupScopeResult,
       currentQRef,
       seqInput,
+      multiTapInput,
       isSequential,
       container,
       onMount,
@@ -1432,6 +1520,7 @@ export function GenericMode<Q>(
       practicingLabel={practicingLabel}
       handleSubmit={handleSubmit}
       seqInput={seqInput}
+      multiTapInput={multiTapInput}
       isSequential={isSequential}
       lastAnswerRef={lastAnswerRef}
       navigateHome={navigateHome}
