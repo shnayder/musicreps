@@ -2165,8 +2165,8 @@ button {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.4rem;
-  max-width: 440px;
-  margin: var(--space-3) auto;
+  width: 100%;
+  margin: var(--space-3) 0;
 }
 /* Answer text input (declarative modes) */
 .answer-input {
