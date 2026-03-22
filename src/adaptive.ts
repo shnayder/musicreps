@@ -21,14 +21,11 @@ export const DEFAULT_CONFIG: AdaptiveConfig = {
   // Forgetting model
   initialStability: 4, // hours — half-life after first correct answer
   maxStability: 336, // hours (14 days) — stability ceiling
-  stabilityGrowthBase: 2.0, // multiplier on each correct answer
+  stabilityGrowthMax: 0.9, // max additive growth factor (at freshness=0)
   stabilityDecayOnWrong: 0.3, // multiplier on wrong answer
-  recallThreshold: 0.5, // P(recall) below this = "due"
-  expansionThreshold: 0.7, // level automaticity (10th percentile) above which expansion is suggested
-  speedBonusMax: 1.5, // fast answers grow stability up to this extra factor
+  freshnessThreshold: 0.5, // freshness below this = "due" / "needs review"
   selfCorrectionThreshold: 1500, // ms — response time below this triggers self-correction
-  automaticityTarget: 3000, // ms — response time at which speedScore ≈ 0.5
-  automaticityThreshold: 0.8, // automaticity above this = "automatic" (matches stats heatmap)
+  speedTarget: 3000, // ms — response time at which speedScore ≈ 0.5
 };
 
 // ---------------------------------------------------------------------------
@@ -77,7 +74,7 @@ export function computeFreshness(
 /**
  * Speed score: maps EWMA onto [0, 1].
  * - minTime (1000ms) → 1.0 (fully automatic)
- * - automaticityTarget (3000ms) → 0.5
+ * - speedTarget (3000ms) → 0.5
  * - Very slow → approaches 0
  * Uses exponential decay so the curve is smooth.
  *
@@ -90,45 +87,23 @@ export function computeSpeedScore(
   responseCount: number = 1,
 ): number | null {
   if (ewmaMs == null) return null;
-  const effectiveTarget = cfg.automaticityTarget * responseCount;
+  const effectiveTarget = cfg.speedTarget * responseCount;
   const effectiveMin = cfg.minTime * responseCount;
   const k = Math.LN2 / (effectiveTarget - effectiveMin);
   return Math.exp(-k * Math.max(0, ewmaMs - effectiveMin));
 }
 
-/**
- * Automaticity = recall * speedScore.
- * "Do I know this without thinking?" — combines "have I forgotten it?"
- * with "was I ever fast at it?" Returns null for unseen items.
- */
-export function computeAutomaticity(
-  recall: number | null,
-  speedScore: number | null,
-): number | null {
-  if (recall == null || speedScore == null) return null;
-  return recall * speedScore;
-}
-
-/**
- * Like computeAutomaticity but returns 0 instead of null when the item
- * has been seen (hasSeen = true) but recall/speed data is incomplete.
- * This shows "needs work" (lowest heatmap level) instead of "no data"
- * for items the user has attempted but never answered correctly.
- */
-export function computeAutomaticityForDisplay(
-  recall: number | null,
-  speedScore: number | null,
-  hasSeen: boolean,
-): number | null {
-  const value = computeAutomaticity(recall, speedScore);
-  if (value == null && hasSeen) return 0;
-  return value;
-}
+// Speed and freshness are independent axes — no combined "automaticity" metric.
+// Item classification uses speed thresholds directly:
+//   Automatic: speed ≥ 0.9, Solid: ≥ 0.7, Learning: ≥ 0.3, Hesitant: > 0, Starting: = 0
+// Freshness determines "needs review": freshness < 0.5
 
 /**
  * Compute new stability after a correct answer.
  * - First correct: initialStability.
- * - Subsequent: grow by stabilityGrowthBase * speedFactor.
+ * - Subsequent: freshness-modulated growth. Low freshness (item was due)
+ *   provides stronger evidence of retention than high freshness (just saw it).
+ *   Formula: newStability = oldStability * (1 + growthMax * (1 - freshness))
  * - Self-correction: if fast answer after long gap, back-calculate
  *   that true stability must be at least elapsedHours * 1.5.
  */
@@ -141,16 +116,16 @@ export function updateStability(
   if (oldStability == null) {
     return cfg.initialStability;
   }
-  // Speed factor: fast answers grow stability more (0.5 to speedBonusMax)
-  const range = cfg.maxResponseTime - cfg.minTime;
-  const clamped = Math.max(
-    cfg.minTime,
-    Math.min(responseTimeMs, cfg.maxResponseTime),
-  );
-  const t = range > 0 ? (cfg.maxResponseTime - clamped) / range : 0.5;
-  const speedFactor = 0.5 + t * (cfg.speedBonusMax - 0.5);
 
-  let newStability = oldStability * cfg.stabilityGrowthBase * speedFactor;
+  // Freshness at review time: how much retention remained?
+  const freshness = (elapsedHours != null && elapsedHours > 0)
+    ? Math.pow(2, -elapsedHours / oldStability)
+    : 1; // within-session review = full freshness
+
+  // Growth is modulated by freshness: reviewing a due item (freshness ~0.5)
+  // grows more than reviewing a fresh item (freshness ~1.0).
+  const growthFactor = 1 + cfg.stabilityGrowthMax * (1 - freshness);
+  let newStability = oldStability * growthFactor;
 
   // Self-correction: fast answer after long gap means true half-life is long
   if (
@@ -237,7 +212,7 @@ export function deriveScaledConfig(
   return {
     ...baseCfg,
     minTime: Math.round(baseCfg.minTime * scale),
-    automaticityTarget: Math.round(baseCfg.automaticityTarget * scale),
+    speedTarget: Math.round(baseCfg.speedTarget * scale),
     selfCorrectionThreshold: Math.round(
       baseCfg.selfCorrectionThreshold * scale,
     ),
@@ -269,7 +244,7 @@ export function scaleConfigForResponseCount(
   return {
     ...cfg,
     minTime: cfg.minTime * responseCount,
-    automaticityTarget: cfg.automaticityTarget * responseCount,
+    speedTarget: cfg.speedTarget * responseCount,
     maxResponseTime: cfg.maxResponseTime * responseCount,
     selfCorrectionThreshold: cfg.selfCorrectionThreshold * responseCount,
   };
@@ -344,23 +319,22 @@ export function recordWrongResponse(
 }
 
 /**
- * Compute "level automaticity" — the p-th percentile of per-item
- * automaticity values (unseen items contribute 0).
+ * Compute the p-th percentile of a per-item metric (unseen items contribute 0).
+ * Used for both level speed and level freshness — pass the appropriate getter.
  */
-export function computeLevelAutomaticity(
-  getAutomaticity: (id: string, nowMs?: number) => number | null,
+export function computeLevelPercentile(
+  getMetric: (id: string) => number | null,
   itemIds: string[],
   percentile: number = 0.1,
-  nowMs?: number,
 ): { level: number; seen: number } {
   if (itemIds.length === 0) return { level: 0, seen: 0 };
   let seen = 0;
   const values: number[] = [];
   for (let i = 0; i < itemIds.length; i++) {
-    const auto = getAutomaticity(itemIds[i], nowMs);
-    if (auto !== null) {
+    const val = getMetric(itemIds[i]);
+    if (val !== null) {
       seen++;
-      values.push(auto);
+      values.push(val);
     } else {
       values.push(0);
     }
@@ -372,26 +346,25 @@ export function computeLevelAutomaticity(
 }
 
 /**
- * Recommend groups to review, sorted by needsWork descending.
+ * Classify items per group by speed score, sorted by needsWork descending.
+ * Automatic: speed ≥ 0.9, Working: seen but speed < 0.9, Unseen: no data.
  */
 export function computeStringRecommendations(
-  getAutomaticity: (id: string, nowMs?: number) => number | null,
-  threshold: number,
+  getSpeedScore: (id: string) => number | null,
   stringIndices: number[],
   getItemIds: (index: number) => string[],
-  nowMs?: number,
 ): StringRecommendation[] {
   const results = stringIndices.map((s) => {
     const items = getItemIds(s);
     let workingCount = 0;
     let unseenCount = 0;
-    let fluentCount = 0;
+    let automaticCount = 0;
     for (const id of items) {
-      const auto = getAutomaticity(id, nowMs);
-      if (auto === null) {
+      const speed = getSpeedScore(id);
+      if (speed === null) {
         unseenCount++;
-      } else if (auto > threshold) {
-        fluentCount++;
+      } else if (speed >= 0.9) {
+        automaticCount++;
       } else {
         workingCount++;
       }
@@ -400,7 +373,7 @@ export function computeStringRecommendations(
       string: s,
       workingCount,
       unseenCount,
-      fluentCount,
+      automaticCount,
       totalCount: items.length,
     };
   });
@@ -412,30 +385,29 @@ export function computeStringRecommendations(
 }
 
 /**
- * Check if all items have automaticity above the given threshold.
+ * Check if all items have speed score ≥ 0.9 (automatic).
  */
 export function checkAllItemsAutomatic(
-  getAutomaticity: (id: string) => number | null,
+  getSpeedScore: (id: string) => number | null,
   items: string[],
-  threshold: number,
 ): boolean {
   for (const id of items) {
-    const auto = getAutomaticity(id);
-    if (auto === null || auto <= threshold) return false;
+    const speed = getSpeedScore(id);
+    if (speed === null || speed < 0.9) return false;
   }
   return items.length > 0;
 }
 
 /**
- * Check if previously-automatic material needs review.
- * Returns true only when ALL items had high prior skill but at least one
- * item's automaticity has since dropped below the automatic threshold.
+ * Check if previously-fast material needs review.
+ * Returns true only when ALL items had high prior speed (≥ 0.5) but at least
+ * one item's freshness has dropped below the freshness threshold (0.5).
  */
 export function checkItemsNeedReview(
   storage: StorageAdapter,
-  getAutomaticity: (id: string) => number | null,
+  getSpeedScore: (id: string) => number | null,
+  getFreshness: (id: string) => number | null,
   cfg: AdaptiveConfig,
-  getResponseCount: (id: string) => number,
   items: string[],
 ): boolean {
   if (items.length === 0) return false;
@@ -445,10 +417,10 @@ export function checkItemsNeedReview(
     if (!stats || stats.lastCorrectAt == null || stats.sampleCount < 2) {
       return false;
     }
-    const speed = computeSpeedScore(stats.ewma, cfg, getResponseCount(id));
+    const speed = getSpeedScore(id);
     if (speed == null || speed < 0.5) return false;
-    const auto = getAutomaticity(id);
-    if (auto !== null && auto <= cfg.automaticityThreshold) {
+    const fresh = getFreshness(id);
+    if (fresh !== null && fresh < cfg.freshnessThreshold) {
       hasDecayedItem = true;
     }
   }
@@ -470,20 +442,6 @@ function getItemRecall(
   }
   const now = nowMs ?? Date.now();
   return computeRecall(stats.stability, (now - stats.lastCorrectAt) / 3600000);
-}
-
-function getItemAutomaticity(
-  storage: StorageAdapter,
-  scaledCfg: AdaptiveConfig,
-  getRecall: (itemId: string, nowMs?: number) => number | null,
-  itemId: string,
-  nowMs?: number,
-): number | null {
-  const stats = storage.getStats(itemId);
-  if (!stats) return null;
-  const recall = getRecall(itemId, nowMs);
-  const speed = computeSpeedScore(stats.ewma, scaledCfg);
-  return computeAutomaticityForDisplay(recall, speed, true);
 }
 
 function getItemSpeedScore(
@@ -569,8 +527,6 @@ export function createAdaptiveSelector(
     return getItemRecall(storage, itemId, nowMs);
   }
 
-  const getAutomaticity = (itemId: string, nowMs?: number): number | null =>
-    getItemAutomaticity(storage, scaledCfg(itemId), getRecall, itemId, nowMs);
   const getSpeedScore = (itemId: string): number | null =>
     getItemSpeedScore(storage, scaledCfg(itemId), itemId);
   const getFreshness = (itemId: string, nowMs?: number): number | null =>
@@ -582,27 +538,29 @@ export function createAdaptiveSelector(
     getStats,
     getWeight,
     getRecall,
-    getAutomaticity,
     getSpeedScore,
     getFreshness,
-    getLevelAutomaticity: (itemIds, percentile, nowMs) =>
-      computeLevelAutomaticity(getAutomaticity, itemIds, percentile, nowMs),
-    getStringRecommendations: (stringIndices, getItemIds, nowMs) =>
+    getLevelSpeed: (itemIds, percentile) =>
+      computeLevelPercentile(getSpeedScore, itemIds, percentile),
+    getLevelFreshness: (itemIds, percentile, nowMs) =>
+      computeLevelPercentile(
+        (id) => getFreshness(id, nowMs),
+        itemIds,
+        percentile,
+      ),
+    getStringRecommendations: (stringIndices, getItemIds) =>
       computeStringRecommendations(
-        getAutomaticity,
-        cfg.automaticityThreshold,
+        getSpeedScore,
         stringIndices,
         getItemIds,
-        nowMs,
       ),
-    checkAllAutomatic: (items) =>
-      checkAllItemsAutomatic(getAutomaticity, items, cfg.automaticityThreshold),
+    checkAllAutomatic: (items) => checkAllItemsAutomatic(getSpeedScore, items),
     checkNeedsReview: (items) =>
       checkItemsNeedReview(
         storage,
-        getAutomaticity,
+        getSpeedScore,
+        getFreshness,
         cfg,
-        getResponseCount,
         items,
       ),
     updateConfig: (newCfg: Partial<AdaptiveConfig>) => {

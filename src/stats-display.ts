@@ -20,13 +20,13 @@ function cssVar(name: string): string {
 function heatmapColors() {
   if (!_heatmapColors) {
     _heatmapColors = {
-      none: cssVar('--heatmap-none') || 'hsl(30, 4%, 85%)',
+      none: cssVar('--heatmap-none') || 'hsl(30, 5%, 86%)',
       level: [
-        cssVar('--heatmap-1') || 'hsl(44, 65%, 58%)',
-        cssVar('--heatmap-2') || 'hsl(54, 45%, 52%)',
-        cssVar('--heatmap-3') || 'hsl(68, 30%, 46%)',
-        cssVar('--heatmap-4') || 'hsl(90, 38%, 38%)',
-        cssVar('--heatmap-5') || 'hsl(122, 46%, 33%)',
+        cssVar('--heatmap-1') || 'hsl(40, 60%, 58%)',
+        cssVar('--heatmap-2') || 'hsl(48, 50%, 52%)',
+        cssVar('--heatmap-3') || 'hsl(60, 40%, 46%)',
+        cssVar('--heatmap-4') || 'hsl(80, 35%, 40%)',
+        cssVar('--heatmap-5') || 'hsl(125, 48%, 33%)',
       ],
     };
   }
@@ -45,12 +45,13 @@ export function heatmapNeedsLightText(color: string): boolean {
 // --- Speed x Freshness combined encoding ---
 
 // HSL parameters for each speed level (hue, sat%, light%)
+// Green reserved for truly automatic (>0.9); "fast but not instant" is yellow-green.
 const SPEED_HSL: [number, number, number][] = [
-  [44, 65, 58], // heatmap-1: needs work
-  [54, 45, 52], // heatmap-2
-  [68, 30, 46], // heatmap-3
-  [90, 38, 38], // heatmap-4
-  [122, 46, 33], // heatmap-5: automatic
+  [40, 60, 58], // heatmap-1: needs work
+  [48, 50, 52], // heatmap-2
+  [60, 40, 46], // heatmap-3
+  [80, 35, 40], // heatmap-4: fast but figuring it out
+  [125, 48, 33], // heatmap-5: automatic
 ];
 
 const FRESHNESS_FLOOR = 0.25;
@@ -66,15 +67,7 @@ export function getSpeedFreshnessColor(
 ): string {
   const c = heatmapColors();
   if (speedScore === null || freshness === null) return c.none;
-  const level = speedScore > 0.8
-    ? 4
-    : speedScore > 0.6
-    ? 3
-    : speedScore > 0.4
-    ? 2
-    : speedScore > 0.2
-    ? 1
-    : 0;
+  const level = speedLevel(speedScore);
   const [h, s, l] = SPEED_HSL[level];
   const f = FRESHNESS_FLOOR +
     (1 - FRESHNESS_FLOOR) * Math.max(0, Math.min(1, freshness));
@@ -83,30 +76,18 @@ export function getSpeedFreshnessColor(
   return `hsl(${h}, ${fadedS}%, ${fadedL}%)`;
 }
 
-// Keep legacy exports for any remaining references
-export function getAutomaticityColor(auto: number | null): string {
-  const c = heatmapColors();
-  if (auto === null) return c.none;
-  if (auto > 0.8) return c.level[4];
-  if (auto > 0.6) return c.level[3];
-  if (auto > 0.4) return c.level[2];
-  if (auto > 0.2) return c.level[1];
-  return c.level[0];
-}
-
 // --- Cell color functions (speed x freshness combined view) ---
 
 export function getStatsCellColor(
   selector: {
-    getSpeedScore?(id: string): number | null;
-    getFreshness?(id: string): number | null;
-    getAutomaticity(id: string): number | null;
+    getSpeedScore(id: string): number | null;
+    getFreshness(id: string): number | null;
     getStats(id: string): ItemStats | null;
   },
   itemId: string,
 ): string {
-  const speedScore = selector.getSpeedScore?.(itemId) ?? null;
-  const freshness = selector.getFreshness?.(itemId) ?? null;
+  const speedScore = selector.getSpeedScore(itemId);
+  const freshness = selector.getFreshness(itemId);
   return getSpeedFreshnessColor(speedScore, freshness);
 }
 
@@ -117,9 +98,8 @@ export function getStatsCellColor(
  */
 export function getStatsCellColorMerged(
   selector: {
-    getSpeedScore?(id: string): number | null;
-    getFreshness?(id: string): number | null;
-    getAutomaticity(id: string): number | null;
+    getSpeedScore(id: string): number | null;
+    getFreshness(id: string): number | null;
     getStats(id: string): ItemStats | null;
   },
   itemIds: string | string[],
@@ -132,8 +112,8 @@ export function getStatsCellColorMerged(
     freshSum = 0,
     freshCount = 0;
   for (let i = 0; i < itemIds.length; i++) {
-    const sp = selector.getSpeedScore?.(itemIds[i]) ?? null;
-    const fr = selector.getFreshness?.(itemIds[i]) ?? null;
+    const sp = selector.getSpeedScore(itemIds[i]);
+    const fr = selector.getFreshness(itemIds[i]);
     if (sp !== null) {
       speedSum += sp;
       speedCount++;
@@ -146,6 +126,42 @@ export function getStatsCellColorMerged(
   const avgSpeed = speedCount > 0 ? speedSum / speedCount : null;
   const avgFresh = freshCount > 0 ? freshSum / freshCount : null;
   return getSpeedFreshnessColor(avgSpeed, avgFresh);
+}
+
+// --- Progress bar colors (sorted per-item) ---
+
+type ProgressSelector = {
+  getSpeedScore(id: string): number | null;
+  getFreshness(id: string): number | null;
+};
+
+/** Map a speed score to a discrete level (0–4), matching getSpeedFreshnessColor. */
+function speedLevel(sp: number): number {
+  return sp > 0.9 ? 4 : sp > 0.75 ? 3 : sp > 0.55 ? 2 : sp > 0.3 ? 1 : 0;
+}
+
+/**
+ * Compute per-item progress bar colors, sorted for visual monotonicity.
+ * Sort by discrete speed level descending (determines hue), then freshness
+ * descending within the same level (determines saturation). This ensures
+ * same-hue items cluster together and the bar reads green→yellow→grey.
+ * Unseen items (null speed) sort last.
+ */
+export function progressBarColors(
+  selector: ProgressSelector,
+  itemIds: string[],
+): string[] {
+  const items = itemIds.map((id) => {
+    const sp = selector.getSpeedScore(id);
+    const fr = selector.getFreshness(id);
+    return {
+      level: sp !== null ? speedLevel(sp) : -1,
+      fr: fr ?? -1,
+      color: getSpeedFreshnessColor(sp, fr),
+    };
+  });
+  items.sort((a, b) => a.level !== b.level ? b.level - a.level : b.fr - a.fr);
+  return items.map((item) => item.color);
 }
 
 // --- Legend ---

@@ -1,6 +1,11 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { GUITAR, UKULELE } from '../../music-data.ts';
+import {
+  getUseSolfege,
+  GUITAR,
+  setUseSolfege,
+  UKULELE,
+} from '../../music-data.ts';
 import {
   formatLabel,
   getAllGroupIndices,
@@ -41,7 +46,7 @@ describe('guitar groups', () => {
 
   it('E e group has strings 5 and 0', () => {
     assert.deepEqual(groups[0].strings, [5, 0]);
-    assert.equal(groups[0].label, 'E e');
+    assert.equal(groups[0].label(), 'E e');
   });
 });
 
@@ -147,7 +152,7 @@ describe('getQuestion expected values', () => {
 // ---------------------------------------------------------------------------
 
 describe('formatLabel', () => {
-  it('single group', () => {
+  it('single group in letter mode', () => {
     assert.equal(formatLabel(GUITAR, new Set([0])), 'E e');
   });
 
@@ -161,5 +166,17 @@ describe('formatLabel', () => {
   it('multiple groups sorted', () => {
     const label = formatLabel(GUITAR, new Set([2, 0]));
     assert.equal(label, 'E e, D');
+  });
+
+  it('uses solfège names in solfège mode', () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(formatLabel(GUITAR, new Set([0])), 'Mi mi');
+      assert.equal(formatLabel(GUITAR, new Set([1])), 'La');
+      assert.equal(formatLabel(GUITAR, new Set([2])), 'Re');
+    } finally {
+      setUseSolfege(original);
+    }
   });
 });

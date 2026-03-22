@@ -11,27 +11,23 @@ components and HTML helpers as production — rebuild (`deno task build`) or
 refresh the dev server after edits. Hand-written pages link directly to
 `src/styles.css` so CSS changes are visible on refresh with no rebuild.
 
-| Page                                               | Contents                                       | Source                                        |
-| -------------------------------------------------- | ---------------------------------------------- | --------------------------------------------- |
-| [components-preview.html](components-preview.html) | Preact UI components with mock data            | **Build-generated** from `src/ui/preview.tsx` |
-| [colors.html](colors.html)                         | Color swatches, heatmap scale, semantic tokens | Hand-written                                  |
-| [components.html](components.html)                 | Design tokens, layout patterns, variant A/B    | Hand-written                                  |
+| Page                                               | Contents                                                                                       | Source                                        |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| [components-preview.html](components-preview.html) | Preact UI components with mock data, token reference (spacing, type, radius), live color system | **Build-generated** from `src/ui/preview.tsx` |
 
 **Component preview** (`components-preview.html`) is the primary tool for
 iterating on component design. It renders real Preact components (`NoteButtons`,
 `PracticeCard`, `StatsGrid`, `RoundComplete`, etc.) with shared fixture data
 from `src/fixtures/`, so changes to `src/ui/*.tsx` are immediately visible
-after a rebuild. Available at `localhost:8001/preview` during dev.
+after a rebuild. The **Colors** tab shows live palette ramps, semantic token
+swatches, pairings, heatmap scale, and component token reference — all read
+from `getComputedStyle`. The **Design System** tab includes spacing, type scale,
+border radius, and shadows. Available at `localhost:8001/preview` during dev.
 
 **Screenshots** replace the old static moments page. The Playwright script
 (`scripts/take-screenshots.ts`) captures deterministic screenshots by
 dispatching fixture events to the running app. Push to a `/ui/` branch to
 generate screenshots in CI.
-
-**Components** (`components.html`) covers design system primitives that aren't
-Preact components: CSS custom property swatches, spacing/typography scales,
-grid patterns, touch-target sizing, and variant comparison panels for A/B
-iteration. It overlaps with `colors.html` on token visualization.
 
 For visual design principles (drill-first aesthetic, warmth, feedback clarity,
 information density, mobile-primary), see
@@ -41,6 +37,56 @@ principles, see [layout-and-ia.md](layout-and-ia.md).
 ---
 
 ## Color System
+
+### Three-Layer Token Architecture
+
+Colors use a three-layer architecture designed for dark mode readiness and
+systematic naming:
+
+**Layer 1: Primitives** — raw color scales derived from anchor hues
+(`--hue-neutral`, `--hue-brand`, `--hue-success`, `--hue-error`,
+`--hue-notice`). Change one hue to shift an entire family. Naming:
+`--{family}-{step}` (e.g., `--neutral-400`, `--brand-600`).
+
+**Layer 2: Semantic tokens** — map primitives to meaning. To switch
+light → dark, change these mappings (not the palette). Every color family
+follows a consistent modifier pattern:
+
+| Modifier | Purpose | Example |
+|----------|---------|---------|
+| *(base)* | Primary accent | `--color-brand`, `--color-error` |
+| `-bg` | Background tint | `--color-brand-bg` |
+| `-border` | Bordered elements | `--color-brand-border` |
+| `-text` | Text on `-bg` | `--color-brand-text` |
+| `-dark` | Darker variant | `--color-brand-dark` |
+
+Families: **brand**, **success**, **error**, **notice** (gold/attention),
+**accent**, **text** (trio), **surface** (5 levels), **border** (trio).
+`--color-on-brand`, `--color-on-success`, `--color-on-error` provide text
+colors for filled backgrounds (white in light mode, flips in dark mode).
+`--color-chrome` is the segmented control / toolbar fill.
+
+**Layer 3: Component tokens** — `--_` prefixed CSS private custom properties
+defined on component root selectors, always referencing semantic tokens:
+
+```css
+.component {
+  --_bg: var(--color-surface);
+  --_text: var(--color-text);
+  background: var(--_bg);
+  color: var(--_text);
+}
+.component.active { --_bg: var(--color-brand); --_text: var(--color-on-brand); }
+```
+
+Components with `--_` tokens: **ActionButton** (`.page-action-btn`),
+**AnswerButton** (`.answer-btn`), **Toggle** (`.string-toggle`,
+`.distance-toggle`, `.notes-toggle`, `.level-toggle-btn`),
+**SequentialSlot** (`.seq-slot`), **SkillCard** (`.skill-card` → `--_accent`).
+
+**Live reference:** The preview page's **Colors** tab (`localhost:8001/preview`)
+shows all palette ramps, semantic swatches, pairings, heatmap scale, and
+component token mapping tables with resolved values.
 
 ### Palette Model
 
@@ -92,7 +138,7 @@ bg, border, and text variants. Currently three families exist:
 | ------------- | -------------------- | ------- | --------- | -------- |
 | Brand/Success | `--color-brand`      | `-bg`   | —         | `-text`  |
 | Error         | `--color-error`      | `-bg`   | —         | `-text`  |
-| Recommended   | `--color-recommended`| `-bg`   | `-border` | `-text`  |
+| Recommended   | `--color-notice`| `-bg`   | `-border` | `-text`  |
 | Accent        | `--color-accent`     | —       | —         | `-muted` |
 
 When adding a new semantic color, follow this pattern: define the accent first,
@@ -136,10 +182,10 @@ card surfaces (suggestion card).
 | Token                       | Value                | Usage                                   |
 | --------------------------- | -------------------- | --------------------------------------- |
 | `--color-highlight`         | `#EAB308`            | Current fretboard question              |
-| `--color-recommended`       | `#D4A017`            | Accent: suggestion card header & border |
-| `--color-recommended-bg`    | `hsl(44, 70%, 96%)`  | Suggestion card background              |
-| `--color-recommended-border`| `hsl(44, 60%, 80%)`  | Suggestion card border                  |
-| `--color-recommended-text`  | `hsl(44, 80%, 25%)`  | Dark gold text on recommended surfaces  |
+| `--color-notice`       | `#D4A017`            | Accent: suggestion card header & border |
+| `--color-notice-bg`    | `hsl(44, 70%, 96%)`  | Suggestion card background              |
+| `--color-notice-border`| `hsl(44, 60%, 80%)`  | Suggestion card border                  |
+| `--color-notice-text`  | `hsl(44, 80%, 25%)`  | Dark gold text on recommended surfaces  |
 
 ### Error (Red)
 
@@ -168,7 +214,7 @@ Subtle warmth instead of pure grays — shifted `hsl(30, …)` for cohesion.
 | `--color-bg`              | `#fff`              | Page background, button default      |
 | `--color-surface`         | `hsl(30, 10%, 96%)` | Quiz card bg, toggles, table headers |
 | `--color-surface-hover`   | `hsl(30, 8%, 93%)`  | Button/nav hover state               |
-| `--color-surface-alt`     | `hsl(30, 8%, 92%)`  | Progress bar bg, countdown bg        |
+| `--color-surface-raised`     | `hsl(30, 8%, 92%)`  | Progress bar bg, countdown bg        |
 | `--color-surface-pressed` | `hsl(30, 5%, 82%)`  | Button `:active` state               |
 | `--color-surface-accent`  | `hsl(30, 8%, 90%)`  | Accidental note button bg            |
 
@@ -189,11 +235,11 @@ to white on levels 3–5 (L ≤ 50%) via `heatmapNeedsLightText()`.
 | Token            | Value                | Meaning              |
 | ---------------- | -------------------- | -------------------- |
 | `--heatmap-none` | `hsl(30, 4%, 85%)`  | No data (unseen)     |
-| `--heatmap-1`    | `hsl(44, 65%, 58%)` | Needs work (<20%)    |
-| `--heatmap-2`    | `hsl(54, 45%, 52%)` | Fading (>20%)        |
-| `--heatmap-3`    | `hsl(68, 30%, 46%)` | Getting there (>40%) |
-| `--heatmap-4`    | `hsl(90, 38%, 38%)` | Solid (>60%)         |
-| `--heatmap-5`    | `hsl(122, 46%, 33%)`| Automatic (>80%)     |
+| `--heatmap-1`    | `hsl(40, 60%, 58%)` | Needs work (≤30%)    |
+| `--heatmap-2`    | `hsl(48, 50%, 52%)` | Fading (>30%)        |
+| `--heatmap-3`    | `hsl(60, 40%, 46%)` | Getting there (>55%) |
+| `--heatmap-4`    | `hsl(80, 35%, 40%)` | Solid (>75%)         |
+| `--heatmap-5`    | `hsl(125, 48%, 33%)`| Automatic (>90%)     |
 
 ### Fretboard SVG
 
@@ -204,7 +250,7 @@ fill color. No text inside circles; hover card shows note details.
 | -------------------------- | -------------------- | ------------------------------------- |
 | `.fb-pos` (default)        | `hsl(30, 5%, 90%)`   | Dormant position circles              |
 | `.fb-pos` (quiz highlight) | `hsl(50, 100%, 50%)` | Active question — vivid yellow        |
-| `.fb-pos` (tap correct)    | `hsl(122, 46%, 33%)` | Found position — matches heatmap-5    |
+| `.fb-pos` (tap correct)    | `hsl(125, 48%, 33%)` | Found position — matches heatmap-5    |
 | `.fb-string`               | `hsl(30, 8%, 72%)`   | String lines                          |
 | `.fb-fret`                 | `hsl(30, 5%, 82%)`   | Fret lines                            |
 | `.fb-nut`                  | `hsl(30, 8%, 48%)`   | Nut bar at fret 0                     |
@@ -215,33 +261,137 @@ numbers — dropped for legibility at mobile sizes.
 
 ---
 
-## Typography Scale
+## Typography
 
-7 tokens consolidating 15+ previous `font-size` values:
+Three-layer system paralleling colors: **palette** (raw tokens) →
+**semantic roles** (what the text IS) → **component mapping** (where it's
+used). See `plans/design-docs/2026-03-21-typography-system-redesign.md` for
+the full design rationale.
 
-| Token         | Size     | Maps to                                          |
-| ------------- | -------- | ------------------------------------------------ |
-| `--text-xs`   | 0.75rem  | Legend labels, progress text, tiny stats         |
-| `--text-sm`   | 0.85rem  | Session stats, settings, table text, calibration |
-| `--text-base` | 1rem     | Body, buttons, nav items, hints                  |
-| `--text-md`   | 1.125rem | Answer buttons, note buttons, chord slots        |
-| `--text-lg`   | 1.3rem   | Mode title                                       |
-| `--text-xl`   | 1.5rem   | Back button, feedback, close buttons             |
-| `--text-2xl`  | 2rem     | Home title, quiz prompts                         |
+### Layer 1: Palette
 
-Font weights: 400 (normal), 500 (medium — buttons/labels), 600 (semibold —
-headings, CTA).
+| Category | Tokens |
+|---|---|
+| Sizes | `--text-xs` (0.75rem) through `--text-3xl` (3rem) |
+| Weights | `--font-normal` (400), `--font-medium` (500), `--font-semibold` (600), `--font-bold` (700) |
+| Line heights | `--leading-none` (1), `--leading-tight` (1.2), `--leading-snug` (1.4), `--leading-normal` (1.5) |
+| Families | `--font-body` (system sans), `--font-display` (DM Serif Display, embedded) |
 
-### Font Families
+### Layer 2: Semantic Roles (17 roles)
 
-| Token            | Value                                    | Usage      |
-| ---------------- | ---------------------------------------- | ---------- |
-| `--font-display` | `'DM Serif Display', Georgia, serif`     | Home title |
-| *(body)*         | `system-ui, -apple-system, sans-serif`   | Everything else |
+Each role defines 4 custom properties: `--type-{role}-size`, `-weight`,
+`-leading`, `-color`. Both `.text-*` classes and bespoke classes reference
+these — never palette tokens directly.
 
-DM Serif Display is embedded as a base64 `@font-face` at build time
-(`main.ts` reads `src/DMSerifDisplay-latin.woff2`). Latin subset only, ~24KB
-woff2. No external font requests — fully offline-compatible.
+**Display** — big, high-emphasis hero text
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `display-brand` | 2xl | normal | tight | text |
+
+`display-brand` also has `--type-display-brand-family: var(--font-display)`.
+
+**Heading** — structural hierarchy
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `heading-page` | lg | semibold | tight | text |
+| `heading-section` | base | semibold | tight | text |
+| `heading-subsection` | base | semibold | tight | muted |
+
+**Body** — readable content
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `body` | base | normal | normal | text |
+| `body-secondary` | sm | normal | snug | muted |
+
+**Label** — short functional identifiers
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `label` | sm | medium | none | muted |
+| `label-tag` | xs | semibold | none | muted |
+
+**Quiz** — drill-specific content text
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `quiz-instruction` | base | semibold | normal | muted |
+| `quiz-prompt` | 2xl | semibold | tight | text |
+| `quiz-response` | lg | semibold | none | text |
+| `quiz-feedback` | xl | normal | none | text |
+
+**Supporting** — tertiary/helper text
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `supporting` | xs | normal | snug | text-light |
+
+**Metric** — data values
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `metric-hero` | 3xl | bold | none | brand |
+| `metric-primary` | md | semibold | none | text |
+| `metric-info` | base | medium | none | text |
+
+**Status** — state communication
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `status` | sm | normal | snug | text |
+
+Status color variants: `.status-success`, `.status-error`, `.status-notice`,
+`.status-empty` (italic).
+
+### Intensity Tiers
+
+Roles at the same tier should have matched visual weight even when they
+differ in size, color, or weight. Like `color.error` and `color.info` at
+the same saturation — different hues, same intensity.
+
+| Tier | Roles | Characteristic |
+|------|-------|----------------|
+| Hero | `display-brand`, `metric-hero` | Largest, highest emphasis |
+| Primary | `heading-page`, `quiz-prompt`, `quiz-feedback` | Screen-level focal points |
+| Section | `heading-section`, `heading-subsection`, `metric-primary` | Organizes content |
+| Content | `body`, `body-secondary`, `label`, `quiz-instruction`, `metric-info`, `status` | Same visual weight, differentiated by weight/color |
+| Tertiary | `supporting`, `label-tag` | Smallest, lowest emphasis |
+
+When adding or adjusting a role, check that it sits at the right tier.
+Roles in the same tier should feel equally prominent when placed side by
+side — if one jumps out, its recipe is at the wrong tier.
+
+### Layer 3: Component Mapping
+
+Bespoke classes reference `--type-*` role properties for typography and add
+their own layout. **No typography overrides** — every bespoke class uses its
+role's recipe exactly.
+
+### Structural Components
+
+#### ActionButton
+
+```tsx
+<ActionButton variant='primary' onClick={start}>Practice</ActionButton>
+<ActionButton variant='secondary' onClick={stop}>Stop</ActionButton>
+```
+
+`.page-action-btn` with variant class. For flow-initiating/stopping buttons.
+
+#### Text
+
+```tsx
+<Text role='heading-page' as='h1'>Guitar Fretboard</Text>
+<Text role='heading-subsection' as='div'>Speed check</Text>
+<Text role='label'>Response time</Text>
+<Text role='metric-primary'>{value}</Text>
+<Text role='supporting'>Explanation text</Text>
+<Text role='quiz-prompt'>C#</Text>
+```
+
+Maps content role to typography recipe. For all non-interactive content text.
 
 ---
 
@@ -260,61 +410,114 @@ woff2. No external font requests — fully offline-compatible.
 
 ---
 
-## Component Patterns
+## Elevation (Shadows)
 
-### Primary Button (Practice)
+4 elevation tokens for box-shadow. Use for physical-feeling depth, not for
+outlines or glows (those stay literal).
 
-Brand sage background, white text, subtle shadow, hover darkens. Uses
-`.start-btn` class applied via `modeScreen()` scaffold.
+| Token            | Value                              | Usage                          |
+| ---------------- | ---------------------------------- | ------------------------------ |
+| `--shadow-sm`    | `0 1px 4px rgba(0,0,0,0.1)`       | Pressed/active state           |
+| `--shadow-md`    | `0 2px 8px rgba(0,0,0,0.12)`      | Default elevation (CTA, cards) |
+| `--shadow-lg`    | `0 4px 12px rgba(0,0,0,0.12)`     | Popover, skip menu             |
+| `--shadow-hover` | `0 3px 12px rgba(0,0,0,0.18)`     | Hover lift                     |
 
-```css
-background: var(--color-brand);
-color: white;
-border: 2px solid var(--color-brand);
-border-radius: var(--radius-md);
-font-weight: 600;
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+---
+
+## Transitions
+
+Duration tokens for transition timing. Easing functions (`ease`, `linear`) stay
+literal because CSS `transition` shorthand doesn't support variable substitution
+for the timing function alone.
+
+| Token               | Value  | Usage                                 |
+| ------------------- | ------ | ------------------------------------- |
+| `--duration-fast`   | 0.1s   | Transform scale, quick micro-feedback |
+| `--duration-base`   | 0.15s  | Color/background/border changes       |
+| `--duration-slow`   | 0.3s   | Progress bar width                    |
+| `--duration-linear` | 0.2s   | Countdown bar (linear easing)         |
+
+---
+
+## Opacity States
+
+Semantic opacity tokens for interactive states. `opacity: 1` resets and hover
+micro-interactions stay literal.
+
+| Token                | Value | Usage                                |
+| -------------------- | ----- | ------------------------------------ |
+| `--opacity-disabled` | 0.5   | Disabled buttons (note, answer)      |
+| `--opacity-dimmed`   | 0.4   | Skipped toggles, dimmed split-notes  |
+| `--opacity-pressed`  | 0.8   | Active/pressed state                 |
+| `--opacity-subtle`   | 0.3   | Skipped progress bars, hidden accidentals |
+
+---
+
+## Z-Index Scale
+
+| Token          | Value | Usage                       |
+| -------------- | ----- | --------------------------- |
+| `--z-raised`   | 1     | Stacking above siblings     |
+| `--z-popover`  | 100   | Skip menu, floating panels  |
+
+---
+
+## Touch Target
+
+| Token                | Value | Usage                                      |
+| -------------------- | ----- | ------------------------------------------ |
+| `--size-touch-target` | 44px  | WCAG AA minimum for close/nav buttons      |
+
+---
+
+## Button Variant Taxonomy
+
+Every interactive element falls into one of these categories. Each has a
+distinct visual treatment — don't reuse styles across roles. See
+[layout-and-ia.md](layout-and-ia.md#one-interaction-grammar) (principle #14).
+
+| Variant | Role | Visual treatment | Class / component |
+|---------|------|-----------------|-------------------|
+| **Primary action** | Initiate flow (Practice, Keep Going, Start, Done) | Filled brand green, white text, `--font-semibold` | `<ActionButton variant='primary'>` |
+| **Secondary action** | Cancel / alternative (Stop) | Outlined, `--color-border`, muted text, `--font-normal` | `<ActionButton variant='secondary'>` |
+| **Small action** | Tertiary / utility (Redo speed check, Accept suggestion) | Outlined, smaller font, lighter border — visually quieter than secondary | `.baseline-rerun-btn`, `.suggestion-card-accept` |
+| **Answer** | Quiz response | White bg, 2px `--color-text-muted` border, equal visual weight across all options | `.answer-btn`, `.note-btn` |
+| **Toggle** | Multi-select filter (strings, groups, notes) | `--color-surface` inactive → `--color-toggle-active` active, 36px min size | `.string-toggle`, `.distance-toggle` |
+| **Tab** | View switching | Underline active, `--color-brand` indicator, no fill | `.mode-tab`, `.home-tab` |
+| **Text link** | Tertiary navigation | Muted text, underline on hover, no background | `.text-link` |
+| **Close** | Dismiss / navigate back | × icon, `--color-text-light`, `--size-touch-target` min size | `.mode-close-btn`, `.quiz-header-close` |
+
+**When to use ActionButton vs raw button:** Use `<ActionButton>` for
+primary/secondary flow actions (start, stop, continue, done). Use raw `<button>`
+with a specific class for everything else — answer buttons have feedback
+semantics, toggles have pressed state, tabs have ARIA roles, and small actions
+have intentionally quieter styling.
+
+---
+
+## Info Hierarchy Pattern
+
+When displaying a metric with context, use the **label: value / explanation**
+pattern. The value is visually dominant; the label is quieter; the explanation
+is smallest.
+
+```
+{label}         {value}         ← Text role: label + metric
+{explanation}                   ← Text role: caption
+[action]                        ← Small action button (optional)
 ```
 
-### Secondary Buttons (Stop, Redo)
+This pattern appears in:
+- **BaselineInfo** — "Response time: 0.5s / Timing thresholds are based on..."
+- **Round complete stats** — "This round: 8/10 correct"
+- **Practice status** — "Status: Building..."
 
-Outlined, not filled. `.stop-btn` has normal border; `.baseline-rerun-btn` has
-lighter border and muted text.
+Use `<Text role='label'>`, `<Text role='metric'>`, and `<Text role='caption'>`
+to encode the hierarchy structurally.
 
-### Answer / Note Buttons
+---
 
-White background, 2px muted border, hover/active/focus states. Accidental
-buttons use `--color-surface-accent` background.
-
-### Toggle Buttons (String, Distance)
-
-`--color-surface` inactive, `--color-toggle-active` active. 36px minimum size
-for touch targets. Transition and hover states.
-
-### Baseline Info (Speed Check)
-
-Appears at the bottom of the progress tab. Uses a "label: value / explanation"
-hierarchy pattern where the measured value is visually prominent.
-
-```
-Speed check                    (section header — sm, semibold, muted)
-Response time    0.5s          (label: sm muted, value: md semibold)
-                 (default)     (tag — italic, light, when uncalibrated)
-Timing thresholds are based    (explanation — xs, light)
-on this measurement.
-[Redo speed check]             (secondary button — outlined, xs)
-```
-
-The section header uses `--text-sm` semibold with `--color-text-muted` — a
-quieter version of `.practice-section-header` appropriate for this subordinate
-section at the bottom of the progress tab. The value
-(`--text-md`, semibold, `--color-text`) is the dominant element; the label
-(`--text-sm`, `--color-text-muted`) reads as a quiet annotation.
-
-**Info hierarchy pattern:** When displaying a metric with context, use
-"label: value / explanation" — value is visually dominant (larger, bolder),
-label is quieter, explanation is smallest. This pattern applies wherever a
-single number needs context (e.g., baseline, round stats).
+## Screen Patterns
 
 ### Home Screen
 
@@ -473,7 +676,7 @@ columns or answer-area widths.
 Darken background slightly. No layout shift.
 
 ```css
-transition: background 0.15s ease, border-color 0.15s ease;
+transition: background var(--duration-base) ease, border-color var(--duration-base) ease;
 ```
 
 ### Active / Pressed
@@ -493,10 +696,10 @@ Mouse/touch users see no outline (`:focus:not(:focus-visible)` removes it).
 
 ### Transitions
 
-- Color changes: `0.15s ease`
-- Layout/size: `0.1s ease` (transform scale)
-- Progress bar: `0.3s ease` (width)
-- Countdown bar: `0.2s linear`
+- Color changes: `var(--duration-base)` ease
+- Layout/size: `var(--duration-fast)` ease (transform scale)
+- Progress bar: `var(--duration-slow)` ease (width)
+- Countdown bar: `var(--duration-linear)` linear
 
 ---
 

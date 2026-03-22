@@ -7,6 +7,159 @@ import { useMemo } from 'preact/hooks';
 import type { PracticeSummaryState } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
 import { BaselineInfo } from './speed-check.tsx';
+import { ActionButton } from './action-button.tsx';
+import { Text } from './text.tsx';
+import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
+
+// ---------------------------------------------------------------------------
+// CloseButton — × dismiss button used in top bars and overlays
+// ---------------------------------------------------------------------------
+
+export function CloseButton(
+  { onClick, ariaLabel }: {
+    onClick?: () => void;
+    ariaLabel: string;
+  },
+) {
+  return (
+    <button
+      type='button'
+      class='close-btn'
+      aria-label={ariaLabel}
+      onClick={onClick}
+    >
+      {'\u00D7'}
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tabs — accessible tablist + panels (WAI-ARIA Tabs pattern)
+// ---------------------------------------------------------------------------
+
+export type TabDef<T extends string = string> = {
+  id: T;
+  label: ComponentChildren;
+  content: ComponentChildren;
+};
+
+// ---------------------------------------------------------------------------
+// TabBar + TabPanels — split rendering for layout flexibility.
+// TabBar goes in footer (mobile) or header (desktop); panels go in main.
+// ---------------------------------------------------------------------------
+
+export type TabsPrefix = string;
+
+let tabsPrefixCounter = 0;
+
+/** Generate a stable prefix for tab ARIA IDs. Call once per component. */
+export function useTabsPrefix(): TabsPrefix {
+  return useMemo(() => 'tabs-' + tabsPrefixCounter++, []);
+}
+
+/** Tab bar (the row of tab buttons). Place in footer or header. */
+export function TabBar<T extends string>(
+  { tabs, activeTab, onTabSwitch, prefix, class: className = 'tabs' }: {
+    tabs: TabDef<T>[];
+    activeTab: T;
+    onTabSwitch: (tab: T) => void;
+    prefix: TabsPrefix;
+    class?: string;
+  },
+) {
+  function handleKeyDown(e: KeyboardEvent, current: T) {
+    const ids = tabs.map((t) => t.id);
+    const idx = ids.indexOf(current);
+    let nextIdx = idx;
+    if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + ids.length) % ids.length;
+    else if (e.key === 'ArrowRight') nextIdx = (idx + 1) % ids.length;
+    else if (e.key === 'Home') nextIdx = 0;
+    else if (e.key === 'End') nextIdx = ids.length - 1;
+    else return;
+    e.preventDefault();
+    const nextId = ids[nextIdx];
+    onTabSwitch(nextId);
+    requestAnimationFrame(() => {
+      (document.getElementById(
+        prefix + '-tab-' + nextId,
+      ) as HTMLElement | null)?.focus();
+    });
+  }
+
+  return (
+    <div class={className} role='tablist'>
+      {tabs.map((tab) => (
+        <button
+          type='button'
+          key={tab.id}
+          id={prefix + '-tab-' + tab.id}
+          role='tab'
+          aria-selected={activeTab === tab.id}
+          aria-controls={prefix + '-panel-' + tab.id}
+          tabIndex={activeTab === tab.id ? 0 : -1}
+          class={'tab-btn' + (activeTab === tab.id ? ' active' : '')}
+          data-tab={tab.id}
+          onClick={() => onTabSwitch(tab.id)}
+          onKeyDown={(e) => handleKeyDown(e, tab.id)}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Tab panels (the content areas). Place in main content zone. */
+export function TabPanels<T extends string>(
+  { tabs, activeTab, prefix }: {
+    tabs: TabDef<T>[];
+    activeTab: T;
+    prefix: TabsPrefix;
+  },
+) {
+  return (
+    <>
+      {tabs.map((tab) => (
+        <div
+          key={tab.id}
+          id={prefix + '-panel-' + tab.id}
+          role='tabpanel'
+          aria-labelledby={prefix + '-tab-' + tab.id}
+          class={'tab-panel' + (activeTab === tab.id ? ' active' : '')}
+        >
+          {tab.content}
+        </div>
+      ))}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tabs — composed TabBar + TabPanels (backward-compatible, renders together)
+// ---------------------------------------------------------------------------
+
+export function Tabs<T extends string>(
+  { tabs, activeTab, onTabSwitch, class: className = 'tabs' }: {
+    tabs: TabDef<T>[];
+    activeTab: T;
+    onTabSwitch: (tab: T) => void;
+    class?: string;
+  },
+) {
+  const prefix = useTabsPrefix();
+  return (
+    <>
+      <TabBar
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabSwitch={onTabSwitch}
+        prefix={prefix}
+        class={className}
+      />
+      <TabPanels tabs={tabs} activeTab={activeTab} prefix={prefix} />
+    </>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Phase type
@@ -33,15 +186,14 @@ export function ModeScreen(
 }
 
 // ---------------------------------------------------------------------------
-// ModeTopBar — close button + mode title + description + before/after
+// ModeTopBar — close button + mode title + description
 // ---------------------------------------------------------------------------
 
 export function ModeTopBar(
-  { modeId, title, description, beforeAfter, onBack, showBack = true }: {
+  { modeId, title, description, onBack, showBack = true }: {
     modeId?: string;
     title: string;
     description?: string;
-    beforeAfter?: { before: string; after: string };
     onBack?: () => void;
     showBack?: boolean;
   },
@@ -55,110 +207,21 @@ export function ModeTopBar(
           {description && <p class='mode-description'>{description}</p>}
         </div>
         {showBack && (
-          <button
-            type='button'
-            tabIndex={0}
-            class='mode-close-btn'
-            aria-label='Back to home'
+          <CloseButton
+            ariaLabel='Back to home'
             onClick={onBack}
-          >
-            {'\u00D7' /* × close */}
-          </button>
+          />
         )}
       </div>
-      {beforeAfter && (
-        <div class='mode-before-after'>
-          <span class='mode-ba-before'>{beforeAfter.before}</span>
-          <span class='mode-ba-arrow'>&rarr;</span>
-          <span class='mode-ba-after'>{beforeAfter.after}</span>
-        </div>
-      )}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// TabbedIdle — practice/progress tab switching (WAI-ARIA Tabs pattern)
+// ModeTab — tab IDs for mode screens
 // ---------------------------------------------------------------------------
 
-let tabbedIdCounter = 0;
-
-const TABS = ['practice', 'progress'] as const;
-const TAB_LABELS: Record<string, string> = {
-  practice: 'Practice',
-  progress: 'Progress',
-};
-
-export function TabbedIdle(
-  { activeTab, onTabSwitch, practiceContent, progressContent }: {
-    activeTab: 'practice' | 'progress';
-    onTabSwitch: (tab: 'practice' | 'progress') => void;
-    practiceContent: ComponentChildren;
-    progressContent: ComponentChildren;
-  },
-) {
-  const prefix = useMemo(() => 'tabs-' + tabbedIdCounter++, []);
-
-  function handleTabKeyDown(
-    e: KeyboardEvent,
-    current: 'practice' | 'progress',
-  ) {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      const next = current === 'practice' ? 'progress' : 'practice';
-      onTabSwitch(next);
-      requestAnimationFrame(() => {
-        const container = (e.currentTarget as HTMLElement).parentElement;
-        const nextBtn = container?.querySelector(
-          '[data-tab="' + next + '"]',
-        ) as HTMLElement | null;
-        nextBtn?.focus();
-      });
-    }
-  }
-
-  return (
-    <>
-      <div class='mode-tabs' role='tablist'>
-        {TABS.map((tab) => (
-          <button
-            type='button'
-            key={tab}
-            id={prefix + '-tab-' + tab}
-            role='tab'
-            aria-selected={activeTab === tab}
-            aria-controls={prefix + '-panel-' + tab}
-            tabIndex={activeTab === tab ? 0 : -1}
-            class={'mode-tab' + (activeTab === tab ? ' active' : '')}
-            data-tab={tab}
-            onClick={() => onTabSwitch(tab)}
-            onKeyDown={(e) => handleTabKeyDown(e, tab)}
-          >
-            {TAB_LABELS[tab]}
-          </button>
-        ))}
-      </div>
-      <div
-        id={prefix + '-panel-practice'}
-        role='tabpanel'
-        aria-labelledby={prefix + '-tab-practice'}
-        class={'tab-content tab-practice' +
-          (activeTab === 'practice' ? ' active' : '')}
-      >
-        {practiceContent}
-      </div>
-      <div
-        id={prefix + '-panel-progress'}
-        role='tabpanel'
-        aria-labelledby={prefix + '-tab-progress'}
-        class={'tab-content tab-progress' +
-          (activeTab === 'progress' ? ' active' : '')}
-      >
-        {progressContent}
-      </div>
-    </>
-  );
-}
+export type ModeTab = 'practice' | 'progress' | 'about';
 
 // ---------------------------------------------------------------------------
 // PracticeCard — wraps practice zones (status, scope, action)
@@ -171,10 +234,7 @@ export function PracticeCard(
     statusDetail?: string;
     recommendation?: string;
     scope?: ComponentChildren;
-    onStart?: () => void;
     onApplyRecommendation?: () => void;
-    scopeValid?: boolean;
-    validationMessage?: string;
   },
 ) {
   // When summary is provided, map its fields; individual props override.
@@ -187,51 +247,25 @@ export function PracticeCard(
       ? props.summary.recommendationText
       : undefined);
   const onApplyRecommendation = props.onApplyRecommendation;
-  const { scope, onStart } = props;
-  const scopeDisabled = props.scopeValid === false;
-  const validationMessage = scopeDisabled ? props.validationMessage : undefined;
-
-  const recBlock = recommendation
-    ? (
-      <div class='suggestion-card'>
-        <div class='suggestion-card-header'>Suggestion</div>
-        <div class='suggestion-card-body'>
-          <span class='suggestion-card-text'>{recommendation}</span>
-          {onApplyRecommendation
-            ? (
-              <button
-                type='button'
-                tabIndex={0}
-                class='suggestion-card-accept'
-                onClick={onApplyRecommendation}
-              >
-                Accept
-              </button>
-            )
-            : null}
-        </div>
-      </div>
-    )
-    : null;
+  const { scope } = props;
 
   return (
     <div class='practice-card'>
       {statusLabel && (
         <div class='practice-status'>
-          <span class='practice-status-prefix'>Status</span>
-          <span class='practice-status-label'>{statusLabel}</span>
-          <span class='practice-status-detail'>{statusDetail || ''}</span>
+          <div class='practice-status-row'>
+            <Text role='label'>Status</Text>
+            <span class='practice-status-label'>{statusLabel}</span>
+          </div>
+          {statusDetail && (
+            <span class='practice-status-detail'>{statusDetail}</span>
+          )}
         </div>
       )}
-      {recBlock}
+      {recommendation && (
+        <Recommendation text={recommendation} onApply={onApplyRecommendation} />
+      )}
       {scope && <div class='practice-scope'>{scope}</div>}
-      <div class='practice-zone-action'>
-        <StartButton
-          onStart={onStart}
-          disabled={scopeDisabled}
-          validationMessage={validationMessage}
-        />
-      </div>
     </div>
   );
 }
@@ -247,7 +281,7 @@ export function Recommendation(
     <div class='suggestion-card'>
       <div class='suggestion-card-header'>Suggestion</div>
       <div class='suggestion-card-body'>
-        <span class='suggestion-card-text'>{text}</span>
+        <Text role='body-secondary' class='suggestion-card-text'>{text}</Text>
         {onApply
           ? (
             <button
@@ -279,16 +313,15 @@ export function StartButton(
   const msgId = validationMessage ? 'start-validation-msg' : undefined;
   return (
     <>
-      <button
-        type='button'
-        tabIndex={0}
+      <ActionButton
+        variant='primary'
         class='start-btn'
-        onClick={onStart}
+        onClick={onStart ?? noop}
         disabled={disabled}
         aria-describedby={msgId}
       >
         Practice
-      </button>
+      </ActionButton>
       {validationMessage
         ? (
           <div id={msgId} class='start-validation-message'>
@@ -348,15 +381,10 @@ export function QuizSession(
             lastQuestion={lastQuestion}
           />
         </div>
-        <button
-          type='button'
-          tabIndex={0}
-          class='quiz-header-close'
-          aria-label='Stop quiz'
+        <CloseButton
+          ariaLabel='Stop quiz'
           onClick={onClose}
-        >
-          {'\u00D7' /* × close button */}
-        </button>
+        />
       </div>
     </div>
   );
@@ -445,7 +473,13 @@ export function RoundCompleteInfo(
       {context
         ? (
           <div class='round-complete-overall'>
-            <div class='round-complete-overall-label'>Overall</div>
+            <Text
+              role='heading-subsection'
+              as='div'
+              class='round-complete-overall-label'
+            >
+              Overall
+            </Text>
             <div class='round-complete-context'>{context}</div>
           </div>
         )
@@ -459,6 +493,8 @@ export function RoundCompleteInfo(
 // Rendered in .quiz-controls zone.
 // ---------------------------------------------------------------------------
 
+const noop = () => {};
+
 export function RoundCompleteActions(
   { onContinue, onStop }: {
     onContinue?: () => void;
@@ -468,22 +504,12 @@ export function RoundCompleteActions(
   return (
     <>
       <div class='page-action-row'>
-        <button
-          type='button'
-          tabIndex={0}
-          class='page-action-btn page-action-primary'
-          onClick={onContinue}
-        >
+        <ActionButton variant='primary' onClick={onContinue ?? noop}>
           Keep Going
-        </button>
-        <button
-          type='button'
-          tabIndex={0}
-          class='page-action-btn page-action-secondary'
-          onClick={onStop}
-        >
+        </ActionButton>
+        <ActionButton variant='secondary' onClick={onStop ?? noop}>
           Stop
-        </button>
+        </ActionButton>
       </div>
       <div class='hint hint-spacer'>&nbsp;</div>
     </>
@@ -491,7 +517,58 @@ export function RoundCompleteActions(
 }
 
 // ---------------------------------------------------------------------------
-// PracticeTab — composes TabbedIdle + PracticeCard + progress wrapper
+// TabIcon — icon + label for mode navigation tabs
+// ---------------------------------------------------------------------------
+
+const TAB_ICONS: Record<string, string> = {
+  // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
+  practice: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>' +
+    '<path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+  // Bar chart
+  progress: '<line x1="18" x2="18" y1="20" y2="10"/>' +
+    '<line x1="12" x2="12" y1="20" y2="4"/>' +
+    '<line x1="6" x2="6" y1="20" y2="14"/>',
+  // Info circle
+  about: '<circle cx="12" cy="12" r="10"/>' +
+    '<path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  // Star — filled star for Active skills tab
+  'active-skills':
+    '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  // Grid/list — four squares for All Skills tab
+  'all-skills': '<rect x="3" y="3" width="7" height="7"/>' +
+    '<rect x="14" y="3" width="7" height="7"/>' +
+    '<rect x="3" y="14" width="7" height="7"/>' +
+    '<rect x="14" y="14" width="7" height="7"/>',
+  // Gear — settings cog
+  settings: '<circle cx="12" cy="12" r="3"/>' +
+    '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+};
+
+export function TabIcon({ icon, text }: { icon: string; text: string }) {
+  const paths = TAB_ICONS[icon] ?? '';
+  return (
+    <span class='tab-icon-label'>
+      <svg
+        xmlns='http://www.w3.org/2000/svg'
+        width='18'
+        height='18'
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        stroke-width='2'
+        stroke-linecap='round'
+        stroke-linejoin='round'
+        aria-hidden='true'
+        // deno-lint-ignore react-no-danger
+        dangerouslySetInnerHTML={{ __html: paths }}
+      />
+      <span>{text}</span>
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// PracticeTab — composes Tabs + PracticeCard
 // ---------------------------------------------------------------------------
 
 export function PracticeTab(
@@ -507,45 +584,88 @@ export function PracticeTab(
     onTabSwitch,
     scopeValid,
     validationMessage,
+    aboutContent,
+    practiceContent,
+    progressExtra,
   }: {
     summary: PracticeSummaryState;
     onStart: () => void;
     onApplyRecommendation?: () => void;
     scope?: ComponentChildren;
     statsContent: ComponentChildren;
-    onCalibrate: () => void;
-    baseline: number | null;
-    activeTab: 'practice' | 'progress';
-    onTabSwitch: (tab: 'practice' | 'progress') => void;
+    onCalibrate?: () => void;
+    baseline?: number | null;
+    activeTab: ModeTab;
+    onTabSwitch: (tab: ModeTab) => void;
     scopeValid?: boolean;
     validationMessage?: string;
+    aboutContent?: ComponentChildren;
+    /** If provided, replaces the default PracticeCard in the practice tab. */
+    practiceContent?: ComponentChildren;
+    /** Extra content inserted above baseline in the progress tab. */
+    progressExtra?: ComponentChildren;
   },
 ) {
-  return (
-    <TabbedIdle
-      activeTab={activeTab}
-      onTabSwitch={onTabSwitch}
-      practiceContent={
+  const prefix = useTabsPrefix();
+  const tabs: TabDef<ModeTab>[] = [
+    {
+      id: 'practice',
+      label: <TabIcon icon='practice' text='Practice' />,
+      content: practiceContent ?? (
         <PracticeCard
           summary={summary}
-          onStart={onStart}
           onApplyRecommendation={onApplyRecommendation}
           scope={scope}
-          scopeValid={scopeValid}
-          validationMessage={validationMessage}
         />
-      }
-      progressContent={
+      ),
+    },
+    {
+      id: 'progress',
+      label: <TabIcon icon='progress' text='Progress' />,
+      content: (
         <div>
-          <div class='stats-container'>
-            {statsContent}
-          </div>
-          <BaselineInfo
-            baseline={baseline}
-            onRun={onCalibrate}
-          />
+          <div class='stats-container'>{statsContent}</div>
+          {progressExtra}
+          {onCalibrate && (
+            <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
+          )}
         </div>
-      }
-    />
+      ),
+    },
+  ];
+  if (aboutContent) {
+    tabs.push({
+      id: 'about',
+      label: <TabIcon icon='about' text='About' />,
+      content: aboutContent,
+    });
+  }
+
+  return (
+    <>
+      <LayoutMain>
+        <TabPanels tabs={tabs} activeTab={activeTab} prefix={prefix} />
+      </LayoutMain>
+      <LayoutFooter>
+        {activeTab === 'practice' && (
+          <div class='practice-zone-action'>
+            <StartButton
+              onStart={onStart}
+              disabled={scopeValid === false}
+              validationMessage={scopeValid === false
+                ? validationMessage
+                : undefined}
+            />
+          </div>
+        )}
+        <TabBar
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabSwitch={onTabSwitch}
+          prefix={prefix}
+          class='mode-nav'
+        />
+      </LayoutFooter>
+    </>
   );
 }

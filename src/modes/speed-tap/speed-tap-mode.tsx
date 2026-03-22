@@ -10,13 +10,8 @@ import {
   useState,
 } from 'preact/hooks';
 import type { ModeHandle, NoteFilter as NoteFilterType } from '../../types.ts';
-import {
-  displayNote,
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
-  NOTES,
-  pickRandomAccidental,
-} from '../../music-data.ts';
+import { displayNote, NOTES, pickRandomAccidental } from '../../music-data.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import { buildStatsLegend, getStatsCellColor } from '../../stats-display.ts';
 import { fretboardSVG } from '../../html-helpers.ts';
 
@@ -34,6 +29,7 @@ import { usePracticeSummary } from '../../hooks/use-practice-summary.ts';
 
 import { NoteButtons } from '../../ui/buttons.tsx';
 import { NoteFilter } from '../../ui/scope.tsx';
+import { Text } from '../../ui/text.tsx';
 import {
   ModeTopBar,
   PracticeTab,
@@ -43,7 +39,13 @@ import {
   RoundCompleteInfo,
 } from '../../ui/mode-screen.tsx';
 import { FeedbackDisplay } from '../../ui/quiz-ui.tsx';
-import { BUTTON_PROVIDER, SpeedCheck } from '../../ui/speed-check.tsx';
+import {
+  CenteredContent,
+  LayoutFooter,
+  LayoutHeader,
+  LayoutMain,
+  ScreenLayout,
+} from '../../ui/screen-layout.tsx';
 
 import {
   ALL_ITEMS,
@@ -56,7 +58,7 @@ import {
 // UI constants and DOM helpers (not pure logic — kept in mode file)
 // ---------------------------------------------------------------------------
 
-const FB_TAP_CORRECT = 'hsl(122, 46%, 33%)';
+const FB_TAP_CORRECT = 'hsl(125, 48%, 33%)';
 
 function setCircleFill(
   root: HTMLElement,
@@ -190,7 +192,6 @@ type SpeedTapActiveProps = {
   engine: ReturnType<typeof useQuizEngine>;
   round: ReturnType<typeof useRoundSummary>;
   practicingLabel: string;
-  learner: ReturnType<typeof useLearnerModel>;
   progressText: string;
   promptText: string;
   svgHTML: string;
@@ -203,7 +204,6 @@ function SpeedTapActiveView(
     engine,
     round,
     practicingLabel,
-    learner,
     progressText,
     promptText,
     svgHTML,
@@ -212,9 +212,36 @@ function SpeedTapActiveView(
   }: SpeedTapActiveProps,
 ) {
   const phase = engine.state.phase;
+
+  if (phase === 'round-complete') {
+    return (
+      <ScreenLayout>
+        <LayoutHeader>
+          <div />
+        </LayoutHeader>
+        <LayoutMain scrollable={false}>
+          <CenteredContent>
+            <RoundCompleteInfo
+              context={round.roundContext}
+              heading='Round complete'
+              count={engine.state.roundAnswered}
+              correct={round.roundCorrect}
+            />
+          </CenteredContent>
+        </LayoutMain>
+        <LayoutFooter>
+          <RoundCompleteActions
+            onContinue={engine.continueQuiz}
+            onStop={engine.stop}
+          />
+        </LayoutFooter>
+      </ScreenLayout>
+    );
+  }
+
   return (
-    <>
-      {phase !== 'round-complete' && (
+    <ScreenLayout>
+      <LayoutHeader>
         <QuizSession
           timeLeft={engine.timerText}
           timerPct={engine.timerPct}
@@ -227,70 +254,34 @@ function SpeedTapActiveView(
             : ''}
           onClose={engine.stop}
         />
-      )}
-      {engine.calibrating
-        ? (
-          <QuizArea>
-            <SpeedCheck
-              provider={BUTTON_PROVIDER}
-              fixture={engine.calibrationFixture}
-              onComplete={(baseline) => {
-                learner.applyBaseline(baseline);
-                engine.endCalibration();
-              }}
-              onCancel={engine.endCalibration}
-            />
-          </QuizArea>
-        )
-        : phase === 'round-complete'
-        ? (
-          <QuizArea
-            controls={
-              <RoundCompleteActions
-                onContinue={engine.continueQuiz}
-                onStop={engine.stop}
-              />
-            }
-          >
-            <RoundCompleteInfo
-              context={round.roundContext}
-              heading='Round complete'
-              count={engine.state.roundAnswered}
-              correct={round.roundCorrect}
-            />
-          </QuizArea>
-        )
-        : (
-          <QuizArea
-            prompt={promptText}
-            controls={
-              <>
-                <NoteButtons hidden onAnswer={() => {}} />
-                <FeedbackDisplay
-                  text={engine.state.feedbackText}
-                  className={engine.state.feedbackClass}
-                  hint={engine.state.hintText || undefined}
-                  correct={engine.state.feedbackCorrect}
-                  onNext={engine.state.answered
-                    ? engine.nextQuestion
-                    : undefined}
-                  label={engine.state.roundTimerExpired ? 'Continue' : 'Next'}
-                />
-              </>
-            }
-          >
-            <div class='speed-tap-status'>
-              <span class='speed-tap-progress'>{progressText}</span>
-            </div>
-            <div
-              ref={quizFbRef}
-              onClick={handleTap}
-              // deno-lint-ignore react-no-danger
-              dangerouslySetInnerHTML={{ __html: svgHTML }}
-            />
-          </QuizArea>
-        )}
-    </>
+      </LayoutHeader>
+      <LayoutMain scrollable={false}>
+        <QuizArea
+          prompt={promptText}
+          controls={<NoteButtons hidden onAnswer={() => {}} />}
+        >
+          <div class='speed-tap-status'>
+            <span class='speed-tap-progress'>{progressText}</span>
+          </div>
+          <div
+            ref={quizFbRef}
+            onClick={handleTap}
+            // deno-lint-ignore react-no-danger
+            dangerouslySetInnerHTML={{ __html: svgHTML }}
+          />
+        </QuizArea>
+      </LayoutMain>
+      <LayoutFooter>
+        <FeedbackDisplay
+          text={engine.state.feedbackText}
+          className={engine.state.feedbackClass}
+          hint={engine.state.hintText || undefined}
+          correct={engine.state.feedbackCorrect}
+          onNext={engine.state.answered ? engine.nextQuestion : undefined}
+          label={engine.state.roundTimerExpired ? 'Continue' : 'Next'}
+        />
+      </LayoutFooter>
+    </ScreenLayout>
   );
 }
 
@@ -335,10 +326,9 @@ function getPracticingLabel(noteFilter: NoteFilterType): string {
 // ---------------------------------------------------------------------------
 
 function SpeedTapIdleView(
-  { noteFilter, scopeActions, learner, engine, ps, statsHTML }: {
+  { noteFilter, scopeActions, engine, ps, statsHTML }: {
     noteFilter: NoteFilterType;
     scopeActions: ReturnType<typeof useScopeState>[1];
-    learner: ReturnType<typeof useLearnerModel>;
     engine: ReturnType<typeof useQuizEngine>;
     ps: ReturnType<typeof usePracticeSummary>;
     statsHTML: string;
@@ -362,11 +352,29 @@ function SpeedTapIdleView(
           dangerouslySetInnerHTML={{ __html: statsHTML }}
         />
       }
-      baseline={learner.motorBaseline}
-      onCalibrate={engine.startCalibration}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
+      aboutContent={<SpeedTapAboutTab />}
     />
+  );
+}
+
+function SpeedTapAboutTab() {
+  const ba = MODE_BEFORE_AFTER.speedTap;
+  return (
+    <div class='about-tab'>
+      <Text role='heading-subsection' as='div'>What you're training</Text>
+      <div class='about-before-after'>
+        <div class='about-ba-row'>
+          <Text role='label' as='span'>Before</Text>
+          <span class='about-ba-text'>{ba.before()}</span>
+        </div>
+        <div class='about-ba-row'>
+          <Text role='label' as='span'>After</Text>
+          <span class='about-ba-text about-ba-after'>{ba.after()}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -528,7 +536,7 @@ export function SpeedTapMode(
   const noteFilter: NoteFilterType = scope.kind === 'note-filter'
     ? scope.noteFilter
     : 'natural';
-  const learner = useLearnerModel('speedTap', ALL_ITEMS);
+  const learner = useLearnerModel('speedTap', ALL_ITEMS, 'fretboard-tap');
   const sp = useSpeedTapSpatial(scope);
 
   const engine = useQuizEngine(sp.engineConfig, learner.selector, container);
@@ -572,39 +580,38 @@ export function SpeedTapMode(
     : '';
   const isIdle = engine.state.phase === 'idle';
 
-  return (
-    <>
-      <ModeTopBar
-        modeId='speedTap'
-        title='Speed Tap'
-        description={MODE_DESCRIPTIONS.speedTap}
-        beforeAfter={MODE_BEFORE_AFTER.speedTap}
-        onBack={navigateHome}
-        showBack={isIdle}
-      />
-      {isIdle && (
+  if (isIdle) {
+    return (
+      <ScreenLayout>
+        <LayoutHeader>
+          <ModeTopBar
+            modeId='speedTap'
+            title='Speed Tap'
+            description={MODE_DESCRIPTIONS.speedTap}
+            onBack={navigateHome}
+          />
+        </LayoutHeader>
         <SpeedTapIdleView
           noteFilter={noteFilter}
           scopeActions={scopeActions}
-          learner={learner}
           engine={engine}
           ps={ps}
           statsHTML={statsHTML}
         />
-      )}
-      {!isIdle && (
-        <SpeedTapActiveView
-          engine={engine}
-          round={round}
-          practicingLabel={practicingLabel}
-          learner={learner}
-          progressText={sp.progressText}
-          promptText={promptText}
-          svgHTML={sp.svgHTML}
-          quizFbRef={sp.quizFbRef}
-          handleTap={sp.handleTap}
-        />
-      )}
-    </>
+      </ScreenLayout>
+    );
+  }
+
+  return (
+    <SpeedTapActiveView
+      engine={engine}
+      round={round}
+      practicingLabel={practicingLabel}
+      progressText={sp.progressText}
+      promptText={promptText}
+      svgHTML={sp.svgHTML}
+      quizFbRef={sp.quizFbRef}
+      handleTap={sp.handleTap}
+    />
   );
 }

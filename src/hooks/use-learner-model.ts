@@ -2,7 +2,11 @@
 // adapter, and motor baseline. Provides the learner model for quiz modes.
 
 import { useEffect, useMemo, useRef } from 'preact/hooks';
-import type { AdaptiveSelector, StorageAdapter } from '../types.ts';
+import type {
+  AdaptiveSelector,
+  MotorTaskType,
+  StorageAdapter,
+} from '../types.ts';
 import {
   createAdaptiveSelector,
   createLocalStorageAdapter,
@@ -25,19 +29,21 @@ export type LearnerModel = {
  *
  * @param namespace   Storage namespace for per-item stats (e.g., "guitar")
  * @param allItemIds  All possible item IDs — preloaded on mount
- * @param provider    Calibration provider key (e.g., "button"). Defaults to "button".
+ * @param taskType    Motor task type for baseline storage key. Defaults to "note-button".
  * @param responseCountFn  Optional: expected response count per item (for multi-response modes)
  */
 export function useLearnerModel(
   namespace: string,
   allItemIds: string[],
-  provider = 'button',
+  taskType: MotorTaskType = 'note-button',
   responseCountFn?: (itemId: string) => number,
 ): LearnerModel {
   // Stable references — these don't change across renders.
   const storageRef = useRef<StorageAdapter>(null!);
   const selectorRef = useRef<AdaptiveSelector>(null!);
   const baselineRef = useRef<number | null>(null);
+
+  const storageKey = 'motorBaseline_' + taskType;
 
   // Create storage + selector once per namespace.
   const model = useMemo(() => {
@@ -61,21 +67,19 @@ export function useLearnerModel(
 
   // Load motor baseline on mount.
   useEffect(() => {
-    const baselineKey = 'motorBaseline_' + provider;
-    const legacyKey = 'motorBaseline_' + namespace;
-    let stored = localStorage.getItem(baselineKey);
-    if (!stored && legacyKey !== baselineKey) {
-      stored = localStorage.getItem(legacyKey);
-      if (stored) localStorage.setItem(baselineKey, stored); // migrate
-    }
-    if (stored) {
-      const parsed = parseInt(stored, 10);
-      if (parsed > 0) {
-        baselineRef.current = parsed;
-        model.selector.updateConfig(deriveScaledConfig(parsed, DEFAULT_CONFIG));
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        const parsed = parseInt(stored, 10);
+        if (parsed > 0) {
+          baselineRef.current = parsed;
+          model.selector.updateConfig(
+            deriveScaledConfig(parsed, DEFAULT_CONFIG),
+          );
+        }
       }
-    }
-  }, [model.selector, provider, namespace]);
+    } catch (_) { /* localStorage unavailable */ }
+  }, [model.selector, storageKey]);
 
   return {
     selector: model.selector,
@@ -86,23 +90,27 @@ export function useLearnerModel(
 
     applyBaseline(baseline: number) {
       baselineRef.current = baseline;
-      localStorage.setItem('motorBaseline_' + provider, String(baseline));
+      try {
+        localStorage.setItem(storageKey, String(baseline));
+      } catch (_) { /* localStorage unavailable */ }
       model.selector.updateConfig(
         deriveScaledConfig(baseline, DEFAULT_CONFIG),
       );
     },
 
     syncBaseline() {
-      const stored = localStorage.getItem('motorBaseline_' + provider);
-      if (stored) {
-        const parsed = parseInt(stored, 10);
-        if (parsed > 0 && parsed !== baselineRef.current) {
-          baselineRef.current = parsed;
-          model.selector.updateConfig(
-            deriveScaledConfig(parsed, DEFAULT_CONFIG),
-          );
+      try {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          const parsed = parseInt(stored, 10);
+          if (parsed > 0 && parsed !== baselineRef.current) {
+            baselineRef.current = parsed;
+            model.selector.updateConfig(
+              deriveScaledConfig(parsed, DEFAULT_CONFIG),
+            );
+          }
         }
-      }
+      } catch (_) { /* localStorage unavailable */ }
     },
   };
 }

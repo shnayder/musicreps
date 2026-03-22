@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mastery Terminology — Visual Reference</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #f5f5f5; color: #222; line-height: 1.5;
+    padding: 2rem;
+  }
+  h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+  .subtitle { color: #666; margin-bottom: 0.75rem; }
+  h2 {
+    font-size: 1.15rem; color: #444; margin: 2.5rem 0 1rem;
+    border-bottom: 2px solid #ddd; padding-bottom: 0.3rem;
+  }
+  h3 { font-size: 0.95rem; color: #555; margin: 1.2rem 0 0.5rem; }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex; gap: 0.75rem; align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .toolbar button {
+    padding: 0.4rem 1rem; border: 1px solid #ccc; border-radius: 6px;
+    background: #fff; font-size: 0.85rem; cursor: pointer;
+    font-weight: 500;
+  }
+  .toolbar button:hover { background: #f0f0f0; }
+  .toolbar button:active { background: #e0e0e0; }
+  .toolbar .status {
+    font-size: 0.82rem; color: #1a5928; font-weight: 500;
+    transition: opacity 0.3s;
+  }
+
+  /* Two-column layout */
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .example-col {
+    background: #fff; border-radius: 10px; padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .discuss-col {
+    background: #fffbe6; border-radius: 10px; padding: 1.25rem;
+    border: 1px dashed #d4c87a;
+  }
+  .discuss-col h3 { color: #8a7a2a; }
+  textarea.comment-box {
+    display: block; width: 100%; min-height: 3.5rem; resize: vertical;
+    font-family: system-ui, sans-serif; font-size: 0.85rem;
+    border: 1px solid #e0d68a; border-radius: 6px;
+    padding: 0.5rem 0.7rem; margin-top: 0.5rem;
+    background: #fff8dc; color: #333;
+    field-sizing: content;
+  }
+  textarea.comment-box:focus {
+    outline: 2px solid #b8a840; border-color: transparent;
+  }
+  textarea.comment-box::placeholder { color: #bba; font-style: italic; }
+
+  /* Item examples */
+  .item-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.6rem;
+    font-size: 0.9rem;
+  }
+  .item-label { font-weight: 600; font-size: 0.85rem; }
+  .item-metrics {
+    display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+  }
+  .metric {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.78rem; color: #555;
+  }
+  .metric-label { color: #888; }
+  .swatch {
+    display: inline-block; width: 22px; height: 22px;
+    border-radius: 4px; border: 1px solid rgba(0,0,0,0.1);
+    vertical-align: middle;
+  }
+  .auto-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 600;
+    padding: 1px 6px; border-radius: 999px;
+  }
+  .badge-automatic { background: #d4edda; color: #1a5928; }
+  .badge-working { background: #fff3cd; color: #856404; }
+  .badge-unseen { background: #e9ecef; color: #6c757d; }
+  .badge-stale { background: #f0d0d0; color: #8b3a3a; }
+
+  /* Group rollup */
+  .group-box {
+    background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px;
+    padding: 0.8rem 1rem; margin-bottom: 0.75rem;
+  }
+  .group-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.4rem;
+  }
+  .group-name { font-weight: 600; font-size: 0.9rem; }
+  .group-status {
+    font-size: 0.78rem; font-weight: 600; padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .status-automatic { background: #d4edda; color: #1a5928; }
+  .status-learned { background: #b8e6c8; color: #1a5928; }
+  .status-learning { background: #cce5ff; color: #004085; }
+  .status-hesitant { background: #fff3cd; color: #856404; }
+  .status-starting { background: #ffe8cc; color: #7a4a00; }
+  .status-not-started { background: #e9ecef; color: #6c757d; }
+  .group-items {
+    display: flex; gap: 3px; margin-top: 0.4rem;
+  }
+  .mini-swatch {
+    width: 14px; height: 14px; border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .group-metrics {
+    font-size: 0.78rem; color: #777; margin-top: 0.3rem;
+  }
+
+  /* Progress bar (home screen style) */
+  .progress-bar {
+    display: flex; height: 8px; border-radius: 4px; overflow: hidden;
+    margin-top: 0.3rem;
+  }
+  .progress-bar > div { flex: 1; }
+
+  /* Skill card mock */
+  .skill-card-mock {
+    background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+    padding: 0.8rem 1rem; margin-bottom: 0.6rem;
+    display: flex; flex-direction: column; gap: 0.3rem;
+  }
+  .skill-card-top {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .skill-name { font-weight: 600; font-size: 0.95rem; }
+  .cue-pill {
+    font-size: 0.72rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .cue-review { background: #fff0e0; color: #b35900; }
+  .cue-get-faster { background: #fff3cd; color: #856404; }
+  .cue-learn-next { background: #d4edda; color: #1a5928; }
+  .cue-none { display: none; }
+
+  .all-done-msg {
+    background: #d4edda; color: #1a5928; border-radius: 8px;
+    padding: 0.6rem 1rem; font-size: 0.88rem; font-weight: 500;
+    margin-bottom: 0.6rem;
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: #999; margin-bottom: 0.75rem;
+  }
+  .vs-label {
+    font-size: 0.8rem; font-weight: 600; color: #b35900;
+    margin: 0.75rem 0 0.5rem; text-align: center;
+  }
+  .arrow-down {
+    text-align: center; color: #aaa; font-size: 1.2rem; margin: 0.5rem 0;
+  }
+
+  p { font-size: 0.88rem; margin-bottom: 0.5rem; }
+  .note { font-size: 0.82rem; color: #666; }
+  .problem { color: #b35900; font-weight: 500; }
+  .fix { color: #1a5928; font-weight: 500; }
+  ul, ol { font-size: 0.88rem; margin-left: 1.2rem; margin-bottom: 0.5rem; }
+  li { margin-bottom: 0.25rem; }
+  code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<h1>Mastery Terminology — Proposed System</h1>
+<p class="subtitle">Visual walkthrough: items &rarr; groups &rarr; skills. Left: examples with real colors. Right: discussion.</p>
+
+<div class="toolbar">
+  <button id="btn-copy" title="Copy all feedback to clipboard">Copy all feedback</button>
+  <button id="btn-save" title="Download feedback as .md file">Save .md</button>
+  <span class="status" id="status"></span>
+</div>
+
+<!-- ================================================================== -->
+<h2>1. Per-item: Three Metrics</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Example items from "Semitone Math"</div>
+
+    <!-- Item: C+3 — automatic, fresh -->
+    <div class="item-row">
+      <div>
+        <div class="item-label">C + 3 = D&#x266F;</div>
+        <span class="auto-badge badge-automatic">Automatic</span>
+      </div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">ewma</span> 900ms</div>
+        <div class="metric"><span class="metric-label">speed</span> 1.0</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.95</div>
+        <div class="metric"><span class="metric-label">auto</span> 0.95</div>
+        <div class="swatch" style="background: hsl(125, 46%, 34%)" title="heatmap-5, fresh"></div>
+      </div>
+    </div>
+
+    <!-- Item: G-5 — automatic but borderline speed -->
+    <div class="item-row">
+      <div>
+        <div class="item-label">G &#x2212; 5 = D</div>
+        <span class="auto-badge badge-automatic">Automatic</span>
+      </div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">ewma</span> 1300ms</div>
+        <div class="metric"><span class="metric-label">speed</span> 0.87</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.92</div>
+        <div class="metric"><span class="metric-label">auto</span> 0.80</div>
+        <div class="swatch" style="background: hsl(80, 33%, 41%)" title="heatmap-4, fresh"></div>
+      </div>
+    </div>
+
+    <!-- Item: A+7 — working, slow but fresh -->
+    <div class="item-row">
+      <div>
+        <div class="item-label">A + 7 = E</div>
+        <span class="auto-badge badge-working">Working</span>
+      </div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">ewma</span> 3200ms</div>
+        <div class="metric"><span class="metric-label">speed</span> 0.48</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.88</div>
+        <div class="metric"><span class="metric-label">auto</span> 0.42</div>
+        <div class="swatch" style="background: hsl(48, 42%, 53%)" title="heatmap-2, fresh"></div>
+      </div>
+    </div>
+
+    <!-- Item: F-2 — working, was fast but stale -->
+    <div class="item-row">
+      <div>
+        <div class="item-label">F &#x2212; 2 = D&#x266F;</div>
+        <span class="auto-badge badge-stale">Stale</span>
+      </div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">ewma</span> 1100ms</div>
+        <div class="metric"><span class="metric-label">speed</span> 0.93</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.15</div>
+        <div class="metric"><span class="metric-label">auto</span> 0.14</div>
+        <div class="swatch" style="background: hsl(125, 14%, 67%)" title="heatmap-5, stale → grey-green"></div>
+      </div>
+    </div>
+
+    <!-- Item: B+8 — unseen -->
+    <div class="item-row">
+      <div>
+        <div class="item-label">B + 8 = G</div>
+        <span class="auto-badge badge-unseen">Unseen</span>
+      </div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">ewma</span> —</div>
+        <div class="metric"><span class="metric-label">speed</span> —</div>
+        <div class="metric"><span class="metric-label">fresh</span> —</div>
+        <div class="metric"><span class="metric-label">auto</span> —</div>
+        <div class="swatch" style="background: hsl(30, 4%, 85%)" title="unseen grey"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Item metrics</h3>
+    <p>Three derived metrics per item, all 0–1:</p>
+    <ul>
+      <li><strong>Speed</strong> — how fast? (ewma &rarr; exponential decay)</li>
+      <li><strong>Freshness</strong> — how recent? (half-life model)</li>
+      <li><strong>Automaticity</strong> = speed &times; freshness</li>
+    </ul>
+    <p>Item classification uses <strong>automaticity only</strong>:</p>
+    <ul>
+      <li><strong>Automatic</strong>: auto &gt; 0.8</li>
+      <li><strong>Working</strong>: seen, auto &le; 0.8</li>
+      <li><strong>Unseen</strong>: no data</li>
+    </ul>
+    <p class="note">Note the G&#x2212;5 example: auto = 0.80, classified Automatic.
+       But speed = 0.87 &rarr; heatmap-4 (yellow-green), not green. This is the
+       tension point.</p>
+    <textarea class="comment-box" data-section="item-metrics" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>2. Per-item Display: Heatmap (progress tab)</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Heatmap color encoding — two separate axes</div>
+
+    <h3>Speed axis &rarr; hue (5 levels)</h3>
+    <div style="display:flex; gap:4px; align-items:center; margin-bottom:0.5rem;">
+      <div class="swatch" style="background:hsl(40,60%,58%)" title="heatmap-1"></div>
+      <span class="note">&le;0.3 "Hesitant"</span>
+      <div class="swatch" style="background:hsl(48,50%,52%); margin-left:0.5rem" title="heatmap-2"></div>
+      <span class="note">0.3–0.55</span>
+      <div class="swatch" style="background:hsl(60,40%,46%); margin-left:0.5rem" title="heatmap-3"></div>
+      <span class="note">0.55–0.75</span>
+    </div>
+    <div style="display:flex; gap:4px; align-items:center; margin-bottom:0.5rem;">
+      <div class="swatch" style="background:hsl(80,35%,40%)" title="heatmap-4"></div>
+      <span class="note">0.75–0.9 "Fast but figuring it out"</span>
+      <div class="swatch" style="background:hsl(125,48%,33%); margin-left:0.5rem" title="heatmap-5"></div>
+      <span class="note">&gt;0.9 "Automatic"</span>
+    </div>
+
+    <h3>Freshness axis &rarr; saturation/lightness</h3>
+    <div style="display:flex; gap:4px; align-items:center;">
+      <div class="swatch" style="background:hsl(125,48%,33%)" title="fresh"></div>
+      <span class="note">Fresh (1.0)</span>
+      <div class="swatch" style="background:hsl(125,36%,44%); margin-left:0.5rem" title="aging"></div>
+      <span class="note">0.7</span>
+      <div class="swatch" style="background:hsl(125,24%,56%); margin-left:0.5rem" title="fading"></div>
+      <span class="note">0.4</span>
+      <div class="swatch" style="background:hsl(125,14%,67%); margin-left:0.5rem" title="stale"></div>
+      <span class="note">0.1 (stale)</span>
+      <div class="swatch" style="background:hsl(125,12%,72%); margin-left:0.5rem" title="very stale"></div>
+      <span class="note">0.0</span>
+    </div>
+    <p class="note" style="margin-top:0.5rem">The heatmap shows "fast but stale" (green hue, grey wash) vs
+       "slow but fresh" (gold hue, vivid) — you can read both dimensions at a glance.</p>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Keep for detailed view</h3>
+    <p>The two-axis heatmap is the right tool for the progress tab — it's a
+       diagnostic view where seeing both speed and freshness separately is valuable.</p>
+    <p><strong>No changes proposed here.</strong> The heatmap stays as-is.</p>
+    <p class="note">The heatmap legend already uses "Hesitant" and "Automatic" as
+       speed-axis endpoints. These match the proposed status labels.</p>
+    <textarea class="comment-box" data-section="heatmap" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>3. Per-group: Rolling Up Items</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Example groups from "Fretboard"</div>
+
+    <!-- Group: Natural notes — automatic -->
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">Natural Notes (E A D G B)</span>
+        <span class="group-status status-automatic">Automatic</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,45%,35%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,47%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,44%,35%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,47%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,45%,35%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10 automaticity: <strong>0.84</strong> &rarr; Automatic (&ge; 0.8)
+      </div>
+    </div>
+
+    <!-- Group: F C — learning -->
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">F, C Notes</span>
+        <span class="group-status status-learning">Learning</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(60,38%,47%)"></div>
+        <div class="mini-swatch" style="background:hsl(48,42%,53%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(60,38%,47%)"></div>
+        <div class="mini-swatch" style="background:hsl(48,45%,53%)"></div>
+        <div class="mini-swatch" style="background:hsl(40,55%,59%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10 automaticity: <strong>0.35</strong> &rarr; Learning (0.2–0.8)
+      </div>
+    </div>
+
+    <!-- Group: sharps/flats — hesitant -->
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">G&#x266F;, C&#x266F;, D&#x266F;</span>
+        <span class="group-status status-hesitant">Hesitant</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(40,55%,59%)"></div>
+        <div class="mini-swatch" style="background:hsl(48,42%,53%)"></div>
+        <div class="mini-swatch" style="background:hsl(40,55%,59%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10 automaticity: <strong>0.08</strong> &rarr; Hesitant (&lt; 0.2)
+      </div>
+    </div>
+
+    <!-- Group: not started -->
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">B, E, &#x266F;&#x266D;</span>
+        <span class="group-status status-not-started">Not started</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+      </div>
+      <div class="group-metrics">
+        No items seen &rarr; Not started
+      </div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Group rollup</h3>
+    <p><strong>Level automaticity</strong> = P10 (10th percentile) of per-item
+       automaticity across the group's items. Conservative — one weak item
+       drags the whole group down.</p>
+
+    <h3>Status labels (proposed)</h3>
+    <ul>
+      <li><strong>Not started</strong> — no items seen</li>
+      <li><strong>Hesitant</strong> — P10 auto &lt; 0.2 (just started, still pausing)</li>
+      <li><strong>Learning</strong> — P10 auto 0.2–0.8 (making real progress)</li>
+      <li><strong>Automatic</strong> — P10 auto &ge; 0.8 (nearly all items fast &amp; fresh)</li>
+    </ul>
+
+    <h3>Stale detection (separate)</h3>
+    <p>A group can also be <strong>stale</strong>: mean(speed) &ge; 0.5 AND
+       mean(freshness) &lt; 0.5. This means "you were fast, but it's been a while."
+       Used for the "Review" cue at the skill level.</p>
+    <p class="note">Stale detection deliberately uses speed and freshness
+       separately, not automaticity — the question is "was fast, has decayed."</p>
+
+    <h3>Expansion gate</h3>
+    <p>Level automaticity &ge; 0.7 &rarr; unlock next group.</p>
+
+    <textarea class="comment-box" data-section="group-rollup" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>4. Per-skill: Home Screen Recommendations</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Home screen — Active skills tab</div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Guitar Fretboard</span>
+        <span class="cue-pill cue-review">Review</span>
+      </div>
+      <div class="note">Groups 0–2 stale (was fast, haven't practiced in weeks)</div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,14%,67%)"></div>
+        <div style="background:hsl(125,14%,67%)"></div>
+        <div style="background:hsl(125,14%,67%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Semitone Math</span>
+        <span class="cue-pill cue-get-faster">Get faster</span>
+      </div>
+      <div class="note">Group 0 has working items (slow but fresh)</div>
+      <div class="progress-bar">
+        <div style="background:hsl(48,42%,53%)"></div>
+      </div>
+    </div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Key Signatures</span>
+        <span class="cue-pill cue-learn-next">Learn next level</span>
+      </div>
+      <div class="note">Group 0 automatic, ready to expand</div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Interval Math</span>
+        <span class="cue-pill cue-none"></span>
+      </div>
+      <div class="note">Not started — no cue label</div>
+      <div class="progress-bar">
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Skill classification</h3>
+    <p>The home screen looks across all groups in a skill and picks
+       the highest-priority recommendation type:</p>
+    <ol>
+      <li><strong>Review</strong> — any stale groups</li>
+      <li><strong>Get faster</strong> — working items remaining</li>
+      <li><strong>Learn next level</strong> — expansion gate open</li>
+      <li>(not-started — no cue shown)</li>
+      <li>(automatic — no cue shown)</li>
+    </ol>
+
+    <h3>Progress bar colors</h3>
+    <p class="problem">Currently: uses heatmap colors (speed &times; freshness).
+       This can show yellow-green for items the engine classifies as "automatic."</p>
+    <p class="fix">Proposed: use automaticity-based colors for the progress bars,
+       so green = automatic, matching the cue labels.</p>
+
+    <textarea class="comment-box" data-section="skill-recs" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>5. The "All Done" State</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">All starred skills automatic</div>
+
+    <div class="all-done-msg">
+      All your starred skills are automatic. Nice work! Star new skills to keep going.
+    </div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Note &#x2194; Semitones</span>
+      </div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+      </div>
+    </div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Key Signatures</span>
+      </div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+        <div style="background:hsl(125,46%,34%)"></div>
+        <div style="background:hsl(125,47%,33%)"></div>
+        <div style="background:hsl(125,45%,35%)"></div>
+        <div style="background:hsl(125,48%,33%)"></div>
+      </div>
+    </div>
+
+    <div class="vs-label">&uarr; After fix: automaticity-based green</div>
+
+    <div style="margin-top:1rem">
+      <div class="section-label">Current bug — same data, heatmap colors</div>
+      <div class="skill-card-mock">
+        <div class="skill-card-top">
+          <span class="skill-name">Note &#x2194; Semitones</span>
+          <span class="cue-pill cue-get-faster">Get faster</span>
+        </div>
+        <div class="progress-bar">
+          <div style="background:hsl(80,33%,41%)"></div>
+        </div>
+      </div>
+      <div class="note" style="text-align:center; margin-top:0.3rem">
+        Items have auto 0.81 but speedScore 0.87 &rarr; heatmap-4 yellow-green.
+        <br>Message says "automatic" but bar says "not quite."
+      </div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>The collision point</h3>
+    <p>This is where the two color systems clash. The engine says "all done"
+       (all items have automaticity &gt; 0.8), but the progress bars use heatmap
+       colors where green requires speedScore &gt; 0.9.</p>
+
+    <h3>Fix</h3>
+    <p class="fix">Home progress bars should use automaticity-based colors:</p>
+    <ul>
+      <li>auto &gt; 0.8 &rarr; green (heatmap-5)</li>
+      <li>auto &gt; 0.6 &rarr; yellow-green (heatmap-4)</li>
+      <li>auto &gt; 0.4 &rarr; yellow (heatmap-3)</li>
+      <li>auto &gt; 0.2 &rarr; orange (heatmap-2)</li>
+      <li>auto &le; 0.2 &rarr; gold (heatmap-1)</li>
+    </ul>
+    <p class="note">The detailed progress-tab heatmap keeps its two-axis encoding.
+       Only the summary bars on the home screen change.</p>
+
+    <textarea class="comment-box" data-section="all-done" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>Summary of Changes</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Terminology renames</div>
+    <table style="width:100%; font-size:0.88rem; border-collapse:collapse;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:4px 8px">Current</th>
+        <th style="text-align:left; padding:4px 8px">Proposed</th>
+        <th style="text-align:left; padding:4px 8px">Where</th>
+      </tr>
+      <tr><td style="padding:4px 8px">Fluent (F)</td><td style="padding:4px 8px"><strong>Automatic</strong></td><td style="padding:4px 8px">Item classification</td></tr>
+      <tr><td style="padding:4px 8px">Slow</td><td style="padding:4px 8px"><strong>Hesitant</strong></td><td style="padding:4px 8px">Status label</td></tr>
+      <tr><td style="padding:4px 8px">Getting faster</td><td style="padding:4px 8px"><strong>Learning</strong></td><td style="padding:4px 8px">Status label</td></tr>
+      <tr><td style="padding:4px 8px"><code>recallThreshold</code></td><td style="padding:4px 8px"><code><strong>freshnessThreshold</strong></code></td><td style="padding:4px 8px">Config</td></tr>
+      <tr><td style="padding:4px 8px"><code>slow-fresh</code></td><td style="padding:4px 8px"><code><strong>working</strong></code></td><td style="padding:4px 8px">Fixture state</td></tr>
+      <tr><td style="padding:4px 8px"><code>fast-fresh</code></td><td style="padding:4px 8px"><code><strong>automatic</strong></code></td><td style="padding:4px 8px">Fixture state</td></tr>
+      <tr><td style="padding:4px 8px"><code>fast-stale</code></td><td style="padding:4px 8px"><code><strong>stale</strong></code></td><td style="padding:4px 8px">Fixture state</td></tr>
+    </table>
+
+    <div class="section-label" style="margin-top:1.5rem">Behavior changes</div>
+    <table style="width:100%; font-size:0.88rem; border-collapse:collapse;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:4px 8px">What</th>
+        <th style="text-align:left; padding:4px 8px">Change</th>
+      </tr>
+      <tr><td style="padding:4px 8px">Home progress bars</td><td style="padding:4px 8px">Switch from heatmap colors to automaticity-based colors</td></tr>
+      <tr><td style="padding:4px 8px">0.5 thresholds</td><td style="padding:4px 8px">Unify <code>recallThreshold</code> + <code>STALE_FRESHNESS_THRESHOLD</code></td></tr>
+    </table>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Scope</h3>
+    <p>Mostly renames and one color-system fix. No algorithm changes.
+       The underlying metrics, thresholds, and decision logic stay the same.</p>
+
+    <h3>What stays the same</h3>
+    <ul>
+      <li>Item metrics (speed, freshness, automaticity)</li>
+      <li>Progress-tab heatmap (two-axis encoding)</li>
+      <li>Recommendation algorithm (consolidate-before-expanding)</li>
+      <li>Stale detection (two-axis, as designed)</li>
+      <li>All thresholds (0.2, 0.5, 0.7, 0.8)</li>
+    </ul>
+
+    <textarea class="comment-box" data-section="summary" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- ================================================================== -->
+<!-- V2 — REVISED PROPOSAL -->
+<!-- ================================================================== -->
+<!-- ================================================================== -->
+
+<div style="margin: 3rem 0; border-top: 4px solid #4a90d9; padding-top: 2rem;">
+<h1 style="color: #4a90d9;">Iteration 2 — Revised Proposal</h1>
+<p class="subtitle">Based on v1 feedback. Key changes: drop item classification, per-level status as
+   the core unit, keep heatmap colors everywhere, align "automatic" with heatmap green,
+   standardize on skill &rarr; levels (not mode &rarr; groups).</p>
+</div>
+
+<!-- ================================================================== -->
+<h2>1. Per-item: Metrics Only (no classification)</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Example items from "Semitone Math"</div>
+
+    <div class="item-row">
+      <div><div class="item-label">C + 3 = D&#x266F;</div></div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">ewma</span> 900ms</div>
+        <div class="metric"><span class="metric-label">speed</span> 1.0</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.95</div>
+        <div class="swatch" style="background: hsl(125, 46%, 34%)" title="heatmap-5, fresh"></div>
+      </div>
+    </div>
+
+    <div class="item-row">
+      <div><div class="item-label">G &#x2212; 5 = D</div></div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">ewma</span> 1300ms</div>
+        <div class="metric"><span class="metric-label">speed</span> 0.87</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.92</div>
+        <div class="swatch" style="background: hsl(80, 33%, 41%)" title="heatmap-4, fresh"></div>
+      </div>
+    </div>
+
+    <div class="item-row">
+      <div><div class="item-label">A + 7 = E</div></div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">ewma</span> 3200ms</div>
+        <div class="metric"><span class="metric-label">speed</span> 0.48</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.88</div>
+        <div class="swatch" style="background: hsl(48, 42%, 53%)" title="heatmap-2, fresh"></div>
+      </div>
+    </div>
+
+    <div class="item-row">
+      <div><div class="item-label">F &#x2212; 2 = D&#x266F;</div></div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">ewma</span> 1100ms</div>
+        <div class="metric"><span class="metric-label">speed</span> 0.93</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.15</div>
+        <div class="swatch" style="background: hsl(125, 14%, 67%)" title="heatmap-5, stale"></div>
+        <span class="note" style="margin-left:0.3rem">&larr; fast but stale</span>
+      </div>
+    </div>
+
+    <div class="item-row">
+      <div><div class="item-label">B + 8 = G</div></div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">ewma</span> —</div>
+        <div class="metric"><span class="metric-label">speed</span> —</div>
+        <div class="metric"><span class="metric-label">fresh</span> —</div>
+        <div class="swatch" style="background: hsl(30, 4%, 85%)" title="unseen"></div>
+        <span class="note" style="margin-left:0.3rem">&larr; unseen</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Items are just data — no classification</h3>
+    <p>Each item has speed and freshness scores. The heatmap shows them
+       directly (hue = speed, saturation = freshness). No need to bucket
+       items into Automatic/Working/Unseen — that classification only existed
+       to feed the recommendation engine, which now operates at the
+       <strong>level</strong> (not item) layer.</p>
+    <p>Items feed into level rollups. That's it.</p>
+
+    <h3>What items are used for</h3>
+    <ul>
+      <li><strong>Heatmap display</strong> — speed &times; freshness color per cell</li>
+      <li><strong>Quiz item selection</strong> — adaptive selector picks next question
+          (weighted random, unseen boost, freshness-based "due" priority)</li>
+      <li><strong>Input to level rollup</strong> — aggregated into level metrics</li>
+    </ul>
+    <textarea class="comment-box" data-section="v2-items" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>2. Per-level: The Core Unit</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Level metrics (rolled up from items)</div>
+
+    <p style="font-size:0.85rem; margin-bottom:0.75rem;">
+      For each level in a skill, we compute:
+    </p>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">Level: Natural Notes</span>
+        <span class="group-status status-automatic">Automatic</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,47%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,47%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10 speed: <strong>0.94</strong> &ge; 0.9 &check; &nbsp;
+        P10 freshness: <strong>0.88</strong> &ge; 0.5 &check; &nbsp;
+        &rarr; <strong>Automatic</strong>: fast enough AND recent enough
+      </div>
+    </div>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">Level: F, C Notes</span>
+        <span class="group-status status-learning">Learning</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(60,38%,47%)"></div>
+        <div class="mini-swatch" style="background:hsl(48,42%,53%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(60,38%,47%)"></div>
+        <div class="mini-swatch" style="background:hsl(48,45%,53%)"></div>
+        <div class="mini-swatch" style="background:hsl(40,55%,59%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10 speed: <strong>0.35</strong> &lt; 0.9 &cross; &nbsp;
+        P10 freshness: <strong>0.72</strong> &ge; 0.5 &check; &nbsp;
+        &rarr; <strong>Learning</strong>: recent but not fast enough
+      </div>
+    </div>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">Level: G&#x266F;, C&#x266F;, D&#x266F;</span>
+        <span class="group-status" style="background:#f0d0d0; color:#8b3a3a">Needs review</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,14%,67%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,13%,68%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,10%,65%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,12%,69%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,14%,67%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,11%,66%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,13%,68%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,12%,70%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10 speed: <strong>0.82</strong> &ge; 0.9? borderline &nbsp;
+        P10 freshness: <strong>0.18</strong> &lt; 0.5 &cross; &nbsp;
+        &rarr; <strong>Needs review</strong>: was fast, has decayed
+      </div>
+    </div>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">Level: B, E, &#x266F;&#x266D;</span>
+        <span class="group-status status-not-started">Not started</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+      </div>
+      <div class="group-metrics">
+        No items seen. Expansion gate? P10 speed across active levels:
+        <strong>0.72</strong> &mdash; close but not &ge; 0.9 &rarr;
+        <strong>Not ready to start</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="discuss-col">
+    <h3>Level status — the core classification</h3>
+    <p>Each level gets a status based on two checks against its items:</p>
+    <table style="width:100%; font-size:0.82rem; border-collapse:collapse; margin:0.5rem 0;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">Status</th>
+        <th style="text-align:left; padding:3px 6px">Condition</th>
+      </tr>
+      <tr><td style="padding:3px 6px"><strong>Automatic</strong></td>
+          <td style="padding:3px 6px">P10 speed &ge; 0.9 AND P10 freshness &ge; 0.5</td></tr>
+      <tr><td style="padding:3px 6px"><strong>Learning</strong></td>
+          <td style="padding:3px 6px">P10 freshness &ge; 0.5, but P10 speed &lt; 0.9</td></tr>
+      <tr><td style="padding:3px 6px"><strong>Needs review</strong></td>
+          <td style="padding:3px 6px">P10 speed was &ge; 0.5 AND P10 freshness &lt; 0.5</td></tr>
+      <tr><td style="padding:3px 6px"><strong>Hesitant</strong></td>
+          <td style="padding:3px 6px">Some items seen, P10 speed &lt; 0.3</td></tr>
+      <tr><td style="padding:3px 6px"><strong>Ready to start</strong></td>
+          <td style="padding:3px 6px">Not started + expansion gate open</td></tr>
+      <tr><td style="padding:3px 6px"><strong>Not ready</strong></td>
+          <td style="padding:3px 6px">Not started + expansion gate closed</td></tr>
+      <tr><td style="padding:3px 6px"><strong>Skipped</strong></td>
+          <td style="padding:3px 6px">User deferred or marked mastered</td></tr>
+    </table>
+
+    <h3>Aligns "Automatic" with heatmap green</h3>
+    <p class="fix">By requiring P10 speed &ge; 0.9 (same as heatmap-5 green threshold),
+       a level classified as "Automatic" will always show green items.
+       No more mismatch between label and color.</p>
+
+    <h3>Expansion gate</h3>
+    <p>Current: P10 automaticity across all started items &ge; 0.7.</p>
+    <p>Proposed: P10 speed across all active levels &ge; 0.9? Or keep at 0.7?
+       The gate answers: "am I fast enough at what I know to add more?"</p>
+
+    <h3>Open questions</h3>
+    <p class="note">Where does "Hesitant" fit vs "Learning"? Is P10 speed
+       &lt; 0.3 the right boundary, or is it just the low end of Learning?
+       In v1 we had automaticity thresholds 0.2/0.8; here we're using
+       speed thresholds 0.3/0.9. Do we need three started states
+       (Hesitant/Learning/Automatic) or just two (Learning/Automatic)?</p>
+
+    <textarea class="comment-box" data-section="v2-levels" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>3. Per-skill: Level Statuses Propagate Up</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Skill = collection of levels. Status bubbles up.</div>
+
+    <h3 style="margin-top:0">Guitar Fretboard</h3>
+    <table style="width:100%; font-size:0.82rem; border-collapse:collapse; margin-bottom:0.75rem;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">Level</th>
+        <th style="text-align:left; padding:3px 6px">Status</th>
+      </tr>
+      <tr><td style="padding:3px 6px">Natural Notes</td><td style="padding:3px 6px"><span class="group-status status-automatic" style="font-size:0.72rem">Automatic</span></td></tr>
+      <tr><td style="padding:3px 6px">F, C</td><td style="padding:3px 6px"><span class="group-status status-learning" style="font-size:0.72rem">Learning</span></td></tr>
+      <tr><td style="padding:3px 6px">G&#x266F;, C&#x266F;, D&#x266F;</td><td style="padding:3px 6px"><span class="group-status" style="font-size:0.72rem; background:#f0d0d0; color:#8b3a3a">Needs review</span></td></tr>
+      <tr><td style="padding:3px 6px">B, E, &#x266F;&#x266D;</td><td style="padding:3px 6px"><span class="group-status status-not-started" style="font-size:0.72rem">Not ready</span></td></tr>
+    </table>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Guitar Fretboard</span>
+        <span class="cue-pill cue-review">Review</span>
+      </div>
+      <div class="note">Has a "needs review" level &rarr; highest priority cue</div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+        <div style="background:hsl(60,38%,47%)"></div>
+        <div style="background:hsl(125,14%,67%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+
+    <h3>Semitone Math</h3>
+    <table style="width:100%; font-size:0.82rem; border-collapse:collapse; margin-bottom:0.75rem;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">Level</th>
+        <th style="text-align:left; padding:3px 6px">Status</th>
+      </tr>
+      <tr><td style="padding:3px 6px">&#xB1;1, &#xB1;2</td><td style="padding:3px 6px"><span class="group-status status-learning" style="font-size:0.72rem">Learning</span></td></tr>
+      <tr><td style="padding:3px 6px">&#xB1;3, &#xB1;4</td><td style="padding:3px 6px"><span class="group-status status-not-started" style="font-size:0.72rem">Not ready</span></td></tr>
+      <tr><td style="padding:3px 6px">&#xB1;5, &#xB1;6</td><td style="padding:3px 6px"><span class="group-status status-not-started" style="font-size:0.72rem">Not ready</span></td></tr>
+    </table>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Semitone Math</span>
+        <span class="cue-pill cue-get-faster">Keep practicing</span>
+      </div>
+      <div class="note">Has a "learning" level, no review needed</div>
+      <div class="progress-bar">
+        <div style="background:hsl(48,42%,53%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+
+    <h3>Key Signatures</h3>
+    <table style="width:100%; font-size:0.82rem; border-collapse:collapse; margin-bottom:0.75rem;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">Level</th>
+        <th style="text-align:left; padding:3px 6px">Status</th>
+      </tr>
+      <tr><td style="padding:3px 6px">No sharps/flats</td><td style="padding:3px 6px"><span class="group-status status-automatic" style="font-size:0.72rem">Automatic</span></td></tr>
+      <tr><td style="padding:3px 6px">1 sharp/flat</td><td style="padding:3px 6px"><span class="group-status" style="font-size:0.72rem; background:#e8f4e8; color:#2d6e2d">Ready to start</span></td></tr>
+      <tr><td style="padding:3px 6px">2 sharps/flats</td><td style="padding:3px 6px"><span class="group-status status-not-started" style="font-size:0.72rem">Not ready</span></td></tr>
+    </table>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Key Signatures</span>
+        <span class="cue-pill cue-learn-next">Learn next level</span>
+      </div>
+      <div class="note">Has a "ready to start" level</div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="discuss-col">
+    <h3>Propagation rules</h3>
+    <p>The skill cue label = highest-priority level status across all its levels:</p>
+    <table style="width:100%; font-size:0.82rem; border-collapse:collapse; margin:0.5rem 0;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">If any level is...</th>
+        <th style="text-align:left; padding:3px 6px">Skill cue</th>
+      </tr>
+      <tr><td style="padding:3px 6px">Needs review</td><td style="padding:3px 6px"><span class="cue-pill cue-review" style="font-size:0.7rem">Review</span></td></tr>
+      <tr><td style="padding:3px 6px">Learning (or Hesitant)</td><td style="padding:3px 6px"><span class="cue-pill cue-get-faster" style="font-size:0.7rem">Keep practicing</span></td></tr>
+      <tr><td style="padding:3px 6px">Ready to start</td><td style="padding:3px 6px"><span class="cue-pill cue-learn-next" style="font-size:0.7rem">Learn next level</span></td></tr>
+      <tr><td style="padding:3px 6px">All automatic</td><td style="padding:3px 6px">(no cue &mdash; all done)</td></tr>
+      <tr><td style="padding:3px 6px">All not started</td><td style="padding:3px 6px">(no cue &mdash; cold start)</td></tr>
+    </table>
+
+    <h3>Cleaner than v1</h3>
+    <p class="fix">The home screen recommendation is now a <em>direct rollup</em>
+       of per-level statuses, not a separate classification system.
+       "Get faster" becomes "keep practicing" &mdash; a level we'd recommend
+       on the skill page propagates up.</p>
+
+    <h3>Progress bar colors</h3>
+    <p>Keep heatmap colors (speed &times; freshness). Since "Automatic"
+       now requires P10 speed &ge; 0.9, automatic levels will show green
+       bars. No color system change needed.</p>
+
+    <textarea class="comment-box" data-section="v2-skills" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>4. Summary: v1 &rarr; v2 Changes</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">What changed from v1</div>
+    <table style="width:100%; font-size:0.85rem; border-collapse:collapse;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:4px 8px">v1</th>
+        <th style="text-align:left; padding:4px 8px">v2</th>
+      </tr>
+      <tr><td style="padding:4px 8px">Items classified as Automatic/Working/Unseen</td>
+          <td style="padding:4px 8px">Items are just data (speed, freshness)</td></tr>
+      <tr><td style="padding:4px 8px">"Automatic" = automaticity &gt; 0.8<br><span class="note">(speed 0.87 &times; fresh 0.92 = 0.80 &check;)</span></td>
+          <td style="padding:4px 8px">"Automatic" = P10 speed &ge; 0.9 AND P10 fresh &ge; 0.5<br><span class="note">(matches heatmap green)</span></td></tr>
+      <tr><td style="padding:4px 8px">Home recs: separate classification system</td>
+          <td style="padding:4px 8px">Home recs: direct rollup of level statuses</td></tr>
+      <tr><td style="padding:4px 8px">Progress bars: switch to automaticity colors</td>
+          <td style="padding:4px 8px">Progress bars: keep heatmap colors (now consistent)</td></tr>
+      <tr><td style="padding:4px 8px">"mode" / "groups"</td>
+          <td style="padding:4px 8px">"skill" / "levels"</td></tr>
+      <tr><td style="padding:4px 8px">"Get faster" cue</td>
+          <td style="padding:4px 8px">"Keep practicing" cue</td></tr>
+    </table>
+
+    <div class="section-label" style="margin-top:1.5rem">Terminology (v2)</div>
+    <table style="width:100%; font-size:0.85rem; border-collapse:collapse;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:4px 8px">Term</th>
+        <th style="text-align:left; padding:4px 8px">Scope</th>
+        <th style="text-align:left; padding:4px 8px">Meaning</th>
+      </tr>
+      <tr><td style="padding:4px 8px">Skill</td><td style="padding:4px 8px">top</td><td style="padding:4px 8px">e.g. "Guitar Fretboard", "Key Signatures"</td></tr>
+      <tr><td style="padding:4px 8px">Level</td><td style="padding:4px 8px">mid</td><td style="padding:4px 8px">A group of related items within a skill</td></tr>
+      <tr><td style="padding:4px 8px">Item</td><td style="padding:4px 8px">leaf</td><td style="padding:4px 8px">One question (e.g. "C+3", fret 3 on string 2)</td></tr>
+      <tr style="border-top:1px solid #ddd"><td style="padding:4px 8px">Automatic</td><td style="padding:4px 8px">level</td><td style="padding:4px 8px">Fast enough &amp; recent enough. No action needed.</td></tr>
+      <tr><td style="padding:4px 8px">Learning</td><td style="padding:4px 8px">level</td><td style="padding:4px 8px">Recent but not fast enough yet.</td></tr>
+      <tr><td style="padding:4px 8px">Hesitant</td><td style="padding:4px 8px">level</td><td style="padding:4px 8px">Just started, still pausing on answers.</td></tr>
+      <tr><td style="padding:4px 8px">Needs review</td><td style="padding:4px 8px">level</td><td style="padding:4px 8px">Was fast, hasn't practiced in a while.</td></tr>
+    </table>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Open questions</h3>
+    <ul>
+      <li>Expansion gate threshold: keep 0.7 (on automaticity) or switch to
+          speed &ge; 0.9 (matching the new "Automatic" definition)?</li>
+      <li>Do we need Hesitant as a separate state from Learning?
+          Both mean "keep practicing." The distinction is speed &lt; 0.3 vs 0.3–0.9.</li>
+      <li>"Needs review" threshold: current stale detection uses mean(speed) &ge; 0.5
+          AND mean(freshness) &lt; 0.5. Should we switch to P10 like the other checks?</li>
+      <li>The "Keep practicing" cue replaces "Get faster" &mdash; less speed-focused.
+          Alternative: just "Practice" or "Not automatic yet"?</li>
+      <li>Rename <code>recallThreshold</code> &rarr; <code>freshnessThreshold</code>
+          (already planned, still applies).</li>
+    </ul>
+
+    <textarea class="comment-box" data-section="v2-summary" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- ================================================================== -->
+<!-- V3 — TWO-STEP MODEL -->
+<!-- ================================================================== -->
+<!-- ================================================================== -->
+
+<div style="margin: 3rem 0; border-top: 4px solid #28a745; padding-top: 2rem;">
+<h1 style="color: #28a745;">Iteration 3 &mdash; Two-Step Level Model</h1>
+<p class="subtitle">Based on v2 feedback. Key changes: separate level-only status (exhaustive)
+   from cross-level recommendation algorithm. Level stats are inputs; level status is a pure
+   function of those stats; cross-level logic (expansion, sequencing) is a separate step.</p>
+<div class="toolbar">
+  <button id="btn-copy-v3" title="Copy v3 feedback to clipboard">Copy v3 feedback</button>
+  <span class="status" id="status-v3" style="font-size:0.82rem; color:#1a5928; font-weight:500; transition:opacity 0.3s;"></span>
+</div>
+</div>
+
+<!-- ================================================================== -->
+<h2>1. Per-item: Metrics (unchanged from v2)</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Each item has speed + freshness. No item-level classification.</div>
+    <div class="item-row">
+      <div><div class="item-label">C + 3 = D&#x266F;</div></div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">speed</span> 1.0</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.95</div>
+        <div class="swatch" style="background: hsl(125, 46%, 34%)" title="heatmap-5, fresh"></div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div><div class="item-label">A + 7 = E</div></div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">speed</span> 0.48</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.88</div>
+        <div class="swatch" style="background: hsl(48, 42%, 53%)" title="heatmap-2, fresh"></div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div><div class="item-label">F &#x2212; 2 = D&#x266F;</div></div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">speed</span> 0.93</div>
+        <div class="metric"><span class="metric-label">fresh</span> 0.15</div>
+        <div class="swatch" style="background: hsl(125, 14%, 67%)" title="heatmap-5, stale"></div>
+        <span class="note">&larr; fast but stale</span>
+      </div>
+    </div>
+    <div class="item-row">
+      <div><div class="item-label">B + 8 = G</div></div>
+      <div class="item-metrics">
+        <div class="metric"><span class="metric-label">speed</span> &mdash;</div>
+        <div class="metric"><span class="metric-label">fresh</span> &mdash;</div>
+        <div class="swatch" style="background: hsl(30, 4%, 85%)" title="unseen"></div>
+        <span class="note">&larr; unseen</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Same as v2</h3>
+    <p>Items are data: speed + freshness. Heatmap shows them directly.
+       Items feed into level rollups. No change here.</p>
+    <textarea class="comment-box" data-section="v3-items" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>2. Step 1: Per-level Stats &amp; Status (this level only)</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">For each level, compute stats, then classify</div>
+
+    <h3>Level stats (computed from items)</h3>
+    <table style="width:100%; font-size:0.82rem; border-collapse:collapse; margin-bottom:1rem;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">Stat</th>
+        <th style="text-align:left; padding:3px 6px">Definition</th>
+      </tr>
+      <tr><td style="padding:3px 6px"><code>P10(speed)</code></td>
+          <td style="padding:3px 6px">10th percentile of speed scores (unseen &rarr; 0)</td></tr>
+      <tr><td style="padding:3px 6px"><code>P10(freshness)</code></td>
+          <td style="padding:3px 6px">10th percentile of freshness scores (unseen &rarr; 0)</td></tr>
+      <tr><td style="padding:3px 6px"><code>unseen_fraction</code></td>
+          <td style="padding:3px 6px">fraction of items with no data</td></tr>
+      <tr><td style="padding:3px 6px"><code>is_started</code></td>
+          <td style="padding:3px 6px">at least one item seen (unseen_fraction &lt; 1)</td></tr>
+      <tr><td style="padding:3px 6px"><code>is_skipped</code></td>
+          <td style="padding:3px 6px">user deferred this level</td></tr>
+    </table>
+
+    <h3>Level-only status (two independent axes)</h3>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+      <div style="background:#f8f8f8; border-radius:6px; padding:0.6rem;">
+        <div style="font-weight:600; font-size:0.82rem; margin-bottom:0.3rem;">Speed axis</div>
+        <div style="font-size:0.82rem;">
+          <div style="margin-bottom:0.2rem;"><span class="group-status status-automatic" style="font-size:0.7rem">Automatic</span> P10(speed) &ge; 0.9</div>
+          <div style="margin-bottom:0.2rem;"><span class="group-status status-learning" style="font-size:0.7rem">Learning</span> P10(speed) &ge; 0.3</div>
+          <div style="margin-bottom:0.2rem;"><span class="group-status status-hesitant" style="font-size:0.7rem">Hesitant</span> P10(speed) &gt; 0</div>
+          <div><span class="group-status status-not-started" style="font-size:0.7rem">Starting</span> P10(speed) = 0</div>
+        </div>
+      </div>
+      <div style="background:#f8f8f8; border-radius:6px; padding:0.6rem;">
+        <div style="font-weight:600; font-size:0.82rem; margin-bottom:0.3rem;">Freshness axis</div>
+        <div style="font-size:0.82rem;">
+          <div style="margin-bottom:0.2rem;"><span class="group-status" style="font-size:0.7rem; background:#f0d0d0; color:#8b3a3a">Needs review</span> P10(freshness) &lt; 0.5</div>
+          <div><span class="group-status" style="font-size:0.7rem; background:#e8f4e8; color:#2d6e2d">Fresh</span> P10(freshness) &ge; 0.5</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Special states (checked first)</h3>
+    <div style="font-size:0.82rem; margin-bottom:1rem;">
+      <div style="margin-bottom:0.2rem;"><span class="group-status" style="font-size:0.7rem; background:#e0e0e0; color:#666">Skipped</span> is_skipped = true</div>
+      <div><span class="group-status status-not-started" style="font-size:0.7rem">Not started</span> is_started = false</div>
+    </div>
+
+    <h3>Examples</h3>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">Natural Notes</span>
+        <span class="group-status status-automatic">Automatic</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,47%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,47%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10(speed): <strong>0.94</strong> &ge; 0.9 &rarr; <em>Automatic</em> &nbsp;&nbsp;
+        P10(fresh): <strong>0.88</strong> &ge; 0.5 &rarr; <em>Fresh</em>
+      </div>
+    </div>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">F, C Notes</span>
+        <span class="group-status status-learning">Learning</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(60,38%,47%)"></div>
+        <div class="mini-swatch" style="background:hsl(48,42%,53%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(60,38%,47%)"></div>
+        <div class="mini-swatch" style="background:hsl(48,45%,53%)"></div>
+        <div class="mini-swatch" style="background:hsl(40,55%,59%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10(speed): <strong>0.35</strong> &ge; 0.3 &rarr; <em>Learning</em> &nbsp;&nbsp;
+        P10(fresh): <strong>0.72</strong> &ge; 0.5 &rarr; <em>Fresh</em>
+      </div>
+    </div>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">G&#x266F;, C&#x266F;, D&#x266F;</span>
+        <div>
+          <span class="group-status status-learning" style="font-size:0.7rem">Learning</span>
+          <span class="group-status" style="font-size:0.7rem; background:#f0d0d0; color:#8b3a3a">Needs review</span>
+        </div>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,14%,67%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,13%,68%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,10%,65%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,12%,69%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,14%,67%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,11%,66%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,13%,68%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,12%,70%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10(speed): <strong>0.82</strong> &ge; 0.3 &rarr; <em>Learning</em> &nbsp;&nbsp;
+        P10(fresh): <strong>0.18</strong> &lt; 0.5 &rarr; <em>Needs review</em>
+      </div>
+    </div>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">B, E, &#x266F;&#x266D;</span>
+        <span class="group-status status-not-started">Not started</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+      </div>
+      <div class="group-metrics">
+        is_started: <strong>false</strong> &rarr; <em>Not started</em>
+      </div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Exhaustive, level-only status</h3>
+    <p>Every level gets a status based <em>only</em> on its own items.
+       No cross-level logic here (expansion gate, sequencing, etc.).</p>
+
+    <p>Two independent axes:</p>
+    <ul>
+      <li><strong>Speed</strong>: Automatic / Learning / Hesitant / Starting
+          &mdash; "how fast are you at this level?"</li>
+      <li><strong>Freshness</strong>: Needs review / Fresh
+          &mdash; "have you practiced recently?"</li>
+    </ul>
+    <p>Plus two special overrides: Skipped and Not started.</p>
+
+    <h3>Composable statuses</h3>
+    <p>A started level has <em>both</em> a speed status and a freshness status.
+       e.g. "Learning + Needs review" means you weren't fast, AND it's been a while.
+       "Automatic + Fresh" = the goal state. "Automatic + Needs review" = was fast, decayed.</p>
+
+    <h3>Where displayed?</h3>
+    <p>Currently we don't display level status directly, but we should &mdash;
+       e.g. round-complete screen, practice tab level list. The speed status maps
+       naturally to the heatmap legend colors.</p>
+
+    <h3>Open: Hesitant vs Starting</h3>
+    <p class="note">Hesitant (P10 speed &gt; 0 but &lt; 0.3) vs Starting (P10 speed = 0)
+       &mdash; is the distinction useful? Starting = most items unseen, a few barely tried.
+       Hesitant = you've tried enough to have a measurable (but low) speed. Both mean
+       "keep going." Could merge into one status.</p>
+
+    <textarea class="comment-box" data-section="v3-level-status" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>3. Step 2: Cross-level Recommendation Algorithm</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Takes level statuses + level ordering &rarr; what to practice</div>
+
+    <h3>Inputs</h3>
+    <ul style="font-size:0.82rem;">
+      <li>Ordered list of levels with their status (speed + freshness)</li>
+      <li>Level ordering (which is "next" after the current ones)</li>
+      <li>Expansion gate: are you fast enough at current levels to start a new one?</li>
+    </ul>
+
+    <h3>Algorithm sketch</h3>
+    <div style="background:#f8f8f8; border:1px solid #e0e0e0; border-radius:8px; padding:0.8rem; font-size:0.82rem; margin-bottom:1rem;">
+      <div style="font-weight:600; margin-bottom:0.4rem;">1. Identify candidates by status</div>
+      <table style="width:100%; border-collapse:collapse;">
+        <tr style="border-bottom:1px solid #eee">
+          <td style="padding:2px 6px"><span class="group-status" style="font-size:0.68rem; background:#f0d0d0; color:#8b3a3a">Needs review</span></td>
+          <td style="padding:2px 6px">Any level with freshness &lt; 0.5 &rarr; review candidate</td>
+        </tr>
+        <tr style="border-bottom:1px solid #eee">
+          <td style="padding:2px 6px"><span class="group-status status-learning" style="font-size:0.68rem">Learning</span> / <span class="group-status status-hesitant" style="font-size:0.68rem">Hesitant</span></td>
+          <td style="padding:2px 6px">Any started, non-automatic level &rarr; practice candidate</td>
+        </tr>
+        <tr>
+          <td style="padding:2px 6px"><span class="group-status status-not-started" style="font-size:0.68rem">Not started</span></td>
+          <td style="padding:2px 6px">Next unstarted level + expansion gate open &rarr; expand candidate</td>
+        </tr>
+      </table>
+
+      <div style="font-weight:600; margin:0.6rem 0 0.4rem;">2. Prioritize</div>
+      <div>Review &gt; Practice &gt; Expand</div>
+      <div class="note">(Same priority order as current system)</div>
+
+      <div style="font-weight:600; margin:0.6rem 0 0.4rem;">3. Cap</div>
+      <div>Recommend top N levels (e.g. consolidate indices + expand index)</div>
+    </div>
+
+    <h3>Example: Guitar Fretboard</h3>
+    <table style="width:100%; font-size:0.82rem; border-collapse:collapse; margin-bottom:0.5rem;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">Level</th>
+        <th style="text-align:left; padding:3px 6px">Speed</th>
+        <th style="text-align:left; padding:3px 6px">Freshness</th>
+        <th style="text-align:left; padding:3px 6px">Recommendation</th>
+      </tr>
+      <tr><td style="padding:3px 6px">Natural Notes</td>
+          <td style="padding:3px 6px"><span class="group-status status-automatic" style="font-size:0.68rem">Automatic</span></td>
+          <td style="padding:3px 6px"><span class="group-status" style="font-size:0.68rem; background:#e8f4e8; color:#2d6e2d">Fresh</span></td>
+          <td style="padding:3px 6px; color:#888">&mdash; (done)</td></tr>
+      <tr><td style="padding:3px 6px">F, C</td>
+          <td style="padding:3px 6px"><span class="group-status status-learning" style="font-size:0.68rem">Learning</span></td>
+          <td style="padding:3px 6px"><span class="group-status" style="font-size:0.68rem; background:#e8f4e8; color:#2d6e2d">Fresh</span></td>
+          <td style="padding:3px 6px; font-weight:500; color:#856404">Practice</td></tr>
+      <tr><td style="padding:3px 6px">G&#x266F;, C&#x266F;, D&#x266F;</td>
+          <td style="padding:3px 6px"><span class="group-status status-learning" style="font-size:0.68rem">Learning</span></td>
+          <td style="padding:3px 6px"><span class="group-status" style="font-size:0.68rem; background:#f0d0d0; color:#8b3a3a">Needs review</span></td>
+          <td style="padding:3px 6px; font-weight:500; color:#8b3a3a">Review</td></tr>
+      <tr><td style="padding:3px 6px">B, E, &#x266F;&#x266D;</td>
+          <td style="padding:3px 6px" colspan="2"><span class="group-status status-not-started" style="font-size:0.68rem">Not started</span></td>
+          <td style="padding:3px 6px; color:#888">&mdash; (gate closed)</td></tr>
+    </table>
+    <div class="note">Result: recommend Review (G&#x266F;) + Practice (F,C). Gate closed because
+       active levels aren't all automatic.</div>
+
+    <h3>Expansion gate</h3>
+    <div style="background:#f0f7ff; border:1px solid #b8d4f0; border-radius:6px; padding:0.6rem; font-size:0.82rem;">
+      <strong>Gate opens when:</strong> all started, non-skipped levels have speed status = Automatic
+      AND freshness = Fresh.<br>
+      <strong>Expands:</strong> the next unstarted level in sequence (not all at once).
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Separation of concerns</h3>
+    <p>Step 1 (level status) is a pure function of that level's items.
+       Step 2 (recommendations) uses level statuses + structure to decide what to do.</p>
+    <p>This matches the current code structure: <code>computeRecommendations()</code>
+       already takes group stats and produces consolidate/expand recommendations.
+       The change is making the intermediate level status explicit and exhaustive.</p>
+
+    <h3>Similar to skill-level recs</h3>
+    <p>The pattern is the same at both levels:</p>
+    <ol>
+      <li>Compute per-unit stats (per-level or per-skill)</li>
+      <li>Classify into status</li>
+      <li>Identify candidates, prioritize, cap</li>
+    </ol>
+
+    <h3>Expansion gate: simplified</h3>
+    <p>v2 proposed "P10 speed &ge; 0.9 across all active levels." Now it's simpler:
+       <strong>all started levels must be Automatic + Fresh.</strong>
+       This is a higher bar than the current 0.7 automaticity threshold &mdash;
+       you need to be truly fast AND recently practiced to unlock more.</p>
+    <p class="note">Open: is this too strict? The current gate (P10 auto &ge; 0.7) lets you
+       expand while still working on current levels. The new gate would require finishing
+       each level before starting the next. Maybe the gate should be "all started levels
+       are at least Learning" or "no Hesitant/Starting levels"?</p>
+
+    <textarea class="comment-box" data-section="v3-cross-level" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>4. Per-skill: Cue Labels (propagation)</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Skill cue = highest-priority level recommendation</div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Guitar Fretboard</span>
+        <span class="cue-pill cue-review">Review</span>
+      </div>
+      <div class="note">Level "G&#x266F;, C&#x266F;, D&#x266F;" needs review &rarr; highest priority</div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+        <div style="background:hsl(60,38%,47%)"></div>
+        <div style="background:hsl(125,14%,67%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Semitone Math</span>
+        <span class="cue-pill cue-get-faster">Keep practicing</span>
+      </div>
+      <div class="note">Level "&#xB1;1, &#xB1;2" is Learning + Fresh &rarr; practice</div>
+      <div class="progress-bar">
+        <div style="background:hsl(48,42%,53%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Key Signatures</span>
+        <span class="cue-pill cue-learn-next">Learn next level</span>
+      </div>
+      <div class="note">Level "No sharps/flats" is Automatic + Fresh, gate open</div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+
+    <div class="all-done-msg">
+      All your starred skills are automatic. Nice work! Star new skills to keep going.
+    </div>
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Note &#x2194; Semitones</span>
+      </div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+      </div>
+    </div>
+    <div class="note" style="text-align:center; margin-top:0.3rem">
+      All levels Automatic + Fresh &rarr; all green bars &rarr; "all done." No mismatch possible.
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Propagation rules</h3>
+    <table style="width:100%; font-size:0.82rem; border-collapse:collapse; margin:0.5rem 0;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">Level recommendation</th>
+        <th style="text-align:left; padding:3px 6px">Skill cue</th>
+      </tr>
+      <tr><td style="padding:3px 6px">Any level: Review</td>
+          <td style="padding:3px 6px"><span class="cue-pill cue-review" style="font-size:0.7rem">Review</span></td></tr>
+      <tr><td style="padding:3px 6px">Any level: Practice</td>
+          <td style="padding:3px 6px"><span class="cue-pill cue-get-faster" style="font-size:0.7rem">Keep practicing</span></td></tr>
+      <tr><td style="padding:3px 6px">Any level: Expand</td>
+          <td style="padding:3px 6px"><span class="cue-pill cue-learn-next" style="font-size:0.7rem">Learn next level</span></td></tr>
+      <tr><td style="padding:3px 6px">All levels automatic + fresh</td>
+          <td style="padding:3px 6px">(no cue &mdash; all done)</td></tr>
+      <tr><td style="padding:3px 6px">No levels started</td>
+          <td style="padding:3px 6px">(no cue &mdash; cold start)</td></tr>
+    </table>
+
+    <h3>The "all done" bug is gone</h3>
+    <p class="fix">Automatic requires P10(speed) &ge; 0.9, which matches heatmap-5 green.
+       So when all levels are Automatic + Fresh, every bar segment is green.
+       No more yellow-green bars with an "all done" message.</p>
+
+    <textarea class="comment-box" data-section="v3-skill-cues" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>5. v2 &rarr; v3 Summary</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">What changed from v2</div>
+    <table style="width:100%; font-size:0.85rem; border-collapse:collapse;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:4px 8px">v2</th>
+        <th style="text-align:left; padding:4px 8px">v3</th>
+      </tr>
+      <tr><td style="padding:4px 8px">Level status combines speed + freshness + expansion into one list of 7 states</td>
+          <td style="padding:4px 8px">Level status = two independent axes (speed: 4 states, freshness: 2 states) + special overrides</td></tr>
+      <tr><td style="padding:4px 8px">"Ready to start" / "Not ready" are level statuses</td>
+          <td style="padding:4px 8px">Expansion is a cross-level recommendation, not a level status</td></tr>
+      <tr><td style="padding:4px 8px">"Needs review" is one of 7 competing states</td>
+          <td style="padding:4px 8px">"Needs review" is an orthogonal freshness flag &mdash; composable with speed status</td></tr>
+      <tr><td style="padding:4px 8px">Skill cue = rollup of level statuses</td>
+          <td style="padding:4px 8px">Skill cue = rollup of cross-level recommendations (which use level statuses as input)</td></tr>
+    </table>
+
+    <div class="section-label" style="margin-top:1.5rem">The pipeline</div>
+    <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; flex-wrap:wrap;">
+      <div style="background:#fff; border:1px solid #ddd; border-radius:6px; padding:0.3rem 0.6rem;">Items<br><span class="note">speed, freshness</span></div>
+      <div style="color:#aaa;">&rarr;</div>
+      <div style="background:#e8f0ff; border:1px solid #b8d4f0; border-radius:6px; padding:0.3rem 0.6rem;">Level stats<br><span class="note">P10(speed), P10(fresh), ...</span></div>
+      <div style="color:#aaa;">&rarr;</div>
+      <div style="background:#e8f0ff; border:1px solid #b8d4f0; border-radius:6px; padding:0.3rem 0.6rem;">Level status<br><span class="note">speed axis + fresh axis</span></div>
+      <div style="color:#aaa;">&rarr;</div>
+      <div style="background:#fff0e0; border:1px solid #e0c090; border-radius:6px; padding:0.3rem 0.6rem;">Cross-level recs<br><span class="note">review / practice / expand</span></div>
+      <div style="color:#aaa;">&rarr;</div>
+      <div style="background:#d4edda; border:1px solid #a8d5b0; border-radius:6px; padding:0.3rem 0.6rem;">Skill cue<br><span class="note">highest-priority rec</span></div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Key insight: two-axis status is composable</h3>
+    <p>v2 had a flat list of 7 states where you had to choose between e.g.
+       "Learning" and "Needs review." But a level can be both &mdash;
+       "I was learning this AND it's been a while."
+       Two independent axes capture this naturally.</p>
+
+    <h3>Cross-level as a separate step</h3>
+    <p>"Ready to start" isn't a property of a level &mdash; it's a relationship
+       between levels. Keeping it in the recommendation step (not the status step)
+       is cleaner.</p>
+
+    <h3>Open questions</h3>
+    <ul>
+      <li>Expansion gate strictness: "all started levels Automatic + Fresh" vs
+          something more permissive?</li>
+      <li>Merge Hesitant + Starting? Both mean "very early." The distinction is
+          measurable speed &gt; 0 vs not.</li>
+      <li>Should the user-facing display show both axes, or just the most
+          important one? e.g. "Learning (needs review)" vs just "Needs review"?</li>
+    </ul>
+
+    <textarea class="comment-box" data-section="v3-summary" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- ================================================================== -->
+<!-- V4 — REFINED SPEED LEVELS + EXPANSION POLICY -->
+<!-- ================================================================== -->
+<!-- ================================================================== -->
+
+<div style="margin: 3rem 0; border-top: 4px solid #e67e22; padding-top: 2rem;">
+<h1 style="color: #e67e22;">Iteration 4 &mdash; Refined Speed Levels &amp; Expansion Policy</h1>
+<p class="subtitle">Based on v3 feedback. Key changes: add "Learned" speed level (&ge;0.7) between
+   Learning and Automatic. Clarify Hesitant vs Starting distinction (item coverage).
+   Expansion gate = "all active levels at least Learned, none need review."
+   More nuanced rec priority with expand/automate alternation.</p>
+<div class="toolbar">
+  <button id="btn-copy-v4" title="Copy v4 feedback to clipboard">Copy v4 feedback</button>
+  <span class="status" id="status-v4" style="font-size:0.82rem; color:#1a5928; font-weight:500; transition:opacity 0.3s;"></span>
+</div>
+</div>
+
+<!-- ================================================================== -->
+<h2>1. Per-level Speed Axis: 5 Levels</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Speed status &mdash; what's the user's experience at this level?</div>
+
+    <table style="width:100%; font-size:0.85rem; border-collapse:collapse; margin-bottom:1rem;">
+      <tr style="border-bottom:2px solid #ddd">
+        <th style="text-align:left; padding:4px 8px">Status</th>
+        <th style="text-align:left; padding:4px 8px">P10(speed)</th>
+        <th style="text-align:left; padding:4px 8px">What it feels like</th>
+      </tr>
+      <tr style="border-bottom:1px solid #eee">
+        <td style="padding:4px 8px"><span class="group-status status-automatic">Automatic</span></td>
+        <td style="padding:4px 8px">&ge; 0.9</td>
+        <td style="padding:4px 8px">Don't have to think about it &mdash; just know it</td>
+      </tr>
+      <tr style="border-bottom:1px solid #eee">
+        <td style="padding:4px 8px"><span class="group-status status-learned">Learned</span></td>
+        <td style="padding:4px 8px">&ge; 0.7</td>
+        <td style="padding:4px 8px">Remember it, but have to think for a bit</td>
+      </tr>
+      <tr style="border-bottom:1px solid #eee">
+        <td style="padding:4px 8px"><span class="group-status status-learning">Learning</span></td>
+        <td style="padding:4px 8px">&ge; 0.3</td>
+        <td style="padding:4px 8px">Have to think about it &mdash; working through the logic</td>
+      </tr>
+      <tr style="border-bottom:1px solid #eee">
+        <td style="padding:4px 8px"><span class="group-status status-hesitant">Hesitant</span></td>
+        <td style="padding:4px 8px">&gt; 0</td>
+        <td style="padding:4px 8px">Seen nearly all items, but still slow on most</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 8px"><span class="group-status status-starting">Starting</span></td>
+        <td style="padding:4px 8px">= 0</td>
+        <td style="padding:4px 8px">Still seeing new items for the first time</td>
+      </tr>
+    </table>
+
+    <h3>What P10(speed) tells us about item coverage</h3>
+    <div style="background:#f8f8f8; border-radius:6px; padding:0.6rem; font-size:0.82rem; margin-bottom:1rem;">
+      <p>P10 = 10th percentile. For a 48-item level:</p>
+      <ul style="margin-left:1rem;">
+        <li><strong>P10 = 0 (Starting)</strong>: at least 5 items are unseen &mdash;
+            still encountering new material</li>
+        <li><strong>P10 &gt; 0 (Hesitant)</strong>: at most ~4 items unseen &mdash;
+            the bar is mostly not grey, now working on speed</li>
+      </ul>
+      <p style="margin-top:0.3rem;">For a 10-item level, P10 = 0 means &ge; 1 unseen.
+         The threshold scales naturally with level size.</p>
+    </div>
+
+    <h3>Heatmap color correspondence</h3>
+    <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
+      <div class="swatch" style="background:hsl(125,48%,33%)" title="heatmap-5"></div>
+      <span class="note" style="margin-right:0.8rem">Automatic (&gt;0.9)</span>
+      <div class="swatch" style="background:hsl(80,35%,40%)" title="heatmap-4"></div>
+      <span class="note" style="margin-right:0.8rem">Learned (0.7&ndash;0.9)</span>
+      <div class="swatch" style="background:hsl(60,40%,46%)" title="heatmap-3"></div>
+      <span class="note" style="margin-right:0.8rem">Learning (0.3&ndash;0.7)</span>
+    </div>
+    <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+      <div class="swatch" style="background:hsl(48,50%,52%)" title="heatmap-2"></div>
+      <div class="swatch" style="background:hsl(40,60%,58%)" title="heatmap-1"></div>
+      <span class="note" style="margin-right:0.8rem">Hesitant (&lt;0.3)</span>
+      <div class="swatch" style="background:hsl(30,4%,85%)" title="unseen"></div>
+      <span class="note">Starting (unseen)</span>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Why 5 levels?</h3>
+    <p>Functionally, only <strong>Automatic / Not yet</strong> matters.
+       But finer gradations give the user a sense of progress and let us
+       write better copy. "You've learned these &mdash; now automate them"
+       is more motivating than "keep practicing."</p>
+
+    <h3>Hesitant vs Starting</h3>
+    <p>Both mean "early stage," but the user experience is different:</p>
+    <ul>
+      <li><strong>Starting</strong>: you're still seeing grey cells fill in.
+          The progress feeling comes from <em>coverage</em>.</li>
+      <li><strong>Hesitant</strong>: the bar is mostly colored now.
+          Progress feeling shifts to <em>speed</em> &mdash; watching gold
+          cells turn green.</li>
+    </ul>
+    <p class="note">P10 naturally captures this: it's 0 when enough items are
+       unseen that the 10th percentile falls on an unseen item.</p>
+
+    <h3>Mapping to the user's chord tracker</h3>
+    <table style="width:100%; font-size:0.78rem; border-collapse:collapse; margin:0.5rem 0;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:2px 4px">Chord tracker</th>
+        <th style="text-align:left; padding:2px 4px">Speed level</th>
+      </tr>
+      <tr><td style="padding:2px 4px">Don't know</td><td style="padding:2px 4px">Starting</td></tr>
+      <tr><td style="padding:2px 4px">Weak</td><td style="padding:2px 4px">Hesitant</td></tr>
+      <tr><td style="padding:2px 4px">Good</td><td style="padding:2px 4px">Learning / Learned</td></tr>
+      <tr><td style="padding:2px 4px">Automatic</td><td style="padding:2px 4px">Automatic</td></tr>
+      <tr><td style="padding:2px 4px">Review</td><td style="padding:2px 4px">(freshness axis)</td></tr>
+      <tr><td style="padding:2px 4px">Skip</td><td style="padding:2px 4px">Skipped</td></tr>
+    </table>
+
+    <textarea class="comment-box" data-section="v4-speed-levels" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>2. Full Level Status: Speed &times; Freshness</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Two independent axes (unchanged from v3, but with 5 speed levels)</div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+      <div style="background:#f8f8f8; border-radius:6px; padding:0.6rem;">
+        <div style="font-weight:600; font-size:0.82rem; margin-bottom:0.3rem;">Speed axis (5 levels)</div>
+        <div style="font-size:0.82rem;">
+          <div style="margin-bottom:0.15rem;"><span class="group-status status-automatic" style="font-size:0.68rem">Automatic</span> &ge; 0.9</div>
+          <div style="margin-bottom:0.15rem;"><span class="group-status status-learned" style="font-size:0.68rem">Learned</span> &ge; 0.7</div>
+          <div style="margin-bottom:0.15rem;"><span class="group-status status-learning" style="font-size:0.68rem">Learning</span> &ge; 0.3</div>
+          <div style="margin-bottom:0.15rem;"><span class="group-status status-hesitant" style="font-size:0.68rem">Hesitant</span> &gt; 0</div>
+          <div><span class="group-status status-starting" style="font-size:0.68rem">Starting</span> = 0</div>
+        </div>
+      </div>
+      <div style="background:#f8f8f8; border-radius:6px; padding:0.6rem;">
+        <div style="font-weight:600; font-size:0.82rem; margin-bottom:0.3rem;">Freshness axis</div>
+        <div style="font-size:0.82rem;">
+          <div style="margin-bottom:0.15rem;"><span class="group-status" style="font-size:0.68rem; background:#f0d0d0; color:#8b3a3a">Needs review</span> P10(fresh) &lt; 0.5</div>
+          <div><span class="group-status" style="font-size:0.68rem; background:#e8f4e8; color:#2d6e2d">Fresh</span> P10(fresh) &ge; 0.5</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Examples (Guitar Fretboard)</h3>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">Natural Notes</span>
+        <div>
+          <span class="group-status status-automatic" style="font-size:0.7rem">Automatic</span>
+          <span class="group-status" style="font-size:0.7rem; background:#e8f4e8; color:#2d6e2d">Fresh</span>
+        </div>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,47%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,47%,34%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,46%,34%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10(speed): <strong>0.94</strong> &rarr; Automatic &nbsp;&nbsp;
+        P10(fresh): <strong>0.88</strong> &rarr; Fresh &nbsp;&nbsp;
+        <em>Goal state. No action needed.</em>
+      </div>
+    </div>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">F, C Notes</span>
+        <div>
+          <span class="group-status status-learned" style="font-size:0.7rem">Learned</span>
+          <span class="group-status" style="font-size:0.7rem; background:#e8f4e8; color:#2d6e2d">Fresh</span>
+        </div>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,48%,33%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,35%,40%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(60,38%,47%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,35%,40%)"></div>
+        <div class="mini-swatch" style="background:hsl(60,38%,47%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,33%,41%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,35%,40%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10(speed): <strong>0.73</strong> &rarr; Learned &nbsp;&nbsp;
+        P10(fresh): <strong>0.82</strong> &rarr; Fresh &nbsp;&nbsp;
+        <em>Remember it, but still thinking. Automate or expand?</em>
+      </div>
+    </div>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">G&#x266F;, C&#x266F;, D&#x266F;</span>
+        <div>
+          <span class="group-status status-learning" style="font-size:0.7rem">Learning</span>
+          <span class="group-status" style="font-size:0.7rem; background:#f0d0d0; color:#8b3a3a">Needs review</span>
+        </div>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(125,14%,67%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,10%,65%)"></div>
+        <div class="mini-swatch" style="background:hsl(60,8%,63%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,12%,69%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,11%,66%)"></div>
+        <div class="mini-swatch" style="background:hsl(48,8%,62%)"></div>
+        <div class="mini-swatch" style="background:hsl(125,13%,68%)"></div>
+        <div class="mini-swatch" style="background:hsl(80,10%,67%)"></div>
+      </div>
+      <div class="group-metrics">
+        P10(speed): <strong>0.42</strong> &rarr; Learning &nbsp;&nbsp;
+        P10(fresh): <strong>0.18</strong> &rarr; Needs review &nbsp;&nbsp;
+        <em>Was working on it, hasn't practiced in a while.</em>
+      </div>
+    </div>
+
+    <div class="group-box">
+      <div class="group-header">
+        <span class="group-name">B, E, &#x266F;&#x266D;</span>
+        <span class="group-status status-not-started" style="font-size:0.7rem">Not started</span>
+      </div>
+      <div class="group-items">
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+        <div class="mini-swatch" style="background:hsl(30,4%,85%)"></div>
+      </div>
+      <div class="group-metrics">
+        Not started. Expansion gate decides when this becomes available.
+      </div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>The "Learned" level is the key addition</h3>
+    <p>v3 went straight from Learning to Automatic. That made the expansion gate
+       too strict ("all Automatic") or required a separate threshold.</p>
+    <p>Now "Learned" sits at P10(speed) &ge; 0.7 &mdash; you know the material
+       but still think about it. This is exactly the right point to say "you can
+       expand to new material" while continuing to automate what you've learned.</p>
+
+    <h3>Learned maps to heatmap-4 (yellow-green)</h3>
+    <p>At this level, items typically show <span class="swatch" style="width:14px; height:14px; display:inline-block; vertical-align:middle; background:hsl(80,35%,40%)"></span>
+       yellow-green. You can see you're close to green but not quite there.
+       The visual message matches: "good, but not automatic yet."</p>
+
+    <textarea class="comment-box" data-section="v4-full-status" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>3. Cross-level Recommendations: Expand &amp; Automate</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Expansion gate + recommendation priority with alternation</div>
+
+    <h3>Expansion gate</h3>
+    <div style="background:#f0f7ff; border:1px solid #b8d4f0; border-radius:6px; padding:0.6rem 0.8rem; font-size:0.85rem; margin-bottom:1rem;">
+      <strong>Gate opens when:</strong>
+      <ul style="margin:0.3rem 0 0 1rem;">
+        <li>All started, non-skipped levels are at least <span class="group-status status-learned" style="font-size:0.68rem">Learned</span></li>
+        <li>No levels <span class="group-status" style="font-size:0.68rem; background:#f0d0d0; color:#8b3a3a">Need review</span></li>
+      </ul>
+      <strong>Expands:</strong> the next unstarted level in sequence (one at a time).
+    </div>
+
+    <h3>Recommendation priority</h3>
+    <div style="background:#f8f8f8; border:1px solid #e0e0e0; border-radius:8px; padding:0.8rem; font-size:0.82rem; margin-bottom:1rem;">
+      <table style="width:100%; border-collapse:collapse;">
+        <tr style="border-bottom:1px solid #ddd">
+          <th style="text-align:left; padding:3px 6px">Priority</th>
+          <th style="text-align:left; padding:3px 6px">Condition</th>
+          <th style="text-align:left; padding:3px 6px">Action</th>
+        </tr>
+        <tr style="border-bottom:1px solid #eee">
+          <td style="padding:3px 6px; font-weight:600;">1. Review</td>
+          <td style="padding:3px 6px">Any level: Needs review</td>
+          <td style="padding:3px 6px">Recommend reviewing that level</td>
+        </tr>
+        <tr style="border-bottom:1px solid #eee">
+          <td style="padding:3px 6px; font-weight:600;">2. Practice</td>
+          <td style="padding:3px 6px">Any level: Starting or Hesitant or Learning</td>
+          <td style="padding:3px 6px">Recommend practicing that level</td>
+        </tr>
+        <tr style="border-bottom:1px solid #eee">
+          <td style="padding:3px 6px; font-weight:600;">3. Expand</td>
+          <td style="padding:3px 6px">Gate open + next unstarted level available</td>
+          <td style="padding:3px 6px">Recommend starting next level</td>
+        </tr>
+        <tr>
+          <td style="padding:3px 6px; font-weight:600;">4. Automate</td>
+          <td style="padding:3px 6px">Any level: Learned (not yet Automatic)</td>
+          <td style="padding:3px 6px">Recommend drilling for automaticity</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Expand/Automate alternation</h3>
+    <div style="background:#fff8f0; border:1px solid #e0c090; border-radius:6px; padding:0.6rem 0.8rem; font-size:0.82rem; margin-bottom:1rem;">
+      <p><strong>Policy:</strong> expand if &le; 2 "Learned" levels. If &ge; 3
+         "Learned" levels, prioritize automating them before expanding more.</p>
+      <p class="note" style="margin-top:0.3rem;">This prevents the user from racing through all
+         levels at "Learned" without automating any. But it also prevents the boredom of
+         drilling one level to perfection before seeing anything new.</p>
+    </div>
+
+    <h3>Walkthrough: Guitar Fretboard</h3>
+    <table style="width:100%; font-size:0.78rem; border-collapse:collapse;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">Level</th>
+        <th style="text-align:left; padding:3px 6px">Speed</th>
+        <th style="text-align:left; padding:3px 6px">Fresh</th>
+        <th style="text-align:left; padding:3px 6px">Rec</th>
+      </tr>
+      <tr><td style="padding:3px 6px">Natural Notes</td>
+          <td style="padding:3px 6px"><span class="group-status status-automatic" style="font-size:0.65rem">Automatic</span></td>
+          <td style="padding:3px 6px"><span class="group-status" style="font-size:0.65rem; background:#e8f4e8; color:#2d6e2d">Fresh</span></td>
+          <td style="padding:3px 6px; color:#888">&mdash;</td></tr>
+      <tr><td style="padding:3px 6px">F, C</td>
+          <td style="padding:3px 6px"><span class="group-status status-learned" style="font-size:0.65rem">Learned</span></td>
+          <td style="padding:3px 6px"><span class="group-status" style="font-size:0.65rem; background:#e8f4e8; color:#2d6e2d">Fresh</span></td>
+          <td style="padding:3px 6px; color:#1a5928; font-weight:500;">Automate</td></tr>
+      <tr><td style="padding:3px 6px">G&#x266F;, C&#x266F;, D&#x266F;</td>
+          <td style="padding:3px 6px"><span class="group-status status-learning" style="font-size:0.65rem">Learning</span></td>
+          <td style="padding:3px 6px"><span class="group-status" style="font-size:0.65rem; background:#f0d0d0; color:#8b3a3a">Needs review</span></td>
+          <td style="padding:3px 6px; color:#8b3a3a; font-weight:500;">Review</td></tr>
+      <tr><td style="padding:3px 6px">B, E, &#x266F;&#x266D;</td>
+          <td style="padding:3px 6px" colspan="2"><span class="group-status status-not-started" style="font-size:0.65rem">Not started</span></td>
+          <td style="padding:3px 6px; color:#888">&mdash; (gate closed: G&#x266F; not Learned + needs review)</td></tr>
+    </table>
+    <div class="note" style="margin-top:0.3rem;">
+      Result: Review G&#x266F;, then Automate F,C. Gate closed because G&#x266F; is below Learned and needs review.
+    </div>
+
+    <h3>After G&#x266F; catches up&hellip;</h3>
+    <table style="width:100%; font-size:0.78rem; border-collapse:collapse; margin-top:0.5rem;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">Level</th>
+        <th style="text-align:left; padding:3px 6px">Speed</th>
+        <th style="text-align:left; padding:3px 6px">Fresh</th>
+        <th style="text-align:left; padding:3px 6px">Rec</th>
+      </tr>
+      <tr><td style="padding:3px 6px">Natural Notes</td>
+          <td style="padding:3px 6px"><span class="group-status status-automatic" style="font-size:0.65rem">Automatic</span></td>
+          <td style="padding:3px 6px"><span class="group-status" style="font-size:0.65rem; background:#e8f4e8; color:#2d6e2d">Fresh</span></td>
+          <td style="padding:3px 6px; color:#888">&mdash;</td></tr>
+      <tr><td style="padding:3px 6px">F, C</td>
+          <td style="padding:3px 6px"><span class="group-status status-learned" style="font-size:0.65rem">Learned</span></td>
+          <td style="padding:3px 6px"><span class="group-status" style="font-size:0.65rem; background:#e8f4e8; color:#2d6e2d">Fresh</span></td>
+          <td style="padding:3px 6px; color:#1a5928; font-weight:500;">Automate</td></tr>
+      <tr><td style="padding:3px 6px">G&#x266F;, C&#x266F;, D&#x266F;</td>
+          <td style="padding:3px 6px"><span class="group-status status-learned" style="font-size:0.65rem">Learned</span></td>
+          <td style="padding:3px 6px"><span class="group-status" style="font-size:0.65rem; background:#e8f4e8; color:#2d6e2d">Fresh</span></td>
+          <td style="padding:3px 6px; color:#1a5928; font-weight:500;">Automate</td></tr>
+      <tr><td style="padding:3px 6px">B, E, &#x266F;&#x266D;</td>
+          <td style="padding:3px 6px" colspan="2"><span class="group-status status-not-started" style="font-size:0.65rem">Not started</span></td>
+          <td style="padding:3px 6px; color:#004085; font-weight:500;">Expand (gate open, 2 Learned &le; cap)</td></tr>
+    </table>
+    <div class="note" style="margin-top:0.3rem;">
+      All active levels &ge; Learned, none need review &rarr; gate opens. Only 2 Learned levels &le; cap of 3 &rarr; expand.
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Pedagogically sound alternation</h3>
+    <p>The expand/automate alternation prevents two failure modes:</p>
+    <ul>
+      <li><strong>Grinding one level forever</strong> (boring, diminishing returns)</li>
+      <li><strong>Racing through everything at "Learned"</strong> (nothing gets automated,
+          everything decays, massive review backlog later)</li>
+    </ul>
+    <p>The cap (e.g. 3 Learned levels) is a tunable parameter. Start with 3,
+       adjust based on user feedback.</p>
+
+    <h3>Expansion gate is now natural</h3>
+    <p class="fix">The gate uses the same speed thresholds as level status.
+       "All active levels at least Learned" = P10(speed) &ge; 0.7 for each.
+       Compare to the current system: P10(automaticity) &ge; 0.7 across
+       all started items. Similar threshold, cleaner concept.</p>
+
+    <h3>Future: effort-based limits</h3>
+    <p class="note">Once we track session effort (reps, time), we can add:
+       "if you've done 150 reps on one level today, recommend something else."
+       This slots in at the recommendation step without changing the status model.</p>
+
+    <textarea class="comment-box" data-section="v4-cross-level" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>4. Per-skill: Cue Labels</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">Skill cue = highest-priority cross-level recommendation</div>
+
+    <table style="width:100%; font-size:0.82rem; border-collapse:collapse; margin-bottom:1rem;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:3px 6px">Cross-level rec</th>
+        <th style="text-align:left; padding:3px 6px">Skill cue</th>
+      </tr>
+      <tr><td style="padding:3px 6px">Any level: Review</td>
+          <td style="padding:3px 6px"><span class="cue-pill cue-review" style="font-size:0.7rem">Review</span></td></tr>
+      <tr><td style="padding:3px 6px">Any level: Practice</td>
+          <td style="padding:3px 6px"><span class="cue-pill cue-get-faster" style="font-size:0.7rem">Keep practicing</span></td></tr>
+      <tr><td style="padding:3px 6px">Expand available</td>
+          <td style="padding:3px 6px"><span class="cue-pill cue-learn-next" style="font-size:0.7rem">Learn next level</span></td></tr>
+      <tr><td style="padding:3px 6px">Automate remaining</td>
+          <td style="padding:3px 6px"><span class="cue-pill" style="font-size:0.7rem; background:#b8e6c8; color:#1a5928">Almost there</span></td></tr>
+      <tr><td style="padding:3px 6px">All Automatic + Fresh</td>
+          <td style="padding:3px 6px">(no cue &mdash; all done)</td></tr>
+      <tr><td style="padding:3px 6px">No levels started</td>
+          <td style="padding:3px 6px">(no cue &mdash; cold start)</td></tr>
+    </table>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Guitar Fretboard</span>
+        <span class="cue-pill cue-review">Review</span>
+      </div>
+      <div class="note">G&#x266F; level needs review &rarr; highest priority</div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+        <div style="background:hsl(80,33%,41%)"></div>
+        <div style="background:hsl(60,8%,63%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Key Signatures</span>
+        <span class="cue-pill cue-learn-next">Learn next level</span>
+      </div>
+      <div class="note">Level 0 Automatic + Fresh, gate open, 0 Learned levels</div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+        <div style="background:hsl(30,4%,85%)"></div>
+      </div>
+    </div>
+
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Semitone Math</span>
+        <span class="cue-pill" style="background:#b8e6c8; color:#1a5928">Almost there</span>
+      </div>
+      <div class="note">All levels Learned or Automatic, none need review. Automate remaining.</div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+        <div style="background:hsl(125,46%,34%)"></div>
+        <div style="background:hsl(80,33%,41%)"></div>
+        <div style="background:hsl(80,35%,40%)"></div>
+        <div style="background:hsl(125,48%,33%)"></div>
+        <div style="background:hsl(80,33%,41%)"></div>
+      </div>
+    </div>
+
+    <div class="all-done-msg">
+      All your starred skills are automatic. Nice work!
+    </div>
+    <div class="skill-card-mock">
+      <div class="skill-card-top">
+        <span class="skill-name">Note &#x2194; Semitones</span>
+      </div>
+      <div class="progress-bar">
+        <div style="background:hsl(125,48%,33%)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>New cue: "Almost there"</h3>
+    <p>When all levels are at least Learned and none need review, but some aren't
+       Automatic yet. The user is close. Different vibe from "keep practicing" &mdash;
+       this is the home stretch.</p>
+    <p class="note">Cue wording TBD: "Almost there" / "Automate" / "Drill" / "Lock it in"?</p>
+
+    <h3>"All done" works correctly</h3>
+    <p class="fix">Automatic requires P10(speed) &ge; 0.9, matching heatmap green.
+       All bars show green. No mismatch possible.</p>
+
+    <textarea class="comment-box" data-section="v4-skill-cues" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<h2>5. v3 &rarr; v4 Summary</h2>
+<!-- ================================================================== -->
+
+<div class="row">
+  <div class="example-col">
+    <div class="section-label">What changed from v3</div>
+    <table style="width:100%; font-size:0.85rem; border-collapse:collapse; margin-bottom:1.5rem;">
+      <tr style="border-bottom:1px solid #ddd">
+        <th style="text-align:left; padding:4px 8px">v3</th>
+        <th style="text-align:left; padding:4px 8px">v4</th>
+      </tr>
+      <tr><td style="padding:4px 8px">4 speed levels (Automatic/Learning/Hesitant/Starting)</td>
+          <td style="padding:4px 8px">5 speed levels (+<span class="group-status status-learned" style="font-size:0.7rem">Learned</span> at &ge;0.7)</td></tr>
+      <tr><td style="padding:4px 8px">Expansion gate: all Automatic + Fresh</td>
+          <td style="padding:4px 8px">Expansion gate: all at least Learned + no reviews needed</td></tr>
+      <tr><td style="padding:4px 8px">3 recommendation types (review/practice/expand)</td>
+          <td style="padding:4px 8px">4 types (+automate: Learned &rarr; Automatic)</td></tr>
+      <tr><td style="padding:4px 8px">No expansion throttle</td>
+          <td style="padding:4px 8px">Expand/automate alternation (&le;3 Learned before automate)</td></tr>
+    </table>
+
+    <div class="section-label">The full pipeline (v4)</div>
+    <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; flex-wrap:wrap;">
+      <div style="background:#fff; border:1px solid #ddd; border-radius:6px; padding:0.25rem 0.5rem;">Items<br><span class="note">speed, freshness</span></div>
+      <div style="color:#aaa;">&rarr;</div>
+      <div style="background:#e8f0ff; border:1px solid #b8d4f0; border-radius:6px; padding:0.25rem 0.5rem;">Level stats<br><span class="note">P10(speed), P10(fresh)</span></div>
+      <div style="color:#aaa;">&rarr;</div>
+      <div style="background:#e8f0ff; border:1px solid #b8d4f0; border-radius:6px; padding:0.25rem 0.5rem;">Level status<br><span class="note">5 speed &times; 2 fresh</span></div>
+      <div style="color:#aaa;">&rarr;</div>
+      <div style="background:#fff0e0; border:1px solid #e0c090; border-radius:6px; padding:0.25rem 0.5rem;">Cross-level recs<br><span class="note">review/practice/expand/automate</span></div>
+      <div style="color:#aaa;">&rarr;</div>
+      <div style="background:#d4edda; border:1px solid #a8d5b0; border-radius:6px; padding:0.25rem 0.5rem;">Skill cue<br><span class="note">highest-priority</span></div>
+    </div>
+  </div>
+
+  <div class="discuss-col">
+    <h3>Open questions</h3>
+    <ul>
+      <li>Exact word for "Learned" &mdash; the user knows it but thinks about it.
+          "Good"? "Solid"? "Learned"?</li>
+      <li>Learned-level cap before prioritizing automate: 2? 3? Should it depend
+          on skill size?</li>
+      <li>"Almost there" cue wording: "Almost automatic" / "Lock it in" / "Drill"?</li>
+      <li>Should "Automate" show as a distinct cue on the home screen, or just as
+          a recommendation within the skill?</li>
+      <li>Effort-based limits: how should session effort interact with the priority
+          system? (Future work, but good to consider the interface.)</li>
+    </ul>
+
+    <textarea class="comment-box" data-section="v4-summary" placeholder="Comments / questions..."></textarea>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// localStorage persistence for comment textareas
+// ---------------------------------------------------------------------------
+
+const STORAGE_PREFIX = 'mastery-terminology-feedback--';
+
+function loadNotes() {
+  for (const ta of document.querySelectorAll('textarea.comment-box')) {
+    const key = STORAGE_PREFIX + ta.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) ta.value = saved;
+    } catch (_) { /* expected */ }
+  }
+}
+
+function saveNote(ta) {
+  const key = STORAGE_PREFIX + ta.dataset.section;
+  try {
+    localStorage.setItem(key, ta.value);
+  } catch (_) { /* expected */ }
+}
+
+// Load on init
+loadNotes();
+
+// Auto-save on input
+for (const ta of document.querySelectorAll('textarea.comment-box')) {
+  ta.addEventListener('input', () => saveNote(ta));
+}
+
+// ---------------------------------------------------------------------------
+// Build summary text
+// ---------------------------------------------------------------------------
+
+const SECTION_TITLES = {
+  'item-metrics': '1. Per-item: Three Metrics',
+  'heatmap': '2. Per-item Display: Heatmap',
+  'group-rollup': '3. Per-group: Rolling Up Items',
+  'skill-recs': '4. Per-skill: Home Screen Recommendations',
+  'all-done': '5. The "All Done" State',
+  'summary': 'Summary of Changes',
+  'v2-items': 'v2 — 1. Per-item: Metrics Only',
+  'v2-levels': 'v2 — 2. Per-level: The Core Unit',
+  'v2-skills': 'v2 — 3. Per-skill: Level Statuses Propagate Up',
+  'v2-summary': 'v2 — 4. Summary',
+  'v3-items': 'v3 — 1. Per-item: Metrics',
+  'v3-level-status': 'v3 — 2. Per-level Stats & Status',
+  'v3-cross-level': 'v3 — 3. Cross-level Recommendation Algorithm',
+  'v3-skill-cues': 'v3 — 4. Per-skill: Cue Labels',
+  'v3-summary': 'v3 — 5. Summary',
+  'v4-speed-levels': 'v4 — 1. Speed Axis: 5 Levels',
+  'v4-full-status': 'v4 — 2. Full Level Status',
+  'v4-cross-level': 'v4 — 3. Cross-level Recommendations',
+  'v4-skill-cues': 'v4 — 4. Skill Cue Labels',
+  'v4-summary': 'v4 — 5. Summary',
+};
+
+function buildSummary() {
+  const lines = ['# Mastery Terminology — Feedback', ''];
+  for (const ta of document.querySelectorAll('textarea.comment-box')) {
+    const section = ta.dataset.section;
+    const title = SECTION_TITLES[section] || section;
+    const text = ta.value.trim();
+    if (text) {
+      lines.push(`## ${title}`, '', text, '');
+    }
+  }
+  if (lines.length <= 2) {
+    lines.push('(No feedback entered yet.)');
+  }
+  return lines.join('\n');
+}
+
+// ---------------------------------------------------------------------------
+// Status flash
+// ---------------------------------------------------------------------------
+
+function showStatus(msg) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(showStatus._timer);
+  showStatus._timer = setTimeout(() => { el.style.opacity = '0'; }, 2000);
+}
+
+// ---------------------------------------------------------------------------
+// Copy to clipboard
+// ---------------------------------------------------------------------------
+
+async function copyToClipboard(text, label) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showStatus('Copied ' + label + '!');
+  } catch {
+    // Fallback for older browsers / non-https
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showStatus('Copied ' + label + ' (fallback)');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Toolbar buttons
+// ---------------------------------------------------------------------------
+
+document.getElementById('btn-copy').addEventListener('click', () => {
+  copyToClipboard(buildSummary(), 'all feedback');
+});
+
+// Copy v3 feedback only
+document.getElementById('btn-copy-v3').addEventListener('click', () => {
+  const v3Sections = ['v3-items', 'v3-level-status', 'v3-cross-level', 'v3-skill-cues', 'v3-summary'];
+  const lines = ['# Mastery Terminology — v3 Feedback', ''];
+  for (const section of v3Sections) {
+    const ta = document.querySelector(`textarea[data-section="${section}"]`);
+    if (!ta) continue;
+    const title = SECTION_TITLES[section] || section;
+    const text = ta.value.trim();
+    if (text) {
+      lines.push(`## ${title}`, '', text, '');
+    }
+  }
+  if (lines.length <= 2) lines.push('(No v3 feedback entered yet.)');
+  copyToClipboard(lines.join('\n'), 'v3 feedback');
+  // Flash the v3-specific status
+  const el = document.getElementById('status-v3');
+  el.textContent = 'Copied v3 feedback!';
+  el.style.opacity = '1';
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => { el.style.opacity = '0'; }, 2000);
+});
+
+// Copy v4 feedback only
+document.getElementById('btn-copy-v4').addEventListener('click', () => {
+  const v4Sections = ['v4-speed-levels', 'v4-full-status', 'v4-cross-level', 'v4-skill-cues', 'v4-summary'];
+  const lines = ['# Mastery Terminology — v4 Feedback', ''];
+  for (const section of v4Sections) {
+    const ta = document.querySelector(`textarea[data-section="${section}"]`);
+    if (!ta) continue;
+    const title = SECTION_TITLES[section] || section;
+    const text = ta.value.trim();
+    if (text) {
+      lines.push(`## ${title}`, '', text, '');
+    }
+  }
+  if (lines.length <= 2) lines.push('(No v4 feedback entered yet.)');
+  copyToClipboard(lines.join('\n'), 'v4 feedback');
+  const el = document.getElementById('status-v4');
+  el.textContent = 'Copied v4 feedback!';
+  el.style.opacity = '1';
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => { el.style.opacity = '0'; }, 2000);
+});
+
+document.getElementById('btn-save').addEventListener('click', () => {
+  const text = buildSummary();
+  const blob = new Blob([text], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mastery-terminology-feedback.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showStatus('Saved .md file');
+});
+</script>
+
+</body>
+</html>

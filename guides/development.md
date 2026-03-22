@@ -46,6 +46,10 @@ deno task iterate capture [session]                   # capture next version
 deno task iterate view [session]                      # open review page
 deno task iterate list                                # list sessions
 deno task iterate --list-states                       # print valid state names
+
+# Visual history archive (outside repo)
+npx tsx scripts/capture-visual-history.ts --archive-dir <path>          # capture at HEAD
+npx tsx scripts/capture-visual-history.ts --archive-dir <path> --force  # force capture
 ```
 
 ## Build System
@@ -106,6 +110,79 @@ the correct layer set in the test (`FOUNDATION`, `ENGINE`, `DISPLAY`, `APP`,
 `BUILD_TIME`, or `TOOL`). Files under `src/modes/`, `src/hooks/`, and `src/ui/`
 are classified by path automatically.
 
+### E2E tests
+
+Browser-level tests using Playwright that verify cross-cutting user flows. They
+run against a real dev server and exercise the full stack (HTML → CSS → JS →
+localStorage).
+
+#### Running
+
+```bash
+deno task e2e          # All 5 suites (~30s)
+deno task e2e:quiz     # Quiz lifecycle (start, answer, feedback, next, stop)
+deno task e2e:nav      # Navigation and mode switching
+deno task e2e:persist  # localStorage persistence across reloads
+deno task e2e:chord    # Chord spelling sequential input
+deno task e2e:skip     # Skip/unskip recommendations
+```
+
+Requires Playwright's Chromium: `npx playwright install chromium`.
+
+E2E tests also run in CI on every push to `claude/*` and `codex/*` branches.
+
+#### Test infrastructure
+
+Each suite lives in `tests/e2e/` and spawns its own Deno dev server on a
+dedicated port (8003–8007) to avoid conflicts. Shared helpers in
+`tests/e2e/helpers/`:
+
+- **`server.ts`** — starts a dev server subprocess, waits for `Listening on`
+  output, returns the actual port.
+- **`page-helpers.ts`** — `createTestPage`, `seedLocalStorage`,
+  `navigateToMode`, `startQuiz`, `advanceToNext`.
+- **`fixture-builders.ts`** — `buildMotorBaseline`, `buildEnabledGroups` for
+  seeding localStorage with known state.
+
+The `?roundMs=N` query parameter overrides the 60-second round timer (e.g.,
+`?roundMs=5000` for 5s rounds). Useful in both E2E tests and manual testing.
+
+#### What to E2E test
+
+- **Cross-cutting user flows** — quiz start → answer → feedback → next → stop.
+- **Navigation lifecycle** — mode switching, back button, menu interaction.
+- **Persistence** — localStorage survives reload, corrupt data doesn't crash.
+- **Scope changes** — enabling/disabling groups, skip/unskip recommendations.
+- **Multi-step input** — sequential answer entry (chord spelling).
+
+#### What NOT to E2E test
+
+- **Pure logic** — question generation, scoring, adaptive selection → unit tests.
+- **Visual appearance** — layout, colors, spacing → screenshot diffing.
+- **Exhaustive combinations** — every group × every direction → unit tests.
+  E2E tests should spot-check representative flows, not enumerate.
+- **Timing-sensitive internals** — EWMA values, exact scores → unit tests with
+  controlled inputs.
+
+#### Design principles
+
+- **Wait for DOM state, not timeouts.** Use `waitForSelector` with a state
+  (`'visible'`, `'hidden'`) instead of `waitForTimeout`. Timeouts are flaky
+  across machines.
+- **Be direction-agnostic.** Bidirectional modes pick a random direction each
+  question. Don't assume the prompt will be a note vs. a number — read the
+  placeholder or prompt text to determine which kind of answer to give.
+- **Find targets dynamically.** When the app's recommendation algorithm picks
+  which group to suggest, read the actual recommendation text instead of
+  hardcoding expected values. Algorithms change; tests shouldn't break.
+- **Seed known state.** Use `seedLocalStorage` + `buildMotorBaseline` to skip
+  calibration and start from a deterministic baseline. Don't rely on completing
+  calibration in-test.
+- **Each suite owns its server.** Dedicated ports prevent interference between
+  parallel or sequential runs. If adding a new suite, pick the next unused port.
+- **Clean up contexts.** Wrap each test's page in `try/finally` with
+  `page.context().close()` to avoid leaking browser contexts.
+
 ## Versioning
 
 A version identifier is displayed on the home screen (`<span class="version">`).
@@ -147,6 +224,17 @@ yet — it may default to pushing to `origin/main`.
 `git push` refuses if the local and remote branch names don't match — an extra
 safeguard against accidentally pushing to `main`.
 
+### Pruning stale branches
+
+`scripts/prune-branches.sh` removes stale remote-tracking refs and deletes
+local branches that have been merged into `main`. It always keeps `main`,
+`gh-pages`, `workstream/*`, and the current branch.
+
+```bash
+scripts/prune-branches.sh          # Preview (dry run)
+scripts/prune-branches.sh --do-it  # Actually delete
+```
+
 ## Deployment
 
 Build output goes to `docs/` (GitHub Pages source directory):
@@ -154,7 +242,10 @@ Build output goes to `docs/` (GitHub Pages source directory):
 - `docs/index.html` — the single-page app
 - `docs/sw.js` — service worker (network-first cache strategy)
 - `docs/favicon-32x32.png` — browser tab icon
-- `docs/apple-touch-icon.png` — iOS home screen icon
+- `docs/apple-touch-icon.png` — iOS home screen icon (180x180)
+- `docs/icon-192x192.png` — PWA icon (192x192, Android installability)
+- `docs/icon-512x512.png` — PWA icon (512x512, splash screens)
+- `docs/manifest.json` — web app manifest (PWA installability)
 - `docs/design/` — design reference pages (copied from `guides/design/`)
 
 After building, commit the changed files. The service worker ensures users get
@@ -172,14 +263,16 @@ build-generated:
   the primary tool for iterating on component design. Available at
   `localhost:8001/preview` during dev.
 
-- `guides/design/colors.html` — hand-written color palette reference.
+The **Colors** tab on the preview page shows live palette ramps, semantic token
+swatches, pairings, heatmap scale, and component token reference.
 
-- `guides/design/components.html` — hand-written design system reference (CSS
-  tokens, spacing/typography scales, grid patterns, variant A/B panels).
+Build-generated pages require `deno task build` or a dev server refresh.
 
-All pages link to `src/styles.css` so CSS changes are visible on refresh.
-Hand-written pages need no rebuild; build-generated pages require
-`deno task build`.
+**Every new UI component must appear in the preview page.** The preview is the
+design system source of truth — it renders real components with mock data, not
+copies or approximations. When adding a component, add a Section for it in the
+relevant preview tab file (`src/ui/preview-tab-*.tsx`). If no tab fits, add a
+new one.
 
 **If you add new files to `docs/`**, no workflow changes are needed — the
 preview deploy workflow copies all files from `docs/` automatically.
@@ -196,45 +289,13 @@ and deploys the output to `preview/<branch-name>/` on the `gh-pages` branch.
 - **PR comment:** the deploy workflow posts the preview URL on any associated
   PR.
 
-## Agent Screenshot Workflow
+## Screenshots
 
-The CI pipeline captures fixture-based screenshots on pushes to `claude/*/ui/*`
-branches. The script dispatches state fixtures to the running app (no clicking
-through quizzes), so screenshots are fully deterministic.
-
-### How it works
-
-1. `deploy-preview.yml` runs `take-screenshots.ts --ci` on `/ui/` branches
-2. The script opens the app with `?fixtures`, dispatches `__fixture__` events
-   to inject engine state, and captures after Preact re-renders
-3. CI uses `--ci` flag: 1x device scale, JPEG output (smaller, faster)
-4. Screenshots deploy to `preview/<branch>/screenshots/` on gh-pages
-
-### Branch requirement
-
-Screenshots only run on branches matching `*/ui/*` (e.g.,
-`claude/fix-buttons/ui/review`). Non-UI branches skip Playwright entirely.
-
-### Step-by-step
-
-```bash
-# 1. Push to a /ui/ branch
-git push -u origin claude/my-feature/ui/review
-
-# 2. Poll workflow status until complete (~2-3 min)
-curl -s "https://api.github.com/repos/shnayder/musicreps/actions/runs?branch=claude/my-feature/ui/review&per_page=1" \
-  | python3 -c "import sys,json; r=json.load(sys.stdin)['workflow_runs'][0]; print(r['status'], r['conclusion'] or '')"
-
-# 3. List available screenshots
-curl -s "https://api.github.com/repos/shnayder/musicreps/contents/preview/claude-my-feature-ui-review/screenshots?ref=gh-pages" \
-  | python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['name'].endswith(('.png','.jpg'))]"
-
-# 4. Download a specific screenshot
-curl -sL -o /tmp/screenshot.jpg \
-  "https://raw.githubusercontent.com/shnayder/musicreps/gh-pages/preview/claude-my-feature-ui-review/screenshots/fretboard-idle.jpg"
-```
-
-Then use `Read /tmp/screenshot.jpg` to view the image.
+The `take-screenshots.ts` script captures fixture-based screenshots locally. It
+dispatches state fixtures to the running app (no clicking through quizzes), so
+screenshots are fully deterministic. **Screenshots are not captured in CI** —
+preview deploys include only the built app. Use the visual history archive
+(above) or run the script locally for visual review.
 
 ### Available screenshots
 
@@ -316,6 +377,74 @@ list. Common ones: `<mode>-idle`, `<mode>-quiz`, `<mode>-quiz-rev`,
 Sessions live in `screenshots/iterate/<session-name>/` (gitignored). Each
 version's screenshots are in a `v1/`, `v2/`, etc. subdirectory. `session.json`
 tracks the state list and version history.
+
+## Visual History Archive
+
+A lightweight archive of key screenshots over time, stored **outside the repo**.
+Each snapshot captures a few representative screens with commit metadata — an
+easy way to see how the app looked at any point without checking out old commits.
+
+**Why outside the repo?** Binary files (images, screenshots) bloat git history
+permanently — even after deletion, the blobs stay in the object store. The CI
+preview system previously committed screenshots to `gh-pages` on every push,
+inflating the repo to 400+ MB. This archive avoids that by keeping images in a
+local directory that syncs without polluting git.
+
+### Capturing
+
+The archive directory must be specified via `--archive-dir` or the
+`MUSICREPS_VISUAL_HISTORY_DIR` environment variable.
+
+```bash
+ARCHIVE=~/my/visual-history
+
+# Normal: capture at HEAD (skips if no new commits since last snapshot)
+npx tsx scripts/capture-visual-history.ts --archive-dir $ARCHIVE
+
+# Force capture even if HEAD unchanged
+npx tsx scripts/capture-visual-history.ts --archive-dir $ARCHIVE --force
+
+# Backfill from an old gh-pages preview commit
+npx tsx scripts/capture-visual-history.ts --archive-dir $ARCHIVE \
+  --backfill-ghpages <gh-pages-commit> \
+  --preview <preview-dir-name> \
+  --note "description"
+```
+
+### Automatic weekly capture
+
+A launchd agent (`~/Library/LaunchAgents/com.musicreps.visual-history.plist`)
+runs the capture script every Monday at 10:17am. It skips automatically if HEAD
+hasn't changed since the last snapshot. Logs go to
+`/tmp/musicreps-visual-history.log`.
+
+```bash
+# Check agent status
+launchctl list | grep musicreps
+
+# Reload after editing the plist
+launchctl unload ~/Library/LaunchAgents/com.musicreps.visual-history.plist
+launchctl load ~/Library/LaunchAgents/com.musicreps.visual-history.plist
+```
+
+### Manifest
+
+`scripts/visual-history.json` lists which screenshots to capture. Edit this file
+to change the set of screens in future snapshots. Names must match entries from
+the screenshot manifest (`npx tsx scripts/take-screenshots.ts --list`).
+
+### Archive structure
+
+```
+~/Dropbox/projects/musicreps-visual-history/
+  index.md                        # Chronological table of all snapshots
+  2026-03-17_8fcb41bb/
+    home.jpg
+    fretboard-idle.jpg
+    semitoneMath-idle.jpg
+    ...
+    meta.json                     # {commit, date, subject, screenshots}
+```
 
 ## iOS App (Capacitor)
 
@@ -487,3 +616,68 @@ No `GH_TOKEN` needed. Git push/pull work normally via the `origin` remote.
 **Read-only.** The proxy supports GET requests (list PRs, read comments) but
 not POST/PATCH (create PRs, post comments). Push the branch and create PRs
 manually or let CI handle it.
+
+# Git Safety Policy
+
+## Core Rule
+Only use Git operations that are **recoverable, non-destructive, and append-only**.  
+Never rewrite or implicitly discard state.
+
+Feature work:
+- make feature branches for all work. Never push directly to main.
+- merge from latest main as needed
+- PR back into main. No rebase.
+
+---
+
+## Allowed Commands
+
+- git status
+- git diff
+- git add <files>
+- git commit -m "<message>"
+- git switch -c <branch>
+- git checkout -b <branch>
+- git branch
+- git log
+
+---
+
+## Strictly Disallowed Commands
+
+- git stash pop
+- git stash    // Let's not use stash at all. Temp commits or temp folders are always available.
+- git commit --amend
+- git rebase (any form)
+- git reset --hard
+- git clean -fd (or similar)
+- git push --force (or --force-with-lease)
+- git checkout <commit> (detached HEAD workflows)
+
+If these truly need to be run, describe what needs to be done and why, give the exact command you'd like to run, and escalate.
+
+## Failure / Recovery Protocol
+
+If the repo state is unclear or something fails, run these:
+
+- git status
+- git stash list
+- git reflog
+- git diff
+
+Do NOT:
+- reset
+- clean
+- force push
+- drop stashes blindly
+
+Escalate instead.
+
+---
+
+## Behavioral Constraints
+
+- Never assume hidden state (stash, index, reflog) is safe
+- Never delete or overwrite work implicitly
+- Prefer creating new commits over modifying existing ones
+- Prefer visible state (branches, commits) over hidden state (stash)

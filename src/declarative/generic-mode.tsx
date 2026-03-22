@@ -17,7 +17,12 @@ import {
   useRef,
   useState,
 } from 'preact/hooks';
-import type { ModeHandle } from '../types.ts';
+import type {
+  AdaptiveSelector,
+  ModeHandle,
+  SpeedCheckFixture,
+  SuggestionLine,
+} from '../types.ts';
 
 import { useLearnerModel } from '../hooks/use-learner-model.ts';
 import { useGroupScope } from '../hooks/use-group-scope.ts';
@@ -25,6 +30,7 @@ import type { QuizEngineConfig } from '../hooks/use-quiz-engine.ts';
 import { useQuizEngine } from '../hooks/use-quiz-engine.ts';
 import {
   PHASE_FOCUS_TARGETS,
+  type PresentationPhase,
   usePhaseClass,
 } from '../hooks/use-phase-class.ts';
 import { useModeLifecycle } from '../hooks/use-mode-lifecycle.ts';
@@ -50,22 +56,44 @@ import {
   SplitNoteButtons,
 } from '../ui/buttons.tsx';
 import { SequentialSlots } from '../ui/sequential-slots.tsx';
-import { GroupProgressToggles } from '../ui/scope.tsx';
+import {
+  CenteredContent,
+  LayoutFooter,
+  LayoutHeader,
+  LayoutMain,
+  QuizStage,
+  ScreenLayout,
+} from '../ui/screen-layout.tsx';
+import {
+  getStatsCellColorMerged,
+  progressBarColors,
+} from '../stats-display.ts';
 import {
   ModeTopBar,
   PracticeTab,
-  QuizArea,
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
 } from '../ui/mode-screen.tsx';
+import {
+  LevelProgressCard,
+  LevelToggles,
+  PracticeConfig,
+  SkillHeader,
+  SuggestionLines,
+} from '../ui/practice-config.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from '../ui/stats.tsx';
 import {
   FeedbackDisplay,
   KeyboardHint,
   type KeyboardHintType,
 } from '../ui/quiz-ui.tsx';
-import { BUTTON_PROVIDER, SpeedCheck } from '../ui/speed-check.tsx';
+import { Text } from '../ui/text.tsx';
+import {
+  IMPLEMENTED_TASK_TYPES,
+  NOTE_BUTTON_CONFIG,
+  SpeedCheck,
+} from '../ui/speed-check.tsx';
 
 import type {
   AnswerSpec,
@@ -391,29 +419,42 @@ function ResponseButtons(
 // ---------------------------------------------------------------------------
 
 function SequentialQuizArea<Q>(
-  { def, engine, ctrl, currentQ, activeButtons, seq, placeholder, promptText }:
-    {
-      def: ModeDefinition<Q>;
-      engine: ReturnType<typeof useQuizEngine>;
-      ctrl: ModeController<Q>;
-      currentQ: Q | null;
-      activeButtons: ButtonsDef;
-      seq: {
-        entries: { display: string }[];
-        evaluated: SequentialEntryResult[] | null;
-        correctAnswer: string;
-        handleInput: (input: string) => void;
-        handleBatch: (text: string) => boolean;
-      };
-      placeholder?: string;
-      promptText: string;
-    },
+  {
+    def,
+    engine,
+    ctrl,
+    currentQ,
+    activeButtons,
+    seq,
+    placeholder,
+    promptText,
+    instruction,
+  }: {
+    def: ModeDefinition<Q>;
+    engine: ReturnType<typeof useQuizEngine>;
+    ctrl: ModeController<Q>;
+    currentQ: Q | null;
+    activeButtons: ButtonsDef;
+    seq: {
+      entries: { display: string }[];
+      evaluated: SequentialEntryResult[] | null;
+      correctAnswer: string;
+      handleInput: (input: string) => void;
+      handleBatch: (text: string) => boolean;
+    };
+    placeholder?: string;
+    promptText: string;
+    instruction?: string;
+  },
 ) {
   return (
-    <QuizArea
-      prompt={ctrl.renderPrompt ? undefined : promptText}
-      controls={
+    <QuizStage
+      prompt={
         <>
+          {instruction && <div class='quiz-instruction'>{instruction}</div>}
+          {ctrl.renderPrompt && currentQ
+            ? ctrl.renderPrompt(currentQ)
+            : <div class='quiz-prompt'>{promptText}</div>}
           <SequentialSlots
             expectedCount={currentQ && def.sequential
               ? def.sequential.expectedCount(currentQ)
@@ -424,6 +465,10 @@ function SequentialQuizArea<Q>(
               ? seq.correctAnswer.split(' ')
               : null}
           />
+        </>
+      }
+      response={
+        <>
           <ResponseButtons
             buttonsDef={activeButtons}
             onAnswer={seq.handleInput}
@@ -437,18 +482,9 @@ function SequentialQuizArea<Q>(
               placeholder={placeholder}
             />
           )}
-          <FeedbackDisplay
-            text={engine.state.feedbackText}
-            className={engine.state.feedbackClass}
-            hint={engine.state.hintText || undefined}
-            correct={engine.state.feedbackCorrect}
-            onNext={engine.state.answered ? engine.nextQuestion : undefined}
-          />
         </>
       }
-    >
-      {currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null}
-    </QuizArea>
+    />
   );
 }
 
@@ -468,6 +504,7 @@ function StandardQuizArea<Q>(
     placeholder,
     promptText,
     lastAnswerRef,
+    instruction,
   }: {
     engine: ReturnType<typeof useQuizEngine>;
     ctrl: ModeController<Q>;
@@ -485,12 +522,20 @@ function StandardQuizArea<Q>(
         normalizedInput: string;
       } | null;
     };
+    instruction?: string;
   },
 ) {
   return (
-    <QuizArea
-      prompt={ctrl.renderPrompt ? undefined : promptText}
-      controls={
+    <QuizStage
+      prompt={
+        <>
+          {instruction && <div class='quiz-instruction'>{instruction}</div>}
+          {ctrl.renderPrompt && currentQ
+            ? ctrl.renderPrompt(currentQ)
+            : <div class='quiz-prompt'>{promptText}</div>}
+        </>
+      }
+      response={
         <>
           <ResponseButtons
             buttonsDef={activeButtons}
@@ -527,19 +572,9 @@ function StandardQuizArea<Q>(
             feedbackCorrect={engine.state.feedbackCorrect}
           />
           <KeyboardHint type={getHintType(activeButtons)} />
-          <FeedbackDisplay
-            text={engine.state.feedbackText}
-            className={engine.state.feedbackClass}
-            hint={engine.state.hintText || undefined}
-            correct={engine.state.feedbackCorrect}
-            onNext={engine.state.answered ? engine.nextQuestion : undefined}
-            label={engine.state.roundTimerExpired ? 'Continue' : 'Next'}
-          />
         </>
       }
-    >
-      {currentQ && ctrl.renderPrompt ? ctrl.renderPrompt(currentQ) : null}
-    </QuizArea>
+    />
   );
 }
 
@@ -550,7 +585,6 @@ function StandardQuizArea<Q>(
 type QuizActiveViewProps<Q> = {
   def: ModeDefinition<Q>;
   engine: ReturnType<typeof useQuizEngine>;
-  learner: ReturnType<typeof useLearnerModel>;
   ctrl: ModeController<Q>;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
@@ -581,7 +615,6 @@ function QuizActiveView<Q>(
   {
     def,
     engine,
-    learner,
     ctrl,
     currentQ,
     round,
@@ -598,9 +631,71 @@ function QuizActiveView<Q>(
 ) {
   const phase = engine.state.phase;
 
+  if (phase === 'round-complete') {
+    return (
+      <ScreenLayout>
+        <LayoutHeader>
+          <div />
+        </LayoutHeader>
+        <LayoutMain scrollable={false}>
+          <CenteredContent>
+            <RoundCompleteInfo
+              context={round.roundContext}
+              heading='Round complete'
+              count={engine.state.roundAnswered}
+              correct={round.roundCorrect}
+            />
+          </CenteredContent>
+        </LayoutMain>
+        <LayoutFooter>
+          <RoundCompleteActions
+            onContinue={engine.continueQuiz}
+            onStop={engine.stop}
+          />
+        </LayoutFooter>
+      </ScreenLayout>
+    );
+  }
+
+  const instruction = currentQ && def.quizInstruction
+    ? (typeof def.quizInstruction === 'function'
+      ? def.quizInstruction(currentQ)
+      : def.quizInstruction)
+    : undefined;
+
+  const quizContent = def.sequential
+    ? (
+      <SequentialQuizArea
+        def={def}
+        engine={engine}
+        ctrl={ctrl}
+        currentQ={currentQ}
+        activeButtons={activeButtons}
+        seq={seq}
+        placeholder={placeholder}
+        promptText={promptText}
+        instruction={instruction}
+      />
+    )
+    : (
+      <StandardQuizArea
+        engine={engine}
+        ctrl={ctrl}
+        currentQ={currentQ}
+        activeButtons={activeButtons}
+        inactiveButtons={inactiveButtons}
+        handleSubmit={handleSubmit}
+        useFlats={useFlats}
+        placeholder={placeholder}
+        promptText={promptText}
+        lastAnswerRef={lastAnswerRef}
+        instruction={instruction}
+      />
+    );
+
   return (
-    <>
-      {phase !== 'round-complete' && (
+    <ScreenLayout>
+      <LayoutHeader>
         <QuizSession
           timeLeft={engine.timerText}
           timerPct={engine.timerPct}
@@ -613,67 +708,21 @@ function QuizActiveView<Q>(
             : ''}
           onClose={engine.stop}
         />
-      )}
-      {engine.calibrating
-        ? (
-          <QuizArea>
-            <SpeedCheck
-              provider={BUTTON_PROVIDER}
-              fixture={engine.calibrationFixture}
-              onComplete={(baseline) => {
-                learner.applyBaseline(baseline);
-                engine.endCalibration();
-              }}
-              onCancel={engine.endCalibration}
-            />
-          </QuizArea>
-        )
-        : phase === 'round-complete'
-        ? (
-          <QuizArea
-            controls={
-              <RoundCompleteActions
-                onContinue={engine.continueQuiz}
-                onStop={engine.stop}
-              />
-            }
-          >
-            <RoundCompleteInfo
-              context={round.roundContext}
-              heading='Round complete'
-              count={engine.state.roundAnswered}
-              correct={round.roundCorrect}
-            />
-          </QuizArea>
-        )
-        : def.sequential
-        ? (
-          <SequentialQuizArea
-            def={def}
-            engine={engine}
-            ctrl={ctrl}
-            currentQ={currentQ}
-            activeButtons={activeButtons}
-            seq={seq}
-            placeholder={placeholder}
-            promptText={promptText}
-          />
-        )
-        : (
-          <StandardQuizArea
-            engine={engine}
-            ctrl={ctrl}
-            currentQ={currentQ}
-            activeButtons={activeButtons}
-            inactiveButtons={inactiveButtons}
-            handleSubmit={handleSubmit}
-            useFlats={useFlats}
-            placeholder={placeholder}
-            promptText={promptText}
-            lastAnswerRef={lastAnswerRef}
-          />
-        )}
-    </>
+      </LayoutHeader>
+      <LayoutMain scrollable={false}>
+        {quizContent}
+      </LayoutMain>
+      <LayoutFooter>
+        <FeedbackDisplay
+          text={engine.state.feedbackText}
+          className={engine.state.feedbackClass}
+          hint={engine.state.hintText || undefined}
+          correct={engine.state.feedbackCorrect}
+          onNext={engine.state.answered ? engine.nextQuestion : undefined}
+          label={engine.state.roundTimerExpired ? 'Continue' : 'Next'}
+        />
+      </LayoutFooter>
+    </ScreenLayout>
   );
 }
 
@@ -681,17 +730,120 @@ function QuizActiveView<Q>(
 // IdlePracticeView — rendered when the engine is idle
 // ---------------------------------------------------------------------------
 
+/** Resolve a group label that may be a string or a function. */
+function resolveGroupLabel(label: string | (() => string)): string {
+  return typeof label === 'function' ? label() : label;
+}
+
+/** Build practice content for multi-level modes (groups). */
+function GroupPracticeContent<Q>(
+  { def, groupScopeResult }: {
+    def: ModeDefinition<Q>;
+    groupScopeResult: ReturnType<typeof useGroupScope>;
+  },
+) {
+  const groupScope = def.scope.kind === 'groups' ? def.scope : null;
+  if (!groupScope) return null;
+
+  const groupLabels = groupScope.allGroupIndices.map((i) =>
+    resolveGroupLabel(groupScope.groups[i].label)
+  );
+
+  return (
+    <>
+      <PracticeConfig
+        mode={groupScopeResult.practiceMode}
+        onModeChange={groupScopeResult.setPracticeMode}
+        suggestedContent={
+          <SuggestionLines lines={groupScopeResult.suggestionLines} />
+        }
+        customContent={
+          <LevelToggles
+            labels={groupLabels}
+            active={groupScopeResult.practiceMode === 'custom'
+              ? groupScopeResult.enabledGroups
+              : groupScopeResult.suggestedScope}
+            onToggle={groupScopeResult.scopeActions.toggleGroup}
+            itemCount={groupScopeResult.enabledItems.length}
+          />
+        }
+      />
+    </>
+  );
+}
+
+/** Build level progress cards for the progress tab. */
+function LevelProgressCards<Q>(
+  { def, learner, groupScopeResult }: {
+    def: ModeDefinition<Q>;
+    learner: ReturnType<typeof useLearnerModel>;
+    groupScopeResult: ReturnType<typeof useGroupScope>;
+  },
+) {
+  const groupScope = def.scope.kind === 'groups' ? def.scope : null;
+  if (!groupScope) return null;
+  return (
+    <div class='level-progress-cards'>
+      {groupScope.allGroupIndices.map((i) => {
+        const itemIds = groupScope.getItemIdsForGroup(i);
+        const colors = progressBarColors(learner.selector, itemIds);
+        const skipReason = groupScopeResult.skippedGroups.get(i);
+        const status = skipReason === 'mastered'
+          ? 'known' as const
+          : skipReason === 'deferred'
+          ? 'skipped' as const
+          : 'normal' as const;
+        return (
+          <LevelProgressCard
+            key={i}
+            label={resolveGroupLabel(groupScope.groups[i].label)}
+            colors={colors}
+            status={status}
+            onToggleKnown={() =>
+              skipReason === 'mastered'
+                ? groupScopeResult.scopeActions.unskipGroup(i)
+                : groupScopeResult.scopeActions.skipGroup(i, 'mastered')}
+            onToggleSkip={() =>
+              skipReason === 'deferred'
+                ? groupScopeResult.scopeActions.unskipGroup(i)
+                : groupScopeResult.scopeActions.skipGroup(i, 'deferred')}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/** Compute a suggestion line for single-level (no groups) modes. */
+function singleLevelSuggestion(
+  selector: AdaptiveSelector,
+  allItems: string[],
+): SuggestionLine {
+  const anySeen = allItems.some((id) => selector.getStats(id) !== null);
+  if (!anySeen) return { verb: 'Start practicing', levels: [] };
+  if (selector.checkAllAutomatic(allItems)) {
+    return { verb: 'All items mastered', levels: [] };
+  }
+  if (selector.checkNeedsReview(allItems)) {
+    return { verb: 'Review', levels: [] };
+  }
+  return { verb: 'Keep practicing', levels: [] };
+}
+
 function IdlePracticeView<Q>(
-  { def, engine, learner, ctrl, groupScopeResult, ps }: {
+  { def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }: {
     def: ModeDefinition<Q>;
     engine: ReturnType<typeof useQuizEngine>;
     learner: ReturnType<typeof useLearnerModel>;
     ctrl: ModeController<Q>;
     groupScopeResult: ReturnType<typeof useGroupScope> | null;
     ps: ReturnType<typeof usePracticeSummary>;
+    onCalibrate?: () => void;
   },
 ) {
-  const groupScope = def.scope.kind === 'groups' ? def.scope : null;
+  const hasGroups = def.scope.kind === 'groups' && groupScopeResult;
+  const hasStats = def.stats.kind !== 'none' || !!ctrl.renderStats;
+
   return (
     <PracticeTab
       summary={ps.summary}
@@ -702,24 +854,27 @@ function IdlePracticeView<Q>(
         : undefined}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one group'
-      scope={groupScopeResult && groupScope
+      practiceContent={hasGroups
         ? (
-          <GroupProgressToggles
-            groups={groupScope.allGroupIndices.map((i) => ({
-              label: groupScope.groups[i].label,
-              itemIds: groupScope.getItemIdsForGroup(i),
-            }))}
-            active={groupScopeResult.enabledGroups}
-            onToggle={groupScopeResult.scopeActions.toggleGroup}
-            selector={learner.selector}
-            skipped={groupScopeResult.skippedGroups}
-            onSkip={groupScopeResult.scopeActions.skipGroup}
-            onUnskip={groupScopeResult.scopeActions.unskipGroup}
+          <GroupPracticeContent
+            def={def}
+            groupScopeResult={groupScopeResult}
           />
         )
-        : undefined}
+        : (
+          <div class='practice-config'>
+            <SuggestionLines
+              lines={[singleLevelSuggestion(learner.selector, def.allItems)]}
+            />
+          </div>
+        )}
       statsContent={
         <>
+          {hasStats && (
+            <Text role='heading-subsection' as='div'>
+              All items
+            </Text>
+          )}
           {ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : (
             <>
               {def.stats.kind === 'grid' && (
@@ -740,14 +895,63 @@ function IdlePracticeView<Q>(
               )}
             </>
           )}
-          {(def.stats.kind !== 'none' || ctrl.renderStats) && <StatsLegend />}
+          {hasStats && <StatsLegend />}
         </>
       }
-      baseline={learner.motorBaseline}
-      onCalibrate={engine.startCalibration}
+      progressExtra={hasGroups
+        ? (
+          <>
+            <Text role='heading-subsection'>Levels</Text>
+            <LevelProgressCards
+              def={def}
+              learner={learner}
+              groupScopeResult={groupScopeResult}
+            />
+          </>
+        )
+        : undefined}
+      baseline={onCalibrate ? learner.motorBaseline : undefined}
+      onCalibrate={onCalibrate}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
+      aboutContent={<AboutTab beforeAfter={def.beforeAfter} />}
     />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AboutTab — before/after contrast and future mode-specific info
+// ---------------------------------------------------------------------------
+
+function AboutTab(
+  { beforeAfter }: {
+    beforeAfter: {
+      before: string | (() => string);
+      after: string | (() => string);
+    };
+  },
+) {
+  const before = typeof beforeAfter.before === 'function'
+    ? beforeAfter.before()
+    : beforeAfter.before;
+  const after = typeof beforeAfter.after === 'function'
+    ? beforeAfter.after()
+    : beforeAfter.after;
+
+  return (
+    <div class='about-tab'>
+      <Text role='heading-subsection' as='div'>What you're training</Text>
+      <div class='about-before-after'>
+        <div class='about-ba-row'>
+          <Text role='label' as='span'>Before</Text>
+          <span class='about-ba-text'>{before}</span>
+        </div>
+        <div class='about-ba-row'>
+          <Text role='label' as='span'>After</Text>
+          <span class='about-ba-text about-ba-after'>{after}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -903,7 +1107,8 @@ function useGenericDerivedState<Q>(
   isSequential: boolean,
   container: HTMLElement,
   onMount: (handle: ModeHandle) => void,
-  ctrl: ModeController<Q>,
+  presentationPhase: PresentationPhase,
+  deactivateCleanup?: () => void,
 ) {
   const currentQ = useMemo(() => {
     const id = engine.state.currentItemId;
@@ -912,7 +1117,7 @@ function useGenericDerivedState<Q>(
   currentQRef.current = currentQ;
   if (isSequential) seqInput.resetOnItemChange(engine.state.currentItemId);
 
-  usePhaseClass(container, engine.state.phase, PHASE_FOCUS_TARGETS);
+  usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
   const practicingLabel = groupScopeResult?.practicingLabel ?? 'all items';
   const round = useRoundSummary(engine, practicingLabel);
   const ps = usePracticeSummary({
@@ -923,7 +1128,7 @@ function useGenericDerivedState<Q>(
     recommendation: groupScopeResult?.recommendation ?? null,
     recommendationText: groupScopeResult?.recommendationText ?? '',
   });
-  useModeLifecycle(onMount, engine, learner, ctrl.deactivateCleanup);
+  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
 
   const handleSubmit = useCallback((input: string): boolean => {
     if (
@@ -947,6 +1152,233 @@ function buildSeqProps(seqInput: ReturnType<typeof useSequentialInput>) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// useSpeedCheckOverlay — local speed check state for mode components
+// ---------------------------------------------------------------------------
+
+type SpeedCheckOverlay = {
+  speedCheck: SpeedCheckFixture | 'active' | null;
+  setSpeedCheck: (v: SpeedCheckFixture | 'active' | null) => void;
+  hasSpeedCheck: boolean;
+  presentationPhase: PresentationPhase;
+  deactivateCleanup: () => void;
+};
+
+function useSpeedCheckOverlay<Q>(
+  engine: ReturnType<typeof useQuizEngine>,
+  def: ModeDefinition<Q>,
+  ctrl: ModeController<Q>,
+): SpeedCheckOverlay {
+  const [speedCheck, setSpeedCheck] = useState<
+    SpeedCheckFixture | 'active' | null
+  >(null);
+  const hasSpeedCheck = IMPLEMENTED_TASK_TYPES.has(
+    def.motorTaskType ?? 'note-button',
+  );
+
+  // Sync calibration fixture from engine's fixture injection into local state.
+  useEffect(() => {
+    if (engine.calibrationFixture) {
+      setSpeedCheck(engine.calibrationFixture);
+    }
+  }, [engine.calibrationFixture]);
+
+  const presentationPhase: PresentationPhase = speedCheck
+    ? 'calibration'
+    : engine.state.phase;
+
+  const deactivateCleanup = useCallback(() => {
+    setSpeedCheck(null);
+    ctrl.deactivateCleanup?.();
+  }, [ctrl.deactivateCleanup]);
+
+  return {
+    speedCheck,
+    setSpeedCheck,
+    hasSpeedCheck,
+    presentationPhase,
+    deactivateCleanup,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// GenericModeBody — renders speed check overlay or idle/active views
+// ---------------------------------------------------------------------------
+
+type GenericModeBodyProps<Q> = {
+  def: ModeDefinition<Q>;
+  engine: ReturnType<typeof useQuizEngine>;
+  learner: ReturnType<typeof useLearnerModel>;
+  ctrl: ModeController<Q>;
+  groupScopeResult: ReturnType<typeof useGroupScope> | null;
+  ps: ReturnType<typeof usePracticeSummary>;
+  sc: SpeedCheckOverlay;
+  currentQ: Q | null;
+  round: ReturnType<typeof useRoundSummary>;
+  practicingLabel: string;
+  handleSubmit: (input: string) => boolean;
+  seqInput: ReturnType<typeof useSequentialInput>;
+  isSequential: boolean;
+  lastAnswerRef: {
+    current: {
+      expected: string;
+      comparison: ComparisonStrategy;
+      normalizedInput: string;
+    } | null;
+  };
+  navigateHome: () => void;
+};
+
+/** Compute progress colors for the SkillHeader progress bar.
+ *  Multi-level: one color per group (merged speed/freshness).
+ *  Single-level: per-item sorted colors (via shared progressBarColors). */
+function useProgressColors<Q>(
+  def: ModeDefinition<Q>,
+  learner: ReturnType<typeof useLearnerModel>,
+): string[] {
+  return useMemo(() => {
+    if (def.scope.kind === 'groups') {
+      const scope = def.scope;
+      return scope.allGroupIndices.map((i) => {
+        const itemIds = scope.getItemIdsForGroup(i);
+        return getStatsCellColorMerged(learner.selector, itemIds);
+      });
+    }
+    return progressBarColors(learner.selector, def.allItems);
+  }, [def, learner.selector]);
+}
+
+/** Render SkillHeader (idle) or minimal ModeTopBar (active/calibration). */
+function ModeHeader<Q>(
+  { def, isIdle, progressColors, navigateHome }: {
+    def: ModeDefinition<Q>;
+    isIdle: boolean;
+    progressColors: string[];
+    navigateHome: () => void;
+  },
+) {
+  if (isIdle) {
+    return (
+      <SkillHeader
+        modeId={def.id}
+        title={def.name}
+        progressColors={progressColors}
+        onBack={navigateHome}
+      />
+    );
+  }
+  return <ModeTopBar modeId={def.id} title={def.name} showBack={false} />;
+}
+
+function GenericModeBody<Q>(
+  {
+    def,
+    engine,
+    learner,
+    ctrl,
+    groupScopeResult,
+    ps,
+    sc,
+    currentQ,
+    round,
+    practicingLabel,
+    handleSubmit,
+    seqInput,
+    isSequential,
+    lastAnswerRef,
+    navigateHome,
+  }: GenericModeBodyProps<Q>,
+) {
+  const dir = currentQ && def.getDirection ? def.getDirection(currentQ) : 'fwd';
+  const promptText = currentQ ? def.getPromptText(currentQ) : '';
+  const useFlats = currentQ && def.getUseFlats
+    ? def.getUseFlats(currentQ)
+    : undefined;
+  const { active: activeButtons, inactive: inactiveButtons } = resolveButtons(
+    def,
+    dir,
+  );
+  const isIdle = engine.state.phase === 'idle' && !sc.speedCheck;
+  const progressColors = useProgressColors(def, learner);
+
+  if (isIdle) {
+    return (
+      <ScreenLayout>
+        <LayoutHeader>
+          <ModeHeader
+            def={def}
+            isIdle
+            progressColors={progressColors}
+            navigateHome={navigateHome}
+          />
+        </LayoutHeader>
+        <IdlePracticeView
+          def={def}
+          engine={engine}
+          learner={learner}
+          ctrl={ctrl}
+          groupScopeResult={groupScopeResult}
+          ps={ps}
+          onCalibrate={sc.hasSpeedCheck
+            ? () => sc.setSpeedCheck('active')
+            : undefined}
+        />
+      </ScreenLayout>
+    );
+  }
+
+  if (sc.speedCheck) {
+    return (
+      <ScreenLayout>
+        <LayoutHeader>
+          <ModeHeader
+            def={def}
+            isIdle={false}
+            progressColors={progressColors}
+            navigateHome={navigateHome}
+          />
+        </LayoutHeader>
+        <LayoutMain scrollable={false}>
+          <SpeedCheck
+            config={NOTE_BUTTON_CONFIG}
+            fixture={typeof sc.speedCheck === 'object'
+              ? sc.speedCheck
+              : undefined}
+            onComplete={(baseline) => {
+              learner.applyBaseline(baseline);
+              sc.setSpeedCheck(null);
+            }}
+            onCancel={() => sc.setSpeedCheck(null)}
+          />
+        </LayoutMain>
+      </ScreenLayout>
+    );
+  }
+
+  return (
+    <QuizActiveView
+      def={def}
+      engine={engine}
+      ctrl={ctrl}
+      currentQ={currentQ}
+      round={round}
+      practicingLabel={practicingLabel}
+      handleSubmit={handleSubmit}
+      seq={buildSeqProps(seqInput)}
+      activeButtons={activeButtons}
+      inactiveButtons={inactiveButtons}
+      promptText={promptText}
+      useFlats={useFlats}
+      placeholder={getInputPlaceholder(def, currentQ, isSequential)}
+      lastAnswerRef={lastAnswerRef}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// GenericMode component
+// ---------------------------------------------------------------------------
+
 export function GenericMode<Q>(
   { def, container, navigateHome, onMount }: {
     def: ModeDefinition<Q>;
@@ -955,7 +1387,11 @@ export function GenericMode<Q>(
     onMount: (handle: ModeHandle) => void;
   },
 ) {
-  const learner = useLearnerModel(def.namespace, def.allItems);
+  const learner = useLearnerModel(
+    def.namespace,
+    def.allItems,
+    def.motorTaskType,
+  );
   const groupScopeSpec = buildGroupScopeSpec(def, learner.selector);
   const groupScopeResult = groupScopeSpec
     ? useGroupScope(groupScopeSpec)
@@ -969,6 +1405,8 @@ export function GenericMode<Q>(
 
   const { engine, currentQRef, seqInput, lastAnswerRef, isSequential } =
     useGenericEngine(def, ctrl, ctrlRef, groupScopeResult, learner, container);
+  const sc = useSpeedCheckOverlay(engine, def, ctrl);
+
   const { currentQ, round, ps, practicingLabel, handleSubmit } =
     useGenericDerivedState(
       def,
@@ -980,61 +1418,27 @@ export function GenericMode<Q>(
       isSequential,
       container,
       onMount,
-      ctrl,
+      sc.presentationPhase,
+      sc.deactivateCleanup,
     );
 
-  const dir = (currentQ && def.getDirection)
-    ? def.getDirection(currentQ)
-    : 'fwd';
-  const promptText = currentQ ? def.getPromptText(currentQ) : '';
-  const useFlats = currentQ && def.getUseFlats
-    ? def.getUseFlats(currentQ)
-    : undefined;
-  const { active: activeButtons, inactive: inactiveButtons } = resolveButtons(
-    def,
-    dir,
-  );
-  const isIdle = engine.state.phase === 'idle';
-
   return (
-    <>
-      <ModeTopBar
-        modeId={def.id}
-        title={def.name}
-        description={def.description}
-        beforeAfter={def.beforeAfter}
-        onBack={navigateHome}
-        showBack={isIdle}
-      />
-      {isIdle && (
-        <IdlePracticeView
-          def={def}
-          engine={engine}
-          learner={learner}
-          ctrl={ctrl}
-          groupScopeResult={groupScopeResult}
-          ps={ps}
-        />
-      )}
-      {!isIdle && (
-        <QuizActiveView
-          def={def}
-          engine={engine}
-          learner={learner}
-          ctrl={ctrl}
-          currentQ={currentQ}
-          round={round}
-          practicingLabel={practicingLabel}
-          handleSubmit={handleSubmit}
-          seq={buildSeqProps(seqInput)}
-          activeButtons={activeButtons}
-          inactiveButtons={inactiveButtons}
-          promptText={promptText}
-          useFlats={useFlats}
-          placeholder={getInputPlaceholder(def, currentQ, isSequential)}
-          lastAnswerRef={lastAnswerRef}
-        />
-      )}
-    </>
+    <GenericModeBody
+      def={def}
+      engine={engine}
+      learner={learner}
+      ctrl={ctrl}
+      groupScopeResult={groupScopeResult}
+      ps={ps}
+      sc={sc}
+      currentQ={currentQ}
+      round={round}
+      practicingLabel={practicingLabel}
+      handleSubmit={handleSubmit}
+      seqInput={seqInput}
+      isSequential={isSequential}
+      lastAnswerRef={lastAnswerRef}
+      navigateHome={navigateHome}
+    />
   );
 }

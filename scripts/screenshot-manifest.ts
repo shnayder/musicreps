@@ -27,8 +27,15 @@ import {
   returnedAfterBreak,
   semitoneMathItemIds,
 } from '../src/fixtures/heatmap-scenarios.ts';
-import { GUITAR, MODE_NAMES } from '../src/music-data.ts';
+import { generateLocalStorageData } from '../src/fixtures/recommendation-scenarios.ts';
+import { GUITAR } from '../src/music-data.ts';
+import { MODE_NAMES } from '../src/mode-catalog.ts';
 import { getGroups, getItemIdsForGroup } from '../src/modes/fretboard/logic.ts';
+import { getItemIdsForGroup as semiMathGetGroup } from '../src/modes/semitone-math/logic.ts';
+import { getItemIdsForGroup as keySigGetGroup } from '../src/modes/key-signatures/logic.ts';
+import {
+  ALL_ITEMS as NOTE_SEMI_ITEMS,
+} from '../src/modes/note-semitones/logic.ts';
 
 // ---------------------------------------------------------------------------
 // Mode IDs & titles
@@ -80,15 +87,149 @@ export type ScreenshotEntry = {
 
 export function buildManifest(): ScreenshotEntry[] {
   const entries: ScreenshotEntry[] = [];
+  const guitarGroups = getGroups(GUITAR);
+  const gIds = guitarGroups.map((_, i) => getItemIdsForGroup(GUITAR, i));
 
   // Home screen (before any mode is selected)
   entries.push({ name: 'home', modeId: 'home' });
 
-  // Home screen with only Core track selected
+  // Home screen with starred skills (Active tab — default when starred)
   entries.push({
-    name: 'home-core-only',
+    name: 'home-starred',
     modeId: 'home',
-    localStorageData: { selectedTracks: JSON.stringify(['core']) },
+    localStorageData: {
+      starredSkills: JSON.stringify(['fretboard', 'keySignatures']),
+    },
+  });
+
+  // Home screen: Active tab with nothing starred
+  entries.push({
+    name: 'home-active-empty',
+    modeId: 'home',
+    localStorageData: { homeTab: 'active' },
+  });
+
+  // Home screen: recommendations — mixed cue labels
+  // fretboard: stale (review), semitoneMath: working (get-faster),
+  // keySignatures: mastered g0 (learn-next), intervalMath: not started
+  entries.push({
+    name: 'home-recs-mixed',
+    modeId: 'home',
+    localStorageData: {
+      starredSkills: JSON.stringify([
+        'fretboard',
+        'semitoneMath',
+        'keySignatures',
+        'intervalMath',
+      ]),
+      // fretboard: groups 0-2 mastered but stale → "Review"
+      ...perGroupScenario('fretboard', [
+        { itemIds: gIds[0], state: 'stale' },
+        { itemIds: gIds[1], state: 'stale' },
+        { itemIds: gIds[2], state: 'stale' },
+        ...gIds.slice(3).map((ids) => ({
+          itemIds: ids,
+          state: 'unseen' as const,
+        })),
+      ]),
+      // semitoneMath: g0 slow but fresh → "Get faster"
+      ...perGroupScenario('semitoneMath', [
+        {
+          itemIds: semiMathGetGroup(0),
+          state: 'working',
+          seenFraction: 0.7,
+        },
+      ]),
+      // keySignatures: g0 mastered, rest unseen → "Learn next level"
+      ...generateLocalStorageData(
+        'keySignatures',
+        {
+          0: {
+            automaticCount: 10,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 10,
+          },
+        },
+        Date.now(),
+        keySigGetGroup,
+      ),
+      // intervalMath: no data → "not-started" (won't show cue unless cold-start)
+    },
+  });
+
+  // Home screen: all done — all starred skills fully automatic
+  // Use generateLocalStorageData with all-fluent specs so the recommendation
+  // engine classifies both as "automatic" → triggers "all done" message.
+  entries.push({
+    name: 'home-recs-all-done',
+    modeId: 'home',
+    localStorageData: {
+      starredSkills: JSON.stringify(['noteSemitones', 'keySignatures']),
+      ...generateLocalStorageData(
+        'noteSemitones',
+        {
+          0: {
+            automaticCount: 24,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 24,
+          },
+        },
+        Date.now(),
+        () => NOTE_SEMI_ITEMS,
+      ),
+      ...generateLocalStorageData(
+        'keySignatures',
+        {
+          0: {
+            automaticCount: 6,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 6,
+          },
+          1: {
+            automaticCount: 4,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 4,
+          },
+          2: {
+            automaticCount: 4,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 4,
+          },
+          3: {
+            automaticCount: 4,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 4,
+          },
+          4: {
+            automaticCount: 6,
+            workingCount: 0,
+            unseenCount: 0,
+            totalCount: 6,
+          },
+        },
+        Date.now(),
+        keySigGetGroup,
+      ),
+    },
+  });
+
+  // Home screen: cold start — all starred but none started
+  entries.push({
+    name: 'home-recs-cold-start',
+    modeId: 'home',
+    localStorageData: {
+      starredSkills: JSON.stringify([
+        'semitoneMath',
+        'keySignatures',
+        'fretboard',
+      ]),
+    },
   });
 
   // All modes: idle + quiz (+ reverse quiz for bidirectional modes)
@@ -108,21 +249,23 @@ export function buildManifest(): ScreenshotEntry[] {
     }
   }
 
-  // Speed Check: fixture-based calibration captures
+  // Speed Check: fixture-based calibration captures.
+  // SpeedCheck is rendered by GenericMode (e.g. semitoneMath), not SpeedTap
+  // (SpeedTap uses fretboard-tap which is not yet in IMPLEMENTED_TASK_TYPES).
   entries.push(
     {
       name: 'speedCheck-intro',
-      modeId: 'speedTap',
+      modeId: 'semitoneMath',
       fixture: speedCheckIntro(),
     },
     {
       name: 'speedCheck-testing',
-      modeId: 'speedTap',
+      modeId: 'semitoneMath',
       fixture: speedCheckTesting(),
     },
     {
       name: 'speedCheck-results',
-      modeId: 'speedTap',
+      modeId: 'semitoneMath',
       fixture: speedCheckResults(),
     },
   );
@@ -212,8 +355,6 @@ export function buildManifest(): ScreenshotEntry[] {
 
   // Progress tab: group-aware fretboard scenarios
   // Each scenario has different groups in different learning stages.
-  const guitarGroups = getGroups(GUITAR);
-  const gIds = guitarGroups.map((_, i) => getItemIdsForGroup(GUITAR, i));
   const unseen = (ids: string[]): GroupItemProfile => ({
     itemIds: ids,
     state: 'unseen',
@@ -228,7 +369,7 @@ export function buildManifest(): ScreenshotEntry[] {
     [
       'fb-starting',
       [
-        { itemIds: gIds[0], state: 'slow-fresh', seenFraction: 0.35 },
+        { itemIds: gIds[0], state: 'working', seenFraction: 0.35 },
         ...gIds.slice(1).map(unseen),
       ],
       [0],
@@ -237,9 +378,9 @@ export function buildManifest(): ScreenshotEntry[] {
     [
       'fb-working',
       [
-        { itemIds: gIds[0], state: 'fast-fresh' },
+        { itemIds: gIds[0], state: 'automatic' },
         { itemIds: gIds[1], state: 'mixed' },
-        { itemIds: gIds[2], state: 'slow-fresh', seenFraction: 0.5 },
+        { itemIds: gIds[2], state: 'working', seenFraction: 0.5 },
         ...gIds.slice(3).map(unseen),
       ],
       [0, 1, 2],
@@ -248,10 +389,10 @@ export function buildManifest(): ScreenshotEntry[] {
     [
       'fb-mastered-working',
       [
-        { itemIds: gIds[0], state: 'fast-fresh' },
-        { itemIds: gIds[1], state: 'fast-fresh' },
+        { itemIds: gIds[0], state: 'automatic' },
+        { itemIds: gIds[1], state: 'automatic' },
         { itemIds: gIds[2], state: 'mixed' },
-        { itemIds: gIds[3], state: 'slow-fresh', seenFraction: 0.5 },
+        { itemIds: gIds[3], state: 'working', seenFraction: 0.5 },
         ...gIds.slice(4).map(unseen),
       ],
       [0, 1, 2, 3],
@@ -260,9 +401,9 @@ export function buildManifest(): ScreenshotEntry[] {
     [
       'fb-needs-review',
       [
-        { itemIds: gIds[0], state: 'fast-stale' },
-        { itemIds: gIds[1], state: 'fast-stale' },
-        { itemIds: gIds[2], state: 'fast-stale' },
+        { itemIds: gIds[0], state: 'stale' },
+        { itemIds: gIds[1], state: 'stale' },
+        { itemIds: gIds[2], state: 'stale' },
         ...gIds.slice(3).map(unseen),
       ],
       [0, 1, 2],
@@ -271,13 +412,13 @@ export function buildManifest(): ScreenshotEntry[] {
     [
       'fb-nearly-done',
       [
-        { itemIds: gIds[0], state: 'fast-fresh' },
-        { itemIds: gIds[1], state: 'fast-fresh' },
-        { itemIds: gIds[2], state: 'fast-fresh' },
-        { itemIds: gIds[3], state: 'fast-fresh' },
-        { itemIds: gIds[4], state: 'fast-fresh' },
-        { itemIds: gIds[5], state: 'fast-fresh' },
-        { itemIds: gIds[6], state: 'fast-fresh' },
+        { itemIds: gIds[0], state: 'automatic' },
+        { itemIds: gIds[1], state: 'automatic' },
+        { itemIds: gIds[2], state: 'automatic' },
+        { itemIds: gIds[3], state: 'automatic' },
+        { itemIds: gIds[4], state: 'automatic' },
+        { itemIds: gIds[5], state: 'automatic' },
+        { itemIds: gIds[6], state: 'automatic' },
         { itemIds: gIds[7], state: 'mixed' },
       ],
       [0, 1, 2, 3, 4, 5, 6, 7],
@@ -289,11 +430,20 @@ export function buildManifest(): ScreenshotEntry[] {
       ...perGroupScenario('fretboard', groups),
       fretboard_enabledGroups: JSON.stringify(enabledIndices),
     };
-    // Practice tab (default view)
+    // Practice tab — suggested mode (default)
     entries.push({
       name: `design-fretboard-practice-${label}`,
       modeId: 'fretboard',
       localStorageData: data,
+    });
+    // Practice tab — custom mode
+    entries.push({
+      name: `design-fretboard-custom-${label}`,
+      modeId: 'fretboard',
+      localStorageData: {
+        ...data,
+        fretboard_enabledGroups_practiceMode: 'custom',
+      },
     });
     // Progress tab
     entries.push({

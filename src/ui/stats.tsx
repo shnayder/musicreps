@@ -12,10 +12,9 @@ import {
 
 /** Selector interface for stats lookup (subset of AdaptiveSelector). */
 export interface StatsSelector {
-  getAutomaticity(id: string): number | null;
+  getSpeedScore(id: string): number | null;
+  getFreshness(id: string): number | null;
   getStats(id: string): ItemStats | null;
-  getSpeedScore?(id: string): number | null;
-  getFreshness?(id: string): number | null;
 }
 
 // ---------------------------------------------------------------------------

@@ -37,8 +37,17 @@ import {
   RoundCompleteInfo,
   SessionInfo,
   StartButton,
-  TabbedIdle,
+  Tabs,
 } from './mode-screen.tsx';
+import { SegmentedControl, SettingToggle } from './segmented-control.tsx';
+import {
+  CenteredContent,
+  LayoutFooter,
+  LayoutHeader,
+  LayoutMain,
+  QuizStage,
+  ScreenLayout,
+} from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
 // Helper
@@ -239,9 +248,12 @@ describe('NumeralButtons', () => {
 
 function mockSelector(): StatsSelector {
   return {
-    getAutomaticity(id: string) {
+    getSpeedScore(id: string) {
       if (id === 'C+1') return 0.9;
       if (id === 'C+2') return 0.5;
+      return null;
+    },
+    getFreshness(_id: string) {
       return null;
     },
     getStats() {
@@ -544,7 +556,7 @@ describe('ModeTopBar', () => {
   it('renders close button and title', () => {
     const html = render(<ModeTopBar title='Semitone Math' />);
     assert.ok(html.includes('mode-top-bar'));
-    assert.ok(html.includes('mode-close-btn'));
+    assert.ok(html.includes('close-btn'));
     assert.ok(html.includes('mode-title'));
     assert.ok(html.includes('Semitone Math'));
     assert.ok(html.includes('\u00D7'));
@@ -554,7 +566,7 @@ describe('ModeTopBar', () => {
     const html = render(<ModeTopBar title='Test' showBack={false} />);
     assert.ok(html.includes('mode-top-bar'));
     assert.ok(html.includes('mode-title'));
-    assert.ok(!html.includes('mode-close-btn'));
+    assert.ok(!html.includes('close-btn'));
   });
 
   it('renders description as static paragraph', () => {
@@ -563,19 +575,6 @@ describe('ModeTopBar', () => {
     );
     assert.ok(html.includes('mode-description'));
     assert.ok(html.includes('Some description'));
-  });
-
-  it('renders before/after line when provided', () => {
-    const html = render(
-      <ModeTopBar
-        title='Test'
-        description='Short desc'
-        beforeAfter={{ before: 'slow way', after: 'fast way' }}
-      />,
-    );
-    assert.ok(html.includes('mode-before-after'));
-    assert.ok(html.includes('slow way'));
-    assert.ok(html.includes('fast way'));
   });
 
   it('renders skill icon when modeId is provided', () => {
@@ -605,53 +604,79 @@ describe('SkillIcon', () => {
   });
 });
 
-describe('TabbedIdle', () => {
+describe('Tabs', () => {
+  const practiceTabs = [
+    {
+      id: 'practice',
+      label: 'Practice',
+      content: <div class='test-practice'>P</div>,
+    },
+    {
+      id: 'progress',
+      label: 'Progress',
+      content: <div class='test-progress'>G</div>,
+    },
+  ];
+
   it('renders tabs with practice active', () => {
     const html = render(
-      <TabbedIdle
+      <Tabs
+        tabs={practiceTabs}
         activeTab='practice'
         onTabSwitch={() => {}}
-        practiceContent={<div class='test-practice'>P</div>}
-        progressContent={<div class='test-progress'>G</div>}
       />,
     );
-    assert.ok(html.includes('mode-tabs'));
-    // Practice tab button has active class
-    assert.ok(html.includes('mode-tab active'));
-    // Practice content has active class
-    assert.ok(html.includes('tab-practice active'));
-    // Progress content does NOT have active class
-    assert.ok(!html.includes('tab-progress active'));
+    assert.ok(html.includes('tabs'));
+    assert.ok(html.includes('tab-btn active'));
+    assert.ok(html.includes('tab-panel active'));
+    assert.ok(html.includes('test-practice'));
   });
 
   it('renders tabs with progress active', () => {
     const html = render(
-      <TabbedIdle
+      <Tabs
+        tabs={practiceTabs}
         activeTab='progress'
         onTabSwitch={() => {}}
-        practiceContent={<div>P</div>}
-        progressContent={<div>G</div>}
       />,
     );
-    assert.ok(html.includes('tab-progress active'));
-    assert.ok(!html.includes('tab-practice active'));
+    // Only the progress panel should have 'active'
+    const panels = [...html.matchAll(/class="tab-panel([^"]*)"/g)].map((m) =>
+      m[1]
+    );
+    assert.strictEqual(panels.length, 2);
+    assert.ok(
+      !panels[0].includes('active'),
+      'practice panel should not be active',
+    );
+    assert.ok(panels[1].includes('active'), 'progress panel should be active');
+  });
+
+  it('wires up ARIA attributes', () => {
+    const html = render(
+      <Tabs tabs={practiceTabs} activeTab='practice' onTabSwitch={() => {}} />,
+    );
+    assert.ok(html.includes('role="tablist"'));
+    assert.ok(html.includes('role="tab"'));
+    assert.ok(html.includes('role="tabpanel"'));
+    assert.ok(html.includes('aria-selected="true"'));
+    assert.ok(html.includes('aria-controls='));
+    assert.ok(html.includes('aria-labelledby='));
   });
 });
 
 describe('PracticeCard', () => {
-  it('renders status line and start button', () => {
+  it('renders status line', () => {
     const html = render(
       <PracticeCard
         statusLabel='Strong'
-        statusDetail='12 of 14 fluent'
+        statusDetail='12 of 14 automatic'
       />,
     );
     assert.ok(html.includes('practice-card'));
     assert.ok(html.includes('practice-status-label'));
     assert.ok(html.includes('Strong'));
-    assert.ok(html.includes('12 of 14 fluent'));
-    assert.ok(html.includes('practice-zone-action'));
-    assert.ok(html.includes('start-btn'));
+    assert.ok(html.includes('12 of 14 automatic'));
   });
 
   it('shows recommendation with accept button', () => {
@@ -746,7 +771,7 @@ describe('QuizSession', () => {
     assert.ok(html.includes('quiz-session-info'));
     assert.ok(html.includes('Natural notes'));
     assert.ok(html.includes('5 of 12'));
-    assert.ok(html.includes('quiz-header-close'));
+    assert.ok(html.includes('close-btn'));
   });
 });
 
@@ -944,5 +969,154 @@ describe('SequentialSlots', () => {
     );
     assert.ok(html.includes('>D♯<'));
     assert.ok(html.includes('>F♯<'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SegmentedControl + SettingToggle
+// ---------------------------------------------------------------------------
+
+describe('SegmentedControl', () => {
+  it('renders radiogroup with correct aria attributes', () => {
+    const html = render(
+      <SegmentedControl
+        options={[
+          { value: 'a', label: 'Alpha' },
+          { value: 'b', label: 'Beta' },
+        ]}
+        value='a'
+        onChange={() => {}}
+      />,
+    );
+    assert.ok(html.includes('role="radiogroup"'));
+    assert.ok(html.includes('role="radio"'));
+    assert.ok(html.includes('aria-checked="true"'));
+    assert.ok(html.includes('aria-checked="false"'));
+    assert.ok(html.includes('segmented-control'));
+    assert.ok(html.includes('segmented-btn active'));
+    assert.ok(html.includes('Alpha'));
+    assert.ok(html.includes('Beta'));
+  });
+});
+
+describe('SettingToggle', () => {
+  it('renders label + segmented control with aria-labelledby linkage', () => {
+    const html = render(
+      <SettingToggle
+        label='Notation'
+        options={[
+          { value: 'letter', label: 'Letter' },
+          { value: 'solfege', label: 'Solfege' },
+        ]}
+        value='letter'
+        onChange={() => {}}
+      />,
+    );
+    assert.ok(html.includes('settings-field'));
+    assert.ok(html.includes('Notation'));
+    assert.ok(html.includes('aria-labelledby'));
+    // The label id and the radiogroup's aria-labelledby should match
+    const labelIdMatch = html.match(/id="(stl-\d+)"/);
+    assert.ok(labelIdMatch, 'label should have an id');
+    assert.ok(
+      html.includes(`aria-labelledby="${labelIdMatch![1]}"`),
+      'radiogroup should reference label id',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ScreenLayout components
+// ---------------------------------------------------------------------------
+
+describe('ScreenLayout', () => {
+  it('renders with screen-layout class', () => {
+    const html = render(
+      <ScreenLayout>
+        <div>content</div>
+      </ScreenLayout>,
+    );
+    assert.ok(html.includes('screen-layout'));
+    assert.ok(html.includes('content'));
+  });
+});
+
+describe('LayoutHeader', () => {
+  it('renders with layout-header class', () => {
+    const html = render(
+      <LayoutHeader>
+        <div>header</div>
+      </LayoutHeader>,
+    );
+    assert.ok(html.includes('layout-header'));
+    assert.ok(html.includes('header'));
+  });
+});
+
+describe('LayoutMain', () => {
+  it('renders with layout-main layout-main-scroll by default', () => {
+    const html = render(
+      <LayoutMain>
+        <div>main</div>
+      </LayoutMain>,
+    );
+    assert.ok(html.includes('layout-main'));
+    assert.ok(html.includes('layout-main-scroll'));
+  });
+
+  it('renders with layout-main-fixed when scrollable=false', () => {
+    const html = render(
+      <LayoutMain scrollable={false}>
+        <div>main</div>
+      </LayoutMain>,
+    );
+    assert.ok(html.includes('layout-main'));
+    assert.ok(html.includes('layout-main-fixed'));
+    assert.ok(!html.includes('layout-main-scroll'));
+  });
+});
+
+describe('LayoutFooter', () => {
+  it('returns null when children is falsy', () => {
+    const html = render(<LayoutFooter>{null}</LayoutFooter>);
+    assert.equal(html, '');
+  });
+
+  it('renders with layout-footer when children provided', () => {
+    const html = render(
+      <LayoutFooter>
+        <div>footer</div>
+      </LayoutFooter>,
+    );
+    assert.ok(html.includes('layout-footer'));
+    assert.ok(html.includes('footer'));
+  });
+});
+
+describe('QuizStage', () => {
+  it('renders prompt and response zones', () => {
+    const html = render(
+      <QuizStage
+        prompt={<div>question</div>}
+        response={<div>buttons</div>}
+      />,
+    );
+    assert.ok(html.includes('quiz-stage'));
+    assert.ok(html.includes('quiz-stage-prompt'));
+    assert.ok(html.includes('quiz-stage-response'));
+    assert.ok(html.includes('question'));
+    assert.ok(html.includes('buttons'));
+  });
+});
+
+describe('CenteredContent', () => {
+  it('renders with centered-content class', () => {
+    const html = render(
+      <CenteredContent>
+        <div>centered</div>
+      </CenteredContent>,
+    );
+    assert.ok(html.includes('centered-content'));
+    assert.ok(html.includes('centered'));
   });
 });

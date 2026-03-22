@@ -34,6 +34,20 @@
    centralized `refreshNotation(container)` function to replace the ad-hoc
    "click active stats toggle" approach duplicated between `attach()` and
    `onNotationChange`.
+1. LOW — `useMemo` for `recommendationText` in `use-group-scope.ts` and the
+   label resolution in `useScopeState` read solfege state via thunks but don't
+   include it in their dependency arrays. Currently harmless because settings
+   lives on the home screen and mode components re-mount on entry, so labels are
+   always fresh. Would matter if settings became accessible within a mode.
+
+1. LOW — Dead keyboard handler code in fretboard controller. All modes now use
+   the `AnswerInput` textbox + Enter as primary input. The fretboard controller
+   still wires `createAdaptiveKeyHandler` with 600ms pending delay, narrowing
+   state, `hasAccidentals` logic, and `hideAccidentals` — none of which are
+   needed. Removing the fretboard usage would also make `createNoteKeyHandler`,
+   `createSolfegeKeyHandler`, `createAdaptiveKeyHandler`, `noteNarrowingSet`,
+   `numberNarrowingSet`, and ~400 lines of their tests in `quiz-engine_test.ts`
+   dead code eligible for removal.
 
 ## Fixed (2026-02)
 

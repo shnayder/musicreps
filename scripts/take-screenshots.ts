@@ -10,23 +10,18 @@
 //   npx tsx scripts/take-screenshots.ts --only pat   # only names matching pat
 
 import { chromium } from 'playwright';
-import { ChildProcess, spawn } from 'child_process';
+import { ChildProcess } from 'child_process';
 import { mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import type { FixtureDetail } from '../src/types.ts';
 import {
   buildManifest,
-  ENGINE_MODES,
   MODE_IDS,
   MODE_TITLES,
   type ScreenshotEntry,
 } from './screenshot-manifest.ts';
-import {
-  buildComponentManifest,
-  type ComponentEntry,
-} from './component-manifest.ts';
-import { captureComponents } from './capture-components.ts';
+import { startServer } from '../tests/e2e/helpers/server.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -52,48 +47,6 @@ const IMG_EXT = ciMode ? 'jpg' : 'png';
 const IMG_TYPE = ciMode ? ('jpeg' as const) : ('png' as const);
 
 // ---------------------------------------------------------------------------
-// Dev server
-// ---------------------------------------------------------------------------
-
-function startServer(): { proc: ChildProcess; portReady: Promise<number> } {
-  const proc = spawn(
-    'deno',
-    [
-      'run',
-      '--allow-net',
-      '--allow-read',
-      '--allow-run',
-      '--allow-env=BUILD_NUMBER,APP_CONTACT_EMAIL,APP_SUPPORT_URL,APP_TERMS_URL,APP_PRIVACY_URL',
-      'main.ts',
-      `--port=${PREFERRED_PORT}`,
-    ],
-    {
-      cwd: path.resolve(__dirname, '..'),
-      stdio: 'pipe',
-    },
-  );
-  const portReady = new Promise<number>((resolve, reject) => {
-    const timeout = setTimeout(
-      () => reject(new Error('Server did not start within 10s')),
-      10_000,
-    );
-    proc.stderr?.on('data', (d: Buffer) => {
-      const msg = d.toString();
-      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
-      if (m) {
-        clearTimeout(timeout);
-        resolve(parseInt(m[1], 10));
-      } else if (!msg.includes('Listening on')) process.stderr.write(msg);
-    });
-    proc.on('exit', (code) => {
-      clearTimeout(timeout);
-      if (code) reject(new Error(`Server exited with code ${code}`));
-    });
-  });
-  return { proc, portReady };
-}
-
-// ---------------------------------------------------------------------------
 // Index HTML generation
 // ---------------------------------------------------------------------------
 
@@ -101,7 +54,6 @@ function generateIndexHTML(
   manifest: ScreenshotEntry[],
   outDir: string,
   imgExt: string,
-  componentEntries?: ComponentEntry[],
 ): void {
   // Split into mode groups, speed check, design moments, and progress tab
   const modeGroups = new Map<string, ScreenshotEntry[]>();
@@ -188,14 +140,6 @@ function generateIndexHTML(
       `<h2>Progress Tab</h2>\n<div class="shots">\n${shots}\n</div>\n`;
   }
 
-  // Components section
-  if (componentEntries && componentEntries.length > 0) {
-    const shots = componentEntries
-      .map((e) => shotHTML(e.name, e.name.replace('comp/', '')))
-      .join('\n');
-    sections += `<h2>Components</h2>\n<div class="shots">\n${shots}\n</div>\n`;
-  }
-
   const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Screenshots</title>
 <style>
@@ -229,25 +173,17 @@ async function main() {
     );
   }
 
-  // Build component manifest and apply --only filter
-  let compEntries = buildComponentManifest(onlyPatterns);
-
   // --list: print all names and exit (no browser needed)
   if (listMode) {
     for (const entry of manifest) console.log(entry.name);
-    for (const entry of compEntries) console.log(entry.name);
     return;
   }
 
   mkdirSync(OUT_DIR, { recursive: true });
 
-  const hasAppEntries = manifest.length > 0;
-  const hasCompEntries = compEntries.length > 0;
-
-  // --- Capture app screenshots (needs dev server) ---
-  if (hasAppEntries) {
+  if (manifest.length > 0) {
     console.log('Starting dev server...');
-    const { proc: server, portReady } = startServer();
+    const { proc: server, portReady } = startServer(PREFERRED_PORT);
     try {
       const port = await portReady;
       BASE_URL = `http://localhost:${port}`;
@@ -265,13 +201,11 @@ async function main() {
       await page.goto(`${BASE_URL}/?fixtures`);
       await page.waitForLoadState('networkidle');
 
-      // Seed motorBaseline for all engine modes to skip calibration
-      for (const ns of ENGINE_MODES) {
-        await page.evaluate(
-          (key) => localStorage.setItem(key, '500'),
-          `motorBaseline_${ns}`,
-        );
-      }
+      // Seed shared motor baseline to skip calibration for all modes.
+      // All note-button modes share the 'note-button' task type key.
+      await page.evaluate(
+        () => localStorage.setItem('motorBaseline_note-button', '500'),
+      );
 
       // Reload so app picks up seeded baselines
       await page.reload();
@@ -291,6 +225,8 @@ async function main() {
 
       // Helper: capture screenshot
       async function capture(name: string) {
+        // Move mouse to top-left corner to clear any hover state
+        await page.mouse.move(0, 0);
         const filePath = path.join(OUT_DIR, `${name}.${IMG_EXT}`);
         await page.screenshot({
           path: filePath,
@@ -391,21 +327,8 @@ async function main() {
     }
   }
 
-  // --- Capture component screenshots (file://, no server) ---
-  if (hasCompEntries) {
-    console.log('Capturing component screenshots...');
-    await captureComponents({
-      entries: compEntries,
-      outDir: OUT_DIR,
-      imgType: IMG_TYPE,
-      ...(ciMode ? { quality: 80 } : {}),
-      hasTouch: touchMode,
-    });
-  }
-
-  generateIndexHTML(manifest, OUT_DIR, IMG_EXT, compEntries);
-  const total = manifest.length + compEntries.length;
-  console.log(`\nDone! ${total} screenshots in ${OUT_DIR}`);
+  generateIndexHTML(manifest, OUT_DIR, IMG_EXT);
+  console.log(`\nDone! ${manifest.length} screenshots in ${OUT_DIR}`);
 }
 
 main().catch((err) => {

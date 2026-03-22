@@ -5,72 +5,120 @@ import type {
   AdaptiveSelector,
   PracticeSummaryState,
   RecommendationResult,
+  SuggestionLine,
 } from './types.ts';
+import { computeLevelPercentile } from './adaptive.ts';
 
 // ---------------------------------------------------------------------------
 // Practice summary computation
 // ---------------------------------------------------------------------------
 
-/** Count how many items have automaticity above threshold ("fluent"). */
-export function countFluent(
+/** Count how many items have speed score ≥ 0.9 ("automatic"). */
+export function countAutomatic(
   itemIds: string[],
-  getAutomaticity: (id: string) => number | null,
-  threshold: number,
-): { fluent: number; seen: number } {
-  let fluent = 0;
+  getSpeedScore: (id: string) => number | null,
+): { automatic: number; seen: number } {
+  let automatic = 0;
   let seen = 0;
   for (let i = 0; i < itemIds.length; i++) {
-    const auto = getAutomaticity(itemIds[i]);
-    if (auto !== null) {
+    const speed = getSpeedScore(itemIds[i]);
+    if (speed !== null) {
       seen++;
-      if (auto > threshold) fluent++;
+      if (speed >= 0.9) automatic++;
     }
   }
-  return { fluent, seen };
+  return { automatic, seen };
+}
+
+// Re-export for consumers that import from mode-ui-state.
+export { computeLevelPercentile } from './adaptive.ts';
+
+/** Compute the status label from P10(speed). */
+export function statusLabelFromLevel(level: number): string {
+  if (level >= 0.9) return 'Automatic';
+  if (level >= 0.7) return 'Solid';
+  if (level >= 0.3) return 'Learning';
+  return 'Hesitant';
+}
+
+// Re-export for consumers that import from mode-ui-state.
+export type { SuggestionLine } from './types.ts';
+
+/**
+ * Group levelRecs by type, deduplicating indices by highest priority.
+ * Returns a record mapping rec type to sorted group indices.
+ */
+function groupRecsByType(
+  levelRecs: RecommendationResult['levelRecs'],
+): Record<string, number[]> {
+  const seen = new Set<number>();
+  const byType: Record<string, number[]> = {};
+  for (const rec of levelRecs) {
+    if (seen.has(rec.index)) continue;
+    seen.add(rec.index);
+    if (!byType[rec.type]) byType[rec.type] = [];
+    byType[rec.type].push(rec.index);
+  }
+  return byType;
 }
 
 /**
- * Compute "level automaticity" — the p-th percentile of per-item automaticity
- * values (unseen items contribute 0). Compresses the group's item distribution
- * into one number that reflects the weakest items.
- *
- * For 12 items at p=0.1: index = ceil(1.2)-1 = 1 → 2nd lowest value.
- * For 48 items: index = ceil(4.8)-1 = 4 → 5th lowest.
+ * Build structured recommendation lines from a RecommendationResult.
+ * Each line has a capitalized verb and array of level labels.
  */
-export function computeLevelAutomaticity(
-  itemIds: string[],
-  getAutomaticity: (id: string) => number | null,
-  percentile: number = 0.1,
-): { level: number; seen: number } {
-  if (itemIds.length === 0) return { level: 0, seen: 0 };
-  let seen = 0;
-  const values: number[] = [];
-  for (let i = 0; i < itemIds.length; i++) {
-    const auto = getAutomaticity(itemIds[i]);
-    if (auto !== null) {
-      seen++;
-      values.push(auto);
-    } else {
-      values.push(0);
-    }
+export function buildRecommendationLines(
+  result: RecommendationResult,
+  getGroupLabel: (index: number) => string,
+): SuggestionLine[] {
+  if (result.recommended.size === 0) return [];
+
+  const byType = groupRecsByType(result.levelRecs);
+  const lines: SuggestionLine[] = [];
+
+  if (byType['review']) {
+    const labels = byType['review'].sort((a, b) => a - b).map(getGroupLabel);
+    lines.push({ verb: 'Review', levels: labels });
   }
-  values.sort((a, b) => a - b);
-  const rawIndex = Math.ceil(values.length * percentile) - 1;
-  const index = Math.min(values.length - 1, Math.max(0, rawIndex));
-  return { level: values[index], seen };
+  if (byType['practice']) {
+    const labels = byType['practice'].sort((a, b) => a - b).map(getGroupLabel);
+    lines.push({ verb: 'Practice', levels: labels });
+  }
+  if (byType['expand'] && result.expandIndex !== null) {
+    const suffix = ' \u2014 ' + result.expandNewCount + ' new item' +
+      (result.expandNewCount !== 1 ? 's' : '');
+    lines.push({
+      verb: 'Start',
+      levels: [getGroupLabel(result.expandIndex) + suffix],
+    });
+  }
+  if (byType['automate']) {
+    const labels = byType['automate'].sort((a, b) => a - b).map(getGroupLabel);
+    lines.push({ verb: 'Keep practicing', levels: labels });
+  }
+
+  return lines;
 }
 
-/** Compute the status label from level automaticity. */
-export function statusLabelFromLevel(level: number): string {
-  if (level >= 0.8) return 'Automatic';
-  if (level >= 0.5) return 'Fluent';
-  if (level >= 0.2) return 'Developing';
-  return 'Learning';
+/** Map a SuggestionLine verb back to the flat text verb for buildRecommendationText. */
+function flatVerb(line: SuggestionLine): string {
+  switch (line.verb) {
+    case 'Review':
+      return 'review';
+    case 'Practice':
+      return 'practice';
+    case 'Start':
+      return 'start';
+    case 'Keep practicing':
+      return 'automate';
+    default:
+      return line.verb.toLowerCase();
+  }
 }
 
 /**
  * Build recommendation rationale text from a RecommendationResult.
- * Works for any group-based mode — caller provides group label function.
+ * Generates a unified string from `result.levelRecs` — same text shown
+ * in both in-skill suggestion card and home screen cue.
  *
  * @param getGroupLabel Maps a group/string index to a display label.
  * @param extraParts Additional suggestions (e.g., note filter for fretboard).
@@ -82,40 +130,10 @@ export function buildRecommendationText(
 ): string {
   if (result.recommended.size === 0) return '';
 
-  // Review mode: simple text for polishing across all groups
-  if (result.reviewMode) {
-    return 'review all \u2014 polish across ' +
-      result.consolidateIndices.length + ' group' +
-      (result.consolidateIndices.length !== 1 ? 's' : '');
-  }
-
-  const parts: string[] = [];
-
-  if (result.consolidateIndices.length > 0) {
-    const labels = result.consolidateIndices
-      .slice()
-      .sort((a, b) => a - b)
-      .map(getGroupLabel);
-    // Use "refresh" when all consolidation groups are stale
-    const allStale = result.staleIndices !== undefined &&
-      result.staleIndices.length === result.consolidateIndices.length &&
-      result.consolidateIndices.length > 0;
-    const verb = allStale ? 'refresh' : 'solidify';
-    const suffix = allStale
-      ? 'skills getting stale'
-      : result.consolidateWorkingCount + ' item' +
-        (result.consolidateWorkingCount !== 1 ? 's' : '') +
-        ' to work on';
-    parts.push(verb + ' ' + labels.join(', ') + ' \u2014 ' + suffix);
-  }
-
-  if (result.expandIndex !== null) {
-    parts.push(
-      'start ' + getGroupLabel(result.expandIndex) +
-        ' \u2014 ' + result.expandNewCount + ' new item' +
-        (result.expandNewCount !== 1 ? 's' : ''),
-    );
-  }
+  const lines = buildRecommendationLines(result, getGroupLabel);
+  const parts = lines.map((line) =>
+    flatVerb(line) + ' ' + line.levels.join(', ')
+  );
 
   if (extraParts) {
     for (let i = 0; i < extraParts.length; i++) {
@@ -130,7 +148,7 @@ export function buildRecommendationText(
  * Compute the full practice summary state. Pure function — no DOM.
  *
  * @param allItemIds All items in the mode (not just enabled).
- * @param selector Adaptive selector (for automaticity lookups).
+ * @param selector Adaptive selector (for speed/freshness lookups).
  * @param itemNoun "positions" for fretboard, "items" for everything else.
  * @param recommendation Precomputed recommendation result (null for no-group modes).
  * @param recommendationText Precomputed recommendation text (from buildRecommendationText).
@@ -146,17 +164,15 @@ export function computePracticeSummary(opts: {
   masteryText: string;
   showMastery: boolean;
 }): PracticeSummaryState {
-  const threshold = opts.selector.getConfig().automaticityThreshold;
-  const { fluent } = countFluent(
+  const { automatic } = countAutomatic(
     opts.allItemIds,
-    (id) => opts.selector.getAutomaticity(id),
-    threshold,
+    (id) => opts.selector.getSpeedScore(id),
   );
   const total = opts.allItemIds.length;
 
-  const { level, seen } = computeLevelAutomaticity(
+  const { level, seen } = computeLevelPercentile(
+    (id) => opts.selector.getSpeedScore(id),
     opts.allItemIds,
-    (id) => opts.selector.getAutomaticity(id),
   );
 
   let statusLabel: string;
@@ -167,7 +183,7 @@ export function computePracticeSummary(opts: {
     statusDetail = total + ' ' + opts.itemNoun + ' to learn';
   } else {
     statusLabel = statusLabelFromLevel(level);
-    statusDetail = fluent + '/' + total + ' ' + opts.itemNoun + ' fluent';
+    statusDetail = automatic + '/' + total + ' ' + opts.itemNoun + ' automatic';
   }
 
   const hasRec = opts.recommendation !== null &&

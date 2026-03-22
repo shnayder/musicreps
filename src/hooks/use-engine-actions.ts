@@ -3,21 +3,19 @@
 
 import { useCallback, useRef } from 'preact/hooks';
 import type { AdaptiveSelector, EngineState } from '../types.ts';
+import { incrementDailyReps } from '../effort.ts';
 import {
   engineContinueRound,
   engineNextQuestion,
   engineStart,
+  engineStop,
   engineSubmitAnswer,
   engineUpdateIdleMessage,
   engineUpdateMasteryAfterAnswer,
   engineUpdateProgress,
 } from '../quiz-engine-state.ts';
-import { LAST_QUESTION_CAP_MS } from './use-round-timer.ts';
-import {
-  HINT_CONTINUE,
-  IS_TOUCH_PRIMARY,
-  ROUND_DURATION_MS,
-} from './use-round-transitions.ts';
+import { effectiveRoundMs, LAST_QUESTION_CAP_MS } from './use-round-timer.ts';
+import { HINT_CONTINUE, IS_TOUCH_PRIMARY } from './use-round-transitions.ts';
 import type { RoundTimerHandle } from './use-round-timer.ts';
 import type { QuizEngineConfig } from './quiz-engine-types.ts';
 
@@ -33,10 +31,9 @@ function computeProgress(
 ): { masteredCount: number; totalEnabledCount: number } {
   const items = configRef.current.getEnabledItems();
   let mastered = 0;
-  const threshold = selectorRef.current.getConfig().automaticityThreshold;
   for (const id of items) {
-    const auto = selectorRef.current.getAutomaticity(id);
-    if (auto !== null && auto > threshold) mastered++;
+    const speed = selectorRef.current.getSpeedScore(id);
+    if (speed !== null && speed >= 0.9) mastered++;
   }
   return { masteredCount: mastered, totalEnabledCount: items.length };
 }
@@ -58,6 +55,7 @@ function processSubmitAnswer(
     responseTime,
     result.correct,
   );
+  incrementDailyReps();
 
   setState((prev) => {
     let next = engineSubmitAnswer(
@@ -91,7 +89,7 @@ function processSubmitAnswer(
       : 0;
     timer.roundDurationSnapshotRef.current = Math.min(
       elapsed,
-      ROUND_DURATION_MS + LAST_QUESTION_CAP_MS,
+      effectiveRoundMs + LAST_QUESTION_CAP_MS,
     );
     setState((prev) => ({ ...prev, hintText: HINT_CONTINUE }));
   }
@@ -100,6 +98,8 @@ function processSubmitAnswer(
 export type EngineActionsHandle = {
   nextQuestionRef: { current: () => void };
   start: () => void;
+  /** Reset engine state to idle (no timer/callback cleanup). */
+  stopEngine: () => void;
   continueQuiz: () => void;
   nextQuestion: () => void;
   submitAnswer: (input: string) => void;
@@ -156,6 +156,10 @@ export function useEngineActions(
     setTimeout(() => nextQuestionRef.current(), 0);
   }, [timer.startRoundTimer]);
 
+  const stopEngine = useCallback(() => {
+    setState(engineStop);
+  }, []);
+
   const continueQuiz = useCallback(() => {
     setState(engineContinueRound);
     timer.startRoundTimer();
@@ -177,6 +181,7 @@ export function useEngineActions(
   return {
     nextQuestionRef,
     start,
+    stopEngine,
     continueQuiz,
     nextQuestion,
     submitAnswer,

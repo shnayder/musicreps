@@ -127,49 +127,217 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
     /* Preview page overrides */
     body {
       display: block;
-      max-width: 720px;
-      padding: 2rem 1rem;
+      max-width: none;
+      padding: 1.5rem 2rem;
       min-height: auto;
       color: var(--color-text);
       line-height: 1.5;
     }
     h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
-    .subtitle { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
-    .page-nav { display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.8rem; }
+    .subtitle { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+    .page-nav { display: flex; gap: 1rem; margin-bottom: 0.75rem; font-size: 0.8rem; }
     .page-nav a { color: var(--color-brand-dark); text-decoration: none; }
     .page-nav a:hover { text-decoration: underline; }
+    /* Tab navigation */
+    .preview-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--color-border-lighter);
+      flex-wrap: wrap;
+    }
+    .preview-tab-btn {
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--color-text-light);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .preview-tab-btn:hover { color: var(--color-text); }
+    .preview-tab-btn.active {
+      color: var(--color-brand-dark);
+      border-bottom-color: var(--color-brand-dark);
+      font-weight: 600;
+    }
+    /* Within-tab section dividers */
     h2 {
-      font-size: 1.1rem;
-      margin: 2.5rem 0 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 2rem 0 1rem;
       padding-bottom: 0.25rem;
       border-bottom: 1px solid var(--color-border-lighter);
+      color: var(--color-text-light);
     }
-    .preview-section { margin-bottom: 1.5rem; }
+    h2:first-child { margin-top: 0; }
+    /* Component grid */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 1.25rem;
+    }
+    .preview-section { margin-bottom: 0; }
     .preview-section h3 {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
       color: var(--color-text-light);
       margin: 0 0 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
     .preview-frame {
-      max-width: 402px;
       border: 1px solid var(--color-border-light);
       border-radius: 8px;
       padding: var(--space-4);
       background: var(--color-bg);
     }
+    .tab-description {
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      margin: 0 0 1.5rem;
+    }
+    /* ScreenLayout preview override — constrain to a phone-sized frame */
+    .preview-screen-layout {
+      height: 500px;
+      border: 1px solid var(--color-border-lighter);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    /* Comment system */
+    .preview-section h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .comment-bubble-btn {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 0;
+      opacity: 0.2;
+      transition: opacity 0.15s;
+      line-height: 1;
+    }
+    .preview-section:hover .comment-bubble-btn { opacity: 0.5; }
+    .comment-bubble-btn.has-comment { opacity: 1; }
+    .comment-bubble-btn:hover { opacity: 1; }
+    .comment-area {
+      margin-top: 0.4rem;
+    }
+    .comment-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid hsl(45, 60%, 75%);
+      border-radius: 4px;
+      padding: 0.4rem 0.5rem;
+      font-family: inherit;
+      font-size: 0.8rem;
+      resize: none;
+      overflow: hidden;
+      background: hsl(45, 80%, 97%);
+      color: hsl(45, 30%, 25%);
+    }
+    .comment-textarea:focus {
+      outline: 2px solid hsl(45, 70%, 55%);
+      outline-offset: -1px;
+    }
+    .comment-textarea::placeholder { color: hsl(45, 30%, 65%); }
+    .comment-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.4rem 0.75rem;
+      margin-bottom: 1rem;
+      background: hsl(45, 80%, 95%);
+      border: 1px solid hsl(45, 60%, 80%);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      min-height: 2rem;
+    }
+    .comment-toolbar-count {
+      font-weight: 600;
+      color: hsl(45, 40%, 40%);
+    }
+    .comment-toolbar-btn {
+      border: 1px solid var(--color-border);
+      background: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .comment-toolbar-btn:hover:not(:disabled) { background: var(--color-surface-hover); }
+    .comment-toolbar-btn:disabled { opacity: 0.35; cursor: default; }
+    .comment-toolbar-clear { color: var(--color-error-text); }
+    /* Colors tab — palette ramps, swatch cards, heatmap strip */
+    .palette-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.35rem;
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+    }
+    .palette-hue-note { font-weight: 400; color: var(--color-text-muted); }
+    .palette-row { display: flex; gap: 2px; }
+    .palette-cell {
+      flex: 1;
+      height: 44px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+      border: 1px solid rgba(128, 128, 128, 0.15);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+    .swatch-card {
+      border: 1px solid var(--color-border-light);
+      border-radius: 6px;
+      overflow: hidden;
+      font-size: 0.8rem;
+    }
+    .swatch-color {
+      height: 48px;
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .swatch-info { padding: 0.4rem 0.6rem; }
+    .swatch-var {
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+      font-size: 0.75rem;
+      color: var(--color-text);
+      font-weight: 500;
+    }
+    .swatch-value {
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+      font-size: 0.7rem;
+      color: var(--color-text-light);
+    }
+    .swatch-note { font-size: 0.7rem; color: var(--color-text-muted); margin-top: 0.15rem; }
+    .heatmap-strip { display: flex; gap: 2px; margin: 0.5rem 0; }
+    .heatmap-step {
+      flex: 1;
+      height: 36px;
+      border-radius: 4px;
+      border: 1px solid var(--color-border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
-  <h1>Component Preview</h1>
-  <div class="subtitle">
-    Preact components rendered with mock data &mdash; edit
-    <code>src/ui/preview.tsx</code>, rebuild or refresh <code>/preview</code>.
-  </div>
-  <div class="page-nav">
-    <a href="components.html">Design System &rarr;</a>
-    <a href="colors.html">Colors &rarr;</a>
-  </div>
   <div id="preview-root"></div>
   <script>
 ${previewJs}
@@ -203,6 +371,24 @@ async function copyDesignPages(css: string): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export { buildHTML, SERVICE_WORKER as sw };
+
+// ---------------------------------------------------------------------------
+// Static assets copied to docs/ at build time and served by the dev server
+// ---------------------------------------------------------------------------
+
+const STATIC_ASSETS = new Set([
+  'apple-touch-icon.png',
+  'favicon-32x32.png',
+  'icon-192x192.png',
+  'icon-512x512.png',
+  'manifest.json',
+]);
+
+function staticContentType(name: string): string {
+  if (name.endsWith('.json')) return 'application/json';
+  if (name.endsWith('.png')) return 'image/png';
+  return 'application/octet-stream';
+}
 
 // ---------------------------------------------------------------------------
 // Port selection (find first available port starting from preferred)
@@ -240,7 +426,7 @@ if (import.meta.main) {
     const html = stamp(assembleHTML(css, js));
     const docsDir = resolve('./docs');
     await Deno.mkdir(docsDir, { recursive: true });
-    for (const name of ['apple-touch-icon.png', 'favicon-32x32.png']) {
+    for (const name of STATIC_ASSETS) {
       await Deno.copyFile(resolve(`./static/${name}`), `${docsDir}/${name}`);
     }
     await Deno.writeTextFile(`${docsDir}/index.html`, html);
@@ -274,6 +460,13 @@ if (import.meta.main) {
         return new Response(SERVICE_WORKER, {
           headers: { 'content-type': 'application/javascript' },
         });
+      }
+      // Serve static assets (icons, manifest, etc.)
+      const assetName = url.pathname.slice(1); // strip leading /
+      if (STATIC_ASSETS.has(assetName)) {
+        const data = await Deno.readFile(resolve(`./static/${assetName}`));
+        const ct = staticContentType(assetName);
+        return new Response(data, { headers: { 'content-type': ct } });
       }
       if (url.pathname === '/preview') {
         const css = await Deno.readTextFile(resolve('./src/styles.css'));

@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { MODE_BEFORE_AFTER } from './mode-catalog.ts';
 import {
   CHORD_ROOTS,
   CHORD_TYPES,
@@ -33,6 +34,7 @@ import {
   pickAccidentalName,
   pickRandomAccidental,
   resolveNoteInput,
+  resolveSolfegeToLetter,
   ROMAN_NUMERALS,
   rootUsesFlats,
   setUseSolfege,
@@ -1226,6 +1228,162 @@ describe('displayNotePair', () => {
       setUseSolfege(true);
       assert.equal(displayNotePair('C'), 'Do');
       assert.equal(displayNotePair('F#'), 'Fa\u266F');
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Solfège input support
+// ---------------------------------------------------------------------------
+
+describe('resolveSolfegeToLetter', () => {
+  it('resolves natural solfège syllables', () => {
+    assert.equal(resolveSolfegeToLetter('do'), 'C');
+    assert.equal(resolveSolfegeToLetter('re'), 'D');
+    assert.equal(resolveSolfegeToLetter('mi'), 'E');
+    assert.equal(resolveSolfegeToLetter('fa'), 'F');
+    assert.equal(resolveSolfegeToLetter('sol'), 'G');
+    assert.equal(resolveSolfegeToLetter('la'), 'A');
+    assert.equal(resolveSolfegeToLetter('si'), 'B');
+  });
+
+  it('resolves "so" as shorthand for G', () => {
+    assert.equal(resolveSolfegeToLetter('so'), 'G');
+  });
+
+  it('resolves sharps (do# → C#)', () => {
+    assert.equal(resolveSolfegeToLetter('do#'), 'C#');
+    assert.equal(resolveSolfegeToLetter('fa#'), 'F#');
+    assert.equal(resolveSolfegeToLetter('sol#'), 'G#');
+  });
+
+  it('resolves flats (mib → Eb)', () => {
+    assert.equal(resolveSolfegeToLetter('mib'), 'Eb');
+    assert.equal(resolveSolfegeToLetter('sib'), 'Bb');
+    assert.equal(resolveSolfegeToLetter('reb'), 'Db');
+  });
+
+  it('resolves "s" as sharp alias (dos → C#)', () => {
+    assert.equal(resolveSolfegeToLetter('dos'), 'C#');
+    assert.equal(resolveSolfegeToLetter('fas'), 'F#');
+  });
+
+  it('is case-insensitive', () => {
+    assert.equal(resolveSolfegeToLetter('Do'), 'C');
+    assert.equal(resolveSolfegeToLetter('RE'), 'D');
+    assert.equal(resolveSolfegeToLetter('Mi#'), 'E#');
+  });
+
+  it('returns null for unrecognised input', () => {
+    assert.equal(resolveSolfegeToLetter('xyz'), null);
+    assert.equal(resolveSolfegeToLetter('c'), null);
+    assert.equal(resolveSolfegeToLetter(''), null);
+  });
+});
+
+describe('isValidNoteInput with solfège mode', () => {
+  it('rejects solfège input in letter mode', () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(false);
+      assert.equal(isValidNoteInput('do'), false);
+      assert.equal(isValidNoteInput('re'), false);
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it('accepts solfège input in solfège mode', () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(isValidNoteInput('do'), true);
+      assert.equal(isValidNoteInput('re'), true);
+      assert.equal(isValidNoteInput('mi'), true);
+      assert.equal(isValidNoteInput('fa'), true);
+      assert.equal(isValidNoteInput('sol'), true);
+      assert.equal(isValidNoteInput('la'), true);
+      assert.equal(isValidNoteInput('si'), true);
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it('accepts solfège with accidentals in solfège mode', () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(isValidNoteInput('do#'), true);
+      assert.equal(isValidNoteInput('reb'), true);
+      assert.equal(isValidNoteInput('fa#'), true);
+      assert.equal(isValidNoteInput('sib'), true);
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it('still accepts letter input in solfège mode', () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(isValidNoteInput('c'), true);
+      assert.equal(isValidNoteInput('f#'), true);
+      assert.equal(isValidNoteInput('bb'), true);
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+});
+
+describe('resolveNoteInput with solfège mode', () => {
+  it('resolves solfège to canonical note names in solfège mode', () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      assert.equal(resolveNoteInput('do'), 'C');
+      assert.equal(resolveNoteInput('re'), 'D');
+      assert.equal(resolveNoteInput('sol'), 'G');
+      assert.equal(resolveNoteInput('sol#'), 'G#');
+      assert.equal(resolveNoteInput('mib'), 'D#');
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it('returns null for solfège in letter mode', () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(false);
+      assert.equal(resolveNoteInput('do'), null);
+      assert.equal(resolveNoteInput('re'), null);
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+});
+
+describe('MODE_BEFORE_AFTER respects solfège', () => {
+  it('uses letter names in letter mode', () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(false);
+      const ba = MODE_BEFORE_AFTER.semitoneMath;
+      assert.ok(ba.before().includes('F\u266F'));
+      assert.ok(!ba.before().includes('Fa'));
+    } finally {
+      setUseSolfege(original);
+    }
+  });
+
+  it('uses solfège names in solfège mode', () => {
+    const original = getUseSolfege();
+    try {
+      setUseSolfege(true);
+      const ba = MODE_BEFORE_AFTER.semitoneMath;
+      assert.ok(ba.before().includes('Fa'));
+      assert.ok(!ba.before().includes('F\u266F'));
     } finally {
       setUseSolfege(original);
     }

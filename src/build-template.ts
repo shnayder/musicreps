@@ -16,6 +16,7 @@ import {
   pianoNoteButtons,
   tabbedIdleHTML,
 } from './html-helpers.ts';
+import { MODE_NAMES } from './mode-catalog.ts';
 // ---------------------------------------------------------------------------
 // Shared HTML fragments
 // ---------------------------------------------------------------------------
@@ -36,7 +37,7 @@ function modeScreens(): string {
   <!-- Guitar Fretboard mode -->
 ${
     modeScreen('fretboard', {
-      modeName: 'Guitar Fretboard',
+      modeName: MODE_NAMES.fretboard,
       idleHTML: tabbedIdleHTML({
         practiceScope: DISTANCE_TOGGLES,
         progressContent: fretboardSVG({
@@ -59,7 +60,7 @@ ${
   <!-- Ukulele Fretboard mode -->
 ${
     modeScreen('ukulele', {
-      modeName: 'Ukulele Fretboard',
+      modeName: MODE_NAMES.ukulele,
       idleHTML: tabbedIdleHTML({
         practiceScope: DISTANCE_TOGGLES,
         progressContent: fretboardSVG({
@@ -82,7 +83,7 @@ ${
   <!-- Speed Tap mode -->
 ${
     modeScreen('speedTap', {
-      modeName: 'Speed Tap',
+      modeName: MODE_NAMES.speedTap,
       idleHTML: tabbedIdleHTML({ practiceScope: notesToggleHTML() }),
       quizAreaContent: `<div class="speed-tap-status">
         <span class="speed-tap-progress"></span>
@@ -95,7 +96,7 @@ ${
   <!-- Note Semitones mode -->
 ${
     modeScreen('noteSemitones', {
-      modeName: 'Note \u2194 Semitones',
+      modeName: MODE_NAMES.noteSemitones,
       idleHTML: tabbedIdleHTML({}),
       quizAreaContent: `${noteAnswerButtons()}
       ${numberButtons(0, 11)}`,
@@ -105,7 +106,7 @@ ${
   <!-- Interval Semitones mode -->
 ${
     modeScreen('intervalSemitones', {
-      modeName: 'Interval \u2194 Semitones',
+      modeName: MODE_NAMES.intervalSemitones,
       idleHTML: tabbedIdleHTML({}),
       quizAreaContent: `${intervalAnswerButtons()}
       ${numberButtons(1, 12)}`,
@@ -115,7 +116,7 @@ ${
   <!-- Semitone Math mode -->
 ${
     modeScreen('semitoneMath', {
-      modeName: 'Semitone Math',
+      modeName: MODE_NAMES.semitoneMath,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `${noteAnswerButtons()}`,
     })
@@ -124,7 +125,7 @@ ${
   <!-- Interval Math mode -->
 ${
     modeScreen('intervalMath', {
-      modeName: 'Interval Math',
+      modeName: MODE_NAMES.intervalMath,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `${noteAnswerButtons()}`,
     })
@@ -133,7 +134,7 @@ ${
   <!-- Key Signatures mode -->
 ${
     modeScreen('keySignatures', {
-      modeName: 'Key Signatures',
+      modeName: MODE_NAMES.keySignatures,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `${keysigAnswerButtons()}
       ${noteAnswerButtons({ hidden: true })}`,
@@ -143,7 +144,7 @@ ${
   <!-- Scale Degrees mode -->
 ${
     modeScreen('scaleDegrees', {
-      modeName: 'Scale Degrees',
+      modeName: MODE_NAMES.scaleDegrees,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `${noteAnswerButtons()}
       ${degreeAnswerButtons({ hidden: true })}`,
@@ -153,7 +154,7 @@ ${
   <!-- Diatonic Chords mode -->
 ${
     modeScreen('diatonicChords', {
-      modeName: 'Diatonic Chords',
+      modeName: MODE_NAMES.diatonicChords,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `${noteAnswerButtons()}
       ${numeralAnswerButtons({ hidden: true })}`,
@@ -163,7 +164,7 @@ ${
   <!-- Chord Spelling mode -->
 ${
     modeScreen('chordSpelling', {
-      modeName: 'Chord Spelling',
+      modeName: MODE_NAMES.chordSpelling,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `<div class="seq-slots"></div>
       ${noteAnswerButtons()}`,
@@ -190,6 +191,10 @@ export function assembleHTML(css: string, js: string): string {
   <title>Music Reps</title>
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#ffffff">
 
   <style>
     ${css}

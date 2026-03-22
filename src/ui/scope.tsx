@@ -5,7 +5,24 @@ import { Fragment } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import type { GroupStatus } from '../types.ts';
 import { displayNote } from '../music-data.ts';
-import { getSpeedFreshnessColor } from '../stats-display.ts';
+import { progressBarColors } from '../stats-display.ts';
+import { Text } from './text.tsx';
+
+// ---------------------------------------------------------------------------
+// GroupProgressBar — segmented bar showing per-item mastery colors
+// ---------------------------------------------------------------------------
+
+export function GroupProgressBar(
+  { colors, disabled }: { colors: string[]; disabled?: boolean },
+) {
+  return (
+    <div class={'group-progress-bar' + (disabled ? ' skipped' : '')}>
+      {colors.map((color, i) => (
+        <div class='group-bar-slice' key={i} style={`background:${color}`} />
+      ))}
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // GroupToggles — distance group toggles (e.g., +1 to +3, +4 to +6)
@@ -20,7 +37,7 @@ export function GroupToggles(
 ) {
   return (
     <div class='toggle-group'>
-      <span class='toggle-group-label'>Groups</span>
+      <Text role='label' class='toggle-group-label'>Groups</Text>
       <div class='distance-toggles'>
         {labels.map((label, i) => (
           <button
@@ -174,13 +191,7 @@ export function GroupProgressToggles(
         const isSkipped = skipped?.has(i) ?? false;
         const skipReason = skipped?.get(i);
         const currentStatus: 'learn' | GroupStatus = skipReason ?? 'learn';
-        const items = g.itemIds.map((id) => {
-          const sp = selector.getSpeedScore(id);
-          const fr = selector.getFreshness(id);
-          const auto = (sp !== null && fr !== null) ? sp * fr : null;
-          return { id, auto, color: getSpeedFreshnessColor(sp, fr) };
-        });
-        items.sort((a, b) => (b.auto ?? -1) - (a.auto ?? -1));
+        const colors = progressBarColors(selector, g.itemIds);
         return (
           <Fragment key={i}>
             <button
@@ -196,17 +207,10 @@ export function GroupProgressToggles(
             >
               {g.label}
             </button>
-            <div
-              class={'group-progress-bar' + (isSkipped ? ' skipped' : '')}
-            >
-              {items.map((item) => (
-                <div
-                  class='group-bar-slice'
-                  key={item.id}
-                  style={`background:${item.color}`}
-                />
-              ))}
-            </div>
+            <GroupProgressBar
+              colors={colors}
+              disabled={isSkipped}
+            />
             {hasMenu && (
               <GroupSkipMenu
                 index={i}
@@ -236,7 +240,7 @@ export function StringToggles(
 ) {
   return (
     <div class='toggle-group'>
-      <span class='toggle-group-label'>Strings</span>
+      <Text role='label' class='toggle-group-label'>Strings</Text>
       <div class='string-toggles'>
         {stringNames.map((name, i) => (
           <button
@@ -284,7 +288,7 @@ export function NoteFilter(
 
   return (
     <div class='toggle-group'>
-      <span class='toggle-group-label'>Notes</span>
+      <Text role='label' class='toggle-group-label'>Notes</Text>
       <div class='notes-toggles'>
         <button
           type='button'
@@ -324,7 +328,7 @@ export function NotesToggles(
 ) {
   return (
     <div class='toggle-group'>
-      <span class='toggle-group-label'>Notes</span>
+      <Text role='label' class='toggle-group-label'>Notes</Text>
       <div class='notes-toggles'>
         {notes.map((n) => (
           <button

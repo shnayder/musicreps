@@ -8,8 +8,7 @@
 //   deno task iterate list
 //
 // State names match the screenshot manifest (e.g. fretboard-idle,
-// semitoneMath-quiz, design-correct-feedback) or component manifest
-// (e.g. comp/buttons, comp/tabs). Use --list-states to see all.
+// semitoneMath-quiz, design-correct-feedback). Use --list-states to see all.
 
 import { chromium } from 'playwright';
 import { ChildProcess, spawn } from 'child_process';
@@ -24,17 +23,8 @@ import {
 import path from 'path';
 import { fileURLToPath } from 'url';
 import type { FixtureDetail } from '../src/types.ts';
-import {
-  buildManifest,
-  ENGINE_MODES,
-  type ScreenshotEntry,
-} from './screenshot-manifest.ts';
-import {
-  buildComponentManifest,
-  type ComponentEntry,
-  isComponentName,
-} from './component-manifest.ts';
-import { captureComponents } from './capture-components.ts';
+import { buildManifest, type ScreenshotEntry } from './screenshot-manifest.ts';
+import { startServer } from '../tests/e2e/helpers/server.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -80,44 +70,7 @@ function listSessions(): string[] {
     .map((d) => d.name);
 }
 
-// ---------------------------------------------------------------------------
-// Dev server (same pattern as take-screenshots.ts)
-// ---------------------------------------------------------------------------
-
-function startServer(): { proc: ChildProcess; portReady: Promise<number> } {
-  const proc = spawn(
-    'deno',
-    [
-      'run',
-      '--allow-net',
-      '--allow-read',
-      '--allow-run',
-      '--allow-env=BUILD_NUMBER,APP_CONTACT_EMAIL,APP_SUPPORT_URL,APP_TERMS_URL,APP_PRIVACY_URL',
-      'main.ts',
-      `--port=${PREFERRED_PORT}`,
-    ],
-    { cwd: ROOT, stdio: 'pipe' },
-  );
-  const portReady = new Promise<number>((resolve, reject) => {
-    const timeout = setTimeout(
-      () => reject(new Error('Server did not start within 10s')),
-      10_000,
-    );
-    proc.stderr?.on('data', (d: Buffer) => {
-      const msg = d.toString();
-      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
-      if (m) {
-        clearTimeout(timeout);
-        resolve(parseInt(m[1], 10));
-      } else if (!msg.includes('Listening on')) process.stderr.write(msg);
-    });
-    proc.on('exit', (code) => {
-      clearTimeout(timeout);
-      if (code) reject(new Error(`Server exited with code ${code}`));
-    });
-  });
-  return { proc, portReady };
-}
+// Dev server — uses shared helper from tests/e2e/helpers/server.ts
 
 async function waitForServer(timeoutMs = 10_000): Promise<void> {
   const start = Date.now();
@@ -145,7 +98,7 @@ async function captureStates(
   mkdirSync(outDir, { recursive: true });
 
   console.log('Starting dev server...');
-  const { proc: server, portReady } = startServer();
+  const { proc: server, portReady } = startServer(PREFERRED_PORT);
   try {
     const port = await portReady;
     BASE_URL = `http://localhost:${port}`;
@@ -163,13 +116,11 @@ async function captureStates(
     await page.goto(`${BASE_URL}/?fixtures`);
     await page.waitForLoadState('networkidle');
 
-    // Seed motorBaseline for all engine modes to skip calibration
-    for (const ns of ENGINE_MODES) {
-      await page.evaluate(
-        (key) => localStorage.setItem(key, '500'),
-        `motorBaseline_${ns}`,
-      );
-    }
+    // Seed shared motor baseline to skip calibration for all modes.
+    // All note-button modes share the 'note-button' task type key.
+    await page.evaluate(
+      () => localStorage.setItem('motorBaseline_note-button', '500'),
+    );
     await page.reload();
     await page.waitForLoadState('networkidle');
 
@@ -251,6 +202,7 @@ async function captureStates(
       const filePath = path.join(outDir, `${entry.name}.png`);
       await page.screenshot({ path: filePath, type: 'png' });
       console.log(`  ${entry.name}.png`);
+
       previousHadFixture = !!entry.fixture;
 
       // Clean up seeded localStorage for next entry
@@ -272,38 +224,74 @@ async function captureStates(
 }
 
 // ---------------------------------------------------------------------------
-// Partitioned capture: app states (dev server) + components (file://)
+// Capture session states via dev server
 // ---------------------------------------------------------------------------
 
 async function captureSessionStates(
   stateNames: string[],
   outDir: string,
   appManifestMap: Map<string, ScreenshotEntry>,
-  compManifestMap: Map<string, ComponentEntry>,
   hasTouch = true,
 ): Promise<void> {
-  const appNames = stateNames.filter((s) => !isComponentName(s));
-  const compNames = stateNames.filter((s) => isComponentName(s));
+  const appEntries = stateNames.map((s) => {
+    const entry = appManifestMap.get(s);
+    if (!entry) throw new Error(`State "${s}" no longer in manifest`);
+    return entry;
+  });
+  await captureStates(appEntries, outDir, hasTouch);
+}
 
-  // Capture app states (needs dev server)
-  if (appNames.length > 0) {
-    const appEntries = appNames.map((s) => {
-      const entry = appManifestMap.get(s);
-      if (!entry) throw new Error(`State "${s}" no longer in manifest`);
-      return entry;
-    });
-    await captureStates(appEntries, outDir, hasTouch);
-  }
+// ---------------------------------------------------------------------------
+// Evaluation data
+// ---------------------------------------------------------------------------
 
-  // Capture component states (file://, no server)
-  if (compNames.length > 0) {
-    const compEntries = compNames.map((s) => {
-      const entry = compManifestMap.get(s);
-      if (!entry) throw new Error(`Component "${s}" no longer in manifest`);
-      return entry;
-    });
-    await captureComponents({ entries: compEntries, outDir, hasTouch });
+type EvalIssue = {
+  id: string;
+  element: string;
+  category: string;
+  severity: 'high' | 'medium' | 'low';
+  issue: string;
+  principles: { id: string; name: string }[];
+  proposal: string;
+  sourceRef?: string;
+};
+
+type EvalState = {
+  issues: EvalIssue[];
+  positives: string[];
+};
+
+type EvalData = {
+  goal: string;
+  version: string;
+  timestamp: string;
+  categoriesEvaluated?: string[];
+  states: Record<string, EvalState>;
+  summary: string;
+  prioritizedChanges: {
+    priority: number;
+    description: string;
+    affectedStates: string[];
+    effort: string;
+    issues: string[];
+  }[];
+};
+
+function readEvaluations(name: string): Map<string, EvalData> {
+  const dir = sessionDir(name);
+  const evals = new Map<string, EvalData>();
+  if (!existsSync(dir)) return evals;
+  for (const file of readdirSync(dir)) {
+    const match = file.match(/^evaluation-(v\d+)\.json$/);
+    if (!match) continue;
+    try {
+      const data = JSON.parse(readFileSync(path.join(dir, file), 'utf-8'));
+      evals.set(match[1], data);
+    } catch {
+      // Skip malformed evaluation files
+    }
   }
+  return evals;
 }
 
 // ---------------------------------------------------------------------------
@@ -327,9 +315,77 @@ function escapeHtml(s: string): string {
   );
 }
 
+function generateEvalCell(
+  evalData: EvalData | undefined,
+  state: string,
+): string {
+  if (!evalData) return '';
+  const stateEval = evalData.states[state];
+  if (!stateEval) return '<td class="eval-cell"></td>';
+
+  const issues = stateEval.issues || [];
+  const positives = stateEval.positives || [];
+  const counts = { high: 0, medium: 0, low: 0 };
+  for (const i of issues) counts[i.severity]++;
+
+  let badges = '';
+  if (counts.high) {
+    badges += `<span class="eval-badge eval-high">${counts.high}</span>`;
+  }
+  if (counts.medium) {
+    badges += `<span class="eval-badge eval-medium">${counts.medium}</span>`;
+  }
+  if (counts.low) {
+    badges += `<span class="eval-badge eval-low">${counts.low}</span>`;
+  }
+  if (!issues.length) badges = '<span class="eval-badge eval-ok">0</span>';
+
+  let issueHtml = '';
+  for (const issue of issues) {
+    const principles = issue.principles
+      .map((p) => `${escapeHtml(p.id)}: ${escapeHtml(p.name)}`)
+      .join(', ');
+    issueHtml += `
+      <div class="eval-issue eval-severity-${issue.severity}">
+        <div class="eval-issue-header"><span class="eval-dot"></span><strong>${
+      escapeHtml(issue.element)
+    }</strong></div>
+        <p class="eval-issue-text">${escapeHtml(issue.issue)}</p>
+        ${
+      issue.proposal
+        ? `<p class="eval-proposal">&rarr; ${escapeHtml(issue.proposal)}</p>`
+        : ''
+    }
+        ${
+      principles
+        ? `<p class="eval-principles">${escapeHtml(principles)}</p>`
+        : ''
+    }
+      </div>`;
+  }
+
+  let posHtml = '';
+  if (positives.length) {
+    posHtml =
+      `<details class="eval-positives"><summary>Positives (${positives.length})</summary>
+      <ul>${
+        positives.map((p) => `<li>${escapeHtml(p)}</li>`).join('')
+      }</ul></details>`;
+  }
+
+  return `<td class="eval-cell"><details open>
+    <summary>${badges} ${issues.length} issue${
+    issues.length !== 1 ? 's' : ''
+  }</summary>
+    <div class="eval-issues">${issueHtml}</div>${posHtml}
+  </details></td>`;
+}
+
 function generateReviewHTML(name: string, session: Session): void {
   const { states, versions } = session;
   const colCount = states.length + 1; // +1 for General column
+  const evaluations = readEvaluations(name);
+  const hasEvals = evaluations.size > 0;
 
   // Table header
   const headers = states
@@ -339,13 +395,20 @@ function generateReviewHTML(name: string, session: Session): void {
   // Table body: one group per version
   let body = '';
   for (const ver of versions) {
+    const evalData = evaluations.get(ver);
     body += `
       <tr class="ver-header">
         <td colspan="${colCount}"><h2>${
       escapeHtml(ver)
     }</h2><button onclick="copyRound('${
       escapeHtml(ver)
-    }')">Copy round summary</button></td>
+    }')">Copy round summary</button>${
+      evalData
+        ? `<button onclick="copyEval('${
+          escapeHtml(ver)
+        }')">Copy evaluation</button>`
+        : ''
+    }</td>
       </tr>
       <tr class="shots">`;
     for (const state of states) {
@@ -359,7 +422,23 @@ function generateReviewHTML(name: string, session: Session): void {
     }
     body += `
         <td></td>
-      </tr>
+      </tr>`;
+    // Evaluation row (only if evaluation exists for this version)
+    if (evalData) {
+      body += `
+      <tr class="eval">`;
+      for (const state of states) {
+        body += generateEvalCell(evalData, state);
+      }
+      body += `
+        <td class="eval-cell">${
+        evalData.summary
+          ? `<div class="eval-summary">${escapeHtml(evalData.summary)}</div>`
+          : ''
+      }</td>
+      </tr>`;
+    }
+    body += `
       <tr class="notes">`;
     for (const state of states) {
       const id = `${escapeHtml(ver)}--${escapeHtml(state)}`;
@@ -430,6 +509,55 @@ function generateReviewHTML(name: string, session: Session): void {
     background: #fff; cursor: pointer; font-size: .75rem; white-space: nowrap;
   }
   .ver-header button:hover { background: #e8e8e8; }
+
+  /* Evaluation panels */
+  .eval td { padding: .25rem; vertical-align: top; }
+  .eval-cell { width: 300px; }
+  .eval-cell > details { font-size: .75rem; padding: .25rem; }
+  .eval-cell > details > summary { cursor: pointer; font-weight: 600; padding: .2rem 0; text-align: left; }
+  .eval-badge {
+    display: inline-block; padding: 1px 6px; border-radius: 8px;
+    font-size: .65rem; font-weight: 600; color: #fff; margin-right: 2px;
+  }
+  .eval-high { background: #c62828; }
+  .eval-medium { background: #e6a817; }
+  .eval-low { background: #888; }
+  .eval-ok { background: #2e7d32; }
+  .eval-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 4px; vertical-align: middle;
+  }
+  .eval-severity-high .eval-dot { background: #c62828; }
+  .eval-severity-medium .eval-dot { background: #e6a817; }
+  .eval-severity-low .eval-dot { background: #888; }
+  .eval-issue {
+    margin: .3rem 0; padding: .3rem .4rem; border-left: 3px solid; border-radius: 2px;
+  }
+  .eval-severity-high { border-color: #c62828; background: #fff5f5; }
+  .eval-severity-medium { border-color: #e6a817; background: #fffdf5; }
+  .eval-severity-low { border-color: #888; background: #fafafa; }
+  .eval-issue-header { font-size: .8rem; }
+  .eval-issue-text { margin: .15rem 0; }
+  .eval-proposal { color: #2e7d32; font-style: italic; margin: .15rem 0; }
+  .eval-principles { color: #888; font-size: .65rem; margin: .1rem 0; }
+  .eval-positives { margin-top: .4rem; text-align: left; }
+  .eval-positives summary { cursor: pointer; color: #2e7d32; font-weight: 500; text-align: left; }
+  .eval-positives ul { margin: .2rem 0; padding-left: 1.2rem; }
+  .eval-positives li { color: #2e7d32; margin: .1rem 0; }
+  .eval-summary { font-size: .75rem; color: #555; font-style: italic; padding: .3rem; }
+  .eval-goal-bar {
+    background: #fff; border: 1px solid #ddd; border-radius: 4px;
+    padding: .5rem .75rem; margin-bottom: .5rem; font-size: .85rem;
+    display: flex; gap: .5rem; align-items: center; flex-wrap: wrap;
+  }
+  .eval-goal-bar strong { color: #333; flex-shrink: 0; }
+  .eval-goal-bar input {
+    flex: 1; min-width: 200px; border: 1px solid transparent; border-radius: 3px;
+    padding: .2rem .4rem; font: inherit; background: transparent;
+  }
+  .eval-goal-bar input:hover { border-color: #ddd; }
+  .eval-goal-bar input:focus { border-color: #4a90d9; outline: none; background: #fff; }
+  .eval-goal-bar .eval-categories { color: #888; font-size: .75rem; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -440,6 +568,24 @@ function generateReviewHTML(name: string, session: Session): void {
   <button id="btn-save" title="Download feedback as .md file">Save .md</button>
   <span class="status" id="status"></span>
 </div>
+${
+    hasEvals
+      ? (() => {
+        // Show goal from the latest evaluation
+        const latestEval = evaluations.get(versions[versions.length - 1]) ||
+          [...evaluations.values()].pop();
+        if (!latestEval) return '';
+        const cats = latestEval.categoriesEvaluated
+          ? ` <span class="eval-categories">(${
+            latestEval.categoriesEvaluated.join(', ')
+          })</span>`
+          : '';
+        return `<div class="eval-goal-bar"><strong>Goal:</strong> <input id="eval-goal" value="${
+          escapeHtml(latestEval.goal)
+        }">${cats}</div>`;
+      })()
+      : ''
+  }
 
 <div class="scroll-wrapper">
 <table>
@@ -459,6 +605,11 @@ function generateReviewHTML(name: string, session: Session): void {
 const SESSION = ${JSON.stringify(name)};
 const STATES = ${JSON.stringify(states)};
 const VERSIONS = ${JSON.stringify(versions)};
+const EVALUATIONS = ${
+    JSON.stringify(
+      Object.fromEntries(evaluations),
+    )
+  };
 
 // --- localStorage persistence ---
 const storagePrefix = 'iterate-' + SESSION + '-';
@@ -477,10 +628,20 @@ function loadNotes() {
       if (saved) ta.value = saved;
     }
   }
+  // Load saved goal override
+  const goalInput = document.getElementById('eval-goal');
+  if (goalInput) {
+    const saved = localStorage.getItem(storagePrefix + 'goal');
+    if (saved) goalInput.value = saved;
+  }
 }
 
 // Save on input
 document.addEventListener('input', (e) => {
+  if (e.target.id === 'eval-goal') {
+    localStorage.setItem(storagePrefix + 'goal', e.target.value);
+    return;
+  }
   if (e.target.tagName !== 'TEXTAREA') return;
   const id = e.target.id; // "v1--fretboard-idle"
   const [ver, ...rest] = id.split('--');
@@ -566,6 +727,44 @@ function showStatus(msg) {
   el.textContent = msg;
   setTimeout(() => { el.textContent = ''; }, 2000);
 }
+
+// --- Evaluation export ---
+function buildEvalMarkdown(ver) {
+  const evalData = EVALUATIONS[ver];
+  if (!evalData) return '';
+  const lines = ['## Design Evaluation — ' + SESSION + ' ' + ver, ''];
+  lines.push('**Goal:** ' + evalData.goal, '');
+  for (const state of STATES) {
+    const se = evalData.states[state];
+    if (!se || !se.issues.length) continue;
+    lines.push('### ' + state, '');
+    for (const issue of se.issues) {
+      const sev = issue.severity.toUpperCase();
+      const princ = issue.principles.map(function(p) { return p.id + ': ' + p.name; }).join(', ');
+      lines.push('- **[' + sev + ']** ' + issue.element + ': ' + issue.issue);
+      if (issue.proposal) lines.push('  -> ' + issue.proposal);
+      if (princ) lines.push('  Principles: ' + princ);
+    }
+    if (se.positives && se.positives.length) {
+      lines.push('', '**Positives:**');
+      for (const p of se.positives) lines.push('- ' + p);
+    }
+    lines.push('');
+  }
+  if (evalData.prioritizedChanges && evalData.prioritizedChanges.length) {
+    lines.push('### Prioritized Changes', '');
+    for (const c of evalData.prioritizedChanges) {
+      lines.push(c.priority + '. ' + c.description + ' (' + c.effort + ')');
+    }
+  }
+  return lines.join('\\n');
+}
+
+async function copyEval(ver) {
+  const text = buildEvalMarkdown(ver);
+  if (!text) { showStatus('No evaluation for ' + ver); return; }
+  await copyToClipboard(text, ver + ' evaluation');
+}
 </script>
 </body></html>
 `;
@@ -616,8 +815,7 @@ Commands:
 Options:
   --list-states   Print all valid state names and exit.
 
-State names match the screenshot or component manifest (run --list-states to see all).
-Component names use the comp/ prefix (e.g. comp/buttons, comp/tabs).
+State names match the screenshot manifest (run --list-states to see all).
 `);
   process.exit(1);
 }
@@ -627,12 +825,10 @@ async function main() {
   const touchMode = !args.includes('--no-touch');
   const filteredArgs = args.filter((a) => a !== '--no-touch');
 
-  // --list-states: print all valid state names (app + component)
+  // --list-states: print all valid state names
   if (filteredArgs.includes('--list-states')) {
     const manifest = buildManifest();
     for (const entry of manifest) console.log(entry.name);
-    const compEntries = buildComponentManifest();
-    for (const entry of compEntries) console.log(entry.name);
     return;
   }
 
@@ -641,9 +837,7 @@ async function main() {
 
   const manifest = buildManifest();
   const manifestMap = new Map(manifest.map((e) => [e.name, e]));
-  const compManifest = buildComponentManifest();
-  const compMap = new Map(compManifest.map((e) => [e.name, e]));
-  const allNames = new Set([...manifestMap.keys(), ...compMap.keys()]);
+  const allNames = new Set(manifestMap.keys());
 
   switch (command) {
     case 'new': {
@@ -683,7 +877,6 @@ async function main() {
         stateNames,
         outDir,
         manifestMap,
-        compMap,
         touchMode,
       );
 
@@ -724,7 +917,6 @@ async function main() {
         session.states,
         outDir,
         manifestMap,
-        compMap,
         touchMode,
       );
 

@@ -330,19 +330,19 @@ Color helpers in `stats-display.ts` (pure functions, no DOM):
   coloring
 - `buildStatsLegend()` — color scale legend HTML string
 
-### Consolidate Before Expanding
+### Recommendation Pipeline (v4)
 
-Shared algorithm in `recommendations.ts` gating progression to new item groups.
+Shared algorithm in `recommendations.ts` deciding which item groups to practice.
 Used by 6 different systems: fretboard strings, semitone math groups, interval
 math groups, key signature groups, scale degree groups, diatonic chord groups,
 chord spelling groups.
 
 ```javascript
 computeRecommendations(selector, allIndices, getItemIds, config, options);
-// Returns { recommended: Set, enabled: Set|null }
+// Returns { recommended: Set, enabled: Set|null, levelRecs, expandIndex, ... }
 ```
 
-See [Algorithms](#consolidate-before-expanding-1) below for the full algorithm.
+See [Algorithms](#recommendation-pipeline-v4-1) below for the full algorithm.
 
 ## Algorithms
 
@@ -373,10 +373,10 @@ motor response time (reaction + tap + device latency). A random button is
 highlighted green; user taps as fast as they can. The median becomes the **motor
 baseline**.
 
-All modes share a baseline via a **calibration provider** system. Modes declare
-a `calibrationProvider` (default `'button'`); the baseline is stored as
-`motorBaseline_{provider}`. Completing calibration in any mode makes it
-available to all modes sharing that provider.
+All modes share a baseline via a **motor task type** system. Modes declare a
+`motorTaskType` (default `'note-button'`); the baseline is stored as
+`motorBaseline_{taskType}`. Completing calibration in any mode makes it
+available to all modes sharing that task type.
 
 All timing thresholds scale proportionally:
 
@@ -392,7 +392,7 @@ All timing thresholds scale proportionally:
 | Heatmap orange          | < 6.0x            |
 
 Key functions: `deriveScaledConfig()`, `computeMedian()` in `adaptive.ts`;
-`getCalibrationThresholds()`, `pickCalibrationButton()` in `quiz-engine.ts`.
+`getCalibrationThresholds()`, `pickCalibrationNote()` in `quiz-engine.ts`.
 
 #### Response-count scaling (planned)
 
@@ -420,7 +420,7 @@ Per-item half-life forgetting curve: `P(recall) = 2^(-t/stability)`.
 
 - Each item tracks `stability` (half-life in hours) and `lastCorrectAt`
 - First correct answer: `stability = initialStability` (4 hours)
-- Subsequent correct: stability grows by `stabilityGrowthBase * speedFactor`
+- Subsequent correct: freshness-modulated growth `stability * (1 + growthMax * (1 - freshness))`
 - Wrong answer: stability reduced by `stabilityDecayOnWrong` (floored at
   `initialStability`)
 - **Self-correction**: fast answer after long gap → stability boosted to at
@@ -447,35 +447,37 @@ The progress bar and "Looks like you've got this!" message use the
 
 Config: `automaticityThreshold` (default 0.8) in `DEFAULT_CONFIG`.
 
-### Consolidate Before Expanding
+### Recommendation Pipeline (v4)
 
-The recommendation algorithm gates expansion to new item groups behind
-consolidation of what's already been started:
+The recommendation algorithm uses per-level status to decide what to practice:
 
 1. **Partition** groups into "started" (at least 1 item seen) and "unstarted"
    (all items unseen)
-2. **Consolidation ratio** = mastered items / total seen items across all
-   started groups. An item is "mastered" when `recall >= recallThreshold` (0.5)
-3. **Rank** started groups by work remaining (`dueCount + unseenCount`);
-   recommend those above the median
-4. **Expansion gate**: only suggest one unstarted group when
-   `consolidationRatio >= expansionThreshold` (0.7)
-5. **First launch**: no data → recommend the first unstarted group (respecting
+2. **Per-level status**: compute P10 speed and P10 freshness for each started
+   level. Speed labels: Automatic (≥0.9), Learned (≥0.7), Learning (≥0.3),
+   Hesitant (>0), Starting (=0). Needs review when P10 freshness < 0.5.
+3. **Build recommendations** in priority order:
+   - **Review** — any level needs review → recommend reviewing that level
+   - **Practice** — any level Starting/Hesitant/Learning → recommend practicing
+   - **Expand** — expansion gate open + unstarted level available → start next
+   - **Automate** — any level Learned (not Automatic) → recommend drilling
+4. **Expansion gate** opens when all started levels ≥ Learned (P10 speed ≥ 0.7)
+   AND none need review. If ≥3 Learned levels, expansion is deprioritized
+   (placed after automate) to encourage automating before expanding further.
+5. **Item budget**: `maxWorkItems` (default 30) limits how many items are
+   included. Recs are added in priority order until budget is exhausted.
+6. **First launch**: no data → recommend the first unstarted group (respecting
    `sortUnstarted` if provided) with `enabled` populated so "Use suggestion"
    works immediately
 
-Config: `expansionThreshold` (default 0.7) in `DEFAULT_CONFIG`.
-
 **Ownership rule**: `computeRecommendations()` owns _all_ suggestion logic,
-including the first-launch default. Per-mode `renderPracticeSummary` should
-never special-case "no data yet" — the recommendation result's `expandIndex` and
-`expandNewCount` fields tell the UI what to display. This keeps suggestion logic
-unit-testable in one place instead of scattered across 8 mode files.
+including the first-launch default. The result's `levelRecs` array drives
+both in-skill suggestion text and home screen cue labels, keeping them in sync.
 
 ### Distance Group Progression (Math Modes)
 
 264 items per math mode, grouped into 6 distance groups unlocked progressively.
-Uses the consolidate-before-expanding algorithm. Default: group 0 only.
+Uses the recommendation pipeline (v4). Default: group 0 only.
 
 | Group | Distances | Semitone label | Interval label | Items |
 | ----- | --------- | -------------- | -------------- | ----- |

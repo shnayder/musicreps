@@ -355,51 +355,66 @@ export function refreshNoteButtonLabels(container: HTMLElement): void {
 // Calibration helpers
 // ---------------------------------------------------------------------------
 
+export type CalibrationThreshold = {
+  label: string;
+  maxMs: number | null;
+  meaning: string;
+  colorToken: string;
+};
+
 export function getCalibrationThresholds(
   baseline: number,
-): { label: string; maxMs: number | null; meaning: string }[] {
+): CalibrationThreshold[] {
   return [
     {
       label: 'Automatic',
       maxMs: Math.round(baseline * 1.5),
-      meaning: 'Fully memorized — instant recall',
+      meaning: 'Fully memorized \u2014 instant recall',
+      colorToken: '--heatmap-5',
     },
     {
-      label: 'Good',
+      label: 'Solid',
       maxMs: Math.round(baseline * 3.0),
       meaning: 'Solid recall, minor hesitation',
+      colorToken: '--heatmap-4',
     },
     {
-      label: 'Developing',
+      label: 'Learning',
       maxMs: Math.round(baseline * 4.5),
-      meaning: 'Working on it — needs practice',
+      meaning: 'Working on it \u2014 needs practice',
+      colorToken: '--heatmap-3',
     },
     {
-      label: 'Slow',
+      label: 'Hesitant',
       maxMs: Math.round(baseline * 6.0),
       meaning: 'Significant hesitation',
+      colorToken: '--heatmap-2',
     },
-    { label: 'Very slow', maxMs: null, meaning: 'Not yet learned' },
+    {
+      label: 'Starting',
+      maxMs: null,
+      meaning: 'Not yet learned',
+      colorToken: '--heatmap-1',
+    },
   ];
 }
 
-export function pickCalibrationButton(
-  buttons: HTMLElement[],
-  prevBtn: HTMLElement | null,
+/**
+ * Pick a random note name for calibration trials.
+ * 65% naturals, 35% sharps. No consecutive repeats.
+ */
+export function pickCalibrationNote(
+  prevNote: string | null,
   rng?: () => number,
-): HTMLElement {
+): string {
   const rand = rng || Math.random;
-  const sharpBtns = buttons.filter((b) => b.dataset.note?.includes('#'));
-  const naturalBtns = buttons.filter((b) =>
-    b.dataset.note && !b.dataset.note.includes('#')
-  );
-  const useSharp = sharpBtns.length > 0 && rand() < 0.35;
-  const pool = useSharp
-    ? sharpBtns
-    : (naturalBtns.length > 0 ? naturalBtns : buttons);
-  let btn;
+  const naturals = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  const sharps = ['C#', 'D#', 'F#', 'G#', 'A#'];
+  const useSharp = rand() < 0.35;
+  const pool = useSharp ? sharps : naturals;
+  let note;
   do {
-    btn = pool[Math.floor(rand() * pool.length)];
-  } while (btn === prevBtn && pool.length > 1);
-  return btn;
+    note = pool[Math.floor(rand() * pool.length)];
+  } while (note === prevNote && pool.length > 1);
+  return note;
 }

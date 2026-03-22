@@ -39,6 +39,15 @@ touches multiple systems, or benefits from a written walkthrough.
 Example: `plans/design-docs/2026-02-11-architecture-review.md` — phased
 refactoring plan with code samples for each extraction step.
 
+### Visual design spec
+
+Write when **redesigning or polishing a feature's visual appearance**. Typical
+for layout cleanups, hierarchy improvements, or design system alignment. Derive
+the design from the type hierarchy and structural components before writing CSS.
+
+See [visual-design-spec.md](visual-design-spec.md) for the full template and
+process.
+
 ### Bug fix plan
 
 Write for **non-trivial bugs** affecting multiple files or shared systems. Skip

@@ -2,7 +2,6 @@
 // Extracted to avoid circular imports.
 
 import type { CheckAnswerResult, EngineState } from '../types.ts';
-import type { SpeedCheckFixture } from '../types.ts';
 
 export type QuizEngineConfig = {
   getEnabledItems: () => string[];
@@ -28,14 +27,10 @@ export type QuizEngineHandle = {
   timerText: string;
   timerWarning: boolean;
   timerLastQuestion: boolean;
-  calibrating: boolean;
-  calibrationFixture: SpeedCheckFixture | undefined;
   start: () => void;
   stop: () => void;
   submitAnswer: (input: string) => void;
   nextQuestion: () => void;
   continueQuiz: () => void;
   updateIdleMessage: () => void;
-  startCalibration: () => void;
-  endCalibration: () => void;
 };

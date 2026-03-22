@@ -13,6 +13,7 @@ import { computePracticeSummary } from '../mode-ui-state.ts';
 import type { StatsViewSelector } from './use-round-summary.ts';
 import { useStatsSelector } from './use-round-summary.ts';
 import type { QuizEngineHandle } from './use-quiz-engine.ts';
+import type { ModeTab } from '../ui/mode-screen.tsx';
 
 // ---------------------------------------------------------------------------
 // Hook
@@ -20,8 +21,8 @@ import type { QuizEngineHandle } from './use-quiz-engine.ts';
 
 export type PracticeSummaryHandle = {
   summary: PracticeSummaryState;
-  activeTab: 'practice' | 'progress';
-  setActiveTab: (tab: 'practice' | 'progress') => void;
+  activeTab: ModeTab;
+  setActiveTab: (tab: ModeTab) => void;
   statsSel: StatsViewSelector;
 };
 
@@ -29,7 +30,7 @@ export type PracticeSummaryHandle = {
  * Compute practice summary state + tab controls for a quiz mode.
  *
  * @param allItems All item IDs in the mode (not just enabled).
- * @param selector Adaptive selector (for automaticity lookups).
+ * @param selector Adaptive selector (for speed/freshness lookups).
  * @param engine Quiz engine handle (for mastery text and phase).
  * @param itemNoun "positions" for fretboard, "notes" for speed-tap, "items" for the rest.
  * @param recommendation Precomputed recommendation result (null for no-group modes).
@@ -43,9 +44,7 @@ export function usePracticeSummary(opts: {
   recommendation: RecommendationResult | null;
   recommendationText: string;
 }): PracticeSummaryHandle {
-  const [activeTab, setActiveTab] = useState<'practice' | 'progress'>(
-    'practice',
-  );
+  const [activeTab, setActiveTab] = useState<ModeTab>('practice');
 
   const summary = useMemo(
     () =>

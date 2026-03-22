@@ -108,10 +108,12 @@ type Layer =
 const FOUNDATION = new Set([
   'src/types.ts',
   'src/music-data.ts',
+  'src/mode-catalog.ts',
   'src/adaptive.ts',
   'src/app-config.ts',
   'src/deadline.ts',
   'src/recommendations.ts',
+  'src/effort.ts',
 ]);
 
 const ENGINE = new Set([
@@ -123,6 +125,7 @@ const DISPLAY = new Set([
   'src/stats-display.ts',
   'src/mode-ui-state.ts',
   'src/quiz-fretboard-state.ts',
+  'src/dev-panel.ts',
 ]);
 
 const BUILD_TIME = new Set([
@@ -157,6 +160,8 @@ function classifyLayer(file: string): Layer {
   if (file.match(/src\/modes\/[^/]+\/logic\.ts$/)) return 'mode-logic';
   if (file.startsWith('src/modes/')) return 'mode-component';
   if (file === 'src/mode-utils.ts') return 'mode-logic';
+  if (file === 'src/mode-progress-manifest.ts') return 'mode-logic';
+  if (file === 'src/home-recommendations.ts') return 'mode-logic';
   return 'app'; // fallback for unknown files
 }
 

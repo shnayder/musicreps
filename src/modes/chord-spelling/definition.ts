@@ -2,11 +2,8 @@
 // Sequential response: user spells out all notes of a chord.
 // "Cm7" → C, Eb, G, Bb. Strict enharmonic spelling.
 
-import {
-  displayNote,
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
-} from '../../music-data.ts';
+import { displayNote } from '../../music-data.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,
@@ -26,6 +23,7 @@ export const CHORD_SPELLING_DEF: ModeDefinition<Question> = {
   id: 'chordSpelling',
   name: 'Chord Spelling',
   namespace: 'chordSpelling',
+  motorTaskType: 'chord-sequence',
   description: MODE_DESCRIPTIONS.chordSpelling,
   beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
   itemNoun: 'items',
@@ -33,6 +31,7 @@ export const CHORD_SPELLING_DEF: ModeDefinition<Question> = {
   allItems: ALL_ITEMS,
   getQuestion: (itemId) => parseItem(itemId),
   getPromptText: (q) => displayNote(q.rootName) + q.chordType.symbol,
+  quizInstruction: 'Spell this chord',
 
   // Sequential: collect N notes, then evaluate all at once
   sequential: {

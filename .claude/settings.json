@@ -1,0 +1,25 @@
+{
+  "env": {
+    "ENABLE_LSP_TOOL": "1"
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v deno || npm install -g deno"
+          },
+          {
+            "type": "command",
+            "command": "if [ \"$IS_SANDBOX\" = \"yes\" ]; then npm install; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

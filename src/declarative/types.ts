@@ -3,13 +3,17 @@
 // letting GenericMode handle all the shared hook composition + rendering.
 
 import type { ComponentChildren } from 'preact';
-import type { CheckAnswerResult, ItemStats, StatsTableRow } from '../types.ts';
+import type {
+  CheckAnswerResult,
+  ItemStats,
+  MotorTaskType,
+  StatsTableRow,
+} from '../types.ts';
 
 /** Minimal selector interface for stats rendering (color computation). */
 export type StatsSelector = {
   getSpeedScore(id: string): number | null;
   getFreshness(id: string): number | null;
-  getAutomaticity(id: string): number | null;
   getStats(id: string): ItemStats | null;
 };
 
@@ -69,7 +73,7 @@ export type NoScopeDef = { kind: 'none' };
 
 export type GroupScopeDef = {
   kind: 'groups';
-  groups: Array<{ label: string }>;
+  groups: Array<{ label: string | (() => string) }>;
   getItemIdsForGroup: (index: number) => string[];
   allGroupIndices: number[];
   storageKey: string;
@@ -229,8 +233,13 @@ type ModeDefinitionBase<Q> = {
   id: string;
   name: string;
   namespace: string;
+  /** Motor task type for speed check calibration. Defaults to 'note-button'. */
+  motorTaskType?: MotorTaskType;
   description: string;
-  beforeAfter: { before: string; after: string };
+  beforeAfter: {
+    before: string | (() => string);
+    after: string | (() => string);
+  };
   itemNoun: string;
 
   // --- Item space ---
@@ -241,6 +250,8 @@ type ModeDefinitionBase<Q> = {
   getQuestion: (itemId: string) => Q;
   /** Generate prompt text from a question. */
   getPromptText: (q: Q) => string;
+  /** Instruction shown above the prompt during quiz (e.g., "What note is this?"). */
+  quizInstruction?: string | ((q: Q) => string);
 
   // --- Direction (for bidirectional modes) ---
   /** Get the direction of a question. Only needed for bidirectional answers. */

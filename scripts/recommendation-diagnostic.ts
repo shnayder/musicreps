@@ -46,6 +46,7 @@ import {
   type ScenarioOutput,
   SCENARIOS,
 } from '../src/fixtures/recommendation-scenarios.ts';
+import { startServer } from '../tests/e2e/helpers/server.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -64,19 +65,19 @@ const DIAG_DIR = path.join(ROOT, 'screenshots', 'diagnostic');
 type SerializedRow = {
   name: string;
   description: string;
-  levelAutomaticity: number;
-  medianWork: number;
+  levelSpeed: number;
+  levelFreshness: number;
   gateOpen: boolean;
   groupRecs: {
     index: number;
-    fluent: number;
+    automatic: number;
     working: number;
     unseen: number;
   }[];
-  consolidateIndices: number[];
+  recommendedIndices: number[];
   expandIndex: number | null;
   expandNewCount: number;
-  consolidateWorkingCount: number;
+  levelRecs: { index: number; type: string }[];
   recommendationText: string;
   statusLabel: string;
   statusDetail: string;
@@ -125,43 +126,7 @@ function autoSessionName(): string {
   return `diag-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
 }
 
-// ---------------------------------------------------------------------------
-// Dev server (same pattern as take-screenshots.ts)
-// ---------------------------------------------------------------------------
-
-function startServer(): { proc: ChildProcess; portReady: Promise<number> } {
-  const proc = spawn(
-    'deno',
-    [
-      'run',
-      '--allow-net',
-      '--allow-read',
-      '--allow-run',
-      'main.ts',
-      `--port=${PREFERRED_PORT}`,
-    ],
-    { cwd: ROOT, stdio: 'pipe' },
-  );
-  const portReady = new Promise<number>((resolve, reject) => {
-    const timeout = setTimeout(
-      () => reject(new Error('Server did not start within 10s')),
-      10_000,
-    );
-    proc.stderr?.on('data', (d: Buffer) => {
-      const msg = d.toString();
-      const m = msg.match(/Listening on http:\/\/[\w.]+:(\d+)/);
-      if (m) {
-        clearTimeout(timeout);
-        resolve(parseInt(m[1], 10));
-      } else if (!msg.includes('Listening on')) process.stderr.write(msg);
-    });
-    proc.on('exit', (code) => {
-      clearTimeout(timeout);
-      if (code) reject(new Error(`Server exited with code ${code}`));
-    });
-  });
-  return { proc, portReady };
-}
+// Dev server — uses shared helper from tests/e2e/helpers/server.ts
 
 // ---------------------------------------------------------------------------
 // Pure analysis: run scenario through recommendation algorithm
@@ -188,12 +153,13 @@ function analyzeScenario(
     }
   }
 
-  // Run recommendation algorithm
+  // Run recommendation algorithm (sort unstarted by index, matching use-group-scope)
   const recommendation = computeRecommendations(
     selector,
     ALL_GROUP_INDICES,
     getItemIdsForGroup,
-    { expansionThreshold: cfg.expansionThreshold },
+    {},
+    { sortUnstarted: (a, b) => a.string - b.string },
   );
 
   // Build recommendation text
@@ -222,33 +188,29 @@ function analyzeScenario(
   const started = recs.filter((r) => r.unseenCount < r.totalCount);
 
   const startedItemIds = started.flatMap((r) => getItemIdsForGroup(r.string));
-  const { level: levelAutomaticity } = selector.getLevelAutomaticity(
+  const { level: levelSpeed } = selector.getLevelSpeed(startedItemIds);
+  const { level: levelFreshness } = selector.getLevelFreshness(
     startedItemIds,
+    undefined,
+    Date.now(),
   );
-
-  const workCounts = started
-    .map((r) => r.workingCount + r.unseenCount)
-    .sort((a, b) => b - a);
-  const medianWork = workCounts.length > 0
-    ? workCounts[Math.floor(workCounts.length / 2)]
-    : 0;
 
   const groupRecs = recs.map((r) => ({
     index: r.string,
-    fluent: r.fluentCount,
+    automatic: r.automaticCount,
     working: r.workingCount,
     unseen: r.unseenCount,
   }));
 
   return {
-    levelAutomaticity,
-    medianWork,
+    levelSpeed,
+    levelFreshness,
     gateOpen: recommendation.expandIndex !== null,
     groupRecs,
-    consolidateIndices: [...recommendation.consolidateIndices],
+    recommendedIndices: [...recommendation.recommended],
     expandIndex: recommendation.expandIndex,
     expandNewCount: recommendation.expandNewCount,
-    consolidateWorkingCount: recommendation.consolidateWorkingCount,
+    levelRecs: recommendation.levelRecs,
     recommendationText,
     statusLabel: practiceSummary.statusLabel,
     statusDetail: practiceSummary.statusDetail,
@@ -281,7 +243,7 @@ async function captureRound(
   const now = Date.now();
 
   console.log('Starting dev server...');
-  const { proc: server, portReady } = startServer();
+  const { proc: server, portReady } = startServer(PREFERRED_PORT);
   const rows: SerializedRow[] = [];
 
   try {
@@ -325,7 +287,7 @@ async function captureRound(
 
       await page.evaluate(
         (baseline: number) => {
-          localStorage.setItem('motorBaseline_button', String(baseline));
+          localStorage.setItem('motorBaseline_note-button', String(baseline));
         },
         MOTOR_BASELINE,
       );
@@ -361,16 +323,12 @@ async function captureRound(
       // --- 3. Run checks ---
       // Reconstruct RecommendationResult with Sets for check functions
       const recommendation = {
-        recommended: new Set(analysis.consolidateIndices),
+        recommended: new Set(analysis.recommendedIndices),
         enabled: null as Set<number> | null,
-        consolidateIndices: analysis.consolidateIndices,
-        consolidateWorkingCount: analysis.consolidateWorkingCount,
         expandIndex: analysis.expandIndex,
         expandNewCount: analysis.expandNewCount,
+        levelRecs: analysis.levelRecs,
       };
-      if (analysis.expandIndex !== null) {
-        recommendation.recommended.add(analysis.expandIndex);
-      }
 
       const output: ScenarioOutput = {
         recommendation,
@@ -477,32 +435,33 @@ function generateReviewHTML(sessionName: string, session: Session): void {
           (g) =>
             `<div class="group-row">` +
             `<span class="group-label">G${g.index}</span> ` +
-            `<span class="fluent">${g.fluent}F</span> ` +
+            `<span class="automatic">${g.automatic}A</span> ` +
             `<span class="working">${g.working}W</span> ` +
             `<span class="unseen">${g.unseen}U</span>` +
             `</div>`,
         )
         .join('\n');
 
-      const levelAuto = row.levelAutomaticity;
       const algorithmHtml =
-        `<div>Level: <strong>${levelAuto.toFixed(2)}</strong></div>` +
-        `<div>Median work: <strong>${row.medianWork}</strong></div>` +
+        `<div>P10 speed: <strong>${row.levelSpeed.toFixed(2)}</strong></div>` +
+        `<div>P10 freshness: <strong>${
+          row.levelFreshness.toFixed(2)
+        }</strong></div>` +
         `<div>Gate: <strong class="${
           row.gateOpen ? 'gate-open' : 'gate-closed'
         }">${row.gateOpen ? 'OPEN' : 'CLOSED'}</strong></div>`;
 
-      const consolidateLabels = row.consolidateIndices
+      const recommendedLabels = row.recommendedIndices
         .map((i) => `G${i}`)
         .join(', ');
-      const expandLabel = row.expandIndex !== null
-        ? `G${row.expandIndex}`
-        : 'none';
+      const levelRecLabels = row.levelRecs
+        .map((r) => `${r.type}(G${r.index})`)
+        .join(', ');
       const recHtml =
-        `<div>Consolidate: <strong>${
-          consolidateLabels || 'none'
+        `<div>Recommended: <strong>${
+          recommendedLabels || 'none'
         }</strong></div>` +
-        `<div>Expand: <strong>${expandLabel}</strong></div>` +
+        `<div>Recs: <strong>${levelRecLabels || 'none'}</strong></div>` +
         `<div class="rec-text">${
           escapeHtml(row.recommendationText || '(none)')
         }</div>`;
@@ -632,7 +591,7 @@ function generateReviewHTML(sessionName: string, session: Session): void {
   .group-stats-col { min-width: 120px; font-family: monospace; font-size: 0.8rem; }
   .group-row { white-space: nowrap; }
   .group-label { font-weight: bold; }
-  .fluent { color: #2a7; }
+  .automatic { color: #2a7; }
   .working { color: #c63; }
   .unseen { color: #888; }
   .algo-col { min-width: 120px; }
@@ -687,18 +646,18 @@ function generateReviewHTML(sessionName: string, session: Session): void {
 <details>
 <summary style="cursor:pointer; font-weight:bold; margin-bottom:0.5rem;">How it works</summary>
 <div class="howto">
-  <p>Each item is classified by its <strong>automaticity</strong> (speed &times; freshness):</p>
+  <p>Each item is classified by its <strong>speed score</strong>:</p>
   <ul>
-    <li><strong class="fluent">F (Fluent)</strong> &mdash; automaticity &gt; threshold (fast + fresh)</li>
-    <li><strong class="working">W (Working)</strong> &mdash; seen but automaticity &le; threshold (slow or decayed)</li>
+    <li><strong class="automatic">A (Automatic)</strong> &mdash; speed &ge; 0.9</li>
+    <li><strong class="working">W (Working)</strong> &mdash; seen but speed &lt; 0.9</li>
     <li><strong class="unseen">U (Unseen)</strong> &mdash; no data yet</li>
   </ul>
-  <p><strong>Level automaticity</strong> = 10th percentile of per-item automaticity (unseen &rarr; 0) across all started groups.<br>
-     <strong>Expansion gate</strong> opens when level &ge; 0.7 (<code>expansionThreshold</code>).<br>
-     Started groups with work (W + U) above the <strong>median</strong> are recommended for consolidation.<br>
-     When the gate is open, one unstarted group is suggested for <strong>expansion</strong>.</p>
+  <p><strong>Per-level status:</strong> P10 speed &rarr; Automatic (&ge;0.9) / Learned (&ge;0.7) / Learning (&ge;0.3) / Hesitant (&gt;0) / Starting (=0).<br>
+     <strong>Freshness:</strong> P10 freshness &lt; 0.5 &rarr; needs review.<br>
+     <strong>Recs priority:</strong> review &rarr; practice &rarr; expand &rarr; automate.<br>
+     <strong>Expansion gate</strong> opens when all started levels &ge; Learned AND none need review.</p>
   <p style="font-size:0.8rem; color:#666;">
-    See <a href="../../guides/architecture.md">guides/architecture.md</a> &sect; &ldquo;Consolidate Before Expanding&rdquo; for the full algorithm.
+    See <a href="../../guides/architecture.md">guides/architecture.md</a> &sect; &ldquo;Recommendation Pipeline (v4)&rdquo; for the full algorithm.
   </p>
 </div>
 </details>

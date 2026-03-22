@@ -38,12 +38,8 @@ export function useFixtureInjection(
       }
 
       if (detail.calibration) {
-        const calPhase = detail.calibration.phase === 'results'
-          ? 'calibration-results' as const
-          : detail.calibration.phase === 'running'
-          ? 'calibrating' as const
-          : 'calibration-intro' as const;
-        setState((prev) => ({ ...prev, phase: calPhase }));
+        // Calibration is a local overlay — the engine stays idle.
+        // SpeedCheck's internal phase is driven by the fixture's phase field.
         setCalibrationFixture(detail.calibration);
       }
 

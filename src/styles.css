@@ -1,59 +1,182 @@
+/*
+ * Music Reps — Stylesheet
+ *
+ * Table of contents:
+ *
+ *   1. TOKENS ................. Custom properties (:root)
+ *   2. BASE ................... Body, reset, scrollbar
+ *   3. HOME SCREEN ........... Title, tabs, skill cards, tracks, footer
+ *   4. MODE CHROME ........... Top bar, close buttons, tabs, settings
+ *   5. PRACTICE CARD ......... Status, scope, suggestion, action zone
+ *   6. PROGRESS TAB .......... Baseline info, group progress toggles
+ *   7. FRETBOARD ............. SVG, note filter toggles
+ *   8. QUIZ SESSION .......... Countdown bar, session info, quiz area
+ *   9. QUIZ CONTENT .......... Prompt, round complete, feedback display
+ *  10. ANSWER BUTTONS ........ Notes, split-notes, numbers, intervals, etc.
+ *  11. BUTTON FEEDBACK ....... Correct/wrong/reveal, keyboard narrowing
+ *  12. CALIBRATION ........... Speed check highlight, action buttons
+ *  13. TEXT ROLES ............ Type hierarchy recipe classes
+ *  14. UTILITIES ............. SR-only, focus-visible, keyboard hint
+ *  15. PAGE ACTIONS .......... Next, keep going, stop (shared base)
+ *  16. STATS ................. Tables, grids, heatmap legend
+ *  17. SEQUENTIAL SLOTS ...... Chord spelling multi-input
+ *  18. REDUCED MOTION ........ prefers-reduced-motion overrides
+ *  19. MOBILE LAYOUT ......... max-width: 599px overrides
+ */
+
+/* ==========================================================================
+   1. TOKENS
+   ========================================================================== */
+
 :root {
-  /* Brand / Success (deep green — unified) */
-  --color-brand: #2e7d32;
-  --color-brand-dark: #1b5e20;
-  --color-brand-bg: #e8f5e9;
-  --color-success: #2e7d32;
-  --color-success-dark: #1b5e20;
-  --color-success-bg: #e8f5e9;
-  --color-success-text: #1b5e20;
+  /* ================================================================
+     PALETTE — raw color scales.
+     Change anchor hues to shift entire families in one place.
+     ================================================================ */
+
+  --for-hsl-previews-in-vscode: hsl(180, 3%, 20%); /* hsl(220, 79%, 31%);*/
+  --for-hsl-previews-in-vscode2: hsl(243, 100%, 22%); /* hsl(220, 79%, 31%);*/
+
+  /* Anchor hues — the main knobs for color exploration */
+  --hue-neutral: 240; /* try 220 for cool charcoal */
+  --hue-brand: 123; /* try 175 for teal */
+  --hue-success: 123; /* correct-answer feedback (split from brand) */
+  --hue-error: 4;
+  --hue-notice: 44; /* attention, recommendations, highlights */
+
+  /* Neutral scale — derived from --hue-neutral */
+  --neutral-0: #fff;
+  --neutral-100: hsl(var(--hue-neutral), 10%, 96%);
+  --neutral-150: hsl(var(--hue-neutral), 8%, 93%);
+  --neutral-200: hsl(var(--hue-neutral), 8%, 92%);
+  --neutral-250: hsl(var(--hue-neutral), 8%, 90%);
+  --neutral-300: hsl(var(--hue-neutral), 5%, 86%);
+  --neutral-350: hsl(var(--hue-neutral), 5%, 82%);
+  --neutral-400: hsl(var(--hue-neutral), 5%, 80%);
+  --neutral-450: hsl(var(--hue-neutral), 8%, 72%);
+  --neutral-500: hsl(var(--hue-neutral), 5%, 62%);
+  --neutral-550: hsl(var(--hue-neutral), 5%, 60%);
+  --neutral-600: hsl(var(--hue-neutral), 8%, 48%);
+  --neutral-650: hsl(var(--hue-neutral), 3%, 40%);
+  --neutral-700: hsl(var(--hue-neutral), 4%, 32%);
+  --neutral-800: hsl(var(--hue-neutral), 5%, 20%);
+  --neutral-850: hsl(var(--hue-neutral), 8%, 16%);
+  --neutral-900: hsl(var(--hue-neutral), 10%, 12%);
+  --neutral-950: hsl(var(--hue-neutral), 12%, 8%);
+
+  /* Brand scale — derived from --hue-brand */
+  --brand-100: hsl(var(--hue-brand), 39%, 93%);
+  --brand-600: hsl(var(--hue-brand), 46%, 34%);
+  --brand-800: hsl(var(--hue-brand), 55%, 24%);
+
+  /* Success scale — derived from --hue-success */
+  --success-100: hsl(var(--hue-success), 39%, 93%);
+  --success-600: hsl(var(--hue-success), 46%, 34%);
+  --success-800: hsl(var(--hue-success), 55%, 24%);
+
+  /* Error scale — derived from --hue-error */
+  --error-100: hsl(var(--hue-error), 100%, 96%);
+  --error-500: hsl(var(--hue-error), 90%, 58%);
+  --error-800: hsl(var(--hue-error), 66%, 47%);
+
+  /* Notice scale — derived from --hue-notice */
+  --notice-100: hsl(var(--hue-notice), 70%, 96%);
+  --notice-300: hsl(var(--hue-notice), 60%, 80%);
+  --notice-400: hsl(var(--hue-notice), 50%, 85%);
+  --notice-450: hsl(var(--hue-notice), 60%, 91%);
+  --notice-500: hsl(var(--hue-notice), 80%, 46%);
+  --notice-600: hsl(var(--hue-notice), 93%, 47%);
+  --notice-700: hsl(var(--hue-notice), 70%, 45%);
+  --notice-800: hsl(var(--hue-notice), 80%, 25%);
+
+  /* ================================================================
+     SEMANTIC TOKENS — map palette to meaning.
+     To switch light → dark, change these mappings (not the palette).
+     ================================================================ */
+
+  /* Brand */
+  --color-brand: var(--brand-600);
+  --color-brand-dark: var(--brand-800);
+  --color-brand-bg: var(--brand-100);
+  /* Success (correct answers — can diverge from brand) */
+  --color-success: var(--success-600);
+  --color-success-dark: var(--success-800);
+  --color-success-bg: var(--success-100);
+  --color-success-text: var(--success-800);
   /* Error */
-  --color-error: #f44336;
-  --color-error-bg: #ffebee;
-  --color-error-text: #c62828;
+  --color-error: var(--error-500);
+  --color-error-bg: var(--error-100);
+  --color-error-border: var(--error-500);
+  --color-error-text: var(--error-800);
+  /* On-fill text (flips in dark mode) */
+  --color-on-brand: white;
+  --color-on-success: white;
+  --color-on-error: white;
   /* Focus */
-  --color-focus: #2e7d32;
-  --color-focus-bg: #e8f5e9;
-  /* Gold accents (highlights, recommendations, achievements) */
-  --color-recommended: #d4a017;
-  --color-recommended-bg: hsl(44, 70%, 96%);
-  --color-recommended-border: hsl(44, 60%, 80%);
-  --color-recommended-text: hsl(44, 80%, 25%);
-  --color-highlight: #eab308;
-  /* UI accents */
-  --color-accent: hsl(220, 65%, 50%);
-  --color-accent-muted: hsl(220, 40%, 65%);
-  --color-toggle-active: hsl(0, 0%, 32%);
-  /* Text (warm neutrals) */
-  --color-text: hsl(30, 5%, 20%);
-  --color-text-muted: hsl(30, 3%, 40%);
-  --color-text-light: hsl(30, 3%, 60%);
-  /* Surfaces & backgrounds (warm neutrals) */
-  --color-bg: #fff;
-  --color-surface: hsl(30, 10%, 96%);
-  --color-surface-hover: hsl(30, 8%, 93%);
-  --color-surface-alt: hsl(30, 8%, 92%);
-  --color-surface-pressed: hsl(30, 5%, 82%);
-  --color-surface-accent: hsl(30, 8%, 90%);
-  /* Borders (warm neutrals) */
-  --color-border: hsl(30, 5%, 60%);
-  --color-border-light: hsl(30, 5%, 80%);
-  --color-border-lighter: hsl(30, 5%, 86%);
+  --color-focus: var(--brand-600);
+  --color-focus-bg: var(--brand-100);
+  /* Notice (attention, recommendations, highlights) */
+  --color-notice: var(--notice-500);
+  --color-notice-bg: var(--notice-100);
+  --color-notice-border: var(--notice-300);
+  --color-notice-bg-hover: var(--notice-400);
+  --color-notice-bg-pressed: var(--notice-450);
+  --color-notice-text: var(--notice-800);
+  --color-highlight: var(--notice-600);
+  /* UI accents — unified with brand (one accent, not five) */
+  --color-accent: var(--brand-600);
+  --color-accent-muted: hsl(var(--hue-brand), 30%, 55%);
+  --color-toggle-active: var(--neutral-700);
+  /* Text */
+  --color-text: var(--neutral-800);
+  --color-text-muted: var(--neutral-650);
+  --color-text-light: var(--neutral-550);
+  /* Surfaces & backgrounds */
+  --color-bg: var(--neutral-0);
+  --color-surface: var(--neutral-100);
+  --color-surface-hover: var(--neutral-150);
+  --color-surface-raised: var(--neutral-200);
+  --color-surface-pressed: var(--neutral-350);
+  --color-surface-accent: var(--neutral-250);
+  /* Chrome (segmented controls, toolbar fills) */
+  --color-chrome: var(--neutral-200);
+  /* Borders */
+  --color-border: var(--neutral-550);
+  --color-border-light: var(--neutral-400);
+  --color-border-lighter: var(--neutral-300);
+  /* Brand border (can diverge in dark mode) */
+  --color-brand-border: var(--brand-600);
+  --color-brand-text: var(--brand-800);
+  /* Success border */
+  --color-success-border: var(--success-600);
   /* Overlay */
   --color-overlay: rgba(0, 0, 0, 0.35);
 
-  /* Track colors */
-  --color-track-core: hsl(30, 3%, 40%);
-  --color-track-guitar: hsl(25, 55%, 45%);
-  --color-track-ukulele: hsl(185, 40%, 38%);
+  /* Track colors (independent hues) */
+  --color-track-core: var(--brand-600); /* hsl(307, 55%, 32%); */
+  --color-track-reading: var(--brand-600); /* hsl(260, 55%, 54%); */
+  --color-track-guitar: var(--brand-600); /* hsl(25, 55%, 45%); */
+  --color-track-ukulele: var(--brand-600); /* hsl(185, 55%, 38%); */
+  /* Star */
+  --color-star: var(--notice-700);
 
-  /* Heatmap scale (gold → green, matches palette: attention → mastered) */
-  --heatmap-none: hsl(30, 4%, 85%);
-  --heatmap-1: hsl(44, 65%, 58%);
-  --heatmap-2: hsl(54, 45%, 52%);
-  --heatmap-3: hsl(68, 30%, 46%);
-  --heatmap-4: hsl(90, 38%, 38%);
-  --heatmap-5: hsl(122, 46%, 33%);
+  /* Heatmap scale (cross-hue: gold → green, not parameterized) */
+  --heatmap-none: var(--neutral-300);
+  --heatmap-1: hsl(40, 60%, 58%);
+  --heatmap-2: hsl(48, 50%, 52%);
+  --heatmap-3: hsl(60, 40%, 46%);
+  --heatmap-4: hsl(80, 35%, 40%);
+  --heatmap-5: hsl(125, 48%, 33%);
+
+  /* Fretboard SVG — derived from neutral hue */
+  --fb-string: var(--neutral-450);
+  --fb-fret: var(--neutral-350);
+  --fb-nut: var(--neutral-600);
+  --fb-marker: var(--neutral-500);
+
+  /* ================================================================
+     NON-COLOR TOKENS
+     ================================================================ */
 
   /* Typography scale */
   --text-xs: 0.75rem;
@@ -65,7 +188,14 @@
   --text-2xl: 2rem;
   --text-3xl: 3rem;
 
+  /* Line heights */
+  --leading-none: 1;
+  --leading-tight: 1.2;
+  --leading-snug: 1.4;
+  --leading-normal: 1.5;
+
   /* Font families */
+  --font-body: system-ui, -apple-system, sans-serif;
   --font-display: 'DM Serif Display', Georgia, serif;
 
   /* Spacing scale */
@@ -84,9 +214,147 @@
   /* Interactive element sizes */
   --size-close-btn: 2.25rem;
   --size-content-inset: var(--space-5);
+
+  /* Elevation (box-shadow) */
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-hover: 0 3px 12px rgba(0, 0, 0, 0.18);
+
+  /* Transition timing */
+  --duration-fast: 0.1s;
+  --duration-base: 0.15s;
+  --duration-slow: 0.3s;
+  --duration-linear: 0.2s;
+
+  /* Opacity states */
+  --opacity-disabled: 0.5;
+  --opacity-dimmed: 0.4;
+  --opacity-pressed: 0.8;
+  --opacity-subtle: 0.3;
+
+  /* Z-index scale */
+  --z-raised: 1;
+  --z-popover: 100;
+
+  /* Font weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Touch target minimum (WCAG AA) */
+  --size-touch-target: 44px;
+
+  /* ================================================================
+     TYPOGRAPHY ROLES (Layer 2)
+     Semantic role → palette mapping. Bespoke and .text-* classes
+     reference these, never palette tokens directly.
+     ================================================================ */
+
+  /* -- Display: big, high-emphasis hero text -- */
+  --type-display-brand-size: var(--text-2xl);
+  --type-display-brand-weight: var(--font-normal);
+  --type-display-brand-leading: var(--leading-tight);
+  --type-display-brand-color: var(--color-text);
+  --type-display-brand-family: var(--font-display);
+
+  /* -- Heading: structural hierarchy -- */
+  --type-heading-page-size: var(--text-lg);
+  --type-heading-page-weight: var(--font-semibold);
+  --type-heading-page-leading: var(--leading-tight);
+  --type-heading-page-color: var(--color-text);
+
+  --type-heading-section-size: var(--text-base);
+  --type-heading-section-weight: var(--font-semibold);
+  --type-heading-section-leading: var(--leading-tight);
+  --type-heading-section-color: var(--color-text);
+
+  --type-heading-subsection-size: var(--text-base);
+  --type-heading-subsection-weight: var(--font-semibold);
+  --type-heading-subsection-leading: var(--leading-tight);
+  --type-heading-subsection-color: var(--color-text-muted);
+
+  /* -- Body: readable content -- */
+  --type-body-size: var(--text-base);
+  --type-body-weight: var(--font-normal);
+  --type-body-leading: var(--leading-normal);
+  --type-body-color: var(--color-text);
+
+  --type-body-secondary-size: var(--text-sm);
+  --type-body-secondary-weight: var(--font-normal);
+  --type-body-secondary-leading: var(--leading-snug);
+  --type-body-secondary-color: var(--color-text-muted);
+
+  /* -- Label: short functional identifiers -- */
+  --type-label-size: var(--text-sm);
+  --type-label-weight: var(--font-medium);
+  --type-label-leading: var(--leading-none);
+  --type-label-color: var(--color-text-muted);
+
+  --type-label-tag-size: var(--text-xs);
+  --type-label-tag-weight: var(--font-semibold);
+  --type-label-tag-leading: var(--leading-none);
+  --type-label-tag-color: var(--color-text-muted);
+
+  /* -- Quiz: drill-specific content text -- */
+  --type-quiz-instruction-size: var(--text-base);
+  --type-quiz-instruction-weight: var(--font-semibold);
+  --type-quiz-instruction-leading: var(--leading-normal);
+  --type-quiz-instruction-color: var(--color-text-muted);
+
+  --type-quiz-prompt-size: var(--text-2xl);
+  --type-quiz-prompt-weight: var(--font-semibold);
+  --type-quiz-prompt-leading: var(--leading-tight);
+  --type-quiz-prompt-color: var(--color-text);
+
+  --type-quiz-response-size: var(--text-lg);
+  --type-quiz-response-weight: var(--font-semibold);
+  --type-quiz-response-leading: var(--leading-none);
+  --type-quiz-response-color: var(--color-text);
+
+  --type-quiz-feedback-size: var(--text-xl);
+  --type-quiz-feedback-weight: var(--font-normal);
+  --type-quiz-feedback-leading: var(--leading-none);
+  --type-quiz-feedback-color: var(--color-text);
+
+  /* -- Supporting: tertiary/helper text -- */
+  --type-supporting-size: var(--text-xs);
+  --type-supporting-weight: var(--font-normal);
+  --type-supporting-leading: var(--leading-snug);
+  --type-supporting-color: var(--color-text-light);
+
+  /* -- Metric: data values -- */
+  --type-metric-hero-size: var(--text-3xl);
+  --type-metric-hero-weight: var(--font-bold);
+  --type-metric-hero-leading: var(--leading-none);
+  --type-metric-hero-color: var(--color-brand);
+
+  --type-metric-primary-size: var(--text-md);
+  --type-metric-primary-weight: var(--font-semibold);
+  --type-metric-primary-leading: var(--leading-none);
+  --type-metric-primary-color: var(--color-text);
+
+  --type-metric-info-size: var(--text-base);
+  --type-metric-info-weight: var(--font-medium);
+  --type-metric-info-leading: var(--leading-none);
+  --type-metric-info-color: var(--color-text);
+
+  /* -- Status: state communication -- */
+  --type-status-size: var(--text-sm);
+  --type-status-weight: var(--font-normal);
+  --type-status-leading: var(--leading-snug);
+  --type-status-color: var(--color-text);
 }
 
-* {
+/* ==========================================================================
+   2. BASE
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
 html {
@@ -94,7 +362,7 @@ html {
   overscroll-behavior: none;
 }
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   max-width: 650px;
   margin: 0 auto;
   padding: 0 var(--space-5);
@@ -113,24 +381,118 @@ body {
   overscroll-behavior: none;
 }
 
-/* --- Home screen --- */
-.home-screen {
+/* ==========================================================================
+   2b. SCREEN LAYOUT — three-zone structure (header/main/footer)
+   Enforced by ScreenLayout, LayoutHeader, LayoutMain, LayoutFooter components.
+   ========================================================================== */
+
+.screen-layout {
   display: flex;
   flex-direction: column;
-  padding: 0 var(--space-5) var(--space-5);
+  height: 100dvh;
+  overflow: hidden;
 }
+
+.layout-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+
+.layout-main {
+  flex: 1;
+  min-height: 0;
+}
+.layout-main-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.layout-main-fixed {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-border-lighter);
+}
+
+/* --- Main content patterns --- */
+
+/* QuizStage: 60/40 prompt/response split, centered within each zone */
+.quiz-stage {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.quiz-stage-prompt {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  text-align: center;
+  padding: var(--space-3);
+}
+/* Instruction text must not shrink when fretboard/content is present */
+.quiz-stage-prompt > .quiz-instruction {
+  flex-shrink: 0;
+}
+/* Fretboard: wrapper fills remaining space, SVG contained within */
+.quiz-stage-prompt > div:has(> svg.fretboard) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.quiz-stage-prompt svg.fretboard {
+  max-height: 45dvh;
+}
+.quiz-stage-response {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* CenteredContent: vertically centered info/instruction screens */
+.centered-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+  text-align: center;
+  padding: var(--space-5);
+}
+
+/* ==========================================================================
+   3. HOME SCREEN
+   ========================================================================== */
+/* .home-screen: outer container — ScreenLayout fills the viewport inside it.
+   No styles needed; show/hide is on .home-screen.hidden below. */
 .home-screen.hidden {
   display: none;
 }
+/* Home screen uses ScreenLayout; .home-content provides padding inside LayoutMain */
+.home-content {
+  padding: 0 var(--space-5) var(--space-5);
+}
 .home-header {
   text-align: left;
-  padding: var(--space-3) 0 var(--space-4);
+  padding: var(--space-3) var(--space-3) var(--space-4);
 }
 .home-title {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: 400;
-  color: var(--color-text);
+  font-family: var(--type-display-brand-family);
+  font-size: var(--type-display-brand-size);
+  font-weight: var(--type-display-brand-weight);
+  line-height: var(--type-display-brand-leading);
+  color: var(--type-display-brand-color);
   margin: 0;
 }
 .home-title::after {
@@ -143,11 +505,98 @@ body {
   border-radius: var(--radius-sm);
 }
 .home-tagline {
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
   margin: var(--space-3) 0 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  line-height: 1.4;
 }
+/* --- Tabs --- */
+.tabs {
+  display: flex;
+  border-bottom: 2px solid var(--color-border-lighter);
+}
+.tab-btn {
+  flex: 1;
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: color var(--duration-base) ease;
+}
+.tab-btn:hover {
+  color: var(--color-text);
+}
+.tab-btn.active {
+  color: var(--color-brand-dark);
+  font-weight: var(--font-semibold);
+}
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-brand);
+}
+.tab-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+/* --- Mode navigation: bottom bar on mobile, top tabs on desktop --- */
+.tab-icon-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.tab-icon-label svg {
+  display: block;
+}
+/* mode-nav is inside LayoutFooter — no position: fixed needed. */
+.mode-nav {
+  display: flex;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border-lighter);
+  border-bottom: none;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.mode-nav .tab-btn {
+  font-size: var(--text-xs);
+  padding: var(--space-2) var(--space-3);
+}
+.mode-nav .tab-btn.active::after {
+  /* No underline — the icon color is enough for bottom nav */
+  display: none;
+}
+/* Note: bottom nav padding is now handled by ScreenLayout / LayoutFooter.
+   No ad-hoc padding-bottom needed on tab panels. */
+@media (min-width: 768px) {
+  .mode-nav {
+    border-top: none;
+    border-bottom: 2px solid var(--color-border-lighter);
+    padding-bottom: 0;
+  }
+  .mode-nav .tab-btn {
+    font-size: var(--text-sm);
+    padding: var(--space-3) var(--space-5);
+  }
+  .mode-nav .tab-btn.active::after {
+    display: block;
+  }
+  .tab-icon-label {
+    flex-direction: row;
+    gap: var(--space-2);
+  }
+}
+
 .home-modes {
   flex: 1;
 }
@@ -156,12 +605,15 @@ body {
   align-items: center;
   gap: var(--space-3);
   font-size: var(--text-sm);
-  font-weight: 700;
+  font-weight: var(--font-bold);
   margin-top: var(--space-6);
   margin-bottom: var(--space-2);
 }
 .track-group-core {
   color: var(--color-track-core);
+}
+.track-group-reading {
+  color: var(--color-track-reading);
 }
 .track-group-guitar {
   color: var(--color-track-guitar);
@@ -175,16 +627,14 @@ body {
   height: 1px;
   background: var(--color-border-lighter);
 }
-.track-skills-list:first-child .home-group-label {
-  margin-top: var(--space-4);
-}
 .home-mode-btn {
   display: flex;
   flex-direction: column;
   width: 100%;
+  box-sizing: border-box;
   text-align: left;
   padding: var(--space-4) var(--space-4);
-  padding-right: 2rem;
+  padding-right: 3rem;
   background: var(--color-bg);
   border: 1px solid var(--color-border-lighter);
   border-left: 3px solid var(--color-brand);
@@ -194,14 +644,7 @@ body {
   position: relative;
 }
 .home-mode-btn::after {
-  content: '\203A';
-  position: absolute;
-  right: var(--space-4);
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: var(--text-base);
-  color: var(--color-text-light);
-  line-height: 1;
+  content: none;
 }
 .home-mode-btn:hover {
   background: var(--color-surface);
@@ -209,60 +652,170 @@ body {
 .home-mode-btn:active {
   background: var(--color-surface-pressed);
 }
-/* --- Track selection --- */
-.track-selection-header {
+/* --- Track accordion sections --- */
+.track-accordion {
+  margin-top: var(--space-2);
+}
+.track-accordion-header {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) 0;
+  background: none;
+  border: none;
   font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-2);
+  font-weight: var(--font-bold);
+  cursor: pointer;
+  text-align: left;
 }
-.track-selection-header::after {
+.track-accordion-header:hover {
+  color: var(--color-text);
+}
+.track-accordion-header:active {
+  opacity: var(--opacity-pressed);
+}
+.track-accordion-header:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.track-accordion-header::after {
   content: '';
   flex: 1;
   height: 1px;
   background: var(--color-border-lighter);
 }
-.track-chips {
+.track-accordion-chevron {
+  font-size: 1em;
+  line-height: var(--leading-none);
+}
+.track-accordion-body {
+  padding-bottom: var(--space-2);
+}
+/* --- Star toggle on skill cards --- */
+.skill-card-star {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: var(--size-touch-target);
+  height: var(--size-touch-target);
   display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-.track-chip {
-  padding: var(--space-2) var(--space-4);
-  border-radius: 999px;
-  border: 1px solid var(--color-border-light);
-  background: var(--color-bg);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-muted);
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
   cursor: pointer;
-  margin: 0;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  font-size: var(--text-lg);
+  color: var(--color-text-light);
+  padding: 0;
+  z-index: var(--z-raised);
 }
-.track-chip:hover:not(:disabled) {
-  background: var(--color-surface-hover);
+.skill-card-star:hover {
+  color: var(--color-text-muted);
 }
-.track-chip:disabled {
-  cursor: default;
+.skill-card-star:active {
+  transform: scale(0.9);
 }
-.track-chip.active {
-  color: white;
-  border-color: transparent;
+.skill-card-star:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
 }
-.track-chip.active.track-core {
-  background: var(--color-track-core);
+.skill-card-star.starred {
+  color: var(--color-star);
 }
-.track-chip.active.track-guitar {
-  background: var(--color-track-guitar);
+/* --- Active Skills tab content --- */
+.active-skills-list {
+  margin-top: var(--space-4);
 }
-.track-chip.active.track-ukulele {
-  background: var(--color-track-ukulele);
+.active-skills-empty {
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
+  color: var(--color-text-light);
+  font-style: italic;
+  margin: var(--space-6) 0;
+  text-align: center;
 }
-.track-chip:focus-visible {
-  outline-offset: 2px;
+.all-skills-hint {
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
+  color: var(--color-text-light);
+  font-style: italic;
+  margin: var(--space-4) 0 0;
+  text-align: center;
+}
+.active-skill-track-pill {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: var(--type-label-tag-size);
+  font-weight: var(--type-label-tag-weight);
+  line-height: var(--type-label-tag-leading);
+  padding: 1px var(--space-2);
+  border-radius: 999px;
+  margin-bottom: 1px;
+}
+.pill-core {
+  color: var(--color-track-core);
+  background: hsla(30, 30%, 42%, 0.12);
+}
+.pill-reading {
+  color: var(--color-track-reading);
+  background: hsla(260, 30%, 50%, 0.12);
+}
+.pill-guitar {
+  color: var(--color-track-guitar);
+  background: hsla(25, 55%, 45%, 0.12);
+}
+.pill-ukulele {
+  color: var(--color-track-ukulele);
+  background: hsla(185, 40%, 38%, 0.12);
+}
+/* Active skill card: no padding on outer — banner and body handle their own. */
+.active-skill-card {
+  padding: 0;
+}
+.skill-card-body {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: var(--space-4);
+  padding-right: 3rem;
+}
+/* Recommendation banner inside active skill card. */
+.skill-rec-banner {
+  background: var(--color-notice-bg);
+  border-bottom: 1px solid var(--color-notice-border);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+.skill-rec-header {
+  font-size: var(--type-label-tag-size);
+  font-weight: var(--type-label-tag-weight);
+  line-height: var(--type-label-tag-leading);
+  color: var(--color-notice);
+  margin-bottom: var(--space-1);
+}
+
+/* Banner reacts with card on hover/active. */
+.home-mode-btn:hover > .skill-rec-banner {
+  background: var(--color-notice-bg-hover);
+}
+.home-mode-btn:active > .skill-rec-banner {
+  background: var(--color-notice-bg-pressed);
+}
+.active-skills-done {
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  text-align: center;
 }
 /* --- Skill cards (extends home-mode-btn) --- */
 .skill-card {
@@ -280,22 +833,23 @@ body {
 }
 .skill-icon {
   flex-shrink: 0;
-  color: var(--skill-accent);
+  color: var(--_accent);
 }
 .skill-card[data-track='core'] {
-  --skill-accent: var(--color-track-core);
+  --_accent: var(--color-track-core);
   border-left-color: var(--color-track-core);
 }
+.skill-card[data-track='reading'] {
+  --_accent: var(--color-track-reading);
+  border-left-color: var(--color-track-reading);
+}
 .skill-card[data-track='guitar'] {
-  --skill-accent: var(--color-track-guitar);
+  --_accent: var(--color-track-guitar);
   border-left-color: var(--color-track-guitar);
 }
 .skill-card[data-track='ukulele'] {
-  --skill-accent: var(--color-track-ukulele);
+  --_accent: var(--color-track-ukulele);
   border-left-color: var(--color-track-ukulele);
-}
-.skill-card::after {
-  color: var(--skill-accent);
 }
 .skill-card-ba {
   display: grid;
@@ -303,8 +857,9 @@ body {
   align-items: baseline;
   gap: var(--space-3);
   margin-top: var(--space-3);
-  font-size: var(--text-xs);
-  line-height: 1.4;
+  font-size: var(--type-supporting-size);
+  font-weight: var(--type-supporting-weight);
+  line-height: var(--type-supporting-leading);
 }
 .skill-card-before {
   text-align: right;
@@ -313,45 +868,26 @@ body {
 .skill-card-arrow {
   color: var(--color-brand);
   font-size: var(--text-base);
-  font-weight: 700;
+  font-weight: var(--font-bold);
 }
 .skill-card-after {
   color: var(--color-text);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
-/* --- Other skills (collapsed section) --- */
-.home-other-skills {
-  margin-top: var(--space-5);
-}
-.home-other-skills summary {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  padding: var(--space-3) 0;
-  list-style: none;
-}
-.home-other-skills summary::-webkit-details-marker {
-  display: none;
-}
-.home-other-skills summary::before {
-  content: '\25B6';
-  display: inline-block;
-  font-size: 0.6em;
-  margin-right: var(--space-2);
-  transition: transform 0.15s ease;
-}
-.home-other-skills[open] summary::before {
-  transform: rotate(90deg);
+.skill-card-progress {
+  margin-top: var(--space-2);
 }
 .home-mode-name {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--color-text);
+  font-size: var(--type-heading-section-size);
+  font-weight: var(--type-heading-section-weight);
+  line-height: var(--type-heading-section-leading);
+  color: var(--type-heading-section-color);
 }
 .home-mode-desc {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
 }
 .home-footer {
   display: flex;
@@ -370,7 +906,7 @@ body {
   background: none;
   border: none;
   padding: var(--space-2) 0;
-  min-height: 44px;
+  min-height: var(--size-touch-target);
   display: inline-flex;
   align-items: center;
 }
@@ -382,11 +918,15 @@ body {
   color: var(--color-text);
 }
 .version {
-  font-size: var(--text-xs);
-  color: var(--color-text-light);
+  font-size: var(--type-supporting-size);
+  font-weight: var(--type-supporting-weight);
+  line-height: var(--type-supporting-leading);
+  color: var(--type-supporting-color);
 }
 
-/* --- Mode top bar --- */
+/* ==========================================================================
+   4. MODE CHROME
+   ========================================================================== */
 .mode-top-bar {
   padding: var(--space-3) 0;
   padding-left: var(--size-content-inset);
@@ -401,28 +941,31 @@ body {
   flex-shrink: 0;
   color: var(--color-text-muted);
 }
-.mode-close-btn {
+.close-btn {
   background: none;
   border: none;
   font-size: var(--size-close-btn);
   cursor: pointer;
   padding: var(--space-2);
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--size-touch-target);
+  min-height: var(--size-touch-target);
   color: var(--color-text-light);
-  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0 0;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
-  line-height: 1;
+  line-height: var(--leading-none);
+  transition:
+    color var(--duration-base) ease,
+    background var(--duration-base) ease;
 }
-.mode-close-btn:hover {
+.close-btn:hover {
   color: var(--color-text);
   background: var(--color-surface-hover);
 }
-.mode-close-btn:active {
+.close-btn:active {
   background: var(--color-surface-pressed);
 }
 .mode-top-bar-text {
@@ -431,14 +974,17 @@ body {
 }
 .mode-title {
   margin: 0;
-  font-size: var(--text-lg);
-  font-weight: 600;
+  font-size: var(--type-heading-page-size);
+  font-weight: var(--type-heading-page-weight);
+  line-height: var(--type-heading-page-leading);
+  color: var(--type-heading-page-color);
 }
 .mode-description {
   margin: var(--space-1) 0 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  line-height: 1.3;
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
 }
 .mode-before-after {
   display: grid;
@@ -446,8 +992,8 @@ body {
   align-items: baseline;
   gap: var(--space-3);
   margin: var(--space-2) 0 0;
-  font-size: var(--text-xs);
-  line-height: 1.4;
+  font-size: var(--type-supporting-size);
+  line-height: var(--type-supporting-leading);
 }
 .mode-ba-before {
   text-align: right;
@@ -456,11 +1002,11 @@ body {
 .mode-ba-arrow {
   color: var(--color-brand);
   font-size: var(--text-base);
-  font-weight: 700;
+  font-weight: var(--font-bold);
 }
 .mode-ba-after {
   color: var(--color-text);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 /* --- Settings page --- */
 .settings-page {
@@ -475,22 +1021,10 @@ body {
 }
 .settings-page-title {
   margin: 0;
-  font-weight: 600;
-  font-size: var(--text-xl);
-}
-.settings-close-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: var(--text-xl);
-  line-height: 1;
-  padding: var(--space-2);
-  min-width: 44px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-muted);
+  font-size: var(--type-heading-page-size);
+  font-weight: var(--type-heading-page-weight);
+  line-height: var(--type-heading-page-leading);
+  color: var(--type-heading-page-color);
 }
 .settings-section {
   border-top: 1px solid var(--color-border-lighter);
@@ -514,41 +1048,66 @@ body {
   flex-direction: column;
   gap: var(--space-3);
 }
-.settings-label {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-muted);
-}
-.settings-toggle-group {
-  display: flex;
-  gap: 0;
+
+.segmented-control {
+  display: inline-flex;
+  align-self: flex-start;
   border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  background: var(--color-chrome);
+  padding: 2px;
+  gap: 2px;
 }
-.settings-toggle-btn {
-  flex: 1;
-  padding: var(--space-3) var(--space-4);
+.segmented-btn {
+  padding: var(--space-2) var(--space-4);
   border: none;
-  background: var(--color-surface);
+  border-radius: calc(var(--radius-md) - 2px);
+  background: transparent;
   cursor: pointer;
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: var(--font-medium);
+  color: var(--color-text-muted);
+  transition:
+    background var(--duration-base) ease,
+    color var(--duration-base) ease;
+}
+.segmented-btn + .segmented-btn {
+  border-left: none;
+}
+.segmented-btn.active {
+  background: white;
   color: var(--color-text);
-  transition: background 0.15s ease, color 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
-.settings-toggle-btn + .settings-toggle-btn {
-  border-left: 1px solid var(--color-border);
+.segmented-btn:hover:not(.active) {
+  color: var(--color-text);
 }
-.settings-toggle-btn.active {
-  background: var(--color-brand);
-  color: white;
+.segmented-btn:active {
+  opacity: var(--opacity-pressed);
 }
-.settings-toggle-btn:hover:not(.active) {
-  background: var(--color-surface-hover);
+
+/* --- Dev panel --- */
+.dev-stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-1) 0;
 }
-.settings-toggle-btn:active {
-  opacity: 0.8;
+.dev-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.dev-table th,
+.dev-table td {
+  padding: var(--space-1) var(--space-2);
+  text-align: left;
+}
+.dev-table th.num,
+.dev-table td.num {
+  text-align: right;
+}
+.dev-table thead tr {
+  border-bottom: 1px solid var(--color-border-lighter);
 }
 
 /* --- Mode screens --- */
@@ -558,7 +1117,9 @@ body {
   flex: 1;
 }
 .mode-screen.mode-active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
 .quiz-session-header {
@@ -585,42 +1146,41 @@ body {
   display: none;
 }
 
-/* --- Mode tabs (Practice / Progress) --- */
-.mode-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 2px solid var(--color-border-lighter);
-  margin-bottom: var(--space-5);
-}
-.mode-tab {
-  flex: 1;
-  padding: var(--space-3) var(--space-5);
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  background: none;
-  font-size: var(--text-base);
-  font-weight: 500;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-.mode-tab:hover {
-  color: var(--color-text);
-}
-.mode-tab.active {
-  color: var(--color-brand-dark);
-  border-bottom-color: var(--color-brand);
-  font-weight: 600;
-}
-.tab-content {
+.tab-panel {
   display: none;
 }
-.tab-content.active {
+.tab-panel.active {
   display: block;
 }
 
-/* --- Practice card --- */
+/* --- About tab --- */
+.about-tab {
+  padding: var(--space-3) 0;
+}
+.about-before-after {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.about-ba-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.about-ba-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+}
+.about-ba-after {
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+
+/* ==========================================================================
+   5. PRACTICE CARD
+   ========================================================================== */
 .practice-card {
   margin-bottom: var(--space-4);
   padding: var(--space-4) var(--space-5);
@@ -632,24 +1192,30 @@ body {
   padding-top: var(--space-5);
 }
 .practice-section-header {
-  font-weight: 600;
-  font-size: var(--text-base);
-  color: var(--color-text);
+  font-size: var(--type-heading-section-size);
+  font-weight: var(--type-heading-section-weight);
+  line-height: var(--type-heading-section-leading);
+  color: var(--type-heading-section-color);
   text-align: left;
   margin-bottom: var(--space-3);
 }
 .practice-status {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-1);
   margin-bottom: var(--space-3);
 }
 .practice-status:empty,
 .practice-status-label:empty {
   display: none;
 }
+.practice-status-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
 .practice-status-label {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: var(--text-sm);
   color: var(--color-text);
 }
@@ -661,17 +1227,18 @@ body {
   display: none;
 }
 .suggestion-card {
-  background: var(--color-recommended-bg);
-  border: 1px solid var(--color-recommended-border);
-  border-left: 3px solid var(--color-recommended);
+  background: var(--color-notice-bg);
+  border: 1px solid var(--color-notice-border);
+  border-left: 3px solid var(--color-notice);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-3);
 }
 .suggestion-card-header {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-recommended);
+  font-size: var(--type-heading-subsection-size);
+  font-weight: var(--type-heading-subsection-weight);
+  line-height: var(--type-heading-subsection-leading);
+  color: var(--color-notice);
   margin-bottom: var(--space-2);
 }
 .suggestion-card-body {
@@ -682,24 +1249,22 @@ body {
 }
 .suggestion-card-text {
   flex: 1;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
   min-width: 0;
 }
 .suggestion-card-accept {
   font-size: var(--text-xs);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-recommended);
+  border: 1px solid var(--color-notice);
   border-radius: var(--radius-sm);
-  background: var(--color-recommended-bg);
-  color: var(--color-recommended-text);
+  background: var(--color-notice-bg);
+  color: var(--color-notice-text);
   cursor: pointer;
   flex-shrink: 0;
 }
 .suggestion-card-accept:hover {
-  background: var(--color-recommended);
-  color: white;
+  background: var(--color-notice);
+  color: var(--color-on-brand);
 }
 
 /* --- Practice scope (inside practice card) --- */
@@ -710,13 +1275,192 @@ body {
   margin-bottom: 0;
 }
 
-/* --- Practice action zone (inside practice card) --- */
+/* --- Practice action zone (bottom-anchored, outside tabs) --- */
 .practice-zone-action {
   text-align: center;
-  margin-top: var(--space-5);
+  margin-top: auto;
+  padding: var(--space-5) 0 var(--space-4);
 }
 
-/* --- Baseline info (Progress tab) --- */
+/* ==========================================================================
+   5b. SKILL HEADER + PRACTICE CONFIG (redesign)
+   ========================================================================== */
+
+/* --- Labeled progress bar (skill header + level cards) --- */
+.progress-bar-labeled {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+.progress-bar-label {
+  margin-bottom: var(--space-2);
+}
+
+/* --- Skill header: title + close + progress bar --- */
+.skill-header {
+  padding: var(--space-4) var(--space-5) var(--space-3);
+}
+.skill-header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.skill-header-row .mode-title {
+  flex: 1;
+}
+.skill-header-progress {
+  margin-top: var(--space-3);
+}
+
+/* --- Practice config: suggested/custom toggle --- */
+.practice-config {
+  padding: var(--space-3) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.practice-config-label {
+  margin-bottom: var(--space-1);
+}
+.practice-config-content {
+  margin-top: var(--space-2);
+}
+
+/* --- Suggestion lines (suggested mode) --- */
+.suggestion-lines {
+  background: var(--color-notice-bg);
+  border: 1px solid var(--color-notice-border);
+  border-left: 3px solid var(--color-notice);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.suggestion-line {
+  font-size: var(--text-sm);
+  color: var(--color-notice-text);
+  line-height: var(--leading-normal);
+}
+.suggestion-verb {
+  font-weight: var(--font-semibold);
+  color: var(--color-notice);
+}
+
+/* --- Level toggles (custom mode) --- */
+.level-toggles-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.level-toggles-header {
+  margin-bottom: calc(-1 * var(--space-2));
+}
+.level-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.level-toggle-btn {
+  min-width: 3.5rem;
+  text-align: center;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-border);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  padding: 0 0.5rem;
+  margin: 0;
+  transition:
+    background var(--duration-base) ease,
+    color var(--duration-base) ease,
+    border-color var(--duration-base) ease;
+}
+.level-toggle-btn:hover {
+  background: var(--color-surface-hover);
+}
+.level-toggle-btn.active {
+  background: var(--color-toggle-active);
+  color: var(--color-on-brand);
+  border-color: var(--color-toggle-active);
+}
+.level-toggles-count {
+  font-size: var(--text-sm);
+}
+
+/* --- Level progress card (progress tab) --- */
+.level-progress-card {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+.level-progress-card.skipped {
+  opacity: 0.5;
+}
+.level-progress-card.known {
+  border-color: var(--color-brand);
+}
+.level-progress-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.level-progress-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  flex: 1;
+}
+.level-progress-pill {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-notice-bg);
+  color: var(--color-notice-text);
+}
+.level-progress-actions {
+  display: flex;
+  gap: var(--space-1);
+}
+.level-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  transition:
+    background var(--duration-base) ease,
+    color var(--duration-base) ease;
+}
+.level-action-btn:hover {
+  background: var(--color-surface-hover);
+}
+.level-action-btn.known.active {
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  border-color: var(--color-brand);
+}
+.level-action-btn.skip.active {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border-color: var(--color-error-text);
+}
+
+/* ==========================================================================
+   6. PROGRESS TAB
+   ========================================================================== */
 .baseline-info {
   margin-top: var(--space-5);
   padding: var(--space-4) var(--space-5);
@@ -726,9 +1470,6 @@ body {
   display: none;
 }
 .baseline-header {
-  font-weight: 600;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
   margin-bottom: var(--space-3);
 }
 .baseline-metric {
@@ -737,24 +1478,10 @@ body {
   gap: var(--space-3);
   margin-bottom: var(--space-1);
 }
-.baseline-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-.baseline-value {
-  font-size: var(--text-md);
-  font-weight: 600;
-  color: var(--color-text);
-}
 .baseline-default-tag {
-  font-size: var(--text-sm);
-  font-weight: 400;
   font-style: italic;
-  color: var(--color-text-light);
 }
 .baseline-explanation {
-  font-size: var(--text-xs);
-  color: var(--color-text-light);
   margin-bottom: var(--space-4);
 }
 .baseline-rerun-btn {
@@ -763,11 +1490,13 @@ body {
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-xs);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--color-text-muted);
   cursor: pointer;
   margin: 0;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background var(--duration-base) ease,
+    border-color var(--duration-base) ease;
 }
 .baseline-rerun-btn:hover {
   background: var(--color-surface-hover);
@@ -777,7 +1506,9 @@ body {
   background: var(--color-surface-pressed);
 }
 
-/* --- Fretboard --- */
+/* ==========================================================================
+   7. FRETBOARD
+   ========================================================================== */
 .fretboard-wrapper {
   display: flex;
   flex-direction: column;
@@ -798,18 +1529,21 @@ body {
   background: var(--color-surface);
   color: var(--color-border);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   cursor: pointer;
   padding: 0;
   margin: 0;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background var(--duration-base) ease,
+    color var(--duration-base) ease,
+    border-color var(--duration-base) ease;
 }
 .string-toggle:hover {
   background: var(--color-surface-hover);
 }
 .string-toggle.active {
   background: var(--color-toggle-active);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
 .distance-toggles {
@@ -825,18 +1559,21 @@ body {
   background: var(--color-surface);
   color: var(--color-border);
   font-size: var(--text-xs);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   cursor: pointer;
   padding: 0 0.4rem;
   margin: 0;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background var(--duration-base) ease,
+    color var(--duration-base) ease,
+    border-color var(--duration-base) ease;
 }
 .distance-toggle:hover {
   background: var(--color-surface-hover);
 }
 .distance-toggle.active {
   background: var(--color-toggle-active);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
 
@@ -857,18 +1594,18 @@ body {
   padding: 0 var(--space-3);
 }
 .group-progress-toggles .distance-toggle.skipped {
-  opacity: 0.4;
+  opacity: var(--opacity-dimmed);
   text-decoration: line-through;
 }
 .group-progress-bar {
   display: flex;
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--color-surface);
 }
 .group-progress-bar.skipped {
-  opacity: 0.3;
+  opacity: var(--opacity-subtle);
 }
 .group-bar-slice {
   flex: 1;
@@ -882,8 +1619,8 @@ body {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-text-muted);
-  font-size: 14px;
-  line-height: 1;
+  font-size: var(--text-sm);
+  line-height: var(--leading-none);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -901,11 +1638,11 @@ body {
   position: absolute;
   right: -1px;
   top: calc(100% + 2px);
-  z-index: 100;
+  z-index: var(--z-popover);
   background: var(--color-bg);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
   padding: var(--space-1) 0;
   min-width: 140px;
   white-space: nowrap;
@@ -945,18 +1682,21 @@ body {
   background: var(--color-surface);
   color: var(--color-border);
   font-size: var(--text-xs);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   cursor: pointer;
   padding: 0 0.6rem;
   margin: 0;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background var(--duration-base) ease,
+    color var(--duration-base) ease,
+    border-color var(--duration-base) ease;
 }
 .notes-toggle:hover {
   background: var(--color-surface-hover);
 }
 .notes-toggle.active {
   background: var(--color-toggle-active);
-  color: white;
+  color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
 /* Constrain both width and height so the vertical SVG fits on screen.
@@ -980,22 +1720,22 @@ body {
 }
 /* SVG fretboard — new circle-based design */
 .fb-string {
-  stroke: hsl(30, 8%, 72%);
+  stroke: var(--fb-string);
 }
 .fb-fret {
-  stroke: hsl(30, 5%, 82%);
+  stroke: var(--fb-fret);
 }
 .fb-nut {
-  fill: hsl(30, 8%, 48%);
+  fill: var(--fb-nut);
 }
 .fb-marker {
-  fill: hsl(30, 5%, 62%);
+  fill: var(--fb-marker);
 }
 .fb-pos {
   fill: none;
   stroke: none;
   cursor: pointer;
-  transition: fill 0.15s;
+  transition: fill var(--duration-base);
   pointer-events: all;
 }
 .fb-tap {
@@ -1020,7 +1760,7 @@ button {
 .mastery-message {
   background: var(--color-success-bg);
   color: var(--color-success-text);
-  font-weight: bold;
+  font-weight: var(--font-bold);
   font-size: var(--text-base);
   padding: var(--space-3) var(--space-5);
   margin-bottom: var(--space-3);
@@ -1029,39 +1769,8 @@ button {
 }
 
 /* --- Primary CTA (Practice) --- */
-.start-btn {
-  background: var(--color-brand);
-  color: white;
-  border: 2px solid var(--color-brand);
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  font-size: var(--text-md);
-  padding: var(--space-4) var(--space-6);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
-}
-.start-btn:hover {
-  background: var(--color-brand-dark);
-  border-color: var(--color-brand-dark);
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
-}
-.start-btn:active {
-  transform: scale(0.98);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-}
-.start-btn:disabled {
-  background: var(--color-surface-alt);
-  border-color: var(--color-border-light);
-  color: var(--color-text-light);
-  box-shadow: none;
-  cursor: not-allowed;
-}
-.start-btn:disabled:hover {
-  background: var(--color-surface-alt);
-  border-color: var(--color-border-light);
-  box-shadow: none;
-  transform: none;
-}
+/* .start-btn — focus-target marker for phase transitions (use-phase-class.ts).
+   Visual treatment comes from .page-action-btn + .page-action-primary. */
 .start-validation-message {
   font-size: var(--text-xs);
   color: var(--color-error-text);
@@ -1069,7 +1778,9 @@ button {
   margin-top: var(--space-2);
 }
 
-/* --- Quiz countdown row — bar + timer side by side --- */
+/* ==========================================================================
+   8. QUIZ SESSION
+   ========================================================================== */
 .quiz-countdown-row {
   display: flex;
   align-items: center;
@@ -1079,22 +1790,24 @@ button {
 .quiz-countdown-bar {
   flex: 1;
   height: 6px;
-  background: var(--color-surface-alt);
+  background: var(--color-surface-raised);
 }
 .quiz-countdown-fill {
   height: 100%;
   background: var(--color-brand);
-  transition: width 0.2s linear;
+  transition: width var(--duration-linear) linear;
   width: 100%;
 }
 .round-timer-warning .quiz-countdown-fill,
 .last-question .quiz-countdown-fill {
-  background: var(--color-recommended);
+  background: var(--color-notice);
 }
 .quiz-info-time {
-  font-size: var(--text-sm);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
-  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
@@ -1104,16 +1817,18 @@ button {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
   padding-bottom: var(--space-2);
 }
 .quiz-info-context {
   flex: 1;
 }
 .quiz-info-last-question {
-  color: var(--color-recommended);
-  font-weight: 600;
+  color: var(--color-notice);
+  font-weight: var(--font-semibold);
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -1121,38 +1836,13 @@ button {
 .quiz-info-count {
   font-variant-numeric: tabular-nums;
 }
-.quiz-header-close {
-  background: none;
-  border: none;
-  font-size: var(--size-close-btn);
-  color: var(--color-text-light);
-  cursor: pointer;
-  padding: var(--space-2);
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  line-height: 1;
-  margin: 0;
-  border-radius: var(--radius-sm);
-  transition: color 0.15s ease, background 0.15s ease;
-}
-.quiz-header-close:hover {
-  color: var(--color-text);
-  background: var(--color-surface-hover);
-}
-.quiz-header-close:active {
-  background: var(--color-surface-pressed);
-}
 
 /* --- Progress bar (build-time template only) --- */
 .progress-bar {
   width: 100%;
   max-width: 300px;
   height: 20px;
-  background: var(--color-surface-alt);
+  background: var(--color-surface-raised);
   border-radius: var(--radius-md);
   margin: 0 auto var(--space-4);
   overflow: hidden;
@@ -1163,7 +1853,7 @@ button {
   height: 100%;
   background: var(--color-success);
   border-radius: var(--radius-md);
-  transition: width 0.3s ease;
+  transition: width var(--duration-slow) ease;
   min-width: 0;
 }
 .progress-text {
@@ -1176,7 +1866,7 @@ button {
   align-items: center;
   justify-content: center;
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--color-text);
   pointer-events: none;
 }
@@ -1221,26 +1911,31 @@ button {
   margin-top: auto;
   text-align: center;
 }
-/* --- Round complete --- */
+/* ==========================================================================
+   9. QUIZ CONTENT
+   ========================================================================== */
 .round-complete {
   align-items: center;
   text-align: center;
 }
 .round-complete-heading {
-  font-size: var(--text-xl);
-  font-weight: 700;
-  color: var(--color-text);
+  font-size: var(--type-heading-page-size);
+  font-weight: var(--type-heading-page-weight);
+  line-height: var(--type-heading-page-leading);
+  color: var(--type-heading-page-color);
   margin-bottom: var(--space-4);
 }
 .round-complete-count {
-  font-size: var(--text-3xl);
-  font-weight: 700;
-  color: var(--color-brand);
-  line-height: 1;
+  font-size: var(--type-metric-hero-size);
+  font-weight: var(--type-metric-hero-weight);
+  line-height: var(--type-metric-hero-leading);
+  color: var(--type-metric-hero-color);
 }
 .round-complete-count-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
   margin-bottom: var(--space-3);
 }
 .round-complete-stats {
@@ -1252,21 +1947,27 @@ button {
   border-top: 1px solid var(--color-border-lighter);
 }
 .round-complete-overall-label {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-muted);
+  font-size: var(--type-heading-subsection-size);
+  font-weight: var(--type-heading-subsection-weight);
+  line-height: var(--type-heading-subsection-leading);
+  color: var(--type-heading-subsection-color);
   margin-bottom: var(--space-2);
 }
 .round-complete-context {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
 }
 .round-stat-line {
-  font-size: var(--text-sm);
-  color: var(--color-text);
-  line-height: 1.6;
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
+  color: var(--type-status-color);
 }
-/* --- Note buttons (piano-style layout) --- */
+/* ==========================================================================
+   10. ANSWER BUTTONS
+   ========================================================================== */
 .note-buttons {
   display: flex;
   flex-direction: column;
@@ -1325,7 +2026,7 @@ button {
   min-width: 0;
   height: 48px;
   font-size: var(--text-md);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   border: 2px solid var(--color-text-muted);
   border-radius: var(--radius-md);
   background: var(--color-bg);
@@ -1337,9 +2038,9 @@ button {
   justify-content: center;
   touch-action: manipulation;
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.1s ease;
+    background var(--duration-base) ease,
+    border-color var(--duration-base) ease,
+    transform var(--duration-fast) ease;
 }
 @media (hover: hover) {
   .note-btn:hover {
@@ -1363,7 +2064,7 @@ button {
   transform: scale(0.97);
 }
 .note-btn:disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: default;
 }
 .note-btn.hidden {
@@ -1391,17 +2092,19 @@ button {
   grid-template-columns: repeat(3, 1fr);
   gap: 0.4rem;
   width: 60%;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity var(--duration-base) ease,
+    transform var(--duration-base) ease;
 }
 .split-note-row-accidentals.split-note-acc-hidden {
-  opacity: 0.3;
+  opacity: var(--opacity-subtle);
   pointer-events: none;
 }
 .split-note-btn {
   min-width: 0;
   height: 48px;
   font-size: var(--text-md);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   border: 1.5px solid var(--color-border-light);
   border-radius: var(--radius-sm);
   background: var(--color-bg);
@@ -1410,7 +2113,10 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.1s, border-color 0.1s, opacity 0.15s;
+  transition:
+    background var(--duration-fast),
+    border-color var(--duration-fast),
+    opacity var(--duration-base);
   -webkit-tap-highlight-color: transparent;
 }
 .split-note-btn:active {
@@ -1419,7 +2125,7 @@ button {
 }
 .split-note-btn:disabled {
   cursor: default;
-  opacity: 0.4;
+  opacity: var(--opacity-dimmed);
 }
 @media (hover: hover) {
   .split-note-btn:hover:not(:disabled) {
@@ -1433,7 +2139,7 @@ button {
   box-shadow: 0 0 0 1px var(--color-border);
 }
 .split-note-dimmed {
-  opacity: 0.4;
+  opacity: var(--opacity-dimmed);
 }
 .split-note-acc {
   background: var(--color-surface-accent);
@@ -1448,9 +2154,18 @@ button {
   margin: var(--space-2) 0;
   min-height: 2.5rem;
 }
+.quiz-instruction {
+  font-size: var(--type-quiz-instruction-size);
+  font-weight: var(--type-quiz-instruction-weight);
+  line-height: var(--type-quiz-instruction-leading);
+  color: var(--type-quiz-instruction-color);
+  margin-bottom: var(--space-3);
+}
 .quiz-prompt {
-  font-size: var(--text-2xl);
-  font-weight: 600;
+  font-size: var(--type-quiz-prompt-size);
+  font-weight: var(--type-quiz-prompt-weight);
+  line-height: var(--type-quiz-prompt-leading);
+  color: var(--type-quiz-prompt-color);
 }
 .quiz-prompt:empty {
   display: none;
@@ -1461,8 +2176,8 @@ button {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.4rem;
-  max-width: 360px;
-  margin: var(--space-3) auto;
+  width: 100%;
+  margin: var(--space-3) 0;
 }
 /* Answer text input (declarative modes) */
 .answer-input {
@@ -1471,7 +2186,7 @@ button {
   max-width: 280px;
   margin: var(--space-2) auto;
   padding: var(--space-2) var(--space-3);
-  font-size: var(--text-lg);
+  font-size: var(--type-quiz-response-size);
   font-family: inherit;
   text-align: center;
   border: 2px solid var(--color-border);
@@ -1479,7 +2194,7 @@ button {
   background: var(--color-bg);
   color: var(--color-text);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-base);
 }
 @media (pointer: fine) {
   .answer-input {
@@ -1490,7 +2205,7 @@ button {
   border-color: var(--color-border);
 }
 .answer-input:disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   pointer-events: none;
 }
 .answer-input-wrong {
@@ -1498,7 +2213,7 @@ button {
   opacity: 1;
 }
 .answer-input-correct {
-  border-color: var(--color-correct) !important;
+  border-color: var(--color-success) !important;
   opacity: 1;
 }
 .answer-input-shake {
@@ -1516,13 +2231,18 @@ button {
   }
 }
 
+/* --- Component tokens: AnswerButton --- */
 .answer-btn {
+  --_bg: var(--color-bg);
+  --_text: inherit;
+  --_border: var(--color-text-muted);
   height: 48px;
   font-size: var(--text-md);
-  font-weight: 500;
-  border: 2px solid var(--color-text-muted);
+  font-weight: var(--font-medium);
+  border: 2px solid var(--_border);
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  background: var(--_bg);
+  color: var(--_text);
   cursor: pointer;
   padding: 0 var(--space-2);
   margin: 0;
@@ -1531,47 +2251,49 @@ button {
   justify-content: center;
   touch-action: manipulation;
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.1s ease;
+    background var(--duration-base) ease,
+    border-color var(--duration-base) ease,
+    transform var(--duration-fast) ease;
 }
 @media (hover: hover) {
   .answer-btn:hover {
-    background: var(--color-surface-hover);
-    border-color: var(--color-text);
+    --_bg: var(--color-surface-hover);
+    --_border: var(--color-text);
   }
   .answer-btn:disabled:hover {
-    background: var(--color-bg);
-    border-color: var(--color-text-muted);
+    --_bg: var(--color-bg);
+    --_border: var(--color-text-muted);
     transform: none;
   }
 }
 .answer-btn:active {
-  background: var(--color-surface-pressed);
+  --_bg: var(--color-surface-pressed);
   transform: scale(0.97);
 }
 .answer-btn:disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: default;
 }
 
-/* --- Button feedback (correct/wrong/reveal) --- */
+/* ==========================================================================
+   11. BUTTON FEEDBACK
+   ========================================================================== */
 .btn-feedback-correct {
-  background: var(--color-success-bg) !important;
-  border-color: var(--color-success) !important;
-  color: var(--color-success-text) !important;
+  --_bg: var(--color-success-bg) !important;
+  --_border: var(--color-success) !important;
+  --_text: var(--color-success-text) !important;
   opacity: 1 !important;
 }
 .btn-feedback-wrong {
-  background: var(--color-error-bg) !important;
-  border-color: var(--color-error) !important;
-  color: var(--color-error-text) !important;
+  --_bg: var(--color-error-bg) !important;
+  --_border: var(--color-error) !important;
+  --_text: var(--color-error-text) !important;
   opacity: 1 !important;
 }
 .btn-feedback-reveal {
-  background: var(--color-success-bg) !important;
-  border-color: var(--color-success) !important;
-  color: var(--color-success-text) !important;
+  --_bg: var(--color-success-bg) !important;
+  --_border: var(--color-success) !important;
+  --_text: var(--color-success-text) !important;
   opacity: 1 !important;
 }
 
@@ -1584,36 +2306,33 @@ button {
   display: none;
 }
 
-/* --- Calibration highlight --- */
-.calibration-target {
-  background: var(--color-success) !important;
-  border-color: var(--color-success-dark) !important;
-  color: white !important;
-  box-shadow: 0 0 12px rgba(76, 175, 80, 0.6);
+/* ==========================================================================
+   12. CALIBRATION
+   ========================================================================== */
+.speed-check-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-1) 0;
 }
-.calibration-progress {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+.speed-check-header-progress {
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
+  font-variant-numeric: tabular-nums;
+}
+.heatmap-swatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+.calibration-task-label {
   margin-top: var(--space-3);
-}
-.calibration-action-btn {
-  display: block;
-  margin: var(--space-6) auto 0;
-  padding: var(--space-4) 2.5rem;
-  font-size: var(--text-md);
-  font-weight: 600;
-  background: var(--color-brand);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-.calibration-action-btn:hover {
-  background: var(--color-brand-dark);
-}
-.calibration-action-btn:active {
-  background: var(--color-brand-dark);
+  color: var(--color-text-muted);
 }
 .calibration-results {
   text-align: center;
@@ -1621,8 +2340,11 @@ button {
   margin: 0 auto;
 }
 .calibration-baseline {
-  font-size: var(--text-md);
-  font-weight: 600;
+  font-size: var(--type-metric-primary-size);
+  font-weight: var(--type-metric-primary-weight);
+  line-height: var(--type-metric-primary-leading);
+  color: var(--type-metric-primary-color);
+  font-variant-numeric: tabular-nums;
   margin: var(--space-3) 0 var(--space-5);
 }
 .calibration-thresholds {
@@ -1639,18 +2361,165 @@ button {
 }
 .calibration-thresholds th {
   background: var(--color-surface);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 .calibration-thresholds td:first-child {
-  font-weight: 600;
-  white-space: nowrap;
+  width: 1.5rem;
+  text-align: center;
+  padding: 0.35rem var(--space-2);
 }
 .calibration-thresholds td:nth-child(2) {
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+}
+.calibration-thresholds td:nth-child(3) {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-/* --- Screen-reader-only utility --- */
+/* ==========================================================================
+   13. TEXT ROLES (Layer 2 → Layer 3 classes)
+   Each class references --type-* role properties, never palette tokens.
+   ========================================================================== */
+
+/* -- Display -- */
+.text-display-brand {
+  font-family: var(--type-display-brand-family);
+  font-size: var(--type-display-brand-size);
+  font-weight: var(--type-display-brand-weight);
+  line-height: var(--type-display-brand-leading);
+  color: var(--type-display-brand-color);
+}
+
+/* -- Heading -- */
+.text-heading-page {
+  font-size: var(--type-heading-page-size);
+  font-weight: var(--type-heading-page-weight);
+  line-height: var(--type-heading-page-leading);
+  color: var(--type-heading-page-color);
+}
+.text-heading-section {
+  font-size: var(--type-heading-section-size);
+  font-weight: var(--type-heading-section-weight);
+  line-height: var(--type-heading-section-leading);
+  color: var(--type-heading-section-color);
+}
+.text-heading-subsection {
+  font-size: var(--type-heading-subsection-size);
+  font-weight: var(--type-heading-subsection-weight);
+  line-height: var(--type-heading-subsection-leading);
+  color: var(--type-heading-subsection-color);
+}
+
+/* -- Body -- */
+.text-body {
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  line-height: var(--type-body-leading);
+  color: var(--type-body-color);
+}
+.text-body-secondary {
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
+}
+
+/* -- Label -- */
+.text-label {
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  line-height: var(--type-label-leading);
+  color: var(--type-label-color);
+}
+.text-label-tag {
+  font-size: var(--type-label-tag-size);
+  font-weight: var(--type-label-tag-weight);
+  line-height: var(--type-label-tag-leading);
+  color: var(--type-label-tag-color);
+}
+
+/* -- Quiz -- */
+.text-quiz-instruction {
+  font-size: var(--type-quiz-instruction-size);
+  font-weight: var(--type-quiz-instruction-weight);
+  line-height: var(--type-quiz-instruction-leading);
+  color: var(--type-quiz-instruction-color);
+}
+.text-quiz-prompt {
+  font-size: var(--type-quiz-prompt-size);
+  font-weight: var(--type-quiz-prompt-weight);
+  line-height: var(--type-quiz-prompt-leading);
+  color: var(--type-quiz-prompt-color);
+}
+.text-quiz-response {
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
+  line-height: var(--type-quiz-response-leading);
+  color: var(--type-quiz-response-color);
+}
+.text-quiz-feedback {
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
+  color: var(--type-quiz-feedback-color);
+}
+
+/* -- Supporting -- */
+.text-supporting {
+  font-size: var(--type-supporting-size);
+  font-weight: var(--type-supporting-weight);
+  line-height: var(--type-supporting-leading);
+  color: var(--type-supporting-color);
+}
+
+/* -- Metric -- */
+.text-metric-hero {
+  font-size: var(--type-metric-hero-size);
+  font-weight: var(--type-metric-hero-weight);
+  line-height: var(--type-metric-hero-leading);
+  color: var(--type-metric-hero-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-primary {
+  font-size: var(--type-metric-primary-size);
+  font-weight: var(--type-metric-primary-weight);
+  line-height: var(--type-metric-primary-leading);
+  color: var(--type-metric-primary-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-info {
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -- Status (+ color variants) -- */
+.text-status {
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
+  color: var(--type-status-color);
+}
+.status-success {
+  color: var(--color-success-text);
+}
+.status-error {
+  color: var(--color-error-text);
+}
+.status-notice {
+  color: var(--color-notice);
+}
+.status-empty {
+  color: var(--color-text-light);
+  font-style: italic;
+}
+
+/* ==========================================================================
+   14. UTILITIES
+   ========================================================================== */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -1665,7 +2534,9 @@ button {
 
 /* --- Feedback --- */
 .feedback {
-  font-size: var(--text-xl);
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
   margin: var(--space-5) 0;
   min-height: 2rem;
 }
@@ -1677,24 +2548,36 @@ button {
 }
 
 .hint {
-  color: var(--color-text-muted);
-  font-size: var(--text-base);
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
   margin-top: var(--space-5);
+  text-align: center;
 }
 .hint-spacer {
   visibility: hidden;
 }
 
-/* --- Page-action buttons (shared base for next/continue/stop) --- */
+/* ==========================================================================
+   15. PAGE ACTIONS
+   ========================================================================== */
+/* --- Component tokens: ActionButton --- */
 .page-action-btn {
+  --_bg: var(--color-brand);
+  --_text: var(--color-on-brand);
+  --_border: transparent;
+  --_weight: var(--font-semibold);
   padding: var(--space-3) var(--space-5);
-  border: none;
+  border: 1px solid var(--_border);
   border-radius: var(--radius-md);
   font-size: var(--text-base);
-  font-weight: 600;
+  font-weight: var(--_weight);
   cursor: pointer;
   touch-action: manipulation;
   min-height: 48px;
+  background: var(--_bg);
+  color: var(--_text);
 }
 @media (hover: hover) {
   .page-action-btn:hover {
@@ -1702,38 +2585,48 @@ button {
   }
 }
 .page-action-btn:active {
-  opacity: 0.8;
+  opacity: var(--opacity-pressed);
   transform: scale(0.98);
 }
 .page-action-btn:focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
 }
+.page-action-btn:disabled {
+  --_bg: var(--color-surface-raised);
+  --_text: var(--color-text-light);
+  --_border: var(--color-border-light);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.page-action-btn:disabled:hover {
+  transform: none;
+}
 .page-action-primary {
-  background: var(--color-brand);
-  color: white;
+  --_bg: var(--color-brand);
+  --_text: var(--color-on-brand);
 }
 .page-action-secondary {
-  background: none;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  font-weight: 400;
+  --_bg: transparent;
+  --_text: var(--color-text-muted);
+  --_border: var(--color-border);
+  --_weight: var(--font-normal);
 }
 @media (hover: hover) {
   .page-action-secondary:hover {
+    --_bg: var(--color-surface-hover);
     opacity: 1;
-    background: var(--color-surface-hover);
   }
 }
 .page-action-secondary:active {
+  --_bg: var(--color-surface-pressed);
   opacity: 1;
-  background: var(--color-surface-pressed);
 }
 .page-action-correct {
-  background: var(--color-success);
+  --_bg: var(--color-success);
 }
 .page-action-wrong {
-  background: var(--color-error);
+  --_bg: var(--color-error);
 }
 .page-action-row {
   display: flex;
@@ -1754,8 +2647,10 @@ button {
 /* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
 .keyboard-hint {
   display: none;
-  font-size: var(--text-sm);
-  color: var(--color-text-light);
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
   text-align: center;
   margin-top: var(--space-3);
 }
@@ -1774,7 +2669,7 @@ button {
   box-shadow: 0 0 0 1px var(--color-border);
 }
 .kb-dimmed {
-  opacity: 0.4;
+  opacity: var(--opacity-dimmed);
 }
 
 .stats {
@@ -1783,7 +2678,9 @@ button {
   color: var(--color-text-muted);
 }
 
-/* --- Heatmap legend (gradient bar) --- */
+/* ==========================================================================
+   16. STATS
+   ========================================================================== */
 .heatmap-legend {
   display: none;
   margin: var(--space-4) 0;
@@ -1800,7 +2697,7 @@ button {
 .legend-section-title {
   grid-column: 1;
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--color-text-muted);
   justify-self: end;
   align-self: start;
@@ -1841,9 +2738,10 @@ button {
   gap: var(--space-3);
 }
 .toggle-group-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  font-weight: 500;
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  line-height: var(--type-label-leading);
+  color: var(--type-label-color);
   flex-shrink: 0;
   min-width: 3.5rem;
 }
@@ -1852,6 +2750,15 @@ button {
 .stats-container {
   text-align: center;
   margin: var(--space-3) 0;
+}
+.stats-container > .text-heading-subsection {
+  text-align: left;
+  padding: 0 var(--space-4);
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-3);
+}
+.stats-container > .text-heading-subsection:first-child {
+  margin-top: 0;
 }
 .stats-table {
   border-collapse: collapse;
@@ -1865,7 +2772,7 @@ button {
 }
 .stats-table th {
   background: var(--color-surface);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 .stats-cell {
   width: 40px;
@@ -1892,7 +2799,7 @@ button {
 }
 .stats-grid th {
   background: var(--color-surface);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: var(--text-xs);
 }
 .stats-grid .stats-cell {
@@ -1900,7 +2807,7 @@ button {
   height: 24px;
 }
 .stats-grid-row-label {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   background: var(--color-surface);
   padding: 0.2rem 0.4rem;
 }
@@ -1914,7 +2821,11 @@ button {
   margin: 0 0 var(--space-3) 0;
 }
 .speed-tap-progress {
-  font-weight: 500;
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
+  font-variant-numeric: tabular-nums;
 }
 .speed-tap-stats {
   font-size: var(--text-xs);
@@ -1942,7 +2853,9 @@ button {
   grid-template-columns: repeat(4, 1fr);
 }
 
-/* --- Sequential response slots (chord spelling, etc.) --- */
+/* ==========================================================================
+   17. SEQUENTIAL SLOTS
+   ========================================================================== */
 .seq-slots {
   display: flex;
   justify-content: center;
@@ -1950,7 +2863,10 @@ button {
   margin: var(--space-4) 0;
   min-height: 2.5rem;
 }
+/* --- Component tokens: SequentialSlot --- */
 .seq-slot {
+  --_text: var(--color-text-muted);
+  --_border: var(--color-border);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1958,28 +2874,30 @@ button {
   padding: 0 0.25rem;
   height: 2.5rem;
   border: none;
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--_border);
   border-radius: 0;
-  font-size: var(--text-lg);
-  font-weight: 600;
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
   background: transparent;
-  color: var(--color-text-muted);
-  transition: border-color 0.15s ease, color 0.15s ease;
+  color: var(--_text);
+  transition:
+    border-color var(--duration-base) ease,
+    color var(--duration-base) ease;
 }
 .seq-slot.active {
-  border-bottom-color: var(--color-accent);
+  --_border: var(--color-accent);
 }
 .seq-slot.filled {
-  border-bottom-color: var(--color-text);
-  color: var(--color-text);
+  --_border: var(--color-text);
+  --_text: var(--color-text);
 }
 .seq-slot.correct {
-  border-bottom-color: var(--color-success);
-  color: var(--color-success-text);
+  --_border: var(--color-success);
+  --_text: var(--color-success-text);
 }
 .seq-slot.wrong {
-  border-bottom-color: var(--color-error);
-  color: var(--color-error-text);
+  --_border: var(--color-error);
+  --_text: var(--color-error-text);
 }
 .seq-slots-container {
   display: inline-flex;
@@ -1997,8 +2915,8 @@ button {
   justify-content: center;
   min-width: 2.5rem;
   padding: 0 0.25rem;
-  font-size: var(--text-lg);
-  font-weight: 600;
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
   color: var(--color-success-text);
 }
 
@@ -2012,10 +2930,6 @@ button {
   outline: none;
 }
 /* Specific overrides for elements that need different focus styling */
-.start-btn:focus-visible {
-  outline-color: var(--color-brand-dark);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 4px rgba(209, 147, 27, 0.3);
-}
 .home-mode-btn:focus-visible {
   outline-offset: -2px;
 }
@@ -2032,11 +2946,6 @@ button {
   outline-color: white;
 }
 
-/* Tab buttons */
-.mode-tab:focus-visible {
-  outline-offset: -2px;
-}
-
 /* Answer buttons */
 .answer-btn:focus-visible,
 .note-btn:focus-visible,
@@ -2044,17 +2953,16 @@ button {
   outline-offset: -2px;
 }
 
-/* Back button, close buttons */
-.mode-close-btn:focus-visible,
-.quiz-header-close:focus-visible {
+/* Close buttons */
+.close-btn:focus-visible {
   outline-offset: -2px;
 }
 
 /* Settings page */
-.settings-toggle-btn:focus-visible {
+.segmented-btn:focus-visible {
   outline-offset: -2px;
 }
-.settings-toggle-btn.active:focus-visible {
+.segmented-btn.active:focus-visible {
   outline-color: white;
 }
 
@@ -2064,7 +2972,9 @@ button {
   outline-offset: 2px;
 }
 
-/* --- Reduced motion --- */
+/* ==========================================================================
+   18. REDUCED MOTION
+   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -2073,7 +2983,21 @@ button {
   }
 }
 
-/* Mobile layout */
+/* Standalone / native app — no decorative side borders */
+@media (display-mode: standalone) {
+  body {
+    border-left: none;
+    border-right: none;
+  }
+}
+body.native-app {
+  border-left: none;
+  border-right: none;
+}
+
+/* ==========================================================================
+   19. MOBILE LAYOUT
+   ========================================================================== */
 @media (max-width: 599px) {
   body {
     margin: 0;
@@ -2100,10 +3024,6 @@ button {
   .fretboard-container {
     width: 100%;
     max-width: 500px;
-  }
-
-  .quiz-prompt {
-    font-size: 1.6rem;
   }
 
   /* .quiz-controls margin-top:auto pushes controls toward the bottom;

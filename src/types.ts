@@ -75,14 +75,11 @@ export type AdaptiveConfig = {
   maxResponseTime: number;
   initialStability: number;
   maxStability: number;
-  stabilityGrowthBase: number;
+  stabilityGrowthMax: number;
   stabilityDecayOnWrong: number;
-  recallThreshold: number;
-  expansionThreshold: number;
-  speedBonusMax: number;
+  freshnessThreshold: number;
   selfCorrectionThreshold: number;
-  automaticityTarget: number;
-  automaticityThreshold: number;
+  speedTarget: number;
 };
 
 export interface StorageAdapter {
@@ -99,7 +96,7 @@ export type StringRecommendation = {
   string: number;
   workingCount: number;
   unseenCount: number;
-  fluentCount: number;
+  automaticCount: number;
   totalCount: number;
 };
 
@@ -109,10 +106,13 @@ export interface AdaptiveSelector {
   getStats(itemId: string): ItemStats | null;
   getWeight(itemId: string): number;
   getRecall(itemId: string, nowMs?: number): number | null;
-  getAutomaticity(itemId: string, nowMs?: number): number | null;
   getSpeedScore(itemId: string): number | null;
   getFreshness(itemId: string, nowMs?: number): number | null;
-  getLevelAutomaticity(
+  getLevelSpeed(
+    itemIds: string[],
+    percentile?: number,
+  ): { level: number; seen: number };
+  getLevelFreshness(
     itemIds: string[],
     percentile?: number,
     nowMs?: number,
@@ -120,7 +120,6 @@ export interface AdaptiveSelector {
   getStringRecommendations(
     stringIndices: number[],
     getItemIds: (index: number) => string[],
-    nowMs?: number,
   ): StringRecommendation[];
   checkAllAutomatic(items: string[]): boolean;
   checkNeedsReview(items: string[]): boolean;
@@ -160,18 +159,39 @@ export interface DeadlineTracker {
 // Recommendations
 // ---------------------------------------------------------------------------
 
+export type LevelRecommendation = {
+  index: number;
+  type: 'review' | 'practice' | 'expand' | 'automate';
+};
+
 export type RecommendationResult = {
   recommended: Set<number>;
   enabled: Set<number> | null;
-  consolidateIndices: number[];
-  consolidateWorkingCount: number;
   expandIndex: number | null;
   expandNewCount: number;
-  /** True when most items are fluent and no unstarted groups remain. */
-  reviewMode?: boolean;
-  /** Consolidation group indices where items are fast but stale. */
-  staleIndices?: number[];
+  /** Per-level recommendations in priority order. */
+  levelRecs: LevelRecommendation[];
 };
+
+// ---------------------------------------------------------------------------
+// Structured recommendation lines (for practice config UI)
+// ---------------------------------------------------------------------------
+
+export type SuggestionLine = {
+  verb: string;
+  levels: string[];
+};
+
+// ---------------------------------------------------------------------------
+// Motor task types (for speed check calibration)
+// ---------------------------------------------------------------------------
+
+export type MotorTaskType =
+  | 'note-button'
+  | 'number'
+  | 'chord-sequence'
+  | 'keysig'
+  | 'fretboard-tap';
 
 // ---------------------------------------------------------------------------
 // Quiz engine
@@ -180,14 +200,7 @@ export type RecommendationResult = {
 export type EnginePhase =
   | 'idle'
   | 'active'
-  | 'round-complete'
-  | 'calibration-intro'
-  | 'calibrating'
-  | 'calibration-results';
-
-export function isCalibrationPhase(phase: EnginePhase): boolean {
-  return phase === 'calibrating' || phase.startsWith('calibration');
-}
+  | 'round-complete';
 
 export type EngineState = {
   phase: EnginePhase;
@@ -219,8 +232,6 @@ export type EngineState = {
 
   masteryText: string;
   showMastery: boolean;
-
-  calibrationBaseline: number | null;
 
   quizActive: boolean;
   answersEnabled: boolean;
@@ -335,8 +346,8 @@ export type SpeedCheckFixture = {
   baseline?: number;
   /** Trial progress text (for 'running' phase). Defaults to ''. */
   trialProgress?: string;
-  /** Which button to highlight green (for 'running' phase). */
-  targetNote?: string;
+  /** Answer shown in the prompt (for 'running' phase), e.g., 'E'. */
+  promptAnswer?: string;
 };
 
 /** Shape dispatched via __fixture__ custom event. */

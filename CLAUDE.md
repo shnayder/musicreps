@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Interactive music training app — fretboard note identification, interval math,
-and more. Multiple quiz modes accessed via hamburger menu.
+and more. Multiple quiz modes accessed from the home screen.
 
 ## Quick Start
 
@@ -16,9 +16,13 @@ deno task ok                                     # All checks + build
 ```
 
 **Run `deno task ok` before pushing.** It runs lint, format check, type check,
-tests, and build in sequence — any failure stops the chain. Don't push broken
-code by accident. If you hit `UnknownIssuer` TLS errors or npm resolution
-failures, see the **Web sandbox** section in
+tests, and build in sequence — any failure stops the chain. Use `/pr` to create
+PRs — it enforces the full sequence. Use `/check-ci` after pushing to verify CI
+passes before declaring success (CI also runs E2E tests via Playwright). Run
+`deno task prepush` locally if Playwright is available — it adds E2E tests.
+
+If you hit `UnknownIssuer` TLS errors or npm resolution failures, see the **Web
+sandbox** section in
 [guides/development.md](guides/development.md#web-sandbox-is_sandboxyes).
 
 **Run `deno task iterate capture` after UI changes.** When a `deno task iterate`
@@ -26,6 +30,11 @@ session is active, capture a new version after every round of UI changes so the
 user can visually review diffs. Create a new session
 (`deno task iterate new <name> <states...>`) at the start of a UI task if none
 exists for the relevant states.
+
+**Every new UI component must appear in the component preview page**
+(`/preview`, source in `src/ui/preview-tab-*.tsx`). The preview renders real
+components with mock data — it is the design system source of truth. No copies
+or approximations.
 
 **The HTML template lives in `src/build-template.ts`** — the single source of
 truth for the page structure. **Version is derived from git at build time** (see
@@ -121,8 +130,9 @@ at build time. Key patterns:
   spaced repetition.
 - **Motor Baseline** — per-provider calibration measuring physical response
   time. All timing thresholds scale proportionally (1x–9x baseline).
-- **Consolidate Before Expanding** — shared `computeRecommendations()` gates
-  progression to new item groups behind mastery of existing ones.
+- **Recommendation Pipeline (v4)** — shared `computeRecommendations()` computes
+  per-level status (speed/freshness) and emits prioritized recs (review →
+  practice → expand → automate) with an expansion gate.
 - **CSS Custom Properties** — color palette, heatmap scale, and semantic tokens
   defined as `--color-*` and `--heatmap-*` variables in `:root`. JS reads
   heatmap colors via `getComputedStyle` with hardcoded fallbacks for tests.
@@ -173,6 +183,7 @@ Bidirectional modes track each direction as a separate item.
 | Guide                         | Contents                                                 |
 | ----------------------------- | -------------------------------------------------------- |
 | [vision.md](guides/vision.md) | Who it's for, what we're building, tone, skill lifecycle |
+| [brand.md](guides/brand.md)   | Core positioning, promise, messaging, visual tone        |
 
 **Enduring** — design values that should outlast any implementation:
 
@@ -187,18 +198,19 @@ Bidirectional modes track each direction as a separate item.
 | Guide                                                         | Contents                                                                       |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | [architecture.md](guides/architecture.md)                     | Module graph, build system, patterns, algorithms, DOM layout, adding new modes |
-| [visual-design.md](guides/design/visual-design.md)            | Color system, typography, spacing, component patterns                          |
+| [visual-design.md](guides/design/visual-design.md)            | Color system, typography, spacing, type hierarchy, button taxonomy, elevation  |
 | [coding-style.md](guides/coding-style.md)                     | Naming, file structure, DOM rules, testing patterns                            |
 | [accidental-conventions.md](guides/accidental-conventions.md) | Sharp/flat naming rules by mode, rule priority                                 |
 | [terminology.md](guides/terminology.md)                       | User-facing terms and their internal equivalents                               |
 
 **Process** — how to work on the codebase:
 
-| Guide                                                         | Contents                                                             |
-| ------------------------------------------------------------- | -------------------------------------------------------------------- |
-| [development.md](guides/development.md)                       | Commands, testing, versioning, branching, deployment, GitHub API     |
-| [feature-process.md](guides/feature-process.md)               | When/how to write plans, design spec + implementation plan templates |
-| [tech-debt-tracker.md](plans/exec-plans/tech-debt-tracker.md) | Technical debt tracking                                              |
+| Guide                                                         | Contents                                                                   |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| [development.md](guides/development.md)                       | Commands, testing, versioning, branching, deployment, GitHub API           |
+| [feature-process.md](guides/feature-process.md)               | When/how to write plans, design spec + implementation plan templates       |
+| [visual-design-spec.md](guides/visual-design-spec.md)         | Template for visual design work (layout, styling, design system alignment) |
+| [tech-debt-tracker.md](plans/exec-plans/tech-debt-tracker.md) | Technical debt tracking                                                    |
 
 The review checklist (`.claude/commands/review-checklist.md`) verifies these
 conventions — use `/review` to run it.
@@ -235,6 +247,10 @@ port from the server's `Listening on` stderr output.
 egress proxy instead — see
 [development.md](guides/development.md#github-api-access-web-environment) for
 the pattern.
+
+**Claude Code sandbox note:** `gh` CLI commands that hit the GitHub API (e.g.
+`gh pr create`, `gh pr view`) fail with TLS certificate errors inside the
+sandbox. Always run `gh` API commands with the sandbox disabled.
 
 ## PR Requirements
 
