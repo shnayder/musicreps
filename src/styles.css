@@ -858,6 +858,7 @@ body {
   gap: var(--space-3);
   margin-top: var(--space-3);
   font-size: var(--type-supporting-size);
+  font-weight: var(--type-supporting-weight);
   line-height: var(--type-supporting-leading);
 }
 .skill-card-before {
@@ -918,6 +919,7 @@ body {
 }
 .version {
   font-size: var(--type-supporting-size);
+  font-weight: var(--type-supporting-weight);
   line-height: var(--type-supporting-leading);
   color: var(--type-supporting-color);
 }
@@ -1803,6 +1805,7 @@ button {
 .quiz-info-time {
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
   color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -1816,6 +1819,7 @@ button {
   gap: var(--space-3);
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
   color: var(--type-metric-info-color);
   padding-bottom: var(--space-2);
 }
@@ -1929,6 +1933,7 @@ button {
 }
 .round-complete-count-label {
   font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--type-body-secondary-color);
   margin-bottom: var(--space-3);
@@ -1950,6 +1955,7 @@ button {
 }
 .round-complete-context {
   font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--type-body-secondary-color);
 }
@@ -2313,6 +2319,7 @@ button {
 .speed-check-header-progress {
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
   color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
 }
@@ -2641,6 +2648,7 @@ button {
 .keyboard-hint {
   display: none;
   font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--type-body-secondary-color);
   text-align: center;
@@ -2815,6 +2823,7 @@ button {
 .speed-tap-progress {
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
   color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
 }
