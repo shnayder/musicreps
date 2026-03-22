@@ -203,7 +203,14 @@
   --text-2xl: 2rem;
   --text-3xl: 3rem;
 
+  /* Line heights */
+  --leading-none: 1;
+  --leading-tight: 1.2;
+  --leading-snug: 1.4;
+  --leading-normal: 1.5;
+
   /* Font families */
+  --font-body: system-ui, -apple-system, sans-serif;
   --font-display: 'DM Serif Display', Georgia, serif;
 
   /* Spacing scale */
@@ -253,6 +260,106 @@
 
   /* Touch target minimum (WCAG AA) */
   --size-touch-target: 44px;
+
+  /* ================================================================
+     TYPOGRAPHY ROLES (Layer 2)
+     Semantic role → palette mapping. Bespoke and .text-* classes
+     reference these, never palette tokens directly.
+     ================================================================ */
+
+  /* -- Display: big, high-emphasis hero text -- */
+  --type-display-brand-size: var(--text-2xl);
+  --type-display-brand-weight: var(--font-normal);
+  --type-display-brand-leading: var(--leading-tight);
+  --type-display-brand-color: var(--color-text);
+  --type-display-brand-family: var(--font-display);
+
+  /* -- Heading: structural hierarchy -- */
+  --type-heading-page-size: var(--text-lg);
+  --type-heading-page-weight: var(--font-semibold);
+  --type-heading-page-leading: var(--leading-tight);
+  --type-heading-page-color: var(--color-text);
+
+  --type-heading-section-size: var(--text-base);
+  --type-heading-section-weight: var(--font-semibold);
+  --type-heading-section-leading: var(--leading-tight);
+  --type-heading-section-color: var(--color-text);
+
+  --type-heading-subsection-size: var(--text-base);
+  --type-heading-subsection-weight: var(--font-semibold);
+  --type-heading-subsection-leading: var(--leading-tight);
+  --type-heading-subsection-color: var(--color-text-muted);
+
+  /* -- Body: readable content -- */
+  --type-body-size: var(--text-base);
+  --type-body-weight: var(--font-normal);
+  --type-body-leading: var(--leading-normal);
+  --type-body-color: var(--color-text);
+
+  --type-body-secondary-size: var(--text-sm);
+  --type-body-secondary-weight: var(--font-normal);
+  --type-body-secondary-leading: var(--leading-snug);
+  --type-body-secondary-color: var(--color-text-muted);
+
+  /* -- Label: short functional identifiers -- */
+  --type-label-size: var(--text-sm);
+  --type-label-weight: var(--font-medium);
+  --type-label-leading: var(--leading-none);
+  --type-label-color: var(--color-text-muted);
+
+  --type-label-tag-size: var(--text-xs);
+  --type-label-tag-weight: var(--font-semibold);
+  --type-label-tag-leading: var(--leading-none);
+  --type-label-tag-color: var(--color-text-muted);
+
+  /* -- Quiz: drill-specific content text -- */
+  --type-quiz-instruction-size: var(--text-base);
+  --type-quiz-instruction-weight: var(--font-semibold);
+  --type-quiz-instruction-leading: var(--leading-normal);
+  --type-quiz-instruction-color: var(--color-text-muted);
+
+  --type-quiz-prompt-size: var(--text-2xl);
+  --type-quiz-prompt-weight: var(--font-semibold);
+  --type-quiz-prompt-leading: var(--leading-tight);
+  --type-quiz-prompt-color: var(--color-text);
+
+  --type-quiz-response-size: var(--text-lg);
+  --type-quiz-response-weight: var(--font-semibold);
+  --type-quiz-response-leading: var(--leading-none);
+  --type-quiz-response-color: var(--color-text);
+
+  --type-quiz-feedback-size: var(--text-xl);
+  --type-quiz-feedback-weight: var(--font-normal);
+  --type-quiz-feedback-leading: var(--leading-none);
+  --type-quiz-feedback-color: var(--color-text);
+
+  /* -- Supporting: tertiary/helper text -- */
+  --type-supporting-size: var(--text-xs);
+  --type-supporting-weight: var(--font-normal);
+  --type-supporting-leading: var(--leading-snug);
+  --type-supporting-color: var(--color-text-light);
+
+  /* -- Metric: data values -- */
+  --type-metric-hero-size: var(--text-3xl);
+  --type-metric-hero-weight: var(--font-bold);
+  --type-metric-hero-leading: var(--leading-none);
+  --type-metric-hero-color: var(--color-brand);
+
+  --type-metric-primary-size: var(--text-md);
+  --type-metric-primary-weight: var(--font-semibold);
+  --type-metric-primary-leading: var(--leading-none);
+  --type-metric-primary-color: var(--color-text);
+
+  --type-metric-info-size: var(--text-base);
+  --type-metric-info-weight: var(--font-medium);
+  --type-metric-info-leading: var(--leading-none);
+  --type-metric-info-color: var(--color-text);
+
+  /* -- Status: state communication -- */
+  --type-status-size: var(--text-sm);
+  --type-status-weight: var(--font-normal);
+  --type-status-leading: var(--leading-snug);
+  --type-status-color: var(--color-text);
 }
 
 /* ==========================================================================
@@ -270,7 +377,7 @@ html {
   overscroll-behavior: none;
 }
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   max-width: 650px;
   margin: 0 auto;
   padding: 0 var(--space-5);
@@ -393,13 +500,14 @@ body {
 }
 .home-header {
   text-align: left;
-  padding: var(--space-3) 0 var(--space-4);
+  padding: var(--space-3) var(--space-3) var(--space-4);
 }
 .home-title {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: var(--font-normal);
-  color: var(--color-text);
+  font-family: var(--type-display-brand-family);
+  font-size: var(--type-display-brand-size);
+  font-weight: var(--type-display-brand-weight);
+  line-height: var(--type-display-brand-leading);
+  color: var(--type-display-brand-color);
   margin: 0;
 }
 .home-title::after {
@@ -412,10 +520,11 @@ body {
   border-radius: var(--radius-sm);
 }
 .home-tagline {
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
   margin: var(--space-3) 0 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  line-height: 1.4;
 }
 /* --- Tabs --- */
 .tabs {
@@ -594,7 +703,7 @@ body {
 }
 .track-accordion-chevron {
   font-size: 1em;
-  line-height: 1;
+  line-height: var(--leading-none);
 }
 .track-accordion-body {
   padding-bottom: var(--space-2);
@@ -636,14 +745,18 @@ body {
   margin-top: var(--space-4);
 }
 .active-skills-empty {
-  font-size: var(--text-sm);
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
   margin: var(--space-6) 0;
   text-align: center;
 }
 .all-skills-hint {
-  font-size: var(--text-sm);
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
   margin: var(--space-4) 0 0;
@@ -652,8 +765,9 @@ body {
 .active-skill-track-pill {
   display: inline-block;
   align-self: flex-start;
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
+  font-size: var(--type-label-tag-size);
+  font-weight: var(--type-label-tag-weight);
+  line-height: var(--type-label-tag-leading);
   padding: 1px var(--space-2);
   border-radius: 999px;
   margin-bottom: 1px;
@@ -693,8 +807,9 @@ body {
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .skill-rec-header {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
+  font-size: var(--type-label-tag-size);
+  font-weight: var(--type-label-tag-weight);
+  line-height: var(--type-label-tag-leading);
   color: var(--color-notice);
   margin-bottom: var(--space-1);
 }
@@ -707,7 +822,9 @@ body {
   background: var(--color-notice-bg-pressed);
 }
 .active-skills-done {
-  font-size: var(--text-sm);
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
   color: var(--color-success-text);
   background: var(--color-success-bg);
   padding: var(--space-3) var(--space-4);
@@ -755,8 +872,9 @@ body {
   align-items: baseline;
   gap: var(--space-3);
   margin-top: var(--space-3);
-  font-size: var(--text-xs);
-  line-height: 1.4;
+  font-size: var(--type-supporting-size);
+  font-weight: var(--type-supporting-weight);
+  line-height: var(--type-supporting-leading);
 }
 .skill-card-before {
   text-align: right;
@@ -775,13 +893,16 @@ body {
   margin-top: var(--space-2);
 }
 .home-mode-name {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--color-text);
+  font-size: var(--type-heading-section-size);
+  font-weight: var(--type-heading-section-weight);
+  line-height: var(--type-heading-section-leading);
+  color: var(--type-heading-section-color);
 }
 .home-mode-desc {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
 }
 .home-footer {
   display: flex;
@@ -812,8 +933,10 @@ body {
   color: var(--color-text);
 }
 .version {
-  font-size: var(--text-xs);
-  color: var(--color-text-light);
+  font-size: var(--type-supporting-size);
+  font-weight: var(--type-supporting-weight);
+  line-height: var(--type-supporting-leading);
+  color: var(--type-supporting-color);
 }
 
 /* ==========================================================================
@@ -848,7 +971,7 @@ body {
   justify-content: center;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
-  line-height: 1;
+  line-height: var(--leading-none);
   transition:
     color var(--duration-base) ease,
     background var(--duration-base) ease;
@@ -866,14 +989,17 @@ body {
 }
 .mode-title {
   margin: 0;
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-size: var(--type-heading-page-size);
+  font-weight: var(--type-heading-page-weight);
+  line-height: var(--type-heading-page-leading);
+  color: var(--type-heading-page-color);
 }
 .mode-description {
   margin: var(--space-1) 0 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  line-height: 1.3;
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
 }
 .mode-before-after {
   display: grid;
@@ -881,8 +1007,8 @@ body {
   align-items: baseline;
   gap: var(--space-3);
   margin: var(--space-2) 0 0;
-  font-size: var(--text-xs);
-  line-height: 1.4;
+  font-size: var(--type-supporting-size);
+  line-height: var(--type-supporting-leading);
 }
 .mode-ba-before {
   text-align: right;
@@ -910,8 +1036,10 @@ body {
 }
 .settings-page-title {
   margin: 0;
-  font-weight: var(--font-semibold);
-  font-size: var(--text-xl);
+  font-size: var(--type-heading-page-size);
+  font-weight: var(--type-heading-page-weight);
+  line-height: var(--type-heading-page-leading);
+  color: var(--type-heading-page-color);
 }
 .settings-section {
   border-top: 1px solid var(--color-border-lighter);
@@ -1058,7 +1186,7 @@ body {
 .about-ba-text {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  line-height: 1.5;
+  line-height: var(--leading-normal);
 }
 .about-ba-after {
   font-weight: var(--font-semibold);
@@ -1079,9 +1207,10 @@ body {
   padding-top: var(--space-5);
 }
 .practice-section-header {
-  font-weight: var(--font-semibold);
-  font-size: var(--text-base);
-  color: var(--color-text);
+  font-size: var(--type-heading-section-size);
+  font-weight: var(--type-heading-section-weight);
+  line-height: var(--type-heading-section-leading);
+  color: var(--type-heading-section-color);
   text-align: left;
   margin-bottom: var(--space-3);
 }
@@ -1121,8 +1250,9 @@ body {
   margin-bottom: var(--space-3);
 }
 .suggestion-card-header {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
+  font-size: var(--type-heading-subsection-size);
+  font-weight: var(--type-heading-subsection-weight);
+  line-height: var(--type-heading-subsection-leading);
   color: var(--color-notice);
   margin-bottom: var(--space-2);
 }
@@ -1226,7 +1356,7 @@ body {
 .suggestion-line {
   font-size: var(--text-sm);
   color: var(--color-notice-text);
-  line-height: 1.5;
+  line-height: var(--leading-normal);
 }
 .suggestion-verb {
   font-weight: var(--font-semibold);
@@ -1505,7 +1635,7 @@ body {
   background: transparent;
   color: var(--color-text-muted);
   font-size: var(--text-sm);
-  line-height: 1;
+  line-height: var(--leading-none);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1688,9 +1818,11 @@ button {
   background: var(--color-notice);
 }
 .quiz-info-time {
-  font-size: var(--text-sm);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
-  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
@@ -1700,8 +1832,10 @@ button {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
   padding-bottom: var(--space-2);
 }
 .quiz-info-context {
@@ -1800,20 +1934,23 @@ button {
   text-align: center;
 }
 .round-complete-heading {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text);
+  font-size: var(--type-heading-page-size);
+  font-weight: var(--type-heading-page-weight);
+  line-height: var(--type-heading-page-leading);
+  color: var(--type-heading-page-color);
   margin-bottom: var(--space-4);
 }
 .round-complete-count {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--color-brand);
-  line-height: 1;
+  font-size: var(--type-metric-hero-size);
+  font-weight: var(--type-metric-hero-weight);
+  line-height: var(--type-metric-hero-leading);
+  color: var(--type-metric-hero-color);
 }
 .round-complete-count-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
   margin-bottom: var(--space-3);
 }
 .round-complete-stats {
@@ -1825,16 +1962,23 @@ button {
   border-top: 1px solid var(--color-border-lighter);
 }
 .round-complete-overall-label {
+  font-size: var(--type-heading-subsection-size);
+  font-weight: var(--type-heading-subsection-weight);
+  line-height: var(--type-heading-subsection-leading);
+  color: var(--type-heading-subsection-color);
   margin-bottom: var(--space-2);
 }
 .round-complete-context {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
 }
 .round-stat-line {
-  font-size: var(--text-sm);
-  color: var(--color-text);
-  line-height: 1.6;
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
+  color: var(--type-status-color);
 }
 /* ==========================================================================
    10. ANSWER BUTTONS
@@ -2026,14 +2170,17 @@ button {
   min-height: 2.5rem;
 }
 .quiz-instruction {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-light);
+  font-size: var(--type-quiz-instruction-size);
+  font-weight: var(--type-quiz-instruction-weight);
+  line-height: var(--type-quiz-instruction-leading);
+  color: var(--type-quiz-instruction-color);
   margin-bottom: var(--space-3);
 }
 .quiz-prompt {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-semibold);
+  font-size: var(--type-quiz-prompt-size);
+  font-weight: var(--type-quiz-prompt-weight);
+  line-height: var(--type-quiz-prompt-leading);
+  color: var(--type-quiz-prompt-color);
 }
 .quiz-prompt:empty {
   display: none;
@@ -2044,8 +2191,8 @@ button {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.4rem;
-  max-width: 360px;
-  margin: var(--space-3) auto;
+  width: 100%;
+  margin: var(--space-3) 0;
 }
 /* Answer text input (declarative modes) */
 .answer-input {
@@ -2054,7 +2201,7 @@ button {
   max-width: 280px;
   margin: var(--space-2) auto;
   padding: var(--space-2) var(--space-3);
-  font-size: var(--text-lg);
+  font-size: var(--type-quiz-response-size);
   font-family: inherit;
   text-align: center;
   border: 2px solid var(--color-border);
@@ -2185,8 +2332,10 @@ button {
   padding: var(--space-1) 0;
 }
 .speed-check-header-progress {
-  font-size: var(--text-base);
-  color: var(--color-text-muted);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
 }
 .heatmap-swatch {
@@ -2206,8 +2355,11 @@ button {
   margin: 0 auto;
 }
 .calibration-baseline {
-  font-size: var(--text-md);
-  font-weight: var(--font-semibold);
+  font-size: var(--type-metric-primary-size);
+  font-weight: var(--type-metric-primary-weight);
+  line-height: var(--type-metric-primary-leading);
+  color: var(--type-metric-primary-color);
+  font-variant-numeric: tabular-nums;
   margin: var(--space-3) 0 var(--space-5);
 }
 .calibration-thresholds {
@@ -2241,35 +2393,143 @@ button {
 }
 
 /* ==========================================================================
-   13. TEXT ROLES (type hierarchy recipes)
+   13. TEXT ROLES (Layer 2 → Layer 3 classes)
+   Each class references --type-* role properties, never palette tokens.
    ========================================================================== */
-.text-section-header {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--color-text);
+
+/* -- Display -- */
+.text-display-brand {
+  font-family: var(--type-display-brand-family);
+  font-size: var(--type-display-brand-size);
+  font-weight: var(--type-display-brand-weight);
+  line-height: var(--type-display-brand-leading);
+  color: var(--type-display-brand-color);
 }
-.text-subsection-header {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-muted);
+
+/* -- Heading -- */
+.text-heading-page {
+  font-size: var(--type-heading-page-size);
+  font-weight: var(--type-heading-page-weight);
+  line-height: var(--type-heading-page-leading);
+  color: var(--type-heading-page-color);
 }
+.text-heading-section {
+  font-size: var(--type-heading-section-size);
+  font-weight: var(--type-heading-section-weight);
+  line-height: var(--type-heading-section-leading);
+  color: var(--type-heading-section-color);
+}
+.text-heading-subsection {
+  font-size: var(--type-heading-subsection-size);
+  font-weight: var(--type-heading-subsection-weight);
+  line-height: var(--type-heading-subsection-leading);
+  color: var(--type-heading-subsection-color);
+}
+
+/* -- Body -- */
+.text-body {
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  line-height: var(--type-body-leading);
+  color: var(--type-body-color);
+}
+.text-body-secondary {
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
+}
+
+/* -- Label -- */
 .text-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-muted);
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  line-height: var(--type-label-leading);
+  color: var(--type-label-color);
 }
-.text-secondary {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+.text-label-tag {
+  font-size: var(--type-label-tag-size);
+  font-weight: var(--type-label-tag-weight);
+  line-height: var(--type-label-tag-leading);
+  color: var(--type-label-tag-color);
 }
-.text-caption {
-  font-size: var(--text-xs);
+
+/* -- Quiz -- */
+.text-quiz-instruction {
+  font-size: var(--type-quiz-instruction-size);
+  font-weight: var(--type-quiz-instruction-weight);
+  line-height: var(--type-quiz-instruction-leading);
+  color: var(--type-quiz-instruction-color);
+}
+.text-quiz-prompt {
+  font-size: var(--type-quiz-prompt-size);
+  font-weight: var(--type-quiz-prompt-weight);
+  line-height: var(--type-quiz-prompt-leading);
+  color: var(--type-quiz-prompt-color);
+}
+.text-quiz-response {
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
+  line-height: var(--type-quiz-response-leading);
+  color: var(--type-quiz-response-color);
+}
+.text-quiz-feedback {
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
+  color: var(--type-quiz-feedback-color);
+}
+
+/* -- Supporting -- */
+.text-supporting {
+  font-size: var(--type-supporting-size);
+  font-weight: var(--type-supporting-weight);
+  line-height: var(--type-supporting-leading);
+  color: var(--type-supporting-color);
+}
+
+/* -- Metric -- */
+.text-metric-hero {
+  font-size: var(--type-metric-hero-size);
+  font-weight: var(--type-metric-hero-weight);
+  line-height: var(--type-metric-hero-leading);
+  color: var(--type-metric-hero-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-primary {
+  font-size: var(--type-metric-primary-size);
+  font-weight: var(--type-metric-primary-weight);
+  line-height: var(--type-metric-primary-leading);
+  color: var(--type-metric-primary-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-info {
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -- Status (+ color variants) -- */
+.text-status {
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
+  color: var(--type-status-color);
+}
+.status-success {
+  color: var(--color-success-text);
+}
+.status-error {
+  color: var(--color-error-text);
+}
+.status-notice {
+  color: var(--color-notice);
+}
+.status-empty {
   color: var(--color-text-light);
-}
-.text-metric {
-  font-size: var(--text-md);
-  font-weight: var(--font-semibold);
-  color: var(--color-text);
+  font-style: italic;
 }
 
 /* ==========================================================================
@@ -2289,7 +2549,9 @@ button {
 
 /* --- Feedback --- */
 .feedback {
-  font-size: var(--text-xl);
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
   margin: var(--space-5) 0;
   min-height: 2rem;
 }
@@ -2301,9 +2563,12 @@ button {
 }
 
 .hint {
-  color: var(--color-text-muted);
-  font-size: var(--text-base);
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
   margin-top: var(--space-5);
+  text-align: center;
 }
 .hint-spacer {
   visibility: hidden;
@@ -2397,8 +2662,10 @@ button {
 /* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
 .keyboard-hint {
   display: none;
-  font-size: var(--text-sm);
-  color: var(--color-text-light);
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
   text-align: center;
   margin-top: var(--space-3);
 }
@@ -2486,6 +2753,10 @@ button {
   gap: var(--space-3);
 }
 .toggle-group-label {
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  line-height: var(--type-label-leading);
+  color: var(--type-label-color);
   flex-shrink: 0;
   min-width: 3.5rem;
 }
@@ -2495,10 +2766,14 @@ button {
   text-align: center;
   margin: var(--space-3) 0;
 }
-.stats-container > .text-subsection-header {
+.stats-container > .text-heading-subsection {
   text-align: left;
   padding: 0 var(--space-4);
+  margin-top: var(--space-5);
   margin-bottom: var(--space-3);
+}
+.stats-container > .text-heading-subsection:first-child {
+  margin-top: 0;
 }
 .stats-table {
   border-collapse: collapse;
@@ -2561,7 +2836,11 @@ button {
   margin: 0 0 var(--space-3) 0;
 }
 .speed-tap-progress {
-  font-weight: var(--font-medium);
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--type-metric-info-color);
+  font-variant-numeric: tabular-nums;
 }
 .speed-tap-stats {
   font-size: var(--text-xs);
@@ -2612,8 +2891,8 @@ button {
   border: none;
   border-bottom: 2px solid var(--_border);
   border-radius: 0;
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
   background: transparent;
   color: var(--_text);
   transition:
@@ -2651,8 +2930,8 @@ button {
   justify-content: center;
   min-width: 2.5rem;
   padding: 0 0.25rem;
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
   color: var(--color-success-text);
 }
 
@@ -2760,10 +3039,6 @@ body.native-app {
   .fretboard-container {
     width: 100%;
     max-width: 500px;
-  }
-
-  .quiz-prompt {
-    font-size: 1.6rem;
   }
 
   /* .quiz-controls margin-top:auto pushes controls toward the bottom;
@@ -5142,7 +5417,7 @@ ${text}`).join("\n\n");
     return /* @__PURE__ */ u3("div", { class: "suggestion-card", children: [
       /* @__PURE__ */ u3("div", { class: "suggestion-card-header", children: "Suggestion" }),
       /* @__PURE__ */ u3("div", { class: "suggestion-card-body", children: [
-        /* @__PURE__ */ u3(Text, { role: "secondary", class: "suggestion-card-text", children: text }),
+        /* @__PURE__ */ u3(Text, { role: "body-secondary", class: "suggestion-card-text", children: text }),
         onApply ? /* @__PURE__ */ u3(
           "button",
           {
@@ -5250,7 +5525,7 @@ ${text}`).join("\n\n");
         /* @__PURE__ */ u3(
           Text,
           {
-            role: "subsection-header",
+            role: "heading-subsection",
             as: "div",
             class: "round-complete-overall-label",
             children: "Overall"
@@ -6984,40 +7259,75 @@ ${text}`).join("\n\n");
   }
   function TypographySection({ tabId }) {
     return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("h2", { children: "Typography" }),
+      /* @__PURE__ */ u3("h2", { children: "Typography \u2014 Type Hierarchy" }),
       /* @__PURE__ */ u3(PreviewGrid, { children: [
-        /* @__PURE__ */ u3(Section, { title: "Text roles", tabId, children: /* @__PURE__ */ u3(
+        /* @__PURE__ */ u3(Section, { title: "All text roles", tabId, children: /* @__PURE__ */ u3(
           "div",
           {
-            style: { display: "flex", flexDirection: "column", gap: "0.5rem" },
+            style: { display: "flex", flexDirection: "column", gap: "0.75rem" },
             children: [
-              /* @__PURE__ */ u3(Text, { role: "section-header", as: "div", children: "Section Header" }),
-              /* @__PURE__ */ u3(Text, { role: "subsection-header", as: "div", children: "Subsection Header" }),
+              /* @__PURE__ */ u3(Text, { role: "display-brand", as: "div", children: "Display Brand" }),
+              /* @__PURE__ */ u3(Text, { role: "metric-hero", as: "div", children: "99" }),
+              /* @__PURE__ */ u3(Text, { role: "heading-page", as: "div", children: "Heading Page" }),
+              /* @__PURE__ */ u3(Text, { role: "heading-section", as: "div", children: "Heading Section" }),
+              /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "Heading Subsection" }),
               /* @__PURE__ */ u3(Text, { role: "label", as: "div", children: "Label" }),
-              /* @__PURE__ */ u3("div", { children: "Body text (default \u2014 no Text component needed)" }),
-              /* @__PURE__ */ u3(Text, { role: "secondary", as: "div", children: "Secondary text" }),
-              /* @__PURE__ */ u3(Text, { role: "caption", as: "div", children: "Caption text" }),
-              /* @__PURE__ */ u3(Text, { role: "metric", as: "div", children: "42.5s" })
+              /* @__PURE__ */ u3(Text, { role: "label-tag", as: "div", children: "Label Tag" }),
+              /* @__PURE__ */ u3("div", { children: "Body text (default \u2014 no role needed)" }),
+              /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "div", children: "Body Secondary" }),
+              /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", children: "Quiz Instruction" }),
+              /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", children: "Quiz Prompt" }),
+              /* @__PURE__ */ u3(Text, { role: "quiz-response", as: "div", children: "Quiz Response" }),
+              /* @__PURE__ */ u3(Text, { role: "quiz-feedback", as: "div", children: "Quiz Feedback" }),
+              /* @__PURE__ */ u3(Text, { role: "supporting", as: "div", children: "Supporting" }),
+              /* @__PURE__ */ u3(Text, { role: "metric-primary", as: "div", children: "0.52s" }),
+              /* @__PURE__ */ u3(Text, { role: "metric-info", as: "div", children: "30 reps" }),
+              /* @__PURE__ */ u3(Text, { role: "status", as: "div", children: "Status" })
             ]
           }
         ) }),
-        /* @__PURE__ */ u3(Section, { title: "Text roles \u2014 in context (metric display)", tabId, children: /* @__PURE__ */ u3(
+        /* @__PURE__ */ u3(Section, { title: "In context \u2014 mode header", tabId, children: /* @__PURE__ */ u3(
           "div",
           {
             style: { display: "flex", flexDirection: "column", gap: "0.25rem" },
             children: [
-              /* @__PURE__ */ u3(Text, { role: "subsection-header", as: "div", children: "Speed check" }),
+              /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", children: "Guitar Fretboard" }),
+              /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: "Identify notes on the fretboard" })
+            ]
+          }
+        ) }),
+        /* @__PURE__ */ u3(Section, { title: "In context \u2014 quiz", tabId, children: /* @__PURE__ */ u3(
+          "div",
+          {
+            style: {
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "0.5rem"
+            },
+            children: [
+              /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", children: "What note is this?" }),
+              /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", children: "C#" })
+            ]
+          }
+        ) }),
+        /* @__PURE__ */ u3(Section, { title: "In context \u2014 metric display", tabId, children: /* @__PURE__ */ u3(
+          "div",
+          {
+            style: { display: "flex", flexDirection: "column", gap: "0.25rem" },
+            children: [
+              /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "Speed check" }),
               /* @__PURE__ */ u3(
                 "div",
                 {
                   style: { display: "flex", alignItems: "baseline", gap: "0.5rem" },
                   children: [
                     /* @__PURE__ */ u3(Text, { role: "label", children: "Response time" }),
-                    /* @__PURE__ */ u3(Text, { role: "metric", children: "0.5s" })
+                    /* @__PURE__ */ u3(Text, { role: "metric-primary", children: "0.5s" })
                   ]
                 }
               ),
-              /* @__PURE__ */ u3(Text, { role: "caption", as: "div", children: "Timing thresholds are based on this measurement." })
+              /* @__PURE__ */ u3(Text, { role: "supporting", as: "div", children: "Timing thresholds are based on this measurement." })
             ]
           }
         ) })
@@ -7088,7 +7398,7 @@ ${text}`).join("\n\n");
                       }
                     }
                   ),
-                  /* @__PURE__ */ u3(Text, { role: "caption", children: desc })
+                  /* @__PURE__ */ u3(Text, { role: "supporting", children: desc })
                 ]
               },
               name
@@ -7100,12 +7410,13 @@ ${text}`).join("\n\n");
   }
   var TYPE_TOKENS = [
     { name: "--text-xs", usage: "Legend labels, tiny annotations" },
-    { name: "--text-sm", usage: "Session stats, settings, table text" },
+    { name: "--text-sm", usage: "Descriptions, settings, table text" },
     { name: "--text-base", usage: "Body, buttons, nav items" },
-    { name: "--text-md", usage: "Answer buttons, note buttons" },
-    { name: "--text-lg", usage: "Mode title, answer count" },
+    { name: "--text-md", usage: "Answer buttons, metrics" },
+    { name: "--text-lg", usage: "Screen titles" },
     { name: "--text-xl", usage: "Feedback, close buttons" },
-    { name: "--text-2xl", usage: "Home title, quiz prompts" }
+    { name: "--text-2xl", usage: "Page title, quiz prompts" },
+    { name: "--text-3xl", usage: "Round-complete count" }
   ];
   function TypeScaleSection({ tabId }) {
     return /* @__PURE__ */ u3(k, { children: [
@@ -7149,12 +7460,165 @@ ${text}`).join("\n\n");
                 }
               ),
               /* @__PURE__ */ u3("span", { style: { fontSize: val }, children: "Ag 0\u20139 C#" }),
-              /* @__PURE__ */ u3(Text, { role: "caption", as: "span", style: { marginLeft: "auto" }, children: usage })
+              /* @__PURE__ */ u3(
+                Text,
+                {
+                  role: "supporting",
+                  as: "span",
+                  style: { marginLeft: "auto" },
+                  children: usage
+                }
+              )
             ]
           },
           name
         );
       }) }) }) })
+    ] });
+  }
+  var WEIGHT_TOKENS = [
+    { name: "--font-normal", value: "400", usage: "Body, descriptions" },
+    { name: "--font-medium", value: "500", usage: "Buttons, labels, toggles" },
+    { name: "--font-semibold", value: "600", usage: "Headings, CTA, titles" },
+    { name: "--font-bold", value: "700", usage: "Track headings, round stats" }
+  ];
+  var LEADING_TOKENS = [
+    { name: "--leading-none", value: "1", usage: "Icons, buttons, inputs" },
+    { name: "--leading-tight", value: "1.2", usage: "Headings, prompts" },
+    { name: "--leading-snug", value: "1.4", usage: "Cards, descriptions" },
+    {
+      name: "--leading-normal",
+      value: "1.5",
+      usage: "Body text, readable blocks"
+    }
+  ];
+  function FontWeightSection({ tabId }) {
+    return /* @__PURE__ */ u3(Section, { title: "Font weight tokens", tabId, children: /* @__PURE__ */ u3("div", { style: { display: "flex", flexDirection: "column", gap: "0.5rem" }, children: WEIGHT_TOKENS.map(({ name, value, usage }) => /* @__PURE__ */ u3(
+      "div",
+      {
+        style: {
+          display: "flex",
+          alignItems: "baseline",
+          gap: "0.6rem"
+        },
+        children: [
+          /* @__PURE__ */ u3(
+            "code",
+            {
+              style: {
+                fontSize: "0.7rem",
+                minWidth: "8rem",
+                color: "var(--color-text-light)",
+                flexShrink: 0
+              },
+              children: name
+            }
+          ),
+          /* @__PURE__ */ u3(
+            "span",
+            {
+              style: {
+                fontWeight: value,
+                minWidth: "8rem"
+              },
+              children: "Music Reps Ag"
+            }
+          ),
+          /* @__PURE__ */ u3(Text, { role: "supporting", as: "span", children: usage })
+        ]
+      },
+      name
+    )) }) });
+  }
+  function LineHeightSection({ tabId }) {
+    return /* @__PURE__ */ u3(Section, { title: "Line height tokens", tabId, children: /* @__PURE__ */ u3("div", { style: { display: "flex", flexDirection: "column", gap: "1rem" }, children: LEADING_TOKENS.map(({ name, value, usage }) => /* @__PURE__ */ u3(
+      "div",
+      {
+        style: {
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "0.6rem"
+        },
+        children: [
+          /* @__PURE__ */ u3(
+            "code",
+            {
+              style: {
+                fontSize: "0.7rem",
+                minWidth: "8rem",
+                color: "var(--color-text-light)",
+                flexShrink: 0,
+                paddingTop: "0.15rem"
+              },
+              children: name
+            }
+          ),
+          /* @__PURE__ */ u3(
+            "div",
+            {
+              style: {
+                lineHeight: value,
+                background: "var(--color-surface)",
+                padding: "0 0.25rem",
+                borderRadius: "2px",
+                minWidth: "10rem"
+              },
+              children: "Two-line sample to show leading value"
+            }
+          ),
+          /* @__PURE__ */ u3(Text, { role: "supporting", as: "span", style: { paddingTop: "0.15rem" }, children: usage })
+        ]
+      },
+      name
+    )) }) });
+  }
+  function FontFamilySection({ tabId }) {
+    return /* @__PURE__ */ u3(Section, { title: "Font family tokens", tabId, children: /* @__PURE__ */ u3("div", { style: { display: "flex", flexDirection: "column", gap: "0.75rem" }, children: [
+      /* @__PURE__ */ u3("div", { children: [
+        /* @__PURE__ */ u3(
+          "code",
+          {
+            style: {
+              fontSize: "0.7rem",
+              color: "var(--color-text-light)"
+            },
+            children: "--font-body"
+          }
+        ),
+        /* @__PURE__ */ u3("div", { style: { fontSize: "var(--text-lg)" }, children: "Music Reps \u2014 Ag 0\u20139 C# Bb" })
+      ] }),
+      /* @__PURE__ */ u3("div", { children: [
+        /* @__PURE__ */ u3(
+          "code",
+          {
+            style: {
+              fontSize: "0.7rem",
+              color: "var(--color-text-light)"
+            },
+            children: "--font-display"
+          }
+        ),
+        /* @__PURE__ */ u3(
+          "div",
+          {
+            style: {
+              fontFamily: "var(--font-display)",
+              fontSize: "var(--text-lg)"
+            },
+            children: "Music Reps \u2014 Ag 0\u20139 C# Bb"
+          }
+        )
+      ] })
+    ] }) });
+  }
+  function TypographyPaletteSection({ tabId }) {
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3("h2", { children: "Typography \u2014 Palette" }),
+      /* @__PURE__ */ u3(PreviewGrid, { children: [
+        /* @__PURE__ */ u3(FontFamilySection, { tabId }),
+        /* @__PURE__ */ u3(FontWeightSection, { tabId }),
+        /* @__PURE__ */ u3(LineHeightSection, { tabId })
+      ] })
     ] });
   }
   var RADIUS_TOKENS = [
@@ -7195,11 +7659,11 @@ ${text}`).join("\n\n");
               children: name
             }
           ),
-          /* @__PURE__ */ u3(Text, { role: "caption", as: "span", children: cssVar(name) }),
+          /* @__PURE__ */ u3(Text, { role: "supporting", as: "span", children: cssVar(name) }),
           /* @__PURE__ */ u3(
             Text,
             {
-              role: "caption",
+              role: "supporting",
               as: "span",
               style: { textAlign: "center", maxWidth: "80px" },
               children: usage
@@ -7244,10 +7708,10 @@ ${text}`).join("\n\n");
                       alignItems: "center",
                       justifyContent: "center"
                     },
-                    children: /* @__PURE__ */ u3(Text, { role: "caption", children: "Flat" })
+                    children: /* @__PURE__ */ u3(Text, { role: "supporting", children: "Flat" })
                   }
                 ),
-                /* @__PURE__ */ u3(Text, { role: "caption", children: "Cards, tables" })
+                /* @__PURE__ */ u3(Text, { role: "supporting", children: "Cards, tables" })
               ]
             }
           ),
@@ -7274,10 +7738,10 @@ ${text}`).join("\n\n");
                       alignItems: "center",
                       justifyContent: "center"
                     },
-                    children: /* @__PURE__ */ u3(Text, { role: "caption", children: "Low" })
+                    children: /* @__PURE__ */ u3(Text, { role: "supporting", children: "Low" })
                   }
                 ),
-                /* @__PURE__ */ u3(Text, { role: "caption", children: "CTA button" })
+                /* @__PURE__ */ u3(Text, { role: "supporting", children: "CTA button" })
               ]
             }
           ),
@@ -7304,10 +7768,10 @@ ${text}`).join("\n\n");
                       alignItems: "center",
                       justifyContent: "center"
                     },
-                    children: /* @__PURE__ */ u3(Text, { role: "caption", children: "High" })
+                    children: /* @__PURE__ */ u3(Text, { role: "supporting", children: "High" })
                   }
                 ),
-                /* @__PURE__ */ u3(Text, { role: "caption", children: "Modal, drawer" })
+                /* @__PURE__ */ u3(Text, { role: "supporting", children: "Modal, drawer" })
               ]
             }
           )
@@ -7361,8 +7825,9 @@ ${text}`).join("\n\n");
       /* @__PURE__ */ u3(SettingsPanelSection, { tabId }),
       /* @__PURE__ */ u3(ActionButtonsSection, { tabId }),
       /* @__PURE__ */ u3(TypographySection, { tabId }),
-      /* @__PURE__ */ u3(SpacingSection, { tabId }),
       /* @__PURE__ */ u3(TypeScaleSection, { tabId }),
+      /* @__PURE__ */ u3(TypographyPaletteSection, { tabId }),
+      /* @__PURE__ */ u3(SpacingSection, { tabId }),
       /* @__PURE__ */ u3(RadiusShadowSection, { tabId })
     ] });
   }
@@ -7433,7 +7898,7 @@ ${text}`).join("\n\n");
   // src/ui/practice-config.tsx
   function ProgressBarLabeled({ label, colors, disabled }) {
     return /* @__PURE__ */ u3("div", { class: "progress-bar-labeled", children: [
-      label && /* @__PURE__ */ u3(Text, { role: "caption", as: "div", class: "progress-bar-label", children: label }),
+      label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
       /* @__PURE__ */ u3(GroupProgressBar, { colors, disabled })
     ] });
   }
@@ -7457,7 +7922,7 @@ ${text}`).join("\n\n");
   }
   function LevelToggles({ labels, active, onToggle, itemCount }) {
     return /* @__PURE__ */ u3("div", { class: "level-toggles-section", children: [
-      /* @__PURE__ */ u3(Text, { role: "secondary", as: "div", class: "level-toggles-header", children: "Choose levels to practice" }),
+      /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "div", class: "level-toggles-header", children: "Choose levels to practice" }),
       /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => /* @__PURE__ */ u3(
         "button",
         {
@@ -7470,7 +7935,7 @@ ${text}`).join("\n\n");
         },
         i3
       )) }),
-      /* @__PURE__ */ u3(Text, { role: "secondary", as: "div", class: "level-toggles-count", children: [
+      /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "div", class: "level-toggles-count", children: [
         itemCount,
         " ",
         itemCount === 1 ? "item" : "items",
@@ -7514,7 +7979,7 @@ ${text}`).join("\n\n");
   }
   function PracticeConfig({ mode, onModeChange, suggestedContent, customContent }) {
     return /* @__PURE__ */ u3("div", { class: "practice-config", children: [
-      /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "practice-config-label", children: "Practice setup" }),
+      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "div", class: "practice-config-label", children: "Practice setup" }),
       /* @__PURE__ */ u3(
         SegmentedControl,
         {
