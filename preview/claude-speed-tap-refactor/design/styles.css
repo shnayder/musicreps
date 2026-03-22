@@ -2852,7 +2852,7 @@ button {
   justify-content: center;
 }
 .interactive-fretboard .fretboard-container {
-  max-height: 100%;
+  max-height: 85%;
 }
 .interactive-fretboard svg.fretboard {
   max-height: 100%;
