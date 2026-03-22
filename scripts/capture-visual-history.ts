@@ -3,9 +3,11 @@
  * Skips if HEAD hasn't changed since the last snapshot.
  *
  * Usage:
- *   npx tsx scripts/capture-visual-history.ts                        # auto-skip if no new commits
- *   npx tsx scripts/capture-visual-history.ts --force                # capture even if HEAD unchanged
- *   npx tsx scripts/capture-visual-history.ts --backfill-ghpages <gh-pages-commit> --preview <dir> [--note "..."]
+ *   npx tsx scripts/capture-visual-history.ts --archive-dir <path>                  # auto-skip if no new commits
+ *   npx tsx scripts/capture-visual-history.ts --archive-dir <path> --force          # capture even if HEAD unchanged
+ *   npx tsx scripts/capture-visual-history.ts --archive-dir <path> --backfill-ghpages <gh-pages-commit> --preview <dir> [--note "..."]
+ *
+ * The archive directory can also be set via MUSICREPS_VISUAL_HISTORY_DIR.
  */
 
 import { execSync } from 'child_process';
@@ -30,7 +32,6 @@ const REPO_DIR = path.resolve(__dirname, '..');
 
 interface Config {
   description: string;
-  archiveDir: string;
   screenshots: string[];
 }
 
@@ -342,7 +343,15 @@ function getArg(args: string[], flag: string): string | null {
 function main(): void {
   const args = process.argv.slice(2);
   const config = loadConfig();
-  const archiveDir = expandHome(config.archiveDir);
+  const rawDir = getArg(args, '--archive-dir')
+    ?? process.env.MUSICREPS_VISUAL_HISTORY_DIR;
+  if (!rawDir) {
+    console.error(
+      'Archive directory required. Pass --archive-dir <path> or set MUSICREPS_VISUAL_HISTORY_DIR.',
+    );
+    process.exit(1);
+  }
+  const archiveDir = expandHome(rawDir);
   mkdirSync(archiveDir, { recursive: true });
 
   const force = args.includes('--force');

@@ -47,9 +47,9 @@ deno task iterate view [session]                      # open review page
 deno task iterate list                                # list sessions
 deno task iterate --list-states                       # print valid state names
 
-# Visual history archive (outside repo, in Dropbox)
-npx tsx scripts/capture-visual-history.ts             # capture at HEAD (auto-skip)
-npx tsx scripts/capture-visual-history.ts --force     # force capture
+# Visual history archive (outside repo)
+npx tsx scripts/capture-visual-history.ts --archive-dir <path>          # capture at HEAD
+npx tsx scripts/capture-visual-history.ts --archive-dir <path> --force  # force capture
 ```
 
 ## Build System
@@ -375,28 +375,32 @@ tracks the state list and version history.
 
 ## Visual History Archive
 
-A lightweight archive of key screenshots over time, stored **outside the repo**
-at `~/Dropbox/projects/musicreps-visual-history/`. Each snapshot captures a few
-representative screens with commit metadata — an easy way to see how the app
-looked at any point without checking out old commits.
+A lightweight archive of key screenshots over time, stored **outside the repo**.
+Each snapshot captures a few representative screens with commit metadata — an
+easy way to see how the app looked at any point without checking out old commits.
 
 **Why outside the repo?** Binary files (images, screenshots) bloat git history
 permanently — even after deletion, the blobs stay in the object store. The CI
 preview system previously committed screenshots to `gh-pages` on every push,
-inflating the repo to 400+ MB. This archive avoids that by keeping images in
-Dropbox, where they sync without polluting git.
+inflating the repo to 400+ MB. This archive avoids that by keeping images in a
+local directory that syncs without polluting git.
 
 ### Capturing
 
+The archive directory must be specified via `--archive-dir` or the
+`MUSICREPS_VISUAL_HISTORY_DIR` environment variable.
+
 ```bash
+ARCHIVE=~/my/visual-history
+
 # Normal: capture at HEAD (skips if no new commits since last snapshot)
-npx tsx scripts/capture-visual-history.ts
+npx tsx scripts/capture-visual-history.ts --archive-dir $ARCHIVE
 
 # Force capture even if HEAD unchanged
-npx tsx scripts/capture-visual-history.ts --force
+npx tsx scripts/capture-visual-history.ts --archive-dir $ARCHIVE --force
 
 # Backfill from an old gh-pages preview commit
-npx tsx scripts/capture-visual-history.ts \
+npx tsx scripts/capture-visual-history.ts --archive-dir $ARCHIVE \
   --backfill-ghpages <gh-pages-commit> \
   --preview <preview-dir-name> \
   --note "description"

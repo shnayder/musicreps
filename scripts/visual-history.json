@@ -1,6 +1,5 @@
 {
   "description": "Screenshots to capture for the visual history archive. Names must match entries from screenshot-manifest.ts (use --list to see all).",
-  "archiveDir": "~/Dropbox/projects/musicreps-visual-history",
   "screenshots": [
     "home",
     "home-starred",
