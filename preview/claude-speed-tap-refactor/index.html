@@ -2835,15 +2835,15 @@ button {
   padding: 0.2rem 0.4rem;
 }
 
-/* --- Speed Tap mode --- */
-.speed-tap-status {
+/* --- Interactive fretboard (multi-tap modes) --- */
+.interactive-fretboard-status {
   display: flex;
   justify-content: center;
   gap: var(--space-6);
   font-size: var(--text-lg);
   margin: 0 0 var(--space-3) 0;
 }
-.speed-tap-progress {
+.interactive-fretboard-progress {
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
   line-height: var(--type-metric-info-leading);
@@ -3070,7 +3070,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="3919cc speed-tap-refactor"></div>
+  <div class="home-screen" id="home-screen" data-version="64c72c speed-tap-refactor"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -11118,9 +11118,9 @@ body.native-app {
           setCircleFill(root, posKey, colorSel);
         }
       }
-    }, [tappedPositions, evaluated]);
-    return /* @__PURE__ */ u3("div", { class: "speed-tap-fretboard", children: [
-      progressText && /* @__PURE__ */ u3("div", { class: "speed-tap-status", children: /* @__PURE__ */ u3("span", { class: "speed-tap-progress", children: progressText }) }),
+    }, [tappedPositions, evaluated, svgHTML]);
+    return /* @__PURE__ */ u3("div", { class: "interactive-fretboard", children: [
+      /* @__PURE__ */ u3("div", { class: "interactive-fretboard-status", children: /* @__PURE__ */ u3("span", { class: "interactive-fretboard-progress", children: progressText || "\xA0" }) }),
       /* @__PURE__ */ u3(
         "div",
         {
@@ -11194,6 +11194,21 @@ body.native-app {
   }
 
   // src/declarative/use-multi-tap-input.ts
+  function processMultiTap(multiTap, q3, tapped, positionKey2) {
+    const targets = multiTap.getTargets(q3);
+    if (tapped.has(positionKey2) || tapped.size >= targets.length) {
+      return { kind: "ignored" };
+    }
+    const next = new Set(tapped);
+    next.add(positionKey2);
+    const progressText = next.size + " / " + targets.length;
+    if (next.size === targets.length) {
+      const result = multiTap.evaluate(q3, [...next]);
+      const sentinel = (result.correct ? "__correct__" : "__wrong__") + ":" + result.correctAnswer;
+      return { kind: "complete", progressText, result, sentinel };
+    }
+    return { kind: "added", progressText };
+  }
   function useMultiTapInput(def, currentQRef, submitRef) {
     const [tappedPositions, setTappedPositions] = d2(
       /* @__PURE__ */ new Set()
@@ -11210,20 +11225,21 @@ body.native-app {
     }, []);
     const handleTap = q2((positionKey2) => {
       if (!def.multiTap || !currentQRef.current) return;
-      const q3 = currentQRef.current;
-      const targets = def.multiTap.getTargets(q3);
-      const tapped = tappedRef.current;
-      if (tapped.has(positionKey2) || tapped.size >= targets.length) return;
-      const next = new Set(tapped);
+      const action = processMultiTap(
+        def.multiTap,
+        currentQRef.current,
+        tappedRef.current,
+        positionKey2
+      );
+      if (action.kind === "ignored") return;
+      const next = new Set(tappedRef.current);
       next.add(positionKey2);
       tappedRef.current = next;
       setTappedPositions(next);
-      setProgressText(next.size + " / " + targets.length);
-      if (next.size === targets.length) {
-        const result = def.multiTap.evaluate(q3, [...next]);
-        setEvaluated(result);
-        const sentinel = result.correct ? "__correct__" : "__wrong__";
-        submitRef.current(sentinel + ":" + result.correctAnswer);
+      setProgressText(action.progressText);
+      if (action.kind === "complete") {
+        setEvaluated(action.result);
+        submitRef.current(action.sentinel);
       }
     }, [def]);
     const resetOnItemChange = q2((currentItemId) => {
@@ -12717,7 +12733,7 @@ body.native-app {
         for (let j3 = 0; j3 < NOTES.length; j3++) {
           html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, NOTES[j3].name) + '"></td>';
         }
-        html += "</tr></tbody></table>" + buildStatsLegend();
+        html += "</tr></tbody></table>";
         return /* @__PURE__ */ u3(
           "div",
           {
@@ -12743,8 +12759,7 @@ body.native-app {
     quizInstruction: "Find all positions",
     multiTap: {
       getTargets: (q3) => q3.positions.map(positionKey),
-      evaluate: evaluate2,
-      getDisplayAnswer: (q3) => displayNote(q3.note)
+      evaluate: evaluate2
     },
     getExpectedResponseCount: (itemId) => getPositionsForNote(itemId).length,
     buttons: { kind: "none" },

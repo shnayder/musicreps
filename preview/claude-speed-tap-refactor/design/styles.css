@@ -2821,15 +2821,15 @@ button {
   padding: 0.2rem 0.4rem;
 }
 
-/* --- Speed Tap mode --- */
-.speed-tap-status {
+/* --- Interactive fretboard (multi-tap modes) --- */
+.interactive-fretboard-status {
   display: flex;
   justify-content: center;
   gap: var(--space-6);
   font-size: var(--text-lg);
   margin: 0 0 var(--space-3) 0;
 }
-.speed-tap-progress {
+.interactive-fretboard-progress {
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
   line-height: var(--type-metric-info-leading);
