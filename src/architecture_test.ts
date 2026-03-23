@@ -114,6 +114,7 @@ const FOUNDATION = new Set([
   'src/deadline.ts',
   'src/recommendations.ts',
   'src/effort.ts',
+  'src/storage.ts',
 ]);
 
 const ENGINE = new Set([

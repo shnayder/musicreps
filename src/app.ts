@@ -16,6 +16,7 @@ import type { ModeHandle } from './types.ts';
 import { HomeScreen } from './ui/home-screen.tsx';
 import { APP_CONFIG } from './app-config.ts';
 import { registerModeForEffort } from './effort.ts';
+import { initStorage, migrateFromLocalStorage } from './storage.ts';
 
 // Declarative mode definitions + GenericMode
 import { GenericMode } from './declarative/generic-mode.tsx';
@@ -37,11 +38,12 @@ import { SPEED_TAP_DEF } from './modes/speed-tap/definition.tsx';
 // touch unless the document has a touchstart listener.
 document.addEventListener('touchstart', () => {}, { passive: true });
 
-const nav = createNavigation();
-
 // --- Declarative modes — GenericMode interprets each ModeDefinition ---
 // deno-lint-ignore no-explicit-any
-function registerDeclarativeMode(def: ModeDefinition<any>) {
+function registerDeclarativeMode(
+  nav: ReturnType<typeof createNavigation>,
+  def: ModeDefinition<any>,
+) {
   registerModeForEffort({
     id: def.id,
     namespace: def.namespace,
@@ -74,53 +76,71 @@ function registerDeclarativeMode(def: ModeDefinition<any>) {
   });
 }
 
-// Declarative modes
-registerDeclarativeMode(createFretboardDef(GUITAR));
-registerDeclarativeMode(createFretboardDef(UKULELE));
-registerDeclarativeMode(NOTE_SEMITONES_DEF);
-registerDeclarativeMode(INTERVAL_SEMITONES_DEF);
-registerDeclarativeMode(SEMITONE_MATH_DEF);
-registerDeclarativeMode(INTERVAL_MATH_DEF);
-registerDeclarativeMode(KEY_SIGNATURES_DEF);
-registerDeclarativeMode(SCALE_DEGREES_DEF);
-registerDeclarativeMode(DIATONIC_CHORDS_DEF);
-registerDeclarativeMode(CHORD_SPELLING_DEF);
-registerDeclarativeMode(SPEED_TAP_DEF);
+async function boot() {
+  // Initialize storage backend before anything reads persisted data.
+  // On web this is instant (localStorage). On native (Capacitor) it
+  // bulk-loads Preferences into an in-memory cache.
+  await initStorage();
 
-nav.init();
+  const isNativeApp = !!window.Capacitor;
 
-// Settings state controller — re-render on notation change
-const settings = createSettingsController({
-  onNotationChange(): void {
-    document.querySelectorAll('.mode-screen.mode-active').forEach(
-      (el: Element) => {
-        refreshNoteButtonLabels(el as HTMLElement);
-      },
-    );
-  },
-});
+  // One-time migration: copy localStorage → Capacitor Preferences on
+  // first native launch so existing users don't lose data.
+  if (isNativeApp) {
+    await migrateFromLocalStorage();
+  }
 
-const isNativeApp = !!window.Capacitor;
-if (isNativeApp) document.body.classList.add('native-app');
+  const nav = createNavigation();
 
-// Mount Preact home screen — replaces static build-time HTML
-const homeRoot = document.getElementById('home-screen')!;
-const version = homeRoot.dataset.version || '';
-homeRoot.textContent = '';
-render(
-  h(HomeScreen, {
-    onSelectMode: (modeId: string) => nav.switchTo(modeId),
-    settings,
-    appConfig: APP_CONFIG,
-    showDevLink: true,
-    version,
-    isNativeApp,
-  }),
-  homeRoot,
-);
+  // Declarative modes
+  registerDeclarativeMode(nav, createFretboardDef(GUITAR));
+  registerDeclarativeMode(nav, createFretboardDef(UKULELE));
+  registerDeclarativeMode(nav, NOTE_SEMITONES_DEF);
+  registerDeclarativeMode(nav, INTERVAL_SEMITONES_DEF);
+  registerDeclarativeMode(nav, SEMITONE_MATH_DEF);
+  registerDeclarativeMode(nav, INTERVAL_MATH_DEF);
+  registerDeclarativeMode(nav, KEY_SIGNATURES_DEF);
+  registerDeclarativeMode(nav, SCALE_DEGREES_DEF);
+  registerDeclarativeMode(nav, DIATONIC_CHORDS_DEF);
+  registerDeclarativeMode(nav, CHORD_SPELLING_DEF);
+  registerDeclarativeMode(nav, SPEED_TAP_DEF);
 
-// Register service worker for cache busting on iOS home screen
-// Skip in Capacitor — app runs from local files, no SW needed
-if ('serviceWorker' in navigator && !isNativeApp) {
-  navigator.serviceWorker.register('sw.js');
+  nav.init();
+
+  // Settings state controller — re-render on notation change
+  const settings = createSettingsController({
+    onNotationChange(): void {
+      document.querySelectorAll('.mode-screen.mode-active').forEach(
+        (el: Element) => {
+          refreshNoteButtonLabels(el as HTMLElement);
+        },
+      );
+    },
+  });
+
+  if (isNativeApp) document.body.classList.add('native-app');
+
+  // Mount Preact home screen — replaces static build-time HTML
+  const homeRoot = document.getElementById('home-screen')!;
+  const version = homeRoot.dataset.version || '';
+  homeRoot.textContent = '';
+  render(
+    h(HomeScreen, {
+      onSelectMode: (modeId: string) => nav.switchTo(modeId),
+      settings,
+      appConfig: APP_CONFIG,
+      showDevLink: true,
+      version,
+      isNativeApp,
+    }),
+    homeRoot,
+  );
+
+  // Register service worker for cache busting on iOS home screen
+  // Skip in Capacitor — app runs from local files, no SW needed
+  if ('serviceWorker' in navigator && !isNativeApp) {
+    navigator.serviceWorker.register('sw.js');
+  }
 }
+
+boot();

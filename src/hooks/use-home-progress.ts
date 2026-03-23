@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { AdaptiveSelector, StorageAdapter } from '../types.ts';
+import { storage } from '../storage.ts';
 import {
   createAdaptiveSelector,
   createLocalStorageAdapter,
@@ -49,13 +50,13 @@ function averageSpeed(
 }
 
 /**
- * Load skipped group indices from localStorage.
+ * Load skipped group indices from storage.
  * Convention: key = `{namespace}_enabledGroups_skipped`.
  * Format: [[index, reason], ...] where reason is 'mastered' | 'deferred'.
  */
 export function loadSkippedGroups(namespace: string): ReadonlySet<number> {
   try {
-    const raw = localStorage.getItem(namespace + '_enabledGroups_skipped');
+    const raw = storage.getItem(namespace + '_enabledGroups_skipped');
     if (!raw) return new Set();
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return new Set();
@@ -169,13 +170,13 @@ export function computeAllRecommendations(
 }
 
 // ---------------------------------------------------------------------------
-// localStorage helpers
+// storage helpers
 // ---------------------------------------------------------------------------
 
-/** Read motor baseline from localStorage (with NaN guard). */
+/** Read motor baseline from storage (with NaN guard). */
 function readMotorBaseline(): number | null {
   try {
-    const raw = localStorage.getItem('motorBaseline_note-button');
+    const raw = storage.getItem('motorBaseline_note-button');
     if (raw) {
       const n = Number(raw);
       if (!isNaN(n) && n > 0) return n;

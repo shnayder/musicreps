@@ -13,14 +13,15 @@ import {
   DEFAULT_CONFIG,
   deriveScaledConfig,
 } from '../adaptive.ts';
+import { storage } from '../storage.ts';
 
 export type LearnerModel = {
   selector: AdaptiveSelector;
   storage: StorageAdapter;
   motorBaseline: number | null;
-  /** Apply a new motor baseline (from calibration). Persists to localStorage. */
+  /** Apply a new motor baseline (from calibration). Persists to storage. */
   applyBaseline: (baseline: number) => void;
-  /** Re-read baseline from localStorage (e.g., after another mode calibrated). */
+  /** Re-read baseline from storage (e.g., after another mode calibrated). */
   syncBaseline: () => void;
 };
 
@@ -68,7 +69,7 @@ export function useLearnerModel(
   // Load motor baseline on mount.
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(storageKey);
+      const stored = storage.getItem(storageKey);
       if (stored) {
         const parsed = parseInt(stored, 10);
         if (parsed > 0) {
@@ -78,7 +79,7 @@ export function useLearnerModel(
           );
         }
       }
-    } catch (_) { /* localStorage unavailable */ }
+    } catch (_) { /* storage unavailable */ }
   }, [model.selector, storageKey]);
 
   return {
@@ -91,8 +92,8 @@ export function useLearnerModel(
     applyBaseline(baseline: number) {
       baselineRef.current = baseline;
       try {
-        localStorage.setItem(storageKey, String(baseline));
-      } catch (_) { /* localStorage unavailable */ }
+        storage.setItem(storageKey, String(baseline));
+      } catch (_) { /* storage unavailable */ }
       model.selector.updateConfig(
         deriveScaledConfig(baseline, DEFAULT_CONFIG),
       );
@@ -100,7 +101,7 @@ export function useLearnerModel(
 
     syncBaseline() {
       try {
-        const stored = localStorage.getItem(storageKey);
+        const stored = storage.getItem(storageKey);
         if (stored) {
           const parsed = parseInt(stored, 10);
           if (parsed > 0 && parsed !== baselineRef.current) {
@@ -110,7 +111,7 @@ export function useLearnerModel(
             );
           }
         }
-      } catch (_) { /* localStorage unavailable */ }
+      } catch (_) { /* storage unavailable */ }
     },
   };
 }

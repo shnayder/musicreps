@@ -6,6 +6,7 @@
 // convenience wrappers use localStorage.
 
 import type { StorageAdapter } from './types.ts';
+import { storage } from './storage.ts';
 
 // ---------------------------------------------------------------------------
 // Mode registry — namespace + allItems for each mode
@@ -79,11 +80,11 @@ export type DailyRepsStore = {
   write(json: string): void;
 };
 
-/** Default store backed by localStorage. */
+/** Default store backed by the storage abstraction. */
 export function localDailyRepsStore(): DailyRepsStore {
   return {
-    read: () => localStorage.getItem(DAILY_KEY),
-    write: (json) => localStorage.setItem(DAILY_KEY, json),
+    read: () => storage.getItem(DAILY_KEY),
+    write: (json) => storage.setItem(DAILY_KEY, json),
   };
 }
 

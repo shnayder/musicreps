@@ -3,6 +3,7 @@
 
 import { render } from 'preact';
 import { useState } from 'preact/hooks';
+import { storage } from '../storage.ts';
 import { type GroupSel, mockSelector } from './preview-shared.tsx';
 import { CommentProvider, CommentToolbar } from './preview-comments.tsx';
 import { FlowTab } from './preview-tab-flow.tsx';
@@ -49,7 +50,7 @@ const STORAGE_KEY = 'preview_active_tab';
 
 function loadSavedTab(): PreviewTab {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = storage.getItem(STORAGE_KEY);
     if (saved && (TABS as readonly string[]).includes(saved)) {
       return saved as PreviewTab;
     }
@@ -69,7 +70,7 @@ function PreviewApp() {
   function switchTab(tab: PreviewTab) {
     setActiveTab(tab);
     try {
-      localStorage.setItem(STORAGE_KEY, tab);
+      storage.setItem(STORAGE_KEY, tab);
     } catch { /* ignore */ }
   }
 

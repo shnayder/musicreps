@@ -10,6 +10,7 @@
 // without causing dependency churn on the engineConfig useMemo.
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
+import { storage } from '../storage.ts';
 import type {
   AdaptiveSelector,
   GroupStatus,
@@ -38,7 +39,7 @@ export type GroupScopeSpec = {
   getItemIdsForGroup: (index: number) => string[];
   /** All valid group indices, e.g. `[0, 1, 2, ...]` (from mode logic). */
   allGroupIndices: number[];
-  /** localStorage key for persisting enabled groups. */
+  /** storage key for persisting enabled groups. */
   storageKey: string;
   /** Human label for the scope control, e.g. 'Distances', 'Keys'. */
   scopeLabel: string;
@@ -120,7 +121,7 @@ function usePracticeMode(
   const pmKey = storageKey + '_practiceMode';
   const [mode, setModeRaw] = useState<PracticeMode>(() => {
     try {
-      return localStorage.getItem(pmKey) === 'custom' ? 'custom' : 'suggested';
+      return storage.getItem(pmKey) === 'custom' ? 'custom' : 'suggested';
     } catch {
       return 'suggested';
     }
@@ -128,7 +129,7 @@ function usePracticeMode(
   const setMode = useCallback((m: PracticeMode) => {
     setModeRaw(m);
     try {
-      localStorage.setItem(pmKey, m);
+      storage.setItem(pmKey, m);
     } catch { /* expected */ }
   }, [pmKey]);
   return [mode, setMode];
@@ -182,7 +183,7 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   const notationVersion = useNotationVersion();
   const [practiceMode, setPracticeMode] = usePracticeMode(spec.storageKey);
 
-  // --- Scope state (persisted to localStorage) — always reflects custom ---
+  // --- Scope state (persisted to storage) — always reflects custom ---
   const [scope, scopeActions] = useScopeState({
     kind: 'groups',
     groups: spec.groups.map((g, i) => ({
