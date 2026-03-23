@@ -198,7 +198,9 @@ Bidirectional modes track each direction as a separate item.
 | Guide                                                         | Contents                                                                       |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | [architecture.md](guides/architecture.md)                     | Module graph, build system, patterns, algorithms, DOM layout, adding new modes |
-| [visual-design.md](guides/design/visual-design.md)            | Color system, typography, spacing, type hierarchy, button taxonomy, elevation  |
+| [visual-design.md](guides/design/visual-design.md)            | Index to color, typography, spacing, components, patterns docs                 |
+| [typography.md](guides/design/typography.md)                  | Type system: 5-tier scale, 20 roles, intensity tiers, design principles        |
+| [color-system.md](guides/design/color-system.md)              | Color architecture, palette model, semantic families, heatmap                  |
 | [coding-style.md](guides/coding-style.md)                     | Naming, file structure, DOM rules, testing patterns                            |
 | [accidental-conventions.md](guides/accidental-conventions.md) | Sharp/flat naming rules by mode, rule priority                                 |
 | [terminology.md](guides/terminology.md)                       | User-facing terms and their internal equivalents                               |

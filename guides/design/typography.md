@@ -1,0 +1,225 @@
+# Typography
+
+Three-layer system paralleling colors: **palette** (raw tokens) →
+**semantic roles** (what the text IS) → **component mapping** (where it's
+used). See `plans/design-docs/2026-03-21-typography-system-redesign.md` for
+the original design rationale.
+
+## Three-Layer Architecture
+
+```
+Layer 1: Palette tokens (raw ingredients)
+  --text-xs, --font-semibold, --leading-tight, --color-text, etc.
+  Change here when the entire scale needs to shift.
+
+Layer 2: Semantic role properties (what the text IS)
+  --type-heading-page-size: var(--text-lg);
+  4 custom properties per role, in :root.
+  Change here when a role's recipe is wrong for its purpose.
+
+Layer 3: Component mapping (where it's used)
+  .mode-title { font-size: var(--type-heading-page-size); ... }
+  Both bespoke and .text-* classes reference Layer 2, never Layer 1.
+  Change here when a component uses the wrong role.
+```
+
+Most fixes are Layer 2 (one line in `:root` cascades everywhere). Layer 3
+is for wrong role assignment. Layer 1 is rare — only for shifting the
+whole scale (e.g., bumping the base font size for mobile readability).
+
+## The 5-Tier Scale
+
+Every role maps to one of 5 size tiers. The `html` base is 17px
+(`font-size: 106.25%`), aligning with Apple HIG body size.
+
+| Tier | Token | At 17px base | Roles |
+|------|-------|-------------|-------|
+| Display | `--text-2xl` | 34px | display-brand, quiz-prompt |
+| Large | `--text-lg` | 22px | heading-page, quiz-response, quiz-feedback |
+| Standard | `--text-base` | 17px | body, heading-section, heading-subsection, label, control, quiz-instruction, answer, action, metric-primary, metric-info |
+| Small | `--text-sm` | 14.5px | body-secondary, status |
+| Tiny | `--text-xs` | 12.75px | supporting, label-tag |
+
+`--text-3xl` (51px) exists for metric-hero only (round-complete count).
+`--text-md` and `--text-xl` are defined but not referenced by any role.
+
+**Rule: max 3 sizes per screen.** Differentiate with weight and color,
+not more sizes. If a new element needs a size between tiers, resist adding
+a new tier — ask whether weight or color can create the needed hierarchy
+within an existing tier.
+
+## Intensity Tiers
+
+Roles at the same intensity tier should have matched visual weight. Like
+`color.error` and `color.info` at the same saturation — different hues,
+same intensity.
+
+| Tier | Roles | Characteristic |
+|------|-------|----------------|
+| Hero | `display-brand`, `metric-hero` | Largest, highest emphasis |
+| Primary | `heading-page`, `quiz-prompt`, `quiz-feedback` | Screen-level focal points |
+| Section | `heading-section`, `heading-subsection`, `metric-primary` | Organizes content |
+| Content | `body`, `body-secondary`, `label`, `control`, `quiz-instruction`, `metric-info`, `status`, `answer`, `action` | Same visual weight, differentiated by weight/color |
+| Tertiary | `supporting`, `label-tag` | Smallest, lowest emphasis |
+
+When adding or adjusting a role, check that it sits at the right tier.
+Roles in the same tier should feel equally prominent when placed side by
+side — if one jumps out, its recipe is at the wrong tier.
+
+## Role Reference
+
+### Content Roles (17)
+
+**Display** — big, high-emphasis hero text
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `display-brand` | 2xl | normal | tight | text |
+
+`display-brand` also has `--type-display-brand-family: var(--font-display)`.
+
+**Heading** — structural hierarchy
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `heading-page` | lg | semibold | tight | text |
+| `heading-section` | base | semibold | tight | text |
+| `heading-subsection` | base | semibold | tight | muted |
+
+**Body** — readable content
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `body` | base | normal | normal | text |
+| `body-secondary` | sm | normal | snug | muted |
+
+**Label** — short functional identifiers
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `label` | base | medium | none | muted |
+| `label-tag` | xs | semibold | none | muted |
+
+**Quiz** — drill-specific content text
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `quiz-instruction` | base | semibold | normal | muted |
+| `quiz-prompt` | 2xl | semibold | tight | text |
+| `quiz-response` | lg | semibold | none | text |
+| `quiz-feedback` | lg | normal | none | text |
+
+**Supporting** — tertiary/helper text
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `supporting` | xs | normal | snug | text-light |
+
+**Metric** — data values
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `metric-hero` | 3xl | bold | none | brand |
+| `metric-primary` | base | semibold | none | text |
+| `metric-info` | base | medium | none | text |
+
+**Status** — state communication
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `status` | sm | normal | snug | text |
+
+Status color variants: `.status-success`, `.status-error`, `.status-notice`,
+`.status-empty` (italic).
+
+### Interactive Roles (3)
+
+| Role | Size | Weight | Leading | Color |
+|------|------|--------|---------|-------|
+| `action` | base | semibold | none | on-brand |
+| `answer` | base | medium | none | text |
+| `control` | base | medium | none | muted |
+
+Variants: `.action-secondary` (normal weight, muted color),
+`.control-selected` (semibold weight, text color).
+
+## Layer 1: Palette
+
+| Category | Tokens |
+|---|---|
+| Sizes | `--text-xs` (0.75rem) through `--text-3xl` (3rem) |
+| Weights | `--font-normal` (400), `--font-medium` (500), `--font-semibold` (600), `--font-bold` (700) |
+| Line heights | `--leading-none` (1), `--leading-tight` (1.2), `--leading-snug` (1.4), `--leading-normal` (1.5) |
+| Families | `--font-body` (system sans), `--font-display` (DM Serif Display, embedded base64, Latin subset, ~24KB) |
+
+Base: `html { font-size: 106.25%; }` — 17px, aligned with Apple HIG body.
+
+## Design Principles
+
+1. **Differentiate with weight and color, not more sizes.** The 5-tier
+   scale is sufficient. Two elements at the same size can feel completely
+   different via semibold vs normal weight and text vs muted color.
+
+2. **No typography overrides.** Every bespoke CSS class references
+   `--type-*` role properties for all 4 properties (size, weight, leading,
+   color). Never reference palette tokens (`--text-sm`, `--font-medium`)
+   directly in component CSS.
+
+3. **Build template parity.** The `<Text>` component isn't available at
+   build time. Bespoke CSS classes that appear in `html-helpers.ts` must
+   carry the full 4-property role recipe — they can't rely on a `.text-*`
+   class being added by Preact.
+
+4. **When to change each layer:**
+   - The whole scale feels too small → Layer 1 (html font-size)
+   - A role looks wrong everywhere → Layer 2 (role property in `:root`)
+   - One component looks wrong → Layer 3 (wrong role assignment)
+
+5. **`font-variant-numeric: tabular-nums`** on all metric classes. This
+   is added directly in the `.text-metric-*` CSS classes, not as a role
+   property (it's a display concern, not a recipe property).
+
+## Adding New Roles
+
+Before creating a new role, answer these questions:
+
+1. **Does an existing role fit?** Check the 20 roles above. Often the
+   element maps to an existing role with no changes needed.
+
+2. **Does it need a new size tier?** If it would introduce a 6th size
+   on any screen, the answer is no. Find a way to use weight/color
+   within an existing tier.
+
+3. **Which group does it belong to?** Display, heading, body, label,
+   quiz, supporting, metric, status, or a new interactive group?
+
+4. **Which intensity tier?** Place it alongside roles of similar visual
+   weight. Test by rendering it next to its tier peers — does it match?
+
+5. **Define all 4 properties.** Size, weight, leading, color — all
+   referencing palette tokens. Add to `:root`, create `.text-{role}`
+   class, add to `TextRole` type.
+
+## Structural Components
+
+### ActionButton
+
+```tsx
+<ActionButton variant='primary' onClick={start}>Practice</ActionButton>
+<ActionButton variant='secondary' onClick={stop}>Stop</ActionButton>
+```
+
+`.page-action-btn` with variant class. For flow-initiating/stopping buttons.
+
+### Text
+
+```tsx
+<Text role='heading-page' as='h1'>Guitar Fretboard</Text>
+<Text role='heading-subsection' as='div'>Speed check</Text>
+<Text role='label'>Response time</Text>
+<Text role='metric-primary'>{value}</Text>
+<Text role='supporting'>Explanation text</Text>
+<Text role='quiz-prompt'>C#</Text>
+```
+
+Maps content role to typography recipe. For all non-interactive content text.
