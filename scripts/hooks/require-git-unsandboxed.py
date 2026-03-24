@@ -7,13 +7,18 @@ that looks like uncommitted changes (which would undo upstream .claude/ updates)
 """
 
 import json
+import shlex
 import sys
 
 input_data = json.load(sys.stdin)
 tool_input = input_data.get("tool_input", {})
 
 command = tool_input.get("command", "")
-if not command.split()[0:1] == ["git"]:
+try:
+    tokens = shlex.split(command)
+except ValueError:
+    tokens = command.split()
+if "git" not in tokens:
     sys.exit(0)
 
 if tool_input.get("dangerouslyDisableSandbox"):
