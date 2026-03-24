@@ -18,8 +18,8 @@ When the user is adding new colored elements or defining component states:
 
 1. Identify each colored element and its semantic purpose.
 2. Find the appropriate semantic token — never hardcode hex/HSL values.
-3. Check the **three-layer rule**: component CSS should reference Layer 3
-   (`--_` tokens) or Layer 2 (semantic tokens), never Layer 1 (primitives).
+3. Check the **three-layer rule**: component CSS should reference Layer 3 (`--_`
+   tokens) or Layer 2 (semantic tokens), never Layer 1 (primitives).
 4. Verify the **palette model** — only green (brand/success), gold (attention),
    and red (error) carry meaning. Everything else is neutral chrome.
 5. If no existing token fits, propose a new one:
@@ -32,8 +32,8 @@ When the user is adding new colored elements or defining component states:
 
 When reviewing color changes on a branch or diff:
 
-1. Identify what changed (new color token, semantic mapping, or component
-   token override).
+1. Identify what changed (new color token, semantic mapping, or component token
+   override).
 2. Run the checklist:
    - **Layer check**: Is the change at the right layer? Wrong semantic mapping →
      Layer 2. Wrong component token → Layer 3. Whole palette off → Layer 1.

@@ -16,9 +16,9 @@ Parse `$ARGUMENTS`:
 
 When the user is adding new interactive elements or components:
 
-1. Identify each interactive element and classify it using the 8-variant
-   button taxonomy (primary action, secondary action, small action, answer,
-   toggle, tab, text link, close).
+1. Identify each interactive element and classify it using the 8-variant button
+   taxonomy (primary action, secondary action, small action, answer, toggle,
+   tab, text link, close).
 2. Verify **no style reuse across roles** — each variant has a distinct visual
    treatment.
 3. Apply the **ActionButton rule**: `<ActionButton>` for flow actions (start,
@@ -39,8 +39,8 @@ When reviewing component changes on a branch or diff:
      variants?
    - **No cross-role styling**: Variants maintain distinct visual treatments?
    - **ActionButton rule**: Flow actions use `<ActionButton>`, others don't?
-   - **Info hierarchy**: Metric displays use the label/value/explanation
-     pattern with correct Text roles?
+   - **Info hierarchy**: Metric displays use the label/value/explanation pattern
+     with correct Text roles?
    - **Preview page**: Are new components or variants shown in the Buttons or
      Screen Structure tabs?
 3. Report findings organized as: correct, warnings, issues.

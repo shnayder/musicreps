@@ -1,4 +1,5 @@
-Interaction and accessibility guidance for designing new UI and reviewing changes.
+Interaction and accessibility guidance for designing new UI and reviewing
+changes.
 
 ## Reference
 
@@ -22,8 +23,8 @@ When the user is adding interactive states or new interactive elements:
    transition.
 3. Check **active/pressed**: pressed surface color, subtle scale-down on
    buttons.
-4. Check **focus visible**: visible focus ring on keyboard navigation,
-   invisible on mouse/touch.
+4. Check **focus visible**: visible focus ring on keyboard navigation, invisible
+   on mouse/touch.
 5. Check **transitions**: correct duration category (quick for color, fast for
    layout, gradual for progress, steady for countdown).
 6. Run the **accessibility checklist**:

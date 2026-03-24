@@ -32,8 +32,8 @@ When the user is laying out new UI or adjusting spacing:
 
 When reviewing spacing/token changes on a branch or diff:
 
-1. Identify what changed (new token usage, token value change, or one-off
-   values introduced).
+1. Identify what changed (new token usage, token value change, or one-off values
+   introduced).
 2. Run the checklist:
    - **Token discipline**: All spacing uses `--space-*` tokens? No magic
      numbers?

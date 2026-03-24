@@ -57,8 +57,8 @@ When reviewing screen or layout changes on a branch or diff:
      logical groups across card boundaries?
    - **Viewport discipline**: No viewport-conditional component sizing? Media
      queries only for structural layout and typography?
-   - **Tab discipline**: No new tabs unless the content has a genuinely different
-     primary intention?
+   - **Tab discipline**: No new tabs unless the content has a genuinely
+     different primary intention?
    - **Transition feel**: Does the phase shift feel right — lights dimming for
      drill, exhale for round-complete?
 3. Report findings organized as: correct, warnings, issues.
