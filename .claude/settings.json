@@ -20,13 +20,23 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/hooks/require-git-unsandboxed.py"
+          }
+        ]
+      }
     ]
   },
   "permissions": {
     "additionalDirectories": ["../.todos"]
   },
   "sandbox": {
-    "enabled": true,
-    "excludedCommands": ["git:*"]
+    "enabled": true
   }
 }
