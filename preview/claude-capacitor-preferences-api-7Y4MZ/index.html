@@ -3105,7 +3105,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="0717ec capacitor-preferences-api-7Y4MZ"></div>
+  <div class="home-screen" id="home-screen" data-version="1b7d58 capacitor-preferences-api-7Y4MZ"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6609,7 +6609,7 @@ body.native-app {
       getConfig: () => cfg
     };
   }
-  function createLocalStorageAdapter(namespace) {
+  function createStorageAdapter(namespace) {
     const cache = {};
     const mkKey = (itemId) => `adaptive_${namespace}_${itemId}`;
     const dlKey = (itemId) => `deadline_${namespace}_${itemId}`;
@@ -6741,7 +6741,7 @@ body.native-app {
   function getDevPanelData() {
     const modes2 = getRegisteredModes();
     const modeEfforts = modes2.map(
-      (m3) => computeModeEffort(m3, createLocalStorageAdapter(m3.namespace))
+      (m3) => computeModeEffort(m3, createStorageAdapter(m3.namespace))
     );
     const daily = getDailyReps();
     const global = computeGlobalEffort(modeEfforts, daily);
@@ -8022,7 +8022,7 @@ body.native-app {
     segments.sort((a3, b) => b.speed - a3.speed);
     return { groupColors: segments.map((s3) => s3.color) };
   }
-  function computeAllProgress(createStorage = createLocalStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups) {
+  function computeAllProgress(createStorage = createStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups) {
     const result = /* @__PURE__ */ new Map();
     for (const entry of MODE_PROGRESS_MANIFEST) {
       const skipped = getSkipped(entry.namespace);
@@ -8038,7 +8038,7 @@ body.native-app {
     }
     return result;
   }
-  function computeAllRecommendations(starred, createStorage = createLocalStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups, definitionOrder) {
+  function computeAllRecommendations(starred, createStorage = createStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups, definitionOrder) {
     if (starred.size === 0) return [];
     const config = {};
     const perSkill = [];
@@ -8086,12 +8086,12 @@ body.native-app {
     return T2(() => {
       const baseline = readMotorBaseline();
       const progress = computeAllProgress(
-        createLocalStorageAdapter,
+        createStorageAdapter,
         baseline
       );
       const recommendations = computeAllRecommendations(
         starred,
-        createLocalStorageAdapter,
+        createStorageAdapter,
         baseline
       );
       return { progress, recommendations };
@@ -9265,6 +9265,10 @@ body.native-app {
       storage.removeItem("selectedTracks");
     } catch (_3) {
     }
+    try {
+      globalThis.localStorage?.removeItem("selectedTracks");
+    } catch (_3) {
+    }
   }
   function TrackPill({ trackId, label }) {
     return /* @__PURE__ */ u3("span", { class: `active-skill-track-pill pill-${trackId}`, children: label });
@@ -9783,7 +9787,7 @@ body.native-app {
     const baselineRef = A2(null);
     const storageKey = "motorBaseline_" + taskType;
     const model = T2(() => {
-      const storage2 = createLocalStorageAdapter(namespace);
+      const storage2 = createStorageAdapter(namespace);
       const rcFn = responseCountFn ?? null;
       const selector = createAdaptiveSelector(
         storage2,
@@ -12963,12 +12967,12 @@ body.native-app {
   }
   async function boot() {
     await initStorage();
-    loadNotationPreference();
-    cleanupLegacyKeys();
     const isNativeApp = !!window.Capacitor;
     if (isNativeApp) {
       await migrateFromLocalStorage();
     }
+    loadNotationPreference();
+    cleanupLegacyKeys();
     const nav = createNavigation();
     registerDeclarativeMode(nav, createFretboardDef(GUITAR));
     registerDeclarativeMode(nav, createFretboardDef(UKULELE));
