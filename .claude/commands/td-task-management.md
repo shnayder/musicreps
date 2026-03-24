@@ -7,9 +7,13 @@ description: Task management for AI agents across context windows. Use when agen
 
 ## Overview
 
-`td` is a minimalist CLI for tracking tasks and maintaining agent memory across context windows. When your AI session ends, `td` captures what was done, what remains, and what decisions were made—so the next session picks up exactly where the last one left off.
+`td` is a minimalist CLI for tracking tasks and maintaining agent memory across
+context windows. When your AI session ends, `td` captures what was done, what
+remains, and what decisions were made—so the next session picks up exactly where
+the last one left off.
 
-**Core capability:** Run `td usage` and get everything needed for the next action—current focus, pending reviews, open issues, recent decisions.
+**Core capability:** Run `td usage` and get everything needed for the next
+action—current focus, pending reviews, open issues, recent decisions.
 
 ## Quick Start
 
@@ -20,6 +24,7 @@ td usage --new-session  # Auto-rotation + see current state
 ```
 
 Output tells you:
+
 - Active work sessions and recent decisions
 - What issues are pending review (you can review these)
 - Highest priority open issues
@@ -79,6 +84,7 @@ td handoff <id> \
 ```
 
 Keys:
+
 - `--done` - What's actually complete (be honest)
 - `--remaining` - What's left (be specific)
 - `--decision` - Why you chose approach X
@@ -102,7 +108,8 @@ td approve <id>
 td reject <id> --reason "Missing error handling"
 ```
 
-**Important:** You cannot approve work you implemented. Session isolation enforces this.
+**Important:** You cannot approve work you implemented. Session isolation
+enforces this.
 
 ### Workflow 4: Handling Blockers
 
@@ -121,6 +128,7 @@ td context td-a1b2  # Refresh context when blocker resolves
 ## Commands by Category
 
 ### Checking Status
+
 - `td usage` - Current state, reviews, next steps
 - `td usage -q` - Compact view (after first read)
 - `td current` - What you're working on
@@ -129,6 +137,7 @@ td context td-a1b2  # Refresh context when blocker resolves
 - `td critical-path` - What unblocks most work
 
 ### Working on Issues
+
 - `td start <id>` - Begin work
 - `td unstart <id>` - Revert to open (undo accidental start)
 - `td log "msg"` - Track progress
@@ -138,16 +147,19 @@ td context td-a1b2  # Refresh context when blocker resolves
 - `td context <id>` - Full context for resuming
 
 ### Handing Off
+
 - `td handoff <id> --done "..." --remaining "..."` - Single issue
 - `td ws handoff` - Multi-issue work session
 
 ### Reviews
+
 - `td review <id>` - Submit for review
 - `td reviewable` - Issues you can review
 - `td approve <id>` - Approve (different session only)
 - `td reject <id> --reason "..."` - Reject
 
 ### Creating/Managing Issues
+
 - `td create "title" --type feature --priority P1` - Create
 - `td list` - List all
 - `td list --status in_progress` - Filter by status
@@ -155,23 +167,29 @@ td context td-a1b2  # Refresh context when blocker resolves
 - `td delete <id>` - Delete
 
 ### File Tracking
+
 - `td link <id> <files...>` - Track files with issue
 - `td files <id>` - Show file changes
 
 ### Other
+
 - `td monitor` - Live dashboard
 - `td session --new "name"` - Force new session
 - `td undo` - Undo last action
 
-See [quick_reference.md](references/quick_reference.md) for full command listing.
+See [quick_reference.md](references/quick_reference.md) for full command
+listing.
 
 ## Resources
 
 ### [quick_reference.md](references/quick_reference.md)
+
 Complete command reference organized by task type.
 
 ### [ai_agent_workflows.md](references/ai_agent_workflows.md)
+
 Detailed workflows for common AI agent scenarios:
+
 - Single-issue focus
 - Multi-issue work sessions
 - Handling blockers
@@ -190,15 +208,20 @@ open → in_progress → in_review → closed
 
 ## Key Principles
 
-**Session Isolation:** Every terminal/context gets a unique session ID. The session that implements code cannot approve it. Different session must review. This forces actual handoffs and prevents "works on my context" bugs.
+**Session Isolation:** Every terminal/context gets a unique session ID. The
+session that implements code cannot approve it. Different session must review.
+This forces actual handoffs and prevents "works on my context" bugs.
 
-**Structured Handoffs:** Don't just say "here's what I did"—structure it with done/remaining/decisions/uncertain so next agent has clear context.
+**Structured Handoffs:** Don't just say "here's what I did"—structure it with
+done/remaining/decisions/uncertain so next agent has clear context.
 
-**Minimal:** Does one thing. Single binary, SQLite local storage (`.todos/`), no server, works with any AI tool.
+**Minimal:** Does one thing. Single binary, SQLite local storage (`.todos/`), no
+server, works with any AI tool.
 
 ## For AI Agents
 
 Always start conversation with:
+
 ```bash
 td usage --new-session
 ```
@@ -212,4 +235,5 @@ This auto-rotates sessions and gives you current state. Then:
 5. **Log uncertainty** → Use `--uncertain` flag to mark unknowns
 6. **Track files** → Use `td link` so future sessions know what changed
 
-See [ai_agent_workflows.md](references/ai_agent_workflows.md) for detailed examples.
+See [ai_agent_workflows.md](references/ai_agent_workflows.md) for detailed
+examples.
