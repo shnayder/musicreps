@@ -3740,10 +3740,29 @@ body.native-app {
   }
 
   // src/storage.ts
+  function getLocalStorage() {
+    try {
+      return typeof globalThis !== "undefined" ? globalThis.localStorage ?? null : null;
+    } catch {
+      return null;
+    }
+  }
+  var _fallback = /* @__PURE__ */ new Map();
   var webStorage = {
-    getItem: (key) => localStorage.getItem(key),
-    setItem: (key, value) => localStorage.setItem(key, value),
-    removeItem: (key) => localStorage.removeItem(key)
+    getItem(key) {
+      const ls = getLocalStorage();
+      return ls ? ls.getItem(key) : _fallback.get(key) ?? null;
+    },
+    setItem(key, value) {
+      const ls = getLocalStorage();
+      if (ls) ls.setItem(key, value);
+      else _fallback.set(key, value);
+    },
+    removeItem(key) {
+      const ls = getLocalStorage();
+      if (ls) ls.removeItem(key);
+      else _fallback.delete(key);
+    }
   };
   var _storage = webStorage;
   var storage = {
@@ -4076,10 +4095,6 @@ body.native-app {
   }
   REVERSE_SOLFEGE["so"] = "G";
   var _useSolfege = false;
-  try {
-    _useSolfege = storage.getItem("fretboard_notation") === "solfege";
-  } catch (_2) {
-  }
   function displayNote(name) {
     if (!name) return name;
     const letter = name[0].toUpperCase();
@@ -6180,10 +6195,6 @@ ${text}`).join("\n\n");
   }
 
   // src/ui/home-screen.tsx
-  try {
-    storage.removeItem("selectedTracks");
-  } catch (_2) {
-  }
   function TrackPill({ trackId, label }) {
     return /* @__PURE__ */ u3("span", { class: `active-skill-track-pill pill-${trackId}`, children: label });
   }

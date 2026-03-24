@@ -3105,7 +3105,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="bfa93f capacitor-preferences-api-7Y4MZ"></div>
+  <div class="home-screen" id="home-screen" data-version="0717ec capacitor-preferences-api-7Y4MZ"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -5040,14 +5040,33 @@ body.native-app {
   }, I.__r = 0, f = /(PointerCapture)$|Capture$/i, c = 0, s = O(false), a = O(true), h = 0;
 
   // src/storage.ts
+  function getLocalStorage() {
+    try {
+      return typeof globalThis !== "undefined" ? globalThis.localStorage ?? null : null;
+    } catch {
+      return null;
+    }
+  }
+  var _fallback = /* @__PURE__ */ new Map();
   var webStorage = {
-    getItem: (key) => localStorage.getItem(key),
-    setItem: (key, value) => localStorage.setItem(key, value),
-    removeItem: (key) => localStorage.removeItem(key)
+    getItem(key) {
+      const ls = getLocalStorage();
+      return ls ? ls.getItem(key) : _fallback.get(key) ?? null;
+    },
+    setItem(key, value) {
+      const ls = getLocalStorage();
+      if (ls) ls.setItem(key, value);
+      else _fallback.set(key, value);
+    },
+    removeItem(key) {
+      const ls = getLocalStorage();
+      if (ls) ls.removeItem(key);
+      else _fallback.delete(key);
+    }
   };
   var _preferences = null;
-  function createNativeStorage(prefs, initial) {
-    const cache = initial;
+  var _nativeCache = null;
+  function createNativeStorage(prefs, cache) {
     return {
       getItem(key) {
         return cache.get(key) ?? null;
@@ -5090,23 +5109,29 @@ body.native-app {
         if (value !== null) cache.set(key, value);
       });
       await Promise.all(reads);
+      _nativeCache = cache;
       _storage = createNativeStorage(Preferences, cache);
     } catch (_3) {
     }
   }
   async function migrateFromLocalStorage() {
-    if (!_preferences) return;
+    if (!_preferences || !_nativeCache) return;
     const prefs = _preferences;
-    for (let i3 = 0; i3 < localStorage.length; i3++) {
-      const key = localStorage.key(i3);
-      if (!key) continue;
-      const { value: existing } = await prefs.get({ key });
-      if (existing !== null) continue;
-      const value = localStorage.getItem(key);
-      if (value !== null) {
-        await prefs.set({ key, value });
-        _storage.setItem(key, value);
+    const cache = _nativeCache;
+    const ls = getLocalStorage();
+    if (!ls) return;
+    try {
+      for (let i3 = 0; i3 < ls.length; i3++) {
+        const key = ls.key(i3);
+        if (!key) continue;
+        if (cache.has(key)) continue;
+        const value = ls.getItem(key);
+        if (value !== null) {
+          await prefs.set({ key, value });
+          cache.set(key, value);
+        }
       }
+    } catch (_3) {
     }
   }
 
@@ -5623,9 +5648,11 @@ body.native-app {
     }
     for (const cb of _notationListeners) cb();
   }
-  try {
-    _useSolfege = storage.getItem("fretboard_notation") === "solfege";
-  } catch (_3) {
+  function loadNotationPreference() {
+    try {
+      _useSolfege = storage.getItem("fretboard_notation") === "solfege";
+    } catch (_3) {
+    }
   }
   function displayNote(name) {
     if (!name) return name;
@@ -9233,9 +9260,11 @@ body.native-app {
     } catch (_3) {
     }
   }
-  try {
-    storage.removeItem("selectedTracks");
-  } catch (_3) {
+  function cleanupLegacyKeys() {
+    try {
+      storage.removeItem("selectedTracks");
+    } catch (_3) {
+    }
   }
   function TrackPill({ trackId, label }) {
     return /* @__PURE__ */ u3("span", { class: `active-skill-track-pill pill-${trackId}`, children: label });
@@ -12934,6 +12963,8 @@ body.native-app {
   }
   async function boot() {
     await initStorage();
+    loadNotationPreference();
+    cleanupLegacyKeys();
     const isNativeApp = !!window.Capacitor;
     if (isNativeApp) {
       await migrateFromLocalStorage();
@@ -12979,7 +13010,9 @@ body.native-app {
       navigator.serviceWorker.register("sw.js");
     }
   }
-  boot();
+  boot().catch((err) => {
+    console.error("Boot failed:", err);
+  });
 })();
 
   </script>
