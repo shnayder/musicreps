@@ -3105,7 +3105,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="522746 add-relative-minors-keys-FPLCf"></div>
+  <div class="home-screen" id="home-screen" data-version="66ae8c add-relative-minors-keys-FPLCf"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6783,19 +6783,26 @@ body.native-app {
     { keys: ["B", "Db", "F#"], label: "B D\u266D F\u266F" }
   ];
   var MINOR_ROOT_TO_MAJOR = /* @__PURE__ */ new Map();
+  var RELATIVE_MINOR_DEGREE = 6;
   for (const key of MAJOR_KEYS) {
-    MINOR_ROOT_TO_MAJOR.set(getScaleDegreeNote(key.root, 6), key);
+    MINOR_ROOT_TO_MAJOR.set(
+      getScaleDegreeNote(key.root, RELATIVE_MINOR_DEGREE),
+      key
+    );
   }
-  var MINOR_ROOTS = MAJOR_KEYS.map((k3) => getScaleDegreeNote(k3.root, 6));
+  var MINOR_ROOTS = MAJOR_KEYS.map(
+    (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE)
+  );
+  function minorKeyGroup(majorKeys) {
+    const keys = majorKeys.map(
+      (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE) + "m"
+    );
+    const label = keys.map((k3) => displayNote(k3.slice(0, -1)) + "m").join(" ");
+    return { keys, label };
+  }
   var MINOR_KEY_GROUPS = [
-    {
-      keys: MAJOR_KEYS.filter((k3) => k3.accidentalCount <= 3).map((k3) => getScaleDegreeNote(k3.root, 6) + "m"),
-      label: "Am Em Dm Bm Gm F\u266Fm Cm"
-    },
-    {
-      keys: MAJOR_KEYS.filter((k3) => k3.accidentalCount > 3).map((k3) => getScaleDegreeNote(k3.root, 6) + "m"),
-      label: "C\u266Fm Fm G\u266Fm B\u266Dm D\u266Fm"
-    }
+    minorKeyGroup(MAJOR_KEYS.filter((k3) => k3.accidentalCount <= 3)),
+    minorKeyGroup(MAJOR_KEYS.filter((k3) => k3.accidentalCount > 3))
   ];
   var ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
   function getItemIdsForGroup(groupIndex) {
