@@ -27,6 +27,6 @@
   },
   "sandbox": {
     "enabled": true,
-    "excludedCommands": ["git"]
+    "excludedCommands": ["git:*"]
   }
 }
