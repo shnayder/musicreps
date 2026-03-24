@@ -1,7 +1,6 @@
 // Tests for the storage abstraction (src/storage.ts).
-// In the test environment (Node/Deno), there is no Capacitor, so the module
-// defaults to the web (localStorage) backend.  These tests verify that the
-// public API delegates correctly and that initStorage() is a safe no-op on web.
+// The web backend lazily resolves localStorage with an in-memory fallback,
+// so these tests work in any JS context (browser, Deno, Node).
 
 import { describe, it } from 'node:test';
 import * as assert from 'node:assert/strict';

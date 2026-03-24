@@ -14,13 +14,39 @@ export interface KVStorage {
 }
 
 // ---------------------------------------------------------------------------
-// Web backend — thin wrapper around localStorage
+// Web backend — lazily resolves localStorage so importing this module is
+// safe in non-browser contexts (Deno tests, Node scripts, etc.)
 // ---------------------------------------------------------------------------
 
+function getLocalStorage(): Storage | null {
+  try {
+    return typeof globalThis !== 'undefined'
+      // deno-lint-ignore no-explicit-any
+      ? ((globalThis as any).localStorage as Storage | undefined) ?? null
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** In-memory fallback when localStorage is unavailable. */
+const _fallback = new Map<string, string>();
+
 const webStorage: KVStorage = {
-  getItem: (key) => localStorage.getItem(key),
-  setItem: (key, value) => localStorage.setItem(key, value),
-  removeItem: (key) => localStorage.removeItem(key),
+  getItem(key: string): string | null {
+    const ls = getLocalStorage();
+    return ls ? ls.getItem(key) : (_fallback.get(key) ?? null);
+  },
+  setItem(key: string, value: string): void {
+    const ls = getLocalStorage();
+    if (ls) ls.setItem(key, value);
+    else _fallback.set(key, value);
+  },
+  removeItem(key: string): void {
+    const ls = getLocalStorage();
+    if (ls) ls.removeItem(key);
+    else _fallback.delete(key);
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -36,11 +62,13 @@ type PreferencesPlugin = {
 
 let _preferences: PreferencesPlugin | null = null;
 
+/** The native storage cache, accessible for direct cache updates. */
+let _nativeCache: Map<string, string> | null = null;
+
 function createNativeStorage(
   prefs: PreferencesPlugin,
-  initial: Map<string, string>,
+  cache: Map<string, string>,
 ): KVStorage {
-  const cache = initial;
   return {
     getItem(key: string): string | null {
       return cache.get(key) ?? null;
@@ -106,6 +134,7 @@ export async function initStorage(): Promise<void> {
     });
     await Promise.all(reads);
 
+    _nativeCache = cache;
     _storage = createNativeStorage(Preferences, cache);
   } catch (_) {
     // Preferences plugin unavailable — fall back to localStorage.
@@ -115,23 +144,31 @@ export async function initStorage(): Promise<void> {
 /**
  * One-time migration: copy localStorage entries into Capacitor Preferences.
  * Call after `initStorage()` on first native launch.  Skips keys that already
- * exist in Preferences.  No-op on web.
+ * exist in Preferences.  No-op on web or if Preferences failed to load.
  */
 export async function migrateFromLocalStorage(): Promise<void> {
-  if (!_preferences) return;
+  if (!_preferences || !_nativeCache) return;
   const prefs = _preferences;
+  const cache = _nativeCache;
+  const ls = getLocalStorage();
+  if (!ls) return;
 
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (!key) continue;
-    // Skip if already migrated
-    const { value: existing } = await prefs.get({ key });
-    if (existing !== null) continue;
-    const value = localStorage.getItem(key);
-    if (value !== null) {
-      await prefs.set({ key, value });
-      // Also populate the live cache so the app sees it immediately.
-      _storage.setItem(key, value);
+  try {
+    for (let i = 0; i < ls.length; i++) {
+      const key = ls.key(i);
+      if (!key) continue;
+      // Skip if already in Preferences (from a previous migration or init).
+      if (cache.has(key)) continue;
+      const value = ls.getItem(key);
+      if (value !== null) {
+        await prefs.set({ key, value });
+        // Update the in-memory cache directly (not via _storage.setItem,
+        // which would fire a redundant Preferences.set).
+        cache.set(key, value);
+      }
     }
+  } catch (_) {
+    // Partial migration is acceptable — will retry remaining keys on next
+    // launch (already-migrated keys are skipped via the cache.has check).
   }
 }

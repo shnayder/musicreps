@@ -8,12 +8,12 @@ declare global {
 }
 
 import { h, render } from 'preact';
-import { GUITAR, UKULELE } from './music-data.ts';
+import { GUITAR, loadNotationPreference, UKULELE } from './music-data.ts';
 import { createNavigation } from './navigation.ts';
 import { createSettingsController } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
 import type { ModeHandle } from './types.ts';
-import { HomeScreen } from './ui/home-screen.tsx';
+import { cleanupLegacyKeys, HomeScreen } from './ui/home-screen.tsx';
 import { APP_CONFIG } from './app-config.ts';
 import { registerModeForEffort } from './effort.ts';
 import { initStorage, migrateFromLocalStorage } from './storage.ts';
@@ -82,6 +82,11 @@ async function boot() {
   // bulk-loads Preferences into an in-memory cache.
   await initStorage();
 
+  // Deferred reads — must happen after initStorage() so native
+  // Preferences cache is populated before any storage.getItem calls.
+  loadNotationPreference();
+  cleanupLegacyKeys();
+
   const isNativeApp = !!window.Capacitor;
 
   // One-time migration: copy localStorage → Capacitor Preferences on
@@ -143,4 +148,6 @@ async function boot() {
   }
 }
 
-boot();
+boot().catch((err) => {
+  console.error('Boot failed:', err);
+});

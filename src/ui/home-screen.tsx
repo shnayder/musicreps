@@ -85,10 +85,12 @@ function saveAccordionState(state: Record<string, boolean>): void {
   } catch (_) { /* expected */ }
 }
 
-// Clean up legacy selectedTracks key (one-time migration)
-try {
-  storage.removeItem('selectedTracks');
-} catch (_) { /* expected */ }
+/** Clean up legacy storage keys.  Call after initStorage(). */
+export function cleanupLegacyKeys(): void {
+  try {
+    storage.removeItem('selectedTracks');
+  } catch (_) { /* expected */ }
+}
 
 // ---------------------------------------------------------------------------
 // TrackPill — colored track label badge

@@ -705,11 +705,13 @@ export function setUseSolfege(v: boolean) {
   for (const cb of _notationListeners) cb();
 }
 
-// Load notation preference on module evaluation
-try {
-  _useSolfege = storage.getItem('fretboard_notation') === 'solfege';
-} catch (_) {
-  /* expected */
+/** Load notation preference from storage.  Call after initStorage(). */
+export function loadNotationPreference(): void {
+  try {
+    _useSolfege = storage.getItem('fretboard_notation') === 'solfege';
+  } catch (_) {
+    /* expected */
+  }
 }
 
 /**

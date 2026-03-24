@@ -3,7 +3,7 @@
 // plus a new effort_daily counter incremented on each response.
 //
 // Pure functions accept a StorageAdapter for testability; the module-level
-// convenience wrappers use localStorage.
+// convenience wrappers use the shared storage abstraction.
 
 import type { StorageAdapter } from './types.ts';
 import { storage } from './storage.ts';
