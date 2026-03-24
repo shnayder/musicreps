@@ -55,16 +55,18 @@ deadlines, motor baselines, scope config — must survive across sessions.
 
 ```
 app.ts boot():
-  1. await initStorage()        — on native: bulk-load all Preferences keys
-  2. initNotationPreference()   — deferred read (was at module eval)
-  3. await migrateFromLocalStorage()  — one-time, native only
-  4. createNavigation(), registerModes(), render()
+  1. await initStorage()              — on native: bulk-load all Preferences keys
+  2. await migrateFromLocalStorage()  — one-time, native only (before any reads)
+  3. loadNotationPreference()         — deferred read (was at module eval)
+  4. cleanupLegacyKeys()              — removes from both storage + localStorage
+  5. createNavigation(), registerModes(), render()
 ```
 
-**Critical constraint:** No storage reads may happen at ES module evaluation
+**Critical constraint:** Migration must complete before any deferred reads, so
+migrated values are visible. No storage reads may happen at ES module evaluation
 time. The `music-data.ts` notation preference read and the `home-screen.tsx`
 legacy key cleanup must be deferred to explicit init functions called after
-`initStorage()`.
+`initStorage()` and migration.
 
 ### Module-eval timing issue (PR feedback)
 
@@ -102,7 +104,8 @@ Wrapped in try/catch so a failure doesn't prevent the app from rendering.
 - `initStorage()` catches all errors and falls back to the web backend.
 - `migrateFromLocalStorage()` catches all errors — partial migration is
   acceptable (will retry remaining keys on next launch).
-- `boot()` catches unhandled rejections so the app always renders.
+- `boot()` catches unhandled rejections so they are logged and don't crash
+  the bootstrap sequence.
 - Individual `storage.setItem()` calls on the native backend already catch
   Preferences errors (fire-and-forget).
 

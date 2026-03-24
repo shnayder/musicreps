@@ -82,18 +82,19 @@ async function boot() {
   // bulk-loads Preferences into an in-memory cache.
   await initStorage();
 
-  // Deferred reads — must happen after initStorage() so native
-  // Preferences cache is populated before any storage.getItem calls.
-  loadNotationPreference();
-  cleanupLegacyKeys();
-
   const isNativeApp = !!window.Capacitor;
 
   // One-time migration: copy localStorage → Capacitor Preferences on
-  // first native launch so existing users don't lose data.
+  // first native launch so existing users don't lose data.  Must run
+  // before any persisted reads so migrated values are visible.
   if (isNativeApp) {
     await migrateFromLocalStorage();
   }
+
+  // Deferred reads — after initStorage() + migration so the cache
+  // is fully populated before any storage.getItem calls.
+  loadNotationPreference();
+  cleanupLegacyKeys();
 
   const nav = createNavigation();
 

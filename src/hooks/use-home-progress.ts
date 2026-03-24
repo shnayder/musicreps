@@ -7,7 +7,7 @@ import type { AdaptiveSelector, StorageAdapter } from '../types.ts';
 import { storage } from '../storage.ts';
 import {
   createAdaptiveSelector,
-  createLocalStorageAdapter,
+  createStorageAdapter,
   deriveScaledConfig,
 } from '../adaptive.ts';
 import {
@@ -110,7 +110,7 @@ export function computeProgressForMode(
 
 /** Compute progress for all modes. Exported for testing. */
 export function computeAllProgress(
-  createStorage: (ns: string) => StorageAdapter = createLocalStorageAdapter,
+  createStorage: (ns: string) => StorageAdapter = createStorageAdapter,
   motorBaseline: number | null = null,
   getSkipped: (ns: string) => ReadonlySet<number> = loadSkippedGroups,
 ): Map<string, ModeProgress> {
@@ -140,7 +140,7 @@ export function computeAllProgress(
  */
 export function computeAllRecommendations(
   starred: ReadonlySet<string>,
-  createStorage: (ns: string) => StorageAdapter = createLocalStorageAdapter,
+  createStorage: (ns: string) => StorageAdapter = createStorageAdapter,
   motorBaseline: number | null = null,
   getSkipped: (ns: string) => ReadonlySet<number> = loadSkippedGroups,
   definitionOrder?: string[],
@@ -230,12 +230,12 @@ export function useHomeProgress(
   return useMemo(() => {
     const baseline = readMotorBaseline();
     const progress = computeAllProgress(
-      createLocalStorageAdapter,
+      createStorageAdapter,
       baseline,
     );
     const recommendations = computeAllRecommendations(
       starred,
-      createLocalStorageAdapter,
+      createStorageAdapter,
       baseline,
     );
     return { progress, recommendations };

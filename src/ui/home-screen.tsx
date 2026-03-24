@@ -85,10 +85,14 @@ function saveAccordionState(state: Record<string, boolean>): void {
   } catch (_) { /* expected */ }
 }
 
-/** Clean up legacy storage keys.  Call after initStorage(). */
+/** Clean up legacy storage keys.  Call after initStorage() + migration. */
 export function cleanupLegacyKeys(): void {
   try {
     storage.removeItem('selectedTracks');
+  } catch (_) { /* expected */ }
+  // Also remove from localStorage to prevent re-migration of the key.
+  try {
+    globalThis.localStorage?.removeItem('selectedTracks');
   } catch (_) { /* expected */ }
 }
 

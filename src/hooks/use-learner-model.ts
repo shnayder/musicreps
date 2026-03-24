@@ -9,7 +9,7 @@ import type {
 } from '../types.ts';
 import {
   createAdaptiveSelector,
-  createLocalStorageAdapter,
+  createStorageAdapter,
   DEFAULT_CONFIG,
   deriveScaledConfig,
 } from '../adaptive.ts';
@@ -48,7 +48,7 @@ export function useLearnerModel(
 
   // Create storage + selector once per namespace.
   const model = useMemo(() => {
-    const storage = createLocalStorageAdapter(namespace);
+    const storage = createStorageAdapter(namespace);
     const rcFn = responseCountFn ?? null;
     const selector = createAdaptiveSelector(
       storage,

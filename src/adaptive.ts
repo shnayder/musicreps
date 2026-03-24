@@ -607,7 +607,7 @@ export function createMemoryStorage(): StorageAdapter {
 // Capacitor Preferences on native)
 // ---------------------------------------------------------------------------
 
-export function createLocalStorageAdapter(namespace: string): StorageAdapter {
+export function createStorageAdapter(namespace: string): StorageAdapter {
   const cache: Record<string, ItemStats | number | null> = {};
   const mkKey = (itemId: string): string => `adaptive_${namespace}_${itemId}`;
   const dlKey = (itemId: string): string => `deadline_${namespace}_${itemId}`;
