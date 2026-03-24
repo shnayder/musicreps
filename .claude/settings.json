@@ -24,5 +24,9 @@
   },
   "permissions": {
     "additionalDirectories": ["../.todos"]
+  },
+  "sandbox": {
+    "enabled": true,
+    "excludedCommands": ["git"]
   }
 }
