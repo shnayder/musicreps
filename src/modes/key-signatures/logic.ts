@@ -30,12 +30,15 @@ export const KEY_GROUPS = [
 
 /** Map from minor root name to its relative major key. */
 const MINOR_ROOT_TO_MAJOR = new Map<string, MajorKey>();
+const RELATIVE_MINOR_DEGREE = 6; // 6th degree of a major scale = relative minor
 for (const key of MAJOR_KEYS) {
-  MINOR_ROOT_TO_MAJOR.set(getScaleDegreeNote(key.root, 6), key);
+  MINOR_ROOT_TO_MAJOR.set(getScaleDegreeNote(key.root, RELATIVE_MINOR_DEGREE), key);
 }
 
 /** All minor root names, in MAJOR_KEYS order. */
-const MINOR_ROOTS = MAJOR_KEYS.map((k) => getScaleDegreeNote(k.root, 6));
+const MINOR_ROOTS = MAJOR_KEYS.map((k) =>
+  getScaleDegreeNote(k.root, RELATIVE_MINOR_DEGREE),
+);
 
 /** Minor key groups for scope selection, ordered by difficulty. */
 // Group 5: 0–3 accidentals, Group 6: 4+ accidentals
