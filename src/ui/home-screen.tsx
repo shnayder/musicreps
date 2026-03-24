@@ -8,6 +8,7 @@ import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
 import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
 import { SkillIcon } from './icons.tsx';
 import type { SettingsController } from '../types.ts';
+import { storage } from '../storage.ts';
 import type { AppConfig } from '../app-config.ts';
 import {
   type ModeProgress,
@@ -32,7 +33,7 @@ import {
 } from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
-// localStorage persistence for starred skills
+// storage persistence for starred skills
 // ---------------------------------------------------------------------------
 
 const STARRED_KEY = 'starredSkills';
@@ -42,7 +43,7 @@ const TAB_KEY = 'homeTab';
 function loadStarredSkills(): Set<string> {
   const allModeIds = new Set(TRACKS.flatMap((t) => t.skills));
   try {
-    const raw = localStorage.getItem(STARRED_KEY);
+    const raw = storage.getItem(STARRED_KEY);
     if (raw) {
       const arr = JSON.parse(raw);
       if (Array.isArray(arr)) {
@@ -55,14 +56,14 @@ function loadStarredSkills(): Set<string> {
 
 function saveStarredSkills(starred: Set<string>): void {
   try {
-    localStorage.setItem(STARRED_KEY, JSON.stringify([...starred]));
+    storage.setItem(STARRED_KEY, JSON.stringify([...starred]));
   } catch (_) { /* expected */ }
 }
 
 function loadAccordionState(): Record<string, boolean> {
   const trackIds = new Set(TRACKS.map((t) => t.id));
   try {
-    const raw = localStorage.getItem(ACCORDION_KEY);
+    const raw = storage.getItem(ACCORDION_KEY);
     if (raw) {
       const obj = JSON.parse(raw);
       if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
@@ -80,14 +81,20 @@ function loadAccordionState(): Record<string, boolean> {
 
 function saveAccordionState(state: Record<string, boolean>): void {
   try {
-    localStorage.setItem(ACCORDION_KEY, JSON.stringify(state));
+    storage.setItem(ACCORDION_KEY, JSON.stringify(state));
   } catch (_) { /* expected */ }
 }
 
-// Clean up legacy selectedTracks key (one-time migration)
-try {
-  localStorage.removeItem('selectedTracks');
-} catch (_) { /* expected */ }
+/** Clean up legacy storage keys.  Call after initStorage() + migration. */
+export function cleanupLegacyKeys(): void {
+  try {
+    storage.removeItem('selectedTracks');
+  } catch (_) { /* expected */ }
+  // Also remove from localStorage to prevent re-migration of the key.
+  try {
+    globalThis.localStorage?.removeItem('selectedTracks');
+  } catch (_) { /* expected */ }
+}
 
 // ---------------------------------------------------------------------------
 // TrackPill — colored track label badge
@@ -635,7 +642,7 @@ export type HomeTab = 'active' | 'all' | 'settings';
 
 function loadInitialTab(): HomeTab {
   try {
-    const saved = localStorage.getItem(TAB_KEY);
+    const saved = storage.getItem(TAB_KEY);
     if (saved === 'active' || saved === 'all' || saved === 'settings') {
       return saved;
     }
@@ -785,7 +792,7 @@ export function HomeScreen(
     setTab(t);
     if (t === 'settings') setUseSolfege(settings.getUseSolfege());
     try {
-      localStorage.setItem(TAB_KEY, t);
+      storage.setItem(TAB_KEY, t);
     } catch (_) { /* expected */ }
   }, [settings]);
 

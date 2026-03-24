@@ -1,11 +1,12 @@
 // Preview comment system: inline annotations for design review.
 // Each Section gets a comment icon that expands into a textarea.
-// Comments persist in localStorage, with copy/clear at tab level.
+// Comments persist in storage, with copy/clear at tab level.
 
 import type { ComponentChildren } from 'preact';
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import { createContext } from 'preact';
 import { useContext } from 'preact/hooks';
+import { storage } from '../storage.ts';
 
 // ---------------------------------------------------------------------------
 // Storage
@@ -17,7 +18,7 @@ type CommentStore = Record<string, string>;
 
 function loadComments(): CommentStore {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = storage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
   return {};
@@ -25,7 +26,7 @@ function loadComments(): CommentStore {
 
 function saveComments(store: CommentStore): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    storage.setItem(STORAGE_KEY, JSON.stringify(store));
   } catch { /* ignore */ }
 }
 

@@ -1,6 +1,6 @@
 // useScopeState — Preact hook wrapping scope load/save/toggle from
 // mode-controller.ts. Manages enabled groups, fretboard strings, and
-// note filter in localStorage.
+// note filter in storage.
 
 import { useCallback, useState } from 'preact/hooks';
 import type {
@@ -9,6 +9,7 @@ import type {
   ScopeSpec,
   ScopeState,
 } from '../types.ts';
+import { storage } from '../storage.ts';
 
 // ---------------------------------------------------------------------------
 // Load / save helpers (extracted from mode-controller.ts lines 47-120)
@@ -19,14 +20,14 @@ function loadScope(spec: ScopeSpec): ScopeState {
 
   if (spec.kind === 'groups') {
     let enabled = new Set(spec.defaultEnabled);
-    const saved = localStorage.getItem(spec.storageKey);
+    const saved = storage.getItem(spec.storageKey);
     if (saved) {
       try {
         enabled = new Set(JSON.parse(saved));
       } catch (_) { /* expected */ }
     }
     // Drop indices beyond the current group count (groups may have been
-    // removed between releases — stale localStorage shouldn't crash).
+    // removed between releases — stale storage shouldn't crash).
     const groupCount = spec.groups.length;
     for (const idx of enabled) {
       if (idx < 0 || idx >= groupCount) enabled.delete(idx);
@@ -37,7 +38,7 @@ function loadScope(spec: ScopeSpec): ScopeState {
     }
     // Load skipped groups (Map<number, GroupStatus>).
     const skipped = new Map<number, GroupStatus>();
-    const savedSkipped = localStorage.getItem(spec.storageKey + '_skipped');
+    const savedSkipped = storage.getItem(spec.storageKey + '_skipped');
     if (savedSkipped) {
       try {
         const parsed = JSON.parse(savedSkipped);
@@ -74,7 +75,7 @@ function loadScope(spec: ScopeSpec): ScopeState {
 
   if (spec.kind === 'note-filter') {
     let noteFilter: NoteFilter = 'natural';
-    const saved = localStorage.getItem(spec.storageKey);
+    const saved = storage.getItem(spec.storageKey);
     if (
       saved === 'natural' || saved === 'sharps-flats' ||
       saved === 'all' || saved === 'none'
@@ -89,17 +90,17 @@ function loadScope(spec: ScopeSpec): ScopeState {
 
 function saveScope(spec: ScopeSpec, scope: ScopeState): void {
   if (spec.kind === 'groups' && scope.kind === 'groups') {
-    localStorage.setItem(
+    storage.setItem(
       spec.storageKey,
       JSON.stringify([...scope.enabledGroups]),
     );
-    localStorage.setItem(
+    storage.setItem(
       spec.storageKey + '_skipped',
       JSON.stringify([...scope.skippedGroups.entries()]),
     );
   } else if (spec.kind === 'note-filter' && scope.kind === 'note-filter') {
     try {
-      localStorage.setItem(spec.storageKey, scope.noteFilter);
+      storage.setItem(spec.storageKey, scope.noteFilter);
     } catch (_) { /* expected */ }
   }
 }
@@ -124,7 +125,7 @@ export function useScopeState(
 ): [ScopeState, ScopeActions] {
   const [scope, setScopeRaw] = useState<ScopeState>(() => loadScope(spec));
 
-  // Update state and persist to localStorage.
+  // Update state and persist to storage.
   const setScope = useCallback((next: ScopeState) => {
     setScopeRaw(next);
     saveScope(spec, next);

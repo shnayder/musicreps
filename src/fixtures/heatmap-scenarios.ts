@@ -1,6 +1,6 @@
 // Heatmap scenario data generators for progress tab screenshots.
 // Each function generates localStorage key/value pairs matching the
-// adaptive_{namespace}_{itemId} format used by createLocalStorageAdapter.
+// adaptive_{namespace}_{itemId} format used by createStorageAdapter.
 //
 // Scenarios create realistic ItemStats distributions so the progress tab
 // heatmap shows interesting visual patterns rather than empty/uniform grids.

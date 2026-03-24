@@ -4,9 +4,10 @@
 
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { AdaptiveSelector, StorageAdapter } from '../types.ts';
+import { storage } from '../storage.ts';
 import {
   createAdaptiveSelector,
-  createLocalStorageAdapter,
+  createStorageAdapter,
   deriveScaledConfig,
 } from '../adaptive.ts';
 import {
@@ -49,13 +50,13 @@ function averageSpeed(
 }
 
 /**
- * Load skipped group indices from localStorage.
+ * Load skipped group indices from storage.
  * Convention: key = `{namespace}_enabledGroups_skipped`.
  * Format: [[index, reason], ...] where reason is 'mastered' | 'deferred'.
  */
 export function loadSkippedGroups(namespace: string): ReadonlySet<number> {
   try {
-    const raw = localStorage.getItem(namespace + '_enabledGroups_skipped');
+    const raw = storage.getItem(namespace + '_enabledGroups_skipped');
     if (!raw) return new Set();
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return new Set();
@@ -109,7 +110,7 @@ export function computeProgressForMode(
 
 /** Compute progress for all modes. Exported for testing. */
 export function computeAllProgress(
-  createStorage: (ns: string) => StorageAdapter = createLocalStorageAdapter,
+  createStorage: (ns: string) => StorageAdapter = createStorageAdapter,
   motorBaseline: number | null = null,
   getSkipped: (ns: string) => ReadonlySet<number> = loadSkippedGroups,
 ): Map<string, ModeProgress> {
@@ -139,7 +140,7 @@ export function computeAllProgress(
  */
 export function computeAllRecommendations(
   starred: ReadonlySet<string>,
-  createStorage: (ns: string) => StorageAdapter = createLocalStorageAdapter,
+  createStorage: (ns: string) => StorageAdapter = createStorageAdapter,
   motorBaseline: number | null = null,
   getSkipped: (ns: string) => ReadonlySet<number> = loadSkippedGroups,
   definitionOrder?: string[],
@@ -169,13 +170,13 @@ export function computeAllRecommendations(
 }
 
 // ---------------------------------------------------------------------------
-// localStorage helpers
+// storage helpers
 // ---------------------------------------------------------------------------
 
-/** Read motor baseline from localStorage (with NaN guard). */
+/** Read motor baseline from storage (with NaN guard). */
 function readMotorBaseline(): number | null {
   try {
-    const raw = localStorage.getItem('motorBaseline_note-button');
+    const raw = storage.getItem('motorBaseline_note-button');
     if (raw) {
       const n = Number(raw);
       if (!isNaN(n) && n > 0) return n;
@@ -229,12 +230,12 @@ export function useHomeProgress(
   return useMemo(() => {
     const baseline = readMotorBaseline();
     const progress = computeAllProgress(
-      createLocalStorageAdapter,
+      createStorageAdapter,
       baseline,
     );
     const recommendations = computeAllRecommendations(
       starred,
-      createLocalStorageAdapter,
+      createStorageAdapter,
       baseline,
     );
     return { progress, recommendations };

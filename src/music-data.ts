@@ -10,6 +10,7 @@ import type {
   MajorKey,
   Note,
 } from './types.ts';
+import { storage } from './storage.ts';
 
 export const NOTES: Note[] = [
   { name: 'C', displayName: 'C', num: 0, accepts: ['c'] },
@@ -692,23 +693,25 @@ export function subscribeNotation(cb: () => void): () => void {
   return () => _notationListeners.delete(cb);
 }
 
-/** Set notation mode and persist to localStorage. */
+/** Set notation mode and persist to storage. */
 export function setUseSolfege(v: boolean) {
   _useSolfege = v;
   _notationVersion++;
   try {
-    localStorage.setItem('fretboard_notation', v ? 'solfege' : 'letter');
+    storage.setItem('fretboard_notation', v ? 'solfege' : 'letter');
   } catch (_) {
     /* expected */
   }
   for (const cb of _notationListeners) cb();
 }
 
-// Load notation preference on module evaluation
-try {
-  _useSolfege = localStorage.getItem('fretboard_notation') === 'solfege';
-} catch (_) {
-  /* expected */
+/** Load notation preference from storage.  Call after initStorage(). */
+export function loadNotationPreference(): void {
+  try {
+    _useSolfege = storage.getItem('fretboard_notation') === 'solfege';
+  } catch (_) {
+    /* expected */
+  }
 }
 
 /**

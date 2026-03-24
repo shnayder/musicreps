@@ -1,5 +1,7 @@
 // Navigation: home screen and mode switching.
-// Persists last-used mode in localStorage (for future "Resume" feature).
+// Persists last-used mode via storage abstraction (for future "Resume" feature).
+
+import { storage } from './storage.ts';
 
 type ModeController = {
   init(): void;
@@ -83,7 +85,7 @@ export function createNavigation(): {
         if (target) target.focus();
       }
     });
-    localStorage.setItem(LAST_MODE_KEY, modeId);
+    storage.setItem(LAST_MODE_KEY, modeId);
   }
 
   function init(): void {
