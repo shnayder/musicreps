@@ -32,16 +32,17 @@ whole scale (e.g., bumping the base font size for mobile readability).
 Every role maps to one of 5 size tiers. The `html` base is 17px
 (`font-size: 106.25%`), aligning with Apple HIG body size.
 
-| Tier | Token | At 17px base | Roles |
-|------|-------|-------------|-------|
-| Display | `--text-2xl` | 34px | display-brand, quiz-prompt |
-| Large | `--text-lg` | 22px | heading-page, quiz-response, quiz-feedback |
-| Standard | `--text-base` | 17px | body, heading-section, heading-subsection, label, control, quiz-instruction, answer, action, metric-primary, metric-info |
-| Small | `--text-sm` | 14.5px | body-secondary, status |
-| Tiny | `--text-xs` | 12.75px | supporting, label-tag |
+| Tier | Token | Roles |
+|------|-------|-------|
+| Display | `--text-2xl` | display-brand, quiz-prompt |
+| Large | `--text-lg` | heading-page, quiz-response, quiz-feedback |
+| Standard | `--text-base` | body, heading-section, heading-subsection, label, control, quiz-instruction, answer, action, metric-primary, metric-info |
+| Small | `--text-sm` | body-secondary, status |
+| Tiny | `--text-xs` | supporting, label-tag |
 
-`--text-3xl` (51px) exists for metric-hero only (round-complete count).
+`--text-3xl` exists for metric-hero only (round-complete count).
 `--text-md` and `--text-xl` are defined but not referenced by any role.
+Current computed values are shown in the [design system preview](/preview).
 
 **Rule: max 3 sizes per screen.** Differentiate with weight and color,
 not more sizes. If a new element needs a size between tiers, resist adding
@@ -68,91 +69,29 @@ side — if one jumps out, its recipe is at the wrong tier.
 
 ## Role Reference
 
-### Content Roles (17)
+20 roles (17 content + 3 interactive) with their current computed properties
+are shown in the **Typography — Role Reference** section of the
+[design system preview](/preview). The token recipes (which palette tokens
+each role uses) live in `src/styles.css` under the Layer 2 `:root` block.
 
-**Display** — big, high-emphasis hero text
-
-| Role | Size | Weight | Leading | Color |
-|------|------|--------|---------|-------|
-| `display-brand` | 2xl | normal | tight | text |
-
-`display-brand` also has `--type-display-brand-family: var(--font-display)`.
-
-**Heading** — structural hierarchy
-
-| Role | Size | Weight | Leading | Color |
-|------|------|--------|---------|-------|
-| `heading-page` | lg | semibold | tight | text |
-| `heading-section` | base | semibold | tight | text |
-| `heading-subsection` | base | semibold | tight | muted |
-
-**Body** — readable content
-
-| Role | Size | Weight | Leading | Color |
-|------|------|--------|---------|-------|
-| `body` | base | normal | normal | text |
-| `body-secondary` | sm | normal | snug | muted |
-
-**Label** — short functional identifiers
-
-| Role | Size | Weight | Leading | Color |
-|------|------|--------|---------|-------|
-| `label` | base | medium | none | muted |
-| `label-tag` | xs | semibold | none | muted |
-
-**Quiz** — drill-specific content text
-
-| Role | Size | Weight | Leading | Color |
-|------|------|--------|---------|-------|
-| `quiz-instruction` | base | semibold | normal | muted |
-| `quiz-prompt` | 2xl | semibold | tight | text |
-| `quiz-response` | lg | semibold | none | text |
-| `quiz-feedback` | lg | normal | none | text |
-
-**Supporting** — tertiary/helper text
-
-| Role | Size | Weight | Leading | Color |
-|------|------|--------|---------|-------|
-| `supporting` | xs | normal | snug | text-light |
-
-**Metric** — data values
-
-| Role | Size | Weight | Leading | Color |
-|------|------|--------|---------|-------|
-| `metric-hero` | 3xl | bold | none | brand |
-| `metric-primary` | base | semibold | none | text |
-| `metric-info` | base | medium | none | text |
-
-**Status** — state communication
-
-| Role | Size | Weight | Leading | Color |
-|------|------|--------|---------|-------|
-| `status` | sm | normal | snug | text |
-
-Status color variants: `.status-success`, `.status-error`, `.status-notice`,
-`.status-empty` (italic).
-
-### Interactive Roles (3)
-
-| Role | Size | Weight | Leading | Color |
-|------|------|--------|---------|-------|
-| `action` | base | semibold | none | on-brand |
-| `answer` | base | medium | none | text |
-| `control` | base | medium | none | muted |
+Role groups: Display, Heading, Body, Label, Quiz, Supporting, Metric, Status,
+Interactive (action, answer, control).
 
 Variants: `.action-secondary` (normal weight, muted color),
-`.control-selected` (semibold weight, text color).
+`.control-selected` (semibold weight, text color),
+`.status-success`, `.status-error`, `.status-notice`, `.status-empty` (italic).
 
 ## Layer 1: Palette
 
 | Category | Tokens |
 |---|---|
-| Sizes | `--text-xs` (0.75rem) through `--text-3xl` (3rem) |
-| Weights | `--font-normal` (400), `--font-medium` (500), `--font-semibold` (600), `--font-bold` (700) |
-| Line heights | `--leading-none` (1), `--leading-tight` (1.2), `--leading-snug` (1.4), `--leading-normal` (1.5) |
-| Families | `--font-body` (system sans), `--font-display` (DM Serif Display, embedded base64, Latin subset, ~24KB) |
+| Sizes | `--text-xs` through `--text-3xl` |
+| Weights | `--font-normal`, `--font-medium`, `--font-semibold`, `--font-bold` |
+| Line heights | `--leading-none`, `--leading-tight`, `--leading-snug`, `--leading-normal` |
+| Families | `--font-body` (system sans), `--font-display` (DM Serif Display, embedded) |
 
-Base: `html { font-size: 106.25%; }` — 17px, aligned with Apple HIG body.
+Current values are shown in the [design system preview](/preview) under
+**Type Scale** and **Typography — Palette**.
 
 ## Design Principles
 
@@ -183,8 +122,9 @@ Base: `html { font-size: 106.25%; }` — 17px, aligned with Apple HIG body.
 
 Before creating a new role, answer these questions:
 
-1. **Does an existing role fit?** Check the 20 roles above. Often the
-   element maps to an existing role with no changes needed.
+1. **Does an existing role fit?** Check the 20 roles in the
+   [design system preview](/preview). Often the element maps to an
+   existing role with no changes needed.
 
 2. **Does it need a new size tier?** If it would introduce a 6th size
    on any screen, the answer is no. Find a way to use weight/color
