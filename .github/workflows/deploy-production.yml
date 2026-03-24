@@ -63,5 +63,14 @@ jobs:
         env:
           BUILD_NUMBER: ${{ steps.commit-count.outputs.count }}
 
+      - name: Detect merged branch
+        id: merged
+        run: |
+          BRANCH=$(echo "${{ github.event.head_commit.message }}" \
+            | sed -n 's/.*from [^/]*\///p' | head -1)
+          if [[ "$BRANCH" == claude/* ]]; then
+            echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy to gh-pages
-        run: bash scripts/deploy-gh-pages.sh production
+        run: bash scripts/deploy-gh-pages.sh production "${{ steps.merged.outputs.branch }}"

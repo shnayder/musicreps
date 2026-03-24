@@ -5,12 +5,12 @@ MODE="${1:-}"
 BRANCH="${2:-}"
 
 usage() {
-  echo "Usage: $0 production | preview <branch> | cleanup <branch>" >&2
+  echo "Usage: $0 production [branch] | preview <branch> | cleanup <branch>" >&2
   exit 1
 }
 
 case "$MODE" in
-  production) ;;
+  production) ;;  # BRANCH is optional (merged claude/* branch to clean up)
   preview|cleanup) [ -z "$BRANCH" ] && usage ;;
   *) usage ;;
 esac
@@ -63,6 +63,13 @@ else
     cp -r /tmp/build/* .
     VERSION=$(grep -oP '(?<=class="version">)[^<]+' index.html | head -1 || echo "unknown")
     COMMIT_MSG="Build production: ${VERSION}"
+
+    # Clean up merged branch's preview if it exists
+    CLEANED_PREVIEW=false
+    if [ -n "$SAFE_NAME" ] && [ -d "preview/${SAFE_NAME}" ]; then
+      rm -rf "preview/${SAFE_NAME}"
+      CLEANED_PREVIEW=true
+    fi
   else
     rm -rf "preview/${SAFE_NAME}"
     mkdir -p "preview/${SAFE_NAME}"
@@ -74,8 +81,14 @@ fi
 # --- Ensure .nojekyll ---
 touch .nojekyll
 
-# --- Regenerate preview/index.html (preview/cleanup only) ---
+# --- Regenerate preview/index.html ---
+REGEN_INDEX=false
 if [ "$MODE" != "production" ]; then
+  REGEN_INDEX=true
+elif [ "$CLEANED_PREVIEW" = true ]; then
+  REGEN_INDEX=true
+fi
+if [ "$REGEN_INDEX" = true ]; then
 mkdir -p preview
 has_previews=false
 for dir in preview/*/; do
@@ -115,7 +128,7 @@ fi
 fi # end preview index regeneration
 
 # --- Commit and push ---
-if [ "$MODE" = "production" ]; then
+if [ "$MODE" = "production" ] && [ "$CLEANED_PREVIEW" != true ]; then
   git add -A -- . ':!preview'
 else
   # Only stage the specific preview directory and index — avoid accidentally
