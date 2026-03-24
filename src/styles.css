@@ -290,7 +290,7 @@
   --type-body-secondary-color: var(--color-text-muted);
 
   /* -- Label: short functional identifiers -- */
-  --type-label-size: var(--text-sm);
+  --type-label-size: var(--text-base);
   --type-label-weight: var(--font-medium);
   --type-label-leading: var(--leading-none);
   --type-label-color: var(--color-text-muted);
@@ -316,7 +316,7 @@
   --type-quiz-response-leading: var(--leading-none);
   --type-quiz-response-color: var(--color-text);
 
-  --type-quiz-feedback-size: var(--text-xl);
+  --type-quiz-feedback-size: var(--text-lg);
   --type-quiz-feedback-weight: var(--font-normal);
   --type-quiz-feedback-leading: var(--leading-none);
   --type-quiz-feedback-color: var(--color-text);
@@ -333,7 +333,7 @@
   --type-metric-hero-leading: var(--leading-none);
   --type-metric-hero-color: var(--color-brand);
 
-  --type-metric-primary-size: var(--text-md);
+  --type-metric-primary-size: var(--text-base);
   --type-metric-primary-weight: var(--font-semibold);
   --type-metric-primary-leading: var(--leading-none);
   --type-metric-primary-color: var(--color-text);
@@ -348,6 +348,28 @@
   --type-status-weight: var(--font-normal);
   --type-status-leading: var(--leading-snug);
   --type-status-color: var(--color-text);
+
+  /* ================================================================
+     INTERACTIVE TYPOGRAPHY ROLES (Layer 2)
+     ================================================================ */
+
+  /* -- Action: primary CTA buttons (Practice, Stop, Next) -- */
+  --type-action-size: var(--text-base);
+  --type-action-weight: var(--font-semibold);
+  --type-action-leading: var(--leading-none);
+  --type-action-color: var(--color-on-brand);
+
+  /* -- Answer: quiz answer buttons (note, number, interval) -- */
+  --type-answer-size: var(--text-base);
+  --type-answer-weight: var(--font-medium);
+  --type-answer-leading: var(--leading-none);
+  --type-answer-color: var(--color-text);
+
+  /* -- Control: tabs, toggles, segmented controls, small buttons -- */
+  --type-control-size: var(--text-base);
+  --type-control-weight: var(--font-medium);
+  --type-control-leading: var(--leading-none);
+  --type-control-color: var(--color-text-muted);
 }
 
 /* ==========================================================================
@@ -361,6 +383,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 html {
+  font-size: 106.25%; /* 17px base — aligns with Apple HIG body size */
   background: var(--color-surface);
   overscroll-behavior: none;
 }
@@ -523,9 +546,10 @@ body {
 .tab-btn {
   flex: 1;
   padding: var(--space-3) var(--space-5);
-  font-size: var(--text-base);
-  font-weight: var(--font-medium);
-  color: var(--color-text-muted);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
+  color: var(--type-control-color);
   background: none;
   border: none;
   cursor: pointer;
@@ -537,7 +561,7 @@ body {
 }
 .tab-btn.active {
   color: var(--color-brand-dark);
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-semibold); /* control-selected */
 }
 .tab-btn.active::after {
   content: '';
@@ -573,7 +597,6 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 .mode-nav .tab-btn {
-  font-size: var(--text-xs);
   padding: var(--space-2) var(--space-3);
 }
 .mode-nav .tab-btn.active::after {
@@ -589,7 +612,6 @@ body {
     padding-bottom: 0;
   }
   .mode-nav .tab-btn {
-    font-size: var(--text-sm);
     padding: var(--space-3) var(--space-5);
   }
   .mode-nav .tab-btn.active::after {
@@ -903,8 +925,10 @@ body {
 }
 /* --- Text link (reusable) --- */
 .text-link {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
+  color: var(--type-control-color);
   text-decoration: none;
   cursor: pointer;
   background: none;
@@ -1068,9 +1092,10 @@ body {
   border-radius: calc(var(--radius-md) - 2px);
   background: transparent;
   cursor: pointer;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-muted);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
+  color: var(--type-control-color);
   transition:
     background var(--duration-base) ease,
     color var(--duration-base) ease;
@@ -1256,8 +1281,9 @@ body {
   min-width: 0;
 }
 .suggestion-card-accept {
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
   padding: var(--space-2) var(--space-4);
   border: 1px solid var(--color-notice);
   border-radius: var(--radius-sm);
@@ -1374,8 +1400,9 @@ body {
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-border);
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
   cursor: pointer;
   padding: 0 0.5rem;
   margin: 0;
@@ -1439,11 +1466,13 @@ body {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   cursor: pointer;
-  font-size: var(--text-sm);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
+  color: var(--type-control-color);
   transition:
     background var(--duration-base) ease,
     color var(--duration-base) ease;
@@ -1493,9 +1522,10 @@ body {
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  color: var(--color-text-muted);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
+  color: var(--type-control-color);
   cursor: pointer;
   margin: 0;
   transition:
@@ -1532,8 +1562,9 @@ body {
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-border);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
   cursor: pointer;
   padding: 0;
   margin: 0;
@@ -1562,8 +1593,9 @@ body {
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-border);
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
   cursor: pointer;
   padding: 0 0.4rem;
   margin: 0;
@@ -1622,9 +1654,10 @@ body {
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  line-height: var(--leading-none);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
+  color: var(--type-control-color);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1660,7 +1693,9 @@ body {
   padding: var(--space-2) var(--space-3);
   border: none;
   background: transparent;
-  font-size: var(--text-sm);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
   color: var(--color-text);
   cursor: pointer;
   text-align: left;
@@ -1685,8 +1720,9 @@ body {
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-border);
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
   cursor: pointer;
   padding: 0 0.6rem;
   margin: 0;
@@ -2029,8 +2065,9 @@ button {
 .note-btn {
   min-width: 0;
   height: 48px;
-  font-size: var(--text-md);
-  font-weight: var(--font-medium);
+  font-size: var(--type-answer-size);
+  font-weight: var(--type-answer-weight);
+  line-height: var(--type-answer-leading);
   border: 2px solid var(--color-text-muted);
   border-radius: var(--radius-md);
   background: var(--color-bg);
@@ -2107,8 +2144,9 @@ button {
 .split-note-btn {
   min-width: 0;
   height: 48px;
-  font-size: var(--text-md);
-  font-weight: var(--font-medium);
+  font-size: var(--type-answer-size);
+  font-weight: var(--type-answer-weight);
+  line-height: var(--type-answer-leading);
   border: 1.5px solid var(--color-border-light);
   border-radius: var(--radius-sm);
   background: var(--color-bg);
@@ -2241,8 +2279,9 @@ button {
   --_text: inherit;
   --_border: var(--color-text-muted);
   height: 48px;
-  font-size: var(--text-md);
-  font-weight: var(--font-medium);
+  font-size: var(--type-answer-size);
+  font-weight: var(--type-answer-weight);
+  line-height: var(--type-answer-leading);
   border: 2px solid var(--_border);
   border-radius: var(--radius-md);
   background: var(--_bg);
@@ -2521,6 +2560,34 @@ button {
   font-style: italic;
 }
 
+/* -- Interactive roles -- */
+.text-action {
+  font-size: var(--type-action-size);
+  font-weight: var(--type-action-weight);
+  line-height: var(--type-action-leading);
+  color: var(--type-action-color);
+}
+.action-secondary {
+  font-weight: var(--font-normal);
+  color: var(--color-text-muted);
+}
+.text-answer {
+  font-size: var(--type-answer-size);
+  font-weight: var(--type-answer-weight);
+  line-height: var(--type-answer-leading);
+  color: var(--type-answer-color);
+}
+.text-control {
+  font-size: var(--type-control-size);
+  font-weight: var(--type-control-weight);
+  line-height: var(--type-control-leading);
+  color: var(--type-control-color);
+}
+.control-selected {
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+
 /* ==========================================================================
    14. UTILITIES
    ========================================================================== */
@@ -2569,14 +2636,15 @@ button {
 /* --- Component tokens: ActionButton --- */
 .page-action-btn {
   --_bg: var(--color-brand);
-  --_text: var(--color-on-brand);
+  --_text: var(--type-action-color);
   --_border: transparent;
-  --_weight: var(--font-semibold);
+  --_weight: var(--type-action-weight);
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--_border);
   border-radius: var(--radius-md);
-  font-size: var(--text-base);
+  font-size: var(--type-action-size);
   font-weight: var(--_weight);
+  line-height: var(--type-action-leading);
   cursor: pointer;
   touch-action: manipulation;
   min-height: 48px;
@@ -2614,7 +2682,7 @@ button {
   --_bg: transparent;
   --_text: var(--color-text-muted);
   --_border: var(--color-border);
-  --_weight: var(--font-normal);
+  --_weight: var(--font-normal); /* action-secondary weight */
 }
 @media (hover: hover) {
   .page-action-secondary:hover {

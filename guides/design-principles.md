@@ -24,7 +24,7 @@ How the product should work — what it does and doesn't do for users.
    [vision.md](vision.md#skill-lifecycle)).
 
 4. **Minimal friction.** Zero barriers to drilling. No login required to start
-   practicing, no setup, no onboarding. Open the app and go.
+   practicing, no setup, no onboarding. Open the app and go. No random animations to sit through before you can get back to practice.
 
 5. **Short-session friendly.** 2-5 minutes should be productive. State that
    matters persists across sessions so progress carries over even when sessions
@@ -67,8 +67,7 @@ typography, spacing, components).
 1. **Drill-first aesthetic** — nothing distracts from drilling. Chrome fades
    away during quiz; visual weight goes to the question and answer buttons.
 
-2. **Warmth over sterility** — inviting, like a good practice space. Warm
-   neutrals, sage brand, no cold gray wireframe feel.
+2. **Serious, not cartoonish** — We're targeting people who understand the need to work on fundamentals over the long term. It's great to have fun, but we don't need to make EVERYTHING EXCITING ALL THE TIME. 
 
 3. **Feedback clarity** — correct/wrong instantly recognizable via distinct
    semantic colors (green/red). Never use brand or heatmap colors for feedback.

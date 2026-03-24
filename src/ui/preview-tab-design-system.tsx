@@ -251,72 +251,268 @@ function ActionButtonsSection({ tabId }: { tabId: string }) {
   );
 }
 
-function TypographySection({ tabId }: { tabId: string }) {
+// ---------------------------------------------------------------------------
+// Typography — Role Reference (live from CSS)
+// ---------------------------------------------------------------------------
+
+const ROLE_GROUPS: Array<{
+  group: string;
+  roles: Array<{
+    role: string;
+    sample: string;
+    variants?: Array<{ label: string; class: string; sample: string }>;
+  }>;
+}> = [
+  {
+    group: 'Display',
+    roles: [{ role: 'display-brand', sample: 'Music Reps' }],
+  },
+  {
+    group: 'Heading',
+    roles: [
+      { role: 'heading-page', sample: 'Guitar Fretboard' },
+      { role: 'heading-section', sample: 'Section Title' },
+      { role: 'heading-subsection', sample: 'Subsection' },
+    ],
+  },
+  {
+    group: 'Body',
+    roles: [
+      { role: 'body', sample: 'Body text for content' },
+      { role: 'body-secondary', sample: 'Secondary description' },
+    ],
+  },
+  {
+    group: 'Label',
+    roles: [
+      { role: 'label', sample: 'Response time' },
+      { role: 'label-tag', sample: 'NEW' },
+    ],
+  },
+  {
+    group: 'Quiz',
+    roles: [
+      { role: 'quiz-instruction', sample: 'What note is this?' },
+      { role: 'quiz-prompt', sample: 'C#' },
+      { role: 'quiz-response', sample: 'D' },
+      { role: 'quiz-feedback', sample: 'Correct! C#' },
+    ],
+  },
+  {
+    group: 'Supporting',
+    roles: [{ role: 'supporting', sample: 'Helper text' }],
+  },
+  {
+    group: 'Metric',
+    roles: [
+      { role: 'metric-hero', sample: '42' },
+      { role: 'metric-primary', sample: '0.52s' },
+      { role: 'metric-info', sample: '30 reps' },
+    ],
+  },
+  {
+    group: 'Status',
+    roles: [{ role: 'status', sample: 'Practicing strings 1–3' }],
+  },
+  {
+    group: 'Interactive',
+    roles: [
+      {
+        role: 'action',
+        sample: 'Practice',
+        variants: [
+          {
+            label: 'action-secondary',
+            class: 'action-secondary',
+            sample: 'Stop',
+          },
+        ],
+      },
+      { role: 'answer', sample: 'C#' },
+      {
+        role: 'control',
+        sample: 'Letters',
+        variants: [
+          {
+            label: 'control-selected',
+            class: 'control-selected',
+            sample: 'Solfège',
+          },
+        ],
+      },
+    ],
+  },
+];
+
+function readRoleProps(role: string) {
+  const p = `--type-${role}`;
+  return {
+    size: cssVar(`${p}-size`),
+    weight: cssVar(`${p}-weight`),
+    leading: cssVar(`${p}-leading`),
+    color: cssVar(`${p}-color`),
+    family: cssVar(`${p}-family`) || null,
+  };
+}
+
+const propCellStyle = {
+  fontSize: '0.7rem',
+  color: 'var(--color-text-muted)',
+  fontFamily: 'monospace',
+  minWidth: '2.5rem',
+  flexShrink: 0,
+} as const;
+
+function RoleRow(
+  { role, sample, cls }: { role: string; sample: string; cls?: string },
+) {
+  const props = readRoleProps(role);
+  const textClass = cls ? `text-${role} ${cls}` : `text-${role}`;
+  const needsBg = role === 'action' && !cls;
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: '0.5rem',
+        padding: '0.2rem 0',
+      }}
+    >
+      <code
+        style={{
+          fontSize: '0.65rem',
+          minWidth: '10rem',
+          color: 'var(--color-text-light)',
+          flexShrink: 0,
+        }}
+      >
+        {cls || role}
+      </code>
+      <span
+        class={textClass}
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          flex: '1 1 0',
+          minWidth: 0,
+          ...(needsBg
+            ? {
+              background: 'var(--color-brand)',
+              padding: '0.1rem 0.4rem',
+              borderRadius: '4px',
+            }
+            : {}),
+        }}
+      >
+        {sample}
+      </span>
+      <span style={propCellStyle}>{props.size}</span>
+      <span style={propCellStyle}>{props.weight}</span>
+      <span style={propCellStyle}>{props.leading}</span>
+      <span
+        style={{
+          width: '14px',
+          height: '14px',
+          borderRadius: '2px',
+          background: props.color || 'transparent',
+          border: '1px solid var(--color-border)',
+          flexShrink: 0,
+        }}
+      />
+    </div>
+  );
+}
+
+function TypographyRoleReference({ tabId }: { tabId: string }) {
   return (
     <>
-      <h2>Typography — Type Hierarchy</h2>
+      <h2>Typography — Role Reference</h2>
       <PreviewGrid>
-        <Section title='All text roles' tabId={tabId}>
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
-          >
-            <Text role='display-brand' as='div'>Display Brand</Text>
-            <Text role='metric-hero' as='div'>99</Text>
-            <Text role='heading-page' as='div'>Heading Page</Text>
-            <Text role='heading-section' as='div'>Heading Section</Text>
-            <Text role='heading-subsection' as='div'>Heading Subsection</Text>
-            <Text role='label' as='div'>Label</Text>
-            <Text role='label-tag' as='div'>Label Tag</Text>
-            <div>Body text (default — no role needed)</div>
-            <Text role='body-secondary' as='div'>Body Secondary</Text>
-            <Text role='quiz-instruction' as='div'>Quiz Instruction</Text>
-            <Text role='quiz-prompt' as='div'>Quiz Prompt</Text>
-            <Text role='quiz-response' as='div'>Quiz Response</Text>
-            <Text role='quiz-feedback' as='div'>Quiz Feedback</Text>
-            <Text role='supporting' as='div'>Supporting</Text>
-            <Text role='metric-primary' as='div'>0.52s</Text>
-            <Text role='metric-info' as='div'>30 reps</Text>
-            <Text role='status' as='div'>Status</Text>
-          </div>
-        </Section>
-        <Section title='In context — mode header' tabId={tabId}>
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
-          >
-            <Text role='heading-page' as='h1'>Guitar Fretboard</Text>
-            <Text role='body-secondary' as='p'>
-              Identify notes on the fretboard
-            </Text>
-          </div>
-        </Section>
-        <Section title='In context — quiz' tabId={tabId}>
+        <Section title='All 20 roles — live from CSS' tabId={tabId}>
           <div
             style={{
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
+              alignItems: 'baseline',
               gap: '0.5rem',
+              padding: '0.2rem 0',
+              borderBottom: '1px solid var(--color-border)',
+              marginBottom: '0.25rem',
             }}
           >
-            <Text role='quiz-instruction' as='div'>What note is this?</Text>
-            <Text role='quiz-prompt' as='div'>C#</Text>
-          </div>
-        </Section>
-        <Section title='In context — metric display' tabId={tabId}>
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
-          >
-            <Text role='heading-subsection' as='div'>Speed check</Text>
-            <div
-              style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}
+            <span
+              style={{
+                fontSize: '0.65rem',
+                minWidth: '10rem',
+                color: 'var(--color-text-muted)',
+                fontWeight: 600,
+              }}
             >
-              <Text role='label'>Response time</Text>
-              <Text role='metric-primary'>0.5s</Text>
-            </div>
-            <Text role='supporting' as='div'>
-              Timing thresholds are based on this measurement.
-            </Text>
+              Role
+            </span>
+            <span
+              style={{
+                fontSize: '0.65rem',
+                color: 'var(--color-text-muted)',
+                fontWeight: 600,
+              }}
+            >
+              Sample
+            </span>
+            <span
+              style={{
+                ...propCellStyle,
+                marginLeft: 'auto',
+                fontWeight: 600,
+                color: 'var(--color-text-muted)',
+              }}
+            >
+              Size
+            </span>
+            <span
+              style={{
+                ...propCellStyle,
+                fontWeight: 600,
+                color: 'var(--color-text-muted)',
+              }}
+            >
+              Wt
+            </span>
+            <span
+              style={{
+                ...propCellStyle,
+                fontWeight: 600,
+                color: 'var(--color-text-muted)',
+              }}
+            >
+              Lh
+            </span>
+            <span style={{ width: '14px', flexShrink: 0 }} />
           </div>
+          {ROLE_GROUPS.map(({ group, roles }) => (
+            <div key={group}>
+              <Text
+                role='label-tag'
+                as='div'
+                style={{ padding: '0.4rem 0 0.15rem' }}
+              >
+                {group}
+              </Text>
+              {roles.map(({ role, sample, variants }) => (
+                <div key={role}>
+                  <RoleRow role={role} sample={sample} />
+                  {variants?.map((v) => (
+                    <RoleRow
+                      key={v.label}
+                      role={role}
+                      sample={v.sample}
+                      cls={v.class}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          ))}
         </Section>
       </PreviewGrid>
     </>
@@ -819,7 +1015,7 @@ export function DesignSystemTab({ tabId }: { tabId: string }) {
       <TabsSection tabId={tabId} />
       <SettingsPanelSection tabId={tabId} />
       <ActionButtonsSection tabId={tabId} />
-      <TypographySection tabId={tabId} />
+      <TypographyRoleReference tabId={tabId} />
       <TypeScaleSection tabId={tabId} />
       <TypographyPaletteSection tabId={tabId} />
       <SpacingSection tabId={tabId} />
