@@ -13,8 +13,7 @@ Audit the tech debt tracker against the current codebase.
    - Look for patterns that commonly indicate debt: duplicated code blocks,
      ad-hoc workarounds, hardcoded values that should be configurable.
 
-4. Present findings as a table:
-   | # | Item (summary) | Status | Evidence |
+4. Present findings as a table: | # | Item (summary) | Status | Evidence |
    - Status: **Fixed**, **Partially fixed**, **Still present**, or **New**
    - Evidence: file paths, line numbers, or brief explanation
 

@@ -9,18 +9,25 @@ Things move from here to the backlog.
 
 - Cheat sheets for each mode.
 
-- make # of questions done in the round a much bigger deal. That's what we're aiming to increase. And track it.
+- make # of questions done in the round a much bigger deal. That's what we're
+  aiming to increase. And track it.
 
-- Idea: replace speed check with in-quiz trickiness: ask same question multiple times—eg E, F, E. Second E is cached in WM, response time should be pretty close to the right target. Enough samples may be good enough. Can test.
+- Idea: replace speed check with in-quiz trickiness: ask same question multiple
+  times—eg E, F, E. Second E is cached in WM, response time should be pretty
+  close to the right target. Enough samples may be good enough. Can test.
 
 - new progress view
-    - old fast/slow elements hard to distinguish. Kind of the point, but still annoying. I know I should proactice regardless, but I just want to know.
-    - also may want to show time scale somehow (some items may be new, decay after a few hours, others very stable). Global or per-group, or per item? So "recently" is different for different items.
+  - old fast/slow elements hard to distinguish. Kind of the point, but still
+    annoying. I know I should proactice regardless, but I just want to know.
+  - also may want to show time scale somehow (some items may be new, decay after
+    a few hours, others very stable). Global or per-group, or per item? So
+    "recently" is different for different items.
 
+- bug: speed check should have same keyboard behavior as other modes. Currently
+  [02/26/2026 00:05] supports keyboard, but weirdly and no hint.
 
-- bug: speed check should have same keyboard behavior as other modes. Currently [02/26/2026 00:05] supports keyboard, but weirdly and no hint.
-
-- semantic design system. not just font-lg/sm, but where each gets used. Baking into components sounds good.
+- semantic design system. not just font-lg/sm, but where each gets used. Baking
+  into components sounds good.
 
 - dev: periodic git cleanup. v0: Remove merged feature branches.
 
@@ -36,20 +43,20 @@ Things move from here to the backlog.
     plans/product-specs/2026-02-13-landing-screen.md.
 
 - inference of what you know
-  - 10 random notes on fretboard all automatic -> you know the fretboard -> you probably know other guitar, music stuff for that matter.
+  - 10 random notes on fretboard all automatic -> you know the fretboard -> you
+    probably know other guitar, music stuff for that matter.
     - analytics eventually
     - common sense to start. Within mode first.
     - perhaps synthetic data would be fun.
 
-
 - Project timeline report/viz/analysis. Typically see slowdown with complexity,
   polish. Let’s see.
-    - look at history, analyze, story tell
-https://github.com/jhlee0409/claude-code-history-viewer
-        - how many human lines of input?
-        - how many lines of code?
-        - how many lines of guidance
-        - "phases of development" 
+  - look at history, analyze, story tell
+    https://github.com/jhlee0409/claude-code-history-viewer
+    - how many human lines of input?
+    - how many lines of code?
+    - how many lines of guidance
+    - "phases of development"
 
 progress chart lost on-hover/tap details. Add those back in? needed?
 
