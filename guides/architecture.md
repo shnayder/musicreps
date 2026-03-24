@@ -67,8 +67,8 @@ UI layer:
     imports: stats-display
   declarative/generic-mode.tsx ← GenericMode: interprets ModeDefinition → full UI
     imports: hooks, ui components, declarative/types
-  modes/{name}/{name}-mode.tsx ← 2 hand-written Preact mode components
-    imports: ./logic, hooks, ui components, recommendations, mode-ui-state
+  ui/interactive-fretboard.tsx ← Reusable tappable fretboard component
+    imports: html-helpers, declarative/types
 
 App layer:
   navigation.ts            ← Home screen, mode switching
@@ -176,13 +176,15 @@ const engine = useQuizEngine(engineConfig, learner.selector);
 **When to use it**: Any logic that affects UI state and could benefit from
 testability. Pure state modules get the `*-state.ts` suffix.
 
-### Declarative Modes (9 of 11 modes)
+### Declarative Modes (all 11 modes)
 
-Most quiz modes use the **declarative system**: a `ModeDefinition<Q>` data
+All quiz modes use the **declarative system**: a `ModeDefinition<Q>` data
 object describes what varies (item space, question logic, answer buttons, scope,
 stats), and `GenericMode` handles all shared hook composition and rendering.
+Three answer variants: single (`answer`), sequential (`sequential`), and
+multi-tap (`multiTap`).
 
-A typical mode definition is 20–50 lines in `src/modes/{name}/definition.ts`:
+A typical mode definition is 20–100 lines in `src/modes/{name}/definition.ts`:
 
 ```typescript
 export const SEMITONE_MATH_DEF: ModeDefinition<Question> = {
@@ -249,18 +251,7 @@ regex) is fine as long as it meets that contract.
 registerDeclarativeMode(SEMITONE_MATH_DEF);
 ```
 
-### Hand-Written Modes (2 of 11 modes)
-
-Chord Spelling (sequential note entry state machine) and Speed Tap
-(fretboard-as-response) are too specialized for GenericMode. They remain as
-hand-written Preact components composing shared hooks and UI directly.
-
-```typescript
-registerPreactMode('chordSpelling', 'Chord Spelling', ChordSpellingMode);
-registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);
-```
-
-**Key hooks (shared by both patterns):**
+**Key hooks (shared by all modes):**
 
 - `useGroupScope` — wraps scope persistence, enabled-item derivation,
   recommendations, and practicing-label formatting into one call. Returns stable
@@ -644,15 +635,14 @@ rather than adding complexity. Per-mode flags are a code smell.
 9. **CLAUDE.md**: update quiz modes table with item count, answer type, and ID
    format
 
-### Hand-written mode checklist (rare)
+### Multi-tap mode checklist
 
-Only for modes needing custom response interfaces (sequential input, spatial
-tap, etc.) that can't be expressed as a `ModeDefinition`:
+For modes where the user taps multiple targets on a spatial surface (fretboard):
 
-1. **Create** `src/modes/{name}/logic.ts` — pure logic (same as above)
-2. **Create** `src/modes/{name}/{name}-mode.tsx` — a Preact component composing
-   shared hooks and UI components
-3. **Compose hooks**: `useLearnerModel`, `useGroupScope`/`useScopeState`,
-   `useQuizEngine`, `usePhaseClass`, `useModeLifecycle`, `useRoundSummary`
-4. **Register** in `app.ts` with `registerPreactMode()`
-5. Steps 4-9 from the declarative checklist above
+1. **Create** `src/modes/{name}/logic.ts` — pure logic with `evaluate()`,
+   `getTargets()`, group helpers
+2. **Create** `src/modes/{name}/definition.ts` — `ModeDefinition<Q>` with
+   `multiTap` variant, `buttons: { kind: 'none' }`, and optional `useController`
+   for custom stats rendering
+3. **Register** in `app.ts` with `registerDeclarativeMode()`
+4. Steps 4-9 from the declarative checklist above

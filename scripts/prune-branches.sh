@@ -40,7 +40,7 @@ current_branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
 
 # Build grep pattern to exclude kept branches.
 # Anchors each pattern to full branch name (after leading whitespace).
-exclude_pattern="^\\*"
+exclude_pattern="^[\\*\\+]"
 for keep in "${KEEP[@]}"; do
   # Convert glob * to regex .*, anchor to full line
   pattern=$(echo "$keep" | sed 's/\*/.\*/g')

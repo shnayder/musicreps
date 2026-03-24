@@ -66,14 +66,15 @@ src/
   styles.css             # Inlined CSS
   *_test.ts              # Tests (node:test)
   declarative/
-    types.ts             # ModeDefinition, ButtonsDef, ScopeDef, StatsDef
+    types.ts             # ModeDefinition, ButtonsDef, ScopeDef, StatsDef, MultiTapDef
     generic-mode.tsx     # GenericMode: interprets ModeDefinition → full UI
+    use-sequential-input.ts  # Sequential (multi-note) collection hook
+    use-multi-tap-input.ts   # Multi-tap (spatial set) collection hook
   modes/
     {name}/
       logic.ts            # Pure mode logic: questions, answers, items, groups
       logic_test.ts        # Tests for mode logic
-      definition.ts        # Declarative mode definition (10 modes)
-      {name}-mode.tsx      # Hand-written Preact component (1 mode)
+      definition.ts        # Declarative mode definition (11 modes)
   ui/
     mode-screen.tsx       # Structural layout components (ModeScreen, QuizArea, etc.)
     buttons.tsx           # Answer button components (NoteButtons, NumberButtons, etc.)
@@ -109,17 +110,17 @@ Single-page app using Preact for UI components. Source files are ES modules
 bundled by esbuild (with automatic JSX transform) into a single IIFE `<script>`
 at build time. Key patterns:
 
-- **Declarative Modes** — 10 of 11 modes use `ModeDefinition<Q>` (20-50 lines of
+- **Declarative Modes** — All 11 modes use `ModeDefinition<Q>` (20-100 lines of
   data) interpreted by `GenericMode`, which handles all hook composition,
-  rendering, and keyboard input. Modes needing custom rendering (e.g., fretboard
-  SVG) provide a `useController` hook. 1 specialized mode (Speed Tap) remains as
-  a hand-written component.
+  rendering, and keyboard input. Three answer variants: single (`answer`),
+  sequential (`sequential`, e.g., chord spelling), and multi-tap (`multiTap`,
+  e.g., Speed Tap). Modes needing custom rendering (e.g., fretboard SVG) provide
+  a `useController` hook.
 - **Shared Hooks** — `useQuizEngine` (engine lifecycle), `useLearnerModel`
   (adaptive selector + storage), `useGroupScope` (group scope + recommendations
   for 6 modes), `useModeLifecycle` (navigation activate/deactivate for all
   modes), `useScopeState` (low-level scope persistence), `useKeyHandler`
-  (keyboard events). GenericMode composes these automatically; the hand-written
-  Speed Tap mode composes them directly.
+  (keyboard events). GenericMode composes these automatically.
 - **Shared UI Components** — `ModeScreen`, `QuizArea`, `PracticeCard`,
   `StatsTable`/`StatsGrid`, `NoteButtons`, `GroupToggles`, etc. Emit the same
   CSS class names as the build-time HTML for style parity.

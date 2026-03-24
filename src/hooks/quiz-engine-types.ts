@@ -18,7 +18,6 @@ export type QuizEngineConfig = {
     ctx: { submitAnswer: (input: string) => void },
   ) => boolean | void;
   getPracticingLabel?: () => string;
-  getExpectedResponseCount?: (itemId: string) => number;
 };
 
 export type QuizEngineHandle = {
