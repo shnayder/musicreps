@@ -172,7 +172,7 @@ graph, algorithm details, and step-by-step "adding a new quiz mode" checklist.
 | Interval ↔ Semitones | 24 (12 intervals x 2 dirs)         | Interval or number 1-12 | `m2:fwd`, `m2:rev`     |
 | Semitone Math        | 264 (12 notes x 11 x 2 dirs)       | Note name               | `C+3`, `C-3`           |
 | Interval Math        | 264 (12 notes x 11 x 2 dirs)       | Note name               | `C+m3`, `C-P4`         |
-| Key Signatures       | 24 (12 keys x 2 dirs)              | Sig label or note       | `D:fwd`, `D:rev`       |
+| Key Signatures       | 48 (24 keys x 2 dirs)              | Sig label or note       | `D:fwd`, `Am:rev`      |
 | Scale Degrees        | 144 (12 keys x 6 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `C:7:rev`   |
 | Diatonic Chords      | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral         | `Bb:IV:fwd`, `C:D:rev` |
 | Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`    |

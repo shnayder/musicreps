@@ -5,8 +5,6 @@ import {
   displayNote,
   isValidKeysigInput,
   isValidNoteInput,
-  keySignatureLabel,
-  MAJOR_KEYS,
   rootUsesFlats,
 } from '../../music-data.ts';
 import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
@@ -14,10 +12,10 @@ import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,
   ALL_ITEMS,
+  ALL_KEY_GROUPS,
   getItemIdsForGroup,
   getQuestion,
   getStatsRows,
-  KEY_GROUPS,
   type Question,
 } from './logic.ts';
 
@@ -32,13 +30,14 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   allItems: ALL_ITEMS,
   getQuestion,
   getPromptText: (q) =>
-    q.dir === 'fwd' ? displayNote(q.root) + ' major' : q.sigLabel + ' major',
+    q.dir === 'fwd'
+      ? displayNote(q.root) + ' ' + q.quality
+      : q.sigLabel + ' ' + q.quality,
   quizInstruction: (q) => q.dir === 'fwd' ? 'What key signature?' : 'What key?',
   answer: {
     kind: 'bidirectional',
     fwd: {
-      getExpectedValue: (q) =>
-        keySignatureLabel(MAJOR_KEYS.find((k) => k.root === q.root)!),
+      getExpectedValue: (q) => q.sigLabel,
       comparison: 'exact',
     },
     rev: {
@@ -61,16 +60,16 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
 
   scope: {
     kind: 'groups',
-    groups: KEY_GROUPS,
+    groups: ALL_KEY_GROUPS,
     getItemIdsForGroup,
     allGroupIndices: ALL_GROUP_INDICES,
     storageKey: 'keySignatures_enabledGroups',
     scopeLabel: 'Keys',
     defaultEnabled: [0, 1],
     formatLabel: (groups) => {
-      if (groups.size === KEY_GROUPS.length) return 'all keys';
+      if (groups.size === ALL_KEY_GROUPS.length) return 'all keys';
       const keys = [...groups].sort((a, b) => a - b)
-        .flatMap((g) => KEY_GROUPS[g].keys)
+        .flatMap((g) => ALL_KEY_GROUPS[g].keys)
         .map((k) => displayNote(k));
       return keys.join(', ');
     },

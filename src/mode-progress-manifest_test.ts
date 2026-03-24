@@ -61,7 +61,7 @@ describe('MODE_PROGRESS_MANIFEST', () => {
       intervalSemitones: 1, // single-group mode
       semitoneMath: 5, // distance groups
       intervalMath: 5, // distance groups
-      keySignatures: 5, // key groups
+      keySignatures: 7, // 5 major + 2 minor key groups
       scaleDegrees: 3, // degree groups
       diatonicChords: 3, // chord groups
       chordSpelling: 7, // spelling groups (groups 0-6)
