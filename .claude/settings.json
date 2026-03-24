@@ -23,6 +23,6 @@
     ]
   },
   "permissions": {
-    "additionalDirectories": ["/Users/shnayder/Dropbox/projects/musicreps-root/.todos"]
+    "additionalDirectories": ["../.todos"]
   }
 }

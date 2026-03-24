@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: startsWith(github.event.ref, 'claude/')
+    if: github.event.ref_type == 'branch' && startsWith(github.event.ref, 'claude/')
     steps:
       - name: Checkout (for deploy script)
         uses: actions/checkout@v4
