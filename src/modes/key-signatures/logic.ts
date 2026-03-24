@@ -32,27 +32,33 @@ export const KEY_GROUPS = [
 const MINOR_ROOT_TO_MAJOR = new Map<string, MajorKey>();
 const RELATIVE_MINOR_DEGREE = 6; // 6th degree of a major scale = relative minor
 for (const key of MAJOR_KEYS) {
-  MINOR_ROOT_TO_MAJOR.set(getScaleDegreeNote(key.root, RELATIVE_MINOR_DEGREE), key);
+  MINOR_ROOT_TO_MAJOR.set(
+    getScaleDegreeNote(key.root, RELATIVE_MINOR_DEGREE),
+    key,
+  );
 }
 
 /** All minor root names, in MAJOR_KEYS order. */
 const MINOR_ROOTS = MAJOR_KEYS.map((k) =>
-  getScaleDegreeNote(k.root, RELATIVE_MINOR_DEGREE),
+  getScaleDegreeNote(k.root, RELATIVE_MINOR_DEGREE)
 );
+
+/** Build a minor-key group from a filtered set of major keys. */
+function minorKeyGroup(
+  majorKeys: MajorKey[],
+): { keys: string[]; label: string } {
+  const keys = majorKeys.map(
+    (k) => getScaleDegreeNote(k.root, RELATIVE_MINOR_DEGREE) + 'm',
+  );
+  const label = keys.map((k) => displayNote(k.slice(0, -1)) + 'm').join(' ');
+  return { keys, label };
+}
 
 /** Minor key groups for scope selection, ordered by difficulty. */
 // Group 5: 0–3 accidentals, Group 6: 4+ accidentals
 export const MINOR_KEY_GROUPS = [
-  {
-    keys: MAJOR_KEYS.filter((k) => k.accidentalCount <= 3)
-      .map((k) => getScaleDegreeNote(k.root, 6) + 'm'),
-    label: 'Am Em Dm Bm Gm F\u266Fm Cm',
-  },
-  {
-    keys: MAJOR_KEYS.filter((k) => k.accidentalCount > 3)
-      .map((k) => getScaleDegreeNote(k.root, 6) + 'm'),
-    label: 'C\u266Fm Fm G\u266Fm B\u266Dm D\u266Fm',
-  },
+  minorKeyGroup(MAJOR_KEYS.filter((k) => k.accidentalCount <= 3)),
+  minorKeyGroup(MAJOR_KEYS.filter((k) => k.accidentalCount > 3)),
 ];
 
 /** All key groups: 5 major + 2 minor. */
