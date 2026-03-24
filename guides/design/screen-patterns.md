@@ -1,88 +1,230 @@
 # Screen & Layout Patterns
 
-Patterns for specific screens and reusable layout techniques.
+How to make layout decisions in this app. Not a description of what exists (the
+preview page serves that role) and not a list of principles
+([layout-and-ia.md](layout-and-ia.md) covers those). This is the practical
+bridge — how to apply principles to concrete screen decisions.
 
-**Live reference:** The preview page's **Screen Structure** and **Full Flow**
-tabs show these patterns with current styling. The CSS is the single source of
-truth — this guide describes structural patterns and design rationale.
+**Companion docs:**
 
-## Screen Patterns
+- [layout-and-ia.md](layout-and-ia.md) — 17 enduring UX principles (the "why")
+- [architecture.md](../architecture.md#universal-mode-layout) — DOM structure
+  and phase classes (the implementation)
+- Preview page (`/preview`) — visual source of truth
 
-### Home Screen
+---
 
-Full-screen mode selector. Title uses display font with a green accent bar
-beneath it. Mode cards have a green left border accent and a right-facing
-chevron. Section labels use small bold muted text with a horizontal rule
-extending to the right edge. Footer has Settings text link and version number.
+## The Three-Act Loop
 
-### Text Link
+Every mode follows the same rhythm: **Configure, Drill, Reflect.** This maps
+directly to the phase cycle (`idle` → `active` → `round-complete` → `idle`).
+Each act has fundamentally different user needs and therefore fundamentally
+different layout constraints.
 
-Reusable `.text-link` class for inline link-styled interactive elements. Muted
-color, no border/background, underline on hover. Meets touch target minimum.
+**Act 1 — Configure (idle phase).** The user is browsing. They can tolerate
+density. They are making decisions: what to practice, how they are doing, whether
+to accept a recommendation. The layout can afford information richness — status
+cards, scope toggles, stats grids, recommendations. Scrolling is fine. The
+user's attention is diffuse.
 
-### Mode Top Bar
+**Act 2 — Drill (active phase).** The user is under time pressure. Every pixel
+must serve the question-answer loop. The layout must be sparse: prompt, answer
+controls, minimal session chrome. No scrolling. The user's attention is focused
+on a single point. See layout-and-ia.md principle #6 (Minimize chrome during
+quiz).
 
-Each mode screen has a simple top bar: back button + mode title. Hidden during
-active quiz and calibration phases.
+**Act 3 — Reflect (round-complete phase).** The user has just finished a burst.
+This is a decompression moment. The layout should give them a clear summary (how
+did that round go?) and a clear choice (keep going or stop?). Not as sparse as
+drilling, not as dense as configuring. The content is read-only — there are no
+decisions to make except "again?" See principle #15 (Data abstraction before
+detail).
 
-### Practice Card
+**The key insight: density is a function of phase.** If you are adding something
+to the drill phase and it makes the screen denser, you are almost certainly
+putting it in the wrong place. If you are adding something to the idle phase and
+it feels sparse, you might be under-using the space.
 
-Consolidated single card containing: mastery status -> suggestion card ->
-scope toggles -> Practice CTA. When a recommendation exists, a gold suggestion
-card (`.suggestion-card`) appears at the top of the Practice Settings zone with
-an "Accept" button that pre-fills the scope toggles.
+---
 
-### Quiz Session Info
+## The Zone Model
 
-During active quiz: full-width countdown bar (depletes over 60s, turns gold in
-last 10s) + single compact info row (context, time, count, close button).
+The app uses a three-zone structural layout (`ScreenLayout` →
+`LayoutHeader` / `LayoutMain` / `LayoutFooter`). This is not just CSS
+convenience — it is a content placement contract.
 
-### Quiz Area
+**Header zone — identity and navigation chrome.** In idle: mode top bar (icon,
+title, close). In active: quiz session info (countdown bar, context, count,
+close). The header is fixed; it does not scroll. It should be as thin as
+possible. Nothing the user needs to interact with frequently belongs here.
 
-Active quiz area gets a surface background via phase class on the mode screen
-container with a lighter border and reduced padding during active state.
+**Main zone — the primary content area.** This is where the user's attention
+lives. In idle, it holds tab panels (Practice, Progress) and scrolls. In active,
+it holds the quiz stage (prompt + response) and does not scroll. The switch
+between scrollable and non-scrollable main is a key phase transition marker. If
+content scrolls during drilling, something is wrong.
 
-### Round Complete Stats
+**Footer zone — actions and navigation.** In idle: the Practice button and the
+tab bar. In round-complete: continue/stop actions. The footer is fixed; it
+anchors the user's next action at a predictable screen position. See principle
+#13 (Action gravity).
 
-Three stats in a row: correct (x/y), median time, fluent (x/y). Round number in
-heading.
+**The practical rule:** you never need to ask "where vertically does this go?"
+The answer is always: is it chrome (header), content (main), or an action
+(footer)?
 
-## Layout Patterns
+---
 
-### Vertical centering for quiz content
+## Placing New Content
 
-Quiz content should center vertically in the available viewport height to
-prevent top-stacking on larger screens. The quiz area container uses flex column
-with `justify-content: center` and a min-height.
+When you have a new piece of UI, follow this decision path.
 
-**Rationale:** On phones the content fills naturally, but on tablets and desktop
-the quiz prompt and buttons stack at the top with large empty space below.
-Centering creates balanced whitespace above and below. The countdown bar and
-session info stay pinned at the top as flex-shrink: 0 chrome.
+### Step 1: Which phase?
 
-### Stat card surface
+- **User needs it while drilling** → active phase. Apply extreme scrutiny —
+  does it genuinely serve the question-answer loop? If not, it belongs
+  elsewhere.
+- **User needs it before starting** → idle phase, in one of the tabs.
+- **User needs it after a round** → round-complete phase.
+- **User needs it across phases** → session chrome (header zone) or a
+  persistent action (footer zone). This is rare.
 
-Round-complete stats and similar summary blocks should live inside a card
-surface to provide visual containment. Uses bg color, lighter border, large
-radius, standard padding, and a max-width with auto margins for centering.
+### Step 2: If idle phase, which tab?
 
-### Two-row answer layout
+- **Practice tab** — anything that configures what the next session will be.
+  Scope controls, recommendations, status summary, the start action.
+- **Progress tab** — anything that shows historical performance. Stats grids,
+  heatmaps, calibration, trends.
+- **A new tab** — only if the content has a different primary intention that
+  does not fit either existing tab. The bar is high — adding a tab adds
+  navigation cost for every user on every visit. (About is the precedent for
+  truly orthogonal content.)
 
-Modes with 12 answers that map to the chromatic scale use a two-row layout:
-top row for "accidental" items (5 buttons), bottom row for "natural" items
-(7 buttons). The 14-column grid from `.note-buttons` is the reference
-implementation; interval mode follows the same shell.
+### Step 3: Within a tab, what container?
 
-**Rationale:** The piano mental model is already established by the note
-buttons. Intervals map 1:1 to semitones, so the same spatial layout reinforces
-the semitone-to-interval association.
+- The **Practice tab** uses a single PracticeCard that flows top-to-bottom:
+  status → recommendation → scope → (start button in footer). New
+  practice-related content slots into this flow based on the principle of
+  configuration leading to action.
+- The **Progress tab** is more modular: stats container, then optional extras,
+  then baseline info. New analytics or visualization features slot in here.
 
-### Viewport queries vs. component sizing
+### Step 4: Could this be an overlay?
 
-Component-level sizing (grids, max-widths) should not vary by viewport width.
-Components may render in different contexts — the component preview page, a
-screenshot viewport, or the actual app — so viewport-conditional sizing creates
-mismatches. Use the container's own `max-width` constraint instead.
+Overlays (modals, drawers) are for content that interrupts the current flow:
+global settings, confirmations, or content requiring a different interaction
+mode. Do not use overlays for content the user accesses frequently within a mode.
 
-Reserve `@media` viewport queries for **structural layout** (body padding, phase
-margins) and **typography scaling**, not for component internals.
+### Anti-patterns
+
+- Adding a scope control to the Progress tab (scope belongs in Practice)
+- Adding a stats summary to the active quiz phase (stats are for reflection)
+- Creating a new tab for something that could be a section within Practice or
+  Progress
+- Putting an action in the header zone (actions belong in footer or inline with
+  content)
+
+---
+
+## Layout Techniques
+
+Each technique below is a design decision with rationale, not a CSS recipe.
+
+### Quiz stage: prompt/response split
+
+During active drilling, the main zone divides into two vertically-stacked
+regions: the prompt (what the app presents) and the response (how the user
+answers). The prompt has more space because it carries more visual complexity
+(fretboard SVG, multi-line text prompts), while response controls are compact (a
+row or two of buttons). Both regions center their content. The response area
+stays in the lower half of the screen, within thumb reach on mobile.
+
+### Card containment for configuration
+
+The Practice tab wraps all configuration in a single card surface. This visually
+communicates "this is one decision" (what to practice). If a new configuration
+concern is added, it should go inside this card, not beside it. A second card
+would imply a second independent decision. See principle #7 (Visual containers
+match logical groups).
+
+### Two-row chromatic answer layout
+
+When a mode has 12 answers mapping to the chromatic scale, they use a
+piano-inspired two-row layout: 5 accidentals on top, 7 naturals on bottom. This
+leverages the piano mental model musicians already have. Intervals map 1:1 to
+semitones, so the same spatial layout reinforces the association. Any new mode
+with chromatic answers should use this layout.
+
+### Scrollable vs. fixed main
+
+The idle phase main zone scrolls because configuration and stats content may
+exceed viewport height, especially on mobile. The active phase main zone is
+fixed — no scrolling — because scrolling during a timed drill is a failure of
+layout. If active-phase content does not fit without scrolling, the content needs
+to be reduced, not the constraint relaxed.
+
+### Viewport queries: structural only
+
+Viewport-based responsive changes should affect structural layout (body padding,
+phase margins) and typography scaling. They should not change component
+internals. A component should look the same whether rendered in the app, the
+preview page, or a screenshot viewport. Components size themselves via max-width
+constraints, not media queries.
+
+---
+
+## Density Management
+
+Information density should be inversely proportional to time pressure.
+
+**Idle phase: density is welcome.** The user is in browsing mode. They can scan
+a stats grid, read a recommendation, toggle scope options. Multiple information
+groups on screen simultaneously is fine. The constraint is not density but
+clarity — every group must be labeled, contained, and ordered by priority
+(principles #2, #3, #4).
+
+**Active phase: density is the enemy.** Strip everything that is not question,
+answer, feedback, or session progress. The countdown bar and session info row are
+the maximum acceptable chrome. Even feedback should be transient — it appears
+after answering and clears when the next question arrives. If you are tempted to
+show "helpful context" during drilling, put it in the idle phase instead.
+
+**Round-complete phase: density should decompress.** Show the round summary
+prominently. Show the overall context secondarily. The two actions (continue,
+stop) should be the only interactive elements. This is a breathing moment — do
+not fill it with configuration options or detailed analytics.
+
+**Transitions matter.** The shift from idle (dense, scrollable) to active
+(sparse, fixed) should feel like the lights dimming in a theater. The shift from
+active to round-complete should feel like an exhale. The shift back to idle
+should feel like the lights coming back up. Phase classes handle the mechanical
+show/hide, but the designer's job is to ensure the emotional density shift is
+right.
+
+---
+
+## The Home Screen
+
+The home screen is the only screen that does not follow the three-act loop. It
+has one job: get the user into a mode. It is a launcher, not a dashboard.
+
+Mode cards are the primary interactive elements. Section labels group modes by
+category. The footer holds global navigation (Settings, version).
+
+**Placement heuristic:** if content applies to a specific mode, it does not
+belong here. If it applies across modes (global settings, overall progress,
+mode recommendations), it could live here — but the bar is high. Every element
+on the home screen is friction between the user and their practice session. See
+principle #4 (Minimal friction in design-principles.md).
+
+---
+
+## Cross-References
+
+| Need | Go to |
+|------|-------|
+| Why a layout decision is right | [layout-and-ia.md](layout-and-ia.md) (17 principles) |
+| Current DOM structure and phase classes | [architecture.md](../architecture.md#universal-mode-layout) |
+| What components look like now | Preview page (`/preview`) |
+| How to implement a new mode | [architecture.md](../architecture.md) (Adding a New Quiz Mode) |
+| Color, typography, spacing tokens | [visual-design.md](visual-design.md) (index) |
