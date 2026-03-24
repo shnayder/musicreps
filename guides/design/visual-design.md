@@ -22,12 +22,10 @@ refresh the dev server after edits.
 
 | Page                                               | Contents                                                                                       | Source                                        |
 | -------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| [components-preview.html](components-preview.html) | Preact UI components with mock data, token reference (spacing, type, radius), live color system | **Build-generated** from `src/ui/preview.tsx` |
+**Component preview** is the primary tool for
+iterating on component design. Available at `localhost:8001/preview` during dev. (Implemented in `preview.tsx`)
 
-**Component preview** (`components-preview.html`) is the primary tool for
-iterating on component design. Available at `localhost:8001/preview` during dev.
-
-**Screenshots** replace the old static moments page. The Playwright script
+**Screenshots** The Playwright script
 (`scripts/take-screenshots.ts`) captures deterministic screenshots by
 dispatching fixture events to the running app.
 
