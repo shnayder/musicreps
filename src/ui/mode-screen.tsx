@@ -6,7 +6,6 @@ import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
 import type { PracticeSummaryState } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
-import { BaselineInfo } from './speed-check.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
@@ -564,6 +563,46 @@ export function TabIcon({ icon, text }: { icon: string; text: string }) {
       />
       <span>{text}</span>
     </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// BaselineInfo — progress tab inline component (moved from speed-check.tsx
+// to avoid circular dependency)
+// ---------------------------------------------------------------------------
+
+function BaselineInfo(
+  { baseline, onRun }: { baseline: number | null; onRun: () => void },
+) {
+  const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
+  const tag = baseline
+    ? null
+    : <Text role='supporting' class='baseline-default-tag'>(default)</Text>;
+  const btnLabel = baseline ? 'Redo speed check' : 'Run speed check';
+  return (
+    <div class='baseline-info'>
+      <Text role='heading-subsection' as='div' class='baseline-header'>
+        Speed check
+      </Text>
+      <div class='baseline-metric'>
+        <Text role='label'>Response time for note input</Text>
+        <Text role='metric-primary'>
+          {value}
+          {tag && <>{tag}</>}
+        </Text>
+      </div>
+      <Text role='supporting' as='div' class='baseline-explanation'>
+        Timing thresholds are based on this measurement.
+      </Text>
+      <button
+        type='button'
+        tabIndex={0}
+        class='baseline-rerun-btn'
+        onClick={onRun}
+      >
+        {btnLabel}
+      </button>
+    </div>
   );
 }
 

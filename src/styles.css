@@ -2223,19 +2223,16 @@ button {
 /* ==========================================================================
    12. CALIBRATION
    ========================================================================== */
-.speed-check-header-row {
+.speed-check-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: var(--space-1) 0;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3)
+    var(--size-content-inset);
+  background: var(--color-chrome);
 }
-.speed-check-header-progress {
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
-  line-height: var(--type-metric-info-leading);
-  color: var(--type-metric-info-color);
-  font-variant-numeric: tabular-nums;
+.speed-check-label {
+  flex: 1;
 }
 .heatmap-swatch {
   display: inline-block;

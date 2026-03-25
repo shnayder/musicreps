@@ -1370,29 +1370,15 @@ function GenericModeBody<Q>(
 
   if (sc.speedCheck) {
     return (
-      <ScreenLayout>
-        <LayoutHeader>
-          <ModeHeader
-            def={def}
-            isIdle={false}
-            progressColors={progressColors}
-            navigateHome={navigateHome}
-          />
-        </LayoutHeader>
-        <LayoutMain scrollable={false}>
-          <SpeedCheck
-            config={NOTE_BUTTON_CONFIG}
-            fixture={typeof sc.speedCheck === 'object'
-              ? sc.speedCheck
-              : undefined}
-            onComplete={(baseline) => {
-              learner.applyBaseline(baseline);
-              sc.setSpeedCheck(null);
-            }}
-            onCancel={() => sc.setSpeedCheck(null)}
-          />
-        </LayoutMain>
-      </ScreenLayout>
+      <SpeedCheck
+        config={NOTE_BUTTON_CONFIG}
+        fixture={typeof sc.speedCheck === 'object' ? sc.speedCheck : undefined}
+        onComplete={(baseline) => {
+          learner.applyBaseline(baseline);
+          sc.setSpeedCheck(null);
+        }}
+        onCancel={() => sc.setSpeedCheck(null)}
+      />
     );
   }
 
