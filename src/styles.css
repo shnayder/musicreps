@@ -211,13 +211,22 @@
   --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-display: 'Gabarito', system-ui, sans-serif;
 
-  /* Spacing scale */
+  /* Spacing scale (Layer 1: palette) */
   --space-1: 0.125rem;
   --space-2: 0.25rem;
   --space-3: 0.5rem;
   --space-4: 0.75rem;
   --space-5: 1rem;
   --space-6: 1.5rem;
+  --space-7: 2rem;
+
+  /* Spacing roles (Layer 2: semantic) */
+  --gap-micro: var(--space-1);       /* sub-element coupling: icon+label, toggle rows */
+  --gap-related: var(--space-2);     /* related siblings: buttons in group, label+value */
+  --gap-group: var(--space-4);       /* distinct groups within container: heading→content */
+  --pad-component: var(--space-5);   /* internal padding of controls/cards/wells */
+  --pad-region: var(--space-6);      /* layout region padding, major section breaks */
+  --gap-section: var(--space-7);     /* page-level group separators */
 
   /* Border radius scale */
   --radius-sm: 4px;
@@ -226,7 +235,7 @@
 
   /* Interactive element sizes */
   --size-close-btn: 2.25rem;
-  --size-content-inset: var(--space-5);
+  --size-content-inset: var(--pad-region);
   --size-answer-grid: 300px;
   --size-answer-grid-wide: 420px;
 
@@ -480,7 +489,7 @@ body {
   justify-content: center;
   min-height: 0;
   text-align: center;
-  padding: var(--space-3);
+  padding: var(--gap-group);
 }
 /* Instruction + prompt text must not shrink when fretboard/content is present */
 .quiz-stage-prompt > .quiz-instruction,
@@ -513,7 +522,7 @@ body {
   flex: 1;
   min-height: 0;
   text-align: center;
-  padding: var(--space-5);
+  padding: var(--pad-region);
 }
 
 /* ==========================================================================
@@ -526,11 +535,11 @@ body {
 }
 /* Home screen uses ScreenLayout; .home-content provides padding inside LayoutMain */
 .home-content {
-  padding: 0 0 var(--space-5);
+  padding: 0 0 var(--pad-region);
 }
 .home-header {
   text-align: left;
-  padding: var(--space-3) var(--size-content-inset) var(--space-4);
+  padding: var(--gap-group) var(--size-content-inset) var(--pad-component);
   background: var(--color-chrome);
 }
 .home-title {
@@ -549,7 +558,7 @@ body {
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--type-body-secondary-color);
-  margin: var(--space-3) 0 0;
+  margin: var(--gap-group) 0 0;
 }
 /* --- Tabs --- */
 .tabs {
@@ -558,7 +567,7 @@ body {
 }
 .tab-btn {
   flex: 1;
-  padding: var(--space-3) var(--space-5);
+  padding: var(--gap-group) var(--pad-region);
   font-size: var(--type-control-size);
   font-weight: var(--type-control-weight);
   line-height: var(--type-control-leading);
@@ -605,7 +614,7 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 .mode-nav .tab-btn {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--gap-related) var(--gap-group);
 }
 .mode-nav .tab-btn.active::after {
   /* No underline — the icon color is enough for bottom nav */
@@ -620,14 +629,14 @@ body {
     padding-bottom: 0;
   }
   .mode-nav .tab-btn {
-    padding: var(--space-3) var(--space-5);
+    padding: var(--gap-group) var(--pad-region);
   }
   .mode-nav .tab-btn.active::after {
     display: block;
   }
   .tab-icon-label {
     flex-direction: row;
-    gap: var(--space-2);
+    gap: var(--gap-related);
   }
 }
 
@@ -637,11 +646,11 @@ body {
 .home-group-label {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--gap-group);
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
-  margin-top: var(--space-6);
-  margin-bottom: var(--space-2);
+  margin-top: var(--gap-section);
+  margin-bottom: var(--gap-related);
 }
 .track-group-core {
   color: var(--color-track-core);
@@ -667,13 +676,13 @@ body {
   width: 100%;
   box-sizing: border-box;
   text-align: left;
-  padding: var(--space-4) var(--space-4);
+  padding: var(--pad-component) var(--pad-component);
   padding-right: 3rem;
   background: var(--color-card);
   border: 1px solid var(--color-border-lighter);
   border-left: 3px solid var(--color-brand);
   border-radius: var(--radius-md);
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--gap-group);
   cursor: pointer;
   position: relative;
 }
@@ -688,14 +697,14 @@ body {
 }
 /* --- Track accordion sections --- */
 .track-accordion {
-  margin-top: var(--space-2);
+  margin-top: var(--gap-related);
 }
 .track-accordion-header {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--gap-related);
   width: 100%;
-  padding: var(--space-3) 0;
+  padding: var(--gap-group) 0;
   background: none;
   border: none;
   font-family: var(--type-heading-subsection-family);
@@ -728,13 +737,13 @@ body {
   line-height: var(--leading-none);
 }
 .track-accordion-body {
-  padding-bottom: var(--space-2);
+  padding-bottom: var(--gap-related);
 }
 /* --- Star toggle on skill cards --- */
 .skill-card-star {
   position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
+  top: var(--gap-related);
+  right: var(--gap-related);
   width: var(--size-touch-target);
   height: var(--size-touch-target);
   display: flex;
@@ -764,7 +773,7 @@ body {
 }
 /* --- Active Skills tab content --- */
 .active-skills-list {
-  margin-top: var(--space-4);
+  margin-top: var(--pad-component);
 }
 .active-skills-empty {
   font-size: var(--type-status-size);
@@ -772,7 +781,7 @@ body {
   line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
-  margin: var(--space-6) 0;
+  margin: var(--gap-section) 0;
   text-align: center;
 }
 .all-skills-hint {
@@ -781,7 +790,7 @@ body {
   line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
-  margin: var(--space-4) 0 0;
+  margin: var(--pad-component) 0 0;
   text-align: center;
 }
 .active-skill-track-pill {
@@ -790,7 +799,7 @@ body {
   font-size: var(--type-label-tag-size);
   font-weight: var(--type-label-tag-weight);
   line-height: var(--type-label-tag-leading);
-  padding: 1px var(--space-2);
+  padding: 1px var(--gap-related);
   border-radius: 999px;
   margin-bottom: 1px;
 }
@@ -818,13 +827,13 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
-  padding: var(--space-4);
+  padding: var(--pad-component);
   padding-right: 3rem;
 }
 /* Recommendation banner inside active skill card. */
 .skill-rec-banner {
   background: var(--notice-600);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--gap-related) var(--gap-group);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .skill-rec-header {
@@ -847,9 +856,9 @@ body {
   line-height: var(--type-status-leading);
   color: var(--color-success-text);
   background: var(--color-success-bg);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--gap-group) var(--pad-component);
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--pad-component);
   text-align: center;
 }
 /* --- Skill cards (extends home-mode-btn) --- */
@@ -859,7 +868,7 @@ body {
 .skill-card-header {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--gap-group);
 }
 .skill-card-header-text {
   display: flex;
@@ -890,8 +899,8 @@ body {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: baseline;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
+  gap: var(--gap-group);
+  margin-top: var(--gap-group);
   font-size: var(--type-supporting-size);
   font-weight: var(--type-supporting-weight);
   line-height: var(--type-supporting-leading);
@@ -910,7 +919,7 @@ body {
   font-weight: var(--font-semibold);
 }
 .skill-card-progress {
-  margin-top: var(--space-2);
+  margin-top: var(--gap-related);
 }
 .home-mode-name {
   font-family: var(--type-heading-section-family);
@@ -929,10 +938,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) 0;
+  padding: var(--pad-component) 0;
   border-top: 1px solid var(--color-border-lighter);
   background: var(--color-chrome);
-  margin-top: var(--space-4);
+  margin-top: var(--pad-component);
 }
 /* --- Text link (reusable) --- */
 .text-link {
@@ -944,7 +953,7 @@ body {
   cursor: pointer;
   background: none;
   border: none;
-  padding: var(--space-2) 0;
+  padding: var(--gap-related) 0;
   min-height: var(--size-touch-target);
   display: inline-flex;
   align-items: center;
@@ -967,15 +976,15 @@ body {
    4. MODE CHROME
    ========================================================================== */
 .mode-top-bar {
-  padding: var(--space-3) var(--space-3) var(--space-3)
+  padding: var(--gap-group) var(--gap-group) var(--gap-group)
     var(--size-content-inset);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--gap-group);
   background: var(--color-chrome);
 }
 .mode-top-bar-row {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--gap-group);
 }
 .mode-top-bar .skill-icon {
   flex-shrink: 0;
@@ -986,7 +995,7 @@ body {
   border: none;
   font-size: var(--size-close-btn);
   cursor: pointer;
-  padding: var(--space-2);
+  padding: var(--gap-related);
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
   color: var(--color-text-light);
@@ -1021,7 +1030,7 @@ body {
   color: var(--type-heading-page-color);
 }
 .mode-description {
-  margin: var(--space-1) 0 0;
+  margin: var(--gap-micro) 0 0;
   font-size: var(--type-body-secondary-size);
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
@@ -1031,8 +1040,8 @@ body {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: baseline;
-  gap: var(--space-3);
-  margin: var(--space-2) 0 0;
+  gap: var(--gap-group);
+  margin: var(--gap-related) 0 0;
   font-size: var(--type-supporting-size);
   line-height: var(--type-supporting-leading);
 }
@@ -1053,7 +1062,7 @@ body {
 .settings-page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--pad-component);
 }
 .settings-page-header {
   display: flex;
@@ -1070,10 +1079,10 @@ body {
 }
 .settings-section {
   border-top: 1px solid var(--color-border-lighter);
-  padding-top: var(--space-4);
+  padding-top: var(--pad-component);
 }
 .settings-section-title {
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--gap-group);
   font-size: var(--text-base);
 }
 .settings-link-list {
@@ -1088,7 +1097,7 @@ body {
 .settings-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--gap-group);
 }
 
 .segmented-control {
@@ -1101,7 +1110,7 @@ body {
   gap: 2px;
 }
 .segmented-btn {
-  padding: var(--space-2) var(--space-4);
+  padding: var(--gap-related) var(--pad-component);
   border: none;
   border-radius: calc(var(--radius-md) - 2px);
   background: transparent;
@@ -1133,7 +1142,7 @@ body {
 .dev-stat-row {
   display: flex;
   justify-content: space-between;
-  padding: var(--space-1) 0;
+  padding: var(--gap-micro) 0;
 }
 .dev-table {
   width: 100%;
@@ -1142,7 +1151,7 @@ body {
 }
 .dev-table th,
 .dev-table td {
-  padding: var(--space-1) var(--space-2);
+  padding: var(--gap-micro) var(--gap-related);
   text-align: left;
 }
 .dev-table th.num,
@@ -1168,8 +1177,8 @@ body {
 .quiz-session-header {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3) var(--space-2)
+  gap: var(--gap-related);
+  padding: var(--gap-related) var(--gap-group) var(--gap-related)
     var(--size-content-inset);
   background: var(--color-chrome);
 }
@@ -1202,18 +1211,18 @@ body {
 
 /* --- About tab --- */
 .about-tab {
-  padding: var(--space-3) 0;
+  padding: var(--gap-group) 0;
 }
 .about-before-after {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
+  gap: var(--gap-group);
+  margin-top: var(--gap-group);
 }
 .about-ba-row {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--gap-micro);
 }
 .about-ba-text {
   font-size: var(--text-sm);
@@ -1229,14 +1238,14 @@ body {
    5. PRACTICE CARD
    ========================================================================== */
 .practice-card {
-  margin-bottom: var(--space-4);
-  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--pad-component);
+  padding: var(--pad-component) var(--pad-region);
   background: var(--color-card);
   border-radius: var(--radius-md);
 }
 .practice-zone + .practice-zone {
-  margin-top: var(--space-5);
-  padding-top: var(--space-5);
+  margin-top: var(--pad-region);
+  padding-top: var(--pad-region);
 }
 .practice-section-header {
   font-family: var(--type-heading-section-family);
@@ -1245,13 +1254,13 @@ body {
   line-height: var(--type-heading-section-leading);
   color: var(--type-heading-section-color);
   text-align: left;
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--gap-group);
 }
 .practice-status {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  margin-bottom: var(--space-3);
+  gap: var(--gap-micro);
+  margin-bottom: var(--gap-group);
 }
 .practice-status:empty,
 .practice-status-label:empty {
@@ -1260,7 +1269,7 @@ body {
 .practice-status-row {
   display: flex;
   align-items: baseline;
-  gap: var(--space-2);
+  gap: var(--gap-related);
 }
 .practice-status-label {
   font-weight: var(--font-semibold);
@@ -1279,8 +1288,8 @@ body {
   border: 1px solid var(--color-notice-border);
   border-left: 3px solid var(--color-notice);
   border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-3);
+  padding: var(--gap-group) var(--pad-component);
+  margin-bottom: var(--gap-group);
 }
 .suggestion-card-header {
   font-family: var(--type-heading-subsection-family);
@@ -1292,7 +1301,7 @@ body {
 .suggestion-card-body {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--gap-group);
   flex-wrap: wrap;
 }
 .suggestion-card-text {
@@ -1303,7 +1312,7 @@ body {
   font-size: var(--type-control-size);
   font-weight: var(--type-control-weight);
   line-height: var(--type-control-leading);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--gap-related) var(--pad-component);
   border: 1px solid var(--color-brand);
   border-radius: var(--radius-sm);
   background: transparent;
@@ -1318,7 +1327,7 @@ body {
 
 /* --- Practice scope (inside practice card) --- */
 .practice-scope {
-  margin-top: var(--space-4);
+  margin-top: var(--pad-component);
   background: var(--color-well);
 }
 .practice-scope .settings-row {
@@ -1329,7 +1338,7 @@ body {
 .practice-zone-action {
   text-align: center;
   margin-top: auto;
-  padding: var(--space-5) 0 var(--space-4);
+  padding: var(--pad-region) 0 var(--pad-component);
 }
 
 /* ==========================================================================
@@ -1338,44 +1347,44 @@ body {
 
 /* --- Labeled progress bar (skill header + level cards) --- */
 .progress-bar-labeled {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--gap-related) var(--gap-group);
   border: 1px solid var(--color-border-lighter);
   border-radius: var(--radius-md);
   background: var(--color-well);
 }
 .progress-bar-label {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--gap-related);
 }
 
 /* --- Skill header: title + close + progress bar --- */
 .skill-header {
-  padding: var(--space-4) var(--size-content-inset) var(--space-3);
+  padding: var(--pad-component) var(--size-content-inset) var(--gap-group);
   background: var(--color-chrome);
 }
 .skill-header-row {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--gap-group);
 }
 .skill-header-row .mode-title {
   flex: 1;
 }
 .skill-header-progress {
-  margin-top: var(--space-3);
+  margin-top: var(--gap-group);
 }
 
 /* --- Practice config: suggested/custom toggle --- */
 .practice-config {
-  padding: var(--space-3) var(--space-5);
+  padding: var(--gap-group) var(--pad-region);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--gap-group);
 }
 .practice-config-label {
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--gap-micro);
 }
 .practice-config-content {
-  margin-top: var(--space-2);
+  margin-top: var(--gap-related);
 }
 
 /* --- Suggestion lines (suggested mode) --- */
@@ -1384,10 +1393,10 @@ body {
   border: 1px solid var(--color-notice-border);
   border-left: 3px solid var(--color-notice);
   border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--gap-group) var(--pad-component);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--gap-related);
 }
 .suggestion-line {
   font-size: var(--text-sm);
@@ -1402,18 +1411,18 @@ body {
 .level-toggles-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--gap-group);
   background: var(--color-well);
   border-radius: var(--radius-md);
-  padding: var(--space-4);
+  padding: var(--pad-component);
 }
 .level-toggles-header {
-  margin-bottom: calc(-1 * var(--space-2));
+  margin-bottom: calc(-1 * var(--gap-related));
 }
 .level-toggles {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--gap-related);
 }
 .level-toggle-btn {
   min-width: 3.5rem;
@@ -1444,10 +1453,10 @@ body {
 }
 /* --- Level progress card (progress tab) --- */
 .level-progress-card {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--gap-group) var(--pad-component);
   border: 1px solid var(--color-border-lighter);
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--gap-related);
   background: var(--color-card);
 }
 .level-progress-card.skipped {
@@ -1459,8 +1468,8 @@ body {
 .level-progress-header {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-2);
+  gap: var(--gap-group);
+  margin-bottom: var(--gap-related);
 }
 .level-progress-label {
   font-size: var(--text-sm);
@@ -1470,14 +1479,14 @@ body {
 .level-progress-pill {
   font-size: var(--text-xs);
   font-weight: var(--font-medium);
-  padding: var(--space-1) var(--space-3);
+  padding: var(--gap-micro) var(--gap-group);
   border-radius: var(--radius-sm);
   background: var(--color-notice-bg);
   color: var(--color-notice-text);
 }
 .level-progress-actions {
   display: flex;
-  gap: var(--space-1);
+  gap: var(--gap-micro);
 }
 .level-action-btn {
   width: 28px;
@@ -1515,8 +1524,8 @@ body {
    6. PROGRESS TAB
    ========================================================================== */
 .baseline-info {
-  margin-top: var(--space-5);
-  padding: var(--space-4) var(--space-5);
+  margin-top: var(--pad-region);
+  padding: var(--pad-component) var(--pad-region);
   border-top: 1px solid var(--color-border-lighter);
   background: var(--color-well);
 }
@@ -1524,25 +1533,25 @@ body {
   display: none;
 }
 .baseline-header {
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--gap-group);
 }
 .baseline-metric {
   display: flex;
   align-items: baseline;
-  gap: var(--space-3);
-  margin-bottom: var(--space-1);
+  gap: var(--gap-group);
+  margin-bottom: var(--gap-micro);
 }
 .baseline-default-tag {
   font-style: italic;
 }
 .baseline-explanation {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--pad-component);
 }
 .baseline-rerun-btn {
   background: none;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--gap-related) var(--pad-component);
   font-size: var(--type-control-size);
   font-weight: var(--type-control-weight);
   line-height: var(--type-control-leading);
@@ -1573,7 +1582,7 @@ body {
 .string-toggles {
   display: flex;
   flex-direction: row;
-  gap: var(--space-1);
+  gap: var(--gap-micro);
   justify-content: flex-start;
 }
 .string-toggle {
@@ -1605,7 +1614,7 @@ body {
 .distance-toggles {
   display: flex;
   flex-direction: row;
-  gap: var(--space-1);
+  gap: var(--gap-micro);
   justify-content: flex-start;
 }
 .distance-toggle {
@@ -1638,9 +1647,9 @@ body {
 .group-progress-toggles {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: var(--space-2) var(--space-3);
+  gap: var(--gap-related) var(--gap-group);
   align-items: center;
-  padding: 0 var(--space-4);
+  padding: 0 var(--pad-component);
 }
 .group-progress-toggles.has-skip {
   grid-template-columns: auto 1fr auto;
@@ -1648,7 +1657,7 @@ body {
 .group-progress-toggles .distance-toggle {
   height: 28px;
   font-size: var(--text-sm);
-  padding: 0 var(--space-3);
+  padding: 0 var(--gap-group);
 }
 .group-progress-toggles .distance-toggle.skipped {
   opacity: var(--opacity-dimmed);
@@ -1701,7 +1710,7 @@ body {
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
-  padding: var(--space-1) 0;
+  padding: var(--gap-micro) 0;
   min-width: 140px;
   white-space: nowrap;
   overflow: hidden;
@@ -1709,9 +1718,9 @@ body {
 .group-skip-menu button {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--gap-related);
   width: 100%;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--gap-related) var(--gap-group);
   border: none;
   background: transparent;
   font-size: var(--type-control-size);
@@ -1732,7 +1741,7 @@ body {
 .notes-toggles {
   display: flex;
   flex-direction: row;
-  gap: var(--space-1);
+  gap: var(--gap-micro);
   justify-content: flex-start;
 }
 .notes-toggle {
@@ -1809,22 +1818,22 @@ body {
 .settings-row {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
+  gap: var(--gap-group);
+  margin-bottom: var(--gap-group);
 }
 button {
-  padding: var(--space-3) var(--space-6);
+  padding: var(--gap-group) var(--gap-section);
   font-size: var(--text-base);
   cursor: pointer;
-  margin: 0 var(--space-3);
+  margin: 0 var(--gap-group);
 }
 .mastery-message {
   background: var(--color-success-bg);
   color: var(--color-success-text);
   font-weight: var(--font-bold);
   font-size: var(--text-base);
-  padding: var(--space-3) var(--space-5);
-  margin-bottom: var(--space-3);
+  padding: var(--gap-group) var(--pad-region);
+  margin-bottom: var(--gap-group);
   border-radius: var(--radius-sm);
   text-align: center;
 }
@@ -1836,7 +1845,7 @@ button {
   font-size: var(--text-xs);
   color: var(--color-error-text);
   text-align: center;
-  margin-top: var(--space-2);
+  margin-top: var(--gap-related);
 }
 
 /* ==========================================================================
@@ -1845,8 +1854,8 @@ button {
 .quiz-countdown-row {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
+  gap: var(--gap-related);
+  margin-bottom: var(--gap-related);
 }
 .quiz-countdown-bar {
   flex: 1;
@@ -1877,12 +1886,12 @@ button {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--gap-group);
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
   line-height: var(--type-metric-info-leading);
   color: var(--type-metric-info-color);
-  padding-bottom: var(--space-2);
+  padding-bottom: var(--gap-related);
 }
 .quiz-info-context {
   flex: 1;
@@ -1905,7 +1914,7 @@ button {
   height: 20px;
   background: var(--color-surface-raised);
   border-radius: var(--radius-md);
-  margin: 0 auto var(--space-4);
+  margin: 0 auto var(--pad-component);
   overflow: hidden;
   position: relative;
   display: none;
@@ -1956,7 +1965,7 @@ button {
   flex-direction: column;
   flex: 1;
   text-align: center;
-  padding: 0 var(--space-3) var(--space-3);
+  padding: 0 var(--gap-group) var(--gap-group);
 }
 .quiz-content {
   flex: 1;
@@ -1984,7 +1993,7 @@ button {
   font-weight: var(--type-heading-page-weight);
   line-height: var(--type-heading-page-leading);
   color: var(--type-heading-page-color);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--pad-component);
 }
 .round-complete-count {
   font-size: var(--type-metric-hero-size);
@@ -1997,14 +2006,14 @@ button {
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--type-body-secondary-color);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--gap-group);
 }
 .round-complete-stats {
-  margin: var(--space-3) 0 var(--space-5);
+  margin: var(--gap-group) 0 var(--pad-region);
 }
 .round-complete-overall {
-  margin-bottom: var(--space-5);
-  padding-top: var(--space-4);
+  margin-bottom: var(--pad-region);
+  padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
 }
 .round-complete-overall-label {
@@ -2013,7 +2022,7 @@ button {
   font-weight: var(--type-heading-subsection-weight);
   line-height: var(--type-heading-subsection-leading);
   color: var(--type-heading-subsection-color);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--gap-related);
 }
 .round-complete-context {
   font-size: var(--type-body-secondary-size);
@@ -2038,10 +2047,10 @@ button {
   gap: 0.4rem;
   width: 100%;
   max-width: var(--size-answer-grid);
-  margin: var(--space-3) auto;
+  margin: var(--gap-group) auto;
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg);
-  padding: var(--space-5);
+  padding: var(--pad-region);
 }
 .answer-grid-6 {
   grid-template-columns: repeat(6, 1fr);
@@ -2056,10 +2065,10 @@ button {
   gap: 0.4rem;
   width: 100%;
   max-width: var(--size-answer-grid);
-  margin: var(--space-3) auto;
+  margin: var(--gap-group) auto;
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg);
-  padding: var(--space-5);
+  padding: var(--pad-region);
 }
 .answer-grid-stack > .answer-grid {
   margin: 0;
@@ -2088,8 +2097,8 @@ button {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: var(--space-2);
-  margin: var(--space-2) 0;
+  gap: var(--gap-related);
+  margin: var(--gap-related) 0;
   min-height: 2.5rem;
 }
 .quiz-instruction {
@@ -2097,7 +2106,7 @@ button {
   font-weight: var(--type-quiz-instruction-weight);
   line-height: var(--type-quiz-instruction-leading);
   color: var(--type-quiz-instruction-color);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--gap-group);
 }
 .quiz-prompt {
   font-size: var(--type-quiz-prompt-size);
@@ -2114,8 +2123,8 @@ button {
   display: none;
   width: 100%;
   max-width: 280px;
-  margin: var(--space-2) auto;
-  padding: var(--space-2) var(--space-3);
+  margin: var(--gap-related) auto;
+  padding: var(--gap-related) var(--gap-group);
   font-size: var(--type-quiz-response-size);
   font-family: inherit;
   text-align: center;
@@ -2227,8 +2236,8 @@ button {
 .speed-check-header {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-3) var(--space-3)
+  gap: var(--gap-group);
+  padding: var(--gap-group) var(--gap-group) var(--gap-group)
     var(--size-content-inset);
   background: var(--color-chrome);
 }
@@ -2243,7 +2252,7 @@ button {
   vertical-align: middle;
 }
 .calibration-task-label {
-  margin-top: var(--space-3);
+  margin-top: var(--gap-group);
   color: var(--color-text-muted);
 }
 .calibration-results {
@@ -2257,18 +2266,18 @@ button {
   line-height: var(--type-metric-primary-leading);
   color: var(--type-metric-primary-color);
   font-variant-numeric: tabular-nums;
-  margin: var(--space-3) 0 var(--space-5);
+  margin: var(--gap-group) 0 var(--pad-region);
 }
 .calibration-thresholds {
   border-collapse: collapse;
-  margin: 0 auto var(--space-5);
+  margin: 0 auto var(--pad-region);
   font-size: var(--text-sm);
   width: 100%;
 }
 .calibration-thresholds th,
 .calibration-thresholds td {
   border: 1px solid var(--color-border-light);
-  padding: 0.35rem var(--space-3);
+  padding: 0.35rem var(--gap-group);
   text-align: left;
 }
 .calibration-thresholds th {
@@ -2278,7 +2287,7 @@ button {
 .calibration-thresholds td:first-child {
   width: 1.5rem;
   text-align: center;
-  padding: 0.35rem var(--space-2);
+  padding: 0.35rem var(--gap-related);
 }
 .calibration-thresholds td:nth-child(2) {
   font-weight: var(--font-semibold);
@@ -2486,7 +2495,7 @@ button {
   font-size: var(--type-quiz-feedback-size);
   font-weight: var(--type-quiz-feedback-weight);
   line-height: var(--type-quiz-feedback-leading);
-  margin: var(--space-5) 0;
+  margin: var(--pad-region) 0;
   min-height: 2rem;
 }
 .correct {
@@ -2501,7 +2510,7 @@ button {
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--type-body-secondary-color);
-  margin-top: var(--space-5);
+  margin-top: var(--pad-region);
   text-align: center;
 }
 .hint-spacer {
@@ -2517,7 +2526,7 @@ button {
   --_text: var(--type-action-color);
   --_border: transparent;
   --_weight: var(--type-action-weight);
-  padding: var(--space-3) var(--space-5);
+  padding: var(--gap-group) var(--pad-region);
   border: 1px solid var(--_border);
   border-radius: var(--radius-md);
   font-size: var(--type-action-size);
@@ -2580,9 +2589,9 @@ button {
 }
 .page-action-row {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--gap-group);
   justify-content: center;
-  margin: var(--space-4) auto var(--space-2);
+  margin: var(--pad-component) auto var(--gap-related);
 }
 .page-action-row > .page-action-btn {
   flex: 1;
@@ -2592,7 +2601,7 @@ button {
 .next-btn,
 .start-btn {
   display: block;
-  margin: var(--space-4) auto var(--space-2);
+  margin: var(--pad-component) auto var(--gap-related);
 }
 
 /* --- Keyboard hint (pointer-fine only, hidden on touch) --- */
@@ -2603,7 +2612,7 @@ button {
   line-height: var(--type-body-secondary-leading);
   color: var(--type-body-secondary-color);
   text-align: center;
-  margin-top: var(--space-3);
+  margin-top: var(--gap-group);
 }
 @media (pointer: fine) {
   .keyboard-hint {
@@ -2623,7 +2632,7 @@ button {
 }
 
 .stats {
-  margin-top: var(--space-5);
+  margin-top: var(--pad-region);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
@@ -2633,13 +2642,13 @@ button {
    ========================================================================== */
 .heatmap-legend {
   display: none;
-  margin: var(--space-4) 0;
+  margin: var(--pad-component) 0;
 }
 .heatmap-legend.active {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   row-gap: 0.2rem;
-  column-gap: var(--space-2);
+  column-gap: var(--gap-related);
 }
 .legend-section {
   display: contents;
@@ -2685,7 +2694,7 @@ button {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--gap-group);
 }
 .toggle-group-label {
   font-size: var(--type-label-size);
@@ -2699,20 +2708,20 @@ button {
 /* --- Stats tables (lookup modes) --- */
 .stats-container {
   text-align: center;
-  margin: var(--space-3) 0;
+  margin: var(--gap-group) 0;
 }
 .stats-container > .text-heading-section {
   text-align: left;
-  padding: 0 var(--space-4);
-  margin-top: var(--space-5);
-  margin-bottom: var(--space-3);
+  padding: 0 var(--pad-component);
+  margin-top: var(--pad-region);
+  margin-bottom: var(--gap-group);
 }
 .stats-container > .text-heading-section:first-child {
   margin-top: 0;
 }
 .stats-table {
   border-collapse: collapse;
-  margin: var(--space-3) auto;
+  margin: var(--gap-group) auto;
   font-size: var(--text-sm);
 }
 .stats-table th, .stats-table td {
@@ -2735,7 +2744,7 @@ button {
 /* --- Stats grids (math modes) --- */
 .stats-grid-wrapper {
   overflow-x: auto;
-  margin: var(--space-3) 0;
+  margin: var(--gap-group) 0;
 }
 .stats-grid {
   border-collapse: collapse;
@@ -2800,8 +2809,8 @@ button {
   flex-shrink: 0;
   display: flex;
   justify-content: center;
-  gap: var(--space-6);
-  margin: 0 0 var(--space-3) 0;
+  gap: var(--gap-section);
+  margin: 0 0 var(--gap-group) 0;
 }
 .interactive-fretboard-progress {
   font-size: var(--type-metric-info-size);
@@ -2827,8 +2836,8 @@ button {
 .seq-slots {
   display: flex;
   justify-content: center;
-  gap: var(--space-3);
-  margin: var(--space-4) 0;
+  gap: var(--gap-group);
+  margin: var(--pad-component) 0;
   min-height: 2.5rem;
 }
 /* --- Component tokens: SequentialSlot --- */
@@ -2874,8 +2883,8 @@ button {
 }
 .seq-correct-row {
   display: flex;
-  gap: var(--space-3);
-  margin-top: var(--space-1);
+  gap: var(--gap-group);
+  margin-top: var(--gap-micro);
 }
 .seq-correct-note {
   display: inline-flex;
@@ -2966,7 +2975,7 @@ body.native-app {
    ========================================================================== */
 @media (max-width: 599px) {
   :root {
-    --size-content-inset: var(--space-1);
+    --size-content-inset: var(--gap-group);
   }
 
   body {
@@ -2986,7 +2995,7 @@ body.native-app {
   /* .quiz-controls margin-top:auto pushes controls toward the bottom;
      extra padding so they clear the screen edge on mobile. */
   .quiz-area {
-    padding: 0 var(--space-4) var(--space-4);
+    padding: 0 var(--pad-component) var(--pad-component);
   }
 
   .next-btn,

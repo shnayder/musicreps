@@ -124,21 +124,21 @@ function Phase1Components(
                 id: 'practice' as ModeTab,
                 label: <TabIcon icon='practice' text='Practice' />,
                 content: (
-                  <div style='padding:var(--space-4)'>Practice content</div>
+                  <div style='padding:var(--pad-component)'>Practice content</div>
                 ),
               },
               {
                 id: 'progress' as ModeTab,
                 label: <TabIcon icon='progress' text='Progress' />,
                 content: (
-                  <div style='padding:var(--space-4)'>Progress content</div>
+                  <div style='padding:var(--pad-component)'>Progress content</div>
                 ),
               },
               {
                 id: 'about' as ModeTab,
                 label: <TabIcon icon='about' text='About' />,
                 content: (
-                  <div style='padding:var(--space-4)'>
+                  <div style='padding:var(--pad-component)'>
                     About content
                   </div>
                 ),
@@ -298,7 +298,7 @@ function Phase2MultiLevel(
           />
           <div
             class='practice-zone-action'
-            style='padding: var(--space-5) var(--space-5) var(--space-4)'
+            style='padding: var(--pad-region) var(--pad-region) var(--pad-component)'
           >
             <ActionButton variant='primary' onClick={() => {}}>
               Practice
@@ -333,7 +333,7 @@ function Phase2MultiLevel(
           />
           <div
             class='practice-zone-action'
-            style='padding: var(--space-5) var(--space-5) var(--space-4)'
+            style='padding: var(--pad-region) var(--pad-region) var(--pad-component)'
           >
             <ActionButton variant='primary' onClick={() => {}}>
               Practice
@@ -361,7 +361,7 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
           />
           <div
             class='practice-zone-action'
-            style='padding: var(--space-5) var(--space-5) var(--space-4)'
+            style='padding: var(--pad-region) var(--pad-region) var(--pad-component)'
           >
             <ActionButton variant='primary' onClick={() => {}}>
               Practice
@@ -371,7 +371,7 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
       </Section>
 
       <Section title='Progress tab — level cards' tabId={tabId}>
-        <div style='padding: var(--space-3) var(--space-5)'>
+        <div style='padding: var(--gap-group) var(--pad-region)'>
           <LevelProgressCard
             label='E string'
             pill='Review'

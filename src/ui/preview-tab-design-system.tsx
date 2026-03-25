@@ -520,12 +520,19 @@ function TypographyRoleReference({ tabId }: { tabId: string }) {
 }
 
 const SPACE_TOKENS: Array<{ name: string; desc: string }> = [
-  { name: '--space-1', desc: 'Toggle gaps, pixel-level' },
-  { name: '--space-2', desc: 'Button grid gaps, tight padding' },
-  { name: '--space-3', desc: 'Standard gap, small padding' },
-  { name: '--space-4', desc: 'Section gaps, nav padding' },
-  { name: '--space-5', desc: 'Body padding, section spacing' },
-  { name: '--space-6', desc: 'Large section gaps' },
+  { name: '--space-1', desc: 'Palette: 0.125rem (2px)' },
+  { name: '--space-2', desc: 'Palette: 0.25rem (4px)' },
+  { name: '--space-3', desc: 'Palette: 0.5rem (8px)' },
+  { name: '--space-4', desc: 'Palette: 0.75rem (12px)' },
+  { name: '--space-5', desc: 'Palette: 1rem (16px)' },
+  { name: '--space-6', desc: 'Palette: 1.5rem (24px)' },
+  { name: '--space-7', desc: 'Palette: 2rem (32px)' },
+  { name: '--gap-micro', desc: 'Sub-element coupling: icon+label, toggle rows' },
+  { name: '--gap-related', desc: 'Related siblings: buttons in group, label+value' },
+  { name: '--gap-group', desc: 'Distinct groups within container' },
+  { name: '--pad-component', desc: 'Internal padding of controls/cards/wells' },
+  { name: '--pad-region', desc: 'Layout region padding, major section breaks' },
+  { name: '--gap-section', desc: 'Page-level group separators' },
 ];
 
 function SpacingSection({ tabId }: { tabId: string }) {

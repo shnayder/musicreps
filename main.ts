@@ -201,7 +201,7 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
     .preview-frame {
       border: 1px solid var(--color-border-light);
       border-radius: 8px;
-      padding: var(--space-4);
+      padding: var(--pad-component);
       background: var(--color-bg);
     }
     .tab-description {
