@@ -34,61 +34,64 @@
      Change anchor hues to shift entire families in one place.
      ================================================================ */
 
-  --for-hsl-previews-in-vscode: hsl(180, 3%, 20%); /* hsl(220, 79%, 31%);*/
-  --for-hsl-previews-in-vscode2: hsl(243, 100%, 22%); /* hsl(220, 79%, 31%);*/
+  --for-hsl-previews-in-vscode: hsl(147, 26%, 24%); /* primary: #2D4C3B */
+  --for-hsl-previews-in-vscode2: hsl(32, 95%, 44%); /* secondary: #D97706 */
 
   /* Anchor hues — the main knobs for color exploration */
-  --hue-neutral: 240; /* try 220 for cool charcoal */
-  --hue-brand: 123; /* try 175 for teal */
-  --hue-success: 123; /* correct-answer feedback (split from brand) */
+  --hue-neutral: 45; /* warm cream (was 240 cool blue-gray) */
+  --hue-brand: 147; /* forest green (was 123) */
+  --hue-success: 147; /* correct-answer feedback (split from brand) */
   --hue-error: 4;
-  --hue-notice: 44; /* attention, recommendations, highlights */
+  --hue-notice: 32; /* warm amber (was 44) */
 
-  /* Neutral scale — derived from --hue-neutral */
+  /* Neutral scale — warm cream derived from --hue-neutral
+     Higher saturation at light end for warmth, fading toward darker steps */
   --neutral-0: #fff;
-  --neutral-100: hsl(var(--hue-neutral), 10%, 96%);
-  --neutral-150: hsl(var(--hue-neutral), 8%, 93%);
-  --neutral-200: hsl(var(--hue-neutral), 8%, 92%);
-  --neutral-250: hsl(var(--hue-neutral), 8%, 90%);
-  --neutral-300: hsl(var(--hue-neutral), 5%, 86%);
-  --neutral-350: hsl(var(--hue-neutral), 5%, 82%);
-  --neutral-400: hsl(var(--hue-neutral), 5%, 80%);
-  --neutral-450: hsl(var(--hue-neutral), 8%, 72%);
-  --neutral-500: hsl(var(--hue-neutral), 5%, 62%);
-  --neutral-550: hsl(var(--hue-neutral), 5%, 60%);
-  --neutral-600: hsl(var(--hue-neutral), 8%, 48%);
-  --neutral-650: hsl(var(--hue-neutral), 3%, 40%);
-  --neutral-700: hsl(var(--hue-neutral), 4%, 32%);
-  --neutral-800: hsl(var(--hue-neutral), 5%, 20%);
-  --neutral-850: hsl(var(--hue-neutral), 8%, 16%);
-  --neutral-900: hsl(var(--hue-neutral), 10%, 12%);
-  --neutral-950: hsl(var(--hue-neutral), 12%, 8%);
+  --neutral-50: hsl(var(--hue-neutral), 40%, 97%);
+  --neutral-75: hsl(var(--hue-neutral), 40%, 95.5%);
+  --neutral-100: hsl(var(--hue-neutral), 40%, 94%);
+  --neutral-150: hsl(var(--hue-neutral), 22%, 91%);
+  --neutral-200: hsl(var(--hue-neutral), 18%, 89%);
+  --neutral-250: hsl(var(--hue-neutral), 15%, 87%);
+  --neutral-300: hsl(var(--hue-neutral), 12%, 84%);
+  --neutral-350: hsl(var(--hue-neutral), 10%, 80%);
+  --neutral-400: hsl(var(--hue-neutral), 8%, 76%);
+  --neutral-450: hsl(var(--hue-neutral), 8%, 68%);
+  --neutral-500: hsl(var(--hue-neutral), 6%, 58%);
+  --neutral-550: hsl(var(--hue-neutral), 5%, 54%);
+  --neutral-600: hsl(var(--hue-neutral), 6%, 44%);
+  --neutral-650: hsl(var(--hue-neutral), 5%, 36%);
+  --neutral-700: hsl(var(--hue-neutral), 6%, 28%);
+  --neutral-800: hsl(var(--hue-neutral), 8%, 18%);
+  --neutral-850: hsl(var(--hue-neutral), 10%, 14%);
+  --neutral-900: hsl(var(--hue-neutral), 12%, 10%);
+  --neutral-950: hsl(var(--hue-neutral), 14%, 7%);
 
-  /* Brand scale — derived from --hue-brand */
-  --brand-100: hsl(var(--hue-brand), 39%, 93%);
-  --brand-600: hsl(var(--hue-brand), 46%, 34%);
-  --brand-800: hsl(var(--hue-brand), 55%, 24%);
+  /* Brand scale — forest green, anchored on #2D4C3B */
+  --brand-100: hsl(var(--hue-brand), 25%, 92%);
+  --brand-600: #2D4C3B;
+  --brand-800: hsl(var(--hue-brand), 30%, 16%);
 
-  /* Success scale — derived from --hue-success */
-  --success-100: hsl(var(--hue-success), 39%, 93%);
-  --success-300: hsl(var(--hue-success), 40%, 60%);
-  --success-600: hsl(var(--hue-success), 46%, 34%);
-  --success-800: hsl(var(--hue-success), 55%, 24%);
+  /* Success scale — same hue family as brand */
+  --success-100: hsl(var(--hue-success), 25%, 92%);
+  --success-300: hsl(var(--hue-success), 30%, 50%);
+  --success-600: #2D4C3B;
+  --success-800: hsl(var(--hue-success), 30%, 16%);
 
   /* Error scale — derived from --hue-error */
   --error-100: hsl(var(--hue-error), 100%, 96%);
   --error-500: hsl(var(--hue-error), 90%, 58%);
   --error-800: hsl(var(--hue-error), 66%, 47%);
 
-  /* Notice scale — derived from --hue-notice */
-  --notice-100: hsl(var(--hue-notice), 70%, 96%);
-  --notice-300: hsl(var(--hue-notice), 60%, 80%);
-  --notice-400: hsl(var(--hue-notice), 50%, 85%);
-  --notice-450: hsl(var(--hue-notice), 60%, 91%);
-  --notice-500: hsl(var(--hue-notice), 80%, 46%);
-  --notice-600: hsl(var(--hue-notice), 93%, 47%);
-  --notice-700: hsl(var(--hue-notice), 70%, 45%);
-  --notice-800: hsl(var(--hue-notice), 80%, 25%);
+  /* Notice scale — warm amber, anchored on #D97706 */
+  --notice-100: hsl(var(--hue-notice), 60%, 95%);
+  --notice-300: hsl(var(--hue-notice), 50%, 78%);
+  --notice-400: hsl(var(--hue-notice), 45%, 84%);
+  --notice-450: hsl(var(--hue-notice), 50%, 90%);
+  --notice-500: #D97706;
+  --notice-600: hsl(var(--hue-notice), 90%, 42%);
+  --notice-700: hsl(var(--hue-notice), 65%, 38%);
+  --notice-800: hsl(var(--hue-notice), 70%, 22%);
 
   /* ================================================================
      SEMANTIC TOKENS — map palette to meaning.
@@ -129,24 +132,24 @@
   /* UI accents — unified with brand (one accent, not five) */
   --color-accent: var(--brand-600);
   --color-accent-muted: hsl(var(--hue-brand), 30%, 55%);
-  --color-toggle-active: var(--neutral-700);
+  --color-toggle-active: var(--color-brand);
   /* Text */
   --color-text: var(--neutral-800);
   --color-text-muted: var(--neutral-650);
   --color-text-light: var(--neutral-550);
   /* Surfaces & backgrounds */
-  --color-canvas: hsl(var(--hue-neutral), 6%, 95%);
+  --color-canvas: var(--neutral-50);
   --color-card: var(--neutral-0);
-  --color-well: hsl(var(--hue-neutral), 6%, 95%);
+  --color-well: var(--neutral-100);
   --color-overlay-surface: var(--color-card);
   --color-bg: var(--color-canvas); /* alias — migrate to semantic tokens */
-  --color-surface: var(--neutral-100);
+  --color-surface: var(--neutral-75);
   --color-surface-hover: var(--neutral-150);
   --color-surface-raised: var(--neutral-200);
   --color-surface-pressed: var(--neutral-350);
   --color-surface-accent: var(--neutral-250);
   /* Chrome (segmented controls, toolbar fills, nav bars) */
-  --color-chrome: hsl(var(--hue-neutral), 6%, 93%);
+  --color-chrome: var(--neutral-75);
   /* Borders */
   --color-border: var(--neutral-550);
   --color-border-light: var(--neutral-400);
@@ -358,7 +361,7 @@
      ================================================================ */
 
   /* -- Action: primary CTA buttons (Practice, Stop, Next) -- */
-  --type-action-size: var(--text-base);
+  --type-action-size: var(--text-lg);
   --type-action-weight: var(--font-semibold);
   --type-action-leading: var(--leading-none);
   --type-action-color: var(--color-on-brand);
@@ -528,13 +531,7 @@ body {
   margin: 0;
 }
 .home-title::after {
-  content: '';
-  display: block;
-  width: 32px;
-  height: 3px;
-  background: var(--color-brand);
-  margin: var(--space-3) 0 0;
-  border-radius: var(--radius-sm);
+  display: none;
 }
 .home-tagline {
   font-size: var(--type-body-secondary-size);
@@ -817,8 +814,7 @@ body {
 }
 /* Recommendation banner inside active skill card. */
 .skill-rec-banner {
-  background: var(--color-notice-bg);
-  border-bottom: 1px solid var(--color-notice-border);
+  background: var(--notice-600);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
@@ -826,16 +822,15 @@ body {
   font-size: var(--type-label-tag-size);
   font-weight: var(--type-label-tag-weight);
   line-height: var(--type-label-tag-leading);
-  color: var(--color-notice);
-  margin-bottom: var(--space-1);
+  color: var(--color-on-brand);
 }
 
 /* Banner reacts with card on hover/active. */
 .home-mode-btn:hover > .skill-rec-banner {
-  background: var(--color-notice-bg-hover);
+  opacity: 0.9;
 }
 .home-mode-btn:active > .skill-rec-banner {
-  background: var(--color-notice-bg-pressed);
+  opacity: 0.8;
 }
 .active-skills-done {
   font-size: var(--type-status-size);
@@ -1185,7 +1180,7 @@ body {
 
 .tab-panel {
   display: none;
-  background: var(--color-card);
+  background: var(--color-canvas);
 }
 .tab-panel.active {
   display: block;
@@ -1276,8 +1271,7 @@ body {
   font-size: var(--type-heading-subsection-size);
   font-weight: var(--type-heading-subsection-weight);
   line-height: var(--type-heading-subsection-leading);
-  color: var(--color-notice);
-  margin-bottom: var(--space-2);
+  color: var(--color-brand);
 }
 .suggestion-card-body {
   display: flex;
@@ -1294,15 +1288,15 @@ body {
   font-weight: var(--type-control-weight);
   line-height: var(--type-control-leading);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-notice);
+  border: 1px solid var(--color-brand);
   border-radius: var(--radius-sm);
-  background: var(--color-notice-bg);
-  color: var(--color-notice-text);
+  background: transparent;
+  color: var(--color-brand);
   cursor: pointer;
   flex-shrink: 0;
 }
 .suggestion-card-accept:hover {
-  background: var(--color-notice);
+  background: var(--color-brand);
   color: var(--color-on-brand);
 }
 
@@ -1331,7 +1325,7 @@ body {
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border-lighter);
   border-radius: var(--radius-md);
-  background: var(--color-card);
+  background: var(--color-well);
 }
 .progress-bar-label {
   margin-bottom: var(--space-2);
@@ -1381,12 +1375,11 @@ body {
 }
 .suggestion-line {
   font-size: var(--text-sm);
-  color: var(--color-notice-text);
+  color: var(--color-brand);
   line-height: var(--leading-normal);
 }
 .suggestion-verb {
   font-weight: var(--font-semibold);
-  color: var(--color-notice);
 }
 
 /* --- Level toggles (custom mode) --- */
@@ -1409,8 +1402,8 @@ body {
   height: 36px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-border);
+  background: var(--color-card);
+  color: var(--color-brand);
   font-size: var(--type-control-size);
   font-weight: var(--type-control-weight);
   line-height: var(--type-control-leading);
@@ -1440,6 +1433,7 @@ body {
   border: 1px solid var(--color-border-lighter);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-2);
+  background: var(--color-card);
 }
 .level-progress-card.skipped {
   opacity: 0.5;
@@ -1767,7 +1761,7 @@ body {
   height: auto;
   display: block;
   margin: 0 auto;
-  background: var(--color-card);
+  background: transparent;
   touch-action: manipulation;
 }
 /* SVG fretboard — new circle-based design */
@@ -1846,7 +1840,7 @@ button {
 }
 .quiz-countdown-fill {
   height: 100%;
-  background: var(--color-brand);
+  background: var(--color-notice);
   transition: width var(--duration-linear) linear;
   width: 100%;
 }
@@ -2723,8 +2717,9 @@ button {
   flex: 1;
 }
 
-/* --- Next button (positioning only — visual treatment via page-action-btn) --- */
-.next-btn {
+/* --- Standalone action buttons (positioning only — visual treatment via page-action-btn) --- */
+.next-btn,
+.start-btn {
   display: block;
   margin: var(--space-4) auto var(--space-2);
 }
@@ -2835,7 +2830,6 @@ button {
 .stats-container {
   text-align: center;
   margin: var(--space-3) 0;
-  background: var(--color-well);
 }
 .stats-container > .text-heading-subsection {
   text-align: left;
@@ -3152,6 +3146,7 @@ body.native-app {
   }
 
   .next-btn,
+  .start-btn,
   .page-action-row {
     width: 80%;
   }

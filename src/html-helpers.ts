@@ -208,9 +208,8 @@ export function tabbedIdleHTML(config: {
     ? `\n          <div class="practice-scope">\n            <div class="settings-row">\n              ${config.practiceScope}\n            </div>\n          </div>`
     : '';
   const recBlock = `<div class="suggestion-card">
-            <div class="suggestion-card-header">Suggestion</div>
             <div class="suggestion-card-body">
-              <span class="suggestion-card-text"></span>
+              <div class="suggestion-card-header suggestion-card-text"></div>
               <button tabindex="0" class="suggestion-card-accept">Accept</button>
             </div>
           </div>`;

@@ -279,9 +279,8 @@ export function Recommendation(
 ) {
   return (
     <div class='suggestion-card'>
-      <div class='suggestion-card-header'>Suggestion</div>
       <div class='suggestion-card-body'>
-        <Text role='body-secondary' class='suggestion-card-text'>{text}</Text>
+        <div class='suggestion-card-header'>{text}</div>
         {onApply
           ? (
             <button
