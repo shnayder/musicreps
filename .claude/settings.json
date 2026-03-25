@@ -34,7 +34,32 @@
     ]
   },
   "permissions": {
-    "additionalDirectories": ["../.todos"]
+    "additionalDirectories": ["../.todos"],
+     "allow": [
+      "Bash(deno run:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(grep:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsx:*)",
+      "Bash(git mv:*)",
+      "Bash(git checkout:*)",
+      "Bash(git fetch:*)",
+      "Bash(git commit:*)",
+      "Bash(test:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh run:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(deno check:*)",
+      "Bash(deno task build:*)",
+      "Bash(deno task:*)",
+      "Bash(deno fmt:*)",
+      "Bash(npx playwright:*)"
+    ]
   },
   "sandbox": {
     "enabled": true
