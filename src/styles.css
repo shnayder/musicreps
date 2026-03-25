@@ -135,14 +135,18 @@
   --color-text-muted: var(--neutral-650);
   --color-text-light: var(--neutral-550);
   /* Surfaces & backgrounds */
-  --color-bg: var(--neutral-0);
+  --color-canvas: hsl(var(--hue-neutral), 6%, 95%);
+  --color-card: #fff;
+  --color-well: hsl(var(--hue-neutral), 6%, 95%);
+  --color-overlay-surface: #fff;
+  --color-bg: var(--color-canvas); /* alias — migrate to semantic tokens */
   --color-surface: var(--neutral-100);
   --color-surface-hover: var(--neutral-150);
   --color-surface-raised: var(--neutral-200);
   --color-surface-pressed: var(--neutral-350);
   --color-surface-accent: var(--neutral-250);
-  /* Chrome (segmented controls, toolbar fills) */
-  --color-chrome: var(--neutral-200);
+  /* Chrome (segmented controls, toolbar fills, nav bars) */
+  --color-chrome: hsl(var(--hue-neutral), 6%, 93%);
   /* Borders */
   --color-border: var(--neutral-550);
   --color-border-light: var(--neutral-400);
@@ -384,7 +388,7 @@
 }
 html {
   font-size: 106.25%; /* 17px base — aligns with Apple HIG body size */
-  background: var(--color-surface);
+  background: var(--color-canvas);
   overscroll-behavior: none;
 }
 body {
@@ -401,7 +405,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   color: var(--color-text);
-  background: var(--color-bg);
+  background: var(--color-canvas);
   border-left: 1px solid var(--color-border-lighter);
   border-right: 1px solid var(--color-border-lighter);
   overscroll-behavior: none;
@@ -513,6 +517,7 @@ body {
 .home-header {
   text-align: left;
   padding: var(--space-3) var(--space-3) var(--space-4);
+  background: var(--color-chrome);
 }
 .home-title {
   font-family: var(--type-display-brand-family);
@@ -591,7 +596,7 @@ body {
 /* mode-nav is inside LayoutFooter — no position: fixed needed. */
 .mode-nav {
   display: flex;
-  background: var(--color-bg);
+  background: var(--color-chrome);
   border-top: 1px solid var(--color-border-lighter);
   border-bottom: none;
   padding-bottom: env(safe-area-inset-bottom, 0);
@@ -661,7 +666,7 @@ body {
   text-align: left;
   padding: var(--space-4) var(--space-4);
   padding-right: 3rem;
-  background: var(--color-bg);
+  background: var(--color-card);
   border: 1px solid var(--color-border-lighter);
   border-left: 3px solid var(--color-brand);
   border-radius: var(--radius-md);
@@ -921,6 +926,7 @@ body {
   justify-content: space-between;
   padding: var(--space-4) 0;
   border-top: 1px solid var(--color-border-lighter);
+  background: var(--color-chrome);
   margin-top: var(--space-4);
 }
 /* --- Text link (reusable) --- */
@@ -959,6 +965,7 @@ body {
   padding: var(--space-3) 0;
   padding-left: var(--size-content-inset);
   margin-bottom: var(--space-3);
+  background: var(--color-chrome);
 }
 .mode-top-bar-row {
   display: flex;
@@ -1104,7 +1111,7 @@ body {
   border-left: none;
 }
 .segmented-btn.active {
-  background: white;
+  background: var(--color-card);
   color: var(--color-text);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -1155,6 +1162,7 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  background: var(--color-chrome);
 }
 .quiz-session-header-content {
   flex: 1;
@@ -1177,6 +1185,7 @@ body {
 
 .tab-panel {
   display: none;
+  background: var(--color-card);
 }
 .tab-panel.active {
   display: block;
@@ -1213,7 +1222,7 @@ body {
 .practice-card {
   margin-bottom: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  background: var(--color-bg);
+  background: var(--color-card);
   border-radius: var(--radius-md);
 }
 .practice-zone + .practice-zone {
@@ -1300,6 +1309,7 @@ body {
 /* --- Practice scope (inside practice card) --- */
 .practice-scope {
   margin-top: var(--space-4);
+  background: var(--color-well);
 }
 .practice-scope .settings-row {
   margin-bottom: 0;
@@ -1321,7 +1331,7 @@ body {
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border-lighter);
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  background: var(--color-card);
 }
 .progress-bar-label {
   margin-bottom: var(--space-2);
@@ -1330,6 +1340,7 @@ body {
 /* --- Skill header: title + close + progress bar --- */
 .skill-header {
   padding: var(--space-4) var(--space-5) var(--space-3);
+  background: var(--color-chrome);
 }
 .skill-header-row {
   display: flex;
@@ -1498,6 +1509,7 @@ body {
   margin-top: var(--space-5);
   padding: var(--space-4) var(--space-5);
   border-top: 1px solid var(--color-border-lighter);
+  background: var(--color-well);
 }
 .baseline-info:empty {
   display: none;
@@ -1676,7 +1688,7 @@ body {
   right: -1px;
   top: calc(100% + 2px);
   z-index: var(--z-popover);
-  background: var(--color-bg);
+  background: var(--color-overlay-surface);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
@@ -1755,7 +1767,7 @@ body {
   height: auto;
   display: block;
   margin: 0 auto;
-  background: var(--color-bg);
+  background: var(--color-card);
   touch-action: manipulation;
 }
 /* SVG fretboard — new circle-based design */
@@ -1917,7 +1929,7 @@ button {
 .mode-screen.phase-active,
 .mode-screen.phase-round-complete,
 .mode-screen.phase-calibration {
-  background: var(--color-bg);
+  background: var(--color-card);
   margin: 0 calc(-1 * var(--space-5));
   padding: 0 var(--space-5);
   display: flex;
@@ -1957,6 +1969,7 @@ button {
 .round-complete {
   align-items: center;
   text-align: center;
+  background: var(--color-card);
 }
 .round-complete-heading {
   font-size: var(--type-heading-page-size);
@@ -2070,7 +2083,7 @@ button {
   line-height: var(--type-answer-leading);
   border: 2px solid var(--color-text-muted);
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  background: var(--color-card);
   cursor: pointer;
   padding: 0;
   margin: 0;
@@ -2092,7 +2105,7 @@ button {
     background: var(--color-surface-pressed);
   }
   .note-btn:disabled:hover {
-    background: var(--color-bg);
+    background: var(--color-card);
     border-color: var(--color-text-muted);
     transform: none;
   }
@@ -2149,7 +2162,7 @@ button {
   line-height: var(--type-answer-leading);
   border: 1.5px solid var(--color-border-light);
   border-radius: var(--radius-sm);
-  background: var(--color-bg);
+  background: var(--color-card);
   color: var(--color-text);
   cursor: pointer;
   display: flex;
@@ -2233,7 +2246,7 @@ button {
   text-align: center;
   border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  background: var(--color-card);
   color: var(--color-text);
   outline: none;
   transition: border-color var(--duration-base);
@@ -2275,7 +2288,7 @@ button {
 
 /* --- Component tokens: AnswerButton --- */
 .answer-btn {
-  --_bg: var(--color-bg);
+  --_bg: var(--color-card);
   --_text: inherit;
   --_border: var(--color-text-muted);
   height: 48px;
@@ -2304,7 +2317,7 @@ button {
     --_border: var(--color-text);
   }
   .answer-btn:disabled:hover {
-    --_bg: var(--color-bg);
+    --_bg: var(--color-card);
     --_border: var(--color-text-muted);
     transform: none;
   }
@@ -2822,6 +2835,7 @@ button {
 .stats-container {
   text-align: center;
   margin: var(--space-3) 0;
+  background: var(--color-well);
 }
 .stats-container > .text-heading-subsection {
   text-align: left;
