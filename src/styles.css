@@ -133,6 +133,8 @@
   --color-accent: var(--brand-600);
   --color-accent-muted: hsl(var(--hue-brand), 30%, 55%);
   --color-toggle-active: var(--color-brand);
+  /* Tertiary accent (warm sienna) */
+  --color-tertiary: #a0522d;
   /* Text */
   --color-text: var(--neutral-800);
   --color-text-muted: var(--neutral-650);
@@ -205,8 +207,8 @@
   --leading-normal: 1.5;
 
   /* Font families */
-  --font-body: system-ui, -apple-system, sans-serif;
-  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Gabarito', system-ui, sans-serif;
 
   /* Spacing scale */
   --space-1: 0.125rem;
@@ -272,19 +274,22 @@
 
   /* -- Heading: structural hierarchy -- */
   --type-heading-page-size: var(--text-lg);
-  --type-heading-page-weight: var(--font-semibold);
+  --type-heading-page-weight: var(--font-medium);
   --type-heading-page-leading: var(--leading-tight);
-  --type-heading-page-color: var(--color-text);
+  --type-heading-page-color: var(--color-text-muted);
+  --type-heading-page-family: var(--font-display);
 
-  --type-heading-section-size: var(--text-base);
+  --type-heading-section-size: var(--text-lg);
   --type-heading-section-weight: var(--font-semibold);
   --type-heading-section-leading: var(--leading-tight);
-  --type-heading-section-color: var(--color-text);
+  --type-heading-section-color: var(--color-tertiary);
+  --type-heading-section-family: var(--font-display);
 
   --type-heading-subsection-size: var(--text-base);
   --type-heading-subsection-weight: var(--font-semibold);
   --type-heading-subsection-leading: var(--leading-tight);
   --type-heading-subsection-color: var(--color-text-muted);
+  --type-heading-subsection-family: var(--font-display);
 
   /* -- Body: readable content -- */
   --type-body-size: var(--text-base);
@@ -298,8 +303,8 @@
   --type-body-secondary-color: var(--color-text-muted);
 
   /* -- Label: short functional identifiers -- */
-  --type-label-size: var(--text-base);
-  --type-label-weight: var(--font-medium);
+  --type-label-size: var(--text-sm);
+  --type-label-weight: var(--font-normal);
   --type-label-leading: var(--leading-none);
   --type-label-color: var(--color-text-muted);
 
@@ -378,6 +383,12 @@
   --type-control-weight: var(--font-medium);
   --type-control-leading: var(--leading-none);
   --type-control-color: var(--color-text-muted);
+
+  /* -- Control-small: segmented controls, compact toggles -- */
+  --type-control-small-size: var(--text-sm);
+  --type-control-small-weight: var(--font-medium);
+  --type-control-small-leading: var(--leading-none);
+  --type-control-small-color: var(--color-text-muted);
 }
 
 /* ==========================================================================
@@ -905,6 +916,7 @@ body {
   margin-top: var(--space-2);
 }
 .home-mode-name {
+  font-family: var(--type-heading-section-family);
   font-size: var(--type-heading-section-size);
   font-weight: var(--type-heading-section-weight);
   line-height: var(--type-heading-section-leading);
@@ -1005,6 +1017,7 @@ body {
 }
 .mode-title {
   margin: 0;
+  font-family: var(--type-heading-page-family);
   font-size: var(--type-heading-page-size);
   font-weight: var(--type-heading-page-weight);
   line-height: var(--type-heading-page-leading);
@@ -1052,6 +1065,7 @@ body {
 }
 .settings-page-title {
   margin: 0;
+  font-family: var(--type-heading-page-family);
   font-size: var(--type-heading-page-size);
   font-weight: var(--type-heading-page-weight);
   line-height: var(--type-heading-page-leading);
@@ -1095,10 +1109,10 @@ body {
   border-radius: calc(var(--radius-md) - 2px);
   background: transparent;
   cursor: pointer;
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  color: var(--type-control-color);
+  font-size: var(--type-control-small-size);
+  font-weight: var(--type-control-small-weight);
+  line-height: var(--type-control-small-leading);
+  color: var(--type-control-small-color);
   transition:
     background var(--duration-base) ease,
     color var(--duration-base) ease;
@@ -1226,6 +1240,7 @@ body {
   padding-top: var(--space-5);
 }
 .practice-section-header {
+  font-family: var(--type-heading-section-family);
   font-size: var(--type-heading-section-size);
   font-weight: var(--type-heading-section-weight);
   line-height: var(--type-heading-section-leading);
@@ -1269,6 +1284,7 @@ body {
   margin-bottom: var(--space-3);
 }
 .suggestion-card-header {
+  font-family: var(--type-heading-subsection-family);
   font-size: var(--type-heading-subsection-size);
   font-weight: var(--type-heading-subsection-weight);
   line-height: var(--type-heading-subsection-leading);
@@ -1388,6 +1404,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  background: var(--color-well);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
 }
 .level-toggles-header {
   margin-bottom: calc(-1 * var(--space-2));
@@ -1424,10 +1443,6 @@ body {
   color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
-.level-toggles-count {
-  font-size: var(--text-sm);
-}
-
 /* --- Level progress card (progress tab) --- */
 .level-progress-card {
   padding: var(--space-3) var(--space-4);
@@ -1967,6 +1982,7 @@ button {
   background: var(--color-card);
 }
 .round-complete-heading {
+  font-family: var(--type-heading-page-family);
   font-size: var(--type-heading-page-size);
   font-weight: var(--type-heading-page-weight);
   line-height: var(--type-heading-page-leading);
@@ -1995,6 +2011,7 @@ button {
   border-top: 1px solid var(--color-border-lighter);
 }
 .round-complete-overall-label {
+  font-family: var(--type-heading-subsection-family);
   font-size: var(--type-heading-subsection-size);
   font-weight: var(--type-heading-subsection-weight);
   line-height: var(--type-heading-subsection-leading);
@@ -2290,18 +2307,21 @@ button {
 
 /* -- Heading -- */
 .text-heading-page {
+  font-family: var(--type-heading-page-family);
   font-size: var(--type-heading-page-size);
   font-weight: var(--type-heading-page-weight);
   line-height: var(--type-heading-page-leading);
   color: var(--type-heading-page-color);
 }
 .text-heading-section {
+  font-family: var(--type-heading-section-family);
   font-size: var(--type-heading-section-size);
   font-weight: var(--type-heading-section-weight);
   line-height: var(--type-heading-section-leading);
   color: var(--type-heading-section-color);
 }
 .text-heading-subsection {
+  font-family: var(--type-heading-subsection-family);
   font-size: var(--type-heading-subsection-size);
   font-weight: var(--type-heading-subsection-weight);
   line-height: var(--type-heading-subsection-leading);
@@ -2436,6 +2456,12 @@ button {
   font-weight: var(--type-control-weight);
   line-height: var(--type-control-leading);
   color: var(--type-control-color);
+}
+.text-control-small {
+  font-size: var(--type-control-small-size);
+  font-weight: var(--type-control-small-weight);
+  line-height: var(--type-control-small-leading);
+  color: var(--type-control-small-color);
 }
 .control-selected {
   font-weight: var(--font-semibold);
@@ -2677,13 +2703,13 @@ button {
   text-align: center;
   margin: var(--space-3) 0;
 }
-.stats-container > .text-heading-subsection {
+.stats-container > .text-heading-section {
   text-align: left;
   padding: 0 var(--space-4);
   margin-top: var(--space-5);
   margin-bottom: var(--space-3);
 }
-.stats-container > .text-heading-subsection:first-child {
+.stats-container > .text-heading-section:first-child {
   margin-top: 0;
 }
 .stats-table {

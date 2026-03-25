@@ -784,7 +784,6 @@ function GroupPracticeContent<Q>(
               ? groupScopeResult.enabledGroups
               : groupScopeResult.suggestedScope}
             onToggle={groupScopeResult.scopeActions.toggleGroup}
-            itemCount={groupScopeResult.enabledItems.length}
           />
         }
       />
@@ -863,6 +862,10 @@ function IdlePracticeView<Q>(
 ) {
   const hasGroups = def.scope.kind === 'groups' && groupScopeResult;
   const hasStats = def.stats.kind !== 'none' || !!ctrl.renderStats;
+  const customItemCount = hasGroups &&
+      groupScopeResult.practiceMode === 'custom'
+    ? groupScopeResult.enabledItems.length
+    : null;
 
   return (
     <PracticeTab
@@ -874,6 +877,9 @@ function IdlePracticeView<Q>(
         : undefined}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one group'
+      startLabel={customItemCount != null
+        ? `Practice (${customItemCount} ${customItemCount === 1 ? 'item' : 'items'})`
+        : undefined}
       practiceContent={hasGroups
         ? (
           <GroupPracticeContent
@@ -891,7 +897,7 @@ function IdlePracticeView<Q>(
       statsContent={
         <>
           {hasStats && (
-            <Text role='heading-subsection' as='div'>
+            <Text role='heading-section' as='div'>
               All items
             </Text>
           )}
@@ -921,7 +927,7 @@ function IdlePracticeView<Q>(
       progressExtra={hasGroups
         ? (
           <>
-            <Text role='heading-subsection'>Levels</Text>
+            <Text role='heading-section'>Levels</Text>
             <LevelProgressCards
               def={def}
               learner={learner}

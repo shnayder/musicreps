@@ -303,10 +303,11 @@ export function Recommendation(
 // ---------------------------------------------------------------------------
 
 export function StartButton(
-  { onStart, disabled, validationMessage }: {
+  { onStart, disabled, validationMessage, label }: {
     onStart?: () => void;
     disabled?: boolean;
     validationMessage?: string;
+    label?: string;
   },
 ) {
   const msgId = validationMessage ? 'start-validation-msg' : undefined;
@@ -319,7 +320,7 @@ export function StartButton(
         disabled={disabled}
         aria-describedby={msgId}
       >
-        Practice
+        {label ?? 'Practice'}
       </ActionButton>
       {validationMessage
         ? (
@@ -586,6 +587,7 @@ export function PracticeTab(
     aboutContent,
     practiceContent,
     progressExtra,
+    startLabel,
   }: {
     summary: PracticeSummaryState;
     onStart: () => void;
@@ -603,6 +605,8 @@ export function PracticeTab(
     practiceContent?: ComponentChildren;
     /** Extra content inserted above baseline in the progress tab. */
     progressExtra?: ComponentChildren;
+    /** Custom label for the start button (e.g. "Practice (32 items)"). */
+    startLabel?: string;
   },
 ) {
   const prefix = useTabsPrefix();
@@ -654,6 +658,7 @@ export function PracticeTab(
               validationMessage={scopeValid === false
                 ? validationMessage
                 : undefined}
+              label={startLabel}
             />
           </div>
         )}

@@ -188,7 +188,7 @@ function Phase1Components(
             labels={MOCK_LEVEL_LABELS}
             active={customActive}
             onToggle={toggleCustom}
-            itemCount={customItemCount}
+
           />
         </Section>
       </PreviewGrid>
@@ -206,7 +206,7 @@ function Phase1Components(
                 labels={MOCK_LEVEL_LABELS}
                 active={customActive}
                 onToggle={toggleCustom}
-                itemCount={customItemCount}
+    
               />
             }
           />
@@ -221,7 +221,7 @@ function Phase1Components(
                 labels={MOCK_LEVEL_LABELS}
                 active={customActive}
                 onToggle={toggleCustom}
-                itemCount={customItemCount}
+    
               />
             }
           />
@@ -327,7 +327,7 @@ function Phase2MultiLevel(
                 labels={MOCK_LEVEL_LABELS}
                 active={customActive}
                 onToggle={toggleCustom}
-                itemCount={customItemCount}
+    
               />
             }
           />
@@ -500,7 +500,7 @@ function ScreenLayoutIdleExamples(
                   labels={MOCK_LEVEL_LABELS}
                   active={customActive}
                   onToggle={toggleCustom}
-                  itemCount={customItemCount}
+      
                 />
               }
             />

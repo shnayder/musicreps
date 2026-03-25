@@ -35,7 +35,7 @@
   },
   "permissions": {
     "additionalDirectories": ["../.todos"],
-     "allow": [
+    "allow": [
       "Bash(deno run:*)",
       "Bash(git add:*)",
       "Bash(git push:*)",
