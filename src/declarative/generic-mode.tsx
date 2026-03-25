@@ -51,7 +51,6 @@ import {
   NoteButtons,
   NumberButtons,
   NumeralButtons,
-  PianoNoteButtons,
   SplitKeysigButtons,
   SplitNoteButtons,
 } from '../ui/buttons.tsx';
@@ -117,7 +116,6 @@ import {
 function getHintType(buttons: ButtonsDef): KeyboardHintType {
   switch (buttons.kind) {
     case 'note':
-    case 'piano-note':
     case 'split-note':
       return 'note';
     case 'number':
@@ -349,15 +347,7 @@ function ResponseButtons(
         <NoteButtons
           onAnswer={onAnswer}
           useFlats={useFlats}
-          feedback={feedback}
-        />
-      );
-    case 'piano-note':
-      return (
-        <PianoNoteButtons
-          onAnswer={onAnswer}
-          hideAccidentals={hideAccidentalsOverride ??
-            buttonsDef.hideAccidentals}
+          hideAccidentals={hideAccidentalsOverride}
           narrowing={narrowing}
           feedback={feedback}
         />

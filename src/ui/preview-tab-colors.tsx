@@ -240,12 +240,14 @@ function SurfaceSection({ tabId }: { tabId: string }) {
     <Section title='Surfaces & backgrounds' tabId={tabId}>
       <SwatchGrid
         items={[
-          { name: '--color-bg', note: 'Page background' },
-          { name: '--color-surface', note: 'Card bg, inactive toggles' },
+          { name: '--color-canvas', note: 'Page background' },
+          { name: '--color-chrome', note: 'Top bar, tab bar' },
+          { name: '--color-well', note: 'Recessed containers, button card' },
+          { name: '--color-card', note: 'Elevated cards, buttons' },
+          { name: '--color-surface', note: 'Inactive toggles' },
           { name: '--color-surface-hover', note: 'Button/nav hover' },
-          { name: '--color-surface-raised', note: 'Progress bar bg, raised' },
+          { name: '--color-surface-raised', note: 'Progress bar bg' },
           { name: '--color-surface-pressed', note: 'Button :active' },
-          { name: '--color-surface-accent', note: 'Accidental note bg' },
         ]}
       />
     </Section>

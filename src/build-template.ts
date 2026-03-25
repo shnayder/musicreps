@@ -12,7 +12,6 @@ import {
   notesToggleHTML,
   numberButtons,
   numeralAnswerButtons,
-  pianoNoteButtons,
   tabbedIdleHTML,
 } from './html-helpers.ts';
 import { MODE_NAMES } from './mode-catalog.ts';
@@ -52,7 +51,7 @@ ${
           fretMarkers: [3, 5, 7, 9, 12],
         })
       }
-      ${pianoNoteButtons()}`,
+      <div class="answer-grid"></div>`,
     })
   }
 
@@ -75,7 +74,7 @@ ${
           fretMarkers: [3, 5, 7, 10, 12],
         })
       }
-      ${pianoNoteButtons()}`,
+      <div class="answer-grid"></div>`,
     })
   }
 

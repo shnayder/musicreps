@@ -25,11 +25,6 @@ export type NoteButtonsDef = {
   kind: 'note';
 };
 
-export type PianoNoteButtonsDef = {
-  kind: 'piano-note';
-  hideAccidentals?: boolean;
-};
-
 export type NumberButtonsDef = {
   kind: 'number';
   start: number;
@@ -46,7 +41,6 @@ export type NoButtonsDef = { kind: 'none' };
 /** Which tap/click buttons to show. Keyboard input goes through a text field. */
 export type ButtonsDef =
   | NoteButtonsDef
-  | PianoNoteButtonsDef
   | NumberButtonsDef
   | DegreeButtonsDef
   | NumeralButtonsDef

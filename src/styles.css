@@ -224,6 +224,7 @@
   /* Interactive element sizes */
   --size-close-btn: 2.25rem;
   --size-content-inset: var(--space-5);
+  --size-answer-grid: 300px;
 
   /* Elevation (box-shadow) */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -367,8 +368,8 @@
   --type-action-color: var(--color-on-brand);
 
   /* -- Answer: quiz answer buttons (note, number, interval) -- */
-  --type-answer-size: var(--text-base);
-  --type-answer-weight: var(--font-medium);
+  --type-answer-size: var(--text-lg);
+  --type-answer-weight: var(--font-semibold);
   --type-answer-leading: var(--leading-none);
   --type-answer-color: var(--color-text);
 
@@ -2015,183 +2016,53 @@ button {
 /* ==========================================================================
    10. ANSWER BUTTONS
    ========================================================================== */
-.note-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  width: 100%;
-  margin: var(--space-3) 0;
-}
-.note-row-naturals,
-.note-row-accidentals {
+
+/* --- Unified 4-column answer grid --- */
+.answer-grid {
   display: grid;
-  grid-template-columns: repeat(14, 1fr);
-  column-gap: 2px; /* sub-column separator; --space-1 too wide for 14-col grid */
-}
-.note-row-accidentals.hidden {
-  display: none;
-}
-/* Natural notes: each spans 2 of 14 sub-columns */
-.note-row-naturals .note-btn:nth-child(1) {
-  grid-column: 1 / 3;
-}
-.note-row-naturals .note-btn:nth-child(2) {
-  grid-column: 3 / 5;
-}
-.note-row-naturals .note-btn:nth-child(3) {
-  grid-column: 5 / 7;
-}
-.note-row-naturals .note-btn:nth-child(4) {
-  grid-column: 7 / 9;
-}
-.note-row-naturals .note-btn:nth-child(5) {
-  grid-column: 9 / 11;
-}
-.note-row-naturals .note-btn:nth-child(6) {
-  grid-column: 11 / 13;
-}
-.note-row-naturals .note-btn:nth-child(7) {
-  grid-column: 13 / 15;
-}
-/* Accidentals: piano black-key positioning between naturals */
-.note-row-accidentals .note-btn:nth-child(1) {
-  grid-column: 2 / 4;
-}
-.note-row-accidentals .note-btn:nth-child(2) {
-  grid-column: 4 / 6;
-}
-.note-row-accidentals .note-btn:nth-child(3) {
-  grid-column: 8 / 10;
-}
-.note-row-accidentals .note-btn:nth-child(4) {
-  grid-column: 10 / 12;
-}
-.note-row-accidentals .note-btn:nth-child(5) {
-  grid-column: 12 / 14;
-}
-.note-btn {
-  min-width: 0;
-  height: 48px;
-  font-size: var(--type-answer-size);
-  font-weight: var(--type-answer-weight);
-  line-height: var(--type-answer-leading);
-  border: 2px solid var(--color-text-muted);
-  border-radius: var(--radius-md);
-  background: var(--color-card);
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  touch-action: manipulation;
-  transition:
-    background var(--duration-base) ease,
-    border-color var(--duration-base) ease,
-    transform var(--duration-fast) ease;
-}
-@media (hover: hover) {
-  .note-btn:hover {
-    background: var(--color-surface-hover);
-    border-color: var(--color-text);
-  }
-  .note-btn.accidental:hover {
-    background: var(--color-surface-pressed);
-  }
-  .note-btn:disabled:hover {
-    background: var(--color-card);
-    border-color: var(--color-text-muted);
-    transform: none;
-  }
-}
-.note-btn.accidental {
-  background: var(--color-surface-accent);
-}
-.note-btn:active {
-  background: var(--color-surface-pressed);
-  transform: scale(0.97);
-}
-.note-btn:disabled {
-  opacity: var(--opacity-disabled);
-  cursor: default;
-}
-.note-btn.hidden {
-  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  width: 100%;
+  max-width: var(--size-answer-grid);
+  margin: var(--space-3) auto;
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
 }
 
-/* --- Split note buttons (base note + accidental two-step input) --- */
-.split-note-buttons {
+/* Stack multiple grids vertically (split inputs: chord spelling, key sig) */
+.answer-grid-stack {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.4rem;
   width: 100%;
-  max-width: 400px;
+  max-width: var(--size-answer-grid);
   margin: var(--space-3) auto;
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
 }
-.split-note-row-base {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.4rem;
-  width: 100%;
+.answer-grid-stack > .answer-grid {
+  margin: 0;
+  background: none;
+  border-radius: 0;
+  padding: 0;
 }
-.split-note-row-accidentals {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.4rem;
-  width: 60%;
-  transition:
-    opacity var(--duration-base) ease,
-    transform var(--duration-base) ease;
+
+/* --- Pending/dimmed states for split (two-step) inputs --- */
+.answer-btn-pending {
+  --_bg: var(--color-surface);
+  box-shadow: 0 0 0 2px var(--color-text);
 }
-.split-note-row-accidentals.split-note-acc-hidden {
+.answer-btn-dimmed {
+  opacity: var(--opacity-dimmed);
+}
+
+/* Accidental qualifier row fades when hidden (split-note chord spelling) */
+.answer-grid-acc-hidden {
   opacity: var(--opacity-subtle);
   pointer-events: none;
-}
-.split-note-btn {
-  min-width: 0;
-  height: 48px;
-  font-size: var(--type-answer-size);
-  font-weight: var(--type-answer-weight);
-  line-height: var(--type-answer-leading);
-  border: 1.5px solid var(--color-border-light);
-  border-radius: var(--radius-sm);
-  background: var(--color-card);
-  color: var(--color-text);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background var(--duration-fast),
-    border-color var(--duration-fast),
-    opacity var(--duration-base);
-  -webkit-tap-highlight-color: transparent;
-}
-.split-note-btn:active {
-  background: var(--color-surface-pressed);
-  transform: scale(0.97);
-}
-.split-note-btn:disabled {
-  cursor: default;
-  opacity: var(--opacity-dimmed);
-}
-@media (hover: hover) {
-  .split-note-btn:hover:not(:disabled) {
-    background: var(--color-surface-hover);
-    border-color: var(--color-text);
-  }
-}
-.split-note-pending {
-  border-color: var(--color-text);
-  background: var(--color-surface);
-  box-shadow: 0 0 0 1px var(--color-border);
-}
-.split-note-dimmed {
-  opacity: var(--opacity-dimmed);
-}
-.split-note-acc {
-  background: var(--color-surface-accent);
 }
 
 /* --- Quiz prompt (text modes) --- */
@@ -2220,14 +2091,6 @@ button {
   display: none;
 }
 
-/* --- Answer buttons grid (shared by new modes) --- */
-.answer-buttons {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
-  width: 100%;
-  margin: var(--space-3) 0;
-}
 /* Answer text input (declarative modes) */
 .answer-input {
   display: none;
@@ -2284,17 +2147,16 @@ button {
 .answer-btn {
   --_bg: var(--color-card);
   --_text: inherit;
-  --_border: var(--color-text-muted);
-  height: 48px;
+  aspect-ratio: 1;
   font-size: var(--type-answer-size);
   font-weight: var(--type-answer-weight);
   line-height: var(--type-answer-leading);
-  border: 2px solid var(--_border);
-  border-radius: var(--radius-md);
+  border: none;
+  border-radius: var(--radius-lg);
   background: var(--_bg);
   color: var(--_text);
   cursor: pointer;
-  padding: 0 var(--space-2);
+  padding: 0;
   margin: 0;
   display: flex;
   align-items: center;
@@ -2302,17 +2164,14 @@ button {
   touch-action: manipulation;
   transition:
     background var(--duration-base) ease,
-    border-color var(--duration-base) ease,
     transform var(--duration-fast) ease;
 }
 @media (hover: hover) {
   .answer-btn:hover {
     --_bg: var(--color-surface-hover);
-    --_border: var(--color-text);
   }
   .answer-btn:disabled:hover {
     --_bg: var(--color-card);
-    --_border: var(--color-text-muted);
     transform: none;
   }
 }
@@ -2330,30 +2189,18 @@ button {
    ========================================================================== */
 .btn-feedback-correct {
   --_bg: var(--color-success-bg) !important;
-  --_border: var(--color-success) !important;
   --_text: var(--color-success-text) !important;
   opacity: 1 !important;
 }
 .btn-feedback-wrong {
   --_bg: var(--color-error-bg) !important;
-  --_border: var(--color-error) !important;
   --_text: var(--color-error-text) !important;
   opacity: 1 !important;
 }
 .btn-feedback-reveal {
   --_bg: var(--color-success-bg) !important;
-  --_border: var(--color-success) !important;
   --_text: var(--color-success-text) !important;
   opacity: 1 !important;
-}
-
-.answer-buttons-intervals {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-/* --- Answer group visibility (toggled by mode JS for bidirectional questions) --- */
-.answer-group-hidden {
-  display: none !important;
 }
 
 /* ==========================================================================
@@ -2744,9 +2591,8 @@ button {
 /* Neutral treatment: strong border + surface bg — avoids brand/success green
    which would read as "correct" rather than "possible match". */
 .kb-match {
-  border-color: var(--color-text) !important;
-  background: var(--color-surface) !important;
-  box-shadow: 0 0 0 1px var(--color-border);
+  --_bg: var(--color-surface) !important;
+  box-shadow: 0 0 0 2px var(--color-text);
 }
 .kb-dimmed {
   opacity: var(--opacity-dimmed);
@@ -2951,87 +2797,6 @@ button {
   height: 20px;
 }
 
-/* --- Split key-signature buttons (number + sharp/flat, either order) --- */
-.split-keysig-buttons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  width: 100%;
-  max-width: 400px;
-  margin: var(--space-3) auto;
-}
-.split-keysig-row-numbers {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 0.4rem;
-  width: 100%;
-}
-.split-keysig-row-accidentals {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.4rem;
-  width: 40%;
-}
-.split-keysig-btn {
-  --_bg: var(--color-card);
-  --_text: var(--color-text);
-  --_border: var(--color-border-light);
-  min-width: 0;
-  height: 48px;
-  font-size: var(--type-answer-size);
-  font-weight: var(--type-answer-weight);
-  line-height: var(--type-answer-leading);
-  border: 1.5px solid var(--_border);
-  border-radius: var(--radius-sm);
-  background: var(--_bg);
-  color: var(--_text);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background var(--duration-fast),
-    border-color var(--duration-fast),
-    opacity var(--duration-base);
-  -webkit-tap-highlight-color: transparent;
-}
-.split-keysig-btn:active {
-  background: var(--color-surface-pressed);
-  transform: scale(0.97);
-}
-.split-keysig-btn:disabled {
-  cursor: default;
-  opacity: var(--opacity-dimmed);
-}
-@media (hover: hover) {
-  .split-keysig-btn:hover:not(:disabled) {
-    background: var(--color-surface-hover);
-    border-color: var(--color-text);
-  }
-}
-.split-keysig-pending {
-  border-color: var(--color-text);
-  background: var(--color-surface);
-  box-shadow: 0 0 0 1px var(--color-border);
-}
-.split-keysig-dimmed {
-  opacity: var(--opacity-dimmed);
-}
-.split-keysig-acc {
-  background: var(--color-surface-accent);
-}
-
-/* --- Degree answer buttons --- */
-.answer-buttons-degrees {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-/* --- Roman numeral answer buttons --- */
-.answer-buttons-numerals {
-  grid-template-columns: repeat(4, 1fr);
-}
-
 /* ==========================================================================
    17. SEQUENTIAL SLOTS
    ========================================================================== */
@@ -3126,10 +2891,7 @@ button {
 }
 
 /* Answer buttons */
-.answer-btn:focus-visible,
-.note-btn:focus-visible,
-.split-note-btn:focus-visible,
-.split-keysig-btn:focus-visible {
+.answer-btn:focus-visible {
   outline-offset: -2px;
 }
 

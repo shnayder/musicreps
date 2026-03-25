@@ -1,10 +1,9 @@
-// Answer button components: Preact equivalents of html-helpers button generators.
-// Each emits the same CSS class names as the build-time HTML for style parity.
+// Answer button components — unified 4-column grid layout.
+// All button types use .answer-grid container + .answer-btn buttons.
 
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
 import {
-  ACCIDENTAL_NAMES,
   DEGREE_LABELS,
   displayNote,
   INTERVAL_ABBREVS,
@@ -62,23 +61,25 @@ function feedbackClass(
 }
 
 // ---------------------------------------------------------------------------
-// Note answer buttons (12-note grid)
+// Note answer buttons (12-note or 7-natural grid)
 // ---------------------------------------------------------------------------
 
 export function NoteButtons(
-  { onAnswer, useFlats, narrowing, feedback }: {
+  { onAnswer, useFlats, hideAccidentals, narrowing, feedback }: {
     onAnswer?: (note: string) => void;
     /** When set, accidental buttons show flats (true) or sharps (false). */
     useFlats?: boolean;
+    /** When true, render only 7 natural notes instead of all 12. */
+    hideAccidentals?: boolean;
     /** Set of note names to highlight as keyboard matches; others dimmed. */
     narrowing?: ReadonlySet<string> | null;
     feedback?: ButtonFeedback | null;
   },
 ) {
-  const cls = 'answer-buttons answer-buttons-notes';
+  const notes = hideAccidentals ? NATURAL_NOTES : NOTE_NAMES;
   return (
-    <div class={cls}>
-      {NOTE_NAMES.map((n) => {
+    <div class='answer-grid'>
+      {notes.map((n) => {
         let label: string;
         if (useFlats !== undefined) {
           const note = NOTES.find((x) => x.name === n);
@@ -88,7 +89,7 @@ export function NoteButtons(
         } else {
           label = displayNote(n);
         }
-        let btnCls = 'answer-btn answer-btn-note';
+        let btnCls = 'answer-btn';
         if (narrowing) {
           btnCls += narrowing.has(n) ? ' kb-match' : ' kb-dimmed';
         }
@@ -175,12 +176,12 @@ export function SplitNoteButtons(
   const showAccidentals = effective !== null && !answered;
 
   return (
-    <div class='split-note-buttons'>
-      <div class='split-note-row-base'>
+    <div class='answer-grid-stack'>
+      <div class='answer-grid'>
         {NATURAL_NOTES.map((n) => {
-          let cls = 'split-note-btn split-note-base';
-          if (effective === n) cls += ' split-note-pending';
-          else if (effective) cls += ' split-note-dimmed';
+          let cls = 'answer-btn';
+          if (effective === n) cls += ' answer-btn-pending';
+          else if (effective) cls += ' answer-btn-dimmed';
           return (
             <button
               type='button'
@@ -197,15 +198,15 @@ export function SplitNoteButtons(
         })}
       </div>
       <div
-        class={'split-note-row-accidentals' +
-          (showAccidentals ? '' : ' split-note-acc-hidden')}
+        class={'answer-grid' +
+          (showAccidentals ? '' : ' answer-grid-acc-hidden')}
       >
         {ACCIDENTALS_SINGLE.map(({ label, suffix }) => (
           <button
             type='button'
             tabIndex={0}
             key={label}
-            class='split-note-btn split-note-acc'
+            class='answer-btn'
             data-accidental={suffix || 'natural'}
             disabled={!showAccidentals}
             onClick={() => handleAccidental(suffix)}
@@ -213,69 +214,6 @@ export function SplitNoteButtons(
             {label}
           </button>
         ))}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Piano-layout note buttons (fretboard modes)
-// ---------------------------------------------------------------------------
-
-export function PianoNoteButtons(
-  { onAnswer, hideAccidentals, narrowing, feedback }: {
-    onAnswer?: (note: string) => void;
-    hideAccidentals?: boolean;
-    /** Set of note names to highlight as keyboard matches; others dimmed. */
-    narrowing?: ReadonlySet<string> | null;
-    feedback?: ButtonFeedback | null;
-  },
-) {
-  return (
-    <div class='note-buttons'>
-      <div class='note-row-accidentals'>
-        {ACCIDENTAL_NAMES.map((n) => {
-          const label = displayNote(n);
-          let cls = 'note-btn accidental' + (hideAccidentals ? ' hidden' : '');
-          if (narrowing && !hideAccidentals) {
-            cls += narrowing.has(n) ? ' kb-match' : ' kb-dimmed';
-          }
-          cls += feedbackClass(feedback ?? null, n, label);
-          return (
-            <button
-              type='button'
-              tabIndex={0}
-              key={n}
-              class={cls}
-              data-note={n}
-              onClick={onAnswer ? () => onAnswer(n) : undefined}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
-      <div class='note-row-naturals'>
-        {NATURAL_NOTES.map((n) => {
-          const label = displayNote(n);
-          let cls = 'note-btn';
-          if (narrowing) {
-            cls += narrowing.has(n) ? ' kb-match' : ' kb-dimmed';
-          }
-          cls += feedbackClass(feedback ?? null, n, label);
-          return (
-            <button
-              type='button'
-              tabIndex={0}
-              key={n}
-              class={cls}
-              data-note={n}
-              onClick={onAnswer ? () => onAnswer(n) : undefined}
-            >
-              {label}
-            </button>
-          );
-        })}
       </div>
     </div>
   );
@@ -297,12 +235,11 @@ export function NumberButtons(
 ) {
   const nums = [];
   for (let i = start; i <= end; i++) nums.push(i);
-  const cls = 'answer-buttons answer-buttons-numbers';
   return (
-    <div class={cls}>
+    <div class='answer-grid'>
       {nums.map((i) => {
         const val = String(i);
-        let btnCls = 'answer-btn answer-btn-num';
+        let btnCls = 'answer-btn';
         if (narrowing) {
           btnCls += narrowing.has(val) ? ' kb-match' : ' kb-dimmed';
         }
@@ -334,11 +271,10 @@ export function IntervalButtons(
     feedback?: ButtonFeedback | null;
   },
 ) {
-  const cls = 'answer-buttons answer-buttons-intervals';
   return (
-    <div class={cls}>
+    <div class='answer-grid'>
       {INTERVAL_ABBREVS.map((iv) => {
-        let btnCls = 'answer-btn answer-btn-interval';
+        let btnCls = 'answer-btn';
         btnCls += feedbackClass(feedback ?? null, iv, iv);
         return (
           <button
@@ -391,12 +327,12 @@ function KeysigNumberRow(
   },
 ) {
   return (
-    <div class='split-keysig-row-numbers'>
+    <div class='answer-grid'>
       {KEYSIG_NUMBERS.map((n) => {
-        let cls = 'split-keysig-btn split-keysig-num';
+        let cls = 'answer-btn';
         if (!answered) {
-          if (pendingNum === n) cls += ' split-keysig-pending';
-          else if (pendingNum) cls += ' split-keysig-dimmed';
+          if (pendingNum === n) cls += ' answer-btn-pending';
+          else if (pendingNum) cls += ' answer-btn-dimmed';
         }
         const disabled = answered || (n === '0' && pendingAcc !== null);
         if (fbParts) {
@@ -435,12 +371,12 @@ function KeysigAccidentalRow(
   },
 ) {
   return (
-    <div class='split-keysig-row-accidentals'>
+    <div class='answer-grid'>
       {KEYSIG_ACCIDENTALS.map(({ label, suffix }) => {
-        let cls = 'split-keysig-btn split-keysig-acc';
+        let cls = 'answer-btn';
         if (!answered) {
-          if (pendingAcc === suffix) cls += ' split-keysig-pending';
-          else if (pendingAcc) cls += ' split-keysig-dimmed';
+          if (pendingAcc === suffix) cls += ' answer-btn-pending';
+          else if (pendingAcc) cls += ' answer-btn-dimmed';
         }
         const disabled = answered || pendingNum === '0';
         if (fbParts) {
@@ -524,10 +460,9 @@ export function SplitKeysigButtons(
     : null;
 
   const answered = !!feedback;
-  const cls = 'split-keysig-buttons';
 
   return (
-    <div class={cls}>
+    <div class='answer-grid-stack'>
       <KeysigNumberRow
         pendingNum={pendingNum}
         pendingAcc={pendingAcc}
@@ -556,11 +491,10 @@ export function DegreeButtons(
     feedback?: ButtonFeedback | null;
   },
 ) {
-  const cls = 'answer-buttons answer-buttons-degrees';
   return (
-    <div class={cls}>
+    <div class='answer-grid'>
       {DEGREE_LABELS.map(([val, label]) => {
-        let btnCls = 'answer-btn answer-btn-degree';
+        let btnCls = 'answer-btn';
         btnCls += feedbackClass(feedback ?? null, val, label);
         return (
           <button
@@ -589,11 +523,10 @@ export function NumeralButtons(
     feedback?: ButtonFeedback | null;
   },
 ) {
-  const cls = 'answer-buttons answer-buttons-numerals';
   return (
-    <div class={cls}>
+    <div class='answer-grid'>
       {ROMAN_NUMERALS.map((n) => {
-        let btnCls = 'answer-btn answer-btn-numeral';
+        let btnCls = 'answer-btn';
         btnCls += feedbackClass(feedback ?? null, n, n);
         return (
           <button

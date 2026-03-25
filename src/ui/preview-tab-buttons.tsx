@@ -6,7 +6,6 @@ import {
   NoteButtons,
   NumberButtons,
   NumeralButtons,
-  PianoNoteButtons,
   SplitKeysigButtons,
 } from './buttons.tsx';
 import { ActionButton } from './action-button.tsx';
@@ -170,11 +169,11 @@ export function ButtonsTab({ tabId }: { tabId: string }) {
     <>
       <h2>Answer Button Variants</h2>
       <PreviewGrid>
-        <Section title='Note Buttons (Grid)' tabId={tabId}>
+        <Section title='Note Buttons (12)' tabId={tabId}>
           <NoteButtons />
         </Section>
-        <Section title='Piano Note Buttons' tabId={tabId}>
-          <PianoNoteButtons />
+        <Section title='Note Buttons (naturals only)' tabId={tabId}>
+          <NoteButtons hideAccidentals />
         </Section>
         <Section title='Interval Buttons' tabId={tabId}>
           <IntervalButtons />
