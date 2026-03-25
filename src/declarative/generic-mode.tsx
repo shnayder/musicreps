@@ -64,8 +64,8 @@ import {
   ScreenLayout,
 } from '../ui/screen-layout.tsx';
 import {
-  getStatsCellColorMerged,
   progressBarColors,
+  progressBarGroupSegment,
 } from '../stats-display.ts';
 import {
   ModeTopBar,
@@ -1274,7 +1274,7 @@ type GenericModeBodyProps<Q> = {
 };
 
 /** Compute progress colors for the SkillHeader progress bar.
- *  Multi-level: one color per group (merged speed/freshness).
+ *  Multi-level: one color per group (three-zone: fresh/stale/unseen).
  *  Single-level: per-item sorted colors (via shared progressBarColors). */
 function useProgressColors<Q>(
   def: ModeDefinition<Q>,
@@ -1283,10 +1283,14 @@ function useProgressColors<Q>(
   return useMemo(() => {
     if (def.scope.kind === 'groups') {
       const scope = def.scope;
-      return scope.allGroupIndices.map((i) => {
-        const itemIds = scope.getItemIdsForGroup(i);
-        return getStatsCellColorMerged(learner.selector, itemIds);
+      const segments = scope.allGroupIndices.map((i) =>
+        progressBarGroupSegment(learner.selector, scope.getItemIdsForGroup(i))
+      );
+      segments.sort((a, b) => {
+        if (a.zone !== b.zone) return a.zone - b.zone;
+        return b.speed - a.speed;
       });
+      return segments.map((s) => s.color);
     }
     return progressBarColors(learner.selector, def.allItems);
   }, [def, learner.selector]);

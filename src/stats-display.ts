@@ -195,6 +195,56 @@ export function progressBarColors(
   return items.map((item) => item.color);
 }
 
+/** Three-zone classification for a group of items. */
+export type GroupBarSegment = {
+  color: string;
+  zone: 0 | 1 | 2; // 0 = fresh, 1 = stale, 2 = unseen
+  speed: number; // average speed (for sort within fresh zone)
+};
+
+/**
+ * Three-zone color + metadata for a group of items (one segment per group).
+ * Averages speed and freshness across seen items, then classifies:
+ * - Fresh (avg freshness >= 0.5): speed-only color at full saturation
+ * - Stale (avg freshness < 0.5): notice-orange review color
+ * - Unseen (no seen items): neutral grey
+ */
+export function progressBarGroupSegment(
+  selector: ProgressSelector,
+  itemIds: string[],
+): GroupBarSegment {
+  let speedSum = 0, speedCount = 0, freshSum = 0, freshCount = 0;
+  for (const id of itemIds) {
+    const sp = selector.getSpeedScore(id);
+    const fr = selector.getFreshness(id);
+    if (sp !== null) {
+      speedSum += sp;
+      speedCount++;
+    }
+    if (fr !== null) {
+      freshSum += fr;
+      freshCount++;
+    }
+  }
+  if (speedCount === 0) {
+    return { color: heatmapColors().none, zone: 2, speed: 0 };
+  }
+  const avgSpeed = speedSum / speedCount;
+  const avgFresh = freshCount > 0 ? freshSum / freshCount : null;
+  if (avgFresh !== null && avgFresh < FRESHNESS_THRESHOLD) {
+    return { color: barStaleColor(), zone: 1, speed: avgSpeed };
+  }
+  return { color: speedOnlyColor(avgSpeed), zone: 0, speed: avgSpeed };
+}
+
+/** Convenience wrapper returning just the color string. */
+export function progressBarGroupColor(
+  selector: ProgressSelector,
+  itemIds: string[],
+): string {
+  return progressBarGroupSegment(selector, itemIds).color;
+}
+
 // --- Legend ---
 
 /**

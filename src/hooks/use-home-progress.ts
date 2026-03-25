@@ -3,7 +3,7 @@
 // recomputed on mount and on navigate-home.
 
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import type { AdaptiveSelector, StorageAdapter } from '../types.ts';
+import type { StorageAdapter } from '../types.ts';
 import { storage } from '../storage.ts';
 import {
   createAdaptiveSelector,
@@ -15,8 +15,9 @@ import {
   type ModeProgressEntry,
 } from '../mode-progress-manifest.ts';
 import {
-  getSpeedFreshnessColor,
-  getStatsCellColorMerged,
+  type GroupBarSegment,
+  progressBarGroupColor,
+  progressBarGroupSegment,
 } from '../stats-display.ts';
 import {
   computeSkillRecommendation,
@@ -35,19 +36,6 @@ export type ModeProgress = {
 // ---------------------------------------------------------------------------
 // Pure computation (no hooks — testable)
 // ---------------------------------------------------------------------------
-
-/** Average speed score across items (unseen → 0). Used for sort order. */
-function averageSpeed(
-  selector: Pick<AdaptiveSelector, 'getSpeedScore'>,
-  itemIds: string[],
-): number {
-  if (itemIds.length === 0) return 0;
-  let sum = 0;
-  for (const id of itemIds) {
-    sum += selector.getSpeedScore(id) ?? 0;
-  }
-  return sum / itemIds.length;
-}
 
 /**
  * Load skipped group indices from storage.
@@ -87,24 +75,25 @@ export function computeProgressForMode(
     : undefined;
   const selector = createAdaptiveSelector(storage, cfg);
 
-  // Compute per-group color + speed, then sort descending
-  type Segment = { color: string; speed: number };
-  const segments: Segment[] = [];
+  // Compute per-group segment (color + zone + speed), then sort:
+  // fresh by speed desc → stale → unseen
+  const segments: GroupBarSegment[] = [];
   for (let i = 0; i < entry.groups.length; i++) {
     if (skippedGroups?.has(i)) continue;
-    const ids = entry.groups[i].getItemIds();
-    segments.push({
-      color: getStatsCellColorMerged(selector, ids),
-      speed: averageSpeed(selector, ids),
-    });
+    segments.push(
+      progressBarGroupSegment(selector, entry.groups[i].getItemIds()),
+    );
   }
 
   // All groups skipped → single "unseen" segment
   if (segments.length === 0) {
-    return { groupColors: [getSpeedFreshnessColor(null, null)] };
+    return { groupColors: [progressBarGroupColor(selector, [])] };
   }
 
-  segments.sort((a, b) => b.speed - a.speed);
+  segments.sort((a, b) => {
+    if (a.zone !== b.zone) return a.zone - b.zone;
+    return b.speed - a.speed;
+  });
   return { groupColors: segments.map((s) => s.color) };
 }
 
