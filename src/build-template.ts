@@ -7,7 +7,6 @@ import {
   degreeAnswerButtons,
   fretboardSVG,
   intervalAnswerButtons,
-  keysigAnswerButtons,
   modeScreen,
   noteAnswerButtons,
   notesToggleHTML,
@@ -136,7 +135,7 @@ ${
     modeScreen('keySignatures', {
       modeName: MODE_NAMES.keySignatures,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-      quizAreaContent: `${keysigAnswerButtons()}
+      quizAreaContent: `<div class="split-keysig-buttons"></div>
       ${noteAnswerButtons({ hidden: true })}`,
     })
   }

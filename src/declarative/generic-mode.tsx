@@ -48,11 +48,11 @@ import {
   type ButtonFeedback,
   DegreeButtons,
   IntervalButtons,
-  KeysigButtons,
   NoteButtons,
   NumberButtons,
   NumeralButtons,
   PianoNoteButtons,
+  SplitKeysigButtons,
   SplitNoteButtons,
 } from '../ui/buttons.tsx';
 import { SequentialSlots } from '../ui/sequential-slots.tsx';
@@ -323,7 +323,6 @@ function AnswerInput(
 function ResponseButtons(
   {
     buttonsDef,
-    hidden,
     onAnswer,
     useFlats,
     narrowing,
@@ -334,7 +333,6 @@ function ResponseButtons(
     pendingNote,
   }: {
     buttonsDef: ButtonsDef;
-    hidden?: boolean;
     onAnswer: (input: string) => void;
     useFlats?: boolean;
     narrowing?: ReadonlySet<string> | null;
@@ -349,7 +347,6 @@ function ResponseButtons(
     case 'note':
       return (
         <NoteButtons
-          hidden={hidden}
           onAnswer={onAnswer}
           useFlats={useFlats}
           feedback={feedback}
@@ -357,15 +354,13 @@ function ResponseButtons(
       );
     case 'piano-note':
       return (
-        <div class={hidden ? 'answer-group-hidden' : undefined}>
-          <PianoNoteButtons
-            onAnswer={onAnswer}
-            hideAccidentals={hideAccidentalsOverride ??
-              buttonsDef.hideAccidentals}
-            narrowing={narrowing}
-            feedback={feedback}
-          />
-        </div>
+        <PianoNoteButtons
+          onAnswer={onAnswer}
+          hideAccidentals={hideAccidentalsOverride ??
+            buttonsDef.hideAccidentals}
+          narrowing={narrowing}
+          feedback={feedback}
+        />
       );
     case 'split-note':
       return (
@@ -381,7 +376,6 @@ function ResponseButtons(
         <NumberButtons
           start={buttonsDef.start}
           end={buttonsDef.end}
-          hidden={hidden}
           onAnswer={(n) => onAnswer(String(n))}
           feedback={feedback}
         />
@@ -389,7 +383,6 @@ function ResponseButtons(
     case 'degree':
       return (
         <DegreeButtons
-          hidden={hidden}
           onAnswer={onAnswer}
           feedback={feedback}
         />
@@ -397,7 +390,6 @@ function ResponseButtons(
     case 'numeral':
       return (
         <NumeralButtons
-          hidden={hidden}
           onAnswer={onAnswer}
           feedback={feedback}
         />
@@ -405,15 +397,13 @@ function ResponseButtons(
     case 'interval':
       return (
         <IntervalButtons
-          hidden={hidden}
           onAnswer={onAnswer}
           feedback={feedback}
         />
       );
-    case 'keysig':
+    case 'split-keysig':
       return (
-        <KeysigButtons
-          hidden={hidden}
+        <SplitKeysigButtons
           onAnswer={onAnswer}
           feedback={feedback}
         />
@@ -540,7 +530,6 @@ function StandardQuizArea<Q>(
     ctrl,
     currentQ,
     activeButtons,
-    inactiveButtons,
     handleSubmit,
     useFlats,
     placeholder,
@@ -552,7 +541,6 @@ function StandardQuizArea<Q>(
     ctrl: ModeController<Q>;
     currentQ: Q | null;
     activeButtons: ButtonsDef;
-    inactiveButtons: ButtonsDef | null;
     handleSubmit: (input: string) => boolean;
     useFlats?: boolean;
     placeholder?: string;
@@ -600,13 +588,6 @@ function StandardQuizArea<Q>(
               }
               : null}
           />
-          {inactiveButtons && (
-            <ResponseButtons
-              buttonsDef={inactiveButtons}
-              hidden
-              onAnswer={handleSubmit}
-            />
-          )}
           <AnswerInput
             onSubmit={handleSubmit}
             disabled={engine.state.answered}
@@ -641,7 +622,6 @@ type QuizActiveViewProps<Q> = {
   };
   multiTapInput: MultiTapInputHandle;
   activeButtons: ButtonsDef;
-  inactiveButtons: ButtonsDef | null;
   promptText: string;
   useFlats?: boolean;
   placeholder?: string;
@@ -666,7 +646,6 @@ function QuizActiveView<Q>(
     seq,
     multiTapInput,
     activeButtons,
-    inactiveButtons,
     promptText,
     useFlats,
     placeholder,
@@ -735,7 +714,6 @@ function QuizActiveView<Q>(
         ctrl={ctrl}
         currentQ={currentQ}
         activeButtons={activeButtons}
-        inactiveButtons={inactiveButtons}
         handleSubmit={handleSubmit}
         useFlats={useFlats}
         placeholder={placeholder}
@@ -1096,13 +1074,11 @@ function useGenericEngine<Q>(
 function resolveButtons<Q>(
   def: ModeDefinition<Q>,
   dir: 'fwd' | 'rev',
-): { active: ButtonsDef; inactive: ButtonsDef | null } {
+): ButtonsDef {
   if (def.buttons.kind === 'bidirectional') {
-    return dir === 'fwd'
-      ? { active: def.buttons.fwd, inactive: def.buttons.rev }
-      : { active: def.buttons.rev, inactive: def.buttons.fwd };
+    return dir === 'fwd' ? def.buttons.fwd : def.buttons.rev;
   }
-  return { active: def.buttons, inactive: null };
+  return def.buttons;
 }
 
 function buildGroupScopeSpec<Q>(
@@ -1366,10 +1342,7 @@ function GenericModeBody<Q>(
   const useFlats = currentQ && def.getUseFlats
     ? def.getUseFlats(currentQ)
     : undefined;
-  const { active: activeButtons, inactive: inactiveButtons } = resolveButtons(
-    def,
-    dir,
-  );
+  const activeButtons = resolveButtons(def, dir);
   const isIdle = engine.state.phase === 'idle' && !sc.speedCheck;
   const progressColors = useProgressColors(def, learner);
 
@@ -1439,7 +1412,6 @@ function GenericModeBody<Q>(
       seq={buildSeqProps(seqInput)}
       multiTapInput={multiTapInput}
       activeButtons={activeButtons}
-      inactiveButtons={inactiveButtons}
       promptText={promptText}
       useFlats={useFlats}
       placeholder={getInputPlaceholder(def, currentQ, isSequential)}

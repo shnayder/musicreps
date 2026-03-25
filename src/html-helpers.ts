@@ -95,31 +95,6 @@ export function intervalAnswerButtons(): string {
     ).join('\n') + '\n      </div>';
 }
 
-/** Key signature answer buttons (0, 1#..7#, 1b..7b). */
-export function keysigAnswerButtons(): string {
-  const sigs = [
-    '0',
-    '1#',
-    '2#',
-    '3#',
-    '4#',
-    '5#',
-    '6#',
-    '7#',
-    '1b',
-    '2b',
-    '3b',
-    '4b',
-    '5b',
-    '6b',
-    '7b',
-  ];
-  return `<div class="answer-buttons answer-buttons-keysig">\n` +
-    sigs.map((s) =>
-      `        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="${s}">${s}</button>`
-    ).join('\n') + '\n      </div>';
-}
-
 /** Scale degree answer buttons (1st..7th). */
 export function degreeAnswerButtons(opts?: { hidden?: boolean }): string {
   const degrees: [string, string][] = [

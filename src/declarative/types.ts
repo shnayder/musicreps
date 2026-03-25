@@ -39,7 +39,7 @@ export type NumberButtonsDef = {
 export type DegreeButtonsDef = { kind: 'degree' };
 export type NumeralButtonsDef = { kind: 'numeral' };
 export type IntervalButtonsDef = { kind: 'interval' };
-export type KeysigButtonsDef = { kind: 'keysig' };
+export type SplitKeysigButtonsDef = { kind: 'split-keysig' };
 export type SplitNoteButtonsDef = { kind: 'split-note' };
 export type NoButtonsDef = { kind: 'none' };
 
@@ -51,7 +51,7 @@ export type ButtonsDef =
   | DegreeButtonsDef
   | NumeralButtonsDef
   | IntervalButtonsDef
-  | KeysigButtonsDef
+  | SplitKeysigButtonsDef
   | SplitNoteButtonsDef
   | NoButtonsDef;
 

@@ -8,7 +8,6 @@ import {
   DEGREE_LABELS,
   displayNote,
   INTERVAL_ABBREVS,
-  KEYSIG_LABELS,
   NATURAL_NOTES,
   NOTE_NAMES,
   NOTES,
@@ -67,9 +66,8 @@ function feedbackClass(
 // ---------------------------------------------------------------------------
 
 export function NoteButtons(
-  { onAnswer, hidden, useFlats, narrowing, feedback }: {
+  { onAnswer, useFlats, narrowing, feedback }: {
     onAnswer?: (note: string) => void;
-    hidden?: boolean;
     /** When set, accidental buttons show flats (true) or sharps (false). */
     useFlats?: boolean;
     /** Set of note names to highlight as keyboard matches; others dimmed. */
@@ -77,8 +75,7 @@ export function NoteButtons(
     feedback?: ButtonFeedback | null;
   },
 ) {
-  const cls = 'answer-buttons answer-buttons-notes' +
-    (hidden ? ' answer-group-hidden' : '');
+  const cls = 'answer-buttons answer-buttons-notes';
   return (
     <div class={cls}>
       {NOTE_NAMES.map((n) => {
@@ -289,11 +286,10 @@ export function PianoNoteButtons(
 // ---------------------------------------------------------------------------
 
 export function NumberButtons(
-  { start, end, onAnswer, hidden, narrowing, feedback }: {
+  { start, end, onAnswer, narrowing, feedback }: {
     start: number;
     end: number;
     onAnswer?: (num: number) => void;
-    hidden?: boolean;
     /** Set of number strings to highlight as keyboard matches; others dimmed. */
     narrowing?: ReadonlySet<string> | null;
     feedback?: ButtonFeedback | null;
@@ -301,8 +297,7 @@ export function NumberButtons(
 ) {
   const nums = [];
   for (let i = start; i <= end; i++) nums.push(i);
-  const cls = 'answer-buttons answer-buttons-numbers' +
-    (hidden ? ' answer-group-hidden' : '');
+  const cls = 'answer-buttons answer-buttons-numbers';
   return (
     <div class={cls}>
       {nums.map((i) => {
@@ -334,14 +329,12 @@ export function NumberButtons(
 // ---------------------------------------------------------------------------
 
 export function IntervalButtons(
-  { onAnswer, hidden, feedback }: {
+  { onAnswer, feedback }: {
     onAnswer?: (interval: string) => void;
-    hidden?: boolean;
     feedback?: ButtonFeedback | null;
   },
 ) {
-  const cls = 'answer-buttons answer-buttons-intervals' +
-    (hidden ? ' answer-group-hidden' : '');
+  const cls = 'answer-buttons answer-buttons-intervals';
   return (
     <div class={cls}>
       {INTERVAL_ABBREVS.map((iv) => {
@@ -365,36 +358,190 @@ export function IntervalButtons(
 }
 
 // ---------------------------------------------------------------------------
-// Key signature buttons
+// Split key-signature buttons (number + sharp/flat, either order)
 // ---------------------------------------------------------------------------
 
-export function KeysigButtons(
-  { onAnswer, hidden, feedback }: {
-    onAnswer?: (sig: string) => void;
-    hidden?: boolean;
-    feedback?: ButtonFeedback | null;
+const KEYSIG_NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7'] as const;
+const KEYSIG_ACCIDENTALS = [
+  { label: '\u266D', suffix: 'b' }, // ♭
+  { label: '\u266F', suffix: '#' }, // ♯
+] as const;
+
+/** Parse a keysig value like "2#" into { num, suffix }. */
+function parseKeysig(val: string): { num: string; suffix: string } {
+  if (val === '0') return { num: '0', suffix: '' };
+  const num = val.slice(0, -1);
+  const suffix = val.slice(-1);
+  return { num, suffix };
+}
+
+type KeysigFeedbackParts = {
+  fb: ButtonFeedback;
+  parsed: { num: string; suffix: string };
+  correctParsed: { num: string; suffix: string };
+};
+
+function KeysigNumberRow(
+  { pendingNum, pendingAcc, answered, fbParts, onTap }: {
+    pendingNum: string | null;
+    pendingAcc: string | null;
+    answered: boolean;
+    fbParts: KeysigFeedbackParts | null;
+    onTap: (n: string) => void;
   },
 ) {
-  const cls = 'answer-buttons answer-buttons-keysig' +
-    (hidden ? ' answer-group-hidden' : '');
   return (
-    <div class={cls}>
-      {KEYSIG_LABELS.map((s) => {
-        let btnCls = 'answer-btn answer-btn-keysig';
-        btnCls += feedbackClass(feedback ?? null, s, s);
+    <div class='split-keysig-row-numbers'>
+      {KEYSIG_NUMBERS.map((n) => {
+        let cls = 'split-keysig-btn split-keysig-num';
+        if (!answered) {
+          if (pendingNum === n) cls += ' split-keysig-pending';
+          else if (pendingNum) cls += ' split-keysig-dimmed';
+        }
+        const disabled = answered || (n === '0' && pendingAcc !== null);
+        if (fbParts) {
+          const numFb: ButtonFeedback = {
+            correct: fbParts.fb.correct,
+            userInput: fbParts.parsed.num,
+            displayAnswer: fbParts.correctParsed.num,
+          };
+          cls += feedbackClass(numFb, n, n);
+        }
         return (
           <button
             type='button'
             tabIndex={0}
-            key={s}
-            class={btnCls}
-            data-sig={s}
-            onClick={onAnswer ? () => onAnswer(s) : undefined}
+            key={n}
+            class={cls}
+            data-sig-num={n}
+            disabled={disabled}
+            onClick={() => onTap(n)}
           >
-            {s}
+            {n}
           </button>
         );
       })}
+    </div>
+  );
+}
+
+function KeysigAccidentalRow(
+  { pendingNum, pendingAcc, answered, fbParts, onTap }: {
+    pendingNum: string | null;
+    pendingAcc: string | null;
+    answered: boolean;
+    fbParts: KeysigFeedbackParts | null;
+    onTap: (suffix: string) => void;
+  },
+) {
+  return (
+    <div class='split-keysig-row-accidentals'>
+      {KEYSIG_ACCIDENTALS.map(({ label, suffix }) => {
+        let cls = 'split-keysig-btn split-keysig-acc';
+        if (!answered) {
+          if (pendingAcc === suffix) cls += ' split-keysig-pending';
+          else if (pendingAcc) cls += ' split-keysig-dimmed';
+        }
+        const disabled = answered || pendingNum === '0';
+        if (fbParts) {
+          const accFb: ButtonFeedback = {
+            correct: fbParts.fb.correct,
+            userInput: fbParts.parsed.suffix,
+            displayAnswer: fbParts.correctParsed.suffix,
+          };
+          cls += feedbackClass(accFb, suffix, label);
+        }
+        return (
+          <button
+            type='button'
+            tabIndex={0}
+            key={suffix}
+            class={cls}
+            data-sig-acc={suffix}
+            disabled={disabled}
+            onClick={() => onTap(suffix)}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function SplitKeysigButtons(
+  { onAnswer, feedback }: {
+    onAnswer?: (sig: string) => void;
+    feedback?: ButtonFeedback | null;
+  },
+) {
+  const [pendingNum, setPendingNum] = useState<string | null>(null);
+  const [pendingAcc, setPendingAcc] = useState<string | null>(null);
+  const onAnswerRef = useRef(onAnswer);
+  onAnswerRef.current = onAnswer;
+
+  // Auto-submit when both selections are made
+  useEffect(() => {
+    if (pendingNum && pendingAcc) {
+      onAnswerRef.current?.(pendingNum + pendingAcc);
+      setPendingNum(null);
+      setPendingAcc(null);
+    }
+  }, [pendingNum, pendingAcc]);
+
+  // Reset pending state when feedback arrives (new question)
+  const prevFeedback = useRef(feedback);
+  useEffect(() => {
+    if (feedback !== prevFeedback.current) {
+      prevFeedback.current = feedback;
+      if (!feedback) {
+        setPendingNum(null);
+        setPendingAcc(null);
+      }
+    }
+  }, [feedback]);
+
+  const handleNum = useCallback((n: string) => {
+    if (n === '0') {
+      onAnswerRef.current?.('0');
+      setPendingNum(null);
+      setPendingAcc(null);
+      return;
+    }
+    setPendingNum((prev) => prev === n ? null : n);
+  }, []);
+
+  const handleAcc = useCallback((suffix: string) => {
+    setPendingAcc((prev) => prev === suffix ? null : suffix);
+  }, []);
+
+  const fbParts: KeysigFeedbackParts | null = feedback
+    ? {
+      fb: feedback,
+      parsed: parseKeysig(feedback.userInput),
+      correctParsed: parseKeysig(feedback.displayAnswer),
+    }
+    : null;
+
+  const answered = !!feedback;
+  const cls = 'split-keysig-buttons';
+
+  return (
+    <div class={cls}>
+      <KeysigNumberRow
+        pendingNum={pendingNum}
+        pendingAcc={pendingAcc}
+        answered={answered}
+        fbParts={fbParts}
+        onTap={handleNum}
+      />
+      <KeysigAccidentalRow
+        pendingNum={pendingNum}
+        pendingAcc={pendingAcc}
+        answered={answered}
+        fbParts={fbParts}
+        onTap={handleAcc}
+      />
     </div>
   );
 }
@@ -404,14 +551,12 @@ export function KeysigButtons(
 // ---------------------------------------------------------------------------
 
 export function DegreeButtons(
-  { onAnswer, hidden, feedback }: {
+  { onAnswer, feedback }: {
     onAnswer?: (degree: string) => void;
-    hidden?: boolean;
     feedback?: ButtonFeedback | null;
   },
 ) {
-  const cls = 'answer-buttons answer-buttons-degrees' +
-    (hidden ? ' answer-group-hidden' : '');
+  const cls = 'answer-buttons answer-buttons-degrees';
   return (
     <div class={cls}>
       {DEGREE_LABELS.map(([val, label]) => {
@@ -439,14 +584,12 @@ export function DegreeButtons(
 // ---------------------------------------------------------------------------
 
 export function NumeralButtons(
-  { onAnswer, hidden, feedback }: {
+  { onAnswer, feedback }: {
     onAnswer?: (numeral: string) => void;
-    hidden?: boolean;
     feedback?: ButtonFeedback | null;
   },
 ) {
-  const cls = 'answer-buttons answer-buttons-numerals' +
-    (hidden ? ' answer-group-hidden' : '');
+  const cls = 'answer-buttons answer-buttons-numerals';
   return (
     <div class={cls}>
       {ROMAN_NUMERALS.map((n) => {

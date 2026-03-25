@@ -69,13 +69,13 @@
 
   /* Brand scale — forest green, anchored on #2D4C3B */
   --brand-100: hsl(var(--hue-brand), 25%, 92%);
-  --brand-600: #2D4C3B;
+  --brand-600: #2d4c3b;
   --brand-800: hsl(var(--hue-brand), 30%, 16%);
 
   /* Success scale — same hue family as brand */
   --success-100: hsl(var(--hue-success), 25%, 92%);
   --success-300: hsl(var(--hue-success), 30%, 50%);
-  --success-600: #2D4C3B;
+  --success-600: #2d4c3b;
   --success-800: hsl(var(--hue-success), 30%, 16%);
 
   /* Error scale — derived from --hue-error */
@@ -88,7 +88,7 @@
   --notice-300: hsl(var(--hue-notice), 50%, 78%);
   --notice-400: hsl(var(--hue-notice), 45%, 84%);
   --notice-450: hsl(var(--hue-notice), 50%, 90%);
-  --notice-500: #D97706;
+  --notice-500: #d97706;
   --notice-600: hsl(var(--hue-notice), 90%, 42%);
   --notice-700: hsl(var(--hue-notice), 65%, 38%);
   --notice-800: hsl(var(--hue-notice), 70%, 22%);
@@ -2353,7 +2353,7 @@ button {
 
 /* --- Answer group visibility (toggled by mode JS for bidirectional questions) --- */
 .answer-group-hidden {
-  display: none;
+  display: none !important;
 }
 
 /* ==========================================================================
@@ -2951,9 +2951,75 @@ button {
   height: 20px;
 }
 
-/* --- Key signature answer buttons --- */
-.answer-buttons-keysig {
-  grid-template-columns: repeat(4, 1fr);
+/* --- Split key-signature buttons (number + sharp/flat, either order) --- */
+.split-keysig-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 400px;
+  margin: var(--space-3) auto;
+}
+.split-keysig-row-numbers {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.4rem;
+  width: 100%;
+}
+.split-keysig-row-accidentals {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+  width: 40%;
+}
+.split-keysig-btn {
+  --_bg: var(--color-card);
+  --_text: var(--color-text);
+  --_border: var(--color-border-light);
+  min-width: 0;
+  height: 48px;
+  font-size: var(--type-answer-size);
+  font-weight: var(--type-answer-weight);
+  line-height: var(--type-answer-leading);
+  border: 1.5px solid var(--_border);
+  border-radius: var(--radius-sm);
+  background: var(--_bg);
+  color: var(--_text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background var(--duration-fast),
+    border-color var(--duration-fast),
+    opacity var(--duration-base);
+  -webkit-tap-highlight-color: transparent;
+}
+.split-keysig-btn:active {
+  background: var(--color-surface-pressed);
+  transform: scale(0.97);
+}
+.split-keysig-btn:disabled {
+  cursor: default;
+  opacity: var(--opacity-dimmed);
+}
+@media (hover: hover) {
+  .split-keysig-btn:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-text);
+  }
+}
+.split-keysig-pending {
+  border-color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+.split-keysig-dimmed {
+  opacity: var(--opacity-dimmed);
+}
+.split-keysig-acc {
+  background: var(--color-surface-accent);
 }
 
 /* --- Degree answer buttons --- */
@@ -3062,7 +3128,8 @@ button {
 /* Answer buttons */
 .answer-btn:focus-visible,
 .note-btn:focus-visible,
-.split-note-btn:focus-visible {
+.split-note-btn:focus-visible,
+.split-keysig-btn:focus-visible {
   outline-offset: -2px;
 }
 

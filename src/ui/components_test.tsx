@@ -9,11 +9,11 @@ import { renderToString } from 'preact-render-to-string';
 import {
   DegreeButtons,
   IntervalButtons,
-  KeysigButtons,
   NoteButtons,
   NumberButtons,
   NumeralButtons,
   PianoNoteButtons,
+  SplitKeysigButtons,
 } from './buttons.tsx';
 import { SequentialSlots } from './sequential-slots.tsx';
 import type { StatsSelector } from './stats.tsx';
@@ -74,11 +74,6 @@ describe('NoteButtons', () => {
     const html = render(<NoteButtons />);
     assert.ok(html.includes('data-note="C"'));
     assert.ok(html.includes('data-note="F#"'));
-  });
-
-  it('applies hidden class', () => {
-    const html = render(<NoteButtons hidden />);
-    assert.ok(html.includes('answer-group-hidden'));
   });
 
   it('applies btn-feedback-correct to the pressed button on correct answer', () => {
@@ -202,12 +197,14 @@ describe('IntervalButtons', () => {
   });
 });
 
-describe('KeysigButtons', () => {
-  it('renders 15 key signature buttons', () => {
-    const html = render(<KeysigButtons />);
-    assert.ok(html.includes('answer-buttons-keysig'));
-    const count = (html.match(/answer-btn-keysig/g) || []).length;
-    assert.equal(count, 15);
+describe('SplitKeysigButtons', () => {
+  it('renders 8 number buttons and 2 accidental buttons', () => {
+    const html = render(<SplitKeysigButtons />);
+    assert.ok(html.includes('split-keysig-buttons'));
+    const numCount = (html.match(/split-keysig-num/g) || []).length;
+    assert.equal(numCount, 8);
+    const accCount = (html.match(/split-keysig-acc/g) || []).length;
+    assert.equal(accCount, 2);
   });
 });
 
