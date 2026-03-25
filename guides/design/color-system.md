@@ -31,10 +31,10 @@ follows a consistent modifier pattern:
 | `-dark` | Darker variant | `--color-brand-dark` |
 
 Families: **brand**, **success**, **error**, **notice** (gold/attention),
-**accent**, **text** (trio), **surface** (5 levels), **border** (trio).
-`--color-on-brand`, `--color-on-success`, `--color-on-error` provide text
-colors for filled backgrounds (white in light mode, flips in dark mode).
-`--color-chrome` is the segmented control / toolbar fill.
+**accent**, **text** (trio), **surface** (container + interactive tiers),
+**chrome**, **border** (trio). `--color-on-brand`, `--color-on-success`,
+`--color-on-error` provide text colors for filled backgrounds (white in light
+mode, flips in dark mode).
 
 **Layer 3: Component tokens** — `--_` prefixed CSS private custom properties
 defined on component root selectors, always referencing semantic tokens:
@@ -104,8 +104,53 @@ as needed.
 | Notice | `--color-notice` | bg, border, text | Recommendations, suggestions |
 | Accent | `--color-accent` | muted | Active input states, chord-slot underline |
 
-Additional token groups: **Text** (primary, muted, light), **Surface** (5
-levels from bg to pressed), **Border** (3 levels from strong to lighter).
+Additional token groups: **Text** (primary, muted, light), **Surface** (two
+tiers — see below), **Chrome**, **Border** (3 levels from strong to lighter).
+
+## Surface Token Architecture
+
+Surfaces use a two-tier model: **container surfaces** define the backdrop for
+regions, while **interactive surfaces** handle button/control states within
+those containers.
+
+### Container surfaces
+
+Structural backgrounds for page regions. These distinguish content layers and
+establish visual hierarchy between areas of the screen.
+
+| Token | Value (light) | Role |
+|-------|---------------|------|
+| `--color-canvas` | warm gray 95% | Page background (html, body) |
+| `--color-card` | white | Primary content containers (practice cards, mode screens, tab panels, answer buttons, fretboard) |
+| `--color-well` | warm gray 95% | Inset/recessed areas within cards (practice scope, baseline info) |
+| `--color-chrome` | warm gray 93% | Toolbar/navigation surfaces (mode nav, top bar, skill header, session header, home header, footer) |
+| `--color-overlay-surface` | white | Floating layers (popovers, dropdowns) |
+
+**Stacking order** (back to front): canvas → card → well (inset) or chrome
+(toolbar). Overlays float above everything.
+
+`--color-bg` is a legacy alias for `--color-canvas` — new code should use the
+semantic name directly.
+
+### Interactive surfaces
+
+State variants for controls (buttons, toggles) that sit inside containers.
+These always reference the neutral palette steps.
+
+| Token | Primitive | Role |
+|-------|-----------|------|
+| `--color-surface` | `neutral-100` | Default/inactive control background |
+| `--color-surface-hover` | `neutral-150` | Hover state |
+| `--color-surface-raised` | `neutral-200` | Slightly elevated (progress bar bg, disabled buttons) |
+| `--color-surface-accent` | `neutral-250` | Accidental note buttons (sharps/flats) |
+| `--color-surface-pressed` | `neutral-350` | Active/pressed state |
+
+### Dark mode notes
+
+To flip to dark mode: invert the container surfaces (canvas → dark, card →
+near-black, etc.) and remap the interactive surface primitives to lighter
+neutral steps. The two-tier split keeps these changes isolated — container
+tokens control the page feel, interactive tokens control control states.
 
 ## Using the Color System
 
