@@ -901,6 +901,161 @@ function practiceCardPreview(result: GroupResult): string {
   </div>`;
 }
 
+/**
+ * Speed-only color: full saturation, no freshness fading.
+ */
+function speedOnlyColor(speedScore: number | null): string {
+  if (speedScore === null) return NO_DATA_COLOR;
+  const level = speedScore > 0.9
+    ? 4
+    : speedScore > 0.75
+    ? 3
+    : speedScore > 0.55
+    ? 2
+    : speedScore > 0.3
+    ? 1
+    : 0;
+  const [h, s, l] = SPEED_HSL[level];
+  return `hsl(${h}, ${s}%, ${l}%)`;
+}
+
+/**
+ * Binary fresh/stale color: full speed color if fresh, grey if stale.
+ */
+function binaryFreshColor(
+  speedScore: number | null,
+  freshness: number | null,
+): string {
+  if (speedScore === null) return NO_DATA_COLOR;
+  if (freshness !== null && freshness < 0.5) return 'hsl(30, 5%, 72%)';
+  return speedOnlyColor(speedScore);
+}
+
+/**
+ * Freshness-only color: achromatic, dark = recent, light = stale.
+ */
+function freshnessOnlyColor(freshness: number | null): string {
+  if (freshness === null) return NO_DATA_COLOR;
+  const f = Math.max(0, Math.min(1, freshness));
+  const l = Math.round(78 - 40 * f); // 78% (stale) → 38% (fresh)
+  return `hsl(30, 5%, ${l}%)`;
+}
+
+/**
+ * Build alternative progress bar prototypes for comparison.
+ */
+function alternativeBarPreviews(result: GroupResult): string {
+  const { total, items, automatic, working, unseen } = result;
+  const sliceWidth = total > 0 ? 100 / total : 0;
+
+  // Sort helpers
+  const bySpeed = items.slice().sort((a, b) => {
+    return (b.speedScore ?? -1) - (a.speedScore ?? -1);
+  });
+  const byFreshness = items.slice().sort((a, b) => {
+    return (b.freshness ?? -1) - (a.freshness ?? -1);
+  });
+
+  // --- Variant A: Current (speed hue + freshness fade) ---
+  const barCurrent = renderBar(
+    bySpeed,
+    sliceWidth,
+    (item) => item.heatmapColor,
+  );
+
+  // --- Variant B: Speed only (no freshness) ---
+  const barSpeedOnly = renderBar(
+    bySpeed,
+    sliceWidth,
+    (item) => speedOnlyColor(item.speedScore),
+  );
+
+  // --- Variant C: Binary fresh/stale ---
+  const barBinary = renderBar(
+    bySpeed,
+    sliceWidth,
+    (item) => binaryFreshColor(item.speedScore, item.freshness),
+  );
+
+  // --- Variant D: Completeness fill (3-zone: automatic / working / unseen) ---
+  const autoPct = total > 0 ? (automatic / total) * 100 : 0;
+  const workPct = total > 0 ? (working / total) * 100 : 0;
+  const unseenPct = total > 0 ? (unseen / total) * 100 : 0;
+  const barCompleteness = `<div class="alt-bar">` +
+    (autoPct > 0
+      ? `<div class="bar-slice" style="width:${autoPct}%;background:hsl(125,48%,33%)"></div>`
+      : '') +
+    (workPct > 0
+      ? `<div class="bar-slice" style="width:${workPct}%;background:hsl(48,50%,52%)"></div>`
+      : '') +
+    (unseenPct > 0
+      ? `<div class="bar-slice" style="width:${unseenPct}%;background:${NO_DATA_COLOR}"></div>`
+      : '') +
+    `</div>`;
+
+  // --- Variant E: Two stacked bars (speed top, freshness bottom) ---
+  const barSpeedRow = renderBar(
+    bySpeed,
+    sliceWidth,
+    (item) => speedOnlyColor(item.speedScore),
+    'alt-bar alt-bar-thin',
+  );
+  const barFreshRow = renderBar(
+    byFreshness,
+    sliceWidth,
+    (item) => freshnessOnlyColor(item.freshness),
+    'alt-bar alt-bar-thin',
+  );
+  const barDual = `<div class="dual-bar">${barSpeedRow}${barFreshRow}</div>`;
+
+  // --- Variant F: Speed fill + stale hatching ---
+  const barHatched = renderBar(
+    bySpeed,
+    sliceWidth,
+    (item) => speedOnlyColor(item.speedScore),
+    'alt-bar',
+    (item) =>
+      item.freshness !== null && item.freshness < 0.5 ? ' bar-slice-stale' : '',
+  );
+
+  return `<div class="alt-bar-comparison">
+    <div class="alt-bar-label">Bar prototypes</div>
+    <div class="alt-bar-grid">
+      <span class="alt-bar-name">A. Current (speed hue + freshness fade)</span>
+      ${barCurrent}
+      <span class="alt-bar-name">B. Speed only (no freshness)</span>
+      ${barSpeedOnly}
+      <span class="alt-bar-name">C. Binary fresh/stale (grey if stale)</span>
+      ${barBinary}
+      <span class="alt-bar-name">D. Completeness (auto / working / unseen)</span>
+      ${barCompleteness}
+      <span class="alt-bar-name">E. Dual bar (speed top, freshness bottom)</span>
+      ${barDual}
+      <span class="alt-bar-name">F. Speed + stale hatching</span>
+      ${barHatched}
+    </div>
+  </div>`;
+}
+
+function renderBar(
+  items: ItemResult[],
+  sliceWidth: number,
+  colorFn: (item: ItemResult) => string,
+  className = 'alt-bar',
+  extraClassFn?: (item: ItemResult) => string,
+): string {
+  return `<div class="${className}">` +
+    items
+      .map(
+        (item) =>
+          `<div class="bar-slice${
+            extraClassFn ? extraClassFn(item) : ''
+          }" style="width:${sliceWidth}%;background:${colorFn(item)}"></div>`,
+      )
+      .join('') +
+    `</div>`;
+}
+
 function miniHeatmap(items: ItemResult[]): string {
   return items
     .map(
@@ -981,6 +1136,7 @@ function generateReviewHTML(
       </div>
 
       ${practiceCardPreview(result)}
+      ${alternativeBarPreviews(result)}
       ${summaryHtml}
       ${heatmapHtml}
 
@@ -1089,7 +1245,7 @@ function generateReviewHTML(
     display: flex; height: 12px; border-radius: 3px; overflow: hidden;
     flex: 0 0 140px; background: #e8e8e8;
   }
-  .bar-slice { min-width: 1px; }
+  .bar-slice { min-width: 1px; position: relative; overflow: hidden; }
   .practice-card-text {
     font-size: 0.9rem; color: #333;
   }
@@ -1101,6 +1257,39 @@ function generateReviewHTML(
     field-sizing: content;
   }
   .scenario-notes textarea:focus { outline: 2px solid #4a90d9; border-color: transparent; }
+  .alt-bar-comparison {
+    margin-bottom: 0.75rem; padding: 0.6rem 0.75rem;
+    background: #fdfdfd; border: 2px solid #9b59b6; border-radius: 6px;
+  }
+  .alt-bar-label {
+    font-size: 0.7rem; color: #9b59b6; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;
+  }
+  .alt-bar-grid {
+    display: grid; grid-template-columns: 200px 140px; gap: 4px 12px;
+    align-items: center;
+  }
+  .alt-bar-name { font-size: 0.75rem; color: #555; }
+  .alt-bar {
+    display: flex; height: 12px; border-radius: 3px; overflow: hidden;
+    background: #e8e8e8; width: 140px;
+  }
+  .alt-bar-thin {
+    height: 5px; border-radius: 2px;
+  }
+  .dual-bar {
+    display: flex; flex-direction: column; gap: 1px; width: 140px;
+  }
+  .bar-slice-stale {
+    position: relative;
+  }
+  .bar-slice-stale::after {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      -45deg, transparent, transparent 2px,
+      rgba(255,255,255,0.45) 2px, rgba(255,255,255,0.45) 4px
+    );
+  }
   .legend-section {
     font-size: 0.8rem; margin-bottom: 1rem; padding: 0.5rem;
     background: #fff; border: 1px solid #ddd; border-radius: 4px;

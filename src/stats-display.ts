@@ -140,27 +140,58 @@ function speedLevel(sp: number): number {
   return sp > 0.9 ? 4 : sp > 0.75 ? 3 : sp > 0.55 ? 2 : sp > 0.3 ? 1 : 0;
 }
 
+// Stale bar color (notice-family tint, read from CSS with fallback)
+let _barStaleColor: string | null = null;
+function barStaleColor(): string {
+  if (!_barStaleColor) {
+    _barStaleColor = cssVar('--color-bar-stale') || 'hsl(32, 80%, 55%)';
+  }
+  return _barStaleColor;
+}
+
+/** Speed-only color at full saturation (no freshness fading). */
+function speedOnlyColor(sp: number): string {
+  const [h, s, l] = SPEED_HSL[speedLevel(sp)];
+  return `hsl(${h}, ${s}%, ${l}%)`;
+}
+
+const FRESHNESS_THRESHOLD = 0.5;
+
 /**
- * Compute per-item progress bar colors, sorted for visual monotonicity.
- * Sort by discrete speed level descending (determines hue), then freshness
- * descending within the same level (determines saturation). This ensures
- * same-hue items cluster together and the bar reads green→yellow→grey.
- * Unseen items (null speed) sort last.
+ * Compute per-item progress bar colors using three-zone encoding:
+ * - Fresh (freshness >= 0.5): speed hue at full saturation
+ * - Stale (freshness < 0.5): notice-orange review color
+ * - Unseen (no data): neutral grey
+ *
+ * Sorted: fresh items by speed desc → stale → unseen.
+ * Items visually migrate from speed colors into the stale zone as they decay.
  */
 export function progressBarColors(
   selector: ProgressSelector,
   itemIds: string[],
 ): string[] {
+  const c = heatmapColors();
+  const stale = barStaleColor();
   const items = itemIds.map((id) => {
     const sp = selector.getSpeedScore(id);
     const fr = selector.getFreshness(id);
-    return {
-      level: sp !== null ? speedLevel(sp) : -1,
-      fr: fr ?? -1,
-      color: getSpeedFreshnessColor(sp, fr),
-    };
+    // zone: 0 = fresh, 1 = stale, 2 = unseen
+    const zone = sp === null
+      ? 2
+      : (fr !== null && fr < FRESHNESS_THRESHOLD)
+      ? 1
+      : 0;
+    const color = zone === 2
+      ? c.none
+      : zone === 1
+      ? stale
+      : speedOnlyColor(sp!);
+    return { zone, level: sp !== null ? speedLevel(sp) : -1, color };
   });
-  items.sort((a, b) => a.level !== b.level ? b.level - a.level : b.fr - a.fr);
+  items.sort((a, b) => {
+    if (a.zone !== b.zone) return a.zone - b.zone;
+    return b.level - a.level; // within fresh zone, green first
+  });
   return items.map((item) => item.color);
 }
 

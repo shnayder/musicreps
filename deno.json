@@ -55,6 +55,7 @@
     "diagnostic": "npx tsx scripts/recommendation-diagnostic.ts",
     "item-model": "npx tsx scripts/item-model-diagnostic.ts",
     "group-model": "npx tsx scripts/group-model-diagnostic.ts",
+    "bar-compare": "npx tsx scripts/progress-bar-compare.ts",
     "e2e": "npx tsx tests/e2e/skip-unskip.test.ts && npx tsx tests/e2e/quiz-flow.test.ts && npx tsx tests/e2e/navigation.test.ts && npx tsx tests/e2e/persistence.test.ts && npx tsx tests/e2e/chord-spelling.test.ts",
     "e2e:quiz": "npx tsx tests/e2e/quiz-flow.test.ts",
     "e2e:nav": "npx tsx tests/e2e/navigation.test.ts",
