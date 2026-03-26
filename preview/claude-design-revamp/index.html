@@ -142,7 +142,7 @@
   --color-error-bg: var(--error-100);
   --color-error-border: var(--error-500);
   --color-error-text: var(--error-800);
-  --color-tap-selected: hsl(210, 60%, 50%);
+  --color-tap-selected: var(--color-accent);
   /* On-fill text (flips in dark mode) */
   --color-on-brand: white;
   --color-on-success: white;
@@ -846,19 +846,19 @@ body {
 }
 .pill-core {
   color: var(--color-track-core);
-  background: hsla(30, 30%, 42%, 0.12);
+  background: var(--color-brand-bg);
 }
 .pill-reading {
   color: var(--color-track-reading);
-  background: hsla(260, 30%, 50%, 0.12);
+  background: var(--color-brand-bg);
 }
 .pill-guitar {
   color: var(--color-track-guitar);
-  background: hsla(25, 55%, 45%, 0.12);
+  background: var(--color-brand-bg);
 }
 .pill-ukulele {
   color: var(--color-track-ukulele);
-  background: hsla(185, 40%, 38%, 0.12);
+  background: var(--color-brand-bg);
 }
 /* Active skill card: no padding on outer — banner and body handle their own. */
 .active-skill-card {
@@ -1170,7 +1170,7 @@ body {
 .segmented-btn.active {
   background: var(--color-card);
   color: var(--color-text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 .segmented-btn:hover:not(.active) {
   color: var(--color-text);
@@ -2085,7 +2085,7 @@ button {
 .answer-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
+  gap: var(--gap-related);
   width: 100%;
   max-width: var(--size-answer-grid);
   margin: var(--gap-group) auto;
@@ -2103,7 +2103,7 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--gap-related);
   width: 100%;
   max-width: var(--size-answer-grid);
   margin: var(--gap-group) auto;
@@ -3055,7 +3055,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="eb83e8 design-revamp"></div>
+  <div class="home-screen" id="home-screen" data-version="359c7e design-revamp"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -3817,20 +3817,7 @@ body.native-app {
         </svg>
       </div>
     </div>
-      <div class="answer-buttons answer-buttons-notes answer-group-hidden">
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
-      </div>
+      <div class="answer-grid"></div>
       <div class="feedback"></div>
       <div class="hint"></div>
       <div class="round-complete">
@@ -3905,34 +3892,8 @@ body.native-app {
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
-      <div class="answer-buttons answer-buttons-notes">
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
-      </div>
-      <div class="answer-buttons answer-buttons-numbers">
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="0">0</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="1">1</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="2">2</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="3">3</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="4">4</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="5">5</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="6">6</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="7">7</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="8">8</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="9">9</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="10">10</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="11">11</button>
-      </div>
+      <div class="answer-grid"></div>
+      <div class="answer-grid"></div>
       <div class="feedback"></div>
       <div class="hint"></div>
       <div class="round-complete">
@@ -4007,34 +3968,8 @@ body.native-app {
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
-      <div class="answer-buttons answer-buttons-intervals">
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="m2">m2</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="M2">M2</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="m3">m3</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="M3">M3</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="P4">P4</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="TT">TT</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="P5">P5</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="m6">m6</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="M6">M6</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="m7">m7</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="M7">M7</button>
-        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="P8">P8</button>
-      </div>
-      <div class="answer-buttons answer-buttons-numbers">
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="1">1</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="2">2</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="3">3</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="4">4</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="5">5</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="6">6</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="7">7</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="8">8</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="9">9</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="10">10</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="11">11</button>
-        <button tabindex="0" class="answer-btn answer-btn-num" data-num="12">12</button>
-      </div>
+      <div class="answer-grid"></div>
+      <div class="answer-grid"></div>
       <div class="feedback"></div>
       <div class="hint"></div>
       <div class="round-complete">
@@ -4121,20 +4056,7 @@ body.native-app {
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
-      <div class="answer-buttons answer-buttons-notes">
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
-      </div>
+      <div class="answer-grid"></div>
       <div class="feedback"></div>
       <div class="hint"></div>
       <div class="round-complete">
@@ -4221,20 +4143,7 @@ body.native-app {
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
-      <div class="answer-buttons answer-buttons-notes">
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
-      </div>
+      <div class="answer-grid"></div>
       <div class="feedback"></div>
       <div class="hint"></div>
       <div class="round-complete">
@@ -4322,20 +4231,7 @@ body.native-app {
         <div class="quiz-prompt"></div>
       </div>
       <div class="split-keysig-buttons"></div>
-      <div class="answer-buttons answer-buttons-notes answer-group-hidden">
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
-      </div>
+      <div class="answer-grid"></div>
       <div class="feedback"></div>
       <div class="hint"></div>
       <div class="round-complete">
@@ -4422,29 +4318,8 @@ body.native-app {
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
-      <div class="answer-buttons answer-buttons-notes">
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
-      </div>
-      <div class="answer-buttons answer-buttons-degrees answer-group-hidden">
-        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="1">1st</button>
-        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="2">2nd</button>
-        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="3">3rd</button>
-        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="4">4th</button>
-        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="5">5th</button>
-        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="6">6th</button>
-        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="7">7th</button>
-      </div>
+      <div class="answer-grid"></div>
+      <div class="answer-grid"></div>
       <div class="feedback"></div>
       <div class="hint"></div>
       <div class="round-complete">
@@ -4531,29 +4406,8 @@ body.native-app {
       <div class="quiz-prompt-row">
         <div class="quiz-prompt"></div>
       </div>
-      <div class="answer-buttons answer-buttons-notes">
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
-      </div>
-      <div class="answer-buttons answer-buttons-numerals answer-group-hidden">
-        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="I">I</button>
-        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="ii">ii</button>
-        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="iii">iii</button>
-        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="IV">IV</button>
-        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="V">V</button>
-        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="vi">vi</button>
-        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="vii°">vii°</button>
-      </div>
+      <div class="answer-grid"></div>
+      <div class="answer-grid"></div>
       <div class="feedback"></div>
       <div class="hint"></div>
       <div class="round-complete">
@@ -4641,20 +4495,7 @@ body.native-app {
         <div class="quiz-prompt"></div>
       </div>
       <div class="seq-slots"></div>
-      <div class="answer-buttons answer-buttons-notes">
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C">C</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="C#">C#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D">D</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="D#">D#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="E">E</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F">F</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="F#">F#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G">G</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="G#">G#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A">A</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="A#">A#</button>
-        <button tabindex="0" class="answer-btn answer-btn-note" data-note="B">B</button>
-      </div>
+      <div class="answer-grid"></div>
       <div class="feedback"></div>
       <div class="hint"></div>
       <div class="round-complete">
