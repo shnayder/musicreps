@@ -101,7 +101,7 @@ function Phase1Components(
     setPracticeMode,
     customActive,
     toggleCustom,
-    customItemCount,
+    customItemCount: _customItemCount,
     tabId,
   }:
     & CustomState
@@ -124,14 +124,18 @@ function Phase1Components(
                 id: 'practice' as ModeTab,
                 label: <TabIcon icon='practice' text='Practice' />,
                 content: (
-                  <div style='padding:var(--pad-component)'>Practice content</div>
+                  <div style='padding:var(--pad-component)'>
+                    Practice content
+                  </div>
                 ),
               },
               {
                 id: 'progress' as ModeTab,
                 label: <TabIcon icon='progress' text='Progress' />,
                 content: (
-                  <div style='padding:var(--pad-component)'>Progress content</div>
+                  <div style='padding:var(--pad-component)'>
+                    Progress content
+                  </div>
                 ),
               },
               {
@@ -188,7 +192,6 @@ function Phase1Components(
             labels={MOCK_LEVEL_LABELS}
             active={customActive}
             onToggle={toggleCustom}
-
           />
         </Section>
       </PreviewGrid>
@@ -206,7 +209,6 @@ function Phase1Components(
                 labels={MOCK_LEVEL_LABELS}
                 active={customActive}
                 onToggle={toggleCustom}
-    
               />
             }
           />
@@ -221,7 +223,6 @@ function Phase1Components(
                 labels={MOCK_LEVEL_LABELS}
                 active={customActive}
                 onToggle={toggleCustom}
-    
               />
             }
           />
@@ -273,7 +274,7 @@ function Phase1Cards({ tabId }: { tabId: string }) {
 // ---------------------------------------------------------------------------
 
 function Phase2MultiLevel(
-  { customActive, toggleCustom, customItemCount, tabId }: CustomState & {
+  { customActive, toggleCustom, customItemCount: _, tabId }: CustomState & {
     tabId: string;
   },
 ) {
@@ -327,7 +328,6 @@ function Phase2MultiLevel(
                 labels={MOCK_LEVEL_LABELS}
                 active={customActive}
                 onToggle={toggleCustom}
-    
               />
             }
           />
@@ -445,7 +445,7 @@ function ModeNavFooter() {
 }
 
 function ScreenLayoutIdleExamples(
-  { customActive, toggleCustom, customItemCount, tabId }: CustomState & {
+  { customActive, toggleCustom, customItemCount: _, tabId }: CustomState & {
     tabId: string;
   },
 ) {
@@ -500,7 +500,6 @@ function ScreenLayoutIdleExamples(
                   labels={MOCK_LEVEL_LABELS}
                   active={customActive}
                   onToggle={toggleCustom}
-      
                 />
               }
             />

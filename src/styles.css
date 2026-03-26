@@ -224,12 +224,22 @@
   --space-7: 2rem;
 
   /* Spacing roles (Layer 2: semantic) */
-  --gap-micro: var(--space-1);       /* sub-element coupling: icon+label, toggle rows */
-  --gap-related: var(--space-2);     /* related siblings: buttons in group, label+value */
-  --gap-group: var(--space-4);       /* distinct groups within container: heading→content */
-  --pad-component: var(--space-5);   /* internal padding of controls/cards/wells */
-  --pad-region: var(--space-6);      /* layout region padding, major section breaks */
-  --gap-section: var(--space-7);     /* page-level group separators */
+  --gap-micro: var(
+    --space-1
+  ); /* sub-element coupling: icon+label, toggle rows */
+  --gap-related: var(
+    --space-2
+  ); /* related siblings: buttons in group, label+value */
+  --gap-group: var(
+    --space-4
+  ); /* distinct groups within container: heading→content */
+  --pad-component: var(
+    --space-5
+  ); /* internal padding of controls/cards/wells */
+  --pad-region: var(
+    --space-6
+  ); /* layout region padding, major section breaks */
+  --gap-section: var(--space-7); /* page-level group separators */
 
   /* Border radius scale */
   --radius-sm: 4px;

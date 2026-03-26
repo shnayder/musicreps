@@ -674,7 +674,7 @@ describe('PracticeCard', () => {
     );
     assert.ok(html.includes('suggestion-card'));
     assert.ok(html.includes('suggestion-card-header'));
-    assert.ok(html.includes('suggestion-card-text'));
+    assert.ok(html.includes('start A string'));
     assert.ok(html.includes('suggestion-card-accept'));
   });
 
@@ -688,7 +688,7 @@ describe('PracticeCard', () => {
     );
     assert.ok(html.includes('practice-scope'));
     assert.ok(html.includes('mock-scope'));
-    assert.ok(html.includes('suggestion-card-text'));
+    assert.ok(html.includes('suggestion-card-header'));
   });
 });
 

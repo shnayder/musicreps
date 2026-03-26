@@ -527,8 +527,14 @@ const SPACE_TOKENS: Array<{ name: string; desc: string }> = [
   { name: '--space-5', desc: 'Palette: 1rem (16px)' },
   { name: '--space-6', desc: 'Palette: 1.5rem (24px)' },
   { name: '--space-7', desc: 'Palette: 2rem (32px)' },
-  { name: '--gap-micro', desc: 'Sub-element coupling: icon+label, toggle rows' },
-  { name: '--gap-related', desc: 'Related siblings: buttons in group, label+value' },
+  {
+    name: '--gap-micro',
+    desc: 'Sub-element coupling: icon+label, toggle rows',
+  },
+  {
+    name: '--gap-related',
+    desc: 'Related siblings: buttons in group, label+value',
+  },
   { name: '--gap-group', desc: 'Distinct groups within container' },
   { name: '--pad-component', desc: 'Internal padding of controls/cards/wells' },
   { name: '--pad-region', desc: 'Layout region padding, major section breaks' },

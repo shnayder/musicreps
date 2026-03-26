@@ -879,7 +879,9 @@ function IdlePracticeView<Q>(
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one group'
       startLabel={customItemCount != null
-        ? `Practice (${customItemCount} ${customItemCount === 1 ? 'item' : 'items'})`
+        ? `Practice (${customItemCount} ${
+          customItemCount === 1 ? 'item' : 'items'
+        })`
         : undefined}
       practiceContent={hasGroups
         ? (
