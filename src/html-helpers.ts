@@ -16,89 +16,32 @@ import {
 // Reusable button blocks
 // ---------------------------------------------------------------------------
 
-/** 12-note answer button grid (C, C#, D, ... B). */
-export function noteAnswerButtons(opts?: { hidden?: boolean }): string {
-  const notes: [string, string][] = [
-    ['C', 'C'],
-    ['C#', 'C#'],
-    ['D', 'D'],
-    ['D#', 'D#'],
-    ['E', 'E'],
-    ['F', 'F'],
-    ['F#', 'F#'],
-    ['G', 'G'],
-    ['G#', 'G#'],
-    ['A', 'A'],
-    ['A#', 'A#'],
-    ['B', 'B'],
-  ];
-  const cls = opts?.hidden ? ' answer-group-hidden' : '';
-  return `<div class="answer-buttons answer-buttons-notes${cls}">\n` +
-    notes.map(([val, label]) =>
-      `        <button tabindex="0" class="answer-btn answer-btn-note" data-note="${val}">${label}</button>`
-    ).join('\n') + '\n      </div>';
+// Build-time button placeholders — Preact replaces these on mount.
+// Keep the container divs so the HTML structure is valid.
+
+/** Note answer buttons placeholder. */
+export function noteAnswerButtons(): string {
+  return '<div class="answer-grid"></div>';
 }
 
-/** Number answer buttons (start..end inclusive). */
-export function numberButtons(start: number, end: number): string {
-  const btns = [];
-  for (let i = start; i <= end; i++) {
-    btns.push(
-      `        <button tabindex="0" class="answer-btn answer-btn-num" data-num="${i}">${i}</button>`,
-    );
-  }
-  return `<div class="answer-buttons answer-buttons-numbers">\n` +
-    btns.join('\n') + '\n      </div>';
+/** Number answer buttons placeholder. */
+export function numberButtons(_start: number, _end: number): string {
+  return '<div class="answer-grid"></div>';
 }
 
-/** Interval answer buttons (m2..P8). */
+/** Interval answer buttons placeholder. */
 export function intervalAnswerButtons(): string {
-  const intervals = [
-    'm2',
-    'M2',
-    'm3',
-    'M3',
-    'P4',
-    'TT',
-    'P5',
-    'm6',
-    'M6',
-    'm7',
-    'M7',
-    'P8',
-  ];
-  return `<div class="answer-buttons answer-buttons-intervals">\n` +
-    intervals.map((i) =>
-      `        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="${i}">${i}</button>`
-    ).join('\n') + '\n      </div>';
+  return '<div class="answer-grid"></div>';
 }
 
-/** Scale degree answer buttons (1st..7th). */
-export function degreeAnswerButtons(opts?: { hidden?: boolean }): string {
-  const degrees: [string, string][] = [
-    ['1', '1st'],
-    ['2', '2nd'],
-    ['3', '3rd'],
-    ['4', '4th'],
-    ['5', '5th'],
-    ['6', '6th'],
-    ['7', '7th'],
-  ];
-  const cls = opts?.hidden ? ' answer-group-hidden' : '';
-  return `<div class="answer-buttons answer-buttons-degrees${cls}">\n` +
-    degrees.map(([val, label]) =>
-      `        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="${val}">${label}</button>`
-    ).join('\n') + '\n      </div>';
+/** Scale degree answer buttons placeholder. */
+export function degreeAnswerButtons(): string {
+  return '<div class="answer-grid"></div>';
 }
 
-/** Roman numeral answer buttons (I, ii, iii, IV, V, vi, vii\u00B0). */
-export function numeralAnswerButtons(opts?: { hidden?: boolean }): string {
-  const numerals = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii\u00B0'];
-  const cls = opts?.hidden ? ' answer-group-hidden' : '';
-  return `<div class="answer-buttons answer-buttons-numerals${cls}">\n` +
-    numerals.map((n) =>
-      `        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="${n}">${n}</button>`
-    ).join('\n') + '\n      </div>';
+/** Roman numeral answer buttons placeholder. */
+export function numeralAnswerButtons(): string {
+  return '<div class="answer-grid"></div>';
 }
 
 // ---------------------------------------------------------------------------

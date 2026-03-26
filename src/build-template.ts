@@ -87,7 +87,7 @@ ${
         <span class="speed-tap-progress"></span>
       </div>
       ${fretboardSVG()}
-      ${noteAnswerButtons({ hidden: true })}`,
+      ${noteAnswerButtons()}`,
     })
   }
 
@@ -135,7 +135,7 @@ ${
       modeName: MODE_NAMES.keySignatures,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `<div class="split-keysig-buttons"></div>
-      ${noteAnswerButtons({ hidden: true })}`,
+      ${noteAnswerButtons()}`,
     })
   }
 
@@ -145,7 +145,7 @@ ${
       modeName: MODE_NAMES.scaleDegrees,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `${noteAnswerButtons()}
-      ${degreeAnswerButtons({ hidden: true })}`,
+      ${degreeAnswerButtons()}`,
     })
   }
 
@@ -155,7 +155,7 @@ ${
       modeName: MODE_NAMES.diatonicChords,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `${noteAnswerButtons()}
-      ${numeralAnswerButtons({ hidden: true })}`,
+      ${numeralAnswerButtons()}`,
     })
   }
 

@@ -56,14 +56,17 @@ Components with `--_` tokens: **ActionButton** (`.page-action-btn`),
 
 ## Palette Model
 
-Three colors carry all the meaning:
+Three color families carry meaning:
 
-- **Green** — actions, correctness, brand identity
-- **Gold** — attention, recommendations, achievements
-- **Red** — errors only
+- **Green (brand/success)** — brand identity, correct answers, actions,
+  active states. Forest green (#2D4C3B) anchors the palette.
+- **Amber (notice)** — attention, recommendations, suggestions, stale items.
+  Warm gold (#D97706) for banners and highlights.
+- **Red (error)** — wrong answers only. Used sparingly.
 
-Everything else is warm neutral chrome. This simplicity is intentional: during a
-drill, the user should never have to decode what a color means.
+Everything else is warm neutral chrome (hue 45, cream-to-charcoal). During a
+drill, the user should never have to decode what a color means — green is good,
+red is wrong, amber means "look here."
 
 ## Color Design Principles
 

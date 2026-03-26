@@ -237,9 +237,9 @@ export type ModeController<Q> = {
   ) => boolean | void;
   /** Called on mode deactivation (e.g., reset keyboard handler). */
   deactivateCleanup?: () => void;
-  /** Keyboard narrowing set for PianoNoteButtons. */
+  /** Keyboard narrowing set for NoteButtons. */
   narrowing?: ReadonlySet<string> | null;
-  /** Dynamic hideAccidentals override for PianoNoteButtons. */
+  /** Dynamic hideAccidentals override for NoteButtons. */
   hideAccidentals?: boolean;
   /** Ref for GenericMode to inject the engine's submitAnswer function.
    *  Required for controllers that submit programmatically (e.g., multi-tap). */

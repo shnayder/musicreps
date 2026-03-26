@@ -114,7 +114,7 @@
   --color-error-bg: var(--error-100);
   --color-error-border: var(--error-500);
   --color-error-text: var(--error-800);
-  --color-tap-selected: hsl(210, 60%, 50%);
+  --color-tap-selected: var(--color-accent);
   /* On-fill text (flips in dark mode) */
   --color-on-brand: white;
   --color-on-success: white;
@@ -818,19 +818,19 @@ body {
 }
 .pill-core {
   color: var(--color-track-core);
-  background: hsla(30, 30%, 42%, 0.12);
+  background: var(--color-brand-bg);
 }
 .pill-reading {
   color: var(--color-track-reading);
-  background: hsla(260, 30%, 50%, 0.12);
+  background: var(--color-brand-bg);
 }
 .pill-guitar {
   color: var(--color-track-guitar);
-  background: hsla(25, 55%, 45%, 0.12);
+  background: var(--color-brand-bg);
 }
 .pill-ukulele {
   color: var(--color-track-ukulele);
-  background: hsla(185, 40%, 38%, 0.12);
+  background: var(--color-brand-bg);
 }
 /* Active skill card: no padding on outer — banner and body handle their own. */
 .active-skill-card {
@@ -1142,7 +1142,7 @@ body {
 .segmented-btn.active {
   background: var(--color-card);
   color: var(--color-text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 .segmented-btn:hover:not(.active) {
   color: var(--color-text);
@@ -2057,7 +2057,7 @@ button {
 .answer-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
+  gap: var(--gap-related);
   width: 100%;
   max-width: var(--size-answer-grid);
   margin: var(--gap-group) auto;
@@ -2075,7 +2075,7 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--gap-related);
   width: 100%;
   max-width: var(--size-answer-grid);
   margin: var(--gap-group) auto;

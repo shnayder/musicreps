@@ -74,6 +74,7 @@ src/
   mode-ui-state.ts       # Pure practice summary computation
   navigation.ts          # Hamburger menu, mode switching
   settings.ts            # Settings modal
+  storage.ts             # localStorage abstraction (web + Capacitor)
   types.ts               # Shared type definitions
   styles.css             # Inlined CSS
   *_test.ts              # Tests (node:test)
