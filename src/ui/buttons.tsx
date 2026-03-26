@@ -65,7 +65,7 @@ function feedbackClass(
 // ---------------------------------------------------------------------------
 
 export function NoteButtons(
-  { onAnswer, useFlats, hideAccidentals, narrowing, feedback }: {
+  { onAnswer, useFlats, hideAccidentals, narrowing, feedback, columns }: {
     onAnswer?: (note: string) => void;
     /** When set, accidental buttons show flats (true) or sharps (false). */
     useFlats?: boolean;
@@ -74,11 +74,14 @@ export function NoteButtons(
     /** Set of note names to highlight as keyboard matches; others dimmed. */
     narrowing?: ReadonlySet<string> | null;
     feedback?: ButtonFeedback | null;
+    /** Grid column count. Defaults to 4. */
+    columns?: number;
   },
 ) {
   const notes = hideAccidentals ? NATURAL_NOTES : NOTE_NAMES;
+  const gridCls = columns === 6 ? 'answer-grid answer-grid-6' : 'answer-grid';
   return (
-    <div class='answer-grid'>
+    <div class={gridCls}>
       {notes.map((n) => {
         let label: string;
         if (useFlats !== undefined) {

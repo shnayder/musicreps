@@ -350,6 +350,7 @@ function ResponseButtons(
           hideAccidentals={hideAccidentalsOverride}
           narrowing={narrowing}
           feedback={feedback}
+          columns={buttonsDef.columns}
         />
       );
     case 'split-note':

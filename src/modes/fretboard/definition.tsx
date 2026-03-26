@@ -81,7 +81,7 @@ export function createFretboardDef(
     },
     validateInput: (_q, input) => isValidNoteInput(input),
 
-    buttons: { kind: 'note' },
+    buttons: { kind: 'note', columns: 6 },
 
     scope: {
       kind: 'groups',

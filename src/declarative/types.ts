@@ -23,6 +23,8 @@ export type StatsSelector = {
 
 export type NoteButtonsDef = {
   kind: 'note';
+  /** Grid column count. Defaults to 4. Use 6 for compact layouts (fretboard). */
+  columns?: number;
 };
 
 export type NumberButtonsDef = {

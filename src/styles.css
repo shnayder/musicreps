@@ -69,6 +69,7 @@
 
   /* Brand scale — forest green, anchored on #2D4C3B */
   --brand-100: hsl(var(--hue-brand), 25%, 92%);
+  --brand-200: hsl(var(--hue-brand), 35%, 85%);
   --brand-600: #2d4c3b;
   --brand-800: hsl(var(--hue-brand), 30%, 16%);
 
@@ -101,7 +102,7 @@
   /* Brand */
   --color-brand: var(--brand-600);
   --color-brand-dark: var(--brand-800);
-  --color-brand-bg: var(--brand-100);
+  --color-brand-bg: var(--brand-200);
   /* Success (correct answers — can diverge from brand) */
   --color-success: var(--success-600);
   --color-success-dark: var(--success-800);
@@ -227,6 +228,7 @@
   --size-close-btn: 2.25rem;
   --size-content-inset: var(--space-5);
   --size-answer-grid: 300px;
+  --size-answer-grid-wide: 420px;
 
   /* Elevation (box-shadow) */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -486,16 +488,13 @@ body {
   flex-shrink: 0;
 }
 /* Fretboard: wrapper fills remaining space, SVG contained within */
-.quiz-stage-prompt > div:has(> svg.fretboard) {
+.quiz-stage-prompt > div:has(svg.fretboard) {
   flex: 1;
   min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-}
-.quiz-stage-prompt svg.fretboard {
-  max-height: 45dvh;
 }
 .quiz-stage-response {
   flex: 2;
@@ -574,17 +573,10 @@ body {
   color: var(--color-text);
 }
 .tab-btn.active {
-  color: var(--color-brand-dark);
+  color: var(--color-brand-text);
   font-weight: var(--font-semibold); /* control-selected */
-}
-.tab-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--color-brand);
+  background: var(--color-brand-bg);
+  border-radius: var(--radius-md);
 }
 .tab-btn:focus-visible {
   outline: 2px solid var(--color-focus);
@@ -2036,7 +2028,7 @@ button {
    10. ANSWER BUTTONS
    ========================================================================== */
 
-/* --- Unified 4-column answer grid --- */
+/* --- Unified answer grid (default 4 columns) --- */
 .answer-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -2047,6 +2039,10 @@ button {
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+}
+.answer-grid-6 {
+  grid-template-columns: repeat(6, 1fr);
+  max-width: var(--size-answer-grid-wide);
 }
 
 /* Stack multiple grids vertically (split inputs: chord spelling, key sig) */
