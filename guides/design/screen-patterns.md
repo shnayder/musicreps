@@ -73,6 +73,47 @@ anchors the user's next action at a predictable screen position. See principle
 The answer is always: is it chrome (header), content (main), or an action
 (footer)?
 
+### Viewport and safe-area model (iOS)
+
+With `viewport-fit=cover`, the web content fills the full viewport including the
+notch and home-indicator zones. Safe-area insets tell us where those zones are.
+The rule: **`body` owns all safe-area padding; children fill the remaining
+space.**
+
+```
+┌───────────────────────────────┐  ← 0
+│     safe-area-inset-top       │  body padding-top
+├───────────────────────────────┤
+│  ┌─────────────────────────┐  │
+│  │ .screen-layout           │  │  height: calc(100dvh - inset-top)
+│  │  ┌───────────────────┐  │  │
+│  │  │ .layout-header     │  │  │  flex-shrink: 0
+│  │  ├───────────────────┤  │  │
+│  │  │ .layout-main       │  │  │  flex: 1
+│  │  ├───────────────────┤  │  │
+│  │  │ .layout-footer     │  │  │  flex-shrink: 0
+│  │  │  .mode-nav         │  │  │
+│  │  │  pb: inset-bottom  │  │  │  ← home indicator clearance
+│  │  └───────────────────┘  │  │
+│  └─────────────────────────┘  │
+└───────────────────────────────┘  ← 100dvh
+```
+
+Key invariants:
+
+- **Top inset: body owns it.** `padding-top: env(safe-area-inset-top)` pushes
+  content below the notch/status bar.
+- **Bottom inset: `.mode-nav` owns it.** `padding-bottom: env(safe-area-inset-bottom)`
+  provides clearance from the home indicator. Body padding-bottom is `0`.
+- **`.screen-layout`** uses `height: calc(100dvh - env(safe-area-inset-top, 0px))`
+  — an absolute value that works regardless of DOM nesting. It spans from below
+  the notch to the bottom of the viewport; mode-nav's padding keeps tabs above
+  the home indicator within that space.
+- **Each inset is applied exactly once.** No component should add safe-area
+  padding that another component already handles.
+- **On desktop** (no safe-area insets), all `env()` values resolve to `0` and
+  the layout degrades to a simple full-viewport flexbox.
+
 ---
 
 ## Placing New Content
