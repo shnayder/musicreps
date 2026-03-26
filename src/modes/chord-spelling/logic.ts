@@ -20,20 +20,36 @@ import {
 // Constants
 // ---------------------------------------------------------------------------
 
+/** Long labels by group index (hand-written for readability). */
+const GROUP_LONG_LABELS: Record<number, string> = {
+  0: 'Major triads',
+  1: 'Minor triads',
+  2: 'Dominant 7th',
+  3: 'Major 7th',
+  4: 'Minor 7th',
+  5: 'Diminished, augmented & half-dim',
+  6: 'Suspended & 6th chords',
+};
+
 /**
  * Build chord type groups from CHORD_TYPES, grouping by the `group` field.
  * Each group gets a label built from the chord symbols in that group.
  */
-function buildGroups(): { types: ChordType[]; label: string }[] {
+function buildGroups(): {
+  types: ChordType[];
+  label: string;
+  longLabel: string;
+}[] {
   let maxGroup = 0;
   for (const ct of CHORD_TYPES) {
     if (ct.group > maxGroup) maxGroup = ct.group;
   }
-  const result: { types: ChordType[]; label: string }[] = [];
+  const result: { types: ChordType[]; label: string; longLabel: string }[] = [];
   for (let g = 0; g <= maxGroup; g++) {
     const types = CHORD_TYPES.filter((t) => t.group === g);
     const label = types.map((t) => t.symbol || 'maj').join(', ');
-    result.push({ types, label });
+    const longLabel = GROUP_LONG_LABELS[g] ?? label;
+    result.push({ types, label, longLabel });
   }
   return result;
 }

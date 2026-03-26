@@ -816,7 +816,8 @@ function LevelProgressCards<Q>(
         return (
           <LevelProgressCard
             key={i}
-            label={resolveGroupLabel(groupScope.groups[i].label)}
+            label={groupScope.groups[i].longLabel ??
+              resolveGroupLabel(groupScope.groups[i].label)}
             colors={colors}
             status={status}
             onToggleKnown={() =>
