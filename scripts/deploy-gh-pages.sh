@@ -61,7 +61,7 @@ else
   if [ "$MODE" = "production" ]; then
     find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name 'preview' -exec rm -rf {} +
     cp -r /tmp/build/* .
-    VERSION=$(grep -oP '(?<=class="version">)[^<]+' index.html | head -1 || echo "unknown")
+    VERSION=$(grep -oP '(?<=data-version=")[^"]+' index.html | head -1 || echo "unknown")
     COMMIT_MSG="Build production: ${VERSION}"
 
     # Clean up merged branch's preview if it exists
@@ -128,11 +128,15 @@ fi
 fi # end preview index regeneration
 
 # --- Commit and push ---
-if [ "$MODE" = "production" ] && [ "$CLEANED_PREVIEW" != true ]; then
+if [ "$MODE" = "production" ]; then
   git add -A -- . ':!preview'
+  if [ "$CLEANED_PREVIEW" = true ]; then
+    # Also stage the cleaned-up preview directory and regenerated index
+    git add -A -- "preview/${SAFE_NAME}" preview/index.html
+  fi
 else
-  # Only stage the specific preview directory and index — avoid accidentally
-  # committing stray files (node_modules, screenshots, etc.)
+  # Preview/cleanup: only stage the specific preview directory and index — avoid
+  # accidentally committing stray files (node_modules, screenshots, etc.)
   git add -A -- "preview/${SAFE_NAME}" preview/index.html .nojekyll
 fi
 if git diff --cached --quiet; then
