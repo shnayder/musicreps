@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
   buildStatsLegend,
+  computeReviewPill,
   getSpeedFreshnessColor,
   getStatsCellColor,
   getStatsCellColorMerged,
@@ -212,21 +213,15 @@ describe('heatmapNeedsLightText', () => {
 });
 
 // ---------------------------------------------------------------------------
-// progressBarColors
+// progressBarColors (speed-only encoding)
 // ---------------------------------------------------------------------------
 
-// Stale bar color fallback (matches stats-display.ts)
-const STALE = 'hsl(32, 80%, 55%)';
-
 describe('progressBarColors', () => {
-  it('sorts fresh items by speed descending', () => {
+  it('sorts seen items by speed descending', () => {
     const selector = {
       getSpeedScore(id: string) {
         return ({ a: 0.2, b: 0.9, c: 0.5 } as Record<string, number>)[id] ??
           null;
-      },
-      getFreshness(_id: string) {
-        return 1.0; // all fresh
       },
     };
     const colors = progressBarColors(selector, ['a', 'b', 'c']);
@@ -236,51 +231,42 @@ describe('progressBarColors', () => {
     assert.ok(colors[2].startsWith('hsl(40,'), `last: ${colors[2]}`);
   });
 
-  it('uses speed-only color at full saturation for fresh items', () => {
+  it('uses speed-only color at full saturation', () => {
     const selector = {
       getSpeedScore(_id: string) {
         return 0.95;
       },
-      getFreshness(_id: string) {
-        return 1.0;
-      },
     };
     const colors = progressBarColors(selector, ['a']);
-    // Should be hsl(125, 48%, 33%) — full saturation, no freshness fading
     assert.ok(colors[0].startsWith('hsl(125,'), `color: ${colors[0]}`);
     assert.ok(colors[0].includes('48%'), `full sat: ${colors[0]}`);
   });
 
-  it('uses stale color for items with freshness < 0.5', () => {
+  it('ignores freshness — stale items keep speed color', () => {
+    // Even with low freshness, the bar shows speed color (not stale orange)
     const selector = {
       getSpeedScore(_id: string) {
-        return 0.95; // fast
-      },
-      getFreshness(id: string) {
-        return id === 'fresh' ? 1.0 : 0.3; // stale
+        return 0.95;
       },
     };
-    const colors = progressBarColors(selector, ['fresh', 'stale']);
-    assert.equal(colors.length, 2);
-    // Fresh first (speed color), stale second (notice orange)
-    assert.ok(colors[0].startsWith('hsl(125,'), `fresh: ${colors[0]}`);
-    assert.equal(colors[1], STALE);
+    const colors = progressBarColors(selector, ['a']);
+    assert.ok(
+      colors[0].startsWith('hsl(125,'),
+      `should be speed color: ${colors[0]}`,
+    );
   });
 
-  it('sorts: fresh by speed → stale → unseen', () => {
+  it('sorts: seen by speed → unseen', () => {
     const selector = {
       getSpeedScore(id: string) {
         return ({ f: 0.5, s: 0.9 } as Record<string, number>)[id] ?? null;
       },
-      getFreshness(id: string) {
-        return ({ f: 1.0, s: 0.2 } as Record<string, number>)[id] ?? null;
-      },
     };
     const colors = progressBarColors(selector, ['u', 'f', 's']);
     assert.equal(colors.length, 3);
-    // f is fresh (speed color), s is stale (orange), u is unseen (grey)
-    assert.ok(colors[0].startsWith('hsl('), `fresh first: ${colors[0]}`);
-    assert.equal(colors[1], STALE);
+    // s (speed 0.9, hue 80) first, f (speed 0.5, hue 48) second, u unseen last
+    assert.ok(colors[0].startsWith('hsl(80,'), `fastest first: ${colors[0]}`);
+    assert.ok(colors[1].startsWith('hsl(48,'), `slower second: ${colors[1]}`);
     assert.equal(colors[2], NONE);
   });
 
@@ -289,9 +275,6 @@ describe('progressBarColors', () => {
       getSpeedScore(id: string) {
         return id === 'seen' ? 0.5 : null;
       },
-      getFreshness(id: string) {
-        return id === 'seen' ? 1.0 : null;
-      },
     };
     const colors = progressBarColors(selector, ['unseen', 'seen']);
     assert.equal(colors.length, 2);
@@ -299,14 +282,11 @@ describe('progressBarColors', () => {
     assert.equal(colors[1], NONE);
   });
 
-  it('produces visually monotonic hues for fresh items', () => {
+  it('produces visually monotonic hues', () => {
     const speeds = [0.95, 0.85, 0.6, 0.4, 0.1];
     const selector = {
       getSpeedScore(id: string) {
         return speeds[parseInt(id)] ?? null;
-      },
-      getFreshness(_id: string) {
-        return 1.0; // all fresh
       },
     };
     const ids = speeds.map((_, i) => String(i));
@@ -318,5 +298,87 @@ describe('progressBarColors', () => {
         `hue[${i}]=${hues[i]} > hue[${i - 1}]=${hues[i - 1]}: not monotonic`,
       );
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeReviewPill
+// ---------------------------------------------------------------------------
+
+describe('computeReviewPill', () => {
+  it('returns null for unseen items', () => {
+    const selector = {
+      getStats: () => null,
+      getFreshness: () => null,
+    };
+    assert.equal(computeReviewPill(selector, ['a', 'b']), null);
+  });
+
+  it('returns "Review soon" when avg freshness < 0.5', () => {
+    const now = Date.now();
+    const selector = {
+      getStats: () => ({
+        recentTimes: [1000],
+        ewma: 1000,
+        sampleCount: 5,
+        lastSeen: now,
+        stability: 4,
+        lastCorrectAt: now - 5 * 3600000,
+      }),
+      getFreshness: () => 0.3,
+    };
+    assert.equal(computeReviewPill(selector, ['a']), 'Review soon');
+  });
+
+  it('returns "Review soon" when ≤24h remaining', () => {
+    const selector = {
+      getStats: () => ({
+        recentTimes: [1000],
+        ewma: 1000,
+        sampleCount: 5,
+        lastSeen: Date.now(),
+        stability: 30,
+        lastCorrectAt: Date.now(),
+      }),
+      getFreshness: () => 0.7,
+    };
+    // stability=30h, freshness=0.7 → remaining = 30*(1+log2(0.7)) ≈ 30*0.485 ≈ 14.6h
+    assert.equal(computeReviewPill(selector, ['a']), 'Review soon');
+  });
+
+  it('returns "Review in Xd" for moderate stability', () => {
+    const selector = {
+      getStats: () => ({
+        recentTimes: [1000],
+        ewma: 1000,
+        sampleCount: 5,
+        lastSeen: Date.now(),
+        stability: 168,
+        lastCorrectAt: Date.now(),
+      }),
+      getFreshness: () => 1.0,
+    };
+    // stability=168h (7d), freshness=1.0 → remaining = 168h = 7d
+    const pill = computeReviewPill(selector, ['a']);
+    assert.ok(pill?.startsWith('Review in '), `pill: ${pill}`);
+    assert.ok(pill?.endsWith('d'), `should be days: ${pill}`);
+  });
+
+  it('returns "Review in Xw" for high stability', () => {
+    const selector = {
+      getStats: () => ({
+        recentTimes: [1000],
+        ewma: 1000,
+        sampleCount: 5,
+        lastSeen: Date.now(),
+        stability: 720,
+        lastCorrectAt: Date.now(),
+      }),
+      getFreshness: () => 1.0,
+    };
+    // stability=720h (30d), freshness=1.0 → remaining = 720h ≈ 30d ≈ 4w
+    const pill = computeReviewPill(selector, ['a']);
+    assert.ok(pill?.startsWith('Review in '), `pill: ${pill}`);
+    assert.ok(pill?.endsWith('w'), `should be weeks: ${pill}`);
   });
 });

@@ -173,9 +173,6 @@
   /* Star */
   --color-star: var(--notice-700);
 
-  /* Progress bar: stale items needing review (notice-family tint) */
-  --color-bar-stale: hsl(var(--hue-notice), 80%, 55%);
-
   /* Heatmap scale (cross-hue: gold → green, not parameterized) */
   --heatmap-none: var(--neutral-300);
   --heatmap-1: hsl(40, 60%, 58%);

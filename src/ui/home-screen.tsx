@@ -190,7 +190,7 @@ export function SkillCard(
         {isStarred ? '\u2605' : '\u2606'}
       </button>
       <SkillCardHeader modeId={modeId} />
-      {progress && (
+      {progress && progress.groupColors.length > 0 && (
         <div class='skill-card-progress'>
           <GroupProgressBar colors={progress.groupColors} />
         </div>
@@ -268,7 +268,7 @@ function ActiveSkillCard(
           trackId={trackId}
           trackLabel={trackLabel}
         />
-        {progress && (
+        {progress && progress.groupColors.length > 0 && (
           <div class='skill-card-progress'>
             <GroupProgressBar colors={progress.groupColors} />
           </div>

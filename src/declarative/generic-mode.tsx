@@ -64,6 +64,7 @@ import {
   ScreenLayout,
 } from '../ui/screen-layout.tsx';
 import {
+  computeReviewPill,
   progressBarColors,
   progressBarGroupSegment,
 } from '../stats-display.ts';
@@ -807,6 +808,7 @@ function LevelProgressCards<Q>(
       {groupScope.allGroupIndices.map((i) => {
         const itemIds = groupScope.getItemIdsForGroup(i);
         const colors = progressBarColors(learner.selector, itemIds);
+        const pill = computeReviewPill(learner.selector, itemIds);
         const skipReason = groupScopeResult.skippedGroups.get(i);
         const status = skipReason === 'mastered'
           ? 'known' as const
@@ -817,6 +819,7 @@ function LevelProgressCards<Q>(
           <LevelProgressCard
             key={i}
             label={resolveGroupLabel(groupScope.groups[i].label)}
+            pill={pill ?? undefined}
             colors={colors}
             status={status}
             onToggleKnown={() =>

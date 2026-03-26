@@ -128,25 +128,15 @@ export function getStatsCellColorMerged(
   return getSpeedFreshnessColor(avgSpeed, avgFresh);
 }
 
-// --- Progress bar colors (sorted per-item) ---
+// --- Progress bar colors (sorted per-item, speed-only) ---
 
 type ProgressSelector = {
   getSpeedScore(id: string): number | null;
-  getFreshness(id: string): number | null;
 };
 
 /** Map a speed score to a discrete level (0–4), matching getSpeedFreshnessColor. */
 function speedLevel(sp: number): number {
   return sp > 0.9 ? 4 : sp > 0.75 ? 3 : sp > 0.55 ? 2 : sp > 0.3 ? 1 : 0;
-}
-
-// Stale bar color (notice-family tint, read from CSS with fallback)
-let _barStaleColor: string | null = null;
-function barStaleColor(): string {
-  if (!_barStaleColor) {
-    _barStaleColor = cssVar('--color-bar-stale') || 'hsl(32, 80%, 55%)';
-  }
-  return _barStaleColor;
 }
 
 /** Speed-only color at full saturation (no freshness fading). */
@@ -158,82 +148,59 @@ function speedOnlyColor(sp: number): string {
 const FRESHNESS_THRESHOLD = 0.5;
 
 /**
- * Compute per-item progress bar colors using three-zone encoding:
- * - Fresh (freshness >= 0.5): speed hue at full saturation
- * - Stale (freshness < 0.5): notice-orange review color
+ * Compute per-item progress bar colors (speed-only encoding):
+ * - Seen: speed hue at full saturation (gold → green)
  * - Unseen (no data): neutral grey
  *
- * Sorted: fresh items by speed desc → stale → unseen.
- * Items visually migrate from speed colors into the stale zone as they decay.
+ * Sorted: seen by speed desc → unseen.
  */
 export function progressBarColors(
   selector: ProgressSelector,
   itemIds: string[],
 ): string[] {
   const c = heatmapColors();
-  const stale = barStaleColor();
   const items = itemIds.map((id) => {
     const sp = selector.getSpeedScore(id);
-    const fr = selector.getFreshness(id);
-    // zone: 0 = fresh, 1 = stale, 2 = unseen
-    const zone = sp === null
-      ? 2
-      : (fr !== null && fr < FRESHNESS_THRESHOLD)
-      ? 1
-      : 0;
-    const color = zone === 2
-      ? c.none
-      : zone === 1
-      ? stale
-      : speedOnlyColor(sp!);
+    const zone: 0 | 2 = sp === null ? 2 : 0;
+    const color = zone === 2 ? c.none : speedOnlyColor(sp!);
     return { zone, level: sp !== null ? speedLevel(sp) : -1, color };
   });
   items.sort((a, b) => {
     if (a.zone !== b.zone) return a.zone - b.zone;
-    return b.level - a.level; // within fresh zone, green first
+    return b.level - a.level; // seen zone: green first
   });
   return items.map((item) => item.color);
 }
 
-/** Three-zone classification for a group of items. */
+/** Speed-only classification for a group of items. */
 export type GroupBarSegment = {
   color: string;
-  zone: 0 | 1 | 2; // 0 = fresh, 1 = stale, 2 = unseen
-  speed: number; // average speed (for sort within fresh zone)
+  zone: 0 | 2; // 0 = seen, 2 = unseen
+  speed: number; // average speed (for sort within seen zone)
 };
 
 /**
- * Three-zone color + metadata for a group of items (one segment per group).
- * Averages speed and freshness across seen items, then classifies:
- * - Fresh (avg freshness >= 0.5): speed-only color at full saturation
- * - Stale (avg freshness < 0.5): notice-orange review color
+ * Speed-only color + metadata for a group of items (one segment per group).
+ * Averages speed across seen items:
+ * - Seen (any items have speed data): speed-only color at full saturation
  * - Unseen (no seen items): neutral grey
  */
 export function progressBarGroupSegment(
   selector: ProgressSelector,
   itemIds: string[],
 ): GroupBarSegment {
-  let speedSum = 0, speedCount = 0, freshSum = 0, freshCount = 0;
+  let speedSum = 0, speedCount = 0;
   for (const id of itemIds) {
     const sp = selector.getSpeedScore(id);
-    const fr = selector.getFreshness(id);
     if (sp !== null) {
       speedSum += sp;
       speedCount++;
-    }
-    if (fr !== null) {
-      freshSum += fr;
-      freshCount++;
     }
   }
   if (speedCount === 0) {
     return { color: heatmapColors().none, zone: 2, speed: 0 };
   }
   const avgSpeed = speedSum / speedCount;
-  const avgFresh = freshCount > 0 ? freshSum / freshCount : null;
-  if (avgFresh !== null && avgFresh < FRESHNESS_THRESHOLD) {
-    return { color: barStaleColor(), zone: 1, speed: avgSpeed };
-  }
   return { color: speedOnlyColor(avgSpeed), zone: 0, speed: avgSpeed };
 }
 
@@ -243,6 +210,59 @@ export function progressBarGroupColor(
   itemIds: string[],
 ): string {
   return progressBarGroupSegment(selector, itemIds).color;
+}
+
+// --- Review timing pills ---
+
+type ReviewSelector = {
+  getStats(id: string): ItemStats | null;
+  getFreshness(id: string): number | null;
+};
+
+/** Format hours remaining until review as a human-readable duration. */
+function formatReviewDuration(hours: number): string {
+  const days = Math.round(hours / 24);
+  if (days <= 14) return `${days}d`;
+  const weeks = Math.round(days / 7);
+  if (weeks <= 12) return `${weeks}w`;
+  const months = Math.round(days / 30);
+  return `${months}mo`;
+}
+
+/**
+ * Compute a review-timing pill label for a group of items.
+ * Returns null for unseen groups. For seen groups:
+ * - "Review soon" if avg freshness < threshold or ≤24h remaining
+ * - "Review in Xd/Xw/Xmo" based on estimated time until review
+ */
+export function computeReviewPill(
+  selector: ReviewSelector,
+  itemIds: string[],
+): string | null {
+  let stabilitySum = 0, stabilityCount = 0;
+  let freshnessSum = 0, freshnessCount = 0;
+  for (const id of itemIds) {
+    const stats = selector.getStats(id);
+    if (stats?.stability != null) {
+      stabilitySum += stats.stability;
+      stabilityCount++;
+    }
+    const fr = selector.getFreshness(id);
+    if (fr !== null) {
+      freshnessSum += fr;
+      freshnessCount++;
+    }
+  }
+  if (stabilityCount === 0 || freshnessCount === 0) return null;
+
+  const avgFreshness = freshnessSum / freshnessCount;
+  if (avgFreshness < FRESHNESS_THRESHOLD) return 'Review soon';
+
+  const avgStability = stabilitySum / stabilityCount;
+  const hoursRemaining = avgStability * (1 + Math.log2(avgFreshness));
+  if (hoursRemaining <= 24) return 'Review soon';
+
+  return `Review in ${formatReviewDuration(hoursRemaining)}`;
 }
 
 // --- Legend ---
