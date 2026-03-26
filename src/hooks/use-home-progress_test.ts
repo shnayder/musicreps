@@ -71,16 +71,25 @@ describe('computeAllProgress', () => {
     }
   });
 
-  it('group-based modes have correct number of color segments', () => {
+  it('multi-group modes have one color per group, single-group modes have per-item colors', () => {
     const result = computeAllProgress(emptyStorageFactory());
     for (const entry of MODE_PROGRESS_MANIFEST) {
       const progress = result.get(entry.modeId)!;
-      const expectedCount = entry.groups.length;
-      assert.equal(
-        progress.groupColors.length,
-        expectedCount,
-        `${entry.modeId} color count`,
-      );
+      if (entry.groups.length === 1) {
+        // Single-group: per-item colors (matches skill screen)
+        const itemCount = entry.allItemIds().length;
+        assert.equal(
+          progress.groupColors.length,
+          itemCount,
+          `${entry.modeId} per-item color count`,
+        );
+      } else {
+        assert.equal(
+          progress.groupColors.length,
+          entry.groups.length,
+          `${entry.modeId} group color count`,
+        );
+      }
     }
   });
 
@@ -117,10 +126,18 @@ describe('computeAllProgress', () => {
 // ---------------------------------------------------------------------------
 
 describe('computeProgressForMode', () => {
-  it('single-group mode has exactly one color segment', () => {
+  it('single-group mode has per-item color segments', () => {
     const entry = getModeProgress('noteSemitones')!;
     const storage = createMemoryStorage();
     const result = computeProgressForMode(entry, storage, null);
+    assert.equal(result.groupColors.length, entry.allItemIds().length);
+  });
+
+  it('single-group mode skipped yields a single neutral segment', () => {
+    const entry = getModeProgress('noteSemitones')!;
+    const storage = createMemoryStorage();
+    const skipped = new Set([0]);
+    const result = computeProgressForMode(entry, storage, null, skipped);
     assert.equal(result.groupColors.length, 1);
   });
 

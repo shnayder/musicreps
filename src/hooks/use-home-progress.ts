@@ -16,6 +16,7 @@ import {
 } from '../mode-progress-manifest.ts';
 import {
   type GroupBarSegment,
+  progressBarColors,
   progressBarGroupColor,
   progressBarGroupSegment,
 } from '../stats-display.ts';
@@ -75,8 +76,18 @@ export function computeProgressForMode(
     : undefined;
   const selector = createAdaptiveSelector(storage, cfg);
 
-  // Compute per-group segment (color + zone + speed), then sort:
-  // fresh by speed desc → stale → unseen
+  // Single-group modes: per-item colors to match the skill screen
+  // (which uses progressBarColors for non-group scopes).
+  if (entry.groups.length === 1) {
+    if (skippedGroups?.has(0)) {
+      return { groupColors: [progressBarGroupColor(selector, [])] };
+    }
+    return {
+      groupColors: progressBarColors(selector, entry.allItemIds()),
+    };
+  }
+
+  // Multi-group modes: one segment per group, then sort.
   const segments: GroupBarSegment[] = [];
   for (let i = 0; i < entry.groups.length; i++) {
     if (skippedGroups?.has(i)) continue;
