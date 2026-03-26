@@ -622,9 +622,8 @@ body {
   background: var(--color-chrome);
   border-top: 1px solid var(--color-border-lighter);
   border-bottom: none;
-  padding-left: var(--size-content-inset);
-  padding-right: var(--size-content-inset);
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding: var(--gap-related) var(--size-content-inset);
+  padding-bottom: max(var(--gap-related), env(safe-area-inset-bottom, 0));
 }
 .mode-nav .tab-btn {
   padding: var(--gap-related) var(--gap-group);
