@@ -3055,7 +3055,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="eadae9 fix-progress-bar-sync-gSEqY"></div>
+  <div class="home-screen" id="home-screen" data-version="449ebd fix-progress-bar-sync-gSEqY"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7809,7 +7809,7 @@ body.native-app {
         return { groupColors: [progressBarGroupColor(selector, [])] };
       }
       return {
-        groupColors: progressBarColors(selector, entry.groups[0].getItemIds())
+        groupColors: progressBarColors(selector, entry.allItemIds())
       };
     }
     const segments = [];
