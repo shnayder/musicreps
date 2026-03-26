@@ -83,7 +83,7 @@ export function computeProgressForMode(
       return { groupColors: [progressBarGroupColor(selector, [])] };
     }
     return {
-      groupColors: progressBarColors(selector, entry.groups[0].getItemIds()),
+      groupColors: progressBarColors(selector, entry.allItemIds()),
     };
   }
 
