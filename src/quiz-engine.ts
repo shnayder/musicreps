@@ -323,21 +323,7 @@ export function createAdaptiveKeyHandler(
 // ---------------------------------------------------------------------------
 
 export function refreshNoteButtonLabels(container: HTMLElement): void {
-  container.querySelectorAll<HTMLButtonElement>('.answer-btn-note').forEach(
-    function (btn) {
-      const note = NOTES.find(function (n) {
-        return n.name === btn.dataset.note;
-      });
-      if (note) btn.textContent = displayNote(note.name);
-    },
-  );
-  container.querySelectorAll<HTMLButtonElement>('.note-btn').forEach(
-    function (btn) {
-      const noteName = btn.dataset.note;
-      if (noteName) btn.textContent = displayNote(noteName);
-    },
-  );
-  container.querySelectorAll<HTMLButtonElement>('.split-note-base').forEach(
+  container.querySelectorAll<HTMLButtonElement>('[data-note]').forEach(
     function (btn) {
       const noteName = btn.dataset.note;
       if (noteName) btn.textContent = displayNote(noteName);

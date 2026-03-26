@@ -79,15 +79,25 @@ async function bundleJS(entry = './src/app.ts'): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function fontFaceCSS(): Promise<string> {
-  const fontPath = resolve('./src/DMSerifDisplay-latin.woff2');
-  const fontBytes = await Deno.readFile(fontPath);
-  const b64 = btoa(String.fromCharCode(...fontBytes));
+  const [gabaritoBytes, jakartaBytes] = await Promise.all([
+    Deno.readFile(resolve('./src/Gabarito-latin.woff2')),
+    Deno.readFile(resolve('./src/PlusJakartaSans-latin.woff2')),
+  ]);
+  const gabaritoB64 = btoa(String.fromCharCode(...gabaritoBytes));
+  const jakartaB64 = btoa(String.fromCharCode(...jakartaBytes));
   return `@font-face {
-  font-family: 'DM Serif Display';
+  font-family: 'Gabarito';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 700;
   font-display: swap;
-  src: url(data:font/woff2;base64,${b64}) format('woff2');
+  src: url(data:font/woff2;base64,${gabaritoB64}) format('woff2');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(data:font/woff2;base64,${jakartaB64}) format('woff2');
 }`;
 }
 
@@ -191,7 +201,7 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
     .preview-frame {
       border: 1px solid var(--color-border-light);
       border-radius: 8px;
-      padding: var(--space-4);
+      padding: var(--pad-component);
       background: var(--color-bg);
     }
     .tab-description {

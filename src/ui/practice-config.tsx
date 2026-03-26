@@ -93,17 +93,16 @@ export function SuggestionLines(
 // ---------------------------------------------------------------------------
 
 export function LevelToggles(
-  { labels, active, onToggle, itemCount }: {
+  { labels, active, onToggle }: {
     labels: string[];
     active: ReadonlySet<number>;
     onToggle: (index: number) => void;
-    itemCount: number;
   },
 ) {
   return (
     <div class='level-toggles-section'>
-      <Text role='body-secondary' as='div' class='level-toggles-header'>
-        Choose levels to practice
+      <Text role='heading-subsection' as='div' class='level-toggles-header'>
+        Choose levels
       </Text>
       <div class='level-toggles'>
         {labels.map((label, i) => (
@@ -119,9 +118,6 @@ export function LevelToggles(
           </button>
         ))}
       </div>
-      <Text role='body-secondary' as='div' class='level-toggles-count'>
-        {itemCount} {itemCount === 1 ? 'item' : 'items'} selected
-      </Text>
     </div>
   );
 }

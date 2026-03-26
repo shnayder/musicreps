@@ -48,11 +48,10 @@ import {
   type ButtonFeedback,
   DegreeButtons,
   IntervalButtons,
-  KeysigButtons,
   NoteButtons,
   NumberButtons,
   NumeralButtons,
-  PianoNoteButtons,
+  SplitKeysigButtons,
   SplitNoteButtons,
 } from '../ui/buttons.tsx';
 import { SequentialSlots } from '../ui/sequential-slots.tsx';
@@ -65,8 +64,8 @@ import {
   ScreenLayout,
 } from '../ui/screen-layout.tsx';
 import {
-  getStatsCellColorMerged,
   progressBarColors,
+  progressBarGroupSegment,
 } from '../stats-display.ts';
 import {
   ModeTopBar,
@@ -117,7 +116,6 @@ import {
 function getHintType(buttons: ButtonsDef): KeyboardHintType {
   switch (buttons.kind) {
     case 'note':
-    case 'piano-note':
     case 'split-note':
       return 'note';
     case 'number':
@@ -323,7 +321,6 @@ function AnswerInput(
 function ResponseButtons(
   {
     buttonsDef,
-    hidden,
     onAnswer,
     useFlats,
     narrowing,
@@ -334,7 +331,6 @@ function ResponseButtons(
     pendingNote,
   }: {
     buttonsDef: ButtonsDef;
-    hidden?: boolean;
     onAnswer: (input: string) => void;
     useFlats?: boolean;
     narrowing?: ReadonlySet<string> | null;
@@ -349,23 +345,13 @@ function ResponseButtons(
     case 'note':
       return (
         <NoteButtons
-          hidden={hidden}
           onAnswer={onAnswer}
           useFlats={useFlats}
+          hideAccidentals={hideAccidentalsOverride}
+          narrowing={narrowing}
           feedback={feedback}
+          columns={buttonsDef.columns}
         />
-      );
-    case 'piano-note':
-      return (
-        <div class={hidden ? 'answer-group-hidden' : undefined}>
-          <PianoNoteButtons
-            onAnswer={onAnswer}
-            hideAccidentals={hideAccidentalsOverride ??
-              buttonsDef.hideAccidentals}
-            narrowing={narrowing}
-            feedback={feedback}
-          />
-        </div>
       );
     case 'split-note':
       return (
@@ -381,7 +367,6 @@ function ResponseButtons(
         <NumberButtons
           start={buttonsDef.start}
           end={buttonsDef.end}
-          hidden={hidden}
           onAnswer={(n) => onAnswer(String(n))}
           feedback={feedback}
         />
@@ -389,7 +374,6 @@ function ResponseButtons(
     case 'degree':
       return (
         <DegreeButtons
-          hidden={hidden}
           onAnswer={onAnswer}
           feedback={feedback}
         />
@@ -397,7 +381,6 @@ function ResponseButtons(
     case 'numeral':
       return (
         <NumeralButtons
-          hidden={hidden}
           onAnswer={onAnswer}
           feedback={feedback}
         />
@@ -405,15 +388,13 @@ function ResponseButtons(
     case 'interval':
       return (
         <IntervalButtons
-          hidden={hidden}
           onAnswer={onAnswer}
           feedback={feedback}
         />
       );
-    case 'keysig':
+    case 'split-keysig':
       return (
-        <KeysigButtons
-          hidden={hidden}
+        <SplitKeysigButtons
           onAnswer={onAnswer}
           feedback={feedback}
         />
@@ -540,7 +521,6 @@ function StandardQuizArea<Q>(
     ctrl,
     currentQ,
     activeButtons,
-    inactiveButtons,
     handleSubmit,
     useFlats,
     placeholder,
@@ -552,7 +532,6 @@ function StandardQuizArea<Q>(
     ctrl: ModeController<Q>;
     currentQ: Q | null;
     activeButtons: ButtonsDef;
-    inactiveButtons: ButtonsDef | null;
     handleSubmit: (input: string) => boolean;
     useFlats?: boolean;
     placeholder?: string;
@@ -600,13 +579,6 @@ function StandardQuizArea<Q>(
               }
               : null}
           />
-          {inactiveButtons && (
-            <ResponseButtons
-              buttonsDef={inactiveButtons}
-              hidden
-              onAnswer={handleSubmit}
-            />
-          )}
           <AnswerInput
             onSubmit={handleSubmit}
             disabled={engine.state.answered}
@@ -641,7 +613,6 @@ type QuizActiveViewProps<Q> = {
   };
   multiTapInput: MultiTapInputHandle;
   activeButtons: ButtonsDef;
-  inactiveButtons: ButtonsDef | null;
   promptText: string;
   useFlats?: boolean;
   placeholder?: string;
@@ -666,7 +637,6 @@ function QuizActiveView<Q>(
     seq,
     multiTapInput,
     activeButtons,
-    inactiveButtons,
     promptText,
     useFlats,
     placeholder,
@@ -735,7 +705,6 @@ function QuizActiveView<Q>(
         ctrl={ctrl}
         currentQ={currentQ}
         activeButtons={activeButtons}
-        inactiveButtons={inactiveButtons}
         handleSubmit={handleSubmit}
         useFlats={useFlats}
         placeholder={placeholder}
@@ -816,7 +785,6 @@ function GroupPracticeContent<Q>(
               ? groupScopeResult.enabledGroups
               : groupScopeResult.suggestedScope}
             onToggle={groupScopeResult.scopeActions.toggleGroup}
-            itemCount={groupScopeResult.enabledItems.length}
           />
         }
       />
@@ -895,6 +863,10 @@ function IdlePracticeView<Q>(
 ) {
   const hasGroups = def.scope.kind === 'groups' && groupScopeResult;
   const hasStats = def.stats.kind !== 'none' || !!ctrl.renderStats;
+  const customItemCount = hasGroups &&
+      groupScopeResult.practiceMode === 'custom'
+    ? groupScopeResult.enabledItems.length
+    : null;
 
   return (
     <PracticeTab
@@ -906,6 +878,11 @@ function IdlePracticeView<Q>(
         : undefined}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one group'
+      startLabel={customItemCount != null
+        ? `Practice (${customItemCount} ${
+          customItemCount === 1 ? 'item' : 'items'
+        })`
+        : undefined}
       practiceContent={hasGroups
         ? (
           <GroupPracticeContent
@@ -923,7 +900,7 @@ function IdlePracticeView<Q>(
       statsContent={
         <>
           {hasStats && (
-            <Text role='heading-subsection' as='div'>
+            <Text role='heading-section' as='div'>
               All items
             </Text>
           )}
@@ -953,7 +930,7 @@ function IdlePracticeView<Q>(
       progressExtra={hasGroups
         ? (
           <>
-            <Text role='heading-subsection'>Levels</Text>
+            <Text role='heading-section'>Levels</Text>
             <LevelProgressCards
               def={def}
               learner={learner}
@@ -1096,13 +1073,11 @@ function useGenericEngine<Q>(
 function resolveButtons<Q>(
   def: ModeDefinition<Q>,
   dir: 'fwd' | 'rev',
-): { active: ButtonsDef; inactive: ButtonsDef | null } {
+): ButtonsDef {
   if (def.buttons.kind === 'bidirectional') {
-    return dir === 'fwd'
-      ? { active: def.buttons.fwd, inactive: def.buttons.rev }
-      : { active: def.buttons.rev, inactive: def.buttons.fwd };
+    return dir === 'fwd' ? def.buttons.fwd : def.buttons.rev;
   }
-  return { active: def.buttons, inactive: null };
+  return def.buttons;
 }
 
 function buildGroupScopeSpec<Q>(
@@ -1301,7 +1276,7 @@ type GenericModeBodyProps<Q> = {
 };
 
 /** Compute progress colors for the SkillHeader progress bar.
- *  Multi-level: one color per group (merged speed/freshness).
+ *  Multi-level: one color per group (three-zone: fresh/stale/unseen).
  *  Single-level: per-item sorted colors (via shared progressBarColors). */
 function useProgressColors<Q>(
   def: ModeDefinition<Q>,
@@ -1310,10 +1285,14 @@ function useProgressColors<Q>(
   return useMemo(() => {
     if (def.scope.kind === 'groups') {
       const scope = def.scope;
-      return scope.allGroupIndices.map((i) => {
-        const itemIds = scope.getItemIdsForGroup(i);
-        return getStatsCellColorMerged(learner.selector, itemIds);
+      const segments = scope.allGroupIndices.map((i) =>
+        progressBarGroupSegment(learner.selector, scope.getItemIdsForGroup(i))
+      );
+      segments.sort((a, b) => {
+        if (a.zone !== b.zone) return a.zone - b.zone;
+        return b.speed - a.speed;
       });
+      return segments.map((s) => s.color);
     }
     return progressBarColors(learner.selector, def.allItems);
   }, [def, learner.selector]);
@@ -1366,10 +1345,7 @@ function GenericModeBody<Q>(
   const useFlats = currentQ && def.getUseFlats
     ? def.getUseFlats(currentQ)
     : undefined;
-  const { active: activeButtons, inactive: inactiveButtons } = resolveButtons(
-    def,
-    dir,
-  );
+  const activeButtons = resolveButtons(def, dir);
   const isIdle = engine.state.phase === 'idle' && !sc.speedCheck;
   const progressColors = useProgressColors(def, learner);
 
@@ -1401,29 +1377,15 @@ function GenericModeBody<Q>(
 
   if (sc.speedCheck) {
     return (
-      <ScreenLayout>
-        <LayoutHeader>
-          <ModeHeader
-            def={def}
-            isIdle={false}
-            progressColors={progressColors}
-            navigateHome={navigateHome}
-          />
-        </LayoutHeader>
-        <LayoutMain scrollable={false}>
-          <SpeedCheck
-            config={NOTE_BUTTON_CONFIG}
-            fixture={typeof sc.speedCheck === 'object'
-              ? sc.speedCheck
-              : undefined}
-            onComplete={(baseline) => {
-              learner.applyBaseline(baseline);
-              sc.setSpeedCheck(null);
-            }}
-            onCancel={() => sc.setSpeedCheck(null)}
-          />
-        </LayoutMain>
-      </ScreenLayout>
+      <SpeedCheck
+        config={NOTE_BUTTON_CONFIG}
+        fixture={typeof sc.speedCheck === 'object' ? sc.speedCheck : undefined}
+        onComplete={(baseline) => {
+          learner.applyBaseline(baseline);
+          sc.setSpeedCheck(null);
+        }}
+        onCancel={() => sc.setSpeedCheck(null)}
+      />
     );
   }
 
@@ -1439,7 +1401,6 @@ function GenericModeBody<Q>(
       seq={buildSeqProps(seqInput)}
       multiTapInput={multiTapInput}
       activeButtons={activeButtons}
-      inactiveButtons={inactiveButtons}
       promptText={promptText}
       useFlats={useFlats}
       placeholder={getInputPlaceholder(def, currentQ, isSequential)}

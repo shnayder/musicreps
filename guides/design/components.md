@@ -17,7 +17,7 @@ distinct visual treatment — don't reuse styles across roles. See
 | **Primary action** | Initiate flow (Practice, Keep Going, Start, Done) | `<ActionButton variant='primary'>` |
 | **Secondary action** | Cancel / alternative (Stop) | `<ActionButton variant='secondary'>` |
 | **Small action** | Tertiary / utility (Redo speed check, Accept suggestion) | `.baseline-rerun-btn`, `.suggestion-card-accept` |
-| **Answer** | Quiz response — equal visual weight across all options | `.answer-btn`, `.note-btn` |
+| **Answer** | Quiz response — equal visual weight, 4-column grid | `.answer-btn` in `.answer-grid` |
 | **Toggle** | Multi-select filter (strings, groups, notes) | `.string-toggle`, `.distance-toggle` |
 | **Tab** | View switching | `.mode-tab`, `.home-tab` |
 | **Text link** | Tertiary navigation — muted, no background | `.text-link` |

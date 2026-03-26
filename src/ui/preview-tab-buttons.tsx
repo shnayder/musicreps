@@ -3,11 +3,10 @@
 import {
   DegreeButtons,
   IntervalButtons,
-  KeysigButtons,
   NoteButtons,
   NumberButtons,
   NumeralButtons,
-  PianoNoteButtons,
+  SplitKeysigButtons,
 } from './buttons.tsx';
 import { ActionButton } from './action-button.tsx';
 import { PreviewGrid, Section } from './preview-shared.tsx';
@@ -170,11 +169,11 @@ export function ButtonsTab({ tabId }: { tabId: string }) {
     <>
       <h2>Answer Button Variants</h2>
       <PreviewGrid>
-        <Section title='Note Buttons (Grid)' tabId={tabId}>
+        <Section title='Note Buttons (12)' tabId={tabId}>
           <NoteButtons />
         </Section>
-        <Section title='Piano Note Buttons' tabId={tabId}>
-          <PianoNoteButtons />
+        <Section title='Note Buttons (naturals only)' tabId={tabId}>
+          <NoteButtons hideAccidentals />
         </Section>
         <Section title='Interval Buttons' tabId={tabId}>
           <IntervalButtons />
@@ -182,8 +181,8 @@ export function ButtonsTab({ tabId }: { tabId: string }) {
         <Section title='Number Buttons (0–11)' tabId={tabId}>
           <NumberButtons start={0} end={11} />
         </Section>
-        <Section title='Key Signature Buttons' tabId={tabId}>
-          <KeysigButtons />
+        <Section title='Split Key Signature Buttons' tabId={tabId}>
+          <SplitKeysigButtons />
         </Section>
         <Section title='Degree Buttons' tabId={tabId}>
           <DegreeButtons />

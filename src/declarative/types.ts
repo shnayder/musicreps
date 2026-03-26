@@ -23,11 +23,8 @@ export type StatsSelector = {
 
 export type NoteButtonsDef = {
   kind: 'note';
-};
-
-export type PianoNoteButtonsDef = {
-  kind: 'piano-note';
-  hideAccidentals?: boolean;
+  /** Grid column count. Defaults to 4. Use 6 for compact layouts (fretboard). */
+  columns?: number;
 };
 
 export type NumberButtonsDef = {
@@ -39,19 +36,18 @@ export type NumberButtonsDef = {
 export type DegreeButtonsDef = { kind: 'degree' };
 export type NumeralButtonsDef = { kind: 'numeral' };
 export type IntervalButtonsDef = { kind: 'interval' };
-export type KeysigButtonsDef = { kind: 'keysig' };
+export type SplitKeysigButtonsDef = { kind: 'split-keysig' };
 export type SplitNoteButtonsDef = { kind: 'split-note' };
 export type NoButtonsDef = { kind: 'none' };
 
 /** Which tap/click buttons to show. Keyboard input goes through a text field. */
 export type ButtonsDef =
   | NoteButtonsDef
-  | PianoNoteButtonsDef
   | NumberButtonsDef
   | DegreeButtonsDef
   | NumeralButtonsDef
   | IntervalButtonsDef
-  | KeysigButtonsDef
+  | SplitKeysigButtonsDef
   | SplitNoteButtonsDef
   | NoButtonsDef;
 
@@ -241,9 +237,9 @@ export type ModeController<Q> = {
   ) => boolean | void;
   /** Called on mode deactivation (e.g., reset keyboard handler). */
   deactivateCleanup?: () => void;
-  /** Keyboard narrowing set for PianoNoteButtons. */
+  /** Keyboard narrowing set for NoteButtons. */
   narrowing?: ReadonlySet<string> | null;
-  /** Dynamic hideAccidentals override for PianoNoteButtons. */
+  /** Dynamic hideAccidentals override for NoteButtons. */
   hideAccidentals?: boolean;
   /** Ref for GenericMode to inject the engine's submitAnswer function.
    *  Required for controllers that submit programmatically (e.g., multi-tap). */

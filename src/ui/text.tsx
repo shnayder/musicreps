@@ -29,7 +29,9 @@ export type TextRole =
   | 'metric-primary'
   | 'metric-info'
   // Status
-  | 'status';
+  | 'status'
+  // Control (small)
+  | 'control-small';
 
 export function Text(
   { role, children, class: extra, as: Tag = 'span', ...rest }: {

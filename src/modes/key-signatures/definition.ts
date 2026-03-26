@@ -54,7 +54,7 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
     q.dir === 'fwd' ? 'Signature (e.g. 2#)' : 'Note name',
   buttons: {
     kind: 'bidirectional',
-    fwd: { kind: 'keysig' },
+    fwd: { kind: 'split-keysig' },
     rev: { kind: 'note' },
   },
 

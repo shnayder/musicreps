@@ -88,7 +88,7 @@ Variants: `.action-secondary` (normal weight, muted color),
 | Sizes | `--text-xs` through `--text-3xl` |
 | Weights | `--font-normal`, `--font-medium`, `--font-semibold`, `--font-bold` |
 | Line heights | `--leading-none`, `--leading-tight`, `--leading-snug`, `--leading-normal` |
-| Families | `--font-body` (system sans), `--font-display` (DM Serif Display, embedded) |
+| Families | `--font-body` (Plus Jakarta Sans, embedded), `--font-display` (Gabarito, embedded) |
 
 Current values are shown in the [design system preview](/preview) under
 **Type Scale** and **Typography — Palette**.

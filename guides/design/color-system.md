@@ -56,14 +56,17 @@ Components with `--_` tokens: **ActionButton** (`.page-action-btn`),
 
 ## Palette Model
 
-Three colors carry all the meaning:
+Three color families carry meaning:
 
-- **Green** — actions, correctness, brand identity
-- **Gold** — attention, recommendations, achievements
-- **Red** — errors only
+- **Green (brand/success)** — brand identity, correct answers, actions,
+  active states. Forest green (#2D4C3B) anchors the palette.
+- **Amber (notice)** — attention, recommendations, suggestions, stale items.
+  Warm gold (#D97706) for banners and highlights.
+- **Red (error)** — wrong answers only. Used sparingly.
 
-Everything else is warm neutral chrome. This simplicity is intentional: during a
-drill, the user should never have to decode what a color means.
+Everything else is warm neutral chrome (hue 45, cream-to-charcoal). During a
+drill, the user should never have to decode what a color means — green is good,
+red is wrong, amber means "look here."
 
 ## Color Design Principles
 
@@ -173,6 +176,42 @@ to white on darker levels via `heatmapNeedsLightText()`.
 | 3 | Getting there (>55%) |
 | 4 | Solid (>75%) |
 | 5 | Automatic (>90%) |
+
+## Progress Bar Color Encoding
+
+Progress bars show per-item speed as a segmented bar. Speed and freshness are
+**separated** — the bar encodes only speed (hue), and freshness is handled at the
+group level through a different visual element.
+
+**Why not encode freshness in the bar?** The original design faded each segment's
+saturation/lightness based on item freshness. This produced two problems:
+
+1. **Mottled appearance** — sorting by speed clusters items by hue, but freshness
+   variation within each hue band creates inconsistent lightness. The bar looks
+   noisy rather than communicating a clear gradient.
+2. **Sad stale bars** — when data goes stale, everything fades toward grey. A bar
+   of once-mastered items becomes an indistinguishable wall of washed-out tones.
+
+**Three-zone encoding:** Each segment gets one of three colors based on its state:
+
+| Zone | Condition | Color | Meaning |
+|------|-----------|-------|---------|
+| Fresh | Seen, freshness >= 0.5 | Speed hue (heatmap scale) | Active mastery |
+| Stale | Seen, freshness < 0.5 | Notice orange (`--color-notice` family) | Needs review |
+| Unseen | No data | `--heatmap-none` (neutral grey) | Not yet practiced |
+
+Segments are sorted: fresh items by speed descending, then stale, then unseen.
+This creates a clean left-to-right gradient where items visually migrate from
+their speed color into the notice-orange "needs review" zone as they decay.
+
+**Notice orange for staleness** ties the progress bar to the recommendation
+system's "review" suggestion cards, which also use the notice color family. The
+user learns one color association: orange = come back to this.
+
+**Freshness at the group level** is shown separately (not per-item) because
+individual item freshness is noisy and highly correlated within a group. A single
+aggregate indicator per group is more useful than 12 faded segments. See the
+progress bar redesign plan for indicator options.
 
 ## Fretboard SVG
 

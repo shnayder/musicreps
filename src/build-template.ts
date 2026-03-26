@@ -7,13 +7,11 @@ import {
   degreeAnswerButtons,
   fretboardSVG,
   intervalAnswerButtons,
-  keysigAnswerButtons,
   modeScreen,
   noteAnswerButtons,
   notesToggleHTML,
   numberButtons,
   numeralAnswerButtons,
-  pianoNoteButtons,
   tabbedIdleHTML,
 } from './html-helpers.ts';
 import { MODE_NAMES } from './mode-catalog.ts';
@@ -53,7 +51,7 @@ ${
           fretMarkers: [3, 5, 7, 9, 12],
         })
       }
-      ${pianoNoteButtons()}`,
+      <div class="answer-grid"></div>`,
     })
   }
 
@@ -76,7 +74,7 @@ ${
           fretMarkers: [3, 5, 7, 10, 12],
         })
       }
-      ${pianoNoteButtons()}`,
+      <div class="answer-grid"></div>`,
     })
   }
 
@@ -89,7 +87,7 @@ ${
         <span class="speed-tap-progress"></span>
       </div>
       ${fretboardSVG()}
-      ${noteAnswerButtons({ hidden: true })}`,
+      ${noteAnswerButtons()}`,
     })
   }
 
@@ -136,8 +134,8 @@ ${
     modeScreen('keySignatures', {
       modeName: MODE_NAMES.keySignatures,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-      quizAreaContent: `${keysigAnswerButtons()}
-      ${noteAnswerButtons({ hidden: true })}`,
+      quizAreaContent: `<div class="split-keysig-buttons"></div>
+      ${noteAnswerButtons()}`,
     })
   }
 
@@ -147,7 +145,7 @@ ${
       modeName: MODE_NAMES.scaleDegrees,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `${noteAnswerButtons()}
-      ${degreeAnswerButtons({ hidden: true })}`,
+      ${degreeAnswerButtons()}`,
     })
   }
 
@@ -157,7 +155,7 @@ ${
       modeName: MODE_NAMES.diatonicChords,
       idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
       quizAreaContent: `${noteAnswerButtons()}
-      ${numeralAnswerButtons({ hidden: true })}`,
+      ${numeralAnswerButtons()}`,
     })
   }
 

@@ -6,7 +6,6 @@ import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
 import type { PracticeSummaryState } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
-import { BaselineInfo } from './speed-check.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
@@ -279,9 +278,8 @@ export function Recommendation(
 ) {
   return (
     <div class='suggestion-card'>
-      <div class='suggestion-card-header'>Suggestion</div>
       <div class='suggestion-card-body'>
-        <Text role='body-secondary' class='suggestion-card-text'>{text}</Text>
+        <div class='suggestion-card-header'>{text}</div>
         {onApply
           ? (
             <button
@@ -304,10 +302,11 @@ export function Recommendation(
 // ---------------------------------------------------------------------------
 
 export function StartButton(
-  { onStart, disabled, validationMessage }: {
+  { onStart, disabled, validationMessage, label }: {
     onStart?: () => void;
     disabled?: boolean;
     validationMessage?: string;
+    label?: string;
   },
 ) {
   const msgId = validationMessage ? 'start-validation-msg' : undefined;
@@ -320,7 +319,7 @@ export function StartButton(
         disabled={disabled}
         aria-describedby={msgId}
       >
-        Practice
+        {label ?? 'Practice'}
       </ActionButton>
       {validationMessage
         ? (
@@ -568,6 +567,46 @@ export function TabIcon({ icon, text }: { icon: string; text: string }) {
 }
 
 // ---------------------------------------------------------------------------
+// BaselineInfo — progress tab inline component (moved from speed-check.tsx
+// to avoid circular dependency)
+// ---------------------------------------------------------------------------
+
+function BaselineInfo(
+  { baseline, onRun }: { baseline: number | null; onRun: () => void },
+) {
+  const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
+  const tag = baseline
+    ? null
+    : <Text role='supporting' class='baseline-default-tag'>(default)</Text>;
+  const btnLabel = baseline ? 'Redo speed check' : 'Run speed check';
+  return (
+    <div class='baseline-info'>
+      <Text role='heading-subsection' as='div' class='baseline-header'>
+        Speed check
+      </Text>
+      <div class='baseline-metric'>
+        <Text role='label'>Response time for note input</Text>
+        <Text role='metric-primary'>
+          {value}
+          {tag && <>{tag}</>}
+        </Text>
+      </div>
+      <Text role='supporting' as='div' class='baseline-explanation'>
+        Timing thresholds are based on this measurement.
+      </Text>
+      <button
+        type='button'
+        tabIndex={0}
+        class='baseline-rerun-btn'
+        onClick={onRun}
+      >
+        {btnLabel}
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // PracticeTab — composes Tabs + PracticeCard
 // ---------------------------------------------------------------------------
 
@@ -587,6 +626,7 @@ export function PracticeTab(
     aboutContent,
     practiceContent,
     progressExtra,
+    startLabel,
   }: {
     summary: PracticeSummaryState;
     onStart: () => void;
@@ -604,6 +644,8 @@ export function PracticeTab(
     practiceContent?: ComponentChildren;
     /** Extra content inserted above baseline in the progress tab. */
     progressExtra?: ComponentChildren;
+    /** Custom label for the start button (e.g. "Practice (32 items)"). */
+    startLabel?: string;
   },
 ) {
   const prefix = useTabsPrefix();
@@ -655,6 +697,7 @@ export function PracticeTab(
               validationMessage={scopeValid === false
                 ? validationMessage
                 : undefined}
+              label={startLabel}
             />
           </div>
         )}

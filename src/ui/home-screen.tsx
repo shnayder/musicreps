@@ -15,7 +15,6 @@ import {
   useHomeProgress,
 } from '../hooks/use-home-progress.ts';
 import type { SkillRecommendation } from '../home-recommendations.ts';
-import { Text } from './text.tsx';
 import {
   CloseButton,
   TabBar,
@@ -248,8 +247,7 @@ function ActiveSkillCard(
     >
       {hasRec && (
         <div class={`skill-rec-banner track-accent-${trackId}`}>
-          <div class='skill-rec-header'>Suggestion</div>
-          <Text role='body-secondary' as='div'>{rec!.detail}</Text>
+          <div class='skill-rec-header'>{rec!.detail}</div>
         </div>
       )}
       <div class='skill-card-body'>

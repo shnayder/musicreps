@@ -34,18 +34,30 @@ const _fallback = new Map<string, string>();
 
 const webStorage: KVStorage = {
   getItem(key: string): string | null {
-    const ls = getLocalStorage();
-    return ls ? ls.getItem(key) : (_fallback.get(key) ?? null);
+    try {
+      const ls = getLocalStorage();
+      return ls ? ls.getItem(key) : (_fallback.get(key) ?? null);
+    } catch {
+      return _fallback.get(key) ?? null;
+    }
   },
   setItem(key: string, value: string): void {
-    const ls = getLocalStorage();
-    if (ls) ls.setItem(key, value);
-    else _fallback.set(key, value);
+    try {
+      const ls = getLocalStorage();
+      if (ls) ls.setItem(key, value);
+      else _fallback.set(key, value);
+    } catch {
+      _fallback.set(key, value);
+    }
   },
   removeItem(key: string): void {
-    const ls = getLocalStorage();
-    if (ls) ls.removeItem(key);
-    else _fallback.delete(key);
+    try {
+      const ls = getLocalStorage();
+      if (ls) ls.removeItem(key);
+      else _fallback.delete(key);
+    } catch {
+      _fallback.delete(key);
+    }
   },
 };
 

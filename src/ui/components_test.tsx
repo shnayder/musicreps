@@ -9,11 +9,10 @@ import { renderToString } from 'preact-render-to-string';
 import {
   DegreeButtons,
   IntervalButtons,
-  KeysigButtons,
   NoteButtons,
   NumberButtons,
   NumeralButtons,
-  PianoNoteButtons,
+  SplitKeysigButtons,
 } from './buttons.tsx';
 import { SequentialSlots } from './sequential-slots.tsx';
 import type { StatsSelector } from './stats.tsx';
@@ -64,9 +63,8 @@ function render(vnode: ReturnType<typeof h>): string {
 describe('NoteButtons', () => {
   it('renders 12 note buttons', () => {
     const html = render(<NoteButtons />);
-    assert.ok(html.includes('answer-buttons-notes'));
-    // 12 notes: C C# D D# E F F# G G# A A# B
-    const count = (html.match(/answer-btn-note/g) || []).length;
+    assert.ok(html.includes('answer-grid'));
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 12);
   });
 
@@ -74,11 +72,6 @@ describe('NoteButtons', () => {
     const html = render(<NoteButtons />);
     assert.ok(html.includes('data-note="C"'));
     assert.ok(html.includes('data-note="F#"'));
-  });
-
-  it('applies hidden class', () => {
-    const html = render(<NoteButtons hidden />);
-    assert.ok(html.includes('answer-group-hidden'));
   });
 
   it('applies btn-feedback-correct to the pressed button on correct answer', () => {
@@ -162,33 +155,25 @@ describe('NoteButtons keyboard feedback', () => {
   });
 });
 
-describe('PianoNoteButtons', () => {
-  it('renders accidentals and naturals rows', () => {
-    const html = render(<PianoNoteButtons />);
-    assert.ok(html.includes('note-row-accidentals'));
-    assert.ok(html.includes('note-row-naturals'));
-  });
-
-  it('renders 5 accidental + 7 natural buttons', () => {
-    const html = render(<PianoNoteButtons />);
-    const accidentals = (html.match(/note-btn accidental/g) || []).length;
-    const allButtons = (html.match(/note-btn/g) || []).length;
-    assert.equal(accidentals, 5);
-    assert.equal(allButtons - accidentals, 7);
+describe('NoteButtons hideAccidentals', () => {
+  it('renders only 7 natural buttons when hideAccidentals is true', () => {
+    const html = render(<NoteButtons hideAccidentals />);
+    const count = (html.match(/answer-btn/g) || []).length;
+    assert.equal(count, 7);
   });
 });
 
 describe('NumberButtons', () => {
   it('renders correct range', () => {
     const html = render(<NumberButtons start={0} end={11} />);
-    assert.ok(html.includes('answer-buttons-numbers'));
-    const count = (html.match(/answer-btn-num/g) || []).length;
+    assert.ok(html.includes('answer-grid'));
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 12);
   });
 
   it('renders custom range', () => {
     const html = render(<NumberButtons start={1} end={5} />);
-    const count = (html.match(/answer-btn-num/g) || []).length;
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 5);
   });
 });
@@ -196,26 +181,27 @@ describe('NumberButtons', () => {
 describe('IntervalButtons', () => {
   it('renders 12 interval buttons', () => {
     const html = render(<IntervalButtons />);
-    assert.ok(html.includes('answer-buttons-intervals'));
-    const count = (html.match(/answer-btn-interval/g) || []).length;
+    assert.ok(html.includes('answer-grid'));
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 12);
   });
 });
 
-describe('KeysigButtons', () => {
-  it('renders 15 key signature buttons', () => {
-    const html = render(<KeysigButtons />);
-    assert.ok(html.includes('answer-buttons-keysig'));
-    const count = (html.match(/answer-btn-keysig/g) || []).length;
-    assert.equal(count, 15);
+describe('SplitKeysigButtons', () => {
+  it('renders 8 number buttons and 2 accidental buttons', () => {
+    const html = render(<SplitKeysigButtons />);
+    assert.ok(html.includes('answer-grid-stack'));
+    // 8 numbers + 2 accidentals = 10 answer-btn total
+    const count = (html.match(/answer-btn/g) || []).length;
+    assert.equal(count, 10);
   });
 });
 
 describe('DegreeButtons', () => {
   it('renders 6 degree buttons (1st excluded)', () => {
     const html = render(<DegreeButtons />);
-    assert.ok(html.includes('answer-buttons-degrees'));
-    const count = (html.match(/answer-btn-degree/g) || []).length;
+    assert.ok(html.includes('answer-grid'));
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 6);
   });
 
@@ -230,8 +216,8 @@ describe('DegreeButtons', () => {
 describe('NumeralButtons', () => {
   it('renders 7 numeral buttons', () => {
     const html = render(<NumeralButtons />);
-    assert.ok(html.includes('answer-buttons-numerals'));
-    const count = (html.match(/answer-btn-numeral/g) || []).length;
+    assert.ok(html.includes('answer-grid'));
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 7);
   });
 
@@ -688,7 +674,7 @@ describe('PracticeCard', () => {
     );
     assert.ok(html.includes('suggestion-card'));
     assert.ok(html.includes('suggestion-card-header'));
-    assert.ok(html.includes('suggestion-card-text'));
+    assert.ok(html.includes('start A string'));
     assert.ok(html.includes('suggestion-card-accept'));
   });
 
@@ -702,7 +688,7 @@ describe('PracticeCard', () => {
     );
     assert.ok(html.includes('practice-scope'));
     assert.ok(html.includes('mock-scope'));
-    assert.ok(html.includes('suggestion-card-text'));
+    assert.ok(html.includes('suggestion-card-header'));
   });
 });
 

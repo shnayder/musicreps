@@ -215,15 +215,18 @@ describe('heatmapNeedsLightText', () => {
 // progressBarColors
 // ---------------------------------------------------------------------------
 
+// Stale bar color fallback (matches stats-display.ts)
+const STALE = 'hsl(32, 80%, 55%)';
+
 describe('progressBarColors', () => {
-  it('sorts by speed descending', () => {
+  it('sorts fresh items by speed descending', () => {
     const selector = {
       getSpeedScore(id: string) {
         return ({ a: 0.2, b: 0.9, c: 0.5 } as Record<string, number>)[id] ??
           null;
       },
       getFreshness(_id: string) {
-        return 1.0;
+        return 1.0; // all fresh
       },
     };
     const colors = progressBarColors(selector, ['a', 'b', 'c']);
@@ -233,35 +236,52 @@ describe('progressBarColors', () => {
     assert.ok(colors[2].startsWith('hsl(40,'), `last: ${colors[2]}`);
   });
 
-  it('sorts by freshness within same speed', () => {
+  it('uses speed-only color at full saturation for fresh items', () => {
     const selector = {
       getSpeedScore(_id: string) {
-        return 0.8; // same speed for all
+        return 0.95;
       },
-      getFreshness(id: string) {
-        return ({ a: 0.3, b: 1.0, c: 0.6 } as Record<string, number>)[id] ??
-          null;
+      getFreshness(_id: string) {
+        return 1.0;
       },
     };
-    const colors = progressBarColors(selector, ['a', 'b', 'c']);
+    const colors = progressBarColors(selector, ['a']);
+    // Should be hsl(125, 48%, 33%) — full saturation, no freshness fading
+    assert.ok(colors[0].startsWith('hsl(125,'), `color: ${colors[0]}`);
+    assert.ok(colors[0].includes('48%'), `full sat: ${colors[0]}`);
+  });
+
+  it('uses stale color for items with freshness < 0.5', () => {
+    const selector = {
+      getSpeedScore(_id: string) {
+        return 0.95; // fast
+      },
+      getFreshness(id: string) {
+        return id === 'fresh' ? 1.0 : 0.3; // stale
+      },
+    };
+    const colors = progressBarColors(selector, ['fresh', 'stale']);
+    assert.equal(colors.length, 2);
+    // Fresh first (speed color), stale second (notice orange)
+    assert.ok(colors[0].startsWith('hsl(125,'), `fresh: ${colors[0]}`);
+    assert.equal(colors[1], STALE);
+  });
+
+  it('sorts: fresh by speed → stale → unseen', () => {
+    const selector = {
+      getSpeedScore(id: string) {
+        return ({ f: 0.5, s: 0.9 } as Record<string, number>)[id] ?? null;
+      },
+      getFreshness(id: string) {
+        return ({ f: 1.0, s: 0.2 } as Record<string, number>)[id] ?? null;
+      },
+    };
+    const colors = progressBarColors(selector, ['u', 'f', 's']);
     assert.equal(colors.length, 3);
-    // Same hue (speed 0.8 → level 3 → hue 80), but different saturation.
-    // b (fresh 1.0) first, c (0.6) second, a (0.3) third — all hue 80.
-    for (const c of colors) {
-      assert.ok(c.startsWith('hsl(80,'), `all should be hue 80: ${c}`);
-    }
-    // Saturation should decrease with freshness (fresher = more vivid).
-    const sats = colors.map((c) => {
-      const m = c.match(/hsl\(\s*80,\s*(\d+)%/);
-      assert.ok(m, `should parse saturation: ${c}`);
-      return parseInt(m![1], 10);
-    });
-    for (let i = 1; i < sats.length; i++) {
-      assert.ok(
-        sats[i] <= sats[i - 1],
-        `sat[${i}]=${sats[i]} > sat[${i - 1}]=${sats[i - 1]}: not monotonic`,
-      );
-    }
+    // f is fresh (speed color), s is stale (orange), u is unseen (grey)
+    assert.ok(colors[0].startsWith('hsl('), `fresh first: ${colors[0]}`);
+    assert.equal(colors[1], STALE);
+    assert.equal(colors[2], NONE);
   });
 
   it('puts unseen items last', () => {
@@ -276,25 +296,22 @@ describe('progressBarColors', () => {
     const colors = progressBarColors(selector, ['unseen', 'seen']);
     assert.equal(colors.length, 2);
     assert.ok(!colors[0].includes('86%'), 'first should not be grey');
-    assert.ok(colors[1].includes('86%'), `last should be grey: ${colors[1]}`);
+    assert.equal(colors[1], NONE);
   });
 
-  it('produces visually monotonic output — no green after yellow', () => {
-    // Simulate items with different speeds, same freshness
+  it('produces visually monotonic hues for fresh items', () => {
     const speeds = [0.95, 0.85, 0.6, 0.4, 0.1];
     const selector = {
       getSpeedScore(id: string) {
         return speeds[parseInt(id)] ?? null;
       },
       getFreshness(_id: string) {
-        return 1.0;
+        return 1.0; // all fresh
       },
     };
     const ids = speeds.map((_, i) => String(i));
     const colors = progressBarColors(selector, ids);
-    // Extract hue from each hsl(...) color
     const hues = colors.map((c) => parseInt(c.match(/hsl\((\d+)/)?.[1] ?? '0'));
-    // Hues should be non-increasing (green 125 → gold 40)
     for (let i = 1; i < hues.length; i++) {
       assert.ok(
         hues[i] <= hues[i - 1],

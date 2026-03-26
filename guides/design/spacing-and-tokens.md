@@ -7,20 +7,61 @@ Non-color, non-typography design tokens. All defined as CSS custom properties in
 values with visual examples. The CSS is the single source of truth — this guide
 describes the system structure and usage principles.
 
-## Spacing Scale
+## Spacing: Three-Layer Architecture
 
-6 tokens (`--space-1` through `--space-6`) consolidating 9+ gap/padding values
-into a consistent scale. Use these tokens for all spacing — don't introduce
-one-off pixel values.
+Parallels the color and typography systems: **palette** (raw values) →
+**semantic** (what the space does) → **component** (where it's used).
 
-| Token | Usage |
+### Layer 1: Palette
+
+7 raw tokens. Change here when the entire scale needs to shift.
+
+| Token | Value |
 |-------|-------|
-| `--space-1` | Toggle gaps |
-| `--space-2` | Button grid gaps, tight padding |
-| `--space-3` | Standard gap, small padding |
-| `--space-4` | Section gaps, nav padding |
-| `--space-5` | Body padding, section spacing |
-| `--space-6` | Large section gaps |
+| `--space-1` | 0.125rem (2px) |
+| `--space-2` | 0.25rem (4px) |
+| `--space-3` | 0.5rem (8px) |
+| `--space-4` | 0.75rem (12px) |
+| `--space-5` | 1rem (16px) |
+| `--space-6` | 1.5rem (24px) |
+| `--space-7` | 2rem (32px) |
+
+### Layer 2: Semantic tokens
+
+6 tokens that name **what the space is doing**. `gap-` = space between things.
+`pad-` = space inside things. Change here to shift breathing room globally.
+
+| Token | Default | Meaning |
+|-------|---------|---------|
+| `--gap-micro` | space-1 | Sub-element coupling: icon+label, toggle rows |
+| `--gap-related` | space-2 | Related siblings: buttons in group, label+value |
+| `--gap-group` | space-4 | Distinct groups within container: heading→content |
+| `--pad-component` | space-5 | Internal padding of controls/cards/wells |
+| `--pad-region` | space-6 | Layout region padding, major section breaks |
+| `--gap-section` | space-7 | Page-level group separators |
+
+**Always reference semantic tokens in component CSS.** Never use `--space-N`
+directly in component rules — those are for Layer 2 definitions only.
+
+### Layer 3: Component tokens
+
+`--size-content-inset` is the one Layer 3 layout token — the horizontal inset
+for `LayoutMain`. It references `--pad-region` by default and flips to
+`--gap-micro` on mobile. Future component tokens follow the same `--_` prefix
+pattern as colors, added only when a component needs compact/comfortable
+variants.
+
+### Adjusting breathing room
+
+To give the whole app more (or less) space, shift the 4 "spacious" semantic
+tokens. Micro and related gaps stay tight intentionally.
+
+```css
+--gap-group:     var(--space-4);  /* ← bump to space-5 for more room */
+--pad-component: var(--space-5);
+--pad-region:    var(--space-6);
+--gap-section:   var(--space-7);
+```
 
 ## Elevation (Shadows)
 

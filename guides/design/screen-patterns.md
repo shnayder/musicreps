@@ -147,13 +147,14 @@ concern is added, it should go inside this card, not beside it. A second card
 would imply a second independent decision. See principle #7 (Visual containers
 match logical groups).
 
-### Two-row chromatic answer layout
+### Unified answer grid
 
-When a mode has 12 answers mapping to the chromatic scale, they use a
-piano-inspired two-row layout: 5 accidentals on top, 7 naturals on bottom. This
-leverages the piano mental model musicians already have. Intervals map 1:1 to
-semitones, so the same spatial layout reinforces the association. Any new mode
-with chromatic answers should use this layout.
+All answer buttons use a single 4-column grid (`.answer-grid`) with square
+buttons (`.answer-btn`). 12-note and 12-interval layouts fill 3 clean rows.
+Partial rows (7 degrees, 7 numerals) wrap naturally with gaps on the right.
+
+Two-step inputs (chord spelling, key signatures) stack multiple grids vertically
+in an `.answer-grid-stack` wrapper.
 
 ### Scrollable vs. fixed main
 
