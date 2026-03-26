@@ -3055,7 +3055,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1080"></div>
+  <div class="home-screen" id="home-screen" data-version="#1083"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7804,6 +7804,14 @@ body.native-app {
   function computeProgressForMode(entry, storage2, motorBaseline, skippedGroups) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
     const selector = createAdaptiveSelector(storage2, cfg);
+    if (entry.groups.length === 1) {
+      if (skippedGroups?.has(0)) {
+        return { groupColors: [progressBarGroupColor(selector, [])] };
+      }
+      return {
+        groupColors: progressBarColors(selector, entry.allItemIds())
+      };
+    }
     const segments = [];
     for (let i3 = 0; i3 < entry.groups.length; i3++) {
       if (skippedGroups?.has(i3)) continue;
