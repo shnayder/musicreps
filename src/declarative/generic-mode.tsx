@@ -89,6 +89,7 @@ import {
 } from '../ui/quiz-ui.tsx';
 import { InteractiveFretboard } from '../ui/interactive-fretboard.tsx';
 import { Text } from '../ui/text.tsx';
+import { MODE_ABOUT_BEFORE_AFTER } from '../mode-catalog.ts';
 import {
   IMPLEMENTED_TASK_TYPES,
   NOTE_BUTTON_CONFIG,
@@ -943,7 +944,13 @@ function IdlePracticeView<Q>(
       onCalibrate={onCalibrate}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
-      aboutContent={<AboutTab beforeAfter={def.beforeAfter} />}
+      aboutContent={
+        <AboutTab
+          id={def.id}
+          description={def.description}
+          beforeAfter={def.beforeAfter}
+        />
+      }
     />
   );
 }
@@ -953,31 +960,35 @@ function IdlePracticeView<Q>(
 // ---------------------------------------------------------------------------
 
 function AboutTab(
-  { beforeAfter }: {
+  { id, description, beforeAfter }: {
+    id: string;
+    description: string;
     beforeAfter: {
       before: string | (() => string);
       after: string | (() => string);
     };
   },
 ) {
-  const before = typeof beforeAfter.before === 'function'
-    ? beforeAfter.before()
-    : beforeAfter.before;
-  const after = typeof beforeAfter.after === 'function'
-    ? beforeAfter.after()
-    : beforeAfter.after;
+  // Prefer expanded about-tab text; fall back to skill-card text.
+  const expanded = MODE_ABOUT_BEFORE_AFTER[id];
+  const src = expanded ?? beforeAfter;
+  const before = typeof src.before === 'function' ? src.before() : src.before;
+  const after = typeof src.after === 'function' ? src.after() : src.after;
 
   return (
     <div class='about-tab'>
+      <Text role='body-secondary' as='p' class='about-description'>
+        {description}
+      </Text>
       <Text role='heading-subsection' as='div'>What you're training</Text>
-      <div class='about-before-after'>
-        <div class='about-ba-row'>
-          <Text role='label' as='span'>Before</Text>
-          <span class='about-ba-text'>{before}</span>
+      <div class='about-columns'>
+        <div class='about-col about-col-before'>
+          <Text role='label' as='div' class='about-col-header'>Before</Text>
+          <p class='about-col-text'>{before}</p>
         </div>
-        <div class='about-ba-row'>
-          <Text role='label' as='span'>After</Text>
-          <span class='about-ba-text about-ba-after'>{after}</span>
+        <div class='about-col about-col-after'>
+          <Text role='label' as='div' class='about-col-header'>After</Text>
+          <p class='about-col-text'>{after}</p>
         </div>
       </div>
     </div>

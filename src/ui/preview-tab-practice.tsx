@@ -28,6 +28,8 @@ import {
   SuggestionLines,
 } from './practice-config.tsx';
 import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
+import { Text } from './text.tsx';
+import { MODE_ABOUT_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../mode-catalog.ts';
 import {
   LayoutFooter,
   LayoutHeader,
@@ -141,11 +143,7 @@ function Phase1Components(
               {
                 id: 'about' as ModeTab,
                 label: <TabIcon icon='about' text='About' />,
-                content: (
-                  <div style='padding:var(--pad-component)'>
-                    About content
-                  </div>
-                ),
+                content: <PreviewAboutTab />,
               },
             ]}
             activeTab={navTab}
@@ -414,6 +412,28 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
 // ---------------------------------------------------------------------------
 
 /** Mode-nav tab bar used in idle-phase footer examples. */
+function PreviewAboutTab() {
+  const ba = MODE_ABOUT_BEFORE_AFTER.keySignatures;
+  return (
+    <div class='about-tab'>
+      <Text role='body-secondary' as='p' class='about-description'>
+        {MODE_DESCRIPTIONS.keySignatures}
+      </Text>
+      <Text role='heading-subsection' as='div'>What you're training</Text>
+      <div class='about-columns'>
+        <div class='about-col about-col-before'>
+          <Text role='label' as='div' class='about-col-header'>Before</Text>
+          <p class='about-col-text'>{ba.before()}</p>
+        </div>
+        <div class='about-col about-col-after'>
+          <Text role='label' as='div' class='about-col-header'>After</Text>
+          <p class='about-col-text'>{ba.after()}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ModeNavFooter() {
   const prefix = useTabsPrefix();
   const tabs: TabDef<ModeTab>[] = [

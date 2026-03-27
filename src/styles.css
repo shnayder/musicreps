@@ -1226,23 +1226,44 @@ body {
 .about-tab {
   padding: var(--gap-group) 0;
 }
-.about-before-after {
-  display: flex;
-  flex-direction: column;
+.about-description {
+  margin: 0 0 var(--pad-component);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+}
+.about-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--gap-group);
   margin-top: var(--gap-group);
 }
-.about-ba-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-micro);
-}
-.about-ba-text {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+.about-col {
+  padding: var(--pad-component);
+  border-radius: var(--radius-md);
   line-height: var(--leading-normal);
 }
-.about-ba-after {
+.about-col-before {
+  background: var(--color-well);
+}
+.about-col-after {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+}
+.about-col-header {
+  margin-bottom: var(--gap-related);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.about-col-text {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+.about-col-after .about-col-text {
+  font-style: normal;
   font-weight: var(--font-semibold);
   color: var(--color-text);
 }
