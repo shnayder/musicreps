@@ -6,7 +6,7 @@ import type { ComponentChildren } from 'preact';
 import { useCallback, useState } from 'preact/hooks';
 import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
 import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
-import { SkillIcon } from './icons.tsx';
+import { RepeatMark, SkillIcon } from './icons.tsx';
 import type { SettingsController } from '../types.ts';
 import { storage } from '../storage.ts';
 import type { AppConfig } from '../app-config.ts';
@@ -294,7 +294,8 @@ function ActiveSkillsList(
   if (starred.size === 0) {
     return (
       <p class='active-skills-empty'>
-        Star skills in the <strong>All Skills</strong> tab to add them here.
+        Pick the skills you want to drill. Star them in{' '}
+        <strong>All Skills</strong> to build your lineup.
       </p>
     );
   }
@@ -408,6 +409,16 @@ function SettingsAboutLegal(
 ) {
   return (
     <div>
+      <div class='brand-lockup'>
+        <div class='brand-lockup-name'>
+          <RepeatMark size={20} />
+          Music Reps
+        </div>
+        <p class='brand-lockup-tagline'>
+          Make music fundamentals automatic so you can focus on making music.
+        </p>
+      </div>
+
       <section class='settings-section'>
         <h2 class='settings-section-title'>About</h2>
         <div class='settings-link-list'>
@@ -655,11 +666,13 @@ function loadInitialTab(): HomeTab {
 function HomeHeader({ isNativeApp }: { isNativeApp?: boolean }) {
   return (
     <div class={`home-header${isNativeApp ? ' sr-only' : ''}`}>
-      <h1 class='home-title'>Music Reps</h1>
+      <h1 class='home-title'>
+        <RepeatMark size={28} class='home-logo-mark' />
+        Music Reps
+      </h1>
       {!isNativeApp && (
         <p class='home-tagline'>
-          Instant recall for music fundamentals. You know the
-          theory&#x2009;&mdash;&#x2009;now make it automatic.
+          Make music fundamentals automatic so you can focus on playing.
         </p>
       )}
       <p class='all-skills-hint'>

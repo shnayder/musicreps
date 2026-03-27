@@ -556,12 +556,19 @@ body {
   background: var(--color-chrome);
 }
 .home-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
   font-family: var(--type-display-brand-family);
   font-size: var(--type-display-brand-size);
   font-weight: var(--type-display-brand-weight);
   line-height: var(--type-display-brand-leading);
   color: var(--type-display-brand-color);
   margin: 0;
+}
+.home-logo-mark {
+  color: var(--color-brand);
+  flex-shrink: 0;
 }
 .home-title::after {
   display: none;
@@ -1106,6 +1113,27 @@ body {
 .settings-meta {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+}
+/* --- Brand lockup (Settings > About) --- */
+.brand-lockup {
+  text-align: center;
+  padding: var(--pad-region) 0;
+}
+.brand-lockup-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-family: var(--type-display-brand-family);
+  font-size: var(--text-lg);
+  font-weight: var(--type-display-brand-weight);
+  color: var(--color-brand);
+}
+.brand-lockup-tagline {
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--color-text-muted);
+  margin: var(--gap-related) 0 0;
 }
 .settings-field {
   display: flex;
@@ -2042,6 +2070,11 @@ button {
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--type-body-secondary-color);
+}
+.round-complete-mark {
+  margin-top: var(--pad-component);
+  color: var(--color-text-light);
+  opacity: 0.5;
 }
 .round-stat-line {
   font-size: var(--type-status-size);

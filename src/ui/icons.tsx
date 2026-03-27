@@ -129,6 +129,33 @@ function SpellCheck() {
 }
 
 // ---------------------------------------------------------------------------
+// RepeatMark — musical repeat sign (𝄇) used as brand logo mark.
+// Thick barline + thin barline + two dots. Inherits color via currentColor.
+// ---------------------------------------------------------------------------
+
+export function RepeatMark(
+  { size = 24, class: cls }: { size?: number; class?: string },
+) {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      width={String(size)}
+      height={String(size)}
+      viewBox='0 0 24 24'
+      fill='currentColor'
+      stroke='none'
+      aria-hidden='true'
+      class={cls}
+    >
+      <rect x='2' y='2' width='4' height='20' rx='1' />
+      <rect x='9' y='2' width='2' height='20' />
+      <circle cx='17' cy='8.5' r='2.5' />
+      <circle cx='17' cy='15.5' r='2.5' />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Icon mapping by mode ID
 // ---------------------------------------------------------------------------
 

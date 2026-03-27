@@ -11,17 +11,17 @@ import { displayNote } from './music-data.ts';
 // ---------------------------------------------------------------------------
 
 export const MODE_DESCRIPTIONS: Record<string, string> = {
-  fretboard: 'Stop hunting for notes on the fretboard',
-  ukulele: 'Stop hunting for notes on the fretboard',
-  speedTap: 'Know all positions of a note instantly',
-  noteSemitones: 'The number system behind the chromatic scale',
-  intervalSemitones: 'Know the size of every interval in semitones',
+  fretboard: 'Name any fret instantly \u2014 no counting',
+  ukulele: 'Name any fret instantly \u2014 no counting',
+  speedTap: 'Find every position of a note, automatic',
+  noteSemitones: 'Notes to numbers and back, instant',
+  intervalSemitones: 'Interval sizes in semitones, automatic',
   semitoneMath: 'Transpose by semitones without counting',
   intervalMath: 'Transpose by interval without counting',
-  keySignatures: 'See a key, know its sharps and flats instantly',
-  scaleDegrees: 'Connect notes to their function in a key',
-  diatonicChords: 'Know which chords belong in any key',
-  chordSpelling: 'Know the notes in any chord',
+  keySignatures: 'Sharps and flats for any key, instant recall',
+  scaleDegrees: 'Degrees and notes in any key, automatic',
+  diatonicChords: 'Chords in any key, instant recall',
+  chordSpelling: 'Spell any chord without thinking',
 };
 
 // ---------------------------------------------------------------------------

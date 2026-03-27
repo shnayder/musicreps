@@ -5,7 +5,7 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
 import type { PracticeSummaryState } from '../types.ts';
-import { SkillIcon } from './icons.tsx';
+import { RepeatMark, SkillIcon } from './icons.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
@@ -483,6 +483,9 @@ export function RoundCompleteInfo(
           </div>
         )
         : null}
+      <div class='round-complete-mark' aria-hidden='true'>
+        <RepeatMark size={16} />
+      </div>
     </div>
   );
 }
