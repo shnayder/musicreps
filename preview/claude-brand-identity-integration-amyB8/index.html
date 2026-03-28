@@ -500,8 +500,8 @@ body {
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
   padding-right: max(var(--size-content-inset), env(safe-area-inset-right, 0));
 }
-/* Brand watermark — end-repeat mark centered behind main content area */
-.mode-screen .layout-main::before {
+/* Brand watermark — end-repeat mark, idle (practice setup) phase only */
+.mode-screen.phase-idle .layout-main::before {
   content: '';
   position: absolute;
   left: 50%;
@@ -512,7 +512,7 @@ body {
   opacity: 0.04;
   pointer-events: none;
   z-index: 0;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232d4c3b'%3E%3Ccircle cx='7' cy='8.5' r='2.5'/%3E%3Ccircle cx='7' cy='15.5' r='2.5'/%3E%3Crect x='13' y='2' width='2' height='20'/%3E%3Crect x='18' y='2' width='4' height='20' rx='1'/%3E%3C/svg%3E")
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232d4c3b'%3E%3Ccircle cx='7' cy='8.5' r='2.5'/%3E%3Ccircle cx='7' cy='15.5' r='2.5'/%3E%3Crect x='13' y='2' width='2' height='20'/%3E%3Crect x='18' y='2' width='4' height='20'/%3E%3C/svg%3E")
     no-repeat center / contain;
 }
 .layout-main-scroll {
@@ -1303,6 +1303,8 @@ body {
    5. PRACTICE CARD
    ========================================================================== */
 .practice-card {
+  position: relative;
+  z-index: 1;
   margin-bottom: var(--pad-component);
   padding: var(--pad-component) var(--pad-region);
   background: var(--color-card);
@@ -3084,7 +3086,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="c5144c brand-identity-integration-amyB8"></div>
+  <div class="home-screen" id="home-screen" data-version="a33c2e brand-identity-integration-amyB8"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6611,7 +6613,7 @@ body.native-app {
           /* @__PURE__ */ u3("circle", { cx: "7", cy: "8.5", r: "2.5" }),
           /* @__PURE__ */ u3("circle", { cx: "7", cy: "15.5", r: "2.5" }),
           /* @__PURE__ */ u3("rect", { x: "13", y: "2", width: "2", height: "20" }),
-          /* @__PURE__ */ u3("rect", { x: "18", y: "2", width: "4", height: "20", rx: "1" })
+          /* @__PURE__ */ u3("rect", { x: "18", y: "2", width: "4", height: "20" })
         ]
       }
     );
