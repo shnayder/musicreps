@@ -618,13 +618,15 @@ body {
   font-size: var(--type-status-size);
   font-weight: var(--type-status-weight);
   line-height: var(--type-status-leading);
-  color: var(--color-text-light);
+  color: var(--type-status-color);
 }
 .home-header.native .home-stats-bar {
   margin-top: 0;
 }
 .home-stat-value {
+  font-size: var(--type-metric-effort-size);
   font-weight: var(--type-metric-effort-weight);
+  line-height: var(--type-metric-effort-leading);
   color: var(--type-metric-effort-color);
 }
 .home-stat-sep {
