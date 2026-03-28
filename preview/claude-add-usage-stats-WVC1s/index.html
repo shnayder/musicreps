@@ -3147,7 +3147,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="b2beaa add-usage-stats-WVC1s"></div>
+  <div class="home-screen" id="home-screen" data-version="60a546 add-usage-stats-WVC1s"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6234,6 +6234,7 @@ body.native-app {
     if (existing) {
       storage2.saveStats(itemId, {
         ...existing,
+        sampleCount: existing.sampleCount + 1,
         lastSeen: now,
         stability: computeStabilityAfterWrong(existing.stability ?? null, cfg)
       });
@@ -6241,7 +6242,7 @@ body.native-app {
       storage2.saveStats(itemId, {
         recentTimes: [],
         ewma: itemCfg.maxResponseTime,
-        sampleCount: 0,
+        sampleCount: 1,
         lastSeen: now,
         stability: cfg.initialStability,
         lastCorrectAt: null
@@ -12354,6 +12355,7 @@ body.native-app {
     const activeButtons = resolveButtons(def, dir);
     const isIdle = engine.state.phase === "idle" && !sc.speedCheck;
     const progressColors = useProgressColors(def, learner);
+    const phase = engine.state.phase;
     const totalReps = T2(() => {
       let sum = 0;
       for (const id of def.allItems) {
@@ -12361,7 +12363,7 @@ body.native-app {
         if (s3) sum += s3.sampleCount;
       }
       return sum;
-    }, [def.allItems, learner.selector]);
+    }, [def.allItems, learner.selector, phase]);
     if (isIdle) {
       return /* @__PURE__ */ u3(ScreenLayout, { children: [
         /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
