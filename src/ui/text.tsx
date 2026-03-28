@@ -28,6 +28,7 @@ export type TextRole =
   | 'metric-hero'
   | 'metric-primary'
   | 'metric-info'
+  | 'metric-effort'
   // Status
   | 'status'
   // Control (small)

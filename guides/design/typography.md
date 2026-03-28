@@ -36,7 +36,7 @@ Every role maps to one of 5 size tiers. The `html` base is 17px
 |------|-------|-------|
 | Display | `--text-2xl` | display-brand, quiz-prompt |
 | Large | `--text-lg` | heading-page, quiz-response, quiz-feedback |
-| Standard | `--text-base` | body, heading-section, heading-subsection, label, control, quiz-instruction, answer, action, metric-primary, metric-info |
+| Standard | `--text-base` | body, heading-section, heading-subsection, label, control, quiz-instruction, answer, action, metric-primary, metric-info, metric-effort |
 | Small | `--text-sm` | body-secondary, status |
 | Tiny | `--text-xs` | supporting, label-tag |
 
@@ -60,7 +60,7 @@ same intensity.
 | Hero | `display-brand`, `metric-hero` | Largest, highest emphasis |
 | Primary | `heading-page`, `quiz-prompt`, `quiz-feedback` | Screen-level focal points |
 | Section | `heading-section`, `heading-subsection`, `metric-primary` | Organizes content |
-| Content | `body`, `body-secondary`, `label`, `control`, `quiz-instruction`, `metric-info`, `status`, `answer`, `action` | Same visual weight, differentiated by weight/color |
+| Content | `body`, `body-secondary`, `label`, `control`, `quiz-instruction`, `metric-info`, `metric-effort`, `status`, `answer`, `action` | Same visual weight, differentiated by weight/color |
 | Tertiary | `supporting`, `label-tag` | Smallest, lowest emphasis |
 
 When adding or adjusting a role, check that it sits at the right tier.

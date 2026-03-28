@@ -377,6 +377,11 @@
   --type-metric-info-leading: var(--leading-none);
   --type-metric-info-color: var(--color-text);
 
+  --type-metric-effort-size: var(--text-base);
+  --type-metric-effort-weight: var(--font-semibold);
+  --type-metric-effort-leading: var(--leading-none);
+  --type-metric-effort-color: var(--color-tertiary);
+
   /* -- Status: state communication -- */
   --type-status-size: var(--text-sm);
   --type-status-weight: var(--font-normal);
@@ -619,8 +624,8 @@ body {
   margin-top: 0;
 }
 .home-stat-value {
-  font-weight: var(--font-semibold);
-  color: var(--color-text);
+  font-weight: var(--type-metric-effort-weight);
+  color: var(--type-metric-effort-color);
 }
 .home-stat-sep {
   color: var(--color-text-muted);
@@ -1475,17 +1480,16 @@ body {
   display: flex;
   align-items: center;
   gap: 0.3em;
-  font-family: var(--font-body);
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--font-semibold);
-  line-height: var(--type-metric-info-leading);
-  color: var(--color-tertiary);
+  font-size: var(--type-metric-effort-size);
+  font-weight: var(--type-metric-effort-weight);
+  line-height: var(--type-metric-effort-leading);
+  color: var(--type-metric-effort-color);
   white-space: nowrap;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
 .skill-header-reps-icon {
-  color: var(--color-tertiary);
+  color: var(--type-metric-effort-color);
   flex-shrink: 0;
 }
 .skill-header-progress {
@@ -2009,17 +2013,16 @@ button {
   display: flex;
   align-items: center;
   gap: 0.3em;
-  font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--font-semibold);
-  line-height: var(--type-metric-info-leading);
-  color: var(--color-tertiary);
+  font-size: var(--type-metric-effort-size);
+  font-weight: var(--type-metric-effort-weight);
+  line-height: var(--type-metric-effort-leading);
+  color: var(--type-metric-effort-color);
   white-space: nowrap;
   flex-shrink: 0;
 }
 .quiz-info-count-icon {
-  color: var(--color-tertiary);
+  color: var(--type-metric-effort-color);
   flex-shrink: 0;
 }
 
@@ -2537,6 +2540,13 @@ button {
   font-weight: var(--type-metric-info-weight);
   line-height: var(--type-metric-info-leading);
   color: var(--type-metric-info-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-effort {
+  font-size: var(--type-metric-effort-size);
+  font-weight: var(--type-metric-effort-weight);
+  line-height: var(--type-metric-effort-leading);
+  color: var(--type-metric-effort-color);
   font-variant-numeric: tabular-nums;
 }
 
