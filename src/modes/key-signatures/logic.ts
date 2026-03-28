@@ -15,13 +15,18 @@ import {
 // ---------------------------------------------------------------------------
 
 /** Key groups for scope selection, ordered by difficulty. */
-// Labels use: \u266D = ♭ (flat), \u266F = ♯ (sharp)
+// Labels use: \u266D = ♭ (flat), \u266F = ♯ (sharp), \u2013 = – (en dash)
 export const KEY_GROUPS = [
-  { keys: ['C', 'G', 'F'], label: 'C G F' },
-  { keys: ['D', 'Bb'], label: 'D B\u266D' },
-  { keys: ['A', 'Eb'], label: 'A E\u266D' },
-  { keys: ['E', 'Ab'], label: 'E A\u266D' },
-  { keys: ['B', 'Db', 'F#'], label: 'B D\u266D F\u266F' },
+  {
+    keys: ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb'],
+    label: 'Major 0\u20133 \u266F/\u266D',
+    longLabel: 'Major keys (0\u20133 \u266F/\u266D)',
+  },
+  {
+    keys: ['E', 'Ab', 'B', 'Db', 'F#'],
+    label: 'Major 4+ \u266F/\u266D',
+    longLabel: 'Major keys (4+ \u266F/\u266D)',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -46,28 +51,36 @@ const MINOR_ROOTS = MAJOR_KEYS.map((k) =>
 /** Build a minor-key group from a filtered set of major keys. */
 function minorKeyGroup(
   majorKeys: MajorKey[],
-): { keys: string[]; label: string } {
+  label: string,
+  longLabel: string,
+): { keys: string[]; label: string; longLabel: string } {
   const keys = majorKeys.map(
     (k) => getScaleDegreeNote(k.root, RELATIVE_MINOR_DEGREE) + 'm',
   );
-  const label = keys.map((k) => displayNote(k.slice(0, -1)) + 'm').join(' ');
-  return { keys, label };
+  return { keys, label, longLabel };
 }
 
 /** Minor key groups for scope selection, ordered by difficulty. */
-// Group 5: 0–3 accidentals, Group 6: 4+ accidentals
 export const MINOR_KEY_GROUPS = [
-  minorKeyGroup(MAJOR_KEYS.filter((k) => k.accidentalCount <= 3)),
-  minorKeyGroup(MAJOR_KEYS.filter((k) => k.accidentalCount > 3)),
+  minorKeyGroup(
+    MAJOR_KEYS.filter((k) => k.accidentalCount <= 3),
+    'Minor 0\u20133 \u266F/\u266D',
+    'Minor keys (0\u20133 \u266F/\u266D)',
+  ),
+  minorKeyGroup(
+    MAJOR_KEYS.filter((k) => k.accidentalCount > 3),
+    'Minor 4+ \u266F/\u266D',
+    'Minor keys (4+ \u266F/\u266D)',
+  ),
 ];
 
-/** All key groups: 5 major + 2 minor. */
+/** All key groups: 2 major + 2 minor. */
 export const ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
 
 /**
  * Get all item IDs belonging to a key group.
  *
- * @example getItemIdsForGroup(0) → ["C:fwd","C:rev","G:fwd","G:rev","F:fwd","F:rev"]
+ * @example getItemIdsForGroup(0) → ["C:fwd","C:rev","G:fwd",...,"Eb:fwd","Eb:rev"]
  */
 export function getItemIdsForGroup(groupIndex: number): string[] {
   const roots = ALL_KEY_GROUPS[groupIndex].keys;

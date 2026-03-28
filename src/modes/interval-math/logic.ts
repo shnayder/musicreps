@@ -25,11 +25,19 @@ export const MATH_INTERVALS = INTERVALS.filter((i) =>
 
 /** Distance groups using interval names instead of semitone counts. */
 export const DISTANCE_GROUPS = [
-  { distances: [1, 2], label: 'm2 M2' },
-  { distances: [3, 4], label: 'm3 M3' },
-  { distances: [5, 6], label: 'P4 TT' },
-  { distances: [7, 8], label: 'P5 m6' },
-  { distances: [9, 10, 11], label: 'M6 m7 M7' },
+  { distances: [1, 2], label: 'm2 M2', longLabel: 'Seconds (m2, M2)' },
+  { distances: [3, 4], label: 'm3 M3', longLabel: 'Thirds (m3, M3)' },
+  { distances: [5, 6], label: 'P4 TT', longLabel: 'Fourth & tritone (P4, TT)' },
+  {
+    distances: [7, 8],
+    label: 'P5 m6',
+    longLabel: 'Fifth & minor 6th (P5, m6)',
+  },
+  {
+    distances: [9, 10, 11],
+    label: 'M6 m7 M7',
+    longLabel: 'Sixths & sevenths (M6, m7, M7)',
+  },
 ];
 
 /**

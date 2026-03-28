@@ -138,8 +138,8 @@ const ACCIDENTAL_NOTES = NOTES
   .map((n) => n.name);
 
 export const NOTE_GROUPS = [
-  { label: 'Natural notes' },
-  { label: 'Sharps & flats' },
+  { label: 'Naturals', longLabel: 'Natural notes' },
+  { label: '\u266F/\u266D', longLabel: 'Sharps & flats' },
 ];
 
 export const ALL_GROUP_INDICES = [0, 1];

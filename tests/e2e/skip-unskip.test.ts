@@ -333,12 +333,25 @@ describe('skip/unskip — guitar fretboard real data (E2E)', () => {
     const recText = await page.textContent(`${MODE} .suggestion-lines`);
     assert.ok(recText, 'should have recommendation text');
 
-    // With this data, recommendation includes D G ♯♭
-    const target = 'D G \u266F\u266D'; // D G ♯♭
-    assert.ok(
-      recText.includes(target),
-      `recommendation should include ${target}: "${recText}"`,
+    // Switch to Progress tab to find a skip button whose label appears in
+    // the recommendation text (labels changed with regrouping).
+    await page.click(`${MODE} [data-tab="progress"]`);
+    const skipButtons = page.locator(
+      `${MODE} [aria-label^="Skip "]`,
     );
+    const count = await skipButtons.count();
+    let target = '';
+    for (let i = 0; i < count; i++) {
+      const label = (await skipButtons.nth(i).getAttribute('aria-label'))
+        ?.replace('Skip ', '') ?? '';
+      if (label && recText.includes(label)) {
+        target = label;
+        break;
+      }
+    }
+    assert.ok(target, `should find a group in recommendation: "${recText}"`);
+    // Switch back to Practice tab before running skip/unskip cycle
+    await page.click(`${MODE} [data-tab="practice"]`);
 
     await runSkipUnskipTests(page, MODE, target);
   });

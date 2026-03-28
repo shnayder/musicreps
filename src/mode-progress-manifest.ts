@@ -48,7 +48,11 @@ import { ALL_ITEMS as SPEED_TAP_ITEMS } from './modes/speed-tap/logic.ts';
 export type ModeProgressEntry = {
   modeId: string;
   namespace: string;
-  groups: Array<{ label: string; getItemIds: () => string[] }>;
+  groups: Array<{
+    label: string;
+    longLabel?: string;
+    getItemIds: () => string[];
+  }>;
   allItemIds: () => string[];
 };
 
@@ -57,11 +61,12 @@ export type ModeProgressEntry = {
 // ---------------------------------------------------------------------------
 
 function buildGroupEntries(
-  groups: { label: string }[],
+  groups: { label: string; longLabel?: string }[],
   getIds: (i: number) => string[],
-): Array<{ label: string; getItemIds: () => string[] }> {
+): Array<{ label: string; longLabel?: string; getItemIds: () => string[] }> {
   return groups.map((g, i) => ({
     label: g.label,
+    longLabel: g.longLabel,
     getItemIds: () => getIds(i),
   }));
 }
@@ -75,6 +80,7 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
     namespace: 'fretboard',
     groups: guitarGroups.map((g, i) => ({
       label: g.label(),
+      longLabel: g.longLabel,
       getItemIds: () => fretboardGroup(GUITAR, i),
     })),
     allItemIds: () => fretboardAllItems(GUITAR),
@@ -84,6 +90,7 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
     namespace: 'ukulele',
     groups: ukuleleGroups.map((g, i) => ({
       label: g.label(),
+      longLabel: g.longLabel,
       getItemIds: () => fretboardGroup(UKULELE, i),
     })),
     allItemIds: () => fretboardAllItems(UKULELE),

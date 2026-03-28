@@ -19,11 +19,31 @@ import { buildMathIds, parseMathId } from '../../mode-utils.ts';
 /** Distance groups for scope selection (pairs of semitone counts). */
 // Labels use: \u00B1 = ± (plus-minus), \u2013 = – (en dash)
 export const DISTANCE_GROUPS = [
-  { distances: [1, 2], label: '\u00B11\u20132' },
-  { distances: [3, 4], label: '\u00B13\u20134' },
-  { distances: [5, 6], label: '\u00B15\u20136' },
-  { distances: [7, 8], label: '\u00B17\u20138' },
-  { distances: [9, 10, 11], label: '\u00B19\u201311' },
+  {
+    distances: [1, 2],
+    label: '\u00B11\u20132',
+    longLabel: '1\u20132 semitones apart',
+  },
+  {
+    distances: [3, 4],
+    label: '\u00B13\u20134',
+    longLabel: '3\u20134 semitones apart',
+  },
+  {
+    distances: [5, 6],
+    label: '\u00B15\u20136',
+    longLabel: '5\u20136 semitones apart',
+  },
+  {
+    distances: [7, 8],
+    label: '\u00B17\u20138',
+    longLabel: '7\u20138 semitones apart',
+  },
+  {
+    distances: [9, 10, 11],
+    label: '\u00B19\u201311',
+    longLabel: '9\u201311 semitones apart',
+  },
 ];
 
 /**
