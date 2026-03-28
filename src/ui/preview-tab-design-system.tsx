@@ -13,6 +13,7 @@ import {
   TrackPill,
   TrackSection,
 } from './home-screen.tsx';
+import { Pill } from './pill.tsx';
 import { cssVar, PreviewGrid, Section } from './preview-shared.tsx';
 
 // ---------------------------------------------------------------------------
@@ -47,12 +48,26 @@ function SkillCardHeaderSection({ tabId }: { tabId: string }) {
             trackLabel='Core'
           />
         </Section>
-        <Section title='TrackPill variants' tabId={tabId}>
+        <Section title='Pill variants' tabId={tabId}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <TrackPill trackId='core' label='Core' />
-            <TrackPill trackId='reading' label='Reading' />
-            <TrackPill trackId='guitar' label='Guitar' />
-            <TrackPill trackId='ukulele' label='Ukulele' />
+            <div>
+              <TrackPill trackId='core' label='Core' />
+            </div>
+            <div>
+              <TrackPill trackId='reading' label='Reading' />
+            </div>
+            <div>
+              <TrackPill trackId='guitar' label='Guitar' />
+            </div>
+            <div>
+              <TrackPill trackId='ukulele' label='Ukulele' />
+            </div>
+            <div>
+              <Pill variant='notice'>Review soon</Pill>
+            </div>
+            <div>
+              <Pill variant='notice'>Review in 5d</Pill>
+            </div>
           </div>
         </Section>
       </PreviewGrid>

@@ -7,6 +7,7 @@ import { useCallback, useState } from 'preact/hooks';
 import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
 import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
 import { SkillIcon } from './icons.tsx';
+import { Pill } from './pill.tsx';
 import type { SettingsController } from '../types.ts';
 import { storage } from '../storage.ts';
 import type { AppConfig } from '../app-config.ts';
@@ -102,7 +103,7 @@ export function cleanupLegacyKeys(): void {
 export function TrackPill(
   { trackId, label }: { trackId: string; label: string },
 ) {
-  return <span class={`active-skill-track-pill pill-${trackId}`}>{label}</span>;
+  return <Pill variant={trackId}>{label}</Pill>;
 }
 
 // ---------------------------------------------------------------------------
