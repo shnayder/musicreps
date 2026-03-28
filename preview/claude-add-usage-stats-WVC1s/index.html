@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Music Reps</title>
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -549,7 +549,7 @@ body {
   justify-content: center;
   min-height: 0;
   text-align: center;
-  padding: var(--gap-group);
+  padding: var(--gap-group) var(--gap-group) 0;
 }
 /* Instruction + prompt text must not shrink when fretboard/content is present */
 .quiz-stage-prompt > .quiz-instruction,
@@ -1284,10 +1284,6 @@ body {
     var(--gap-group);
   background: var(--color-chrome);
 }
-.quiz-session-header-content {
-  flex: 1;
-  min-width: 0;
-}
 
 /* Element-level visibility (replaces inline style="display: none;") */
 .mastery-message {
@@ -2011,12 +2007,6 @@ button {
 /* ==========================================================================
    8. QUIZ SESSION
    ========================================================================== */
-.quiz-countdown-row {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-related);
-  margin-bottom: var(--gap-related);
-}
 .quiz-countdown-bar {
   flex: 1;
   height: 6px;
@@ -2041,22 +2031,20 @@ button {
   white-space: nowrap;
 }
 
-/* --- Quiz session info — single compact row --- */
-.quiz-session-info {
+.quiz-info-count {
   display: flex;
   align-items: center;
-  gap: var(--gap-group);
+  gap: 0.25em;
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
   line-height: var(--type-metric-info-leading);
   color: var(--type-metric-info-color);
-  padding-bottom: var(--gap-related);
+  white-space: nowrap;
 }
-.quiz-info-context {
-  flex: 1;
-}
-.quiz-info-count {
-  font-variant-numeric: tabular-nums;
+.quiz-info-count-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
 }
 
 /* --- Progress bar (build-time template only) --- */
@@ -2204,10 +2192,10 @@ button {
   gap: var(--gap-related);
   width: 100%;
   max-width: var(--size-answer-grid);
-  margin: var(--gap-group) auto;
+  margin: var(--gap-related) auto;
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg);
-  padding: var(--pad-region);
+  padding: var(--gap-group);
 }
 .answer-grid-6 {
   grid-template-columns: repeat(6, 1fr);
@@ -2222,10 +2210,10 @@ button {
   gap: var(--gap-related);
   width: 100%;
   max-width: var(--size-answer-grid);
-  margin: var(--gap-group) auto;
+  margin: var(--gap-related) auto;
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg);
-  padding: var(--pad-region);
+  padding: var(--gap-group);
 }
 .answer-grid-stack > .answer-grid {
   margin: 0;
@@ -3147,7 +3135,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="67a63c add-usage-stats-WVC1s"></div>
+  <div class="home-screen" id="home-screen" data-version="0f3b8e add-usage-stats-WVC1s"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -3307,17 +3295,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -3593,17 +3578,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -3772,17 +3754,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -3964,17 +3943,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -4040,17 +4016,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -4128,17 +4101,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -4215,17 +4185,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -4302,17 +4269,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -4390,17 +4354,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -4478,17 +4439,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -4566,17 +4524,14 @@ body.native-app {
       <div class="baseline-info"></div>
     </div>
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">×</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>
@@ -8340,7 +8295,6 @@ body.native-app {
   function QuizSession({
     timeLeft,
     timerPct,
-    context,
     count,
     isWarning,
     isLastQuestion,
@@ -8354,38 +8308,25 @@ body.native-app {
           onClick: onClose
         }
       ),
-      /* @__PURE__ */ u3("div", { class: "quiz-session-header-content", children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-countdown-row", children: [
-          /* @__PURE__ */ u3(
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
+          children: /* @__PURE__ */ u3(
             "div",
             {
-              class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
-              children: /* @__PURE__ */ u3(
-                "div",
-                {
-                  class: "quiz-countdown-fill",
-                  style: { width: `${timerPct ?? 100}%` }
-                }
-              )
+              class: "quiz-countdown-fill",
+              style: { width: `${timerPct ?? 100}%` }
             }
-          ),
-          /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" })
-        ] }),
-        /* @__PURE__ */ u3(
-          SessionInfo,
-          {
-            context,
-            count
-          }
-        )
+          )
+        }
+      ),
+      /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" }),
+      count && /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: [
+        count,
+        /* @__PURE__ */ u3(RepeatMark, { size: 13, class: "quiz-info-count-icon" })
       ] })
     ] }) });
-  }
-  function SessionInfo({ context, count }) {
-    return /* @__PURE__ */ u3("div", { class: "quiz-session-info", children: [
-      /* @__PURE__ */ u3("span", { class: "quiz-info-context", children: context || "" }),
-      /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: count || "" })
-    ] });
   }
   function RoundCompleteInfo({ context, heading, count, correct }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
@@ -10292,7 +10233,8 @@ body.native-app {
     ]);
     const answerCount = engine.state.roundAnswered;
     const countText = answerCount + (answerCount === 1 ? " answer" : " answers");
-    return { roundContext, roundCorrect, countText };
+    const countLabel = String(answerCount);
+    return { roundContext, roundCorrect, countText, countLabel };
   }
 
   // src/hooks/use-practice-summary.ts
@@ -11903,7 +11845,6 @@ body.native-app {
     ctrl,
     currentQ,
     round,
-    practicingLabel,
     handleSubmit,
     seq,
     multiTapInput,
@@ -11977,8 +11918,7 @@ body.native-app {
         {
           timeLeft: engine.timerText,
           timerPct: engine.timerPct,
-          context: practicingLabel,
-          count: round.countText,
+          count: round.countLabel,
           isWarning: engine.timerWarning,
           isLastQuestion: engine.timerLastQuestion,
           onClose: engine.stop
@@ -12263,7 +12203,7 @@ body.native-app {
       engine.submitAnswer(input);
       return true;
     }, [engine.submitAnswer, def]);
-    return { currentQ, round, ps, practicingLabel, handleSubmit };
+    return { currentQ, round, ps, handleSubmit };
   }
   function buildSeqProps(seqInput) {
     return {
@@ -12338,7 +12278,6 @@ body.native-app {
     sc,
     currentQ,
     round,
-    practicingLabel,
     handleSubmit,
     seqInput,
     multiTapInput,
@@ -12409,7 +12348,6 @@ body.native-app {
         ctrl,
         currentQ,
         round,
-        practicingLabel,
         handleSubmit,
         seq: buildSeqProps(seqInput),
         multiTapInput,
@@ -12450,7 +12388,7 @@ body.native-app {
       container
     );
     const sc = useSpeedCheckOverlay(engine, def, ctrl);
-    const { currentQ, round, ps, practicingLabel, handleSubmit } = useGenericDerivedState(
+    const { currentQ, round, ps, handleSubmit } = useGenericDerivedState(
       def,
       engine,
       learner,
@@ -12476,7 +12414,6 @@ body.native-app {
         sc,
         currentQ,
         round,
-        practicingLabel,
         handleSubmit,
         seqInput,
         multiTapInput,

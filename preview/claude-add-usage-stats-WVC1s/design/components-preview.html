@@ -543,7 +543,7 @@ body {
   justify-content: center;
   min-height: 0;
   text-align: center;
-  padding: var(--gap-group);
+  padding: var(--gap-group) var(--gap-group) 0;
 }
 /* Instruction + prompt text must not shrink when fretboard/content is present */
 .quiz-stage-prompt > .quiz-instruction,
@@ -1278,10 +1278,6 @@ body {
     var(--gap-group);
   background: var(--color-chrome);
 }
-.quiz-session-header-content {
-  flex: 1;
-  min-width: 0;
-}
 
 /* Element-level visibility (replaces inline style="display: none;") */
 .mastery-message {
@@ -2005,12 +2001,6 @@ button {
 /* ==========================================================================
    8. QUIZ SESSION
    ========================================================================== */
-.quiz-countdown-row {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-related);
-  margin-bottom: var(--gap-related);
-}
 .quiz-countdown-bar {
   flex: 1;
   height: 6px;
@@ -2035,22 +2025,20 @@ button {
   white-space: nowrap;
 }
 
-/* --- Quiz session info — single compact row --- */
-.quiz-session-info {
+.quiz-info-count {
   display: flex;
   align-items: center;
-  gap: var(--gap-group);
+  gap: 0.25em;
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-metric-info-size);
   font-weight: var(--type-metric-info-weight);
   line-height: var(--type-metric-info-leading);
   color: var(--type-metric-info-color);
-  padding-bottom: var(--gap-related);
+  white-space: nowrap;
 }
-.quiz-info-context {
-  flex: 1;
-}
-.quiz-info-count {
-  font-variant-numeric: tabular-nums;
+.quiz-info-count-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
 }
 
 /* --- Progress bar (build-time template only) --- */
@@ -2198,10 +2186,10 @@ button {
   gap: var(--gap-related);
   width: 100%;
   max-width: var(--size-answer-grid);
-  margin: var(--gap-group) auto;
+  margin: var(--gap-related) auto;
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg);
-  padding: var(--pad-region);
+  padding: var(--gap-group);
 }
 .answer-grid-6 {
   grid-template-columns: repeat(6, 1fr);
@@ -2216,10 +2204,10 @@ button {
   gap: var(--gap-related);
   width: 100%;
   max-width: var(--size-answer-grid);
-  margin: var(--gap-group) auto;
+  margin: var(--gap-related) auto;
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg);
-  padding: var(--pad-region);
+  padding: var(--gap-group);
 }
 .answer-grid-stack > .answer-grid {
   margin: 0;
@@ -4589,14 +4577,6 @@ ${text}`).join("\n\n");
     lastQuestion: false
   };
 
-  // src/fixtures/session.ts
-  var sessionEarlyRound = {
-    context: "+1 to +5",
-    count: "7 answers",
-    automatic: 5,
-    total: 18
-  };
-
   // src/fixtures/round-complete.ts
   var goodRound = {
     context: "+1 to +5 \xB7 12 / 18 automatic",
@@ -5677,7 +5657,6 @@ ${text}`).join("\n\n");
   function QuizSession({
     timeLeft,
     timerPct,
-    context,
     count,
     isWarning,
     isLastQuestion,
@@ -5691,38 +5670,25 @@ ${text}`).join("\n\n");
           onClick: onClose
         }
       ),
-      /* @__PURE__ */ u3("div", { class: "quiz-session-header-content", children: [
-        /* @__PURE__ */ u3("div", { class: "quiz-countdown-row", children: [
-          /* @__PURE__ */ u3(
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
+          children: /* @__PURE__ */ u3(
             "div",
             {
-              class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
-              children: /* @__PURE__ */ u3(
-                "div",
-                {
-                  class: "quiz-countdown-fill",
-                  style: { width: `${timerPct ?? 100}%` }
-                }
-              )
+              class: "quiz-countdown-fill",
+              style: { width: `${timerPct ?? 100}%` }
             }
-          ),
-          /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" })
-        ] }),
-        /* @__PURE__ */ u3(
-          SessionInfo,
-          {
-            context,
-            count
-          }
-        )
+          )
+        }
+      ),
+      /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" }),
+      count && /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: [
+        count,
+        /* @__PURE__ */ u3(RepeatMark, { size: 13, class: "quiz-info-count-icon" })
       ] })
     ] }) });
-  }
-  function SessionInfo({ context, count }) {
-    return /* @__PURE__ */ u3("div", { class: "quiz-session-info", children: [
-      /* @__PURE__ */ u3("span", { class: "quiz-info-context", children: context || "" }),
-      /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: count || "" })
-    ] });
   }
   function QuizArea({ prompt, controls, children }) {
     if (controls !== void 0) {
@@ -6792,8 +6758,7 @@ ${text}`).join("\n\n");
           {
             timeLeft: "0:42",
             timerPct: 70,
-            context: "\xB11\u20132 semitones",
-            count: "5 answers",
+            count: "5",
             isWarning: false
           }
         ),
@@ -6805,8 +6770,7 @@ ${text}`).join("\n\n");
           {
             timeLeft: "0:38",
             timerPct: 63,
-            context: "\xB11\u20132 semitones",
-            count: "6 answers",
+            count: "6",
             isWarning: false
           }
         ),
@@ -6845,8 +6809,7 @@ ${text}`).join("\n\n");
           {
             timeLeft: "0:31",
             timerPct: 52,
-            context: "\xB11\u20132 semitones",
-            count: "7 answers",
+            count: "7",
             isWarning: false
           }
         ),
@@ -6886,8 +6849,7 @@ ${text}`).join("\n\n");
           {
             timeLeft: "0:08",
             timerPct: 13,
-            context: "\xB11\u20132 semitones",
-            count: "11 answers",
+            count: "11",
             isWarning: true
           }
         ),
@@ -7133,19 +7095,12 @@ ${text}`).join("\n\n");
       ] }),
       /* @__PURE__ */ u3("h2", { children: "Session Header & Timer" }),
       /* @__PURE__ */ u3(PreviewGrid, { children: [
-        /* @__PURE__ */ u3(Section, { title: "SessionInfo", tabId, children: /* @__PURE__ */ u3(
-          SessionInfo,
-          {
-            context: sessionEarlyRound.context,
-            count: sessionEarlyRound.count
-          }
-        ) }),
         /* @__PURE__ */ u3(Section, { title: "QuizSession (header)", tabId, children: /* @__PURE__ */ u3(
           QuizSession,
           {
-            timeLeft: "42s",
-            context: "Natural notes",
-            count: "5 of 12",
+            timeLeft: "0:42",
+            timerPct: 70,
+            count: "5",
             isWarning: false
           }
         ) }),
@@ -9097,8 +9052,7 @@ ${text}`).join("\n\n");
           {
             timeLeft: "1:23",
             timerPct: 72,
-            context: "E string",
-            count: "5 of 20"
+            count: "5"
           }
         ) }),
         /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(
@@ -9123,8 +9077,7 @@ ${text}`).join("\n\n");
           {
             timeLeft: "1:18",
             timerPct: 65,
-            context: "E string",
-            count: "6 of 20"
+            count: "6"
           }
         ) }),
         /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(
