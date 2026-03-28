@@ -495,7 +495,7 @@ body {
 
 .layout-main {
   position: relative;
-  isolation: isolate;
+  isolation: isolate; /* stacking context so watermark z-index:-1 works */
   flex: 1;
   min-height: 0;
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
@@ -3088,7 +3088,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="e50313 brand-identity-integration-amyB8"></div>
+  <div class="home-screen" id="home-screen" data-version="4ec77c brand-identity-integration-amyB8"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">

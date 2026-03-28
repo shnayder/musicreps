@@ -489,7 +489,7 @@ body {
 
 .layout-main {
   position: relative;
-  isolation: isolate;
+  isolation: isolate; /* stacking context so watermark z-index:-1 works */
   flex: 1;
   min-height: 0;
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
