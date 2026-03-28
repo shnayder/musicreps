@@ -5753,7 +5753,7 @@ ${text}`).join("\n\n");
     chordSpelling: "Chord Spelling"
   };
   var d3 = displayNote;
-  var MODE_ABOUT_BEFORE_AFTER = {
+  var MODE_BEFORE_AFTER = {
     fretboard: {
       before: () => `7th fret, ${d3("G")} string. Ok\u2026 open ${d3("G")}, ${d3("G#")}, ${d3("A")}, ${d3("A#")}, ${d3("B")}, ${d3("C")}, ${d3("C#")}, ${d3("D")}. Wait, was that seven frets? Let me count again.`,
       after: () => `7th fret, ${d3("G")} string. ${d3("D")}. Next.`
@@ -8760,7 +8760,7 @@ ${text}`).join("\n\n");
     ] });
   }
   function PreviewAboutTab() {
-    const ba = MODE_ABOUT_BEFORE_AFTER.keySignatures;
+    const ba = MODE_BEFORE_AFTER.keySignatures;
     return /* @__PURE__ */ u3("div", { class: "about-tab", children: [
       /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "about-description", children: MODE_DESCRIPTIONS.keySignatures }),
       /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "What you're training" }),

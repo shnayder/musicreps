@@ -3076,7 +3076,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="da33f5 redesign-skill-about-tabs-Llwl5"></div>
+  <div class="home-screen" id="home-screen" data-version="c04f51 redesign-skill-about-tabs-Llwl5"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -5933,52 +5933,6 @@ body.native-app {
   };
   var d3 = displayNote;
   var MODE_BEFORE_AFTER = {
-    fretboard: {
-      before: () => `\u201C7th fret, ${d3("G")} string\u2026 ${d3("G")}, ${d3("G#")}, ${d3("A")}\u2026 ${d3("D")}?\u201D`,
-      after: () => `\u201C7th fret, ${d3("G")} string. ${d3("D")}.\u201D`
-    },
-    ukulele: {
-      before: () => `\u201C5th fret, ${d3("C")} string\u2026 ${d3("C")}, ${d3("D")}, ${d3("E")}\u2026 ${d3("E")}?\u201D`,
-      after: () => `\u201C5th fret, ${d3("C")} string. ${d3("E")}.\u201D`
-    },
-    speedTap: {
-      before: () => `\u201CAll the ${d3("C")}\u2019s\u2026 8th fret ${d3("E")}, 3rd fret ${d3("A")}\u2026 um\u2026\u201D`,
-      after: () => `\u201C${d3("C")}\u2019s. 8, 3, 10, 5, 1, 8.\u201D`
-    },
-    noteSemitones: {
-      before: () => `\u201C${d3("G#")}\u2026 ${d3("F")} is 5, so ${d3("G")} is\u2026 7, so ${d3("G#")} is 8.\u201D`,
-      after: () => `\u201C${d3("G#")}. 8.\u201D`
-    },
-    intervalSemitones: {
-      before: () => "\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D",
-      after: () => "\u201CM6. 9 semitones.\u201D"
-    },
-    semitoneMath: {
-      before: () => `\u201C${d3("F#")} + 4\u2026 ${d3("G")}, ${d3("G#")}, ${d3("A")}, ${d3("A#")}\u2026 is that ${d3("Bb")}?\u201D`,
-      after: () => `\u201C${d3("F#")} + 4. ${d3("Bb")}.\u201D`
-    },
-    intervalMath: {
-      before: () => `\u201C${d3("C")} + m6\u2026 minor 6th is 8 semitones\u2026 ${d3("Ab")}?\u201D`,
-      after: () => `\u201C${d3("C")} + m6. ${d3("Ab")}.\u201D`
-    },
-    keySignatures: {
-      before: () => `\u201C3 flats\u2026 ${d3("Bb")}, ${d3("Eb")}, ${d3("Ab")}\u2026 so ${d3("Eb")} major?\u201D`,
-      after: () => `\u201C3 flats: ${d3("Eb")} major.\u201D`
-    },
-    scaleDegrees: {
-      before: () => `\u201C5th degree of ${d3("Bb")}\u2026 ${d3("Bb")}, ${d3("C")}, ${d3("D")}, ${d3("Eb")}, ${d3("F")}\u2026 ${d3("F")}?\u201D`,
-      after: () => `\u201C5th of ${d3("Bb")}. ${d3("F")}.\u201D`
-    },
-    diatonicChords: {
-      before: () => `\u201CIV in ${d3("G")}\u2026 ${d3("G")}, ${d3("A")}, ${d3("B")}, ${d3("C")}\u2026 so ${d3("C")} major?\u201D`,
-      after: () => `\u201CIV in ${d3("G")}. ${d3("C")} major.\u201D`
-    },
-    chordSpelling: {
-      before: () => `\u201C${d3("F")}m7\u2026 ${d3("F")}, ${d3("Ab")}, ${d3("C")}\u2026 what\u2019s the 7th\u2026 ${d3("Eb")}\u201D`,
-      after: () => `\u201C${d3("F")}m7. ${d3("F")} ${d3("Ab")} ${d3("C")} ${d3("Eb")}.\u201D`
-    }
-  };
-  var MODE_ABOUT_BEFORE_AFTER = {
     fretboard: {
       before: () => `7th fret, ${d3("G")} string. Ok\u2026 open ${d3("G")}, ${d3("G#")}, ${d3("A")}, ${d3("A#")}, ${d3("B")}, ${d3("C")}, ${d3("C#")}, ${d3("D")}. Wait, was that seven frets? Let me count again.`,
       after: () => `7th fret, ${d3("G")} string. ${d3("D")}. Next.`
@@ -11903,7 +11857,6 @@ body.native-app {
         aboutContent: /* @__PURE__ */ u3(
           AboutTab,
           {
-            id: def.id,
             description: def.description,
             beforeAfter: def.beforeAfter
           }
@@ -11911,11 +11864,9 @@ body.native-app {
       }
     );
   }
-  function AboutTab({ id, description, beforeAfter }) {
-    const expanded = MODE_ABOUT_BEFORE_AFTER[id];
-    const src = expanded ?? beforeAfter;
-    const before = typeof src.before === "function" ? src.before() : src.before;
-    const after = typeof src.after === "function" ? src.after() : src.after;
+  function AboutTab({ description, beforeAfter }) {
+    const before = typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before;
+    const after = typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after;
     return /* @__PURE__ */ u3("div", { class: "about-tab", children: [
       /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "about-description", children: description }),
       /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "What you're training" }),
