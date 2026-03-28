@@ -481,12 +481,16 @@ body {
 
 .layout-main {
   position: relative;
+  isolation: isolate;
   flex: 1;
   min-height: 0;
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
   padding-right: max(var(--size-content-inset), env(safe-area-inset-right, 0));
 }
-/* Brand watermark — end-repeat mark, idle (practice setup) phase only */
+/* Brand watermark — end-repeat mark, idle (practice setup) phase only.
+   z-index: -1 paints above layout-main's background (thanks to isolation:
+   isolate creating a stacking context) but below all normal-flow children.
+   No z-index needed on any child elements. */
 .mode-screen.phase-idle .layout-main::before {
   content: '';
   position: absolute;
@@ -497,7 +501,7 @@ body {
   aspect-ratio: 1;
   opacity: 0.04;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232d4c3b'%3E%3Ccircle cx='7' cy='8.5' r='2.5'/%3E%3Ccircle cx='7' cy='15.5' r='2.5'/%3E%3Crect x='13' y='2' width='2' height='20'/%3E%3Crect x='18' y='2' width='4' height='20'/%3E%3C/svg%3E")
     no-repeat center / contain;
 }
@@ -1289,8 +1293,6 @@ body {
    5. PRACTICE CARD
    ========================================================================== */
 .practice-card {
-  position: relative;
-  z-index: 1;
   margin-bottom: var(--pad-component);
   padding: var(--pad-component) var(--pad-region);
   background: var(--color-card);
