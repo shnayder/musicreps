@@ -679,9 +679,8 @@ body {
   background: var(--color-chrome);
   border-top: 1px solid var(--color-border-lighter);
   border-bottom: none;
-  padding-left: var(--size-content-inset);
-  padding-right: var(--size-content-inset);
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding: var(--gap-related) var(--size-content-inset);
+  padding-bottom: max(var(--gap-related), env(safe-area-inset-bottom, 0));
 }
 .mode-nav .tab-btn {
   padding: var(--gap-related) var(--gap-group);
@@ -1615,17 +1614,18 @@ body {
 /* ==========================================================================
    6. PROGRESS TAB
    ========================================================================== */
-.baseline-info {
+.progress-section {
   margin-top: var(--pad-region);
-  padding: var(--pad-component) var(--pad-region);
-  border-top: 1px solid var(--color-border-lighter);
-  background: var(--color-well);
+}
+.progress-section:first-child {
+  margin-top: 0;
+}
+.progress-section > .text-heading-section {
+  display: block;
+  margin-bottom: var(--gap-group);
 }
 .baseline-info:empty {
   display: none;
-}
-.baseline-header {
-  margin-bottom: var(--gap-group);
 }
 .baseline-metric {
   display: flex;
@@ -1640,6 +1640,7 @@ body {
   margin-bottom: var(--pad-component);
 }
 .baseline-rerun-btn {
+  display: block;
   background: none;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-sm);
@@ -1649,7 +1650,7 @@ body {
   line-height: var(--type-control-leading);
   color: var(--type-control-color);
   cursor: pointer;
-  margin: 0;
+  margin: 0 auto;
   transition:
     background var(--duration-base) ease,
     border-color var(--duration-base) ease;
@@ -2800,16 +2801,6 @@ button {
 /* --- Stats tables (lookup modes) --- */
 .stats-container {
   text-align: center;
-  margin: var(--gap-group) 0;
-}
-.stats-container > .text-heading-section {
-  text-align: left;
-  padding: 0 var(--pad-component);
-  margin-top: var(--pad-region);
-  margin-bottom: var(--gap-group);
-}
-.stats-container > .text-heading-section:first-child {
-  margin-top: 0;
 }
 .stats-table {
   border-collapse: collapse;
@@ -3106,7 +3097,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1107"></div>
+  <div class="home-screen" id="home-screen" data-version="#1111"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -8399,12 +8390,14 @@ body.native-app {
     const tag = baseline ? null : /* @__PURE__ */ u3(Text, { role: "supporting", class: "baseline-default-tag", children: "(default)" });
     const btnLabel = baseline ? "Redo speed check" : "Run speed check";
     return /* @__PURE__ */ u3("div", { class: "baseline-info", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "baseline-header", children: "Speed check" }),
       /* @__PURE__ */ u3("div", { class: "baseline-metric", children: [
         /* @__PURE__ */ u3(Text, { role: "label", children: "Response time for note input" }),
         /* @__PURE__ */ u3(Text, { role: "metric-primary", children: [
           value,
-          tag && /* @__PURE__ */ u3(k, { children: tag })
+          tag && /* @__PURE__ */ u3(k, { children: [
+            " ",
+            tag
+          ] })
         ] })
       ] }),
       /* @__PURE__ */ u3(Text, { role: "supporting", as: "div", class: "baseline-explanation", children: "Timing thresholds are based on this measurement." }),
@@ -8426,6 +8419,7 @@ body.native-app {
     onApplyRecommendation,
     scope,
     statsContent,
+    statsHeading,
     onCalibrate,
     baseline,
     activeTab,
@@ -8455,9 +8449,15 @@ body.native-app {
         id: "progress",
         label: /* @__PURE__ */ u3(TabIcon, { icon: "progress", text: "Progress" }),
         content: /* @__PURE__ */ u3("div", { children: [
-          /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent }),
-          progressExtra,
-          onCalibrate && /* @__PURE__ */ u3(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate })
+          progressExtra && /* @__PURE__ */ u3("div", { class: "progress-section", children: progressExtra }),
+          /* @__PURE__ */ u3("div", { class: "progress-section", children: [
+            statsHeading,
+            /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent })
+          ] }),
+          onCalibrate && /* @__PURE__ */ u3("div", { class: "progress-section", children: [
+            /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Speed check" }),
+            /* @__PURE__ */ u3(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate })
+          ] })
         ] })
       }
     ];
@@ -11980,8 +11980,8 @@ body.native-app {
             lines: [singleLevelSuggestion(learner.selector, def.allItems)]
           }
         ) }),
+        statsHeading: hasStats ? /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Item details" }) : void 0,
         statsContent: /* @__PURE__ */ u3(k, { children: [
-          hasStats && /* @__PURE__ */ u3(Text, { role: "heading-section", as: "div", children: "All items" }),
           ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u3(k, { children: [
             def.stats.kind === "grid" && /* @__PURE__ */ u3(
               StatsGrid,
