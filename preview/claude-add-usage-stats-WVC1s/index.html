@@ -1503,6 +1503,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.3em;
+  font-family: var(--font-body);
   font-size: var(--type-metric-info-size);
   font-weight: var(--font-semibold);
   line-height: var(--type-metric-info-leading);
@@ -2010,6 +2011,7 @@ button {
 .quiz-countdown-bar {
   flex: 1;
   height: 6px;
+  margin: 0 var(--gap-related);
   background: var(--color-surface-raised);
 }
 .quiz-countdown-fill {
@@ -2034,16 +2036,18 @@ button {
 .quiz-info-count {
   display: flex;
   align-items: center;
-  gap: 0.25em;
+  gap: 0.3em;
+  font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
   font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
+  font-weight: var(--font-semibold);
   line-height: var(--type-metric-info-leading);
-  color: var(--type-metric-info-color);
+  color: var(--color-tertiary);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .quiz-info-count-icon {
-  color: var(--color-text-muted);
+  color: var(--color-tertiary);
   flex-shrink: 0;
 }
 
@@ -3135,7 +3139,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="0f3b8e add-usage-stats-WVC1s"></div>
+  <div class="home-screen" id="home-screen" data-version="2d494a add-usage-stats-WVC1s"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
