@@ -3,12 +3,11 @@
 import {
   feedbackCorrect,
   feedbackWrong,
-  sessionEarlyRound,
   timerMidRound,
   timerWarning,
 } from '../fixtures/index.ts';
 import { CountdownBar, FeedbackDisplay, TextPrompt } from './quiz-ui.tsx';
-import { QuizSession, SessionInfo } from './mode-screen.tsx';
+import { QuizSession } from './mode-screen.tsx';
 import { PreviewGrid, Section } from './preview-shared.tsx';
 
 export function QuizUITab({ tabId }: { tabId: string }) {
@@ -39,17 +38,11 @@ export function QuizUITab({ tabId }: { tabId: string }) {
       </PreviewGrid>
       <h2>Session Header & Timer</h2>
       <PreviewGrid>
-        <Section title='SessionInfo' tabId={tabId}>
-          <SessionInfo
-            context={sessionEarlyRound.context}
-            count={sessionEarlyRound.count}
-          />
-        </Section>
         <Section title='QuizSession (header)' tabId={tabId}>
           <QuizSession
-            timeLeft='42s'
-            context='Natural notes'
-            count='5 of 12'
+            timeLeft='0:42'
+            timerPct={70}
+            count='5'
             isWarning={false}
           />
         </Section>

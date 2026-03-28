@@ -341,7 +341,6 @@ export function QuizSession(
   {
     timeLeft,
     timerPct,
-    context,
     count,
     isWarning,
     isLastQuestion,
@@ -349,7 +348,6 @@ export function QuizSession(
   }: {
     timeLeft?: string;
     timerPct?: number;
-    context?: string;
     count?: string;
     isWarning?: boolean;
     isLastQuestion?: boolean;
@@ -363,44 +361,24 @@ export function QuizSession(
           ariaLabel='Stop quiz'
           onClick={onClose}
         />
-        <div class='quiz-session-header-content'>
-          <div class='quiz-countdown-row'>
-            <div
-              class={'quiz-countdown-bar' +
-                (isWarning ? ' round-timer-warning' : '') +
-                (isLastQuestion ? ' last-question' : '')}
-            >
-              <div
-                class='quiz-countdown-fill'
-                style={{ width: `${timerPct ?? 100}%` }}
-              />
-            </div>
-            <span class='quiz-info-time'>{timeLeft || ''}</span>
-          </div>
-          <SessionInfo
-            context={context}
-            count={count}
+        <div
+          class={'quiz-countdown-bar' +
+            (isWarning ? ' round-timer-warning' : '') +
+            (isLastQuestion ? ' last-question' : '')}
+        >
+          <div
+            class='quiz-countdown-fill'
+            style={{ width: `${timerPct ?? 100}%` }}
           />
         </div>
+        <span class='quiz-info-time'>{timeLeft || ''}</span>
+        {count && (
+          <span class='quiz-info-count'>
+            {count}
+            <RepeatMark size={13} class='quiz-info-count-icon' />
+          </span>
+        )}
       </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// SessionInfo — quiz info context + count display
-// ---------------------------------------------------------------------------
-
-export function SessionInfo(
-  { context, count }: {
-    context?: string;
-    count?: string;
-  },
-) {
-  return (
-    <div class='quiz-session-info'>
-      <span class='quiz-info-context'>{context || ''}</span>
-      <span class='quiz-info-count'>{count || ''}</span>
     </div>
   );
 }

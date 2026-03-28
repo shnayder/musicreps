@@ -603,7 +603,6 @@ type QuizActiveViewProps<Q> = {
   ctrl: ModeController<Q>;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
-  practicingLabel: string;
   handleSubmit: (input: string) => boolean;
   seq: {
     entries: { display: string }[];
@@ -633,7 +632,6 @@ function QuizActiveView<Q>(
     ctrl,
     currentQ,
     round,
-    practicingLabel,
     handleSubmit,
     seq,
     multiTapInput,
@@ -721,8 +719,7 @@ function QuizActiveView<Q>(
         <QuizSession
           timeLeft={engine.timerText}
           timerPct={engine.timerPct}
-          context={practicingLabel}
-          count={round.countText}
+          count={round.countLabel}
           isWarning={engine.timerWarning}
           isLastQuestion={engine.timerLastQuestion}
           onClose={engine.stop}
@@ -1195,7 +1192,7 @@ function useGenericDerivedState<Q>(
     return true;
   }, [engine.submitAnswer, def]);
 
-  return { currentQ, round, ps, practicingLabel, handleSubmit };
+  return { currentQ, round, ps, handleSubmit };
 }
 
 function buildSeqProps(seqInput: ReturnType<typeof useSequentialInput>) {
@@ -1271,7 +1268,6 @@ type GenericModeBodyProps<Q> = {
   sc: SpeedCheckOverlay;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
-  practicingLabel: string;
   handleSubmit: (input: string) => boolean;
   seqInput: ReturnType<typeof useSequentialInput>;
   multiTapInput: MultiTapInputHandle;
@@ -1344,7 +1340,6 @@ function GenericModeBody<Q>(
     sc,
     currentQ,
     round,
-    practicingLabel,
     handleSubmit,
     seqInput,
     multiTapInput,
@@ -1420,7 +1415,6 @@ function GenericModeBody<Q>(
       ctrl={ctrl}
       currentQ={currentQ}
       round={round}
-      practicingLabel={practicingLabel}
       handleSubmit={handleSubmit}
       seq={buildSeqProps(seqInput)}
       multiTapInput={multiTapInput}
@@ -1479,21 +1473,20 @@ export function GenericMode<Q>(
   );
   const sc = useSpeedCheckOverlay(engine, def, ctrl);
 
-  const { currentQ, round, ps, practicingLabel, handleSubmit } =
-    useGenericDerivedState(
-      def,
-      engine,
-      learner,
-      groupScopeResult,
-      currentQRef,
-      seqInput,
-      multiTapInput,
-      isSequential,
-      container,
-      onMount,
-      sc.presentationPhase,
-      sc.deactivateCleanup,
-    );
+  const { currentQ, round, ps, handleSubmit } = useGenericDerivedState(
+    def,
+    engine,
+    learner,
+    groupScopeResult,
+    currentQRef,
+    seqInput,
+    multiTapInput,
+    isSequential,
+    container,
+    onMount,
+    sc.presentationPhase,
+    sc.deactivateCleanup,
+  );
 
   return (
     <GenericModeBody
@@ -1506,7 +1499,6 @@ export function GenericMode<Q>(
       sc={sc}
       currentQ={currentQ}
       round={round}
-      practicingLabel={practicingLabel}
       handleSubmit={handleSubmit}
       seqInput={seqInput}
       multiTapInput={multiTapInput}

@@ -187,17 +187,14 @@ export function modeScreen(id: string, opts: ModeScreenOptions): string {
     </div>
     ${opts.idleHTML}
     <div class="quiz-session">
-      <div class="quiz-countdown-row">
+      <div class="quiz-session-header">
+        <button tabindex="0" class="close-btn" aria-label="Stop quiz">\u00D7</button>
         <div class="quiz-countdown-bar">
           <div class="quiz-countdown-fill"></div>
         </div>
         <span class="quiz-info-time"></span>
-      </div>
-      <div class="quiz-session-info">
-        <span class="quiz-info-context"></span>
         <span class="quiz-info-count"></span>
       </div>
-      <button tabindex="0" class="close-btn" aria-label="Stop quiz">\u00D7</button>
       <div class="progress-bar">
         <div class="progress-fill" style="width: 0%"></div>
         <div class="progress-text">0 / 0 automatic</div>

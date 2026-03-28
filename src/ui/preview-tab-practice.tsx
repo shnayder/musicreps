@@ -574,8 +574,7 @@ function ScreenLayoutActiveExamples({ tabId }: { tabId: string }) {
             <QuizSession
               timeLeft='1:23'
               timerPct={72}
-              context='E string'
-              count='5 of 20'
+              count='5'
             />
           </LayoutHeader>
           <LayoutMain scrollable={false}>
@@ -599,8 +598,7 @@ function ScreenLayoutActiveExamples({ tabId }: { tabId: string }) {
             <QuizSession
               timeLeft='1:18'
               timerPct={65}
-              context='E string'
-              count='6 of 20'
+              count='6'
             />
           </LayoutHeader>
           <LayoutMain scrollable={false}>

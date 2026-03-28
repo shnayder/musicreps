@@ -34,7 +34,6 @@ import {
   Recommendation,
   RoundCompleteActions,
   RoundCompleteInfo,
-  SessionInfo,
   StartButton,
   Tabs,
 } from './mode-screen.tsx';
@@ -737,50 +736,23 @@ describe('StartButton', () => {
 });
 
 describe('QuizSession', () => {
-  it('renders countdown, info, and close', () => {
+  it('renders countdown, count, and close', () => {
     const html = render(
       <QuizSession
         timeLeft='42s'
         timerPct={65}
-        context='Natural notes'
-        count='5 of 12'
+        count='5'
       />,
     );
     assert.ok(html.includes('quiz-session'));
-    assert.ok(html.includes('quiz-countdown-row'));
     assert.ok(html.includes('quiz-countdown-bar'));
     assert.ok(html.includes('quiz-countdown-fill'));
     assert.ok(html.includes('width:65%'));
     assert.ok(html.includes('quiz-info-time'));
     assert.ok(html.includes('42s'));
-    assert.ok(html.includes('quiz-session-info'));
-    assert.ok(html.includes('Natural notes'));
-    assert.ok(html.includes('5 of 12'));
-    assert.ok(html.includes('close-btn'));
-  });
-});
-
-describe('SessionInfo', () => {
-  it('renders context and count', () => {
-    const html = render(
-      <SessionInfo context='A string' count='3 of 8' />,
-    );
-    assert.ok(html.includes('quiz-session-info'));
-    assert.ok(html.includes('quiz-info-context'));
-    assert.ok(html.includes('A string'));
     assert.ok(html.includes('quiz-info-count'));
-    assert.ok(html.includes('3 of 8'));
-  });
-
-  it('renders context and count in session info', () => {
-    const html = render(
-      <SessionInfo
-        context='natural'
-        count='3 answers'
-      />,
-    );
-    assert.ok(html.includes('natural'));
-    assert.ok(html.includes('3 answers'));
+    assert.ok(html.includes('5'));
+    assert.ok(html.includes('close-btn'));
   });
 });
 
