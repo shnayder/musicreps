@@ -1307,10 +1307,26 @@ body {
    5. PRACTICE CARD
    ========================================================================== */
 .practice-card {
+  position: relative;
+  overflow: hidden;
   margin-bottom: var(--pad-component);
   padding: var(--pad-component) var(--pad-region);
   background: var(--color-card);
   border-radius: var(--radius-md);
+}
+/* Brand watermark — giant end-repeat mark behind practice setup content */
+.practice-card::before {
+  content: '';
+  position: absolute;
+  right: -1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8rem;
+  height: 8rem;
+  opacity: 0.04;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232d4c3b'%3E%3Ccircle cx='7' cy='8.5' r='2.5'/%3E%3Ccircle cx='7' cy='15.5' r='2.5'/%3E%3Crect x='13' y='2' width='2' height='20'/%3E%3Crect x='18' y='2' width='4' height='20' rx='1'/%3E%3C/svg%3E")
+    no-repeat center / contain;
 }
 .practice-zone + .practice-zone {
   margin-top: var(--pad-region);
@@ -2030,11 +2046,26 @@ button {
 }
 /* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;
   text-align: center;
   padding: 0 var(--gap-group) var(--gap-group);
+}
+/* Brand watermark — giant end-repeat mark behind active quiz content */
+.quiz-area::before {
+  content: '';
+  position: absolute;
+  right: -2rem;
+  bottom: 10%;
+  width: 12rem;
+  height: 12rem;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232d4c3b'%3E%3Ccircle cx='7' cy='8.5' r='2.5'/%3E%3Ccircle cx='7' cy='15.5' r='2.5'/%3E%3Crect x='13' y='2' width='2' height='20'/%3E%3Crect x='18' y='2' width='4' height='20' rx='1'/%3E%3C/svg%3E")
+    no-repeat center / contain;
 }
 .quiz-content {
   flex: 1;
@@ -3088,7 +3119,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="ff1d74 brand-identity-integration-amyB8"></div>
+  <div class="home-screen" id="home-screen" data-version="0bbe4a brand-identity-integration-amyB8"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6612,10 +6643,10 @@ body.native-app {
         "aria-hidden": "true",
         class: cls,
         children: [
-          /* @__PURE__ */ u3("rect", { x: "2", y: "2", width: "4", height: "20", rx: "1" }),
-          /* @__PURE__ */ u3("rect", { x: "9", y: "2", width: "2", height: "20" }),
-          /* @__PURE__ */ u3("circle", { cx: "17", cy: "8.5", r: "2.5" }),
-          /* @__PURE__ */ u3("circle", { cx: "17", cy: "15.5", r: "2.5" })
+          /* @__PURE__ */ u3("circle", { cx: "7", cy: "8.5", r: "2.5" }),
+          /* @__PURE__ */ u3("circle", { cx: "7", cy: "15.5", r: "2.5" }),
+          /* @__PURE__ */ u3("rect", { x: "13", y: "2", width: "2", height: "20" }),
+          /* @__PURE__ */ u3("rect", { x: "18", y: "2", width: "4", height: "20", rx: "1" })
         ]
       }
     );
@@ -8699,29 +8730,26 @@ body.native-app {
         ] }),
         /* @__PURE__ */ u3("p", { class: "brand-lockup-tagline", children: "Make music fundamentals automatic so you can focus on making music." })
       ] }),
-      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "About" }),
-        /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
-          appConfig.contactEmail && /* @__PURE__ */ u3("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: [
-            "Contact: ",
-            appConfig.contactEmail
-          ] }),
-          appConfig.supportUrl && /* @__PURE__ */ u3(
-            "a",
-            {
-              class: "text-link",
-              href: appConfig.supportUrl,
-              target: "_blank",
-              rel: "noopener noreferrer",
-              children: "Support"
-            }
-          ),
-          /* @__PURE__ */ u3("div", { class: "settings-meta", children: [
-            "Build number: ",
-            version
-          ] })
+      /* @__PURE__ */ u3("section", { class: "settings-section", children: /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
+        appConfig.contactEmail && /* @__PURE__ */ u3("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: [
+          "Contact: ",
+          appConfig.contactEmail
+        ] }),
+        appConfig.supportUrl && /* @__PURE__ */ u3(
+          "a",
+          {
+            class: "text-link",
+            href: appConfig.supportUrl,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            children: "Support"
+          }
+        ),
+        /* @__PURE__ */ u3("div", { class: "settings-meta", children: [
+          "Build number: ",
+          version
         ] })
-      ] }),
+      ] }) }),
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
         /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "Legal" }),
         /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
