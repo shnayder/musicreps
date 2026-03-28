@@ -77,8 +77,8 @@ The answer is always: is it chrome (header), content (main), or an action
 
 With `viewport-fit=cover`, the web content fills the full viewport including the
 notch and home-indicator zones. Safe-area insets tell us where those zones are.
-The rule: **`body` owns all safe-area padding; children fill the remaining
-space.**
+The rule: **`body` owns the top safe-area inset; `.mode-nav` owns the bottom
+inset; children fill the remaining space.**
 
 ```
 ┌───────────────────────────────┐  ← 0

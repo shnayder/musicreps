@@ -579,6 +579,10 @@ variables on `npx cap copy ios` control this:
 | `CAP_DEV_PORT=8002 npx cap copy ios`    | Local dev server (`localhost:N`)  |
 
 `CAP_DEV_HOST` overrides the hostname for the dev server (default `localhost`).
+On iOS, non-HTTPS loads to non-`localhost` hosts are blocked by App Transport
+Security unless you add an `NSAppTransportSecurity` exception in
+`ios/App/App/Info.plist`. Without that, `CAP_DEV_HOST` is effectively limited
+to `localhost` (simulator).
 
 After changing the content source you need to rebuild in Xcode — the URL is baked
 into `ios/App/App/capacitor.config.json` at copy time.
