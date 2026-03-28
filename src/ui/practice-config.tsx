@@ -57,12 +57,14 @@ export function SkillHeader(
     <div class='skill-header'>
       <div class='skill-header-row'>
         {onBack && <CloseButton ariaLabel='Back to home' onClick={onBack} />}
-        {modeId && <SkillIcon modeId={modeId} />}
-        <h1 class='mode-title'>{title}</h1>
+        <div class='skill-header-title'>
+          {modeId && <SkillIcon modeId={modeId} />}
+          <h1 class='mode-title'>{title}</h1>
+        </div>
         {totalReps != null && totalReps > 0 && (
           <span class='skill-header-reps'>
             {totalReps.toLocaleString()}
-            <RepeatMark size={14} class='skill-header-reps-icon' />
+            <RepeatMark size={18} class='skill-header-reps-icon' />
           </span>
         )}
       </div>
