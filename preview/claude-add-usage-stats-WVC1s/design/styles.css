@@ -1465,7 +1465,7 @@ body {
   margin-bottom: var(--gap-related);
 }
 
-/* --- Skill header: X (left) + icon + title (centered) + reps (right) --- */
+/* --- Skill header: X (left) + icon+title (centered) + reps (right) --- */
 .skill-header {
   padding: var(--pad-component) var(--size-content-inset) var(--gap-group);
   background: var(--color-chrome);
@@ -1475,23 +1475,34 @@ body {
   align-items: center;
   gap: var(--gap-group);
 }
-.skill-header-row .mode-title {
+.skill-header-title {
   flex: 1;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-related);
+  min-width: 0;
+}
+.skill-header-title .skill-icon {
+  color: var(--type-heading-page-color);
+}
+.skill-header-title .mode-title {
+  flex: none;
 }
 .skill-header-reps {
   display: flex;
   align-items: center;
-  gap: 0.25em;
-  font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
-  color: var(--color-text-muted);
+  gap: 0.3em;
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--color-tertiary);
   white-space: nowrap;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 .skill-header-reps-icon {
-  color: var(--color-text-muted);
+  color: var(--color-tertiary);
   flex-shrink: 0;
 }
 .skill-header-progress {

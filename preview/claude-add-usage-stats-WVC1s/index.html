@@ -1479,7 +1479,7 @@ body {
   margin-bottom: var(--gap-related);
 }
 
-/* --- Skill header: X (left) + icon + title (centered) + reps (right) --- */
+/* --- Skill header: X (left) + icon+title (centered) + reps (right) --- */
 .skill-header {
   padding: var(--pad-component) var(--size-content-inset) var(--gap-group);
   background: var(--color-chrome);
@@ -1489,23 +1489,34 @@ body {
   align-items: center;
   gap: var(--gap-group);
 }
-.skill-header-row .mode-title {
+.skill-header-title {
   flex: 1;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-related);
+  min-width: 0;
+}
+.skill-header-title .skill-icon {
+  color: var(--type-heading-page-color);
+}
+.skill-header-title .mode-title {
+  flex: none;
 }
 .skill-header-reps {
   display: flex;
   align-items: center;
-  gap: 0.25em;
-  font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
-  color: var(--color-text-muted);
+  gap: 0.3em;
+  font-size: var(--type-metric-info-size);
+  font-weight: var(--type-metric-info-weight);
+  line-height: var(--type-metric-info-leading);
+  color: var(--color-tertiary);
   white-space: nowrap;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 .skill-header-reps-icon {
-  color: var(--color-text-muted);
+  color: var(--color-tertiary);
   flex-shrink: 0;
 }
 .skill-header-progress {
@@ -3136,7 +3147,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="c941ff add-usage-stats-WVC1s"></div>
+  <div class="home-screen" id="home-screen" data-version="b2beaa add-usage-stats-WVC1s"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -10695,11 +10706,13 @@ body.native-app {
     return /* @__PURE__ */ u3("div", { class: "skill-header", children: [
       /* @__PURE__ */ u3("div", { class: "skill-header-row", children: [
         onBack && /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Back to home", onClick: onBack }),
-        modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
-        /* @__PURE__ */ u3("h1", { class: "mode-title", children: title }),
+        /* @__PURE__ */ u3("div", { class: "skill-header-title", children: [
+          modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
+          /* @__PURE__ */ u3("h1", { class: "mode-title", children: title })
+        ] }),
         totalReps != null && totalReps > 0 && /* @__PURE__ */ u3("span", { class: "skill-header-reps", children: [
           totalReps.toLocaleString(),
-          /* @__PURE__ */ u3(RepeatMark, { size: 14, class: "skill-header-reps-icon" })
+          /* @__PURE__ */ u3(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
         ] })
       ] }),
       progressColors && progressColors.length > 0 && /* @__PURE__ */ u3("div", { class: "skill-header-progress", children: /* @__PURE__ */ u3(ProgressBarLabeled, { label: "Progress", colors: progressColors }) })
