@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Music Reps</title>
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -452,6 +452,7 @@
 *::after {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 html {
   font-size: 106.25%; /* 17px base — aligns with Apple HIG body size */
@@ -464,7 +465,7 @@ body {
   margin: 0 auto;
   padding: 0;
   padding-top: env(safe-area-inset-top, 0);
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: 0;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -484,7 +485,7 @@ body {
 .screen-layout {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  height: calc(100dvh - env(safe-area-inset-top, 0px));
   overflow: hidden;
 }
 
@@ -671,7 +672,8 @@ body {
 .tab-icon-label svg {
   display: block;
 }
-/* mode-nav is inside LayoutFooter — no position: fixed needed. */
+/* mode-nav is inside LayoutFooter — no position: fixed needed.
+   mode-nav owns the bottom safe-area clearance (body does not). */
 .mode-nav {
   display: flex;
   background: var(--color-chrome);
@@ -1876,7 +1878,6 @@ body {
   display: block;
   margin: 0 auto;
   background: transparent;
-  touch-action: manipulation;
 }
 /* SVG fretboard — new circle-based design */
 .fb-string {
@@ -2040,9 +2041,7 @@ button {
   background: var(--color-card);
   display: flex;
   flex-direction: column;
-  min-height: calc(
-    100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
-  );
+  min-height: 100%;
 }
 .mode-screen.phase-active .mode-top-bar,
 .mode-screen.phase-round-complete .mode-top-bar,
@@ -2283,7 +2282,6 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  touch-action: manipulation;
   transition:
     background var(--duration-base) ease,
     transform var(--duration-fast) ease;
@@ -2628,7 +2626,6 @@ button {
   font-weight: var(--_weight);
   line-height: var(--type-action-leading);
   cursor: pointer;
-  touch-action: manipulation;
   min-height: 48px;
   background: var(--_bg);
   color: var(--_text);
@@ -3077,7 +3074,7 @@ body.native-app {
     margin: 0;
     padding: 0;
     padding-top: env(safe-area-inset-top, 0);
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: 0;
     border-left: none;
     border-right: none;
   }
@@ -3109,7 +3106,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1100"></div>
+  <div class="home-screen" id="home-screen" data-version="#1107"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
