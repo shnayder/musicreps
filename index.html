@@ -494,10 +494,30 @@ body {
 }
 
 .layout-main {
+  position: relative;
+  isolation: isolate; /* stacking context so watermark z-index:-1 works */
   flex: 1;
   min-height: 0;
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
   padding-right: max(var(--size-content-inset), env(safe-area-inset-right, 0));
+}
+/* Brand watermark — end-repeat mark, idle (practice setup) phase only.
+   z-index: -1 paints above layout-main's background (thanks to isolation:
+   isolate creating a stacking context) but below all normal-flow children.
+   No z-index needed on any child elements. */
+.mode-screen.phase-idle .layout-main::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 75%;
+  aspect-ratio: 1;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: -1;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024' fill='%232d4c3b'%3E%3Ccircle cx='350.6' cy='366.9' r='76.8'/%3E%3Ccircle cx='350.6' cy='674.1' r='76.8'/%3E%3Crect x='554.7' y='136.5' width='68.3' height='768'/%3E%3Crect x='682.7' y='136.5' width='136.5' height='768'/%3E%3C/svg%3E")
+    no-repeat center / contain;
 }
 .layout-main-scroll {
   overflow-y: auto;
@@ -584,12 +604,19 @@ body {
   background: var(--color-chrome);
 }
 .home-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
   font-family: var(--type-display-brand-family);
   font-size: var(--type-display-brand-size);
   font-weight: var(--type-display-brand-weight);
   line-height: var(--type-display-brand-leading);
   color: var(--type-display-brand-color);
   margin: 0;
+}
+.home-logo-mark {
+  color: var(--color-brand);
+  flex-shrink: 0;
 }
 .home-title::after {
   display: none;
@@ -1135,6 +1162,7 @@ body {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
+
 .settings-field {
   display: flex;
   flex-direction: column;
@@ -1254,23 +1282,44 @@ body {
 .about-tab {
   padding: var(--gap-group) 0;
 }
-.about-before-after {
-  display: flex;
-  flex-direction: column;
+.about-description {
+  margin: 0 0 var(--pad-component);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+}
+.about-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--gap-group);
   margin-top: var(--gap-group);
 }
-.about-ba-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-micro);
-}
-.about-ba-text {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+.about-col {
+  padding: var(--pad-component);
+  border-radius: var(--radius-md);
   line-height: var(--leading-normal);
 }
-.about-ba-after {
+.about-col-before {
+  background: var(--color-well);
+}
+.about-col-after {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+}
+.about-col-header {
+  margin-bottom: var(--gap-related);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.about-col-text {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+.about-col-after .about-col-text {
+  font-style: normal;
   font-weight: var(--font-semibold);
   color: var(--color-text);
 }
@@ -2070,6 +2119,11 @@ button {
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--type-body-secondary-color);
+}
+.round-complete-mark {
+  margin-top: var(--pad-component);
+  color: var(--color-text-light);
+  opacity: 0.5;
 }
 .round-stat-line {
   font-size: var(--type-status-size);
@@ -3055,7 +3109,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1083"></div>
+  <div class="home-screen" id="home-screen" data-version="#1100"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -5885,17 +5939,17 @@ body.native-app {
 
   // src/mode-catalog.ts
   var MODE_DESCRIPTIONS = {
-    fretboard: "Stop hunting for notes on the fretboard",
-    ukulele: "Stop hunting for notes on the fretboard",
-    speedTap: "Know all positions of a note instantly",
-    noteSemitones: "The number system behind the chromatic scale",
-    intervalSemitones: "Know the size of every interval in semitones",
+    fretboard: "Name any fret instantly \u2014 no counting",
+    ukulele: "Name any fret instantly \u2014 no counting",
+    speedTap: "Find every position of a note, automatic",
+    noteSemitones: "Notes to numbers and back, instant",
+    intervalSemitones: "Interval sizes in semitones, automatic",
     semitoneMath: "Transpose by semitones without counting",
     intervalMath: "Transpose by interval without counting",
-    keySignatures: "See a key, know its sharps and flats instantly",
-    scaleDegrees: "Connect notes to their function in a key",
-    diatonicChords: "Know which chords belong in any key",
-    chordSpelling: "Know the notes in any chord"
+    keySignatures: "Sharps and flats for any key, instant recall",
+    scaleDegrees: "Degrees and notes in any key, automatic",
+    diatonicChords: "Chords in any key, instant recall",
+    chordSpelling: "Spell any chord without thinking"
   };
   var MODE_NAMES = {
     fretboard: "Guitar Fretboard",
@@ -5913,48 +5967,48 @@ body.native-app {
   var d3 = displayNote;
   var MODE_BEFORE_AFTER = {
     fretboard: {
-      before: () => `\u201C7th fret, ${d3("G")} string\u2026 ${d3("G")}, ${d3("G#")}, ${d3("A")}\u2026 ${d3("D")}?\u201D`,
-      after: () => `\u201C7th fret, ${d3("G")} string. ${d3("D")}.\u201D`
+      before: () => `7th fret, ${d3("G")} string. Ok\u2026 open ${d3("G")}, ${d3("G#")}, ${d3("A")}, ${d3("A#")}, ${d3("B")}, ${d3("C")}, ${d3("C#")}, ${d3("D")}. Wait, was that seven frets? Let me count again.`,
+      after: () => `7th fret, ${d3("G")} string. ${d3("D")}. Next.`
     },
     ukulele: {
-      before: () => `\u201C5th fret, ${d3("C")} string\u2026 ${d3("C")}, ${d3("D")}, ${d3("E")}\u2026 ${d3("E")}?\u201D`,
-      after: () => `\u201C5th fret, ${d3("C")} string. ${d3("E")}.\u201D`
+      before: () => `5th fret, ${d3("C")} string. ${d3("C")}\u2026 ${d3("C#")}, ${d3("D")}, ${d3("D#")}, ${d3("E")}. That\u2019s five? ${d3("E")}.`,
+      after: () => `5th fret, ${d3("C")} string. ${d3("E")}.`
     },
     speedTap: {
-      before: () => `\u201CAll the ${d3("C")}\u2019s\u2026 8th fret ${d3("E")}, 3rd fret ${d3("A")}\u2026 um\u2026\u201D`,
-      after: () => `\u201C${d3("C")}\u2019s. 8, 3, 10, 5, 1, 8.\u201D`
+      before: () => `All the ${d3("C")}\u2019s. 8th fret low ${d3("E")}, 3rd fret ${d3("A")}\u2026 somewhere on the ${d3("D")} string\u2026 I always forget the high strings.`,
+      after: () => `All the ${d3("C")}\u2019s. Tap tap tap tap tap tap. Done.`
     },
     noteSemitones: {
-      before: () => `\u201C${d3("G#")}\u2026 ${d3("F")} is 5, so ${d3("G")} is\u2026 7, so ${d3("G#")} is 8.\u201D`,
-      after: () => `\u201C${d3("G#")}. 8.\u201D`
+      before: () => `${d3("G#")} as a number. ${d3("C")} is 0, ${d3("D")} is 2, ${d3("E")} is 4, ${d3("F")} is 5, ${d3("G")} is 7\u2026 so ${d3("G#")} is 8? I think.`,
+      after: () => `${d3("G#")}. 8.`
     },
     intervalSemitones: {
-      before: () => "\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D",
-      after: () => "\u201CM6. 9 semitones.\u201D"
+      before: () => "Major 6th in semitones. A perfect 5th is 7, I\u2019m pretty sure. So major 6th is\u2026 9?",
+      after: () => "M6. 9."
     },
     semitoneMath: {
-      before: () => `\u201C${d3("F#")} + 4\u2026 ${d3("G")}, ${d3("G#")}, ${d3("A")}, ${d3("A#")}\u2026 is that ${d3("Bb")}?\u201D`,
-      after: () => `\u201C${d3("F#")} + 4. ${d3("Bb")}.\u201D`
+      before: () => `${d3("F#")} plus 4. So ${d3("F#")}\u2026 ${d3("G")}, ${d3("G#")}, ${d3("A")}, ${d3("A#")}. That\u2019s four up. Is it ${d3("A#")} or ${d3("Bb")}? Same note, but which name?`,
+      after: () => `${d3("F#")} + 4. ${d3("Bb")}.`
     },
     intervalMath: {
-      before: () => `\u201C${d3("C")} + m6\u2026 minor 6th is 8 semitones\u2026 ${d3("Ab")}?\u201D`,
-      after: () => `\u201C${d3("C")} + m6. ${d3("Ab")}.\u201D`
+      before: () => `${d3("C")} up a minor 6th. How many semitones is that\u2026 8? Ok, ${d3("C")}, ${d3("C#")}, ${d3("D")}, ${d3("D#")}, ${d3("E")}, ${d3("F")}, ${d3("F#")}, ${d3("G")}, ${d3("Ab")}. Was that right?`,
+      after: () => `${d3("C")} + m6. ${d3("Ab")}.`
     },
     keySignatures: {
-      before: () => `\u201C3 flats\u2026 ${d3("Bb")}, ${d3("Eb")}, ${d3("Ab")}\u2026 so ${d3("Eb")} major?\u201D`,
-      after: () => `\u201C3 flats: ${d3("Eb")} major.\u201D`
+      before: () => `4 flats. Second from the end is ${d3("Ab")}, so\u2026 ${d3("Ab")} major. Or is it the relative minor? What was the rule for that again?`,
+      after: () => `4 flats. ${d3("Ab")} major / ${d3("F")} minor. IV chord is ${d3("Db")} major. Keep going.`
     },
     scaleDegrees: {
-      before: () => `\u201C5th degree of ${d3("Bb")}\u2026 ${d3("Bb")}, ${d3("C")}, ${d3("D")}, ${d3("Eb")}, ${d3("F")}\u2026 ${d3("F")}?\u201D`,
-      after: () => `\u201C5th of ${d3("Bb")}. ${d3("F")}.\u201D`
+      before: () => `5th degree of ${d3("Bb")}. ${d3("Bb")} is one, ${d3("C")} is two, ${d3("D")} is three, ${d3("Eb")} is four, ${d3("F")} is five. ${d3("F")}. I think.`,
+      after: () => `5th of ${d3("Bb")}. ${d3("F")}.`
     },
     diatonicChords: {
-      before: () => `\u201CIV in ${d3("G")}\u2026 ${d3("G")}, ${d3("A")}, ${d3("B")}, ${d3("C")}\u2026 so ${d3("C")} major?\u201D`,
-      after: () => `\u201CIV in ${d3("G")}. ${d3("C")} major.\u201D`
+      before: () => `IV in ${d3("G")} major. ${d3("G")}, ${d3("A")}, ${d3("B")}, ${d3("C")}. So ${d3("C")}. And the IV is always major in a major key? I think so.`,
+      after: () => `IV in ${d3("G")}. ${d3("C")} major.`
     },
     chordSpelling: {
-      before: () => `\u201C${d3("F")}m7\u2026 ${d3("F")}, ${d3("Ab")}, ${d3("C")}\u2026 what\u2019s the 7th\u2026 ${d3("Eb")}\u201D`,
-      after: () => `\u201C${d3("F")}m7. ${d3("F")} ${d3("Ab")} ${d3("C")} ${d3("Eb")}.\u201D`
+      before: () => `${d3("F")}m7. Root is ${d3("F")}, minor third is ${d3("Ab")}, fifth is ${d3("C")}. The 7th\u2026 it\u2019s a minor 7th, so\u2026 ${d3("Eb")}.`,
+      after: () => `${d3("F")}m7. ${d3("F")} ${d3("Ab")} ${d3("C")} ${d3("Eb")}.`
     }
   };
   var TRACKS = [
@@ -6585,13 +6639,41 @@ body.native-app {
     return /* @__PURE__ */ u3(Icon, {});
   }
 
+  // src/ui/repeat-mark.tsx
+  function RepeatMark({ size = 24, class: cls }) {
+    return /* @__PURE__ */ u3(
+      "svg",
+      {
+        xmlns: "http://www.w3.org/2000/svg",
+        width: String(size),
+        height: String(size),
+        viewBox: "0 0 1024 1024",
+        fill: "currentColor",
+        stroke: "none",
+        "aria-hidden": "true",
+        class: cls,
+        children: [
+          /* @__PURE__ */ u3("circle", { cx: "350.6", cy: "366.9", r: "76.8" }),
+          /* @__PURE__ */ u3("circle", { cx: "350.6", cy: "674.1", r: "76.8" }),
+          /* @__PURE__ */ u3("rect", { x: "554.7", y: "136.5", width: "68.3", height: "768" }),
+          /* @__PURE__ */ u3("rect", { x: "682.7", y: "136.5", width: "136.5", height: "768" })
+        ]
+      }
+    );
+  }
+
   // src/modes/key-signatures/logic.ts
   var KEY_GROUPS = [
-    { keys: ["C", "G", "F"], label: "C G F" },
-    { keys: ["D", "Bb"], label: "D B\u266D" },
-    { keys: ["A", "Eb"], label: "A E\u266D" },
-    { keys: ["E", "Ab"], label: "E A\u266D" },
-    { keys: ["B", "Db", "F#"], label: "B D\u266D F\u266F" }
+    {
+      keys: ["C", "G", "F", "D", "Bb", "A", "Eb"],
+      label: "Major 0\u20133 \u266F/\u266D",
+      longLabel: "Major keys (0\u20133 \u266F/\u266D)"
+    },
+    {
+      keys: ["E", "Ab", "B", "Db", "F#"],
+      label: "Major 4+ \u266F/\u266D",
+      longLabel: "Major keys (4+ \u266F/\u266D)"
+    }
   ];
   var MINOR_ROOT_TO_MAJOR = /* @__PURE__ */ new Map();
   var RELATIVE_MINOR_DEGREE = 6;
@@ -6604,16 +6686,23 @@ body.native-app {
   var MINOR_ROOTS = MAJOR_KEYS.map(
     (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE)
   );
-  function minorKeyGroup(majorKeys) {
+  function minorKeyGroup(majorKeys, label, longLabel) {
     const keys = majorKeys.map(
       (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE) + "m"
     );
-    const label = keys.map((k3) => displayNote(k3.slice(0, -1)) + "m").join(" ");
-    return { keys, label };
+    return { keys, label, longLabel };
   }
   var MINOR_KEY_GROUPS = [
-    minorKeyGroup(MAJOR_KEYS.filter((k3) => k3.accidentalCount <= 3)),
-    minorKeyGroup(MAJOR_KEYS.filter((k3) => k3.accidentalCount > 3))
+    minorKeyGroup(
+      MAJOR_KEYS.filter((k3) => k3.accidentalCount <= 3),
+      "Minor 0\u20133 \u266F/\u266D",
+      "Minor keys (0\u20133 \u266F/\u266D)"
+    ),
+    minorKeyGroup(
+      MAJOR_KEYS.filter((k3) => k3.accidentalCount > 3),
+      "Minor 4+ \u266F/\u266D",
+      "Minor keys (4+ \u266F/\u266D)"
+    )
   ];
   var ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
   function getItemIdsForGroup(groupIndex) {
@@ -6681,9 +6770,9 @@ body.native-app {
   var DEGREE_LABELS2 = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th"];
   var ACTIVE_DEGREES = [2, 3, 4, 5, 6, 7];
   var DEGREE_GROUPS = [
-    { degrees: [4, 5], label: "4th,5th" },
-    { degrees: [3, 7], label: "3rd,7th" },
-    { degrees: [2, 6], label: "2nd,6th" }
+    { degrees: [4, 5], label: "4th, 5th", longLabel: "4th & 5th degrees" },
+    { degrees: [3, 7], label: "3rd, 7th", longLabel: "3rd & 7th degrees" },
+    { degrees: [2, 6], label: "2nd, 6th", longLabel: "2nd & 6th degrees" }
   ];
   function getItemIdsForGroup2(groupIndex) {
     const degrees = DEGREE_GROUPS[groupIndex].degrees;
@@ -6723,10 +6812,18 @@ body.native-app {
 
   // src/modes/diatonic-chords/logic.ts
   var CHORD_GROUPS = [
-    { degrees: [1, 4, 5], label: "I,IV,V" },
-    { degrees: [2, 6], label: "ii,vi" },
-    { degrees: [3, 7], label: "iii,vii\xB0" }
-    // \u00B0 = ° (degree sign)
+    {
+      degrees: [1, 4, 5],
+      label: "I IV V",
+      longLabel: "Primary chords (I, IV, V)"
+    },
+    { degrees: [2, 6], label: "ii vi", longLabel: "Secondary chords (ii, vi)" },
+    {
+      degrees: [3, 7],
+      label: "iii vii\xB0",
+      // \u00B0 = ° (degree sign)
+      longLabel: "Tertiary chords (iii, vii\xB0)"
+    }
   ];
   function getItemIdsForGroup3(groupIndex) {
     const degrees = CHORD_GROUPS[groupIndex].degrees;
@@ -6802,11 +6899,31 @@ body.native-app {
 
   // src/modes/semitone-math/logic.ts
   var DISTANCE_GROUPS = [
-    { distances: [1, 2], label: "\xB11\u20132" },
-    { distances: [3, 4], label: "\xB13\u20134" },
-    { distances: [5, 6], label: "\xB15\u20136" },
-    { distances: [7, 8], label: "\xB17\u20138" },
-    { distances: [9, 10, 11], label: "\xB19\u201311" }
+    {
+      distances: [1, 2],
+      label: "\xB11\u20132",
+      longLabel: "1\u20132 semitones apart"
+    },
+    {
+      distances: [3, 4],
+      label: "\xB13\u20134",
+      longLabel: "3\u20134 semitones apart"
+    },
+    {
+      distances: [5, 6],
+      label: "\xB15\u20136",
+      longLabel: "5\u20136 semitones apart"
+    },
+    {
+      distances: [7, 8],
+      label: "\xB17\u20138",
+      longLabel: "7\u20138 semitones apart"
+    },
+    {
+      distances: [9, 10, 11],
+      label: "\xB19\u201311",
+      longLabel: "9\u201311 semitones apart"
+    }
   ];
   function getItemIdsForGroup4(groupIndex) {
     const distances = DISTANCE_GROUPS[groupIndex].distances;
@@ -6858,11 +6975,19 @@ body.native-app {
     (i3) => i3.num >= 1 && i3.num <= 11
   );
   var DISTANCE_GROUPS2 = [
-    { distances: [1, 2], label: "m2 M2" },
-    { distances: [3, 4], label: "m3 M3" },
-    { distances: [5, 6], label: "P4 TT" },
-    { distances: [7, 8], label: "P5 m6" },
-    { distances: [9, 10, 11], label: "M6 m7 M7" }
+    { distances: [1, 2], label: "m2 M2", longLabel: "Seconds (m2, M2)" },
+    { distances: [3, 4], label: "m3 M3", longLabel: "Thirds (m3, M3)" },
+    { distances: [5, 6], label: "P4 TT", longLabel: "Fourth & tritone (P4, TT)" },
+    {
+      distances: [7, 8],
+      label: "P5 m6",
+      longLabel: "Fifth & minor 6th (P5, m6)"
+    },
+    {
+      distances: [9, 10, 11],
+      label: "M6 m7 M7",
+      longLabel: "Sixths & sevenths (M6, m7, M7)"
+    }
   ];
   function getItemIdsForGroup5(groupIndex) {
     const distances = DISTANCE_GROUPS2[groupIndex].distances;
@@ -6909,6 +7034,15 @@ body.native-app {
   }
 
   // src/modes/chord-spelling/logic.ts
+  var GROUP_LONG_LABELS = {
+    0: "Major triads",
+    1: "Minor triads",
+    2: "Dominant 7th",
+    3: "Major 7th",
+    4: "Minor 7th",
+    5: "Diminished, augmented & half-dim",
+    6: "Suspended & 6th chords"
+  };
   function buildGroups() {
     let maxGroup = 0;
     for (const ct of CHORD_TYPES) {
@@ -6918,7 +7052,8 @@ body.native-app {
     for (let g2 = 0; g2 <= maxGroup; g2++) {
       const types = CHORD_TYPES.filter((t3) => t3.group === g2);
       const label = types.map((t3) => t3.symbol || "maj").join(", ");
-      result.push({ types, label });
+      const longLabel = GROUP_LONG_LABELS[g2] ?? label;
+      result.push({ types, label, longLabel });
     }
     return result;
   }
@@ -7052,45 +7187,91 @@ body.native-app {
   var GUITAR_GROUPS = [
     // Naturals by string (E and e combined since same notes)
     {
-      label: () => `${displayNote("E")} ${displayNote("e")}`,
+      label: () => "E strings",
+      longLabel: "High & low E strings",
       strings: [5, 0],
       noteFilter: "natural"
     },
-    { label: () => displayNote("A"), strings: [4], noteFilter: "natural" },
-    { label: () => displayNote("D"), strings: [3], noteFilter: "natural" },
-    { label: () => displayNote("G"), strings: [2], noteFilter: "natural" },
-    { label: () => displayNote("B"), strings: [1], noteFilter: "natural" },
+    {
+      label: () => "A string",
+      longLabel: "A string",
+      strings: [4],
+      noteFilter: "natural"
+    },
+    {
+      label: () => "D string",
+      longLabel: "D string",
+      strings: [3],
+      noteFilter: "natural"
+    },
+    {
+      label: () => "G string",
+      longLabel: "G string",
+      strings: [2],
+      noteFilter: "natural"
+    },
+    {
+      label: () => "B string",
+      longLabel: "B string",
+      strings: [1],
+      noteFilter: "natural"
+    },
     // Accidentals by string pair
     {
-      label: () => `${displayNote("E")} ${displayNote("A")} \u266F\u266D`,
-      strings: [5, 4],
+      label: () => "E \u266F/\u266D",
+      longLabel: "E strings \u266F/\u266D",
+      strings: [5, 0],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => `${displayNote("D")} ${displayNote("G")} \u266F\u266D`,
-      strings: [3, 2],
+      label: () => "A D \u266F/\u266D",
+      longLabel: "A & D strings \u266F/\u266D",
+      strings: [4, 3],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => `${displayNote("B")} ${displayNote("e")} \u266F\u266D`,
-      strings: [1, 0],
+      label: () => "G B \u266F/\u266D",
+      longLabel: "G & B strings \u266F/\u266D",
+      strings: [2, 1],
       noteFilter: "sharps-flats"
     }
   ];
   var UKULELE_GROUPS = [
     // Naturals by string
-    { label: () => displayNote("G"), strings: [3], noteFilter: "natural" },
-    { label: () => displayNote("C"), strings: [2], noteFilter: "natural" },
-    { label: () => displayNote("E"), strings: [1], noteFilter: "natural" },
-    { label: () => displayNote("A"), strings: [0], noteFilter: "natural" },
+    {
+      label: () => "G string",
+      longLabel: "G string",
+      strings: [3],
+      noteFilter: "natural"
+    },
+    {
+      label: () => "C string",
+      longLabel: "C string",
+      strings: [2],
+      noteFilter: "natural"
+    },
+    {
+      label: () => "E string",
+      longLabel: "E string",
+      strings: [1],
+      noteFilter: "natural"
+    },
+    {
+      label: () => "A string",
+      longLabel: "A string",
+      strings: [0],
+      noteFilter: "natural"
+    },
     // Accidentals by string pair
     {
-      label: () => `${displayNote("G")} ${displayNote("C")} \u266F\u266D`,
+      label: () => "G C \u266F/\u266D",
+      longLabel: "G & C strings \u266F/\u266D",
       strings: [3, 2],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => `${displayNote("E")} ${displayNote("A")} \u266F\u266D`,
+      label: () => "E A \u266F/\u266D",
+      longLabel: "E & A strings \u266F/\u266D",
       strings: [1, 0],
       noteFilter: "sharps-flats"
     }
@@ -7249,8 +7430,8 @@ body.native-app {
   }
   var ACCIDENTAL_NOTES = NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
   var NOTE_GROUPS = [
-    { label: "Natural notes" },
-    { label: "Sharps & flats" }
+    { label: "Naturals", longLabel: "Natural notes" },
+    { label: "\u266F/\u266D", longLabel: "Sharps & flats" }
   ];
   var ALL_GROUP_INDICES7 = [0, 1];
   function getItemIdsForGroup8(index) {
@@ -7266,6 +7447,7 @@ body.native-app {
   function buildGroupEntries(groups, getIds) {
     return groups.map((g2, i3) => ({
       label: g2.label,
+      longLabel: g2.longLabel,
       getItemIds: () => getIds(i3)
     }));
   }
@@ -7277,6 +7459,7 @@ body.native-app {
       namespace: "fretboard",
       groups: guitarGroups.map((g2, i3) => ({
         label: g2.label(),
+        longLabel: g2.longLabel,
         getItemIds: () => getItemIdsForGroup7(GUITAR, i3)
       })),
       allItemIds: () => getAllItems(GUITAR)
@@ -7286,6 +7469,7 @@ body.native-app {
       namespace: "ukulele",
       groups: ukuleleGroups.map((g2, i3) => ({
         label: g2.label(),
+        longLabel: g2.longLabel,
         getItemIds: () => getItemIdsForGroup7(UKULELE, i3)
       })),
       allItemIds: () => getAllItems(UKULELE)
@@ -7694,7 +7878,7 @@ body.native-app {
   function classifySkill(entry, result) {
     const modeId = entry.modeId;
     const singleGroup = entry.groups.length <= 1;
-    const labels = entry.groups.map((g2) => g2.label);
+    const labels = entry.groups.map((g2) => g2.longLabel ?? g2.label);
     if (result.levelRecs.length === 0) {
       return { modeId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
     }
@@ -8162,7 +8346,8 @@ body.native-app {
           }
         ),
         /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
-      ] }) : null
+      ] }) : null,
+      /* @__PURE__ */ u3("div", { class: "round-complete-mark", "aria-hidden": "true", children: /* @__PURE__ */ u3(RepeatMark, { size: 16 }) })
     ] });
   }
   var noop = () => {
@@ -8565,9 +8750,10 @@ body.native-app {
   function ActiveSkillsList({ starred, onToggleStar, onSelectMode, progress, recommendations }) {
     if (starred.size === 0) {
       return /* @__PURE__ */ u3("p", { class: "active-skills-empty", children: [
-        "Star skills in the ",
+        "Pick the skills you want to drill. Star them in",
+        " ",
         /* @__PURE__ */ u3("strong", { children: "All Skills" }),
-        " tab to add them here."
+        " to build your lineup."
       ] });
     }
     const recMap = /* @__PURE__ */ new Map();
@@ -8796,8 +8982,11 @@ body.native-app {
   }
   function HomeHeader({ isNativeApp }) {
     return /* @__PURE__ */ u3("div", { class: `home-header${isNativeApp ? " sr-only" : ""}`, children: [
-      /* @__PURE__ */ u3("h1", { class: "home-title", children: "Music Reps" }),
-      !isNativeApp && /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Instant recall for music fundamentals. You know the theory\u2009\u2014\u2009now make it automatic." }),
+      /* @__PURE__ */ u3("h1", { class: "home-title", children: [
+        /* @__PURE__ */ u3(RepeatMark, { size: 28, class: "home-logo-mark" }),
+        "Music Reps"
+      ] }),
+      !isNativeApp && /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Make music fundamentals automatic so you can focus on playing." }),
       /* @__PURE__ */ u3("p", { class: "all-skills-hint", children: [
         "Tap the \u2606 on a skill to add it to your ",
         /* @__PURE__ */ u3("strong", { children: "Active" }),
@@ -9330,7 +9519,7 @@ body.native-app {
       [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]
     );
     const getLabel = q2(
-      (i3) => resolveLabel(spec.groups[i3].label),
+      (i3) => spec.groups[i3].longLabel ?? resolveLabel(spec.groups[i3].label),
       [spec.groups, notationVersion]
     );
     const suggestionLines = T2(
@@ -11748,7 +11937,7 @@ body.native-app {
       return /* @__PURE__ */ u3(
         LevelProgressCard,
         {
-          label: resolveGroupLabel(groupScope.groups[i3].label),
+          label: groupScope.groups[i3].longLabel ?? resolveGroupLabel(groupScope.groups[i3].label),
           colors,
           status,
           onToggleKnown: () => skipReason === "mastered" ? groupScopeResult.scopeActions.unskipGroup(i3) : groupScopeResult.scopeActions.skipGroup(i3, "mastered"),
@@ -11833,23 +12022,30 @@ body.native-app {
         onCalibrate,
         activeTab: ps.activeTab,
         onTabSwitch: ps.setActiveTab,
-        aboutContent: /* @__PURE__ */ u3(AboutTab, { beforeAfter: def.beforeAfter })
+        aboutContent: /* @__PURE__ */ u3(
+          AboutTab,
+          {
+            description: def.description,
+            beforeAfter: def.beforeAfter
+          }
+        )
       }
     );
   }
-  function AboutTab({ beforeAfter }) {
+  function AboutTab({ description, beforeAfter }) {
     const before = typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before;
     const after = typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after;
     return /* @__PURE__ */ u3("div", { class: "about-tab", children: [
+      /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "about-description", children: description }),
       /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "What you're training" }),
-      /* @__PURE__ */ u3("div", { class: "about-before-after", children: [
-        /* @__PURE__ */ u3("div", { class: "about-ba-row", children: [
-          /* @__PURE__ */ u3(Text, { role: "label", as: "span", children: "Before" }),
-          /* @__PURE__ */ u3("span", { class: "about-ba-text", children: before })
+      /* @__PURE__ */ u3("div", { class: "about-columns", children: [
+        /* @__PURE__ */ u3("div", { class: "about-col about-col-before", children: [
+          /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "about-col-header", children: "Before" }),
+          /* @__PURE__ */ u3("p", { class: "about-col-text", children: before })
         ] }),
-        /* @__PURE__ */ u3("div", { class: "about-ba-row", children: [
-          /* @__PURE__ */ u3(Text, { role: "label", as: "span", children: "After" }),
-          /* @__PURE__ */ u3("span", { class: "about-ba-text about-ba-after", children: after })
+        /* @__PURE__ */ u3("div", { class: "about-col about-col-after", children: [
+          /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "about-col-header", children: "After" }),
+          /* @__PURE__ */ u3("p", { class: "about-col-text", children: after })
         ] })
       ] })
     ] });
@@ -12383,7 +12579,7 @@ body.native-app {
       allGroupIndices: ALL_GROUP_INDICES,
       storageKey: "keySignatures_enabledGroups",
       scopeLabel: "Keys",
-      defaultEnabled: [0, 1],
+      defaultEnabled: [0],
       formatLabel: (groups) => {
         if (groups.size === ALL_KEY_GROUPS.length) return "all keys";
         const keys = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => ALL_KEY_GROUPS[g2].keys).map((k3) => displayNote(k3));
