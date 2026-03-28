@@ -231,7 +231,8 @@ function formatReviewDuration(hours: number): string {
 
 /**
  * Compute a review-timing pill label for a group of items.
- * Returns null for unseen groups. For seen groups:
+ * Returns null when stability or freshness data is missing (unseen items,
+ * or legacy stats without stability/lastCorrectAt). For groups with data:
  * - "Review soon" if avg freshness < threshold or ≤24h remaining
  * - "Review in Xd/Xw/Xmo" based on estimated time until review
  */

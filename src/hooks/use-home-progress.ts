@@ -81,9 +81,16 @@ export function computeProgressForMode(
   if (entry.groups.length === 1) {
     if (skippedGroups?.has(0)) return { groupColors: [] };
     const ids = entry.allItemIds();
-    const anySeen = ids.some((id) => selector.getSpeedScore(id) !== null);
-    if (!anySeen) return { groupColors: [] };
-    return { groupColors: progressBarColors(selector, ids) };
+    const colors = progressBarColors(selector, ids);
+    // Detect all-unseen: after sorting, if first == last all are same color;
+    // confirm with one speed check to distinguish from uniform-speed case.
+    if (
+      colors.length > 0 && colors[0] === colors[colors.length - 1] &&
+      selector.getSpeedScore(ids[0]) === null
+    ) {
+      return { groupColors: [] };
+    }
+    return { groupColors: colors };
   }
 
   // Multi-group modes: one segment per group, then sort.
