@@ -496,6 +496,7 @@ body {
   transform: translate(-50%, -50%);
   height: 75%;
   aspect-ratio: 1;
+  max-width: 100%;
   opacity: 0.04;
   pointer-events: none;
   z-index: -1;
