@@ -150,7 +150,7 @@ export function RepeatMark(
       <circle cx='7' cy='8.5' r='2.5' />
       <circle cx='7' cy='15.5' r='2.5' />
       <rect x='13' y='2' width='2' height='20' />
-      <rect x='18' y='2' width='4' height='20' rx='1' />
+      <rect x='18' y='2' width='4' height='20' />
     </svg>
   );
 }
