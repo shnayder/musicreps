@@ -628,7 +628,7 @@ describe('createAdaptiveSelector', () => {
     );
   });
 
-  it('recordResponse with correct=false does not change EWMA or sampleCount', () => {
+  it('recordResponse with correct=false does not change EWMA but increments sampleCount', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
     selector.recordResponse('0-0', 2000);
@@ -637,17 +637,17 @@ describe('createAdaptiveSelector', () => {
     selector.recordResponse('0-0', 3000, false);
     const after = selector.getStats('0-0')!;
     assert.equal(after.ewma, before.ewma);
-    assert.equal(after.sampleCount, before.sampleCount);
+    assert.equal(after.sampleCount, before.sampleCount + 1);
   });
 
-  it('recordResponse with correct=false on unseen item creates stats', () => {
+  it('recordResponse with correct=false on unseen item creates stats with sampleCount=1', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
     selector.recordResponse('0-0', 3000, false);
 
     const stats = selector.getStats('0-0');
     assert.ok(stats);
-    assert.equal(stats.sampleCount, 0);
+    assert.equal(stats.sampleCount, 1);
     assert.equal(stats.lastCorrectAt, null);
     assert.equal(stats.stability, DEFAULT_CONFIG.initialStability);
   });

@@ -1361,6 +1361,8 @@ function GenericModeBody<Q>(
   const activeButtons = resolveButtons(def, dir);
   const isIdle = engine.state.phase === 'idle' && !sc.speedCheck;
   const progressColors = useProgressColors(def, learner);
+  // Recompute on phase change so the count refreshes when returning to idle.
+  const phase = engine.state.phase;
   const totalReps = useMemo(() => {
     let sum = 0;
     for (const id of def.allItems) {
@@ -1368,7 +1370,7 @@ function GenericModeBody<Q>(
       if (s) sum += s.sampleCount;
     }
     return sum;
-  }, [def.allItems, learner.selector]);
+  }, [def.allItems, learner.selector, phase]);
 
   if (isIdle) {
     return (

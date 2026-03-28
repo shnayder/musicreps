@@ -304,6 +304,7 @@ export function recordWrongResponse(
   if (existing) {
     storage.saveStats(itemId, {
       ...existing,
+      sampleCount: existing.sampleCount + 1,
       lastSeen: now,
       stability: computeStabilityAfterWrong(existing.stability ?? null, cfg),
     });
@@ -311,7 +312,7 @@ export function recordWrongResponse(
     storage.saveStats(itemId, {
       recentTimes: [],
       ewma: itemCfg.maxResponseTime,
-      sampleCount: 0,
+      sampleCount: 1,
       lastSeen: now,
       stability: cfg.initialStability,
       lastCorrectAt: null,
