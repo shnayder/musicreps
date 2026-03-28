@@ -89,7 +89,6 @@ import {
 } from '../ui/quiz-ui.tsx';
 import { InteractiveFretboard } from '../ui/interactive-fretboard.tsx';
 import { Text } from '../ui/text.tsx';
-import { MODE_ABOUT_BEFORE_AFTER } from '../mode-catalog.ts';
 import {
   IMPLEMENTED_TASK_TYPES,
   NOTE_BUTTON_CONFIG,
@@ -946,7 +945,6 @@ function IdlePracticeView<Q>(
       onTabSwitch={ps.setActiveTab}
       aboutContent={
         <AboutTab
-          id={def.id}
           description={def.description}
           beforeAfter={def.beforeAfter}
         />
@@ -960,8 +958,7 @@ function IdlePracticeView<Q>(
 // ---------------------------------------------------------------------------
 
 function AboutTab(
-  { id, description, beforeAfter }: {
-    id: string;
+  { description, beforeAfter }: {
     description: string;
     beforeAfter: {
       before: string | (() => string);
@@ -969,11 +966,12 @@ function AboutTab(
     };
   },
 ) {
-  // Prefer expanded about-tab text; fall back to skill-card text.
-  const expanded = MODE_ABOUT_BEFORE_AFTER[id];
-  const src = expanded ?? beforeAfter;
-  const before = typeof src.before === 'function' ? src.before() : src.before;
-  const after = typeof src.after === 'function' ? src.after() : src.after;
+  const before = typeof beforeAfter.before === 'function'
+    ? beforeAfter.before()
+    : beforeAfter.before;
+  const after = typeof beforeAfter.after === 'function'
+    ? beforeAfter.after()
+    : beforeAfter.after;
 
   return (
     <div class='about-tab'>

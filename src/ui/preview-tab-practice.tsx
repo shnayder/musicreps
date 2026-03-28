@@ -29,7 +29,7 @@ import {
 } from './practice-config.tsx';
 import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
 import { Text } from './text.tsx';
-import { MODE_ABOUT_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../mode-catalog.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../mode-catalog.ts';
 import {
   LayoutFooter,
   LayoutHeader,
@@ -413,7 +413,7 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
 
 /** Mode-nav tab bar used in idle-phase footer examples. */
 function PreviewAboutTab() {
-  const ba = MODE_ABOUT_BEFORE_AFTER.keySignatures;
+  const ba = MODE_BEFORE_AFTER.keySignatures;
   return (
     <div class='about-tab'>
       <Text role='body-secondary' as='p' class='about-description'>
