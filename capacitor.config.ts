@@ -7,12 +7,13 @@ const config: CapacitorConfig = {
   ios: {
     backgroundColor: '#ffffff',
   },
-  ...(process.env.CAP_DEV_PORT && {
+  ...(process.env.CAP_LOCAL ? {} : {
     server: {
-      url: `http://${
-        process.env.CAP_DEV_HOST ?? 'localhost'
-      }:${process.env.CAP_DEV_PORT}`,
-      cleartext: true,
+      url: process.env.CAP_DEV_PORT
+        ? `http://${
+          process.env.CAP_DEV_HOST ?? 'localhost'
+        }:${process.env.CAP_DEV_PORT}`
+        : 'https://shnayder.github.io/musicreps/',
     },
   }),
 };

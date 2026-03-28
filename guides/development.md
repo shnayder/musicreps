@@ -566,6 +566,27 @@ xcodebuild -project ios/App/App.xcodeproj \
 | `ios/App/App/Assets.xcassets/`  | App icon and launch images       |
 | `ios/App/App/public/`           | Web content (copied, gitignored) |
 
+### Content source
+
+By default the iOS app loads from GitHub Pages (`https://shnayder.github.io/musicreps/`)
+so you can test the latest deployed build without rebuilding locally. Environment
+variables on `npx cap copy ios` control this:
+
+| Command                                 | Loads from                        |
+| --------------------------------------- | --------------------------------- |
+| `npx cap copy ios`                      | GitHub Pages (remote, default)    |
+| `CAP_LOCAL=1 npx cap copy ios`          | Bundled local files (`docs/`)     |
+| `CAP_DEV_PORT=8002 npx cap copy ios`    | Local dev server (`localhost:N`)  |
+
+`CAP_DEV_HOST` overrides the hostname for the dev server (default `localhost`).
+On iOS, non-HTTPS loads to non-`localhost` hosts are blocked by App Transport
+Security unless you add an `NSAppTransportSecurity` exception in
+`ios/App/App/Info.plist`. Without that, `CAP_DEV_HOST` is effectively limited
+to `localhost` (simulator).
+
+After changing the content source you need to rebuild in Xcode — the URL is baked
+into `ios/App/App/capacitor.config.json` at copy time.
+
 ## Code Review & PR
 
 Every branch that changes code follows these steps before merging:
