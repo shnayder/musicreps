@@ -74,13 +74,13 @@ export const MINOR_KEY_GROUPS = [
   ),
 ];
 
-/** All key groups: 5 major + 2 minor. */
+/** All key groups: 2 major + 2 minor. */
 export const ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
 
 /**
  * Get all item IDs belonging to a key group.
  *
- * @example getItemIdsForGroup(0) → ["C:fwd","C:rev","G:fwd","G:rev","F:fwd","F:rev"]
+ * @example getItemIdsForGroup(0) → ["C:fwd","C:rev","G:fwd",...,"Eb:fwd","Eb:rev"]
  */
 export function getItemIdsForGroup(groupIndex: number): string[] {
   const roots = ALL_KEY_GROUPS[groupIndex].keys;
