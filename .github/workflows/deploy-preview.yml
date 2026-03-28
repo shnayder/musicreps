@@ -77,14 +77,6 @@ jobs:
           APP_TERMS_URL: https://example.com/terms
           APP_PRIVACY_URL: https://example.com/privacy
 
-      - name: Capture screenshots
-        run: npx tsx scripts/take-screenshots.ts --ci
-        env:
-          APP_CONTACT_EMAIL: preview@example.com
-          APP_SUPPORT_URL: https://github.com/shnayder/musicreps/issues
-          APP_TERMS_URL: https://example.com/terms
-          APP_PRIVACY_URL: https://example.com/privacy
-
       - name: Deploy preview
         run: bash scripts/deploy-gh-pages.sh preview "${{ github.ref_name }}"
 
@@ -105,9 +97,7 @@ jobs:
             });
 
             const marker = '<!-- preview-bot -->';
-            const screenshotsUrl = `${previewUrl}screenshots/index.html`;
-            const screenshotsLine = `\n**Screenshots:** [View all](${screenshotsUrl})`;
-            const body = `${marker}\n**Preview deployed:** ${previewUrl}${screenshotsLine}`;
+            const body = `${marker}\n**Preview deployed:** ${previewUrl}`;
 
             for (const pr of pulls.data) {
               // Check if we already commented
@@ -135,7 +125,7 @@ jobs:
               }
             }
 
-  # Post preview comment when a PR is opened (handles PR created after push)
+  # Post preview link when a PR is opened after the preview was already deployed
   comment-on-open:
     if: >-
       github.event_name == 'pull_request' &&
@@ -154,13 +144,28 @@ jobs:
             const previewUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/preview/${safeName}/`;
 
             const marker = '<!-- preview-bot -->';
-            const screenshotsUrl = `${previewUrl}screenshots/index.html`;
-            const screenshotsLine = `\n**Screenshots:** [View all](${screenshotsUrl})`;
-            const body = `${marker}\n**Preview deployed:** ${previewUrl}${screenshotsLine}`;
+            const body = `${marker}\n**Preview deployed:** ${previewUrl}`;
 
-            await github.rest.issues.createComment({
+            // Check if the deploy job already commented
+            const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
-              body,
             });
+            const existing = comments.data.find(c => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body,
+              });
+            }

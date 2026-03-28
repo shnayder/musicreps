@@ -79,15 +79,25 @@ async function bundleJS(entry = './src/app.ts'): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function fontFaceCSS(): Promise<string> {
-  const fontPath = resolve('./src/DMSerifDisplay-latin.woff2');
-  const fontBytes = await Deno.readFile(fontPath);
-  const b64 = btoa(String.fromCharCode(...fontBytes));
+  const [gabaritoBytes, jakartaBytes] = await Promise.all([
+    Deno.readFile(resolve('./src/Gabarito-latin.woff2')),
+    Deno.readFile(resolve('./src/PlusJakartaSans-latin.woff2')),
+  ]);
+  const gabaritoB64 = btoa(String.fromCharCode(...gabaritoBytes));
+  const jakartaB64 = btoa(String.fromCharCode(...jakartaBytes));
   return `@font-face {
-  font-family: 'DM Serif Display';
+  font-family: 'Gabarito';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 700;
   font-display: swap;
-  src: url(data:font/woff2;base64,${b64}) format('woff2');
+  src: url(data:font/woff2;base64,${gabaritoB64}) format('woff2');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(data:font/woff2;base64,${jakartaB64}) format('woff2');
 }`;
 }
 
@@ -117,7 +127,7 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Component Preview &mdash; Music Reps</title>
   <link rel="stylesheet" href="../../src/styles.css">
   <style>
@@ -191,13 +201,149 @@ function assemblePreviewHTML(css: string, previewJs: string): string {
     .preview-frame {
       border: 1px solid var(--color-border-light);
       border-radius: 8px;
-      padding: var(--space-4);
+      padding: var(--pad-component);
       background: var(--color-bg);
     }
     .tab-description {
       color: var(--color-text-muted);
       font-size: var(--text-sm);
       margin: 0 0 1.5rem;
+    }
+    /* ScreenLayout preview override — constrain to a phone-sized frame */
+    .preview-screen-layout {
+      height: 500px;
+      border: 1px solid var(--color-border-lighter);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    /* Comment system */
+    .preview-section h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .comment-bubble-btn {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 0;
+      opacity: 0.2;
+      transition: opacity 0.15s;
+      line-height: 1;
+    }
+    .preview-section:hover .comment-bubble-btn { opacity: 0.5; }
+    .comment-bubble-btn.has-comment { opacity: 1; }
+    .comment-bubble-btn:hover { opacity: 1; }
+    .comment-area {
+      margin-top: 0.4rem;
+    }
+    .comment-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid hsl(45, 60%, 75%);
+      border-radius: 4px;
+      padding: 0.4rem 0.5rem;
+      font-family: inherit;
+      font-size: 0.8rem;
+      resize: none;
+      overflow: hidden;
+      background: hsl(45, 80%, 97%);
+      color: hsl(45, 30%, 25%);
+    }
+    .comment-textarea:focus {
+      outline: 2px solid hsl(45, 70%, 55%);
+      outline-offset: -1px;
+    }
+    .comment-textarea::placeholder { color: hsl(45, 30%, 65%); }
+    .comment-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.4rem 0.75rem;
+      margin-bottom: 1rem;
+      background: hsl(45, 80%, 95%);
+      border: 1px solid hsl(45, 60%, 80%);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      min-height: 2rem;
+    }
+    .comment-toolbar-count {
+      font-weight: 600;
+      color: hsl(45, 40%, 40%);
+    }
+    .comment-toolbar-btn {
+      border: 1px solid var(--color-border);
+      background: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .comment-toolbar-btn:hover:not(:disabled) { background: var(--color-surface-hover); }
+    .comment-toolbar-btn:disabled { opacity: 0.35; cursor: default; }
+    .comment-toolbar-clear { color: var(--color-error-text); }
+    /* Colors tab — palette ramps, swatch cards, heatmap strip */
+    .palette-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.35rem;
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+    }
+    .palette-hue-note { font-weight: 400; color: var(--color-text-muted); }
+    .palette-row { display: flex; gap: 2px; }
+    .palette-cell {
+      flex: 1;
+      height: 44px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+      border: 1px solid rgba(128, 128, 128, 0.15);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+    .swatch-card {
+      border: 1px solid var(--color-border-light);
+      border-radius: 6px;
+      overflow: hidden;
+      font-size: 0.8rem;
+    }
+    .swatch-color {
+      height: 48px;
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .swatch-info { padding: 0.4rem 0.6rem; }
+    .swatch-var {
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+      font-size: 0.75rem;
+      color: var(--color-text);
+      font-weight: 500;
+    }
+    .swatch-value {
+      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+      font-size: 0.7rem;
+      color: var(--color-text-light);
+    }
+    .swatch-note { font-size: 0.7rem; color: var(--color-text-muted); margin-top: 0.15rem; }
+    .heatmap-strip { display: flex; gap: 2px; margin: 0.5rem 0; }
+    .heatmap-step {
+      flex: 1;
+      height: 36px;
+      border-radius: 4px;
+      border: 1px solid var(--color-border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 500;
     }
   </style>
 </head>

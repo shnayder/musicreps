@@ -9,11 +9,10 @@ import { renderToString } from 'preact-render-to-string';
 import {
   DegreeButtons,
   IntervalButtons,
-  KeysigButtons,
   NoteButtons,
   NumberButtons,
   NumeralButtons,
-  PianoNoteButtons,
+  SplitKeysigButtons,
 } from './buttons.tsx';
 import { SequentialSlots } from './sequential-slots.tsx';
 import type { StatsSelector } from './stats.tsx';
@@ -39,6 +38,15 @@ import {
   StartButton,
   Tabs,
 } from './mode-screen.tsx';
+import { SegmentedControl, SettingToggle } from './segmented-control.tsx';
+import {
+  CenteredContent,
+  LayoutFooter,
+  LayoutHeader,
+  LayoutMain,
+  QuizStage,
+  ScreenLayout,
+} from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
 // Helper
@@ -55,9 +63,8 @@ function render(vnode: ReturnType<typeof h>): string {
 describe('NoteButtons', () => {
   it('renders 12 note buttons', () => {
     const html = render(<NoteButtons />);
-    assert.ok(html.includes('answer-buttons-notes'));
-    // 12 notes: C C# D D# E F F# G G# A A# B
-    const count = (html.match(/answer-btn-note/g) || []).length;
+    assert.ok(html.includes('answer-grid'));
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 12);
   });
 
@@ -65,11 +72,6 @@ describe('NoteButtons', () => {
     const html = render(<NoteButtons />);
     assert.ok(html.includes('data-note="C"'));
     assert.ok(html.includes('data-note="F#"'));
-  });
-
-  it('applies hidden class', () => {
-    const html = render(<NoteButtons hidden />);
-    assert.ok(html.includes('answer-group-hidden'));
   });
 
   it('applies btn-feedback-correct to the pressed button on correct answer', () => {
@@ -153,33 +155,25 @@ describe('NoteButtons keyboard feedback', () => {
   });
 });
 
-describe('PianoNoteButtons', () => {
-  it('renders accidentals and naturals rows', () => {
-    const html = render(<PianoNoteButtons />);
-    assert.ok(html.includes('note-row-accidentals'));
-    assert.ok(html.includes('note-row-naturals'));
-  });
-
-  it('renders 5 accidental + 7 natural buttons', () => {
-    const html = render(<PianoNoteButtons />);
-    const accidentals = (html.match(/note-btn accidental/g) || []).length;
-    const allButtons = (html.match(/note-btn/g) || []).length;
-    assert.equal(accidentals, 5);
-    assert.equal(allButtons - accidentals, 7);
+describe('NoteButtons hideAccidentals', () => {
+  it('renders only 7 natural buttons when hideAccidentals is true', () => {
+    const html = render(<NoteButtons hideAccidentals />);
+    const count = (html.match(/answer-btn/g) || []).length;
+    assert.equal(count, 7);
   });
 });
 
 describe('NumberButtons', () => {
   it('renders correct range', () => {
     const html = render(<NumberButtons start={0} end={11} />);
-    assert.ok(html.includes('answer-buttons-numbers'));
-    const count = (html.match(/answer-btn-num/g) || []).length;
+    assert.ok(html.includes('answer-grid'));
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 12);
   });
 
   it('renders custom range', () => {
     const html = render(<NumberButtons start={1} end={5} />);
-    const count = (html.match(/answer-btn-num/g) || []).length;
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 5);
   });
 });
@@ -187,26 +181,27 @@ describe('NumberButtons', () => {
 describe('IntervalButtons', () => {
   it('renders 12 interval buttons', () => {
     const html = render(<IntervalButtons />);
-    assert.ok(html.includes('answer-buttons-intervals'));
-    const count = (html.match(/answer-btn-interval/g) || []).length;
+    assert.ok(html.includes('answer-grid'));
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 12);
   });
 });
 
-describe('KeysigButtons', () => {
-  it('renders 15 key signature buttons', () => {
-    const html = render(<KeysigButtons />);
-    assert.ok(html.includes('answer-buttons-keysig'));
-    const count = (html.match(/answer-btn-keysig/g) || []).length;
-    assert.equal(count, 15);
+describe('SplitKeysigButtons', () => {
+  it('renders 8 number buttons and 2 accidental buttons', () => {
+    const html = render(<SplitKeysigButtons />);
+    assert.ok(html.includes('answer-grid-stack'));
+    // 8 numbers + 2 accidentals = 10 answer-btn total
+    const count = (html.match(/answer-btn/g) || []).length;
+    assert.equal(count, 10);
   });
 });
 
 describe('DegreeButtons', () => {
   it('renders 6 degree buttons (1st excluded)', () => {
     const html = render(<DegreeButtons />);
-    assert.ok(html.includes('answer-buttons-degrees'));
-    const count = (html.match(/answer-btn-degree/g) || []).length;
+    assert.ok(html.includes('answer-grid'));
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 6);
   });
 
@@ -221,8 +216,8 @@ describe('DegreeButtons', () => {
 describe('NumeralButtons', () => {
   it('renders 7 numeral buttons', () => {
     const html = render(<NumeralButtons />);
-    assert.ok(html.includes('answer-buttons-numerals'));
-    const count = (html.match(/answer-btn-numeral/g) || []).length;
+    assert.ok(html.includes('answer-grid'));
+    const count = (html.match(/answer-btn/g) || []).length;
     assert.equal(count, 7);
   });
 
@@ -657,7 +652,7 @@ describe('Tabs', () => {
 });
 
 describe('PracticeCard', () => {
-  it('renders status line and start button', () => {
+  it('renders status line', () => {
     const html = render(
       <PracticeCard
         statusLabel='Strong'
@@ -668,8 +663,6 @@ describe('PracticeCard', () => {
     assert.ok(html.includes('practice-status-label'));
     assert.ok(html.includes('Strong'));
     assert.ok(html.includes('12 of 14 automatic'));
-    assert.ok(html.includes('practice-zone-action'));
-    assert.ok(html.includes('start-btn'));
   });
 
   it('shows recommendation with accept button', () => {
@@ -681,7 +674,7 @@ describe('PracticeCard', () => {
     );
     assert.ok(html.includes('suggestion-card'));
     assert.ok(html.includes('suggestion-card-header'));
-    assert.ok(html.includes('suggestion-card-text'));
+    assert.ok(html.includes('start A string'));
     assert.ok(html.includes('suggestion-card-accept'));
   });
 
@@ -695,7 +688,7 @@ describe('PracticeCard', () => {
     );
     assert.ok(html.includes('practice-scope'));
     assert.ok(html.includes('mock-scope'));
-    assert.ok(html.includes('suggestion-card-text'));
+    assert.ok(html.includes('suggestion-card-header'));
   });
 });
 
@@ -962,5 +955,154 @@ describe('SequentialSlots', () => {
     );
     assert.ok(html.includes('>D♯<'));
     assert.ok(html.includes('>F♯<'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SegmentedControl + SettingToggle
+// ---------------------------------------------------------------------------
+
+describe('SegmentedControl', () => {
+  it('renders radiogroup with correct aria attributes', () => {
+    const html = render(
+      <SegmentedControl
+        options={[
+          { value: 'a', label: 'Alpha' },
+          { value: 'b', label: 'Beta' },
+        ]}
+        value='a'
+        onChange={() => {}}
+      />,
+    );
+    assert.ok(html.includes('role="radiogroup"'));
+    assert.ok(html.includes('role="radio"'));
+    assert.ok(html.includes('aria-checked="true"'));
+    assert.ok(html.includes('aria-checked="false"'));
+    assert.ok(html.includes('segmented-control'));
+    assert.ok(html.includes('segmented-btn active'));
+    assert.ok(html.includes('Alpha'));
+    assert.ok(html.includes('Beta'));
+  });
+});
+
+describe('SettingToggle', () => {
+  it('renders label + segmented control with aria-labelledby linkage', () => {
+    const html = render(
+      <SettingToggle
+        label='Notation'
+        options={[
+          { value: 'letter', label: 'Letter' },
+          { value: 'solfege', label: 'Solfege' },
+        ]}
+        value='letter'
+        onChange={() => {}}
+      />,
+    );
+    assert.ok(html.includes('settings-field'));
+    assert.ok(html.includes('Notation'));
+    assert.ok(html.includes('aria-labelledby'));
+    // The label id and the radiogroup's aria-labelledby should match
+    const labelIdMatch = html.match(/id="(stl-\d+)"/);
+    assert.ok(labelIdMatch, 'label should have an id');
+    assert.ok(
+      html.includes(`aria-labelledby="${labelIdMatch![1]}"`),
+      'radiogroup should reference label id',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ScreenLayout components
+// ---------------------------------------------------------------------------
+
+describe('ScreenLayout', () => {
+  it('renders with screen-layout class', () => {
+    const html = render(
+      <ScreenLayout>
+        <div>content</div>
+      </ScreenLayout>,
+    );
+    assert.ok(html.includes('screen-layout'));
+    assert.ok(html.includes('content'));
+  });
+});
+
+describe('LayoutHeader', () => {
+  it('renders with layout-header class', () => {
+    const html = render(
+      <LayoutHeader>
+        <div>header</div>
+      </LayoutHeader>,
+    );
+    assert.ok(html.includes('layout-header'));
+    assert.ok(html.includes('header'));
+  });
+});
+
+describe('LayoutMain', () => {
+  it('renders with layout-main layout-main-scroll by default', () => {
+    const html = render(
+      <LayoutMain>
+        <div>main</div>
+      </LayoutMain>,
+    );
+    assert.ok(html.includes('layout-main'));
+    assert.ok(html.includes('layout-main-scroll'));
+  });
+
+  it('renders with layout-main-fixed when scrollable=false', () => {
+    const html = render(
+      <LayoutMain scrollable={false}>
+        <div>main</div>
+      </LayoutMain>,
+    );
+    assert.ok(html.includes('layout-main'));
+    assert.ok(html.includes('layout-main-fixed'));
+    assert.ok(!html.includes('layout-main-scroll'));
+  });
+});
+
+describe('LayoutFooter', () => {
+  it('returns null when children is falsy', () => {
+    const html = render(<LayoutFooter>{null}</LayoutFooter>);
+    assert.equal(html, '');
+  });
+
+  it('renders with layout-footer when children provided', () => {
+    const html = render(
+      <LayoutFooter>
+        <div>footer</div>
+      </LayoutFooter>,
+    );
+    assert.ok(html.includes('layout-footer'));
+    assert.ok(html.includes('footer'));
+  });
+});
+
+describe('QuizStage', () => {
+  it('renders prompt and response zones', () => {
+    const html = render(
+      <QuizStage
+        prompt={<div>question</div>}
+        response={<div>buttons</div>}
+      />,
+    );
+    assert.ok(html.includes('quiz-stage'));
+    assert.ok(html.includes('quiz-stage-prompt'));
+    assert.ok(html.includes('quiz-stage-response'));
+    assert.ok(html.includes('question'));
+    assert.ok(html.includes('buttons'));
+  });
+});
+
+describe('CenteredContent', () => {
+  it('renders with centered-content class', () => {
+    const html = render(
+      <CenteredContent>
+        <div>centered</div>
+      </CenteredContent>,
+    );
+    assert.ok(html.includes('centered-content'));
+    assert.ok(html.includes('centered'));
   });
 });

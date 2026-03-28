@@ -46,6 +46,10 @@ deno task iterate capture [session]                   # capture next version
 deno task iterate view [session]                      # open review page
 deno task iterate list                                # list sessions
 deno task iterate --list-states                       # print valid state names
+
+# Visual history archive (outside repo)
+npx tsx scripts/capture-visual-history.ts --archive-dir <path>          # capture at HEAD
+npx tsx scripts/capture-visual-history.ts --archive-dir <path> --force  # force capture
 ```
 
 ## Build System
@@ -259,11 +263,16 @@ build-generated:
   the primary tool for iterating on component design. Available at
   `localhost:8001/preview` during dev.
 
-- `guides/design/colors.html` — hand-written color palette reference.
+The **Colors** tab on the preview page shows live palette ramps, semantic token
+swatches, pairings, heatmap scale, and component token reference.
 
-All pages link to `src/styles.css` so CSS changes are visible on refresh.
-Hand-written pages need no rebuild; build-generated pages require
-`deno task build`.
+Build-generated pages require `deno task build` or a dev server refresh.
+
+**Every new UI component must appear in the preview page.** The preview is the
+design system source of truth — it renders real components with mock data, not
+copies or approximations. When adding a component, add a Section for it in the
+relevant preview tab file (`src/ui/preview-tab-*.tsx`). If no tab fits, add a
+new one.
 
 **If you add new files to `docs/`**, no workflow changes are needed — the
 preview deploy workflow copies all files from `docs/` automatically.
@@ -280,45 +289,13 @@ and deploys the output to `preview/<branch-name>/` on the `gh-pages` branch.
 - **PR comment:** the deploy workflow posts the preview URL on any associated
   PR.
 
-## Agent Screenshot Workflow
+## Screenshots
 
-The CI pipeline captures fixture-based screenshots on pushes to `claude/*/ui/*`
-branches. The script dispatches state fixtures to the running app (no clicking
-through quizzes), so screenshots are fully deterministic.
-
-### How it works
-
-1. `deploy-preview.yml` runs `take-screenshots.ts --ci` on `/ui/` branches
-2. The script opens the app with `?fixtures`, dispatches `__fixture__` events
-   to inject engine state, and captures after Preact re-renders
-3. CI uses `--ci` flag: 1x device scale, JPEG output (smaller, faster)
-4. Screenshots deploy to `preview/<branch>/screenshots/` on gh-pages
-
-### Branch requirement
-
-Screenshots only run on branches matching `*/ui/*` (e.g.,
-`claude/fix-buttons/ui/review`). Non-UI branches skip Playwright entirely.
-
-### Step-by-step
-
-```bash
-# 1. Push to a /ui/ branch
-git push -u origin claude/my-feature/ui/review
-
-# 2. Poll workflow status until complete (~2-3 min)
-curl -s "https://api.github.com/repos/shnayder/musicreps/actions/runs?branch=claude/my-feature/ui/review&per_page=1" \
-  | python3 -c "import sys,json; r=json.load(sys.stdin)['workflow_runs'][0]; print(r['status'], r['conclusion'] or '')"
-
-# 3. List available screenshots
-curl -s "https://api.github.com/repos/shnayder/musicreps/contents/preview/claude-my-feature-ui-review/screenshots?ref=gh-pages" \
-  | python3 -c "import sys,json; [print(f['name']) for f in json.load(sys.stdin) if f['name'].endswith(('.png','.jpg'))]"
-
-# 4. Download a specific screenshot
-curl -sL -o /tmp/screenshot.jpg \
-  "https://raw.githubusercontent.com/shnayder/musicreps/gh-pages/preview/claude-my-feature-ui-review/screenshots/fretboard-idle.jpg"
-```
-
-Then use `Read /tmp/screenshot.jpg` to view the image.
+The `take-screenshots.ts` script captures fixture-based screenshots locally. It
+dispatches state fixtures to the running app (no clicking through quizzes), so
+screenshots are fully deterministic. **Screenshots are not captured in CI** —
+preview deploys include only the built app. Use the visual history archive
+(above) or run the script locally for visual review.
 
 ### Available screenshots
 
@@ -400,6 +377,74 @@ list. Common ones: `<mode>-idle`, `<mode>-quiz`, `<mode>-quiz-rev`,
 Sessions live in `screenshots/iterate/<session-name>/` (gitignored). Each
 version's screenshots are in a `v1/`, `v2/`, etc. subdirectory. `session.json`
 tracks the state list and version history.
+
+## Visual History Archive
+
+A lightweight archive of key screenshots over time, stored **outside the repo**.
+Each snapshot captures a few representative screens with commit metadata — an
+easy way to see how the app looked at any point without checking out old commits.
+
+**Why outside the repo?** Binary files (images, screenshots) bloat git history
+permanently — even after deletion, the blobs stay in the object store. The CI
+preview system previously committed screenshots to `gh-pages` on every push,
+inflating the repo to 400+ MB. This archive avoids that by keeping images in a
+local directory that syncs without polluting git.
+
+### Capturing
+
+The archive directory must be specified via `--archive-dir` or the
+`MUSICREPS_VISUAL_HISTORY_DIR` environment variable.
+
+```bash
+ARCHIVE=~/my/visual-history
+
+# Normal: capture at HEAD (skips if no new commits since last snapshot)
+npx tsx scripts/capture-visual-history.ts --archive-dir $ARCHIVE
+
+# Force capture even if HEAD unchanged
+npx tsx scripts/capture-visual-history.ts --archive-dir $ARCHIVE --force
+
+# Backfill from an old gh-pages preview commit
+npx tsx scripts/capture-visual-history.ts --archive-dir $ARCHIVE \
+  --backfill-ghpages <gh-pages-commit> \
+  --preview <preview-dir-name> \
+  --note "description"
+```
+
+### Automatic weekly capture
+
+A launchd agent (`~/Library/LaunchAgents/com.musicreps.visual-history.plist`)
+runs the capture script every Monday at 10:17am. It skips automatically if HEAD
+hasn't changed since the last snapshot. Logs go to
+`/tmp/musicreps-visual-history.log`.
+
+```bash
+# Check agent status
+launchctl list | grep musicreps
+
+# Reload after editing the plist
+launchctl unload ~/Library/LaunchAgents/com.musicreps.visual-history.plist
+launchctl load ~/Library/LaunchAgents/com.musicreps.visual-history.plist
+```
+
+### Manifest
+
+`scripts/visual-history.json` lists which screenshots to capture. Edit this file
+to change the set of screens in future snapshots. Names must match entries from
+the screenshot manifest (`npx tsx scripts/take-screenshots.ts --list`).
+
+### Archive structure
+
+```
+~/Dropbox/projects/musicreps-visual-history/
+  index.md                        # Chronological table of all snapshots
+  2026-03-17_8fcb41bb/
+    home.jpg
+    fretboard-idle.jpg
+    semitoneMath-idle.jpg
+    ...
+    meta.json                     # {commit, date, subject, screenshots}
+```
 
 ## iOS App (Capacitor)
 
@@ -571,3 +616,68 @@ No `GH_TOKEN` needed. Git push/pull work normally via the `origin` remote.
 **Read-only.** The proxy supports GET requests (list PRs, read comments) but
 not POST/PATCH (create PRs, post comments). Push the branch and create PRs
 manually or let CI handle it.
+
+# Git Safety Policy
+
+## Core Rule
+Only use Git operations that are **recoverable, non-destructive, and append-only**.  
+Never rewrite or implicitly discard state.
+
+Feature work:
+- make feature branches for all work. Never push directly to main.
+- merge from latest main as needed
+- PR back into main. No rebase.
+
+---
+
+## Allowed Commands
+
+- git status
+- git diff
+- git add <files>
+- git commit -m "<message>"
+- git switch -c <branch>
+- git checkout -b <branch>
+- git branch
+- git log
+
+---
+
+## Strictly Disallowed Commands
+
+- git stash pop
+- git stash    // Let's not use stash at all. Temp commits or temp folders are always available.
+- git commit --amend
+- git rebase (any form)
+- git reset --hard
+- git clean -fd (or similar)
+- git push --force (or --force-with-lease)
+- git checkout <commit> (detached HEAD workflows)
+
+If these truly need to be run, describe what needs to be done and why, give the exact command you'd like to run, and escalate.
+
+## Failure / Recovery Protocol
+
+If the repo state is unclear or something fails, run these:
+
+- git status
+- git stash list
+- git reflog
+- git diff
+
+Do NOT:
+- reset
+- clean
+- force push
+- drop stashes blindly
+
+Escalate instead.
+
+---
+
+## Behavioral Constraints
+
+- Never assume hidden state (stash, index, reflog) is safe
+- Never delete or overwrite work implicitly
+- Prefer creating new commits over modifying existing ones
+- Prefer visible state (branches, commits) over hidden state (stash)

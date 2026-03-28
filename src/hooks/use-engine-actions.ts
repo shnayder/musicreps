@@ -124,7 +124,7 @@ export function useEngineActions(
     const items = configRef.current.getEnabledItems();
     if (items.length === 0) return;
     const el = document.activeElement;
-    if (el instanceof HTMLElement && el.matches('.answer-btn, .note-btn')) {
+    if (el instanceof HTMLElement && el.matches('.answer-btn')) {
       el.blur();
     }
     const nextItemId = selectorRef.current.selectNext(items);

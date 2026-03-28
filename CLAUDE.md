@@ -3,6 +3,18 @@
 Interactive music training app — fretboard note identification, interval math,
 and more. Multiple quiz modes accessed from the home screen.
 
+## MANDATORY: Use td for Task Management
+
+Run td usage --new-session at conversation start (or after /clear). This tells
+you what to work on next.
+
+Sessions are automatic (based on terminal/agent context). Optional:
+
+- td session "name" to label the current session
+- td session --new to force a new session in the same context
+
+Use td usage -q after first read.
+
 ## Quick Start
 
 ```bash
@@ -16,9 +28,13 @@ deno task ok                                     # All checks + build
 ```
 
 **Run `deno task ok` before pushing.** It runs lint, format check, type check,
-tests, and build in sequence — any failure stops the chain. Don't push broken
-code by accident. If you hit `UnknownIssuer` TLS errors or npm resolution
-failures, see the **Web sandbox** section in
+tests, and build in sequence — any failure stops the chain. Use `/pr` to create
+PRs — it enforces the full sequence. Use `/check-ci` after pushing to verify CI
+passes before declaring success (CI also runs E2E tests via Playwright). Run
+`deno task prepush` locally if Playwright is available — it adds E2E tests.
+
+If you hit `UnknownIssuer` TLS errors or npm resolution failures, see the **Web
+sandbox** section in
 [guides/development.md](guides/development.md#web-sandbox-is_sandboxyes).
 
 **Run `deno task iterate capture` after UI changes.** When a `deno task iterate`
@@ -26,6 +42,11 @@ session is active, capture a new version after every round of UI changes so the
 user can visually review diffs. Create a new session
 (`deno task iterate new <name> <states...>`) at the start of a UI task if none
 exists for the relevant states.
+
+**Every new UI component must appear in the component preview page**
+(`/preview`, source in `src/ui/preview-tab-*.tsx`). The preview renders real
+components with mock data — it is the design system source of truth. No copies
+or approximations.
 
 **The HTML template lives in `src/build-template.ts`** — the single source of
 truth for the page structure. **Version is derived from git at build time** (see
@@ -53,18 +74,20 @@ src/
   mode-ui-state.ts       # Pure practice summary computation
   navigation.ts          # Hamburger menu, mode switching
   settings.ts            # Settings modal
+  storage.ts             # localStorage abstraction (web + Capacitor)
   types.ts               # Shared type definitions
   styles.css             # Inlined CSS
   *_test.ts              # Tests (node:test)
   declarative/
-    types.ts             # ModeDefinition, ButtonsDef, ScopeDef, StatsDef
+    types.ts             # ModeDefinition, ButtonsDef, ScopeDef, StatsDef, MultiTapDef
     generic-mode.tsx     # GenericMode: interprets ModeDefinition → full UI
+    use-sequential-input.ts  # Sequential (multi-note) collection hook
+    use-multi-tap-input.ts   # Multi-tap (spatial set) collection hook
   modes/
     {name}/
       logic.ts            # Pure mode logic: questions, answers, items, groups
       logic_test.ts        # Tests for mode logic
-      definition.ts        # Declarative mode definition (10 modes)
-      {name}-mode.tsx      # Hand-written Preact component (1 mode)
+      definition.ts        # Declarative mode definition (11 modes)
   ui/
     mode-screen.tsx       # Structural layout components (ModeScreen, QuizArea, etc.)
     buttons.tsx           # Answer button components (NoteButtons, NumberButtons, etc.)
@@ -100,17 +123,17 @@ Single-page app using Preact for UI components. Source files are ES modules
 bundled by esbuild (with automatic JSX transform) into a single IIFE `<script>`
 at build time. Key patterns:
 
-- **Declarative Modes** — 10 of 11 modes use `ModeDefinition<Q>` (20-50 lines of
+- **Declarative Modes** — All 11 modes use `ModeDefinition<Q>` (20-100 lines of
   data) interpreted by `GenericMode`, which handles all hook composition,
-  rendering, and keyboard input. Modes needing custom rendering (e.g., fretboard
-  SVG) provide a `useController` hook. 1 specialized mode (Speed Tap) remains as
-  a hand-written component.
+  rendering, and keyboard input. Three answer variants: single (`answer`),
+  sequential (`sequential`, e.g., chord spelling), and multi-tap (`multiTap`,
+  e.g., Speed Tap). Modes needing custom rendering (e.g., fretboard SVG) provide
+  a `useController` hook.
 - **Shared Hooks** — `useQuizEngine` (engine lifecycle), `useLearnerModel`
   (adaptive selector + storage), `useGroupScope` (group scope + recommendations
   for 6 modes), `useModeLifecycle` (navigation activate/deactivate for all
   modes), `useScopeState` (low-level scope persistence), `useKeyHandler`
-  (keyboard events). GenericMode composes these automatically; the hand-written
-  Speed Tap mode composes them directly.
+  (keyboard events). GenericMode composes these automatically.
 - **Shared UI Components** — `ModeScreen`, `QuizArea`, `PracticeCard`,
   `StatsTable`/`StatsGrid`, `NoteButtons`, `GroupToggles`, etc. Emit the same
   CSS class names as the build-time HTML for style parity.
@@ -150,7 +173,7 @@ graph, algorithm details, and step-by-step "adding a new quiz mode" checklist.
 | Interval ↔ Semitones | 24 (12 intervals x 2 dirs)         | Interval or number 1-12 | `m2:fwd`, `m2:rev`     |
 | Semitone Math        | 264 (12 notes x 11 x 2 dirs)       | Note name               | `C+3`, `C-3`           |
 | Interval Math        | 264 (12 notes x 11 x 2 dirs)       | Note name               | `C+m3`, `C-P4`         |
-| Key Signatures       | 24 (12 keys x 2 dirs)              | Sig label or note       | `D:fwd`, `D:rev`       |
+| Key Signatures       | 48 (24 keys x 2 dirs)              | Sig label or note       | `D:fwd`, `Am:rev`      |
 | Scale Degrees        | 144 (12 keys x 6 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `C:7:rev`   |
 | Diatonic Chords      | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral         | `Bb:IV:fwd`, `C:D:rev` |
 | Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`    |
@@ -189,7 +212,9 @@ Bidirectional modes track each direction as a separate item.
 | Guide                                                         | Contents                                                                       |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | [architecture.md](guides/architecture.md)                     | Module graph, build system, patterns, algorithms, DOM layout, adding new modes |
-| [visual-design.md](guides/design/visual-design.md)            | Color system, typography, spacing, type hierarchy, button taxonomy, elevation  |
+| [visual-design.md](guides/design/visual-design.md)            | Index to color, typography, spacing, components, patterns docs                 |
+| [typography.md](guides/design/typography.md)                  | Type system: 5-tier scale, 20 roles, intensity tiers, design principles        |
+| [color-system.md](guides/design/color-system.md)              | Color architecture, palette model, semantic families, heatmap                  |
 | [coding-style.md](guides/coding-style.md)                     | Naming, file structure, DOM rules, testing patterns                            |
 | [accidental-conventions.md](guides/accidental-conventions.md) | Sharp/flat naming rules by mode, rule priority                                 |
 | [terminology.md](guides/terminology.md)                       | User-facing terms and their internal equivalents                               |

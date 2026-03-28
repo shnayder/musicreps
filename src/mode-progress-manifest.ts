@@ -4,8 +4,8 @@
 import { GUITAR, UKULELE } from './music-data.ts';
 import {
   ALL_ITEMS as KEY_SIG_ITEMS,
+  ALL_KEY_GROUPS,
   getItemIdsForGroup as keySigGroup,
-  KEY_GROUPS,
 } from './modes/key-signatures/logic.ts';
 import {
   ALL_ITEMS as SCALE_DEG_ITEMS,
@@ -115,7 +115,7 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
   {
     modeId: 'keySignatures',
     namespace: 'keySignatures',
-    groups: buildGroupEntries(KEY_GROUPS, keySigGroup),
+    groups: buildGroupEntries(ALL_KEY_GROUPS, keySigGroup),
     allItemIds: () => KEY_SIG_ITEMS,
   },
   {

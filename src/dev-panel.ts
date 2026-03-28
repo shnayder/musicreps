@@ -1,7 +1,7 @@
 // Dev panel data: computes effort stats for display.
 // The UI lives in home-screen.tsx as a Preact component (DevPage).
 
-import { createLocalStorageAdapter } from './adaptive.ts';
+import { createStorageAdapter } from './adaptive.ts';
 import {
   computeGlobalEffort,
   computeModeEffort,
@@ -21,7 +21,7 @@ export type DevPanelData = {
 export function getDevPanelData(): DevPanelData {
   const modes = getRegisteredModes();
   const modeEfforts = modes.map((m) =>
-    computeModeEffort(m, createLocalStorageAdapter(m.namespace))
+    computeModeEffort(m, createStorageAdapter(m.namespace))
   );
   const daily = getDailyReps();
   const global = computeGlobalEffort(modeEfforts, daily);

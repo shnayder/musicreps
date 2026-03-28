@@ -28,7 +28,8 @@ import {
   semitoneMathItemIds,
 } from '../src/fixtures/heatmap-scenarios.ts';
 import { generateLocalStorageData } from '../src/fixtures/recommendation-scenarios.ts';
-import { GUITAR, MODE_NAMES } from '../src/music-data.ts';
+import { GUITAR } from '../src/music-data.ts';
+import { MODE_NAMES } from '../src/mode-catalog.ts';
 import { getGroups, getItemIdsForGroup } from '../src/modes/fretboard/logic.ts';
 import { getItemIdsForGroup as semiMathGetGroup } from '../src/modes/semitone-math/logic.ts';
 import { getItemIdsForGroup as keySigGetGroup } from '../src/modes/key-signatures/logic.ts';
@@ -429,11 +430,20 @@ export function buildManifest(): ScreenshotEntry[] {
       ...perGroupScenario('fretboard', groups),
       fretboard_enabledGroups: JSON.stringify(enabledIndices),
     };
-    // Practice tab (default view)
+    // Practice tab — suggested mode (default)
     entries.push({
       name: `design-fretboard-practice-${label}`,
       modeId: 'fretboard',
       localStorageData: data,
+    });
+    // Practice tab — custom mode
+    entries.push({
+      name: `design-fretboard-custom-${label}`,
+      modeId: 'fretboard',
+      localStorageData: {
+        ...data,
+        fretboard_enabledGroups_practiceMode: 'custom',
+      },
     });
     // Progress tab
     entries.push({

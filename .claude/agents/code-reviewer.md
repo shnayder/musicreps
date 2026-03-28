@@ -156,8 +156,8 @@ State one of:
 - **Be specific.** Reference exact file names and line numbers (`file.js:42`).
 - **Show code.** When suggesting fixes, write concrete code — not vague advice.
 - **Don't skip categories.** Say "None found" explicitly if clean.
-- **Prioritize the dual build file requirement.** Changes to `main.ts` without
-  matching `build.ts` changes (or vice versa) are the most common bug. Check
-  first.
+- **Check build consistency.** esbuild resolves the module graph from
+  `src/app.ts` — verify new source files have proper imports/exports and that
+  `deno task build` produces correct output.
 - **No cosmetic nits.** Don't comment on formatting, naming style, or whitespace
   unless it materially affects readability or correctness.

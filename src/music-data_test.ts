@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { MODE_BEFORE_AFTER } from './mode-catalog.ts';
 import {
   CHORD_ROOTS,
   CHORD_TYPES,
@@ -23,7 +24,6 @@ import {
   keySignatureLabel,
   LETTER_NAMES,
   MAJOR_KEYS,
-  MODE_BEFORE_AFTER,
   NATURAL_NOTES,
   noteAdd,
   noteByNum,
@@ -1371,6 +1371,7 @@ describe('MODE_BEFORE_AFTER respects solfège', () => {
       setUseSolfege(false);
       const ba = MODE_BEFORE_AFTER.semitoneMath;
       assert.ok(ba.before().includes('F\u266F'));
+      assert.ok(ba.after().includes('F\u266F'));
       assert.ok(!ba.before().includes('Fa'));
     } finally {
       setUseSolfege(original);
@@ -1383,9 +1384,19 @@ describe('MODE_BEFORE_AFTER respects solfège', () => {
       setUseSolfege(true);
       const ba = MODE_BEFORE_AFTER.semitoneMath;
       assert.ok(ba.before().includes('Fa'));
+      assert.ok(ba.after().includes('Fa'));
       assert.ok(!ba.before().includes('F\u266F'));
     } finally {
       setUseSolfege(original);
+    }
+  });
+
+  it('all modes produce non-empty strings', () => {
+    for (const [key, ba] of Object.entries(MODE_BEFORE_AFTER)) {
+      const before = ba.before();
+      const after = ba.after();
+      assert.ok(before.length > 0, `${key} before is empty`);
+      assert.ok(after.length > 0, `${key} after is empty`);
     }
   });
 });

@@ -16,136 +16,32 @@ import {
 // Reusable button blocks
 // ---------------------------------------------------------------------------
 
-/** Piano-style note buttons: naturals in bottom row, accidentals above. */
-export function pianoNoteButtons(): string {
-  return `<div class="note-buttons">
-        <div class="note-row-accidentals">
-          <button tabindex="0" class="note-btn accidental" data-note="C#">C#</button>
-          <button tabindex="0" class="note-btn accidental" data-note="D#">D#</button>
-          <button tabindex="0" class="note-btn accidental" data-note="F#">F#</button>
-          <button tabindex="0" class="note-btn accidental" data-note="G#">G#</button>
-          <button tabindex="0" class="note-btn accidental" data-note="A#">A#</button>
-        </div>
-        <div class="note-row-naturals">
-          <button tabindex="0" class="note-btn" data-note="C">C</button>
-          <button tabindex="0" class="note-btn" data-note="D">D</button>
-          <button tabindex="0" class="note-btn" data-note="E">E</button>
-          <button tabindex="0" class="note-btn" data-note="F">F</button>
-          <button tabindex="0" class="note-btn" data-note="G">G</button>
-          <button tabindex="0" class="note-btn" data-note="A">A</button>
-          <button tabindex="0" class="note-btn" data-note="B">B</button>
-        </div>
-      </div>`;
+// Build-time button placeholders — Preact replaces these on mount.
+// Keep the container divs so the HTML structure is valid.
+
+/** Note answer buttons placeholder. */
+export function noteAnswerButtons(): string {
+  return '<div class="answer-grid"></div>';
 }
 
-/** 12-note answer button grid (C, C#, D, ... B). */
-export function noteAnswerButtons(opts?: { hidden?: boolean }): string {
-  const notes: [string, string][] = [
-    ['C', 'C'],
-    ['C#', 'C#'],
-    ['D', 'D'],
-    ['D#', 'D#'],
-    ['E', 'E'],
-    ['F', 'F'],
-    ['F#', 'F#'],
-    ['G', 'G'],
-    ['G#', 'G#'],
-    ['A', 'A'],
-    ['A#', 'A#'],
-    ['B', 'B'],
-  ];
-  const cls = opts?.hidden ? ' answer-group-hidden' : '';
-  return `<div class="answer-buttons answer-buttons-notes${cls}">\n` +
-    notes.map(([val, label]) =>
-      `        <button tabindex="0" class="answer-btn answer-btn-note" data-note="${val}">${label}</button>`
-    ).join('\n') + '\n      </div>';
+/** Number answer buttons placeholder. */
+export function numberButtons(_start: number, _end: number): string {
+  return '<div class="answer-grid"></div>';
 }
 
-/** Number answer buttons (start..end inclusive). */
-export function numberButtons(start: number, end: number): string {
-  const btns = [];
-  for (let i = start; i <= end; i++) {
-    btns.push(
-      `        <button tabindex="0" class="answer-btn answer-btn-num" data-num="${i}">${i}</button>`,
-    );
-  }
-  return `<div class="answer-buttons answer-buttons-numbers">\n` +
-    btns.join('\n') + '\n      </div>';
-}
-
-/** Interval answer buttons (m2..P8). */
+/** Interval answer buttons placeholder. */
 export function intervalAnswerButtons(): string {
-  const intervals = [
-    'm2',
-    'M2',
-    'm3',
-    'M3',
-    'P4',
-    'TT',
-    'P5',
-    'm6',
-    'M6',
-    'm7',
-    'M7',
-    'P8',
-  ];
-  return `<div class="answer-buttons answer-buttons-intervals">\n` +
-    intervals.map((i) =>
-      `        <button tabindex="0" class="answer-btn answer-btn-interval" data-interval="${i}">${i}</button>`
-    ).join('\n') + '\n      </div>';
+  return '<div class="answer-grid"></div>';
 }
 
-/** Key signature answer buttons (0, 1#..7#, 1b..7b). */
-export function keysigAnswerButtons(): string {
-  const sigs = [
-    '0',
-    '1#',
-    '2#',
-    '3#',
-    '4#',
-    '5#',
-    '6#',
-    '7#',
-    '1b',
-    '2b',
-    '3b',
-    '4b',
-    '5b',
-    '6b',
-    '7b',
-  ];
-  return `<div class="answer-buttons answer-buttons-keysig">\n` +
-    sigs.map((s) =>
-      `        <button tabindex="0" class="answer-btn answer-btn-keysig" data-sig="${s}">${s}</button>`
-    ).join('\n') + '\n      </div>';
+/** Scale degree answer buttons placeholder. */
+export function degreeAnswerButtons(): string {
+  return '<div class="answer-grid"></div>';
 }
 
-/** Scale degree answer buttons (1st..7th). */
-export function degreeAnswerButtons(opts?: { hidden?: boolean }): string {
-  const degrees: [string, string][] = [
-    ['1', '1st'],
-    ['2', '2nd'],
-    ['3', '3rd'],
-    ['4', '4th'],
-    ['5', '5th'],
-    ['6', '6th'],
-    ['7', '7th'],
-  ];
-  const cls = opts?.hidden ? ' answer-group-hidden' : '';
-  return `<div class="answer-buttons answer-buttons-degrees${cls}">\n` +
-    degrees.map(([val, label]) =>
-      `        <button tabindex="0" class="answer-btn answer-btn-degree" data-degree="${val}">${label}</button>`
-    ).join('\n') + '\n      </div>';
-}
-
-/** Roman numeral answer buttons (I, ii, iii, IV, V, vi, vii\u00B0). */
-export function numeralAnswerButtons(opts?: { hidden?: boolean }): string {
-  const numerals = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii\u00B0'];
-  const cls = opts?.hidden ? ' answer-group-hidden' : '';
-  return `<div class="answer-buttons answer-buttons-numerals${cls}">\n` +
-    numerals.map((n) =>
-      `        <button tabindex="0" class="answer-btn answer-btn-numeral" data-numeral="${n}">${n}</button>`
-    ).join('\n') + '\n      </div>';
+/** Roman numeral answer buttons placeholder. */
+export function numeralAnswerButtons(): string {
+  return '<div class="answer-grid"></div>';
 }
 
 // ---------------------------------------------------------------------------
@@ -208,9 +104,8 @@ export function tabbedIdleHTML(config: {
     ? `\n          <div class="practice-scope">\n            <div class="settings-row">\n              ${config.practiceScope}\n            </div>\n          </div>`
     : '';
   const recBlock = `<div class="suggestion-card">
-            <div class="suggestion-card-header">Suggestion</div>
             <div class="suggestion-card-body">
-              <span class="suggestion-card-text"></span>
+              <div class="suggestion-card-header suggestion-card-text"></div>
               <button tabindex="0" class="suggestion-card-accept">Accept</button>
             </div>
           </div>`;

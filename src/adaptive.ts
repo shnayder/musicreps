@@ -11,6 +11,7 @@ import type {
   StorageAdapter,
   StringRecommendation,
 } from './types.ts';
+import { storage } from './storage.ts';
 
 export const DEFAULT_CONFIG: AdaptiveConfig = {
   minTime: 1000,
@@ -602,10 +603,11 @@ export function createMemoryStorage(): StorageAdapter {
 }
 
 // ---------------------------------------------------------------------------
-// localStorage-backed storage (for browser)
+// Persisted storage (uses storage abstraction — localStorage on web,
+// Capacitor Preferences on native)
 // ---------------------------------------------------------------------------
 
-export function createLocalStorageAdapter(namespace: string): StorageAdapter {
+export function createStorageAdapter(namespace: string): StorageAdapter {
   const cache: Record<string, ItemStats | number | null> = {};
   const mkKey = (itemId: string): string => `adaptive_${namespace}_${itemId}`;
   const dlKey = (itemId: string): string => `deadline_${namespace}_${itemId}`;
@@ -615,7 +617,7 @@ export function createLocalStorageAdapter(namespace: string): StorageAdapter {
     getStats(itemId: string): ItemStats | null {
       const k = mkKey(itemId);
       if (!(k in cache)) {
-        const data = localStorage.getItem(k);
+        const data = storage.getItem(k);
         try {
           cache[k] = data ? JSON.parse(data) : null;
         } catch {
@@ -627,18 +629,18 @@ export function createLocalStorageAdapter(namespace: string): StorageAdapter {
     saveStats(itemId: string, stats: ItemStats): void {
       const k = mkKey(itemId);
       cache[k] = stats;
-      localStorage.setItem(k, JSON.stringify(stats));
+      storage.setItem(k, JSON.stringify(stats));
     },
     getLastSelected(): string | null {
-      return localStorage.getItem(lastKey);
+      return storage.getItem(lastKey);
     },
     setLastSelected(itemId: string): void {
-      localStorage.setItem(lastKey, itemId);
+      storage.setItem(lastKey, itemId);
     },
     getDeadline(itemId: string): number | null {
       const k = dlKey(itemId);
       if (!(k in cache)) {
-        const data = localStorage.getItem(k);
+        const data = storage.getItem(k);
         cache[k] = data ? Number(data) : null;
       }
       return cache[k] as number | null;
@@ -646,9 +648,9 @@ export function createLocalStorageAdapter(namespace: string): StorageAdapter {
     saveDeadline(itemId: string, deadline: number): void {
       const k = dlKey(itemId);
       cache[k] = deadline;
-      localStorage.setItem(k, String(deadline));
+      storage.setItem(k, String(deadline));
     },
-    /** Pre-populate cache to avoid localStorage reads during gameplay. */
+    /** Pre-populate cache to avoid storage reads during gameplay. */
     preload(itemIds: string[]): void {
       for (const itemId of itemIds) {
         this.getStats(itemId);

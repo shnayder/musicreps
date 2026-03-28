@@ -5,6 +5,7 @@ import type {
   AdaptiveSelector,
   PracticeSummaryState,
   RecommendationResult,
+  SuggestionLine,
 } from './types.ts';
 import { computeLevelPercentile } from './adaptive.ts';
 
@@ -40,6 +41,80 @@ export function statusLabelFromLevel(level: number): string {
   return 'Hesitant';
 }
 
+// Re-export for consumers that import from mode-ui-state.
+export type { SuggestionLine } from './types.ts';
+
+/**
+ * Group levelRecs by type, deduplicating indices by highest priority.
+ * Returns a record mapping rec type to sorted group indices.
+ */
+function groupRecsByType(
+  levelRecs: RecommendationResult['levelRecs'],
+): Record<string, number[]> {
+  const seen = new Set<number>();
+  const byType: Record<string, number[]> = {};
+  for (const rec of levelRecs) {
+    if (seen.has(rec.index)) continue;
+    seen.add(rec.index);
+    if (!byType[rec.type]) byType[rec.type] = [];
+    byType[rec.type].push(rec.index);
+  }
+  return byType;
+}
+
+/**
+ * Build structured recommendation lines from a RecommendationResult.
+ * Each line has a capitalized verb and array of level labels.
+ */
+export function buildRecommendationLines(
+  result: RecommendationResult,
+  getGroupLabel: (index: number) => string,
+): SuggestionLine[] {
+  if (result.recommended.size === 0) return [];
+
+  const byType = groupRecsByType(result.levelRecs);
+  const lines: SuggestionLine[] = [];
+
+  if (byType['review']) {
+    const labels = byType['review'].sort((a, b) => a - b).map(getGroupLabel);
+    lines.push({ verb: 'Review', levels: labels });
+  }
+  if (byType['practice']) {
+    const labels = byType['practice'].sort((a, b) => a - b).map(getGroupLabel);
+    lines.push({ verb: 'Practice', levels: labels });
+  }
+  if (byType['expand'] && result.expandIndex !== null) {
+    const suffix = ' \u2014 ' + result.expandNewCount + ' new item' +
+      (result.expandNewCount !== 1 ? 's' : '');
+    lines.push({
+      verb: 'Start',
+      levels: [getGroupLabel(result.expandIndex) + suffix],
+    });
+  }
+  if (byType['automate']) {
+    const labels = byType['automate'].sort((a, b) => a - b).map(getGroupLabel);
+    lines.push({ verb: 'Keep practicing', levels: labels });
+  }
+
+  return lines;
+}
+
+/** Map a SuggestionLine verb back to the flat text verb for buildRecommendationText. */
+function flatVerb(line: SuggestionLine): string {
+  switch (line.verb) {
+    case 'Review':
+      return 'review';
+    case 'Practice':
+      return 'practice';
+    case 'Start':
+      return 'start';
+    case 'Keep practicing':
+      return 'automate';
+    default:
+      return line.verb.toLowerCase();
+  }
+}
+
 /**
  * Build recommendation rationale text from a RecommendationResult.
  * Generates a unified string from `result.levelRecs` — same text shown
@@ -55,39 +130,10 @@ export function buildRecommendationText(
 ): string {
   if (result.recommended.size === 0) return '';
 
-  const parts: string[] = [];
-
-  // Group levelRecs by type, preserving priority order.
-  // Each index appears only under its first (highest-priority) type.
-  const seen = new Set<number>();
-  const byType: Record<string, number[]> = {};
-  for (const rec of result.levelRecs) {
-    if (seen.has(rec.index)) continue;
-    seen.add(rec.index);
-    if (!byType[rec.type]) byType[rec.type] = [];
-    byType[rec.type].push(rec.index);
-  }
-
-  // Emit each type in priority order.
-  if (byType['review']) {
-    const labels = byType['review'].sort((a, b) => a - b).map(getGroupLabel);
-    parts.push('review ' + labels.join(', '));
-  }
-  if (byType['practice']) {
-    const labels = byType['practice'].sort((a, b) => a - b).map(getGroupLabel);
-    parts.push('practice ' + labels.join(', '));
-  }
-  if (byType['expand'] && result.expandIndex !== null) {
-    parts.push(
-      'start ' + getGroupLabel(result.expandIndex) +
-        ' \u2014 ' + result.expandNewCount + ' new item' +
-        (result.expandNewCount !== 1 ? 's' : ''),
-    );
-  }
-  if (byType['automate']) {
-    const labels = byType['automate'].sort((a, b) => a - b).map(getGroupLabel);
-    parts.push('automate ' + labels.join(', '));
-  }
+  const lines = buildRecommendationLines(result, getGroupLabel);
+  const parts = lines.map((line) =>
+    flatVerb(line) + ' ' + line.levels.join(', ')
+  );
 
   if (extraParts) {
     for (let i = 0; i < extraParts.length; i++) {

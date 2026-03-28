@@ -8,14 +8,15 @@ declare global {
 }
 
 import { h, render } from 'preact';
-import { GUITAR, UKULELE } from './music-data.ts';
+import { GUITAR, loadNotationPreference, UKULELE } from './music-data.ts';
 import { createNavigation } from './navigation.ts';
 import { createSettingsController } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
 import type { ModeHandle } from './types.ts';
-import { HomeScreen } from './ui/home-screen.tsx';
+import { cleanupLegacyKeys, HomeScreen } from './ui/home-screen.tsx';
 import { APP_CONFIG } from './app-config.ts';
 import { registerModeForEffort } from './effort.ts';
+import { initStorage, migrateFromLocalStorage } from './storage.ts';
 
 // Declarative mode definitions + GenericMode
 import { GenericMode } from './declarative/generic-mode.tsx';
@@ -31,49 +32,18 @@ import { DIATONIC_CHORDS_DEF } from './modes/diatonic-chords/definition.ts';
 import { createFretboardDef } from './modes/fretboard/definition.tsx';
 import { CHORD_SPELLING_DEF } from './modes/chord-spelling/definition.ts';
 
-// Hand-written modes (too specialized for GenericMode)
-import { SpeedTapMode } from './modes/speed-tap/speed-tap-mode.tsx';
-import { ALL_ITEMS as SPEED_TAP_ITEMS } from './modes/speed-tap/logic.ts';
+import { SPEED_TAP_DEF } from './modes/speed-tap/definition.tsx';
 
 // Enable :active pseudo-class on iOS Safari. WebKit doesn't fire :active on
 // touch unless the document has a touchstart listener.
 document.addEventListener('touchstart', () => {}, { passive: true });
 
-const nav = createNavigation();
-
-// --- Preact-based modes ---
-
+// --- Declarative modes — GenericMode interprets each ModeDefinition ---
 // deno-lint-ignore no-explicit-any
-function registerPreactMode(id: string, name: string, Component: any) {
-  let handle: ModeHandle | null = null;
-  const container = document.getElementById('mode-' + id)!;
-  nav.registerMode(id, {
-    name,
-    init() {
-      container.textContent = ''; // Clear build-time HTML before Preact takes over
-      render(
-        h(Component, {
-          container,
-          navigateHome: () => nav.navigateHome(),
-          onMount: (h: ModeHandle) => {
-            handle = h;
-          },
-        }),
-        container,
-      );
-    },
-    activate() {
-      handle?.activate();
-    },
-    deactivate() {
-      handle?.deactivate();
-    },
-  });
-}
-
-// Declarative modes — GenericMode interprets the definition
-// deno-lint-ignore no-explicit-any
-function registerDeclarativeMode(def: ModeDefinition<any>) {
+function registerDeclarativeMode(
+  nav: ReturnType<typeof createNavigation>,
+  def: ModeDefinition<any>,
+) {
   registerModeForEffort({
     id: def.id,
     namespace: def.namespace,
@@ -106,60 +76,79 @@ function registerDeclarativeMode(def: ModeDefinition<any>) {
   });
 }
 
-// Declarative modes
-registerDeclarativeMode(createFretboardDef(GUITAR));
-registerDeclarativeMode(createFretboardDef(UKULELE));
-registerDeclarativeMode(NOTE_SEMITONES_DEF);
-registerDeclarativeMode(INTERVAL_SEMITONES_DEF);
-registerDeclarativeMode(SEMITONE_MATH_DEF);
-registerDeclarativeMode(INTERVAL_MATH_DEF);
-registerDeclarativeMode(KEY_SIGNATURES_DEF);
-registerDeclarativeMode(SCALE_DEGREES_DEF);
-registerDeclarativeMode(DIATONIC_CHORDS_DEF);
-registerDeclarativeMode(CHORD_SPELLING_DEF);
+async function boot() {
+  // Initialize storage backend before anything reads persisted data.
+  // On web this is instant (localStorage). On native (Capacitor) it
+  // bulk-loads Preferences into an in-memory cache.
+  await initStorage();
 
-// Hand-written modes (too specialized for GenericMode)
-registerModeForEffort({
-  id: 'speedTap',
-  namespace: 'speedTap',
-  allItems: SPEED_TAP_ITEMS,
-});
-registerPreactMode('speedTap', 'Speed Tap', SpeedTapMode);
+  const isNativeApp = !!window.Capacitor;
 
-nav.init();
+  // One-time migration: copy localStorage → Capacitor Preferences on
+  // first native launch so existing users don't lose data.  Must run
+  // before any persisted reads so migrated values are visible.
+  if (isNativeApp) {
+    await migrateFromLocalStorage();
+  }
 
-// Settings state controller — re-render on notation change
-const settings = createSettingsController({
-  onNotationChange(): void {
-    document.querySelectorAll('.mode-screen.mode-active').forEach(
-      (el: Element) => {
-        refreshNoteButtonLabels(el as HTMLElement);
-      },
-    );
-  },
-});
+  // Deferred reads — after initStorage() + migration so the cache
+  // is fully populated before any storage.getItem calls.
+  loadNotationPreference();
+  cleanupLegacyKeys();
 
-const isNativeApp = !!window.Capacitor;
-if (isNativeApp) document.body.classList.add('native-app');
+  const nav = createNavigation();
 
-// Mount Preact home screen — replaces static build-time HTML
-const homeRoot = document.getElementById('home-screen')!;
-const version = homeRoot.dataset.version || '';
-homeRoot.textContent = '';
-render(
-  h(HomeScreen, {
-    onSelectMode: (modeId: string) => nav.switchTo(modeId),
-    settings,
-    appConfig: APP_CONFIG,
-    showDevLink: true,
-    version,
-    isNativeApp,
-  }),
-  homeRoot,
-);
+  // Declarative modes
+  registerDeclarativeMode(nav, createFretboardDef(GUITAR));
+  registerDeclarativeMode(nav, createFretboardDef(UKULELE));
+  registerDeclarativeMode(nav, NOTE_SEMITONES_DEF);
+  registerDeclarativeMode(nav, INTERVAL_SEMITONES_DEF);
+  registerDeclarativeMode(nav, SEMITONE_MATH_DEF);
+  registerDeclarativeMode(nav, INTERVAL_MATH_DEF);
+  registerDeclarativeMode(nav, KEY_SIGNATURES_DEF);
+  registerDeclarativeMode(nav, SCALE_DEGREES_DEF);
+  registerDeclarativeMode(nav, DIATONIC_CHORDS_DEF);
+  registerDeclarativeMode(nav, CHORD_SPELLING_DEF);
+  registerDeclarativeMode(nav, SPEED_TAP_DEF);
 
-// Register service worker for cache busting on iOS home screen
-// Skip in Capacitor — app runs from local files, no SW needed
-if ('serviceWorker' in navigator && !isNativeApp) {
-  navigator.serviceWorker.register('sw.js');
+  nav.init();
+
+  // Settings state controller — re-render on notation change
+  const settings = createSettingsController({
+    onNotationChange(): void {
+      document.querySelectorAll('.mode-screen.mode-active').forEach(
+        (el: Element) => {
+          refreshNoteButtonLabels(el as HTMLElement);
+        },
+      );
+    },
+  });
+
+  if (isNativeApp) document.body.classList.add('native-app');
+
+  // Mount Preact home screen — replaces static build-time HTML
+  const homeRoot = document.getElementById('home-screen')!;
+  const version = homeRoot.dataset.version || '';
+  homeRoot.textContent = '';
+  render(
+    h(HomeScreen, {
+      onSelectMode: (modeId: string) => nav.switchTo(modeId),
+      settings,
+      appConfig: APP_CONFIG,
+      showDevLink: true,
+      version,
+      isNativeApp,
+    }),
+    homeRoot,
+  );
+
+  // Register service worker for cache busting on iOS home screen
+  // Skip in Capacitor — app runs from local files, no SW needed
+  if ('serviceWorker' in navigator && !isNativeApp) {
+    navigator.serviceWorker.register('sw.js');
+  }
 }
+
+boot().catch((err) => {
+  console.error('Boot failed:', err);
+});

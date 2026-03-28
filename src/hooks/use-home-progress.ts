@@ -3,10 +3,11 @@
 // recomputed on mount and on navigate-home.
 
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import type { AdaptiveSelector, StorageAdapter } from '../types.ts';
+import type { StorageAdapter } from '../types.ts';
+import { storage } from '../storage.ts';
 import {
   createAdaptiveSelector,
-  createLocalStorageAdapter,
+  createStorageAdapter,
   deriveScaledConfig,
 } from '../adaptive.ts';
 import {
@@ -14,8 +15,10 @@ import {
   type ModeProgressEntry,
 } from '../mode-progress-manifest.ts';
 import {
-  getSpeedFreshnessColor,
-  getStatsCellColorMerged,
+  type GroupBarSegment,
+  progressBarColors,
+  progressBarGroupColor,
+  progressBarGroupSegment,
 } from '../stats-display.ts';
 import {
   computeSkillRecommendation,
@@ -35,27 +38,14 @@ export type ModeProgress = {
 // Pure computation (no hooks — testable)
 // ---------------------------------------------------------------------------
 
-/** Average speed score across items (unseen → 0). Used for sort order. */
-function averageSpeed(
-  selector: Pick<AdaptiveSelector, 'getSpeedScore'>,
-  itemIds: string[],
-): number {
-  if (itemIds.length === 0) return 0;
-  let sum = 0;
-  for (const id of itemIds) {
-    sum += selector.getSpeedScore(id) ?? 0;
-  }
-  return sum / itemIds.length;
-}
-
 /**
- * Load skipped group indices from localStorage.
+ * Load skipped group indices from storage.
  * Convention: key = `{namespace}_enabledGroups_skipped`.
  * Format: [[index, reason], ...] where reason is 'mastered' | 'deferred'.
  */
 export function loadSkippedGroups(namespace: string): ReadonlySet<number> {
   try {
-    const raw = localStorage.getItem(namespace + '_enabledGroups_skipped');
+    const raw = storage.getItem(namespace + '_enabledGroups_skipped');
     if (!raw) return new Set();
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return new Set();
@@ -86,30 +76,41 @@ export function computeProgressForMode(
     : undefined;
   const selector = createAdaptiveSelector(storage, cfg);
 
-  // Compute per-group color + speed, then sort descending
-  type Segment = { color: string; speed: number };
-  const segments: Segment[] = [];
+  // Single-group modes: per-item colors to match the skill screen
+  // (which uses progressBarColors for non-group scopes).
+  if (entry.groups.length === 1) {
+    if (skippedGroups?.has(0)) {
+      return { groupColors: [progressBarGroupColor(selector, [])] };
+    }
+    return {
+      groupColors: progressBarColors(selector, entry.allItemIds()),
+    };
+  }
+
+  // Multi-group modes: one segment per group, then sort.
+  const segments: GroupBarSegment[] = [];
   for (let i = 0; i < entry.groups.length; i++) {
     if (skippedGroups?.has(i)) continue;
-    const ids = entry.groups[i].getItemIds();
-    segments.push({
-      color: getStatsCellColorMerged(selector, ids),
-      speed: averageSpeed(selector, ids),
-    });
+    segments.push(
+      progressBarGroupSegment(selector, entry.groups[i].getItemIds()),
+    );
   }
 
   // All groups skipped → single "unseen" segment
   if (segments.length === 0) {
-    return { groupColors: [getSpeedFreshnessColor(null, null)] };
+    return { groupColors: [progressBarGroupColor(selector, [])] };
   }
 
-  segments.sort((a, b) => b.speed - a.speed);
+  segments.sort((a, b) => {
+    if (a.zone !== b.zone) return a.zone - b.zone;
+    return b.speed - a.speed;
+  });
   return { groupColors: segments.map((s) => s.color) };
 }
 
 /** Compute progress for all modes. Exported for testing. */
 export function computeAllProgress(
-  createStorage: (ns: string) => StorageAdapter = createLocalStorageAdapter,
+  createStorage: (ns: string) => StorageAdapter = createStorageAdapter,
   motorBaseline: number | null = null,
   getSkipped: (ns: string) => ReadonlySet<number> = loadSkippedGroups,
 ): Map<string, ModeProgress> {
@@ -139,7 +140,7 @@ export function computeAllProgress(
  */
 export function computeAllRecommendations(
   starred: ReadonlySet<string>,
-  createStorage: (ns: string) => StorageAdapter = createLocalStorageAdapter,
+  createStorage: (ns: string) => StorageAdapter = createStorageAdapter,
   motorBaseline: number | null = null,
   getSkipped: (ns: string) => ReadonlySet<number> = loadSkippedGroups,
   definitionOrder?: string[],
@@ -169,13 +170,13 @@ export function computeAllRecommendations(
 }
 
 // ---------------------------------------------------------------------------
-// localStorage helpers
+// storage helpers
 // ---------------------------------------------------------------------------
 
-/** Read motor baseline from localStorage (with NaN guard). */
+/** Read motor baseline from storage (with NaN guard). */
 function readMotorBaseline(): number | null {
   try {
-    const raw = localStorage.getItem('motorBaseline_note-button');
+    const raw = storage.getItem('motorBaseline_note-button');
     if (raw) {
       const n = Number(raw);
       if (!isNaN(n) && n > 0) return n;
@@ -229,12 +230,12 @@ export function useHomeProgress(
   return useMemo(() => {
     const baseline = readMotorBaseline();
     const progress = computeAllProgress(
-      createLocalStorageAdapter,
+      createStorageAdapter,
       baseline,
     );
     const recommendations = computeAllRecommendations(
       starred,
-      createLocalStorageAdapter,
+      createStorageAdapter,
       baseline,
     );
     return { progress, recommendations };

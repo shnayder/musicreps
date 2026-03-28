@@ -5,11 +5,10 @@ import {
   displayNote,
   isValidNoteInput,
   isValidNumeralInput,
-  MODE_BEFORE_AFTER,
-  MODE_DESCRIPTIONS,
   ROMAN_NUMERALS,
   rootUsesFlats,
 } from '../../music-data.ts';
+import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_INDICES,
@@ -39,6 +38,8 @@ export const DIATONIC_CHORDS_DEF: ModeDefinition<Question> = {
         displayNote(q.keyRoot) + ' major'
       : displayNote(q.rootNote) + q.chord.qualityLabel +
         ' in ' + displayNote(q.keyRoot) + ' major',
+  quizInstruction: (q) =>
+    q.dir === 'fwd' ? 'What chord root?' : 'What numeral?',
   answer: {
     kind: 'bidirectional',
     fwd: {

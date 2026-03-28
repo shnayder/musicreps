@@ -43,10 +43,10 @@ For each screen state, list elements in interaction-priority order.
 
 | Element | Content role | Component / class | Notes |
 |---------|-------------|-------------------|-------|
-| Section title | section-header | `<Text role='section-header'>` | |
+| Section title | heading-section | `<Text role='heading-section'>` | |
 | Status label | label | `<Text role='label'>` | |
-| Measured value | metric | `<Text role='metric'>` | |
-| Explanation | caption | `<Text role='caption'>` | |
+| Measured value | metric-primary | `<Text role='metric-primary'>` | |
+| Explanation | supporting | `<Text role='supporting'>` | |
 | Primary CTA | — | `<ActionButton variant='primary'>` | |
 | Cancel | — | `<ActionButton variant='secondary'>` | |
 
@@ -71,7 +71,7 @@ Which existing patterns are composed:
 Any intentional departures from standard recipes, with rationale.
 
 Example: "Suggestion card header uses subsection-header sizing but
-`--color-recommended` instead of `--color-text-muted` — branded emphasis."
+`--color-notice` instead of `--color-text-muted` — branded emphasis."
 
 ## Resolved Decisions
 

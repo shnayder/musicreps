@@ -108,11 +108,13 @@ type Layer =
 const FOUNDATION = new Set([
   'src/types.ts',
   'src/music-data.ts',
+  'src/mode-catalog.ts',
   'src/adaptive.ts',
   'src/app-config.ts',
   'src/deadline.ts',
   'src/recommendations.ts',
   'src/effort.ts',
+  'src/storage.ts',
 ]);
 
 const ENGINE = new Set([
@@ -155,6 +157,7 @@ function classifyLayer(file: string): Layer {
   if (file.startsWith('src/ui/')) return 'ui';
   if (file === 'src/declarative/types.ts') return 'hooks';
   if (file === 'src/declarative/use-sequential-input.ts') return 'hooks';
+  if (file === 'src/declarative/use-multi-tap-input.ts') return 'hooks';
   if (file === 'src/declarative/generic-mode.tsx') return 'ui';
   if (file.match(/src\/modes\/[^/]+\/logic\.ts$/)) return 'mode-logic';
   if (file.startsWith('src/modes/')) return 'mode-component';

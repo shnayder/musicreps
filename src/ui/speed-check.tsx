@@ -1,6 +1,6 @@
-// SpeedCheck + BaselineInfo — standalone calibration component.
-// SpeedCheck owns the full calibration lifecycle: intro → trial loop → results.
-// BaselineInfo shows the baseline in the progress tab with a run/rerun button.
+// SpeedCheck — standalone calibration component.
+// Owns the full calibration lifecycle: intro → trial loop → results.
+// BaselineInfo (progress tab inline display) lives in mode-screen.tsx.
 
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { type ButtonFeedback, NoteButtons } from './buttons.tsx';
@@ -14,6 +14,15 @@ import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { KeyboardHint } from './quiz-ui.tsx';
 import { isValidNoteInput, resolveNoteInput } from '../music-data.ts';
+import { CloseButton } from './mode-screen.tsx';
+import {
+  CenteredContent,
+  LayoutFooter,
+  LayoutHeader,
+  LayoutMain,
+  QuizStage,
+  ScreenLayout,
+} from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
 // Motor task configuration
@@ -64,87 +73,20 @@ const PAUSE_MS = 400;
 const WRONG_FEEDBACK_MS = 800;
 
 // ---------------------------------------------------------------------------
-// CloseButton — reusable close button with proper touch target
-// ---------------------------------------------------------------------------
-
-function CloseButton(
-  { onClick, label = 'Close' }: { onClick: () => void; label?: string },
-) {
-  return (
-    <button
-      type='button'
-      tabIndex={0}
-      class='quiz-header-close'
-      aria-label={label}
-      onClick={onClick}
-    >
-      {'\u00D7'}
-    </button>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// SpeedCheckHeader — replaces QuizSession during speed check
+// SpeedCheckHeader — chrome bar with label, optional count, and close button
 // ---------------------------------------------------------------------------
 
 function SpeedCheckHeader(
-  { trialProgress, onClose }: { trialProgress?: string; onClose: () => void },
+  { count, onClose }: { count?: string; onClose: () => void },
 ) {
   return (
-    <div class='quiz-session'>
-      <div class='quiz-session-header'>
-        <div class='quiz-session-header-content'>
-          <div class='speed-check-header-row'>
-            <h1 class='mode-title'>Speed Check</h1>
-            {trialProgress && (
-              <span class='speed-check-header-progress'>
-                {trialProgress}
-              </span>
-            )}
-          </div>
-        </div>
-        <CloseButton onClick={onClose} label='Cancel speed check' />
+    <LayoutHeader>
+      <div class='speed-check-header'>
+        <Text role='heading-page' class='speed-check-label'>Speed Check</Text>
+        {count && <Text role='metric-info'>{count}</Text>}
+        <CloseButton ariaLabel='Cancel speed check' onClick={onClose} />
       </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// BaselineInfo — progress tab inline component
-// ---------------------------------------------------------------------------
-
-export function BaselineInfo(
-  { baseline, onRun }: { baseline: number | null; onRun: () => void },
-) {
-  const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
-  const tag = baseline
-    ? null
-    : <Text role='caption' class='baseline-default-tag'>(default)</Text>;
-  const btnLabel = baseline ? 'Redo speed check' : 'Run speed check';
-  return (
-    <div class='baseline-info'>
-      <Text role='subsection-header' as='div' class='baseline-header'>
-        Speed check
-      </Text>
-      <div class='baseline-metric'>
-        <Text role='label'>Response time for note input</Text>
-        <Text role='metric'>
-          {value}
-          {tag && <>{tag}</>}
-        </Text>
-      </div>
-      <Text role='caption' as='div' class='baseline-explanation'>
-        Timing thresholds are based on this measurement.
-      </Text>
-      <button
-        type='button'
-        tabIndex={0}
-        class='baseline-rerun-btn'
-        onClick={onRun}
-      >
-        {btnLabel}
-      </button>
-    </div>
+    </LayoutHeader>
   );
 }
 
@@ -347,24 +289,16 @@ function SpeedCheckInput(
 // ---------------------------------------------------------------------------
 
 function SpeedCheckIntro(
-  { title, text, onStart }: {
+  { title, text }: {
     title: string;
     text: string;
-    onStart: () => void;
   },
 ) {
   return (
-    <>
-      <div class='quiz-content calibration-results'>
-        <Text role='section-header' as='h2'>{title}</Text>
-        <p>{text}</p>
-      </div>
-      <div class='quiz-controls'>
-        <ActionButton variant='primary' class='next-btn' onClick={onStart}>
-          Start
-        </ActionButton>
-      </div>
-    </>
+    <div class='calibration-results'>
+      <Text role='heading-section' as='h2'>{title}</Text>
+      <p>{text}</p>
+    </div>
   );
 }
 
@@ -373,59 +307,45 @@ function SpeedCheckIntro(
 // ---------------------------------------------------------------------------
 
 function SpeedCheckResults(
-  { baseline, onComplete }: {
-    baseline: number;
-    onComplete: (baseline: number) => void;
-  },
+  { baseline }: { baseline: number },
 ) {
   const thresholds = getCalibrationThresholds(baseline);
   return (
-    <>
-      <div class='quiz-content calibration-results'>
-        <Text role='section-header' as='h2'>Speed Check Complete</Text>
-        <div class='calibration-baseline'>
-          {(baseline / 1000).toFixed(2)}s
-        </div>
-        <table class='calibration-thresholds'>
-          <thead>
-            <tr>
-              <th></th>
-              <th>Level</th>
-              <th>Max time</th>
-              <th>Meaning</th>
+    <div class='calibration-results'>
+      <Text role='heading-page' as='h2'>Speed Check Complete</Text>
+      <div class='calibration-baseline'>
+        {(baseline / 1000).toFixed(2)}s
+      </div>
+      <table class='calibration-thresholds'>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Level</th>
+            <th>Max time</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          {thresholds.map((t) => (
+            <tr key={t.label}>
+              <td>
+                <span
+                  class='heatmap-swatch'
+                  style={`background-color: var(${t.colorToken})`}
+                />
+              </td>
+              <td>{t.label}</td>
+              <td>
+                {t.maxMs !== null
+                  ? (t.maxMs / 1000).toFixed(1) + 's'
+                  : '\u2014'}
+              </td>
+              <td>{t.meaning}</td>
             </tr>
-          </thead>
-          <tbody>
-            {thresholds.map((t) => (
-              <tr key={t.label}>
-                <td>
-                  <span
-                    class='heatmap-swatch'
-                    style={`background-color: var(${t.colorToken})`}
-                  />
-                </td>
-                <td>{t.label}</td>
-                <td>
-                  {t.maxMs !== null
-                    ? (t.maxMs / 1000).toFixed(1) + 's'
-                    : '\u2014'}
-                </td>
-                <td>{t.meaning}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div class='quiz-controls'>
-        <ActionButton
-          variant='primary'
-          class='next-btn'
-          onClick={() => onComplete(baseline)}
-        >
-          Done
-        </ActionButton>
-      </div>
-    </>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -484,49 +404,75 @@ export function SpeedCheck(
 
   if (phase === 'intro') {
     return (
-      <>
+      <ScreenLayout>
         <SpeedCheckHeader onClose={onCancel} />
-        <div class='quiz-area'>
-          <SpeedCheckIntro
-            title={config.introTitle}
-            text={config.introText}
-            onStart={() => setPhase('running')}
-          />
-        </div>
-      </>
+        <LayoutMain scrollable={false}>
+          <CenteredContent>
+            <SpeedCheckIntro
+              title={config.introTitle}
+              text={config.introText}
+            />
+          </CenteredContent>
+        </LayoutMain>
+        <LayoutFooter>
+          <ActionButton
+            variant='primary'
+            class='next-btn'
+            onClick={() => setPhase('running')}
+          >
+            Start
+          </ActionButton>
+        </LayoutFooter>
+      </ScreenLayout>
     );
   }
 
   if (phase === 'running') {
     return (
-      <>
+      <ScreenLayout>
         <SpeedCheckHeader
-          trialProgress={trials.trialProgress}
+          count={trials.trialProgress}
           onClose={onCancel}
         />
-        <div class='quiz-area'>
-          <div class='quiz-content'>
-            <div class='quiz-prompt'>{trials.promptText}</div>
-          </div>
-          <div class='quiz-controls'>
-            <NoteButtons
-              onAnswer={trials.handleTrialResponse}
-              feedback={trials.feedback}
-            />
-            <SpeedCheckInput
-              onSubmit={trials.handleTrialResponse}
-              wrongFlash={trials.feedback?.correct === false}
-            />
-            <KeyboardHint type='note' />
-          </div>
-        </div>
-      </>
+        <LayoutMain scrollable={false}>
+          <QuizStage
+            prompt={<div class='quiz-prompt'>{trials.promptText}</div>}
+            response={
+              <>
+                <NoteButtons
+                  onAnswer={trials.handleTrialResponse}
+                  feedback={trials.feedback}
+                />
+                <SpeedCheckInput
+                  onSubmit={trials.handleTrialResponse}
+                  wrongFlash={trials.feedback?.correct === false}
+                />
+                <KeyboardHint type='note' />
+              </>
+            }
+          />
+        </LayoutMain>
+      </ScreenLayout>
     );
   }
 
   return (
-    <div class='quiz-area'>
-      <SpeedCheckResults baseline={baseline} onComplete={onComplete} />
-    </div>
+    <ScreenLayout>
+      <SpeedCheckHeader onClose={onCancel} />
+      <LayoutMain scrollable={false}>
+        <CenteredContent>
+          <SpeedCheckResults baseline={baseline} />
+        </CenteredContent>
+      </LayoutMain>
+      <LayoutFooter>
+        <ActionButton
+          variant='primary'
+          class='next-btn'
+          onClick={() => onComplete(baseline)}
+        >
+          Done
+        </ActionButton>
+      </LayoutFooter>
+    </ScreenLayout>
   );
 }

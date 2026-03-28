@@ -1,24 +1,39 @@
-// Home screen: tabbed view with Active (starred) and All Skills tabs.
-// Active tab shows starred skills; All Skills tab shows track accordions.
+// Home screen: tabbed view with Active (starred), All Skills, and Settings tabs.
+// Active tab shows starred skills; All Skills tab shows track accordions;
+// Settings tab shows inline settings panel.
 
 import type { ComponentChildren } from 'preact';
-import { useCallback, useMemo, useState } from 'preact/hooks';
-import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../music-data.ts';
+import { useCallback, useState } from 'preact/hooks';
+import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
 import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
 import { SkillIcon } from './icons.tsx';
+import { RepeatMark } from './repeat-mark.tsx';
 import type { SettingsController } from '../types.ts';
+import { storage } from '../storage.ts';
 import type { AppConfig } from '../app-config.ts';
 import {
   type ModeProgress,
   useHomeProgress,
 } from '../hooks/use-home-progress.ts';
 import type { SkillRecommendation } from '../home-recommendations.ts';
-import { Text } from './text.tsx';
-import { CloseButton, Tabs } from './mode-screen.tsx';
+import {
+  CloseButton,
+  TabBar,
+  type TabDef,
+  TabIcon,
+  TabPanels,
+  useTabsPrefix,
+} from './mode-screen.tsx';
 import { GroupProgressBar } from './scope.tsx';
+import {
+  LayoutFooter,
+  LayoutHeader,
+  LayoutMain,
+  ScreenLayout,
+} from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
-// localStorage persistence for starred skills
+// storage persistence for starred skills
 // ---------------------------------------------------------------------------
 
 const STARRED_KEY = 'starredSkills';
@@ -28,7 +43,7 @@ const TAB_KEY = 'homeTab';
 function loadStarredSkills(): Set<string> {
   const allModeIds = new Set(TRACKS.flatMap((t) => t.skills));
   try {
-    const raw = localStorage.getItem(STARRED_KEY);
+    const raw = storage.getItem(STARRED_KEY);
     if (raw) {
       const arr = JSON.parse(raw);
       if (Array.isArray(arr)) {
@@ -41,14 +56,14 @@ function loadStarredSkills(): Set<string> {
 
 function saveStarredSkills(starred: Set<string>): void {
   try {
-    localStorage.setItem(STARRED_KEY, JSON.stringify([...starred]));
+    storage.setItem(STARRED_KEY, JSON.stringify([...starred]));
   } catch (_) { /* expected */ }
 }
 
 function loadAccordionState(): Record<string, boolean> {
   const trackIds = new Set(TRACKS.map((t) => t.id));
   try {
-    const raw = localStorage.getItem(ACCORDION_KEY);
+    const raw = storage.getItem(ACCORDION_KEY);
     if (raw) {
       const obj = JSON.parse(raw);
       if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
@@ -66,14 +81,20 @@ function loadAccordionState(): Record<string, boolean> {
 
 function saveAccordionState(state: Record<string, boolean>): void {
   try {
-    localStorage.setItem(ACCORDION_KEY, JSON.stringify(state));
+    storage.setItem(ACCORDION_KEY, JSON.stringify(state));
   } catch (_) { /* expected */ }
 }
 
-// Clean up legacy selectedTracks key (one-time migration)
-try {
-  localStorage.removeItem('selectedTracks');
-} catch (_) { /* expected */ }
+/** Clean up legacy storage keys.  Call after initStorage() + migration. */
+export function cleanupLegacyKeys(): void {
+  try {
+    storage.removeItem('selectedTracks');
+  } catch (_) { /* expected */ }
+  // Also remove from localStorage to prevent re-migration of the key.
+  try {
+    globalThis.localStorage?.removeItem('selectedTracks');
+  } catch (_) { /* expected */ }
+}
 
 // ---------------------------------------------------------------------------
 // TrackPill — colored track label badge
@@ -112,100 +133,14 @@ export function SkillCardHeader(
   );
 }
 
-// ---------------------------------------------------------------------------
-// SegmentedControl — exclusive multi-option picker (radio group pattern)
-// ---------------------------------------------------------------------------
-
-export type SegmentOption<T extends string> = { value: T; label: string };
-
-let segmentedControlCounter = 0;
-
-export function SegmentedControl<T extends string>(
-  { options, value, onChange, 'aria-labelledby': labelledBy }: {
-    options: SegmentOption<T>[];
-    value: T;
-    onChange: (value: T) => void;
-    'aria-labelledby'?: string;
-  },
-) {
-  const prefix = useMemo(() => 'sc-' + segmentedControlCounter++, []);
-
-  function handleKeyDown(e: KeyboardEvent, current: T) {
-    const vals = options.map((o) => o.value);
-    const idx = vals.indexOf(current);
-    let next = idx;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      next = (idx - 1 + vals.length) % vals.length;
-    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      next = (idx + 1) % vals.length;
-    } else if (e.key === 'Home') {
-      next = 0;
-    } else if (e.key === 'End') {
-      next = vals.length - 1;
-    } else {
-      return;
-    }
-    e.preventDefault();
-    onChange(vals[next]);
-    requestAnimationFrame(() => {
-      (document.getElementById(
-        prefix + '-' + vals[next],
-      ) as HTMLElement | null)?.focus();
-    });
-  }
-
-  return (
-    <div
-      class='segmented-control'
-      role='radiogroup'
-      aria-labelledby={labelledBy}
-    >
-      {options.map((opt) => (
-        <button
-          key={opt.value}
-          id={prefix + '-' + opt.value}
-          type='button'
-          role='radio'
-          aria-checked={value === opt.value}
-          tabIndex={value === opt.value ? 0 : -1}
-          class={'segmented-btn' + (value === opt.value ? ' active' : '')}
-          onClick={() => onChange(opt.value)}
-          onKeyDown={(e) => handleKeyDown(e, opt.value)}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// SettingToggle — labelled SegmentedControl for settings fields
-// ---------------------------------------------------------------------------
-
-let settingToggleLabelCounter = 0;
-
-export function SettingToggle<T extends string>(
-  { label, options, value, onChange }: {
-    label: string;
-    options: SegmentOption<T>[];
-    value: T;
-    onChange: (value: T) => void;
-  },
-) {
-  const labelId = useMemo(() => 'stl-' + settingToggleLabelCounter++, []);
-  return (
-    <div class='settings-field'>
-      <Text role='label' as='div' id={labelId}>{label}</Text>
-      <SegmentedControl
-        options={options}
-        value={value}
-        onChange={onChange}
-        aria-labelledby={labelId}
-      />
-    </div>
-  );
-}
+// Shared SegmentedControl extracted to its own file.
+// Import for local use + re-export for backward compat.
+import { SettingToggle } from './segmented-control.tsx';
+export {
+  SegmentedControl,
+  type SegmentOption,
+  SettingToggle,
+} from './segmented-control.tsx';
 
 // ---------------------------------------------------------------------------
 // SkillCard — a single mode button with before/after contrast and star toggle
@@ -313,8 +248,7 @@ function ActiveSkillCard(
     >
       {hasRec && (
         <div class={`skill-rec-banner track-accent-${trackId}`}>
-          <div class='skill-rec-header'>Suggestion</div>
-          <Text role='secondary' as='div'>{rec!.detail}</Text>
+          <div class='skill-rec-header'>{rec!.detail}</div>
         </div>
       )}
       <div class='skill-card-body'>
@@ -361,7 +295,8 @@ function ActiveSkillsList(
   if (starred.size === 0) {
     return (
       <p class='active-skills-empty'>
-        Star skills in the <strong>All Skills</strong> tab to add them here.
+        Pick the skills you want to drill. Star them in{' '}
+        <strong>All Skills</strong> to build your lineup.
       </p>
     );
   }
@@ -467,7 +402,7 @@ export function TrackSection(
 }
 
 // ---------------------------------------------------------------------------
-// SettingsPage — settings screen (extracted for function length limit)
+// SettingsAboutLegal — about/legal links for settings panel
 // ---------------------------------------------------------------------------
 
 function SettingsAboutLegal(
@@ -526,26 +461,22 @@ function SettingsAboutLegal(
   );
 }
 
-function SettingsPage(
-  { settings, appConfig, version, useSolfege, setUseSolfege, onClose }: {
+// ---------------------------------------------------------------------------
+// SettingsPanel — inline settings content for the Settings tab
+// ---------------------------------------------------------------------------
+
+export function SettingsPanel(
+  { settings, appConfig, version, useSolfege, setUseSolfege, onOpenDev }: {
     settings: SettingsController;
     appConfig: AppConfig;
     version: string;
     useSolfege: boolean;
     setUseSolfege: (v: boolean) => void;
-    onClose: () => void;
+    onOpenDev?: () => void;
   },
 ) {
   return (
     <div class='settings-page'>
-      <div class='settings-page-header'>
-        <h1 class='settings-page-title'>Settings</h1>
-        <CloseButton
-          ariaLabel='Close'
-          onClick={onClose}
-        />
-      </div>
-
       <section class='settings-section'>
         <h2 class='settings-section-title'>General</h2>
         <SettingToggle
@@ -564,6 +495,14 @@ function SettingsPage(
       </section>
 
       <SettingsAboutLegal appConfig={appConfig} version={version} />
+
+      {onOpenDev && (
+        <section class='settings-section'>
+          <button type='button' class='text-link' onClick={onOpenDev}>
+            Dev panel
+          </button>
+        </section>
+      )}
     </div>
   );
 }
@@ -670,11 +609,6 @@ function AllSkillsList(
 ) {
   return (
     <div class='home-modes'>
-      <p class='all-skills-hint'>
-        Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
-        {' '}
-        list.
-      </p>
       {TRACKS.map((track) => (
         <TrackSection
           key={track.id}
@@ -701,134 +635,128 @@ function AllSkillsList(
 }
 
 // ---------------------------------------------------------------------------
-// HomeScreen — top-level component with Active / All Skills tabs
+// HomeScreen — top-level component with bottom nav: Active / All Skills / Settings
 // ---------------------------------------------------------------------------
 
-type HomeTab = 'active' | 'all';
+export type HomeTab = 'active' | 'all' | 'settings';
 
 function loadInitialTab(): HomeTab {
   try {
-    const saved = localStorage.getItem(TAB_KEY);
-    if (saved === 'active' || saved === 'all') return saved;
+    const saved = storage.getItem(TAB_KEY);
+    if (saved === 'active' || saved === 'all' || saved === 'settings') {
+      return saved;
+    }
   } catch (_) { /* expected */ }
   return loadStarredSkills().size > 0 ? 'active' : 'all';
 }
 
 // ---------------------------------------------------------------------------
-// HomeHeader / HomeFooter — top/bottom chrome for the home screen
+// HomeHeader — title + tagline that scrolls with content
 // ---------------------------------------------------------------------------
 
 function HomeHeader({ isNativeApp }: { isNativeApp?: boolean }) {
   return (
     <div class={`home-header${isNativeApp ? ' sr-only' : ''}`}>
-      <h1 class='home-title'>Music Reps</h1>
+      <h1 class='home-title'>
+        <RepeatMark size={28} class='home-logo-mark' />
+        Music Reps
+      </h1>
       {!isNativeApp && (
         <p class='home-tagline'>
-          Instant recall for music fundamentals. You know the
-          theory&#x2009;&mdash;&#x2009;now make it automatic.
+          Make music fundamentals automatic so you can focus on playing.
         </p>
       )}
-    </div>
-  );
-}
-
-function HomeFooter(
-  { version, onSettings, onOpenDev }: {
-    version: string;
-    onSettings: () => void;
-    onOpenDev?: () => void;
-  },
-) {
-  return (
-    <div class='home-footer'>
-      <span>
-        <button
-          type='button'
-          class='home-settings-btn text-link'
-          onClick={onSettings}
-        >
-          Settings
-        </button>
-        {onOpenDev && (
-          <>
-            {' \u00B7 '}
-            <button
-              type='button'
-              class='text-link'
-              onClick={onOpenDev}
-            >
-              Dev
-            </button>
-          </>
-        )}
-      </span>
-      <span class='version'>{version}</span>
+      <p class='all-skills-hint'>
+        Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
+        {' '}
+        list.
+      </p>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// HomeSkillTabs — Active / All Skills tabbed content
+// useHomeTabs — build tab definitions for the home screen bottom nav
 // ---------------------------------------------------------------------------
 
-function HomeSkillTabs(
+function useHomeTabs(
   {
-    tab,
-    onChangeTab,
     starred,
     accordion,
-    onToggleStar,
-    onToggleExpand,
-    onSelectMode,
     progress,
     recommendations,
+    settings,
+    appConfig,
+    version,
+    useSolfege,
+    setUseSolfege,
+    onSelectMode,
+    onToggleStar,
+    onToggleExpand,
+    onOpenDev,
   }: {
-    tab: HomeTab;
-    onChangeTab: (t: HomeTab) => void;
     starred: Set<string>;
     accordion: Record<string, boolean>;
-    onToggleStar: (modeId: string) => void;
-    onToggleExpand: (trackId: string) => void;
-    onSelectMode: (modeId: string) => void;
     progress: Map<string, ModeProgress>;
     recommendations: SkillRecommendation[];
+    settings: SettingsController;
+    appConfig: AppConfig;
+    version: string;
+    useSolfege: boolean;
+    setUseSolfege: (v: boolean) => void;
+    onSelectMode: (modeId: string) => void;
+    onToggleStar: (modeId: string) => void;
+    onToggleExpand: (trackId: string) => void;
+    onOpenDev?: () => void;
   },
-) {
-  return (
-    <Tabs
-      tabs={[
-        {
-          id: 'active',
-          label: `Active${starred.size > 0 ? ` (${starred.size})` : ''}`,
-          content: (
-            <ActiveSkillsList
-              starred={starred}
-              onToggleStar={onToggleStar}
-              onSelectMode={onSelectMode}
-              progress={progress}
-              recommendations={recommendations}
-            />
-          ),
-        },
-        {
-          id: 'all',
-          label: 'All Skills',
-          content: (
-            <AllSkillsList
-              accordion={accordion}
-              starred={starred}
-              onToggleExpand={onToggleExpand}
-              onToggleStar={onToggleStar}
-              onSelectMode={onSelectMode}
-              progress={progress}
-            />
-          ),
-        },
-      ]}
-      activeTab={tab}
-      onTabSwitch={onChangeTab}
-    />
-  );
+): TabDef<HomeTab>[] {
+  return [
+    {
+      id: 'active',
+      label: <TabIcon icon='active-skills' text='Active' />,
+      content: (
+        <>
+          <ActiveSkillsList
+            starred={starred}
+            onToggleStar={onToggleStar}
+            onSelectMode={onSelectMode}
+            progress={progress}
+            recommendations={recommendations}
+          />
+        </>
+      ),
+    },
+    {
+      id: 'all',
+      label: <TabIcon icon='all-skills' text='All Skills' />,
+      content: (
+        <>
+          <AllSkillsList
+            accordion={accordion}
+            starred={starred}
+            onToggleExpand={onToggleExpand}
+            onToggleStar={onToggleStar}
+            onSelectMode={onSelectMode}
+            progress={progress}
+          />
+        </>
+      ),
+    },
+    {
+      id: 'settings',
+      label: <TabIcon icon='settings' text='Settings' />,
+      content: (
+        <SettingsPanel
+          settings={settings}
+          appConfig={appConfig}
+          version={version}
+          useSolfege={useSolfege}
+          setUseSolfege={setUseSolfege}
+          onOpenDev={onOpenDev}
+        />
+      ),
+    },
+  ];
 }
 
 // ---------------------------------------------------------------------------
@@ -848,10 +776,10 @@ export function HomeScreen(
   const [starred, setStarred] = useState(loadStarredSkills);
   const { progress, recommendations } = useHomeProgress(starred);
   const [accordion, setAccordion] = useState(loadAccordionState);
-  const [showSettings, setShowSettings] = useState(false);
   const [showDev, setShowDev] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
   const [tab, setTab] = useState<HomeTab>(loadInitialTab);
+  const prefix = useTabsPrefix();
 
   const handleToggleStar = useCallback((modeId: string) => {
     setStarred((prev) => {
@@ -864,10 +792,11 @@ export function HomeScreen(
 
   const handleChangeTab = useCallback((t: HomeTab) => {
     setTab(t);
+    if (t === 'settings') setUseSolfege(settings.getUseSolfege());
     try {
-      localStorage.setItem(TAB_KEY, t);
+      storage.setItem(TAB_KEY, t);
     } catch (_) { /* expected */ }
-  }, []);
+  }, [settings]);
 
   const handleToggleExpand = useCallback((trackId: string) => {
     setAccordion((prev) => {
@@ -877,47 +806,45 @@ export function HomeScreen(
     });
   }, []);
 
-  if (showSettings) {
-    return (
-      <SettingsPage
-        settings={settings}
-        appConfig={appConfig}
-        version={version}
-        useSolfege={useSolfege}
-        setUseSolfege={setUseSolfege}
-        onClose={() => setShowSettings(false)}
-      />
-    );
-  }
+  const tabs = useHomeTabs({
+    starred,
+    accordion,
+    progress,
+    recommendations,
+    settings,
+    appConfig,
+    version,
+    useSolfege,
+    setUseSolfege,
+    onSelectMode,
+    onToggleStar: handleToggleStar,
+    onToggleExpand: handleToggleExpand,
+    onOpenDev: showDevLink ? () => setShowDev(true) : undefined,
+  });
 
   if (showDev) {
     return <DevPage onClose={() => setShowDev(false)} />;
   }
 
   return (
-    <div class='home-content'>
-      <HomeHeader isNativeApp={isNativeApp} />
-
-      <HomeSkillTabs
-        tab={tab}
-        onChangeTab={handleChangeTab}
-        starred={starred}
-        accordion={accordion}
-        onToggleStar={handleToggleStar}
-        onToggleExpand={handleToggleExpand}
-        onSelectMode={onSelectMode}
-        progress={progress}
-        recommendations={recommendations}
-      />
-
-      <HomeFooter
-        version={version}
-        onSettings={() => {
-          setUseSolfege(settings.getUseSolfege());
-          setShowSettings(true);
-        }}
-        onOpenDev={showDevLink ? () => setShowDev(true) : undefined}
-      />
-    </div>
+    <ScreenLayout class='home-screen-layout'>
+      <LayoutHeader>
+        <HomeHeader isNativeApp={isNativeApp} />
+      </LayoutHeader>
+      <LayoutMain>
+        <div class='home-content'>
+          <TabPanels tabs={tabs} activeTab={tab} prefix={prefix} />
+        </div>
+      </LayoutMain>
+      <LayoutFooter>
+        <TabBar
+          tabs={tabs}
+          activeTab={tab}
+          onTabSwitch={handleChangeTab}
+          prefix={prefix}
+          class='mode-nav'
+        />
+      </LayoutFooter>
+    </ScreenLayout>
   );
 }

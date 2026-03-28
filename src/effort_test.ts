@@ -52,16 +52,20 @@ describe('computeModeEffort', () => {
   it('sums reps and counts started items', () => {
     const storage = createMemoryStorage();
     storage.saveStats('a', {
+      recentTimes: [],
       ewma: 500,
       sampleCount: 10,
       stability: 1,
       lastSeen: Date.now(),
+      lastCorrectAt: Date.now(),
     });
     storage.saveStats('b', {
+      recentTimes: [],
       ewma: 600,
       sampleCount: 5,
       stability: 1,
       lastSeen: Date.now(),
+      lastCorrectAt: Date.now(),
     });
     const mode = makeModeInfo('test', ['a', 'b', 'c']);
     const result = computeModeEffort(mode, storage);
@@ -73,10 +77,12 @@ describe('computeModeEffort', () => {
   it('ignores items with sampleCount 0', () => {
     const storage = createMemoryStorage();
     storage.saveStats('a', {
+      recentTimes: [],
       ewma: 500,
       sampleCount: 0,
       stability: 0,
       lastSeen: 0,
+      lastCorrectAt: null,
     });
     const mode = makeModeInfo('test', ['a']);
     const result = computeModeEffort(mode, storage);

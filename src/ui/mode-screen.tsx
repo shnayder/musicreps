@@ -6,9 +6,10 @@ import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
 import type { PracticeSummaryState } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
-import { BaselineInfo } from './speed-check.tsx';
+import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
+import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 
 // ---------------------------------------------------------------------------
 // CloseButton — × dismiss button used in top bars and overlays
@@ -42,18 +43,30 @@ export type TabDef<T extends string = string> = {
   content: ComponentChildren;
 };
 
-let tabsIdCounter = 0;
+// ---------------------------------------------------------------------------
+// TabBar + TabPanels — split rendering for layout flexibility.
+// TabBar goes in footer (mobile) or header (desktop); panels go in main.
+// ---------------------------------------------------------------------------
 
-export function Tabs<T extends string>(
-  { tabs, activeTab, onTabSwitch, class: className = 'tabs' }: {
+export type TabsPrefix = string;
+
+let tabsPrefixCounter = 0;
+
+/** Generate a stable prefix for tab ARIA IDs. Call once per component. */
+export function useTabsPrefix(): TabsPrefix {
+  return useMemo(() => 'tabs-' + tabsPrefixCounter++, []);
+}
+
+/** Tab bar (the row of tab buttons). Place in footer or header. */
+export function TabBar<T extends string>(
+  { tabs, activeTab, onTabSwitch, prefix, class: className = 'tabs' }: {
     tabs: TabDef<T>[];
     activeTab: T;
     onTabSwitch: (tab: T) => void;
+    prefix: TabsPrefix;
     class?: string;
   },
 ) {
-  const prefix = useMemo(() => 'tabs-' + tabsIdCounter++, []);
-
   function handleKeyDown(e: KeyboardEvent, current: T) {
     const ids = tabs.map((t) => t.id);
     const idx = ids.indexOf(current);
@@ -74,26 +87,38 @@ export function Tabs<T extends string>(
   }
 
   return (
+    <div class={className} role='tablist'>
+      {tabs.map((tab) => (
+        <button
+          type='button'
+          key={tab.id}
+          id={prefix + '-tab-' + tab.id}
+          role='tab'
+          aria-selected={activeTab === tab.id}
+          aria-controls={prefix + '-panel-' + tab.id}
+          tabIndex={activeTab === tab.id ? 0 : -1}
+          class={'tab-btn' + (activeTab === tab.id ? ' active' : '')}
+          data-tab={tab.id}
+          onClick={() => onTabSwitch(tab.id)}
+          onKeyDown={(e) => handleKeyDown(e, tab.id)}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Tab panels (the content areas). Place in main content zone. */
+export function TabPanels<T extends string>(
+  { tabs, activeTab, prefix }: {
+    tabs: TabDef<T>[];
+    activeTab: T;
+    prefix: TabsPrefix;
+  },
+) {
+  return (
     <>
-      <div class={className} role='tablist'>
-        {tabs.map((tab) => (
-          <button
-            type='button'
-            key={tab.id}
-            id={prefix + '-tab-' + tab.id}
-            role='tab'
-            aria-selected={activeTab === tab.id}
-            aria-controls={prefix + '-panel-' + tab.id}
-            tabIndex={activeTab === tab.id ? 0 : -1}
-            class={'tab-btn' + (activeTab === tab.id ? ' active' : '')}
-            data-tab={tab.id}
-            onClick={() => onTabSwitch(tab.id)}
-            onKeyDown={(e) => handleKeyDown(e, tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
       {tabs.map((tab) => (
         <div
           key={tab.id}
@@ -105,6 +130,33 @@ export function Tabs<T extends string>(
           {tab.content}
         </div>
       ))}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tabs — composed TabBar + TabPanels (backward-compatible, renders together)
+// ---------------------------------------------------------------------------
+
+export function Tabs<T extends string>(
+  { tabs, activeTab, onTabSwitch, class: className = 'tabs' }: {
+    tabs: TabDef<T>[];
+    activeTab: T;
+    onTabSwitch: (tab: T) => void;
+    class?: string;
+  },
+) {
+  const prefix = useTabsPrefix();
+  return (
+    <>
+      <TabBar
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabSwitch={onTabSwitch}
+        prefix={prefix}
+        class={className}
+      />
+      <TabPanels tabs={tabs} activeTab={activeTab} prefix={prefix} />
     </>
   );
 }
@@ -182,10 +234,7 @@ export function PracticeCard(
     statusDetail?: string;
     recommendation?: string;
     scope?: ComponentChildren;
-    onStart?: () => void;
     onApplyRecommendation?: () => void;
-    scopeValid?: boolean;
-    validationMessage?: string;
   },
 ) {
   // When summary is provided, map its fields; individual props override.
@@ -198,9 +247,7 @@ export function PracticeCard(
       ? props.summary.recommendationText
       : undefined);
   const onApplyRecommendation = props.onApplyRecommendation;
-  const { scope, onStart } = props;
-  const scopeDisabled = props.scopeValid === false;
-  const validationMessage = scopeDisabled ? props.validationMessage : undefined;
+  const { scope } = props;
 
   return (
     <div class='practice-card'>
@@ -219,13 +266,6 @@ export function PracticeCard(
         <Recommendation text={recommendation} onApply={onApplyRecommendation} />
       )}
       {scope && <div class='practice-scope'>{scope}</div>}
-      <div class='practice-zone-action'>
-        <StartButton
-          onStart={onStart}
-          disabled={scopeDisabled}
-          validationMessage={validationMessage}
-        />
-      </div>
     </div>
   );
 }
@@ -239,9 +279,8 @@ export function Recommendation(
 ) {
   return (
     <div class='suggestion-card'>
-      <div class='suggestion-card-header'>Suggestion</div>
       <div class='suggestion-card-body'>
-        <Text role='secondary' class='suggestion-card-text'>{text}</Text>
+        <div class='suggestion-card-header'>{text}</div>
         {onApply
           ? (
             <button
@@ -264,10 +303,11 @@ export function Recommendation(
 // ---------------------------------------------------------------------------
 
 export function StartButton(
-  { onStart, disabled, validationMessage }: {
+  { onStart, disabled, validationMessage, label }: {
     onStart?: () => void;
     disabled?: boolean;
     validationMessage?: string;
+    label?: string;
   },
 ) {
   const msgId = validationMessage ? 'start-validation-msg' : undefined;
@@ -280,7 +320,7 @@ export function StartButton(
         disabled={disabled}
         aria-describedby={msgId}
       >
-        Practice
+        {label ?? 'Practice'}
       </ActionButton>
       {validationMessage
         ? (
@@ -434,7 +474,7 @@ export function RoundCompleteInfo(
         ? (
           <div class='round-complete-overall'>
             <Text
-              role='subsection-header'
+              role='heading-subsection'
               as='div'
               class='round-complete-overall-label'
             >
@@ -444,6 +484,9 @@ export function RoundCompleteInfo(
           </div>
         )
         : null}
+      <div class='round-complete-mark' aria-hidden='true'>
+        <RepeatMark size={16} />
+      </div>
     </div>
   );
 }
@@ -477,6 +520,97 @@ export function RoundCompleteActions(
 }
 
 // ---------------------------------------------------------------------------
+// TabIcon — icon + label for mode navigation tabs
+// ---------------------------------------------------------------------------
+
+const TAB_ICONS: Record<string, string> = {
+  // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
+  practice: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>' +
+    '<path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+  // Bar chart
+  progress: '<line x1="18" x2="18" y1="20" y2="10"/>' +
+    '<line x1="12" x2="12" y1="20" y2="4"/>' +
+    '<line x1="6" x2="6" y1="20" y2="14"/>',
+  // Info circle
+  about: '<circle cx="12" cy="12" r="10"/>' +
+    '<path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  // Star — filled star for Active skills tab
+  'active-skills':
+    '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  // Grid/list — four squares for All Skills tab
+  'all-skills': '<rect x="3" y="3" width="7" height="7"/>' +
+    '<rect x="14" y="3" width="7" height="7"/>' +
+    '<rect x="3" y="14" width="7" height="7"/>' +
+    '<rect x="14" y="14" width="7" height="7"/>',
+  // Gear — settings cog
+  settings: '<circle cx="12" cy="12" r="3"/>' +
+    '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+};
+
+export function TabIcon({ icon, text }: { icon: string; text: string }) {
+  const paths = TAB_ICONS[icon] ?? '';
+  return (
+    <span class='tab-icon-label'>
+      <svg
+        xmlns='http://www.w3.org/2000/svg'
+        width='18'
+        height='18'
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        stroke-width='2'
+        stroke-linecap='round'
+        stroke-linejoin='round'
+        aria-hidden='true'
+        // deno-lint-ignore react-no-danger
+        dangerouslySetInnerHTML={{ __html: paths }}
+      />
+      <span>{text}</span>
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// BaselineInfo — progress tab inline component (moved from speed-check.tsx
+// to avoid circular dependency)
+// ---------------------------------------------------------------------------
+
+function BaselineInfo(
+  { baseline, onRun }: { baseline: number | null; onRun: () => void },
+) {
+  const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
+  const tag = baseline
+    ? null
+    : <Text role='supporting' class='baseline-default-tag'>(default)</Text>;
+  const btnLabel = baseline ? 'Redo speed check' : 'Run speed check';
+  return (
+    <div class='baseline-info'>
+      <Text role='heading-subsection' as='div' class='baseline-header'>
+        Speed check
+      </Text>
+      <div class='baseline-metric'>
+        <Text role='label'>Response time for note input</Text>
+        <Text role='metric-primary'>
+          {value}
+          {tag && <>{tag}</>}
+        </Text>
+      </div>
+      <Text role='supporting' as='div' class='baseline-explanation'>
+        Timing thresholds are based on this measurement.
+      </Text>
+      <button
+        type='button'
+        tabIndex={0}
+        class='baseline-rerun-btn'
+        onClick={onRun}
+      >
+        {btnLabel}
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // PracticeTab — composes Tabs + PracticeCard
 // ---------------------------------------------------------------------------
 
@@ -494,6 +628,9 @@ export function PracticeTab(
     scopeValid,
     validationMessage,
     aboutContent,
+    practiceContent,
+    progressExtra,
+    startLabel,
   }: {
     summary: PracticeSummaryState;
     onStart: () => void;
@@ -507,29 +644,34 @@ export function PracticeTab(
     scopeValid?: boolean;
     validationMessage?: string;
     aboutContent?: ComponentChildren;
+    /** If provided, replaces the default PracticeCard in the practice tab. */
+    practiceContent?: ComponentChildren;
+    /** Extra content inserted above baseline in the progress tab. */
+    progressExtra?: ComponentChildren;
+    /** Custom label for the start button (e.g. "Practice (32 items)"). */
+    startLabel?: string;
   },
 ) {
+  const prefix = useTabsPrefix();
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
-      label: 'Practice',
-      content: (
+      label: <TabIcon icon='practice' text='Practice' />,
+      content: practiceContent ?? (
         <PracticeCard
           summary={summary}
-          onStart={onStart}
           onApplyRecommendation={onApplyRecommendation}
           scope={scope}
-          scopeValid={scopeValid}
-          validationMessage={validationMessage}
         />
       ),
     },
     {
       id: 'progress',
-      label: 'Progress',
+      label: <TabIcon icon='progress' text='Progress' />,
       content: (
         <div>
           <div class='stats-container'>{statsContent}</div>
+          {progressExtra}
           {onCalibrate && (
             <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
           )}
@@ -538,7 +680,39 @@ export function PracticeTab(
     },
   ];
   if (aboutContent) {
-    tabs.push({ id: 'about', label: 'About', content: aboutContent });
+    tabs.push({
+      id: 'about',
+      label: <TabIcon icon='about' text='About' />,
+      content: aboutContent,
+    });
   }
-  return <Tabs tabs={tabs} activeTab={activeTab} onTabSwitch={onTabSwitch} />;
+
+  return (
+    <>
+      <LayoutMain>
+        <TabPanels tabs={tabs} activeTab={activeTab} prefix={prefix} />
+      </LayoutMain>
+      <LayoutFooter>
+        {activeTab === 'practice' && (
+          <div class='practice-zone-action'>
+            <StartButton
+              onStart={onStart}
+              disabled={scopeValid === false}
+              validationMessage={scopeValid === false
+                ? validationMessage
+                : undefined}
+              label={startLabel}
+            />
+          </div>
+        )}
+        <TabBar
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabSwitch={onTabSwitch}
+          prefix={prefix}
+          class='mode-nav'
+        />
+      </LayoutFooter>
+    </>
+  );
 }

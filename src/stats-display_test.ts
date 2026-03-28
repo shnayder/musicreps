@@ -6,6 +6,7 @@ import {
   getStatsCellColor,
   getStatsCellColorMerged,
   heatmapNeedsLightText,
+  progressBarColors,
 } from './stats-display.ts';
 
 // Heatmap palette (matches fallback values in stats-display.ts)
@@ -207,5 +208,115 @@ describe('heatmapNeedsLightText', () => {
   it('returns false for empty/invalid color', () => {
     assert.ok(!heatmapNeedsLightText(''));
     assert.ok(!heatmapNeedsLightText('red'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// progressBarColors
+// ---------------------------------------------------------------------------
+
+// Stale bar color fallback (matches stats-display.ts)
+const STALE = 'hsl(32, 80%, 55%)';
+
+describe('progressBarColors', () => {
+  it('sorts fresh items by speed descending', () => {
+    const selector = {
+      getSpeedScore(id: string) {
+        return ({ a: 0.2, b: 0.9, c: 0.5 } as Record<string, number>)[id] ??
+          null;
+      },
+      getFreshness(_id: string) {
+        return 1.0; // all fresh
+      },
+    };
+    const colors = progressBarColors(selector, ['a', 'b', 'c']);
+    assert.equal(colors.length, 3);
+    // b (speed 0.9) → hue 80 first, a (speed 0.2) → hue 40 last
+    assert.ok(colors[0].startsWith('hsl(80,'), `first: ${colors[0]}`);
+    assert.ok(colors[2].startsWith('hsl(40,'), `last: ${colors[2]}`);
+  });
+
+  it('uses speed-only color at full saturation for fresh items', () => {
+    const selector = {
+      getSpeedScore(_id: string) {
+        return 0.95;
+      },
+      getFreshness(_id: string) {
+        return 1.0;
+      },
+    };
+    const colors = progressBarColors(selector, ['a']);
+    // Should be hsl(125, 48%, 33%) — full saturation, no freshness fading
+    assert.ok(colors[0].startsWith('hsl(125,'), `color: ${colors[0]}`);
+    assert.ok(colors[0].includes('48%'), `full sat: ${colors[0]}`);
+  });
+
+  it('uses stale color for items with freshness < 0.5', () => {
+    const selector = {
+      getSpeedScore(_id: string) {
+        return 0.95; // fast
+      },
+      getFreshness(id: string) {
+        return id === 'fresh' ? 1.0 : 0.3; // stale
+      },
+    };
+    const colors = progressBarColors(selector, ['fresh', 'stale']);
+    assert.equal(colors.length, 2);
+    // Fresh first (speed color), stale second (notice orange)
+    assert.ok(colors[0].startsWith('hsl(125,'), `fresh: ${colors[0]}`);
+    assert.equal(colors[1], STALE);
+  });
+
+  it('sorts: fresh by speed → stale → unseen', () => {
+    const selector = {
+      getSpeedScore(id: string) {
+        return ({ f: 0.5, s: 0.9 } as Record<string, number>)[id] ?? null;
+      },
+      getFreshness(id: string) {
+        return ({ f: 1.0, s: 0.2 } as Record<string, number>)[id] ?? null;
+      },
+    };
+    const colors = progressBarColors(selector, ['u', 'f', 's']);
+    assert.equal(colors.length, 3);
+    // f is fresh (speed color), s is stale (orange), u is unseen (grey)
+    assert.ok(colors[0].startsWith('hsl('), `fresh first: ${colors[0]}`);
+    assert.equal(colors[1], STALE);
+    assert.equal(colors[2], NONE);
+  });
+
+  it('puts unseen items last', () => {
+    const selector = {
+      getSpeedScore(id: string) {
+        return id === 'seen' ? 0.5 : null;
+      },
+      getFreshness(id: string) {
+        return id === 'seen' ? 1.0 : null;
+      },
+    };
+    const colors = progressBarColors(selector, ['unseen', 'seen']);
+    assert.equal(colors.length, 2);
+    assert.ok(!colors[0].includes('86%'), 'first should not be grey');
+    assert.equal(colors[1], NONE);
+  });
+
+  it('produces visually monotonic hues for fresh items', () => {
+    const speeds = [0.95, 0.85, 0.6, 0.4, 0.1];
+    const selector = {
+      getSpeedScore(id: string) {
+        return speeds[parseInt(id)] ?? null;
+      },
+      getFreshness(_id: string) {
+        return 1.0; // all fresh
+      },
+    };
+    const ids = speeds.map((_, i) => String(i));
+    const colors = progressBarColors(selector, ids);
+    const hues = colors.map((c) => parseInt(c.match(/hsl\((\d+)/)?.[1] ?? '0'));
+    for (let i = 1; i < hues.length; i++) {
+      assert.ok(
+        hues[i] <= hues[i - 1],
+        `hue[${i}]=${hues[i]} > hue[${i - 1}]=${hues[i - 1]}: not monotonic`,
+      );
+    }
   });
 });

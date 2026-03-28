@@ -9,15 +9,21 @@
 // functions suitable for engineConfig — they always read current values
 // without causing dependency churn on the engineConfig useMemo.
 
-import { useCallback, useMemo, useRef } from 'preact/hooks';
+import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
+import { storage } from '../storage.ts';
 import type {
   AdaptiveSelector,
   GroupStatus,
   RecommendationResult,
   ScopeState,
+  SuggestionLine,
 } from '../types.ts';
 import { computeRecommendations } from '../recommendations.ts';
-import { buildRecommendationText } from '../mode-ui-state.ts';
+import {
+  buildRecommendationLines,
+  buildRecommendationText,
+} from '../mode-ui-state.ts';
+import type { PracticeMode } from '../ui/practice-config.tsx';
 import { type ScopeActions, useScopeState } from './use-scope-state.ts';
 import { useNotationVersion } from './use-notation-version.ts';
 
@@ -33,7 +39,7 @@ export type GroupScopeSpec = {
   getItemIdsForGroup: (index: number) => string[];
   /** All valid group indices, e.g. `[0, 1, 2, ...]` (from mode logic). */
   allGroupIndices: number[];
-  /** localStorage key for persisting enabled groups. */
+  /** storage key for persisting enabled groups. */
   storageKey: string;
   /** Human label for the scope control, e.g. 'Distances', 'Keys'. */
   scopeLabel: string;
@@ -55,11 +61,11 @@ export type GroupScopeResult = {
   scope: ScopeState;
   /** Scope mutation actions (toggleGroup, setScope, skipGroup, etc.). */
   scopeActions: ScopeActions;
-  /** Currently enabled group indices. */
+  /** Currently enabled group indices (reflects active practice mode). */
   enabledGroups: ReadonlySet<number>;
   /** Currently skipped group indices with skip reason. */
   skippedGroups: ReadonlyMap<number, GroupStatus>;
-  /** All item IDs in enabled groups (memoized). */
+  /** All item IDs in enabled groups (reflects active practice mode). */
   enabledItems: string[];
   /** Human-readable label for the active scope, e.g. "1–2, 3–4 semitones". */
   practicingLabel: string;
@@ -80,6 +86,14 @@ export type GroupScopeResult = {
    * Same ref-backing as getEnabledItems.
    */
   getPracticingLabel: () => string;
+  /** Current practice mode: 'suggested' uses recommendation, 'custom' uses user scope. */
+  practiceMode: PracticeMode;
+  /** Switch between suggested and custom practice modes. */
+  setPracticeMode: (mode: PracticeMode) => void;
+  /** Group indices from the recommendation's recommended set. */
+  suggestedScope: ReadonlySet<number>;
+  /** Structured recommendation lines for the SuggestionLines component. */
+  suggestionLines: SuggestionLine[];
 };
 
 // ---------------------------------------------------------------------------
@@ -100,11 +114,76 @@ function resolveLabel(label: string | (() => string)): string {
   return typeof label === 'function' ? label() : label;
 }
 
-export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
-  // Track notation changes so labels re-evaluate when solfège toggles.
-  const notationVersion = useNotationVersion();
+/** Persisted practice mode toggle (suggested vs custom). */
+function usePracticeMode(
+  storageKey: string,
+): [PracticeMode, (mode: PracticeMode) => void] {
+  const pmKey = storageKey + '_practiceMode';
+  const [mode, setModeRaw] = useState<PracticeMode>(() => {
+    try {
+      return storage.getItem(pmKey) === 'custom' ? 'custom' : 'suggested';
+    } catch {
+      return 'suggested';
+    }
+  });
+  const setMode = useCallback((m: PracticeMode) => {
+    setModeRaw(m);
+    try {
+      storage.setItem(pmKey, m);
+    } catch { /* expected */ }
+  }, [pmKey]);
+  return [mode, setMode];
+}
 
-  // --- Scope state (persisted to localStorage) ---
+type RecommendationData = {
+  recommendation: RecommendationResult;
+  suggestedScope: ReadonlySet<number>;
+  suggestionLines: SuggestionLine[];
+  recommendationText: string;
+};
+
+/** Compute recommendations, structured lines, and text from active groups. */
+function useRecommendationData(
+  spec: GroupScopeSpec,
+  activeGroupIndices: number[],
+  notationVersion: number,
+): RecommendationData {
+  const recommendation = useMemo(
+    (): RecommendationResult =>
+      computeRecommendations(
+        spec.selector,
+        activeGroupIndices,
+        spec.getItemIdsForGroup,
+        {},
+        { sortUnstarted: (a, b) => a.string - b.string },
+      ),
+    [spec.selector, activeGroupIndices, spec.getItemIdsForGroup],
+  );
+  const getLabel = useCallback(
+    (i: number) => resolveLabel(spec.groups[i].label),
+    [spec.groups, notationVersion],
+  );
+  const suggestionLines = useMemo(
+    () => buildRecommendationLines(recommendation, getLabel),
+    [recommendation, getLabel],
+  );
+  const recommendationText = useMemo(
+    () => buildRecommendationText(recommendation, getLabel),
+    [recommendation, getLabel],
+  );
+  return {
+    recommendation,
+    suggestedScope: recommendation.recommended,
+    suggestionLines,
+    recommendationText,
+  };
+}
+
+export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
+  const notationVersion = useNotationVersion();
+  const [practiceMode, setPracticeMode] = usePracticeMode(spec.storageKey);
+
+  // --- Scope state (persisted to storage) — always reflects custom ---
   const [scope, scopeActions] = useScopeState({
     kind: 'groups',
     groups: spec.groups.map((g, i) => ({
@@ -118,66 +197,44 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
     sortUnstarted: (a, b) => a.string - b.string,
   });
 
-  const enabledGroups = scope.kind === 'groups'
+  const customGroups = scope.kind === 'groups'
     ? scope.enabledGroups
     : new Set(spec.defaultEnabled);
-
   const skippedGroups: ReadonlyMap<number, GroupStatus> =
     scope.kind === 'groups' ? scope.skippedGroups : EMPTY_SKIPPED;
-
-  // Active indices = all indices minus skipped (for recommendations).
   const activeGroupIndices = useMemo(
     () => spec.allGroupIndices.filter((i) => !skippedGroups.has(i)),
     [spec.allGroupIndices, skippedGroups],
   );
 
-  // --- Enabled items (derived from scope) ---
+  const rec = useRecommendationData(spec, activeGroupIndices, notationVersion);
+
+  // --- Active scope: depends on practice mode ---
+  const enabledGroups =
+    practiceMode === 'suggested' && rec.suggestedScope.size > 0
+      ? rec.suggestedScope
+      : customGroups;
+
   const enabledItems = useMemo(() => {
     const items: string[] = [];
-    for (const g of enabledGroups) {
-      items.push(...spec.getItemIdsForGroup(g));
-    }
+    for (const g of enabledGroups) items.push(...spec.getItemIdsForGroup(g));
     return items;
   }, [enabledGroups, spec.getItemIdsForGroup]);
 
-  // --- Practicing label ---
-  // notationVersion ensures re-evaluation when solfège/letter toggles.
   const practicingLabel = useMemo(
     () => spec.formatLabel(enabledGroups),
     [enabledGroups, spec.formatLabel, notationVersion],
   );
 
-  // --- Recommendations ---
-  const recommendation = useMemo(
-    (): RecommendationResult =>
-      computeRecommendations(
-        spec.selector,
-        activeGroupIndices,
-        spec.getItemIdsForGroup,
-        {},
-        { sortUnstarted: (a, b) => a.string - b.string },
-      ),
-    [spec.selector, activeGroupIndices, spec.getItemIdsForGroup],
-  );
-
-  const recommendationText = useMemo(
-    () =>
-      buildRecommendationText(
-        recommendation,
-        (i) => resolveLabel(spec.groups[i].label),
-      ),
-    [recommendation, notationVersion],
-  );
-
   const applyRecommendation = useCallback(() => {
-    if (recommendation.enabled) {
+    if (rec.recommendation.enabled) {
       scopeActions.setScope({
         kind: 'groups',
-        enabledGroups: recommendation.enabled,
+        enabledGroups: rec.recommendation.enabled,
         skippedGroups,
       });
     }
-  }, [recommendation, scopeActions, skippedGroups]);
+  }, [rec.recommendation, scopeActions, skippedGroups]);
 
   return {
     scope,
@@ -186,10 +243,14 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
     skippedGroups,
     enabledItems,
     practicingLabel,
-    recommendation,
-    recommendationText,
+    recommendation: rec.recommendation,
+    recommendationText: rec.recommendationText,
     applyRecommendation,
     getEnabledItems: useStableGetter(enabledItems),
     getPracticingLabel: useStableGetter(practicingLabel),
+    practiceMode,
+    setPracticeMode,
+    suggestedScope: rec.suggestedScope,
+    suggestionLines: rec.suggestionLines,
   };
 }
