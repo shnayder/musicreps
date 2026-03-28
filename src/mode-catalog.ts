@@ -43,7 +43,8 @@ export const MODE_NAMES: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Before/after contrast text — shown on skill cards to communicate value.
+// Before/after contrast text — shown on skill cards and in the About tab.
+// Inner-monologue style: shows what the thinking actually feels like.
 // Functions so that displayNote() is called at render time, respecting the
 // current solfège setting.
 // ---------------------------------------------------------------------------
@@ -55,79 +56,91 @@ export const MODE_BEFORE_AFTER: Record<
 > = {
   fretboard: {
     before: () =>
-      `\u201C7th fret, ${d('G')} string\u2026 ${d('G')}, ${d('G#')}, ${
+      `7th fret, ${d('G')} string. Ok\u2026 open ${d('G')}, ${d('G#')}, ${
         d('A')
-      }\u2026 ${d('D')}?\u201D`,
-    after: () => `\u201C7th fret, ${d('G')} string. ${d('D')}.\u201D`,
+      }, ${d('A#')}, ${d('B')}, ${d('C')}, ${d('C#')}, ${
+        d('D')
+      }. Wait, was that seven frets? Let me count again.`,
+    after: () => `7th fret, ${d('G')} string. ${d('D')}. Next.`,
   },
   ukulele: {
     before: () =>
-      `\u201C5th fret, ${d('C')} string\u2026 ${d('C')}, ${d('D')}, ${
-        d('E')
-      }\u2026 ${d('E')}?\u201D`,
-    after: () => `\u201C5th fret, ${d('C')} string. ${d('E')}.\u201D`,
+      `5th fret, ${d('C')} string. ${d('C')}\u2026 ${d('C#')}, ${d('D')}, ${
+        d('D#')
+      }, ${d('E')}. That\u2019s five? ${d('E')}.`,
+    after: () => `5th fret, ${d('C')} string. ${d('E')}.`,
   },
   speedTap: {
     before: () =>
-      `\u201CAll the ${d('C')}\u2019s\u2026 8th fret ${d('E')}, 3rd fret ${
+      `All the ${d('C')}\u2019s. 8th fret low ${d('E')}, 3rd fret ${
         d('A')
-      }\u2026 um\u2026\u201D`,
-    after: () => `\u201C${d('C')}\u2019s. 8, 3, 10, 5, 1, 8.\u201D`,
+      }\u2026 somewhere on the ${
+        d('D')
+      } string\u2026 I always forget the high strings.`,
+    after: () => `All the ${d('C')}\u2019s. Tap tap tap tap tap tap. Done.`,
   },
   noteSemitones: {
     before: () =>
-      `\u201C${d('G#')}\u2026 ${d('F')} is 5, so ${d('G')} is\u2026 7, so ${
+      `${d('G#')} as a number. ${d('C')} is 0, ${d('D')} is 2, ${
+        d('E')
+      } is 4, ${d('F')} is 5, ${d('G')} is 7\u2026 so ${
         d('G#')
-      } is 8.\u201D`,
-    after: () => `\u201C${d('G#')}. 8.\u201D`,
+      } is 8? I think.`,
+    after: () => `${d('G#')}. 8.`,
   },
   intervalSemitones: {
     before: () =>
-      '\u201CMajor 6th\u2026 P5 is 7, so M6 is\u2026 9 semitones?\u201D',
-    after: () => '\u201CM6. 9 semitones.\u201D',
+      'Major 6th in semitones. A perfect 5th is 7, I\u2019m pretty sure. So major 6th is\u2026 9?',
+    after: () => 'M6. 9.',
   },
   semitoneMath: {
     before: () =>
-      `\u201C${d('F#')} + 4\u2026 ${d('G')}, ${d('G#')}, ${d('A')}, ${
-        d('A#')
-      }\u2026 is that ${d('Bb')}?\u201D`,
-    after: () => `\u201C${d('F#')} + 4. ${d('Bb')}.\u201D`,
+      `${d('F#')} plus 4. So ${d('F#')}\u2026 ${d('G')}, ${d('G#')}, ${
+        d('A')
+      }, ${d('A#')}. That\u2019s four up. Is it ${d('A#')} or ${
+        d('Bb')
+      }? Same note, but which name?`,
+    after: () => `${d('F#')} + 4. ${d('Bb')}.`,
   },
   intervalMath: {
     before: () =>
-      `\u201C${d('C')} + m6\u2026 minor 6th is 8 semitones\u2026 ${
-        d('Ab')
-      }?\u201D`,
-    after: () => `\u201C${d('C')} + m6. ${d('Ab')}.\u201D`,
+      `${d('C')} up a minor 6th. How many semitones is that\u2026 8? Ok, ${
+        d('C')
+      }, ${d('C#')}, ${d('D')}, ${d('D#')}, ${d('E')}, ${d('F')}, ${d('F#')}, ${
+        d('G')
+      }, ${d('Ab')}. Was that right?`,
+    after: () => `${d('C')} + m6. ${d('Ab')}.`,
   },
   keySignatures: {
     before: () =>
-      `\u201C3 flats\u2026 ${d('Bb')}, ${d('Eb')}, ${d('Ab')}\u2026 so ${
-        d('Eb')
-      } major?\u201D`,
-    after: () => `\u201C3 flats: ${d('Eb')} major.\u201D`,
+      `4 flats. Second from the end is ${d('Ab')}, so\u2026 ${
+        d('Ab')
+      } major. Or is it the relative minor? What was the rule for that again?`,
+    after: () =>
+      `4 flats. ${d('Ab')} major / ${d('F')} minor. IV chord is ${
+        d('Db')
+      } major. Keep going.`,
   },
   scaleDegrees: {
     before: () =>
-      `\u201C5th degree of ${d('Bb')}\u2026 ${d('Bb')}, ${d('C')}, ${d('D')}, ${
-        d('Eb')
-      }, ${d('F')}\u2026 ${d('F')}?\u201D`,
-    after: () => `\u201C5th of ${d('Bb')}. ${d('F')}.\u201D`,
+      `5th degree of ${d('Bb')}. ${d('Bb')} is one, ${d('C')} is two, ${
+        d('D')
+      } is three, ${d('Eb')} is four, ${d('F')} is five. ${d('F')}. I think.`,
+    after: () => `5th of ${d('Bb')}. ${d('F')}.`,
   },
   diatonicChords: {
     before: () =>
-      `\u201CIV in ${d('G')}\u2026 ${d('G')}, ${d('A')}, ${d('B')}, ${
+      `IV in ${d('G')} major. ${d('G')}, ${d('A')}, ${d('B')}, ${d('C')}. So ${
         d('C')
-      }\u2026 so ${d('C')} major?\u201D`,
-    after: () => `\u201CIV in ${d('G')}. ${d('C')} major.\u201D`,
+      }. And the IV is always major in a major key? I think so.`,
+    after: () => `IV in ${d('G')}. ${d('C')} major.`,
   },
   chordSpelling: {
     before: () =>
-      `\u201C${d('F')}m7\u2026 ${d('F')}, ${d('Ab')}, ${
+      `${d('F')}m7. Root is ${d('F')}, minor third is ${d('Ab')}, fifth is ${
         d('C')
-      }\u2026 what\u2019s the 7th\u2026 ${d('Eb')}\u201D`,
-    after: () =>
-      `\u201C${d('F')}m7. ${d('F')} ${d('Ab')} ${d('C')} ${d('Eb')}.\u201D`,
+      }. The 7th\u2026 it\u2019s a minor 7th, so\u2026 ${d('Eb')}.`,
+    after: () => `${d('F')}m7. ${d('F')} ${d('Ab')} ${d('C')} ${d('Eb')}.`,
   },
 };
 
