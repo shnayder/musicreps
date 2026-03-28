@@ -6,6 +6,7 @@ import type { ComponentChildren } from 'preact';
 import type { SuggestionLine } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
 import { CloseButton } from './mode-screen.tsx';
+import { Pill } from './pill.tsx';
 import { GroupProgressBar } from './scope.tsx';
 import { SegmentedControl } from './segmented-control.tsx';
 import { Text } from './text.tsx';
@@ -143,7 +144,6 @@ export function LevelProgressCard(
     <div class={'level-progress-card' + (st !== 'normal' ? ' ' + st : '')}>
       <div class='level-progress-header'>
         <span class='level-progress-label'>{label}</span>
-        {pill && <span class='level-progress-pill'>{pill}</span>}
         {(onToggleKnown || onToggleSkip) && (
           <span class='level-progress-actions'>
             <button
@@ -169,6 +169,11 @@ export function LevelProgressCard(
           </span>
         )}
       </div>
+      {pill && (
+        <div class='level-progress-pill-row'>
+          <Pill variant='notice'>{pill}</Pill>
+        </div>
+      )}
       <ProgressBarLabeled colors={colors} disabled={st === 'skipped'} />
     </div>
   );

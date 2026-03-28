@@ -7,6 +7,7 @@ import { useCallback, useState } from 'preact/hooks';
 import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
 import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
 import { SkillIcon } from './icons.tsx';
+import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import type { SettingsController } from '../types.ts';
 import { storage } from '../storage.ts';
@@ -103,7 +104,7 @@ export function cleanupLegacyKeys(): void {
 export function TrackPill(
   { trackId, label }: { trackId: string; label: string },
 ) {
-  return <span class={`active-skill-track-pill pill-${trackId}`}>{label}</span>;
+  return <Pill variant={trackId}>{label}</Pill>;
 }
 
 // ---------------------------------------------------------------------------
@@ -191,7 +192,7 @@ export function SkillCard(
         {isStarred ? '\u2605' : '\u2606'}
       </button>
       <SkillCardHeader modeId={modeId} />
-      {progress && (
+      {progress && progress.groupColors.length > 0 && (
         <div class='skill-card-progress'>
           <GroupProgressBar colors={progress.groupColors} />
         </div>
@@ -269,7 +270,7 @@ function ActiveSkillCard(
           trackId={trackId}
           trackLabel={trackLabel}
         />
-        {progress && (
+        {progress && progress.groupColors.length > 0 && (
           <div class='skill-card-progress'>
             <GroupProgressBar colors={progress.groupColors} />
           </div>

@@ -233,18 +233,18 @@ function Phase1Components(
 function Phase1Cards({ tabId }: { tabId: string }) {
   return (
     <PreviewGrid>
-      <Section title='LevelProgressCard — review' tabId={tabId}>
+      <Section title='LevelProgressCard — review soon' tabId={tabId}>
         <LevelProgressCard
           label='E string'
-          pill='Review'
+          pill='Review soon'
           colors={MOCK_LEVEL_COLORS[0]}
           status='normal'
         />
       </Section>
-      <Section title='LevelProgressCard — known' tabId={tabId}>
+      <Section title='LevelProgressCard — review scheduled' tabId={tabId}>
         <LevelProgressCard
           label='A string'
-          pill='Learned'
+          pill='Review in 5d'
           colors={MOCK_LEVEL_COLORS[1]}
           status='known'
         />
@@ -372,7 +372,7 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
         <div style='padding: var(--gap-group) var(--pad-region)'>
           <LevelProgressCard
             label='E string'
-            pill='Review'
+            pill='Review soon'
             colors={MOCK_LEVEL_COLORS[0]}
             status='normal'
             onToggleKnown={() => {}}
@@ -380,7 +380,7 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
           />
           <LevelProgressCard
             label='A string'
-            pill='Practice'
+            pill='Review in 5d'
             colors={MOCK_LEVEL_COLORS[1]}
             status='normal'
             onToggleKnown={() => {}}
@@ -388,7 +388,7 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
           />
           <LevelProgressCard
             label='D string'
-            pill='Learned'
+            pill='Review in 3w'
             colors={MOCK_LEVEL_COLORS[2]}
             status='known'
             onToggleKnown={() => {}}

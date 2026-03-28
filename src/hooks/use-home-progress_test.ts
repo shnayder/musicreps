@@ -71,37 +71,15 @@ describe('computeAllProgress', () => {
     }
   });
 
-  it('multi-group modes have one color per group, single-group modes have per-item colors', () => {
+  it('unstarted modes have empty groupColors', () => {
     const result = computeAllProgress(emptyStorageFactory());
     for (const entry of MODE_PROGRESS_MANIFEST) {
       const progress = result.get(entry.modeId)!;
-      if (entry.groups.length === 1) {
-        // Single-group: per-item colors (matches skill screen)
-        const itemCount = entry.allItemIds().length;
-        assert.equal(
-          progress.groupColors.length,
-          itemCount,
-          `${entry.modeId} per-item color count`,
-        );
-      } else {
-        assert.equal(
-          progress.groupColors.length,
-          entry.groups.length,
-          `${entry.modeId} group color count`,
-        );
-      }
-    }
-  });
-
-  it('each color segment is a valid CSS color string', () => {
-    const result = computeAllProgress(emptyStorageFactory());
-    for (const [, progress] of result) {
-      for (const color of progress.groupColors) {
-        assert.ok(
-          typeof color === 'string' && color.length > 0,
-          `invalid color: ${color}`,
-        );
-      }
+      assert.equal(
+        progress.groupColors.length,
+        0,
+        `${entry.modeId} should be empty when unstarted`,
+      );
     }
   });
 
@@ -112,12 +90,13 @@ describe('computeAllProgress', () => {
 
   it('filters skipped groups via getSkipped', () => {
     // Skip groups 0 and 1 of keySignatures (4 groups total)
+    // All unseen → empty regardless of skips
     const skipped = new Set([0, 1]);
     const getSkipped = (ns: string) =>
       ns === 'keySignatures' ? skipped : new Set<number>();
     const result = computeAllProgress(emptyStorageFactory(), null, getSkipped);
     const ks = result.get('keySignatures')!;
-    assert.equal(ks.groupColors.length, 2); // 4 - 2 skipped
+    assert.equal(ks.groupColors.length, 0); // all unseen → empty
   });
 });
 
@@ -126,26 +105,35 @@ describe('computeAllProgress', () => {
 // ---------------------------------------------------------------------------
 
 describe('computeProgressForMode', () => {
-  it('single-group mode has per-item color segments', () => {
+  it('single-group mode returns empty when no items seen', () => {
     const entry = getModeProgress('noteSemitones')!;
     const storage = createMemoryStorage();
     const result = computeProgressForMode(entry, storage, null);
-    assert.equal(result.groupColors.length, entry.allItemIds().length);
+    assert.equal(result.groupColors.length, 0);
   });
 
-  it('single-group mode skipped yields a single neutral segment', () => {
+  it('single-group mode with data has per-item color segments', () => {
+    const entry = getModeProgress('noteSemitones')!;
+    const storage = createMemoryStorage();
+    const ids = entry.allItemIds();
+    seedAutomatic(storage, ids.slice(0, 3), Date.now());
+    const result = computeProgressForMode(entry, storage, null);
+    assert.equal(result.groupColors.length, ids.length);
+  });
+
+  it('single-group mode skipped yields empty', () => {
     const entry = getModeProgress('noteSemitones')!;
     const storage = createMemoryStorage();
     const skipped = new Set([0]);
     const result = computeProgressForMode(entry, storage, null, skipped);
-    assert.equal(result.groupColors.length, 1);
+    assert.equal(result.groupColors.length, 0);
   });
 
-  it('group mode has one color per group', () => {
+  it('group mode returns empty when no items seen', () => {
     const entry = getModeProgress('semitoneMath')!;
     const storage = createMemoryStorage();
     const result = computeProgressForMode(entry, storage, null);
-    assert.equal(result.groupColors.length, 5);
+    assert.equal(result.groupColors.length, 0);
   });
 
   it('sorts segments descending by speed', () => {
@@ -170,19 +158,22 @@ describe('computeProgressForMode', () => {
   it('filters out skipped groups', () => {
     const entry = getModeProgress('keySignatures')!; // 4 groups
     const storage = createMemoryStorage();
+    const now = Date.now();
+    // Seed all groups so they're not unseen
+    for (const g of entry.groups) {
+      seedAutomatic(storage, g.getItemIds(), now);
+    }
     const skipped = new Set([1, 3]);
     const result = computeProgressForMode(entry, storage, null, skipped);
     assert.equal(result.groupColors.length, 2); // 4 - 2 skipped
   });
 
-  it('returns single grey segment when all groups skipped', () => {
-    const entry = getModeProgress('keySignatures')!; // 7 groups
+  it('returns empty when all groups skipped', () => {
+    const entry = getModeProgress('keySignatures')!; // 4 groups
     const storage = createMemoryStorage();
-    const skipped = new Set([0, 1, 2, 3, 4, 5, 6]);
+    const skipped = new Set([0, 1, 2, 3]);
     const result = computeProgressForMode(entry, storage, null, skipped);
-    assert.equal(result.groupColors.length, 1);
-    // Should be a grey color
-    assert.ok(result.groupColors[0].includes('hsl'));
+    assert.equal(result.groupColors.length, 0);
   });
 
   it('uses motorBaseline for scaling', () => {

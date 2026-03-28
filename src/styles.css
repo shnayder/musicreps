@@ -173,9 +173,6 @@
   /* Star */
   --color-star: var(--notice-700);
 
-  /* Progress bar: stale items needing review (notice-family tint) */
-  --color-bar-stale: hsl(var(--hue-notice), 80%, 55%);
-
   /* Heatmap scale (cross-hue: gold → green, not parameterized) */
   --heatmap-none: var(--neutral-300);
   --heatmap-1: hsl(40, 60%, 58%);
@@ -486,6 +483,7 @@ body {
   transform: translate(-50%, -50%);
   height: 75%;
   aspect-ratio: 1;
+  max-width: 100%;
   opacity: 0.04;
   pointer-events: none;
   z-index: -1;
@@ -834,15 +832,19 @@ body {
   margin: var(--pad-component) 0 0;
   text-align: center;
 }
-.active-skill-track-pill {
+/* Shared pill/badge component */
+.pill {
   display: inline-block;
-  align-self: flex-start;
   font-size: var(--type-label-tag-size);
   font-weight: var(--type-label-tag-weight);
   line-height: var(--type-label-tag-leading);
   padding: 1px var(--gap-related);
   border-radius: 999px;
-  margin-bottom: 1px;
+  white-space: nowrap;
+}
+.pill-notice {
+  background: var(--color-notice-bg);
+  color: var(--color-notice-text);
 }
 .pill-core {
   color: var(--color-track-core);
@@ -915,6 +917,10 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+.skill-card-header-text > .pill {
+  align-self: flex-start;
+  margin-bottom: 1px;
 }
 .skill-icon {
   flex-shrink: 0;
@@ -1538,22 +1544,20 @@ body {
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   flex: 1;
+  min-width: 0;
 }
-.level-progress-pill {
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  padding: var(--gap-micro) var(--gap-group);
-  border-radius: var(--radius-sm);
-  background: var(--color-notice-bg);
-  color: var(--color-notice-text);
+.level-progress-pill-row {
+  margin-bottom: var(--gap-related);
 }
 .level-progress-actions {
   display: flex;
-  gap: var(--gap-micro);
+  gap: 2px;
 }
 .level-action-btn {
   width: 28px;
   height: 28px;
+  padding: 0;
+  position: relative;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
@@ -1568,6 +1572,11 @@ body {
   transition:
     background var(--duration-base) ease,
     color var(--duration-base) ease;
+}
+.level-action-btn::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 .level-action-btn:hover {
   background: var(--color-surface-hover);

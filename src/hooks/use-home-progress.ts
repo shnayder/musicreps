@@ -17,7 +17,6 @@ import {
 import {
   type GroupBarSegment,
   progressBarColors,
-  progressBarGroupColor,
   progressBarGroupSegment,
 } from '../stats-display.ts';
 import {
@@ -64,7 +63,8 @@ export function loadSkippedGroups(namespace: string): ReadonlySet<number> {
   return new Set();
 }
 
-/** Compute progress for a single mode, filtering out skipped groups. */
+/** Compute progress for a single mode, filtering out skipped groups.
+ *  Returns empty groupColors if no items have been practiced (not started). */
 export function computeProgressForMode(
   entry: ModeProgressEntry,
   storage: StorageAdapter,
@@ -79,12 +79,18 @@ export function computeProgressForMode(
   // Single-group modes: per-item colors to match the skill screen
   // (which uses progressBarColors for non-group scopes).
   if (entry.groups.length === 1) {
-    if (skippedGroups?.has(0)) {
-      return { groupColors: [progressBarGroupColor(selector, [])] };
+    if (skippedGroups?.has(0)) return { groupColors: [] };
+    const ids = entry.allItemIds();
+    const colors = progressBarColors(selector, ids);
+    // Detect all-unseen: after sorting, if first == last all are same color;
+    // confirm with one speed check to distinguish from uniform-speed case.
+    if (
+      colors.length > 0 && colors[0] === colors[colors.length - 1] &&
+      selector.getSpeedScore(ids[0]) === null
+    ) {
+      return { groupColors: [] };
     }
-    return {
-      groupColors: progressBarColors(selector, entry.allItemIds()),
-    };
+    return { groupColors: colors };
   }
 
   // Multi-group modes: one segment per group, then sort.
@@ -96,9 +102,9 @@ export function computeProgressForMode(
     );
   }
 
-  // All groups skipped → single "unseen" segment
-  if (segments.length === 0) {
-    return { groupColors: [progressBarGroupColor(selector, [])] };
+  // All groups skipped or all unseen → not started
+  if (segments.length === 0 || segments.every((s) => s.zone === 2)) {
+    return { groupColors: [] };
   }
 
   segments.sort((a, b) => {
