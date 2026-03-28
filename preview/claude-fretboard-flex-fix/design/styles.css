@@ -542,25 +542,11 @@ body {
 .quiz-stage-prompt > .quiz-prompt {
   flex-shrink: 0;
 }
-/* Fretboard: wrapper fills remaining space, SVG contained within.
-   Children use max-height: 100% to respect flex-allocated space
-   instead of viewport units (which overshoot on short screens). */
+/* Fretboard host div: participates in flex chain so fretboard
+   scales to fit rather than overflowing. */
 .quiz-stage-prompt > div:has(svg.fretboard) {
   flex: 1;
   min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-.quiz-stage-prompt .fretboard-wrapper {
-  height: 100%;
-}
-.quiz-stage-prompt .fretboard-container {
-  height: 100%;
-}
-.quiz-stage-prompt svg.fretboard {
-  max-height: 100%;
 }
 .quiz-stage-response {
   flex: 2;
@@ -1672,11 +1658,18 @@ body {
 /* ==========================================================================
    7. FRETBOARD
    ========================================================================== */
+/* Every layer in the fretboard flex chain participates so the browser
+   computes the available height and the SVG scales to fit via viewBox +
+   preserveAspectRatio. No viewport-unit hacks — the layout IS the
+   constraint. */
 .fretboard-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   width: 100%;
+  flex: 1;
+  min-height: 0;
 }
 .string-toggles {
   display: flex;
@@ -1868,20 +1861,19 @@ body {
   color: var(--color-on-brand);
   border-color: var(--color-toggle-active);
 }
-/* Constrain both width and height so the vertical SVG fits on screen.
-   The SVG preserves aspect ratio, so limiting height shrinks width too. */
 .fretboard-container {
   position: relative;
   width: 100%;
   min-width: 0;
   max-width: 500px;
-  max-height: 50vh;
+  height: 100%;
   margin: 0 auto;
 }
 .fretboard {
   width: auto;
-  max-height: 50vh;
   height: auto;
+  max-width: 100%;
+  max-height: 100%;
   display: block;
   margin: 0 auto;
   background: transparent;
@@ -2863,11 +2855,7 @@ button {
 }
 
 /* --- Interactive fretboard (multi-tap modes) --- */
-/* No response zone → prompt takes all of QuizStage. The fretboard fills
-   remaining space after fixed-height text elements. Every layer in the
-   flex chain participates so the browser computes the available height
-   and the SVG scales to fit via viewBox + preserveAspectRatio. No
-   viewport-unit hacks — the layout IS the constraint. */
+/* No response zone → prompt takes all of QuizStage. */
 .quiz-stage-prompt:only-child {
   flex: 1;
 }
@@ -2883,19 +2871,8 @@ button {
   display: flex;
   flex-direction: column;
 }
-.interactive-fretboard .fretboard-wrapper {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.interactive-fretboard .fretboard-container {
-  height: 85%;
-}
-.interactive-fretboard svg.fretboard {
-  max-height: 100%;
-}
+/* fretboard-wrapper, fretboard-container, and svg.fretboard
+   inherit flex-chain-friendly sizing from general rules. */
 .interactive-fretboard-status {
   flex-shrink: 0;
   display: flex;
@@ -3076,11 +3053,6 @@ body.native-app {
     padding-bottom: 0;
     border-left: none;
     border-right: none;
-  }
-
-  .fretboard-container {
-    width: 100%;
-    max-width: 500px;
   }
 
   /* .quiz-controls margin-top:auto pushes controls toward the bottom;
