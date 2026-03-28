@@ -5345,16 +5345,25 @@ ${text}`).join("\n\n");
     else if (correct === false) extraCls += " page-action-wrong";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
-      onNext ? /* @__PURE__ */ u3(
+      notice && !onNext ? /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice }) : /* @__PURE__ */ u3(
         ActionButton,
         {
           variant: "primary",
           class: extraCls,
-          onClick: onNext,
+          onClick: onNext ?? (() => {
+          }),
+          style: onNext ? void 0 : { visibility: "hidden" },
           children: label
         }
-      ) : notice ? /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice }) : null,
-      hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : onNext ? /* @__PURE__ */ u3("div", { class: "hint", children: "\xA0" }) : null
+      ),
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "hint",
+          style: hint ? void 0 : { visibility: "hidden" },
+          children: hint || "\xA0"
+        }
+      )
     ] });
   }
   function CountdownBar({ pct, warning, lastQuestion }) {

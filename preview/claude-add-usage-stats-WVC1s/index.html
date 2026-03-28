@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Music Reps</title>
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -3147,7 +3147,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="ce0e26 add-usage-stats-WVC1s"></div>
+  <div class="home-screen" id="home-screen" data-version="67a63c add-usage-stats-WVC1s"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -10867,16 +10867,25 @@ body.native-app {
     else if (correct === false) extraCls += " page-action-wrong";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
-      onNext ? /* @__PURE__ */ u3(
+      notice && !onNext ? /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice }) : /* @__PURE__ */ u3(
         ActionButton,
         {
           variant: "primary",
           class: extraCls,
-          onClick: onNext,
+          onClick: onNext ?? (() => {
+          }),
+          style: onNext ? void 0 : { visibility: "hidden" },
           children: label
         }
-      ) : notice ? /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice }) : null,
-      hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : onNext ? /* @__PURE__ */ u3("div", { class: "hint", children: "\xA0" }) : null
+      ),
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "hint",
+          style: hint ? void 0 : { visibility: "hidden" },
+          children: hint || "\xA0"
+        }
+      )
     ] });
   }
   var NOTE_HINT_LETTER = "C D E, c d e, C#, fs (=F#), Db, bb (=Bb)";
