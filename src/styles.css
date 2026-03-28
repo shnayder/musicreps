@@ -488,7 +488,7 @@ body {
   opacity: 0.04;
   pointer-events: none;
   z-index: -1;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232d4c3b'%3E%3Ccircle cx='7' cy='8.5' r='2.5'/%3E%3Ccircle cx='7' cy='15.5' r='2.5'/%3E%3Crect x='13' y='2' width='2' height='20'/%3E%3Crect x='18' y='2' width='4' height='20'/%3E%3C/svg%3E")
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024' fill='%232d4c3b'%3E%3Ccircle cx='350.6' cy='366.9' r='76.8'/%3E%3Ccircle cx='350.6' cy='674.1' r='76.8'/%3E%3Crect x='554.7' y='136.5' width='68.3' height='768'/%3E%3Crect x='682.7' y='136.5' width='136.5' height='768'/%3E%3C/svg%3E")
     no-repeat center / contain;
 }
 .layout-main-scroll {
