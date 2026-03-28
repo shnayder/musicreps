@@ -1580,8 +1580,10 @@ body {
   gap: 2px;
 }
 .level-action-btn {
-  width: 44px;
+  width: 28px;
   height: 28px;
+  padding: 0;
+  position: relative;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
@@ -1596,6 +1598,11 @@ body {
   transition:
     background var(--duration-base) ease,
     color var(--duration-base) ease;
+}
+.level-action-btn::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 .level-action-btn:hover {
   background: var(--color-surface-hover);
@@ -3110,7 +3117,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="6aa560 progress"></div>
+  <div class="home-screen" id="home-screen" data-version="264961 progress"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -8008,9 +8015,11 @@ body.native-app {
     if (entry.groups.length === 1) {
       if (skippedGroups?.has(0)) return { groupColors: [] };
       const ids = entry.allItemIds();
-      const anySeen = ids.some((id) => selector.getSpeedScore(id) !== null);
-      if (!anySeen) return { groupColors: [] };
-      return { groupColors: progressBarColors(selector, ids) };
+      const colors = progressBarColors(selector, ids);
+      if (colors.length > 0 && colors[0] === colors[colors.length - 1] && selector.getSpeedScore(ids[0]) === null) {
+        return { groupColors: [] };
+      }
+      return { groupColors: colors };
     }
     const segments = [];
     for (let i3 = 0; i3 < entry.groups.length; i3++) {

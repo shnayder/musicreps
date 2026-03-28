@@ -1566,8 +1566,10 @@ body {
   gap: 2px;
 }
 .level-action-btn {
-  width: 44px;
+  width: 28px;
   height: 28px;
+  padding: 0;
+  position: relative;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
@@ -1582,6 +1584,11 @@ body {
   transition:
     background var(--duration-base) ease,
     color var(--duration-base) ease;
+}
+.level-action-btn::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 .level-action-btn:hover {
   background: var(--color-surface-hover);
