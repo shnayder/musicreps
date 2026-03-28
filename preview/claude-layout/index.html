@@ -1569,11 +1569,12 @@ body {
 .progress-section:first-child {
   margin-top: 0;
 }
+.progress-section > .text-heading-section {
+  display: block;
+  margin-bottom: var(--gap-group);
+}
 .baseline-info:empty {
   display: none;
-}
-.baseline-header {
-  margin-bottom: var(--gap-group);
 }
 .baseline-metric {
   display: flex;
@@ -3045,7 +3046,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="867178 layout"></div>
+  <div class="home-screen" id="home-screen" data-version="889b98 layout"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -8207,7 +8208,6 @@ body.native-app {
     const tag = baseline ? null : /* @__PURE__ */ u3(Text, { role: "supporting", class: "baseline-default-tag", children: "(default)" });
     const btnLabel = baseline ? "Redo speed check" : "Run speed check";
     return /* @__PURE__ */ u3("div", { class: "baseline-info", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "div", class: "baseline-header", children: "Speed check" }),
       /* @__PURE__ */ u3("div", { class: "baseline-metric", children: [
         /* @__PURE__ */ u3(Text, { role: "label", children: "Response time for note input" }),
         /* @__PURE__ */ u3(Text, { role: "metric-primary", children: [
@@ -8272,7 +8272,10 @@ body.native-app {
             statsHeading,
             /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent })
           ] }),
-          onCalibrate && /* @__PURE__ */ u3("div", { class: "progress-section", children: /* @__PURE__ */ u3(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate }) })
+          onCalibrate && /* @__PURE__ */ u3("div", { class: "progress-section", children: [
+            /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Speed check" }),
+            /* @__PURE__ */ u3(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate })
+          ] })
         ] })
       }
     ];
