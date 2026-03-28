@@ -409,17 +409,8 @@ function SettingsAboutLegal(
 ) {
   return (
     <div>
-      <div class='brand-lockup'>
-        <div class='brand-lockup-name'>
-          <RepeatMark size={20} />
-          Music Reps
-        </div>
-        <p class='brand-lockup-tagline'>
-          Make music fundamentals automatic so you can focus on making music.
-        </p>
-      </div>
-
       <section class='settings-section'>
+        <h2 class='settings-section-title'>About</h2>
         <div class='settings-link-list'>
           {appConfig.contactEmail && (
             <a class='text-link' href={`mailto:${appConfig.contactEmail}`}>

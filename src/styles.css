@@ -466,10 +466,26 @@ body {
 }
 
 .layout-main {
+  position: relative;
   flex: 1;
   min-height: 0;
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
   padding-right: max(var(--size-content-inset), env(safe-area-inset-right, 0));
+}
+/* Brand watermark — end-repeat mark centered behind main content area */
+.mode-screen .layout-main::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 75%;
+  aspect-ratio: 1;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232d4c3b'%3E%3Ccircle cx='7' cy='8.5' r='2.5'/%3E%3Ccircle cx='7' cy='15.5' r='2.5'/%3E%3Crect x='13' y='2' width='2' height='20'/%3E%3Crect x='18' y='2' width='4' height='20' rx='1'/%3E%3C/svg%3E")
+    no-repeat center / contain;
 }
 .layout-main-scroll {
   overflow-y: auto;
@@ -1114,27 +1130,7 @@ body {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
-/* --- Brand lockup (Settings > About) --- */
-.brand-lockup {
-  text-align: center;
-  padding: var(--pad-region) 0;
-}
-.brand-lockup-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
-  font-family: var(--type-display-brand-family);
-  font-size: var(--text-lg);
-  font-weight: var(--type-display-brand-weight);
-  color: var(--color-brand);
-}
-.brand-lockup-tagline {
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--color-text-muted);
-  margin: var(--gap-related) 0 0;
-}
+
 .settings-field {
   display: flex;
   flex-direction: column;
@@ -1279,26 +1275,10 @@ body {
    5. PRACTICE CARD
    ========================================================================== */
 .practice-card {
-  position: relative;
-  overflow: hidden;
   margin-bottom: var(--pad-component);
   padding: var(--pad-component) var(--pad-region);
   background: var(--color-card);
   border-radius: var(--radius-md);
-}
-/* Brand watermark — end-repeat mark centered behind practice setup content */
-.practice-card::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  height: 75%;
-  aspect-ratio: 1;
-  opacity: 0.04;
-  pointer-events: none;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232d4c3b'%3E%3Ccircle cx='7' cy='8.5' r='2.5'/%3E%3Ccircle cx='7' cy='15.5' r='2.5'/%3E%3Crect x='13' y='2' width='2' height='20'/%3E%3Crect x='18' y='2' width='4' height='20' rx='1'/%3E%3C/svg%3E")
-    no-repeat center / contain;
 }
 .practice-zone + .practice-zone {
   margin-top: var(--pad-region);
@@ -2018,27 +1998,11 @@ button {
 }
 /* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
-  position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;
   text-align: center;
   padding: 0 var(--gap-group) var(--gap-group);
-}
-/* Brand watermark — end-repeat mark centered behind active quiz content */
-.quiz-area::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  height: 75%;
-  aspect-ratio: 1;
-  opacity: 0.04;
-  pointer-events: none;
-  z-index: 0;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232d4c3b'%3E%3Ccircle cx='7' cy='8.5' r='2.5'/%3E%3Ccircle cx='7' cy='15.5' r='2.5'/%3E%3Crect x='13' y='2' width='2' height='20'/%3E%3Crect x='18' y='2' width='4' height='20' rx='1'/%3E%3C/svg%3E")
-    no-repeat center / contain;
 }
 .quiz-content {
   flex: 1;
