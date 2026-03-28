@@ -5412,6 +5412,26 @@ ${text}`).join("\n\n");
       /* @__PURE__ */ u3("path", { d: "m16 20 2 2 4-4" })
     ] });
   }
+  var MODE_ICONS = {
+    fretboard: Guitar,
+    ukulele: Guitar,
+    speedTap: Zap,
+    noteSemitones: Hash,
+    intervalSemitones: Ruler,
+    semitoneMath: Calculator,
+    intervalMath: Calculator,
+    keySignatures: KeyRound,
+    scaleDegrees: Signal,
+    diatonicChords: ListOrdered,
+    chordSpelling: SpellCheck
+  };
+  function SkillIcon({ modeId }) {
+    const Icon = MODE_ICONS[modeId];
+    if (!Icon) return null;
+    return /* @__PURE__ */ u3(Icon, {});
+  }
+
+  // src/ui/repeat-mark.tsx
   function RepeatMark({ size = 24, class: cls }) {
     return /* @__PURE__ */ u3(
       "svg",
@@ -5432,24 +5452,6 @@ ${text}`).join("\n\n");
         ]
       }
     );
-  }
-  var MODE_ICONS = {
-    fretboard: Guitar,
-    ukulele: Guitar,
-    speedTap: Zap,
-    noteSemitones: Hash,
-    intervalSemitones: Ruler,
-    semitoneMath: Calculator,
-    intervalMath: Calculator,
-    keySignatures: KeyRound,
-    scaleDegrees: Signal,
-    diatonicChords: ListOrdered,
-    chordSpelling: SpellCheck
-  };
-  function SkillIcon({ modeId }) {
-    const Icon = MODE_ICONS[modeId];
-    if (!Icon) return null;
-    return /* @__PURE__ */ u3(Icon, {});
   }
 
   // src/ui/screen-layout.tsx

@@ -3088,7 +3088,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="4ec77c brand-identity-integration-amyB8"></div>
+  <div class="home-screen" id="home-screen" data-version="df3b7f brand-identity-integration-amyB8"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6599,6 +6599,26 @@ body.native-app {
       /* @__PURE__ */ u3("path", { d: "m16 20 2 2 4-4" })
     ] });
   }
+  var MODE_ICONS = {
+    fretboard: Guitar,
+    ukulele: Guitar,
+    speedTap: Zap,
+    noteSemitones: Hash,
+    intervalSemitones: Ruler,
+    semitoneMath: Calculator,
+    intervalMath: Calculator,
+    keySignatures: KeyRound,
+    scaleDegrees: Signal,
+    diatonicChords: ListOrdered,
+    chordSpelling: SpellCheck
+  };
+  function SkillIcon({ modeId }) {
+    const Icon = MODE_ICONS[modeId];
+    if (!Icon) return null;
+    return /* @__PURE__ */ u3(Icon, {});
+  }
+
+  // src/ui/repeat-mark.tsx
   function RepeatMark({ size = 24, class: cls }) {
     return /* @__PURE__ */ u3(
       "svg",
@@ -6619,24 +6639,6 @@ body.native-app {
         ]
       }
     );
-  }
-  var MODE_ICONS = {
-    fretboard: Guitar,
-    ukulele: Guitar,
-    speedTap: Zap,
-    noteSemitones: Hash,
-    intervalSemitones: Ruler,
-    semitoneMath: Calculator,
-    intervalMath: Calculator,
-    keySignatures: KeyRound,
-    scaleDegrees: Signal,
-    diatonicChords: ListOrdered,
-    chordSpelling: SpellCheck
-  };
-  function SkillIcon({ modeId }) {
-    const Icon = MODE_ICONS[modeId];
-    if (!Icon) return null;
-    return /* @__PURE__ */ u3(Icon, {});
   }
 
   // src/modes/key-signatures/logic.ts
