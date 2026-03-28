@@ -1541,11 +1541,12 @@ body {
 .progress-section:first-child {
   margin-top: 0;
 }
+.progress-section > .text-heading-section {
+  display: block;
+  margin-bottom: var(--gap-group);
+}
 .baseline-info:empty {
   display: none;
-}
-.baseline-header {
-  margin-bottom: var(--gap-group);
 }
 .baseline-metric {
   display: flex;

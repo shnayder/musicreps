@@ -581,9 +581,6 @@ function BaselineInfo(
   const btnLabel = baseline ? 'Redo speed check' : 'Run speed check';
   return (
     <div class='baseline-info'>
-      <Text role='heading-section' as='div' class='baseline-header'>
-        Speed check
-      </Text>
       <div class='baseline-metric'>
         <Text role='label'>Response time for note input</Text>
         <Text role='metric-primary'>
@@ -676,6 +673,7 @@ export function PracticeTab(
           </div>
           {onCalibrate && (
             <div class='progress-section'>
+              <Text role='heading-section'>Speed check</Text>
               <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
             </div>
           )}
