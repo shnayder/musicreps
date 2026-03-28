@@ -5,7 +5,8 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
 import type { PracticeSummaryState } from '../types.ts';
-import { RepeatMark, SkillIcon } from './icons.tsx';
+import { SkillIcon } from './icons.tsx';
+import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
