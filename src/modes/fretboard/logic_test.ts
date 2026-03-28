@@ -44,9 +44,9 @@ describe('guitar groups', () => {
     assert.equal(accStrings.size, 6);
   });
 
-  it('E e group has strings 5 and 0', () => {
+  it('E strings group has strings 5 and 0', () => {
     assert.deepEqual(groups[0].strings, [5, 0]);
-    assert.equal(groups[0].label(), 'E e');
+    assert.equal(groups[0].label(), 'E strings');
   });
 });
 
@@ -64,10 +64,10 @@ describe('guitar getItemIdsForGroup', () => {
     assert.ok(items.every((id) => id.startsWith('4-')));
   });
 
-  it('E A accidentals: 2 strings × 5 accidentals = 10 items', () => {
+  it('E accidentals: 2 strings × 5 accidentals = 10 items', () => {
     const items = getItemIdsForGroup(GUITAR, 5);
     assert.equal(items.length, 10);
-    assert.ok(items.every((id) => id.startsWith('5-') || id.startsWith('4-')));
+    assert.ok(items.every((id) => id.startsWith('5-') || id.startsWith('0-')));
   });
 
   it('all groups cover all 78 items', () => {
@@ -153,7 +153,7 @@ describe('getQuestion expected values', () => {
 
 describe('formatLabel', () => {
   it('single group in letter mode', () => {
-    assert.equal(formatLabel(GUITAR, new Set([0])), 'E e');
+    assert.equal(formatLabel(GUITAR, new Set([0])), 'E strings');
   });
 
   it('all groups', () => {
@@ -165,16 +165,16 @@ describe('formatLabel', () => {
 
   it('multiple groups sorted', () => {
     const label = formatLabel(GUITAR, new Set([2, 0]));
-    assert.equal(label, 'E e, D');
+    assert.equal(label, 'E strings, D string');
   });
 
   it('uses solfège names in solfège mode', () => {
     const original = getUseSolfege();
     try {
       setUseSolfege(true);
-      assert.equal(formatLabel(GUITAR, new Set([0])), 'Mi mi');
-      assert.equal(formatLabel(GUITAR, new Set([1])), 'La');
-      assert.equal(formatLabel(GUITAR, new Set([2])), 'Re');
+      assert.equal(formatLabel(GUITAR, new Set([0])), 'E strings');
+      assert.equal(formatLabel(GUITAR, new Set([1])), 'A string');
+      assert.equal(formatLabel(GUITAR, new Set([2])), 'D string');
     } finally {
       setUseSolfege(original);
     }

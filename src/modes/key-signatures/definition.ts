@@ -65,7 +65,7 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
     allGroupIndices: ALL_GROUP_INDICES,
     storageKey: 'keySignatures_enabledGroups',
     scopeLabel: 'Keys',
-    defaultEnabled: [0, 1],
+    defaultEnabled: [0],
     formatLabel: (groups) => {
       if (groups.size === ALL_KEY_GROUPS.length) return 'all keys';
       const keys = [...groups].sort((a, b) => a - b)

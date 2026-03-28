@@ -96,7 +96,7 @@ function classifySkill(
 ): SkillRecommendation {
   const modeId = entry.modeId;
   const singleGroup = entry.groups.length <= 1;
-  const labels = entry.groups.map((g) => g.label);
+  const labels = entry.groups.map((g) => g.longLabel ?? g.label);
 
   if (result.levelRecs.length === 0) {
     return { modeId, type: 'automatic', urgency: 0, cueLabel: '', detail: '' };

@@ -89,7 +89,7 @@ describe('computeAllProgress', () => {
   });
 
   it('filters skipped groups via getSkipped', () => {
-    // Skip groups 0 and 1 of keySignatures (7 groups total)
+    // Skip groups 0 and 1 of keySignatures (4 groups total)
     // All unseen → empty regardless of skips
     const skipped = new Set([0, 1]);
     const getSkipped = (ns: string) =>
@@ -141,24 +141,22 @@ describe('computeProgressForMode', () => {
     const storage = createMemoryStorage();
     const now = Date.now();
 
-    // Seed group 0 (C G F) as automatic, group 2 (A Eb) as slow, rest empty.
+    // Seed group 0 (major 0–3) as automatic, group 1 (major 4+) as slow.
     const g0Items = entry.groups![0].getItemIds();
-    const g2Items = entry.groups![2].getItemIds();
+    const g1Items = entry.groups![1].getItemIds();
     seedAutomatic(storage, g0Items, now);
-    seedSlow(storage, g2Items, now);
+    seedSlow(storage, g1Items, now);
 
     const result = computeProgressForMode(entry, storage, null);
 
-    // 7 segments total. Group 0 (automatic) should sort first, group 2 (slow)
-    // should sort before unseen groups. Colors should be
-    // ordered descending: automatic color, slow color, then grey for the rest.
-    assert.equal(result.groupColors.length, 7);
+    // 4 segments total. Group 0 (automatic) should sort first.
+    assert.equal(result.groupColors.length, 4);
     // First color should differ from last (automatic vs grey)
-    assert.notEqual(result.groupColors[0], result.groupColors[6]);
+    assert.notEqual(result.groupColors[0], result.groupColors[3]);
   });
 
   it('filters out skipped groups', () => {
-    const entry = getModeProgress('keySignatures')!; // 7 groups
+    const entry = getModeProgress('keySignatures')!; // 4 groups
     const storage = createMemoryStorage();
     const now = Date.now();
     // Seed all groups so they're not unseen
@@ -167,13 +165,13 @@ describe('computeProgressForMode', () => {
     }
     const skipped = new Set([1, 3]);
     const result = computeProgressForMode(entry, storage, null, skipped);
-    assert.equal(result.groupColors.length, 5); // 7 - 2 skipped
+    assert.equal(result.groupColors.length, 2); // 4 - 2 skipped
   });
 
   it('returns empty when all groups skipped', () => {
-    const entry = getModeProgress('keySignatures')!; // 7 groups
+    const entry = getModeProgress('keySignatures')!; // 4 groups
     const storage = createMemoryStorage();
-    const skipped = new Set([0, 1, 2, 3, 4, 5, 6]);
+    const skipped = new Set([0, 1, 2, 3]);
     const result = computeProgressForMode(entry, storage, null, skipped);
     assert.equal(result.groupColors.length, 0);
   });

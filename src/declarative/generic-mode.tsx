@@ -818,7 +818,8 @@ function LevelProgressCards<Q>(
         return (
           <LevelProgressCard
             key={i}
-            label={resolveGroupLabel(groupScope.groups[i].label)}
+            label={groupScope.groups[i].longLabel ??
+              resolveGroupLabel(groupScope.groups[i].label)}
             pill={pill ?? undefined}
             colors={colors}
             status={status}
@@ -946,7 +947,12 @@ function IdlePracticeView<Q>(
       onCalibrate={onCalibrate}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
-      aboutContent={<AboutTab beforeAfter={def.beforeAfter} />}
+      aboutContent={
+        <AboutTab
+          description={def.description}
+          beforeAfter={def.beforeAfter}
+        />
+      }
     />
   );
 }
@@ -956,7 +962,8 @@ function IdlePracticeView<Q>(
 // ---------------------------------------------------------------------------
 
 function AboutTab(
-  { beforeAfter }: {
+  { description, beforeAfter }: {
+    description: string;
     beforeAfter: {
       before: string | (() => string);
       after: string | (() => string);
@@ -972,15 +979,18 @@ function AboutTab(
 
   return (
     <div class='about-tab'>
+      <Text role='body-secondary' as='p' class='about-description'>
+        {description}
+      </Text>
       <Text role='heading-subsection' as='div'>What you're training</Text>
-      <div class='about-before-after'>
-        <div class='about-ba-row'>
-          <Text role='label' as='span'>Before</Text>
-          <span class='about-ba-text'>{before}</span>
+      <div class='about-columns'>
+        <div class='about-col about-col-before'>
+          <Text role='label' as='div' class='about-col-header'>Before</Text>
+          <p class='about-col-text'>{before}</p>
         </div>
-        <div class='about-ba-row'>
-          <Text role='label' as='span'>After</Text>
-          <span class='about-ba-text about-ba-after'>{after}</span>
+        <div class='about-col about-col-after'>
+          <Text role='label' as='div' class='about-col-header'>After</Text>
+          <p class='about-col-text'>{after}</p>
         </div>
       </div>
     </div>

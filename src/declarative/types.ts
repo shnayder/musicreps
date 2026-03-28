@@ -71,7 +71,7 @@ export type NoScopeDef = { kind: 'none' };
 
 export type GroupScopeDef = {
   kind: 'groups';
-  groups: Array<{ label: string | (() => string) }>;
+  groups: Array<{ label: string | (() => string); longLabel?: string }>;
   getItemIdsForGroup: (index: number) => string[];
   allGroupIndices: number[];
   storageKey: string;

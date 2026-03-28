@@ -33,47 +33,47 @@ describe('ALL_ITEMS', () => {
 });
 
 describe('KEY_GROUPS', () => {
-  it('has 5 major groups', () => {
-    assert.equal(KEY_GROUPS.length, 5);
+  it('has 2 major groups', () => {
+    assert.equal(KEY_GROUPS.length, 2);
   });
 
   it('has 2 minor groups', () => {
     assert.equal(MINOR_KEY_GROUPS.length, 2);
   });
 
-  it('has 7 total groups', () => {
-    assert.equal(ALL_KEY_GROUPS.length, 7);
+  it('has 4 total groups', () => {
+    assert.equal(ALL_KEY_GROUPS.length, 4);
   });
 });
 
 describe('getItemIdsForGroup', () => {
-  it('group 0 contains C, G, F items', () => {
+  it('group 0 contains C, G, F, D, Bb, A, Eb items (major 0–3 ♯/♭)', () => {
     const ids = getItemIdsForGroup(0);
     assert.ok(ids.includes('C:fwd'));
-    assert.ok(ids.includes('C:rev'));
     assert.ok(ids.includes('G:fwd'));
-    assert.ok(ids.includes('G:rev'));
     assert.ok(ids.includes('F:fwd'));
-    assert.ok(ids.includes('F:rev'));
+    assert.ok(ids.includes('D:fwd'));
+    assert.ok(ids.includes('Bb:fwd'));
+    assert.ok(ids.includes('A:fwd'));
+    assert.ok(ids.includes('Eb:fwd'));
   });
 
-  it('group 0 has 6 items (3 keys × 2 directions)', () => {
-    const ids = getItemIdsForGroup(0);
-    assert.equal(ids.length, 6);
+  it('group 0 has 14 items (7 keys × 2 directions)', () => {
+    assert.equal(getItemIdsForGroup(0).length, 14);
   });
 
-  it('group 5 (minor easy) contains Am items', () => {
-    const ids = getItemIdsForGroup(5);
+  it('group 2 (minor 0–3 ♯/♭) contains Am items', () => {
+    const ids = getItemIdsForGroup(2);
     assert.ok(ids.includes('Am:fwd'));
     assert.ok(ids.includes('Am:rev'));
   });
 
-  it('group 5 has 14 items (7 minor keys × 2 directions)', () => {
-    assert.equal(getItemIdsForGroup(5).length, 14);
+  it('group 2 has 14 items (7 minor keys × 2 directions)', () => {
+    assert.equal(getItemIdsForGroup(2).length, 14);
   });
 
-  it('group 6 has 10 items (5 minor keys × 2 directions)', () => {
-    assert.equal(getItemIdsForGroup(6).length, 10);
+  it('group 3 has 10 items (5 minor keys × 2 directions)', () => {
+    assert.equal(getItemIdsForGroup(3).length, 10);
   });
 });
 

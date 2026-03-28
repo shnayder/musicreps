@@ -16,9 +16,9 @@ export const ACTIVE_DEGREES = [2, 3, 4, 5, 6, 7];
 
 /** Degree groups for scope selection, ordered by importance. */
 export const DEGREE_GROUPS = [
-  { degrees: [4, 5], label: '4th,5th' },
-  { degrees: [3, 7], label: '3rd,7th' },
-  { degrees: [2, 6], label: '2nd,6th' },
+  { degrees: [4, 5], label: '4th, 5th', longLabel: '4th & 5th degrees' },
+  { degrees: [3, 7], label: '3rd, 7th', longLabel: '3rd & 7th degrees' },
+  { degrees: [2, 6], label: '2nd, 6th', longLabel: '2nd & 6th degrees' },
 ];
 
 /**

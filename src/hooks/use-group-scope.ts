@@ -34,7 +34,7 @@ import { useNotationVersion } from './use-notation-version.ts';
 /** Configuration for a group-based scope hook. */
 export type GroupScopeSpec = {
   /** Raw group array from mode logic (must have a `.label` property). */
-  groups: Array<{ label: string | (() => string) }>;
+  groups: Array<{ label: string | (() => string); longLabel?: string }>;
   /** Map group index → item IDs (from mode logic). */
   getItemIdsForGroup: (index: number) => string[];
   /** All valid group indices, e.g. `[0, 1, 2, ...]` (from mode logic). */
@@ -160,7 +160,8 @@ function useRecommendationData(
     [spec.selector, activeGroupIndices, spec.getItemIdsForGroup],
   );
   const getLabel = useCallback(
-    (i: number) => resolveLabel(spec.groups[i].label),
+    (i: number) =>
+      spec.groups[i].longLabel ?? resolveLabel(spec.groups[i].label),
     [spec.groups, notationVersion],
   );
   const suggestionLines = useMemo(
