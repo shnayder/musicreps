@@ -585,14 +585,11 @@ function BaselineInfo(
   const btnLabel = baseline ? 'Redo speed check' : 'Run speed check';
   return (
     <div class='baseline-info'>
-      <Text role='heading-subsection' as='div' class='baseline-header'>
-        Speed check
-      </Text>
       <div class='baseline-metric'>
         <Text role='label'>Response time for note input</Text>
         <Text role='metric-primary'>
           {value}
-          {tag && <>{tag}</>}
+          {tag && <>{' '}{tag}</>}
         </Text>
       </div>
       <Text role='supporting' as='div' class='baseline-explanation'>
@@ -621,6 +618,7 @@ export function PracticeTab(
     onApplyRecommendation,
     scope,
     statsContent,
+    statsHeading,
     onCalibrate,
     baseline,
     activeTab,
@@ -637,6 +635,8 @@ export function PracticeTab(
     onApplyRecommendation?: () => void;
     scope?: ComponentChildren;
     statsContent: ComponentChildren;
+    /** Heading rendered outside the centered stats container. */
+    statsHeading?: ComponentChildren;
     onCalibrate?: () => void;
     baseline?: number | null;
     activeTab: ModeTab;
@@ -670,10 +670,16 @@ export function PracticeTab(
       label: <TabIcon icon='progress' text='Progress' />,
       content: (
         <div>
-          <div class='stats-container'>{statsContent}</div>
-          {progressExtra}
+          {progressExtra && <div class='progress-section'>{progressExtra}</div>}
+          <div class='progress-section'>
+            {statsHeading}
+            <div class='stats-container'>{statsContent}</div>
+          </div>
           {onCalibrate && (
-            <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
+            <div class='progress-section'>
+              <Text role='heading-section'>Speed check</Text>
+              <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
+            </div>
           )}
         </div>
       ),

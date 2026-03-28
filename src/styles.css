@@ -651,9 +651,8 @@ body {
   background: var(--color-chrome);
   border-top: 1px solid var(--color-border-lighter);
   border-bottom: none;
-  padding-left: var(--size-content-inset);
-  padding-right: var(--size-content-inset);
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding: var(--gap-related) var(--size-content-inset);
+  padding-bottom: max(var(--gap-related), env(safe-area-inset-bottom, 0));
 }
 .mode-nav .tab-btn {
   padding: var(--gap-related) var(--gap-group);
@@ -1587,17 +1586,18 @@ body {
 /* ==========================================================================
    6. PROGRESS TAB
    ========================================================================== */
-.baseline-info {
+.progress-section {
   margin-top: var(--pad-region);
-  padding: var(--pad-component) var(--pad-region);
-  border-top: 1px solid var(--color-border-lighter);
-  background: var(--color-well);
+}
+.progress-section:first-child {
+  margin-top: 0;
+}
+.progress-section > .text-heading-section {
+  display: block;
+  margin-bottom: var(--gap-group);
 }
 .baseline-info:empty {
   display: none;
-}
-.baseline-header {
-  margin-bottom: var(--gap-group);
 }
 .baseline-metric {
   display: flex;
@@ -1612,6 +1612,7 @@ body {
   margin-bottom: var(--pad-component);
 }
 .baseline-rerun-btn {
+  display: block;
   background: none;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-sm);
@@ -1621,7 +1622,7 @@ body {
   line-height: var(--type-control-leading);
   color: var(--type-control-color);
   cursor: pointer;
-  margin: 0;
+  margin: 0 auto;
   transition:
     background var(--duration-base) ease,
     border-color var(--duration-base) ease;
@@ -2772,16 +2773,6 @@ button {
 /* --- Stats tables (lookup modes) --- */
 .stats-container {
   text-align: center;
-  margin: var(--gap-group) 0;
-}
-.stats-container > .text-heading-section {
-  text-align: left;
-  padding: 0 var(--pad-component);
-  margin-top: var(--pad-region);
-  margin-bottom: var(--gap-group);
-}
-.stats-container > .text-heading-section:first-child {
-  margin-top: 0;
 }
 .stats-table {
   border-collapse: collapse;

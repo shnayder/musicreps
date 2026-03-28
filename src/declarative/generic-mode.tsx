@@ -898,13 +898,11 @@ function IdlePracticeView<Q>(
             />
           </div>
         )}
+      statsHeading={hasStats
+        ? <Text role='heading-section'>Item details</Text>
+        : undefined}
       statsContent={
         <>
-          {hasStats && (
-            <Text role='heading-section' as='div'>
-              All items
-            </Text>
-          )}
           {ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : (
             <>
               {def.stats.kind === 'grid' && (
