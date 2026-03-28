@@ -556,11 +556,13 @@ body {
 .quiz-stage-prompt > .quiz-prompt {
   flex-shrink: 0;
 }
-/* Fretboard host div: participates in flex chain so fretboard
-   scales to fit rather than overflowing. */
+/* Fretboard host div: flex column so .fretboard-wrapper's
+   flex: 1; min-height: 0 can participate in the chain. */
 .quiz-stage-prompt > div:has(svg.fretboard) {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 .quiz-stage-response {
   flex: 2;
@@ -3091,7 +3093,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="796f70 fretboard-flex-fix"></div>
+  <div class="home-screen" id="home-screen" data-version="ddb909 fretboard-flex-fix"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
