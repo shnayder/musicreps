@@ -598,6 +598,33 @@ body {
   color: var(--type-body-secondary-color);
   margin: var(--gap-group) 0 0;
 }
+/* On native apps, hide the title/tagline but keep the stats bar visible */
+.home-header.native .home-title,
+.home-header.native .home-tagline {
+  display: none;
+}
+/* --- Stats bar (home header) --- */
+.home-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-group);
+  margin-top: var(--gap-group);
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
+  color: var(--color-text-light);
+}
+.home-header.native .home-stats-bar {
+  margin-top: 0;
+}
+.home-stat-value {
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+.home-stat-sep {
+  color: var(--color-text-muted);
+}
 /* --- Tabs --- */
 .tabs {
   display: flex;
@@ -828,7 +855,7 @@ body {
   line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
-  margin: var(--pad-component) 0 0;
+  margin: 0 0 var(--gap-group);
   text-align: center;
 }
 /* Shared pill/badge component */
@@ -1022,8 +1049,7 @@ body {
    4. MODE CHROME
    ========================================================================== */
 .mode-top-bar {
-  padding: var(--gap-group) var(--gap-group) var(--gap-group)
-    var(--size-content-inset);
+  padding: var(--gap-group) var(--size-content-inset);
   margin-bottom: var(--gap-group);
   background: var(--color-chrome);
 }
@@ -1113,10 +1139,11 @@ body {
 .settings-page-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--gap-group);
 }
 .settings-page-title {
   margin: 0;
+  flex: 1;
   font-family: var(--type-heading-page-family);
   font-size: var(--type-heading-page-size);
   font-weight: var(--type-heading-page-weight);
@@ -1225,8 +1252,8 @@ body {
   display: flex;
   align-items: center;
   gap: var(--gap-related);
-  padding: var(--gap-related) var(--gap-group) var(--gap-related)
-    var(--size-content-inset);
+  padding: var(--gap-related) var(--size-content-inset) var(--gap-related)
+    var(--gap-group);
   background: var(--color-chrome);
 }
 .quiz-session-header-content {
@@ -1424,7 +1451,7 @@ body {
   margin-bottom: var(--gap-related);
 }
 
-/* --- Skill header: title + close + progress bar --- */
+/* --- Skill header: X (left) + icon + title (centered) + reps (right) --- */
 .skill-header {
   padding: var(--pad-component) var(--size-content-inset) var(--gap-group);
   background: var(--color-chrome);
@@ -1436,6 +1463,22 @@ body {
 }
 .skill-header-row .mode-title {
   flex: 1;
+  text-align: center;
+}
+.skill-header-reps {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.skill-header-reps-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
 }
 .skill-header-progress {
   margin-top: var(--gap-group);

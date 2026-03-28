@@ -3,9 +3,10 @@
 // Settings tab shows inline settings panel.
 
 import type { ComponentChildren } from 'preact';
-import { useCallback, useState } from 'preact/hooks';
+import { useCallback, useMemo, useState } from 'preact/hooks';
 import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
 import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
+import { getGlobalEffort } from '../effort.ts';
 import { SkillIcon } from './icons.tsx';
 import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
@@ -517,8 +518,8 @@ function DevPage({ onClose }: { onClose: () => void }) {
   return (
     <div class='settings-page'>
       <div class='settings-page-header'>
-        <h1 class='settings-page-title'>Dev</h1>
         <CloseButton ariaLabel='Close' onClick={onClose} />
+        <h1 class='settings-page-title'>Dev</h1>
       </div>
 
       <DevSection title='Global'>
@@ -610,6 +611,11 @@ function AllSkillsList(
 ) {
   return (
     <div class='home-modes'>
+      <p class='all-skills-hint'>
+        Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
+        {' '}
+        list.
+      </p>
       {TRACKS.map((track) => (
         <TrackSection
           key={track.id}
@@ -655,23 +661,40 @@ function loadInitialTab(): HomeTab {
 // HomeHeader — title + tagline that scrolls with content
 // ---------------------------------------------------------------------------
 
-function HomeHeader({ isNativeApp }: { isNativeApp?: boolean }) {
+function HomeHeader(
+  { isNativeApp, totalReps, daysActive }: {
+    isNativeApp?: boolean;
+    totalReps: number;
+    daysActive: number;
+  },
+) {
+  const hasStats = totalReps > 0;
   return (
-    <div class={`home-header${isNativeApp ? ' sr-only' : ''}`}>
-      <h1 class='home-title'>
-        <RepeatMark size={28} class='home-logo-mark' />
-        Music Reps
-      </h1>
+    <div class={`home-header${isNativeApp ? ' native' : ''}`}>
       {!isNativeApp && (
-        <p class='home-tagline'>
-          Make music fundamentals automatic so you can focus on playing.
-        </p>
+        <>
+          <h1 class='home-title'>
+            <RepeatMark size={28} class='home-logo-mark' />
+            Music Reps
+          </h1>
+          <p class='home-tagline'>
+            Make music fundamentals automatic so you can focus on playing.
+          </p>
+        </>
       )}
-      <p class='all-skills-hint'>
-        Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
-        {' '}
-        list.
-      </p>
+      {hasStats && (
+        <div class='home-stats-bar'>
+          <span class='home-stat'>
+            <span class='home-stat-value'>{totalReps.toLocaleString()}</span>
+            {' reps'}
+          </span>
+          <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
+          <span class='home-stat'>
+            <span class='home-stat-value'>{daysActive}</span>
+            {daysActive === 1 ? ' day' : ' days'}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -780,6 +803,7 @@ export function HomeScreen(
   const [showDev, setShowDev] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
   const [tab, setTab] = useState<HomeTab>(loadInitialTab);
+  const globalEffort = useMemo(getGlobalEffort, []);
   const prefix = useTabsPrefix();
 
   const handleToggleStar = useCallback((modeId: string) => {
@@ -830,7 +854,11 @@ export function HomeScreen(
   return (
     <ScreenLayout class='home-screen-layout'>
       <LayoutHeader>
-        <HomeHeader isNativeApp={isNativeApp} />
+        <HomeHeader
+          isNativeApp={isNativeApp}
+          totalReps={globalEffort.totalReps}
+          daysActive={globalEffort.daysActive}
+        />
       </LayoutHeader>
       <LayoutMain>
         <div class='home-content'>

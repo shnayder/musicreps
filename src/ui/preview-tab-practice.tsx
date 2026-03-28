@@ -154,10 +154,11 @@ function Phase1Components(
       </PreviewGrid>
 
       <PreviewGrid>
-        <Section title='SkillHeader — with progress' tabId={tabId}>
+        <Section title='SkillHeader — with progress + reps' tabId={tabId}>
           <SkillHeader
             modeId='fretboard'
             title='Guitar Fretboard'
+            totalReps={3473}
             progressColors={MOCK_PROGRESS_COLORS}
             onBack={() => {}}
           />
@@ -166,6 +167,7 @@ function Phase1Components(
           <SkillHeader
             modeId='noteSemitones'
             title='Note ↔ Semitones'
+            totalReps={0}
             progressColors={[]}
             onBack={() => {}}
           />

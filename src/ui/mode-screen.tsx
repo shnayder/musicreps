@@ -201,17 +201,17 @@ export function ModeTopBar(
   return (
     <div class='mode-top-bar'>
       <div class='mode-top-bar-row'>
-        {modeId && <SkillIcon modeId={modeId} />}
-        <div class='mode-top-bar-text'>
-          <h1 class='mode-title'>{title}</h1>
-          {description && <p class='mode-description'>{description}</p>}
-        </div>
         {showBack && (
           <CloseButton
             ariaLabel='Back to home'
             onClick={onBack}
           />
         )}
+        {modeId && <SkillIcon modeId={modeId} />}
+        <div class='mode-top-bar-text'>
+          <h1 class='mode-title'>{title}</h1>
+          {description && <p class='mode-description'>{description}</p>}
+        </div>
       </div>
     </div>
   );
@@ -361,6 +361,10 @@ export function QuizSession(
   return (
     <div class='quiz-session'>
       <div class='quiz-session-header'>
+        <CloseButton
+          ariaLabel='Stop quiz'
+          onClick={onClose}
+        />
         <div class='quiz-session-header-content'>
           <div class='quiz-countdown-row'>
             <div
@@ -381,10 +385,6 @@ export function QuizSession(
             lastQuestion={lastQuestion}
           />
         </div>
-        <CloseButton
-          ariaLabel='Stop quiz'
-          onClick={onClose}
-        />
       </div>
     </div>
   );

@@ -1311,10 +1311,11 @@ function useProgressColors<Q>(
 
 /** Render SkillHeader (idle) or minimal ModeTopBar (active/calibration). */
 function ModeHeader<Q>(
-  { def, isIdle, progressColors, navigateHome }: {
+  { def, isIdle, progressColors, totalReps, navigateHome }: {
     def: ModeDefinition<Q>;
     isIdle: boolean;
     progressColors: string[];
+    totalReps: number;
     navigateHome: () => void;
   },
 ) {
@@ -1323,6 +1324,7 @@ function ModeHeader<Q>(
       <SkillHeader
         modeId={def.id}
         title={def.name}
+        totalReps={totalReps}
         progressColors={progressColors}
         onBack={navigateHome}
       />
@@ -1359,6 +1361,14 @@ function GenericModeBody<Q>(
   const activeButtons = resolveButtons(def, dir);
   const isIdle = engine.state.phase === 'idle' && !sc.speedCheck;
   const progressColors = useProgressColors(def, learner);
+  const totalReps = useMemo(() => {
+    let sum = 0;
+    for (const id of def.allItems) {
+      const s = learner.selector.getStats(id);
+      if (s) sum += s.sampleCount;
+    }
+    return sum;
+  }, [def.allItems, learner.selector]);
 
   if (isIdle) {
     return (
@@ -1368,6 +1378,7 @@ function GenericModeBody<Q>(
             def={def}
             isIdle
             progressColors={progressColors}
+            totalReps={totalReps}
             navigateHome={navigateHome}
           />
         </LayoutHeader>
