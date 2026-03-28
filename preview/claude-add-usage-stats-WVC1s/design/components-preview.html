@@ -1502,7 +1502,7 @@ body {
   align-items: center;
   gap: 0.3em;
   font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
+  font-weight: var(--font-semibold);
   line-height: var(--type-metric-info-leading);
   color: var(--color-tertiary);
   white-space: nowrap;
@@ -2037,7 +2037,6 @@ button {
 
 /* --- Quiz session info — single compact row --- */
 .quiz-session-info {
-  position: relative;
   display: flex;
   align-items: center;
   gap: var(--gap-group);
@@ -2049,13 +2048,6 @@ button {
 }
 .quiz-info-context {
   flex: 1;
-}
-.quiz-info-last-question {
-  color: var(--color-notice);
-  font-weight: var(--font-semibold);
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 }
 .quiz-info-count {
   font-variant-numeric: tabular-nums;
@@ -2673,6 +2665,14 @@ button {
 }
 .hint-spacer {
   visibility: hidden;
+}
+.feedback-notice {
+  text-align: center;
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
+  color: var(--color-notice);
+  padding: var(--pad-component) 0;
 }
 
 /* ==========================================================================
@@ -5339,31 +5339,22 @@ ${text}`).join("\n\n");
   function TextPrompt({ text }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: text });
   }
-  function FeedbackDisplay({ text, className, hint, correct, onNext, label = "Next" }) {
+  function FeedbackDisplay({ text, className, hint, correct, onNext, label = "Next", notice }) {
     let extraCls = "next-btn";
     if (correct === true) extraCls += " page-action-correct";
     else if (correct === false) extraCls += " page-action-wrong";
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
-      /* @__PURE__ */ u3(
+      onNext ? /* @__PURE__ */ u3(
         ActionButton,
         {
           variant: "primary",
           class: extraCls,
-          onClick: onNext ?? (() => {
-          }),
-          style: onNext ? void 0 : { visibility: "hidden" },
+          onClick: onNext,
           children: label
         }
-      ),
-      /* @__PURE__ */ u3(
-        "div",
-        {
-          class: "hint",
-          style: hint ? void 0 : { visibility: "hidden" },
-          children: hint || "\xA0"
-        }
-      )
+      ) : notice ? /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice }) : null,
+      hint ? /* @__PURE__ */ u3("div", { class: "hint", children: hint }) : onNext ? /* @__PURE__ */ u3("div", { class: "hint", children: "\xA0" }) : null
     ] });
   }
   function CountdownBar({ pct, warning, lastQuestion }) {
@@ -5681,7 +5672,6 @@ ${text}`).join("\n\n");
     count,
     isWarning,
     isLastQuestion,
-    lastQuestion,
     onClose
   }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-session", children: /* @__PURE__ */ u3("div", { class: "quiz-session-header", children: [
@@ -5713,17 +5703,15 @@ ${text}`).join("\n\n");
           SessionInfo,
           {
             context,
-            count,
-            lastQuestion
+            count
           }
         )
       ] })
     ] }) });
   }
-  function SessionInfo({ context, count, lastQuestion }) {
+  function SessionInfo({ context, count }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-session-info", children: [
       /* @__PURE__ */ u3("span", { class: "quiz-info-context", children: context || "" }),
-      lastQuestion ? /* @__PURE__ */ u3("span", { class: "quiz-info-last-question", children: lastQuestion }) : null,
       /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: count || "" })
     ] });
   }
@@ -9127,8 +9115,7 @@ ${text}`).join("\n\n");
             timeLeft: "1:18",
             timerPct: 65,
             context: "E string",
-            count: "6 of 20",
-            lastQuestion: "G"
+            count: "6 of 20"
           }
         ) }),
         /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(
