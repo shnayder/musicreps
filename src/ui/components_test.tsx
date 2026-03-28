@@ -414,19 +414,11 @@ describe('FeedbackDisplay', () => {
     assert.ok(html.includes('Try again'));
   });
 
-  it('hint always present but hidden when not provided', () => {
+  it('omits hint div when no hint and no onNext', () => {
     const html = render(
       <FeedbackDisplay text='X' className='feedback' />,
     );
-    // hint div is always rendered to reserve space (prevents layout jump)
-    const hintDivMatch = html.match(
-      /<div[^>]*class="[^"]*\bhint\b[^"]*"[^>]*>/,
-    );
-    assert.ok(hintDivMatch, 'hint div should be rendered');
-    assert.match(
-      hintDivMatch[0],
-      /style="[^"]*\bvisibility:\s*hidden\b[^"]*"/,
-    );
+    assert.ok(!html.includes('class="hint"'), 'hint div should not render');
   });
 
   it('renders visible Next button when onNext provided', () => {
@@ -447,18 +439,11 @@ describe('FeedbackDisplay', () => {
     );
   });
 
-  it('hides Next button when onNext not provided', () => {
+  it('omits Next button when onNext not provided', () => {
     const html = render(
       <FeedbackDisplay text='X' className='feedback' />,
     );
-    const btnMatch = html.match(
-      /<button[^>]*class="[^"]*\bnext-btn\b[^"]*"[^>]*>/,
-    );
-    assert.ok(btnMatch, 'next-btn should be rendered for layout stability');
-    assert.match(
-      btnMatch[0],
-      /style="[^"]*\bvisibility:\s*hidden\b[^"]*"/,
-    );
+    assert.ok(!html.includes('next-btn'), 'next-btn should not render');
   });
 
   it('adds page-action-correct class when correct=true', () => {
@@ -773,16 +758,15 @@ describe('SessionInfo', () => {
     assert.ok(html.includes('3 of 8'));
   });
 
-  it('renders last question in session info', () => {
+  it('renders context and count in session info', () => {
     const html = render(
       <SessionInfo
         context='natural'
         count='3 answers'
-        lastQuestion='Last question'
       />,
     );
-    assert.ok(html.includes('Last question'));
-    assert.ok(html.includes('quiz-info-last-question'));
+    assert.ok(html.includes('natural'));
+    assert.ok(html.includes('3 answers'));
   });
 });
 

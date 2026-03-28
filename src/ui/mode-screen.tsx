@@ -345,7 +345,6 @@ export function QuizSession(
     count,
     isWarning,
     isLastQuestion,
-    lastQuestion,
     onClose,
   }: {
     timeLeft?: string;
@@ -354,7 +353,6 @@ export function QuizSession(
     count?: string;
     isWarning?: boolean;
     isLastQuestion?: boolean;
-    lastQuestion?: string;
     onClose?: () => void;
   },
 ) {
@@ -382,7 +380,6 @@ export function QuizSession(
           <SessionInfo
             context={context}
             count={count}
-            lastQuestion={lastQuestion}
           />
         </div>
       </div>
@@ -395,18 +392,14 @@ export function QuizSession(
 // ---------------------------------------------------------------------------
 
 export function SessionInfo(
-  { context, count, lastQuestion }: {
+  { context, count }: {
     context?: string;
     count?: string;
-    lastQuestion?: string;
   },
 ) {
   return (
     <div class='quiz-session-info'>
       <span class='quiz-info-context'>{context || ''}</span>
-      {lastQuestion
-        ? <span class='quiz-info-last-question'>{lastQuestion}</span>
-        : null}
       <span class='quiz-info-count'>{count || ''}</span>
     </div>
   );

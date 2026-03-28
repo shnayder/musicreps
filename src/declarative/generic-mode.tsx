@@ -725,9 +725,6 @@ function QuizActiveView<Q>(
           count={round.countText}
           isWarning={engine.timerWarning}
           isLastQuestion={engine.timerLastQuestion}
-          lastQuestion={engine.state.roundTimerExpired
-            ? (engine.state.answered ? 'Time is up' : 'Last question')
-            : ''}
           onClose={engine.stop}
         />
       </LayoutHeader>
@@ -742,6 +739,9 @@ function QuizActiveView<Q>(
           correct={engine.state.feedbackCorrect}
           onNext={engine.state.answered ? engine.nextQuestion : undefined}
           label={engine.state.roundTimerExpired ? 'Continue' : 'Next'}
+          notice={engine.state.roundTimerExpired && !engine.state.answered
+            ? 'Last question'
+            : undefined}
         />
       </LayoutFooter>
     </ScreenLayout>

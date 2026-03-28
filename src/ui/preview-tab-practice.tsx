@@ -601,7 +601,6 @@ function ScreenLayoutActiveExamples({ tabId }: { tabId: string }) {
               timerPct={65}
               context='E string'
               count='6 of 20'
-              lastQuestion='G'
             />
           </LayoutHeader>
           <LayoutMain scrollable={false}>
