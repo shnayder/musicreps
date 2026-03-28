@@ -201,9 +201,6 @@
   /* Star */
   --color-star: var(--notice-700);
 
-  /* Progress bar: stale items needing review (notice-family tint) */
-  --color-bar-stale: hsl(var(--hue-notice), 80%, 55%);
-
   /* Heatmap scale (cross-hue: gold → green, not parameterized) */
   --heatmap-none: var(--neutral-300);
   --heatmap-1: hsl(40, 60%, 58%);
@@ -514,6 +511,7 @@ body {
   transform: translate(-50%, -50%);
   height: 75%;
   aspect-ratio: 1;
+  max-width: 100%;
   opacity: 0.04;
   pointer-events: none;
   z-index: -1;
@@ -862,15 +860,19 @@ body {
   margin: var(--pad-component) 0 0;
   text-align: center;
 }
-.active-skill-track-pill {
+/* Shared pill/badge component */
+.pill {
   display: inline-block;
-  align-self: flex-start;
   font-size: var(--type-label-tag-size);
   font-weight: var(--type-label-tag-weight);
   line-height: var(--type-label-tag-leading);
   padding: 1px var(--gap-related);
   border-radius: 999px;
-  margin-bottom: 1px;
+  white-space: nowrap;
+}
+.pill-notice {
+  background: var(--color-notice-bg);
+  color: var(--color-notice-text);
 }
 .pill-core {
   color: var(--color-track-core);
@@ -943,6 +945,10 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+.skill-card-header-text > .pill {
+  align-self: flex-start;
+  margin-bottom: 1px;
 }
 .skill-icon {
   flex-shrink: 0;
@@ -1566,22 +1572,20 @@ body {
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   flex: 1;
+  min-width: 0;
 }
-.level-progress-pill {
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  padding: var(--gap-micro) var(--gap-group);
-  border-radius: var(--radius-sm);
-  background: var(--color-notice-bg);
-  color: var(--color-notice-text);
+.level-progress-pill-row {
+  margin-bottom: var(--gap-related);
 }
 .level-progress-actions {
   display: flex;
-  gap: var(--gap-micro);
+  gap: 2px;
 }
 .level-action-btn {
   width: 28px;
   height: 28px;
+  padding: 0;
+  position: relative;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
@@ -1596,6 +1600,11 @@ body {
   transition:
     background var(--duration-base) ease,
     color var(--duration-base) ease;
+}
+.level-action-btn::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 .level-action-btn:hover {
   background: var(--color-surface-hover);
@@ -3097,7 +3106,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1111"></div>
+  <div class="home-screen" id="home-screen" data-version="#1117"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6627,6 +6636,12 @@ body.native-app {
     return /* @__PURE__ */ u3(Icon, {});
   }
 
+  // src/ui/pill.tsx
+  function Pill({ variant, children }) {
+    const cls = variant ? `pill pill-${variant}` : "pill";
+    return /* @__PURE__ */ u3("span", { class: cls, children });
+  }
+
   // src/ui/repeat-mark.tsx
   function RepeatMark({ size = 24, class: cls }) {
     return /* @__PURE__ */ u3(
@@ -7602,13 +7617,6 @@ body.native-app {
   function speedLevel(sp) {
     return sp > 0.9 ? 4 : sp > 0.75 ? 3 : sp > 0.55 ? 2 : sp > 0.3 ? 1 : 0;
   }
-  var _barStaleColor = null;
-  function barStaleColor() {
-    if (!_barStaleColor) {
-      _barStaleColor = cssVar("--color-bar-stale") || "hsl(32, 80%, 55%)";
-    }
-    return _barStaleColor;
-  }
   function speedOnlyColor(sp) {
     const [h3, s3, l3] = SPEED_HSL[speedLevel(sp)];
     return `hsl(${h3}, ${s3}%, ${l3}%)`;
@@ -7616,12 +7624,10 @@ body.native-app {
   var FRESHNESS_THRESHOLD = 0.5;
   function progressBarColors(selector, itemIds) {
     const c3 = heatmapColors();
-    const stale = barStaleColor();
     const items = itemIds.map((id) => {
       const sp = selector.getSpeedScore(id);
-      const fr = selector.getFreshness(id);
-      const zone = sp === null ? 2 : fr !== null && fr < FRESHNESS_THRESHOLD ? 1 : 0;
-      const color = zone === 2 ? c3.none : zone === 1 ? stale : speedOnlyColor(sp);
+      const zone = sp === null ? 2 : 0;
+      const color = zone === 2 ? c3.none : speedOnlyColor(sp);
       return { zone, level: sp !== null ? speedLevel(sp) : -1, color };
     });
     items.sort((a3, b) => {
@@ -7631,31 +7637,50 @@ body.native-app {
     return items.map((item) => item.color);
   }
   function progressBarGroupSegment(selector, itemIds) {
-    let speedSum = 0, speedCount = 0, freshSum = 0, freshCount = 0;
+    let speedSum = 0, speedCount = 0;
     for (const id of itemIds) {
       const sp = selector.getSpeedScore(id);
-      const fr = selector.getFreshness(id);
       if (sp !== null) {
         speedSum += sp;
         speedCount++;
-      }
-      if (fr !== null) {
-        freshSum += fr;
-        freshCount++;
       }
     }
     if (speedCount === 0) {
       return { color: heatmapColors().none, zone: 2, speed: 0 };
     }
     const avgSpeed = speedSum / speedCount;
-    const avgFresh = freshCount > 0 ? freshSum / freshCount : null;
-    if (avgFresh !== null && avgFresh < FRESHNESS_THRESHOLD) {
-      return { color: barStaleColor(), zone: 1, speed: avgSpeed };
-    }
     return { color: speedOnlyColor(avgSpeed), zone: 0, speed: avgSpeed };
   }
-  function progressBarGroupColor(selector, itemIds) {
-    return progressBarGroupSegment(selector, itemIds).color;
+  function formatReviewDuration(hours) {
+    const days = Math.round(hours / 24);
+    if (days <= 14) return `${days}d`;
+    const weeks = Math.round(days / 7);
+    if (weeks <= 12) return `${weeks}w`;
+    const months = Math.round(days / 30);
+    return `${months}mo`;
+  }
+  function computeReviewPill(selector, itemIds) {
+    let stabilitySum = 0, stabilityCount = 0;
+    let freshnessSum = 0, freshnessCount = 0;
+    for (const id of itemIds) {
+      const stats = selector.getStats(id);
+      if (stats?.stability != null) {
+        stabilitySum += stats.stability;
+        stabilityCount++;
+      }
+      const fr = selector.getFreshness(id);
+      if (fr !== null) {
+        freshnessSum += fr;
+        freshnessCount++;
+      }
+    }
+    if (stabilityCount === 0 || freshnessCount === 0) return null;
+    const avgFreshness = freshnessSum / freshnessCount;
+    if (avgFreshness < FRESHNESS_THRESHOLD) return "Review soon";
+    const avgStability = stabilitySum / stabilityCount;
+    const hoursRemaining = avgStability * (1 + Math.log2(avgFreshness));
+    if (hoursRemaining <= 24) return "Review soon";
+    return `Review in ${formatReviewDuration(hoursRemaining)}`;
   }
   function buildStatsLegend() {
     let html = '<div class="heatmap-legend active">';
@@ -7977,12 +8002,13 @@ body.native-app {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
     const selector = createAdaptiveSelector(storage2, cfg);
     if (entry.groups.length === 1) {
-      if (skippedGroups?.has(0)) {
-        return { groupColors: [progressBarGroupColor(selector, [])] };
+      if (skippedGroups?.has(0)) return { groupColors: [] };
+      const ids = entry.allItemIds();
+      const colors = progressBarColors(selector, ids);
+      if (colors.length > 0 && colors[0] === colors[colors.length - 1] && selector.getSpeedScore(ids[0]) === null) {
+        return { groupColors: [] };
       }
-      return {
-        groupColors: progressBarColors(selector, entry.allItemIds())
-      };
+      return { groupColors: colors };
     }
     const segments = [];
     for (let i3 = 0; i3 < entry.groups.length; i3++) {
@@ -7991,8 +8017,8 @@ body.native-app {
         progressBarGroupSegment(selector, entry.groups[i3].getItemIds())
       );
     }
-    if (segments.length === 0) {
-      return { groupColors: [progressBarGroupColor(selector, [])] };
+    if (segments.length === 0 || segments.every((s3) => s3.zone === 2)) {
+      return { groupColors: [] };
     }
     segments.sort((a3, b) => {
       if (a3.zone !== b.zone) return a3.zone - b.zone;
@@ -8626,7 +8652,7 @@ body.native-app {
     }
   }
   function TrackPill({ trackId, label }) {
-    return /* @__PURE__ */ u3("span", { class: `active-skill-track-pill pill-${trackId}`, children: label });
+    return /* @__PURE__ */ u3(Pill, { variant: trackId, children: label });
   }
   function SkillCardHeader({ modeId, trackId, trackLabel }) {
     const name = MODE_NAMES[modeId] || modeId;
@@ -8677,7 +8703,7 @@ body.native-app {
             }
           ),
           /* @__PURE__ */ u3(SkillCardHeader, { modeId }),
-          progress && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progress.groupColors }) })
+          progress && progress.groupColors.length > 0 && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progress.groupColors }) })
         ]
       }
     );
@@ -8738,7 +8764,7 @@ body.native-app {
                 trackLabel
               }
             ),
-            progress && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progress.groupColors }) })
+            progress && progress.groupColors.length > 0 && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progress.groupColors }) })
           ] })
         ]
       }
@@ -10644,7 +10670,6 @@ body.native-app {
     return /* @__PURE__ */ u3("div", { class: "level-progress-card" + (st !== "normal" ? " " + st : ""), children: [
       /* @__PURE__ */ u3("div", { class: "level-progress-header", children: [
         /* @__PURE__ */ u3("span", { class: "level-progress-label", children: label }),
-        pill && /* @__PURE__ */ u3("span", { class: "level-progress-pill", children: pill }),
         (onToggleKnown || onToggleSkip) && /* @__PURE__ */ u3("span", { class: "level-progress-actions", children: [
           /* @__PURE__ */ u3(
             "button",
@@ -10670,6 +10695,7 @@ body.native-app {
           )
         ] })
       ] }),
+      pill && /* @__PURE__ */ u3("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u3(Pill, { variant: "notice", children: pill }) }),
       /* @__PURE__ */ u3(ProgressBarLabeled, { colors, disabled: st === "skipped" })
     ] });
   }
@@ -11929,12 +11955,14 @@ body.native-app {
     return /* @__PURE__ */ u3("div", { class: "level-progress-cards", children: groupScope.allGroupIndices.map((i3) => {
       const itemIds = groupScope.getItemIdsForGroup(i3);
       const colors = progressBarColors(learner.selector, itemIds);
+      const pill = computeReviewPill(learner.selector, itemIds);
       const skipReason = groupScopeResult.skippedGroups.get(i3);
       const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
       return /* @__PURE__ */ u3(
         LevelProgressCard,
         {
           label: groupScope.groups[i3].longLabel ?? resolveGroupLabel(groupScope.groups[i3].label),
+          pill: pill ?? void 0,
           colors,
           status,
           onToggleKnown: () => skipReason === "mastered" ? groupScopeResult.scopeActions.unskipGroup(i3) : groupScopeResult.scopeActions.skipGroup(i3, "mastered"),
