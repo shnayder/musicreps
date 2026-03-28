@@ -420,7 +420,6 @@ function SettingsAboutLegal(
       </div>
 
       <section class='settings-section'>
-        <h2 class='settings-section-title'>About</h2>
         <div class='settings-link-list'>
           {appConfig.contactEmail && (
             <a class='text-link' href={`mailto:${appConfig.contactEmail}`}>
