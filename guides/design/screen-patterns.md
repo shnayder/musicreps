@@ -205,6 +205,39 @@ fixed — no scrolling — because scrolling during a timed drill is a failure o
 layout. If active-phase content does not fit without scrolling, the content needs
 to be reduced, not the constraint relaxed.
 
+### Flex chain constraint (active phase)
+
+During active quiz, the fretboard SVG (and any other variable-height content)
+must scale to fit the available space — never overflow, never scroll. This works
+by maintaining an **unbroken flex chain** from the viewport-anchored root to the
+content leaf. Every flex child in the chain has `flex: 1; min-height: 0` so it
+fills remaining space and can shrink below its content size.
+
+```
+.screen-layout           height: calc(100dvh - inset-top)  ← anchor
+  .layout-header         flex-shrink: 0                     ← natural
+  .layout-main-fixed     flex: 1; min-height: 0             ← fills
+    .mode-screen.active  flex: 1; min-height: 0             ← fills
+      .quiz-area         flex: 1; min-height: 0             ← fills
+        .quiz-content    flex: 1; min-height: 0             ← fills
+          .quiz-stage    flex: 1; min-height: 0             ← fills
+            .prompt      flex: 3; min-height: 0             ← 60%
+              text       flex-shrink: 0                     ← natural
+              fretboard  flex: 1; min-height: 0             ← remainder
+            .response    flex: 2; min-height: 0             ← 40%
+        .quiz-controls   margin-top: auto                   ← natural
+  .layout-footer         flex-shrink: 0                     ← natural
+```
+
+**The rule:** every flex child between the viewport anchor and variable-height
+content must have `min-height: 0`. Without it, the child defaults to
+`min-height: auto` (content size) and the content can't shrink to fit.
+
+**No viewport-unit hacks.** Content like the fretboard SVG should use
+`max-height: 100%` and `max-width: 100%` to scale within its flex-allocated
+space via viewBox + preserveAspectRatio. Never use `max-height: 50vh` or similar
+— the layout IS the constraint.
+
 ### Viewport queries: structural only
 
 Viewport-based responsive changes should affect structural layout (body padding,
