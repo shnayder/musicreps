@@ -34,24 +34,24 @@ export function FeedbackDisplay(
   return (
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
-      {onNext
-        ? (
+      {notice && !onNext
+        ? <div class='feedback-notice'>{notice}</div>
+        : (
           <ActionButton
             variant='primary'
             class={extraCls}
-            onClick={onNext}
+            onClick={onNext ?? (() => {})}
+            style={onNext ? undefined : { visibility: 'hidden' }}
           >
             {label}
           </ActionButton>
-        )
-        : notice
-        ? <div class='feedback-notice'>{notice}</div>
-        : null}
-      {hint
-        ? <div class='hint'>{hint}</div>
-        : onNext
-        ? <div class='hint'>&nbsp;</div>
-        : null}
+        )}
+      <div
+        class='hint'
+        style={hint ? undefined : { visibility: 'hidden' }}
+      >
+        {hint || '\u00A0'}
+      </div>
     </>
   );
 }

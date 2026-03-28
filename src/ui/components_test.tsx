@@ -414,11 +414,18 @@ describe('FeedbackDisplay', () => {
     assert.ok(html.includes('Try again'));
   });
 
-  it('omits hint div when no hint and no onNext', () => {
+  it('hint always present but hidden when not provided', () => {
     const html = render(
       <FeedbackDisplay text='X' className='feedback' />,
     );
-    assert.ok(!html.includes('class="hint"'), 'hint div should not render');
+    const hintDivMatch = html.match(
+      /<div[^>]*class="[^"]*\bhint\b[^"]*"[^>]*>/,
+    );
+    assert.ok(hintDivMatch, 'hint div should be rendered');
+    assert.match(
+      hintDivMatch[0],
+      /style="[^"]*\bvisibility:\s*hidden\b[^"]*"/,
+    );
   });
 
   it('renders visible Next button when onNext provided', () => {
@@ -439,11 +446,18 @@ describe('FeedbackDisplay', () => {
     );
   });
 
-  it('omits Next button when onNext not provided', () => {
+  it('hides Next button when onNext not provided', () => {
     const html = render(
       <FeedbackDisplay text='X' className='feedback' />,
     );
-    assert.ok(!html.includes('next-btn'), 'next-btn should not render');
+    const btnMatch = html.match(
+      /<button[^>]*class="[^"]*\bnext-btn\b[^"]*"[^>]*>/,
+    );
+    assert.ok(btnMatch, 'next-btn should be rendered for layout stability');
+    assert.match(
+      btnMatch[0],
+      /style="[^"]*\bvisibility:\s*hidden\b[^"]*"/,
+    );
   });
 
   it('adds page-action-correct class when correct=true', () => {
