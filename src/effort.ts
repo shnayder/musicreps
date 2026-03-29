@@ -5,6 +5,7 @@
 // Pure functions accept a StorageAdapter for testability; the module-level
 // convenience wrappers use the shared storage abstraction.
 
+import { createStorageAdapter } from './adaptive.ts';
 import type { StorageAdapter } from './types.ts';
 import { storage } from './storage.ts';
 
@@ -161,4 +162,20 @@ export function computeGlobalEffort(
     daysActive: dates.length,
     dailyReps,
   };
+}
+
+/** Convenience: compute global effort from registered modes + daily reps. */
+export function getGlobalEffort(): GlobalEffort {
+  const modes = getRegisteredModes();
+  const modeEfforts = modes.map((m) =>
+    computeModeEffort(m, createStorageAdapter(m.namespace))
+  );
+  return computeGlobalEffort(modeEfforts, getDailyReps());
+}
+
+/** Convenience: compute effort for a registered mode by ID. */
+export function getModeEffort(modeId: string): ModeEffort | null {
+  const mode = getRegisteredModes().find((m) => m.id === modeId);
+  if (!mode) return null;
+  return computeModeEffort(mode, createStorageAdapter(mode.namespace));
 }

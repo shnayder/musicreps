@@ -7,6 +7,7 @@ import type { SuggestionLine } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
 import { CloseButton } from './mode-screen.tsx';
 import { Pill } from './pill.tsx';
+import { RepeatMark } from './repeat-mark.tsx';
 import { GroupProgressBar } from './scope.tsx';
 import { SegmentedControl } from './segmented-control.tsx';
 import { Text } from './text.tsx';
@@ -44,9 +45,10 @@ export function ProgressBarLabeled(
 // ---------------------------------------------------------------------------
 
 export function SkillHeader(
-  { modeId, title, progressColors, onBack }: {
+  { modeId, title, totalReps, progressColors, onBack }: {
     modeId?: string;
     title: string;
+    totalReps?: number;
     progressColors?: string[];
     onBack?: () => void;
   },
@@ -54,9 +56,17 @@ export function SkillHeader(
   return (
     <div class='skill-header'>
       <div class='skill-header-row'>
-        {modeId && <SkillIcon modeId={modeId} />}
-        <h1 class='mode-title'>{title}</h1>
         {onBack && <CloseButton ariaLabel='Back to home' onClick={onBack} />}
+        <div class='skill-header-title'>
+          {modeId && <SkillIcon modeId={modeId} />}
+          <h1 class='mode-title'>{title}</h1>
+        </div>
+        {totalReps != null && totalReps > 0 && (
+          <span class='skill-header-reps'>
+            {totalReps.toLocaleString()}
+            <RepeatMark size={18} class='skill-header-reps-icon' />
+          </span>
+        )}
       </div>
       {progressColors && progressColors.length > 0 && (
         <div class='skill-header-progress'>

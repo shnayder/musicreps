@@ -121,8 +121,7 @@ function FlowQuizStates({ tabId }: { tabId: string }) {
           <QuizSession
             timeLeft='0:42'
             timerPct={70}
-            context='±1–2 semitones'
-            count='5 answers'
+            count='5'
             isWarning={false}
           />
           <QuizArea prompt='C + 5' controls={<NoteButtons />} />
@@ -134,8 +133,7 @@ function FlowQuizStates({ tabId }: { tabId: string }) {
           <QuizSession
             timeLeft='0:38'
             timerPct={63}
-            context='±1–2 semitones'
-            count='6 answers'
+            count='6'
             isWarning={false}
           />
           <QuizArea
@@ -166,8 +164,7 @@ function FlowQuizStates({ tabId }: { tabId: string }) {
           <QuizSession
             timeLeft='0:31'
             timerPct={52}
-            context='±1–2 semitones'
-            count='7 answers'
+            count='7'
             isWarning={false}
           />
           <QuizArea
@@ -199,8 +196,7 @@ function FlowQuizStates({ tabId }: { tabId: string }) {
           <QuizSession
             timeLeft='0:08'
             timerPct={13}
-            context='±1–2 semitones'
-            count='11 answers'
+            count='11'
             isWarning
           />
           <QuizArea prompt='G - 2' controls={<NoteButtons />} />

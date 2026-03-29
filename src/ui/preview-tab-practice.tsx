@@ -154,10 +154,11 @@ function Phase1Components(
       </PreviewGrid>
 
       <PreviewGrid>
-        <Section title='SkillHeader — with progress' tabId={tabId}>
+        <Section title='SkillHeader — with progress + reps' tabId={tabId}>
           <SkillHeader
             modeId='fretboard'
             title='Guitar Fretboard'
+            totalReps={3473}
             progressColors={MOCK_PROGRESS_COLORS}
             onBack={() => {}}
           />
@@ -166,6 +167,7 @@ function Phase1Components(
           <SkillHeader
             modeId='noteSemitones'
             title='Note ↔ Semitones'
+            totalReps={0}
             progressColors={[]}
             onBack={() => {}}
           />
@@ -572,8 +574,7 @@ function ScreenLayoutActiveExamples({ tabId }: { tabId: string }) {
             <QuizSession
               timeLeft='1:23'
               timerPct={72}
-              context='E string'
-              count='5 of 20'
+              count='5'
             />
           </LayoutHeader>
           <LayoutMain scrollable={false}>
@@ -597,9 +598,7 @@ function ScreenLayoutActiveExamples({ tabId }: { tabId: string }) {
             <QuizSession
               timeLeft='1:18'
               timerPct={65}
-              context='E string'
-              count='6 of 20'
-              lastQuestion='G'
+              count='6'
             />
           </LayoutHeader>
           <LayoutMain scrollable={false}>

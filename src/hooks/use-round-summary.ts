@@ -41,6 +41,8 @@ export type RoundSummary = {
   roundCorrect: string;
   /** Answer count: "5 answers". */
   countText: string;
+  /** Numeric-only count for compact display: "5". */
+  countLabel: string;
 };
 
 /**
@@ -78,6 +80,7 @@ export function useRoundSummary(
   const answerCount = engine.state.roundAnswered;
   const countText = answerCount +
     (answerCount === 1 ? ' answer' : ' answers');
+  const countLabel = String(answerCount);
 
-  return { roundContext, roundCorrect, countText };
+  return { roundContext, roundCorrect, countText, countLabel };
 }

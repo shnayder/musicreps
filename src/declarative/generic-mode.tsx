@@ -603,7 +603,6 @@ type QuizActiveViewProps<Q> = {
   ctrl: ModeController<Q>;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
-  practicingLabel: string;
   handleSubmit: (input: string) => boolean;
   seq: {
     entries: { display: string }[];
@@ -633,7 +632,6 @@ function QuizActiveView<Q>(
     ctrl,
     currentQ,
     round,
-    practicingLabel,
     handleSubmit,
     seq,
     multiTapInput,
@@ -721,13 +719,9 @@ function QuizActiveView<Q>(
         <QuizSession
           timeLeft={engine.timerText}
           timerPct={engine.timerPct}
-          context={practicingLabel}
-          count={round.countText}
+          count={round.countLabel}
           isWarning={engine.timerWarning}
           isLastQuestion={engine.timerLastQuestion}
-          lastQuestion={engine.state.roundTimerExpired
-            ? (engine.state.answered ? 'Time is up' : 'Last question')
-            : ''}
           onClose={engine.stop}
         />
       </LayoutHeader>
@@ -742,6 +736,9 @@ function QuizActiveView<Q>(
           correct={engine.state.feedbackCorrect}
           onNext={engine.state.answered ? engine.nextQuestion : undefined}
           label={engine.state.roundTimerExpired ? 'Continue' : 'Next'}
+          notice={engine.state.roundTimerExpired && !engine.state.answered
+            ? 'Last question'
+            : undefined}
         />
       </LayoutFooter>
     </ScreenLayout>
@@ -1195,7 +1192,7 @@ function useGenericDerivedState<Q>(
     return true;
   }, [engine.submitAnswer, def]);
 
-  return { currentQ, round, ps, practicingLabel, handleSubmit };
+  return { currentQ, round, ps, handleSubmit };
 }
 
 function buildSeqProps(seqInput: ReturnType<typeof useSequentialInput>) {
@@ -1271,7 +1268,6 @@ type GenericModeBodyProps<Q> = {
   sc: SpeedCheckOverlay;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
-  practicingLabel: string;
   handleSubmit: (input: string) => boolean;
   seqInput: ReturnType<typeof useSequentialInput>;
   multiTapInput: MultiTapInputHandle;
@@ -1311,10 +1307,11 @@ function useProgressColors<Q>(
 
 /** Render SkillHeader (idle) or minimal ModeTopBar (active/calibration). */
 function ModeHeader<Q>(
-  { def, isIdle, progressColors, navigateHome }: {
+  { def, isIdle, progressColors, totalReps, navigateHome }: {
     def: ModeDefinition<Q>;
     isIdle: boolean;
     progressColors: string[];
+    totalReps: number;
     navigateHome: () => void;
   },
 ) {
@@ -1323,6 +1320,7 @@ function ModeHeader<Q>(
       <SkillHeader
         modeId={def.id}
         title={def.name}
+        totalReps={totalReps}
         progressColors={progressColors}
         onBack={navigateHome}
       />
@@ -1342,7 +1340,6 @@ function GenericModeBody<Q>(
     sc,
     currentQ,
     round,
-    practicingLabel,
     handleSubmit,
     seqInput,
     multiTapInput,
@@ -1359,6 +1356,16 @@ function GenericModeBody<Q>(
   const activeButtons = resolveButtons(def, dir);
   const isIdle = engine.state.phase === 'idle' && !sc.speedCheck;
   const progressColors = useProgressColors(def, learner);
+  // Recompute on phase change so the count refreshes when returning to idle.
+  const phase = engine.state.phase;
+  const totalReps = useMemo(() => {
+    let sum = 0;
+    for (const id of def.allItems) {
+      const s = learner.selector.getStats(id);
+      if (s) sum += s.sampleCount;
+    }
+    return sum;
+  }, [def.allItems, learner.selector, phase]);
 
   if (isIdle) {
     return (
@@ -1368,6 +1375,7 @@ function GenericModeBody<Q>(
             def={def}
             isIdle
             progressColors={progressColors}
+            totalReps={totalReps}
             navigateHome={navigateHome}
           />
         </LayoutHeader>
@@ -1407,7 +1415,6 @@ function GenericModeBody<Q>(
       ctrl={ctrl}
       currentQ={currentQ}
       round={round}
-      practicingLabel={practicingLabel}
       handleSubmit={handleSubmit}
       seq={buildSeqProps(seqInput)}
       multiTapInput={multiTapInput}
@@ -1466,21 +1473,20 @@ export function GenericMode<Q>(
   );
   const sc = useSpeedCheckOverlay(engine, def, ctrl);
 
-  const { currentQ, round, ps, practicingLabel, handleSubmit } =
-    useGenericDerivedState(
-      def,
-      engine,
-      learner,
-      groupScopeResult,
-      currentQRef,
-      seqInput,
-      multiTapInput,
-      isSequential,
-      container,
-      onMount,
-      sc.presentationPhase,
-      sc.deactivateCleanup,
-    );
+  const { currentQ, round, ps, handleSubmit } = useGenericDerivedState(
+    def,
+    engine,
+    learner,
+    groupScopeResult,
+    currentQRef,
+    seqInput,
+    multiTapInput,
+    isSequential,
+    container,
+    onMount,
+    sc.presentationPhase,
+    sc.deactivateCleanup,
+  );
 
   return (
     <GenericModeBody
@@ -1493,7 +1499,6 @@ export function GenericMode<Q>(
       sc={sc}
       currentQ={currentQ}
       round={round}
-      practicingLabel={practicingLabel}
       handleSubmit={handleSubmit}
       seqInput={seqInput}
       multiTapInput={multiTapInput}

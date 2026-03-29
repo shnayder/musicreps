@@ -17,13 +17,15 @@ export function TextPrompt({ text }: { text: string }) {
 // ---------------------------------------------------------------------------
 
 export function FeedbackDisplay(
-  { text, className, hint, correct, onNext, label = 'Next' }: {
+  { text, className, hint, correct, onNext, label = 'Next', notice }: {
     text: string;
     className: string;
     hint?: string;
     correct?: boolean | null;
     onNext?: () => void;
     label?: string;
+    /** Non-interactive notice shown when there's no action button. */
+    notice?: string;
   },
 ) {
   let extraCls = 'next-btn';
@@ -32,14 +34,18 @@ export function FeedbackDisplay(
   return (
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
-      <ActionButton
-        variant='primary'
-        class={extraCls}
-        onClick={onNext ?? (() => {})}
-        style={onNext ? undefined : { visibility: 'hidden' }}
-      >
-        {label}
-      </ActionButton>
+      {notice && !onNext
+        ? <div class='feedback-notice'>{notice}</div>
+        : (
+          <ActionButton
+            variant='primary'
+            class={extraCls}
+            onClick={onNext ?? (() => {})}
+            style={onNext ? undefined : { visibility: 'hidden' }}
+          >
+            {label}
+          </ActionButton>
+        )}
       <div
         class='hint'
         style={hint ? undefined : { visibility: 'hidden' }}

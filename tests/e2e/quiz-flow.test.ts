@@ -96,11 +96,11 @@ describe('quiz flow — note semitones (E2E)', () => {
       `Next button should have feedback class: ${nextBtnClass}`,
     );
 
-    // Question count should show "1 answer"
+    // Question count should show "1"
     const count = await page.textContent(`${MODE} .quiz-info-count`);
     assert.equal(
       count?.trim(),
-      '1 answer',
+      '1',
       'should show count after first answer',
     );
 
