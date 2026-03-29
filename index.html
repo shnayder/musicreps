@@ -3151,7 +3151,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1132"></div>
+  <div class="home-screen" id="home-screen" data-version="#1134"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7671,6 +7671,26 @@ body.native-app {
     const avgSpeed = speedSum / speedCount;
     return { color: speedOnlyColor(avgSpeed), zone: 0, speed: avgSpeed };
   }
+  function computeProgressColors(selector, input) {
+    if (input.kind === "items") {
+      const ids = input.itemIds;
+      const colors = progressBarColors(selector, ids);
+      if (colors.length > 0 && colors[0] === colors[colors.length - 1] && selector.getSpeedScore(ids[0]) === null) return [];
+      return colors;
+    }
+    const skipped = input.skippedGroups;
+    const active = skipped ? input.groups.filter((g2) => !skipped.has(g2.index)) : input.groups;
+    if (active.length === 0) return [];
+    const segments = active.map(
+      (g2) => progressBarGroupSegment(selector, g2.itemIds)
+    );
+    if (segments.every((s3) => s3.zone === 2)) return [];
+    segments.sort((a3, b) => {
+      if (a3.zone !== b.zone) return a3.zone - b.zone;
+      return b.speed - a3.speed;
+    });
+    return segments.map((s3) => s3.color);
+  }
   function formatReviewDuration(hours) {
     const days = Math.round(hours / 24);
     if (days <= 14) return `${days}d`;
@@ -8021,30 +8041,18 @@ body.native-app {
   function computeProgressForMode(entry, storage2, motorBaseline, skippedGroups) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
     const selector = createAdaptiveSelector(storage2, cfg);
-    if (entry.groups.length === 1) {
-      if (skippedGroups?.has(0)) return { groupColors: [] };
-      const ids = entry.allItemIds();
-      const colors = progressBarColors(selector, ids);
-      if (colors.length > 0 && colors[0] === colors[colors.length - 1] && selector.getSpeedScore(ids[0]) === null) {
-        return { groupColors: [] };
-      }
-      return { groupColors: colors };
-    }
-    const segments = [];
-    for (let i3 = 0; i3 < entry.groups.length; i3++) {
-      if (skippedGroups?.has(i3)) continue;
-      segments.push(
-        progressBarGroupSegment(selector, entry.groups[i3].getItemIds())
-      );
-    }
-    if (segments.length === 0 || segments.every((s3) => s3.zone === 2)) {
+    const input = entry.groups.length === 1 ? { kind: "items", itemIds: entry.allItemIds() } : {
+      kind: "groups",
+      groups: entry.groups.map((g2, i3) => ({
+        index: i3,
+        itemIds: g2.getItemIds()
+      })),
+      skippedGroups
+    };
+    if (entry.groups.length === 1 && skippedGroups?.has(0)) {
       return { groupColors: [] };
     }
-    segments.sort((a3, b) => {
-      if (a3.zone !== b.zone) return a3.zone - b.zone;
-      return b.speed - a3.speed;
-    });
-    return { groupColors: segments.map((s3) => s3.color) };
+    return { groupColors: computeProgressColors(selector, input) };
   }
   function computeAllProgress(createStorage = createStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups) {
     const result = /* @__PURE__ */ new Map();
@@ -12252,21 +12260,24 @@ body.native-app {
       deactivateCleanup
     };
   }
-  function useProgressColors(def, learner) {
+  function useProgressColors(def, learner, _phase, skippedGroups) {
     return T2(() => {
       if (def.scope.kind === "groups") {
         const scope = def.scope;
-        const segments = scope.allGroupIndices.map(
-          (i3) => progressBarGroupSegment(learner.selector, scope.getItemIdsForGroup(i3))
-        );
-        segments.sort((a3, b) => {
-          if (a3.zone !== b.zone) return a3.zone - b.zone;
-          return b.speed - a3.speed;
+        return computeProgressColors(learner.selector, {
+          kind: "groups",
+          groups: scope.allGroupIndices.map((i3) => ({
+            index: i3,
+            itemIds: scope.getItemIdsForGroup(i3)
+          })),
+          skippedGroups
         });
-        return segments.map((s3) => s3.color);
       }
-      return progressBarColors(learner.selector, def.allItems);
-    }, [def, learner.selector]);
+      return computeProgressColors(learner.selector, {
+        kind: "items",
+        itemIds: def.allItems
+      });
+    }, [def, learner.selector, _phase, skippedGroups]);
   }
   function ModeHeader({ def, isIdle, progressColors, totalReps, navigateHome }) {
     if (isIdle) {
@@ -12304,9 +12315,10 @@ body.native-app {
     const promptText = currentQ ? def.getPromptText(currentQ) : "";
     const useFlats = currentQ && def.getUseFlats ? def.getUseFlats(currentQ) : void 0;
     const activeButtons = resolveButtons(def, dir);
-    const isIdle = engine.state.phase === "idle" && !sc.speedCheck;
-    const progressColors = useProgressColors(def, learner);
     const phase = engine.state.phase;
+    const isIdle = phase === "idle" && !sc.speedCheck;
+    const skipped = groupScopeResult?.skippedGroups;
+    const progressColors = useProgressColors(def, learner, phase, skipped);
     const totalReps = T2(() => {
       let sum = 0;
       for (const id of def.allItems) {
