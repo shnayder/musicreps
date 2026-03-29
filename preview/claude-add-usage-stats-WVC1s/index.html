@@ -3151,7 +3151,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="db86e4 add-usage-stats-WVC1s"></div>
+  <div class="home-screen" id="home-screen" data-version="321ec5 add-usage-stats-WVC1s"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -9015,7 +9015,6 @@ body.native-app {
     return loadStarredSkills().size > 0 ? "active" : "all";
   }
   function HomeHeader({ isNativeApp, totalReps, daysActive }) {
-    const hasStats = totalReps > 0;
     return /* @__PURE__ */ u3("div", { class: `home-header${isNativeApp ? " native" : ""}`, children: [
       !isNativeApp && /* @__PURE__ */ u3(k, { children: [
         /* @__PURE__ */ u3("h1", { class: "home-title", children: [
@@ -9024,7 +9023,7 @@ body.native-app {
         ] }),
         /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Make music fundamentals automatic so you can focus on playing." })
       ] }),
-      hasStats && /* @__PURE__ */ u3("div", { class: "home-stats-bar", children: [
+      /* @__PURE__ */ u3("div", { class: "home-stats-bar", children: [
         /* @__PURE__ */ u3("span", { class: "home-stat", children: [
           /* @__PURE__ */ u3("span", { class: "home-stat-value", children: totalReps.toLocaleString() }),
           " reps"
@@ -9106,7 +9105,7 @@ body.native-app {
     const [showDev, setShowDev] = d2(false);
     const [useSolfege, setUseSolfege2] = d2(() => settings.getUseSolfege());
     const [tab, setTab] = d2(loadInitialTab);
-    const globalEffort = T2(getGlobalEffort, []);
+    const globalEffort = T2(getGlobalEffort, [progress]);
     const prefix = useTabsPrefix();
     const handleToggleStar = q2((modeId) => {
       setStarred((prev) => {
