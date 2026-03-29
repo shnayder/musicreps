@@ -391,6 +391,11 @@
   --type-metric-info-leading: var(--leading-none);
   --type-metric-info-color: var(--color-text);
 
+  --type-metric-effort-size: var(--text-base);
+  --type-metric-effort-weight: var(--font-semibold);
+  --type-metric-effort-leading: var(--leading-none);
+  --type-metric-effort-color: var(--color-tertiary);
+
   /* -- Status: state communication -- */
   --type-status-size: var(--text-sm);
   --type-status-weight: var(--font-normal);
@@ -535,7 +540,7 @@ body {
   justify-content: center;
   min-height: 0;
   text-align: center;
-  padding: var(--gap-group);
+  padding: var(--gap-group) var(--gap-group) 0;
 }
 /* Instruction + prompt text must not shrink when fretboard/content is present */
 .quiz-stage-prompt > .quiz-instruction,
@@ -611,6 +616,35 @@ body {
   line-height: var(--type-body-secondary-leading);
   color: var(--type-body-secondary-color);
   margin: var(--gap-group) 0 0;
+}
+/* On native apps, hide the title/tagline but keep the stats bar visible */
+.home-header.native .home-title,
+.home-header.native .home-tagline {
+  display: none;
+}
+/* --- Stats bar (home header) --- */
+.home-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-group);
+  margin-top: var(--gap-group);
+  font-size: var(--type-status-size);
+  font-weight: var(--type-status-weight);
+  line-height: var(--type-status-leading);
+  color: var(--type-status-color);
+}
+.home-header.native .home-stats-bar {
+  margin-top: 0;
+}
+.home-stat-value {
+  font-size: var(--type-metric-effort-size);
+  font-weight: var(--type-metric-effort-weight);
+  line-height: var(--type-metric-effort-leading);
+  color: var(--type-metric-effort-color);
+}
+.home-stat-sep {
+  color: var(--color-text-muted);
 }
 /* --- Tabs --- */
 .tabs {
@@ -842,7 +876,7 @@ body {
   line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
-  margin: var(--pad-component) 0 0;
+  margin: 0 0 var(--gap-group);
   text-align: center;
 }
 /* Shared pill/badge component */
@@ -1036,8 +1070,7 @@ body {
    4. MODE CHROME
    ========================================================================== */
 .mode-top-bar {
-  padding: var(--gap-group) var(--gap-group) var(--gap-group)
-    var(--size-content-inset);
+  padding: var(--gap-group) var(--size-content-inset);
   margin-bottom: var(--gap-group);
   background: var(--color-chrome);
 }
@@ -1127,10 +1160,11 @@ body {
 .settings-page-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--gap-group);
 }
 .settings-page-title {
   margin: 0;
+  flex: 1;
   font-family: var(--type-heading-page-family);
   font-size: var(--type-heading-page-size);
   font-weight: var(--type-heading-page-weight);
@@ -1239,13 +1273,9 @@ body {
   display: flex;
   align-items: center;
   gap: var(--gap-related);
-  padding: var(--gap-related) var(--gap-group) var(--gap-related)
-    var(--size-content-inset);
+  padding: var(--gap-related) var(--size-content-inset) var(--gap-related)
+    var(--gap-group);
   background: var(--color-chrome);
-}
-.quiz-session-header-content {
-  flex: 1;
-  min-width: 0;
 }
 
 /* Element-level visibility (replaces inline style="display: none;") */
@@ -1438,7 +1468,7 @@ body {
   margin-bottom: var(--gap-related);
 }
 
-/* --- Skill header: title + close + progress bar --- */
+/* --- Skill header: X (left) + icon+title (centered) + reps (right) --- */
 .skill-header {
   padding: var(--pad-component) var(--size-content-inset) var(--gap-group);
   background: var(--color-chrome);
@@ -1448,8 +1478,35 @@ body {
   align-items: center;
   gap: var(--gap-group);
 }
-.skill-header-row .mode-title {
+.skill-header-title {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-related);
+  min-width: 0;
+}
+.skill-header-title .skill-icon {
+  color: var(--type-heading-page-color);
+}
+.skill-header-title .mode-title {
+  flex: none;
+}
+.skill-header-reps {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: var(--type-metric-effort-size);
+  font-weight: var(--type-metric-effort-weight);
+  line-height: var(--type-metric-effort-leading);
+  color: var(--type-metric-effort-color);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.skill-header-reps-icon {
+  color: var(--type-metric-effort-color);
+  flex-shrink: 0;
 }
 .skill-header-progress {
   margin-top: var(--gap-group);
@@ -1943,15 +2000,10 @@ button {
 /* ==========================================================================
    8. QUIZ SESSION
    ========================================================================== */
-.quiz-countdown-row {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-related);
-  margin-bottom: var(--gap-related);
-}
 .quiz-countdown-bar {
   flex: 1;
   height: 6px;
+  margin: 0 var(--gap-related);
   background: var(--color-surface-raised);
 }
 .quiz-countdown-fill {
@@ -1973,30 +2025,21 @@ button {
   white-space: nowrap;
 }
 
-/* --- Quiz session info — single compact row --- */
-.quiz-session-info {
-  position: relative;
+.quiz-info-count {
   display: flex;
   align-items: center;
-  gap: var(--gap-group);
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
-  line-height: var(--type-metric-info-leading);
-  color: var(--type-metric-info-color);
-  padding-bottom: var(--gap-related);
-}
-.quiz-info-context {
-  flex: 1;
-}
-.quiz-info-last-question {
-  color: var(--color-notice);
-  font-weight: var(--font-semibold);
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.quiz-info-count {
+  gap: 0.3em;
   font-variant-numeric: tabular-nums;
+  font-size: var(--type-metric-effort-size);
+  font-weight: var(--type-metric-effort-weight);
+  line-height: var(--type-metric-effort-leading);
+  color: var(--type-metric-effort-color);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.quiz-info-count-icon {
+  color: var(--type-metric-effort-color);
+  flex-shrink: 0;
 }
 
 /* --- Progress bar (build-time template only) --- */
@@ -2144,10 +2187,10 @@ button {
   gap: var(--gap-related);
   width: 100%;
   max-width: var(--size-answer-grid);
-  margin: var(--gap-group) auto;
+  margin: var(--gap-related) auto;
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg);
-  padding: var(--pad-region);
+  padding: var(--gap-group);
 }
 .answer-grid-6 {
   grid-template-columns: repeat(6, 1fr);
@@ -2162,10 +2205,10 @@ button {
   gap: var(--gap-related);
   width: 100%;
   max-width: var(--size-answer-grid);
-  margin: var(--gap-group) auto;
+  margin: var(--gap-related) auto;
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg);
-  padding: var(--pad-region);
+  padding: var(--gap-group);
 }
 .answer-grid-stack > .answer-grid {
   margin: 0;
@@ -2515,6 +2558,13 @@ button {
   color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
 }
+.text-metric-effort {
+  font-size: var(--type-metric-effort-size);
+  font-weight: var(--type-metric-effort-weight);
+  line-height: var(--type-metric-effort-leading);
+  color: var(--type-metric-effort-color);
+  font-variant-numeric: tabular-nums;
+}
 
 /* -- Status (+ color variants) -- */
 .text-status {
@@ -2611,6 +2661,14 @@ button {
 }
 .hint-spacer {
   visibility: hidden;
+}
+.feedback-notice {
+  text-align: center;
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
+  color: var(--color-notice);
+  padding: var(--pad-component) 0;
 }
 
 /* ==========================================================================
