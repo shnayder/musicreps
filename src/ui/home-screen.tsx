@@ -668,7 +668,6 @@ function HomeHeader(
     daysActive: number;
   },
 ) {
-  const hasStats = totalReps > 0;
   return (
     <div class={`home-header${isNativeApp ? ' native' : ''}`}>
       {!isNativeApp && (
@@ -682,19 +681,17 @@ function HomeHeader(
           </p>
         </>
       )}
-      {hasStats && (
-        <div class='home-stats-bar'>
-          <span class='home-stat'>
-            <span class='home-stat-value'>{totalReps.toLocaleString()}</span>
-            {' reps'}
-          </span>
-          <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
-          <span class='home-stat'>
-            <span class='home-stat-value'>{daysActive}</span>
-            {daysActive === 1 ? ' day' : ' days'}
-          </span>
-        </div>
-      )}
+      <div class='home-stats-bar'>
+        <span class='home-stat'>
+          <span class='home-stat-value'>{totalReps.toLocaleString()}</span>
+          {' reps'}
+        </span>
+        <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
+        <span class='home-stat'>
+          <span class='home-stat-value'>{daysActive}</span>
+          {daysActive === 1 ? ' day' : ' days'}
+        </span>
+      </div>
     </div>
   );
 }
@@ -803,7 +800,7 @@ export function HomeScreen(
   const [showDev, setShowDev] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
   const [tab, setTab] = useState<HomeTab>(loadInitialTab);
-  const globalEffort = useMemo(getGlobalEffort, []);
+  const globalEffort = useMemo(getGlobalEffort, [progress]);
   const prefix = useTabsPrefix();
 
   const handleToggleStar = useCallback((modeId: string) => {

@@ -8,9 +8,12 @@ import {
   computeGlobalEffort,
   computeModeEffort,
   type DailyRepsStore,
+  getGlobalEffort,
+  getModeEffort,
   incrementDailyReps,
   type ModeInfo,
   parseDailyReps,
+  registerModeForEffort,
 } from './effort.ts';
 
 // ---------------------------------------------------------------------------
@@ -201,5 +204,31 @@ describe('computeGlobalEffort', () => {
     const result = computeGlobalEffort([], daily);
     assert.equal(result.daysActive, 2); // day with 0 excluded
     assert.equal(result.totalReps, 8);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Convenience wrappers (getGlobalEffort, getModeEffort)
+// ---------------------------------------------------------------------------
+
+describe('getModeEffort', () => {
+  it('returns null for unknown mode', () => {
+    assert.equal(getModeEffort('nonexistent-mode-id'), null);
+  });
+});
+
+describe('getGlobalEffort', () => {
+  it('returns a GlobalEffort with totalReps and daysActive', () => {
+    // Register a mode so the function exercises the registry path.
+    // Uses real localStorage-backed storage, which is empty in test.
+    registerModeForEffort({
+      id: '__test_effort__',
+      namespace: '__test_effort__',
+      allItems: ['x'],
+    });
+    const result = getGlobalEffort();
+    assert.equal(typeof result.totalReps, 'number');
+    assert.equal(typeof result.daysActive, 'number');
+    assert.ok(result.totalReps >= 0);
   });
 });
