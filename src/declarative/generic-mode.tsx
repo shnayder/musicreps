@@ -64,9 +64,9 @@ import {
   ScreenLayout,
 } from '../ui/screen-layout.tsx';
 import {
+  computeProgressColors,
   computeReviewPill,
   progressBarColors,
-  progressBarGroupSegment,
 } from '../stats-display.ts';
 import {
   ModeTopBar,
@@ -1283,26 +1283,30 @@ type GenericModeBodyProps<Q> = {
 };
 
 /** Compute progress colors for the SkillHeader progress bar.
- *  Multi-level: one color per group (three-zone: fresh/stale/unseen).
- *  Single-level: per-item sorted colors (via shared progressBarColors). */
+ *  Uses shared computeProgressColors (same logic as home screen). */
 function useProgressColors<Q>(
   def: ModeDefinition<Q>,
   learner: ReturnType<typeof useLearnerModel>,
+  _phase: string,
+  skippedGroups?: ReadonlyMap<number, unknown>,
 ): string[] {
   return useMemo(() => {
     if (def.scope.kind === 'groups') {
       const scope = def.scope;
-      const segments = scope.allGroupIndices.map((i) =>
-        progressBarGroupSegment(learner.selector, scope.getItemIdsForGroup(i))
-      );
-      segments.sort((a, b) => {
-        if (a.zone !== b.zone) return a.zone - b.zone;
-        return b.speed - a.speed;
+      return computeProgressColors(learner.selector, {
+        kind: 'groups',
+        groups: scope.allGroupIndices.map((i) => ({
+          index: i,
+          itemIds: scope.getItemIdsForGroup(i),
+        })),
+        skippedGroups,
       });
-      return segments.map((s) => s.color);
     }
-    return progressBarColors(learner.selector, def.allItems);
-  }, [def, learner.selector]);
+    return computeProgressColors(learner.selector, {
+      kind: 'items',
+      itemIds: def.allItems,
+    });
+  }, [def, learner.selector, _phase, skippedGroups]);
 }
 
 /** Render SkillHeader (idle) or minimal ModeTopBar (active/calibration). */
@@ -1354,10 +1358,10 @@ function GenericModeBody<Q>(
     ? def.getUseFlats(currentQ)
     : undefined;
   const activeButtons = resolveButtons(def, dir);
-  const isIdle = engine.state.phase === 'idle' && !sc.speedCheck;
-  const progressColors = useProgressColors(def, learner);
-  // Recompute on phase change so the count refreshes when returning to idle.
-  const phase = engine.state.phase;
+  const phase = engine.state.phase; // cache-buster: progress + count refresh on phase change
+  const isIdle = phase === 'idle' && !sc.speedCheck;
+  const skipped = groupScopeResult?.skippedGroups;
+  const progressColors = useProgressColors(def, learner, phase, skipped);
   const totalReps = useMemo(() => {
     let sum = 0;
     for (const id of def.allItems) {

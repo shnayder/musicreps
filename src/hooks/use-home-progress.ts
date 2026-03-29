@@ -15,9 +15,8 @@ import {
   type ModeProgressEntry,
 } from '../mode-progress-manifest.ts';
 import {
-  type GroupBarSegment,
-  progressBarColors,
-  progressBarGroupSegment,
+  computeProgressColors,
+  type ProgressColorInput,
 } from '../stats-display.ts';
 import {
   computeSkillRecommendation,
@@ -76,42 +75,23 @@ export function computeProgressForMode(
     : undefined;
   const selector = createAdaptiveSelector(storage, cfg);
 
-  // Single-group modes: per-item colors to match the skill screen
-  // (which uses progressBarColors for non-group scopes).
-  if (entry.groups.length === 1) {
-    if (skippedGroups?.has(0)) return { groupColors: [] };
-    const ids = entry.allItemIds();
-    const colors = progressBarColors(selector, ids);
-    // Detect all-unseen: after sorting, if first == last all are same color;
-    // confirm with one speed check to distinguish from uniform-speed case.
-    if (
-      colors.length > 0 && colors[0] === colors[colors.length - 1] &&
-      selector.getSpeedScore(ids[0]) === null
-    ) {
-      return { groupColors: [] };
-    }
-    return { groupColors: colors };
-  }
+  const input: ProgressColorInput = entry.groups.length === 1
+    ? { kind: 'items', itemIds: entry.allItemIds() }
+    : {
+      kind: 'groups',
+      groups: entry.groups.map((g, i) => ({
+        index: i,
+        itemIds: g.getItemIds(),
+      })),
+      skippedGroups,
+    };
 
-  // Multi-group modes: one segment per group, then sort.
-  const segments: GroupBarSegment[] = [];
-  for (let i = 0; i < entry.groups.length; i++) {
-    if (skippedGroups?.has(i)) continue;
-    segments.push(
-      progressBarGroupSegment(selector, entry.groups[i].getItemIds()),
-    );
-  }
-
-  // All groups skipped or all unseen → not started
-  if (segments.length === 0 || segments.every((s) => s.zone === 2)) {
+  // Single-group + skipped → not started
+  if (entry.groups.length === 1 && skippedGroups?.has(0)) {
     return { groupColors: [] };
   }
 
-  segments.sort((a, b) => {
-    if (a.zone !== b.zone) return a.zone - b.zone;
-    return b.speed - a.speed;
-  });
-  return { groupColors: segments.map((s) => s.color) };
+  return { groupColors: computeProgressColors(selector, input) };
 }
 
 /** Compute progress for all modes. Exported for testing. */
