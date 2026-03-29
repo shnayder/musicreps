@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
   buildStatsLegend,
+  computeProgressColors,
   computeReviewPill,
   getSpeedFreshnessColor,
   getStatsCellColor,
@@ -380,5 +381,115 @@ describe('computeReviewPill', () => {
     const pill = computeReviewPill(selector, ['a']);
     assert.ok(pill?.startsWith('Review in '), `pill: ${pill}`);
     assert.ok(pill?.endsWith('w'), `should be weeks: ${pill}`);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeProgressColors (unified progress bar logic)
+// ---------------------------------------------------------------------------
+
+describe('computeProgressColors', () => {
+  it('returns [] for items mode when all unseen', () => {
+    const selector = { getSpeedScore: () => null };
+    const colors = computeProgressColors(selector, {
+      kind: 'items',
+      itemIds: ['a', 'b', 'c'],
+    });
+    assert.deepEqual(colors, []);
+  });
+
+  it('returns sorted colors for items mode with seen items', () => {
+    const selector = {
+      getSpeedScore(id: string) {
+        return ({ a: 0.2, b: 0.9 } as Record<string, number>)[id] ?? null;
+      },
+    };
+    const colors = computeProgressColors(selector, {
+      kind: 'items',
+      itemIds: ['a', 'b'],
+    });
+    assert.equal(colors.length, 2);
+    assert.ok(colors[0].startsWith('hsl(80,'), `fastest first: ${colors[0]}`);
+  });
+
+  it('returns [] for groups mode when all unseen', () => {
+    const selector = { getSpeedScore: () => null };
+    const colors = computeProgressColors(selector, {
+      kind: 'groups',
+      groups: [
+        { index: 0, itemIds: ['a', 'b'] },
+        { index: 1, itemIds: ['c', 'd'] },
+      ],
+    });
+    assert.deepEqual(colors, []);
+  });
+
+  it('filters out skipped groups', () => {
+    const selector = {
+      getSpeedScore(id: string) {
+        return ({ a: 0.5, b: 0.5, c: 0.9, d: 0.9 } as Record<string, number>)[
+          id
+        ] ?? null;
+      },
+    };
+    const skipped = new Set([1]);
+    const colors = computeProgressColors(selector, {
+      kind: 'groups',
+      groups: [
+        { index: 0, itemIds: ['a', 'b'] },
+        { index: 1, itemIds: ['c', 'd'] },
+      ],
+      skippedGroups: skipped,
+    });
+    // Only group 0 remains (speed ~0.5)
+    assert.equal(colors.length, 1);
+  });
+
+  it('returns [] when all groups are skipped', () => {
+    const selector = { getSpeedScore: () => 0.5 };
+    const colors = computeProgressColors(selector, {
+      kind: 'groups',
+      groups: [{ index: 0, itemIds: ['a'] }],
+      skippedGroups: new Set([0]),
+    });
+    assert.deepEqual(colors, []);
+  });
+
+  it('sorts groups: seen by speed desc, unseen last', () => {
+    const selector = {
+      getSpeedScore(id: string) {
+        return ({ a: 0.3, b: 0.3, e: 0.9, f: 0.9 } as Record<string, number>)[
+          id
+        ] ?? null;
+      },
+    };
+    const colors = computeProgressColors(selector, {
+      kind: 'groups',
+      groups: [
+        { index: 0, itemIds: ['a', 'b'] }, // avg speed 0.3
+        { index: 1, itemIds: ['c', 'd'] }, // all unseen
+        { index: 2, itemIds: ['e', 'f'] }, // avg speed 0.9
+      ],
+    });
+    // Unseen group filtered by all-unseen? No — only if ALL groups unseen.
+    // Here group 0 and 2 are seen, group 1 is unseen.
+    assert.equal(colors.length, 3);
+    // Fastest seen first (group 2, speed 0.9), then slower (group 0), then unseen
+    assert.ok(colors[0].startsWith('hsl(80,'), `fastest: ${colors[0]}`);
+    assert.equal(colors[2], NONE);
+  });
+
+  it('works with Map as skippedGroups (skill screen compat)', () => {
+    const selector = { getSpeedScore: () => 0.5 };
+    const skipped = new Map([[0, 'mastered']]);
+    const colors = computeProgressColors(selector, {
+      kind: 'groups',
+      groups: [
+        { index: 0, itemIds: ['a'] },
+        { index: 1, itemIds: ['b'] },
+      ],
+      skippedGroups: skipped,
+    });
+    assert.equal(colors.length, 1);
   });
 });

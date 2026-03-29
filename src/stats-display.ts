@@ -130,7 +130,7 @@ export function getStatsCellColorMerged(
 
 // --- Progress bar colors (sorted per-item, speed-only) ---
 
-type ProgressSelector = {
+export type ProgressSelector = {
   getSpeedScore(id: string): number | null;
 };
 
@@ -210,6 +210,53 @@ export function progressBarGroupColor(
   itemIds: string[],
 ): string {
   return progressBarGroupSegment(selector, itemIds).color;
+}
+
+// --- Unified progress colors (shared by home + skill screens) ---
+
+/** Input for computeProgressColors: either per-item or per-group. */
+export type ProgressColorInput =
+  | { kind: 'items'; itemIds: string[] }
+  | {
+    kind: 'groups';
+    groups: Array<{ index: number; itemIds: string[] }>;
+    skippedGroups?: ReadonlySet<number> | ReadonlyMap<number, unknown>;
+  };
+
+/**
+ * Compute sorted progress bar colors. Shared by home and skill screens.
+ * - Groups: filters out skipped groups, one color per active group, sorted.
+ * - Items: per-item sorted colors via progressBarColors.
+ * Returns [] for "not started" (all unseen or all skipped).
+ */
+export function computeProgressColors(
+  selector: ProgressSelector,
+  input: ProgressColorInput,
+): string[] {
+  if (input.kind === 'items') {
+    const ids = input.itemIds;
+    const colors = progressBarColors(selector, ids);
+    // Not started: all same color and first item unseen
+    if (
+      colors.length > 0 && colors[0] === colors[colors.length - 1] &&
+      selector.getSpeedScore(ids[0]) === null
+    ) return [];
+    return colors;
+  }
+  const skipped = input.skippedGroups;
+  const active = skipped
+    ? input.groups.filter((g) => !skipped.has(g.index))
+    : input.groups;
+  if (active.length === 0) return [];
+  const segments = active.map((g) =>
+    progressBarGroupSegment(selector, g.itemIds)
+  );
+  if (segments.every((s) => s.zone === 2)) return [];
+  segments.sort((a, b) => {
+    if (a.zone !== b.zone) return a.zone - b.zone;
+    return b.speed - a.speed;
+  });
+  return segments.map((s) => s.color);
 }
 
 // --- Review timing pills ---
