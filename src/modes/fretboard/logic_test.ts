@@ -172,9 +172,9 @@ describe('formatLabel', () => {
     const original = getUseSolfege();
     try {
       setUseSolfege(true);
-      assert.equal(formatLabel(GUITAR, new Set([0])), 'E strings');
-      assert.equal(formatLabel(GUITAR, new Set([1])), 'A string');
-      assert.equal(formatLabel(GUITAR, new Set([2])), 'D string');
+      assert.equal(formatLabel(GUITAR, new Set([0])), 'Mi strings');
+      assert.equal(formatLabel(GUITAR, new Set([1])), 'La string');
+      assert.equal(formatLabel(GUITAR, new Set([2])), 'Re string');
     } finally {
       setUseSolfege(original);
     }
