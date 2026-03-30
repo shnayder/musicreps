@@ -3151,7 +3151,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="ed9589 fix-level-name-translations-rjayO"></div>
+  <div class="home-screen" id="home-screen" data-version="89266f fix-level-name-translations-rjayO"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7211,50 +7211,50 @@ body.native-app {
     // Naturals by string (E and e combined since same notes)
     {
       label: () => displayNote("E") + " strings",
-      longLabel: "High & low E strings",
+      longLabel: () => "High & low " + displayNote("E") + " strings",
       strings: [5, 0],
       noteFilter: "natural"
     },
     {
       label: () => displayNote("A") + " string",
-      longLabel: "A string",
+      longLabel: () => displayNote("A") + " string",
       strings: [4],
       noteFilter: "natural"
     },
     {
       label: () => displayNote("D") + " string",
-      longLabel: "D string",
+      longLabel: () => displayNote("D") + " string",
       strings: [3],
       noteFilter: "natural"
     },
     {
       label: () => displayNote("G") + " string",
-      longLabel: "G string",
+      longLabel: () => displayNote("G") + " string",
       strings: [2],
       noteFilter: "natural"
     },
     {
       label: () => displayNote("B") + " string",
-      longLabel: "B string",
+      longLabel: () => displayNote("B") + " string",
       strings: [1],
       noteFilter: "natural"
     },
     // Accidentals by string pair
     {
       label: () => displayNote("E") + " \u266F/\u266D",
-      longLabel: "E strings \u266F/\u266D",
+      longLabel: () => displayNote("E") + " strings \u266F/\u266D",
       strings: [5, 0],
       noteFilter: "sharps-flats"
     },
     {
       label: () => displayNote("A") + " " + displayNote("D") + " \u266F/\u266D",
-      longLabel: "A & D strings \u266F/\u266D",
+      longLabel: () => displayNote("A") + " & " + displayNote("D") + " strings \u266F/\u266D",
       strings: [4, 3],
       noteFilter: "sharps-flats"
     },
     {
       label: () => displayNote("G") + " " + displayNote("B") + " \u266F/\u266D",
-      longLabel: "G & B strings \u266F/\u266D",
+      longLabel: () => displayNote("G") + " & " + displayNote("B") + " strings \u266F/\u266D",
       strings: [2, 1],
       noteFilter: "sharps-flats"
     }
@@ -7263,38 +7263,38 @@ body.native-app {
     // Naturals by string
     {
       label: () => displayNote("G") + " string",
-      longLabel: "G string",
+      longLabel: () => displayNote("G") + " string",
       strings: [3],
       noteFilter: "natural"
     },
     {
       label: () => displayNote("C") + " string",
-      longLabel: "C string",
+      longLabel: () => displayNote("C") + " string",
       strings: [2],
       noteFilter: "natural"
     },
     {
       label: () => displayNote("E") + " string",
-      longLabel: "E string",
+      longLabel: () => displayNote("E") + " string",
       strings: [1],
       noteFilter: "natural"
     },
     {
       label: () => displayNote("A") + " string",
-      longLabel: "A string",
+      longLabel: () => displayNote("A") + " string",
       strings: [0],
       noteFilter: "natural"
     },
     // Accidentals by string pair
     {
       label: () => displayNote("G") + " " + displayNote("C") + " \u266F/\u266D",
-      longLabel: "G & C strings \u266F/\u266D",
+      longLabel: () => displayNote("G") + " & " + displayNote("C") + " strings \u266F/\u266D",
       strings: [3, 2],
       noteFilter: "sharps-flats"
     },
     {
       label: () => displayNote("E") + " " + displayNote("A") + " \u266F/\u266D",
-      longLabel: "E & A strings \u266F/\u266D",
+      longLabel: () => displayNote("E") + " & " + displayNote("A") + " strings \u266F/\u266D",
       strings: [1, 0],
       noteFilter: "sharps-flats"
     }
@@ -7482,7 +7482,7 @@ body.native-app {
       namespace: "fretboard",
       groups: guitarGroups.map((g2, i3) => ({
         label: g2.label(),
-        longLabel: g2.longLabel,
+        longLabel: g2.longLabel(),
         getItemIds: () => getItemIdsForGroup7(GUITAR, i3)
       })),
       allItemIds: () => getAllItems(GUITAR)
@@ -7492,7 +7492,7 @@ body.native-app {
       namespace: "ukulele",
       groups: ukuleleGroups.map((g2, i3) => ({
         label: g2.label(),
-        longLabel: g2.longLabel,
+        longLabel: g2.longLabel(),
         getItemIds: () => getItemIdsForGroup7(UKULELE, i3)
       })),
       allItemIds: () => getAllItems(UKULELE)
@@ -9576,7 +9576,7 @@ body.native-app {
       [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]
     );
     const getLabel = q2(
-      (i3) => spec.groups[i3].longLabel ?? resolveLabel(spec.groups[i3].label),
+      (i3) => (spec.groups[i3].longLabel ? resolveLabel(spec.groups[i3].longLabel) : void 0) ?? resolveLabel(spec.groups[i3].label),
       [spec.groups, notationVersion]
     );
     const suggestionLines = T2(
@@ -12000,7 +12000,7 @@ body.native-app {
       return /* @__PURE__ */ u3(
         LevelProgressCard,
         {
-          label: groupScope.groups[i3].longLabel ?? resolveGroupLabel(groupScope.groups[i3].label),
+          label: (groupScope.groups[i3].longLabel ? resolveGroupLabel(groupScope.groups[i3].longLabel) : void 0) ?? resolveGroupLabel(groupScope.groups[i3].label),
           pill: pill ?? void 0,
           colors,
           status,
