@@ -80,7 +80,7 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
     namespace: 'fretboard',
     groups: guitarGroups.map((g, i) => ({
       label: g.label(),
-      longLabel: g.longLabel,
+      longLabel: g.longLabel(),
       getItemIds: () => fretboardGroup(GUITAR, i),
     })),
     allItemIds: () => fretboardAllItems(GUITAR),
@@ -90,7 +90,7 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
     namespace: 'ukulele',
     groups: ukuleleGroups.map((g, i) => ({
       label: g.label(),
-      longLabel: g.longLabel,
+      longLabel: g.longLabel(),
       getItemIds: () => fretboardGroup(UKULELE, i),
     })),
     allItemIds: () => fretboardAllItems(UKULELE),

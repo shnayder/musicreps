@@ -815,7 +815,9 @@ function LevelProgressCards<Q>(
         return (
           <LevelProgressCard
             key={i}
-            label={groupScope.groups[i].longLabel ??
+            label={(groupScope.groups[i].longLabel
+              ? resolveGroupLabel(groupScope.groups[i].longLabel)
+              : undefined) ??
               resolveGroupLabel(groupScope.groups[i].label)}
             pill={pill ?? undefined}
             colors={colors}

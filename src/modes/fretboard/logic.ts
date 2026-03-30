@@ -17,7 +17,7 @@ import { createFretboardHelpers } from '../../quiz-fretboard-state.ts';
 
 export type FretboardGroup = {
   label: () => string;
-  longLabel: string;
+  longLabel: () => string;
   strings: number[];
   noteFilter: 'natural' | 'sharps-flats';
 };
@@ -32,50 +32,52 @@ const GUITAR_GROUPS: FretboardGroup[] = [
   // Naturals by string (E and e combined since same notes)
   {
     label: () => displayNote('E') + ' strings',
-    longLabel: 'High & low E strings',
+    longLabel: () => 'High & low ' + displayNote('E') + ' strings',
     strings: [5, 0],
     noteFilter: 'natural',
   },
   {
     label: () => displayNote('A') + ' string',
-    longLabel: 'A string',
+    longLabel: () => displayNote('A') + ' string',
     strings: [4],
     noteFilter: 'natural',
   },
   {
     label: () => displayNote('D') + ' string',
-    longLabel: 'D string',
+    longLabel: () => displayNote('D') + ' string',
     strings: [3],
     noteFilter: 'natural',
   },
   {
     label: () => displayNote('G') + ' string',
-    longLabel: 'G string',
+    longLabel: () => displayNote('G') + ' string',
     strings: [2],
     noteFilter: 'natural',
   },
   {
     label: () => displayNote('B') + ' string',
-    longLabel: 'B string',
+    longLabel: () => displayNote('B') + ' string',
     strings: [1],
     noteFilter: 'natural',
   },
   // Accidentals by string pair
   {
     label: () => displayNote('E') + ' \u266F/\u266D',
-    longLabel: 'E strings \u266F/\u266D',
+    longLabel: () => displayNote('E') + ' strings \u266F/\u266D',
     strings: [5, 0],
     noteFilter: 'sharps-flats',
   },
   {
     label: () => displayNote('A') + ' ' + displayNote('D') + ' \u266F/\u266D',
-    longLabel: 'A & D strings \u266F/\u266D',
+    longLabel: () =>
+      displayNote('A') + ' & ' + displayNote('D') + ' strings \u266F/\u266D',
     strings: [4, 3],
     noteFilter: 'sharps-flats',
   },
   {
     label: () => displayNote('G') + ' ' + displayNote('B') + ' \u266F/\u266D',
-    longLabel: 'G & B strings \u266F/\u266D',
+    longLabel: () =>
+      displayNote('G') + ' & ' + displayNote('B') + ' strings \u266F/\u266D',
     strings: [2, 1],
     noteFilter: 'sharps-flats',
   },
@@ -91,38 +93,40 @@ const UKULELE_GROUPS: FretboardGroup[] = [
   // Naturals by string
   {
     label: () => displayNote('G') + ' string',
-    longLabel: 'G string',
+    longLabel: () => displayNote('G') + ' string',
     strings: [3],
     noteFilter: 'natural',
   },
   {
     label: () => displayNote('C') + ' string',
-    longLabel: 'C string',
+    longLabel: () => displayNote('C') + ' string',
     strings: [2],
     noteFilter: 'natural',
   },
   {
     label: () => displayNote('E') + ' string',
-    longLabel: 'E string',
+    longLabel: () => displayNote('E') + ' string',
     strings: [1],
     noteFilter: 'natural',
   },
   {
     label: () => displayNote('A') + ' string',
-    longLabel: 'A string',
+    longLabel: () => displayNote('A') + ' string',
     strings: [0],
     noteFilter: 'natural',
   },
   // Accidentals by string pair
   {
     label: () => displayNote('G') + ' ' + displayNote('C') + ' \u266F/\u266D',
-    longLabel: 'G & C strings \u266F/\u266D',
+    longLabel: () =>
+      displayNote('G') + ' & ' + displayNote('C') + ' strings \u266F/\u266D',
     strings: [3, 2],
     noteFilter: 'sharps-flats',
   },
   {
     label: () => displayNote('E') + ' ' + displayNote('A') + ' \u266F/\u266D',
-    longLabel: 'E & A strings \u266F/\u266D',
+    longLabel: () =>
+      displayNote('E') + ' & ' + displayNote('A') + ' strings \u266F/\u266D',
     strings: [1, 0],
     noteFilter: 'sharps-flats',
   },
