@@ -3151,7 +3151,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="fd7f27 add-chord-memorization-7onHu"></div>
+  <div class="home-screen" id="home-screen" data-version="260d6d add-chord-memorization-7onHu"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -11378,25 +11378,41 @@ body.native-app {
       c3.style.fill = "";
     });
   }
-  var MUTE_MARKER_Y = 12;
   var MUTE_MARKER_CLASS = "fb-mute-marker";
+  var CIRCLE_R = 14;
   function renderMuteMarkers(root, mutedStrings, sc) {
     const svg = root.querySelector("svg.fretboard");
     if (!svg) return;
     svg.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
     const colorMuted = readCSSColor("--color-text-secondary", "#888");
+    const cy = noteY(0);
+    const half = CIRCLE_R * 0.7;
     for (const s3 of mutedStrings) {
-      const x2 = stringX(s3, sc);
-      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      text.setAttribute("class", MUTE_MARKER_CLASS);
-      text.setAttribute("x", String(x2));
-      text.setAttribute("y", String(MUTE_MARKER_Y));
-      text.setAttribute("text-anchor", "middle");
-      text.setAttribute("font-size", "16");
-      text.setAttribute("font-weight", "bold");
-      text.setAttribute("fill", colorMuted);
-      text.textContent = "\xD7";
-      svg.appendChild(text);
+      const cx = stringX(s3, sc);
+      const line1 = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+      const line2 = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+      for (const ln of [line1, line2]) {
+        ln.setAttribute("class", MUTE_MARKER_CLASS);
+        ln.setAttribute("stroke", colorMuted);
+        ln.setAttribute("stroke-width", "2.5");
+        ln.setAttribute("stroke-linecap", "round");
+      }
+      line1.setAttribute("x1", String(cx - half));
+      line1.setAttribute("y1", String(cy - half));
+      line1.setAttribute("x2", String(cx + half));
+      line1.setAttribute("y2", String(cy + half));
+      line2.setAttribute("x1", String(cx + half));
+      line2.setAttribute("y1", String(cy - half));
+      line2.setAttribute("x2", String(cx - half));
+      line2.setAttribute("y2", String(cy + half));
+      svg.appendChild(line1);
+      svg.appendChild(line2);
     }
   }
   function clearMuteMarkers(root) {
@@ -11853,6 +11869,9 @@ body.native-app {
   }
 
   // src/declarative/use-multi-tap-input.ts
+  function stringOf(posKey) {
+    return posKey.split("-")[0];
+  }
   function processMultiTap(multiTap, q3, tapped, positionKey3) {
     const targets = multiTap.getTargets(q3);
     if (tapped.has(positionKey3)) {
@@ -11863,10 +11882,20 @@ body.native-app {
         progressText: next2.size + " / " + targets.length
       };
     }
-    if (tapped.size >= targets.length) {
+    let next = new Set(tapped);
+    if (multiTap.onePerString) {
+      const tapString = stringOf(positionKey3);
+      for (const existing of tapped) {
+        if (stringOf(existing) === tapString) {
+          next.delete(existing);
+          break;
+        }
+      }
+    }
+    if (next.size >= targets.length) {
       return { kind: "ignored" };
     }
-    const next = new Set(tapped);
+    next = new Set(next);
     next.add(positionKey3);
     const progressText = next.size + " / " + targets.length;
     if (next.size === targets.length) {
@@ -11908,6 +11937,15 @@ body.native-app {
         return;
       }
       const next = new Set(tappedRef.current);
+      if (def.multiTap.onePerString) {
+        const tapString = positionKey3.split("-")[0];
+        for (const existing of tappedRef.current) {
+          if (existing.split("-")[0] === tapString) {
+            next.delete(existing);
+            break;
+          }
+        }
+      }
       next.add(positionKey3);
       tappedRef.current = next;
       setTappedPositions(next);
@@ -13648,7 +13686,8 @@ body.native-app {
         getTargets: (q3) => q3.playedPositions,
         evaluate: evaluate3,
         stringCount,
-        getMutedStrings: (q3) => q3.mutedStrings
+        getMutedStrings: (q3) => q3.mutedStrings,
+        onePerString: true
       },
       getExpectedResponseCount: (itemId2) => {
         const q3 = parseItem3(instrument, itemId2);
