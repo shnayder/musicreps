@@ -498,11 +498,12 @@ body {
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
   padding-right: max(var(--size-content-inset), env(safe-area-inset-right, 0));
 }
-/* Brand watermark — end-repeat mark, idle (practice setup) phase only.
+/* Brand watermark — end-repeat mark, idle and round-complete phases.
    z-index: -1 paints above layout-main's background (thanks to isolation:
    isolate creating a stacking context) but below all normal-flow children.
    No z-index needed on any child elements. */
-.mode-screen.phase-idle .layout-main::before {
+.mode-screen.phase-idle .layout-main::before,
+.mode-screen.phase-round-complete .layout-main::before {
   content: '';
   position: absolute;
   left: 50%;
@@ -2128,7 +2129,6 @@ button {
 .round-complete {
   align-items: center;
   text-align: center;
-  background: var(--color-card);
 }
 .round-complete-heading {
   font-family: var(--type-heading-page-family);
@@ -2154,29 +2154,12 @@ button {
 .round-complete-stats {
   margin: var(--gap-group) 0 var(--pad-region);
 }
-.round-complete-overall {
-  margin-bottom: var(--pad-region);
+.round-complete-progress {
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
   padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
-}
-.round-complete-overall-label {
-  font-family: var(--type-heading-subsection-family);
-  font-size: var(--type-heading-subsection-size);
-  font-weight: var(--type-heading-subsection-weight);
-  line-height: var(--type-heading-subsection-leading);
-  color: var(--type-heading-subsection-color);
-  margin-bottom: var(--gap-related);
-}
-.round-complete-context {
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
-}
-.round-complete-mark {
-  margin-top: var(--pad-component);
-  color: var(--color-text-light);
-  opacity: 0.5;
 }
 .round-stat-line {
   font-size: var(--type-status-size);
@@ -2747,6 +2730,9 @@ button {
 }
 .page-action-row > .page-action-btn {
   flex: 1;
+}
+.page-action-row > .page-action-primary {
+  flex: 2;
 }
 
 /* --- Standalone action buttons (positioning only — visual treatment via page-action-btn) --- */
@@ -4587,12 +4573,10 @@ ${text}`).join("\n\n");
 
   // src/fixtures/round-complete.ts
   var goodRound = {
-    context: "+1 to +5 \xB7 12 / 18 automatic",
     heading: "Round complete",
     correct: "16 correct \xB7 63s"
   };
   var roughRound = {
-    context: "all distances \xB7 3 / 24 automatic",
     heading: "Round complete",
     correct: "5 correct \xB7 62s"
   };
@@ -5739,27 +5723,15 @@ ${text}`).join("\n\n");
     }
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children });
   }
-  function RoundCompleteInfo({ context, heading, count, correct }) {
+  function RoundCompleteInfo({ heading, count, correct, progressColors }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       count != null && /* @__PURE__ */ u3(k, { children: [
         /* @__PURE__ */ u3("div", { class: "round-complete-count", children: count }),
-        /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "question answered" : "questions answered" })
+        /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "rep" : "reps" })
       ] }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }) }),
-      context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
-        /* @__PURE__ */ u3(
-          Text,
-          {
-            role: "heading-subsection",
-            as: "div",
-            class: "round-complete-overall-label",
-            children: "Overall"
-          }
-        ),
-        /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
-      ] }) : null,
-      /* @__PURE__ */ u3("div", { class: "round-complete-mark", "aria-hidden": "true", children: /* @__PURE__ */ u3(RepeatMark, { size: 16 }) })
+      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3("div", { class: "round-complete-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progressColors }) })
     ] });
   }
   var noop = () => {
@@ -6899,10 +6871,15 @@ ${text}`).join("\n\n");
       /* @__PURE__ */ u3(Section, { title: "Round Complete", tabId, children: /* @__PURE__ */ u3(PreviewModeScreen, { phase: "round-complete", children: /* @__PURE__ */ u3(QuizArea, { controls: /* @__PURE__ */ u3(RoundCompleteActions, {}), children: /* @__PURE__ */ u3(
         RoundCompleteInfo,
         {
-          context: goodRound.context,
           heading: goodRound.heading,
           count: 18,
-          correct: goodRound.correct
+          correct: goodRound.correct,
+          progressColors: [
+            "hsl(125, 48%, 33%)",
+            "hsl(80, 35%, 40%)",
+            "hsl(48, 50%, 52%)",
+            "hsl(40, 60%, 58%)"
+          ]
         }
       ) }) }) }),
       /* @__PURE__ */ u3(Section, { title: "Progress Heatmap", tabId, children: [
@@ -7296,19 +7273,28 @@ ${text}`).join("\n\n");
         /* @__PURE__ */ u3(Section, { title: "RoundComplete \u2014 Good", tabId, children: /* @__PURE__ */ u3(QuizArea, { controls: /* @__PURE__ */ u3(RoundCompleteActions, {}), children: /* @__PURE__ */ u3(
           RoundCompleteInfo,
           {
-            context: goodRound.context,
             heading: goodRound.heading,
             count: 18,
-            correct: goodRound.correct
+            correct: goodRound.correct,
+            progressColors: [
+              "hsl(125, 48%, 33%)",
+              "hsl(125, 48%, 33%)",
+              "hsl(80, 35%, 40%)",
+              "hsl(60, 40%, 46%)"
+            ]
           }
         ) }) }),
         /* @__PURE__ */ u3(Section, { title: "RoundComplete \u2014 Rough", tabId, children: /* @__PURE__ */ u3(QuizArea, { controls: /* @__PURE__ */ u3(RoundCompleteActions, {}), children: /* @__PURE__ */ u3(
           RoundCompleteInfo,
           {
-            context: roughRound.context,
             heading: roughRound.heading,
             count: 9,
-            correct: roughRound.correct
+            correct: roughRound.correct,
+            progressColors: [
+              "hsl(48, 50%, 52%)",
+              "hsl(40, 60%, 58%)",
+              "hsl(40, 60%, 58%)"
+            ]
           }
         ) }) })
       ] })
@@ -9154,10 +9140,14 @@ ${text}`).join("\n\n");
         /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
           RoundCompleteInfo,
           {
-            context: "E string \xB7 A string",
             heading: "Round Complete",
             count: 20,
-            correct: "18 correct (90%)"
+            correct: "18 correct (90%)",
+            progressColors: [
+              "hsl(125, 48%, 33%)",
+              "hsl(80, 35%, 40%)",
+              "hsl(48, 50%, 52%)"
+            ]
           }
         ) }) }),
         /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(

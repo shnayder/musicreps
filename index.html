@@ -504,11 +504,12 @@ body {
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
   padding-right: max(var(--size-content-inset), env(safe-area-inset-right, 0));
 }
-/* Brand watermark — end-repeat mark, idle (practice setup) phase only.
+/* Brand watermark — end-repeat mark, idle and round-complete phases.
    z-index: -1 paints above layout-main's background (thanks to isolation:
    isolate creating a stacking context) but below all normal-flow children.
    No z-index needed on any child elements. */
-.mode-screen.phase-idle .layout-main::before {
+.mode-screen.phase-idle .layout-main::before,
+.mode-screen.phase-round-complete .layout-main::before {
   content: '';
   position: absolute;
   left: 50%;
@@ -2134,7 +2135,6 @@ button {
 .round-complete {
   align-items: center;
   text-align: center;
-  background: var(--color-card);
 }
 .round-complete-heading {
   font-family: var(--type-heading-page-family);
@@ -2160,29 +2160,12 @@ button {
 .round-complete-stats {
   margin: var(--gap-group) 0 var(--pad-region);
 }
-.round-complete-overall {
-  margin-bottom: var(--pad-region);
+.round-complete-progress {
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
   padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
-}
-.round-complete-overall-label {
-  font-family: var(--type-heading-subsection-family);
-  font-size: var(--type-heading-subsection-size);
-  font-weight: var(--type-heading-subsection-weight);
-  line-height: var(--type-heading-subsection-leading);
-  color: var(--type-heading-subsection-color);
-  margin-bottom: var(--gap-related);
-}
-.round-complete-context {
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
-}
-.round-complete-mark {
-  margin-top: var(--pad-component);
-  color: var(--color-text-light);
-  opacity: 0.5;
 }
 .round-stat-line {
   font-size: var(--type-status-size);
@@ -2754,6 +2737,9 @@ button {
 .page-action-row > .page-action-btn {
   flex: 1;
 }
+.page-action-row > .page-action-primary {
+  flex: 2;
+}
 
 /* --- Standalone action buttons (positioning only — visual treatment via page-action-btn) --- */
 .next-btn,
@@ -3143,7 +3129,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1137"></div>
+  <div class="home-screen" id="home-screen" data-version="#1139"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -8175,6 +8161,11 @@ body.native-app {
     return /* @__PURE__ */ u3("div", { class: cls, children });
   }
 
+  // src/ui/scope.tsx
+  function GroupProgressBar({ colors, disabled }) {
+    return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `background:${color}` }, i3)) });
+  }
+
   // src/ui/mode-screen.tsx
   function CloseButton({ onClick, ariaLabel }) {
     return /* @__PURE__ */ u3(
@@ -8344,27 +8335,15 @@ body.native-app {
       ] })
     ] }) });
   }
-  function RoundCompleteInfo({ context, heading, count, correct }) {
+  function RoundCompleteInfo({ heading, count, correct, progressColors }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       count != null && /* @__PURE__ */ u3(k, { children: [
         /* @__PURE__ */ u3("div", { class: "round-complete-count", children: count }),
-        /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "question answered" : "questions answered" })
+        /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "rep" : "reps" })
       ] }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }) }),
-      context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
-        /* @__PURE__ */ u3(
-          Text,
-          {
-            role: "heading-subsection",
-            as: "div",
-            class: "round-complete-overall-label",
-            children: "Overall"
-          }
-        ),
-        /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
-      ] }) : null,
-      /* @__PURE__ */ u3("div", { class: "round-complete-mark", "aria-hidden": "true", children: /* @__PURE__ */ u3(RepeatMark, { size: 16 }) })
+      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3("div", { class: "round-complete-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progressColors }) })
     ] });
   }
   var noop = () => {
@@ -8521,11 +8500,6 @@ body.native-app {
         )
       ] })
     ] });
-  }
-
-  // src/ui/scope.tsx
-  function GroupProgressBar({ colors, disabled }) {
-    return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `background:${color}` }, i3)) });
   }
 
   // src/ui/segmented-control.tsx
@@ -10228,16 +10202,7 @@ body.native-app {
       getFreshness: (id) => selector.getFreshness(id)
     }), [selector, enginePhase]);
   }
-  function useRoundSummary(engine, practicingLabel) {
-    const roundContext = T2(() => {
-      const s3 = engine.state;
-      const fluency = s3.masteredCount + " / " + s3.totalEnabledCount + " automatic";
-      return practicingLabel + " \xB7 " + fluency;
-    }, [
-      engine.state.masteredCount,
-      engine.state.totalEnabledCount,
-      practicingLabel
-    ]);
+  function useRoundSummary(engine) {
     const roundCorrect = T2(() => {
       const s3 = engine.state;
       const dur = Math.round((s3.roundDurationMs || 0) / 1e3);
@@ -10247,9 +10212,9 @@ body.native-app {
       engine.state.roundDurationMs
     ]);
     const answerCount = engine.state.roundAnswered;
-    const countText = answerCount + (answerCount === 1 ? " answer" : " answers");
+    const countText = answerCount + (answerCount === 1 ? " rep" : " reps");
     const countLabel = String(answerCount);
-    return { roundContext, roundCorrect, countText, countLabel };
+    return { roundCorrect, countText, countLabel };
   }
 
   // src/hooks/use-practice-summary.ts
@@ -11805,6 +11770,7 @@ body.native-app {
     ctrl,
     currentQ,
     round,
+    progressColors,
     handleSubmit,
     seq,
     multiTapInput,
@@ -11821,10 +11787,10 @@ body.native-app {
         /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(
           RoundCompleteInfo,
           {
-            context: round.roundContext,
             heading: "Round complete",
             count: engine.state.roundAnswered,
-            correct: round.roundCorrect
+            correct: round.roundCorrect,
+            progressColors
           }
         ) }) }),
         /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
@@ -12147,8 +12113,7 @@ body.native-app {
     if (isSequential) seqInput.resetOnItemChange(engine.state.currentItemId);
     if (def.multiTap) multiTapInput.resetOnItemChange(engine.state.currentItemId);
     usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
-    const practicingLabel = groupScopeResult?.practicingLabel ?? "all items";
-    const round = useRoundSummary(engine, practicingLabel);
+    const round = useRoundSummary(engine);
     const ps = usePracticeSummary({
       allItems: def.allItems,
       selector: learner.selector,
@@ -12312,6 +12277,7 @@ body.native-app {
         ctrl,
         currentQ,
         round,
+        progressColors,
         handleSubmit,
         seq: buildSeqProps(seqInput),
         multiTapInput,
