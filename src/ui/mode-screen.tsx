@@ -10,6 +10,7 @@ import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
+import { GroupProgressBar } from './scope.tsx';
 
 // ---------------------------------------------------------------------------
 // CloseButton — × dismiss button used in top bars and overlays
@@ -420,11 +421,11 @@ export function QuizArea(
 // ---------------------------------------------------------------------------
 
 export function RoundCompleteInfo(
-  { context, heading, count, correct }: {
-    context?: string;
+  { heading, count, correct, progressColors }: {
     heading?: string;
     count?: number;
     correct?: string;
+    progressColors?: string[];
   },
 ) {
   return (
@@ -434,30 +435,18 @@ export function RoundCompleteInfo(
         <>
           <div class='round-complete-count'>{count}</div>
           <div class='round-complete-count-label'>
-            {count === 1 ? 'question answered' : 'questions answered'}
+            {count === 1 ? 'rep' : 'reps'}
           </div>
         </>
       )}
       <div class='round-complete-stats'>
         <div class='round-stat-line round-stat-correct'>{correct || ''}</div>
       </div>
-      {context
-        ? (
-          <div class='round-complete-overall'>
-            <Text
-              role='heading-subsection'
-              as='div'
-              class='round-complete-overall-label'
-            >
-              Overall
-            </Text>
-            <div class='round-complete-context'>{context}</div>
-          </div>
-        )
-        : null}
-      <div class='round-complete-mark' aria-hidden='true'>
-        <RepeatMark size={16} />
-      </div>
+      {progressColors && progressColors.length > 0 && (
+        <div class='round-complete-progress'>
+          <GroupProgressBar colors={progressColors} />
+        </div>
+      )}
     </div>
   );
 }

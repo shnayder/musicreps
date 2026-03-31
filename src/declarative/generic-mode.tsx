@@ -596,6 +596,7 @@ type QuizActiveViewProps<Q> = {
   ctrl: ModeController<Q>;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
+  progressColors: string[];
   handleSubmit: (input: string) => boolean;
   seq: {
     entries: { display: string }[];
@@ -625,6 +626,7 @@ function QuizActiveView<Q>(
     ctrl,
     currentQ,
     round,
+    progressColors,
     handleSubmit,
     seq,
     multiTapInput,
@@ -646,10 +648,10 @@ function QuizActiveView<Q>(
         <LayoutMain scrollable={false}>
           <CenteredContent>
             <RoundCompleteInfo
-              context={round.roundContext}
               heading='Round complete'
               count={engine.state.roundAnswered}
               correct={round.roundCorrect}
+              progressColors={progressColors}
             />
           </CenteredContent>
         </LayoutMain>
@@ -1164,8 +1166,7 @@ function useGenericDerivedState<Q>(
   if (def.multiTap) multiTapInput.resetOnItemChange(engine.state.currentItemId);
 
   usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
-  const practicingLabel = groupScopeResult?.practicingLabel ?? 'all items';
-  const round = useRoundSummary(engine, practicingLabel);
+  const round = useRoundSummary(engine);
   const ps = usePracticeSummary({
     allItems: def.allItems,
     selector: learner.selector,
@@ -1412,6 +1413,7 @@ function GenericModeBody<Q>(
       ctrl={ctrl}
       currentQ={currentQ}
       round={round}
+      progressColors={progressColors}
       handleSubmit={handleSubmit}
       seq={buildSeqProps(seqInput)}
       multiTapInput={multiTapInput}
