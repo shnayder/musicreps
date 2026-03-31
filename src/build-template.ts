@@ -167,6 +167,24 @@ ${
       quizAreaContent: `<div class="seq-slots"></div>
       ${noteAnswerButtons()}`,
     })
+  }
+
+  <!-- Guitar Chord Shapes mode -->
+${
+    modeScreen('guitarChordShapes', {
+      modeName: MODE_NAMES.guitarChordShapes,
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `${fretboardSVG()}`,
+    })
+  }
+
+  <!-- Ukulele Chord Shapes mode -->
+${
+    modeScreen('ukuleleChordShapes', {
+      modeName: MODE_NAMES.ukuleleChordShapes,
+      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
+      quizAreaContent: `${fretboardSVG({ stringCount: 4 })}`,
+    })
   }`;
 }
 

@@ -33,6 +33,10 @@ import { createFretboardDef } from './modes/fretboard/definition.tsx';
 import { CHORD_SPELLING_DEF } from './modes/chord-spelling/definition.ts';
 
 import { SPEED_TAP_DEF } from './modes/speed-tap/definition.tsx';
+import {
+  GUITAR_CHORD_SHAPES_DEF,
+  UKULELE_CHORD_SHAPES_DEF,
+} from './modes/chord-shapes/definition.tsx';
 
 // Enable :active pseudo-class on iOS Safari. WebKit doesn't fire :active on
 // touch unless the document has a touchstart listener.
@@ -110,6 +114,8 @@ async function boot() {
   registerDeclarativeMode(nav, DIATONIC_CHORDS_DEF);
   registerDeclarativeMode(nav, CHORD_SPELLING_DEF);
   registerDeclarativeMode(nav, SPEED_TAP_DEF);
+  registerDeclarativeMode(nav, GUITAR_CHORD_SHAPES_DEF);
+  registerDeclarativeMode(nav, UKULELE_CHORD_SHAPES_DEF);
 
   nav.init();
 
