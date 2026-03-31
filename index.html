@@ -274,8 +274,8 @@
   /* Interactive element sizes */
   --size-close-btn: 2.25rem;
   --size-content-inset: var(--pad-region);
-  --size-answer-grid: 300px;
-  --size-answer-grid-wide: 420px;
+  --size-answer-grid: 272px;
+  --size-answer-grid-wide: 400px;
 
   /* Elevation (box-shadow) */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -428,7 +428,7 @@
 
   /* -- Answer: quiz answer buttons (note, number, interval) -- */
   --type-answer-size: var(--text-lg);
-  --type-answer-weight: var(--font-semibold);
+  --type-answer-weight: var(--font-medium);
   --type-answer-leading: var(--leading-none);
   --type-answer-color: var(--color-text);
 
@@ -2202,9 +2202,6 @@ button {
   width: 100%;
   max-width: var(--size-answer-grid);
   margin: var(--gap-related) auto;
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-lg);
-  padding: var(--gap-group);
 }
 .answer-grid-6 {
   grid-template-columns: repeat(6, 1fr);
@@ -2216,19 +2213,13 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--gap-related);
+  gap: var(--gap-group);
   width: 100%;
   max-width: var(--size-answer-grid);
   margin: var(--gap-related) auto;
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-lg);
-  padding: var(--gap-group);
 }
 .answer-grid-stack > .answer-grid {
   margin: 0;
-  background: none;
-  border-radius: 0;
-  padding: 0;
 }
 
 /* --- Pending/dimmed states for split (two-step) inputs --- */
@@ -2238,12 +2229,6 @@ button {
 }
 .answer-btn-dimmed {
   opacity: var(--opacity-dimmed);
-}
-
-/* Accidental qualifier row fades when hidden (split-note chord spelling) */
-.answer-grid-acc-hidden {
-  opacity: var(--opacity-subtle);
-  pointer-events: none;
 }
 
 /* --- Quiz prompt (text modes) --- */
@@ -2332,8 +2317,8 @@ button {
   font-size: var(--type-answer-size);
   font-weight: var(--type-answer-weight);
   line-height: var(--type-answer-leading);
-  border: none;
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
   background: var(--_bg);
   color: var(--_text);
   cursor: pointer;
@@ -2344,14 +2329,17 @@ button {
   justify-content: center;
   transition:
     background var(--duration-base) ease,
+    border-color var(--duration-base) ease,
     transform var(--duration-fast) ease;
 }
 @media (hover: hover) {
   .answer-btn:hover {
     --_bg: var(--color-surface-hover);
+    border-color: var(--color-border-light);
   }
   .answer-btn:disabled:hover {
     --_bg: var(--color-card);
+    border-color: var(--color-border-lighter);
     transform: none;
   }
 }
@@ -2370,16 +2358,19 @@ button {
 .btn-feedback-correct {
   --_bg: var(--color-success-bg) !important;
   --_text: var(--color-success-text) !important;
+  border-color: transparent !important;
   opacity: 1 !important;
 }
 .btn-feedback-wrong {
   --_bg: var(--color-error-bg) !important;
   --_text: var(--color-error-text) !important;
+  border-color: transparent !important;
   opacity: 1 !important;
 }
 .btn-feedback-reveal {
   --_bg: var(--color-success-bg) !important;
   --_text: var(--color-success-text) !important;
+  border-color: transparent !important;
   opacity: 1 !important;
 }
 
@@ -3025,6 +3016,7 @@ button {
 }
 .seq-correct-row {
   display: flex;
+  justify-content: center;
   gap: var(--gap-group);
   margin-top: var(--gap-micro);
 }
@@ -3151,7 +3143,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1134"></div>
+  <div class="home-screen" id="home-screen" data-version="#1137"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -10340,84 +10332,119 @@ body.native-app {
       );
     }) });
   }
-  var ACCIDENTALS_SINGLE = [
-    { label: "\u266D", suffix: "b" },
-    // ♭
-    { label: "\u266E", suffix: "" },
-    // ♮ (natural)
-    { label: "\u266F", suffix: "#" }
-    // ♯
-  ];
-  function SplitNoteButtons({ onAnswer, sequential, pendingNote, answered }) {
-    const [pendingBase, setPendingBase] = d2(null);
+  function SplitButtons({
+    primaryItems,
+    secondaryItems,
+    shortcut,
+    combine,
+    answered,
+    onAnswer,
+    primaryFeedback,
+    secondaryFeedback
+  }) {
+    const [pendingPri, setPendingPri] = d2(null);
+    const [pendingSec, setPendingSec] = d2(null);
     const onAnswerRef = A2(onAnswer);
     onAnswerRef.current = onAnswer;
     y2(() => {
-      if (pendingNote || answered) setPendingBase(null);
-    }, [pendingNote, answered]);
-    const handleBase = q2((note) => {
-      setPendingBase((prev) => {
-        if (prev === note) {
-          onAnswerRef.current(note);
-          return null;
-        }
-        if (prev && sequential) {
-          onAnswerRef.current(prev);
-        }
-        return note;
-      });
-    }, [sequential]);
-    const pendingNoteRef = A2(pendingNote);
-    pendingNoteRef.current = pendingNote;
-    const handleAccidental = q2((suffix) => {
-      setPendingBase((prev) => {
-        const base = prev ?? pendingNoteRef.current;
-        if (!base) return null;
-        onAnswerRef.current(suffix ? base + suffix : base);
-        return null;
-      });
+      if (answered) {
+        setPendingPri(null);
+        setPendingSec(null);
+      }
+    }, [answered]);
+    y2(() => {
+      if (pendingPri && pendingSec !== null) {
+        onAnswerRef.current(combine(pendingPri, pendingSec));
+        setPendingPri(null);
+        setPendingSec(null);
+      }
+    }, [pendingPri, pendingSec, combine]);
+    const handlePri = q2((value) => {
+      if (shortcut && value === shortcut.value) {
+        onAnswerRef.current(shortcut.submit);
+        setPendingPri(null);
+        setPendingSec(null);
+        return;
+      }
+      setPendingPri((prev) => prev === value ? null : value);
+    }, [shortcut]);
+    const handleSec = q2((value) => {
+      setPendingSec((prev) => prev === value ? null : value);
     }, []);
-    const effective = pendingBase ?? pendingNote ?? null;
-    const showAccidentals = effective !== null && !answered;
+    const isAnswered = !!answered || !!primaryFeedback || !!secondaryFeedback;
     return /* @__PURE__ */ u3("div", { class: "answer-grid-stack", children: [
-      /* @__PURE__ */ u3("div", { class: "answer-grid", children: NATURAL_NOTES.map((n2) => {
+      /* @__PURE__ */ u3("div", { class: "answer-grid", children: primaryItems.map(({ label, value }) => {
         let cls = "answer-btn";
-        if (effective === n2) cls += " answer-btn-pending";
-        else if (effective) cls += " answer-btn-dimmed";
+        if (!isAnswered) {
+          if (pendingPri === value) cls += " answer-btn-pending";
+          else if (pendingPri) cls += " answer-btn-dimmed";
+        }
+        const disabled = isAnswered || shortcut && value === shortcut.value && pendingSec !== null;
+        if (primaryFeedback) {
+          cls += feedbackClass(primaryFeedback, value, label);
+        }
         return /* @__PURE__ */ u3(
           "button",
           {
             type: "button",
             tabIndex: 0,
             class: cls,
-            "data-note": n2,
-            disabled: answered,
-            onClick: () => handleBase(n2),
-            children: displayNote(n2)
+            disabled: !!disabled,
+            onClick: () => handlePri(value),
+            children: label
           },
-          n2
+          value
         );
       }) }),
-      /* @__PURE__ */ u3(
-        "div",
-        {
-          class: "answer-grid" + (showAccidentals ? "" : " answer-grid-acc-hidden"),
-          children: ACCIDENTALS_SINGLE.map(({ label, suffix }) => /* @__PURE__ */ u3(
-            "button",
-            {
-              type: "button",
-              tabIndex: 0,
-              class: "answer-btn",
-              "data-accidental": suffix || "natural",
-              disabled: !showAccidentals,
-              onClick: () => handleAccidental(suffix),
-              children: label
-            },
-            label
-          ))
+      /* @__PURE__ */ u3("div", { class: "answer-grid", children: secondaryItems.map(({ label, value }) => {
+        let cls = "answer-btn";
+        if (!isAnswered) {
+          if (pendingSec === value) cls += " answer-btn-pending";
+          else if (pendingSec) cls += " answer-btn-dimmed";
         }
-      )
+        const disabled = isAnswered || shortcut && pendingPri === shortcut.value;
+        if (secondaryFeedback) {
+          cls += feedbackClass(secondaryFeedback, value, label);
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            disabled: !!disabled,
+            onClick: () => handleSec(value),
+            children: label
+          },
+          value
+        );
+      }) })
     ] });
+  }
+  var NOTE_ITEMS = NATURAL_NOTES.map((n2) => ({
+    label: displayNote(n2),
+    value: n2
+  }));
+  var ACCIDENTAL_ITEMS = [
+    { label: "\u266D", value: "b" },
+    // ♭
+    { label: "\u266E", value: "" },
+    // ♮ (natural)
+    { label: "\u266F", value: "#" }
+    // ♯
+  ];
+  var combineNote = (base, acc) => acc ? base + acc : base;
+  function SplitNoteButtons({ onAnswer, answered }) {
+    return /* @__PURE__ */ u3(
+      SplitButtons,
+      {
+        primaryItems: NOTE_ITEMS,
+        secondaryItems: ACCIDENTAL_ITEMS,
+        combine: combineNote,
+        answered,
+        onAnswer
+      }
+    );
   }
   function NumberButtons({ start, end, onAnswer, narrowing, feedback }) {
     const nums = [];
@@ -10461,143 +10488,58 @@ body.native-app {
       );
     }) });
   }
-  var KEYSIG_NUMBERS = ["0", "1", "2", "3", "4", "5", "6", "7"];
-  var KEYSIG_ACCIDENTALS = [
-    { label: "\u266D", suffix: "b" },
+  var KEYSIG_NUMBER_ITEMS = [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7"
+  ].map((n2) => ({ label: n2, value: n2 }));
+  var KEYSIG_ACC_ITEMS = [
+    { label: "\u266D", value: "b" },
     // ♭
-    { label: "\u266F", suffix: "#" }
+    { label: "\u266F", value: "#" }
     // ♯
   ];
+  var combineKeysig = (num, acc) => num + acc;
   function parseKeysig(val) {
-    if (val === "0") return { num: "0", suffix: "" };
-    const num = val.slice(0, -1);
-    const suffix = val.slice(-1);
-    return { num, suffix };
-  }
-  function KeysigNumberRow({ pendingNum, pendingAcc, answered, fbParts, onTap }) {
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: KEYSIG_NUMBERS.map((n2) => {
-      let cls = "answer-btn";
-      if (!answered) {
-        if (pendingNum === n2) cls += " answer-btn-pending";
-        else if (pendingNum) cls += " answer-btn-dimmed";
-      }
-      const disabled = answered || n2 === "0" && pendingAcc !== null;
-      if (fbParts) {
-        const numFb = {
-          correct: fbParts.fb.correct,
-          userInput: fbParts.parsed.num,
-          displayAnswer: fbParts.correctParsed.num
-        };
-        cls += feedbackClass(numFb, n2, n2);
-      }
-      return /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: cls,
-          "data-sig-num": n2,
-          disabled,
-          onClick: () => onTap(n2),
-          children: n2
-        },
-        n2
-      );
-    }) });
-  }
-  function KeysigAccidentalRow({ pendingNum, pendingAcc, answered, fbParts, onTap }) {
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: KEYSIG_ACCIDENTALS.map(({ label, suffix }) => {
-      let cls = "answer-btn";
-      if (!answered) {
-        if (pendingAcc === suffix) cls += " answer-btn-pending";
-        else if (pendingAcc) cls += " answer-btn-dimmed";
-      }
-      const disabled = answered || pendingNum === "0";
-      if (fbParts) {
-        const accFb = {
-          correct: fbParts.fb.correct,
-          userInput: fbParts.parsed.suffix,
-          displayAnswer: fbParts.correctParsed.suffix
-        };
-        cls += feedbackClass(accFb, suffix, label);
-      }
-      return /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: cls,
-          "data-sig-acc": suffix,
-          disabled,
-          onClick: () => onTap(suffix),
-          children: label
-        },
-        suffix
-      );
-    }) });
+    if (val === "0") return { primary: "0", secondary: "" };
+    return { primary: val.slice(0, -1), secondary: val.slice(-1) };
   }
   function SplitKeysigButtons({ onAnswer, feedback }) {
-    const [pendingNum, setPendingNum] = d2(null);
-    const [pendingAcc, setPendingAcc] = d2(null);
-    const onAnswerRef = A2(onAnswer);
-    onAnswerRef.current = onAnswer;
-    y2(() => {
-      if (pendingNum && pendingAcc) {
-        onAnswerRef.current?.(pendingNum + pendingAcc);
-        setPendingNum(null);
-        setPendingAcc(null);
+    let primaryFb = null;
+    let secondaryFb = null;
+    if (feedback) {
+      const parsed = parseKeysig(feedback.userInput);
+      const correct = parseKeysig(feedback.displayAnswer);
+      primaryFb = {
+        correct: parsed.primary === correct.primary,
+        userInput: parsed.primary,
+        displayAnswer: correct.primary
+      };
+      secondaryFb = {
+        correct: parsed.secondary === correct.secondary,
+        userInput: parsed.secondary,
+        displayAnswer: correct.secondary
+      };
+    }
+    return /* @__PURE__ */ u3(
+      SplitButtons,
+      {
+        primaryItems: KEYSIG_NUMBER_ITEMS,
+        secondaryItems: KEYSIG_ACC_ITEMS,
+        shortcut: { value: "0", submit: "0" },
+        combine: combineKeysig,
+        answered: !!feedback,
+        onAnswer: onAnswer ?? (() => {
+        }),
+        primaryFeedback: primaryFb,
+        secondaryFeedback: secondaryFb
       }
-    }, [pendingNum, pendingAcc]);
-    const prevFeedback = A2(feedback);
-    y2(() => {
-      if (feedback !== prevFeedback.current) {
-        prevFeedback.current = feedback;
-        if (!feedback) {
-          setPendingNum(null);
-          setPendingAcc(null);
-        }
-      }
-    }, [feedback]);
-    const handleNum = q2((n2) => {
-      if (n2 === "0") {
-        onAnswerRef.current?.("0");
-        setPendingNum(null);
-        setPendingAcc(null);
-        return;
-      }
-      setPendingNum((prev) => prev === n2 ? null : n2);
-    }, []);
-    const handleAcc = q2((suffix) => {
-      setPendingAcc((prev) => prev === suffix ? null : suffix);
-    }, []);
-    const fbParts = feedback ? {
-      fb: feedback,
-      parsed: parseKeysig(feedback.userInput),
-      correctParsed: parseKeysig(feedback.displayAnswer)
-    } : null;
-    const answered = !!feedback;
-    return /* @__PURE__ */ u3("div", { class: "answer-grid-stack", children: [
-      /* @__PURE__ */ u3(
-        KeysigNumberRow,
-        {
-          pendingNum,
-          pendingAcc,
-          answered,
-          fbParts,
-          onTap: handleNum
-        }
-      ),
-      /* @__PURE__ */ u3(
-        KeysigAccidentalRow,
-        {
-          pendingNum,
-          pendingAcc,
-          answered,
-          fbParts,
-          onTap: handleAcc
-        }
-      )
-    ] });
+    );
   }
   function DegreeButtons({ onAnswer, feedback }) {
     return /* @__PURE__ */ u3("div", { class: "answer-grid", children: DEGREE_LABELS.map(([val, label]) => {
@@ -11664,9 +11606,7 @@ body.native-app {
     narrowing,
     hideAccidentalsOverride,
     feedback,
-    sequential,
-    answered,
-    pendingNote
+    answered
   }) {
     switch (buttonsDef.kind) {
       case "note":
@@ -11686,8 +11626,6 @@ body.native-app {
           SplitNoteButtons,
           {
             onAnswer,
-            sequential,
-            pendingNote,
             answered
           }
         );
@@ -11770,7 +11708,6 @@ body.native-app {
             {
               buttonsDef: activeButtons,
               onAnswer: seq.handleInput,
-              sequential: true,
               answered: engine.state.answered
             }
           ),
