@@ -11,7 +11,7 @@ import {
   noteNarrowingSet,
 } from '../../quiz-engine.ts';
 import { getStatsCellColor } from '../../stats-display.ts';
-import { fretboardSVG } from '../../html-helpers.ts';
+import { fretboardSVG } from '../../fretboard.ts';
 import type {
   ModeController,
   ModeDefinition,

@@ -1,4 +1,4 @@
-// SVG fretboard generation — runs at build time to produce static SVG markup.
+// SVG fretboard generation — produces static SVG markup for fretted instruments.
 // Parameterized for any fretted instrument (guitar, ukulele, etc.).
 //
 // Orientation: vertical (nut at top). Strings run left-to-right (X axis),
@@ -148,4 +148,49 @@ export function tapTargetRects(
         }" height="${bottom - y}"/>`;
       }).join('\n      '),
   ).join('\n      ');
+}
+
+// ---------------------------------------------------------------------------
+// Complete fretboard SVG — wraps primitives above into a ready-to-use SVG.
+// ---------------------------------------------------------------------------
+
+export interface FretboardSVGConfig {
+  id?: string;
+  stringCount?: number;
+  fretCount?: number;
+  fretMarkers?: number[];
+  /** Include invisible rect tap targets covering each fret cell. */
+  tapTargets?: boolean;
+}
+
+/** Generate a complete fretboard SVG wrapper. Defaults to guitar dimensions. */
+export function fretboardSVG(config: FretboardSVGConfig = {}): string {
+  const sc = config.stringCount ?? 6;
+  const fc = config.fretCount ?? 13;
+  const w = svgWidth(sc);
+  const markers = config.fretMarkers ?? [3, 5, 7, 9, 12];
+  const idAttr = config.id ? ` id="${config.id}"` : '';
+  return `<div class="fretboard-wrapper">
+      <div class="fretboard-container">
+        <svg class="fretboard"${idAttr} viewBox="0 0 ${w} ${SVG_HEIGHT}">
+          <!-- Fret marker dots (inlays) -->
+          ${fretMarkerDots(sc, markers, fc)}
+          <!-- Nut (horizontal bar at top) -->
+          <rect class="fb-nut" x="0" y="${
+    fretPositions[1] - 2
+  }" width="${w}" height="4" rx="1"/>
+          <!-- Frets (horizontal lines) -->
+          ${fretLines(w)}
+          <!-- Strings (vertical lines) -->
+          ${stringLines(sc)}
+          <!-- Position circles -->
+          ${positionCircles(sc, fc)}
+          ${
+    config.tapTargets
+      ? '<!-- Tap targets -->\n          ' + tapTargetRects(sc, fc)
+      : ''
+  }
+        </svg>
+      </div>
+    </div>`;
 }

@@ -112,6 +112,7 @@ const FOUNDATION = new Set([
   'src/adaptive.ts',
   'src/app-config.ts',
   'src/deadline.ts',
+  'src/fretboard.ts',
   'src/recommendations.ts',
   'src/effort.ts',
   'src/storage.ts',
@@ -131,8 +132,6 @@ const DISPLAY = new Set([
 
 const BUILD_TIME = new Set([
   'src/build-template.ts',
-  'src/html-helpers.ts',
-  'src/fretboard.ts',
 ]);
 
 const APP = new Set([

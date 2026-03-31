@@ -1,174 +1,23 @@
-// Shared build template — single source of truth for the HTML assembly.
-// Imported by main.ts (Deno) to eliminate duplication between build
-// scripts. Version is injected at build time by replacing the
-// __VERSION__ placeholder (see getVersion() in main.ts).
+// Build template — assembles the complete index.html with CSS, JS, and
+// minimal container divs for the Preact app. Mode IDs are derived from
+// TRACKS so adding a mode to the catalog automatically creates its container.
 
-import {
-  degreeAnswerButtons,
-  fretboardSVG,
-  intervalAnswerButtons,
-  modeScreen,
-  noteAnswerButtons,
-  notesToggleHTML,
-  numberButtons,
-  numeralAnswerButtons,
-  tabbedIdleHTML,
-} from './html-helpers.ts';
-import { MODE_NAMES } from './mode-catalog.ts';
+import { TRACKS } from './mode-catalog.ts';
+
 // ---------------------------------------------------------------------------
-// Shared HTML fragments
+// Mode screen containers — empty divs that Preact renders into at runtime.
 // ---------------------------------------------------------------------------
 
-export const DISTANCE_TOGGLES =
-  '<div class="toggle-group"><span class="toggle-group-label">Groups</span><div class="distance-toggles"></div></div>';
+function modeScreens(): string {
+  const ids = [...new Set(TRACKS.flatMap((t) => t.skills))];
+  return ids
+    .map((id) => `  <div class="mode-screen" id="mode-${id}"></div>`)
+    .join('\n');
+}
 
 // Minimal placeholder — Preact HomeScreen component renders the full UI at runtime.
 export const HOME_SCREEN_HTML =
   `  <div class="home-screen" id="home-screen" data-version="__VERSION__"></div>`;
-
-// ---------------------------------------------------------------------------
-// Mode screen HTML — each mode's unique content
-// ---------------------------------------------------------------------------
-
-function modeScreens(): string {
-  return `
-  <!-- Guitar Fretboard mode -->
-${
-    modeScreen('fretboard', {
-      modeName: MODE_NAMES.fretboard,
-      idleHTML: tabbedIdleHTML({
-        practiceScope: DISTANCE_TOGGLES,
-        progressContent: fretboardSVG({
-          stringCount: 6,
-          fretCount: 13,
-          fretMarkers: [3, 5, 7, 9, 12],
-        }),
-      }),
-      quizAreaContent: `${
-        fretboardSVG({
-          stringCount: 6,
-          fretCount: 13,
-          fretMarkers: [3, 5, 7, 9, 12],
-        })
-      }
-      <div class="answer-grid"></div>`,
-    })
-  }
-
-  <!-- Ukulele Fretboard mode -->
-${
-    modeScreen('ukulele', {
-      modeName: MODE_NAMES.ukulele,
-      idleHTML: tabbedIdleHTML({
-        practiceScope: DISTANCE_TOGGLES,
-        progressContent: fretboardSVG({
-          stringCount: 4,
-          fretCount: 13,
-          fretMarkers: [3, 5, 7, 10, 12],
-        }),
-      }),
-      quizAreaContent: `${
-        fretboardSVG({
-          stringCount: 4,
-          fretCount: 13,
-          fretMarkers: [3, 5, 7, 10, 12],
-        })
-      }
-      <div class="answer-grid"></div>`,
-    })
-  }
-
-  <!-- Speed Tap mode -->
-${
-    modeScreen('speedTap', {
-      modeName: MODE_NAMES.speedTap,
-      idleHTML: tabbedIdleHTML({ practiceScope: notesToggleHTML() }),
-      quizAreaContent: `<div class="speed-tap-status">
-        <span class="speed-tap-progress"></span>
-      </div>
-      ${fretboardSVG()}
-      ${noteAnswerButtons()}`,
-    })
-  }
-
-  <!-- Note Semitones mode -->
-${
-    modeScreen('noteSemitones', {
-      modeName: MODE_NAMES.noteSemitones,
-      idleHTML: tabbedIdleHTML({}),
-      quizAreaContent: `${noteAnswerButtons()}
-      ${numberButtons(0, 11)}`,
-    })
-  }
-
-  <!-- Interval Semitones mode -->
-${
-    modeScreen('intervalSemitones', {
-      modeName: MODE_NAMES.intervalSemitones,
-      idleHTML: tabbedIdleHTML({}),
-      quizAreaContent: `${intervalAnswerButtons()}
-      ${numberButtons(1, 12)}`,
-    })
-  }
-
-  <!-- Semitone Math mode -->
-${
-    modeScreen('semitoneMath', {
-      modeName: MODE_NAMES.semitoneMath,
-      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-      quizAreaContent: `${noteAnswerButtons()}`,
-    })
-  }
-
-  <!-- Interval Math mode -->
-${
-    modeScreen('intervalMath', {
-      modeName: MODE_NAMES.intervalMath,
-      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-      quizAreaContent: `${noteAnswerButtons()}`,
-    })
-  }
-
-  <!-- Key Signatures mode -->
-${
-    modeScreen('keySignatures', {
-      modeName: MODE_NAMES.keySignatures,
-      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-      quizAreaContent: `<div class="split-keysig-buttons"></div>
-      ${noteAnswerButtons()}`,
-    })
-  }
-
-  <!-- Scale Degrees mode -->
-${
-    modeScreen('scaleDegrees', {
-      modeName: MODE_NAMES.scaleDegrees,
-      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-      quizAreaContent: `${noteAnswerButtons()}
-      ${degreeAnswerButtons()}`,
-    })
-  }
-
-  <!-- Diatonic Chords mode -->
-${
-    modeScreen('diatonicChords', {
-      modeName: MODE_NAMES.diatonicChords,
-      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-      quizAreaContent: `${noteAnswerButtons()}
-      ${numeralAnswerButtons()}`,
-    })
-  }
-
-  <!-- Chord Spelling mode -->
-${
-    modeScreen('chordSpelling', {
-      modeName: MODE_NAMES.chordSpelling,
-      idleHTML: tabbedIdleHTML({ practiceScope: DISTANCE_TOGGLES }),
-      quizAreaContent: `<div class="seq-slots"></div>
-      ${noteAnswerButtons()}`,
-    })
-  }`;
-}
 
 // ---------------------------------------------------------------------------
 // HTML assembly
