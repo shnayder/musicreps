@@ -32,6 +32,20 @@ function stringOf(posKey: string): string {
 }
 
 /**
+ * Remove any existing tap on the same string as positionKey (mutates `set`).
+ * Used by onePerString mode to enforce one note per string.
+ */
+function removeExistingOnString(set: Set<string>, positionKey: string): void {
+  const tapString = stringOf(positionKey);
+  for (const existing of set) {
+    if (stringOf(existing) === tapString) {
+      set.delete(existing);
+      return;
+    }
+  }
+}
+
+/**
  * Process a tap against the current collection state (pure function).
  * Tapping a selected position deselects it; tapping an unselected position
  * adds it; completing the set triggers evaluation.
@@ -60,13 +74,7 @@ export function processMultiTap<Q>(
   // onePerString: replace any existing tap on the same string
   let next = new Set(tapped);
   if (multiTap.onePerString) {
-    const tapString = stringOf(positionKey);
-    for (const existing of tapped) {
-      if (stringOf(existing) === tapString) {
-        next.delete(existing);
-        break;
-      }
-    }
+    removeExistingOnString(next, positionKey);
   }
 
   // Reject taps after collection is full (unless onePerString already freed a slot)
@@ -150,13 +158,7 @@ export function useMultiTapInput<Q>(
     // inside processMultiTap, so we reconstruct the set the same way.
     const next = new Set(tappedRef.current);
     if (def.multiTap.onePerString) {
-      const tapString = positionKey.split('-')[0];
-      for (const existing of tappedRef.current) {
-        if (existing.split('-')[0] === tapString) {
-          next.delete(existing);
-          break;
-        }
-      }
+      removeExistingOnString(next, positionKey);
     }
     next.add(positionKey);
     tappedRef.current = next;

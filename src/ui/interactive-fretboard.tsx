@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useMemo, useRef } from 'preact/hooks';
 import { fretboardSVG } from '../html-helpers.ts';
-import { noteY, stringX } from '../fretboard.ts';
+import { noteY, POSITION_POSITION_CIRCLE_R, stringX } from '../fretboard.ts';
 import type { MultiTapEvalResult } from '../declarative/types.ts';
 
 // ---------------------------------------------------------------------------
@@ -74,8 +74,6 @@ type InteractiveFretboardProps = {
 // ---------------------------------------------------------------------------
 
 const MUTE_MARKER_CLASS = 'fb-mute-marker';
-/** Radius of fret-position circles in the SVG (matches fretboard.ts). */
-const CIRCLE_R = 14;
 
 function renderMuteMarkers(
   root: HTMLElement,
@@ -87,7 +85,7 @@ function renderMuteMarkers(
   svg.querySelectorAll('.' + MUTE_MARKER_CLASS).forEach((el) => el.remove());
   const colorMuted = readCSSColor('--color-text-secondary', '#888');
   const cy = noteY(0); // same Y as fret-0 circles
-  const half = CIRCLE_R * 0.7; // half-size of X arms
+  const half = POSITION_CIRCLE_R * 0.7; // half-size of X arms
   for (const s of mutedStrings) {
     const cx = stringX(s, sc);
     // Draw an × using two crossing lines, centered on the fret-0 circle position
