@@ -181,7 +181,7 @@ function SplitButtons(
     setPendingSec((prev) => prev === value ? null : value);
   }, []);
 
-  const isAnswered = !!answered || !!primaryFeedback;
+  const isAnswered = !!answered || !!primaryFeedback || !!secondaryFeedback;
 
   return (
     <div class='answer-grid-stack'>
