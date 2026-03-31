@@ -780,6 +780,7 @@ function GroupPracticeContent<Q>(
         customContent={
           <LevelToggles
             labels={groupLabels}
+            groupIds={groupScope.allGroupIds}
             active={groupScopeResult.practiceMode === 'custom'
               ? groupScopeResult.enabledGroups
               : groupScopeResult.suggestedScope}
