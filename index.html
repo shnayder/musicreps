@@ -3129,7 +3129,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1139"></div>
+  <div class="home-screen" id="home-screen" data-version="#1147"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -6216,14 +6216,14 @@ body.native-app {
     const index = Math.min(values.length - 1, Math.max(0, rawIndex));
     return { level: values[index], seen };
   }
-  function computeStringRecommendations(getSpeedScore, stringIndices, getItemIds) {
-    const results = stringIndices.map((s3) => {
-      const items = getItemIds(s3);
+  function computeGroupRecommendations(getSpeedScore, groupIds, getItemIds) {
+    const results = groupIds.map((id) => {
+      const items = getItemIds(id);
       let workingCount = 0;
       let unseenCount = 0;
       let automaticCount = 0;
-      for (const id of items) {
-        const speed = getSpeedScore(id);
+      for (const itemId of items) {
+        const speed = getSpeedScore(itemId);
         if (speed === null) {
           unseenCount++;
         } else if (speed >= 0.9) {
@@ -6233,16 +6233,18 @@ body.native-app {
         }
       }
       return {
-        string: s3,
+        groupId: id,
         workingCount,
         unseenCount,
         automaticCount,
         totalCount: items.length
       };
     });
-    results.sort(
-      (a3, b) => b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount) || a3.string - b.string
-    );
+    results.sort((a3, b) => {
+      const workDiff = b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount);
+      if (workDiff !== 0) return workDiff;
+      return a3.groupId.localeCompare(b.groupId);
+    });
     return results;
   }
   function checkAllItemsAutomatic(getSpeedScore, items) {
@@ -6345,9 +6347,9 @@ body.native-app {
         itemIds,
         percentile
       ),
-      getStringRecommendations: (stringIndices, getItemIds) => computeStringRecommendations(
+      getGroupRecommendations: (groupIds, getItemIds) => computeGroupRecommendations(
         getSpeedScore,
-        stringIndices,
+        groupIds,
         getItemIds
       ),
       checkAllAutomatic: (items) => checkAllItemsAutomatic(getSpeedScore, items),
@@ -6666,11 +6668,13 @@ body.native-app {
   // src/modes/key-signatures/logic.ts
   var KEY_GROUPS = [
     {
+      id: "major-easy",
       keys: ["C", "G", "F", "D", "Bb", "A", "Eb"],
       label: "Major 0\u20133 \u266F/\u266D",
       longLabel: "Major keys (0\u20133 \u266F/\u266D)"
     },
     {
+      id: "major-hard",
       keys: ["E", "Ab", "B", "Db", "F#"],
       label: "Major 4+ \u266F/\u266D",
       longLabel: "Major keys (4+ \u266F/\u266D)"
@@ -6687,29 +6691,32 @@ body.native-app {
   var MINOR_ROOTS = MAJOR_KEYS.map(
     (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE)
   );
-  function minorKeyGroup(majorKeys, label, longLabel) {
+  function minorKeyGroup(id, majorKeys, label, longLabel) {
     const keys = majorKeys.map(
       (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE) + "m"
     );
-    return { keys, label, longLabel };
+    return { id, keys, label, longLabel };
   }
   var MINOR_KEY_GROUPS = [
     minorKeyGroup(
+      "minor-easy",
       MAJOR_KEYS.filter((k3) => k3.accidentalCount <= 3),
       "Minor 0\u20133 \u266F/\u266D",
       "Minor keys (0\u20133 \u266F/\u266D)"
     ),
     minorKeyGroup(
+      "minor-hard",
       MAJOR_KEYS.filter((k3) => k3.accidentalCount > 3),
       "Minor 4+ \u266F/\u266D",
       "Minor keys (4+ \u266F/\u266D)"
     )
   ];
   var ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
-  function getItemIdsForGroup(groupIndex) {
-    const roots = ALL_KEY_GROUPS[groupIndex].keys;
+  function getItemIdsForGroup(groupId) {
+    const group = ALL_KEY_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
-    for (const root of roots) {
+    for (const root of group.keys) {
       items.push(root + ":fwd");
       items.push(root + ":rev");
     }
@@ -6724,7 +6731,7 @@ body.native-app {
     ALL_ITEMS.push(minorRoot + "m:fwd");
     ALL_ITEMS.push(minorRoot + "m:rev");
   }
-  var ALL_GROUP_INDICES = ALL_KEY_GROUPS.map((_3, i3) => i3);
+  var ALL_GROUP_IDS = ALL_KEY_GROUPS.map((g2) => g2.id);
   function getQuestion(itemId) {
     const [rootPart, dir] = itemId.split(":");
     const isMinor = rootPart.endsWith("m") && rootPart.length > 1 && MINOR_ROOT_TO_MAJOR.has(rootPart.slice(0, -1));
@@ -6771,15 +6778,31 @@ body.native-app {
   var DEGREE_LABELS2 = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th"];
   var ACTIVE_DEGREES = [2, 3, 4, 5, 6, 7];
   var DEGREE_GROUPS = [
-    { degrees: [4, 5], label: "4th, 5th", longLabel: "4th & 5th degrees" },
-    { degrees: [3, 7], label: "3rd, 7th", longLabel: "3rd & 7th degrees" },
-    { degrees: [2, 6], label: "2nd, 6th", longLabel: "2nd & 6th degrees" }
+    {
+      id: "4th-5th",
+      degrees: [4, 5],
+      label: "4th, 5th",
+      longLabel: "4th & 5th degrees"
+    },
+    {
+      id: "3rd-7th",
+      degrees: [3, 7],
+      label: "3rd, 7th",
+      longLabel: "3rd & 7th degrees"
+    },
+    {
+      id: "2nd-6th",
+      degrees: [2, 6],
+      label: "2nd, 6th",
+      longLabel: "2nd & 6th degrees"
+    }
   ];
-  function getItemIdsForGroup2(groupIndex) {
-    const degrees = DEGREE_GROUPS[groupIndex].degrees;
+  function getItemIdsForGroup2(groupId) {
+    const group = DEGREE_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const key of MAJOR_KEYS) {
-      for (const d4 of degrees) {
+      for (const d4 of group.degrees) {
         items.push(key.root + ":" + d4 + ":fwd");
         items.push(key.root + ":" + d4 + ":rev");
       }
@@ -6793,7 +6816,7 @@ body.native-app {
       ALL_ITEMS2.push(key.root + ":" + d4 + ":rev");
     }
   }
-  var ALL_GROUP_INDICES2 = DEGREE_GROUPS.map((_3, i3) => i3);
+  var ALL_GROUP_IDS2 = DEGREE_GROUPS.map((g2) => g2.id);
   var GRID_NOTES = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
@@ -6814,23 +6837,31 @@ body.native-app {
   // src/modes/diatonic-chords/logic.ts
   var CHORD_GROUPS = [
     {
+      id: "primary",
       degrees: [1, 4, 5],
       label: "I IV V",
       longLabel: "Primary chords (I, IV, V)"
     },
-    { degrees: [2, 6], label: "ii vi", longLabel: "Secondary chords (ii, vi)" },
     {
+      id: "secondary",
+      degrees: [2, 6],
+      label: "ii vi",
+      longLabel: "Secondary chords (ii, vi)"
+    },
+    {
+      id: "tertiary",
       degrees: [3, 7],
       label: "iii vii\xB0",
       // \u00B0 = ° (degree sign)
       longLabel: "Tertiary chords (iii, vii\xB0)"
     }
   ];
-  function getItemIdsForGroup3(groupIndex) {
-    const degrees = CHORD_GROUPS[groupIndex].degrees;
+  function getItemIdsForGroup3(groupId) {
+    const group = CHORD_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const key of MAJOR_KEYS) {
-      for (const d4 of degrees) {
+      for (const d4 of group.degrees) {
         items.push(key.root + ":" + d4 + ":fwd");
         items.push(key.root + ":" + d4 + ":rev");
       }
@@ -6844,7 +6875,7 @@ body.native-app {
       ALL_ITEMS3.push(key.root + ":" + d4 + ":rev");
     }
   }
-  var ALL_GROUP_INDICES3 = CHORD_GROUPS.map((_3, i3) => i3);
+  var ALL_GROUP_IDS3 = CHORD_GROUPS.map((g2) => g2.id);
   var GRID_NOTES2 = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
@@ -6901,36 +6932,42 @@ body.native-app {
   // src/modes/semitone-math/logic.ts
   var DISTANCE_GROUPS = [
     {
+      id: "dist-1-2",
       distances: [1, 2],
       label: "\xB11\u20132",
       longLabel: "1\u20132 semitones apart"
     },
     {
+      id: "dist-3-4",
       distances: [3, 4],
       label: "\xB13\u20134",
       longLabel: "3\u20134 semitones apart"
     },
     {
+      id: "dist-5-6",
       distances: [5, 6],
       label: "\xB15\u20136",
       longLabel: "5\u20136 semitones apart"
     },
     {
+      id: "dist-7-8",
       distances: [7, 8],
       label: "\xB17\u20138",
       longLabel: "7\u20138 semitones apart"
     },
     {
+      id: "dist-9-11",
       distances: [9, 10, 11],
       label: "\xB19\u201311",
       longLabel: "9\u201311 semitones apart"
     }
   ];
-  function getItemIdsForGroup4(groupIndex) {
-    const distances = DISTANCE_GROUPS[groupIndex].distances;
+  function getItemIdsForGroup4(groupId) {
+    const group = DISTANCE_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const note of NOTES) {
-      for (const d4 of distances) {
+      for (const d4 of group.distances) {
         items.push(note.name + "+" + d4);
         items.push(note.name + "-" + d4);
       }
@@ -6941,7 +6978,7 @@ body.native-app {
     NOTES.map((n2) => n2.name),
     Array.from({ length: 11 }, (_3, i3) => i3 + 1)
   );
-  var ALL_GROUP_INDICES4 = DISTANCE_GROUPS.map((_3, i3) => i3);
+  var ALL_GROUP_IDS4 = DISTANCE_GROUPS.map((g2) => g2.id);
   function getQuestion4(itemId) {
     const parsed = parseMathId(itemId);
     const noteName = parsed.note;
@@ -6976,23 +7013,43 @@ body.native-app {
     (i3) => i3.num >= 1 && i3.num <= 11
   );
   var DISTANCE_GROUPS2 = [
-    { distances: [1, 2], label: "m2 M2", longLabel: "Seconds (m2, M2)" },
-    { distances: [3, 4], label: "m3 M3", longLabel: "Thirds (m3, M3)" },
-    { distances: [5, 6], label: "P4 TT", longLabel: "Fourth & tritone (P4, TT)" },
     {
+      id: "seconds",
+      distances: [1, 2],
+      label: "m2 M2",
+      longLabel: "Seconds (m2, M2)"
+    },
+    {
+      id: "thirds",
+      distances: [3, 4],
+      label: "m3 M3",
+      longLabel: "Thirds (m3, M3)"
+    },
+    {
+      id: "fourth-tritone",
+      distances: [5, 6],
+      label: "P4 TT",
+      longLabel: "Fourth & tritone (P4, TT)"
+    },
+    {
+      id: "fifth-sixth",
       distances: [7, 8],
       label: "P5 m6",
       longLabel: "Fifth & minor 6th (P5, m6)"
     },
     {
+      id: "sixths-sevenths",
       distances: [9, 10, 11],
       label: "M6 m7 M7",
       longLabel: "Sixths & sevenths (M6, m7, M7)"
     }
   ];
-  function getItemIdsForGroup5(groupIndex) {
-    const distances = DISTANCE_GROUPS2[groupIndex].distances;
-    const intervals = MATH_INTERVALS.filter((i3) => distances.includes(i3.num));
+  function getItemIdsForGroup5(groupId) {
+    const group = DISTANCE_GROUPS2.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const intervals = MATH_INTERVALS.filter(
+      (i3) => group.distances.includes(i3.num)
+    );
     const items = [];
     for (const note of NOTES) {
       for (const interval of intervals) {
@@ -7006,7 +7063,7 @@ body.native-app {
     NOTES.map((n2) => n2.name),
     MATH_INTERVALS.map((i3) => i3.abbrev)
   );
-  var ALL_GROUP_INDICES5 = DISTANCE_GROUPS2.map((_3, i3) => i3);
+  var ALL_GROUP_IDS5 = DISTANCE_GROUPS2.map((g2) => g2.id);
   function getQuestion5(itemId) {
     const parsed = parseMathId(itemId);
     const noteName = parsed.note;
@@ -7044,6 +7101,15 @@ body.native-app {
     5: "Diminished, augmented & half-dim",
     6: "Suspended & 6th chords"
   };
+  var GROUP_IDS = {
+    0: "triads-major",
+    1: "triads-minor",
+    2: "dom-7th",
+    3: "maj-7th",
+    4: "min-7th",
+    5: "dim-aug-hdim",
+    6: "sus-6th"
+  };
   function buildGroups() {
     let maxGroup = 0;
     for (const ct of CHORD_TYPES) {
@@ -7054,16 +7120,18 @@ body.native-app {
       const types = CHORD_TYPES.filter((t3) => t3.group === g2);
       const label = types.map((t3) => t3.symbol || "maj").join(", ");
       const longLabel = GROUP_LONG_LABELS[g2] ?? label;
-      result.push({ types, label, longLabel });
+      const id = GROUP_IDS[g2] ?? String(g2);
+      result.push({ id, types, label, longLabel });
     }
     return result;
   }
   var SPELLING_GROUPS = buildGroups();
-  function getItemIdsForGroup6(groupIndex) {
-    const types = SPELLING_GROUPS[groupIndex].types;
+  function getItemIdsForGroup6(groupId) {
+    const group = SPELLING_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const root of CHORD_ROOTS) {
-      for (const type of types) {
+      for (const type of group.types) {
         items.push(root + ":" + type.name);
       }
     }
@@ -7075,7 +7143,7 @@ body.native-app {
       ALL_ITEMS6.push(root + ":" + type.name);
     }
   }
-  var ALL_GROUP_INDICES6 = SPELLING_GROUPS.map((_3, i3) => i3);
+  var ALL_GROUP_IDS6 = SPELLING_GROUPS.map((g2) => g2.id);
   var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
     name: r3,
     displayName: r3
@@ -7188,51 +7256,59 @@ body.native-app {
   var GUITAR_GROUPS = [
     // Naturals by string (E and e combined since same notes)
     {
-      label: () => "E strings",
-      longLabel: "High & low E strings",
+      id: "e-natural",
+      label: () => displayNote("E") + " strings",
+      longLabel: () => "High & low " + displayNote("E") + " strings",
       strings: [5, 0],
       noteFilter: "natural"
     },
     {
-      label: () => "A string",
-      longLabel: "A string",
+      id: "a-natural",
+      label: () => displayNote("A") + " string",
+      longLabel: () => displayNote("A") + " string",
       strings: [4],
       noteFilter: "natural"
     },
     {
-      label: () => "D string",
-      longLabel: "D string",
+      id: "d-natural",
+      label: () => displayNote("D") + " string",
+      longLabel: () => displayNote("D") + " string",
       strings: [3],
       noteFilter: "natural"
     },
     {
-      label: () => "G string",
-      longLabel: "G string",
+      id: "g-natural",
+      label: () => displayNote("G") + " string",
+      longLabel: () => displayNote("G") + " string",
       strings: [2],
       noteFilter: "natural"
     },
     {
-      label: () => "B string",
-      longLabel: "B string",
+      id: "b-natural",
+      label: () => displayNote("B") + " string",
+      longLabel: () => displayNote("B") + " string",
       strings: [1],
       noteFilter: "natural"
     },
     // Accidentals by string pair
     {
-      label: () => "E \u266F/\u266D",
-      longLabel: "E strings \u266F/\u266D",
+      id: "e-sharps",
+      label: () => displayNote("E") + " \u266F/\u266D",
+      longLabel: () => displayNote("E") + " strings \u266F/\u266D",
       strings: [5, 0],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => "A D \u266F/\u266D",
-      longLabel: "A & D strings \u266F/\u266D",
+      id: "ad-sharps",
+      label: () => displayNote("A") + " " + displayNote("D") + " \u266F/\u266D",
+      longLabel: () => displayNote("A") + " & " + displayNote("D") + " strings \u266F/\u266D",
       strings: [4, 3],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => "G B \u266F/\u266D",
-      longLabel: "G & B strings \u266F/\u266D",
+      id: "gb-sharps",
+      label: () => displayNote("G") + " " + displayNote("B") + " \u266F/\u266D",
+      longLabel: () => displayNote("G") + " & " + displayNote("B") + " strings \u266F/\u266D",
       strings: [2, 1],
       noteFilter: "sharps-flats"
     }
@@ -7240,39 +7316,45 @@ body.native-app {
   var UKULELE_GROUPS = [
     // Naturals by string
     {
-      label: () => "G string",
-      longLabel: "G string",
+      id: "g-natural",
+      label: () => displayNote("G") + " string",
+      longLabel: () => displayNote("G") + " string",
       strings: [3],
       noteFilter: "natural"
     },
     {
-      label: () => "C string",
-      longLabel: "C string",
+      id: "c-natural",
+      label: () => displayNote("C") + " string",
+      longLabel: () => displayNote("C") + " string",
       strings: [2],
       noteFilter: "natural"
     },
     {
-      label: () => "E string",
-      longLabel: "E string",
+      id: "e-natural",
+      label: () => displayNote("E") + " string",
+      longLabel: () => displayNote("E") + " string",
       strings: [1],
       noteFilter: "natural"
     },
     {
-      label: () => "A string",
-      longLabel: "A string",
+      id: "a-natural",
+      label: () => displayNote("A") + " string",
+      longLabel: () => displayNote("A") + " string",
       strings: [0],
       noteFilter: "natural"
     },
     // Accidentals by string pair
     {
-      label: () => "G C \u266F/\u266D",
-      longLabel: "G & C strings \u266F/\u266D",
+      id: "gc-sharps",
+      label: () => displayNote("G") + " " + displayNote("C") + " \u266F/\u266D",
+      longLabel: () => displayNote("G") + " & " + displayNote("C") + " strings \u266F/\u266D",
       strings: [3, 2],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => "E A \u266F/\u266D",
-      longLabel: "E & A strings \u266F/\u266D",
+      id: "ea-sharps",
+      label: () => displayNote("E") + " " + displayNote("A") + " \u266F/\u266D",
+      longLabel: () => displayNote("E") + " & " + displayNote("A") + " strings \u266F/\u266D",
       strings: [1, 0],
       noteFilter: "sharps-flats"
     }
@@ -7299,9 +7381,9 @@ body.native-app {
     }
     return h3;
   }
-  function getItemIdsForGroup7(instrument, groupIndex) {
+  function getItemIdsForGroup7(instrument, groupId) {
     const groups = getGroups(instrument);
-    const group = groups[groupIndex];
+    const group = groups.find((g2) => g2.id === groupId);
     if (!group) return [];
     const fb = getHelpers(instrument);
     const items = [];
@@ -7319,8 +7401,8 @@ body.native-app {
     }
     return items;
   }
-  function getAllGroupIndices(instrument) {
-    return getGroups(instrument).map((_3, i3) => i3);
+  function getAllGroupIds(instrument) {
+    return getGroups(instrument).map((g2) => g2.id);
   }
   function getQuestion6(instrument, itemId) {
     const fb = getHelpers(instrument);
@@ -7329,11 +7411,7 @@ body.native-app {
   function formatLabel(instrument, enabledGroups) {
     const groups = getGroups(instrument);
     if (enabledGroups.size === groups.length) return "all groups";
-    const labels = Array.from(enabledGroups).sort((a3, b) => a3 - b).map((i3) => {
-      const g2 = groups[i3];
-      if (!g2) return String(i3);
-      return typeof g2.label === "function" ? g2.label() : g2.label;
-    });
+    const labels = groups.filter((g2) => enabledGroups.has(g2.id)).map((g2) => g2.label());
     return labels.join(", ");
   }
 
@@ -7431,25 +7509,26 @@ body.native-app {
   }
   var ACCIDENTAL_NOTES = NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
   var NOTE_GROUPS = [
-    { label: "Naturals", longLabel: "Natural notes" },
-    { label: "\u266F/\u266D", longLabel: "Sharps & flats" }
+    { id: "naturals", label: "Naturals", longLabel: "Natural notes" },
+    { id: "sharps-flats", label: "\u266F/\u266D", longLabel: "Sharps & flats" }
   ];
-  var ALL_GROUP_INDICES7 = [0, 1];
-  function getItemIdsForGroup8(index) {
-    return index === 0 ? NATURAL_NOTES.slice() : ACCIDENTAL_NOTES.slice();
+  var ALL_GROUP_IDS7 = NOTE_GROUPS.map((g2) => g2.id);
+  function getItemIdsForGroup8(groupId) {
+    return groupId === "naturals" ? NATURAL_NOTES.slice() : ACCIDENTAL_NOTES.slice();
   }
   function formatGroupLabel(enabledGroups) {
     if (enabledGroups.size === 2) return "all notes";
-    if (enabledGroups.has(1)) return "sharps & flats";
+    if (enabledGroups.has("sharps-flats")) return "sharps & flats";
     return "natural notes";
   }
 
   // src/mode-progress-manifest.ts
   function buildGroupEntries(groups, getIds) {
-    return groups.map((g2, i3) => ({
+    return groups.map((g2) => ({
+      id: g2.id,
       label: g2.label,
       longLabel: g2.longLabel,
-      getItemIds: () => getIds(i3)
+      getItemIds: () => getIds(g2.id)
     }));
   }
   var guitarGroups = getGroups(GUITAR);
@@ -7458,33 +7537,35 @@ body.native-app {
     {
       modeId: "fretboard",
       namespace: "fretboard",
-      groups: guitarGroups.map((g2, i3) => ({
-        label: g2.label(),
+      groups: guitarGroups.map((g2) => ({
+        id: g2.id,
+        label: g2.label,
         longLabel: g2.longLabel,
-        getItemIds: () => getItemIdsForGroup7(GUITAR, i3)
+        getItemIds: () => getItemIdsForGroup7(GUITAR, g2.id)
       })),
       allItemIds: () => getAllItems(GUITAR)
     },
     {
       modeId: "ukulele",
       namespace: "ukulele",
-      groups: ukuleleGroups.map((g2, i3) => ({
-        label: g2.label(),
+      groups: ukuleleGroups.map((g2) => ({
+        id: g2.id,
+        label: g2.label,
         longLabel: g2.longLabel,
-        getItemIds: () => getItemIdsForGroup7(UKULELE, i3)
+        getItemIds: () => getItemIdsForGroup7(UKULELE, g2.id)
       })),
       allItemIds: () => getAllItems(UKULELE)
     },
     {
       modeId: "noteSemitones",
       namespace: "noteSemitones",
-      groups: [{ label: "All", getItemIds: () => ALL_ITEMS7 }],
+      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS7 }],
       allItemIds: () => ALL_ITEMS7
     },
     {
       modeId: "intervalSemitones",
       namespace: "intervalSemitones",
-      groups: [{ label: "All", getItemIds: () => ALL_ITEMS8 }],
+      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS8 }],
       allItemIds: () => ALL_ITEMS8
     },
     {
@@ -7526,7 +7607,7 @@ body.native-app {
     {
       modeId: "speedTap",
       namespace: "speedTap",
-      groups: [{ label: "All", getItemIds: () => ALL_ITEMS9 }],
+      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS9 }],
       allItemIds: () => ALL_ITEMS9
     }
   ];
@@ -7657,7 +7738,7 @@ body.native-app {
       return colors;
     }
     const skipped = input.skippedGroups;
-    const active = skipped ? input.groups.filter((g2) => !skipped.has(g2.index)) : input.groups;
+    const active = skipped ? input.groups.filter((g2) => !skipped.has(g2.id)) : input.groups;
     if (active.length === 0) return [];
     const segments = active.map(
       (g2) => progressBarGroupSegment(selector, g2.itemIds)
@@ -7751,11 +7832,11 @@ body.native-app {
       const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
       const first = sorted[0];
       return {
-        recommended: /* @__PURE__ */ new Set([first.string]),
-        enabled: /* @__PURE__ */ new Set([first.string]),
-        expandIndex: first.string,
+        recommended: /* @__PURE__ */ new Set([first.groupId]),
+        enabled: /* @__PURE__ */ new Set([first.groupId]),
+        expandIndex: first.groupId,
         expandNewCount: first.totalCount,
-        levelRecs: [{ index: first.string, type: "expand" }]
+        levelRecs: [{ groupId: first.groupId, type: "expand" }]
       };
     }
     return {
@@ -7766,8 +7847,8 @@ body.native-app {
       levelRecs: []
     };
   }
-  function classifyLevelStatus(selector, index, getItemIds, nowMs) {
-    const itemIds = getItemIds(index);
+  function classifyLevelStatus(selector, groupId, getItemIds, nowMs) {
+    const itemIds = getItemIds(groupId);
     const { level: speed } = selector.getLevelSpeed(itemIds);
     const { level: freshness } = selector.getLevelFreshness(
       itemIds,
@@ -7781,7 +7862,7 @@ body.native-app {
     else if (speed > 0) speedLabel = "hesitant";
     else speedLabel = "starting";
     return {
-      index,
+      groupId,
       speed,
       freshness,
       speedLabel,
@@ -7792,17 +7873,17 @@ body.native-app {
     const recs = [];
     for (const s3 of statuses) {
       if (s3.needsReview) {
-        recs.push({ index: s3.index, type: "review" });
+        recs.push({ groupId: s3.groupId, type: "review" });
       }
     }
     for (const s3 of statuses) {
       if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
-        recs.push({ index: s3.index, type: "practice" });
+        recs.push({ groupId: s3.groupId, type: "practice" });
       }
     }
     for (const s3 of statuses) {
       if (s3.speedLabel === "learned") {
-        recs.push({ index: s3.index, type: "automate" });
+        recs.push({ groupId: s3.groupId, type: "automate" });
       }
     }
     return recs;
@@ -7815,14 +7896,14 @@ body.native-app {
     const learnedCount = statuses.filter((s3) => s3.speedLabel === "learned").length;
     return learnedCount >= 3;
   }
-  function computeRecommendations(selector, allIndices, getItemIds, config, options) {
+  function computeRecommendations(selector, allGroupIds, getItemIds, config, options) {
     const nowMs = Date.now();
     const sortFn = options?.sortUnstarted;
-    const recs = selector.getStringRecommendations(allIndices, getItemIds);
+    const recs = selector.getGroupRecommendations(allGroupIds, getItemIds);
     const { started, unstarted } = classifyGroups(recs);
     if (started.length === 0) return freshStartResult(unstarted, sortFn);
     const statuses = started.map(
-      (r3) => classifyLevelStatus(selector, r3.string, getItemIds, nowMs)
+      (r3) => classifyLevelStatus(selector, r3.groupId, getItemIds, nowMs)
     );
     const levelRecs = computeLevelRecs(statuses);
     const gateOpen = checkExpansionGate(statuses);
@@ -7830,10 +7911,10 @@ body.native-app {
     let expandNewCount = 0;
     if (gateOpen && unstarted.length > 0) {
       const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
-      expandIndex = sorted[0].string;
+      expandIndex = sorted[0].groupId;
       expandNewCount = sorted[0].totalCount;
       const expandRec = {
-        index: expandIndex,
+        groupId: expandIndex,
         type: "expand"
       };
       if (shouldThrottleExpansion(statuses)) {
@@ -7852,20 +7933,20 @@ body.native-app {
     const enabled = /* @__PURE__ */ new Set();
     let budget = maxWork;
     for (const rec of levelRecs) {
-      if (recommended.has(rec.index)) continue;
-      const itemCount = getItemIds(rec.index).length;
+      if (recommended.has(rec.groupId)) continue;
+      const itemCount = getItemIds(rec.groupId).length;
       if (recommended.size > 0 && budget - itemCount < 0) continue;
-      recommended.add(rec.index);
-      enabled.add(rec.index);
+      recommended.add(rec.groupId);
+      enabled.add(rec.groupId);
       budget -= itemCount;
     }
     if (recommended.size === 0) {
       for (const s3 of statuses) {
-        recommended.add(s3.index);
-        enabled.add(s3.index);
+        recommended.add(s3.groupId);
+        enabled.add(s3.groupId);
       }
     }
-    const filteredRecs = levelRecs.filter((r3) => recommended.has(r3.index));
+    const filteredRecs = levelRecs.filter((r3) => recommended.has(r3.groupId));
     if (expandIndex !== null && !recommended.has(expandIndex)) {
       expandIndex = null;
       expandNewCount = 0;
@@ -7883,61 +7964,67 @@ body.native-app {
   function notStarted(modeId) {
     return { modeId, type: "not-started", urgency: 0, cueLabel: "", detail: "" };
   }
-  function groupLabelText(indices, labels) {
-    return indices.map((i3) => labels[i3] ?? `level ${i3 + 1}`).join(", ");
+  function groupLabelText(groupIds, labelMap) {
+    return groupIds.map((id) => labelMap.get(id) ?? id).join(", ");
   }
   function computeSkillRecommendation(entry, storage2, motorBaseline, skippedGroups, config) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
     const selector = createAdaptiveSelector(storage2, cfg);
-    const allIndices = [];
-    for (let i3 = 0; i3 < entry.groups.length; i3++) {
-      if (!skippedGroups.has(i3)) allIndices.push(i3);
-    }
-    if (allIndices.length === 0) return notStarted(entry.modeId);
-    const getItemIds = (idx) => entry.groups[idx].getItemIds();
-    const allItemIds = allIndices.flatMap(getItemIds);
+    const allGroupIds = entry.groups.filter((g2) => !skippedGroups.has(g2.id)).map((g2) => g2.id);
+    if (allGroupIds.length === 0) return notStarted(entry.modeId);
+    const groupById = new Map(entry.groups.map((g2) => [g2.id, g2]));
+    const getItemIds = (id) => groupById.get(id)?.getItemIds() ?? [];
+    const allItemIds = allGroupIds.flatMap(getItemIds);
     const { seen } = selector.getLevelSpeed(allItemIds);
     if (seen === 0) return notStarted(entry.modeId);
+    const idOrder = new Map(entry.groups.map((g2, i3) => [g2.id, i3]));
     const result = computeRecommendations(
       selector,
-      allIndices,
+      allGroupIds,
       getItemIds,
-      config
+      config,
+      {
+        sortUnstarted: (a3, b) => (idOrder.get(a3.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0)
+      }
     );
     return classifySkill(entry, result);
   }
   function classifySkill(entry, result) {
     const modeId = entry.modeId;
     const singleGroup = entry.groups.length <= 1;
-    const labels = entry.groups.map((g2) => g2.longLabel ?? g2.label);
+    const resolve = (v3) => typeof v3 === "function" ? v3() : v3;
+    const labelMap = new Map(
+      entry.groups.map((g2) => [g2.id, resolve(g2.longLabel ?? g2.label)])
+    );
     if (result.levelRecs.length === 0) {
       return { modeId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
     }
     const firstType = result.levelRecs[0].type;
     if (firstType === "review") {
-      const reviewIndices = result.levelRecs.filter((r3) => r3.type === "review").map((r3) => r3.index);
-      const detail = singleGroup ? "Review" : `Review ${groupLabelText(reviewIndices, labels)}`;
+      const reviewIds = result.levelRecs.filter((r3) => r3.type === "review").map((r3) => r3.groupId);
+      const detail = singleGroup ? "Review" : `Review ${groupLabelText(reviewIds, labelMap)}`;
       return {
         modeId,
         type: "review",
-        urgency: reviewIndices.length,
+        urgency: reviewIds.length,
         cueLabel: "Review",
         detail
       };
     }
     if (firstType === "practice") {
-      const practiceIndices = result.levelRecs.filter((r3) => r3.type === "practice").map((r3) => r3.index);
-      const detail = singleGroup ? "Keep practicing" : `Keep practicing ${groupLabelText(practiceIndices, labels)}`;
+      const practiceIds = result.levelRecs.filter((r3) => r3.type === "practice").map((r3) => r3.groupId);
+      const detail = singleGroup ? "Keep practicing" : `Keep practicing ${groupLabelText(practiceIds, labelMap)}`;
       return {
         modeId,
         type: "keep-practicing",
-        urgency: practiceIndices.length,
+        urgency: practiceIds.length,
         cueLabel: "Keep practicing",
         detail
       };
     }
     if (firstType === "expand") {
-      const detail = singleGroup ? "Learn next level" : `Learn ${labels[result.expandIndex] ?? `level ${result.expandIndex + 1}`}`;
+      const expandId = result.expandIndex;
+      const detail = singleGroup ? "Learn next level" : `Learn ${expandId ? labelMap.get(expandId) ?? expandId : "next level"}`;
       return {
         modeId,
         type: "learn-next",
@@ -7947,12 +8034,12 @@ body.native-app {
       };
     }
     if (firstType === "automate") {
-      const automateIndices = result.levelRecs.filter((r3) => r3.type === "automate").map((r3) => r3.index);
-      const detail = singleGroup ? "Almost there" : `Almost there \u2014 ${groupLabelText(automateIndices, labels)}`;
+      const automateIds = result.levelRecs.filter((r3) => r3.type === "automate").map((r3) => r3.groupId);
+      const detail = singleGroup ? "Almost there" : `Almost there \u2014 ${groupLabelText(automateIds, labelMap)}`;
       return {
         modeId,
         type: "automate",
-        urgency: automateIndices.length,
+        urgency: automateIds.length,
         cueLabel: "Almost there",
         detail
       };
@@ -8005,10 +8092,8 @@ body.native-app {
       if (!Array.isArray(parsed)) return /* @__PURE__ */ new Set();
       const result = /* @__PURE__ */ new Set();
       for (const entry of parsed) {
-        if (Array.isArray(entry) && typeof entry[0] === "number") {
+        if (Array.isArray(entry) && typeof entry[0] === "string") {
           result.add(entry[0]);
-        } else if (typeof entry === "number") {
-          result.add(entry);
         }
       }
       return result;
@@ -8021,13 +8106,13 @@ body.native-app {
     const selector = createAdaptiveSelector(storage2, cfg);
     const input = entry.groups.length === 1 ? { kind: "items", itemIds: entry.allItemIds() } : {
       kind: "groups",
-      groups: entry.groups.map((g2, i3) => ({
-        index: i3,
+      groups: entry.groups.map((g2) => ({
+        id: g2.id,
         itemIds: g2.getItemIds()
       })),
       skippedGroups
     };
-    if (entry.groups.length === 1 && skippedGroups?.has(0)) {
+    if (entry.groups.length === 1 && skippedGroups?.has(entry.groups[0].id)) {
       return { groupColors: [] };
     }
     return { groupColors: computeProgressColors(selector, input) };
@@ -9256,10 +9341,10 @@ body.native-app {
     const seen = /* @__PURE__ */ new Set();
     const byType = {};
     for (const rec of levelRecs) {
-      if (seen.has(rec.index)) continue;
-      seen.add(rec.index);
+      if (seen.has(rec.groupId)) continue;
+      seen.add(rec.groupId);
       if (!byType[rec.type]) byType[rec.type] = [];
-      byType[rec.type].push(rec.index);
+      byType[rec.type].push(rec.groupId);
     }
     return byType;
   }
@@ -9268,11 +9353,11 @@ body.native-app {
     const byType = groupRecsByType(result.levelRecs);
     const lines = [];
     if (byType["review"]) {
-      const labels = byType["review"].sort((a3, b) => a3 - b).map(getGroupLabel);
+      const labels = byType["review"].map(getGroupLabel);
       lines.push({ verb: "Review", levels: labels });
     }
     if (byType["practice"]) {
-      const labels = byType["practice"].sort((a3, b) => a3 - b).map(getGroupLabel);
+      const labels = byType["practice"].map(getGroupLabel);
       lines.push({ verb: "Practice", levels: labels });
     }
     if (byType["expand"] && result.expandIndex !== null) {
@@ -9283,7 +9368,7 @@ body.native-app {
       });
     }
     if (byType["automate"]) {
-      const labels = byType["automate"].sort((a3, b) => a3 - b).map(getGroupLabel);
+      const labels = byType["automate"].map(getGroupLabel);
       lines.push({ verb: "Keep practicing", levels: labels });
     }
     return lines;
@@ -9354,13 +9439,28 @@ body.native-app {
       const saved = storage.getItem(spec.storageKey);
       if (saved) {
         try {
-          enabled = new Set(JSON.parse(saved));
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            if (parsed.length > 0 && typeof parsed[0] === "number") {
+              const newEnabled = /* @__PURE__ */ new Set();
+              for (const idx of parsed) {
+                if (idx >= 0 && idx < spec.groups.length) {
+                  newEnabled.add(spec.groups[idx].id);
+                }
+              }
+              if (newEnabled.size > 0) enabled = newEnabled;
+            } else {
+              const newEnabled = new Set(
+                parsed.filter((x2) => typeof x2 === "string")
+              );
+              if (newEnabled.size > 0) enabled = newEnabled;
+            }
+          }
         } catch (_3) {
         }
       }
-      const groupCount = spec.groups.length;
-      for (const idx of enabled) {
-        if (idx < 0 || idx >= groupCount) enabled.delete(idx);
+      for (const id of enabled) {
+        if (!spec.groups.some((g2) => g2.id === id)) enabled.delete(id);
       }
       if (enabled.size === 0) {
         for (const d4 of spec.defaultEnabled) enabled.add(d4);
@@ -9372,24 +9472,37 @@ body.native-app {
           const parsed = JSON.parse(savedSkipped);
           if (Array.isArray(parsed)) {
             if (parsed.length > 0 && Array.isArray(parsed[0]) && parsed[0].length === 2) {
-              for (const [idx, reason] of parsed) {
-                if (typeof idx === "number" && Number.isInteger(idx) && (reason === "mastered" || reason === "deferred")) {
-                  skipped.set(idx, reason);
+              const [first] = parsed[0];
+              if (typeof first === "number") {
+                for (const [idx, reason] of parsed) {
+                  if (typeof idx === "number" && Number.isInteger(idx) && (reason === "mastered" || reason === "deferred")) {
+                    const group = spec.groups[idx];
+                    if (group) skipped.set(group.id, reason);
+                  }
+                }
+              } else {
+                for (const [id, reason] of parsed) {
+                  if (typeof id === "string" && (reason === "mastered" || reason === "deferred")) {
+                    skipped.set(id, reason);
+                  }
                 }
               }
             } else {
               for (const idx of parsed) {
-                if (typeof idx === "number") skipped.set(idx, "deferred");
+                if (typeof idx === "number") {
+                  const group = spec.groups[idx];
+                  if (group) skipped.set(group.id, "deferred");
+                }
               }
             }
           }
         } catch (_3) {
         }
       }
-      for (const idx of skipped.keys()) {
-        if (idx < 0 || idx >= groupCount) skipped.delete(idx);
+      for (const id of skipped.keys()) {
+        if (!spec.groups.some((g2) => g2.id === id)) skipped.delete(id);
       }
-      for (const idx of skipped.keys()) enabled.delete(idx);
+      for (const id of skipped.keys()) enabled.delete(id);
       return { kind: "groups", enabledGroups: enabled, skippedGroups: skipped };
     }
     if (spec.kind === "note-filter") {
@@ -9425,14 +9538,14 @@ body.native-app {
       setScopeRaw(next);
       saveScope(spec, next);
     }, [spec]);
-    const toggleGroup = q2((index) => {
+    const toggleGroup = q2((id) => {
       setScopeRaw((prev) => {
         if (prev.kind !== "groups") return prev;
         const next = new Set(prev.enabledGroups);
-        if (next.has(index)) {
-          next.delete(index);
+        if (next.has(id)) {
+          next.delete(id);
         } else {
-          next.add(index);
+          next.add(id);
         }
         const updated = {
           kind: "groups",
@@ -9443,15 +9556,17 @@ body.native-app {
         return updated;
       });
     }, [spec]);
-    const skipGroup = q2((index, reason) => {
+    const skipGroup = q2((id, reason) => {
       setScopeRaw((prev) => {
         if (prev.kind !== "groups") return prev;
         const groupCount = spec.groups.length;
-        if (prev.skippedGroups.size + (prev.skippedGroups.has(index) ? 0 : 1) >= groupCount) return prev;
+        if (prev.skippedGroups.size + (prev.skippedGroups.has(id) ? 0 : 1) >= groupCount) return prev;
+        const groupSpec = spec;
+        if (!groupSpec.groups.some((g2) => g2.id === id)) return prev;
         const nextSkipped = new Map(prev.skippedGroups);
-        nextSkipped.set(index, reason);
+        nextSkipped.set(id, reason);
         const nextEnabled = new Set(prev.enabledGroups);
-        nextEnabled.delete(index);
+        nextEnabled.delete(id);
         const updated = {
           kind: "groups",
           enabledGroups: nextEnabled,
@@ -9461,12 +9576,12 @@ body.native-app {
         return updated;
       });
     }, [spec]);
-    const unskipGroup = q2((index) => {
+    const unskipGroup = q2((id) => {
       setScopeRaw((prev) => {
         if (prev.kind !== "groups") return prev;
-        if (!prev.skippedGroups.has(index)) return prev;
+        if (!prev.skippedGroups.has(id)) return prev;
         const nextSkipped = new Map(prev.skippedGroups);
-        nextSkipped.delete(index);
+        nextSkipped.delete(id);
         const updated = {
           kind: "groups",
           enabledGroups: prev.enabledGroups,
@@ -9530,19 +9645,29 @@ body.native-app {
     }, [pmKey]);
     return [mode, setMode];
   }
-  function useRecommendationData(spec, activeGroupIndices, notationVersion) {
+  function useRecommendationData(spec, activeGroupIds, notationVersion) {
+    const idOrder = T2(
+      () => new Map(spec.allGroupIds.map((id, i3) => [id, i3])),
+      [spec.allGroupIds]
+    );
     const recommendation = T2(
       () => computeRecommendations(
         spec.selector,
-        activeGroupIndices,
+        activeGroupIds,
         spec.getItemIdsForGroup,
         {},
-        { sortUnstarted: (a3, b) => a3.string - b.string }
+        {
+          sortUnstarted: (a3, b) => (idOrder.get(a3.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0)
+        }
       ),
-      [spec.selector, activeGroupIndices, spec.getItemIdsForGroup]
+      [spec.selector, activeGroupIds, spec.getItemIdsForGroup, idOrder]
     );
     const getLabel = q2(
-      (i3) => spec.groups[i3].longLabel ?? resolveLabel(spec.groups[i3].label),
+      (id) => {
+        const g2 = spec.groups.find((g3) => g3.id === id);
+        if (!g2) return id;
+        return resolveLabel(g2.longLabel ?? g2.label);
+      },
       [spec.groups, notationVersion]
     );
     const suggestionLines = T2(
@@ -9565,27 +9690,26 @@ body.native-app {
     const [practiceMode, setPracticeMode] = usePracticeMode(spec.storageKey);
     const [scope, scopeActions] = useScopeState({
       kind: "groups",
-      groups: spec.groups.map((g2, i3) => ({
-        index: i3,
+      groups: spec.groups.map((g2) => ({
+        id: g2.id,
         label: resolveLabel(g2.label),
-        itemIds: spec.getItemIdsForGroup(i3)
+        itemIds: spec.getItemIdsForGroup(g2.id)
       })),
       defaultEnabled: spec.defaultEnabled,
       storageKey: spec.storageKey,
-      label: spec.scopeLabel,
-      sortUnstarted: (a3, b) => a3.string - b.string
+      label: spec.scopeLabel
     });
     const customGroups = scope.kind === "groups" ? scope.enabledGroups : new Set(spec.defaultEnabled);
     const skippedGroups = scope.kind === "groups" ? scope.skippedGroups : EMPTY_SKIPPED;
-    const activeGroupIndices = T2(
-      () => spec.allGroupIndices.filter((i3) => !skippedGroups.has(i3)),
-      [spec.allGroupIndices, skippedGroups]
+    const activeGroupIds = T2(
+      () => spec.allGroupIds.filter((id) => !skippedGroups.has(id)),
+      [spec.allGroupIds, skippedGroups]
     );
-    const rec = useRecommendationData(spec, activeGroupIndices, notationVersion);
+    const rec = useRecommendationData(spec, activeGroupIds, notationVersion);
     const enabledGroups = practiceMode === "suggested" && rec.suggestedScope.size > 0 ? rec.suggestedScope : customGroups;
     const enabledItems = T2(() => {
       const items = [];
-      for (const g2 of enabledGroups) items.push(...spec.getItemIdsForGroup(g2));
+      for (const id of enabledGroups) items.push(...spec.getItemIdsForGroup(id));
       return items;
     }, [enabledGroups, spec.getItemIdsForGroup]);
     const practicingLabel = T2(
@@ -10596,21 +10720,24 @@ body.native-app {
       line.levels.join(", ")
     ] }, i3)) });
   }
-  function LevelToggles({ labels, active, onToggle }) {
+  function LevelToggles({ labels, groupIds, active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "level-toggles-section", children: [
       /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "level-toggles-header", children: "Choose levels" }),
-      /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "level-toggle-btn" + (active.has(i3) ? " active" : ""),
-          "aria-pressed": active.has(i3),
-          onClick: () => onToggle(i3),
-          children: label
-        },
-        i3
-      )) })
+      /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => {
+        const id = groupIds[i3];
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "level-toggle-btn" + (active.has(id) ? " active" : ""),
+            "aria-pressed": active.has(id),
+            onClick: () => onToggle(id),
+            children: label
+          },
+          id
+        );
+      }) })
     ] });
   }
   function LevelProgressCard({ label, pill, colors, status, onToggleKnown, onToggleSkip }) {
@@ -11871,9 +11998,10 @@ body.native-app {
   function GroupPracticeContent({ def, groupScopeResult }) {
     const groupScope = def.scope.kind === "groups" ? def.scope : null;
     if (!groupScope) return null;
-    const groupLabels = groupScope.allGroupIndices.map(
-      (i3) => resolveGroupLabel(groupScope.groups[i3].label)
-    );
+    const groupLabels = groupScope.allGroupIds.map((id) => {
+      const g2 = groupScope.groups.find((g3) => g3.id === id);
+      return g2 ? resolveGroupLabel(g2.label) : id;
+    });
     return /* @__PURE__ */ u3(k, { children: /* @__PURE__ */ u3(
       PracticeConfig,
       {
@@ -11884,6 +12012,7 @@ body.native-app {
           LevelToggles,
           {
             labels: groupLabels,
+            groupIds: groupScope.allGroupIds,
             active: groupScopeResult.practiceMode === "custom" ? groupScopeResult.enabledGroups : groupScopeResult.suggestedScope,
             onToggle: groupScopeResult.scopeActions.toggleGroup
           }
@@ -11894,23 +12023,27 @@ body.native-app {
   function LevelProgressCards({ def, learner, groupScopeResult }) {
     const groupScope = def.scope.kind === "groups" ? def.scope : null;
     if (!groupScope) return null;
-    return /* @__PURE__ */ u3("div", { class: "level-progress-cards", children: groupScope.allGroupIndices.map((i3) => {
-      const itemIds = groupScope.getItemIdsForGroup(i3);
+    return /* @__PURE__ */ u3("div", { class: "level-progress-cards", children: groupScope.allGroupIds.map((id) => {
+      const g2 = groupScope.groups.find((g3) => g3.id === id);
+      const itemIds = groupScope.getItemIdsForGroup(id);
       const colors = progressBarColors(learner.selector, itemIds);
       const pill = computeReviewPill(learner.selector, itemIds);
-      const skipReason = groupScopeResult.skippedGroups.get(i3);
+      const skipReason = groupScopeResult.skippedGroups.get(id);
       const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
+      const label = g2 ? resolveGroupLabel(
+        g2.longLabel ?? g2.label
+      ) : id;
       return /* @__PURE__ */ u3(
         LevelProgressCard,
         {
-          label: groupScope.groups[i3].longLabel ?? resolveGroupLabel(groupScope.groups[i3].label),
+          label,
           pill: pill ?? void 0,
           colors,
           status,
-          onToggleKnown: () => skipReason === "mastered" ? groupScopeResult.scopeActions.unskipGroup(i3) : groupScopeResult.scopeActions.skipGroup(i3, "mastered"),
-          onToggleSkip: () => skipReason === "deferred" ? groupScopeResult.scopeActions.unskipGroup(i3) : groupScopeResult.scopeActions.skipGroup(i3, "deferred")
+          onToggleKnown: () => skipReason === "mastered" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "mastered"),
+          onToggleSkip: () => skipReason === "deferred" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "deferred")
         },
-        i3
+        id
       );
     }) });
   }
@@ -12074,7 +12207,7 @@ body.native-app {
     return {
       groups: def.scope.groups,
       getItemIdsForGroup: def.scope.getItemIdsForGroup,
-      allGroupIndices: def.scope.allGroupIndices,
+      allGroupIds: def.scope.allGroupIds,
       storageKey: def.scope.storageKey,
       scopeLabel: def.scope.scopeLabel,
       defaultEnabled: def.scope.defaultEnabled,
@@ -12168,9 +12301,9 @@ body.native-app {
         const scope = def.scope;
         return computeProgressColors(learner.selector, {
           kind: "groups",
-          groups: scope.allGroupIndices.map((i3) => ({
-            index: i3,
-            itemIds: scope.getItemIdsForGroup(i3)
+          groups: scope.allGroupIds.map((id) => ({
+            id,
+            itemIds: scope.getItemIdsForGroup(id)
           })),
           skippedGroups
         });
@@ -12460,13 +12593,13 @@ body.native-app {
       kind: "groups",
       groups: DISTANCE_GROUPS,
       getItemIdsForGroup: getItemIdsForGroup4,
-      allGroupIndices: ALL_GROUP_INDICES4,
+      allGroupIds: ALL_GROUP_IDS4,
       storageKey: "semitoneMath_enabledGroups",
       scopeLabel: "Distances",
-      defaultEnabled: [0],
+      defaultEnabled: [ALL_GROUP_IDS4[0]],
       formatLabel: (groups) => {
         if (groups.size === DISTANCE_GROUPS.length) return "all distances";
-        const labels = [...groups].sort((a3, b) => a3 - b).map((g2) => DISTANCE_GROUPS[g2].label);
+        const labels = DISTANCE_GROUPS.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
         return labels.join(", ") + " semitones";
       }
     },
@@ -12502,13 +12635,13 @@ body.native-app {
       kind: "groups",
       groups: DISTANCE_GROUPS2,
       getItemIdsForGroup: getItemIdsForGroup5,
-      allGroupIndices: ALL_GROUP_INDICES5,
+      allGroupIds: ALL_GROUP_IDS5,
       storageKey: "intervalMath_enabledGroups",
       scopeLabel: "Intervals",
-      defaultEnabled: [0],
+      defaultEnabled: [ALL_GROUP_IDS5[0]],
       formatLabel: (groups) => {
         if (groups.size === DISTANCE_GROUPS2.length) return "all intervals";
-        const labels = [...groups].sort((a3, b) => a3 - b).map((g2) => DISTANCE_GROUPS2[g2].label);
+        const labels = DISTANCE_GROUPS2.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
         return labels.join(", ") + " intervals";
       }
     },
@@ -12555,13 +12688,13 @@ body.native-app {
       kind: "groups",
       groups: ALL_KEY_GROUPS,
       getItemIdsForGroup,
-      allGroupIndices: ALL_GROUP_INDICES,
+      allGroupIds: ALL_GROUP_IDS,
       storageKey: "keySignatures_enabledGroups",
       scopeLabel: "Keys",
-      defaultEnabled: [0],
+      defaultEnabled: [ALL_GROUP_IDS[0]],
       formatLabel: (groups) => {
         if (groups.size === ALL_KEY_GROUPS.length) return "all keys";
-        const keys = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => ALL_KEY_GROUPS[g2].keys).map((k3) => displayNote(k3));
+        const keys = ALL_KEY_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.keys).map((k3) => displayNote(k3));
         return keys.join(", ");
       }
     },
@@ -12610,13 +12743,13 @@ body.native-app {
       kind: "groups",
       groups: DEGREE_GROUPS,
       getItemIdsForGroup: getItemIdsForGroup2,
-      allGroupIndices: ALL_GROUP_INDICES2,
+      allGroupIds: ALL_GROUP_IDS2,
       storageKey: "scaleDegrees_enabledGroups",
       scopeLabel: "Degrees",
-      defaultEnabled: [0],
+      defaultEnabled: [ALL_GROUP_IDS2[0]],
       formatLabel: (groups) => {
         if (groups.size === DEGREE_GROUPS.length) return "all degrees";
-        const degrees = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => DEGREE_GROUPS[g2].degrees).sort((a3, b) => a3 - b);
+        const degrees = DEGREE_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b);
         return degrees.map((d4) => DEGREE_LABELS2[d4 - 1]).join(", ") + " degrees";
       }
     },
@@ -12666,13 +12799,13 @@ body.native-app {
       kind: "groups",
       groups: CHORD_GROUPS,
       getItemIdsForGroup: getItemIdsForGroup3,
-      allGroupIndices: ALL_GROUP_INDICES3,
+      allGroupIds: ALL_GROUP_IDS3,
       storageKey: "diatonicChords_enabledGroups",
       scopeLabel: "Chords",
-      defaultEnabled: [0],
+      defaultEnabled: [ALL_GROUP_IDS3[0]],
       formatLabel: (groups) => {
         if (groups.size === CHORD_GROUPS.length) return "all chords";
-        const numerals = [...groups].sort((a3, b) => a3 - b).flatMap((g2) => CHORD_GROUPS[g2].degrees).sort((a3, b) => a3 - b).map((d4) => ROMAN_NUMERALS[d4 - 1]);
+        const numerals = CHORD_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b).map((d4) => ROMAN_NUMERALS[d4 - 1]);
         return numerals.join(", ") + " chords";
       }
     },
@@ -12700,7 +12833,7 @@ body.native-app {
   function createFretboardDef(instrument) {
     const groups = getGroups(instrument);
     const allItems = getAllItems(instrument);
-    const allGroupIndices = getAllGroupIndices(instrument);
+    const allGroupIds = getAllGroupIds(instrument);
     return {
       id: instrument.id,
       name: instrument.name,
@@ -12721,11 +12854,11 @@ body.native-app {
       scope: {
         kind: "groups",
         groups,
-        getItemIdsForGroup: (index) => getItemIdsForGroup7(instrument, index),
-        allGroupIndices,
+        getItemIdsForGroup: (id) => getItemIdsForGroup7(instrument, id),
+        allGroupIds,
         storageKey: instrument.storageNamespace + "_enabledGroups",
         scopeLabel: "Groups",
-        defaultEnabled: [0],
+        defaultEnabled: [allGroupIds[0]],
         formatLabel: (enabled) => formatLabel(instrument, enabled)
       },
       stats: { kind: "none" },
@@ -12777,8 +12910,9 @@ body.native-app {
       [instrument]
     );
     const hasAccidentals = T2(() => {
-      for (const g2 of enabledGroups) {
-        if (groups[g2]?.noteFilter === "sharps-flats") return true;
+      for (const id of enabledGroups) {
+        const g2 = groups.find((g3) => g3.id === id);
+        if (g2?.noteFilter === "sharps-flats") return true;
       }
       return false;
     }, [enabledGroups, groups]);
@@ -12857,13 +12991,13 @@ body.native-app {
       kind: "groups",
       groups: SPELLING_GROUPS,
       getItemIdsForGroup: getItemIdsForGroup6,
-      allGroupIndices: ALL_GROUP_INDICES6,
+      allGroupIds: ALL_GROUP_IDS6,
       storageKey: "chordSpelling_enabledGroups",
       scopeLabel: "Chord types",
-      defaultEnabled: [0],
+      defaultEnabled: [ALL_GROUP_IDS6[0]],
       formatLabel: (groups) => {
         if (groups.size === SPELLING_GROUPS.length) return "all chord types";
-        const labels = [...groups].sort((a3, b) => a3 - b).map((g2) => SPELLING_GROUPS[g2].label);
+        const labels = SPELLING_GROUPS.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
         return labels.join(", ") + " chords";
       }
     },
@@ -12921,10 +13055,10 @@ body.native-app {
       kind: "groups",
       groups: NOTE_GROUPS,
       getItemIdsForGroup: getItemIdsForGroup8,
-      allGroupIndices: ALL_GROUP_INDICES7,
+      allGroupIds: ALL_GROUP_IDS7,
       storageKey: "speedTap_enabledGroups",
       scopeLabel: "Notes",
-      defaultEnabled: [0],
+      defaultEnabled: [ALL_GROUP_IDS7[0]],
       formatLabel: formatGroupLabel
     },
     stats: { kind: "none" },
