@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useMemo, useRef } from 'preact/hooks';
 import { fretboardSVG } from '../html-helpers.ts';
-import { stringX } from '../fretboard.ts';
+import { noteY, stringX } from '../fretboard.ts';
 import type { MultiTapEvalResult } from '../declarative/types.ts';
 
 // ---------------------------------------------------------------------------
@@ -73,8 +73,9 @@ type InteractiveFretboardProps = {
 // Muted-string X markers — rendered as SVG text elements above the nut.
 // ---------------------------------------------------------------------------
 
-const MUTE_MARKER_Y = 12; // px above the nut line
 const MUTE_MARKER_CLASS = 'fb-mute-marker';
+/** Radius of fret-position circles in the SVG (matches fretboard.ts). */
+const CIRCLE_R = 14;
 
 function renderMuteMarkers(
   root: HTMLElement,
@@ -83,21 +84,37 @@ function renderMuteMarkers(
 ): void {
   const svg = root.querySelector('svg.fretboard');
   if (!svg) return;
-  // Remove any existing markers first
   svg.querySelectorAll('.' + MUTE_MARKER_CLASS).forEach((el) => el.remove());
   const colorMuted = readCSSColor('--color-text-secondary', '#888');
+  const cy = noteY(0); // same Y as fret-0 circles
+  const half = CIRCLE_R * 0.7; // half-size of X arms
   for (const s of mutedStrings) {
-    const x = stringX(s, sc);
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('class', MUTE_MARKER_CLASS);
-    text.setAttribute('x', String(x));
-    text.setAttribute('y', String(MUTE_MARKER_Y));
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('font-size', '16');
-    text.setAttribute('font-weight', 'bold');
-    text.setAttribute('fill', colorMuted);
-    text.textContent = '\u00D7'; // ×
-    svg.appendChild(text);
+    const cx = stringX(s, sc);
+    // Draw an × using two crossing lines, centered on the fret-0 circle position
+    const line1 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'line',
+    );
+    const line2 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'line',
+    );
+    for (const ln of [line1, line2]) {
+      ln.setAttribute('class', MUTE_MARKER_CLASS);
+      ln.setAttribute('stroke', colorMuted);
+      ln.setAttribute('stroke-width', '2.5');
+      ln.setAttribute('stroke-linecap', 'round');
+    }
+    line1.setAttribute('x1', String(cx - half));
+    line1.setAttribute('y1', String(cy - half));
+    line1.setAttribute('x2', String(cx + half));
+    line1.setAttribute('y2', String(cy + half));
+    line2.setAttribute('x1', String(cx + half));
+    line2.setAttribute('y1', String(cy - half));
+    line2.setAttribute('x2', String(cx - half));
+    line2.setAttribute('y2', String(cy + half));
+    svg.appendChild(line1);
+    svg.appendChild(line2);
   }
 }
 

@@ -26,10 +26,18 @@ export type TapAction =
     sentinel: string;
   };
 
+/** Extract the string index from a position key ("string-fret" → string). */
+function stringOf(posKey: string): string {
+  return posKey.split('-')[0];
+}
+
 /**
  * Process a tap against the current collection state (pure function).
  * Tapping a selected position deselects it; tapping an unselected position
  * adds it; completing the set triggers evaluation.
+ *
+ * When `onePerString` is true, tapping a new fret on a string that already
+ * has a tap replaces the old one (chord shape behavior: one note per string).
  */
 export function processMultiTap<Q>(
   multiTap: MultiTapDef<Q>,
@@ -49,12 +57,24 @@ export function processMultiTap<Q>(
     };
   }
 
-  // Reject taps after collection is full (shouldn't happen with deselect)
-  if (tapped.size >= targets.length) {
+  // onePerString: replace any existing tap on the same string
+  let next = new Set(tapped);
+  if (multiTap.onePerString) {
+    const tapString = stringOf(positionKey);
+    for (const existing of tapped) {
+      if (stringOf(existing) === tapString) {
+        next.delete(existing);
+        break;
+      }
+    }
+  }
+
+  // Reject taps after collection is full (unless onePerString already freed a slot)
+  if (next.size >= targets.length) {
     return { kind: 'ignored' };
   }
 
-  const next = new Set(tapped);
+  next = new Set(next);
   next.add(positionKey);
   const progressText = next.size + ' / ' + targets.length;
 
@@ -125,7 +145,19 @@ export function useMultiTapInput<Q>(
       return;
     }
 
+    // For 'added' / 'complete': rebuild the set from processMultiTap's logic.
+    // When onePerString is active, an old tap on the same string was removed
+    // inside processMultiTap, so we reconstruct the set the same way.
     const next = new Set(tappedRef.current);
+    if (def.multiTap.onePerString) {
+      const tapString = positionKey.split('-')[0];
+      for (const existing of tappedRef.current) {
+        if (existing.split('-')[0] === tapString) {
+          next.delete(existing);
+          break;
+        }
+      }
+    }
     next.add(positionKey);
     tappedRef.current = next;
     setTappedPositions(next);

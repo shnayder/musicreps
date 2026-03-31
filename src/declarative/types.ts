@@ -215,6 +215,10 @@ export type MultiTapDef<Q> = {
   /** Return string indices that are muted for this question.
    *  Shown as X markers on the fretboard after evaluation. */
   getMutedStrings?: (q: Q) => number[];
+
+  /** When true, only one tap per string is allowed. Tapping a new fret on a
+   *  string that already has a tap replaces the old one (chord shape behavior). */
+  onePerString?: boolean;
 };
 
 // ---------------------------------------------------------------------------

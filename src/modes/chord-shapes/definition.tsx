@@ -122,6 +122,7 @@ export function createChordShapesDef(
       evaluate,
       stringCount,
       getMutedStrings: (q) => q.mutedStrings,
+      onePerString: true,
     },
 
     getExpectedResponseCount: (itemId) => {
