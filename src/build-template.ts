@@ -11,7 +11,7 @@ import { TRACKS } from './mode-catalog.ts';
 function modeScreens(): string {
   const ids = [...new Set(TRACKS.flatMap((t) => t.skills))];
   return ids
-    .map((id) => `  <div class="mode-screen" id="mode-${id}"></div>`)
+    .map((id) => `  <div class="mode-screen phase-idle" id="mode-${id}"></div>`)
     .join('\n');
 }
 
