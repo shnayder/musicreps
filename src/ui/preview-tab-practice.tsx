@@ -76,6 +76,7 @@ const MOCK_LEVEL_LABELS = [
   'D G ♯♭',
   'B e ♯♭',
 ];
+const MOCK_LEVEL_IDS = MOCK_LEVEL_LABELS.map((_, i) => `g${i}`);
 
 const MOCK_LEVEL_COLORS: string[][] = [
   ['hsl(125, 48%, 33%)', 'hsl(125, 48%, 33%)', 'hsl(80, 35%, 40%)'],
@@ -89,8 +90,8 @@ const MOCK_LEVEL_COLORS: string[][] = [
 // ---------------------------------------------------------------------------
 
 type CustomState = {
-  customActive: Set<number>;
-  toggleCustom: (i: number) => void;
+  customActive: Set<string>;
+  toggleCustom: (id: string) => void;
   customItemCount: number;
 };
 
@@ -190,6 +191,7 @@ function Phase1Components(
         <Section title='LevelToggles — custom mode' tabId={tabId}>
           <LevelToggles
             labels={MOCK_LEVEL_LABELS}
+            groupIds={MOCK_LEVEL_IDS}
             active={customActive}
             onToggle={toggleCustom}
           />
@@ -207,6 +209,7 @@ function Phase1Components(
             customContent={
               <LevelToggles
                 labels={MOCK_LEVEL_LABELS}
+                groupIds={MOCK_LEVEL_IDS}
                 active={customActive}
                 onToggle={toggleCustom}
               />
@@ -221,6 +224,7 @@ function Phase1Components(
             customContent={
               <LevelToggles
                 labels={MOCK_LEVEL_LABELS}
+                groupIds={MOCK_LEVEL_IDS}
                 active={customActive}
                 onToggle={toggleCustom}
               />
@@ -326,6 +330,7 @@ function Phase2MultiLevel(
             customContent={
               <LevelToggles
                 labels={MOCK_LEVEL_LABELS}
+                groupIds={MOCK_LEVEL_IDS}
                 active={customActive}
                 onToggle={toggleCustom}
               />
@@ -520,6 +525,7 @@ function ScreenLayoutIdleExamples(
               customContent={
                 <LevelToggles
                   labels={MOCK_LEVEL_LABELS}
+                  groupIds={MOCK_LEVEL_IDS}
                   active={customActive}
                   onToggle={toggleCustom}
                 />
@@ -669,21 +675,21 @@ export function PracticeRedesignTab(
   },
 ) {
   const [_practiceMode, setPracticeMode] = useState<PracticeMode>('suggested');
-  const [customActive, setCustomActive] = useState<Set<number>>(
-    new Set([0, 1]),
+  const [customActive, setCustomActive] = useState<Set<string>>(
+    new Set(['g0', 'g1']),
   );
 
-  function toggleCustom(i: number) {
+  function toggleCustom(id: string) {
     setCustomActive((prev) => {
       const next = new Set(prev);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
 
   const customItemCount = [...customActive].reduce(
-    (sum, i) => sum + (i < 5 ? 16 : 10),
+    (sum, id) => sum + (parseInt(id.slice(1)) < 5 ? 16 : 10),
     0,
   );
 

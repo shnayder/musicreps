@@ -417,8 +417,8 @@ describe('computeProgressColors', () => {
     const colors = computeProgressColors(selector, {
       kind: 'groups',
       groups: [
-        { index: 0, itemIds: ['a', 'b'] },
-        { index: 1, itemIds: ['c', 'd'] },
+        { id: 'g0', itemIds: ['a', 'b'] },
+        { id: 'g1', itemIds: ['c', 'd'] },
       ],
     });
     assert.deepEqual(colors, []);
@@ -432,12 +432,12 @@ describe('computeProgressColors', () => {
         ] ?? null;
       },
     };
-    const skipped = new Set([1]);
+    const skipped = new Set(['g1']);
     const colors = computeProgressColors(selector, {
       kind: 'groups',
       groups: [
-        { index: 0, itemIds: ['a', 'b'] },
-        { index: 1, itemIds: ['c', 'd'] },
+        { id: 'g0', itemIds: ['a', 'b'] },
+        { id: 'g1', itemIds: ['c', 'd'] },
       ],
       skippedGroups: skipped,
     });
@@ -449,8 +449,8 @@ describe('computeProgressColors', () => {
     const selector = { getSpeedScore: () => 0.5 };
     const colors = computeProgressColors(selector, {
       kind: 'groups',
-      groups: [{ index: 0, itemIds: ['a'] }],
-      skippedGroups: new Set([0]),
+      groups: [{ id: 'g0', itemIds: ['a'] }],
+      skippedGroups: new Set(['g0']),
     });
     assert.deepEqual(colors, []);
   });
@@ -466,9 +466,9 @@ describe('computeProgressColors', () => {
     const colors = computeProgressColors(selector, {
       kind: 'groups',
       groups: [
-        { index: 0, itemIds: ['a', 'b'] }, // avg speed 0.3
-        { index: 1, itemIds: ['c', 'd'] }, // all unseen
-        { index: 2, itemIds: ['e', 'f'] }, // avg speed 0.9
+        { id: 'g0', itemIds: ['a', 'b'] }, // avg speed 0.3
+        { id: 'g1', itemIds: ['c', 'd'] }, // all unseen
+        { id: 'g2', itemIds: ['e', 'f'] }, // avg speed 0.9
       ],
     });
     // Unseen group filtered by all-unseen? No — only if ALL groups unseen.
@@ -481,12 +481,12 @@ describe('computeProgressColors', () => {
 
   it('works with Map as skippedGroups (skill screen compat)', () => {
     const selector = { getSpeedScore: () => 0.5 };
-    const skipped = new Map([[0, 'mastered']]);
+    const skipped = new Map([['g0', 'mastered']]);
     const colors = computeProgressColors(selector, {
       kind: 'groups',
       groups: [
-        { index: 0, itemIds: ['a'] },
-        { index: 1, itemIds: ['b'] },
+        { id: 'g0', itemIds: ['a'] },
+        { id: 'g1', itemIds: ['b'] },
       ],
       skippedGroups: skipped,
     });

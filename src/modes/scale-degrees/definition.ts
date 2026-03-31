@@ -10,7 +10,7 @@ import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ACTIVE_DEGREES,
-  ALL_GROUP_INDICES,
+  ALL_GROUP_IDS,
   ALL_ITEMS,
   DEGREE_GROUPS,
   DEGREE_LABELS,
@@ -66,14 +66,15 @@ export const SCALE_DEGREES_DEF: ModeDefinition<Question> = {
     kind: 'groups',
     groups: DEGREE_GROUPS,
     getItemIdsForGroup,
-    allGroupIndices: ALL_GROUP_INDICES,
+    allGroupIds: ALL_GROUP_IDS,
     storageKey: 'scaleDegrees_enabledGroups',
     scopeLabel: 'Degrees',
-    defaultEnabled: [0],
+    defaultEnabled: [ALL_GROUP_IDS[0]],
     formatLabel: (groups) => {
       if (groups.size === DEGREE_GROUPS.length) return 'all degrees';
-      const degrees = [...groups].sort((a, b) => a - b)
-        .flatMap((g) => DEGREE_GROUPS[g].degrees)
+      const degrees = DEGREE_GROUPS
+        .filter((g) => groups.has(g.id))
+        .flatMap((g) => g.degrees)
         .sort((a, b) => a - b);
       return degrees.map((d) => DEGREE_LABELS[d - 1]).join(', ') + ' degrees';
     },

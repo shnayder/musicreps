@@ -162,13 +162,13 @@ describe('statusLabelFromLevel', () => {
 // ---------------------------------------------------------------------------
 
 describe('buildRecommendationText', () => {
-  function label(i: number): string {
-    return 'Group ' + i;
+  function label(id: string): string {
+    return 'Group ' + id;
   }
 
   it('returns empty string when no recommendations', () => {
     const result: RecommendationResult = {
-      recommended: new Set<number>(),
+      recommended: new Set<string>(),
       enabled: null,
       expandIndex: null,
       expandNewCount: 0,
@@ -179,13 +179,13 @@ describe('buildRecommendationText', () => {
 
   it('builds review text', () => {
     const result: RecommendationResult = {
-      recommended: new Set([0, 1]),
+      recommended: new Set(['0', '1']),
       enabled: null,
       expandIndex: null,
       expandNewCount: 0,
       levelRecs: [
-        { index: 1, type: 'review' },
-        { index: 0, type: 'review' },
+        { groupId: '0', type: 'review' },
+        { groupId: '1', type: 'review' },
       ],
     };
     const text = buildRecommendationText(result, label);
@@ -194,11 +194,11 @@ describe('buildRecommendationText', () => {
 
   it('builds practice text', () => {
     const result: RecommendationResult = {
-      recommended: new Set([0]),
+      recommended: new Set(['0']),
       enabled: null,
       expandIndex: null,
       expandNewCount: 0,
-      levelRecs: [{ index: 0, type: 'practice' }],
+      levelRecs: [{ groupId: '0', type: 'practice' }],
     };
     const text = buildRecommendationText(result, label);
     assert.equal(text, 'practice Group 0');
@@ -206,11 +206,11 @@ describe('buildRecommendationText', () => {
 
   it('builds expand text', () => {
     const result: RecommendationResult = {
-      recommended: new Set([2]),
+      recommended: new Set(['2']),
       enabled: null,
-      expandIndex: 2,
+      expandIndex: '2',
       expandNewCount: 8,
-      levelRecs: [{ index: 2, type: 'expand' }],
+      levelRecs: [{ groupId: '2', type: 'expand' }],
     };
     const text = buildRecommendationText(result, label);
     assert.equal(text, 'start Group 2 \u2014 8 new items');
@@ -218,13 +218,13 @@ describe('buildRecommendationText', () => {
 
   it('builds automate text', () => {
     const result: RecommendationResult = {
-      recommended: new Set([0, 1]),
+      recommended: new Set(['0', '1']),
       enabled: null,
       expandIndex: null,
       expandNewCount: 0,
       levelRecs: [
-        { index: 0, type: 'automate' },
-        { index: 1, type: 'automate' },
+        { groupId: '0', type: 'automate' },
+        { groupId: '1', type: 'automate' },
       ],
     };
     const text = buildRecommendationText(result, label);
@@ -233,14 +233,14 @@ describe('buildRecommendationText', () => {
 
   it('combines review + practice + expand + extra parts', () => {
     const result: RecommendationResult = {
-      recommended: new Set([0, 1, 2]),
+      recommended: new Set(['0', '1', '2']),
       enabled: null,
-      expandIndex: 2,
+      expandIndex: '2',
       expandNewCount: 1,
       levelRecs: [
-        { index: 0, type: 'review' },
-        { index: 1, type: 'practice' },
-        { index: 2, type: 'expand' },
+        { groupId: '0', type: 'review' },
+        { groupId: '1', type: 'practice' },
+        { groupId: '2', type: 'expand' },
       ],
     };
     const text = buildRecommendationText(result, label, ['naturals first']);
@@ -254,15 +254,15 @@ describe('buildRecommendationText', () => {
 
   it('deduplicates groups across rec types (highest priority wins)', () => {
     const result: RecommendationResult = {
-      recommended: new Set([0, 1]),
+      recommended: new Set(['0', '1']),
       enabled: null,
       expandIndex: null,
       expandNewCount: 0,
       levelRecs: [
-        { index: 0, type: 'review' },
-        { index: 1, type: 'review' },
-        { index: 0, type: 'practice' },
-        { index: 1, type: 'practice' },
+        { groupId: '0', type: 'review' },
+        { groupId: '1', type: 'review' },
+        { groupId: '0', type: 'practice' },
+        { groupId: '1', type: 'practice' },
       ],
     };
     const text = buildRecommendationText(result, label);
@@ -272,11 +272,11 @@ describe('buildRecommendationText', () => {
 
   it('uses singular for 1 new item', () => {
     const result: RecommendationResult = {
-      recommended: new Set([0]),
+      recommended: new Set(['0']),
       enabled: null,
-      expandIndex: 0,
+      expandIndex: '0',
       expandNewCount: 1,
-      levelRecs: [{ index: 0, type: 'expand' }],
+      levelRecs: [{ groupId: '0', type: 'expand' }],
     };
     const text = buildRecommendationText(result, label);
     assert.ok(text.includes('1 new item'));
@@ -298,7 +298,7 @@ describe('computePracticeSummary', () => {
       getWeight: () => 1,
       getLevelSpeed: () => ({ level: 0, seen: 0 }),
       getLevelFreshness: () => ({ level: 0, seen: 0 }),
-      getStringRecommendations: () => [],
+      getGroupRecommendations: () => [],
       checkAllAutomatic: () => false,
       checkNeedsReview: () => false,
       recordResponse: () => {},
@@ -366,11 +366,11 @@ describe('computePracticeSummary', () => {
 
   it('sets showRecommendationButton when recommendation has items', () => {
     const rec: RecommendationResult = {
-      recommended: new Set([0]),
+      recommended: new Set(['0']),
       enabled: null,
       expandIndex: null,
       expandNewCount: 0,
-      levelRecs: [{ index: 0, type: 'practice' }],
+      levelRecs: [{ groupId: '0', type: 'practice' }],
     };
     const result = computePracticeSummary({
       allItemIds: ['a'],

@@ -92,8 +92,8 @@ export interface StorageAdapter {
   preload?(itemIds: string[]): void;
 }
 
-export type StringRecommendation = {
-  string: number;
+export type GroupRecommendation = {
+  groupId: string;
   workingCount: number;
   unseenCount: number;
   automaticCount: number;
@@ -117,10 +117,10 @@ export interface AdaptiveSelector {
     percentile?: number,
     nowMs?: number,
   ): { level: number; seen: number };
-  getStringRecommendations(
-    stringIndices: number[],
-    getItemIds: (index: number) => string[],
-  ): StringRecommendation[];
+  getGroupRecommendations(
+    groupIds: string[],
+    getItemIds: (id: string) => string[],
+  ): GroupRecommendation[];
   checkAllAutomatic(items: string[]): boolean;
   checkNeedsReview(items: string[]): boolean;
   updateConfig(newCfg: Partial<AdaptiveConfig>): void;
@@ -160,14 +160,14 @@ export interface DeadlineTracker {
 // ---------------------------------------------------------------------------
 
 export type LevelRecommendation = {
-  index: number;
+  groupId: string;
   type: 'review' | 'practice' | 'expand' | 'automate';
 };
 
 export type RecommendationResult = {
-  recommended: Set<number>;
-  enabled: Set<number> | null;
-  expandIndex: number | null;
+  recommended: Set<string>;
+  enabled: Set<string> | null;
+  expandIndex: string | null;
   expandNewCount: number;
   /** Per-level recommendations in priority order. */
   levelRecs: LevelRecommendation[];
@@ -260,7 +260,7 @@ export type NoteKeyHandler = {
 export type NoteFilter = 'natural' | 'sharps-flats' | 'all' | 'none';
 
 export type GroupDef = {
-  index: number;
+  id: string;
   label: string;
   /** Item IDs belonging to this group. Precomputed at mode creation. */
   itemIds: string[];
@@ -272,14 +272,14 @@ export type ScopeSpec =
   | {
     kind: 'groups';
     groups: GroupDef[];
-    defaultEnabled: number[];
+    defaultEnabled: string[];
     storageKey: string;
     /** Label for the toggle group heading (defaults to "Groups" in HTML). */
     label?: string;
     /** Sort function for recommending which unstarted group to expand next. */
     sortUnstarted?: (
-      a: StringRecommendation,
-      b: StringRecommendation,
+      a: GroupRecommendation,
+      b: GroupRecommendation,
     ) => number;
   }
   | {
@@ -295,8 +295,8 @@ export type ScopeState =
   | { kind: 'none' }
   | {
     kind: 'groups';
-    enabledGroups: ReadonlySet<number>;
-    skippedGroups: ReadonlyMap<number, GroupStatus>;
+    enabledGroups: ReadonlySet<string>;
+    skippedGroups: ReadonlyMap<string, GroupStatus>;
   }
   | { kind: 'note-filter'; noteFilter: NoteFilter };
 

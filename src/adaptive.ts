@@ -7,9 +7,9 @@
 import type {
   AdaptiveConfig,
   AdaptiveSelector,
+  GroupRecommendation,
   ItemStats,
   StorageAdapter,
-  StringRecommendation,
 } from './types.ts';
 import { storage } from './storage.ts';
 
@@ -351,18 +351,18 @@ export function computeLevelPercentile(
  * Classify items per group by speed score, sorted by needsWork descending.
  * Automatic: speed ≥ 0.9, Working: seen but speed < 0.9, Unseen: no data.
  */
-export function computeStringRecommendations(
+export function computeGroupRecommendations(
   getSpeedScore: (id: string) => number | null,
-  stringIndices: number[],
-  getItemIds: (index: number) => string[],
-): StringRecommendation[] {
-  const results = stringIndices.map((s) => {
-    const items = getItemIds(s);
+  groupIds: string[],
+  getItemIds: (id: string) => string[],
+): GroupRecommendation[] {
+  const results = groupIds.map((id) => {
+    const items = getItemIds(id);
     let workingCount = 0;
     let unseenCount = 0;
     let automaticCount = 0;
-    for (const id of items) {
-      const speed = getSpeedScore(id);
+    for (const itemId of items) {
+      const speed = getSpeedScore(itemId);
       if (speed === null) {
         unseenCount++;
       } else if (speed >= 0.9) {
@@ -372,17 +372,19 @@ export function computeStringRecommendations(
       }
     }
     return {
-      string: s,
+      groupId: id,
       workingCount,
       unseenCount,
       automaticCount,
       totalCount: items.length,
     };
   });
-  results.sort((a, b) =>
-    (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount) ||
-    a.string - b.string
-  );
+  results.sort((a, b) => {
+    const workDiff = (b.workingCount + b.unseenCount) -
+      (a.workingCount + a.unseenCount);
+    if (workDiff !== 0) return workDiff;
+    return a.groupId.localeCompare(b.groupId);
+  });
   return results;
 }
 
@@ -550,10 +552,10 @@ export function createAdaptiveSelector(
         itemIds,
         percentile,
       ),
-    getStringRecommendations: (stringIndices, getItemIds) =>
-      computeStringRecommendations(
+    getGroupRecommendations: (groupIds, getItemIds) =>
+      computeGroupRecommendations(
         getSpeedScore,
-        stringIndices,
+        groupIds,
         getItemIds,
       ),
     checkAllAutomatic: (items) => checkAllItemsAutomatic(getSpeedScore, items),

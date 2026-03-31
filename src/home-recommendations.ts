@@ -41,12 +41,12 @@ function notStarted(modeId: string): SkillRecommendation {
   return { modeId, type: 'not-started', urgency: 0, cueLabel: '', detail: '' };
 }
 
-/** Format group labels: "E A" or "E A, D G". */
+/** Format group labels from an array of group IDs and a label map. */
 function groupLabelText(
-  indices: number[],
-  labels: string[],
+  groupIds: string[],
+  labelMap: Map<string, string>,
 ): string {
-  return indices.map((i) => labels[i] ?? `level ${i + 1}`).join(', ');
+  return groupIds.map((id) => labelMap.get(id) ?? id).join(', ');
 }
 
 /**
@@ -57,7 +57,7 @@ export function computeSkillRecommendation(
   entry: ModeProgressEntry,
   storage: StorageAdapter,
   motorBaseline: number | null,
-  skippedGroups: ReadonlySet<number>,
+  skippedGroups: ReadonlySet<string>,
   config: { maxWorkItems?: number },
 ): SkillRecommendation {
   const cfg = motorBaseline !== null
@@ -65,25 +65,32 @@ export function computeSkillRecommendation(
     : undefined;
   const selector = createAdaptiveSelector(storage, cfg);
 
-  // Build active group indices (all minus skipped).
-  const allIndices: number[] = [];
-  for (let i = 0; i < entry.groups.length; i++) {
-    if (!skippedGroups.has(i)) allIndices.push(i);
-  }
-  if (allIndices.length === 0) return notStarted(entry.modeId);
+  // Build active group IDs (all minus skipped).
+  const allGroupIds: string[] = entry.groups
+    .filter((g) => !skippedGroups.has(g.id))
+    .map((g) => g.id);
+  if (allGroupIds.length === 0) return notStarted(entry.modeId);
 
-  const getItemIds = (idx: number) => entry.groups[idx].getItemIds();
+  // O(1) lookups by group ID.
+  const groupById = new Map(entry.groups.map((g) => [g.id, g]));
+  const getItemIds = (id: string) => groupById.get(id)?.getItemIds() ?? [];
 
   // Check if any items have been seen at all.
-  const allItemIds = allIndices.flatMap(getItemIds);
+  const allItemIds = allGroupIds.flatMap(getItemIds);
   const { seen } = selector.getLevelSpeed(allItemIds);
   if (seen === 0) return notStarted(entry.modeId);
 
+  // Preserve definition order for unstarted tie-breaking.
+  const idOrder = new Map(entry.groups.map((g, i) => [g.id, i]));
   const result = computeRecommendations(
     selector as RecommendationSelector,
-    allIndices,
+    allGroupIds,
     getItemIds,
     config,
+    {
+      sortUnstarted: (a, b) =>
+        (idOrder.get(a.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0),
+    },
   );
 
   return classifySkill(entry, result);
@@ -96,7 +103,11 @@ function classifySkill(
 ): SkillRecommendation {
   const modeId = entry.modeId;
   const singleGroup = entry.groups.length <= 1;
-  const labels = entry.groups.map((g) => g.longLabel ?? g.label);
+  const resolve = (v: string | (() => string)) =>
+    typeof v === 'function' ? v() : v;
+  const labelMap = new Map(
+    entry.groups.map((g) => [g.id, resolve(g.longLabel ?? g.label)]),
+  );
 
   if (result.levelRecs.length === 0) {
     return { modeId, type: 'automatic', urgency: 0, cueLabel: '', detail: '' };
@@ -105,42 +116,43 @@ function classifySkill(
   const firstType = result.levelRecs[0].type;
 
   if (firstType === 'review') {
-    const reviewIndices = result.levelRecs
+    const reviewIds = result.levelRecs
       .filter((r) => r.type === 'review')
-      .map((r) => r.index);
+      .map((r) => r.groupId);
     const detail = singleGroup
       ? 'Review'
-      : `Review ${groupLabelText(reviewIndices, labels)}`;
+      : `Review ${groupLabelText(reviewIds, labelMap)}`;
     return {
       modeId,
       type: 'review',
-      urgency: reviewIndices.length,
+      urgency: reviewIds.length,
       cueLabel: 'Review',
       detail,
     };
   }
 
   if (firstType === 'practice') {
-    const practiceIndices = result.levelRecs
+    const practiceIds = result.levelRecs
       .filter((r) => r.type === 'practice')
-      .map((r) => r.index);
+      .map((r) => r.groupId);
     const detail = singleGroup
       ? 'Keep practicing'
-      : `Keep practicing ${groupLabelText(practiceIndices, labels)}`;
+      : `Keep practicing ${groupLabelText(practiceIds, labelMap)}`;
     return {
       modeId,
       type: 'keep-practicing',
-      urgency: practiceIndices.length,
+      urgency: practiceIds.length,
       cueLabel: 'Keep practicing',
       detail,
     };
   }
 
   if (firstType === 'expand') {
+    const expandId = result.expandIndex;
     const detail = singleGroup
       ? 'Learn next level'
       : `Learn ${
-        labels[result.expandIndex!] ?? `level ${result.expandIndex! + 1}`
+        expandId ? (labelMap.get(expandId) ?? expandId) : 'next level'
       }`;
     return {
       modeId,
@@ -152,16 +164,16 @@ function classifySkill(
   }
 
   if (firstType === 'automate') {
-    const automateIndices = result.levelRecs
+    const automateIds = result.levelRecs
       .filter((r) => r.type === 'automate')
-      .map((r) => r.index);
+      .map((r) => r.groupId);
     const detail = singleGroup
       ? 'Almost there'
-      : `Almost there \u2014 ${groupLabelText(automateIndices, labels)}`;
+      : `Almost there \u2014 ${groupLabelText(automateIds, labelMap)}`;
     return {
       modeId,
       type: 'automate',
-      urgency: automateIndices.length,
+      urgency: automateIds.length,
       cueLabel: 'Almost there',
       detail,
     };

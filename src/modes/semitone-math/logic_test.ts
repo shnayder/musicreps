@@ -68,7 +68,7 @@ describe('DISTANCE_GROUPS', () => {
 
 describe('getItemIdsForGroup', () => {
   it('group 0 contains items with distances 1 and 2', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('dist-1-2');
     assert.ok(ids.includes('C+1'));
     assert.ok(ids.includes('C-1'));
     assert.ok(ids.includes('C+2'));
@@ -76,18 +76,18 @@ describe('getItemIdsForGroup', () => {
   });
 
   it('group 0 does not contain distances 3 or higher', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('dist-1-2');
     assert.ok(!ids.includes('C+3'));
     assert.ok(!ids.includes('C-3'));
   });
 
   it('group 0 has 48 items (12 notes × 2 distances × 2 dirs)', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('dist-1-2');
     assert.equal(ids.length, 48);
   });
 
   it('group 4 contains distances 9, 10, and 11', () => {
-    const ids = getItemIdsForGroup(4);
+    const ids = getItemIdsForGroup('dist-9-11');
     assert.ok(ids.includes('C+9'));
     assert.ok(ids.includes('C-9'));
     assert.ok(ids.includes('C+10'));
@@ -97,7 +97,7 @@ describe('getItemIdsForGroup', () => {
   });
 
   it('group 4 has 72 items (12 notes × 3 distances × 2 dirs)', () => {
-    const ids = getItemIdsForGroup(4);
+    const ids = getItemIdsForGroup('dist-9-11');
     assert.equal(ids.length, 72);
   });
 });

@@ -16,22 +16,38 @@ export const ACTIVE_DEGREES = [2, 3, 4, 5, 6, 7];
 
 /** Degree groups for scope selection, ordered by importance. */
 export const DEGREE_GROUPS = [
-  { degrees: [4, 5], label: '4th, 5th', longLabel: '4th & 5th degrees' },
-  { degrees: [3, 7], label: '3rd, 7th', longLabel: '3rd & 7th degrees' },
-  { degrees: [2, 6], label: '2nd, 6th', longLabel: '2nd & 6th degrees' },
+  {
+    id: '4th-5th',
+    degrees: [4, 5],
+    label: '4th, 5th',
+    longLabel: '4th & 5th degrees',
+  },
+  {
+    id: '3rd-7th',
+    degrees: [3, 7],
+    label: '3rd, 7th',
+    longLabel: '3rd & 7th degrees',
+  },
+  {
+    id: '2nd-6th',
+    degrees: [2, 6],
+    label: '2nd, 6th',
+    longLabel: '2nd & 6th degrees',
+  },
 ];
 
 /**
  * Get all item IDs belonging to a degree group.
  * Item ID format: "key:degree:dir" (e.g. "D:5:fwd").
  *
- * @example getItemIdsForGroup(0) → ["C:4:fwd","C:4:rev","C:5:fwd","C:5:rev",...]
+ * @example getItemIdsForGroup('4th-5th') → ["C:4:fwd","C:4:rev","C:5:fwd","C:5:rev",...]
  */
-export function getItemIdsForGroup(groupIndex: number): string[] {
-  const degrees = DEGREE_GROUPS[groupIndex].degrees;
+export function getItemIdsForGroup(groupId: string): string[] {
+  const group = DEGREE_GROUPS.find((g) => g.id === groupId);
+  if (!group) return [];
   const items: string[] = [];
   for (const key of MAJOR_KEYS) {
-    for (const d of degrees) {
+    for (const d of group.degrees) {
       items.push(key.root + ':' + d + ':fwd');
       items.push(key.root + ':' + d + ':rev');
     }
@@ -48,7 +64,7 @@ for (const key of MAJOR_KEYS) {
   }
 }
 
-export const ALL_GROUP_INDICES = DEGREE_GROUPS.map((_, i) => i);
+export const ALL_GROUP_IDS: string[] = DEGREE_GROUPS.map((g) => g.id);
 
 /** Row definitions for the stats grid (one row per key). */
 export const GRID_NOTES = MAJOR_KEYS.map((k) => ({

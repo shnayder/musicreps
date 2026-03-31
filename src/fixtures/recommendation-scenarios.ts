@@ -69,7 +69,7 @@ export type ScenarioOutput = {
 export type RecommendationScenario = {
   name: string;
   description: string;
-  groupStats: Record<number, GroupSpec>;
+  groupStats: Record<string, GroupSpec>;
   checks?: {
     label: string;
     check: (output: ScenarioOutput) => string | null;
@@ -91,16 +91,16 @@ export type RecommendationScenario = {
  */
 export function generateLocalStorageData(
   namespace: string,
-  groupStats: Record<number, GroupSpec>,
+  groupStats: Record<string, GroupSpec>,
   now: number = Date.now(),
-  getItemIds?: (groupIndex: number) => string[],
+  getItemIds?: (groupId: string) => string[],
 ): Record<string, string> {
   const getIds = getItemIds ?? getItemIdsForGroup;
   const result: Record<string, string> = {};
 
-  for (const [groupIdxStr, spec] of Object.entries(groupStats)) {
-    const groupIdx = Number(groupIdxStr);
-    const itemIds = getIds(groupIdx);
+  for (const [groupId, spec] of Object.entries(groupStats)) {
+    const groupIdx = groupId.charCodeAt(0); // deterministic hash seed from ID
+    const itemIds = getIds(groupId);
     let itemOffset = 0;
 
     // Automatic items
@@ -157,31 +157,31 @@ export const SCENARIOS: RecommendationScenario[] = [
     name: 'fresh-start',
     description: 'All 5 groups unseen — brand new learner',
     groupStats: {
-      0: {
+      'dist-1-2': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      1: {
+      'dist-3-4': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      2: {
+      'dist-5-6': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      3: {
+      'dist-7-8': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      4: {
+      'dist-9-11': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 72,
@@ -190,11 +190,11 @@ export const SCENARIOS: RecommendationScenario[] = [
     },
     checks: [
       {
-        label: 'Recommends group 0',
+        label: 'Recommends group dist-1-2',
         check: (o) =>
-          o.recommendation.expandIndex === 0
+          o.recommendation.expandIndex === 'dist-1-2'
             ? null
-            : `expandIndex = ${o.recommendation.expandIndex}, expected 0`,
+            : `expandIndex = ${o.recommendation.expandIndex}, expected dist-1-2`,
       },
       {
         label: 'Status is "Not started"',
@@ -210,31 +210,31 @@ export const SCENARIOS: RecommendationScenario[] = [
     name: 'early-learning',
     description: 'G0 partially learned (10A/15W/23U), rest unseen',
     groupStats: {
-      0: {
+      'dist-1-2': {
         automaticCount: 10,
         workingCount: 15,
         unseenCount: 23,
         totalCount: 48,
       },
-      1: {
+      'dist-3-4': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      2: {
+      'dist-5-6': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      3: {
+      'dist-7-8': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      4: {
+      'dist-9-11': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 72,
@@ -250,11 +250,11 @@ export const SCENARIOS: RecommendationScenario[] = [
             : `expandIndex = ${o.recommendation.expandIndex}, expected null`,
       },
       {
-        label: 'Recommends group 0',
+        label: 'Recommends group dist-1-2',
         check: (o) =>
-          o.recommendation.recommended.has(0)
+          o.recommendation.recommended.has('dist-1-2')
             ? null
-            : `recommended does not include 0`,
+            : `recommended does not include dist-1-2`,
       },
     ],
   },
@@ -263,31 +263,31 @@ export const SCENARIOS: RecommendationScenario[] = [
     name: 'struggling',
     description: 'G0 struggling (5A/30W/13U) — mostly working, few automatic',
     groupStats: {
-      0: {
+      'dist-1-2': {
         automaticCount: 5,
         workingCount: 30,
         unseenCount: 13,
         totalCount: 48,
       },
-      1: {
+      'dist-3-4': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      2: {
+      'dist-5-6': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      3: {
+      'dist-7-8': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      4: {
+      'dist-9-11': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 72,
@@ -310,31 +310,31 @@ export const SCENARIOS: RecommendationScenario[] = [
     description:
       'G0 nearly all automatic (46A/2W/0U) — level speed high enough to expand',
     groupStats: {
-      0: {
+      'dist-1-2': {
         automaticCount: 46,
         workingCount: 2,
         unseenCount: 0,
         totalCount: 48,
       },
-      1: {
+      'dist-3-4': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      2: {
+      'dist-5-6': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      3: {
+      'dist-7-8': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      4: {
+      'dist-9-11': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 72,
@@ -350,11 +350,11 @@ export const SCENARIOS: RecommendationScenario[] = [
             : 'expandIndex is null, expected expansion',
       },
       {
-        label: 'Expands to group 1',
+        label: 'Expands to group dist-3-4',
         check: (o) =>
-          o.recommendation.expandIndex === 1
+          o.recommendation.expandIndex === 'dist-3-4'
             ? null
-            : `expandIndex = ${o.recommendation.expandIndex}, expected 1`,
+            : `expandIndex = ${o.recommendation.expandIndex}, expected dist-3-4`,
       },
     ],
   },
@@ -363,31 +363,31 @@ export const SCENARIOS: RecommendationScenario[] = [
     name: 'mid-progression',
     description: 'G0 mostly automatic, G1 partially learned (18A/20W/10U)',
     groupStats: {
-      0: {
+      'dist-1-2': {
         automaticCount: 40,
         workingCount: 8,
         unseenCount: 0,
         totalCount: 48,
       },
-      1: {
+      'dist-3-4': {
         automaticCount: 18,
         workingCount: 20,
         unseenCount: 10,
         totalCount: 48,
       },
-      2: {
+      'dist-5-6': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      3: {
+      'dist-7-8': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 48,
         totalCount: 48,
       },
-      4: {
+      'dist-9-11': {
         automaticCount: 0,
         workingCount: 0,
         unseenCount: 72,
@@ -396,11 +396,11 @@ export const SCENARIOS: RecommendationScenario[] = [
     },
     checks: [
       {
-        label: 'Recommends G1',
+        label: 'Recommends dist-3-4',
         check: (o) =>
-          o.recommendation.recommended.has(1)
+          o.recommendation.recommended.has('dist-3-4')
             ? null
-            : `recommended does not include 1`,
+            : `recommended does not include dist-3-4`,
       },
       {
         label: 'Status is "Hesitant" or "Learning"',
@@ -417,31 +417,31 @@ export const SCENARIOS: RecommendationScenario[] = [
     name: 'nearly-done',
     description: 'All 5 groups started, mostly automatic with few working',
     groupStats: {
-      0: {
+      'dist-1-2': {
         automaticCount: 46,
         workingCount: 2,
         unseenCount: 0,
         totalCount: 48,
       },
-      1: {
+      'dist-3-4': {
         automaticCount: 45,
         workingCount: 3,
         unseenCount: 0,
         totalCount: 48,
       },
-      2: {
+      'dist-5-6': {
         automaticCount: 44,
         workingCount: 4,
         unseenCount: 0,
         totalCount: 48,
       },
-      3: {
+      'dist-7-8': {
         automaticCount: 43,
         workingCount: 5,
         unseenCount: 0,
         totalCount: 48,
       },
-      4: {
+      'dist-9-11': {
         automaticCount: 66,
         workingCount: 6,
         unseenCount: 0,
@@ -472,31 +472,31 @@ export const SCENARIOS: RecommendationScenario[] = [
     name: 'fully-mastered',
     description: 'All groups fully automatic, no working or unseen items',
     groupStats: {
-      0: {
+      'dist-1-2': {
         automaticCount: 48,
         workingCount: 0,
         unseenCount: 0,
         totalCount: 48,
       },
-      1: {
+      'dist-3-4': {
         automaticCount: 48,
         workingCount: 0,
         unseenCount: 0,
         totalCount: 48,
       },
-      2: {
+      'dist-5-6': {
         automaticCount: 48,
         workingCount: 0,
         unseenCount: 0,
         totalCount: 48,
       },
-      3: {
+      'dist-7-8': {
         automaticCount: 48,
         workingCount: 0,
         unseenCount: 0,
         totalCount: 48,
       },
-      4: {
+      'dist-9-11': {
         automaticCount: 72,
         workingCount: 0,
         unseenCount: 0,

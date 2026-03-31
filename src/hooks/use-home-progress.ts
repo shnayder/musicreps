@@ -37,25 +37,26 @@ export type ModeProgress = {
 // ---------------------------------------------------------------------------
 
 /**
- * Load skipped group indices from storage.
+ * Load skipped group IDs from storage.
  * Convention: key = `{namespace}_enabledGroups_skipped`.
- * Format: [[index, reason], ...] where reason is 'mastered' | 'deferred'.
+ * Only the current string-ID format is supported; legacy numeric entries
+ * are ignored (skipped groups from before the string-ID migration will
+ * reappear, which is acceptable).
  */
-export function loadSkippedGroups(namespace: string): ReadonlySet<number> {
+export function loadSkippedGroups(namespace: string): ReadonlySet<string> {
   try {
     const raw = storage.getItem(namespace + '_enabledGroups_skipped');
     if (!raw) return new Set();
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return new Set();
-    const result = new Set<number>();
+    const result = new Set<string>();
     for (const entry of parsed) {
-      // New format: [[index, reason], ...]
-      if (Array.isArray(entry) && typeof entry[0] === 'number') {
+      // New format: [[id, reason], ...] with string ID
+      if (Array.isArray(entry) && typeof entry[0] === 'string') {
         result.add(entry[0]);
-      } else if (typeof entry === 'number') {
-        // Old format: [index, ...]
-        result.add(entry);
       }
+      // Old numeric format is intentionally ignored here — the home screen
+      // shows legacy data best-effort, without conversion.
     }
     return result;
   } catch (_) { /* expected */ }
@@ -68,7 +69,7 @@ export function computeProgressForMode(
   entry: ModeProgressEntry,
   storage: StorageAdapter,
   motorBaseline: number | null,
-  skippedGroups?: ReadonlySet<number>,
+  skippedGroups?: ReadonlySet<string>,
 ): ModeProgress {
   const cfg = motorBaseline !== null
     ? deriveScaledConfig(motorBaseline)
@@ -79,15 +80,15 @@ export function computeProgressForMode(
     ? { kind: 'items', itemIds: entry.allItemIds() }
     : {
       kind: 'groups',
-      groups: entry.groups.map((g, i) => ({
-        index: i,
+      groups: entry.groups.map((g) => ({
+        id: g.id,
         itemIds: g.getItemIds(),
       })),
       skippedGroups,
     };
 
   // Single-group + skipped → not started
-  if (entry.groups.length === 1 && skippedGroups?.has(0)) {
+  if (entry.groups.length === 1 && skippedGroups?.has(entry.groups[0].id)) {
     return { groupColors: [] };
   }
 
@@ -98,7 +99,7 @@ export function computeProgressForMode(
 export function computeAllProgress(
   createStorage: (ns: string) => StorageAdapter = createStorageAdapter,
   motorBaseline: number | null = null,
-  getSkipped: (ns: string) => ReadonlySet<number> = loadSkippedGroups,
+  getSkipped: (ns: string) => ReadonlySet<string> = loadSkippedGroups,
 ): Map<string, ModeProgress> {
   const result = new Map<string, ModeProgress>();
   for (const entry of MODE_PROGRESS_MANIFEST) {
@@ -128,7 +129,7 @@ export function computeAllRecommendations(
   starred: ReadonlySet<string>,
   createStorage: (ns: string) => StorageAdapter = createStorageAdapter,
   motorBaseline: number | null = null,
-  getSkipped: (ns: string) => ReadonlySet<number> = loadSkippedGroups,
+  getSkipped: (ns: string) => ReadonlySet<string> = loadSkippedGroups,
   definitionOrder?: string[],
 ): SkillRecommendation[] {
   if (starred.size === 0) return [];

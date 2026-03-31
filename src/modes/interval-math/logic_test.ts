@@ -99,7 +99,7 @@ describe('DISTANCE_GROUPS', () => {
 
 describe('getItemIdsForGroup', () => {
   it('group 0 contains items with m2 and M2', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('seconds');
     assert.ok(ids.includes('C+m2'));
     assert.ok(ids.includes('C-m2'));
     assert.ok(ids.includes('C+M2'));
@@ -107,18 +107,18 @@ describe('getItemIdsForGroup', () => {
   });
 
   it('group 0 does not contain m3 or higher', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('seconds');
     assert.ok(!ids.includes('C+m3'));
     assert.ok(!ids.includes('C-P4'));
   });
 
   it('group 0 has 48 items (12 notes × 2 intervals × 2 dirs)', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('seconds');
     assert.equal(ids.length, 48);
   });
 
   it('group 4 contains M6, m7, and M7 items', () => {
-    const ids = getItemIdsForGroup(4);
+    const ids = getItemIdsForGroup('sixths-sevenths');
     assert.ok(ids.includes('C+M6'));
     assert.ok(ids.includes('C-M6'));
     assert.ok(ids.includes('C+m7'));
@@ -128,7 +128,7 @@ describe('getItemIdsForGroup', () => {
   });
 
   it('group 4 has 72 items (12 notes × 3 intervals × 2 dirs)', () => {
-    const ids = getItemIdsForGroup(4);
+    const ids = getItemIdsForGroup('sixths-sevenths');
     assert.equal(ids.length, 72);
   });
 });
