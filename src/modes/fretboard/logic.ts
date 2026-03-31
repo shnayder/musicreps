@@ -16,6 +16,7 @@ import { createFretboardHelpers } from '../../quiz-fretboard-state.ts';
 // ---------------------------------------------------------------------------
 
 export type FretboardGroup = {
+  id: string;
   label: () => string;
   longLabel: () => string;
   strings: number[];
@@ -31,30 +32,35 @@ export type FretboardGroup = {
 const GUITAR_GROUPS: FretboardGroup[] = [
   // Naturals by string (E and e combined since same notes)
   {
+    id: 'e-natural',
     label: () => displayNote('E') + ' strings',
     longLabel: () => 'High & low ' + displayNote('E') + ' strings',
     strings: [5, 0],
     noteFilter: 'natural',
   },
   {
+    id: 'a-natural',
     label: () => displayNote('A') + ' string',
     longLabel: () => displayNote('A') + ' string',
     strings: [4],
     noteFilter: 'natural',
   },
   {
+    id: 'd-natural',
     label: () => displayNote('D') + ' string',
     longLabel: () => displayNote('D') + ' string',
     strings: [3],
     noteFilter: 'natural',
   },
   {
+    id: 'g-natural',
     label: () => displayNote('G') + ' string',
     longLabel: () => displayNote('G') + ' string',
     strings: [2],
     noteFilter: 'natural',
   },
   {
+    id: 'b-natural',
     label: () => displayNote('B') + ' string',
     longLabel: () => displayNote('B') + ' string',
     strings: [1],
@@ -62,12 +68,14 @@ const GUITAR_GROUPS: FretboardGroup[] = [
   },
   // Accidentals by string pair
   {
+    id: 'e-sharps',
     label: () => displayNote('E') + ' \u266F/\u266D',
     longLabel: () => displayNote('E') + ' strings \u266F/\u266D',
     strings: [5, 0],
     noteFilter: 'sharps-flats',
   },
   {
+    id: 'ad-sharps',
     label: () => displayNote('A') + ' ' + displayNote('D') + ' \u266F/\u266D',
     longLabel: () =>
       displayNote('A') + ' & ' + displayNote('D') + ' strings \u266F/\u266D',
@@ -75,6 +83,7 @@ const GUITAR_GROUPS: FretboardGroup[] = [
     noteFilter: 'sharps-flats',
   },
   {
+    id: 'gb-sharps',
     label: () => displayNote('G') + ' ' + displayNote('B') + ' \u266F/\u266D',
     longLabel: () =>
       displayNote('G') + ' & ' + displayNote('B') + ' strings \u266F/\u266D',
@@ -92,24 +101,28 @@ const GUITAR_GROUPS: FretboardGroup[] = [
 const UKULELE_GROUPS: FretboardGroup[] = [
   // Naturals by string
   {
+    id: 'g-natural',
     label: () => displayNote('G') + ' string',
     longLabel: () => displayNote('G') + ' string',
     strings: [3],
     noteFilter: 'natural',
   },
   {
+    id: 'c-natural',
     label: () => displayNote('C') + ' string',
     longLabel: () => displayNote('C') + ' string',
     strings: [2],
     noteFilter: 'natural',
   },
   {
+    id: 'e-natural',
     label: () => displayNote('E') + ' string',
     longLabel: () => displayNote('E') + ' string',
     strings: [1],
     noteFilter: 'natural',
   },
   {
+    id: 'a-natural',
     label: () => displayNote('A') + ' string',
     longLabel: () => displayNote('A') + ' string',
     strings: [0],
@@ -117,6 +130,7 @@ const UKULELE_GROUPS: FretboardGroup[] = [
   },
   // Accidentals by string pair
   {
+    id: 'gc-sharps',
     label: () => displayNote('G') + ' ' + displayNote('C') + ' \u266F/\u266D',
     longLabel: () =>
       displayNote('G') + ' & ' + displayNote('C') + ' strings \u266F/\u266D',
@@ -124,6 +138,7 @@ const UKULELE_GROUPS: FretboardGroup[] = [
     noteFilter: 'sharps-flats',
   },
   {
+    id: 'ea-sharps',
     label: () => displayNote('E') + ' ' + displayNote('A') + ' \u266F/\u266D',
     longLabel: () =>
       displayNote('E') + ' & ' + displayNote('A') + ' strings \u266F/\u266D',
@@ -174,10 +189,10 @@ function getHelpers(
 /** Get all item IDs belonging to a group for the given instrument. */
 export function getItemIdsForGroup(
   instrument: Instrument,
-  groupIndex: number,
+  groupId: string,
 ): string[] {
   const groups = getGroups(instrument);
-  const group = groups[groupIndex];
+  const group = groups.find((g) => g.id === groupId);
   if (!group) return [];
   const fb = getHelpers(instrument);
   const items: string[] = [];
@@ -198,9 +213,9 @@ export function getAllItems(instrument: Instrument): string[] {
   return items;
 }
 
-/** All group indices for the instrument. */
-export function getAllGroupIndices(instrument: Instrument): number[] {
-  return getGroups(instrument).map((_, i) => i);
+/** All group IDs for the instrument. */
+export function getAllGroupIds(instrument: Instrument): string[] {
+  return getGroups(instrument).map((g) => g.id);
 }
 
 // ---------------------------------------------------------------------------
@@ -227,16 +242,13 @@ export function getQuestion(
 
 export function formatLabel(
   instrument: Instrument,
-  enabledGroups: ReadonlySet<number>,
+  enabledGroups: ReadonlySet<string>,
 ): string {
   const groups = getGroups(instrument);
   if (enabledGroups.size === groups.length) return 'all groups';
-  const labels = Array.from(enabledGroups)
-    .sort((a, b) => a - b)
-    .map((i) => {
-      const g = groups[i];
-      if (!g) return String(i);
-      return typeof g.label === 'function' ? g.label() : g.label;
-    });
+  // Preserve group order by iterating in definition order
+  const labels = groups
+    .filter((g) => enabledGroups.has(g.id))
+    .map((g) => g.label());
   return labels.join(', ');
 }

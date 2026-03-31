@@ -37,7 +37,7 @@ describe('DEGREE_GROUPS', () => {
 
 describe('getItemIdsForGroup', () => {
   it('group 0 contains items for degrees 4 and 5', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('4th-5th');
     assert.ok(ids.includes('C:4:fwd'));
     assert.ok(ids.includes('C:4:rev'));
     assert.ok(ids.includes('C:5:fwd'));
@@ -47,14 +47,14 @@ describe('getItemIdsForGroup', () => {
   });
 
   it('group 0 does not include degree 1, 3, or 6', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('4th-5th');
     assert.ok(!ids.includes('C:1:fwd'));
     assert.ok(!ids.includes('C:3:fwd'));
     assert.ok(!ids.includes('C:6:fwd'));
   });
 
   it('group 0 has 48 items (12 keys × 2 degrees × 2 directions)', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('4th-5th');
     assert.equal(ids.length, 48);
   });
 });

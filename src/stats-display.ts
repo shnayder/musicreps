@@ -219,8 +219,8 @@ export type ProgressColorInput =
   | { kind: 'items'; itemIds: string[] }
   | {
     kind: 'groups';
-    groups: Array<{ index: number; itemIds: string[] }>;
-    skippedGroups?: ReadonlySet<number> | ReadonlyMap<number, unknown>;
+    groups: Array<{ id: string; itemIds: string[] }>;
+    skippedGroups?: ReadonlySet<string> | ReadonlyMap<string, unknown>;
   };
 
 /**
@@ -245,7 +245,7 @@ export function computeProgressColors(
   }
   const skipped = input.skippedGroups;
   const active = skipped
-    ? input.groups.filter((g) => !skipped.has(g.index))
+    ? input.groups.filter((g) => !skipped.has(g.id))
     : input.groups;
   if (active.length === 0) return [];
   const segments = active.map((g) =>

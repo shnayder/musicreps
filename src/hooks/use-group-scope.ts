@@ -33,20 +33,24 @@ import { useNotationVersion } from './use-notation-version.ts';
 
 /** Configuration for a group-based scope hook. */
 export type GroupScopeSpec = {
-  /** Raw group array from mode logic (must have a `.label` property). */
+  /** Raw group array from mode logic (must have `.id` and `.label` properties). */
   groups: Array<
-    { label: string | (() => string); longLabel?: string | (() => string) }
+    {
+      id: string;
+      label: string | (() => string);
+      longLabel?: string | (() => string);
+    }
   >;
-  /** Map group index → item IDs (from mode logic). */
-  getItemIdsForGroup: (index: number) => string[];
-  /** All valid group indices, e.g. `[0, 1, 2, ...]` (from mode logic). */
-  allGroupIndices: number[];
+  /** Map group ID → item IDs (from mode logic). */
+  getItemIdsForGroup: (id: string) => string[];
+  /** All valid group IDs (from mode logic). */
+  allGroupIds: string[];
   /** storage key for persisting enabled groups. */
   storageKey: string;
   /** Human label for the scope control, e.g. 'Distances', 'Keys'. */
   scopeLabel: string;
-  /** Which groups are enabled by default (e.g. `[0]` or `[0, 1]`). */
-  defaultEnabled: number[];
+  /** Which groups are enabled by default. */
+  defaultEnabled: string[];
   /** Adaptive selector — used for recommendation computation. */
   selector: AdaptiveSelector;
   /**
@@ -54,7 +58,7 @@ export type GroupScopeSpec = {
    * Mode-specific because label derivation varies (some modes flatMap
    * groups to sub-items, others use group labels directly).
    */
-  formatLabel: (enabledGroups: ReadonlySet<number>) => string;
+  formatLabel: (enabledGroups: ReadonlySet<string>) => string;
 };
 
 /** Everything a group-based mode needs from scope + recommendations. */
@@ -63,10 +67,10 @@ export type GroupScopeResult = {
   scope: ScopeState;
   /** Scope mutation actions (toggleGroup, setScope, skipGroup, etc.). */
   scopeActions: ScopeActions;
-  /** Currently enabled group indices (reflects active practice mode). */
-  enabledGroups: ReadonlySet<number>;
-  /** Currently skipped group indices with skip reason. */
-  skippedGroups: ReadonlyMap<number, GroupStatus>;
+  /** Currently enabled group IDs (reflects active practice mode). */
+  enabledGroups: ReadonlySet<string>;
+  /** Currently skipped group IDs with skip reason. */
+  skippedGroups: ReadonlyMap<string, GroupStatus>;
   /** All item IDs in enabled groups (reflects active practice mode). */
   enabledItems: string[];
   /** Human-readable label for the active scope, e.g. "1–2, 3–4 semitones". */
@@ -92,8 +96,8 @@ export type GroupScopeResult = {
   practiceMode: PracticeMode;
   /** Switch between suggested and custom practice modes. */
   setPracticeMode: (mode: PracticeMode) => void;
-  /** Group indices from the recommendation's recommended set. */
-  suggestedScope: ReadonlySet<number>;
+  /** Group IDs from the recommendation's recommended set. */
+  suggestedScope: ReadonlySet<string>;
   /** Structured recommendation lines for the SuggestionLines component. */
   suggestionLines: SuggestionLine[];
 };
@@ -102,7 +106,7 @@ export type GroupScopeResult = {
 // Hook
 // ---------------------------------------------------------------------------
 
-const EMPTY_SKIPPED: ReadonlyMap<number, GroupStatus> = new Map();
+const EMPTY_SKIPPED: ReadonlyMap<string, GroupStatus> = new Map();
 
 /** Ref-backed stable getter — identity never changes, always reads current. */
 function useStableGetter<T>(value: T): () => T {
@@ -139,7 +143,7 @@ function usePracticeMode(
 
 type RecommendationData = {
   recommendation: RecommendationResult;
-  suggestedScope: ReadonlySet<number>;
+  suggestedScope: ReadonlySet<string>;
   suggestionLines: SuggestionLine[];
   recommendationText: string;
 };
@@ -147,25 +151,35 @@ type RecommendationData = {
 /** Compute recommendations, structured lines, and text from active groups. */
 function useRecommendationData(
   spec: GroupScopeSpec,
-  activeGroupIndices: number[],
+  activeGroupIds: string[],
   notationVersion: number,
 ): RecommendationData {
+  // Build a stable position map for sortUnstarted tie-breaking.
+  const idOrder = useMemo(
+    () => new Map(spec.allGroupIds.map((id, i) => [id, i])),
+    [spec.allGroupIds],
+  );
   const recommendation = useMemo(
     (): RecommendationResult =>
       computeRecommendations(
         spec.selector,
-        activeGroupIndices,
+        activeGroupIds,
         spec.getItemIdsForGroup,
         {},
-        { sortUnstarted: (a, b) => a.string - b.string },
+        {
+          sortUnstarted: (a, b) =>
+            (idOrder.get(a.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0),
+        },
       ),
-    [spec.selector, activeGroupIndices, spec.getItemIdsForGroup],
+    [spec.selector, activeGroupIds, spec.getItemIdsForGroup, idOrder],
   );
   const getLabel = useCallback(
-    (i: number) =>
-      (spec.groups[i].longLabel
-        ? resolveLabel(spec.groups[i].longLabel)
-        : undefined) ?? resolveLabel(spec.groups[i].label),
+    (id: string) => {
+      const g = spec.groups.find((g) => g.id === id);
+      if (!g) return id;
+      return (g.longLabel ? resolveLabel(g.longLabel) : undefined) ??
+        resolveLabel(g.label);
+    },
     [spec.groups, notationVersion],
   );
   const suggestionLines = useMemo(
@@ -191,38 +205,37 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   // --- Scope state (persisted to storage) — always reflects custom ---
   const [scope, scopeActions] = useScopeState({
     kind: 'groups',
-    groups: spec.groups.map((g, i) => ({
-      index: i,
+    groups: spec.groups.map((g) => ({
+      id: g.id,
       label: resolveLabel(g.label),
-      itemIds: spec.getItemIdsForGroup(i),
+      itemIds: spec.getItemIdsForGroup(g.id),
     })),
     defaultEnabled: spec.defaultEnabled,
     storageKey: spec.storageKey,
     label: spec.scopeLabel,
-    sortUnstarted: (a, b) => a.string - b.string,
   });
 
-  const customGroups = scope.kind === 'groups'
+  const customGroups: ReadonlySet<string> = scope.kind === 'groups'
     ? scope.enabledGroups
     : new Set(spec.defaultEnabled);
-  const skippedGroups: ReadonlyMap<number, GroupStatus> =
+  const skippedGroups: ReadonlyMap<string, GroupStatus> =
     scope.kind === 'groups' ? scope.skippedGroups : EMPTY_SKIPPED;
-  const activeGroupIndices = useMemo(
-    () => spec.allGroupIndices.filter((i) => !skippedGroups.has(i)),
-    [spec.allGroupIndices, skippedGroups],
+  const activeGroupIds = useMemo(
+    () => spec.allGroupIds.filter((id) => !skippedGroups.has(id)),
+    [spec.allGroupIds, skippedGroups],
   );
 
-  const rec = useRecommendationData(spec, activeGroupIndices, notationVersion);
+  const rec = useRecommendationData(spec, activeGroupIds, notationVersion);
 
   // --- Active scope: depends on practice mode ---
-  const enabledGroups =
+  const enabledGroups: ReadonlySet<string> =
     practiceMode === 'suggested' && rec.suggestedScope.size > 0
       ? rec.suggestedScope
       : customGroups;
 
   const enabledItems = useMemo(() => {
     const items: string[] = [];
-    for (const g of enabledGroups) items.push(...spec.getItemIdsForGroup(g));
+    for (const id of enabledGroups) items.push(...spec.getItemIdsForGroup(id));
     return items;
   }, [enabledGroups, spec.getItemIdsForGroup]);
 

@@ -764,9 +764,10 @@ function GroupPracticeContent<Q>(
   const groupScope = def.scope.kind === 'groups' ? def.scope : null;
   if (!groupScope) return null;
 
-  const groupLabels = groupScope.allGroupIndices.map((i) =>
-    resolveGroupLabel(groupScope.groups[i].label)
-  );
+  const groupLabels = groupScope.allGroupIds.map((id) => {
+    const g = groupScope.groups.find((g) => g.id === id);
+    return g ? resolveGroupLabel(g.label) : id;
+  });
 
   return (
     <>
@@ -802,34 +803,36 @@ function LevelProgressCards<Q>(
   if (!groupScope) return null;
   return (
     <div class='level-progress-cards'>
-      {groupScope.allGroupIndices.map((i) => {
-        const itemIds = groupScope.getItemIdsForGroup(i);
+      {groupScope.allGroupIds.map((id) => {
+        const g = groupScope.groups.find((g) => g.id === id);
+        const itemIds = groupScope.getItemIdsForGroup(id);
         const colors = progressBarColors(learner.selector, itemIds);
         const pill = computeReviewPill(learner.selector, itemIds);
-        const skipReason = groupScopeResult.skippedGroups.get(i);
+        const skipReason = groupScopeResult.skippedGroups.get(id);
         const status = skipReason === 'mastered'
           ? 'known' as const
           : skipReason === 'deferred'
           ? 'skipped' as const
           : 'normal' as const;
+        const label = g
+          ? ((g.longLabel ? resolveGroupLabel(g.longLabel) : undefined) ??
+            resolveGroupLabel(g.label))
+          : id;
         return (
           <LevelProgressCard
-            key={i}
-            label={(groupScope.groups[i].longLabel
-              ? resolveGroupLabel(groupScope.groups[i].longLabel)
-              : undefined) ??
-              resolveGroupLabel(groupScope.groups[i].label)}
+            key={id}
+            label={label}
             pill={pill ?? undefined}
             colors={colors}
             status={status}
             onToggleKnown={() =>
               skipReason === 'mastered'
-                ? groupScopeResult.scopeActions.unskipGroup(i)
-                : groupScopeResult.scopeActions.skipGroup(i, 'mastered')}
+                ? groupScopeResult.scopeActions.unskipGroup(id)
+                : groupScopeResult.scopeActions.skipGroup(id, 'mastered')}
             onToggleSkip={() =>
               skipReason === 'deferred'
-                ? groupScopeResult.scopeActions.unskipGroup(i)
-                : groupScopeResult.scopeActions.skipGroup(i, 'deferred')}
+                ? groupScopeResult.scopeActions.unskipGroup(id)
+                : groupScopeResult.scopeActions.skipGroup(id, 'deferred')}
           />
         );
       })}
@@ -998,7 +1001,7 @@ function AboutTab(
 // GenericMode component
 // ---------------------------------------------------------------------------
 
-const EMPTY_GROUPS: ReadonlySet<number> = new Set();
+const EMPTY_GROUPS: ReadonlySet<string> = new Set();
 
 // ---------------------------------------------------------------------------
 // Engine setup hook — refs, sequential input, engine config, engine creation
@@ -1098,7 +1101,7 @@ function buildGroupScopeSpec<Q>(
   return {
     groups: def.scope.groups,
     getItemIdsForGroup: def.scope.getItemIdsForGroup,
-    allGroupIndices: def.scope.allGroupIndices,
+    allGroupIds: def.scope.allGroupIds,
     storageKey: def.scope.storageKey,
     scopeLabel: def.scope.scopeLabel,
     defaultEnabled: def.scope.defaultEnabled,
@@ -1290,16 +1293,16 @@ function useProgressColors<Q>(
   def: ModeDefinition<Q>,
   learner: ReturnType<typeof useLearnerModel>,
   _phase: string,
-  skippedGroups?: ReadonlyMap<number, unknown>,
+  skippedGroups?: ReadonlyMap<string, unknown>,
 ): string[] {
   return useMemo(() => {
     if (def.scope.kind === 'groups') {
       const scope = def.scope;
       return computeProgressColors(learner.selector, {
         kind: 'groups',
-        groups: scope.allGroupIndices.map((i) => ({
-          index: i,
-          itemIds: scope.getItemIdsForGroup(i),
+        groups: scope.allGroupIds.map((id) => ({
+          id,
+          itemIds: scope.getItemIdsForGroup(id),
         })),
         skippedGroups,
       });

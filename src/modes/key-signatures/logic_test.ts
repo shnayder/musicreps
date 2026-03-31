@@ -47,8 +47,8 @@ describe('KEY_GROUPS', () => {
 });
 
 describe('getItemIdsForGroup', () => {
-  it('group 0 contains C, G, F, D, Bb, A, Eb items (major 0–3 ♯/♭)', () => {
-    const ids = getItemIdsForGroup(0);
+  it('group major-easy contains C, G, F, D, Bb, A, Eb items (major 0–3 ♯/♭)', () => {
+    const ids = getItemIdsForGroup('major-easy');
     assert.ok(ids.includes('C:fwd'));
     assert.ok(ids.includes('G:fwd'));
     assert.ok(ids.includes('F:fwd'));
@@ -58,22 +58,22 @@ describe('getItemIdsForGroup', () => {
     assert.ok(ids.includes('Eb:fwd'));
   });
 
-  it('group 0 has 14 items (7 keys × 2 directions)', () => {
-    assert.equal(getItemIdsForGroup(0).length, 14);
+  it('group major-easy has 14 items (7 keys × 2 directions)', () => {
+    assert.equal(getItemIdsForGroup('major-easy').length, 14);
   });
 
-  it('group 2 (minor 0–3 ♯/♭) contains Am items', () => {
-    const ids = getItemIdsForGroup(2);
+  it('group minor-easy (minor 0–3 ♯/♭) contains Am items', () => {
+    const ids = getItemIdsForGroup('minor-easy');
     assert.ok(ids.includes('Am:fwd'));
     assert.ok(ids.includes('Am:rev'));
   });
 
-  it('group 2 has 14 items (7 minor keys × 2 directions)', () => {
-    assert.equal(getItemIdsForGroup(2).length, 14);
+  it('group minor-easy has 14 items (7 minor keys × 2 directions)', () => {
+    assert.equal(getItemIdsForGroup('minor-easy').length, 14);
   });
 
-  it('group 3 has 10 items (5 minor keys × 2 directions)', () => {
-    assert.equal(getItemIdsForGroup(3).length, 10);
+  it('group minor-hard has 10 items (5 minor keys × 2 directions)', () => {
+    assert.equal(getItemIdsForGroup('minor-hard').length, 10);
   });
 });
 

@@ -11,7 +11,7 @@ import type {
   ModeDefinition,
 } from '../../declarative/types.ts';
 import {
-  ALL_GROUP_INDICES,
+  ALL_GROUP_IDS,
   ALL_ITEMS,
   evaluate,
   formatGroupLabel,
@@ -88,10 +88,10 @@ export const SPEED_TAP_DEF: ModeDefinition<Question> = {
     kind: 'groups',
     groups: NOTE_GROUPS,
     getItemIdsForGroup,
-    allGroupIndices: ALL_GROUP_INDICES,
+    allGroupIds: ALL_GROUP_IDS,
     storageKey: 'speedTap_enabledGroups',
     scopeLabel: 'Notes',
-    defaultEnabled: [0],
+    defaultEnabled: [ALL_GROUP_IDS[0]],
     formatLabel: formatGroupLabel,
   },
 

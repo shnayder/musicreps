@@ -72,14 +72,18 @@ export type NoScopeDef = { kind: 'none' };
 export type GroupScopeDef = {
   kind: 'groups';
   groups: Array<
-    { label: string | (() => string); longLabel?: string | (() => string) }
+    {
+      id: string;
+      label: string | (() => string);
+      longLabel?: string | (() => string);
+    }
   >;
-  getItemIdsForGroup: (index: number) => string[];
-  allGroupIndices: number[];
+  getItemIdsForGroup: (id: string) => string[];
+  allGroupIds: string[];
   storageKey: string;
   scopeLabel: string;
-  defaultEnabled: number[];
-  formatLabel: (enabledGroups: ReadonlySet<number>) => string;
+  defaultEnabled: string[];
+  formatLabel: (enabledGroups: ReadonlySet<string>) => string;
 };
 
 export type ScopeDef = NoScopeDef | GroupScopeDef;
@@ -322,7 +326,7 @@ type ModeDefinitionBase<Q> = {
   // --- Optional controller hook ---
   /** Preact hook returning imperative rendering + lifecycle hooks.
    *  Called inside GenericMode — may use useRef, useState, etc. */
-  useController?: (enabledGroups: ReadonlySet<number>) => ModeController<Q>;
+  useController?: (enabledGroups: ReadonlySet<string>) => ModeController<Q>;
 };
 
 /**

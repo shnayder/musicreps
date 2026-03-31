@@ -49,6 +49,7 @@ export type ModeProgressEntry = {
   modeId: string;
   namespace: string;
   groups: Array<{
+    id: string;
     label: string;
     longLabel?: string;
     getItemIds: () => string[];
@@ -61,13 +62,16 @@ export type ModeProgressEntry = {
 // ---------------------------------------------------------------------------
 
 function buildGroupEntries(
-  groups: { label: string; longLabel?: string }[],
-  getIds: (i: number) => string[],
-): Array<{ label: string; longLabel?: string; getItemIds: () => string[] }> {
-  return groups.map((g, i) => ({
+  groups: { id: string; label: string; longLabel?: string }[],
+  getIds: (id: string) => string[],
+): Array<
+  { id: string; label: string; longLabel?: string; getItemIds: () => string[] }
+> {
+  return groups.map((g) => ({
+    id: g.id,
     label: g.label,
     longLabel: g.longLabel,
-    getItemIds: () => getIds(i),
+    getItemIds: () => getIds(g.id),
   }));
 }
 
@@ -78,33 +82,35 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
   {
     modeId: 'fretboard',
     namespace: 'fretboard',
-    groups: guitarGroups.map((g, i) => ({
+    groups: guitarGroups.map((g) => ({
+      id: g.id,
       label: g.label(),
       longLabel: g.longLabel(),
-      getItemIds: () => fretboardGroup(GUITAR, i),
+      getItemIds: () => fretboardGroup(GUITAR, g.id),
     })),
     allItemIds: () => fretboardAllItems(GUITAR),
   },
   {
     modeId: 'ukulele',
     namespace: 'ukulele',
-    groups: ukuleleGroups.map((g, i) => ({
+    groups: ukuleleGroups.map((g) => ({
+      id: g.id,
       label: g.label(),
       longLabel: g.longLabel(),
-      getItemIds: () => fretboardGroup(UKULELE, i),
+      getItemIds: () => fretboardGroup(UKULELE, g.id),
     })),
     allItemIds: () => fretboardAllItems(UKULELE),
   },
   {
     modeId: 'noteSemitones',
     namespace: 'noteSemitones',
-    groups: [{ label: 'All', getItemIds: () => NOTE_SEMI_ITEMS }],
+    groups: [{ id: 'all', label: 'All', getItemIds: () => NOTE_SEMI_ITEMS }],
     allItemIds: () => NOTE_SEMI_ITEMS,
   },
   {
     modeId: 'intervalSemitones',
     namespace: 'intervalSemitones',
-    groups: [{ label: 'All', getItemIds: () => INT_SEMI_ITEMS }],
+    groups: [{ id: 'all', label: 'All', getItemIds: () => INT_SEMI_ITEMS }],
     allItemIds: () => INT_SEMI_ITEMS,
   },
   {
@@ -146,7 +152,7 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
   {
     modeId: 'speedTap',
     namespace: 'speedTap',
-    groups: [{ label: 'All', getItemIds: () => SPEED_TAP_ITEMS }],
+    groups: [{ id: 'all', label: 'All', getItemIds: () => SPEED_TAP_ITEMS }],
     allItemIds: () => SPEED_TAP_ITEMS,
   },
 ];

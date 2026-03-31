@@ -45,19 +45,19 @@ export function statusLabelFromLevel(level: number): string {
 export type { SuggestionLine } from './types.ts';
 
 /**
- * Group levelRecs by type, deduplicating indices by highest priority.
- * Returns a record mapping rec type to sorted group indices.
+ * Group levelRecs by type, deduplicating group IDs by highest priority.
+ * Returns a record mapping rec type to group IDs in priority order.
  */
 function groupRecsByType(
   levelRecs: RecommendationResult['levelRecs'],
-): Record<string, number[]> {
-  const seen = new Set<number>();
-  const byType: Record<string, number[]> = {};
+): Record<string, string[]> {
+  const seen = new Set<string>();
+  const byType: Record<string, string[]> = {};
   for (const rec of levelRecs) {
-    if (seen.has(rec.index)) continue;
-    seen.add(rec.index);
+    if (seen.has(rec.groupId)) continue;
+    seen.add(rec.groupId);
     if (!byType[rec.type]) byType[rec.type] = [];
-    byType[rec.type].push(rec.index);
+    byType[rec.type].push(rec.groupId);
   }
   return byType;
 }
@@ -68,7 +68,7 @@ function groupRecsByType(
  */
 export function buildRecommendationLines(
   result: RecommendationResult,
-  getGroupLabel: (index: number) => string,
+  getGroupLabel: (groupId: string) => string,
 ): SuggestionLine[] {
   if (result.recommended.size === 0) return [];
 
@@ -76,11 +76,12 @@ export function buildRecommendationLines(
   const lines: SuggestionLine[] = [];
 
   if (byType['review']) {
-    const labels = byType['review'].sort((a, b) => a - b).map(getGroupLabel);
+    // Labels come in priority order from levelRecs — no numeric sort needed
+    const labels = byType['review'].map(getGroupLabel);
     lines.push({ verb: 'Review', levels: labels });
   }
   if (byType['practice']) {
-    const labels = byType['practice'].sort((a, b) => a - b).map(getGroupLabel);
+    const labels = byType['practice'].map(getGroupLabel);
     lines.push({ verb: 'Practice', levels: labels });
   }
   if (byType['expand'] && result.expandIndex !== null) {
@@ -92,7 +93,7 @@ export function buildRecommendationLines(
     });
   }
   if (byType['automate']) {
-    const labels = byType['automate'].sort((a, b) => a - b).map(getGroupLabel);
+    const labels = byType['automate'].map(getGroupLabel);
     lines.push({ verb: 'Keep practicing', levels: labels });
   }
 
@@ -120,12 +121,12 @@ function flatVerb(line: SuggestionLine): string {
  * Generates a unified string from `result.levelRecs` — same text shown
  * in both in-skill suggestion card and home screen cue.
  *
- * @param getGroupLabel Maps a group/string index to a display label.
+ * @param getGroupLabel Maps a group ID to a display label.
  * @param extraParts Additional suggestions (e.g., note filter for fretboard).
  */
 export function buildRecommendationText(
   result: RecommendationResult,
-  getGroupLabel: (index: number) => string,
+  getGroupLabel: (groupId: string) => string,
   extraParts?: string[],
 ): string {
   if (result.recommended.size === 0) return '';

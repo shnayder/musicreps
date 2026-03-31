@@ -25,15 +25,32 @@ export const MATH_INTERVALS = INTERVALS.filter((i) =>
 
 /** Distance groups using interval names instead of semitone counts. */
 export const DISTANCE_GROUPS = [
-  { distances: [1, 2], label: 'm2 M2', longLabel: 'Seconds (m2, M2)' },
-  { distances: [3, 4], label: 'm3 M3', longLabel: 'Thirds (m3, M3)' },
-  { distances: [5, 6], label: 'P4 TT', longLabel: 'Fourth & tritone (P4, TT)' },
   {
+    id: 'seconds',
+    distances: [1, 2],
+    label: 'm2 M2',
+    longLabel: 'Seconds (m2, M2)',
+  },
+  {
+    id: 'thirds',
+    distances: [3, 4],
+    label: 'm3 M3',
+    longLabel: 'Thirds (m3, M3)',
+  },
+  {
+    id: 'fourth-tritone',
+    distances: [5, 6],
+    label: 'P4 TT',
+    longLabel: 'Fourth & tritone (P4, TT)',
+  },
+  {
+    id: 'fifth-sixth',
     distances: [7, 8],
     label: 'P5 m6',
     longLabel: 'Fifth & minor 6th (P5, m6)',
   },
   {
+    id: 'sixths-sevenths',
     distances: [9, 10, 11],
     label: 'M6 m7 M7',
     longLabel: 'Sixths & sevenths (M6, m7, M7)',
@@ -44,11 +61,14 @@ export const DISTANCE_GROUPS = [
  * Get all item IDs belonging to a distance group.
  * Groups are defined by semitone distance — this maps to interval abbreviations.
  *
- * @example getItemIdsForGroup(0) → ["C+m2","C-m2","C+M2","C-M2","C#+m2",...]
+ * @example getItemIdsForGroup('seconds') → ["C+m2","C-m2","C+M2","C-M2","C#+m2",...]
  */
-export function getItemIdsForGroup(groupIndex: number): string[] {
-  const distances = DISTANCE_GROUPS[groupIndex].distances;
-  const intervals = MATH_INTERVALS.filter((i) => distances.includes(i.num));
+export function getItemIdsForGroup(groupId: string): string[] {
+  const group = DISTANCE_GROUPS.find((g) => g.id === groupId);
+  if (!group) return [];
+  const intervals = MATH_INTERVALS.filter((i) =>
+    group.distances.includes(i.num)
+  );
   const items: string[] = [];
   for (const note of NOTES) {
     for (const interval of intervals) {
@@ -65,7 +85,7 @@ export const ALL_ITEMS: string[] = buildMathIds(
   MATH_INTERVALS.map((i) => i.abbrev),
 );
 
-export const ALL_GROUP_INDICES = DISTANCE_GROUPS.map((_, i) => i);
+export const ALL_GROUP_IDS: string[] = DISTANCE_GROUPS.map((g) => g.id);
 
 // ---------------------------------------------------------------------------
 // Question

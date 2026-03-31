@@ -11,7 +11,7 @@ import {
 import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
-  ALL_GROUP_INDICES,
+  ALL_GROUP_IDS,
   ALL_ITEMS,
   CHORD_GROUPS,
   getGridItemId,
@@ -72,14 +72,15 @@ export const DIATONIC_CHORDS_DEF: ModeDefinition<Question> = {
     kind: 'groups',
     groups: CHORD_GROUPS,
     getItemIdsForGroup,
-    allGroupIndices: ALL_GROUP_INDICES,
+    allGroupIds: ALL_GROUP_IDS,
     storageKey: 'diatonicChords_enabledGroups',
     scopeLabel: 'Chords',
-    defaultEnabled: [0],
+    defaultEnabled: [ALL_GROUP_IDS[0]],
     formatLabel: (groups) => {
       if (groups.size === CHORD_GROUPS.length) return 'all chords';
-      const numerals = [...groups].sort((a, b) => a - b)
-        .flatMap((g) => CHORD_GROUPS[g].degrees)
+      const numerals = CHORD_GROUPS
+        .filter((g) => groups.has(g.id))
+        .flatMap((g) => g.degrees)
         .sort((a, b) => a - b)
         .map((d) => ROMAN_NUMERALS[d - 1]);
       return numerals.join(', ') + ' chords';
