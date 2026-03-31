@@ -49,18 +49,18 @@ export const GUITAR_VOICINGS: ChordVoicing[] = [
 // ---------------------------------------------------------------------------
 
 export const UKULELE_VOICINGS: ChordVoicing[] = [
-  // --- Major ---
-  { root: 'C', quality: 'major', symbol: '', strings: [3, 0, 0, 0] },
-  { root: 'F', quality: 'major', symbol: '', strings: [0, 1, 0, 2] },
-  { root: 'G', quality: 'major', symbol: '', strings: [2, 3, 2, 0] },
-  { root: 'A', quality: 'major', symbol: '', strings: [0, 0, 0, 2] },
-  { root: 'D', quality: 'major', symbol: '', strings: [0, 2, 2, 2] },
-  { root: 'Bb', quality: 'major', symbol: '', strings: [2, 1, 1, 3] },
+  // --- Major ---                          // Chart (G C E A)
+  { root: 'C', quality: 'major', symbol: '', strings: [3, 0, 0, 0] }, // 0003
+  { root: 'F', quality: 'major', symbol: '', strings: [0, 1, 0, 2] }, // 2010
+  { root: 'G', quality: 'major', symbol: '', strings: [2, 3, 2, 0] }, // 0232
+  { root: 'A', quality: 'major', symbol: '', strings: [0, 0, 1, 2] }, // 2100
+  { root: 'D', quality: 'major', symbol: '', strings: [0, 2, 2, 2] }, // 2220
+  { root: 'Bb', quality: 'major', symbol: '', strings: [1, 1, 2, 3] }, // 3211
 
   // --- Minor ---
-  { root: 'A', quality: 'minor', symbol: 'm', strings: [0, 0, 0, 2] },
-  { root: 'D', quality: 'minor', symbol: 'm', strings: [1, 2, 2, 3] },
-  { root: 'E', quality: 'minor', symbol: 'm', strings: [2, 3, 4, 0] },
+  { root: 'A', quality: 'minor', symbol: 'm', strings: [0, 0, 0, 2] }, // 2000
+  { root: 'D', quality: 'minor', symbol: 'm', strings: [0, 1, 2, 2] }, // 2210
+  { root: 'E', quality: 'minor', symbol: 'm', strings: [2, 3, 4, 0] }, // 0432
 
   // --- Dominant 7th ---
   { root: 'C', quality: 'dom7', symbol: '7', strings: [1, 0, 0, 0] },

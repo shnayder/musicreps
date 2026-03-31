@@ -215,6 +215,32 @@ describe('voicingSummary', () => {
   });
 });
 
+describe('voicing data integrity', () => {
+  it('no two voicings within guitar share identical fingerings', () => {
+    const seen = new Set<string>();
+    for (const v of GUITAR_VOICINGS) {
+      const key = JSON.stringify(v.strings);
+      assert.ok(
+        !seen.has(key),
+        `Duplicate guitar fingering: ${v.root}${v.symbol}`,
+      );
+      seen.add(key);
+    }
+  });
+
+  it('no two voicings within ukulele share identical fingerings', () => {
+    const seen = new Set<string>();
+    for (const v of UKULELE_VOICINGS) {
+      const key = JSON.stringify(v.strings);
+      assert.ok(
+        !seen.has(key),
+        `Duplicate ukulele fingering: ${v.root}${v.symbol}`,
+      );
+      seen.add(key);
+    }
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Groups
 // ---------------------------------------------------------------------------
