@@ -50,8 +50,8 @@ export type ModeProgressEntry = {
   namespace: string;
   groups: Array<{
     id: string;
-    label: string;
-    longLabel?: string;
+    label: string | (() => string);
+    longLabel?: string | (() => string);
     getItemIds: () => string[];
   }>;
   allItemIds: () => string[];
@@ -62,10 +62,19 @@ export type ModeProgressEntry = {
 // ---------------------------------------------------------------------------
 
 function buildGroupEntries(
-  groups: { id: string; label: string; longLabel?: string }[],
+  groups: {
+    id: string;
+    label: string | (() => string);
+    longLabel?: string | (() => string);
+  }[],
   getIds: (id: string) => string[],
 ): Array<
-  { id: string; label: string; longLabel?: string; getItemIds: () => string[] }
+  {
+    id: string;
+    label: string | (() => string);
+    longLabel?: string | (() => string);
+    getItemIds: () => string[];
+  }
 > {
   return groups.map((g) => ({
     id: g.id,
@@ -84,8 +93,8 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
     namespace: 'fretboard',
     groups: guitarGroups.map((g) => ({
       id: g.id,
-      label: g.label(),
-      longLabel: g.longLabel(),
+      label: g.label,
+      longLabel: g.longLabel,
       getItemIds: () => fretboardGroup(GUITAR, g.id),
     })),
     allItemIds: () => fretboardAllItems(GUITAR),
@@ -95,8 +104,8 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
     namespace: 'ukulele',
     groups: ukuleleGroups.map((g) => ({
       id: g.id,
-      label: g.label(),
-      longLabel: g.longLabel(),
+      label: g.label,
+      longLabel: g.longLabel,
       getItemIds: () => fretboardGroup(UKULELE, g.id),
     })),
     allItemIds: () => fretboardAllItems(UKULELE),

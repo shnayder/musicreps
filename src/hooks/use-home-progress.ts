@@ -39,7 +39,9 @@ export type ModeProgress = {
 /**
  * Load skipped group IDs from storage.
  * Convention: key = `{namespace}_enabledGroups_skipped`.
- * Supports both old (numeric) and new (string) formats.
+ * Only the current string-ID format is supported; legacy numeric entries
+ * are ignored (skipped groups from before the string-ID migration will
+ * reappear, which is acceptable).
  */
 export function loadSkippedGroups(namespace: string): ReadonlySet<string> {
   try {

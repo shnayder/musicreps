@@ -1,22 +1,28 @@
 #!/usr/bin/env -S deno run --allow-read
-// Lint rule: label functions in mode logic files must not return hardcoded
-// note names (A–G) without going through displayNote().
+// Lint rule: label/longLabel functions in mode logic files must not return
+// hardcoded note names (A–G) without going through displayNote().
 //
 // A group label like `() => 'E strings'` won't translate in solfège mode.
 // It must be `() => displayNote('E') + ' strings'`.
 //
-// Detects: label: () => '...' or label: '...' where the string value starts
-// with or contains a standalone note letter (A–G followed by space or ♯/♭).
+// Detects: label/longLabel: () => '...' or label/longLabel: '...' where the
+// string value starts with or contains a standalone note letter (A–G followed
+// by space or ♯/♭).  Also handles arrow functions spanning two lines.
 
 // Matches a note letter (A–G) that appears as an isolated word:
 //   - at start of string or after a space
 //   - followed by a space, end of string, or an accidental (#, b, ♯, ♭)
 const BARE_NOTE_RE = /(?:^| )([A-G])(?= |$|[#b\u266F\u266D])/;
 
-// Matches label defined as an arrow function returning a string literal,
-// or as a plain string property. Captures the string content.
+// Matches label/longLabel defined as an arrow function returning a string
+// literal, or as a plain string property.  Captures the string content.
+// Also matches when the string literal is on the NEXT line (multiline arrow).
 const LABEL_STRING_RE =
-  /\blabel\s*:\s*(?:\(\s*\)\s*=>\s*)?`([^`]*)`|\blabel\s*:\s*(?:\(\s*\)\s*=>\s*)?'([^']*)'|\blabel\s*:\s*(?:\(\s*\)\s*=>\s*)?\"([^\"]*)\"/g;
+  /\b(?:long)?label\s*:\s*(?:\(\s*\)\s*=>\s*)?[`'"]([^`'"]*)[`'"]/g;
+
+// Matches label/longLabel with an arrow but no string on the same line
+// (the string literal is expected on the next line).
+const LABEL_ARROW_ONLY_RE = /\b(?:long)?label\s*:\s*\(\s*\)\s*=>\s*$/;
 
 interface Violation {
   file: string;
@@ -50,10 +56,12 @@ async function scanFile(path: string): Promise<void> {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+
+    // Check single-line label patterns.
     LABEL_STRING_RE.lastIndex = 0;
     let m: RegExpExecArray | null;
     while ((m = LABEL_STRING_RE.exec(line)) !== null) {
-      const content = m[1] ?? m[2] ?? m[3] ?? '';
+      const content = m[1] ?? '';
       const noteMatch = BARE_NOTE_RE.exec(content);
       if (noteMatch) {
         violations.push({
@@ -62,6 +70,23 @@ async function scanFile(path: string): Promise<void> {
           text: line.trim(),
           note: noteMatch[1],
         });
+      }
+    }
+
+    // Check multi-line: `label: () =>\n  'E strings'`.
+    if (LABEL_ARROW_ONLY_RE.test(line) && i + 1 < lines.length) {
+      const next = lines[i + 1].trim();
+      const strMatch = /^[`'"]([^`'"]*)[`'"]/.exec(next);
+      if (strMatch) {
+        const noteMatch = BARE_NOTE_RE.exec(strMatch[1]);
+        if (noteMatch) {
+          violations.push({
+            file: rel,
+            line: i + 2, // report the string line
+            text: next,
+            note: noteMatch[1],
+          });
+        }
       }
     }
   }

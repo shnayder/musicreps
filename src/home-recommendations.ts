@@ -71,21 +71,26 @@ export function computeSkillRecommendation(
     .map((g) => g.id);
   if (allGroupIds.length === 0) return notStarted(entry.modeId);
 
-  const getItemIds = (id: string) => {
-    const g = entry.groups.find((g) => g.id === id);
-    return g ? g.getItemIds() : [];
-  };
+  // O(1) lookups by group ID.
+  const groupById = new Map(entry.groups.map((g) => [g.id, g]));
+  const getItemIds = (id: string) => groupById.get(id)?.getItemIds() ?? [];
 
   // Check if any items have been seen at all.
   const allItemIds = allGroupIds.flatMap(getItemIds);
   const { seen } = selector.getLevelSpeed(allItemIds);
   if (seen === 0) return notStarted(entry.modeId);
 
+  // Preserve definition order for unstarted tie-breaking.
+  const idOrder = new Map(entry.groups.map((g, i) => [g.id, i]));
   const result = computeRecommendations(
     selector as RecommendationSelector,
     allGroupIds,
     getItemIds,
     config,
+    {
+      sortUnstarted: (a, b) =>
+        (idOrder.get(a.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0),
+    },
   );
 
   return classifySkill(entry, result);
@@ -98,8 +103,10 @@ function classifySkill(
 ): SkillRecommendation {
   const modeId = entry.modeId;
   const singleGroup = entry.groups.length <= 1;
+  const resolve = (v: string | (() => string)) =>
+    typeof v === 'function' ? v() : v;
   const labelMap = new Map(
-    entry.groups.map((g) => [g.id, g.longLabel ?? g.label]),
+    entry.groups.map((g) => [g.id, resolve(g.longLabel ?? g.label)]),
   );
 
   if (result.levelRecs.length === 0) {

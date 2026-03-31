@@ -177,8 +177,7 @@ function useRecommendationData(
     (id: string) => {
       const g = spec.groups.find((g) => g.id === id);
       if (!g) return id;
-      return (g.longLabel ? resolveLabel(g.longLabel) : undefined) ??
-        resolveLabel(g.label);
+      return resolveLabel(g.longLabel ?? g.label);
     },
     [spec.groups, notationVersion],
   );

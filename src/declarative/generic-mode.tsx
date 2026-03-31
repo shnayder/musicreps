@@ -816,8 +816,9 @@ function LevelProgressCards<Q>(
           ? 'skipped' as const
           : 'normal' as const;
         const label = g
-          ? ((g.longLabel ? resolveGroupLabel(g.longLabel) : undefined) ??
-            resolveGroupLabel(g.label))
+          ? resolveGroupLabel(
+            g.longLabel ?? g.label,
+          )
           : id;
         return (
           <LevelProgressCard
