@@ -268,8 +268,8 @@
   /* Interactive element sizes */
   --size-close-btn: 2.25rem;
   --size-content-inset: var(--pad-region);
-  --size-answer-grid: 300px;
-  --size-answer-grid-wide: 420px;
+  --size-answer-grid: 272px;
+  --size-answer-grid-wide: 400px;
 
   /* Elevation (box-shadow) */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -422,7 +422,7 @@
 
   /* -- Answer: quiz answer buttons (note, number, interval) -- */
   --type-answer-size: var(--text-lg);
-  --type-answer-weight: var(--font-semibold);
+  --type-answer-weight: var(--font-medium);
   --type-answer-leading: var(--leading-none);
   --type-answer-color: var(--color-text);
 
@@ -498,11 +498,12 @@ body {
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
   padding-right: max(var(--size-content-inset), env(safe-area-inset-right, 0));
 }
-/* Brand watermark — end-repeat mark, idle (practice setup) phase only.
+/* Brand watermark — end-repeat mark, idle and round-complete phases.
    z-index: -1 paints above layout-main's background (thanks to isolation:
    isolate creating a stacking context) but below all normal-flow children.
    No z-index needed on any child elements. */
-.mode-screen.phase-idle .layout-main::before {
+.mode-screen.phase-idle .layout-main::before,
+.mode-screen.phase-round-complete .layout-main::before {
   content: '';
   position: absolute;
   left: 50%;
@@ -2128,7 +2129,6 @@ button {
 .round-complete {
   align-items: center;
   text-align: center;
-  background: var(--color-card);
 }
 .round-complete-heading {
   font-family: var(--type-heading-page-family);
@@ -2154,29 +2154,12 @@ button {
 .round-complete-stats {
   margin: var(--gap-group) 0 var(--pad-region);
 }
-.round-complete-overall {
-  margin-bottom: var(--pad-region);
+.round-complete-progress {
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
   padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
-}
-.round-complete-overall-label {
-  font-family: var(--type-heading-subsection-family);
-  font-size: var(--type-heading-subsection-size);
-  font-weight: var(--type-heading-subsection-weight);
-  line-height: var(--type-heading-subsection-leading);
-  color: var(--type-heading-subsection-color);
-  margin-bottom: var(--gap-related);
-}
-.round-complete-context {
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
-}
-.round-complete-mark {
-  margin-top: var(--pad-component);
-  color: var(--color-text-light);
-  opacity: 0.5;
 }
 .round-stat-line {
   font-size: var(--type-status-size);
@@ -2196,9 +2179,6 @@ button {
   width: 100%;
   max-width: var(--size-answer-grid);
   margin: var(--gap-related) auto;
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-lg);
-  padding: var(--gap-group);
 }
 .answer-grid-6 {
   grid-template-columns: repeat(6, 1fr);
@@ -2210,19 +2190,13 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--gap-related);
+  gap: var(--gap-group);
   width: 100%;
   max-width: var(--size-answer-grid);
   margin: var(--gap-related) auto;
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-lg);
-  padding: var(--gap-group);
 }
 .answer-grid-stack > .answer-grid {
   margin: 0;
-  background: none;
-  border-radius: 0;
-  padding: 0;
 }
 
 /* --- Pending/dimmed states for split (two-step) inputs --- */
@@ -2232,12 +2206,6 @@ button {
 }
 .answer-btn-dimmed {
   opacity: var(--opacity-dimmed);
-}
-
-/* Accidental qualifier row fades when hidden (split-note chord spelling) */
-.answer-grid-acc-hidden {
-  opacity: var(--opacity-subtle);
-  pointer-events: none;
 }
 
 /* --- Quiz prompt (text modes) --- */
@@ -2326,8 +2294,8 @@ button {
   font-size: var(--type-answer-size);
   font-weight: var(--type-answer-weight);
   line-height: var(--type-answer-leading);
-  border: none;
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
   background: var(--_bg);
   color: var(--_text);
   cursor: pointer;
@@ -2338,14 +2306,17 @@ button {
   justify-content: center;
   transition:
     background var(--duration-base) ease,
+    border-color var(--duration-base) ease,
     transform var(--duration-fast) ease;
 }
 @media (hover: hover) {
   .answer-btn:hover {
     --_bg: var(--color-surface-hover);
+    border-color: var(--color-border-light);
   }
   .answer-btn:disabled:hover {
     --_bg: var(--color-card);
+    border-color: var(--color-border-lighter);
     transform: none;
   }
 }
@@ -2364,16 +2335,19 @@ button {
 .btn-feedback-correct {
   --_bg: var(--color-success-bg) !important;
   --_text: var(--color-success-text) !important;
+  border-color: transparent !important;
   opacity: 1 !important;
 }
 .btn-feedback-wrong {
   --_bg: var(--color-error-bg) !important;
   --_text: var(--color-error-text) !important;
+  border-color: transparent !important;
   opacity: 1 !important;
 }
 .btn-feedback-reveal {
   --_bg: var(--color-success-bg) !important;
   --_text: var(--color-success-text) !important;
+  border-color: transparent !important;
   opacity: 1 !important;
 }
 
@@ -2757,6 +2731,9 @@ button {
 .page-action-row > .page-action-btn {
   flex: 1;
 }
+.page-action-row > .page-action-primary {
+  flex: 2;
+}
 
 /* --- Standalone action buttons (positioning only — visual treatment via page-action-btn) --- */
 .next-btn,
@@ -3019,6 +2996,7 @@ button {
 }
 .seq-correct-row {
   display: flex;
+  justify-content: center;
   gap: var(--gap-group);
   margin-top: var(--gap-micro);
 }
@@ -4247,6 +4225,7 @@ body.native-app {
       return `<circle class="fb-marker" cx="${w3 / 2}" cy="${cy}" r="4"/>`;
     }).join("\n      ");
   }
+  var POSITION_CIRCLE_R = 14;
   function positionCircles(stringCount = 6, fretCount = 13) {
     if (fretCount > MAX_FRET_COUNT) {
       throw new Error(
@@ -4256,7 +4235,7 @@ body.native-app {
     return Array.from(
       { length: stringCount },
       (_2, string) => Array.from({ length: fretCount }, (_3, fret) => {
-        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="14"/>`;
+        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="${POSITION_CIRCLE_R}"/>`;
       }).join("\n      ")
     ).join("\n      ");
   }
@@ -4274,8 +4253,6 @@ body.native-app {
       }).join("\n      ")
     ).join("\n      ");
   }
-
-  // src/html-helpers.ts
   function fretboardSVG(config = {}) {
     const sc = config.stringCount ?? 6;
     const fc = config.fretCount ?? 13;
@@ -4595,12 +4572,10 @@ ${text}`).join("\n\n");
 
   // src/fixtures/round-complete.ts
   var goodRound = {
-    context: "+1 to +5 \xB7 12 / 18 automatic",
     heading: "Round complete",
     correct: "16 correct \xB7 63s"
   };
   var roughRound = {
-    context: "all distances \xB7 3 / 24 automatic",
     heading: "Round complete",
     correct: "5 correct \xB7 62s"
   };
@@ -4653,6 +4628,120 @@ ${text}`).join("\n\n");
       );
     }) });
   }
+  function SplitButtons({
+    primaryItems,
+    secondaryItems,
+    shortcut,
+    combine,
+    answered,
+    onAnswer,
+    primaryFeedback,
+    secondaryFeedback
+  }) {
+    const [pendingPri, setPendingPri] = d2(null);
+    const [pendingSec, setPendingSec] = d2(null);
+    const onAnswerRef = A2(onAnswer);
+    onAnswerRef.current = onAnswer;
+    y2(() => {
+      if (answered) {
+        setPendingPri(null);
+        setPendingSec(null);
+      }
+    }, [answered]);
+    y2(() => {
+      if (pendingPri && pendingSec !== null) {
+        onAnswerRef.current(combine(pendingPri, pendingSec));
+        setPendingPri(null);
+        setPendingSec(null);
+      }
+    }, [pendingPri, pendingSec, combine]);
+    const handlePri = q2((value) => {
+      if (shortcut && value === shortcut.value) {
+        onAnswerRef.current(shortcut.submit);
+        setPendingPri(null);
+        setPendingSec(null);
+        return;
+      }
+      setPendingPri((prev) => prev === value ? null : value);
+    }, [shortcut]);
+    const handleSec = q2((value) => {
+      setPendingSec((prev) => prev === value ? null : value);
+    }, []);
+    const isAnswered = !!answered || !!primaryFeedback || !!secondaryFeedback;
+    return /* @__PURE__ */ u3("div", { class: "answer-grid-stack", children: [
+      /* @__PURE__ */ u3("div", { class: "answer-grid", children: primaryItems.map(({ label, value }) => {
+        let cls = "answer-btn";
+        if (!isAnswered) {
+          if (pendingPri === value) cls += " answer-btn-pending";
+          else if (pendingPri) cls += " answer-btn-dimmed";
+        }
+        const disabled = isAnswered || shortcut && value === shortcut.value && pendingSec !== null;
+        if (primaryFeedback) {
+          cls += feedbackClass(primaryFeedback, value, label);
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            disabled: !!disabled,
+            onClick: () => handlePri(value),
+            children: label
+          },
+          value
+        );
+      }) }),
+      /* @__PURE__ */ u3("div", { class: "answer-grid", children: secondaryItems.map(({ label, value }) => {
+        let cls = "answer-btn";
+        if (!isAnswered) {
+          if (pendingSec === value) cls += " answer-btn-pending";
+          else if (pendingSec) cls += " answer-btn-dimmed";
+        }
+        const disabled = isAnswered || shortcut && pendingPri === shortcut.value;
+        if (secondaryFeedback) {
+          cls += feedbackClass(secondaryFeedback, value, label);
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            disabled: !!disabled,
+            onClick: () => handleSec(value),
+            children: label
+          },
+          value
+        );
+      }) })
+    ] });
+  }
+  var NOTE_ITEMS = NATURAL_NOTES.map((n2) => ({
+    label: displayNote(n2),
+    value: n2
+  }));
+  var ACCIDENTAL_ITEMS = [
+    { label: "\u266D", value: "b" },
+    // ♭
+    { label: "\u266E", value: "" },
+    // ♮ (natural)
+    { label: "\u266F", value: "#" }
+    // ♯
+  ];
+  var combineNote = (base, acc) => acc ? base + acc : base;
+  function SplitNoteButtons({ onAnswer, answered }) {
+    return /* @__PURE__ */ u3(
+      SplitButtons,
+      {
+        primaryItems: NOTE_ITEMS,
+        secondaryItems: ACCIDENTAL_ITEMS,
+        combine: combineNote,
+        answered,
+        onAnswer
+      }
+    );
+  }
   function NumberButtons({ start, end, onAnswer, narrowing, feedback }) {
     const nums = [];
     for (let i3 = start; i3 <= end; i3++) nums.push(i3);
@@ -4695,143 +4784,58 @@ ${text}`).join("\n\n");
       );
     }) });
   }
-  var KEYSIG_NUMBERS = ["0", "1", "2", "3", "4", "5", "6", "7"];
-  var KEYSIG_ACCIDENTALS = [
-    { label: "\u266D", suffix: "b" },
+  var KEYSIG_NUMBER_ITEMS = [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7"
+  ].map((n2) => ({ label: n2, value: n2 }));
+  var KEYSIG_ACC_ITEMS = [
+    { label: "\u266D", value: "b" },
     // ♭
-    { label: "\u266F", suffix: "#" }
+    { label: "\u266F", value: "#" }
     // ♯
   ];
+  var combineKeysig = (num, acc) => num + acc;
   function parseKeysig(val) {
-    if (val === "0") return { num: "0", suffix: "" };
-    const num = val.slice(0, -1);
-    const suffix = val.slice(-1);
-    return { num, suffix };
-  }
-  function KeysigNumberRow({ pendingNum, pendingAcc, answered, fbParts, onTap }) {
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: KEYSIG_NUMBERS.map((n2) => {
-      let cls = "answer-btn";
-      if (!answered) {
-        if (pendingNum === n2) cls += " answer-btn-pending";
-        else if (pendingNum) cls += " answer-btn-dimmed";
-      }
-      const disabled = answered || n2 === "0" && pendingAcc !== null;
-      if (fbParts) {
-        const numFb = {
-          correct: fbParts.fb.correct,
-          userInput: fbParts.parsed.num,
-          displayAnswer: fbParts.correctParsed.num
-        };
-        cls += feedbackClass(numFb, n2, n2);
-      }
-      return /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: cls,
-          "data-sig-num": n2,
-          disabled,
-          onClick: () => onTap(n2),
-          children: n2
-        },
-        n2
-      );
-    }) });
-  }
-  function KeysigAccidentalRow({ pendingNum, pendingAcc, answered, fbParts, onTap }) {
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: KEYSIG_ACCIDENTALS.map(({ label, suffix }) => {
-      let cls = "answer-btn";
-      if (!answered) {
-        if (pendingAcc === suffix) cls += " answer-btn-pending";
-        else if (pendingAcc) cls += " answer-btn-dimmed";
-      }
-      const disabled = answered || pendingNum === "0";
-      if (fbParts) {
-        const accFb = {
-          correct: fbParts.fb.correct,
-          userInput: fbParts.parsed.suffix,
-          displayAnswer: fbParts.correctParsed.suffix
-        };
-        cls += feedbackClass(accFb, suffix, label);
-      }
-      return /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: cls,
-          "data-sig-acc": suffix,
-          disabled,
-          onClick: () => onTap(suffix),
-          children: label
-        },
-        suffix
-      );
-    }) });
+    if (val === "0") return { primary: "0", secondary: "" };
+    return { primary: val.slice(0, -1), secondary: val.slice(-1) };
   }
   function SplitKeysigButtons({ onAnswer, feedback }) {
-    const [pendingNum, setPendingNum] = d2(null);
-    const [pendingAcc, setPendingAcc] = d2(null);
-    const onAnswerRef = A2(onAnswer);
-    onAnswerRef.current = onAnswer;
-    y2(() => {
-      if (pendingNum && pendingAcc) {
-        onAnswerRef.current?.(pendingNum + pendingAcc);
-        setPendingNum(null);
-        setPendingAcc(null);
+    let primaryFb = null;
+    let secondaryFb = null;
+    if (feedback) {
+      const parsed = parseKeysig(feedback.userInput);
+      const correct = parseKeysig(feedback.displayAnswer);
+      primaryFb = {
+        correct: parsed.primary === correct.primary,
+        userInput: parsed.primary,
+        displayAnswer: correct.primary
+      };
+      secondaryFb = {
+        correct: parsed.secondary === correct.secondary,
+        userInput: parsed.secondary,
+        displayAnswer: correct.secondary
+      };
+    }
+    return /* @__PURE__ */ u3(
+      SplitButtons,
+      {
+        primaryItems: KEYSIG_NUMBER_ITEMS,
+        secondaryItems: KEYSIG_ACC_ITEMS,
+        shortcut: { value: "0", submit: "0" },
+        combine: combineKeysig,
+        answered: !!feedback,
+        onAnswer: onAnswer ?? (() => {
+        }),
+        primaryFeedback: primaryFb,
+        secondaryFeedback: secondaryFb
       }
-    }, [pendingNum, pendingAcc]);
-    const prevFeedback = A2(feedback);
-    y2(() => {
-      if (feedback !== prevFeedback.current) {
-        prevFeedback.current = feedback;
-        if (!feedback) {
-          setPendingNum(null);
-          setPendingAcc(null);
-        }
-      }
-    }, [feedback]);
-    const handleNum = q2((n2) => {
-      if (n2 === "0") {
-        onAnswerRef.current?.("0");
-        setPendingNum(null);
-        setPendingAcc(null);
-        return;
-      }
-      setPendingNum((prev) => prev === n2 ? null : n2);
-    }, []);
-    const handleAcc = q2((suffix) => {
-      setPendingAcc((prev) => prev === suffix ? null : suffix);
-    }, []);
-    const fbParts = feedback ? {
-      fb: feedback,
-      parsed: parseKeysig(feedback.userInput),
-      correctParsed: parseKeysig(feedback.displayAnswer)
-    } : null;
-    const answered = !!feedback;
-    return /* @__PURE__ */ u3("div", { class: "answer-grid-stack", children: [
-      /* @__PURE__ */ u3(
-        KeysigNumberRow,
-        {
-          pendingNum,
-          pendingAcc,
-          answered,
-          fbParts,
-          onTap: handleNum
-        }
-      ),
-      /* @__PURE__ */ u3(
-        KeysigAccidentalRow,
-        {
-          pendingNum,
-          pendingAcc,
-          answered,
-          fbParts,
-          onTap: handleAcc
-        }
-      )
-    ] });
+    );
   }
   function DegreeButtons({ onAnswer, feedback }) {
     return /* @__PURE__ */ u3("div", { class: "answer-grid", children: DEGREE_LABELS.map(([val, label]) => {
@@ -5718,27 +5722,15 @@ ${text}`).join("\n\n");
     }
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children });
   }
-  function RoundCompleteInfo({ context, heading, count, correct }) {
+  function RoundCompleteInfo({ heading, count, correct, progressColors }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       count != null && /* @__PURE__ */ u3(k, { children: [
         /* @__PURE__ */ u3("div", { class: "round-complete-count", children: count }),
-        /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "question answered" : "questions answered" })
+        /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "rep" : "reps" })
       ] }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }) }),
-      context ? /* @__PURE__ */ u3("div", { class: "round-complete-overall", children: [
-        /* @__PURE__ */ u3(
-          Text,
-          {
-            role: "heading-subsection",
-            as: "div",
-            class: "round-complete-overall-label",
-            children: "Overall"
-          }
-        ),
-        /* @__PURE__ */ u3("div", { class: "round-complete-context", children: context })
-      ] }) : null,
-      /* @__PURE__ */ u3("div", { class: "round-complete-mark", "aria-hidden": "true", children: /* @__PURE__ */ u3(RepeatMark, { size: 16 }) })
+      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3("div", { class: "round-complete-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progressColors }) })
     ] });
   }
   var noop = () => {
@@ -5885,11 +5877,13 @@ ${text}`).join("\n\n");
   // src/modes/key-signatures/logic.ts
   var KEY_GROUPS = [
     {
+      id: "major-easy",
       keys: ["C", "G", "F", "D", "Bb", "A", "Eb"],
       label: "Major 0\u20133 \u266F/\u266D",
       longLabel: "Major keys (0\u20133 \u266F/\u266D)"
     },
     {
+      id: "major-hard",
       keys: ["E", "Ab", "B", "Db", "F#"],
       label: "Major 4+ \u266F/\u266D",
       longLabel: "Major keys (4+ \u266F/\u266D)"
@@ -5906,29 +5900,32 @@ ${text}`).join("\n\n");
   var MINOR_ROOTS = MAJOR_KEYS.map(
     (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE)
   );
-  function minorKeyGroup(majorKeys, label, longLabel) {
+  function minorKeyGroup(id, majorKeys, label, longLabel) {
     const keys = majorKeys.map(
       (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE) + "m"
     );
-    return { keys, label, longLabel };
+    return { id, keys, label, longLabel };
   }
   var MINOR_KEY_GROUPS = [
     minorKeyGroup(
+      "minor-easy",
       MAJOR_KEYS.filter((k3) => k3.accidentalCount <= 3),
       "Minor 0\u20133 \u266F/\u266D",
       "Minor keys (0\u20133 \u266F/\u266D)"
     ),
     minorKeyGroup(
+      "minor-hard",
       MAJOR_KEYS.filter((k3) => k3.accidentalCount > 3),
       "Minor 4+ \u266F/\u266D",
       "Minor keys (4+ \u266F/\u266D)"
     )
   ];
   var ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
-  function getItemIdsForGroup(groupIndex) {
-    const roots = ALL_KEY_GROUPS[groupIndex].keys;
+  function getItemIdsForGroup(groupId) {
+    const group = ALL_KEY_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
-    for (const root2 of roots) {
+    for (const root2 of group.keys) {
       items.push(root2 + ":fwd");
       items.push(root2 + ":rev");
     }
@@ -5943,20 +5940,36 @@ ${text}`).join("\n\n");
     ALL_ITEMS.push(minorRoot + "m:fwd");
     ALL_ITEMS.push(minorRoot + "m:rev");
   }
-  var ALL_GROUP_INDICES = ALL_KEY_GROUPS.map((_2, i3) => i3);
+  var ALL_GROUP_IDS = ALL_KEY_GROUPS.map((g2) => g2.id);
 
   // src/modes/scale-degrees/logic.ts
   var ACTIVE_DEGREES = [2, 3, 4, 5, 6, 7];
   var DEGREE_GROUPS = [
-    { degrees: [4, 5], label: "4th, 5th", longLabel: "4th & 5th degrees" },
-    { degrees: [3, 7], label: "3rd, 7th", longLabel: "3rd & 7th degrees" },
-    { degrees: [2, 6], label: "2nd, 6th", longLabel: "2nd & 6th degrees" }
+    {
+      id: "4th-5th",
+      degrees: [4, 5],
+      label: "4th, 5th",
+      longLabel: "4th & 5th degrees"
+    },
+    {
+      id: "3rd-7th",
+      degrees: [3, 7],
+      label: "3rd, 7th",
+      longLabel: "3rd & 7th degrees"
+    },
+    {
+      id: "2nd-6th",
+      degrees: [2, 6],
+      label: "2nd, 6th",
+      longLabel: "2nd & 6th degrees"
+    }
   ];
-  function getItemIdsForGroup2(groupIndex) {
-    const degrees = DEGREE_GROUPS[groupIndex].degrees;
+  function getItemIdsForGroup2(groupId) {
+    const group = DEGREE_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const key of MAJOR_KEYS) {
-      for (const d4 of degrees) {
+      for (const d4 of group.degrees) {
         items.push(key.root + ":" + d4 + ":fwd");
         items.push(key.root + ":" + d4 + ":rev");
       }
@@ -5970,7 +5983,7 @@ ${text}`).join("\n\n");
       ALL_ITEMS2.push(key.root + ":" + d4 + ":rev");
     }
   }
-  var ALL_GROUP_INDICES2 = DEGREE_GROUPS.map((_2, i3) => i3);
+  var ALL_GROUP_IDS2 = DEGREE_GROUPS.map((g2) => g2.id);
   var GRID_NOTES = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
@@ -5979,23 +5992,31 @@ ${text}`).join("\n\n");
   // src/modes/diatonic-chords/logic.ts
   var CHORD_GROUPS = [
     {
+      id: "primary",
       degrees: [1, 4, 5],
       label: "I IV V",
       longLabel: "Primary chords (I, IV, V)"
     },
-    { degrees: [2, 6], label: "ii vi", longLabel: "Secondary chords (ii, vi)" },
     {
+      id: "secondary",
+      degrees: [2, 6],
+      label: "ii vi",
+      longLabel: "Secondary chords (ii, vi)"
+    },
+    {
+      id: "tertiary",
       degrees: [3, 7],
       label: "iii vii\xB0",
       // \u00B0 = ° (degree sign)
       longLabel: "Tertiary chords (iii, vii\xB0)"
     }
   ];
-  function getItemIdsForGroup3(groupIndex) {
-    const degrees = CHORD_GROUPS[groupIndex].degrees;
+  function getItemIdsForGroup3(groupId) {
+    const group = CHORD_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const key of MAJOR_KEYS) {
-      for (const d4 of degrees) {
+      for (const d4 of group.degrees) {
         items.push(key.root + ":" + d4 + ":fwd");
         items.push(key.root + ":" + d4 + ":rev");
       }
@@ -6009,7 +6030,7 @@ ${text}`).join("\n\n");
       ALL_ITEMS3.push(key.root + ":" + d4 + ":rev");
     }
   }
-  var ALL_GROUP_INDICES3 = CHORD_GROUPS.map((_2, i3) => i3);
+  var ALL_GROUP_IDS3 = CHORD_GROUPS.map((g2) => g2.id);
   var GRID_NOTES2 = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
@@ -6036,36 +6057,42 @@ ${text}`).join("\n\n");
   // src/modes/semitone-math/logic.ts
   var DISTANCE_GROUPS = [
     {
+      id: "dist-1-2",
       distances: [1, 2],
       label: "\xB11\u20132",
       longLabel: "1\u20132 semitones apart"
     },
     {
+      id: "dist-3-4",
       distances: [3, 4],
       label: "\xB13\u20134",
       longLabel: "3\u20134 semitones apart"
     },
     {
+      id: "dist-5-6",
       distances: [5, 6],
       label: "\xB15\u20136",
       longLabel: "5\u20136 semitones apart"
     },
     {
+      id: "dist-7-8",
       distances: [7, 8],
       label: "\xB17\u20138",
       longLabel: "7\u20138 semitones apart"
     },
     {
+      id: "dist-9-11",
       distances: [9, 10, 11],
       label: "\xB19\u201311",
       longLabel: "9\u201311 semitones apart"
     }
   ];
-  function getItemIdsForGroup4(groupIndex) {
-    const distances = DISTANCE_GROUPS[groupIndex].distances;
+  function getItemIdsForGroup4(groupId) {
+    const group = DISTANCE_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const note of NOTES) {
-      for (const d4 of distances) {
+      for (const d4 of group.distances) {
         items.push(note.name + "+" + d4);
         items.push(note.name + "-" + d4);
       }
@@ -6076,7 +6103,7 @@ ${text}`).join("\n\n");
     NOTES.map((n2) => n2.name),
     Array.from({ length: 11 }, (_2, i3) => i3 + 1)
   );
-  var ALL_GROUP_INDICES4 = DISTANCE_GROUPS.map((_2, i3) => i3);
+  var ALL_GROUP_IDS4 = DISTANCE_GROUPS.map((g2) => g2.id);
   var GRID_COL_LABELS = Array.from(
     { length: 11 },
     (_2, i3) => String(i3 + 1)
@@ -6087,23 +6114,43 @@ ${text}`).join("\n\n");
     (i3) => i3.num >= 1 && i3.num <= 11
   );
   var DISTANCE_GROUPS2 = [
-    { distances: [1, 2], label: "m2 M2", longLabel: "Seconds (m2, M2)" },
-    { distances: [3, 4], label: "m3 M3", longLabel: "Thirds (m3, M3)" },
-    { distances: [5, 6], label: "P4 TT", longLabel: "Fourth & tritone (P4, TT)" },
     {
+      id: "seconds",
+      distances: [1, 2],
+      label: "m2 M2",
+      longLabel: "Seconds (m2, M2)"
+    },
+    {
+      id: "thirds",
+      distances: [3, 4],
+      label: "m3 M3",
+      longLabel: "Thirds (m3, M3)"
+    },
+    {
+      id: "fourth-tritone",
+      distances: [5, 6],
+      label: "P4 TT",
+      longLabel: "Fourth & tritone (P4, TT)"
+    },
+    {
+      id: "fifth-sixth",
       distances: [7, 8],
       label: "P5 m6",
       longLabel: "Fifth & minor 6th (P5, m6)"
     },
     {
+      id: "sixths-sevenths",
       distances: [9, 10, 11],
       label: "M6 m7 M7",
       longLabel: "Sixths & sevenths (M6, m7, M7)"
     }
   ];
-  function getItemIdsForGroup5(groupIndex) {
-    const distances = DISTANCE_GROUPS2[groupIndex].distances;
-    const intervals = MATH_INTERVALS.filter((i3) => distances.includes(i3.num));
+  function getItemIdsForGroup5(groupId) {
+    const group = DISTANCE_GROUPS2.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const intervals = MATH_INTERVALS.filter(
+      (i3) => group.distances.includes(i3.num)
+    );
     const items = [];
     for (const note of NOTES) {
       for (const interval of intervals) {
@@ -6117,7 +6164,7 @@ ${text}`).join("\n\n");
     NOTES.map((n2) => n2.name),
     MATH_INTERVALS.map((i3) => i3.abbrev)
   );
-  var ALL_GROUP_INDICES5 = DISTANCE_GROUPS2.map((_2, i3) => i3);
+  var ALL_GROUP_IDS5 = DISTANCE_GROUPS2.map((g2) => g2.id);
   var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
 
   // src/modes/chord-spelling/logic.ts
@@ -6130,6 +6177,15 @@ ${text}`).join("\n\n");
     5: "Diminished, augmented & half-dim",
     6: "Suspended & 6th chords"
   };
+  var GROUP_IDS = {
+    0: "triads-major",
+    1: "triads-minor",
+    2: "dom-7th",
+    3: "maj-7th",
+    4: "min-7th",
+    5: "dim-aug-hdim",
+    6: "sus-6th"
+  };
   function buildGroups() {
     let maxGroup = 0;
     for (const ct of CHORD_TYPES) {
@@ -6140,16 +6196,18 @@ ${text}`).join("\n\n");
       const types = CHORD_TYPES.filter((t3) => t3.group === g2);
       const label = types.map((t3) => t3.symbol || "maj").join(", ");
       const longLabel = GROUP_LONG_LABELS[g2] ?? label;
-      result.push({ types, label, longLabel });
+      const id = GROUP_IDS[g2] ?? String(g2);
+      result.push({ id, types, label, longLabel });
     }
     return result;
   }
   var SPELLING_GROUPS = buildGroups();
-  function getItemIdsForGroup6(groupIndex) {
-    const types = SPELLING_GROUPS[groupIndex].types;
+  function getItemIdsForGroup6(groupId) {
+    const group = SPELLING_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const root2 of CHORD_ROOTS) {
-      for (const type of types) {
+      for (const type of group.types) {
         items.push(root2 + ":" + type.name);
       }
     }
@@ -6161,7 +6219,7 @@ ${text}`).join("\n\n");
       ALL_ITEMS6.push(root2 + ":" + type.name);
     }
   }
-  var ALL_GROUP_INDICES6 = SPELLING_GROUPS.map((_2, i3) => i3);
+  var ALL_GROUP_IDS6 = SPELLING_GROUPS.map((g2) => g2.id);
   var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
     name: r3,
     displayName: r3
@@ -6234,51 +6292,59 @@ ${text}`).join("\n\n");
   var GUITAR_GROUPS = [
     // Naturals by string (E and e combined since same notes)
     {
-      label: () => "E strings",
-      longLabel: "High & low E strings",
+      id: "e-natural",
+      label: () => displayNote("E") + " strings",
+      longLabel: () => "High & low " + displayNote("E") + " strings",
       strings: [5, 0],
       noteFilter: "natural"
     },
     {
-      label: () => "A string",
-      longLabel: "A string",
+      id: "a-natural",
+      label: () => displayNote("A") + " string",
+      longLabel: () => displayNote("A") + " string",
       strings: [4],
       noteFilter: "natural"
     },
     {
-      label: () => "D string",
-      longLabel: "D string",
+      id: "d-natural",
+      label: () => displayNote("D") + " string",
+      longLabel: () => displayNote("D") + " string",
       strings: [3],
       noteFilter: "natural"
     },
     {
-      label: () => "G string",
-      longLabel: "G string",
+      id: "g-natural",
+      label: () => displayNote("G") + " string",
+      longLabel: () => displayNote("G") + " string",
       strings: [2],
       noteFilter: "natural"
     },
     {
-      label: () => "B string",
-      longLabel: "B string",
+      id: "b-natural",
+      label: () => displayNote("B") + " string",
+      longLabel: () => displayNote("B") + " string",
       strings: [1],
       noteFilter: "natural"
     },
     // Accidentals by string pair
     {
-      label: () => "E \u266F/\u266D",
-      longLabel: "E strings \u266F/\u266D",
+      id: "e-sharps",
+      label: () => displayNote("E") + " \u266F/\u266D",
+      longLabel: () => displayNote("E") + " strings \u266F/\u266D",
       strings: [5, 0],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => "A D \u266F/\u266D",
-      longLabel: "A & D strings \u266F/\u266D",
+      id: "ad-sharps",
+      label: () => displayNote("A") + " " + displayNote("D") + " \u266F/\u266D",
+      longLabel: () => displayNote("A") + " & " + displayNote("D") + " strings \u266F/\u266D",
       strings: [4, 3],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => "G B \u266F/\u266D",
-      longLabel: "G & B strings \u266F/\u266D",
+      id: "gb-sharps",
+      label: () => displayNote("G") + " " + displayNote("B") + " \u266F/\u266D",
+      longLabel: () => displayNote("G") + " & " + displayNote("B") + " strings \u266F/\u266D",
       strings: [2, 1],
       noteFilter: "sharps-flats"
     }
@@ -6286,39 +6352,45 @@ ${text}`).join("\n\n");
   var UKULELE_GROUPS = [
     // Naturals by string
     {
-      label: () => "G string",
-      longLabel: "G string",
+      id: "g-natural",
+      label: () => displayNote("G") + " string",
+      longLabel: () => displayNote("G") + " string",
       strings: [3],
       noteFilter: "natural"
     },
     {
-      label: () => "C string",
-      longLabel: "C string",
+      id: "c-natural",
+      label: () => displayNote("C") + " string",
+      longLabel: () => displayNote("C") + " string",
       strings: [2],
       noteFilter: "natural"
     },
     {
-      label: () => "E string",
-      longLabel: "E string",
+      id: "e-natural",
+      label: () => displayNote("E") + " string",
+      longLabel: () => displayNote("E") + " string",
       strings: [1],
       noteFilter: "natural"
     },
     {
-      label: () => "A string",
-      longLabel: "A string",
+      id: "a-natural",
+      label: () => displayNote("A") + " string",
+      longLabel: () => displayNote("A") + " string",
       strings: [0],
       noteFilter: "natural"
     },
     // Accidentals by string pair
     {
-      label: () => "G C \u266F/\u266D",
-      longLabel: "G & C strings \u266F/\u266D",
+      id: "gc-sharps",
+      label: () => displayNote("G") + " " + displayNote("C") + " \u266F/\u266D",
+      longLabel: () => displayNote("G") + " & " + displayNote("C") + " strings \u266F/\u266D",
       strings: [3, 2],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => "E A \u266F/\u266D",
-      longLabel: "E & A strings \u266F/\u266D",
+      id: "ea-sharps",
+      label: () => displayNote("E") + " " + displayNote("A") + " \u266F/\u266D",
+      longLabel: () => displayNote("E") + " & " + displayNote("A") + " strings \u266F/\u266D",
       strings: [1, 0],
       noteFilter: "sharps-flats"
     }
@@ -6345,9 +6417,9 @@ ${text}`).join("\n\n");
     }
     return h3;
   }
-  function getItemIdsForGroup7(instrument, groupIndex) {
+  function getItemIdsForGroup7(instrument, groupId) {
     const groups = getGroups(instrument);
-    const group = groups[groupIndex];
+    const group = groups.find((g2) => g2.id === groupId);
     if (!group) return [];
     const fb = getHelpers(instrument);
     const items = [];
@@ -6378,13 +6450,19 @@ ${text}`).join("\n\n");
   var noteNames = NOTES.map((n2) => n2.name);
   var ALL_ITEMS9 = NOTES.map((n2) => n2.name);
   var ACCIDENTAL_NOTES = NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
+  var NOTE_GROUPS = [
+    { id: "naturals", label: "Naturals", longLabel: "Natural notes" },
+    { id: "sharps-flats", label: "\u266F/\u266D", longLabel: "Sharps & flats" }
+  ];
+  var ALL_GROUP_IDS7 = NOTE_GROUPS.map((g2) => g2.id);
 
   // src/mode-progress-manifest.ts
   function buildGroupEntries(groups, getIds) {
-    return groups.map((g2, i3) => ({
+    return groups.map((g2) => ({
+      id: g2.id,
       label: g2.label,
       longLabel: g2.longLabel,
-      getItemIds: () => getIds(i3)
+      getItemIds: () => getIds(g2.id)
     }));
   }
   var guitarGroups = getGroups(GUITAR);
@@ -6393,33 +6471,35 @@ ${text}`).join("\n\n");
     {
       modeId: "fretboard",
       namespace: "fretboard",
-      groups: guitarGroups.map((g2, i3) => ({
-        label: g2.label(),
+      groups: guitarGroups.map((g2) => ({
+        id: g2.id,
+        label: g2.label,
         longLabel: g2.longLabel,
-        getItemIds: () => getItemIdsForGroup7(GUITAR, i3)
+        getItemIds: () => getItemIdsForGroup7(GUITAR, g2.id)
       })),
       allItemIds: () => getAllItems(GUITAR)
     },
     {
       modeId: "ukulele",
       namespace: "ukulele",
-      groups: ukuleleGroups.map((g2, i3) => ({
-        label: g2.label(),
+      groups: ukuleleGroups.map((g2) => ({
+        id: g2.id,
+        label: g2.label,
         longLabel: g2.longLabel,
-        getItemIds: () => getItemIdsForGroup7(UKULELE, i3)
+        getItemIds: () => getItemIdsForGroup7(UKULELE, g2.id)
       })),
       allItemIds: () => getAllItems(UKULELE)
     },
     {
       modeId: "noteSemitones",
       namespace: "noteSemitones",
-      groups: [{ label: "All", getItemIds: () => ALL_ITEMS7 }],
+      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS7 }],
       allItemIds: () => ALL_ITEMS7
     },
     {
       modeId: "intervalSemitones",
       namespace: "intervalSemitones",
-      groups: [{ label: "All", getItemIds: () => ALL_ITEMS8 }],
+      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS8 }],
       allItemIds: () => ALL_ITEMS8
     },
     {
@@ -6461,7 +6541,7 @@ ${text}`).join("\n\n");
     {
       modeId: "speedTap",
       namespace: "speedTap",
-      groups: [{ label: "All", getItemIds: () => ALL_ITEMS9 }],
+      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS9 }],
       allItemIds: () => ALL_ITEMS9
     }
   ];
@@ -6890,10 +6970,15 @@ ${text}`).join("\n\n");
       /* @__PURE__ */ u3(Section, { title: "Round Complete", tabId, children: /* @__PURE__ */ u3(PreviewModeScreen, { phase: "round-complete", children: /* @__PURE__ */ u3(QuizArea, { controls: /* @__PURE__ */ u3(RoundCompleteActions, {}), children: /* @__PURE__ */ u3(
         RoundCompleteInfo,
         {
-          context: goodRound.context,
           heading: goodRound.heading,
           count: 18,
-          correct: goodRound.correct
+          correct: goodRound.correct,
+          progressColors: [
+            "hsl(125, 48%, 33%)",
+            "hsl(80, 35%, 40%)",
+            "hsl(48, 50%, 52%)",
+            "hsl(40, 60%, 58%)"
+          ]
         }
       ) }) }) }),
       /* @__PURE__ */ u3(Section, { title: "Progress Heatmap", tabId, children: [
@@ -7082,6 +7167,8 @@ ${text}`).join("\n\n");
         /* @__PURE__ */ u3(Section, { title: "Note Buttons (naturals only)", tabId, children: /* @__PURE__ */ u3(NoteButtons, { hideAccidentals: true }) }),
         /* @__PURE__ */ u3(Section, { title: "Interval Buttons", tabId, children: /* @__PURE__ */ u3(IntervalButtons, {}) }),
         /* @__PURE__ */ u3(Section, { title: "Number Buttons (0\u201311)", tabId, children: /* @__PURE__ */ u3(NumberButtons, { start: 0, end: 11 }) }),
+        /* @__PURE__ */ u3(Section, { title: "Split Note Buttons (Chord Spelling)", tabId, children: /* @__PURE__ */ u3(SplitNoteButtons, { onAnswer: () => {
+        } }) }),
         /* @__PURE__ */ u3(Section, { title: "Split Key Signature Buttons", tabId, children: /* @__PURE__ */ u3(SplitKeysigButtons, {}) }),
         /* @__PURE__ */ u3(Section, { title: "Degree Buttons", tabId, children: /* @__PURE__ */ u3(DegreeButtons, {}) }),
         /* @__PURE__ */ u3(Section, { title: "Numeral Buttons", tabId, children: /* @__PURE__ */ u3(NumeralButtons, {}) })
@@ -7285,19 +7372,28 @@ ${text}`).join("\n\n");
         /* @__PURE__ */ u3(Section, { title: "RoundComplete \u2014 Good", tabId, children: /* @__PURE__ */ u3(QuizArea, { controls: /* @__PURE__ */ u3(RoundCompleteActions, {}), children: /* @__PURE__ */ u3(
           RoundCompleteInfo,
           {
-            context: goodRound.context,
             heading: goodRound.heading,
             count: 18,
-            correct: goodRound.correct
+            correct: goodRound.correct,
+            progressColors: [
+              "hsl(125, 48%, 33%)",
+              "hsl(125, 48%, 33%)",
+              "hsl(80, 35%, 40%)",
+              "hsl(60, 40%, 46%)"
+            ]
           }
         ) }) }),
         /* @__PURE__ */ u3(Section, { title: "RoundComplete \u2014 Rough", tabId, children: /* @__PURE__ */ u3(QuizArea, { controls: /* @__PURE__ */ u3(RoundCompleteActions, {}), children: /* @__PURE__ */ u3(
           RoundCompleteInfo,
           {
-            context: roughRound.context,
             heading: roughRound.heading,
             count: 9,
-            correct: roughRound.correct
+            correct: roughRound.correct,
+            progressColors: [
+              "hsl(48, 50%, 52%)",
+              "hsl(40, 60%, 58%)",
+              "hsl(40, 60%, 58%)"
+            ]
           }
         ) }) })
       ] })
@@ -8521,21 +8617,24 @@ ${text}`).join("\n\n");
       line.levels.join(", ")
     ] }, i3)) });
   }
-  function LevelToggles({ labels, active, onToggle }) {
+  function LevelToggles({ labels, groupIds, active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "level-toggles-section", children: [
       /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "level-toggles-header", children: "Choose levels" }),
-      /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "level-toggle-btn" + (active.has(i3) ? " active" : ""),
-          "aria-pressed": active.has(i3),
-          onClick: () => onToggle(i3),
-          children: label
-        },
-        i3
-      )) })
+      /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => {
+        const id = groupIds[i3];
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "level-toggle-btn" + (active.has(id) ? " active" : ""),
+            "aria-pressed": active.has(id),
+            onClick: () => onToggle(id),
+            children: label
+          },
+          id
+        );
+      }) })
     ] });
   }
   function LevelProgressCard({ label, pill, colors, status, onToggleKnown, onToggleSkip }) {
@@ -8622,6 +8721,7 @@ ${text}`).join("\n\n");
     "D G \u266F\u266D",
     "B e \u266F\u266D"
   ];
+  var MOCK_LEVEL_IDS = MOCK_LEVEL_LABELS.map((_2, i3) => `g${i3}`);
   var MOCK_LEVEL_COLORS = [
     ["hsl(125, 48%, 33%)", "hsl(125, 48%, 33%)", "hsl(80, 35%, 40%)"],
     ["hsl(80, 35%, 40%)", "hsl(60, 40%, 46%)", "hsl(48, 50%, 52%)"],
@@ -8696,6 +8796,7 @@ ${text}`).join("\n\n");
         LevelToggles,
         {
           labels: MOCK_LEVEL_LABELS,
+          groupIds: MOCK_LEVEL_IDS,
           active: customActive,
           onToggle: toggleCustom
         }
@@ -8712,6 +8813,7 @@ ${text}`).join("\n\n");
               LevelToggles,
               {
                 labels: MOCK_LEVEL_LABELS,
+                groupIds: MOCK_LEVEL_IDS,
                 active: customActive,
                 onToggle: toggleCustom
               }
@@ -8728,6 +8830,7 @@ ${text}`).join("\n\n");
               LevelToggles,
               {
                 labels: MOCK_LEVEL_LABELS,
+                groupIds: MOCK_LEVEL_IDS,
                 active: customActive,
                 onToggle: toggleCustom
               }
@@ -8842,6 +8945,7 @@ ${text}`).join("\n\n");
                   LevelToggles,
                   {
                     labels: MOCK_LEVEL_LABELS,
+                    groupIds: MOCK_LEVEL_IDS,
                     active: customActive,
                     onToggle: toggleCustom
                   }
@@ -9042,6 +9146,7 @@ ${text}`).join("\n\n");
               LevelToggles,
               {
                 labels: MOCK_LEVEL_LABELS,
+                groupIds: MOCK_LEVEL_IDS,
                 active: customActive,
                 onToggle: toggleCustom
               }
@@ -9143,10 +9248,14 @@ ${text}`).join("\n\n");
         /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(QuizArea, { children: /* @__PURE__ */ u3(
           RoundCompleteInfo,
           {
-            context: "E string \xB7 A string",
             heading: "Round Complete",
             count: 20,
-            correct: "18 correct (90%)"
+            correct: "18 correct (90%)",
+            progressColors: [
+              "hsl(125, 48%, 33%)",
+              "hsl(80, 35%, 40%)",
+              "hsl(48, 50%, 52%)"
+            ]
           }
         ) }) }),
         /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
@@ -9164,18 +9273,18 @@ ${text}`).join("\n\n");
   function PracticeRedesignTab({ sel: _sel, groupSel: _groupSel, tabId }) {
     const [_practiceMode, setPracticeMode] = d2("suggested");
     const [customActive, setCustomActive] = d2(
-      /* @__PURE__ */ new Set([0, 1])
+      /* @__PURE__ */ new Set(["g0", "g1"])
     );
-    function toggleCustom(i3) {
+    function toggleCustom(id) {
       setCustomActive((prev) => {
         const next = new Set(prev);
-        if (next.has(i3)) next.delete(i3);
-        else next.add(i3);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
         return next;
       });
     }
     const customItemCount = [...customActive].reduce(
-      (sum, i3) => sum + (i3 < 5 ? 16 : 10),
+      (sum, id) => sum + (parseInt(id.slice(1)) < 5 ? 16 : 10),
       0
     );
     return /* @__PURE__ */ u3("div", { children: [
