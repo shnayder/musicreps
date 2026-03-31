@@ -2,14 +2,14 @@
 
 export const sessionEarlyRound = {
   context: '+1 to +5',
-  count: '7 answers',
+  count: '7 reps',
   automatic: 5,
   total: 18,
 };
 
 export const sessionLateRound = {
   context: '+1 to +5',
-  count: '22 answers',
+  count: '22 reps',
   automatic: 10,
   total: 20,
 };

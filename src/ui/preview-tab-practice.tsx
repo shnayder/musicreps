@@ -634,10 +634,14 @@ function ScreenLayoutActiveExamples({ tabId }: { tabId: string }) {
           <LayoutMain scrollable={false}>
             <QuizArea>
               <RoundCompleteInfo
-                context='E string · A string'
                 heading='Round Complete'
                 count={20}
                 correct='18 correct (90%)'
+                progressColors={[
+                  'hsl(125, 48%, 33%)',
+                  'hsl(80, 35%, 40%)',
+                  'hsl(48, 50%, 52%)',
+                ]}
               />
             </QuizArea>
           </LayoutMain>
