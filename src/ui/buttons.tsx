@@ -115,110 +115,162 @@ export function NoteButtons(
 }
 
 // ---------------------------------------------------------------------------
-// Split note buttons: base note row + accidental row (two-step input)
+// SplitButtons — shared two-row split input (either order, auto-submit)
+// Used by chord spelling (note + accidental) and key signatures (number + accidental).
 // ---------------------------------------------------------------------------
 
-const ACCIDENTALS_SINGLE = [
-  { label: '\u266D', suffix: 'b' }, // ♭
-  { label: '\u266E', suffix: '' }, // ♮ (natural)
-  { label: '\u266F', suffix: '#' }, // ♯
-] as const;
+type SplitButtonItem = { label: string; value: string };
 
-export function SplitNoteButtons(
-  { onAnswer, sequential, pendingNote, answered }: {
-    onAnswer: (note: string) => void;
-    /** Enable chain-submit: tapping a new base note auto-submits the pending
-     *  note as natural. Only meaningful in sequential modes (Chord Spelling). */
-    sequential?: boolean;
-    /** Pending note from keyboard input — used to sync visual state. */
-    pendingNote?: string | null;
-    /** When true, buttons are inactive (answer already submitted). */
+/** A primary value that auto-submits without needing the secondary row. */
+type SplitShortcut = { value: string; submit: string };
+
+function SplitButtons(
+  {
+    primaryItems,
+    secondaryItems,
+    shortcut,
+    combine,
+    answered,
+    onAnswer,
+    primaryFeedback,
+    secondaryFeedback,
+  }: {
+    primaryItems: readonly SplitButtonItem[];
+    secondaryItems: readonly SplitButtonItem[];
+    shortcut?: SplitShortcut;
+    combine: (primary: string, secondary: string) => string;
     answered?: boolean;
+    onAnswer: (value: string) => void;
+    primaryFeedback?: ButtonFeedback | null;
+    secondaryFeedback?: ButtonFeedback | null;
   },
 ) {
-  const [pendingBase, setPendingBase] = useState<string | null>(null);
+  const [pendingPri, setPendingPri] = useState<string | null>(null);
+  const [pendingSec, setPendingSec] = useState<string | null>(null);
   const onAnswerRef = useRef(onAnswer);
   onAnswerRef.current = onAnswer;
 
-  // Sync: clear button pending state when keyboard sets a pending note
-  // (keyboard takes over), or when answered.
+  // Clear pending state when answer is consumed
   useEffect(() => {
-    if (pendingNote || answered) setPendingBase(null);
-  }, [pendingNote, answered]);
+    if (answered) {
+      setPendingPri(null);
+      setPendingSec(null);
+    }
+  }, [answered]);
 
-  const handleBase = useCallback((note: string) => {
-    setPendingBase((prev) => {
-      if (prev === note) {
-        // Double-tap: confirm natural
-        onAnswerRef.current(note);
-        return null;
-      }
-      if (prev && sequential) {
-        // Chain: submit previous as natural, start new pending
-        onAnswerRef.current(prev);
-      }
-      return note;
-    });
-  }, [sequential]);
+  // Auto-submit when both selections are made
+  useEffect(() => {
+    if (pendingPri && pendingSec !== null) {
+      onAnswerRef.current(combine(pendingPri, pendingSec));
+      setPendingPri(null);
+      setPendingSec(null);
+    }
+  }, [pendingPri, pendingSec, combine]);
 
-  const pendingNoteRef = useRef(pendingNote);
-  pendingNoteRef.current = pendingNote;
+  const handlePri = useCallback((value: string) => {
+    if (shortcut && value === shortcut.value) {
+      onAnswerRef.current(shortcut.submit);
+      setPendingPri(null);
+      setPendingSec(null);
+      return;
+    }
+    setPendingPri((prev) => prev === value ? null : value);
+  }, [shortcut]);
 
-  const handleAccidental = useCallback((suffix: string) => {
-    setPendingBase((prev) => {
-      // Use button pending first, fall back to keyboard pending
-      const base = prev ?? pendingNoteRef.current;
-      if (!base) return null;
-      onAnswerRef.current(suffix ? base + suffix : base);
-      return null;
-    });
+  const handleSec = useCallback((value: string) => {
+    setPendingSec((prev) => prev === value ? null : value);
   }, []);
 
-  // The effective pending state: button tap OR keyboard
-  const effective = pendingBase ?? pendingNote ?? null;
-  const showAccidentals = effective !== null && !answered;
+  const isAnswered = !!answered || !!primaryFeedback;
 
   return (
     <div class='answer-grid-stack'>
       <div class='answer-grid'>
-        {NATURAL_NOTES.map((n) => {
+        {primaryItems.map(({ label, value }) => {
           let cls = 'answer-btn';
-          if (effective === n) cls += ' answer-btn-pending';
-          else if (effective) cls += ' answer-btn-dimmed';
+          if (!isAnswered) {
+            if (pendingPri === value) cls += ' answer-btn-pending';
+            else if (pendingPri) cls += ' answer-btn-dimmed';
+          }
+          const disabled = isAnswered ||
+            (shortcut && value === shortcut.value && pendingSec !== null);
+          if (primaryFeedback) {
+            cls += feedbackClass(primaryFeedback, value, label);
+          }
           return (
             <button
               type='button'
               tabIndex={0}
-              key={n}
+              key={value}
               class={cls}
-              data-note={n}
-              disabled={answered}
-              onClick={() => handleBase(n)}
+              disabled={!!disabled}
+              onClick={() => handlePri(value)}
             >
-              {displayNote(n)}
+              {label}
             </button>
           );
         })}
       </div>
-      <div
-        class={'answer-grid' +
-          (showAccidentals ? '' : ' answer-grid-acc-hidden')}
-      >
-        {ACCIDENTALS_SINGLE.map(({ label, suffix }) => (
-          <button
-            type='button'
-            tabIndex={0}
-            key={label}
-            class='answer-btn'
-            data-accidental={suffix || 'natural'}
-            disabled={!showAccidentals}
-            onClick={() => handleAccidental(suffix)}
-          >
-            {label}
-          </button>
-        ))}
+      <div class='answer-grid'>
+        {secondaryItems.map(({ label, value }) => {
+          let cls = 'answer-btn';
+          if (!isAnswered) {
+            if (pendingSec === value) cls += ' answer-btn-pending';
+            else if (pendingSec) cls += ' answer-btn-dimmed';
+          }
+          const disabled = isAnswered ||
+            (shortcut && pendingPri === shortcut.value);
+          if (secondaryFeedback) {
+            cls += feedbackClass(secondaryFeedback, value, label);
+          }
+          return (
+            <button
+              type='button'
+              tabIndex={0}
+              key={value}
+              class={cls}
+              disabled={!!disabled}
+              onClick={() => handleSec(value)}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SplitNoteButtons — note + accidental (chord spelling)
+// ---------------------------------------------------------------------------
+
+const NOTE_ITEMS: SplitButtonItem[] = NATURAL_NOTES.map((n) => ({
+  label: displayNote(n),
+  value: n,
+}));
+const ACCIDENTAL_ITEMS: SplitButtonItem[] = [
+  { label: '\u266D', value: 'b' }, // ♭
+  { label: '\u266E', value: '' }, // ♮ (natural)
+  { label: '\u266F', value: '#' }, // ♯
+];
+const combineNote = (base: string, acc: string) => acc ? base + acc : base;
+
+export function SplitNoteButtons(
+  { onAnswer, answered }: {
+    onAnswer: (note: string) => void;
+    /** When true, buttons are inactive (answer already submitted). */
+    answered?: boolean;
+  },
+) {
+  return (
+    <SplitButtons
+      primaryItems={NOTE_ITEMS}
+      secondaryItems={ACCIDENTAL_ITEMS}
+      combine={combineNote}
+      answered={answered}
+      onAnswer={onAnswer}
+    />
   );
 }
 
@@ -297,115 +349,31 @@ export function IntervalButtons(
 }
 
 // ---------------------------------------------------------------------------
-// Split key-signature buttons (number + sharp/flat, either order)
+// SplitKeysigButtons — number + sharp/flat (key signatures)
 // ---------------------------------------------------------------------------
 
-const KEYSIG_NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7'] as const;
-const KEYSIG_ACCIDENTALS = [
-  { label: '\u266D', suffix: 'b' }, // ♭
-  { label: '\u266F', suffix: '#' }, // ♯
-] as const;
+const KEYSIG_NUMBER_ITEMS: SplitButtonItem[] = [
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+].map((n) => ({ label: n, value: n }));
+const KEYSIG_ACC_ITEMS: SplitButtonItem[] = [
+  { label: '\u266D', value: 'b' }, // ♭
+  { label: '\u266F', value: '#' }, // ♯
+];
+const combineKeysig = (num: string, acc: string) => num + acc;
 
-/** Parse a keysig value like "2#" into { num, suffix }. */
-function parseKeysig(val: string): { num: string; suffix: string } {
-  if (val === '0') return { num: '0', suffix: '' };
-  const num = val.slice(0, -1);
-  const suffix = val.slice(-1);
-  return { num, suffix };
-}
-
-type KeysigFeedbackParts = {
-  fb: ButtonFeedback;
-  parsed: { num: string; suffix: string };
-  correctParsed: { num: string; suffix: string };
-};
-
-function KeysigNumberRow(
-  { pendingNum, pendingAcc, answered, fbParts, onTap }: {
-    pendingNum: string | null;
-    pendingAcc: string | null;
-    answered: boolean;
-    fbParts: KeysigFeedbackParts | null;
-    onTap: (n: string) => void;
-  },
-) {
-  return (
-    <div class='answer-grid'>
-      {KEYSIG_NUMBERS.map((n) => {
-        let cls = 'answer-btn';
-        if (!answered) {
-          if (pendingNum === n) cls += ' answer-btn-pending';
-          else if (pendingNum) cls += ' answer-btn-dimmed';
-        }
-        const disabled = answered || (n === '0' && pendingAcc !== null);
-        if (fbParts) {
-          const numFb: ButtonFeedback = {
-            correct: fbParts.fb.correct,
-            userInput: fbParts.parsed.num,
-            displayAnswer: fbParts.correctParsed.num,
-          };
-          cls += feedbackClass(numFb, n, n);
-        }
-        return (
-          <button
-            type='button'
-            tabIndex={0}
-            key={n}
-            class={cls}
-            data-sig-num={n}
-            disabled={disabled}
-            onClick={() => onTap(n)}
-          >
-            {n}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function KeysigAccidentalRow(
-  { pendingNum, pendingAcc, answered, fbParts, onTap }: {
-    pendingNum: string | null;
-    pendingAcc: string | null;
-    answered: boolean;
-    fbParts: KeysigFeedbackParts | null;
-    onTap: (suffix: string) => void;
-  },
-) {
-  return (
-    <div class='answer-grid'>
-      {KEYSIG_ACCIDENTALS.map(({ label, suffix }) => {
-        let cls = 'answer-btn';
-        if (!answered) {
-          if (pendingAcc === suffix) cls += ' answer-btn-pending';
-          else if (pendingAcc) cls += ' answer-btn-dimmed';
-        }
-        const disabled = answered || pendingNum === '0';
-        if (fbParts) {
-          const accFb: ButtonFeedback = {
-            correct: fbParts.fb.correct,
-            userInput: fbParts.parsed.suffix,
-            displayAnswer: fbParts.correctParsed.suffix,
-          };
-          cls += feedbackClass(accFb, suffix, label);
-        }
-        return (
-          <button
-            type='button'
-            tabIndex={0}
-            key={suffix}
-            class={cls}
-            data-sig-acc={suffix}
-            disabled={disabled}
-            onClick={() => onTap(suffix)}
-          >
-            {label}
-          </button>
-        );
-      })}
-    </div>
-  );
+/** Parse a keysig value like "2#" into { primary, secondary }. */
+function parseKeysig(
+  val: string,
+): { primary: string; secondary: string } {
+  if (val === '0') return { primary: '0', secondary: '' };
+  return { primary: val.slice(0, -1), secondary: val.slice(-1) };
 }
 
 export function SplitKeysigButtons(
@@ -414,73 +382,33 @@ export function SplitKeysigButtons(
     feedback?: ButtonFeedback | null;
   },
 ) {
-  const [pendingNum, setPendingNum] = useState<string | null>(null);
-  const [pendingAcc, setPendingAcc] = useState<string | null>(null);
-  const onAnswerRef = useRef(onAnswer);
-  onAnswerRef.current = onAnswer;
-
-  // Auto-submit when both selections are made
-  useEffect(() => {
-    if (pendingNum && pendingAcc) {
-      onAnswerRef.current?.(pendingNum + pendingAcc);
-      setPendingNum(null);
-      setPendingAcc(null);
-    }
-  }, [pendingNum, pendingAcc]);
-
-  // Reset pending state when feedback arrives (new question)
-  const prevFeedback = useRef(feedback);
-  useEffect(() => {
-    if (feedback !== prevFeedback.current) {
-      prevFeedback.current = feedback;
-      if (!feedback) {
-        setPendingNum(null);
-        setPendingAcc(null);
-      }
-    }
-  }, [feedback]);
-
-  const handleNum = useCallback((n: string) => {
-    if (n === '0') {
-      onAnswerRef.current?.('0');
-      setPendingNum(null);
-      setPendingAcc(null);
-      return;
-    }
-    setPendingNum((prev) => prev === n ? null : n);
-  }, []);
-
-  const handleAcc = useCallback((suffix: string) => {
-    setPendingAcc((prev) => prev === suffix ? null : suffix);
-  }, []);
-
-  const fbParts: KeysigFeedbackParts | null = feedback
-    ? {
-      fb: feedback,
-      parsed: parseKeysig(feedback.userInput),
-      correctParsed: parseKeysig(feedback.displayAnswer),
-    }
-    : null;
-
-  const answered = !!feedback;
-
+  let primaryFb: ButtonFeedback | null = null;
+  let secondaryFb: ButtonFeedback | null = null;
+  if (feedback) {
+    const parsed = parseKeysig(feedback.userInput);
+    const correct = parseKeysig(feedback.displayAnswer);
+    primaryFb = {
+      correct: parsed.primary === correct.primary,
+      userInput: parsed.primary,
+      displayAnswer: correct.primary,
+    };
+    secondaryFb = {
+      correct: parsed.secondary === correct.secondary,
+      userInput: parsed.secondary,
+      displayAnswer: correct.secondary,
+    };
+  }
   return (
-    <div class='answer-grid-stack'>
-      <KeysigNumberRow
-        pendingNum={pendingNum}
-        pendingAcc={pendingAcc}
-        answered={answered}
-        fbParts={fbParts}
-        onTap={handleNum}
-      />
-      <KeysigAccidentalRow
-        pendingNum={pendingNum}
-        pendingAcc={pendingAcc}
-        answered={answered}
-        fbParts={fbParts}
-        onTap={handleAcc}
-      />
-    </div>
+    <SplitButtons
+      primaryItems={KEYSIG_NUMBER_ITEMS}
+      secondaryItems={KEYSIG_ACC_ITEMS}
+      shortcut={{ value: '0', submit: '0' }}
+      combine={combineKeysig}
+      answered={!!feedback}
+      onAnswer={onAnswer ?? (() => {})}
+      primaryFeedback={primaryFb}
+      secondaryFeedback={secondaryFb}
+    />
   );
 }
 
