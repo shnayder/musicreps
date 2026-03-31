@@ -54,8 +54,8 @@ npx tsx scripts/capture-visual-history.ts --archive-dir <path> --force  # force 
 
 ## Build System
 
-The HTML template and page structure live in `src/build-template.ts` — the
-single source of truth. `main.ts` is the single
+`src/build-template.ts` assembles the HTML shell with empty mode container
+divs (derived from `TRACKS` in `mode-catalog.ts`). `main.ts` is the single
 build script (Deno), which shells out to esbuild CLI via `Deno.Command`. Source
 files are ES modules bundled by esbuild into a single IIFE `<script>` block.
 

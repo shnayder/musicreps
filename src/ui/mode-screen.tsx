@@ -1,6 +1,5 @@
-// Structural components: Preact equivalents of the mode screen scaffold
-// from html-helpers.ts modeScreen(). Compose leaf components into full
-// mode screen layouts with phase management, tabs, and quiz sessions.
+// Structural components for mode screen layouts: phase management, tabs,
+// quiz sessions, and round-complete overlays.
 
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';

@@ -4,7 +4,7 @@
 // colored correct/wrong/missed using the same palette as answer buttons.
 
 import { useCallback, useEffect, useMemo, useRef } from 'preact/hooks';
-import { fretboardSVG } from '../html-helpers.ts';
+import { fretboardSVG } from '../fretboard.ts';
 import type { MultiTapEvalResult } from '../declarative/types.ts';
 
 // ---------------------------------------------------------------------------
