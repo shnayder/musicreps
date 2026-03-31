@@ -104,10 +104,11 @@ export function SuggestionLines(
 // ---------------------------------------------------------------------------
 
 export function LevelToggles(
-  { labels, active, onToggle }: {
+  { labels, groupIds, active, onToggle }: {
     labels: string[];
-    active: ReadonlySet<number>;
-    onToggle: (index: number) => void;
+    groupIds: string[];
+    active: ReadonlySet<string>;
+    onToggle: (id: string) => void;
   },
 ) {
   return (
@@ -116,18 +117,21 @@ export function LevelToggles(
         Choose levels
       </Text>
       <div class='level-toggles'>
-        {labels.map((label, i) => (
-          <button
-            type='button'
-            tabIndex={0}
-            key={i}
-            class={'level-toggle-btn' + (active.has(i) ? ' active' : '')}
-            aria-pressed={active.has(i)}
-            onClick={() => onToggle(i)}
-          >
-            {label}
-          </button>
-        ))}
+        {labels.map((label, i) => {
+          const id = groupIds[i];
+          return (
+            <button
+              type='button'
+              tabIndex={0}
+              key={id}
+              class={'level-toggle-btn' + (active.has(id) ? ' active' : '')}
+              aria-pressed={active.has(id)}
+              onClick={() => onToggle(id)}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
