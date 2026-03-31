@@ -18,12 +18,19 @@ import {
 /** Chord groups for scope selection, ordered by importance. */
 export const CHORD_GROUPS = [
   {
+    id: 'primary',
     degrees: [1, 4, 5],
     label: 'I IV V',
     longLabel: 'Primary chords (I, IV, V)',
   },
-  { degrees: [2, 6], label: 'ii vi', longLabel: 'Secondary chords (ii, vi)' },
   {
+    id: 'secondary',
+    degrees: [2, 6],
+    label: 'ii vi',
+    longLabel: 'Secondary chords (ii, vi)',
+  },
+  {
+    id: 'tertiary',
     degrees: [3, 7],
     label: 'iii vii\u00B0', // \u00B0 = ° (degree sign)
     longLabel: 'Tertiary chords (iii, vii\u00B0)',
@@ -34,13 +41,14 @@ export const CHORD_GROUPS = [
  * Get all item IDs belonging to a chord group.
  * Item ID format: "key:degree:dir" (e.g. "Bb:4:fwd").
  *
- * @example getItemIdsForGroup(0) → ["C:1:fwd","C:1:rev","C:4:fwd",...,"C:5:rev",...]
+ * @example getItemIdsForGroup('primary') → ["C:1:fwd","C:1:rev","C:4:fwd",...,"C:5:rev",...]
  */
-export function getItemIdsForGroup(groupIndex: number): string[] {
-  const degrees = CHORD_GROUPS[groupIndex].degrees;
+export function getItemIdsForGroup(groupId: string): string[] {
+  const group = CHORD_GROUPS.find((g) => g.id === groupId);
+  if (!group) return [];
   const items: string[] = [];
   for (const key of MAJOR_KEYS) {
-    for (const d of degrees) {
+    for (const d of group.degrees) {
       items.push(key.root + ':' + d + ':fwd');
       items.push(key.root + ':' + d + ':rev');
     }
@@ -57,7 +65,7 @@ for (const key of MAJOR_KEYS) {
   }
 }
 
-export const ALL_GROUP_INDICES = CHORD_GROUPS.map((_, i) => i);
+export const ALL_GROUP_IDS: string[] = CHORD_GROUPS.map((g) => g.id);
 
 /** Row definitions for the stats grid (one row per key). */
 export const GRID_NOTES = MAJOR_KEYS.map((k) => ({

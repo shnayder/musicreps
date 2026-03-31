@@ -327,9 +327,7 @@ function ResponseButtons(
     narrowing,
     hideAccidentalsOverride,
     feedback,
-    sequential,
     answered,
-    pendingNote,
   }: {
     buttonsDef: ButtonsDef;
     onAnswer: (input: string) => void;
@@ -337,9 +335,7 @@ function ResponseButtons(
     narrowing?: ReadonlySet<string> | null;
     hideAccidentalsOverride?: boolean;
     feedback?: ButtonFeedback | null;
-    sequential?: boolean;
     answered?: boolean;
-    pendingNote?: string | null;
   },
 ) {
   switch (buttonsDef.kind) {
@@ -358,8 +354,6 @@ function ResponseButtons(
       return (
         <SplitNoteButtons
           onAnswer={onAnswer}
-          sequential={sequential}
-          pendingNote={pendingNote}
           answered={answered}
         />
       );
@@ -463,7 +457,6 @@ function SequentialQuizArea<Q>(
           <ResponseButtons
             buttonsDef={activeButtons}
             onAnswer={seq.handleInput}
-            sequential
             answered={engine.state.answered}
           />
           {def.sequential?.parseBatchInput && (
@@ -607,6 +600,7 @@ type QuizActiveViewProps<Q> = {
   ctrl: ModeController<Q>;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
+  progressColors: string[];
   handleSubmit: (input: string) => boolean;
   seq: {
     entries: { display: string }[];
@@ -636,6 +630,7 @@ function QuizActiveView<Q>(
     ctrl,
     currentQ,
     round,
+    progressColors,
     handleSubmit,
     seq,
     multiTapInput,
@@ -657,10 +652,10 @@ function QuizActiveView<Q>(
         <LayoutMain scrollable={false}>
           <CenteredContent>
             <RoundCompleteInfo
-              context={round.roundContext}
               heading='Round complete'
               count={engine.state.roundAnswered}
               correct={round.roundCorrect}
+              progressColors={progressColors}
             />
           </CenteredContent>
         </LayoutMain>
@@ -775,9 +770,10 @@ function GroupPracticeContent<Q>(
   const groupScope = def.scope.kind === 'groups' ? def.scope : null;
   if (!groupScope) return null;
 
-  const groupLabels = groupScope.allGroupIndices.map((i) =>
-    resolveGroupLabel(groupScope.groups[i].label)
-  );
+  const groupLabels = groupScope.allGroupIds.map((id) => {
+    const g = groupScope.groups.find((g) => g.id === id);
+    return g ? resolveGroupLabel(g.label) : id;
+  });
 
   return (
     <>
@@ -790,6 +786,7 @@ function GroupPracticeContent<Q>(
         customContent={
           <LevelToggles
             labels={groupLabels}
+            groupIds={groupScope.allGroupIds}
             active={groupScopeResult.practiceMode === 'custom'
               ? groupScopeResult.enabledGroups
               : groupScopeResult.suggestedScope}
@@ -813,32 +810,37 @@ function LevelProgressCards<Q>(
   if (!groupScope) return null;
   return (
     <div class='level-progress-cards'>
-      {groupScope.allGroupIndices.map((i) => {
-        const itemIds = groupScope.getItemIdsForGroup(i);
+      {groupScope.allGroupIds.map((id) => {
+        const g = groupScope.groups.find((g) => g.id === id);
+        const itemIds = groupScope.getItemIdsForGroup(id);
         const colors = progressBarColors(learner.selector, itemIds);
         const pill = computeReviewPill(learner.selector, itemIds);
-        const skipReason = groupScopeResult.skippedGroups.get(i);
+        const skipReason = groupScopeResult.skippedGroups.get(id);
         const status = skipReason === 'mastered'
           ? 'known' as const
           : skipReason === 'deferred'
           ? 'skipped' as const
           : 'normal' as const;
+        const label = g
+          ? resolveGroupLabel(
+            g.longLabel ?? g.label,
+          )
+          : id;
         return (
           <LevelProgressCard
-            key={i}
-            label={groupScope.groups[i].longLabel ??
-              resolveGroupLabel(groupScope.groups[i].label)}
+            key={id}
+            label={label}
             pill={pill ?? undefined}
             colors={colors}
             status={status}
             onToggleKnown={() =>
               skipReason === 'mastered'
-                ? groupScopeResult.scopeActions.unskipGroup(i)
-                : groupScopeResult.scopeActions.skipGroup(i, 'mastered')}
+                ? groupScopeResult.scopeActions.unskipGroup(id)
+                : groupScopeResult.scopeActions.skipGroup(id, 'mastered')}
             onToggleSkip={() =>
               skipReason === 'deferred'
-                ? groupScopeResult.scopeActions.unskipGroup(i)
-                : groupScopeResult.scopeActions.skipGroup(i, 'deferred')}
+                ? groupScopeResult.scopeActions.unskipGroup(id)
+                : groupScopeResult.scopeActions.skipGroup(id, 'deferred')}
           />
         );
       })}
@@ -1007,7 +1009,7 @@ function AboutTab(
 // GenericMode component
 // ---------------------------------------------------------------------------
 
-const EMPTY_GROUPS: ReadonlySet<number> = new Set();
+const EMPTY_GROUPS: ReadonlySet<string> = new Set();
 
 // ---------------------------------------------------------------------------
 // Engine setup hook — refs, sequential input, engine config, engine creation
@@ -1107,7 +1109,7 @@ function buildGroupScopeSpec<Q>(
   return {
     groups: def.scope.groups,
     getItemIdsForGroup: def.scope.getItemIdsForGroup,
-    allGroupIndices: def.scope.allGroupIndices,
+    allGroupIds: def.scope.allGroupIds,
     storageKey: def.scope.storageKey,
     scopeLabel: def.scope.scopeLabel,
     defaultEnabled: def.scope.defaultEnabled,
@@ -1182,8 +1184,7 @@ function useGenericDerivedState<Q>(
   if (def.multiTap) multiTapInput.resetOnItemChange(engine.state.currentItemId);
 
   usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
-  const practicingLabel = groupScopeResult?.practicingLabel ?? 'all items';
-  const round = useRoundSummary(engine, practicingLabel);
+  const round = useRoundSummary(engine);
   const ps = usePracticeSummary({
     allItems: def.allItems,
     selector: learner.selector,
@@ -1299,16 +1300,16 @@ function useProgressColors<Q>(
   def: ModeDefinition<Q>,
   learner: ReturnType<typeof useLearnerModel>,
   _phase: string,
-  skippedGroups?: ReadonlyMap<number, unknown>,
+  skippedGroups?: ReadonlyMap<string, unknown>,
 ): string[] {
   return useMemo(() => {
     if (def.scope.kind === 'groups') {
       const scope = def.scope;
       return computeProgressColors(learner.selector, {
         kind: 'groups',
-        groups: scope.allGroupIndices.map((i) => ({
-          index: i,
-          itemIds: scope.getItemIdsForGroup(i),
+        groups: scope.allGroupIds.map((id) => ({
+          id,
+          itemIds: scope.getItemIdsForGroup(id),
         })),
         skippedGroups,
       });
@@ -1430,6 +1431,7 @@ function GenericModeBody<Q>(
       ctrl={ctrl}
       currentQ={currentQ}
       round={round}
+      progressColors={progressColors}
       handleSubmit={handleSubmit}
       seq={buildSeqProps(seqInput)}
       multiTapInput={multiTapInput}

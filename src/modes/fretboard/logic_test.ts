@@ -8,7 +8,7 @@ import {
 } from '../../music-data.ts';
 import {
   formatLabel,
-  getAllGroupIndices,
+  getAllGroupIds,
   getAllItems,
   getGroups,
   getItemIdsForGroup,
@@ -52,29 +52,29 @@ describe('guitar groups', () => {
 
 describe('guitar getItemIdsForGroup', () => {
   it('E e naturals: 2 strings × 8 naturals = 16 items', () => {
-    const items = getItemIdsForGroup(GUITAR, 0);
+    const items = getItemIdsForGroup(GUITAR, 'e-natural');
     assert.equal(items.length, 16);
     // All items should be on strings 5 or 0
     assert.ok(items.every((id) => id.startsWith('5-') || id.startsWith('0-')));
   });
 
   it('A naturals: 1 string × 8 naturals = 8 items', () => {
-    const items = getItemIdsForGroup(GUITAR, 1);
+    const items = getItemIdsForGroup(GUITAR, 'a-natural');
     assert.equal(items.length, 8);
     assert.ok(items.every((id) => id.startsWith('4-')));
   });
 
   it('E accidentals: 2 strings × 5 accidentals = 10 items', () => {
-    const items = getItemIdsForGroup(GUITAR, 5);
+    const items = getItemIdsForGroup(GUITAR, 'e-sharps');
     assert.equal(items.length, 10);
     assert.ok(items.every((id) => id.startsWith('5-') || id.startsWith('0-')));
   });
 
   it('all groups cover all 78 items', () => {
     const allFromGroups = new Set<string>();
-    for (const i of getAllGroupIndices(GUITAR)) {
-      for (const id of getItemIdsForGroup(GUITAR, i)) {
-        allFromGroups.add(id);
+    for (const id of getAllGroupIds(GUITAR)) {
+      for (const itemId of getItemIdsForGroup(GUITAR, id)) {
+        allFromGroups.add(itemId);
       }
     }
     assert.equal(allFromGroups.size, 78); // 6 strings × 13 frets
@@ -100,9 +100,9 @@ describe('ukulele groups', () => {
 
   it('all groups cover all 52 items', () => {
     const allFromGroups = new Set<string>();
-    for (const i of getAllGroupIndices(UKULELE)) {
-      for (const id of getItemIdsForGroup(UKULELE, i)) {
-        allFromGroups.add(id);
+    for (const id of getAllGroupIds(UKULELE)) {
+      for (const itemId of getItemIdsForGroup(UKULELE, id)) {
+        allFromGroups.add(itemId);
       }
     }
     assert.equal(allFromGroups.size, 52); // 4 strings × 13 frets
@@ -153,18 +153,18 @@ describe('getQuestion expected values', () => {
 
 describe('formatLabel', () => {
   it('single group in letter mode', () => {
-    assert.equal(formatLabel(GUITAR, new Set([0])), 'E strings');
+    assert.equal(formatLabel(GUITAR, new Set(['e-natural'])), 'E strings');
   });
 
   it('all groups', () => {
     assert.equal(
-      formatLabel(GUITAR, new Set(getAllGroupIndices(GUITAR))),
+      formatLabel(GUITAR, new Set(getAllGroupIds(GUITAR))),
       'all groups',
     );
   });
 
   it('multiple groups sorted', () => {
-    const label = formatLabel(GUITAR, new Set([2, 0]));
+    const label = formatLabel(GUITAR, new Set(['d-natural', 'e-natural']));
     assert.equal(label, 'E strings, D string');
   });
 
@@ -172,9 +172,9 @@ describe('formatLabel', () => {
     const original = getUseSolfege();
     try {
       setUseSolfege(true);
-      assert.equal(formatLabel(GUITAR, new Set([0])), 'E strings');
-      assert.equal(formatLabel(GUITAR, new Set([1])), 'A string');
-      assert.equal(formatLabel(GUITAR, new Set([2])), 'D string');
+      assert.equal(formatLabel(GUITAR, new Set(['e-natural'])), 'Mi strings');
+      assert.equal(formatLabel(GUITAR, new Set(['a-natural'])), 'La string');
+      assert.equal(formatLabel(GUITAR, new Set(['d-natural'])), 'Re string');
     } finally {
       setUseSolfege(original);
     }

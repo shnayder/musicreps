@@ -30,7 +30,7 @@ describe('CHORD_GROUPS', () => {
 
 describe('getItemIdsForGroup', () => {
   it('group 0 contains items for degrees 1, 4, and 5', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('primary');
     assert.ok(ids.includes('C:1:fwd'));
     assert.ok(ids.includes('C:1:rev'));
     assert.ok(ids.includes('C:4:fwd'));
@@ -40,7 +40,7 @@ describe('getItemIdsForGroup', () => {
   });
 
   it('group 0 does not include degree 2, 3, 6, or 7', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('primary');
     assert.ok(!ids.includes('C:2:fwd'));
     assert.ok(!ids.includes('C:3:fwd'));
     assert.ok(!ids.includes('C:6:fwd'));
@@ -48,7 +48,7 @@ describe('getItemIdsForGroup', () => {
   });
 
   it('group 0 has 72 items (12 keys × 3 degrees × 2 directions)', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('primary');
     assert.equal(ids.length, 72);
   });
 });

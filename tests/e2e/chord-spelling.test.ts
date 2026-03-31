@@ -153,49 +153,39 @@ describe('chord spelling — button input (E2E)', () => {
     const noteCountMatch = placeholder.match(/^(\d+) notes/);
     const noteCount = noteCountMatch ? parseInt(noteCountMatch[1], 10) : 3;
 
-    // Tap base notes using split-note buttons.
-    // In sequential mode, tapping a new base auto-submits the previous.
-    // So we tap noteCount+1 base notes: each new tap submits the previous.
-    // Actually, the last note needs a double-tap to confirm.
-    const baseButtons = page.locator(`${MODE} .split-note-base`);
+    // Split-note buttons: two grids in an answer-grid-stack.
+    // First grid = base notes (C D E F G A B), second = accidentals (♭ ♮ ♯).
+    // Tap a base note + natural (♮) accidental for each note in the chord.
+    const grids = page.locator(`${MODE} .answer-grid-stack .answer-grid`);
+    const baseButtons = grids.nth(0).locator('.answer-btn');
+    const naturalBtn = grids.nth(1).locator('.answer-btn:nth-child(2)'); // ♮
+
     const btnCount = await baseButtons.count();
+    assert.ok(btnCount >= 2, `expected base note buttons, got ${btnCount}`);
 
-    if (btnCount >= 2) {
-      // Tap different base notes — each new tap submits previous as natural
-      for (let i = 0; i < noteCount - 1; i++) {
-        const btnIdx = i % btnCount;
-        await baseButtons.nth(btnIdx).click();
-        await page.waitForTimeout(150);
-      }
-
-      // Last note: tap then double-tap to confirm
-      const lastIdx = (noteCount - 1) % btnCount;
-      await baseButtons.nth(lastIdx).click();
-      await page.waitForTimeout(150);
-      await baseButtons.nth(lastIdx).click();
-      await page.waitForTimeout(300);
-
-      // Should see feedback (Next button visible after all notes collected)
-      const nextBtn = page.locator(`${MODE} .next-btn`);
-      const nextVisible = await nextBtn.isVisible().catch(() => false);
-      assert.ok(
-        nextVisible,
-        'Next button should appear after all notes submitted',
-      );
-
-      // Sequential slots should show results
-      const evaluatedSlots = page.locator(`${MODE} .seq-slot`);
-      const evaluatedCount = await evaluatedSlots.count();
-      assert.ok(
-        evaluatedCount >= noteCount,
-        `should have ${noteCount} evaluated slots, got ${evaluatedCount}`,
-      );
-    } else {
-      assert.ok(
-        true,
-        'not enough buttons visible — skipping button input test',
-      );
+    for (let i = 0; i < noteCount; i++) {
+      const btnIdx = i % btnCount;
+      await baseButtons.nth(btnIdx).click();
+      await page.waitForTimeout(100);
+      await naturalBtn.click();
+      await page.waitForTimeout(100);
     }
+
+    // Should see feedback (Next button visible after all notes collected)
+    const nextBtn = page.locator(`${MODE} .next-btn`);
+    const nextVisible = await nextBtn.isVisible().catch(() => false);
+    assert.ok(
+      nextVisible,
+      'Next button should appear after all notes submitted',
+    );
+
+    // Sequential slots should show results
+    const evaluatedSlots = page.locator(`${MODE} .seq-slot`);
+    const evaluatedCount = await evaluatedSlots.count();
+    assert.ok(
+      evaluatedCount >= noteCount,
+      `should have ${noteCount} evaluated slots, got ${evaluatedCount}`,
+    );
 
     // Cleanup
     await page.keyboard.press('Escape');

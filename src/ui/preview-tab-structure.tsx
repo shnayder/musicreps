@@ -45,20 +45,29 @@ function QuizFlowComponents({ tabId }: { tabId: string }) {
         <Section title='RoundComplete — Good' tabId={tabId}>
           <QuizArea controls={<RoundCompleteActions />}>
             <RoundCompleteInfo
-              context={goodRound.context}
               heading={goodRound.heading}
               count={18}
               correct={goodRound.correct}
+              progressColors={[
+                'hsl(125, 48%, 33%)',
+                'hsl(125, 48%, 33%)',
+                'hsl(80, 35%, 40%)',
+                'hsl(60, 40%, 46%)',
+              ]}
             />
           </QuizArea>
         </Section>
         <Section title='RoundComplete — Rough' tabId={tabId}>
           <QuizArea controls={<RoundCompleteActions />}>
             <RoundCompleteInfo
-              context={roughRound.context}
               heading={roughRound.heading}
               count={9}
               correct={roughRound.correct}
+              progressColors={[
+                'hsl(48, 50%, 52%)',
+                'hsl(40, 60%, 58%)',
+                'hsl(40, 60%, 58%)',
+              ]}
             />
           </QuizArea>
         </Section>

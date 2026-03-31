@@ -31,11 +31,23 @@ const GROUP_LONG_LABELS: Record<number, string> = {
   6: 'Suspended & 6th chords',
 };
 
+/** Stable string IDs by group index. */
+const GROUP_IDS: Record<number, string> = {
+  0: 'triads-major',
+  1: 'triads-minor',
+  2: 'dom-7th',
+  3: 'maj-7th',
+  4: 'min-7th',
+  5: 'dim-aug-hdim',
+  6: 'sus-6th',
+};
+
 /**
  * Build chord type groups from CHORD_TYPES, grouping by the `group` field.
  * Each group gets a label built from the chord symbols in that group.
  */
 function buildGroups(): {
+  id: string;
   types: ChordType[];
   label: string;
   longLabel: string;
@@ -44,12 +56,18 @@ function buildGroups(): {
   for (const ct of CHORD_TYPES) {
     if (ct.group > maxGroup) maxGroup = ct.group;
   }
-  const result: { types: ChordType[]; label: string; longLabel: string }[] = [];
+  const result: {
+    id: string;
+    types: ChordType[];
+    label: string;
+    longLabel: string;
+  }[] = [];
   for (let g = 0; g <= maxGroup; g++) {
     const types = CHORD_TYPES.filter((t) => t.group === g);
     const label = types.map((t) => t.symbol || 'maj').join(', ');
     const longLabel = GROUP_LONG_LABELS[g] ?? label;
-    result.push({ types, label, longLabel });
+    const id = GROUP_IDS[g] ?? String(g);
+    result.push({ id, types, label, longLabel });
   }
   return result;
 }
@@ -61,13 +79,14 @@ export const SPELLING_GROUPS = buildGroups();
  * Get all item IDs belonging to a chord type group.
  * Item ID format: "root:typeName" (e.g. "C:major", "F#:dim").
  *
- * @example getItemIdsForGroup(0) → ["C:major","C#:major",...,"C:minor","C#:minor",...]
+ * @example getItemIdsForGroup('triads-major') → ["C:major","C#:major",...]
  */
-export function getItemIdsForGroup(groupIndex: number): string[] {
-  const types = SPELLING_GROUPS[groupIndex].types;
+export function getItemIdsForGroup(groupId: string): string[] {
+  const group = SPELLING_GROUPS.find((g) => g.id === groupId);
+  if (!group) return [];
   const items: string[] = [];
   for (const root of CHORD_ROOTS) {
-    for (const type of types) {
+    for (const type of group.types) {
       items.push(root + ':' + type.name);
     }
   }
@@ -82,7 +101,7 @@ for (const root of CHORD_ROOTS) {
   }
 }
 
-export const ALL_GROUP_INDICES = SPELLING_GROUPS.map((_, i) => i);
+export const ALL_GROUP_IDS: string[] = SPELLING_GROUPS.map((g) => g.id);
 
 /** Row definitions for the stats grid (one row per chord root). */
 export const GRID_NOTES = CHORD_ROOTS.map((r) => ({

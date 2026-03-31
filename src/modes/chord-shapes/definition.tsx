@@ -11,7 +11,7 @@ import type {
   ModeDefinition,
 } from '../../declarative/types.ts';
 import {
-  ALL_GROUP_INDICES,
+  ALL_GROUP_IDS,
   allItems,
   evaluate,
   formatGroupLabel,
@@ -135,11 +135,11 @@ export function createChordShapesDef(
     scope: {
       kind: 'groups',
       groups: QUALITY_GROUPS,
-      getItemIdsForGroup: (index) => getItemIdsForGroup(instrument, index),
-      allGroupIndices: ALL_GROUP_INDICES,
+      getItemIdsForGroup: (groupId) => getItemIdsForGroup(instrument, groupId),
+      allGroupIds: ALL_GROUP_IDS,
       storageKey: id + '_enabledGroups',
       scopeLabel: 'Chords',
-      defaultEnabled: [0],
+      defaultEnabled: [ALL_GROUP_IDS[0]],
       formatLabel: formatGroupLabel,
     },
 

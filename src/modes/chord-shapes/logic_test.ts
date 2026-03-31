@@ -253,9 +253,9 @@ describe('groups', () => {
   it('guitar group items cover all voicings', () => {
     const all = new Set(allItems('guitar'));
     const grouped = new Set([
-      ...getItemIdsForGroup('guitar', 0),
-      ...getItemIdsForGroup('guitar', 1),
-      ...getItemIdsForGroup('guitar', 2),
+      ...getItemIdsForGroup('guitar', 'major'),
+      ...getItemIdsForGroup('guitar', 'minor'),
+      ...getItemIdsForGroup('guitar', 'dom7'),
     ]);
     assert.deepEqual(grouped, all);
   });
@@ -263,9 +263,9 @@ describe('groups', () => {
   it('ukulele group items cover all voicings', () => {
     const all = new Set(allItems('ukulele'));
     const grouped = new Set([
-      ...getItemIdsForGroup('ukulele', 0),
-      ...getItemIdsForGroup('ukulele', 1),
-      ...getItemIdsForGroup('ukulele', 2),
+      ...getItemIdsForGroup('ukulele', 'major'),
+      ...getItemIdsForGroup('ukulele', 'minor'),
+      ...getItemIdsForGroup('ukulele', 'dom7'),
     ]);
     assert.deepEqual(grouped, all);
   });
@@ -273,16 +273,19 @@ describe('groups', () => {
 
 describe('formatGroupLabel', () => {
   it('all groups → "all chords"', () => {
-    assert.equal(formatGroupLabel(new Set([0, 1, 2])), 'all chords');
+    assert.equal(
+      formatGroupLabel(new Set(['major', 'minor', 'dom7'])),
+      'all chords',
+    );
   });
 
   it('single group', () => {
-    assert.equal(formatGroupLabel(new Set([0])), 'major');
-    assert.equal(formatGroupLabel(new Set([1])), 'minor');
-    assert.equal(formatGroupLabel(new Set([2])), '7th');
+    assert.equal(formatGroupLabel(new Set(['major'])), 'major');
+    assert.equal(formatGroupLabel(new Set(['minor'])), 'minor');
+    assert.equal(formatGroupLabel(new Set(['dom7'])), '7th');
   });
 
   it('two groups joined with &', () => {
-    assert.equal(formatGroupLabel(new Set([0, 2])), 'major & 7th');
+    assert.equal(formatGroupLabel(new Set(['major', 'dom7'])), 'major & 7th');
   });
 });

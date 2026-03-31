@@ -15,11 +15,6 @@ function initNavigationListeners(
   getCurrentModeId: () => string | null,
   navigateHome: () => void,
 ): void {
-  // Mode back buttons (one per mode screen)
-  document.querySelectorAll('.mode-top-bar .close-btn').forEach((btn) => {
-    btn.addEventListener('click', () => navigateHome());
-  });
-
   // Escape key navigates home when idle on a mode screen.
   document.addEventListener('keydown', (e) => {
     const modeId = getCurrentModeId();

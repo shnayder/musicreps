@@ -141,34 +141,27 @@ export function voicingSummary(strings: StringAction[]): string {
 // ---------------------------------------------------------------------------
 
 export const QUALITY_GROUPS = [
-  { label: 'Major', longLabel: 'Major chords' },
-  { label: 'Minor', longLabel: 'Minor chords' },
-  { label: '7th', longLabel: 'Dominant 7th chords' },
+  { id: 'major', label: 'Major', longLabel: 'Major chords' },
+  { id: 'minor', label: 'Minor', longLabel: 'Minor chords' },
+  { id: 'dom7', label: '7th', longLabel: 'Dominant 7th chords' },
 ];
 
-export const ALL_GROUP_INDICES = [0, 1, 2];
-
-const QUALITY_BY_GROUP: Record<number, string> = {
-  0: 'major',
-  1: 'minor',
-  2: 'dom7',
-};
+export const ALL_GROUP_IDS: string[] = QUALITY_GROUPS.map((g) => g.id);
 
 export function getItemIdsForGroup(
   instrument: 'guitar' | 'ukulele',
-  groupIndex: number,
+  groupId: string,
 ): string[] {
-  const quality = QUALITY_BY_GROUP[groupIndex];
   return getVoicings(instrument)
-    .filter((v) => v.quality === quality)
+    .filter((v) => v.quality === groupId)
     .map(itemId);
 }
 
-export function formatGroupLabel(enabledGroups: ReadonlySet<number>): string {
+export function formatGroupLabel(enabledGroups: ReadonlySet<string>): string {
   if (enabledGroups.size === 3) return 'all chords';
   const labels: string[] = [];
-  if (enabledGroups.has(0)) labels.push('major');
-  if (enabledGroups.has(1)) labels.push('minor');
-  if (enabledGroups.has(2)) labels.push('7th');
+  if (enabledGroups.has('major')) labels.push('major');
+  if (enabledGroups.has('minor')) labels.push('minor');
+  if (enabledGroups.has('dom7')) labels.push('7th');
   return labels.join(' & ');
 }

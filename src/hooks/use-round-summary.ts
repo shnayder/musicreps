@@ -35,11 +35,9 @@ export function useStatsSelector(
 // ---------------------------------------------------------------------------
 
 export type RoundSummary = {
-  /** Context line: "practicing label . X / Y automatic". */
-  roundContext: string;
   /** Accuracy line: "8 correct . 42s". */
   roundCorrect: string;
-  /** Answer count: "5 answers". */
+  /** Rep count: "5 reps". */
   countText: string;
   /** Numeric-only count for compact display: "5". */
   countLabel: string;
@@ -50,24 +48,10 @@ export type RoundSummary = {
  * round-complete screen. Pure computation from engine state.
  *
  * @param engine     Quiz engine handle (for round stats, mastery counts).
- * @param practicingLabel  What the user is currently practicing, e.g.
- *   "+/-1-2, +/-3-4 semitones" or "all items". Shown in the round context line.
  */
 export function useRoundSummary(
   engine: QuizEngineHandle,
-  practicingLabel: string,
 ): RoundSummary {
-  const roundContext = useMemo(() => {
-    const s = engine.state;
-    const fluency = s.masteredCount + ' / ' + s.totalEnabledCount +
-      ' automatic';
-    return practicingLabel + ' \u00B7 ' + fluency;
-  }, [
-    engine.state.masteredCount,
-    engine.state.totalEnabledCount,
-    practicingLabel,
-  ]);
-
   const roundCorrect = useMemo(() => {
     const s = engine.state;
     const dur = Math.round((s.roundDurationMs || 0) / 1000);
@@ -79,8 +63,8 @@ export function useRoundSummary(
 
   const answerCount = engine.state.roundAnswered;
   const countText = answerCount +
-    (answerCount === 1 ? ' answer' : ' answers');
+    (answerCount === 1 ? ' rep' : ' reps');
   const countLabel = String(answerCount);
 
-  return { roundContext, roundCorrect, countText, countLabel };
+  return { roundCorrect, countText, countLabel };
 }
