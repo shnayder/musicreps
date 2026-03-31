@@ -6469,8 +6469,8 @@ ${text}`).join("\n\n");
       namespace: "fretboard",
       groups: guitarGroups.map((g2) => ({
         id: g2.id,
-        label: g2.label(),
-        longLabel: g2.longLabel(),
+        label: g2.label,
+        longLabel: g2.longLabel,
         getItemIds: () => getItemIdsForGroup7(GUITAR, g2.id)
       })),
       allItemIds: () => getAllItems(GUITAR)
@@ -6480,8 +6480,8 @@ ${text}`).join("\n\n");
       namespace: "ukulele",
       groups: ukuleleGroups.map((g2) => ({
         id: g2.id,
-        label: g2.label(),
-        longLabel: g2.longLabel(),
+        label: g2.label,
+        longLabel: g2.longLabel,
         getItemIds: () => getItemIdsForGroup7(UKULELE, g2.id)
       })),
       allItemIds: () => getAllItems(UKULELE)

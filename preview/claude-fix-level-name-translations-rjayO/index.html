@@ -3151,7 +3151,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="6f975f fix-level-name-translations-rjayO"></div>
+  <div class="home-screen" id="home-screen" data-version="c16afa fix-level-name-translations-rjayO"></div>
 
   <!-- Guitar Fretboard mode -->
   <div class="mode-screen phase-idle" id="mode-fretboard">
@@ -7561,8 +7561,8 @@ body.native-app {
       namespace: "fretboard",
       groups: guitarGroups.map((g2) => ({
         id: g2.id,
-        label: g2.label(),
-        longLabel: g2.longLabel(),
+        label: g2.label,
+        longLabel: g2.longLabel,
         getItemIds: () => getItemIdsForGroup7(GUITAR, g2.id)
       })),
       allItemIds: () => getAllItems(GUITAR)
@@ -7572,8 +7572,8 @@ body.native-app {
       namespace: "ukulele",
       groups: ukuleleGroups.map((g2) => ({
         id: g2.id,
-        label: g2.label(),
-        longLabel: g2.longLabel(),
+        label: g2.label,
+        longLabel: g2.longLabel,
         getItemIds: () => getItemIdsForGroup7(UKULELE, g2.id)
       })),
       allItemIds: () => getAllItems(UKULELE)
@@ -7994,26 +7994,29 @@ body.native-app {
     const selector = createAdaptiveSelector(storage2, cfg);
     const allGroupIds = entry.groups.filter((g2) => !skippedGroups.has(g2.id)).map((g2) => g2.id);
     if (allGroupIds.length === 0) return notStarted(entry.modeId);
-    const getItemIds = (id) => {
-      const g2 = entry.groups.find((g3) => g3.id === id);
-      return g2 ? g2.getItemIds() : [];
-    };
+    const groupById = new Map(entry.groups.map((g2) => [g2.id, g2]));
+    const getItemIds = (id) => groupById.get(id)?.getItemIds() ?? [];
     const allItemIds = allGroupIds.flatMap(getItemIds);
     const { seen } = selector.getLevelSpeed(allItemIds);
     if (seen === 0) return notStarted(entry.modeId);
+    const idOrder = new Map(entry.groups.map((g2, i3) => [g2.id, i3]));
     const result = computeRecommendations(
       selector,
       allGroupIds,
       getItemIds,
-      config
+      config,
+      {
+        sortUnstarted: (a3, b) => (idOrder.get(a3.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0)
+      }
     );
     return classifySkill(entry, result);
   }
   function classifySkill(entry, result) {
     const modeId = entry.modeId;
     const singleGroup = entry.groups.length <= 1;
+    const resolve = (v3) => typeof v3 === "function" ? v3() : v3;
     const labelMap = new Map(
-      entry.groups.map((g2) => [g2.id, g2.longLabel ?? g2.label])
+      entry.groups.map((g2) => [g2.id, resolve(g2.longLabel ?? g2.label)])
     );
     if (result.levelRecs.length === 0) {
       return { modeId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
@@ -9697,7 +9700,7 @@ body.native-app {
       (id) => {
         const g2 = spec.groups.find((g3) => g3.id === id);
         if (!g2) return id;
-        return (g2.longLabel ? resolveLabel(g2.longLabel) : void 0) ?? resolveLabel(g2.label);
+        return resolveLabel(g2.longLabel ?? g2.label);
       },
       [spec.groups, notationVersion]
     );
@@ -12124,7 +12127,9 @@ body.native-app {
       const pill = computeReviewPill(learner.selector, itemIds);
       const skipReason = groupScopeResult.skippedGroups.get(id);
       const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
-      const label = g2 ? (g2.longLabel ? resolveGroupLabel(g2.longLabel) : void 0) ?? resolveGroupLabel(g2.label) : id;
+      const label = g2 ? resolveGroupLabel(
+        g2.longLabel ?? g2.label
+      ) : id;
       return /* @__PURE__ */ u3(
         LevelProgressCard,
         {
