@@ -327,9 +327,7 @@ function ResponseButtons(
     narrowing,
     hideAccidentalsOverride,
     feedback,
-    sequential,
     answered,
-    pendingNote,
   }: {
     buttonsDef: ButtonsDef;
     onAnswer: (input: string) => void;
@@ -337,9 +335,7 @@ function ResponseButtons(
     narrowing?: ReadonlySet<string> | null;
     hideAccidentalsOverride?: boolean;
     feedback?: ButtonFeedback | null;
-    sequential?: boolean;
     answered?: boolean;
-    pendingNote?: string | null;
   },
 ) {
   switch (buttonsDef.kind) {
@@ -358,8 +354,6 @@ function ResponseButtons(
       return (
         <SplitNoteButtons
           onAnswer={onAnswer}
-          sequential={sequential}
-          pendingNote={pendingNote}
           answered={answered}
         />
       );
@@ -463,7 +457,6 @@ function SequentialQuizArea<Q>(
           <ResponseButtons
             buttonsDef={activeButtons}
             onAnswer={seq.handleInput}
-            sequential
             answered={engine.state.answered}
           />
           {def.sequential?.parseBatchInput && (

@@ -246,8 +246,8 @@
   /* Interactive element sizes */
   --size-close-btn: 2.25rem;
   --size-content-inset: var(--pad-region);
-  --size-answer-grid: 300px;
-  --size-answer-grid-wide: 420px;
+  --size-answer-grid: 272px;
+  --size-answer-grid-wide: 400px;
 
   /* Elevation (box-shadow) */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -400,7 +400,7 @@
 
   /* -- Answer: quiz answer buttons (note, number, interval) -- */
   --type-answer-size: var(--text-lg);
-  --type-answer-weight: var(--font-semibold);
+  --type-answer-weight: var(--font-medium);
   --type-answer-leading: var(--leading-none);
   --type-answer-color: var(--color-text);
 
@@ -2174,9 +2174,6 @@ button {
   width: 100%;
   max-width: var(--size-answer-grid);
   margin: var(--gap-related) auto;
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-lg);
-  padding: var(--gap-group);
 }
 .answer-grid-6 {
   grid-template-columns: repeat(6, 1fr);
@@ -2188,19 +2185,13 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--gap-related);
+  gap: var(--gap-group);
   width: 100%;
   max-width: var(--size-answer-grid);
   margin: var(--gap-related) auto;
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-lg);
-  padding: var(--gap-group);
 }
 .answer-grid-stack > .answer-grid {
   margin: 0;
-  background: none;
-  border-radius: 0;
-  padding: 0;
 }
 
 /* --- Pending/dimmed states for split (two-step) inputs --- */
@@ -2210,12 +2201,6 @@ button {
 }
 .answer-btn-dimmed {
   opacity: var(--opacity-dimmed);
-}
-
-/* Accidental qualifier row fades when hidden (split-note chord spelling) */
-.answer-grid-acc-hidden {
-  opacity: var(--opacity-subtle);
-  pointer-events: none;
 }
 
 /* --- Quiz prompt (text modes) --- */
@@ -2304,8 +2289,8 @@ button {
   font-size: var(--type-answer-size);
   font-weight: var(--type-answer-weight);
   line-height: var(--type-answer-leading);
-  border: none;
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
   background: var(--_bg);
   color: var(--_text);
   cursor: pointer;
@@ -2316,14 +2301,17 @@ button {
   justify-content: center;
   transition:
     background var(--duration-base) ease,
+    border-color var(--duration-base) ease,
     transform var(--duration-fast) ease;
 }
 @media (hover: hover) {
   .answer-btn:hover {
     --_bg: var(--color-surface-hover);
+    border-color: var(--color-border-light);
   }
   .answer-btn:disabled:hover {
     --_bg: var(--color-card);
+    border-color: var(--color-border-lighter);
     transform: none;
   }
 }
@@ -2342,16 +2330,19 @@ button {
 .btn-feedback-correct {
   --_bg: var(--color-success-bg) !important;
   --_text: var(--color-success-text) !important;
+  border-color: transparent !important;
   opacity: 1 !important;
 }
 .btn-feedback-wrong {
   --_bg: var(--color-error-bg) !important;
   --_text: var(--color-error-text) !important;
+  border-color: transparent !important;
   opacity: 1 !important;
 }
 .btn-feedback-reveal {
   --_bg: var(--color-success-bg) !important;
   --_text: var(--color-success-text) !important;
+  border-color: transparent !important;
   opacity: 1 !important;
 }
 
@@ -2997,6 +2988,7 @@ button {
 }
 .seq-correct-row {
   display: flex;
+  justify-content: center;
   gap: var(--gap-group);
   margin-top: var(--gap-micro);
 }
