@@ -3129,7 +3129,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1159"></div>
+  <div class="home-screen" id="home-screen" data-version="#1162"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -5072,8 +5072,14 @@ body.native-app {
   function saveDailyReps(data, store) {
     store.write(JSON.stringify(data));
   }
+  function toLocalDateString(date) {
+    const y3 = date.getFullYear();
+    const m3 = String(date.getMonth() + 1).padStart(2, "0");
+    const d4 = String(date.getDate()).padStart(2, "0");
+    return `${y3}-${m3}-${d4}`;
+  }
   function incrementDailyReps(store = localDailyRepsStore(), now = /* @__PURE__ */ new Date()) {
-    const today = now.toISOString().slice(0, 10);
+    const today = toLocalDateString(now);
     const data = getDailyReps(store);
     data[today] = (data[today] || 0) + 1;
     saveDailyReps(data, store);
