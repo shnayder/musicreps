@@ -162,10 +162,17 @@ describe('toLocalDateString', () => {
     // In UTC+ timezones this is March 16. Either way, the result must match
     // the *local* date parts, not the UTC date.
     const date = new Date('2024-03-16T02:00:00Z');
-    const expected = `${date.getFullYear()}-${
+    const localExpected = `${date.getFullYear()}-${
       String(date.getMonth() + 1).padStart(2, '0')
     }-${String(date.getDate()).padStart(2, '0')}`;
-    assert.equal(toLocalDateString(date), expected);
+    const utcExpected = `${date.getUTCFullYear()}-${
+      String(date.getUTCMonth() + 1).padStart(2, '0')
+    }-${String(date.getUTCDate()).padStart(2, '0')}`;
+    const actual = toLocalDateString(date);
+    assert.equal(actual, localExpected);
+    if (localExpected !== utcExpected) {
+      assert.notEqual(actual, utcExpected);
+    }
   });
 });
 
