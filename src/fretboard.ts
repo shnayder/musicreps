@@ -106,6 +106,9 @@ export function fretMarkerDots(
     .join('\n      ');
 }
 
+/** Radius of fret-position circles (px). */
+export const POSITION_CIRCLE_R = 14;
+
 /** Generate SVG position circles — one per fret position, no text. */
 export function positionCircles(
   stringCount: number = 6,
@@ -122,7 +125,7 @@ export function positionCircles(
       Array.from({ length: fretCount }, (_, fret) => {
         return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${
           stringX(string, stringCount)
-        }" cy="${noteY(fret)}" r="14"/>`;
+        }" cy="${noteY(fret)}" r="${POSITION_CIRCLE_R}"/>`;
       }).join('\n      '),
   ).join('\n      ');
 }

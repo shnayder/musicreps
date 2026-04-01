@@ -214,6 +214,17 @@ export type MultiTapDef<Q> = {
    *  tapped exactly `getTargets(q).length` positions.
    *  Must return `correctAnswer` for engine feedback display. */
   evaluate: (q: Q, tapped: string[]) => MultiTapEvalResult;
+
+  /** Number of strings on the fretboard (default 6 for guitar). */
+  stringCount?: number;
+
+  /** Return string indices that are muted for this question.
+   *  Shown as X markers on the fretboard after evaluation. */
+  getMutedStrings?: (q: Q) => number[];
+
+  /** When true, only one tap per string is allowed. Tapping a new fret on a
+   *  string that already has a tap replaces the old one (chord shape behavior). */
+  onePerString?: boolean;
 };
 
 // ---------------------------------------------------------------------------

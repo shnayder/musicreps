@@ -22,6 +22,8 @@ export const MODE_DESCRIPTIONS: Record<string, string> = {
   scaleDegrees: 'Degrees and notes in any key, automatic',
   diatonicChords: 'Chords in any key, instant recall',
   chordSpelling: 'Spell any chord without thinking',
+  guitarChordShapes: 'Tap chord fingerings from memory',
+  ukuleleChordShapes: 'Tap chord fingerings from memory',
 };
 
 // ---------------------------------------------------------------------------
@@ -40,6 +42,8 @@ export const MODE_NAMES: Record<string, string> = {
   scaleDegrees: 'Scale Degrees',
   diatonicChords: 'Diatonic Chords',
   chordSpelling: 'Chord Spelling',
+  guitarChordShapes: 'Guitar Chord Shapes',
+  ukuleleChordShapes: 'Ukulele Chord Shapes',
 };
 
 // ---------------------------------------------------------------------------
@@ -142,6 +146,22 @@ export const MODE_BEFORE_AFTER: Record<
       }. The 7th\u2026 it\u2019s a minor 7th, so\u2026 ${d('Eb')}.`,
     after: () => `${d('F')}m7. ${d('F')} ${d('Ab')} ${d('C')} ${d('Eb')}.`,
   },
+  guitarChordShapes: {
+    before: () =>
+      `${d('A')}m. Ok, ${
+        d('A')
+      } minor\u2026 is it the one with the finger on the ${
+        d('B')
+      } string? Or the ${d('G')} string? Let me look it up.`,
+    after: () => `${d('A')}m. Tap tap tap tap tap. Done.`,
+  },
+  ukuleleChordShapes: {
+    before: () =>
+      `${d('G')} major. I know there\u2019s a barre involved\u2026 or is that ${
+        d('F')
+      }? Which fret was it again?`,
+    after: () => `${d('G')}. Tap tap tap tap. Done.`,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -176,11 +196,11 @@ export const TRACKS: Track[] = [
   {
     id: 'guitar',
     label: 'Guitar',
-    skills: ['fretboard', 'speedTap'],
+    skills: ['fretboard', 'speedTap', 'guitarChordShapes'],
   },
   {
     id: 'ukulele',
     label: 'Ukulele',
-    skills: ['ukulele'],
+    skills: ['ukulele', 'ukuleleChordShapes'],
   },
 ];

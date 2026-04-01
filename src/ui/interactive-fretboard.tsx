@@ -4,7 +4,12 @@
 // colored correct/wrong/missed using the same palette as answer buttons.
 
 import { useCallback, useEffect, useMemo, useRef } from 'preact/hooks';
-import { fretboardSVG } from '../fretboard.ts';
+import {
+  fretboardSVG,
+  noteY,
+  POSITION_CIRCLE_R,
+  stringX,
+} from '../fretboard.ts';
 import type { MultiTapEvalResult } from '../declarative/types.ts';
 
 // ---------------------------------------------------------------------------
@@ -64,7 +69,61 @@ type InteractiveFretboardProps = {
   stringCount?: number;
   /** Number of frets including open (default 13 = frets 0-12). */
   fretCount?: number;
+  /** String indices to mark as muted (X above nut). Shown only after evaluation. */
+  mutedStrings?: ReadonlySet<number>;
 };
+
+// ---------------------------------------------------------------------------
+// Muted-string X markers — rendered as SVG text elements above the nut.
+// ---------------------------------------------------------------------------
+
+const MUTE_MARKER_CLASS = 'fb-mute-marker';
+
+function renderMuteMarkers(
+  root: HTMLElement,
+  mutedStrings: ReadonlySet<number>,
+  sc: number,
+): void {
+  const svg = root.querySelector('svg.fretboard');
+  if (!svg) return;
+  svg.querySelectorAll('.' + MUTE_MARKER_CLASS).forEach((el) => el.remove());
+  const colorMuted = readCSSColor('--color-text-secondary', '#888');
+  const cy = noteY(0); // same Y as fret-0 circles
+  const half = POSITION_CIRCLE_R * 0.7; // half-size of X arms
+  for (const s of mutedStrings) {
+    const cx = stringX(s, sc);
+    // Draw an × using two crossing lines, centered on the fret-0 circle position
+    const line1 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'line',
+    );
+    const line2 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'line',
+    );
+    for (const ln of [line1, line2]) {
+      ln.setAttribute('class', MUTE_MARKER_CLASS);
+      ln.setAttribute('stroke', colorMuted);
+      ln.setAttribute('stroke-width', '2.5');
+      ln.setAttribute('stroke-linecap', 'round');
+      ln.setAttribute('pointer-events', 'none');
+    }
+    line1.setAttribute('x1', String(cx - half));
+    line1.setAttribute('y1', String(cy - half));
+    line1.setAttribute('x2', String(cx + half));
+    line1.setAttribute('y2', String(cy + half));
+    line2.setAttribute('x1', String(cx + half));
+    line2.setAttribute('y1', String(cy - half));
+    line2.setAttribute('x2', String(cx - half));
+    line2.setAttribute('y2', String(cy + half));
+    svg.appendChild(line1);
+    svg.appendChild(line2);
+  }
+}
+
+function clearMuteMarkers(root: HTMLElement): void {
+  root.querySelectorAll('.' + MUTE_MARKER_CLASS).forEach((el) => el.remove());
+}
 
 export function InteractiveFretboard(
   {
@@ -74,6 +133,7 @@ export function InteractiveFretboard(
     progressText,
     stringCount = 6,
     fretCount = 13,
+    mutedStrings,
   }: InteractiveFretboardProps,
 ) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -98,6 +158,7 @@ export function InteractiveFretboard(
     const root = wrapperRef.current;
     if (!root) return;
     clearAllCircles(root);
+    clearMuteMarkers(root);
 
     if (evaluated) {
       // After evaluation — same colors as answer button feedback:
@@ -121,6 +182,10 @@ export function InteractiveFretboard(
           setCircleFill(root, missed, colorMissed);
         }
       }
+      // Show muted-string X markers after evaluation
+      if (mutedStrings && mutedStrings.size > 0) {
+        renderMuteMarkers(root, mutedStrings, stringCount);
+      }
     } else {
       // During collection: highlight tapped positions
       const colorSel = readCSSColor(
@@ -131,7 +196,7 @@ export function InteractiveFretboard(
         setCircleFill(root, posKey, colorSel);
       }
     }
-  }, [tappedPositions, evaluated, svgHTML]);
+  }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
 
   return (
     <div class='interactive-fretboard'>

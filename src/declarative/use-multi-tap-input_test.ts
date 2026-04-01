@@ -135,6 +135,70 @@ describe('processMultiTap', () => {
   });
 });
 
+describe('processMultiTap onePerString', () => {
+  it('replaces existing tap on same string', () => {
+    const def: MultiTapDef<{ targets: string[] }> = {
+      ...makeDef(['0-1', '1-2']),
+      onePerString: true,
+    };
+    // Tap string 0 fret 3 first (wrong), then string 0 fret 1 (correct)
+    const tapped = new Set(['0-3']);
+    const action = processMultiTap(
+      def,
+      { targets: ['0-1', '1-2'] },
+      tapped,
+      '0-1',
+    );
+    // Should replace 0-3 with 0-1 (not add to size)
+    assert.equal(action.kind, 'added');
+    if (action.kind === 'added') {
+      assert.equal(action.progressText, '1 / 2');
+    }
+  });
+
+  it('does not replace tap on different string', () => {
+    const def: MultiTapDef<{ targets: string[] }> = {
+      ...makeDef(['0-1', '1-2', '2-3']),
+      onePerString: true,
+    };
+    const tapped = new Set(['0-1']);
+    const action = processMultiTap(
+      def,
+      { targets: ['0-1', '1-2', '2-3'] },
+      tapped,
+      '1-2',
+    );
+    assert.equal(action.kind, 'added');
+    if (action.kind === 'added') {
+      assert.equal(action.progressText, '2 / 3');
+    }
+  });
+
+  it('completes after replacement fills all slots', () => {
+    const def: MultiTapDef<{ targets: string[] }> = {
+      ...makeDef(['0-1', '1-2']),
+      onePerString: true,
+    };
+    // Tap 0-3 (wrong for string 0), then 1-2 (string 1), then 0-1 (replaces 0-3)
+    const tapped = new Set<string>();
+    processMultiTap(def, { targets: ['0-1', '1-2'] }, tapped, '0-3');
+    tapped.add('0-3');
+    processMultiTap(def, { targets: ['0-1', '1-2'] }, tapped, '1-2');
+    tapped.add('1-2');
+    // Now replace 0-3 with 0-1
+    const action = processMultiTap(
+      def,
+      { targets: ['0-1', '1-2'] },
+      tapped,
+      '0-1',
+    );
+    assert.equal(action.kind, 'complete');
+    if (action.kind === 'complete') {
+      assert.equal(action.result.correct, true);
+    }
+  });
+});
+
 describe('multi-tap collection (via simulateTaps)', () => {
   it('collects taps into a set', () => {
     const { tapped } = simulateTaps(['0-0', '1-5', '2-3'], ['0-0', '1-5']);

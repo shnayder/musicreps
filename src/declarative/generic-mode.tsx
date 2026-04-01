@@ -477,10 +477,12 @@ function SequentialQuizArea<Q>(
 // ---------------------------------------------------------------------------
 
 function MultiTapQuizArea(
-  { multiTapInput, promptText, instruction }: {
+  { multiTapInput, promptText, instruction, stringCount, mutedStrings }: {
     multiTapInput: MultiTapInputHandle;
     promptText: string;
     instruction?: string;
+    stringCount?: number;
+    mutedStrings?: ReadonlySet<number>;
   },
 ) {
   // Multi-tap modes render prompt text + interactive fretboard.
@@ -497,6 +499,8 @@ function MultiTapQuizArea(
             tappedPositions={multiTapInput.tappedPositions}
             evaluated={multiTapInput.evaluated}
             progressText={multiTapInput.progressText}
+            stringCount={stringCount}
+            mutedStrings={mutedStrings}
           />
         </>
       }
@@ -671,12 +675,19 @@ function QuizActiveView<Q>(
       : def.quizInstruction)
     : undefined;
 
+  const mtMutedStrings = useMemo(() => {
+    if (!def.multiTap?.getMutedStrings || !currentQ) return undefined;
+    return new Set(def.multiTap.getMutedStrings(currentQ));
+  }, [def, currentQ]);
+
   const quizContent = def.multiTap
     ? (
       <MultiTapQuizArea
         multiTapInput={multiTapInput}
         promptText={promptText}
         instruction={instruction}
+        stringCount={def.multiTap.stringCount}
+        mutedStrings={mtMutedStrings}
       />
     )
     : def.sequential
