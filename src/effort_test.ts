@@ -14,6 +14,7 @@ import {
   type ModeInfo,
   parseDailyReps,
   registerModeForEffort,
+  toLocalDateString,
 } from './effort.ts';
 
 // ---------------------------------------------------------------------------
@@ -141,27 +142,56 @@ describe('parseDailyReps', () => {
 });
 
 // ---------------------------------------------------------------------------
+// toLocalDateString
+// ---------------------------------------------------------------------------
+
+describe('toLocalDateString', () => {
+  it('formats a local-time date as YYYY-MM-DD', () => {
+    // Construct in local time — result is always 2024-03-15 regardless of TZ
+    const date = new Date(2024, 2, 15, 12, 0, 0);
+    assert.equal(toLocalDateString(date), '2024-03-15');
+  });
+
+  it('zero-pads single-digit month and day', () => {
+    const date = new Date(2024, 0, 5, 12, 0, 0); // Jan 5
+    assert.equal(toLocalDateString(date), '2024-01-05');
+  });
+
+  it('uses local date, not UTC', () => {
+    // 2024-03-16 at 2am UTC = still March 15 in any UTC-3..UTC-12 timezone.
+    // In UTC+ timezones this is March 16. Either way, the result must match
+    // the *local* date parts, not the UTC date.
+    const date = new Date('2024-03-16T02:00:00Z');
+    const expected = `${date.getFullYear()}-${
+      String(date.getMonth() + 1).padStart(2, '0')
+    }-${String(date.getDate()).padStart(2, '0')}`;
+    assert.equal(toLocalDateString(date), expected);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // incrementDailyReps
 // ---------------------------------------------------------------------------
 
 describe('incrementDailyReps', () => {
   it('creates first entry', () => {
     const store = memoryDailyStore();
-    incrementDailyReps(store, new Date('2024-03-15T12:00:00Z'));
+    // Use local-time constructor so the expected date is stable across TZs
+    incrementDailyReps(store, new Date(2024, 2, 15, 12, 0, 0));
     const data = JSON.parse(store.read()!);
     assert.equal(data['2024-03-15'], 1);
   });
 
   it('increments existing day', () => {
     const store = memoryDailyStore('{"2024-03-15":5}');
-    incrementDailyReps(store, new Date('2024-03-15T12:00:00Z'));
+    incrementDailyReps(store, new Date(2024, 2, 15, 12, 0, 0));
     const data = JSON.parse(store.read()!);
     assert.equal(data['2024-03-15'], 6);
   });
 
   it('adds new day without affecting others', () => {
     const store = memoryDailyStore('{"2024-03-15":5}');
-    incrementDailyReps(store, new Date('2024-03-16T12:00:00Z'));
+    incrementDailyReps(store, new Date(2024, 2, 16, 12, 0, 0));
     const data = JSON.parse(store.read()!);
     assert.equal(data['2024-03-15'], 5);
     assert.equal(data['2024-03-16'], 1);
