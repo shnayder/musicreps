@@ -106,6 +106,7 @@ function renderMuteMarkers(
       ln.setAttribute('stroke', colorMuted);
       ln.setAttribute('stroke-width', '2.5');
       ln.setAttribute('stroke-linecap', 'round');
+      ln.setAttribute('pointer-events', 'none');
     }
     line1.setAttribute('x1', String(cx - half));
     line1.setAttribute('y1', String(cy - half));
