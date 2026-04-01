@@ -825,26 +825,23 @@ describe('RoundCompleteActions', () => {
 // ---------------------------------------------------------------------------
 
 describe('SequentialSlots', () => {
-  it('renders empty slots with one active', () => {
+  it('renders empty container with no entries', () => {
     const html = render(
       <SequentialSlots
-        expectedCount={3}
         entries={[]}
         evaluated={null}
         correctTones={null}
       />,
     );
     assert.ok(html.includes('seq-slots-container'));
-    // Count <span> elements with seq-slot class (not seq-slots or seq-slots-container)
+    // No slots rendered when no entries
     const slots = html.match(/class="seq-slot[\s"]/g) || [];
-    assert.equal(slots.length, 3);
-    assert.ok(html.includes('seq-slot active'));
+    assert.equal(slots.length, 0);
   });
 
   it('renders filled slots before evaluation', () => {
     const html = render(
       <SequentialSlots
-        expectedCount={3}
         entries={[{ display: 'C' }, { display: 'E' }]}
         evaluated={null}
         correctTones={null}
@@ -853,15 +850,12 @@ describe('SequentialSlots', () => {
     assert.ok(html.includes('filled'));
     assert.ok(html.includes('>C<'));
     assert.ok(html.includes('>E<'));
-    // Third slot is active
-    assert.ok(html.includes('seq-slot active'));
   });
 
   it('renders correct/wrong classes after evaluation', () => {
     const html = render(
       <SequentialSlots
-        expectedCount={3}
-        entries={[]}
+        entries={[{ display: 'C' }, { display: 'E' }, { display: 'G' }]}
         evaluated={[
           { display: 'C', correct: true },
           { display: 'E', correct: true },
@@ -879,8 +873,7 @@ describe('SequentialSlots', () => {
   it('shows correct-row when any entry is wrong', () => {
     const html = render(
       <SequentialSlots
-        expectedCount={2}
-        entries={[]}
+        entries={[{ display: 'C' }, { display: 'E' }]}
         evaluated={[
           { display: 'C', correct: true },
           { display: 'E', correct: false },
@@ -898,8 +891,7 @@ describe('SequentialSlots', () => {
   it('does not show correct-row when all entries are correct', () => {
     const html = render(
       <SequentialSlots
-        expectedCount={2}
-        entries={[]}
+        entries={[{ display: 'C' }, { display: 'E' }]}
         evaluated={[
           { display: 'C', correct: true },
           { display: 'E', correct: true },
@@ -910,13 +902,27 @@ describe('SequentialSlots', () => {
     assert.ok(!html.includes('seq-correct-row'));
   });
 
+  it('shows correct-row when count mismatches', () => {
+    // User entered 2 notes but chord has 3 — should show correct answer
+    const html = render(
+      <SequentialSlots
+        entries={[{ display: 'C' }, { display: 'E' }]}
+        evaluated={[
+          { display: 'C', correct: true },
+          { display: 'E', correct: true },
+        ]}
+        correctTones={['C', 'E', 'G']}
+      />,
+    );
+    assert.ok(html.includes('seq-correct-row'));
+  });
+
   it('renders correctTones without double-formatting', () => {
     // correctTones arrive already display-formatted (e.g. with ♯/♭ unicode).
     // SequentialSlots must render them as-is, not pass through displayNote().
     const html = render(
       <SequentialSlots
-        expectedCount={2}
-        entries={[]}
+        entries={[{ display: 'D' }, { display: 'F' }]}
         evaluated={[
           { display: 'D', correct: false },
           { display: 'F', correct: false },

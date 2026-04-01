@@ -38,7 +38,7 @@ export const CHORD_SPELLING_DEF: ModeDefinition<Question> = {
     expectedCount: (q) => q.tones.length,
     evaluate,
     parseBatchInput: parseChordInput,
-    batchPlaceholder: (q) => `${q.tones.length} notes, e.g. C E G \u2014 Enter`,
+    batchPlaceholder: 'e.g. C E G \u2014 Enter',
   },
 
   buttons: { kind: 'split-note' },
