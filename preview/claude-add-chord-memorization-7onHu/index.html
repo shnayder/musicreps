@@ -3129,7 +3129,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="57385e add-chord-memorization-7onHu"></div>
+  <div class="home-screen" id="home-screen" data-version="4aa559 add-chord-memorization-7onHu"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -5223,7 +5223,9 @@ body.native-app {
     keySignatures: KeyRound,
     scaleDegrees: Signal,
     diatonicChords: ListOrdered,
-    chordSpelling: SpellCheck
+    chordSpelling: SpellCheck,
+    guitarChordShapes: Guitar,
+    ukuleleChordShapes: Guitar
   };
   function SkillIcon({ modeId }) {
     const Icon = MODE_ICONS[modeId];
@@ -9651,6 +9653,7 @@ body.native-app {
         ln.setAttribute("stroke", colorMuted);
         ln.setAttribute("stroke-width", "2.5");
         ln.setAttribute("stroke-linecap", "round");
+        ln.setAttribute("pointer-events", "none");
       }
       line1.setAttribute("x1", String(cx - half));
       line1.setAttribute("y1", String(cy - half));
