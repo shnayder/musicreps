@@ -3129,7 +3129,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1150"></div>
+  <div class="home-screen" id="home-screen" data-version="#1157"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -3140,7 +3140,9 @@ body.native-app {
   <div class="mode-screen phase-idle" id="mode-keySignatures"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
+  <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
   <div class="mode-screen phase-idle" id="mode-ukulele"></div>
+  <div class="mode-screen phase-idle" id="mode-ukuleleChordShapes"></div>
   </div>
 
   <script>
@@ -4517,7 +4519,9 @@ body.native-app {
     keySignatures: "Sharps and flats for any key, instant recall",
     scaleDegrees: "Degrees and notes in any key, automatic",
     diatonicChords: "Chords in any key, instant recall",
-    chordSpelling: "Spell any chord without thinking"
+    chordSpelling: "Spell any chord without thinking",
+    guitarChordShapes: "Tap chord fingerings from memory",
+    ukuleleChordShapes: "Tap chord fingerings from memory"
   };
   var MODE_NAMES = {
     fretboard: "Guitar Fretboard",
@@ -4530,7 +4534,9 @@ body.native-app {
     keySignatures: "Key Signatures",
     scaleDegrees: "Scale Degrees",
     diatonicChords: "Diatonic Chords",
-    chordSpelling: "Chord Spelling"
+    chordSpelling: "Chord Spelling",
+    guitarChordShapes: "Guitar Chord Shapes",
+    ukuleleChordShapes: "Ukulele Chord Shapes"
   };
   var d3 = displayNote;
   var MODE_BEFORE_AFTER = {
@@ -4577,6 +4583,14 @@ body.native-app {
     chordSpelling: {
       before: () => `${d3("F")}m7. Root is ${d3("F")}, minor third is ${d3("Ab")}, fifth is ${d3("C")}. The 7th\u2026 it\u2019s a minor 7th, so\u2026 ${d3("Eb")}.`,
       after: () => `${d3("F")}m7. ${d3("F")} ${d3("Ab")} ${d3("C")} ${d3("Eb")}.`
+    },
+    guitarChordShapes: {
+      before: () => `${d3("A")}m. Ok, ${d3("A")} minor\u2026 is it the one with the finger on the ${d3("B")} string? Or the ${d3("G")} string? Let me look it up.`,
+      after: () => `${d3("A")}m. Tap tap tap tap tap. Done.`
+    },
+    ukuleleChordShapes: {
+      before: () => `${d3("G")} major. I know there\u2019s a barre involved\u2026 or is that ${d3("F")}? Which fret was it again?`,
+      after: () => `${d3("G")}. Tap tap tap tap. Done.`
     }
   };
   var TRACKS = [
@@ -4601,12 +4615,12 @@ body.native-app {
     {
       id: "guitar",
       label: "Guitar",
-      skills: ["fretboard", "speedTap"]
+      skills: ["fretboard", "speedTap", "guitarChordShapes"]
     },
     {
       id: "ukulele",
       label: "Ukulele",
-      skills: ["ukulele"]
+      skills: ["ukulele", "ukuleleChordShapes"]
     }
   ];
 
@@ -4729,11 +4743,11 @@ body.native-app {
       selfCorrectionThreshold: cfg.selfCorrectionThreshold * responseCount
     };
   }
-  function recordCorrectResponse(storage2, cfg, itemCfg, itemId, clamped, now) {
-    const existing = storage2.getStats(itemId);
+  function recordCorrectResponse(storage2, cfg, itemCfg, itemId2, clamped, now) {
+    const existing = storage2.getStats(itemId2);
     const elapsedHours = existing?.lastCorrectAt ? (now - existing.lastCorrectAt) / 36e5 : null;
     if (existing) {
-      storage2.saveStats(itemId, {
+      storage2.saveStats(itemId2, {
         recentTimes: [...existing.recentTimes, clamped].slice(
           -cfg.maxStoredTimes
         ),
@@ -4749,7 +4763,7 @@ body.native-app {
         lastCorrectAt: now
       });
     } else {
-      storage2.saveStats(itemId, {
+      storage2.saveStats(itemId2, {
         recentTimes: [clamped],
         ewma: clamped,
         sampleCount: 1,
@@ -4759,17 +4773,17 @@ body.native-app {
       });
     }
   }
-  function recordWrongResponse(storage2, cfg, itemCfg, itemId, now) {
-    const existing = storage2.getStats(itemId);
+  function recordWrongResponse(storage2, cfg, itemCfg, itemId2, now) {
+    const existing = storage2.getStats(itemId2);
     if (existing) {
-      storage2.saveStats(itemId, {
+      storage2.saveStats(itemId2, {
         ...existing,
         sampleCount: existing.sampleCount + 1,
         lastSeen: now,
         stability: computeStabilityAfterWrong(existing.stability ?? null, cfg)
       });
     } else {
-      storage2.saveStats(itemId, {
+      storage2.saveStats(itemId2, {
         recentTimes: [],
         ewma: itemCfg.maxResponseTime,
         sampleCount: 1,
@@ -4803,8 +4817,8 @@ body.native-app {
       let workingCount = 0;
       let unseenCount = 0;
       let automaticCount = 0;
-      for (const itemId of items) {
-        const speed = getSpeedScore(itemId);
+      for (const itemId2 of items) {
+        const speed = getSpeedScore(itemId2);
         if (speed === null) {
           unseenCount++;
         } else if (speed >= 0.9) {
@@ -4852,23 +4866,23 @@ body.native-app {
     }
     return hasDecayedItem;
   }
-  function getItemRecall(storage2, itemId, nowMs) {
-    const stats = storage2.getStats(itemId);
+  function getItemRecall(storage2, itemId2, nowMs) {
+    const stats = storage2.getStats(itemId2);
     if (!stats || stats.stability == null || stats.lastCorrectAt == null) {
       return null;
     }
     const now = nowMs ?? Date.now();
     return computeRecall(stats.stability, (now - stats.lastCorrectAt) / 36e5);
   }
-  function getItemSpeedScore(storage2, scaledCfg, itemId) {
-    const stats = storage2.getStats(itemId);
+  function getItemSpeedScore(storage2, scaledCfg, itemId2) {
+    const stats = storage2.getStats(itemId2);
     if (!stats) return null;
     const speed = computeSpeedScore(stats.ewma, scaledCfg);
     if (speed == null && stats.sampleCount > 0) return 0;
     return speed;
   }
-  function getItemFreshness(storage2, itemId, nowMs) {
-    const stats = storage2.getStats(itemId);
+  function getItemFreshness(storage2, itemId2, nowMs) {
+    const stats = storage2.getStats(itemId2);
     if (!stats) return null;
     return computeFreshness(
       stats.stability ?? null,
@@ -4877,15 +4891,15 @@ body.native-app {
     );
   }
   function createAdaptiveSelector(storage2, cfg = DEFAULT_CONFIG, randomFn = Math.random, responseCountFn = null) {
-    const getResponseCount = (itemId) => responseCountFn ? responseCountFn(itemId) : 1;
-    const scaledCfg = (itemId) => scaleConfigForResponseCount(cfg, getResponseCount(itemId));
-    function recordResponse(itemId, timeMs, correct = true) {
-      const itemCfg = scaledCfg(itemId);
+    const getResponseCount = (itemId2) => responseCountFn ? responseCountFn(itemId2) : 1;
+    const scaledCfg = (itemId2) => scaleConfigForResponseCount(cfg, getResponseCount(itemId2));
+    function recordResponse(itemId2, timeMs, correct = true) {
+      const itemCfg = scaledCfg(itemId2);
       const clamped = Math.min(timeMs, itemCfg.maxResponseTime);
       const now = Date.now();
       if (correct) {
-        recordCorrectResponse(storage2, cfg, itemCfg, itemId, clamped, now);
-      } else recordWrongResponse(storage2, cfg, itemCfg, itemId, now);
+        recordCorrectResponse(storage2, cfg, itemCfg, itemId2, clamped, now);
+      } else recordWrongResponse(storage2, cfg, itemCfg, itemId2, now);
     }
     function selectNext(validItems) {
       if (validItems.length === 0) {
@@ -4903,17 +4917,17 @@ body.native-app {
       storage2.setLastSelected(selected);
       return selected;
     }
-    function getStats(itemId) {
-      return storage2.getStats(itemId);
+    function getStats(itemId2) {
+      return storage2.getStats(itemId2);
     }
-    function getWeight(itemId) {
-      return computeWeight(storage2.getStats(itemId), scaledCfg(itemId));
+    function getWeight(itemId2) {
+      return computeWeight(storage2.getStats(itemId2), scaledCfg(itemId2));
     }
-    function getRecall(itemId, nowMs) {
-      return getItemRecall(storage2, itemId, nowMs);
+    function getRecall(itemId2, nowMs) {
+      return getItemRecall(storage2, itemId2, nowMs);
     }
-    const getSpeedScore = (itemId) => getItemSpeedScore(storage2, scaledCfg(itemId), itemId);
-    const getFreshness = (itemId, nowMs) => getItemFreshness(storage2, itemId, nowMs);
+    const getSpeedScore = (itemId2) => getItemSpeedScore(storage2, scaledCfg(itemId2), itemId2);
+    const getFreshness = (itemId2, nowMs) => getItemFreshness(storage2, itemId2, nowMs);
     return {
       recordResponse,
       selectNext,
@@ -4949,12 +4963,12 @@ body.native-app {
   }
   function createStorageAdapter(namespace) {
     const cache = {};
-    const mkKey = (itemId) => `adaptive_${namespace}_${itemId}`;
-    const dlKey = (itemId) => `deadline_${namespace}_${itemId}`;
+    const mkKey = (itemId2) => `adaptive_${namespace}_${itemId2}`;
+    const dlKey = (itemId2) => `deadline_${namespace}_${itemId2}`;
     const lastKey = `adaptive_${namespace}_lastSelected`;
     return {
-      getStats(itemId) {
-        const k3 = mkKey(itemId);
+      getStats(itemId2) {
+        const k3 = mkKey(itemId2);
         if (!(k3 in cache)) {
           const data = storage.getItem(k3);
           try {
@@ -4965,34 +4979,34 @@ body.native-app {
         }
         return cache[k3];
       },
-      saveStats(itemId, stats) {
-        const k3 = mkKey(itemId);
+      saveStats(itemId2, stats) {
+        const k3 = mkKey(itemId2);
         cache[k3] = stats;
         storage.setItem(k3, JSON.stringify(stats));
       },
       getLastSelected() {
         return storage.getItem(lastKey);
       },
-      setLastSelected(itemId) {
-        storage.setItem(lastKey, itemId);
+      setLastSelected(itemId2) {
+        storage.setItem(lastKey, itemId2);
       },
-      getDeadline(itemId) {
-        const k3 = dlKey(itemId);
+      getDeadline(itemId2) {
+        const k3 = dlKey(itemId2);
         if (!(k3 in cache)) {
           const data = storage.getItem(k3);
           cache[k3] = data ? Number(data) : null;
         }
         return cache[k3];
       },
-      saveDeadline(itemId, deadline) {
-        const k3 = dlKey(itemId);
+      saveDeadline(itemId2, deadline) {
+        const k3 = dlKey(itemId2);
         cache[k3] = deadline;
         storage.setItem(k3, String(deadline));
       },
       /** Pre-populate cache to avoid storage reads during gameplay. */
       preload(itemIds) {
-        for (const itemId of itemIds) {
-          this.getStats(itemId);
+        for (const itemId2 of itemIds) {
+          this.getStats(itemId2);
         }
       }
     };
@@ -5009,8 +5023,8 @@ body.native-app {
   function computeModeEffort(mode, storage2) {
     let totalReps = 0;
     let itemsStarted = 0;
-    for (const itemId of mode.allItems) {
-      const stats = storage2.getStats(itemId);
+    for (const itemId2 of mode.allItems) {
+      const stats = storage2.getStats(itemId2);
       if (stats && stats.sampleCount > 0) {
         totalReps += stats.sampleCount;
         itemsStarted++;
@@ -5209,7 +5223,9 @@ body.native-app {
     keySignatures: KeyRound,
     scaleDegrees: Signal,
     diatonicChords: ListOrdered,
-    chordSpelling: SpellCheck
+    chordSpelling: SpellCheck,
+    guitarChordShapes: Guitar,
+    ukuleleChordShapes: Guitar
   };
   function SkillIcon({ modeId }) {
     const Icon = MODE_ICONS[modeId];
@@ -5313,8 +5329,8 @@ body.native-app {
     ALL_ITEMS.push(minorRoot + "m:rev");
   }
   var ALL_GROUP_IDS = ALL_KEY_GROUPS.map((g2) => g2.id);
-  function getQuestion(itemId) {
-    const [rootPart, dir] = itemId.split(":");
+  function getQuestion(itemId2) {
+    const [rootPart, dir] = itemId2.split(":");
     const isMinor = rootPart.endsWith("m") && rootPart.length > 1 && MINOR_ROOT_TO_MAJOR.has(rootPart.slice(0, -1));
     if (isMinor) {
       const minorRoot = rootPart.slice(0, -1);
@@ -5402,8 +5418,8 @@ body.native-app {
     name: k3.root,
     displayName: k3.root
   }));
-  function getQuestion2(itemId) {
-    const parts = itemId.split(":");
+  function getQuestion2(itemId2) {
+    const parts = itemId2.split(":");
     const keyRoot = parts[0];
     const degree = parseInt(parts[1]);
     const dir = parts[2];
@@ -5461,8 +5477,8 @@ body.native-app {
     name: k3.root,
     displayName: k3.root
   }));
-  function getQuestion3(itemId) {
-    const parts = itemId.split(":");
+  function getQuestion3(itemId2) {
+    const parts = itemId2.split(":");
     const keyRoot = parts[0];
     const degree = parseInt(parts[1]);
     const dir = parts[2];
@@ -5560,8 +5576,8 @@ body.native-app {
     Array.from({ length: 11 }, (_3, i3) => i3 + 1)
   );
   var ALL_GROUP_IDS4 = DISTANCE_GROUPS.map((g2) => g2.id);
-  function getQuestion4(itemId) {
-    const parsed = parseMathId(itemId);
+  function getQuestion4(itemId2) {
+    const parsed = parseMathId(itemId2);
     const noteName = parsed.note;
     const op = parsed.op;
     const semitones = parseInt(parsed.value);
@@ -5645,8 +5661,8 @@ body.native-app {
     MATH_INTERVALS.map((i3) => i3.abbrev)
   );
   var ALL_GROUP_IDS5 = DISTANCE_GROUPS2.map((g2) => g2.id);
-  function getQuestion5(itemId) {
-    const parsed = parseMathId(itemId);
+  function getQuestion5(itemId2) {
+    const parsed = parseMathId(itemId2);
     const noteName = parsed.note;
     const op = parsed.op;
     const abbrev = parsed.value;
@@ -5730,10 +5746,10 @@ body.native-app {
     displayName: r3
   }));
   var GRID_COL_LABELS3 = CHORD_TYPES.map((t3) => t3.symbol || "maj");
-  function parseItem(itemId) {
-    const colonIdx = itemId.indexOf(":");
-    const rootName = itemId.substring(0, colonIdx);
-    const typeName = itemId.substring(colonIdx + 1);
+  function parseItem(itemId2) {
+    const colonIdx = itemId2.indexOf(":");
+    const rootName = itemId2.substring(0, colonIdx);
+    const typeName = itemId2.substring(colonIdx + 1);
     const chordType = CHORD_TYPES.find((t3) => t3.name === typeName);
     const tones = getChordTones(rootName, chordType);
     return { rootName, chordType, tones };
@@ -5779,8 +5795,8 @@ body.native-app {
       const offset = musicData.stringOffsets[string];
       return noteNames2[(offset + fret) % 12];
     }
-    function parseFretboardItem(itemId) {
-      const [s3, f4] = itemId.split("-").map(Number);
+    function parseFretboardItem(itemId2) {
+      const [s3, f4] = itemId2.split("-").map(Number);
       return {
         currentString: s3,
         currentFret: f4,
@@ -5985,9 +6001,9 @@ body.native-app {
   function getAllGroupIds(instrument) {
     return getGroups(instrument).map((g2) => g2.id);
   }
-  function getQuestion6(instrument, itemId) {
+  function getQuestion6(instrument, itemId2) {
     const fb = getHelpers(instrument);
-    return fb.parseFretboardItem(itemId);
+    return fb.parseFretboardItem(itemId2);
   }
   function formatLabel(instrument, enabledGroups) {
     const groups = getGroups(instrument);
@@ -5998,8 +6014,8 @@ body.native-app {
 
   // src/modes/note-semitones/logic.ts
   var ALL_ITEMS7 = buildBidirectionalIds(NOTES.map((n2) => n2.name));
-  function getQuestion7(itemId) {
-    const [noteName, dir] = itemId.split(":");
+  function getQuestion7(itemId2) {
+    const [noteName, dir] = itemId2.split(":");
     const note = NOTES.find((n2) => n2.name === noteName);
     return {
       noteName: note.name,
@@ -6022,8 +6038,8 @@ body.native-app {
   var ALL_ITEMS8 = buildBidirectionalIds(
     INTERVALS.map((i3) => i3.abbrev)
   );
-  function getQuestion8(itemId) {
-    const [abbrev, dir] = itemId.split(":");
+  function getQuestion8(itemId2) {
+    const [abbrev, dir] = itemId2.split(":");
     const interval = INTERVALS.find((i3) => i3.abbrev === abbrev);
     return {
       abbrev: interval.abbrev,
@@ -6060,13 +6076,13 @@ body.native-app {
     }
     return positions;
   }
-  function parseItem2(itemId) {
-    const noteData = NOTES.find((n2) => n2.name === itemId);
-    const name = noteData ? displayNote(pickRandomAccidental(noteData.displayName)) : displayNote(itemId);
+  function parseItem2(itemId2) {
+    const noteData = NOTES.find((n2) => n2.name === itemId2);
+    const name = noteData ? displayNote(pickRandomAccidental(noteData.displayName)) : displayNote(itemId2);
     return {
-      note: itemId,
+      note: itemId2,
       displayName: name,
-      positions: getPositionsForNote(itemId)
+      positions: getPositionsForNote(itemId2)
     };
   }
   function positionKey(pos) {
@@ -6248,9 +6264,9 @@ body.native-app {
     const fadedL = Math.round(l3 + (NEUTRAL_L - l3) * (1 - f4));
     return `hsl(${h3}, ${fadedS}%, ${fadedL}%)`;
   }
-  function getStatsCellColor(selector, itemId) {
-    const speedScore = selector.getSpeedScore(itemId);
-    const freshness = selector.getFreshness(itemId);
+  function getStatsCellColor(selector, itemId2) {
+    const speedScore = selector.getSpeedScore(itemId2);
+    const freshness = selector.getFreshness(itemId2);
     return getSpeedFreshnessColor(speedScore, freshness);
   }
   function getStatsCellColorMerged(selector, itemIds) {
@@ -9417,8 +9433,8 @@ body.native-app {
       /* @__PURE__ */ u3("tbody", { children: noteList.map((note) => /* @__PURE__ */ u3("tr", { children: [
         /* @__PURE__ */ u3("td", { class: "stats-grid-row-label", children: displayNote(note.name || note.displayName) }),
         colLabels.map((_3, i3) => {
-          const itemId = getItemId(note.name, i3);
-          const color = Array.isArray(itemId) ? getStatsCellColorMerged(selector, itemId) : getStatsCellColor(selector, itemId);
+          const itemId2 = getItemId(note.name, i3);
+          const color = Array.isArray(itemId2) ? getStatsCellColorMerged(selector, itemId2) : getStatsCellColor(selector, itemId2);
           const light = heatmapNeedsLightText(color);
           return /* @__PURE__ */ u3(
             "td",
@@ -9540,6 +9556,7 @@ body.native-app {
       return `<circle class="fb-marker" cx="${w3 / 2}" cy="${cy}" r="4"/>`;
     }).join("\n      ");
   }
+  var POSITION_CIRCLE_R = 14;
   function positionCircles(stringCount = 6, fretCount = 13) {
     if (fretCount > MAX_FRET_COUNT) {
       throw new Error(
@@ -9549,7 +9566,7 @@ body.native-app {
     return Array.from(
       { length: stringCount },
       (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
-        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="14"/>`;
+        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="${POSITION_CIRCLE_R}"/>`;
       }).join("\n      ")
     ).join("\n      ");
   }
@@ -9613,13 +9630,54 @@ body.native-app {
       c3.style.fill = "";
     });
   }
+  var MUTE_MARKER_CLASS = "fb-mute-marker";
+  function renderMuteMarkers(root, mutedStrings, sc) {
+    const svg = root.querySelector("svg.fretboard");
+    if (!svg) return;
+    svg.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
+    const colorMuted = readCSSColor("--color-text-secondary", "#888");
+    const cy = noteY(0);
+    const half = POSITION_CIRCLE_R * 0.7;
+    for (const s3 of mutedStrings) {
+      const cx = stringX(s3, sc);
+      const line1 = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+      const line2 = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+      for (const ln of [line1, line2]) {
+        ln.setAttribute("class", MUTE_MARKER_CLASS);
+        ln.setAttribute("stroke", colorMuted);
+        ln.setAttribute("stroke-width", "2.5");
+        ln.setAttribute("stroke-linecap", "round");
+        ln.setAttribute("pointer-events", "none");
+      }
+      line1.setAttribute("x1", String(cx - half));
+      line1.setAttribute("y1", String(cy - half));
+      line1.setAttribute("x2", String(cx + half));
+      line1.setAttribute("y2", String(cy + half));
+      line2.setAttribute("x1", String(cx + half));
+      line2.setAttribute("y1", String(cy - half));
+      line2.setAttribute("x2", String(cx - half));
+      line2.setAttribute("y2", String(cy + half));
+      svg.appendChild(line1);
+      svg.appendChild(line2);
+    }
+  }
+  function clearMuteMarkers(root) {
+    root.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
+  }
   function InteractiveFretboard({
     onTap,
     tappedPositions,
     evaluated,
     progressText,
     stringCount = 6,
-    fretCount = 13
+    fretCount = 13,
+    mutedStrings
   }) {
     const wrapperRef = A2(null);
     const svgHTML = T2(
@@ -9639,6 +9697,7 @@ body.native-app {
       const root = wrapperRef.current;
       if (!root) return;
       clearAllCircles(root);
+      clearMuteMarkers(root);
       if (evaluated) {
         const colorOk = readCSSColor("--color-success", "#2e7d32");
         const colorBad = readCSSColor("--color-error", "#d32f2f");
@@ -9656,6 +9715,9 @@ body.native-app {
             setCircleFill(root, missed, colorMissed);
           }
         }
+        if (mutedStrings && mutedStrings.size > 0) {
+          renderMuteMarkers(root, mutedStrings, stringCount);
+        }
       } else {
         const colorSel = readCSSColor(
           "--color-tap-selected",
@@ -9665,7 +9727,7 @@ body.native-app {
           setCircleFill(root, posKey, colorSel);
         }
       }
-    }, [tappedPositions, evaluated, svgHTML]);
+    }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
     return /* @__PURE__ */ u3("div", { class: "interactive-fretboard", children: [
       /* @__PURE__ */ u3("div", { class: "interactive-fretboard-status", children: /* @__PURE__ */ u3("span", { class: "interactive-fretboard-progress", children: progressText || "\xA0" }) }),
       /* @__PURE__ */ u3(
@@ -10059,21 +10121,37 @@ body.native-app {
   }
 
   // src/declarative/use-multi-tap-input.ts
-  function processMultiTap(multiTap, q3, tapped, positionKey2) {
+  function stringOf(posKey) {
+    return posKey.split("-")[0];
+  }
+  function removeExistingOnString(set, positionKey3) {
+    const tapString = stringOf(positionKey3);
+    for (const existing of set) {
+      if (stringOf(existing) === tapString) {
+        set.delete(existing);
+        return;
+      }
+    }
+  }
+  function processMultiTap(multiTap, q3, tapped, positionKey3) {
     const targets = multiTap.getTargets(q3);
-    if (tapped.has(positionKey2)) {
+    if (tapped.has(positionKey3)) {
       const next2 = new Set(tapped);
-      next2.delete(positionKey2);
+      next2.delete(positionKey3);
       return {
         kind: "removed",
         progressText: next2.size + " / " + targets.length
       };
     }
-    if (tapped.size >= targets.length) {
+    let next = new Set(tapped);
+    if (multiTap.onePerString) {
+      removeExistingOnString(next, positionKey3);
+    }
+    if (next.size >= targets.length) {
       return { kind: "ignored" };
     }
-    const next = new Set(tapped);
-    next.add(positionKey2);
+    next = new Set(next);
+    next.add(positionKey3);
     const progressText = next.size + " / " + targets.length;
     if (next.size === targets.length) {
       const result = multiTap.evaluate(q3, [...next]);
@@ -10096,25 +10174,28 @@ body.native-app {
       setEvaluated(null);
       setProgressText("");
     }, []);
-    const handleTap = q2((positionKey2) => {
+    const handleTap = q2((positionKey3) => {
       if (!def.multiTap || !currentQRef.current) return;
       const action = processMultiTap(
         def.multiTap,
         currentQRef.current,
         tappedRef.current,
-        positionKey2
+        positionKey3
       );
       if (action.kind === "ignored") return;
       if (action.kind === "removed") {
         const next2 = new Set(tappedRef.current);
-        next2.delete(positionKey2);
+        next2.delete(positionKey3);
         tappedRef.current = next2;
         setTappedPositions(next2);
         setProgressText(action.progressText);
         return;
       }
       const next = new Set(tappedRef.current);
-      next.add(positionKey2);
+      if (def.multiTap.onePerString) {
+        removeExistingOnString(next, positionKey3);
+      }
+      next.add(positionKey3);
       tappedRef.current = next;
       setTappedPositions(next);
       setProgressText(action.progressText);
@@ -10394,7 +10475,7 @@ body.native-app {
       }
     );
   }
-  function MultiTapQuizArea({ multiTapInput, promptText, instruction }) {
+  function MultiTapQuizArea({ multiTapInput, promptText, instruction, stringCount, mutedStrings }) {
     return /* @__PURE__ */ u3(
       QuizStage,
       {
@@ -10407,7 +10488,9 @@ body.native-app {
               onTap: multiTapInput.handleTap,
               tappedPositions: multiTapInput.tappedPositions,
               evaluated: multiTapInput.evaluated,
-              progressText: multiTapInput.progressText
+              progressText: multiTapInput.progressText,
+              stringCount,
+              mutedStrings
             }
           )
         ] }),
@@ -10509,12 +10592,18 @@ body.native-app {
       ] });
     }
     const instruction = currentQ && def.quizInstruction ? typeof def.quizInstruction === "function" ? def.quizInstruction(currentQ) : def.quizInstruction : void 0;
+    const mtMutedStrings = T2(() => {
+      if (!def.multiTap?.getMutedStrings || !currentQ) return void 0;
+      return new Set(def.multiTap.getMutedStrings(currentQ));
+    }, [def, currentQ]);
     const quizContent = def.multiTap ? /* @__PURE__ */ u3(
       MultiTapQuizArea,
       {
         multiTapInput,
         promptText,
-        instruction
+        instruction,
+        stringCount: def.multiTap.stringCount,
+        mutedStrings: mtMutedStrings
       }
     ) : def.sequential ? /* @__PURE__ */ u3(
       SequentialQuizArea,
@@ -10626,13 +10715,13 @@ body.native-app {
       );
     }) });
   }
-  function singleLevelSuggestion(selector, allItems) {
-    const anySeen = allItems.some((id) => selector.getStats(id) !== null);
+  function singleLevelSuggestion(selector, allItems2) {
+    const anySeen = allItems2.some((id) => selector.getStats(id) !== null);
     if (!anySeen) return { verb: "Start practicing", levels: [] };
-    if (selector.checkAllAutomatic(allItems)) {
+    if (selector.checkAllAutomatic(allItems2)) {
       return { verb: "All items mastered", levels: [] };
     }
-    if (selector.checkNeedsReview(allItems)) {
+    if (selector.checkNeedsReview(allItems2)) {
       return { verb: "Review", levels: [] };
     }
     return { verb: "Keep practicing", levels: [] };
@@ -10798,16 +10887,16 @@ body.native-app {
     return {
       getEnabledItems: () => getEnabledItemsRef.current(),
       getPracticingLabel: () => getPracticingLabelRef.current(),
-      checkAnswer: (itemId, input) => checkGenericAnswer(
+      checkAnswer: (itemId2, input) => checkGenericAnswer(
         def,
         currentQRef,
         lastAnswerRef,
         isSequential,
         isMultiTap,
-        itemId,
+        itemId2,
         input
       ),
-      onAnswer: (itemId, result) => ctrlRef.current.onAnswer?.(itemId, result),
+      onAnswer: (itemId2, result) => ctrlRef.current.onAnswer?.(itemId2, result),
       onStart: () => ctrlRef.current.onStart?.(),
       onStop: () => {
         if (isSequential) seqInput.resetOnItemChange(null);
@@ -11411,7 +11500,7 @@ body.native-app {
   }
   function createFretboardDef(instrument) {
     const groups = getGroups(instrument);
-    const allItems = getAllItems(instrument);
+    const allItems2 = getAllItems(instrument);
     const allGroupIds = getAllGroupIds(instrument);
     return {
       id: instrument.id,
@@ -11420,8 +11509,8 @@ body.native-app {
       description: MODE_DESCRIPTIONS[instrument.id],
       beforeAfter: MODE_BEFORE_AFTER[instrument.id],
       itemNoun: "positions",
-      allItems,
-      getQuestion: (itemId) => getQuestion6(instrument, itemId),
+      allItems: allItems2,
+      getQuestion: (itemId2) => getQuestion6(instrument, itemId2),
       getPromptText: () => "Name this note",
       quizInstruction: "What note is this?",
       answer: {
@@ -11467,8 +11556,8 @@ body.native-app {
           if (!el) return;
           for (let s3 = 0; s3 < instrument.stringCount; s3++) {
             for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-              const itemId = s3 + "-" + f4;
-              const color = getStatsCellColor(selector, itemId);
+              const itemId2 = s3 + "-" + f4;
+              const color = getStatsCellColor(selector, itemId2);
               setCircleFill2(el, s3, f4, color);
             }
           }
@@ -11523,9 +11612,9 @@ body.native-app {
     return {
       renderPrompt,
       renderStats,
-      onAnswer: (itemId, result) => {
+      onAnswer: (itemId2, result) => {
         if (quizFbRef.current) {
-          const q3 = getQuestion6(instrument, itemId);
+          const q3 = getQuestion6(instrument, itemId2);
           const color = result.correct ? "var(--color-success)" : "var(--color-error)";
           setCircleFill2(quizFbRef.current, q3.currentString, q3.currentFret, color);
         }
@@ -11555,7 +11644,7 @@ body.native-app {
     beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
     itemNoun: "items",
     allItems: ALL_ITEMS6,
-    getQuestion: (itemId) => parseItem(itemId),
+    getQuestion: (itemId2) => parseItem(itemId2),
     getPromptText: (q3) => displayNote(q3.rootName) + q3.chordType.symbol,
     quizInstruction: "Spell this chord",
     // Sequential: collect N notes, then evaluate all at once
@@ -11628,7 +11717,7 @@ body.native-app {
       getTargets: (q3) => q3.positions.map(positionKey),
       evaluate: evaluate2
     },
-    getExpectedResponseCount: (itemId) => getPositionsForNote(itemId).length,
+    getExpectedResponseCount: (itemId2) => getPositionsForNote(itemId2).length,
     buttons: { kind: "none" },
     scope: {
       kind: "groups",
@@ -11643,6 +11732,239 @@ body.native-app {
     stats: { kind: "none" },
     useController: () => useSpeedTapController()
   };
+
+  // src/modes/chord-shapes/voicings.ts
+  var GUITAR_VOICINGS = [
+    // --- Major ---
+    { root: "C", quality: "major", symbol: "", strings: [0, 1, 0, 2, 3, "x"] },
+    { root: "A", quality: "major", symbol: "", strings: [0, 2, 2, 2, 0, "x"] },
+    { root: "G", quality: "major", symbol: "", strings: [3, 0, 0, 0, 2, 3] },
+    { root: "E", quality: "major", symbol: "", strings: [0, 0, 1, 2, 2, 0] },
+    { root: "D", quality: "major", symbol: "", strings: [2, 3, 2, 0, "x", "x"] },
+    { root: "F", quality: "major", symbol: "", strings: [1, 1, 2, 3, 3, 1] },
+    // --- Minor ---
+    { root: "A", quality: "minor", symbol: "m", strings: [0, 1, 2, 2, 0, "x"] },
+    { root: "E", quality: "minor", symbol: "m", strings: [0, 0, 0, 2, 2, 0] },
+    { root: "D", quality: "minor", symbol: "m", strings: [1, 3, 2, 0, "x", "x"] },
+    // --- Dominant 7th ---
+    { root: "A", quality: "dom7", symbol: "7", strings: [0, 2, 0, 2, 0, "x"] },
+    { root: "B", quality: "dom7", symbol: "7", strings: [2, 0, 2, 1, 2, "x"] },
+    { root: "C", quality: "dom7", symbol: "7", strings: [0, 1, 3, 2, 3, "x"] },
+    { root: "D", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0, "x", "x"] },
+    { root: "E", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0, 2, 0] },
+    { root: "G", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0, 2, 3] }
+  ];
+  var UKULELE_VOICINGS = [
+    // --- Major ---                          // Chart (G C E A)
+    { root: "C", quality: "major", symbol: "", strings: [3, 0, 0, 0] },
+    // 0003
+    { root: "F", quality: "major", symbol: "", strings: [0, 1, 0, 2] },
+    // 2010
+    { root: "G", quality: "major", symbol: "", strings: [2, 3, 2, 0] },
+    // 0232
+    { root: "A", quality: "major", symbol: "", strings: [0, 0, 1, 2] },
+    // 2100
+    { root: "D", quality: "major", symbol: "", strings: [0, 2, 2, 2] },
+    // 2220
+    { root: "Bb", quality: "major", symbol: "", strings: [1, 1, 2, 3] },
+    // 3211
+    // --- Minor ---
+    { root: "A", quality: "minor", symbol: "m", strings: [0, 0, 0, 2] },
+    // 2000
+    { root: "D", quality: "minor", symbol: "m", strings: [0, 1, 2, 2] },
+    // 2210
+    { root: "E", quality: "minor", symbol: "m", strings: [2, 3, 4, 0] },
+    // 0432
+    // --- Dominant 7th ---
+    { root: "C", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0] },
+    { root: "G", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0] },
+    { root: "A", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0] },
+    { root: "D", quality: "dom7", symbol: "7", strings: [3, 2, 2, 2] }
+  ];
+  function getVoicings(instrument) {
+    return instrument === "guitar" ? GUITAR_VOICINGS : UKULELE_VOICINGS;
+  }
+
+  // src/modes/chord-shapes/logic.ts
+  function positionKey2(string, fret) {
+    return string + "-" + fret;
+  }
+  function getPlayedPositions(v3) {
+    const positions = [];
+    for (let s3 = 0; s3 < v3.strings.length; s3++) {
+      const fret = v3.strings[s3];
+      if (fret !== "x") {
+        positions.push(positionKey2(s3, fret));
+      }
+    }
+    return positions;
+  }
+  function getMutedStrings(v3) {
+    const muted = [];
+    for (let s3 = 0; s3 < v3.strings.length; s3++) {
+      if (v3.strings[s3] === "x") muted.push(s3);
+    }
+    return muted;
+  }
+  function itemId(v3) {
+    return v3.root + ":" + v3.quality;
+  }
+  function parseItem3(instrument, id) {
+    const voicing = findVoicing(instrument, id);
+    return buildQuestion(voicing);
+  }
+  function findVoicing(instrument, id) {
+    const voicings = getVoicings(instrument);
+    const v3 = voicings.find((v4) => itemId(v4) === id);
+    if (!v3) throw new Error("Unknown chord voicing: " + id);
+    return v3;
+  }
+  function buildQuestion(v3) {
+    return {
+      root: v3.root,
+      quality: v3.quality,
+      displayName: chordDisplayName(v3),
+      voicing: v3,
+      playedPositions: getPlayedPositions(v3),
+      mutedStrings: getMutedStrings(v3)
+    };
+  }
+  function chordDisplayName(v3) {
+    return displayNote(v3.root) + v3.symbol;
+  }
+  function allItems(instrument) {
+    return getVoicings(instrument).map(itemId);
+  }
+  function evaluate3(q3, tapped) {
+    const targetSet = new Set(q3.playedPositions);
+    const tappedSet = new Set(tapped);
+    const perEntry = tapped.map((pos) => ({
+      positionKey: pos,
+      correct: targetSet.has(pos)
+    }));
+    const missed = [...targetSet].filter((t3) => !tappedSet.has(t3));
+    const correct = perEntry.every((e3) => e3.correct) && missed.length === 0;
+    return {
+      correct,
+      correctAnswer: q3.displayName,
+      perEntry,
+      missed
+    };
+  }
+  var QUALITY_GROUPS = [
+    { id: "major", label: "Major", longLabel: "Major chords" },
+    { id: "minor", label: "Minor", longLabel: "Minor chords" },
+    { id: "dom7", label: "7th", longLabel: "Dominant 7th chords" }
+  ];
+  var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g2) => g2.id);
+  function getItemIdsForGroup9(instrument, groupId) {
+    return getVoicings(instrument).filter((v3) => v3.quality === groupId).map(itemId);
+  }
+  function formatGroupLabel2(enabledGroups) {
+    if (enabledGroups.size === 3) return "all chords";
+    const labels = [];
+    if (enabledGroups.has("major")) labels.push("major");
+    if (enabledGroups.has("minor")) labels.push("minor");
+    if (enabledGroups.has("dom7")) labels.push("7th");
+    return labels.join(" & ");
+  }
+
+  // src/modes/chord-shapes/definition.tsx
+  function useChordShapesController(instrument) {
+    const voicings = getVoicings(instrument);
+    const renderStats = q2(
+      (selector) => {
+        const roots = [];
+        const rootSet = /* @__PURE__ */ new Set();
+        const qualities = [];
+        const qualitySet = /* @__PURE__ */ new Set();
+        for (const v3 of voicings) {
+          if (!rootSet.has(v3.root)) {
+            rootSet.add(v3.root);
+            roots.push(v3.root);
+          }
+          if (!qualitySet.has(v3.quality)) {
+            qualitySet.add(v3.quality);
+            qualities.push(v3.quality);
+          }
+        }
+        const symbolFor = (q3) => voicings.find((v3) => v3.quality === q3)?.symbol ?? q3;
+        let html = '<table class="stats-table chord-shapes-stats"><thead><tr>';
+        html += "<th></th>";
+        for (const r3 of roots) html += "<th>" + displayNote(r3) + "</th>";
+        html += "</tr></thead><tbody>";
+        for (const q3 of qualities) {
+          html += "<tr><th>" + (symbolFor(q3) || "maj") + "</th>";
+          for (const r3 of roots) {
+            const id = r3 + ":" + q3;
+            const exists = voicings.some(
+              (v3) => v3.root === r3 && v3.quality === q3
+            );
+            if (exists) {
+              html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, id) + '"></td>';
+            } else {
+              html += "<td></td>";
+            }
+          }
+          html += "</tr>";
+        }
+        html += "</tbody></table>";
+        return /* @__PURE__ */ u3(
+          "div",
+          {
+            dangerouslySetInnerHTML: { __html: html }
+          }
+        );
+      },
+      [voicings]
+    );
+    return { renderStats };
+  }
+  function createChordShapesDef(instrument) {
+    const isGuitar = instrument === "guitar";
+    const id = isGuitar ? "guitarChordShapes" : "ukuleleChordShapes";
+    const stringCount = isGuitar ? 6 : 4;
+    const items = allItems(instrument);
+    return {
+      id,
+      name: isGuitar ? "Guitar Chord Shapes" : "Ukulele Chord Shapes",
+      namespace: id,
+      motorTaskType: "fretboard-tap",
+      description: MODE_DESCRIPTIONS[id],
+      beforeAfter: MODE_BEFORE_AFTER[id],
+      itemNoun: "chords",
+      allItems: items,
+      getQuestion: (itemId2) => parseItem3(instrument, itemId2),
+      getPromptText: (q3) => "Tap the " + q3.displayName + " chord",
+      quizInstruction: "Tap all played positions",
+      multiTap: {
+        getTargets: (q3) => q3.playedPositions,
+        evaluate: evaluate3,
+        stringCount,
+        getMutedStrings: (q3) => q3.mutedStrings,
+        onePerString: true
+      },
+      getExpectedResponseCount: (itemId2) => {
+        const q3 = parseItem3(instrument, itemId2);
+        return q3.playedPositions.length;
+      },
+      buttons: { kind: "none" },
+      scope: {
+        kind: "groups",
+        groups: QUALITY_GROUPS,
+        getItemIdsForGroup: (groupId) => getItemIdsForGroup9(instrument, groupId),
+        allGroupIds: ALL_GROUP_IDS8,
+        storageKey: id + "_enabledGroups",
+        scopeLabel: "Chords",
+        defaultEnabled: [ALL_GROUP_IDS8[0]],
+        formatLabel: formatGroupLabel2
+      },
+      stats: { kind: "none" },
+      useController: () => useChordShapesController(instrument)
+    };
+  }
+  var GUITAR_CHORD_SHAPES_DEF = createChordShapesDef("guitar");
+  var UKULELE_CHORD_SHAPES_DEF = createChordShapesDef("ukulele");
 
   // src/app.ts
   document.addEventListener("touchstart", () => {
@@ -11699,6 +12021,8 @@ body.native-app {
     registerDeclarativeMode(nav, DIATONIC_CHORDS_DEF);
     registerDeclarativeMode(nav, CHORD_SPELLING_DEF);
     registerDeclarativeMode(nav, SPEED_TAP_DEF);
+    registerDeclarativeMode(nav, GUITAR_CHORD_SHAPES_DEF);
+    registerDeclarativeMode(nav, UKULELE_CHORD_SHAPES_DEF);
     nav.init();
     const settings = createSettingsController({
       onNotationChange() {

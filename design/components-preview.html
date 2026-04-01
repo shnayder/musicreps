@@ -4225,6 +4225,7 @@ body.native-app {
       return `<circle class="fb-marker" cx="${w3 / 2}" cy="${cy}" r="4"/>`;
     }).join("\n      ");
   }
+  var POSITION_CIRCLE_R = 14;
   function positionCircles(stringCount = 6, fretCount = 13) {
     if (fretCount > MAX_FRET_COUNT) {
       throw new Error(
@@ -4234,7 +4235,7 @@ body.native-app {
     return Array.from(
       { length: stringCount },
       (_2, string) => Array.from({ length: fretCount }, (_3, fret) => {
-        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="14"/>`;
+        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="${POSITION_CIRCLE_R}"/>`;
       }).join("\n      ")
     ).join("\n      ");
   }
@@ -5471,7 +5472,9 @@ ${text}`).join("\n\n");
     keySignatures: KeyRound,
     scaleDegrees: Signal,
     diatonicChords: ListOrdered,
-    chordSpelling: SpellCheck
+    chordSpelling: SpellCheck,
+    guitarChordShapes: Guitar,
+    ukuleleChordShapes: Guitar
   };
   function SkillIcon({ modeId }) {
     const Icon = MODE_ICONS[modeId];
@@ -5792,7 +5795,9 @@ ${text}`).join("\n\n");
     keySignatures: "Sharps and flats for any key, instant recall",
     scaleDegrees: "Degrees and notes in any key, automatic",
     diatonicChords: "Chords in any key, instant recall",
-    chordSpelling: "Spell any chord without thinking"
+    chordSpelling: "Spell any chord without thinking",
+    guitarChordShapes: "Tap chord fingerings from memory",
+    ukuleleChordShapes: "Tap chord fingerings from memory"
   };
   var MODE_NAMES = {
     fretboard: "Guitar Fretboard",
@@ -5805,7 +5810,9 @@ ${text}`).join("\n\n");
     keySignatures: "Key Signatures",
     scaleDegrees: "Scale Degrees",
     diatonicChords: "Diatonic Chords",
-    chordSpelling: "Chord Spelling"
+    chordSpelling: "Chord Spelling",
+    guitarChordShapes: "Guitar Chord Shapes",
+    ukuleleChordShapes: "Ukulele Chord Shapes"
   };
   var d3 = displayNote;
   var MODE_BEFORE_AFTER = {
@@ -5852,6 +5859,14 @@ ${text}`).join("\n\n");
     chordSpelling: {
       before: () => `${d3("F")}m7. Root is ${d3("F")}, minor third is ${d3("Ab")}, fifth is ${d3("C")}. The 7th\u2026 it\u2019s a minor 7th, so\u2026 ${d3("Eb")}.`,
       after: () => `${d3("F")}m7. ${d3("F")} ${d3("Ab")} ${d3("C")} ${d3("Eb")}.`
+    },
+    guitarChordShapes: {
+      before: () => `${d3("A")}m. Ok, ${d3("A")} minor\u2026 is it the one with the finger on the ${d3("B")} string? Or the ${d3("G")} string? Let me look it up.`,
+      after: () => `${d3("A")}m. Tap tap tap tap tap. Done.`
+    },
+    ukuleleChordShapes: {
+      before: () => `${d3("G")} major. I know there\u2019s a barre involved\u2026 or is that ${d3("F")}? Which fret was it again?`,
+      after: () => `${d3("G")}. Tap tap tap tap. Done.`
     }
   };
 
