@@ -655,7 +655,7 @@ function AllSkillsList(
 // HomeScreen — top-level component with bottom nav: Active / All Skills / Settings
 // ---------------------------------------------------------------------------
 
-export type HomeTab = 'active' | 'all' | 'settings';
+export type HomeTab = 'active' | 'all' | 'about' | 'settings';
 
 function initialTab(): HomeTab {
   return loadStarredSkills().size > 0 ? 'active' : 'all';
@@ -709,6 +709,58 @@ function HomeHeader(
 }
 
 // ---------------------------------------------------------------------------
+// HomeAboutTab — in-app intro: what this is, how it works, getting started
+// ---------------------------------------------------------------------------
+
+function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
+  return (
+    <div class='home-about'>
+      {isNativeApp && (
+        <div class='home-about-brand'>
+          <h1 class='home-title'>
+            <RepeatMark size={28} class='home-logo-mark' />
+            Music Reps
+          </h1>
+          <p class='home-tagline'>
+            Make music fundamentals automatic so you can focus on playing.
+          </p>
+        </div>
+      )}
+
+      <section class='home-about-section'>
+        <Text role='heading-section' as='h2'>What is Music Reps?</Text>
+        <Text role='body-secondary' as='p'>
+          Music Reps builds instant recall for the building blocks of music{' '}
+          &mdash; note names, intervals, keys, chords, and fretboard navigation.
+          It&rsquo;s for guitarists, ukulele players, and anyone learning music
+          theory who wants to stop counting and start knowing.
+        </Text>
+      </section>
+
+      <section class='home-about-section'>
+        <Text role='heading-section' as='h2'>How it works</Text>
+        <Text role='body-secondary' as='p'>
+          Each skill drills one piece of musical knowledge until it becomes
+          automatic. The app tracks your speed and accuracy, focuses on what you
+          haven&rsquo;t mastered yet, and brings back material before you forget
+          it.
+        </Text>
+      </section>
+
+      <section class='home-about-section'>
+        <Text role='heading-section' as='h2'>Getting started</Text>
+        <Text role='body-secondary' as='p'>
+          Browse <strong>All Skills</strong>{' '}
+          to see what&rsquo;s available. Star the ones you want to work on
+          &mdash; they&rsquo;ll appear on your <strong>Active</strong>{' '}
+          tab with recommendations for what to practice next.
+        </Text>
+      </section>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // useHomeTabs — build tab definitions for the home screen bottom nav
 // ---------------------------------------------------------------------------
 
@@ -727,6 +779,7 @@ function useHomeTabs(
     onToggleStar,
     onToggleExpand,
     onOpenDev,
+    isNativeApp,
   }: {
     starred: Set<string>;
     accordion: Record<string, boolean>;
@@ -741,6 +794,7 @@ function useHomeTabs(
     onToggleStar: (modeId: string) => void;
     onToggleExpand: (trackId: string) => void;
     onOpenDev?: () => void;
+    isNativeApp?: boolean;
   },
 ): TabDef<HomeTab>[] {
   return [
@@ -774,6 +828,11 @@ function useHomeTabs(
           />
         </>
       ),
+    },
+    {
+      id: 'about',
+      label: <TabIcon icon='about' text='About' />,
+      content: <HomeAboutTab isNativeApp={isNativeApp} />,
     },
     {
       id: 'settings',
@@ -851,6 +910,7 @@ export function HomeScreen(
     onToggleStar: handleToggleStar,
     onToggleExpand: handleToggleExpand,
     onOpenDev: showDevLink ? () => setShowDev(true) : undefined,
+    isNativeApp,
   });
 
   if (showDev) {

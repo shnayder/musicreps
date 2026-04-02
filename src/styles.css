@@ -859,6 +859,20 @@ body {
   margin: 0 0 var(--gap-related);
   text-align: center;
 }
+/* --- Home About tab --- */
+.home-about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-section);
+}
+.home-about-brand {
+  text-align: center;
+}
+.home-about-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-related);
+}
 /* Shared pill/badge component */
 .pill {
   display: inline-block;
