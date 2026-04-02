@@ -6,7 +6,11 @@ import {
   isValidNoteInput,
   rootUsesFlats,
 } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ACTIVE_DEGREES,
@@ -26,6 +30,7 @@ export const SCALE_DEGREES_DEF: ModeDefinition<Question> = {
   name: 'Scale Degrees',
   namespace: 'scaleDegrees',
   description: MODE_DESCRIPTIONS.scaleDegrees,
+  aboutDescription: MODE_ABOUT_DESCRIPTIONS.scaleDegrees,
   beforeAfter: MODE_BEFORE_AFTER.scaleDegrees,
   itemNoun: 'items',
 

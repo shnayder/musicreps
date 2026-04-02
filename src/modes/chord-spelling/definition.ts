@@ -3,7 +3,11 @@
 // "Cm7" → C, Eb, G, Bb. Strict enharmonic spelling.
 
 import { displayNote } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_IDS,
@@ -25,6 +29,7 @@ export const CHORD_SPELLING_DEF: ModeDefinition<Question> = {
   namespace: 'chordSpelling',
   motorTaskType: 'chord-sequence',
   description: MODE_DESCRIPTIONS.chordSpelling,
+  aboutDescription: MODE_ABOUT_DESCRIPTIONS.chordSpelling,
   beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
   itemNoun: 'items',
 

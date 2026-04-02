@@ -4,7 +4,11 @@
 
 import { useCallback } from 'preact/hooks';
 import { displayNote, NOTES } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import { getStatsCellColor } from '../../stats-display.ts';
 import type {
   ModeController,
@@ -67,6 +71,7 @@ export const SPEED_TAP_DEF: ModeDefinition<Question> = {
   namespace: 'speedTap',
   motorTaskType: 'fretboard-tap',
   description: MODE_DESCRIPTIONS.speedTap,
+  aboutDescription: MODE_ABOUT_DESCRIPTIONS.speedTap,
   beforeAfter: MODE_BEFORE_AFTER.speedTap,
   itemNoun: 'notes',
 

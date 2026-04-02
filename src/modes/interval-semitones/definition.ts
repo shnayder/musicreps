@@ -2,7 +2,11 @@
 // Bidirectional: "minor 2nd" → 1, or 7 → "P5".
 
 import { isValidIntervalInput, isValidNumberInput } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_ITEMS,
@@ -16,6 +20,7 @@ export const INTERVAL_SEMITONES_DEF: ModeDefinition<Question> = {
   name: 'Interval \u2194 Semitones',
   namespace: 'intervalSemitones',
   description: MODE_DESCRIPTIONS.intervalSemitones,
+  aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalSemitones,
   beforeAfter: MODE_BEFORE_AFTER.intervalSemitones,
   itemNoun: 'items',
 

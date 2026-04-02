@@ -6,7 +6,11 @@ import {
   isValidNoteInput,
   pickAccidentalName,
 } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_IDS,
@@ -24,6 +28,7 @@ export const SEMITONE_MATH_DEF: ModeDefinition<Question> = {
   name: 'Semitone Math',
   namespace: 'semitoneMath',
   description: MODE_DESCRIPTIONS.semitoneMath,
+  aboutDescription: MODE_ABOUT_DESCRIPTIONS.semitoneMath,
   beforeAfter: MODE_BEFORE_AFTER.semitoneMath,
   itemNoun: 'items',
 

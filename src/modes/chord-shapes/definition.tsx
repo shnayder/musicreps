@@ -4,7 +4,11 @@
 
 import { useCallback } from 'preact/hooks';
 import { displayNote } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import { getStatsCellColor } from '../../stats-display.ts';
 import type {
   ModeController,
@@ -109,6 +113,7 @@ export function createChordShapesDef(
     namespace: id,
     motorTaskType: 'fretboard-tap',
     description: MODE_DESCRIPTIONS[id],
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS[id],
     beforeAfter: MODE_BEFORE_AFTER[id],
     itemNoun: 'chords',
 

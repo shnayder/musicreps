@@ -8,7 +8,11 @@ import {
   ROMAN_NUMERALS,
   rootUsesFlats,
 } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_IDS,
@@ -27,6 +31,7 @@ export const DIATONIC_CHORDS_DEF: ModeDefinition<Question> = {
   name: 'Diatonic Chords',
   namespace: 'diatonicChords',
   description: MODE_DESCRIPTIONS.diatonicChords,
+  aboutDescription: MODE_ABOUT_DESCRIPTIONS.diatonicChords,
   beforeAfter: MODE_BEFORE_AFTER.diatonicChords,
   itemNoun: 'items',
 

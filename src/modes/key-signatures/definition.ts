@@ -7,7 +7,11 @@ import {
   isValidNoteInput,
   rootUsesFlats,
 } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_IDS,
@@ -24,6 +28,7 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   name: 'Key Signatures',
   namespace: 'keySignatures',
   description: MODE_DESCRIPTIONS.keySignatures,
+  aboutDescription: MODE_ABOUT_DESCRIPTIONS.keySignatures,
   beforeAfter: MODE_BEFORE_AFTER.keySignatures,
   itemNoun: 'items',
 

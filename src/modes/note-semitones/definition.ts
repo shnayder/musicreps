@@ -6,7 +6,11 @@ import {
   isValidNoteInput,
   isValidNumberInput,
 } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_ITEMS,
@@ -20,6 +24,7 @@ export const NOTE_SEMITONES_DEF: ModeDefinition<Question> = {
   name: 'Note \u2194 Semitones',
   namespace: 'noteSemitones',
   description: MODE_DESCRIPTIONS.noteSemitones,
+  aboutDescription: MODE_ABOUT_DESCRIPTIONS.noteSemitones,
   beforeAfter: MODE_BEFORE_AFTER.noteSemitones,
   itemNoun: 'items',
 

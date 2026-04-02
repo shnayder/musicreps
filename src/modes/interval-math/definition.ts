@@ -6,7 +6,11 @@ import {
   isValidNoteInput,
   pickAccidentalName,
 } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
   ALL_GROUP_IDS,
@@ -24,6 +28,7 @@ export const INTERVAL_MATH_DEF: ModeDefinition<Question> = {
   name: 'Interval Math',
   namespace: 'intervalMath',
   description: MODE_DESCRIPTIONS.intervalMath,
+  aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalMath,
   beforeAfter: MODE_BEFORE_AFTER.intervalMath,
   itemNoun: 'items',
 

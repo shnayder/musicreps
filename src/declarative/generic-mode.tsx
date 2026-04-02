@@ -963,7 +963,7 @@ function IdlePracticeView<Q>(
       onTabSwitch={ps.setActiveTab}
       aboutContent={
         <AboutTab
-          description={def.description}
+          description={def.aboutDescription ?? def.description}
           beforeAfter={def.beforeAfter}
         />
       }
@@ -979,12 +979,12 @@ function AboutTab(
   { description, beforeAfter }: {
     description: string;
     beforeAfter: {
-      before: string | (() => string);
+      before: string[] | (() => string[]);
       after: string | (() => string);
     };
   },
 ) {
-  const before = typeof beforeAfter.before === 'function'
+  const beforeLines = typeof beforeAfter.before === 'function'
     ? beforeAfter.before()
     : beforeAfter.before;
   const after = typeof beforeAfter.after === 'function'
@@ -993,20 +993,25 @@ function AboutTab(
 
   return (
     <div class='about-tab'>
-      <Text role='body-secondary' as='p' class='about-description'>
-        {description}
-      </Text>
-      <Text role='heading-subsection' as='div'>What you're training</Text>
       <div class='about-columns'>
         <div class='about-col about-col-before'>
-          <Text role='label' as='div' class='about-col-header'>Before</Text>
-          <p class='about-col-text'>{before}</p>
+          <Text role='heading-section' as='div' class='about-col-header'>
+            Before
+          </Text>
+          {beforeLines.map((line, i) => (
+            <p key={i} class='about-col-text'>{line}</p>
+          ))}
         </div>
         <div class='about-col about-col-after'>
-          <Text role='label' as='div' class='about-col-header'>After</Text>
+          <Text role='heading-section' as='div' class='about-col-header'>
+            After
+          </Text>
           <p class='about-col-text'>{after}</p>
         </div>
       </div>
+      <Text role='body-secondary' as='p' class='about-description'>
+        {description}
+      </Text>
     </div>
   );
 }

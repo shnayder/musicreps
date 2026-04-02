@@ -288,8 +288,11 @@ type ModeDefinitionBase<Q> = {
   /** Motor task type for speed check calibration. Defaults to 'note-button'. */
   motorTaskType?: MotorTaskType;
   description: string;
+  /** Longer description for the About tab — what this skill is and why it
+   *  matters. Falls back to `description` if omitted. */
+  aboutDescription?: string;
   beforeAfter: {
-    before: string | (() => string);
+    before: string[] | (() => string[]);
     after: string | (() => string);
   };
   itemNoun: string;
