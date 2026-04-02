@@ -856,11 +856,6 @@ body {
   text-align: center;
 }
 .all-skills-hint {
-  font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
-  color: var(--color-text-light);
-  font-style: italic;
   margin: 0 0 var(--gap-related);
   text-align: center;
 }
@@ -1308,6 +1303,13 @@ body {
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
   color: var(--color-text-muted);
+}
+.about-tab-tip {
+  margin: var(--gap-section) 0 0;
+  text-align: center;
+}
+.about-tab-tip-icon {
+  vertical-align: -0.15em;
 }
 .about-columns {
   display: grid;

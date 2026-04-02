@@ -33,6 +33,7 @@ import {
   LayoutMain,
   ScreenLayout,
 } from './screen-layout.tsx';
+import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
 // storage persistence for starred skills
@@ -40,7 +41,6 @@ import {
 
 const STARRED_KEY = 'starredSkills';
 const ACCORDION_KEY = 'trackAccordionState';
-const TAB_KEY = 'homeTab';
 
 function loadStarredSkills(): Set<string> {
   const allModeIds = new Set(TRACKS.flatMap((t) => t.skills));
@@ -89,13 +89,14 @@ function saveAccordionState(state: Record<string, boolean>): void {
 
 /** Clean up legacy storage keys.  Call after initStorage() + migration. */
 export function cleanupLegacyKeys(): void {
-  try {
-    storage.removeItem('selectedTracks');
-  } catch (_) { /* expected */ }
-  // Also remove from localStorage to prevent re-migration of the key.
-  try {
-    globalThis.localStorage?.removeItem('selectedTracks');
-  } catch (_) { /* expected */ }
+  for (const key of ['selectedTracks', 'homeTab']) {
+    try {
+      storage.removeItem(key);
+    } catch (_) { /* expected */ }
+    try {
+      globalThis.localStorage?.removeItem(key);
+    } catch (_) { /* expected */ }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -620,11 +621,11 @@ function AllSkillsList(
   return (
     <div class='home-modes'>
       <h2 class='tab-panel-title'>All Skills</h2>
-      <p class='all-skills-hint'>
+      <Text role='status' as='p' class='status-empty all-skills-hint'>
         Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
         {' '}
         list.
-      </p>
+      </Text>
       {TRACKS.map((track) => (
         <TrackSection
           key={track.id}
@@ -656,13 +657,7 @@ function AllSkillsList(
 
 export type HomeTab = 'active' | 'all' | 'settings';
 
-function loadInitialTab(): HomeTab {
-  try {
-    const saved = storage.getItem(TAB_KEY);
-    if (saved === 'active' || saved === 'all' || saved === 'settings') {
-      return saved;
-    }
-  } catch (_) { /* expected */ }
+function initialTab(): HomeTab {
   return loadStarredSkills().size > 0 ? 'active' : 'all';
 }
 
@@ -816,7 +811,7 @@ export function HomeScreen(
   const [accordion, setAccordion] = useState(loadAccordionState);
   const [showDev, setShowDev] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
-  const [tab, setTab] = useState<HomeTab>(loadInitialTab);
+  const [tab, setTab] = useState<HomeTab>(initialTab);
   const globalEffort = useMemo(getGlobalEffort, [progress]);
   const prefix = useTabsPrefix();
 
@@ -832,9 +827,6 @@ export function HomeScreen(
   const handleChangeTab = useCallback((t: HomeTab) => {
     setTab(t);
     if (t === 'settings') setUseSolfege(settings.getUseSolfege());
-    try {
-      storage.setItem(TAB_KEY, t);
-    } catch (_) { /* expected */ }
   }, [settings]);
 
   const handleToggleExpand = useCallback((trackId: string) => {
