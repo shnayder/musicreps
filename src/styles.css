@@ -2861,6 +2861,19 @@ button {
 .stats-container {
   text-align: center;
 }
+/* Fretboard heatmap in the progress tab: the quiz-stage flex chain
+   isn't present, so reset the height-filling rules and let the SVG
+   scale naturally within a capped container. */
+.stats-container .fretboard-wrapper {
+  flex: unset;
+}
+.stats-container .fretboard-container {
+  height: auto;
+}
+.stats-container .fretboard {
+  max-height: 600px;
+  width: auto;
+}
 .stats-table {
   border-collapse: collapse;
   margin: var(--gap-group) auto;
