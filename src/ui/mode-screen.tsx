@@ -509,11 +509,11 @@ const TAB_ICONS: Record<string, string> = {
 export function TabIcon({ icon, text }: { icon: string; text: string }) {
   const paths = TAB_ICONS[icon] ?? '';
   return (
-    <span class='tab-icon-label'>
+    <span class='tab-icon-label' aria-label={text}>
       <svg
         xmlns='http://www.w3.org/2000/svg'
-        width='18'
-        height='18'
+        width='24'
+        height='24'
         viewBox='0 0 24 24'
         fill='none'
         stroke='currentColor'
@@ -524,7 +524,6 @@ export function TabIcon({ icon, text }: { icon: string; text: string }) {
         // deno-lint-ignore react-no-danger
         dangerouslySetInnerHTML={{ __html: paths }}
       />
-      <span>{text}</span>
     </span>
   );
 }

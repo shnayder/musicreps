@@ -942,7 +942,7 @@ function IdlePracticeView<Q>(
       progressExtra={hasGroups
         ? (
           <>
-            <Text role='heading-section'>Levels</Text>
+            <Text role='heading-section'>Level progress</Text>
             <LevelProgressCards
               def={def}
               learner={learner}
