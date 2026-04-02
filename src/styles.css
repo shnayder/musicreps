@@ -863,6 +863,17 @@ body {
 .home-about-brand {
   text-align: center;
 }
+.home-about-list {
+  margin: 0;
+  padding-left: 1.25em;
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
+}
+.home-about-list li + li {
+  margin-top: var(--gap-related);
+}
 /* Shared pill/badge component */
 .pill {
   display: inline-block;

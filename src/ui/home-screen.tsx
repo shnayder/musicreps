@@ -730,31 +730,66 @@ function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
       <section class='settings-section'>
         <h2 class='settings-section-title'>What is Music Reps?</h2>
         <Text role='body-secondary' as='p'>
-          Music Reps builds instant recall for the building blocks of music{' '}
-          &mdash; note names, intervals, keys, chords, and fretboard navigation.
+          Most musicians can figure out the notes in a chord, the key signature
+          for B&flat; major, or the name of a fret &mdash; given a few seconds
+          to think. Music Reps closes the gap between <em>figuring it out</em>
+          {' '}
+          and <em>just knowing</em>.
+        </Text>
+        <Text role='body-secondary' as='p'>
           It&rsquo;s for guitarists, ukulele players, and anyone learning music
-          theory who wants to stop counting and start knowing.
+          who wants to build real musicianship through consistent daily
+          practice. If you&rsquo;re willing to show up and put in the reps, this
+          app will make the fundamentals automatic so you can focus on playing.
+        </Text>
+        <Text role='body-secondary' as='p'>
+          Use it when you&rsquo;re away from your instrument &mdash; commuting,
+          waiting, or any spare few minutes. Turn dead time into real practice.
         </Text>
       </section>
 
       <section class='settings-section'>
         <h2 class='settings-section-title'>How it works</h2>
-        <Text role='body-secondary' as='p'>
-          Each skill drills one piece of musical knowledge until it becomes
-          automatic. The app tracks your speed and accuracy, focuses on what you
-          haven&rsquo;t mastered yet, and brings back material before you forget
-          it.
-        </Text>
+        <ul class='home-about-list'>
+          <li>
+            <strong>Fast drills, many reps.</strong>{' '}
+            Each skill asks rapid-fire questions. No fluff, no lectures &mdash;
+            just focused practice.
+          </li>
+          <li>
+            <strong>Speed is the measure.</strong>{' '}
+            When your response time drops from eight seconds to under one,
+            you&rsquo;ve stopped counting and started knowing.
+          </li>
+          <li>
+            <strong>Spaced repetition.</strong>{' '}
+            The app focuses on what you haven&rsquo;t mastered and brings back
+            material before you forget it.
+          </li>
+          <li>
+            <strong>A few minutes at a time.</strong>{' '}
+            Designed for short sessions &mdash; two to five minutes, a few times
+            a day, over months and years.
+          </li>
+        </ul>
       </section>
 
       <section class='settings-section'>
         <h2 class='settings-section-title'>Getting started</h2>
-        <Text role='body-secondary' as='p'>
-          Browse <strong>All Skills</strong>{' '}
-          to see what&rsquo;s available. Star the ones you want to work on
-          &mdash; they&rsquo;ll appear on your <strong>Active</strong>{' '}
-          tab with recommendations for what to practice next.
-        </Text>
+        <ul class='home-about-list'>
+          <li>
+            Browse <strong>All Skills</strong>{' '}
+            to see what&rsquo;s available. Star the ones you want to work on.
+          </li>
+          <li>
+            Your starred skills appear on the <strong>Active</strong>{' '}
+            tab with recommendations for what to practice next.
+          </li>
+          <li>
+            Track your speed and coverage in each skill&rsquo;s{' '}
+            <strong>Progress</strong> tab.
+          </li>
+        </ul>
       </section>
     </div>
   );
