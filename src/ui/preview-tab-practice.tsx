@@ -127,8 +127,9 @@ function Phase1Components(
               {
                 id: 'practice' as ModeTab,
                 label: (
-                  <span class='tab-icon-label' aria-label='Practice'>
+                  <span class='tab-icon-label'>
                     <RepeatMark size={24} />
+                    <span class='sr-only'>Practice</span>
                   </span>
                 ),
                 content: (
@@ -452,8 +453,9 @@ function ModeNavFooter() {
     {
       id: 'practice',
       label: (
-        <span class='tab-icon-label' aria-label='Practice'>
+        <span class='tab-icon-label'>
           <RepeatMark size={24} />
+          <span class='sr-only'>Practice</span>
         </span>
       ),
       content: null,
