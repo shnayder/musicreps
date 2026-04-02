@@ -1185,8 +1185,7 @@ body {
   color: var(--type-heading-page-color);
 }
 .settings-section {
-  border-top: 1px solid var(--color-border-lighter);
-  padding-top: var(--pad-component);
+  /* spaced by .settings-page flex gap */
 }
 .settings-section-title {
   margin: 0 0 var(--gap-group);
@@ -1313,7 +1312,7 @@ body {
   display: block;
 }
 .tab-panel-title {
-  margin: 0;
+  margin: 0 0 var(--pad-component);
   padding-top: var(--pad-component);
   font-family: var(--type-heading-section-family);
   font-size: var(--type-heading-section-size);
@@ -3136,7 +3135,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="e01652 add-tab-headers-8qZQY"></div>
+  <div class="home-screen" id="home-screen" data-version="ca4f88 add-tab-headers-8qZQY"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -7595,7 +7594,10 @@ body.native-app {
         )
       ] }),
       /* @__PURE__ */ u3(SettingsAboutLegal, { appConfig, version }),
-      onOpenDev && /* @__PURE__ */ u3("section", { class: "settings-section", children: /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) })
+      onOpenDev && /* @__PURE__ */ u3("section", { class: "settings-section", children: [
+        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "Developer" }),
+        /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" })
+      ] })
     ] });
   }
   function DevPage({ onClose }) {
