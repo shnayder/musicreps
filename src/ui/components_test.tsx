@@ -802,7 +802,7 @@ describe('RoundCompleteInfo', () => {
     );
     assert.ok(html.includes('round-complete'));
     assert.ok(html.includes('round-complete-progress'));
-    assert.ok(html.includes('progress-bar-labeled'));
+    assert.ok(html.includes('progress-bar-plain'));
     assert.ok(html.includes('E strings'));
     assert.ok(html.includes('A string'));
     assert.ok(html.includes('group-progress-bar'));

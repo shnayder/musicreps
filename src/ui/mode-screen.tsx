@@ -455,6 +455,7 @@ export function RoundCompleteInfo(
               key={entry.id}
               label={entry.label}
               colors={entry.colors}
+              plain
             />
           ))}
         </div>

@@ -31,14 +31,16 @@ export function GroupProgressBar(
 // ---------------------------------------------------------------------------
 
 export function ProgressBarLabeled(
-  { label, colors, disabled }: {
+  { label, colors, disabled, plain }: {
     label?: string;
     colors: string[];
     disabled?: boolean;
+    plain?: boolean;
   },
 ) {
+  const cls = plain ? 'progress-bar-plain' : 'progress-bar-labeled';
   return (
-    <div class='progress-bar-labeled'>
+    <div class={cls}>
       {label && (
         <Text role='label' as='div' class='progress-bar-label'>
           {label}
