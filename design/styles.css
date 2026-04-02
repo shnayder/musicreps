@@ -1318,7 +1318,7 @@ body {
   padding: var(--gap-group) 0;
 }
 .about-description {
-  margin: 0 0 var(--pad-component);
+  margin: var(--gap-group) 0 0;
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
   color: var(--color-text-muted);
@@ -1327,7 +1327,6 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--gap-group);
-  margin-top: var(--gap-group);
 }
 .about-col {
   padding: var(--pad-component);
@@ -1343,8 +1342,6 @@ body {
 }
 .about-col-header {
   margin-bottom: var(--gap-related);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 .about-col-text {
   margin: 0;
@@ -1352,6 +1349,9 @@ body {
   line-height: var(--leading-normal);
   color: var(--color-text-muted);
   font-style: italic;
+}
+.about-col-text + .about-col-text {
+  margin-top: var(--gap-related);
 }
 .about-col-after .about-col-text {
   font-style: normal;
