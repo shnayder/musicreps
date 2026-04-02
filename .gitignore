@@ -1,4 +1,5 @@
 .DS_Store
+.claude/worktrees/
 .vscode/
 node_modules/
 screenshots/
@@ -19,3 +20,10 @@ ios/App/output/
 ios/DerivedData/
 **/xcuserdata/
 ios/capacitor-cordova-ios-plugins/
+.sidecar/
+.sidecar-agent
+.sidecar-task
+.sidecar-pr
+.sidecar-start.sh
+.sidecar-base
+.td-root

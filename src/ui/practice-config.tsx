@@ -8,37 +8,13 @@ import { SkillIcon } from './icons.tsx';
 import { CloseButton } from './mode-screen.tsx';
 import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
-import { GroupProgressBar } from './scope.tsx';
+import { ProgressBarLabeled } from './scope.tsx';
 import { SegmentedControl } from './segmented-control.tsx';
 import { Text } from './text.tsx';
 
 // Re-export so existing consumers can import from here.
 export type { SuggestionLine } from '../types.ts';
-
-// ---------------------------------------------------------------------------
-// ProgressBarLabeled — labeled progress bar with border, for skill header
-// and level progress cards. Distinct from the bare GroupProgressBar used
-// on home screen cards.
-// ---------------------------------------------------------------------------
-
-export function ProgressBarLabeled(
-  { label, colors, disabled }: {
-    label?: string;
-    colors: string[];
-    disabled?: boolean;
-  },
-) {
-  return (
-    <div class='progress-bar-labeled'>
-      {label && (
-        <Text role='label' as='div' class='progress-bar-label'>
-          {label}
-        </Text>
-      )}
-      <GroupProgressBar colors={colors} disabled={disabled} />
-    </div>
-  );
-}
+export { ProgressBarLabeled };
 
 // ---------------------------------------------------------------------------
 // SkillHeader — title + close + progress bar (replaces ModeTopBar for idle)
@@ -104,10 +80,11 @@ export function SuggestionLines(
 // ---------------------------------------------------------------------------
 
 export function LevelToggles(
-  { labels, active, onToggle }: {
+  { labels, groupIds, active, onToggle }: {
     labels: string[];
-    active: ReadonlySet<number>;
-    onToggle: (index: number) => void;
+    groupIds: string[];
+    active: ReadonlySet<string>;
+    onToggle: (id: string) => void;
   },
 ) {
   return (
@@ -116,18 +93,21 @@ export function LevelToggles(
         Choose levels
       </Text>
       <div class='level-toggles'>
-        {labels.map((label, i) => (
-          <button
-            type='button'
-            tabIndex={0}
-            key={i}
-            class={'level-toggle-btn' + (active.has(i) ? ' active' : '')}
-            aria-pressed={active.has(i)}
-            onClick={() => onToggle(i)}
-          >
-            {label}
-          </button>
-        ))}
+        {labels.map((label, i) => {
+          const id = groupIds[i];
+          return (
+            <button
+              type='button'
+              tabIndex={0}
+              key={id}
+              class={'level-toggle-btn' + (active.has(id) ? ' active' : '')}
+              aria-pressed={active.has(id)}
+              onClick={() => onToggle(id)}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

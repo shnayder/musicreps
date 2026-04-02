@@ -138,20 +138,22 @@ const ACCIDENTAL_NOTES = NOTES
   .map((n) => n.name);
 
 export const NOTE_GROUPS = [
-  { label: 'Naturals', longLabel: 'Natural notes' },
-  { label: '\u266F/\u266D', longLabel: 'Sharps & flats' },
+  { id: 'naturals', label: 'Naturals', longLabel: 'Natural notes' },
+  { id: 'sharps-flats', label: '\u266F/\u266D', longLabel: 'Sharps & flats' },
 ];
 
-export const ALL_GROUP_INDICES = [0, 1];
+export const ALL_GROUP_IDS: string[] = NOTE_GROUPS.map((g) => g.id);
 
-export function getItemIdsForGroup(index: number): string[] {
-  return index === 0 ? NATURAL_NOTES.slice() : ACCIDENTAL_NOTES.slice();
+export function getItemIdsForGroup(groupId: string): string[] {
+  return groupId === 'naturals'
+    ? NATURAL_NOTES.slice()
+    : ACCIDENTAL_NOTES.slice();
 }
 
 export function formatGroupLabel(
-  enabledGroups: ReadonlySet<number>,
+  enabledGroups: ReadonlySet<string>,
 ): string {
   if (enabledGroups.size === 2) return 'all notes';
-  if (enabledGroups.has(1)) return 'sharps & flats';
+  if (enabledGroups.has('sharps-flats')) return 'sharps & flats';
   return 'natural notes';
 }

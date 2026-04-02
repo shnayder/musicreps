@@ -21,13 +21,15 @@ function makeEntry(
   groupCount: number,
   itemsPerGroup: number = 4,
 ): ModeProgressEntry {
-  const groups: { label: string; getItemIds: () => string[] }[] = [];
+  const groups: { id: string; label: string; getItemIds: () => string[] }[] =
+    [];
   for (let g = 0; g < groupCount; g++) {
     const ids: string[] = [];
     for (let i = 0; i < itemsPerGroup; i++) {
       ids.push(`${modeId}-g${g}-i${i}`);
     }
-    groups.push({ label: `Group ${g}`, getItemIds: () => ids });
+    const id = `g${g}`;
+    groups.push({ id, label: `Group ${g}`, getItemIds: () => ids });
   }
   return {
     modeId,
@@ -83,7 +85,7 @@ function seedStale(storage: StorageAdapter, ids: string[]): void {
 }
 
 const DEFAULT_CONFIG = {};
-const NO_SKIPS = new Set<number>();
+const NO_SKIPS = new Set<string>();
 
 // ---------------------------------------------------------------------------
 // computeSkillRecommendation
@@ -223,7 +225,7 @@ describe('computeSkillRecommendation', () => {
     const storage = createMemoryStorage();
     // Seed group 0 as stale, skip it
     seedStale(storage, entry.groups[0].getItemIds());
-    const skipped = new Set([0]);
+    const skipped = new Set(['g0']);
     const result = computeSkillRecommendation(
       entry,
       storage,

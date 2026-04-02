@@ -10,7 +10,7 @@ import {
 } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
-  ALL_GROUP_INDICES,
+  ALL_GROUP_IDS,
   ALL_ITEMS,
   evaluate,
   getGridItemId,
@@ -43,7 +43,7 @@ export const CHORD_SPELLING_DEF: ModeDefinition<Question> = {
     expectedCount: (q) => q.tones.length,
     evaluate,
     parseBatchInput: parseChordInput,
-    batchPlaceholder: (q) => `${q.tones.length} notes, e.g. C E G \u2014 Enter`,
+    batchPlaceholder: 'e.g. C E G \u2014 Enter',
   },
 
   buttons: { kind: 'split-note' },
@@ -52,14 +52,15 @@ export const CHORD_SPELLING_DEF: ModeDefinition<Question> = {
     kind: 'groups',
     groups: SPELLING_GROUPS,
     getItemIdsForGroup,
-    allGroupIndices: ALL_GROUP_INDICES,
+    allGroupIds: ALL_GROUP_IDS,
     storageKey: 'chordSpelling_enabledGroups',
     scopeLabel: 'Chord types',
-    defaultEnabled: [0],
+    defaultEnabled: [ALL_GROUP_IDS[0]],
     formatLabel: (groups) => {
       if (groups.size === SPELLING_GROUPS.length) return 'all chord types';
-      const labels = [...groups].sort((a, b) => a - b)
-        .map((g) => SPELLING_GROUPS[g].label);
+      const labels = SPELLING_GROUPS
+        .filter((g) => groups.has(g.id))
+        .map((g) => g.label);
       return labels.join(', ') + ' chords';
     },
   },

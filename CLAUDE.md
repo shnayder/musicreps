@@ -51,11 +51,11 @@ exists for the relevant states.
 components with mock data — it is the design system source of truth. No copies
 or approximations.
 
-**The HTML template lives in `src/build-template.ts`** — the single source of
-truth for the page structure. **Version is derived from git at build time** (see
+**The HTML template lives in `src/build-template.ts`** — it assembles the HTML
+shell with empty container divs for each mode (derived from `TRACKS` in
+`mode-catalog.ts`). **Version is derived from git at build time** (see
 `getVersion()` in `main.ts`) — no manual bumps needed. `main.ts` handles both
-building (with `--build`) and dev serving. Mode-specific content is passed as
-arguments to `modeScreen()` in `src/html-helpers.ts`.
+building (with `--build`) and dev serving. Preact renders all UI at runtime.
 
 ## Structure
 
@@ -63,9 +63,8 @@ arguments to `modeScreen()` in `src/html-helpers.ts`.
 main.ts                  # Build + dev server + moments generation (Deno)
 src/
   app.ts                 # Entry point: registers Preact modes, starts navigation
-  build-template.ts      # HTML template (build-time)
-  html-helpers.ts        # Build-time HTML: mode scaffold, fretboard SVG
-  fretboard.ts           # Build-time SVG: fret/string/note generation
+  build-template.ts      # HTML template: shell + empty mode containers
+  fretboard.ts           # SVG fretboard generation (shared by build + runtime)
   adaptive.ts            # Adaptive question selector
   music-data.ts          # Shared music theory data + input validators
   mode-utils.ts          # Shared ID parsing/building, stats row helpers
@@ -138,8 +137,7 @@ at build time. Key patterns:
   modes), `useScopeState` (low-level scope persistence), `useKeyHandler`
   (keyboard events). GenericMode composes these automatically.
 - **Shared UI Components** — `ModeScreen`, `QuizArea`, `PracticeCard`,
-  `StatsTable`/`StatsGrid`, `NoteButtons`, `GroupToggles`, etc. Emit the same
-  CSS class names as the build-time HTML for style parity.
+  `StatsTable`/`StatsGrid`, `NoteButtons`, `GroupToggles`, etc.
 - **Pure State Transitions** — `quiz-engine-state.ts` contains pure functions
   for engine state. The `useQuizEngine` hook wraps them with Preact reactivity.
 - **Adaptive Selector** — weighted random selection (unseen boost + EWMA).
@@ -154,7 +152,7 @@ at build time. Key patterns:
   defined as `--color-*` and `--heatmap-*` variables in `:root`. JS reads
   heatmap colors via `getComputedStyle` with hardcoded fallbacks for tests.
 - **Build System** — esbuild bundles `src/app.ts` (entry point) into a single
-  IIFE. The HTML template is shared via `assembleHTML()` in `build-template.ts`.
+  IIFE. `build-template.ts` assembles the HTML shell with empty mode containers.
 - **Function Length** — max 100 lines per function
   (`scripts/lint-function-length.ts`). Prefer small, clear, obviously correct
   functions that do one thing and can be tested independently. Extract helpers,
@@ -180,6 +178,8 @@ graph, algorithm details, and step-by-step "adding a new quiz mode" checklist.
 | Scale Degrees        | 144 (12 keys x 6 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `C:7:rev`   |
 | Diatonic Chords      | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral         | `Bb:IV:fwd`, `C:D:rev` |
 | Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`    |
+| Guitar Chord Shapes  | 15 (6 maj + 3 min + 6 dom7)        | Multi-tap fretboard     | `C:major`, `A:dom7`    |
+| Ukulele Chord Shapes | 13 (6 maj + 3 min + 4 dom7)        | Multi-tap fretboard     | `C:major`, `G:dom7`    |
 
 Bidirectional modes track each direction as a separate item.
 

@@ -1,6 +1,6 @@
 // useMultiTapInput — handles multi-tap quiz modes.
-// Manages a set of tapped positions (no duplicates), evaluates all at once
-// after the expected count is reached, and resets on question change.
+// Manages a set of tapped positions (no duplicates), evaluates on explicit
+// Check action, and resets on question change.
 // Parallel to useSequentialInput but with set semantics (order doesn't matter).
 
 import { useCallback, useRef, useState } from 'preact/hooks';
@@ -16,56 +16,45 @@ import type {
 
 /** Result of processing a single tap against the collection state. */
 export type TapAction =
-  | { kind: 'ignored' }
-  | { kind: 'added'; progressText: string }
-  | { kind: 'removed'; progressText: string }
-  | {
-    kind: 'complete';
-    progressText: string;
-    result: MultiTapEvalResult;
-    sentinel: string;
-  };
+  | { kind: 'added' }
+  | { kind: 'removed' };
+
+/** Extract the string index from a position key ("string-fret" → string). */
+function stringOf(posKey: string): string {
+  return posKey.split('-')[0];
+}
+
+/**
+ * Remove any existing tap on the same string as positionKey (mutates `set`).
+ * Used by onePerString mode to enforce one note per string.
+ */
+function removeExistingOnString(set: Set<string>, positionKey: string): void {
+  const tapString = stringOf(positionKey);
+  for (const existing of set) {
+    if (stringOf(existing) === tapString) {
+      set.delete(existing);
+      return;
+    }
+  }
+}
 
 /**
  * Process a tap against the current collection state (pure function).
  * Tapping a selected position deselects it; tapping an unselected position
- * adds it; completing the set triggers evaluation.
+ * adds it. Does not trigger evaluation — the caller uses handleCheck for that.
  */
 export function processMultiTap<Q>(
-  multiTap: MultiTapDef<Q>,
-  q: Q,
+  _multiTap: MultiTapDef<Q>,
+  _q: Q,
   tapped: ReadonlySet<string>,
   positionKey: string,
 ): TapAction {
-  const targets = multiTap.getTargets(q);
-
   // Deselect: tapping an already-selected position removes it
   if (tapped.has(positionKey)) {
-    const next = new Set(tapped);
-    next.delete(positionKey);
-    return {
-      kind: 'removed',
-      progressText: next.size + ' / ' + targets.length,
-    };
+    return { kind: 'removed' };
   }
 
-  // Reject taps after collection is full (shouldn't happen with deselect)
-  if (tapped.size >= targets.length) {
-    return { kind: 'ignored' };
-  }
-
-  const next = new Set(tapped);
-  next.add(positionKey);
-  const progressText = next.size + ' / ' + targets.length;
-
-  if (next.size === targets.length) {
-    const result = multiTap.evaluate(q, [...next]);
-    const sentinel = (result.correct ? '__correct__' : '__wrong__') +
-      ':' + result.correctAnswer;
-    return { kind: 'complete', progressText, result, sentinel };
-  }
-
-  return { kind: 'added', progressText };
+  return { kind: 'added' };
 }
 
 // ---------------------------------------------------------------------------
@@ -77,10 +66,10 @@ export type MultiTapInputHandle = {
   tappedPositions: ReadonlySet<string>;
   /** Evaluation results after all taps submitted (null during collection). */
   evaluated: MultiTapEvalResult | null;
-  /** Progress text during collection (e.g., "3 / 8"). */
-  progressText: string;
   /** Handle a tap on a position. */
   handleTap: (positionKey: string) => void;
+  /** Manually trigger evaluation of collected taps. */
+  handleCheck: () => void;
   /** Reset state on question change. */
   resetOnItemChange: (currentItemId: string | null) => void;
 };
@@ -95,18 +84,21 @@ export function useMultiTapInput<Q>(
   );
   const tappedRef = useRef<Set<string>>(new Set());
   const [evaluated, setEvaluated] = useState<MultiTapEvalResult | null>(null);
-  const [progressText, setProgressText] = useState('');
+  const evaluatedRef = useRef<MultiTapEvalResult | null>(null);
   const prevItemRef = useRef<string | null>(null);
 
   const resetAll = useCallback(() => {
     tappedRef.current = new Set();
     setTappedPositions(new Set());
+    evaluatedRef.current = null;
     setEvaluated(null);
-    setProgressText('');
   }, []);
 
   const handleTap = useCallback((positionKey: string) => {
     if (!def.multiTap || !currentQRef.current) return;
+    // Don't accept more taps after evaluation
+    if (evaluatedRef.current) return;
+
     const action = processMultiTap(
       def.multiTap,
       currentQRef.current,
@@ -114,27 +106,40 @@ export function useMultiTapInput<Q>(
       positionKey,
     );
 
-    if (action.kind === 'ignored') return;
-
     if (action.kind === 'removed') {
       const next = new Set(tappedRef.current);
       next.delete(positionKey);
       tappedRef.current = next;
       setTappedPositions(next);
-      setProgressText(action.progressText);
       return;
     }
 
+    // For 'added': rebuild the set. When onePerString is active, an old tap
+    // on the same string needs to be removed before adding the new one.
     const next = new Set(tappedRef.current);
+    if (def.multiTap.onePerString) {
+      removeExistingOnString(next, positionKey);
+    }
     next.add(positionKey);
     tappedRef.current = next;
     setTappedPositions(next);
-    setProgressText(action.progressText);
+  }, [def]);
 
-    if (action.kind === 'complete') {
-      setEvaluated(action.result);
-      submitRef.current(action.sentinel);
-    }
+  const handleCheck = useCallback(() => {
+    if (!def.multiTap || !currentQRef.current) return;
+    if (evaluatedRef.current) return; // already evaluated (e.g. double-click)
+    const tapped = tappedRef.current;
+    if (tapped.size === 0) return;
+
+    const result = def.multiTap.evaluate(
+      currentQRef.current,
+      [...tapped],
+    );
+    evaluatedRef.current = result;
+    setEvaluated(result);
+    const sentinel = (result.correct ? '__correct__' : '__wrong__') +
+      ':' + result.correctAnswer;
+    submitRef.current(sentinel);
   }, [def]);
 
   const resetOnItemChange = useCallback((currentItemId: string | null) => {
@@ -147,8 +152,8 @@ export function useMultiTapInput<Q>(
   return {
     tappedPositions,
     evaluated,
-    progressText,
     handleTap,
+    handleCheck,
     resetOnItemChange,
   };
 }

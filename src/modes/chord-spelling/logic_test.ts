@@ -40,12 +40,12 @@ describe('SPELLING_GROUPS', () => {
 
 describe('getItemIdsForGroup', () => {
   it('group 0 returns non-empty array', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('triads-major');
     assert.ok(ids.length > 0);
   });
 
   it('group 0 items contain chord type names in "root:type" format', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('triads-major');
     for (const id of ids) {
       assert.ok(id.includes(':'), `item "${id}" should contain a colon`);
       const colonIdx = id.indexOf(':');
@@ -58,7 +58,7 @@ describe('getItemIdsForGroup', () => {
   });
 
   it('group 0 items include expected roots', () => {
-    const ids = getItemIdsForGroup(0);
+    const ids = getItemIdsForGroup('triads-major');
     const roots = new Set(ids.map((id) => id.substring(0, id.indexOf(':'))));
     assert.ok(roots.has('C'));
     assert.ok(roots.has('F#'));

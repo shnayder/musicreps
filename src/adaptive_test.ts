@@ -882,44 +882,44 @@ describe('createAdaptiveSelector', () => {
     assert.equal(result.seen, 10);
   });
 
-  it('getStringRecommendations ranks strings by work (working + unseen)', () => {
+  it('getGroupRecommendations ranks groups by work (working + unseen)', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
-    // String 0: fast items answered recently → speed ≥ 0.9 → automatic
+    // Group '0': fast items answered recently → speed ≥ 0.9 → automatic
     selector.recordResponse('0-0', 1200);
     selector.recordResponse('0-1', 1200);
 
-    // String 1: no items answered (all unseen)
+    // Group '1': no items answered (all unseen)
     // (no recordResponse calls)
 
-    const recs = selector.getStringRecommendations(
-      [0, 1],
-      (s) => [`${s}-0`, `${s}-1`],
+    const recs = selector.getGroupRecommendations(
+      ['0', '1'],
+      (id) => [`${id}-0`, `${id}-1`],
     );
 
     assert.equal(recs.length, 2);
-    // String 1 should be first (more unseen items = more work)
-    assert.equal(recs[0].string, 1);
+    // Group '1' should be first (more unseen items = more work)
+    assert.equal(recs[0].groupId, '1');
     assert.equal(recs[0].unseenCount, 2);
     assert.equal(recs[0].workingCount, 0);
     assert.equal(recs[0].automaticCount, 0);
-    assert.equal(recs[1].string, 0);
+    assert.equal(recs[1].groupId, '0');
     assert.equal(recs[1].unseenCount, 0);
     assert.equal(recs[1].workingCount, 0);
     assert.equal(recs[1].automaticCount, 2); // fast + just answered = automatic
   });
 
-  it('getStringRecommendations separates unseen from working items', () => {
+  it('getGroupRecommendations separates unseen from working items', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
-    // String 0: item 0-0 answered fast and recently → automatic, item 0-1 unseen
+    // Group '0': item 0-0 answered fast and recently → automatic, item 0-1 unseen
     selector.recordResponse('0-0', 1200);
 
-    const recs = selector.getStringRecommendations(
-      [0],
-      (s) => [`${s}-0`, `${s}-1`],
+    const recs = selector.getGroupRecommendations(
+      ['0'],
+      (id) => [`${id}-0`, `${id}-1`],
     );
 
     assert.equal(recs[0].unseenCount, 1); // 0-1 unseen
@@ -927,7 +927,7 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].workingCount, 0);
   });
 
-  it('getStringRecommendations counts working items (seen but not automatic)', () => {
+  it('getGroupRecommendations counts working items (seen but not automatic)', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
@@ -942,9 +942,9 @@ describe('createAdaptiveSelector', () => {
       lastCorrectAt: Date.now() - 100 * 3600000,
     });
 
-    const recs = selector.getStringRecommendations(
-      [0],
-      (s) => [`${s}-0`, `${s}-1`],
+    const recs = selector.getGroupRecommendations(
+      ['0'],
+      (id) => [`${id}-0`, `${id}-1`],
     );
 
     assert.equal(recs[0].workingCount, 1); // 0-0 seen but speed < 0.9
@@ -952,36 +952,36 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].automaticCount, 0);
   });
 
-  it('getStringRecommendations classifies slow-but-recent items as working', () => {
+  it('getGroupRecommendations classifies slow-but-recent items as working', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
     // Slow answer (3500ms) just now → speedScore ≈ 0.38 < 0.9 → working, not automatic
     selector.recordResponse('0-0', 3500);
 
-    const recs = selector.getStringRecommendations(
-      [0],
-      (s) => [`${s}-0`],
+    const recs = selector.getGroupRecommendations(
+      ['0'],
+      (id) => [`${id}-0`],
     );
 
     assert.equal(recs[0].workingCount, 1); // slow = not automatic
     assert.equal(recs[0].automaticCount, 0);
   });
 
-  it('getStringRecommendations breaks ties deterministically by string index', () => {
+  it('getGroupRecommendations breaks ties deterministically by groupId order', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
     // Three groups with identical work counts (all unseen, 1 item each).
     // Without tie-breaking, order could be arbitrary. With tie-breaking,
-    // equal-work groups sort by string index ascending.
-    const recs = selector.getStringRecommendations(
-      [5, 2, 8],
-      (s) => [`${s}-0`],
+    // equal-work groups sort by groupId lexicographically.
+    const recs = selector.getGroupRecommendations(
+      ['g5', 'g2', 'g8'],
+      (id) => [`${id}-0`],
     );
-    // All have work=1 (1 unseen). Tie-break → sorted by string: 2, 5, 8.
-    assert.equal(recs[0].string, 2);
-    assert.equal(recs[1].string, 5);
-    assert.equal(recs[2].string, 8);
+    // All have work=1 (1 unseen). Tie-break → sorted by groupId: g2, g5, g8.
+    assert.equal(recs[0].groupId, 'g2');
+    assert.equal(recs[1].groupId, 'g5');
+    assert.equal(recs[2].groupId, 'g8');
   });
 
   it('updateConfig changes config used by selector', () => {

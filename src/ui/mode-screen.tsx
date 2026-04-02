@@ -1,6 +1,5 @@
-// Structural components: Preact equivalents of the mode screen scaffold
-// from html-helpers.ts modeScreen(). Compose leaf components into full
-// mode screen layouts with phase management, tabs, and quiz sessions.
+// Structural components for mode screen layouts: phase management, tabs,
+// quiz sessions, and round-complete overlays.
 
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
@@ -10,7 +9,7 @@ import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
-import { GroupProgressBar } from './scope.tsx';
+import { ProgressBarLabeled } from './scope.tsx';
 
 // ---------------------------------------------------------------------------
 // CloseButton — × dismiss button used in top bars and overlays
@@ -420,12 +419,19 @@ export function QuizArea(
 // Rendered in .quiz-content zone.
 // ---------------------------------------------------------------------------
 
+/** Per-level progress entry: label + color array for one level. */
+export type LevelProgressEntry = {
+  id: string;
+  label: string;
+  colors: string[];
+};
+
 export function RoundCompleteInfo(
-  { heading, count, correct, progressColors }: {
+  { heading, count, correct, levelBars }: {
     heading?: string;
     count?: number;
     correct?: string;
-    progressColors?: string[];
+    levelBars?: LevelProgressEntry[];
   },
 ) {
   return (
@@ -442,9 +448,16 @@ export function RoundCompleteInfo(
       <div class='round-complete-stats'>
         <div class='round-stat-line round-stat-correct'>{correct || ''}</div>
       </div>
-      {progressColors && progressColors.length > 0 && (
+      {levelBars && levelBars.length > 0 && (
         <div class='round-complete-progress'>
-          <GroupProgressBar colors={progressColors} />
+          {levelBars.map((entry) => (
+            <ProgressBarLabeled
+              key={entry.id}
+              label={entry.label}
+              colors={entry.colors}
+              plain
+            />
+          ))}
         </div>
       )}
     </div>
@@ -484,9 +497,6 @@ export function RoundCompleteActions(
 // ---------------------------------------------------------------------------
 
 const TAB_ICONS: Record<string, string> = {
-  // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
-  practice: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>' +
-    '<path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
   // Bar chart
   progress: '<line x1="18" x2="18" y1="20" y2="10"/>' +
     '<line x1="12" x2="12" y1="20" y2="4"/>' +
@@ -513,8 +523,8 @@ export function TabIcon({ icon, text }: { icon: string; text: string }) {
     <span class='tab-icon-label'>
       <svg
         xmlns='http://www.w3.org/2000/svg'
-        width='18'
-        height='18'
+        width='24'
+        height='24'
         viewBox='0 0 24 24'
         fill='none'
         stroke='currentColor'
@@ -525,7 +535,7 @@ export function TabIcon({ icon, text }: { icon: string; text: string }) {
         // deno-lint-ignore react-no-danger
         dangerouslySetInnerHTML={{ __html: paths }}
       />
-      <span>{text}</span>
+      <span class='sr-only'>{text}</span>
     </span>
   );
 }
@@ -616,7 +626,12 @@ export function PracticeTab(
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
-      label: <TabIcon icon='practice' text='Practice' />,
+      label: (
+        <span class='tab-icon-label'>
+          <RepeatMark size={24} />
+          <span class='sr-only'>Practice</span>
+        </span>
+      ),
       content: practiceContent ?? (
         <PracticeCard
           summary={summary}

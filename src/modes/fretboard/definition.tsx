@@ -15,7 +15,7 @@ import {
   noteNarrowingSet,
 } from '../../quiz-engine.ts';
 import { getStatsCellColor } from '../../stats-display.ts';
-import { fretboardSVG } from '../../html-helpers.ts';
+import { fretboardSVG } from '../../fretboard.ts';
 import type {
   ModeController,
   ModeDefinition,
@@ -23,7 +23,7 @@ import type {
 
 import {
   formatLabel,
-  getAllGroupIndices,
+  getAllGroupIds,
   getAllItems,
   getGroups,
   getItemIdsForGroup,
@@ -64,7 +64,7 @@ export function createFretboardDef(
 ): ModeDefinition<Question> {
   const groups = getGroups(instrument);
   const allItems = getAllItems(instrument);
-  const allGroupIndices = getAllGroupIndices(instrument);
+  const allGroupIds = getAllGroupIds(instrument);
 
   return {
     id: instrument.id,
@@ -91,11 +91,11 @@ export function createFretboardDef(
     scope: {
       kind: 'groups',
       groups,
-      getItemIdsForGroup: (index) => getItemIdsForGroup(instrument, index),
-      allGroupIndices,
+      getItemIdsForGroup: (id) => getItemIdsForGroup(instrument, id),
+      allGroupIds,
       storageKey: instrument.storageNamespace + '_enabledGroups',
       scopeLabel: 'Groups',
-      defaultEnabled: [0],
+      defaultEnabled: [allGroupIds[0]],
       formatLabel: (enabled) => formatLabel(instrument, enabled),
     },
 
@@ -165,7 +165,7 @@ function renderFretboardStats(
 function useFretboardController(
   instrument: Instrument,
   groups: ReturnType<typeof getGroups>,
-  enabledGroups: ReadonlySet<number>,
+  enabledGroups: ReadonlySet<string>,
 ): ModeController<Question> {
   // --- SVG refs ---
   const quizFbRef = useRef<HTMLDivElement>(null);
@@ -184,8 +184,9 @@ function useFretboardController(
 
   // --- Check if any enabled group includes accidentals ---
   const hasAccidentals = useMemo(() => {
-    for (const g of enabledGroups) {
-      if (groups[g]?.noteFilter === 'sharps-flats') return true;
+    for (const id of enabledGroups) {
+      const g = groups.find((g) => g.id === id);
+      if (g?.noteFilter === 'sharps-flats') return true;
     }
     return false;
   }, [enabledGroups, groups]);

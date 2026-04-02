@@ -393,7 +393,7 @@
      ================================================================ */
 
   /* -- Action: primary CTA buttons (Practice, Stop, Next) -- */
-  --type-action-size: var(--text-lg);
+  --type-action-size: var(--text-base);
   --type-action-weight: var(--font-semibold);
   --type-action-leading: var(--leading-none);
   --type-action-color: var(--color-on-brand);
@@ -669,9 +669,8 @@ body {
 /* --- Mode navigation: bottom bar on mobile, top tabs on desktop --- */
 .tab-icon-label {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
 }
 .tab-icon-label svg {
   display: block;
@@ -708,8 +707,7 @@ body {
     display: block;
   }
   .tab-icon-label {
-    flex-direction: row;
-    gap: var(--gap-related);
+    justify-content: center;
   }
 }
 
@@ -846,7 +844,7 @@ body {
 }
 /* --- Active Skills tab content --- */
 .active-skills-list {
-  margin-top: var(--pad-component);
+  /* container only — children provide spacing */
 }
 .active-skills-empty {
   font-size: var(--type-status-size);
@@ -863,7 +861,7 @@ body {
   line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
-  margin: 0 0 var(--gap-group);
+  margin: 0 0 var(--gap-related);
   text-align: center;
 }
 /* Shared pill/badge component */
@@ -1142,7 +1140,6 @@ body {
 .settings-page {
   display: flex;
   flex-direction: column;
-  gap: var(--pad-component);
 }
 .settings-page-header {
   display: flex;
@@ -1158,12 +1155,11 @@ body {
   line-height: var(--type-heading-page-leading);
   color: var(--type-heading-page-color);
 }
-.settings-section {
-  border-top: 1px solid var(--color-border-lighter);
-  padding-top: var(--pad-component);
+.settings-section + .settings-section {
+  margin-top: var(--pad-component);
 }
 .settings-section-title {
-  margin: 0 0 var(--gap-group);
+  margin: 0 0 var(--gap-related);
   font-size: var(--text-base);
 }
 .settings-link-list {
@@ -1171,15 +1167,22 @@ body {
   flex-direction: column;
   align-items: flex-start;
 }
+.settings-page .text-link {
+  font-size: var(--type-label-size);
+  padding: var(--gap-related) 0;
+  margin: 0;
+  min-height: 0;
+}
 .settings-meta {
-  font-size: var(--text-sm);
+  font-size: var(--type-label-size);
   color: var(--color-text-muted);
+  padding: var(--gap-related) 0;
 }
 
 .settings-field {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-group);
+  gap: var(--gap-related);
 }
 
 .segmented-control {
@@ -1285,6 +1288,15 @@ body {
 }
 .tab-panel.active {
   display: block;
+}
+.tab-panel-title {
+  margin: 0 0 var(--gap-group);
+  padding-top: var(--pad-component);
+  font-family: var(--type-heading-section-family);
+  font-size: var(--type-heading-section-size);
+  font-weight: var(--type-heading-section-weight);
+  line-height: var(--type-heading-section-leading);
+  color: var(--type-heading-section-color);
 }
 
 /* --- About tab --- */
@@ -1450,6 +1462,9 @@ body {
   border: 1px solid var(--color-border-lighter);
   border-radius: var(--radius-md);
   background: var(--color-well);
+}
+.progress-bar-plain .progress-bar-label {
+  margin-bottom: var(--gap-related);
 }
 .progress-bar-label {
   margin-bottom: var(--gap-related);
@@ -2138,6 +2153,10 @@ button {
   margin: 0 auto;
   padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-group);
+  text-align: left;
 }
 .round-stat-line {
   font-size: var(--type-status-size);
@@ -2712,6 +2731,17 @@ button {
 .page-action-row > .page-action-primary {
   flex: 2;
 }
+/* Non-interactive notice label in a page-action-row (e.g. "Last question") */
+.page-action-notice {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-notice);
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
+}
 
 /* --- Standalone action buttons (positioning only — visual treatment via page-action-btn) --- */
 .next-btn,
@@ -2887,6 +2917,7 @@ button {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  padding: var(--gap-group) 0;
 }
 .interactive-fretboard > div:last-child {
   flex: 1;
@@ -2896,20 +2927,8 @@ button {
 }
 /* fretboard-wrapper, fretboard-container, and svg.fretboard
    inherit flex-chain-friendly sizing from general rules. */
-.interactive-fretboard-status {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  gap: var(--gap-section);
-  margin: 0 0 var(--gap-group) 0;
-}
-.interactive-fretboard-progress {
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
-  line-height: var(--type-metric-info-leading);
-  color: var(--type-metric-info-color);
-  font-variant-numeric: tabular-nums;
-}
+/* interactive-fretboard-status and interactive-fretboard-progress removed:
+   answer counter is no longer shown (free-entry mode). */
 .speed-tap-stats {
   font-size: var(--text-xs);
 }

@@ -14,7 +14,7 @@ import {
 } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
-  ALL_GROUP_INDICES,
+  ALL_GROUP_IDS,
   ALL_ITEMS,
   ALL_KEY_GROUPS,
   getItemIdsForGroup,
@@ -67,14 +67,15 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
     kind: 'groups',
     groups: ALL_KEY_GROUPS,
     getItemIdsForGroup,
-    allGroupIndices: ALL_GROUP_INDICES,
+    allGroupIds: ALL_GROUP_IDS,
     storageKey: 'keySignatures_enabledGroups',
     scopeLabel: 'Keys',
-    defaultEnabled: [0],
+    defaultEnabled: [ALL_GROUP_IDS[0]],
     formatLabel: (groups) => {
       if (groups.size === ALL_KEY_GROUPS.length) return 'all keys';
-      const keys = [...groups].sort((a, b) => a - b)
-        .flatMap((g) => ALL_KEY_GROUPS[g].keys)
+      const keys = ALL_KEY_GROUPS
+        .filter((g) => groups.has(g.id))
+        .flatMap((g) => g.keys)
         .map((k) => displayNote(k));
       return keys.join(', ');
     },

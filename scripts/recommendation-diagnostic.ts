@@ -133,7 +133,7 @@ function autoSessionName(): string {
 // ---------------------------------------------------------------------------
 
 function analyzeScenario(
-  groupStats: Record<number, GroupSpec>,
+  groupStats: Record<string, GroupSpec>,
   now: number,
 ): Omit<
   SerializedRow,

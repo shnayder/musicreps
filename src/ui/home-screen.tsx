@@ -6,7 +6,7 @@ import type { ComponentChildren } from 'preact';
 import { useCallback, useMemo, useState } from 'preact/hooks';
 import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
 import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
-import { getGlobalEffort } from '../effort.ts';
+import { getGlobalEffort, toLocalDateString } from '../effort.ts';
 import { SkillIcon } from './icons.tsx';
 import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
@@ -296,10 +296,13 @@ function ActiveSkillsList(
 ) {
   if (starred.size === 0) {
     return (
-      <p class='active-skills-empty'>
-        Pick the skills you want to drill. Star them in{' '}
-        <strong>All Skills</strong> to build your lineup.
-      </p>
+      <div>
+        <h2 class='tab-panel-title'>Active Skills</h2>
+        <p class='active-skills-empty'>
+          Pick the skills you want to drill. Star them in{' '}
+          <strong>All Skills</strong> to build your lineup.
+        </p>
+      </div>
     );
   }
 
@@ -350,6 +353,7 @@ function ActiveSkillsList(
 
   return (
     <div class='active-skills-list'>
+      <h2 class='tab-panel-title'>Active Skills</h2>
       {allDone && (
         <p class='active-skills-done'>
           All your starred skills are automatic. Nice work! Star new skills in
@@ -411,13 +415,13 @@ function SettingsAboutLegal(
   { appConfig, version }: { appConfig: AppConfig; version: string },
 ) {
   return (
-    <div>
+    <>
       <section class='settings-section'>
         <h2 class='settings-section-title'>About</h2>
         <div class='settings-link-list'>
           {appConfig.contactEmail && (
             <a class='text-link' href={`mailto:${appConfig.contactEmail}`}>
-              Contact: {appConfig.contactEmail}
+              Contact
             </a>
           )}
           {appConfig.supportUrl && (
@@ -430,7 +434,7 @@ function SettingsAboutLegal(
               Support
             </a>
           )}
-          <div class='settings-meta'>Build number: {version}</div>
+          <span class='settings-meta'>Build {version}</span>
         </div>
       </section>
 
@@ -459,7 +463,7 @@ function SettingsAboutLegal(
           )}
         </div>
       </section>
-    </div>
+    </>
   );
 }
 
@@ -479,6 +483,7 @@ export function SettingsPanel(
 ) {
   return (
     <div class='settings-page'>
+      <h2 class='tab-panel-title'>Settings</h2>
       <section class='settings-section'>
         <h2 class='settings-section-title'>General</h2>
         <SettingToggle
@@ -500,9 +505,12 @@ export function SettingsPanel(
 
       {onOpenDev && (
         <section class='settings-section'>
-          <button type='button' class='text-link' onClick={onOpenDev}>
-            Dev panel
-          </button>
+          <h2 class='settings-section-title'>Developer</h2>
+          <div class='settings-link-list'>
+            <button type='button' class='text-link' onClick={onOpenDev}>
+              Dev panel
+            </button>
+          </div>
         </section>
       )}
     </div>
@@ -611,6 +619,7 @@ function AllSkillsList(
 ) {
   return (
     <div class='home-modes'>
+      <h2 class='tab-panel-title'>All Skills</h2>
       <p class='all-skills-hint'>
         Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
         {' '}
@@ -662,8 +671,9 @@ function loadInitialTab(): HomeTab {
 // ---------------------------------------------------------------------------
 
 function HomeHeader(
-  { isNativeApp, totalReps, daysActive }: {
+  { isNativeApp, repsToday, totalReps, daysActive }: {
     isNativeApp?: boolean;
+    repsToday: number;
     totalReps: number;
     daysActive: number;
   },
@@ -683,8 +693,15 @@ function HomeHeader(
       )}
       <div class='home-stats-bar'>
         <span class='home-stat'>
+          <span class='home-stat-value'>
+            {repsToday.toLocaleString()}
+          </span>
+          {' today'}
+        </span>
+        <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
+        <span class='home-stat'>
           <span class='home-stat-value'>{totalReps.toLocaleString()}</span>
-          {' reps'}
+          {' total'}
         </span>
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
@@ -853,6 +870,7 @@ export function HomeScreen(
       <LayoutHeader>
         <HomeHeader
           isNativeApp={isNativeApp}
+          repsToday={globalEffort.dailyReps[toLocalDateString(new Date())] ?? 0}
           totalReps={globalEffort.totalReps}
           daysActive={globalEffort.daysActive}
         />

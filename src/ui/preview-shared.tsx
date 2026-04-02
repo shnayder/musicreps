@@ -4,7 +4,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { NOTES } from '../music-data.ts';
-import { fretboardSVG } from '../html-helpers.ts';
+import { fretboardSVG } from '../fretboard.ts';
 import type { StatsSelector } from './stats.tsx';
 import { CommentArea, CommentBubble } from './preview-comments.tsx';
 

@@ -69,16 +69,14 @@ describe('chord spelling — batch text input (E2E)', () => {
     const promptText = await page.textContent(`${MODE} .quiz-prompt`);
     assert.ok(promptText, 'should have a chord prompt');
 
-    // Read the placeholder to know how many notes are expected
+    // Major/minor triads have 3 notes; placeholder no longer shows count
+    const noteCount = 3;
     const input = page.locator(`${MODE} .answer-input`);
     await input.waitFor({ state: 'visible', timeout: 3000 });
-    const placeholder = await input.getAttribute('placeholder') ?? '';
-    const noteCountMatch = placeholder.match(/^(\d+) notes/);
-    const noteCount = noteCountMatch ? parseInt(noteCountMatch[1], 10) : 3;
 
     // Submit a batch of note names (may be wrong, that's fine — we're testing
     // the UI flow, not musical correctness)
-    const testNotes = ['C', 'E', 'G', 'B'].slice(0, noteCount).join(' ');
+    const testNotes = ['C', 'E', 'G'].slice(0, noteCount).join(' ');
     await input.fill(testNotes);
     await input.press('Enter');
 
@@ -99,27 +97,29 @@ describe('chord spelling — batch text input (E2E)', () => {
     await page.waitForSelector(`${MODE}.phase-idle`, { timeout: 3000 });
   });
 
-  it('wrong note count is rejected with shake', async () => {
+  it('wrong note count via batch shows wrong feedback', async () => {
     await startQuiz(page, MODE_ID);
 
-    // Read expected count from placeholder
+    // Submit fewer notes than expected (major/minor triads need 3)
     const input = page.locator(`${MODE} .answer-input`);
     await input.waitFor({ state: 'visible', timeout: 3000 });
-    const placeholder = await input.getAttribute('placeholder') ?? '';
-    const noteCountMatch = placeholder.match(/^(\d+) notes/);
-    const noteCount = noteCountMatch ? parseInt(noteCountMatch[1], 10) : 3;
 
-    // Submit fewer notes than expected
-    const tooFew = noteCount > 1 ? 'C' : '';
-    await input.fill(tooFew);
+    await input.fill('C');
     await input.press('Enter');
 
-    // Should show shake animation (rejected)
-    const cls = await input.getAttribute('class') ?? '';
-    assert.ok(
-      cls.includes('answer-input-shake'),
-      `should show shake on wrong note count: "${cls}"`,
-    );
+    // Should evaluate as wrong (1 note ≠ 3 expected) and show Next button
+    const nextBtn = page.locator(`${MODE} .next-btn`);
+    await nextBtn.waitFor({ state: 'visible', timeout: 3000 });
+
+    // The single slot should show the entered note
+    const slots = page.locator(`${MODE} .seq-slot`);
+    const slotCount = await slots.count();
+    assert.ok(slotCount >= 1, `should have at least 1 slot, got ${slotCount}`);
+
+    // Correct answer row should appear (since count mismatches)
+    const correctRow = page.locator(`${MODE} .seq-correct-row`);
+    const hasCorrectRow = await correctRow.isVisible().catch(() => false);
+    assert.ok(hasCorrectRow, 'should show correct answer when count is wrong');
 
     // Cleanup
     await page.keyboard.press('Escape');
@@ -143,15 +143,11 @@ describe('chord spelling — button input (E2E)', () => {
     await page?.context().close();
   });
 
-  it('button-by-button input fills slots and evaluates', async () => {
+  it('button-by-button input fills slots and evaluates on Check', async () => {
     await startQuiz(page, MODE_ID);
 
-    // Read expected count from placeholder
-    const input = page.locator(`${MODE} .answer-input`);
-    await input.waitFor({ state: 'visible', timeout: 3000 });
-    const placeholder = await input.getAttribute('placeholder') ?? '';
-    const noteCountMatch = placeholder.match(/^(\d+) notes/);
-    const noteCount = noteCountMatch ? parseInt(noteCountMatch[1], 10) : 3;
+    // Major/minor triads have 3 notes
+    const noteCount = 3;
 
     // Split-note buttons: two grids in an answer-grid-stack.
     // First grid = base notes (C D E F G A B), second = accidentals (♭ ♮ ♯).
@@ -171,15 +167,29 @@ describe('chord spelling — button input (E2E)', () => {
       await page.waitForTimeout(100);
     }
 
-    // Should see feedback (Next button visible after all notes collected)
-    const nextBtn = page.locator(`${MODE} .next-btn`);
-    const nextVisible = await nextBtn.isVisible().catch(() => false);
+    // Sequential slots should show filled entries (not yet evaluated)
+    const filledSlots = page.locator(`${MODE} .seq-slot.filled`);
+    const filledCount = await filledSlots.count();
     assert.ok(
-      nextVisible,
-      'Next button should appear after all notes submitted',
+      filledCount >= noteCount,
+      `should have ${noteCount} filled slots, got ${filledCount}`,
     );
 
-    // Sequential slots should show results
+    // Check button should be visible (no auto-submit)
+    const checkBtn = page.locator(`${MODE} .next-btn`);
+    await checkBtn.waitFor({ state: 'visible', timeout: 3000 });
+    const checkText = await checkBtn.textContent();
+    assert.ok(
+      checkText?.includes('Check'),
+      `should show Check button, got "${checkText}"`,
+    );
+    await checkBtn.click();
+
+    // After clicking Check, Next button should appear
+    const nextBtn = page.locator(`${MODE} .next-btn`);
+    await nextBtn.waitFor({ state: 'visible', timeout: 3000 });
+
+    // Sequential slots should show evaluated results
     const evaluatedSlots = page.locator(`${MODE} .seq-slot`);
     const evaluatedCount = await evaluatedSlots.count();
     assert.ok(

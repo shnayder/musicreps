@@ -20,26 +20,31 @@ import { buildMathIds, parseMathId } from '../../mode-utils.ts';
 // Labels use: \u00B1 = ± (plus-minus), \u2013 = – (en dash)
 export const DISTANCE_GROUPS = [
   {
+    id: 'dist-1-2',
     distances: [1, 2],
     label: '\u00B11\u20132',
     longLabel: '1\u20132 semitones apart',
   },
   {
+    id: 'dist-3-4',
     distances: [3, 4],
     label: '\u00B13\u20134',
     longLabel: '3\u20134 semitones apart',
   },
   {
+    id: 'dist-5-6',
     distances: [5, 6],
     label: '\u00B15\u20136',
     longLabel: '5\u20136 semitones apart',
   },
   {
+    id: 'dist-7-8',
     distances: [7, 8],
     label: '\u00B17\u20138',
     longLabel: '7\u20138 semitones apart',
   },
   {
+    id: 'dist-9-11',
     distances: [9, 10, 11],
     label: '\u00B19\u201311',
     longLabel: '9\u201311 semitones apart',
@@ -49,13 +54,14 @@ export const DISTANCE_GROUPS = [
 /**
  * Get all item IDs belonging to a distance group.
  *
- * @example getItemIdsForGroup(0) → ["C+1","C-1","C+2","C-2","C#+1","C#-1",...]
+ * @example getItemIdsForGroup('dist-1-2') → ["C+1","C-1","C+2","C-2","C#+1","C#-1",...]
  */
-export function getItemIdsForGroup(groupIndex: number): string[] {
-  const distances = DISTANCE_GROUPS[groupIndex].distances;
+export function getItemIdsForGroup(groupId: string): string[] {
+  const group = DISTANCE_GROUPS.find((g) => g.id === groupId);
+  if (!group) return [];
   const items: string[] = [];
   for (const note of NOTES) {
-    for (const d of distances) {
+    for (const d of group.distances) {
       items.push(note.name + '+' + d);
       items.push(note.name + '-' + d);
     }
@@ -69,7 +75,7 @@ export const ALL_ITEMS: string[] = buildMathIds(
   Array.from({ length: 11 }, (_, i) => i + 1),
 );
 
-export const ALL_GROUP_INDICES = DISTANCE_GROUPS.map((_, i) => i);
+export const ALL_GROUP_IDS: string[] = DISTANCE_GROUPS.map((g) => g.id);
 
 // ---------------------------------------------------------------------------
 // Question

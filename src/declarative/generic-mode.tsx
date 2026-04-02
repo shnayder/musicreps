@@ -69,6 +69,7 @@ import {
   progressBarColors,
 } from '../stats-display.ts';
 import {
+  type LevelProgressEntry,
   ModeTopBar,
   PracticeTab,
   QuizSession,
@@ -441,9 +442,6 @@ function SequentialQuizArea<Q>(
             ? ctrl.renderPrompt(currentQ)
             : <div class='quiz-prompt'>{promptText}</div>}
           <SequentialSlots
-            expectedCount={currentQ && def.sequential
-              ? def.sequential.expectedCount(currentQ)
-              : 0}
             entries={seq.entries}
             evaluated={seq.evaluated}
             correctTones={seq.correctAnswer
@@ -477,10 +475,12 @@ function SequentialQuizArea<Q>(
 // ---------------------------------------------------------------------------
 
 function MultiTapQuizArea(
-  { multiTapInput, promptText, instruction }: {
+  { multiTapInput, promptText, instruction, stringCount, mutedStrings }: {
     multiTapInput: MultiTapInputHandle;
     promptText: string;
     instruction?: string;
+    stringCount?: number;
+    mutedStrings?: ReadonlySet<number>;
   },
 ) {
   // Multi-tap modes render prompt text + interactive fretboard.
@@ -496,7 +496,8 @@ function MultiTapQuizArea(
             onTap={multiTapInput.handleTap}
             tappedPositions={multiTapInput.tappedPositions}
             evaluated={multiTapInput.evaluated}
-            progressText={multiTapInput.progressText}
+            stringCount={stringCount}
+            mutedStrings={mutedStrings}
           />
         </>
       }
@@ -596,7 +597,7 @@ type QuizActiveViewProps<Q> = {
   ctrl: ModeController<Q>;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
-  progressColors: string[];
+  levelBars: LevelProgressEntry[];
   handleSubmit: (input: string) => boolean;
   seq: {
     entries: { display: string }[];
@@ -604,6 +605,7 @@ type QuizActiveViewProps<Q> = {
     correctAnswer: string;
     handleInput: (input: string) => void;
     handleBatch: (text: string) => boolean;
+    handleCheck: () => void;
   };
   multiTapInput: MultiTapInputHandle;
   activeButtons: ButtonsDef;
@@ -626,7 +628,7 @@ function QuizActiveView<Q>(
     ctrl,
     currentQ,
     round,
-    progressColors,
+    levelBars,
     handleSubmit,
     seq,
     multiTapInput,
@@ -651,7 +653,7 @@ function QuizActiveView<Q>(
               heading='Round complete'
               count={engine.state.roundAnswered}
               correct={round.roundCorrect}
-              progressColors={progressColors}
+              levelBars={levelBars}
             />
           </CenteredContent>
         </LayoutMain>
@@ -671,12 +673,19 @@ function QuizActiveView<Q>(
       : def.quizInstruction)
     : undefined;
 
+  const mtMutedStrings = useMemo(() => {
+    if (!def.multiTap?.getMutedStrings || !currentQ) return undefined;
+    return new Set(def.multiTap.getMutedStrings(currentQ));
+  }, [def, currentQ]);
+
   const quizContent = def.multiTap
     ? (
       <MultiTapQuizArea
         multiTapInput={multiTapInput}
         promptText={promptText}
         instruction={instruction}
+        stringCount={def.multiTap.stringCount}
+        mutedStrings={mtMutedStrings}
       />
     )
     : def.sequential
@@ -730,6 +739,14 @@ function QuizActiveView<Q>(
           hint={engine.state.hintText || undefined}
           correct={engine.state.feedbackCorrect}
           onNext={engine.state.answered ? engine.nextQuestion : undefined}
+          onCheck={!engine.state.answered
+            ? (def.sequential && !seq.evaluated && seq.entries.length > 0
+              ? seq.handleCheck
+              : def.multiTap && !multiTapInput.evaluated &&
+                  multiTapInput.tappedPositions.size > 0
+              ? multiTapInput.handleCheck
+              : undefined)
+            : undefined}
           label={engine.state.roundTimerExpired ? 'Continue' : 'Next'}
           notice={engine.state.roundTimerExpired && !engine.state.answered
             ? 'Last question'
@@ -759,9 +776,10 @@ function GroupPracticeContent<Q>(
   const groupScope = def.scope.kind === 'groups' ? def.scope : null;
   if (!groupScope) return null;
 
-  const groupLabels = groupScope.allGroupIndices.map((i) =>
-    resolveGroupLabel(groupScope.groups[i].label)
-  );
+  const groupLabels = groupScope.allGroupIds.map((id) => {
+    const g = groupScope.groups.find((g) => g.id === id);
+    return g ? resolveGroupLabel(g.label) : id;
+  });
 
   return (
     <>
@@ -774,6 +792,7 @@ function GroupPracticeContent<Q>(
         customContent={
           <LevelToggles
             labels={groupLabels}
+            groupIds={groupScope.allGroupIds}
             active={groupScopeResult.practiceMode === 'custom'
               ? groupScopeResult.enabledGroups
               : groupScopeResult.suggestedScope}
@@ -797,32 +816,37 @@ function LevelProgressCards<Q>(
   if (!groupScope) return null;
   return (
     <div class='level-progress-cards'>
-      {groupScope.allGroupIndices.map((i) => {
-        const itemIds = groupScope.getItemIdsForGroup(i);
+      {groupScope.allGroupIds.map((id) => {
+        const g = groupScope.groups.find((g) => g.id === id);
+        const itemIds = groupScope.getItemIdsForGroup(id);
         const colors = progressBarColors(learner.selector, itemIds);
         const pill = computeReviewPill(learner.selector, itemIds);
-        const skipReason = groupScopeResult.skippedGroups.get(i);
+        const skipReason = groupScopeResult.skippedGroups.get(id);
         const status = skipReason === 'mastered'
           ? 'known' as const
           : skipReason === 'deferred'
           ? 'skipped' as const
           : 'normal' as const;
+        const label = g
+          ? resolveGroupLabel(
+            g.longLabel ?? g.label,
+          )
+          : id;
         return (
           <LevelProgressCard
-            key={i}
-            label={groupScope.groups[i].longLabel ??
-              resolveGroupLabel(groupScope.groups[i].label)}
+            key={id}
+            label={label}
             pill={pill ?? undefined}
             colors={colors}
             status={status}
             onToggleKnown={() =>
               skipReason === 'mastered'
-                ? groupScopeResult.scopeActions.unskipGroup(i)
-                : groupScopeResult.scopeActions.skipGroup(i, 'mastered')}
+                ? groupScopeResult.scopeActions.unskipGroup(id)
+                : groupScopeResult.scopeActions.skipGroup(id, 'mastered')}
             onToggleSkip={() =>
               skipReason === 'deferred'
-                ? groupScopeResult.scopeActions.unskipGroup(i)
-                : groupScopeResult.scopeActions.skipGroup(i, 'deferred')}
+                ? groupScopeResult.scopeActions.unskipGroup(id)
+                : groupScopeResult.scopeActions.skipGroup(id, 'deferred')}
           />
         );
       })}
@@ -924,7 +948,7 @@ function IdlePracticeView<Q>(
       progressExtra={hasGroups
         ? (
           <>
-            <Text role='heading-section'>Levels</Text>
+            <Text role='heading-section'>Level progress</Text>
             <LevelProgressCards
               def={def}
               learner={learner}
@@ -1000,7 +1024,7 @@ function AboutTab(
 // GenericMode component
 // ---------------------------------------------------------------------------
 
-const EMPTY_GROUPS: ReadonlySet<number> = new Set();
+const EMPTY_GROUPS: ReadonlySet<string> = new Set();
 
 // ---------------------------------------------------------------------------
 // Engine setup hook — refs, sequential input, engine config, engine creation
@@ -1100,7 +1124,7 @@ function buildGroupScopeSpec<Q>(
   return {
     groups: def.scope.groups,
     getItemIdsForGroup: def.scope.getItemIdsForGroup,
-    allGroupIndices: def.scope.allGroupIndices,
+    allGroupIds: def.scope.allGroupIds,
     storageKey: def.scope.storageKey,
     scopeLabel: def.scope.scopeLabel,
     defaultEnabled: def.scope.defaultEnabled,
@@ -1205,6 +1229,7 @@ function buildSeqProps(seqInput: ReturnType<typeof useSequentialInput>) {
     correctAnswer: seqInput.seqCorrectAnswer,
     handleInput: seqInput.handleSeqInput,
     handleBatch: seqInput.handleSeqBatch,
+    handleCheck: seqInput.handleCheck,
   };
 }
 
@@ -1291,16 +1316,16 @@ function useProgressColors<Q>(
   def: ModeDefinition<Q>,
   learner: ReturnType<typeof useLearnerModel>,
   _phase: string,
-  skippedGroups?: ReadonlyMap<number, unknown>,
+  skippedGroups?: ReadonlyMap<string, unknown>,
 ): string[] {
   return useMemo(() => {
     if (def.scope.kind === 'groups') {
       const scope = def.scope;
       return computeProgressColors(learner.selector, {
         kind: 'groups',
-        groups: scope.allGroupIndices.map((i) => ({
-          index: i,
-          itemIds: scope.getItemIdsForGroup(i),
+        groups: scope.allGroupIds.map((id) => ({
+          id,
+          itemIds: scope.getItemIdsForGroup(id),
         })),
         skippedGroups,
       });
@@ -1310,6 +1335,38 @@ function useProgressColors<Q>(
       itemIds: def.allItems,
     });
   }, [def, learner.selector, _phase, skippedGroups]);
+}
+
+/** Per-level progress bars for the round-complete screen.
+ *  For group-based modes: one labeled bar per enabled group.
+ *  For non-group modes: single unlabeled bar with all items.
+ *  Only computed during round-complete phase to avoid unnecessary work. */
+function useLevelBars<Q>(
+  def: ModeDefinition<Q>,
+  learner: ReturnType<typeof useLearnerModel>,
+  _phase: string,
+  groupScopeResult: ReturnType<typeof useGroupScope> | null,
+): LevelProgressEntry[] {
+  const enabledGroups = groupScopeResult?.enabledGroups;
+  return useMemo(() => {
+    if (_phase !== 'round-complete') return [];
+    if (def.scope.kind === 'groups' && enabledGroups) {
+      const scope = def.scope;
+      return scope.allGroupIds
+        .filter((id) => enabledGroups.has(id))
+        .map((id) => {
+          const g = scope.groups.find((g) => g.id === id);
+          const label = g ? resolveGroupLabel(g.longLabel ?? g.label) : id;
+          const colors = progressBarColors(
+            learner.selector,
+            scope.getItemIdsForGroup(id),
+          );
+          return { id, label, colors };
+        });
+    }
+    const colors = progressBarColors(learner.selector, def.allItems);
+    return colors.length > 0 ? [{ id: '_all', label: '', colors }] : [];
+  }, [def, learner.selector, _phase, enabledGroups]);
 }
 
 /** Render SkillHeader (idle) or minimal ModeTopBar (active/calibration). */
@@ -1365,6 +1422,7 @@ function GenericModeBody<Q>(
   const isIdle = phase === 'idle' && !sc.speedCheck;
   const skipped = groupScopeResult?.skippedGroups;
   const progressColors = useProgressColors(def, learner, phase, skipped);
+  const levelBars = useLevelBars(def, learner, phase, groupScopeResult);
   const totalReps = useMemo(() => {
     let sum = 0;
     for (const id of def.allItems) {
@@ -1422,7 +1480,7 @@ function GenericModeBody<Q>(
       ctrl={ctrl}
       currentQ={currentQ}
       round={round}
-      progressColors={progressColors}
+      levelBars={levelBars}
       handleSubmit={handleSubmit}
       seq={buildSeqProps(seqInput)}
       multiTapInput={multiTapInput}

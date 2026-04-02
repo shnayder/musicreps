@@ -13,7 +13,7 @@ import {
 } from '../../mode-catalog.ts';
 import type { ModeDefinition } from '../../declarative/types.ts';
 import {
-  ALL_GROUP_INDICES,
+  ALL_GROUP_IDS,
   ALL_ITEMS,
   DISTANCE_GROUPS,
   getGridItemId,
@@ -52,14 +52,15 @@ export const SEMITONE_MATH_DEF: ModeDefinition<Question> = {
     kind: 'groups',
     groups: DISTANCE_GROUPS,
     getItemIdsForGroup,
-    allGroupIndices: ALL_GROUP_INDICES,
+    allGroupIds: ALL_GROUP_IDS,
     storageKey: 'semitoneMath_enabledGroups',
     scopeLabel: 'Distances',
-    defaultEnabled: [0],
+    defaultEnabled: [ALL_GROUP_IDS[0]],
     formatLabel: (groups) => {
       if (groups.size === DISTANCE_GROUPS.length) return 'all distances';
-      const labels = [...groups].sort((a, b) => a - b)
-        .map((g) => DISTANCE_GROUPS[g].label);
+      const labels = DISTANCE_GROUPS
+        .filter((g) => groups.has(g.id))
+        .map((g) => g.label);
       return labels.join(', ') + ' semitones';
     },
   },

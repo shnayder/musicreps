@@ -89,11 +89,11 @@ describe('computeAllProgress', () => {
   });
 
   it('filters skipped groups via getSkipped', () => {
-    // Skip groups 0 and 1 of keySignatures (4 groups total)
+    // Skip groups major-easy and major-hard of keySignatures (4 groups total)
     // All unseen → empty regardless of skips
-    const skipped = new Set([0, 1]);
+    const skipped = new Set(['major-easy', 'major-hard']);
     const getSkipped = (ns: string) =>
-      ns === 'keySignatures' ? skipped : new Set<number>();
+      ns === 'keySignatures' ? skipped : new Set<string>();
     const result = computeAllProgress(emptyStorageFactory(), null, getSkipped);
     const ks = result.get('keySignatures')!;
     assert.equal(ks.groupColors.length, 0); // all unseen → empty
@@ -124,7 +124,7 @@ describe('computeProgressForMode', () => {
   it('single-group mode skipped yields empty', () => {
     const entry = getModeProgress('noteSemitones')!;
     const storage = createMemoryStorage();
-    const skipped = new Set([0]);
+    const skipped = new Set(['all']);
     const result = computeProgressForMode(entry, storage, null, skipped);
     assert.equal(result.groupColors.length, 0);
   });
@@ -163,7 +163,7 @@ describe('computeProgressForMode', () => {
     for (const g of entry.groups) {
       seedAutomatic(storage, g.getItemIds(), now);
     }
-    const skipped = new Set([1, 3]);
+    const skipped = new Set(['major-hard', 'minor-hard']);
     const result = computeProgressForMode(entry, storage, null, skipped);
     assert.equal(result.groupColors.length, 2); // 4 - 2 skipped
   });
@@ -171,7 +171,12 @@ describe('computeProgressForMode', () => {
   it('returns empty when all groups skipped', () => {
     const entry = getModeProgress('keySignatures')!; // 4 groups
     const storage = createMemoryStorage();
-    const skipped = new Set([0, 1, 2, 3]);
+    const skipped = new Set([
+      'major-easy',
+      'major-hard',
+      'minor-easy',
+      'minor-hard',
+    ]);
     const result = computeProgressForMode(entry, storage, null, skipped);
     assert.equal(result.groupColors.length, 0);
   });
@@ -233,7 +238,7 @@ describe('computeAllProgress performance', () => {
     }
 
     const factory = (ns: string) => storageMap.get(ns) ?? createMemoryStorage();
-    const noSkips = () => new Set<number>();
+    const noSkips = () => new Set<string>();
 
     // Warm up
     computeAllProgress(factory, 950, noSkips);

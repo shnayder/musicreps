@@ -144,6 +144,8 @@ const MODE_ICONS: Record<string, () => preact.JSX.Element> = {
   scaleDegrees: Signal,
   diatonicChords: ListOrdered,
   chordSpelling: SpellCheck,
+  guitarChordShapes: Guitar,
+  ukuleleChordShapes: Guitar,
 };
 
 export function SkillIcon({ modeId }: { modeId: string }) {
