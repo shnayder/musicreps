@@ -49,14 +49,20 @@ export function FeedbackDisplay(
       </ActionButton>
     );
   } else if (onCheck) {
-    button = (
-      <>
-        {notice && <div class='feedback-notice'>{notice}</div>}
+    button = notice
+      ? (
+        <div class='feedback-check-row'>
+          <span class='feedback-notice-inline'>{notice}</span>
+          <ActionButton variant='primary' class='next-btn' onClick={onCheck}>
+            Check
+          </ActionButton>
+        </div>
+      )
+      : (
         <ActionButton variant='primary' class='next-btn' onClick={onCheck}>
           Check
         </ActionButton>
-      </>
-    );
+      );
   } else {
     button = (
       <ActionButton

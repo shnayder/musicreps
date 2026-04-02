@@ -739,9 +739,10 @@ function QuizActiveView<Q>(
           correct={engine.state.feedbackCorrect}
           onNext={engine.state.answered ? engine.nextQuestion : undefined}
           onCheck={!engine.state.answered
-            ? (def.sequential && seq.entries.length > 0
+            ? (def.sequential && !seq.evaluated && seq.entries.length > 0
               ? seq.handleCheck
-              : def.multiTap && multiTapInput.tappedPositions.size > 0
+              : def.multiTap && !multiTapInput.evaluated &&
+                  multiTapInput.tappedPositions.size > 0
               ? multiTapInput.handleCheck
               : undefined)
             : undefined}
