@@ -3127,7 +3127,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="40d575 skill-move-tabs-icons-Jlqqu"></div>
+  <div class="home-screen" id="home-screen" data-version="0bc4a4 skill-move-tabs-icons-Jlqqu"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -7057,22 +7057,25 @@ body.native-app {
   };
   function TabIcon({ icon, text }) {
     const paths = TAB_ICONS[icon] ?? "";
-    return /* @__PURE__ */ u3("span", { class: "tab-icon-label", "aria-label": text, children: /* @__PURE__ */ u3(
-      "svg",
-      {
-        xmlns: "http://www.w3.org/2000/svg",
-        width: "24",
-        height: "24",
-        viewBox: "0 0 24 24",
-        fill: "none",
-        stroke: "currentColor",
-        "stroke-width": "2",
-        "stroke-linecap": "round",
-        "stroke-linejoin": "round",
-        "aria-hidden": "true",
-        dangerouslySetInnerHTML: { __html: paths }
-      }
-    ) });
+    return /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
+      /* @__PURE__ */ u3(
+        "svg",
+        {
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "24",
+          height: "24",
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: "currentColor",
+          "stroke-width": "2",
+          "stroke-linecap": "round",
+          "stroke-linejoin": "round",
+          "aria-hidden": "true",
+          dangerouslySetInnerHTML: { __html: paths }
+        }
+      ),
+      /* @__PURE__ */ u3("span", { class: "sr-only", children: text })
+    ] });
   }
   function BaselineInfo({ baseline, onRun }) {
     const value = baseline ? (baseline / 1e3).toFixed(1) + "s" : "1s";
@@ -7124,7 +7127,10 @@ body.native-app {
     const tabs = [
       {
         id: "practice",
-        label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", "aria-label": "Practice", children: /* @__PURE__ */ u3(RepeatMark, { size: 24 }) }),
+        label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
+          /* @__PURE__ */ u3(RepeatMark, { size: 24 }),
+          /* @__PURE__ */ u3("span", { class: "sr-only", children: "Practice" })
+        ] }),
         content: practiceContent ?? /* @__PURE__ */ u3(
           PracticeCard,
           {

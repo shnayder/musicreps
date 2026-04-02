@@ -5758,22 +5758,25 @@ ${text}`).join("\n\n");
   };
   function TabIcon({ icon, text }) {
     const paths = TAB_ICONS[icon] ?? "";
-    return /* @__PURE__ */ u3("span", { class: "tab-icon-label", "aria-label": text, children: /* @__PURE__ */ u3(
-      "svg",
-      {
-        xmlns: "http://www.w3.org/2000/svg",
-        width: "24",
-        height: "24",
-        viewBox: "0 0 24 24",
-        fill: "none",
-        stroke: "currentColor",
-        "stroke-width": "2",
-        "stroke-linecap": "round",
-        "stroke-linejoin": "round",
-        "aria-hidden": "true",
-        dangerouslySetInnerHTML: { __html: paths }
-      }
-    ) });
+    return /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
+      /* @__PURE__ */ u3(
+        "svg",
+        {
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "24",
+          height: "24",
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: "currentColor",
+          "stroke-width": "2",
+          "stroke-linecap": "round",
+          "stroke-linejoin": "round",
+          "aria-hidden": "true",
+          dangerouslySetInnerHTML: { __html: paths }
+        }
+      ),
+      /* @__PURE__ */ u3("span", { class: "sr-only", children: text })
+    ] });
   }
 
   // src/mode-catalog.ts
@@ -8739,7 +8742,10 @@ ${text}`).join("\n\n");
           tabs: [
             {
               id: "practice",
-              label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", "aria-label": "Practice", children: /* @__PURE__ */ u3(RepeatMark, { size: 24 }) }),
+              label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
+                /* @__PURE__ */ u3(RepeatMark, { size: 24 }),
+                /* @__PURE__ */ u3("span", { class: "sr-only", children: "Practice" })
+              ] }),
               content: /* @__PURE__ */ u3("div", { style: "padding:var(--pad-component)", children: "Practice content" })
             },
             {
@@ -9068,7 +9074,10 @@ ${text}`).join("\n\n");
     const tabs = [
       {
         id: "practice",
-        label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", "aria-label": "Practice", children: /* @__PURE__ */ u3(RepeatMark, { size: 24 }) }),
+        label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
+          /* @__PURE__ */ u3(RepeatMark, { size: 24 }),
+          /* @__PURE__ */ u3("span", { class: "sr-only", children: "Practice" })
+        ] }),
         content: null
       },
       {
