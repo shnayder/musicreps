@@ -883,7 +883,7 @@ body {
   line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
-  margin: 0 0 var(--gap-group);
+  margin: 0 0 var(--gap-related);
   text-align: center;
 }
 /* Shared pill/badge component */
@@ -1182,19 +1182,14 @@ body {
 }
 .settings-section-title {
   margin: 0 0 var(--gap-related);
-  font-size: var(--type-label-size);
-  font-weight: var(--type-label-weight);
-  line-height: var(--type-label-leading);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: var(--text-base);
 }
 .settings-link-list {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
-.settings-link-list .text-link {
+.settings-page .text-link {
   font-size: var(--type-label-size);
   padding: var(--gap-related) 0;
   min-height: 0;
@@ -6780,7 +6775,7 @@ ${text}`).join("\n\n");
       /* @__PURE__ */ u3(SettingsAboutLegal, { appConfig, version }),
       onOpenDev && /* @__PURE__ */ u3("section", { class: "settings-section", children: [
         /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "Developer" }),
-        /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" })
+        /* @__PURE__ */ u3("div", { class: "settings-link-list", children: /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) })
       ] })
     ] });
   }
