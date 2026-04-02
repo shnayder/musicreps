@@ -2670,12 +2670,18 @@ button {
   visibility: hidden;
 }
 .feedback-notice {
-  text-align: center;
+  /* Match .next-btn / .page-action-btn box so swapping notice ↔ button
+     never changes the slot height and the layout stays stable. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: var(--gap-group) var(--pad-region);
+  margin: var(--pad-component) auto var(--gap-related);
   font-size: var(--type-quiz-feedback-size);
   font-weight: var(--type-quiz-feedback-weight);
   line-height: var(--type-quiz-feedback-leading);
   color: var(--color-notice);
-  padding: var(--pad-component) 0;
 }
 
 /* ==========================================================================
@@ -3134,6 +3140,7 @@ body.native-app {
 
   .next-btn,
   .start-btn,
+  .feedback-notice,
   .page-action-row {
     width: 80%;
   }
@@ -3148,7 +3155,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1194"></div>
+  <div class="home-screen" id="home-screen" data-version="#1196"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
