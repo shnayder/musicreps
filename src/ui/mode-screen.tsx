@@ -420,7 +420,11 @@ export function QuizArea(
 // ---------------------------------------------------------------------------
 
 /** Per-level progress entry: label + color array for one level. */
-export type LevelProgressEntry = { label: string; colors: string[] };
+export type LevelProgressEntry = {
+  id: string;
+  label: string;
+  colors: string[];
+};
 
 export function RoundCompleteInfo(
   { heading, count, correct, levelBars }: {
@@ -448,7 +452,7 @@ export function RoundCompleteInfo(
         <div class='round-complete-progress'>
           {levelBars.map((entry) => (
             <ProgressBarLabeled
-              key={entry.label}
+              key={entry.id}
               label={entry.label}
               colors={entry.colors}
             />

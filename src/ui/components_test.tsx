@@ -789,8 +789,8 @@ describe('QuizArea', () => {
 describe('RoundCompleteInfo', () => {
   it('renders heading, count, stats, and level progress bars', () => {
     const levelBars = [
-      { label: 'E strings', colors: ['hsl(125,48,33)'] },
-      { label: 'A string', colors: ['hsl(40,60,58)'] },
+      { id: 'e', label: 'E strings', colors: ['hsl(125,48,33)'] },
+      { id: 'a', label: 'A string', colors: ['hsl(40,60,58)'] },
     ];
     const html = render(
       <RoundCompleteInfo

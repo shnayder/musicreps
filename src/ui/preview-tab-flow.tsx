@@ -220,10 +220,12 @@ function FlowResultsSection(
               correct={goodRound.correct}
               levelBars={[
                 {
+                  id: 'e',
                   label: 'E strings',
                   colors: ['hsl(125, 48%, 33%)', 'hsl(80, 35%, 40%)'],
                 },
                 {
+                  id: 'a',
                   label: 'A string',
                   colors: ['hsl(48, 50%, 52%)', 'hsl(40, 60%, 58%)'],
                 },

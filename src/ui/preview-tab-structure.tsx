@@ -50,10 +50,12 @@ function QuizFlowComponents({ tabId }: { tabId: string }) {
               correct={goodRound.correct}
               levelBars={[
                 {
+                  id: 'e',
                   label: 'E strings',
                   colors: ['hsl(125, 48%, 33%)', 'hsl(125, 48%, 33%)'],
                 },
                 {
+                  id: 'a',
                   label: 'A string',
                   colors: ['hsl(80, 35%, 40%)', 'hsl(60, 40%, 46%)'],
                 },
@@ -69,10 +71,12 @@ function QuizFlowComponents({ tabId }: { tabId: string }) {
               correct={roughRound.correct}
               levelBars={[
                 {
+                  id: 'e',
                   label: 'E strings',
                   colors: ['hsl(48, 50%, 52%)'],
                 },
                 {
+                  id: 'a',
                   label: 'A string',
                   colors: ['hsl(40, 60%, 58%)', 'hsl(40, 60%, 58%)'],
                 },

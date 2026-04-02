@@ -1324,7 +1324,8 @@ function useProgressColors<Q>(
 
 /** Per-level progress bars for the round-complete screen.
  *  For group-based modes: one labeled bar per enabled group.
- *  For non-group modes: single unlabeled bar with all items. */
+ *  For non-group modes: single unlabeled bar with all items.
+ *  Only computed during round-complete phase to avoid unnecessary work. */
 function useLevelBars<Q>(
   def: ModeDefinition<Q>,
   learner: ReturnType<typeof useLearnerModel>,
@@ -1333,22 +1334,23 @@ function useLevelBars<Q>(
 ): LevelProgressEntry[] {
   const enabledGroups = groupScopeResult?.enabledGroups;
   return useMemo(() => {
+    if (_phase !== 'round-complete') return [];
     if (def.scope.kind === 'groups' && enabledGroups) {
       const scope = def.scope;
       return scope.allGroupIds
         .filter((id) => enabledGroups.has(id))
         .map((id) => {
           const g = scope.groups.find((g) => g.id === id);
-          const label = g ? resolveGroupLabel(g.label) : id;
+          const label = g ? resolveGroupLabel(g.longLabel ?? g.label) : id;
           const colors = progressBarColors(
             learner.selector,
             scope.getItemIdsForGroup(id),
           );
-          return { label, colors };
+          return { id, label, colors };
         });
     }
     const colors = progressBarColors(learner.selector, def.allItems);
-    return colors.length > 0 ? [{ label: '', colors }] : [];
+    return colors.length > 0 ? [{ id: '_all', label: '', colors }] : [];
   }, [def, learner.selector, _phase, enabledGroups]);
 }
 
