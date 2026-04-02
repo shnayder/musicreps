@@ -421,7 +421,7 @@
      ================================================================ */
 
   /* -- Action: primary CTA buttons (Practice, Stop, Next) -- */
-  --type-action-size: var(--text-lg);
+  --type-action-size: var(--text-base);
   --type-action-weight: var(--font-semibold);
   --type-action-leading: var(--leading-none);
   --type-action-color: var(--color-on-brand);
@@ -1477,6 +1477,9 @@ body {
   border-radius: var(--radius-md);
   background: var(--color-well);
 }
+.progress-bar-plain .progress-bar-label {
+  margin-bottom: var(--gap-related);
+}
 .progress-bar-label {
   margin-bottom: var(--gap-related);
 }
@@ -2164,6 +2167,10 @@ button {
   margin: 0 auto;
   padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-group);
+  text-align: left;
 }
 .round-stat-line {
   font-size: var(--type-status-size);
@@ -3127,7 +3134,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1166"></div>
+  <div class="home-screen" id="home-screen" data-version="#1172"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -6851,6 +6858,13 @@ body.native-app {
   function GroupProgressBar({ colors, disabled }) {
     return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `background:${color}` }, i3)) });
   }
+  function ProgressBarLabeled({ label, colors, disabled, plain }) {
+    const cls = plain ? "progress-bar-plain" : "progress-bar-labeled";
+    return /* @__PURE__ */ u3("div", { class: cls, children: [
+      label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
+      /* @__PURE__ */ u3(GroupProgressBar, { colors, disabled })
+    ] });
+  }
 
   // src/ui/mode-screen.tsx
   function CloseButton({ onClick, ariaLabel }) {
@@ -7021,7 +7035,7 @@ body.native-app {
       ] })
     ] }) });
   }
-  function RoundCompleteInfo({ heading, count, correct, progressColors }) {
+  function RoundCompleteInfo({ heading, count, correct, levelBars }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       count != null && /* @__PURE__ */ u3(k, { children: [
@@ -7029,7 +7043,15 @@ body.native-app {
         /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "rep" : "reps" })
       ] }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }) }),
-      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3("div", { class: "round-complete-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progressColors }) })
+      levelBars && levelBars.length > 0 && /* @__PURE__ */ u3("div", { class: "round-complete-progress", children: levelBars.map((entry) => /* @__PURE__ */ u3(
+        ProgressBarLabeled,
+        {
+          label: entry.label,
+          colors: entry.colors,
+          plain: true
+        },
+        entry.id
+      )) })
     ] });
   }
   var noop = () => {
@@ -9292,12 +9314,6 @@ body.native-app {
   }
 
   // src/ui/practice-config.tsx
-  function ProgressBarLabeled({ label, colors, disabled }) {
-    return /* @__PURE__ */ u3("div", { class: "progress-bar-labeled", children: [
-      label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
-      /* @__PURE__ */ u3(GroupProgressBar, { colors, disabled })
-    ] });
-  }
   function SkillHeader({ modeId, title, totalReps, progressColors, onBack }) {
     return /* @__PURE__ */ u3("div", { class: "skill-header", children: [
       /* @__PURE__ */ u3("div", { class: "skill-header-row", children: [
@@ -10564,7 +10580,7 @@ body.native-app {
     ctrl,
     currentQ,
     round,
-    progressColors,
+    levelBars,
     handleSubmit,
     seq,
     multiTapInput,
@@ -10584,7 +10600,7 @@ body.native-app {
             heading: "Round complete",
             count: engine.state.roundAnswered,
             correct: round.roundCorrect,
-            progressColors
+            levelBars
           }
         ) }) }),
         /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
@@ -10987,6 +11003,26 @@ body.native-app {
       });
     }, [def, learner.selector, _phase, skippedGroups]);
   }
+  function useLevelBars(def, learner, _phase, groupScopeResult) {
+    const enabledGroups = groupScopeResult?.enabledGroups;
+    return T2(() => {
+      if (_phase !== "round-complete") return [];
+      if (def.scope.kind === "groups" && enabledGroups) {
+        const scope = def.scope;
+        return scope.allGroupIds.filter((id) => enabledGroups.has(id)).map((id) => {
+          const g2 = scope.groups.find((g3) => g3.id === id);
+          const label = g2 ? resolveGroupLabel(g2.longLabel ?? g2.label) : id;
+          const colors2 = progressBarColors(
+            learner.selector,
+            scope.getItemIdsForGroup(id)
+          );
+          return { id, label, colors: colors2 };
+        });
+      }
+      const colors = progressBarColors(learner.selector, def.allItems);
+      return colors.length > 0 ? [{ id: "_all", label: "", colors }] : [];
+    }, [def, learner.selector, _phase, enabledGroups]);
+  }
   function ModeHeader({ def, isIdle, progressColors, totalReps, navigateHome }) {
     if (isIdle) {
       return /* @__PURE__ */ u3(
@@ -11027,6 +11063,7 @@ body.native-app {
     const isIdle = phase === "idle" && !sc.speedCheck;
     const skipped = groupScopeResult?.skippedGroups;
     const progressColors = useProgressColors(def, learner, phase, skipped);
+    const levelBars = useLevelBars(def, learner, phase, groupScopeResult);
     const totalReps = T2(() => {
       let sum = 0;
       for (const id of def.allItems) {
@@ -11083,7 +11120,7 @@ body.native-app {
         ctrl,
         currentQ,
         round,
-        progressColors,
+        levelBars,
         handleSubmit,
         seq: buildSeqProps(seqInput),
         multiTapInput,

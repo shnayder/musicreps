@@ -415,7 +415,7 @@
      ================================================================ */
 
   /* -- Action: primary CTA buttons (Practice, Stop, Next) -- */
-  --type-action-size: var(--text-lg);
+  --type-action-size: var(--text-base);
   --type-action-weight: var(--font-semibold);
   --type-action-leading: var(--leading-none);
   --type-action-color: var(--color-on-brand);
@@ -1471,6 +1471,9 @@ body {
   border-radius: var(--radius-md);
   background: var(--color-well);
 }
+.progress-bar-plain .progress-bar-label {
+  margin-bottom: var(--gap-related);
+}
 .progress-bar-label {
   margin-bottom: var(--gap-related);
 }
@@ -2158,6 +2161,10 @@ button {
   margin: 0 auto;
   padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-group);
+  text-align: left;
 }
 .round-stat-line {
   font-size: var(--type-status-size);
@@ -5084,6 +5091,13 @@ ${text}`).join("\n\n");
   function GroupProgressBar({ colors, disabled }) {
     return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `background:${color}` }, i3)) });
   }
+  function ProgressBarLabeled({ label, colors, disabled, plain }) {
+    const cls = plain ? "progress-bar-plain" : "progress-bar-labeled";
+    return /* @__PURE__ */ u3("div", { class: cls, children: [
+      label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
+      /* @__PURE__ */ u3(GroupProgressBar, { colors, disabled })
+    ] });
+  }
   function GroupToggles({ labels, active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
       /* @__PURE__ */ u3(Text, { role: "label", class: "toggle-group-label", children: "Groups" }),
@@ -5722,7 +5736,7 @@ ${text}`).join("\n\n");
     }
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children });
   }
-  function RoundCompleteInfo({ heading, count, correct, progressColors }) {
+  function RoundCompleteInfo({ heading, count, correct, levelBars }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       count != null && /* @__PURE__ */ u3(k, { children: [
@@ -5730,7 +5744,15 @@ ${text}`).join("\n\n");
         /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "rep" : "reps" })
       ] }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }) }),
-      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3("div", { class: "round-complete-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progressColors }) })
+      levelBars && levelBars.length > 0 && /* @__PURE__ */ u3("div", { class: "round-complete-progress", children: levelBars.map((entry) => /* @__PURE__ */ u3(
+        ProgressBarLabeled,
+        {
+          label: entry.label,
+          colors: entry.colors,
+          plain: true
+        },
+        entry.id
+      )) })
     ] });
   }
   var noop = () => {
@@ -6971,11 +6993,17 @@ ${text}`).join("\n\n");
           heading: goodRound.heading,
           count: 18,
           correct: goodRound.correct,
-          progressColors: [
-            "hsl(125, 48%, 33%)",
-            "hsl(80, 35%, 40%)",
-            "hsl(48, 50%, 52%)",
-            "hsl(40, 60%, 58%)"
+          levelBars: [
+            {
+              id: "e",
+              label: "E strings",
+              colors: ["hsl(125, 48%, 33%)", "hsl(80, 35%, 40%)"]
+            },
+            {
+              id: "a",
+              label: "A string",
+              colors: ["hsl(48, 50%, 52%)", "hsl(40, 60%, 58%)"]
+            }
           ]
         }
       ) }) }) }),
@@ -7373,11 +7401,17 @@ ${text}`).join("\n\n");
             heading: goodRound.heading,
             count: 18,
             correct: goodRound.correct,
-            progressColors: [
-              "hsl(125, 48%, 33%)",
-              "hsl(125, 48%, 33%)",
-              "hsl(80, 35%, 40%)",
-              "hsl(60, 40%, 46%)"
+            levelBars: [
+              {
+                id: "e",
+                label: "E strings",
+                colors: ["hsl(125, 48%, 33%)", "hsl(125, 48%, 33%)"]
+              },
+              {
+                id: "a",
+                label: "A string",
+                colors: ["hsl(80, 35%, 40%)", "hsl(60, 40%, 46%)"]
+              }
             ]
           }
         ) }) }),
@@ -7387,10 +7421,17 @@ ${text}`).join("\n\n");
             heading: roughRound.heading,
             count: 9,
             correct: roughRound.correct,
-            progressColors: [
-              "hsl(48, 50%, 52%)",
-              "hsl(40, 60%, 58%)",
-              "hsl(40, 60%, 58%)"
+            levelBars: [
+              {
+                id: "e",
+                label: "E strings",
+                colors: ["hsl(48, 50%, 52%)"]
+              },
+              {
+                id: "a",
+                label: "A string",
+                colors: ["hsl(40, 60%, 58%)", "hsl(40, 60%, 58%)"]
+              }
             ]
           }
         ) }) })
@@ -8585,12 +8626,6 @@ ${text}`).join("\n\n");
   }
 
   // src/ui/practice-config.tsx
-  function ProgressBarLabeled({ label, colors, disabled }) {
-    return /* @__PURE__ */ u3("div", { class: "progress-bar-labeled", children: [
-      label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
-      /* @__PURE__ */ u3(GroupProgressBar, { colors, disabled })
-    ] });
-  }
   function SkillHeader({ modeId, title, totalReps, progressColors, onBack }) {
     return /* @__PURE__ */ u3("div", { class: "skill-header", children: [
       /* @__PURE__ */ u3("div", { class: "skill-header-row", children: [
@@ -9255,10 +9290,17 @@ ${text}`).join("\n\n");
             heading: "Round Complete",
             count: 20,
             correct: "18 correct (90%)",
-            progressColors: [
-              "hsl(125, 48%, 33%)",
-              "hsl(80, 35%, 40%)",
-              "hsl(48, 50%, 52%)"
+            levelBars: [
+              {
+                id: "e",
+                label: "E strings",
+                colors: ["hsl(125, 48%, 33%)", "hsl(80, 35%, 40%)"]
+              },
+              {
+                id: "a",
+                label: "A string",
+                colors: ["hsl(48, 50%, 52%)", "hsl(40, 60%, 58%)"]
+              }
             ]
           }
         ) }) }),
