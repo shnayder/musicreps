@@ -1465,6 +1465,9 @@ body {
   border-radius: var(--radius-md);
   background: var(--color-well);
 }
+.progress-bar-plain .progress-bar-label {
+  margin-bottom: var(--gap-related);
+}
 .progress-bar-label {
   margin-bottom: var(--gap-related);
 }

@@ -1479,6 +1479,9 @@ body {
   border-radius: var(--radius-md);
   background: var(--color-well);
 }
+.progress-bar-plain .progress-bar-label {
+  margin-bottom: var(--gap-related);
+}
 .progress-bar-label {
   margin-bottom: var(--gap-related);
 }
@@ -3132,7 +3135,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="1459c7 add-level-progress-bars-SVf3y"></div>
+  <div class="home-screen" id="home-screen" data-version="2bc414 add-level-progress-bars-SVf3y"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -6856,8 +6859,9 @@ body.native-app {
   function GroupProgressBar({ colors, disabled }) {
     return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `background:${color}` }, i3)) });
   }
-  function ProgressBarLabeled({ label, colors, disabled }) {
-    return /* @__PURE__ */ u3("div", { class: "progress-bar-labeled", children: [
+  function ProgressBarLabeled({ label, colors, disabled, plain }) {
+    const cls = plain ? "progress-bar-plain" : "progress-bar-labeled";
+    return /* @__PURE__ */ u3("div", { class: cls, children: [
       label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
       /* @__PURE__ */ u3(GroupProgressBar, { colors, disabled })
     ] });
@@ -7044,7 +7048,8 @@ body.native-app {
         ProgressBarLabeled,
         {
           label: entry.label,
-          colors: entry.colors
+          colors: entry.colors,
+          plain: true
         },
         entry.id
       )) })
