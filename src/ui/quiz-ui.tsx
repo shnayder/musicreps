@@ -51,9 +51,9 @@ export function FeedbackDisplay(
   } else if (onCheck) {
     button = notice
       ? (
-        <div class='feedback-check-row'>
-          <span class='feedback-notice-inline'>{notice}</span>
-          <ActionButton variant='primary' class='next-btn' onClick={onCheck}>
+        <div class='page-action-row'>
+          <span class='page-action-notice'>{notice}</span>
+          <ActionButton variant='primary' onClick={onCheck}>
             Check
           </ActionButton>
         </div>
