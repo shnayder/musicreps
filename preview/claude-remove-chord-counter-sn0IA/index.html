@@ -3129,7 +3129,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="37da8f remove-chord-counter-sn0IA"></div>
+  <div class="home-screen" id="home-screen" data-version="4ae632 remove-chord-counter-sn0IA"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -9267,7 +9267,7 @@ body.native-app {
   // src/ui/sequential-slots.tsx
   function SequentialSlots({ entries, evaluated, correctTones }) {
     const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
-    const countMismatch = evaluated && correctTones && entries.length !== correctTones.length;
+    const countMismatch = !!(evaluated && correctTones && entries.length !== correctTones.length);
     return /* @__PURE__ */ u3("div", { class: "seq-slots-container", children: [
       /* @__PURE__ */ u3("div", { class: "seq-slots", children: entries.map((entry, i3) => {
         let cls = "seq-slot";
@@ -9466,7 +9466,10 @@ body.native-app {
     } else if (onNext) {
       button = /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: extraCls, onClick: onNext, children: label });
     } else if (onCheck) {
-      button = /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" });
+      button = /* @__PURE__ */ u3(k, { children: [
+        notice && /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice }),
+        /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" })
+      ] });
     } else {
       button = /* @__PURE__ */ u3(
         ActionButton,
@@ -10088,6 +10091,7 @@ body.native-app {
     }, [def]);
     const handleSeqBatch = q2((text) => {
       if (!def.sequential?.parseBatchInput || !currentQRef.current) return false;
+      if (seqEvaluatedRef.current) return false;
       const notes = def.sequential.parseBatchInput(text);
       if (notes.length === 0) return false;
       seqEntriesRef.current = notes;
@@ -10103,6 +10107,7 @@ body.native-app {
     }, [def]);
     const handleCheck = q2(() => {
       if (!def.sequential || !currentQRef.current) return;
+      if (seqEvaluatedRef.current) return;
       const raw = seqEntriesRef.current;
       if (raw.length === 0) return;
       const q3 = currentQRef.current;
@@ -10143,13 +10148,9 @@ body.native-app {
       }
     }
   }
-  function processMultiTap(multiTap, _q, tapped, positionKey3) {
+  function processMultiTap(_multiTap, _q, tapped, positionKey3) {
     if (tapped.has(positionKey3)) {
       return { kind: "removed" };
-    }
-    if (multiTap.onePerString) {
-      const next = new Set(tapped);
-      removeExistingOnString(next, positionKey3);
     }
     return { kind: "added" };
   }
@@ -10176,7 +10177,6 @@ body.native-app {
         tappedRef.current,
         positionKey3
       );
-      if (action.kind === "ignored") return;
       if (action.kind === "removed") {
         const next2 = new Set(tappedRef.current);
         next2.delete(positionKey3);
@@ -10194,6 +10194,7 @@ body.native-app {
     }, [def]);
     const handleCheck = q2(() => {
       if (!def.multiTap || !currentQRef.current) return;
+      if (evaluatedRef.current) return;
       const tapped = tappedRef.current;
       if (tapped.size === 0) return;
       const result = def.multiTap.evaluate(

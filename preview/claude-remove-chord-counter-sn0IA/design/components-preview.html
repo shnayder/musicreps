@@ -5349,7 +5349,10 @@ ${text}`).join("\n\n");
     } else if (onNext) {
       button = /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: extraCls, onClick: onNext, children: label });
     } else if (onCheck) {
-      button = /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" });
+      button = /* @__PURE__ */ u3(k, { children: [
+        notice && /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice }),
+        /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" })
+      ] });
     } else {
       button = /* @__PURE__ */ u3(
         ActionButton,
