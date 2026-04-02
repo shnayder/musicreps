@@ -93,7 +93,11 @@ const RAMPS = [
   },
   { name: 'brand', hueVar: '--hue-brand', steps: ['100', '600', '800'] },
   { name: 'success', hueVar: '--hue-success', steps: ['100', '600', '800'] },
-  { name: 'error', hueVar: '--hue-error', steps: ['100', '500', '800'] },
+  {
+    name: 'error',
+    hueVar: '--hue-error',
+    steps: ['100', '200', '300', '500', '600', '800'],
+  },
   {
     name: 'notice',
     hueVar: '--hue-notice',

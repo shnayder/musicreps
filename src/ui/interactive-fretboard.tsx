@@ -46,9 +46,27 @@ function setCircleFill(
   if (circle) circle.style.fill = color;
 }
 
+/** Wrong-tap ring: stroke outline only, no fill. */
+function setCircleRing(
+  root: HTMLElement,
+  posKey: string,
+  color: string,
+): void {
+  const [s, f] = posKey.split('-');
+  const circle = root.querySelector(
+    'circle.fb-pos[data-string="' + s + '"][data-fret="' + f + '"]',
+  ) as SVGElement | null;
+  if (!circle) return;
+  circle.style.fill = 'none';
+  circle.style.stroke = color;
+  circle.style.strokeWidth = '3';
+}
+
 function clearAllCircles(root: HTMLElement): void {
   root.querySelectorAll<SVGElement>('.fb-pos').forEach((c) => {
     c.style.fill = '';
+    c.style.stroke = '';
+    c.style.strokeWidth = '';
   });
 }
 
@@ -168,11 +186,11 @@ export function InteractiveFretboard(
       const colorMissed = readCSSColor('--color-success-reveal', '#66bb6a');
       const tappedSet = new Set(evaluated.perEntry.map((e) => e.positionKey));
       for (const entry of evaluated.perEntry) {
-        setCircleFill(
-          root,
-          entry.positionKey,
-          entry.correct ? colorOk : colorBad,
-        );
+        if (entry.correct) {
+          setCircleFill(root, entry.positionKey, colorOk);
+        } else {
+          setCircleRing(root, entry.positionKey, colorBad);
+        }
       }
       for (const missed of evaluated.missed) {
         if (!tappedSet.has(missed)) {
