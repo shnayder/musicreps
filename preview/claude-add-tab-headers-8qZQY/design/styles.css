@@ -1154,7 +1154,6 @@ body {
 .settings-page {
   display: flex;
   flex-direction: column;
-  gap: var(--pad-component);
 }
 .settings-page-header {
   display: flex;
@@ -1171,26 +1170,37 @@ body {
   color: var(--type-heading-page-color);
 }
 .settings-section {
-  /* spaced by .settings-page flex gap */
+  margin-top: var(--pad-component);
 }
 .settings-section-title {
-  margin: 0 0 var(--gap-group);
-  font-size: var(--text-base);
+  margin: 0 0 var(--gap-related);
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  line-height: var(--type-label-leading);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .settings-link-list {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
+.settings-link-list .text-link {
+  font-size: var(--type-label-size);
+  padding: var(--gap-related) 0;
+  min-height: 0;
+}
 .settings-meta {
-  font-size: var(--text-sm);
+  font-size: var(--type-label-size);
   color: var(--color-text-muted);
+  padding: var(--gap-related) 0;
 }
 
 .settings-field {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-group);
+  gap: var(--gap-related);
 }
 
 .segmented-control {
@@ -1298,7 +1308,7 @@ body {
   display: block;
 }
 .tab-panel-title {
-  margin: 0 0 var(--pad-component);
+  margin: 0 0 var(--gap-group);
   padding-top: var(--pad-component);
   font-family: var(--type-heading-section-family);
   font-size: var(--type-heading-section-size);

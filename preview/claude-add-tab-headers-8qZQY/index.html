@@ -1168,7 +1168,6 @@ body {
 .settings-page {
   display: flex;
   flex-direction: column;
-  gap: var(--pad-component);
 }
 .settings-page-header {
   display: flex;
@@ -1185,26 +1184,37 @@ body {
   color: var(--type-heading-page-color);
 }
 .settings-section {
-  /* spaced by .settings-page flex gap */
+  margin-top: var(--pad-component);
 }
 .settings-section-title {
-  margin: 0 0 var(--gap-group);
-  font-size: var(--text-base);
+  margin: 0 0 var(--gap-related);
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  line-height: var(--type-label-leading);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .settings-link-list {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
+.settings-link-list .text-link {
+  font-size: var(--type-label-size);
+  padding: var(--gap-related) 0;
+  min-height: 0;
+}
 .settings-meta {
-  font-size: var(--text-sm);
+  font-size: var(--type-label-size);
   color: var(--color-text-muted);
+  padding: var(--gap-related) 0;
 }
 
 .settings-field {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-group);
+  gap: var(--gap-related);
 }
 
 .segmented-control {
@@ -1312,7 +1322,7 @@ body {
   display: block;
 }
 .tab-panel-title {
-  margin: 0 0 var(--pad-component);
+  margin: 0 0 var(--gap-group);
   padding-top: var(--pad-component);
   font-family: var(--type-heading-section-family);
   font-size: var(--type-heading-section-size);
@@ -3135,7 +3145,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="ca4f88 add-tab-headers-8qZQY"></div>
+  <div class="home-screen" id="home-screen" data-version="61cb21 add-tab-headers-8qZQY"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -7520,14 +7530,11 @@ body.native-app {
     ] });
   }
   function SettingsAboutLegal({ appConfig, version }) {
-    return /* @__PURE__ */ u3("div", { children: [
+    return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
         /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "About" }),
         /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
-          appConfig.contactEmail && /* @__PURE__ */ u3("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: [
-            "Contact: ",
-            appConfig.contactEmail
-          ] }),
+          appConfig.contactEmail && /* @__PURE__ */ u3("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: "Contact" }),
           appConfig.supportUrl && /* @__PURE__ */ u3(
             "a",
             {
@@ -7538,8 +7545,8 @@ body.native-app {
               children: "Support"
             }
           ),
-          /* @__PURE__ */ u3("div", { class: "settings-meta", children: [
-            "Build number: ",
+          /* @__PURE__ */ u3("span", { class: "settings-meta", children: [
+            "Build ",
             version
           ] })
         ] })
