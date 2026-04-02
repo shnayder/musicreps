@@ -858,7 +858,7 @@ body {
 }
 /* --- Active Skills tab content --- */
 .active-skills-list {
-  margin-top: var(--pad-component);
+  /* container only — children provide spacing */
 }
 .active-skills-empty {
   font-size: var(--type-status-size);
@@ -875,7 +875,7 @@ body {
   line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
-  margin: 0 0 var(--gap-group);
+  margin: 0 0 var(--gap-related);
   text-align: center;
 }
 /* Shared pill/badge component */
@@ -1154,7 +1154,6 @@ body {
 .settings-page {
   display: flex;
   flex-direction: column;
-  gap: var(--pad-component);
 }
 .settings-page-header {
   display: flex;
@@ -1170,12 +1169,11 @@ body {
   line-height: var(--type-heading-page-leading);
   color: var(--type-heading-page-color);
 }
-.settings-section {
-  border-top: 1px solid var(--color-border-lighter);
-  padding-top: var(--pad-component);
+.settings-section + .settings-section {
+  margin-top: var(--pad-component);
 }
 .settings-section-title {
-  margin: 0 0 var(--gap-group);
+  margin: 0 0 var(--gap-related);
   font-size: var(--text-base);
 }
 .settings-link-list {
@@ -1183,15 +1181,22 @@ body {
   flex-direction: column;
   align-items: flex-start;
 }
+.settings-page .text-link {
+  font-size: var(--type-label-size);
+  padding: var(--gap-related) 0;
+  margin: 0;
+  min-height: 0;
+}
 .settings-meta {
-  font-size: var(--text-sm);
+  font-size: var(--type-label-size);
   color: var(--color-text-muted);
+  padding: var(--gap-related) 0;
 }
 
 .settings-field {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-group);
+  gap: var(--gap-related);
 }
 
 .segmented-control {
@@ -1297,6 +1302,15 @@ body {
 }
 .tab-panel.active {
   display: block;
+}
+.tab-panel-title {
+  margin: 0 0 var(--gap-group);
+  padding-top: var(--pad-component);
+  font-family: var(--type-heading-section-family);
+  font-size: var(--type-heading-section-size);
+  font-weight: var(--type-heading-section-weight);
+  line-height: var(--type-heading-section-leading);
+  color: var(--type-heading-section-color);
 }
 
 /* --- About tab --- */
