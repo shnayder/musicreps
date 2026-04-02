@@ -654,10 +654,17 @@ function ScreenLayoutActiveExamples({ tabId }: { tabId: string }) {
                 heading='Round Complete'
                 count={20}
                 correct='18 correct (90%)'
-                progressColors={[
-                  'hsl(125, 48%, 33%)',
-                  'hsl(80, 35%, 40%)',
-                  'hsl(48, 50%, 52%)',
+                levelBars={[
+                  {
+                    id: 'e',
+                    label: 'E strings',
+                    colors: ['hsl(125, 48%, 33%)', 'hsl(80, 35%, 40%)'],
+                  },
+                  {
+                    id: 'a',
+                    label: 'A string',
+                    colors: ['hsl(48, 50%, 52%)', 'hsl(40, 60%, 58%)'],
+                  },
                 ]}
               />
             </QuizArea>

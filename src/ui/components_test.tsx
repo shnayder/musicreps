@@ -787,18 +787,24 @@ describe('QuizArea', () => {
 });
 
 describe('RoundCompleteInfo', () => {
-  it('renders heading, count, stats, and progress bar', () => {
-    const colors = ['hsl(125,48,33)', 'hsl(40,60,58)'];
+  it('renders heading, count, stats, and level progress bars', () => {
+    const levelBars = [
+      { id: 'e', label: 'E strings', colors: ['hsl(125,48,33)'] },
+      { id: 'a', label: 'A string', colors: ['hsl(40,60,58)'] },
+    ];
     const html = render(
       <RoundCompleteInfo
         heading='Great job!'
         count={10}
         correct='8 correct'
-        progressColors={colors}
+        levelBars={levelBars}
       />,
     );
     assert.ok(html.includes('round-complete'));
     assert.ok(html.includes('round-complete-progress'));
+    assert.ok(html.includes('progress-bar-plain'));
+    assert.ok(html.includes('E strings'));
+    assert.ok(html.includes('A string'));
     assert.ok(html.includes('group-progress-bar'));
     assert.ok(html.includes('round-complete-heading'));
     assert.ok(html.includes('Great job!'));

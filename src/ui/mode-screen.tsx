@@ -9,7 +9,7 @@ import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
-import { GroupProgressBar } from './scope.tsx';
+import { ProgressBarLabeled } from './scope.tsx';
 
 // ---------------------------------------------------------------------------
 // CloseButton — × dismiss button used in top bars and overlays
@@ -419,12 +419,19 @@ export function QuizArea(
 // Rendered in .quiz-content zone.
 // ---------------------------------------------------------------------------
 
+/** Per-level progress entry: label + color array for one level. */
+export type LevelProgressEntry = {
+  id: string;
+  label: string;
+  colors: string[];
+};
+
 export function RoundCompleteInfo(
-  { heading, count, correct, progressColors }: {
+  { heading, count, correct, levelBars }: {
     heading?: string;
     count?: number;
     correct?: string;
-    progressColors?: string[];
+    levelBars?: LevelProgressEntry[];
   },
 ) {
   return (
@@ -441,9 +448,16 @@ export function RoundCompleteInfo(
       <div class='round-complete-stats'>
         <div class='round-stat-line round-stat-correct'>{correct || ''}</div>
       </div>
-      {progressColors && progressColors.length > 0 && (
+      {levelBars && levelBars.length > 0 && (
         <div class='round-complete-progress'>
-          <GroupProgressBar colors={progressColors} />
+          {levelBars.map((entry) => (
+            <ProgressBarLabeled
+              key={entry.id}
+              label={entry.label}
+              colors={entry.colors}
+              plain
+            />
+          ))}
         </div>
       )}
     </div>

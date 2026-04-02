@@ -8,37 +8,13 @@ import { SkillIcon } from './icons.tsx';
 import { CloseButton } from './mode-screen.tsx';
 import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
-import { GroupProgressBar } from './scope.tsx';
+import { ProgressBarLabeled } from './scope.tsx';
 import { SegmentedControl } from './segmented-control.tsx';
 import { Text } from './text.tsx';
 
 // Re-export so existing consumers can import from here.
 export type { SuggestionLine } from '../types.ts';
-
-// ---------------------------------------------------------------------------
-// ProgressBarLabeled — labeled progress bar with border, for skill header
-// and level progress cards. Distinct from the bare GroupProgressBar used
-// on home screen cards.
-// ---------------------------------------------------------------------------
-
-export function ProgressBarLabeled(
-  { label, colors, disabled }: {
-    label?: string;
-    colors: string[];
-    disabled?: boolean;
-  },
-) {
-  return (
-    <div class='progress-bar-labeled'>
-      {label && (
-        <Text role='label' as='div' class='progress-bar-label'>
-          {label}
-        </Text>
-      )}
-      <GroupProgressBar colors={colors} disabled={disabled} />
-    </div>
-  );
-}
+export { ProgressBarLabeled };
 
 // ---------------------------------------------------------------------------
 // SkillHeader — title + close + progress bar (replaces ModeTopBar for idle)

@@ -393,7 +393,7 @@
      ================================================================ */
 
   /* -- Action: primary CTA buttons (Practice, Stop, Next) -- */
-  --type-action-size: var(--text-lg);
+  --type-action-size: var(--text-base);
   --type-action-weight: var(--font-semibold);
   --type-action-leading: var(--leading-none);
   --type-action-color: var(--color-on-brand);
@@ -1449,6 +1449,9 @@ body {
   border-radius: var(--radius-md);
   background: var(--color-well);
 }
+.progress-bar-plain .progress-bar-label {
+  margin-bottom: var(--gap-related);
+}
 .progress-bar-label {
   margin-bottom: var(--gap-related);
 }
@@ -2136,6 +2139,10 @@ button {
   margin: 0 auto;
   padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-group);
+  text-align: left;
 }
 .round-stat-line {
   font-size: var(--type-status-size);
