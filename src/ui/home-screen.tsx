@@ -714,7 +714,7 @@ function HomeHeader(
 
 function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
   return (
-    <div class='home-about'>
+    <div class='settings-page'>
       {isNativeApp && (
         <div class='home-about-brand'>
           <h1 class='home-title'>
@@ -727,8 +727,8 @@ function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
         </div>
       )}
 
-      <section class='home-about-section'>
-        <Text role='heading-section' as='h2'>What is Music Reps?</Text>
+      <section class='settings-section'>
+        <h2 class='settings-section-title'>What is Music Reps?</h2>
         <Text role='body-secondary' as='p'>
           Music Reps builds instant recall for the building blocks of music{' '}
           &mdash; note names, intervals, keys, chords, and fretboard navigation.
@@ -737,8 +737,8 @@ function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
         </Text>
       </section>
 
-      <section class='home-about-section'>
-        <Text role='heading-section' as='h2'>How it works</Text>
+      <section class='settings-section'>
+        <h2 class='settings-section-title'>How it works</h2>
         <Text role='body-secondary' as='p'>
           Each skill drills one piece of musical knowledge until it becomes
           automatic. The app tracks your speed and accuracy, focuses on what you
@@ -747,8 +747,8 @@ function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
         </Text>
       </section>
 
-      <section class='home-about-section'>
-        <Text role='heading-section' as='h2'>Getting started</Text>
+      <section class='settings-section'>
+        <h2 class='settings-section-title'>Getting started</h2>
         <Text role='body-secondary' as='p'>
           Browse <strong>All Skills</strong>{' '}
           to see what&rsquo;s available. Star the ones you want to work on
