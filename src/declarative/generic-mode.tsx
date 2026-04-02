@@ -69,6 +69,7 @@ import {
   progressBarColors,
 } from '../stats-display.ts';
 import {
+  type LevelProgressEntry,
   ModeTopBar,
   PracticeTab,
   QuizSession,
@@ -600,7 +601,7 @@ type QuizActiveViewProps<Q> = {
   ctrl: ModeController<Q>;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
-  progressColors: string[];
+  levelBars: LevelProgressEntry[];
   handleSubmit: (input: string) => boolean;
   seq: {
     entries: { display: string }[];
@@ -630,7 +631,7 @@ function QuizActiveView<Q>(
     ctrl,
     currentQ,
     round,
-    progressColors,
+    levelBars,
     handleSubmit,
     seq,
     multiTapInput,
@@ -655,7 +656,7 @@ function QuizActiveView<Q>(
               heading='Round complete'
               count={engine.state.roundAnswered}
               correct={round.roundCorrect}
-              progressColors={progressColors}
+              levelBars={levelBars}
             />
           </CenteredContent>
         </LayoutMain>
@@ -1321,6 +1322,36 @@ function useProgressColors<Q>(
   }, [def, learner.selector, _phase, skippedGroups]);
 }
 
+/** Per-level progress bars for the round-complete screen.
+ *  For group-based modes: one labeled bar per enabled group.
+ *  For non-group modes: single unlabeled bar with all items. */
+function useLevelBars<Q>(
+  def: ModeDefinition<Q>,
+  learner: ReturnType<typeof useLearnerModel>,
+  _phase: string,
+  groupScopeResult: ReturnType<typeof useGroupScope> | null,
+): LevelProgressEntry[] {
+  const enabledGroups = groupScopeResult?.enabledGroups;
+  return useMemo(() => {
+    if (def.scope.kind === 'groups' && enabledGroups) {
+      const scope = def.scope;
+      return scope.allGroupIds
+        .filter((id) => enabledGroups.has(id))
+        .map((id) => {
+          const g = scope.groups.find((g) => g.id === id);
+          const label = g ? resolveGroupLabel(g.label) : id;
+          const colors = progressBarColors(
+            learner.selector,
+            scope.getItemIdsForGroup(id),
+          );
+          return { label, colors };
+        });
+    }
+    const colors = progressBarColors(learner.selector, def.allItems);
+    return colors.length > 0 ? [{ label: '', colors }] : [];
+  }, [def, learner.selector, _phase, enabledGroups]);
+}
+
 /** Render SkillHeader (idle) or minimal ModeTopBar (active/calibration). */
 function ModeHeader<Q>(
   { def, isIdle, progressColors, totalReps, navigateHome }: {
@@ -1374,6 +1405,7 @@ function GenericModeBody<Q>(
   const isIdle = phase === 'idle' && !sc.speedCheck;
   const skipped = groupScopeResult?.skippedGroups;
   const progressColors = useProgressColors(def, learner, phase, skipped);
+  const levelBars = useLevelBars(def, learner, phase, groupScopeResult);
   const totalReps = useMemo(() => {
     let sum = 0;
     for (const id of def.allItems) {
@@ -1431,7 +1463,7 @@ function GenericModeBody<Q>(
       ctrl={ctrl}
       currentQ={currentQ}
       round={round}
-      progressColors={progressColors}
+      levelBars={levelBars}
       handleSubmit={handleSubmit}
       seq={buildSeqProps(seqInput)}
       multiTapInput={multiTapInput}

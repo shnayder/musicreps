@@ -218,11 +218,15 @@ function FlowResultsSection(
               heading={goodRound.heading}
               count={18}
               correct={goodRound.correct}
-              progressColors={[
-                'hsl(125, 48%, 33%)',
-                'hsl(80, 35%, 40%)',
-                'hsl(48, 50%, 52%)',
-                'hsl(40, 60%, 58%)',
+              levelBars={[
+                {
+                  label: 'E strings',
+                  colors: ['hsl(125, 48%, 33%)', 'hsl(80, 35%, 40%)'],
+                },
+                {
+                  label: 'A string',
+                  colors: ['hsl(48, 50%, 52%)', 'hsl(40, 60%, 58%)'],
+                },
               ]}
             />
           </QuizArea>

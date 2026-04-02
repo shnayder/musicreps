@@ -48,11 +48,15 @@ function QuizFlowComponents({ tabId }: { tabId: string }) {
               heading={goodRound.heading}
               count={18}
               correct={goodRound.correct}
-              progressColors={[
-                'hsl(125, 48%, 33%)',
-                'hsl(125, 48%, 33%)',
-                'hsl(80, 35%, 40%)',
-                'hsl(60, 40%, 46%)',
+              levelBars={[
+                {
+                  label: 'E strings',
+                  colors: ['hsl(125, 48%, 33%)', 'hsl(125, 48%, 33%)'],
+                },
+                {
+                  label: 'A string',
+                  colors: ['hsl(80, 35%, 40%)', 'hsl(60, 40%, 46%)'],
+                },
               ]}
             />
           </QuizArea>
@@ -63,10 +67,15 @@ function QuizFlowComponents({ tabId }: { tabId: string }) {
               heading={roughRound.heading}
               count={9}
               correct={roughRound.correct}
-              progressColors={[
-                'hsl(48, 50%, 52%)',
-                'hsl(40, 60%, 58%)',
-                'hsl(40, 60%, 58%)',
+              levelBars={[
+                {
+                  label: 'E strings',
+                  colors: ['hsl(48, 50%, 52%)'],
+                },
+                {
+                  label: 'A string',
+                  colors: ['hsl(40, 60%, 58%)', 'hsl(40, 60%, 58%)'],
+                },
               ]}
             />
           </QuizArea>

@@ -2138,6 +2138,9 @@ button {
   margin: 0 auto;
   padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-group);
 }
 .round-stat-line {
   font-size: var(--type-status-size);
