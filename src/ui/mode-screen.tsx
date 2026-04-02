@@ -483,9 +483,6 @@ export function RoundCompleteActions(
 // ---------------------------------------------------------------------------
 
 const TAB_ICONS: Record<string, string> = {
-  // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
-  practice: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>' +
-    '<path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
   // Bar chart
   progress: '<line x1="18" x2="18" y1="20" y2="10"/>' +
     '<line x1="12" x2="12" y1="20" y2="4"/>' +
@@ -512,8 +509,8 @@ export function TabIcon({ icon, text }: { icon: string; text: string }) {
     <span class='tab-icon-label'>
       <svg
         xmlns='http://www.w3.org/2000/svg'
-        width='18'
-        height='18'
+        width='24'
+        height='24'
         viewBox='0 0 24 24'
         fill='none'
         stroke='currentColor'
@@ -524,7 +521,7 @@ export function TabIcon({ icon, text }: { icon: string; text: string }) {
         // deno-lint-ignore react-no-danger
         dangerouslySetInnerHTML={{ __html: paths }}
       />
-      <span>{text}</span>
+      <span class='sr-only'>{text}</span>
     </span>
   );
 }
@@ -615,7 +612,12 @@ export function PracticeTab(
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
-      label: <TabIcon icon='practice' text='Practice' />,
+      label: (
+        <span class='tab-icon-label'>
+          <RepeatMark size={24} />
+          <span class='sr-only'>Practice</span>
+        </span>
+      ),
       content: practiceContent ?? (
         <PracticeCard
           summary={summary}
