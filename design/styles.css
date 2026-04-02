@@ -683,9 +683,8 @@ body {
 /* --- Mode navigation: bottom bar on mobile, top tabs on desktop --- */
 .tab-icon-label {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
 }
 .tab-icon-label svg {
   display: block;
@@ -722,8 +721,7 @@ body {
     display: block;
   }
   .tab-icon-label {
-    flex-direction: row;
-    gap: var(--gap-related);
+    justify-content: center;
   }
 }
 

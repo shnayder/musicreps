@@ -697,9 +697,8 @@ body {
 /* --- Mode navigation: bottom bar on mobile, top tabs on desktop --- */
 .tab-icon-label {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
 }
 .tab-icon-label svg {
   display: block;
@@ -736,8 +735,7 @@ body {
     display: block;
   }
   .tab-icon-label {
-    flex-direction: row;
-    gap: var(--gap-related);
+    justify-content: center;
   }
 }
 
@@ -3129,7 +3127,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1162"></div>
+  <div class="home-screen" id="home-screen" data-version="#1166"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -7046,8 +7044,6 @@ body.native-app {
     ] });
   }
   var TAB_ICONS = {
-    // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
-    practice: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
     // Bar chart
     progress: '<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
     // Info circle
@@ -7066,8 +7062,8 @@ body.native-app {
         "svg",
         {
           xmlns: "http://www.w3.org/2000/svg",
-          width: "18",
-          height: "18",
+          width: "24",
+          height: "24",
           viewBox: "0 0 24 24",
           fill: "none",
           stroke: "currentColor",
@@ -7078,7 +7074,7 @@ body.native-app {
           dangerouslySetInnerHTML: { __html: paths }
         }
       ),
-      /* @__PURE__ */ u3("span", { children: text })
+      /* @__PURE__ */ u3("span", { class: "sr-only", children: text })
     ] });
   }
   function BaselineInfo({ baseline, onRun }) {
@@ -7131,7 +7127,10 @@ body.native-app {
     const tabs = [
       {
         id: "practice",
-        label: /* @__PURE__ */ u3(TabIcon, { icon: "practice", text: "Practice" }),
+        label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
+          /* @__PURE__ */ u3(RepeatMark, { size: 24 }),
+          /* @__PURE__ */ u3("span", { class: "sr-only", children: "Practice" })
+        ] }),
         content: practiceContent ?? /* @__PURE__ */ u3(
           PracticeCard,
           {
@@ -10782,7 +10781,7 @@ body.native-app {
           hasStats && /* @__PURE__ */ u3(StatsLegend, {})
         ] }),
         progressExtra: hasGroups ? /* @__PURE__ */ u3(k, { children: [
-          /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Levels" }),
+          /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Level progress" }),
           /* @__PURE__ */ u3(
             LevelProgressCards,
             {
