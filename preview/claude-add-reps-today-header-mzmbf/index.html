@@ -410,8 +410,6 @@
   --type-metric-effort-leading: var(--leading-none);
   --type-metric-effort-color: var(--color-tertiary);
 
-  --type-metric-today-color: var(--color-accent);
-
   /* -- Status: state communication -- */
   --type-status-size: var(--text-sm);
   --type-status-weight: var(--font-normal);
@@ -659,10 +657,6 @@ body {
   font-weight: var(--type-metric-effort-weight);
   line-height: var(--type-metric-effort-leading);
   color: var(--type-metric-effort-color);
-}
-.home-stat-today {
-  color: var(--type-metric-today-color);
-  font-weight: var(--font-bold);
 }
 .home-stat-sep {
   color: var(--color-text-muted);
@@ -3133,7 +3127,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="c257b9 add-reps-today-header-mzmbf"></div>
+  <div class="home-screen" id="home-screen" data-version="269cda add-reps-today-header-mzmbf"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -7692,13 +7686,13 @@ body.native-app {
       ] }),
       /* @__PURE__ */ u3("div", { class: "home-stats-bar", children: [
         /* @__PURE__ */ u3("span", { class: "home-stat", children: [
-          /* @__PURE__ */ u3("span", { class: "home-stat-value home-stat-today", children: repsToday.toLocaleString() }),
+          /* @__PURE__ */ u3("span", { class: "home-stat-value", children: repsToday.toLocaleString() }),
           " today"
         ] }),
         /* @__PURE__ */ u3("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
         /* @__PURE__ */ u3("span", { class: "home-stat", children: [
           /* @__PURE__ */ u3("span", { class: "home-stat-value", children: totalReps.toLocaleString() }),
-          " reps"
+          " total"
         ] }),
         /* @__PURE__ */ u3("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
         /* @__PURE__ */ u3("span", { class: "home-stat", children: [
