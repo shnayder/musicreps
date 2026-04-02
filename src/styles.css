@@ -382,6 +382,8 @@
   --type-metric-effort-leading: var(--leading-none);
   --type-metric-effort-color: var(--color-tertiary);
 
+  --type-metric-today-color: var(--color-accent);
+
   /* -- Status: state communication -- */
   --type-status-size: var(--text-sm);
   --type-status-weight: var(--font-normal);
@@ -629,6 +631,9 @@ body {
   font-weight: var(--type-metric-effort-weight);
   line-height: var(--type-metric-effort-leading);
   color: var(--type-metric-effort-color);
+}
+.home-stat-today {
+  color: var(--type-metric-today-color);
 }
 .home-stat-sep {
   color: var(--color-text-muted);

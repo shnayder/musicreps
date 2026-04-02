@@ -6,7 +6,7 @@ import type { ComponentChildren } from 'preact';
 import { useCallback, useMemo, useState } from 'preact/hooks';
 import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
 import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
-import { getGlobalEffort } from '../effort.ts';
+import { getGlobalEffort, toLocalDateString } from '../effort.ts';
 import { SkillIcon } from './icons.tsx';
 import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
@@ -662,8 +662,9 @@ function loadInitialTab(): HomeTab {
 // ---------------------------------------------------------------------------
 
 function HomeHeader(
-  { isNativeApp, totalReps, daysActive }: {
+  { isNativeApp, repsToday, totalReps, daysActive }: {
     isNativeApp?: boolean;
+    repsToday: number;
     totalReps: number;
     daysActive: number;
   },
@@ -682,6 +683,13 @@ function HomeHeader(
         </>
       )}
       <div class='home-stats-bar'>
+        <span class='home-stat'>
+          <span class='home-stat-value home-stat-today'>
+            {repsToday.toLocaleString()}
+          </span>
+          {' today'}
+        </span>
+        <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
           <span class='home-stat-value'>{totalReps.toLocaleString()}</span>
           {' reps'}
@@ -853,6 +861,7 @@ export function HomeScreen(
       <LayoutHeader>
         <HomeHeader
           isNativeApp={isNativeApp}
+          repsToday={globalEffort.dailyReps[toLocalDateString(new Date())] ?? 0}
           totalReps={globalEffort.totalReps}
           daysActive={globalEffort.daysActive}
         />
