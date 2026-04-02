@@ -3132,7 +3132,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="1c6c6e add-level-progress-bars-SVf3y"></div>
+  <div class="home-screen" id="home-screen" data-version="1459c7 add-level-progress-bars-SVf3y"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -7046,7 +7046,7 @@ body.native-app {
           label: entry.label,
           colors: entry.colors
         },
-        entry.label
+        entry.id
       )) })
     ] });
   }
@@ -11001,20 +11001,21 @@ body.native-app {
   function useLevelBars(def, learner, _phase, groupScopeResult) {
     const enabledGroups = groupScopeResult?.enabledGroups;
     return T2(() => {
+      if (_phase !== "round-complete") return [];
       if (def.scope.kind === "groups" && enabledGroups) {
         const scope = def.scope;
         return scope.allGroupIds.filter((id) => enabledGroups.has(id)).map((id) => {
           const g2 = scope.groups.find((g3) => g3.id === id);
-          const label = g2 ? resolveGroupLabel(g2.label) : id;
+          const label = g2 ? resolveGroupLabel(g2.longLabel ?? g2.label) : id;
           const colors2 = progressBarColors(
             learner.selector,
             scope.getItemIdsForGroup(id)
           );
-          return { label, colors: colors2 };
+          return { id, label, colors: colors2 };
         });
       }
       const colors = progressBarColors(learner.selector, def.allItems);
-      return colors.length > 0 ? [{ label: "", colors }] : [];
+      return colors.length > 0 ? [{ id: "_all", label: "", colors }] : [];
     }, [def, learner.selector, _phase, enabledGroups]);
   }
   function ModeHeader({ def, isIdle, progressColors, totalReps, navigateHome }) {
