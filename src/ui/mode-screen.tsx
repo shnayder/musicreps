@@ -483,9 +483,6 @@ export function RoundCompleteActions(
 // ---------------------------------------------------------------------------
 
 const TAB_ICONS: Record<string, string> = {
-  // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
-  practice: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>' +
-    '<path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
   // Bar chart
   progress: '<line x1="18" x2="18" y1="20" y2="10"/>' +
     '<line x1="12" x2="12" y1="20" y2="4"/>' +
@@ -614,7 +611,11 @@ export function PracticeTab(
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
-      label: <TabIcon icon='practice' text='Practice' />,
+      label: (
+        <span class='tab-icon-label' aria-label='Practice'>
+          <RepeatMark size={24} />
+        </span>
+      ),
       content: practiceContent ?? (
         <PracticeCard
           summary={summary}

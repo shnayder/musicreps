@@ -16,6 +16,7 @@ import {
   Tabs,
   useTabsPrefix,
 } from './mode-screen.tsx';
+import { RepeatMark } from './repeat-mark.tsx';
 import { FeedbackDisplay } from './quiz-ui.tsx';
 import { NoteButtons } from './buttons.tsx';
 import {
@@ -125,7 +126,11 @@ function Phase1Components(
             tabs={[
               {
                 id: 'practice' as ModeTab,
-                label: <TabIcon icon='practice' text='Practice' />,
+                label: (
+                  <span class='tab-icon-label' aria-label='Practice'>
+                    <RepeatMark size={24} />
+                  </span>
+                ),
                 content: (
                   <div style='padding:var(--pad-component)'>
                     Practice content
@@ -446,7 +451,11 @@ function ModeNavFooter() {
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
-      label: <TabIcon icon='practice' text='Practice' />,
+      label: (
+        <span class='tab-icon-label' aria-label='Practice'>
+          <RepeatMark size={24} />
+        </span>
+      ),
       content: null,
     },
     {
