@@ -505,6 +505,7 @@ export function SettingsPanel(
 
       {onOpenDev && (
         <section class='settings-section'>
+          <h2 class='settings-section-title'>Developer</h2>
           <button type='button' class='text-link' onClick={onOpenDev}>
             Dev panel
           </button>

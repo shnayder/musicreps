@@ -1157,8 +1157,7 @@ body {
   color: var(--type-heading-page-color);
 }
 .settings-section {
-  border-top: 1px solid var(--color-border-lighter);
-  padding-top: var(--pad-component);
+  /* spaced by .settings-page flex gap */
 }
 .settings-section-title {
   margin: 0 0 var(--gap-group);
@@ -1285,7 +1284,7 @@ body {
   display: block;
 }
 .tab-panel-title {
-  margin: 0;
+  margin: 0 0 var(--pad-component);
   padding-top: var(--pad-component);
   font-family: var(--type-heading-section-family);
   font-size: var(--type-heading-section-size);
