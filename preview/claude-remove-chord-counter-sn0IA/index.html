@@ -2658,19 +2658,6 @@ button {
   color: var(--color-notice);
   padding: var(--pad-component) 0;
 }
-/* Inline notice + Check button on same row (no layout shift) */
-.feedback-check-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--gap-group);
-}
-.feedback-notice-inline {
-  font-size: var(--type-quiz-feedback-size);
-  font-weight: var(--type-quiz-feedback-weight);
-  line-height: var(--type-quiz-feedback-leading);
-  color: var(--color-notice);
-}
 
 /* ==========================================================================
    15. PAGE ACTIONS
@@ -2752,6 +2739,17 @@ button {
 }
 .page-action-row > .page-action-primary {
   flex: 2;
+}
+/* Non-interactive notice label in a page-action-row (e.g. "Last question") */
+.page-action-notice {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-notice);
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
 }
 
 /* --- Standalone action buttons (positioning only — visual treatment via page-action-btn) --- */
@@ -3131,7 +3129,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="dc30a1 remove-chord-counter-sn0IA"></div>
+  <div class="home-screen" id="home-screen" data-version="d5078f remove-chord-counter-sn0IA"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -9468,9 +9466,9 @@ body.native-app {
     } else if (onNext) {
       button = /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: extraCls, onClick: onNext, children: label });
     } else if (onCheck) {
-      button = notice ? /* @__PURE__ */ u3("div", { class: "feedback-check-row", children: [
-        /* @__PURE__ */ u3("span", { class: "feedback-notice-inline", children: notice }),
-        /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" })
+      button = notice ? /* @__PURE__ */ u3("div", { class: "page-action-row", children: [
+        /* @__PURE__ */ u3("span", { class: "page-action-notice", children: notice }),
+        /* @__PURE__ */ u3(ActionButton, { variant: "primary", onClick: onCheck, children: "Check" })
       ] }) : /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" });
     } else {
       button = /* @__PURE__ */ u3(

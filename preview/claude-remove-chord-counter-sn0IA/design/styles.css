@@ -2644,19 +2644,6 @@ button {
   color: var(--color-notice);
   padding: var(--pad-component) 0;
 }
-/* Inline notice + Check button on same row (no layout shift) */
-.feedback-check-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--gap-group);
-}
-.feedback-notice-inline {
-  font-size: var(--type-quiz-feedback-size);
-  font-weight: var(--type-quiz-feedback-weight);
-  line-height: var(--type-quiz-feedback-leading);
-  color: var(--color-notice);
-}
 
 /* ==========================================================================
    15. PAGE ACTIONS
@@ -2738,6 +2725,17 @@ button {
 }
 .page-action-row > .page-action-primary {
   flex: 2;
+}
+/* Non-interactive notice label in a page-action-row (e.g. "Last question") */
+.page-action-notice {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-notice);
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
 }
 
 /* --- Standalone action buttons (positioning only — visual treatment via page-action-btn) --- */
