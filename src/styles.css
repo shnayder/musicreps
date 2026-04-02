@@ -634,6 +634,7 @@ body {
 }
 .home-stat-today {
   color: var(--type-metric-today-color);
+  font-weight: var(--font-bold);
 }
 .home-stat-sep {
   color: var(--color-text-muted);
