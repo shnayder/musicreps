@@ -2759,6 +2759,17 @@ button {
 .page-action-row > .page-action-primary {
   flex: 2;
 }
+/* Non-interactive notice label in a page-action-row (e.g. "Last question") */
+.page-action-notice {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-notice);
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
+}
 
 /* --- Standalone action buttons (positioning only — visual treatment via page-action-btn) --- */
 .next-btn,
@@ -2934,6 +2945,7 @@ button {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  padding: var(--gap-group) 0;
 }
 .interactive-fretboard > div:last-child {
   flex: 1;
@@ -2943,20 +2955,8 @@ button {
 }
 /* fretboard-wrapper, fretboard-container, and svg.fretboard
    inherit flex-chain-friendly sizing from general rules. */
-.interactive-fretboard-status {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  gap: var(--gap-section);
-  margin: 0 0 var(--gap-group) 0;
-}
-.interactive-fretboard-progress {
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
-  line-height: var(--type-metric-info-leading);
-  color: var(--type-metric-info-color);
-  font-variant-numeric: tabular-nums;
-}
+/* interactive-fretboard-status and interactive-fretboard-progress removed:
+   answer counter is no longer shown (free-entry mode). */
 .speed-tap-stats {
   font-size: var(--text-xs);
 }
@@ -3148,7 +3148,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1184"></div>
+  <div class="home-screen" id="home-screen" data-version="#1190"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -5789,7 +5789,7 @@ body.native-app {
       };
     });
     return {
-      correct: perEntry.every((e3) => e3.correct),
+      correct: inputs.length === q3.tones.length && perEntry.every((e3) => e3.correct),
       correctAnswer: q3.tones.map(displayNote).join(" "),
       perEntry
     };
@@ -9318,24 +9318,23 @@ body.native-app {
   }
 
   // src/ui/sequential-slots.tsx
-  function SequentialSlots({ expectedCount, entries, evaluated, correctTones }) {
+  function SequentialSlots({ entries, evaluated, correctTones }) {
     const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
+    const countMismatch = !!(evaluated && correctTones && entries.length !== correctTones.length);
     return /* @__PURE__ */ u3("div", { class: "seq-slots-container", children: [
-      /* @__PURE__ */ u3("div", { class: "seq-slots", children: Array.from({ length: expectedCount }, (_3, i3) => {
+      /* @__PURE__ */ u3("div", { class: "seq-slots", children: entries.map((entry, i3) => {
         let cls = "seq-slot";
-        let content = "\xA0";
+        let content;
         if (evaluated && i3 < evaluated.length) {
           content = evaluated[i3].display;
           cls += evaluated[i3].correct ? " correct" : " wrong";
-        } else if (i3 < entries.length) {
-          content = entries[i3].display;
+        } else {
+          content = entry.display;
           cls += " filled";
-        } else if (i3 === entries.length) {
-          cls += " active";
         }
         return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
       }) }),
-      anyWrong && correctTones && /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: t3 }, i3)) })
+      (anyWrong || countMismatch) && correctTones && /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: t3 }, i3)) })
     ] });
   }
 
@@ -9504,23 +9503,36 @@ body.native-app {
   }
 
   // src/ui/quiz-ui.tsx
-  function FeedbackDisplay({ text, className, hint, correct, onNext, label = "Next", notice }) {
+  function FeedbackDisplay({ text, className, hint, correct, onNext, onCheck, label = "Next", notice }) {
     let extraCls = "next-btn";
     if (correct === true) extraCls += " page-action-correct";
     else if (correct === false) extraCls += " page-action-wrong";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
-      notice && !onNext ? /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice }) : /* @__PURE__ */ u3(
+    let button;
+    if (notice && !onNext && !onCheck) {
+      button = /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice });
+    } else if (onNext) {
+      button = /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: extraCls, onClick: onNext, children: label });
+    } else if (onCheck) {
+      button = notice ? /* @__PURE__ */ u3("div", { class: "page-action-row", children: [
+        /* @__PURE__ */ u3("span", { class: "page-action-notice", children: notice }),
+        /* @__PURE__ */ u3(ActionButton, { variant: "primary", onClick: onCheck, children: "Check" })
+      ] }) : /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" });
+    } else {
+      button = /* @__PURE__ */ u3(
         ActionButton,
         {
           variant: "primary",
-          class: extraCls,
-          onClick: onNext ?? (() => {
-          }),
-          style: onNext ? void 0 : { visibility: "hidden" },
+          class: "next-btn",
+          onClick: () => {
+          },
+          style: { visibility: "hidden" },
           children: label
         }
-      ),
+      );
+    }
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
+      button,
       /* @__PURE__ */ u3(
         "div",
         {
@@ -9721,7 +9733,6 @@ body.native-app {
     onTap,
     tappedPositions,
     evaluated,
-    progressText,
     stringCount = 6,
     fretCount = 13,
     mutedStrings
@@ -9775,17 +9786,14 @@ body.native-app {
         }
       }
     }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
-    return /* @__PURE__ */ u3("div", { class: "interactive-fretboard", children: [
-      /* @__PURE__ */ u3("div", { class: "interactive-fretboard-status", children: /* @__PURE__ */ u3("span", { class: "interactive-fretboard-progress", children: progressText || "\xA0" }) }),
-      /* @__PURE__ */ u3(
-        "div",
-        {
-          ref: wrapperRef,
-          onClick: handleClick,
-          dangerouslySetInnerHTML: { __html: svgHTML }
-        }
-      )
-    ] });
+    return /* @__PURE__ */ u3("div", { class: "interactive-fretboard", children: /* @__PURE__ */ u3(
+      "div",
+      {
+        ref: wrapperRef,
+        onClick: handleClick,
+        dangerouslySetInnerHTML: { __html: svgHTML }
+      }
+    ) });
   }
 
   // src/ui/speed-check.tsx
@@ -10111,45 +10119,51 @@ body.native-app {
     const [seqEntries, setSeqEntries] = d2([]);
     const seqEntriesRef = A2([]);
     const [seqEvaluated, setSeqEvaluated] = d2(null);
+    const seqEvaluatedRef = A2(null);
     const [seqCorrectAnswer, setSeqCorrectAnswer] = d2("");
     const prevItemRef = A2(null);
     const resetAll = q2(() => {
       seqEntriesRef.current = [];
       setSeqEntries([]);
+      seqEvaluatedRef.current = null;
       setSeqEvaluated(null);
       setSeqCorrectAnswer("");
     }, []);
     const handleSeqInput = q2((input) => {
       if (!def.sequential || !currentQRef.current) return;
-      const q3 = currentQRef.current;
-      const expected = def.sequential.expectedCount(q3);
-      const raw = seqEntriesRef.current;
-      if (raw.length >= expected) return;
-      const newRaw = [...raw, input];
+      if (seqEvaluatedRef.current) return;
+      const newRaw = [...seqEntriesRef.current, input];
       seqEntriesRef.current = newRaw;
       setSeqEntries(newRaw.map((r3) => ({ display: displayNote(r3) })));
-      if (newRaw.length === expected) {
-        const result = def.sequential.evaluate(q3, newRaw);
-        setSeqEvaluated(result.perEntry);
-        setSeqCorrectAnswer(result.correctAnswer);
-        const sentinel = result.correct ? "__correct__" : "__wrong__";
-        submitRef.current(sentinel + ":" + result.correctAnswer);
-      }
     }, [def]);
     const handleSeqBatch = q2((text) => {
       if (!def.sequential?.parseBatchInput || !currentQRef.current) return false;
-      const q3 = currentQRef.current;
+      if (seqEvaluatedRef.current) return false;
       const notes = def.sequential.parseBatchInput(text);
-      const expected = def.sequential.expectedCount(q3);
-      if (notes.length !== expected) return false;
+      if (notes.length === 0) return false;
       seqEntriesRef.current = notes;
       setSeqEntries(notes.map((r3) => ({ display: displayNote(r3) })));
+      const q3 = currentQRef.current;
       const result = def.sequential.evaluate(q3, notes);
+      seqEvaluatedRef.current = result.perEntry;
       setSeqEvaluated(result.perEntry);
       setSeqCorrectAnswer(result.correctAnswer);
       const sentinel = result.correct ? "__correct__" : "__wrong__";
       submitRef.current(sentinel + ":" + result.correctAnswer);
       return true;
+    }, [def]);
+    const handleCheck = q2(() => {
+      if (!def.sequential || !currentQRef.current) return;
+      if (seqEvaluatedRef.current) return;
+      const raw = seqEntriesRef.current;
+      if (raw.length === 0) return;
+      const q3 = currentQRef.current;
+      const result = def.sequential.evaluate(q3, raw);
+      seqEvaluatedRef.current = result.perEntry;
+      setSeqEvaluated(result.perEntry);
+      setSeqCorrectAnswer(result.correctAnswer);
+      const sentinel = result.correct ? "__correct__" : "__wrong__";
+      submitRef.current(sentinel + ":" + result.correctAnswer);
     }, [def]);
     const resetOnItemChange = q2((currentItemId) => {
       if (currentItemId !== prevItemRef.current) {
@@ -10163,6 +10177,7 @@ body.native-app {
       seqCorrectAnswer,
       handleSeqInput,
       handleSeqBatch,
+      handleCheck,
       resetOnItemChange
     };
   }
@@ -10180,32 +10195,11 @@ body.native-app {
       }
     }
   }
-  function processMultiTap(multiTap, q3, tapped, positionKey3) {
-    const targets = multiTap.getTargets(q3);
+  function processMultiTap(_multiTap, _q, tapped, positionKey3) {
     if (tapped.has(positionKey3)) {
-      const next2 = new Set(tapped);
-      next2.delete(positionKey3);
-      return {
-        kind: "removed",
-        progressText: next2.size + " / " + targets.length
-      };
+      return { kind: "removed" };
     }
-    let next = new Set(tapped);
-    if (multiTap.onePerString) {
-      removeExistingOnString(next, positionKey3);
-    }
-    if (next.size >= targets.length) {
-      return { kind: "ignored" };
-    }
-    next = new Set(next);
-    next.add(positionKey3);
-    const progressText = next.size + " / " + targets.length;
-    if (next.size === targets.length) {
-      const result = multiTap.evaluate(q3, [...next]);
-      const sentinel = (result.correct ? "__correct__" : "__wrong__") + ":" + result.correctAnswer;
-      return { kind: "complete", progressText, result, sentinel };
-    }
-    return { kind: "added", progressText };
+    return { kind: "added" };
   }
   function useMultiTapInput(def, currentQRef, submitRef) {
     const [tappedPositions, setTappedPositions] = d2(
@@ -10213,29 +10207,28 @@ body.native-app {
     );
     const tappedRef = A2(/* @__PURE__ */ new Set());
     const [evaluated, setEvaluated] = d2(null);
-    const [progressText, setProgressText] = d2("");
+    const evaluatedRef = A2(null);
     const prevItemRef = A2(null);
     const resetAll = q2(() => {
       tappedRef.current = /* @__PURE__ */ new Set();
       setTappedPositions(/* @__PURE__ */ new Set());
+      evaluatedRef.current = null;
       setEvaluated(null);
-      setProgressText("");
     }, []);
     const handleTap = q2((positionKey3) => {
       if (!def.multiTap || !currentQRef.current) return;
+      if (evaluatedRef.current) return;
       const action = processMultiTap(
         def.multiTap,
         currentQRef.current,
         tappedRef.current,
         positionKey3
       );
-      if (action.kind === "ignored") return;
       if (action.kind === "removed") {
         const next2 = new Set(tappedRef.current);
         next2.delete(positionKey3);
         tappedRef.current = next2;
         setTappedPositions(next2);
-        setProgressText(action.progressText);
         return;
       }
       const next = new Set(tappedRef.current);
@@ -10245,11 +10238,20 @@ body.native-app {
       next.add(positionKey3);
       tappedRef.current = next;
       setTappedPositions(next);
-      setProgressText(action.progressText);
-      if (action.kind === "complete") {
-        setEvaluated(action.result);
-        submitRef.current(action.sentinel);
-      }
+    }, [def]);
+    const handleCheck = q2(() => {
+      if (!def.multiTap || !currentQRef.current) return;
+      if (evaluatedRef.current) return;
+      const tapped = tappedRef.current;
+      if (tapped.size === 0) return;
+      const result = def.multiTap.evaluate(
+        currentQRef.current,
+        [...tapped]
+      );
+      evaluatedRef.current = result;
+      setEvaluated(result);
+      const sentinel = (result.correct ? "__correct__" : "__wrong__") + ":" + result.correctAnswer;
+      submitRef.current(sentinel);
     }, [def]);
     const resetOnItemChange = q2((currentItemId) => {
       if (currentItemId !== prevItemRef.current) {
@@ -10260,8 +10262,8 @@ body.native-app {
     return {
       tappedPositions,
       evaluated,
-      progressText,
       handleTap,
+      handleCheck,
       resetOnItemChange
     };
   }
@@ -10494,7 +10496,6 @@ body.native-app {
           /* @__PURE__ */ u3(
             SequentialSlots,
             {
-              expectedCount: currentQ && def.sequential ? def.sequential.expectedCount(currentQ) : 0,
               entries: seq.entries,
               evaluated: seq.evaluated,
               correctTones: seq.correctAnswer ? seq.correctAnswer.split(" ") : null
@@ -10535,7 +10536,6 @@ body.native-app {
               onTap: multiTapInput.handleTap,
               tappedPositions: multiTapInput.tappedPositions,
               evaluated: multiTapInput.evaluated,
-              progressText: multiTapInput.progressText,
               stringCount,
               mutedStrings
             }
@@ -10701,6 +10701,7 @@ body.native-app {
           hint: engine.state.hintText || void 0,
           correct: engine.state.feedbackCorrect,
           onNext: engine.state.answered ? engine.nextQuestion : void 0,
+          onCheck: !engine.state.answered ? def.sequential && !seq.evaluated && seq.entries.length > 0 ? seq.handleCheck : def.multiTap && !multiTapInput.evaluated && multiTapInput.tappedPositions.size > 0 ? multiTapInput.handleCheck : void 0 : void 0,
           label: engine.state.roundTimerExpired ? "Continue" : "Next",
           notice: engine.state.roundTimerExpired && !engine.state.answered ? "Last question" : void 0
         }
@@ -10984,7 +10985,8 @@ body.native-app {
       evaluated: seqInput.seqEvaluated,
       correctAnswer: seqInput.seqCorrectAnswer,
       handleInput: seqInput.handleSeqInput,
-      handleBatch: seqInput.handleSeqBatch
+      handleBatch: seqInput.handleSeqBatch,
+      handleCheck: seqInput.handleCheck
     };
   }
   function useSpeedCheckOverlay(engine, def, ctrl) {
@@ -11720,7 +11722,7 @@ body.native-app {
       expectedCount: (q3) => q3.tones.length,
       evaluate,
       parseBatchInput: parseChordInput,
-      batchPlaceholder: (q3) => `${q3.tones.length} notes, e.g. C E G \u2014 Enter`
+      batchPlaceholder: "e.g. C E G \u2014 Enter"
     },
     buttons: { kind: "split-note" },
     scope: {
