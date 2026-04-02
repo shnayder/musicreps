@@ -258,5 +258,6 @@ function useFretboardController(
 
     narrowing,
     hideAccidentals: !hasAccidentals,
+    buttonColumns: hasAccidentals ? undefined : 4,
   };
 }
