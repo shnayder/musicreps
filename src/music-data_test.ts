@@ -1370,9 +1370,10 @@ describe('MODE_BEFORE_AFTER respects solfège', () => {
     try {
       setUseSolfege(false);
       const ba = MODE_BEFORE_AFTER.semitoneMath;
-      assert.ok(ba.before().includes('F\u266F'));
+      const beforeText = ba.before().join(' ');
+      assert.ok(beforeText.includes('F\u266F'));
       assert.ok(ba.after().includes('F\u266F'));
-      assert.ok(!ba.before().includes('Fa'));
+      assert.ok(!beforeText.includes('Fa'));
     } finally {
       setUseSolfege(original);
     }
@@ -1383,9 +1384,10 @@ describe('MODE_BEFORE_AFTER respects solfège', () => {
     try {
       setUseSolfege(true);
       const ba = MODE_BEFORE_AFTER.semitoneMath;
-      assert.ok(ba.before().includes('Fa'));
+      const beforeText = ba.before().join(' ');
+      assert.ok(beforeText.includes('Fa'));
       assert.ok(ba.after().includes('Fa'));
-      assert.ok(!ba.before().includes('F\u266F'));
+      assert.ok(!beforeText.includes('F\u266F'));
     } finally {
       setUseSolfege(original);
     }

@@ -979,21 +979,17 @@ function AboutTab(
   { description, beforeAfter }: {
     description: string;
     beforeAfter: {
-      before: string | (() => string);
+      before: string[] | (() => string[]);
       after: string | (() => string);
     };
   },
 ) {
-  const before = typeof beforeAfter.before === 'function'
+  const beforeLines = typeof beforeAfter.before === 'function'
     ? beforeAfter.before()
     : beforeAfter.before;
   const after = typeof beforeAfter.after === 'function'
     ? beforeAfter.after()
     : beforeAfter.after;
-
-  // Split before text into separate paragraphs at sentence boundaries
-  // so each thought occupies its own line, showing the slow counting process.
-  const beforeLines = before.split(/(?<=[.?!])\s+/);
 
   return (
     <div class='about-tab'>

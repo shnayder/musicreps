@@ -427,8 +427,7 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
 /** Mode-nav tab bar used in idle-phase footer examples. */
 function PreviewAboutTab() {
   const ba = MODE_BEFORE_AFTER.keySignatures;
-  const beforeText = ba.before();
-  const beforeLines = beforeText.split(/(?<=[.?!])\s+/);
+  const beforeLines = ba.before();
   return (
     <div class='about-tab'>
       <div class='about-columns'>

@@ -292,7 +292,7 @@ type ModeDefinitionBase<Q> = {
    *  matters. Falls back to `description` if omitted. */
   aboutDescription?: string;
   beforeAfter: {
-    before: string | (() => string);
+    before: string[] | (() => string[]);
     after: string | (() => string);
   };
   itemNoun: string;
