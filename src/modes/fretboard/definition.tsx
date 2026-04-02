@@ -5,7 +5,11 @@
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import type { Instrument } from '../../types.ts';
 import { isValidNoteInput } from '../../music-data.ts';
-import { MODE_BEFORE_AFTER, MODE_DESCRIPTIONS } from '../../mode-catalog.ts';
+import {
+  MODE_ABOUT_DESCRIPTIONS,
+  MODE_BEFORE_AFTER,
+  MODE_DESCRIPTIONS,
+} from '../../mode-catalog.ts';
 import {
   createAdaptiveKeyHandler,
   noteNarrowingSet,
@@ -67,6 +71,7 @@ export function createFretboardDef(
     name: instrument.name,
     namespace: instrument.storageNamespace,
     description: MODE_DESCRIPTIONS[instrument.id],
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS[instrument.id],
     beforeAfter: MODE_BEFORE_AFTER[instrument.id],
     itemNoun: 'positions',
 

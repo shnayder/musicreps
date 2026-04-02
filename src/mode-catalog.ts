@@ -11,17 +11,107 @@ import { displayNote } from './music-data.ts';
 // ---------------------------------------------------------------------------
 
 export const MODE_DESCRIPTIONS: Record<string, string> = {
-  fretboard: 'Name any fret instantly \u2014 no counting',
-  ukulele: 'Name any fret instantly \u2014 no counting',
-  speedTap: 'Find every position of a note, automatic',
-  noteSemitones: 'Notes to numbers and back, instant',
-  intervalSemitones: 'Interval sizes in semitones, automatic',
-  semitoneMath: 'Transpose by semitones without counting',
-  intervalMath: 'Transpose by interval without counting',
-  keySignatures: 'Sharps and flats for any key, instant recall',
-  scaleDegrees: 'Degrees and notes in any key, automatic',
-  diatonicChords: 'Chords in any key, instant recall',
-  chordSpelling: 'Spell any chord without thinking',
+  fretboard: 'Name any fret instantly',
+  ukulele: 'Name any fret instantly',
+  speedTap: 'Instantly find every position of any note',
+  noteSemitones: 'Convert between notes and semitone numbers instantly',
+  intervalSemitones: 'Know the semitone size of any interval instantly',
+  semitoneMath: 'Add and subtract semitones from any note',
+  intervalMath: 'Move up and down by any interval from any note',
+  keySignatures: 'Instantly know the sharps and flats in any key',
+  scaleDegrees: 'Know every scale degree in every key',
+  diatonicChords: 'Know every chord in every key',
+  chordSpelling: 'Instantly spell the notes in any chord',
+};
+
+// ---------------------------------------------------------------------------
+// About-tab descriptions — longer explanation of what the skill is and why
+// it matters. Shown only on the About tab, not the home screen.
+// ---------------------------------------------------------------------------
+
+export const MODE_ABOUT_DESCRIPTIONS: Record<string, string> = {
+  fretboard:
+    'You can get far on guitar without knowing note names \u2014 shapes, tab, ' +
+    'and fret numbers go a long way. Knowing the notes unlocks the next level: ' +
+    'finding your bearings when someone calls a key at a jam, building chord ' +
+    'voicings anywhere on the neck, moving a riff to a new position, or ' +
+    'understanding what makes that chord you stumbled on actually work. ' +
+    'A musician who knows their instrument can do things that someone who ' +
+    'memorized patterns can\u2019t. This skill builds instant recall for every ' +
+    'note on every fret.',
+  ukulele:
+    'You can get far on ukulele without knowing note names \u2014 shapes, tab, ' +
+    'and fret numbers go a long way. Knowing the notes unlocks the next level: ' +
+    'finding your bearings when someone calls a key at a jam, building chord ' +
+    'voicings anywhere on the neck, moving a riff to a new position, or ' +
+    'understanding what makes that chord you stumbled on actually work. ' +
+    'A musician who knows their instrument can do things that someone who ' +
+    'memorized patterns can\u2019t. This skill builds instant recall for every ' +
+    'note on every fret.',
+  speedTap:
+    'Speed Tap complements the fretboard learning skill, teaching you to find ' +
+    'every instance of a note on the neck. This lets you move between ' +
+    'positions fluidly \u2014 jump to a higher octave, find a bass note, or ' +
+    'play a chord wherever your hand happens to be.',
+  noteSemitones:
+    'The 12 notes of the chromatic scale can each be numbered by their ' +
+    'distance from C in semitones: C is 0, C\u266F is 1, D is 2, all the way ' +
+    'up to B at 11. This mapping is the foundation of all interval and ' +
+    'transposition math. For example, to find a perfect 5th above E: E is 4, ' +
+    'a fifth is 7 semitones, 4 + 7 = 11, and 11 is B. When you know these ' +
+    'numbers cold, that whole chain becomes instant \u2014 and so does every ' +
+    'skill that builds on it, from interval math to chord spelling.',
+  intervalSemitones:
+    'Intervals are a core building block of music, and each interval ' +
+    'corresponds to a number of semitones. A major 3rd is 4 semitones, a ' +
+    'perfect 5th is 7, and so on. Making this mapping automatic makes ' +
+    'transposition and chord building much easier. When you can convert ' +
+    'instantly in both directions, you stop translating and start thinking ' +
+    'in intervals directly.',
+  semitoneMath:
+    'Adding and subtracting semitones from notes is the fundamental ' +
+    'arithmetic of music. It\u2019s how you build chords (a major triad is ' +
+    'root, +4, +3), navigate the fretboard (each fret is one semitone), ' +
+    'apply scale formulas, and transpose. This skill makes that arithmetic ' +
+    'automatic, so you can work through any of these without counting note ' +
+    'by note.',
+  intervalMath:
+    'Interval Math is the named-interval version of Semitone Math. Instead ' +
+    'of \u201CC + 4 semitones,\u201D you work with \u201CC up a major ' +
+    '3rd\u201D \u2014 the way musicians actually talk. This is what you\u2019re ' +
+    'doing when you harmonize a melody, find a chord tone, or figure out what ' +
+    'note is a tritone away from where you are. Making it automatic means you ' +
+    'can think in musical terms without an intermediate translation step.',
+  keySignatures:
+    'Key signatures tell you which notes are sharped or flatted in a key ' +
+    '\u2014 they\u2019re the first thing you see on a piece of sheet music. ' +
+    'Automatically going from \u201C2 sharps\u201D to \u201CD maj/B min\u201D ' +
+    'lets you start playing without pausing to decode the key, identify the ' +
+    'scale and likely chords, and follow along when someone says ' +
+    '\u201Clet\u2019s play in E\u266D.\u201D This skill drills both ' +
+    'directions: key to signature and signature to key.',
+  scaleDegrees:
+    'Scale degrees are how musicians reference notes within a key \u2014 ' +
+    '\u201Cthe 5th of B\u266D\u201D or \u201Cplay the 3rd.\u201D They show ' +
+    'up everywhere: in chord charts, in Nashville numbering, in conversations ' +
+    'about harmony. When this mapping is automatic, you can hear \u201Cgo to ' +
+    'the 6th\u201D and know the note instantly in whatever key you\u2019re ' +
+    'in, without counting up from the root.',
+  diatonicChords:
+    'Every major key has seven chords built on its scale degrees \u2014 the ' +
+    'I is major, the ii is minor, the V is major, and so on. This is the ' +
+    'framework behind chord progressions: a I\u2013V\u2013vi\u2013IV in any ' +
+    'key is the same pattern, just different notes. When you know the ' +
+    'diatonic chords for every key, you can follow a chart written in Roman ' +
+    'numerals, predict what chords fit in a song, and transpose progressions ' +
+    'between keys without working them out from scratch.',
+  chordSpelling:
+    'Chord spelling is knowing the actual notes in a chord \u2014 Dm7 is D, ' +
+    'F, A, C. Whether you\u2019re voicing chords on an instrument, arranging ' +
+    'for other players, or analyzing a song, you need to go from a chord ' +
+    'symbol to its notes. Most musicians work this out by stacking intervals ' +
+    'each time. This skill makes it automatic: see the chord, know the ' +
+    'notes. Builds on Interval Math.',
 };
 
 // ---------------------------------------------------------------------------

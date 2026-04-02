@@ -34,7 +34,7 @@
     ]
   },
   "permissions": {
-    "additionalDirectories": ["../.todos"],
+    "additionalDirectories": ["~/Dropbox/projects/musicreps-root/.todos"],
     "allow": [
       "Bash(deno run:*)",
       "Bash(git add:*)",
@@ -58,7 +58,8 @@
       "Bash(deno task build:*)",
       "Bash(deno task:*)",
       "Bash(deno fmt:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(td:*)"
     ]
   },
   "sandbox": {
