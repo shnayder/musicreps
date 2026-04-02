@@ -5745,8 +5745,6 @@ ${text}`).join("\n\n");
     ] });
   }
   var TAB_ICONS = {
-    // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
-    practice: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
     // Bar chart
     progress: '<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
     // Info circle
@@ -8741,7 +8739,7 @@ ${text}`).join("\n\n");
           tabs: [
             {
               id: "practice",
-              label: /* @__PURE__ */ u3(TabIcon, { icon: "practice", text: "Practice" }),
+              label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", "aria-label": "Practice", children: /* @__PURE__ */ u3(RepeatMark, { size: 24 }) }),
               content: /* @__PURE__ */ u3("div", { style: "padding:var(--pad-component)", children: "Practice content" })
             },
             {
@@ -9070,7 +9068,7 @@ ${text}`).join("\n\n");
     const tabs = [
       {
         id: "practice",
-        label: /* @__PURE__ */ u3(TabIcon, { icon: "practice", text: "Practice" }),
+        label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", "aria-label": "Practice", children: /* @__PURE__ */ u3(RepeatMark, { size: 24 }) }),
         content: null
       },
       {
