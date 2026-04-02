@@ -415,13 +415,13 @@ function SettingsAboutLegal(
   { appConfig, version }: { appConfig: AppConfig; version: string },
 ) {
   return (
-    <div>
+    <>
       <section class='settings-section'>
         <h2 class='settings-section-title'>About</h2>
         <div class='settings-link-list'>
           {appConfig.contactEmail && (
             <a class='text-link' href={`mailto:${appConfig.contactEmail}`}>
-              Contact: {appConfig.contactEmail}
+              Contact
             </a>
           )}
           {appConfig.supportUrl && (
@@ -434,7 +434,7 @@ function SettingsAboutLegal(
               Support
             </a>
           )}
-          <div class='settings-meta'>Build number: {version}</div>
+          <span class='settings-meta'>Build {version}</span>
         </div>
       </section>
 
@@ -463,7 +463,7 @@ function SettingsAboutLegal(
           )}
         </div>
       </section>
-    </div>
+    </>
   );
 }
 
