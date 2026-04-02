@@ -2644,6 +2644,19 @@ button {
   color: var(--color-notice);
   padding: var(--pad-component) 0;
 }
+/* Inline notice + Check button on same row (no layout shift) */
+.feedback-check-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-group);
+}
+.feedback-notice-inline {
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
+  color: var(--color-notice);
+}
 
 /* ==========================================================================
    15. PAGE ACTIONS
@@ -2901,6 +2914,7 @@ button {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  padding: var(--gap-group) 0;
 }
 .interactive-fretboard > div:last-child {
   flex: 1;
@@ -2910,20 +2924,8 @@ button {
 }
 /* fretboard-wrapper, fretboard-container, and svg.fretboard
    inherit flex-chain-friendly sizing from general rules. */
-.interactive-fretboard-status {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  gap: var(--gap-section);
-  margin: 0 0 var(--gap-group) 0;
-}
-.interactive-fretboard-progress {
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
-  line-height: var(--type-metric-info-leading);
-  color: var(--type-metric-info-color);
-  font-variant-numeric: tabular-nums;
-}
+/* interactive-fretboard-status and interactive-fretboard-progress removed:
+   answer counter is no longer shown (free-entry mode). */
 .speed-tap-stats {
   font-size: var(--text-xs);
 }
