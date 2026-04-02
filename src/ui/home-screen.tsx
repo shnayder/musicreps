@@ -296,10 +296,13 @@ function ActiveSkillsList(
 ) {
   if (starred.size === 0) {
     return (
-      <p class='active-skills-empty'>
-        Pick the skills you want to drill. Star them in{' '}
-        <strong>All Skills</strong> to build your lineup.
-      </p>
+      <div>
+        <h2 class='tab-panel-title'>Active Skills</h2>
+        <p class='active-skills-empty'>
+          Pick the skills you want to drill. Star them in{' '}
+          <strong>All Skills</strong> to build your lineup.
+        </p>
+      </div>
     );
   }
 
@@ -350,6 +353,7 @@ function ActiveSkillsList(
 
   return (
     <div class='active-skills-list'>
+      <h2 class='tab-panel-title'>Active Skills</h2>
       {allDone && (
         <p class='active-skills-done'>
           All your starred skills are automatic. Nice work! Star new skills in
@@ -479,6 +483,7 @@ export function SettingsPanel(
 ) {
   return (
     <div class='settings-page'>
+      <h2 class='tab-panel-title'>Settings</h2>
       <section class='settings-section'>
         <h2 class='settings-section-title'>General</h2>
         <SettingToggle
@@ -611,6 +616,7 @@ function AllSkillsList(
 ) {
   return (
     <div class='home-modes'>
+      <h2 class='tab-panel-title'>All Skills</h2>
       <p class='all-skills-hint'>
         Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
         {' '}

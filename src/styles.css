@@ -844,7 +844,7 @@ body {
 }
 /* --- Active Skills tab content --- */
 .active-skills-list {
-  margin-top: var(--pad-component);
+  /* container only — children provide spacing */
 }
 .active-skills-empty {
   font-size: var(--type-status-size);
@@ -1283,6 +1283,15 @@ body {
 }
 .tab-panel.active {
   display: block;
+}
+.tab-panel-title {
+  margin: 0;
+  padding-top: var(--pad-component);
+  font-family: var(--type-heading-page-family);
+  font-size: var(--type-heading-page-size);
+  font-weight: var(--type-heading-page-weight);
+  line-height: var(--type-heading-page-leading);
+  color: var(--type-heading-page-color);
 }
 
 /* --- About tab --- */
