@@ -549,6 +549,16 @@ body {
   justify-content: center;
   min-height: 0;
 }
+/* When the prompt contains a fretboard, let it claim remaining space
+   and shrink the response zone to its natural height. */
+.quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-prompt {
+  flex: 1;
+  justify-content: flex-start;
+}
+.quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-response {
+  flex: none;
+  padding-top: var(--gap-group);
+}
 
 /* CenteredContent: vertically centered info/instruction screens */
 .centered-content {
