@@ -37,7 +37,8 @@ export function FeedbackDisplay(
   // Determine which button to show:
   // 1. After answer: Next button
   // 2. Before answer with entries: Check button
-  // 3. Otherwise: hidden placeholder
+  // 3. Notice only (e.g. "Last question"): notice text
+  // 4. Otherwise: hidden placeholder
   let button;
   if (notice && !onNext && !onCheck) {
     button = <div class='feedback-notice'>{notice}</div>;
@@ -49,9 +50,12 @@ export function FeedbackDisplay(
     );
   } else if (onCheck) {
     button = (
-      <ActionButton variant='primary' class='next-btn' onClick={onCheck}>
-        Check
-      </ActionButton>
+      <>
+        {notice && <div class='feedback-notice'>{notice}</div>}
+        <ActionButton variant='primary' class='next-btn' onClick={onCheck}>
+          Check
+        </ActionButton>
+      </>
     );
   } else {
     button = (

@@ -1,6 +1,6 @@
 // useMultiTapInput — handles multi-tap quiz modes.
-// Manages a set of tapped positions (no duplicates), evaluates all at once
-// after the expected count is reached, and resets on question change.
+// Manages a set of tapped positions (no duplicates), evaluates on explicit
+// Check action, and resets on question change.
 // Parallel to useSequentialInput but with set semantics (order doesn't matter).
 
 import { useCallback, useRef, useState } from 'preact/hooks';
@@ -16,7 +16,6 @@ import type {
 
 /** Result of processing a single tap against the collection state. */
 export type TapAction =
-  | { kind: 'ignored' }
   | { kind: 'added' }
   | { kind: 'removed' };
 
@@ -42,13 +41,10 @@ function removeExistingOnString(set: Set<string>, positionKey: string): void {
 /**
  * Process a tap against the current collection state (pure function).
  * Tapping a selected position deselects it; tapping an unselected position
- * adds it; completing the set triggers evaluation.
- *
- * When `onePerString` is true, tapping a new fret on a string that already
- * has a tap replaces the old one (chord shape behavior: one note per string).
+ * adds it. Does not trigger evaluation — the caller uses handleCheck for that.
  */
 export function processMultiTap<Q>(
-  multiTap: MultiTapDef<Q>,
+  _multiTap: MultiTapDef<Q>,
   _q: Q,
   tapped: ReadonlySet<string>,
   positionKey: string,
@@ -56,13 +52,6 @@ export function processMultiTap<Q>(
   // Deselect: tapping an already-selected position removes it
   if (tapped.has(positionKey)) {
     return { kind: 'removed' };
-  }
-
-  // onePerString: replace any existing tap on the same string
-  if (multiTap.onePerString) {
-    const next = new Set(tapped);
-    removeExistingOnString(next, positionKey);
-    // Even if a slot was freed, we just return 'added'
   }
 
   return { kind: 'added' };
@@ -117,8 +106,6 @@ export function useMultiTapInput<Q>(
       positionKey,
     );
 
-    if (action.kind === 'ignored') return;
-
     if (action.kind === 'removed') {
       const next = new Set(tappedRef.current);
       next.delete(positionKey);
@@ -140,6 +127,7 @@ export function useMultiTapInput<Q>(
 
   const handleCheck = useCallback(() => {
     if (!def.multiTap || !currentQRef.current) return;
+    if (evaluatedRef.current) return; // already evaluated (e.g. double-click)
     const tapped = tappedRef.current;
     if (tapped.size === 0) return;
 

@@ -1,5 +1,5 @@
 // useSequentialInput — handles multi-input sequential quiz modes.
-// Manages the array of entries, evaluates all at once after the last input,
+// Manages the array of entries, evaluates on explicit Check action,
 // and resets on question change.
 
 import { useCallback, useRef, useState } from 'preact/hooks';
@@ -51,6 +51,7 @@ export function useSequentialInput<Q>(
 
   const handleSeqBatch = useCallback((text: string): boolean => {
     if (!def.sequential?.parseBatchInput || !currentQRef.current) return false;
+    if (seqEvaluatedRef.current) return false; // already evaluated
     const notes = def.sequential.parseBatchInput(text);
     if (notes.length === 0) return false;
 
@@ -70,6 +71,7 @@ export function useSequentialInput<Q>(
 
   const handleCheck = useCallback(() => {
     if (!def.sequential || !currentQRef.current) return;
+    if (seqEvaluatedRef.current) return; // already evaluated (e.g. double-click)
     const raw = seqEntriesRef.current;
     if (raw.length === 0) return;
 

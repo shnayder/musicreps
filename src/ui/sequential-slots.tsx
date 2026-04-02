@@ -23,9 +23,9 @@ export function SequentialSlots(
   },
 ) {
   const anyWrong = evaluated?.some((e) => !e.correct) ?? false;
-  // Also wrong if user entered fewer notes than expected
-  const countMismatch = evaluated && correctTones &&
-    entries.length !== correctTones.length;
+  // Also wrong if user entered a different number of notes than expected
+  const countMismatch = !!(evaluated && correctTones &&
+    entries.length !== correctTones.length);
 
   return (
     <div class='seq-slots-container'>

@@ -1,5 +1,6 @@
-// Tests for processMultiTap — the pure collection/evaluation logic shared by
-// useMultiTapInput. Tests the actual exported function, not a re-implementation.
+// Tests for processMultiTap — the pure tap toggle logic shared by
+// useMultiTapInput. The function only handles add/remove; evaluation
+// and onePerString replacement are handled by the hook.
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,8 +11,8 @@ import { processMultiTap } from './use-multi-tap-input.ts';
 // Test helpers
 // ---------------------------------------------------------------------------
 
-/** Create a simple multiTap spec for testing. */
-function makeDef(_targets: string[]): MultiTapDef<{ targets: string[] }> {
+/** Create a minimal multiTap spec for testing. */
+function makeDef(): MultiTapDef<{ targets: string[] }> {
   return {
     getTargets: (q) => q.targets,
     evaluate: (q, tapped) => {
@@ -33,10 +34,9 @@ function makeDef(_targets: string[]): MultiTapDef<{ targets: string[] }> {
 // ---------------------------------------------------------------------------
 
 describe('processMultiTap', () => {
-  it('adds a valid tap', () => {
-    const def = makeDef(['0-0', '1-5']);
+  it('adds a new tap', () => {
     const action = processMultiTap(
-      def,
+      makeDef(),
       { targets: ['0-0', '1-5'] },
       new Set(),
       '0-0',
@@ -45,68 +45,33 @@ describe('processMultiTap', () => {
   });
 
   it('deselects an already-tapped position', () => {
-    const def = makeDef(['0-0', '1-5']);
-    const already = new Set(['0-0']);
     const action = processMultiTap(
-      def,
+      makeDef(),
       { targets: ['0-0', '1-5'] },
-      already,
+      new Set(['0-0']),
       '0-0',
     );
     assert.equal(action.kind, 'removed');
   });
 
   it('allows taps beyond target count (no auto-submit)', () => {
-    const def = makeDef(['0-0']);
-    const full = new Set(['0-0']);
-    const action = processMultiTap(def, { targets: ['0-0'] }, full, '1-5');
-    // No longer 'ignored' — user can tap freely
-    assert.equal(action.kind, 'added');
-  });
-
-  it('returns added for all non-duplicate taps (no auto-complete)', () => {
-    const def = makeDef(['0-0', '1-5']);
-    const partial = new Set(['0-0']);
     const action = processMultiTap(
-      def,
-      { targets: ['0-0', '1-5'] },
-      partial,
+      makeDef(),
+      { targets: ['0-0'] },
+      new Set(['0-0']),
       '1-5',
     );
-    // No longer auto-completes — just added
-    assert.equal(action.kind, 'added');
-  });
-});
-
-describe('processMultiTap onePerString', () => {
-  it('replaces existing tap on same string', () => {
-    const def: MultiTapDef<{ targets: string[] }> = {
-      ...makeDef(['0-1', '1-2']),
-      onePerString: true,
-    };
-    // Tap string 0 fret 3 first (wrong), then string 0 fret 1 (correct)
-    const tapped = new Set(['0-3']);
-    const action = processMultiTap(
-      def,
-      { targets: ['0-1', '1-2'] },
-      tapped,
-      '0-1',
-    );
-    // Should return added (replacement handled by hook)
+    // Tapping a new position on a full set still returns 'added'
+    // (evaluation is deferred to handleCheck)
     assert.equal(action.kind, 'added');
   });
 
-  it('does not replace tap on different string', () => {
-    const def: MultiTapDef<{ targets: string[] }> = {
-      ...makeDef(['0-1', '1-2', '2-3']),
-      onePerString: true,
-    };
-    const tapped = new Set(['0-1']);
+  it('adds without auto-completing when all targets tapped', () => {
     const action = processMultiTap(
-      def,
-      { targets: ['0-1', '1-2', '2-3'] },
-      tapped,
-      '1-2',
+      makeDef(),
+      { targets: ['0-0', '1-5'] },
+      new Set(['0-0']),
+      '1-5',
     );
     assert.equal(action.kind, 'added');
   });
