@@ -684,7 +684,7 @@ function HomeHeader(
       )}
       <div class='home-stats-bar'>
         <span class='home-stat'>
-          <span class='home-stat-value home-stat-today'>
+          <span class='home-stat-value'>
             {repsToday.toLocaleString()}
           </span>
           {' today'}
@@ -692,7 +692,7 @@ function HomeHeader(
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
           <span class='home-stat-value'>{totalReps.toLocaleString()}</span>
-          {' reps'}
+          {' total'}
         </span>
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
