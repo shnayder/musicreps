@@ -3134,7 +3134,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1172"></div>
+  <div class="home-screen" id="home-screen" data-version="#1176"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -7697,7 +7697,7 @@ body.native-app {
     }
     return loadStarredSkills().size > 0 ? "active" : "all";
   }
-  function HomeHeader({ isNativeApp, totalReps, daysActive }) {
+  function HomeHeader({ isNativeApp, repsToday, totalReps, daysActive }) {
     return /* @__PURE__ */ u3("div", { class: `home-header${isNativeApp ? " native" : ""}`, children: [
       !isNativeApp && /* @__PURE__ */ u3(k, { children: [
         /* @__PURE__ */ u3("h1", { class: "home-title", children: [
@@ -7708,8 +7708,13 @@ body.native-app {
       ] }),
       /* @__PURE__ */ u3("div", { class: "home-stats-bar", children: [
         /* @__PURE__ */ u3("span", { class: "home-stat", children: [
+          /* @__PURE__ */ u3("span", { class: "home-stat-value", children: repsToday.toLocaleString() }),
+          " today"
+        ] }),
+        /* @__PURE__ */ u3("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
+        /* @__PURE__ */ u3("span", { class: "home-stat", children: [
           /* @__PURE__ */ u3("span", { class: "home-stat-value", children: totalReps.toLocaleString() }),
-          " reps"
+          " total"
         ] }),
         /* @__PURE__ */ u3("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
         /* @__PURE__ */ u3("span", { class: "home-stat", children: [
@@ -7836,6 +7841,7 @@ body.native-app {
         HomeHeader,
         {
           isNativeApp,
+          repsToday: globalEffort.dailyReps[toLocalDateString(/* @__PURE__ */ new Date())] ?? 0,
           totalReps: globalEffort.totalReps,
           daysActive: globalEffort.daysActive
         }
