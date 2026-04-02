@@ -63,8 +63,6 @@ type InteractiveFretboardProps = {
   tappedPositions: ReadonlySet<string>;
   /** Evaluation result (null during collection, populated after submission). */
   evaluated: MultiTapEvalResult | null;
-  /** Progress text (e.g., "3 / 8"). */
-  progressText: string;
   /** Number of strings (default 6 for guitar). */
   stringCount?: number;
   /** Number of frets including open (default 13 = frets 0-12). */
@@ -130,7 +128,6 @@ export function InteractiveFretboard(
     onTap,
     tappedPositions,
     evaluated,
-    progressText,
     stringCount = 6,
     fretCount = 13,
     mutedStrings,
@@ -200,11 +197,6 @@ export function InteractiveFretboard(
 
   return (
     <div class='interactive-fretboard'>
-      <div class='interactive-fretboard-status'>
-        <span class='interactive-fretboard-progress'>
-          {progressText || '\u00A0'}
-        </span>
-      </div>
       <div
         ref={wrapperRef}
         onClick={handleClick}

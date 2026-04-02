@@ -442,9 +442,6 @@ function SequentialQuizArea<Q>(
             ? ctrl.renderPrompt(currentQ)
             : <div class='quiz-prompt'>{promptText}</div>}
           <SequentialSlots
-            expectedCount={currentQ && def.sequential
-              ? def.sequential.expectedCount(currentQ)
-              : 0}
             entries={seq.entries}
             evaluated={seq.evaluated}
             correctTones={seq.correctAnswer
@@ -499,7 +496,6 @@ function MultiTapQuizArea(
             onTap={multiTapInput.handleTap}
             tappedPositions={multiTapInput.tappedPositions}
             evaluated={multiTapInput.evaluated}
-            progressText={multiTapInput.progressText}
             stringCount={stringCount}
             mutedStrings={mutedStrings}
           />
@@ -609,6 +605,7 @@ type QuizActiveViewProps<Q> = {
     correctAnswer: string;
     handleInput: (input: string) => void;
     handleBatch: (text: string) => boolean;
+    handleCheck: () => void;
   };
   multiTapInput: MultiTapInputHandle;
   activeButtons: ButtonsDef;
@@ -742,6 +739,14 @@ function QuizActiveView<Q>(
           hint={engine.state.hintText || undefined}
           correct={engine.state.feedbackCorrect}
           onNext={engine.state.answered ? engine.nextQuestion : undefined}
+          onCheck={!engine.state.answered
+            ? (def.sequential && !seq.evaluated && seq.entries.length > 0
+              ? seq.handleCheck
+              : def.multiTap && !multiTapInput.evaluated &&
+                  multiTapInput.tappedPositions.size > 0
+              ? multiTapInput.handleCheck
+              : undefined)
+            : undefined}
           label={engine.state.roundTimerExpired ? 'Continue' : 'Next'}
           notice={engine.state.roundTimerExpired && !engine.state.answered
             ? 'Last question'
@@ -1215,6 +1220,7 @@ function buildSeqProps(seqInput: ReturnType<typeof useSequentialInput>) {
     correctAnswer: seqInput.seqCorrectAnswer,
     handleInput: seqInput.handleSeqInput,
     handleBatch: seqInput.handleSeqBatch,
+    handleCheck: seqInput.handleCheck,
   };
 }
 

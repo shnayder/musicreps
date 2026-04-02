@@ -157,7 +157,8 @@ export function evaluate(q: Question, inputs: string[]): SequentialEvalResult {
   });
 
   return {
-    correct: perEntry.every((e) => e.correct),
+    correct: inputs.length === q.tones.length &&
+      perEntry.every((e) => e.correct),
     correctAnswer: q.tones.map(displayNote).join(' '),
     perEntry,
   };

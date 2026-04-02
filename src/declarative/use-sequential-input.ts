@@ -1,5 +1,5 @@
 // useSequentialInput — handles multi-input sequential quiz modes.
-// Manages the array of entries, evaluates all at once after the last input,
+// Manages the array of entries, evaluates on explicit Check action,
 // and resets on question change.
 
 import { useCallback, useRef, useState } from 'preact/hooks';
@@ -12,6 +12,8 @@ export type SequentialInputHandle<Q> = {
   seqCorrectAnswer: string;
   handleSeqInput: (input: string) => void;
   handleSeqBatch: (text: string) => boolean;
+  /** Manually trigger evaluation of collected entries. */
+  handleCheck: () => void;
   resetOnItemChange: (currentItemId: string | null) => void;
 };
 
@@ -25,52 +27,61 @@ export function useSequentialInput<Q>(
   const [seqEvaluated, setSeqEvaluated] = useState<
     SequentialEntryResult[] | null
   >(null);
+  const seqEvaluatedRef = useRef<SequentialEntryResult[] | null>(null);
   const [seqCorrectAnswer, setSeqCorrectAnswer] = useState('');
   const prevItemRef = useRef<string | null>(null);
 
   const resetAll = useCallback(() => {
     seqEntriesRef.current = [];
     setSeqEntries([]);
+    seqEvaluatedRef.current = null;
     setSeqEvaluated(null);
     setSeqCorrectAnswer('');
   }, []);
 
   const handleSeqInput = useCallback((input: string) => {
     if (!def.sequential || !currentQRef.current) return;
-    const q = currentQRef.current;
-    const expected = def.sequential.expectedCount(q);
-    const raw = seqEntriesRef.current;
-    if (raw.length >= expected) return;
+    // Don't accept more input after evaluation
+    if (seqEvaluatedRef.current) return;
 
-    const newRaw = [...raw, input];
+    const newRaw = [...seqEntriesRef.current, input];
     seqEntriesRef.current = newRaw;
     setSeqEntries(newRaw.map((r) => ({ display: displayNote(r) })));
-
-    if (newRaw.length === expected) {
-      const result = def.sequential.evaluate(q, newRaw);
-      setSeqEvaluated(result.perEntry);
-      setSeqCorrectAnswer(result.correctAnswer);
-      const sentinel = result.correct ? '__correct__' : '__wrong__';
-      submitRef.current(sentinel + ':' + result.correctAnswer);
-    }
   }, [def]);
 
   const handleSeqBatch = useCallback((text: string): boolean => {
     if (!def.sequential?.parseBatchInput || !currentQRef.current) return false;
-    const q = currentQRef.current;
+    if (seqEvaluatedRef.current) return false; // already evaluated
     const notes = def.sequential.parseBatchInput(text);
-    const expected = def.sequential.expectedCount(q);
-    if (notes.length !== expected) return false;
+    if (notes.length === 0) return false;
 
+    // Replace entries with parsed batch, then immediately check
     seqEntriesRef.current = notes;
     setSeqEntries(notes.map((r) => ({ display: displayNote(r) })));
 
+    const q = currentQRef.current;
     const result = def.sequential.evaluate(q, notes);
+    seqEvaluatedRef.current = result.perEntry;
     setSeqEvaluated(result.perEntry);
     setSeqCorrectAnswer(result.correctAnswer);
     const sentinel = result.correct ? '__correct__' : '__wrong__';
     submitRef.current(sentinel + ':' + result.correctAnswer);
     return true;
+  }, [def]);
+
+  const handleCheck = useCallback(() => {
+    if (!def.sequential || !currentQRef.current) return;
+    if (seqEvaluatedRef.current) return; // already evaluated (e.g. double-click)
+    const raw = seqEntriesRef.current;
+    if (raw.length === 0) return;
+
+    const q = currentQRef.current;
+    const result = def.sequential.evaluate(q, raw);
+    seqEvaluatedRef.current = result.perEntry;
+    setSeqEvaluated(result.perEntry);
+    setSeqCorrectAnswer(result.correctAnswer);
+    const sentinel = result.correct ? '__correct__' : '__wrong__';
+    submitRef.current(sentinel + ':' + result.correctAnswer);
   }, [def]);
 
   const resetOnItemChange = useCallback((currentItemId: string | null) => {
@@ -86,6 +97,7 @@ export function useSequentialInput<Q>(
     seqCorrectAnswer,
     handleSeqInput,
     handleSeqBatch,
+    handleCheck,
     resetOnItemChange,
   };
 }

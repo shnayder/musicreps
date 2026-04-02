@@ -17,12 +17,14 @@ export function TextPrompt({ text }: { text: string }) {
 // ---------------------------------------------------------------------------
 
 export function FeedbackDisplay(
-  { text, className, hint, correct, onNext, label = 'Next', notice }: {
+  { text, className, hint, correct, onNext, onCheck, label = 'Next', notice }: {
     text: string;
     className: string;
     hint?: string;
     correct?: boolean | null;
     onNext?: () => void;
+    /** Show a "Check" button for free-entry modes (sequential/multi-tap). */
+    onCheck?: () => void;
     label?: string;
     /** Non-interactive notice shown when there's no action button. */
     notice?: string;
@@ -31,21 +33,53 @@ export function FeedbackDisplay(
   let extraCls = 'next-btn';
   if (correct === true) extraCls += ' page-action-correct';
   else if (correct === false) extraCls += ' page-action-wrong';
+
+  // Determine which button to show:
+  // 1. After answer: Next button
+  // 2. Before answer with entries: Check button
+  // 3. Notice only (e.g. "Last question"): notice text
+  // 4. Otherwise: hidden placeholder
+  let button;
+  if (notice && !onNext && !onCheck) {
+    button = <div class='feedback-notice'>{notice}</div>;
+  } else if (onNext) {
+    button = (
+      <ActionButton variant='primary' class={extraCls} onClick={onNext}>
+        {label}
+      </ActionButton>
+    );
+  } else if (onCheck) {
+    button = notice
+      ? (
+        <div class='page-action-row'>
+          <span class='page-action-notice'>{notice}</span>
+          <ActionButton variant='primary' onClick={onCheck}>
+            Check
+          </ActionButton>
+        </div>
+      )
+      : (
+        <ActionButton variant='primary' class='next-btn' onClick={onCheck}>
+          Check
+        </ActionButton>
+      );
+  } else {
+    button = (
+      <ActionButton
+        variant='primary'
+        class='next-btn'
+        onClick={() => {}}
+        style={{ visibility: 'hidden' }}
+      >
+        {label}
+      </ActionButton>
+    );
+  }
+
   return (
     <>
       <div class={className + ' sr-only'} aria-live='polite'>{text}</div>
-      {notice && !onNext
-        ? <div class='feedback-notice'>{notice}</div>
-        : (
-          <ActionButton
-            variant='primary'
-            class={extraCls}
-            onClick={onNext ?? (() => {})}
-            style={onNext ? undefined : { visibility: 'hidden' }}
-          >
-            {label}
-          </ActionButton>
-        )}
+      {button}
       <div
         class='hint'
         style={hint ? undefined : { visibility: 'hidden' }}
