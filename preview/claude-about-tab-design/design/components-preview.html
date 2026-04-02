@@ -415,7 +415,7 @@
      ================================================================ */
 
   /* -- Action: primary CTA buttons (Practice, Stop, Next) -- */
-  --type-action-size: var(--text-lg);
+  --type-action-size: var(--text-base);
   --type-action-weight: var(--font-semibold);
   --type-action-leading: var(--leading-none);
   --type-action-color: var(--color-on-brand);
@@ -691,9 +691,8 @@ body {
 /* --- Mode navigation: bottom bar on mobile, top tabs on desktop --- */
 .tab-icon-label {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
 }
 .tab-icon-label svg {
   display: block;
@@ -730,8 +729,7 @@ body {
     display: block;
   }
   .tab-icon-label {
-    flex-direction: row;
-    gap: var(--gap-related);
+    justify-content: center;
   }
 }
 
@@ -868,7 +866,7 @@ body {
 }
 /* --- Active Skills tab content --- */
 .active-skills-list {
-  margin-top: var(--pad-component);
+  /* container only — children provide spacing */
 }
 .active-skills-empty {
   font-size: var(--type-status-size);
@@ -885,7 +883,7 @@ body {
   line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
-  margin: 0 0 var(--gap-group);
+  margin: 0 0 var(--gap-related);
   text-align: center;
 }
 /* Shared pill/badge component */
@@ -1164,7 +1162,6 @@ body {
 .settings-page {
   display: flex;
   flex-direction: column;
-  gap: var(--pad-component);
 }
 .settings-page-header {
   display: flex;
@@ -1180,12 +1177,11 @@ body {
   line-height: var(--type-heading-page-leading);
   color: var(--type-heading-page-color);
 }
-.settings-section {
-  border-top: 1px solid var(--color-border-lighter);
-  padding-top: var(--pad-component);
+.settings-section + .settings-section {
+  margin-top: var(--pad-component);
 }
 .settings-section-title {
-  margin: 0 0 var(--gap-group);
+  margin: 0 0 var(--gap-related);
   font-size: var(--text-base);
 }
 .settings-link-list {
@@ -1193,15 +1189,22 @@ body {
   flex-direction: column;
   align-items: flex-start;
 }
+.settings-page .text-link {
+  font-size: var(--type-label-size);
+  padding: var(--gap-related) 0;
+  margin: 0;
+  min-height: 0;
+}
 .settings-meta {
-  font-size: var(--text-sm);
+  font-size: var(--type-label-size);
   color: var(--color-text-muted);
+  padding: var(--gap-related) 0;
 }
 
 .settings-field {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-group);
+  gap: var(--gap-related);
 }
 
 .segmented-control {
@@ -1307,6 +1310,15 @@ body {
 }
 .tab-panel.active {
   display: block;
+}
+.tab-panel-title {
+  margin: 0 0 var(--gap-group);
+  padding-top: var(--pad-component);
+  font-family: var(--type-heading-section-family);
+  font-size: var(--type-heading-section-size);
+  font-weight: var(--type-heading-section-weight);
+  line-height: var(--type-heading-section-leading);
+  color: var(--type-heading-section-color);
 }
 
 /* --- About tab --- */
@@ -1472,6 +1484,9 @@ body {
   border: 1px solid var(--color-border-lighter);
   border-radius: var(--radius-md);
   background: var(--color-well);
+}
+.progress-bar-plain .progress-bar-label {
+  margin-bottom: var(--gap-related);
 }
 .progress-bar-label {
   margin-bottom: var(--gap-related);
@@ -2160,6 +2175,10 @@ button {
   margin: 0 auto;
   padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-group);
+  text-align: left;
 }
 .round-stat-line {
   font-size: var(--type-status-size);
@@ -2734,6 +2753,17 @@ button {
 .page-action-row > .page-action-primary {
   flex: 2;
 }
+/* Non-interactive notice label in a page-action-row (e.g. "Last question") */
+.page-action-notice {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-notice);
+  font-size: var(--type-quiz-feedback-size);
+  font-weight: var(--type-quiz-feedback-weight);
+  line-height: var(--type-quiz-feedback-leading);
+}
 
 /* --- Standalone action buttons (positioning only — visual treatment via page-action-btn) --- */
 .next-btn,
@@ -2909,6 +2939,7 @@ button {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  padding: var(--gap-group) 0;
 }
 .interactive-fretboard > div:last-child {
   flex: 1;
@@ -2918,20 +2949,8 @@ button {
 }
 /* fretboard-wrapper, fretboard-container, and svg.fretboard
    inherit flex-chain-friendly sizing from general rules. */
-.interactive-fretboard-status {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  gap: var(--gap-section);
-  margin: 0 0 var(--gap-group) 0;
-}
-.interactive-fretboard-progress {
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
-  line-height: var(--type-metric-info-leading);
-  color: var(--type-metric-info-color);
-  font-variant-numeric: tabular-nums;
-}
+/* interactive-fretboard-status and interactive-fretboard-progress removed:
+   answer counter is no longer shown (free-entry mode). */
 .speed-tap-stats {
   font-size: var(--text-xs);
 }
@@ -4225,6 +4244,7 @@ body.native-app {
       return `<circle class="fb-marker" cx="${w3 / 2}" cy="${cy}" r="4"/>`;
     }).join("\n      ");
   }
+  var POSITION_CIRCLE_R = 14;
   function positionCircles(stringCount = 6, fretCount = 13) {
     if (fretCount > MAX_FRET_COUNT) {
       throw new Error(
@@ -4234,7 +4254,7 @@ body.native-app {
     return Array.from(
       { length: stringCount },
       (_2, string) => Array.from({ length: fretCount }, (_3, fret) => {
-        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="14"/>`;
+        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="${POSITION_CIRCLE_R}"/>`;
       }).join("\n      ")
     ).join("\n      ");
   }
@@ -4252,8 +4272,6 @@ body.native-app {
       }).join("\n      ")
     ).join("\n      ");
   }
-
-  // src/html-helpers.ts
   function fretboardSVG(config = {}) {
     const sc = config.stringCount ?? 6;
     const fc = config.fretCount ?? 13;
@@ -5087,6 +5105,13 @@ ${text}`).join("\n\n");
   function GroupProgressBar({ colors, disabled }) {
     return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `background:${color}` }, i3)) });
   }
+  function ProgressBarLabeled({ label, colors, disabled, plain }) {
+    const cls = plain ? "progress-bar-plain" : "progress-bar-labeled";
+    return /* @__PURE__ */ u3("div", { class: cls, children: [
+      label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
+      /* @__PURE__ */ u3(GroupProgressBar, { colors, disabled })
+    ] });
+  }
   function GroupToggles({ labels, active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "toggle-group", children: [
       /* @__PURE__ */ u3(Text, { role: "label", class: "toggle-group-label", children: "Groups" }),
@@ -5340,23 +5365,36 @@ ${text}`).join("\n\n");
   function TextPrompt({ text }) {
     return /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: text });
   }
-  function FeedbackDisplay({ text, className, hint, correct, onNext, label = "Next", notice }) {
+  function FeedbackDisplay({ text, className, hint, correct, onNext, onCheck, label = "Next", notice }) {
     let extraCls = "next-btn";
     if (correct === true) extraCls += " page-action-correct";
     else if (correct === false) extraCls += " page-action-wrong";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
-      notice && !onNext ? /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice }) : /* @__PURE__ */ u3(
+    let button;
+    if (notice && !onNext && !onCheck) {
+      button = /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice });
+    } else if (onNext) {
+      button = /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: extraCls, onClick: onNext, children: label });
+    } else if (onCheck) {
+      button = notice ? /* @__PURE__ */ u3("div", { class: "page-action-row", children: [
+        /* @__PURE__ */ u3("span", { class: "page-action-notice", children: notice }),
+        /* @__PURE__ */ u3(ActionButton, { variant: "primary", onClick: onCheck, children: "Check" })
+      ] }) : /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" });
+    } else {
+      button = /* @__PURE__ */ u3(
         ActionButton,
         {
           variant: "primary",
-          class: extraCls,
-          onClick: onNext ?? (() => {
-          }),
-          style: onNext ? void 0 : { visibility: "hidden" },
+          class: "next-btn",
+          onClick: () => {
+          },
+          style: { visibility: "hidden" },
           children: label
         }
-      ),
+      );
+    }
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
+      button,
       /* @__PURE__ */ u3(
         "div",
         {
@@ -5473,7 +5511,9 @@ ${text}`).join("\n\n");
     keySignatures: KeyRound,
     scaleDegrees: Signal,
     diatonicChords: ListOrdered,
-    chordSpelling: SpellCheck
+    chordSpelling: SpellCheck,
+    guitarChordShapes: Guitar,
+    ukuleleChordShapes: Guitar
   };
   function SkillIcon({ modeId }) {
     const Icon = MODE_ICONS[modeId];
@@ -5723,7 +5763,7 @@ ${text}`).join("\n\n");
     }
     return /* @__PURE__ */ u3("div", { class: "quiz-area", children });
   }
-  function RoundCompleteInfo({ heading, count, correct, progressColors }) {
+  function RoundCompleteInfo({ heading, count, correct, levelBars }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
       /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
       count != null && /* @__PURE__ */ u3(k, { children: [
@@ -5731,7 +5771,15 @@ ${text}`).join("\n\n");
         /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "rep" : "reps" })
       ] }),
       /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }) }),
-      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3("div", { class: "round-complete-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progressColors }) })
+      levelBars && levelBars.length > 0 && /* @__PURE__ */ u3("div", { class: "round-complete-progress", children: levelBars.map((entry) => /* @__PURE__ */ u3(
+        ProgressBarLabeled,
+        {
+          label: entry.label,
+          colors: entry.colors,
+          plain: true
+        },
+        entry.id
+      )) })
     ] });
   }
   var noop = () => {
@@ -5746,8 +5794,6 @@ ${text}`).join("\n\n");
     ] });
   }
   var TAB_ICONS = {
-    // Repeat/loop — two arrows forming a cycle (reinforces "reps" theme)
-    practice: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
     // Bar chart
     progress: '<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
     // Info circle
@@ -5766,8 +5812,8 @@ ${text}`).join("\n\n");
         "svg",
         {
           xmlns: "http://www.w3.org/2000/svg",
-          width: "18",
-          height: "18",
+          width: "24",
+          height: "24",
           viewBox: "0 0 24 24",
           fill: "none",
           stroke: "currentColor",
@@ -5778,7 +5824,7 @@ ${text}`).join("\n\n");
           dangerouslySetInnerHTML: { __html: paths }
         }
       ),
-      /* @__PURE__ */ u3("span", { children: text })
+      /* @__PURE__ */ u3("span", { class: "sr-only", children: text })
     ] });
   }
 
@@ -5794,7 +5840,9 @@ ${text}`).join("\n\n");
     keySignatures: "Instantly know the sharps and flats in any key",
     scaleDegrees: "Know every scale degree in every key",
     diatonicChords: "Know every chord in every key",
-    chordSpelling: "Instantly spell the notes in any chord"
+    chordSpelling: "Instantly spell the notes in any chord",
+    guitarChordShapes: "Tap chord fingerings from memory",
+    ukuleleChordShapes: "Tap chord fingerings from memory"
   };
   var MODE_ABOUT_DESCRIPTIONS = {
     fretboard: "You can get far on guitar without knowing note names \u2014 shapes, tab, and fret numbers go a long way. Knowing the notes unlocks the next level: finding your bearings when someone calls a key at a jam, building chord voicings anywhere on the neck, moving a riff to a new position, or understanding what makes that chord you stumbled on actually work. A musician who knows their instrument can do things that someone who memorized patterns can\u2019t. This skill builds instant recall for every note on every fret.",
@@ -5807,7 +5855,9 @@ ${text}`).join("\n\n");
     keySignatures: "Key signatures tell you which notes are sharped or flatted in a key \u2014 they\u2019re the first thing you see on a piece of sheet music. Automatically going from \u201C2 sharps\u201D to \u201CD maj/B min\u201D lets you start playing without pausing to decode the key, identify the scale and likely chords, and follow along when someone says \u201Clet\u2019s play in E\u266D.\u201D This skill drills both directions: key to signature and signature to key.",
     scaleDegrees: "Scale degrees are how musicians reference notes within a key \u2014 \u201Cthe 5th of B\u266D\u201D or \u201Cplay the 3rd.\u201D They show up everywhere: in chord charts, in Nashville numbering, in conversations about harmony. When this mapping is automatic, you can hear \u201Cgo to the 6th\u201D and know the note instantly in whatever key you\u2019re in, without counting up from the root.",
     diatonicChords: "Every major key has seven chords built on its scale degrees \u2014 the I is major, the ii is minor, the V is major, and so on. This is the framework behind chord progressions: a I\u2013V\u2013vi\u2013IV in any key is the same pattern, just different notes. When you know the diatonic chords for every key, you can follow a chart written in Roman numerals, predict what chords fit in a song, and transpose progressions between keys without working them out from scratch.",
-    chordSpelling: "Chord spelling is knowing the actual notes in a chord \u2014 Dm7 is D, F, A, C. Whether you\u2019re voicing chords on an instrument, arranging for other players, or analyzing a song, you need to go from a chord symbol to its notes. Most musicians work this out by stacking intervals each time. This skill makes it automatic: see the chord, know the notes. Builds on Interval Math."
+    chordSpelling: "Chord spelling is knowing the actual notes in a chord \u2014 Dm7 is D, F, A, C. Whether you\u2019re voicing chords on an instrument, arranging for other players, or analyzing a song, you need to go from a chord symbol to its notes. Most musicians work this out by stacking intervals each time. This skill makes it automatic: see the chord, know the notes. Builds on Interval Math.",
+    guitarChordShapes: "This skill builds instant recall for common chord voicings on the guitar. Automate the shapes so you can focus on moving your fingers, not remembering where they\u2019re supposed to go.",
+    ukuleleChordShapes: "This skill builds instant recall for common chord voicings on the ukulele. Automate the shapes so you can focus on moving your fingers, not remembering where they\u2019re supposed to go."
   };
   var MODE_NAMES = {
     fretboard: "Guitar Fretboard",
@@ -5820,7 +5870,9 @@ ${text}`).join("\n\n");
     keySignatures: "Key Signatures",
     scaleDegrees: "Scale Degrees",
     diatonicChords: "Diatonic Chords",
-    chordSpelling: "Chord Spelling"
+    chordSpelling: "Chord Spelling",
+    guitarChordShapes: "Guitar Chord Shapes",
+    ukuleleChordShapes: "Ukulele Chord Shapes"
   };
   var d3 = displayNote;
   var MODE_BEFORE_AFTER = {
@@ -5867,6 +5919,14 @@ ${text}`).join("\n\n");
     chordSpelling: {
       before: () => `${d3("F")}m7. Root is ${d3("F")}, minor third is ${d3("Ab")}, fifth is ${d3("C")}. The 7th\u2026 it\u2019s a minor 7th, so\u2026 ${d3("Eb")}.`,
       after: () => `${d3("F")}m7. ${d3("F")} ${d3("Ab")} ${d3("C")} ${d3("Eb")}.`
+    },
+    guitarChordShapes: {
+      before: () => `${d3("A")}m. Ok, ${d3("A")} minor\u2026 is it the one with the finger on the ${d3("B")} string? Or the ${d3("G")} string? Let me look it up.`,
+      after: () => `${d3("A")}m. Tap tap tap tap tap. Done.`
+    },
+    ukuleleChordShapes: {
+      before: () => `${d3("G")} major. I know there\u2019s a barre involved\u2026 or is that ${d3("F")}? Which fret was it again?`,
+      after: () => `${d3("G")}. Tap tap tap tap. Done.`
     }
   };
 
@@ -5879,11 +5939,13 @@ ${text}`).join("\n\n");
   // src/modes/key-signatures/logic.ts
   var KEY_GROUPS = [
     {
+      id: "major-easy",
       keys: ["C", "G", "F", "D", "Bb", "A", "Eb"],
       label: "Major 0\u20133 \u266F/\u266D",
       longLabel: "Major keys (0\u20133 \u266F/\u266D)"
     },
     {
+      id: "major-hard",
       keys: ["E", "Ab", "B", "Db", "F#"],
       label: "Major 4+ \u266F/\u266D",
       longLabel: "Major keys (4+ \u266F/\u266D)"
@@ -5900,29 +5962,32 @@ ${text}`).join("\n\n");
   var MINOR_ROOTS = MAJOR_KEYS.map(
     (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE)
   );
-  function minorKeyGroup(majorKeys, label, longLabel) {
+  function minorKeyGroup(id, majorKeys, label, longLabel) {
     const keys = majorKeys.map(
       (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE) + "m"
     );
-    return { keys, label, longLabel };
+    return { id, keys, label, longLabel };
   }
   var MINOR_KEY_GROUPS = [
     minorKeyGroup(
+      "minor-easy",
       MAJOR_KEYS.filter((k3) => k3.accidentalCount <= 3),
       "Minor 0\u20133 \u266F/\u266D",
       "Minor keys (0\u20133 \u266F/\u266D)"
     ),
     minorKeyGroup(
+      "minor-hard",
       MAJOR_KEYS.filter((k3) => k3.accidentalCount > 3),
       "Minor 4+ \u266F/\u266D",
       "Minor keys (4+ \u266F/\u266D)"
     )
   ];
   var ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
-  function getItemIdsForGroup(groupIndex) {
-    const roots = ALL_KEY_GROUPS[groupIndex].keys;
+  function getItemIdsForGroup(groupId) {
+    const group = ALL_KEY_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
-    for (const root2 of roots) {
+    for (const root2 of group.keys) {
       items.push(root2 + ":fwd");
       items.push(root2 + ":rev");
     }
@@ -5937,20 +6002,36 @@ ${text}`).join("\n\n");
     ALL_ITEMS.push(minorRoot + "m:fwd");
     ALL_ITEMS.push(minorRoot + "m:rev");
   }
-  var ALL_GROUP_INDICES = ALL_KEY_GROUPS.map((_2, i3) => i3);
+  var ALL_GROUP_IDS = ALL_KEY_GROUPS.map((g2) => g2.id);
 
   // src/modes/scale-degrees/logic.ts
   var ACTIVE_DEGREES = [2, 3, 4, 5, 6, 7];
   var DEGREE_GROUPS = [
-    { degrees: [4, 5], label: "4th, 5th", longLabel: "4th & 5th degrees" },
-    { degrees: [3, 7], label: "3rd, 7th", longLabel: "3rd & 7th degrees" },
-    { degrees: [2, 6], label: "2nd, 6th", longLabel: "2nd & 6th degrees" }
+    {
+      id: "4th-5th",
+      degrees: [4, 5],
+      label: "4th, 5th",
+      longLabel: "4th & 5th degrees"
+    },
+    {
+      id: "3rd-7th",
+      degrees: [3, 7],
+      label: "3rd, 7th",
+      longLabel: "3rd & 7th degrees"
+    },
+    {
+      id: "2nd-6th",
+      degrees: [2, 6],
+      label: "2nd, 6th",
+      longLabel: "2nd & 6th degrees"
+    }
   ];
-  function getItemIdsForGroup2(groupIndex) {
-    const degrees = DEGREE_GROUPS[groupIndex].degrees;
+  function getItemIdsForGroup2(groupId) {
+    const group = DEGREE_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const key of MAJOR_KEYS) {
-      for (const d4 of degrees) {
+      for (const d4 of group.degrees) {
         items.push(key.root + ":" + d4 + ":fwd");
         items.push(key.root + ":" + d4 + ":rev");
       }
@@ -5964,7 +6045,7 @@ ${text}`).join("\n\n");
       ALL_ITEMS2.push(key.root + ":" + d4 + ":rev");
     }
   }
-  var ALL_GROUP_INDICES2 = DEGREE_GROUPS.map((_2, i3) => i3);
+  var ALL_GROUP_IDS2 = DEGREE_GROUPS.map((g2) => g2.id);
   var GRID_NOTES = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
@@ -5973,23 +6054,31 @@ ${text}`).join("\n\n");
   // src/modes/diatonic-chords/logic.ts
   var CHORD_GROUPS = [
     {
+      id: "primary",
       degrees: [1, 4, 5],
       label: "I IV V",
       longLabel: "Primary chords (I, IV, V)"
     },
-    { degrees: [2, 6], label: "ii vi", longLabel: "Secondary chords (ii, vi)" },
     {
+      id: "secondary",
+      degrees: [2, 6],
+      label: "ii vi",
+      longLabel: "Secondary chords (ii, vi)"
+    },
+    {
+      id: "tertiary",
       degrees: [3, 7],
       label: "iii vii\xB0",
       // \u00B0 = ° (degree sign)
       longLabel: "Tertiary chords (iii, vii\xB0)"
     }
   ];
-  function getItemIdsForGroup3(groupIndex) {
-    const degrees = CHORD_GROUPS[groupIndex].degrees;
+  function getItemIdsForGroup3(groupId) {
+    const group = CHORD_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const key of MAJOR_KEYS) {
-      for (const d4 of degrees) {
+      for (const d4 of group.degrees) {
         items.push(key.root + ":" + d4 + ":fwd");
         items.push(key.root + ":" + d4 + ":rev");
       }
@@ -6003,7 +6092,7 @@ ${text}`).join("\n\n");
       ALL_ITEMS3.push(key.root + ":" + d4 + ":rev");
     }
   }
-  var ALL_GROUP_INDICES3 = CHORD_GROUPS.map((_2, i3) => i3);
+  var ALL_GROUP_IDS3 = CHORD_GROUPS.map((g2) => g2.id);
   var GRID_NOTES2 = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
@@ -6030,36 +6119,42 @@ ${text}`).join("\n\n");
   // src/modes/semitone-math/logic.ts
   var DISTANCE_GROUPS = [
     {
+      id: "dist-1-2",
       distances: [1, 2],
       label: "\xB11\u20132",
       longLabel: "1\u20132 semitones apart"
     },
     {
+      id: "dist-3-4",
       distances: [3, 4],
       label: "\xB13\u20134",
       longLabel: "3\u20134 semitones apart"
     },
     {
+      id: "dist-5-6",
       distances: [5, 6],
       label: "\xB15\u20136",
       longLabel: "5\u20136 semitones apart"
     },
     {
+      id: "dist-7-8",
       distances: [7, 8],
       label: "\xB17\u20138",
       longLabel: "7\u20138 semitones apart"
     },
     {
+      id: "dist-9-11",
       distances: [9, 10, 11],
       label: "\xB19\u201311",
       longLabel: "9\u201311 semitones apart"
     }
   ];
-  function getItemIdsForGroup4(groupIndex) {
-    const distances = DISTANCE_GROUPS[groupIndex].distances;
+  function getItemIdsForGroup4(groupId) {
+    const group = DISTANCE_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const note of NOTES) {
-      for (const d4 of distances) {
+      for (const d4 of group.distances) {
         items.push(note.name + "+" + d4);
         items.push(note.name + "-" + d4);
       }
@@ -6070,7 +6165,7 @@ ${text}`).join("\n\n");
     NOTES.map((n2) => n2.name),
     Array.from({ length: 11 }, (_2, i3) => i3 + 1)
   );
-  var ALL_GROUP_INDICES4 = DISTANCE_GROUPS.map((_2, i3) => i3);
+  var ALL_GROUP_IDS4 = DISTANCE_GROUPS.map((g2) => g2.id);
   var GRID_COL_LABELS = Array.from(
     { length: 11 },
     (_2, i3) => String(i3 + 1)
@@ -6081,23 +6176,43 @@ ${text}`).join("\n\n");
     (i3) => i3.num >= 1 && i3.num <= 11
   );
   var DISTANCE_GROUPS2 = [
-    { distances: [1, 2], label: "m2 M2", longLabel: "Seconds (m2, M2)" },
-    { distances: [3, 4], label: "m3 M3", longLabel: "Thirds (m3, M3)" },
-    { distances: [5, 6], label: "P4 TT", longLabel: "Fourth & tritone (P4, TT)" },
     {
+      id: "seconds",
+      distances: [1, 2],
+      label: "m2 M2",
+      longLabel: "Seconds (m2, M2)"
+    },
+    {
+      id: "thirds",
+      distances: [3, 4],
+      label: "m3 M3",
+      longLabel: "Thirds (m3, M3)"
+    },
+    {
+      id: "fourth-tritone",
+      distances: [5, 6],
+      label: "P4 TT",
+      longLabel: "Fourth & tritone (P4, TT)"
+    },
+    {
+      id: "fifth-sixth",
       distances: [7, 8],
       label: "P5 m6",
       longLabel: "Fifth & minor 6th (P5, m6)"
     },
     {
+      id: "sixths-sevenths",
       distances: [9, 10, 11],
       label: "M6 m7 M7",
       longLabel: "Sixths & sevenths (M6, m7, M7)"
     }
   ];
-  function getItemIdsForGroup5(groupIndex) {
-    const distances = DISTANCE_GROUPS2[groupIndex].distances;
-    const intervals = MATH_INTERVALS.filter((i3) => distances.includes(i3.num));
+  function getItemIdsForGroup5(groupId) {
+    const group = DISTANCE_GROUPS2.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const intervals = MATH_INTERVALS.filter(
+      (i3) => group.distances.includes(i3.num)
+    );
     const items = [];
     for (const note of NOTES) {
       for (const interval of intervals) {
@@ -6111,7 +6226,7 @@ ${text}`).join("\n\n");
     NOTES.map((n2) => n2.name),
     MATH_INTERVALS.map((i3) => i3.abbrev)
   );
-  var ALL_GROUP_INDICES5 = DISTANCE_GROUPS2.map((_2, i3) => i3);
+  var ALL_GROUP_IDS5 = DISTANCE_GROUPS2.map((g2) => g2.id);
   var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
 
   // src/modes/chord-spelling/logic.ts
@@ -6124,6 +6239,15 @@ ${text}`).join("\n\n");
     5: "Diminished, augmented & half-dim",
     6: "Suspended & 6th chords"
   };
+  var GROUP_IDS = {
+    0: "triads-major",
+    1: "triads-minor",
+    2: "dom-7th",
+    3: "maj-7th",
+    4: "min-7th",
+    5: "dim-aug-hdim",
+    6: "sus-6th"
+  };
   function buildGroups() {
     let maxGroup = 0;
     for (const ct of CHORD_TYPES) {
@@ -6134,16 +6258,18 @@ ${text}`).join("\n\n");
       const types = CHORD_TYPES.filter((t3) => t3.group === g2);
       const label = types.map((t3) => t3.symbol || "maj").join(", ");
       const longLabel = GROUP_LONG_LABELS[g2] ?? label;
-      result.push({ types, label, longLabel });
+      const id = GROUP_IDS[g2] ?? String(g2);
+      result.push({ id, types, label, longLabel });
     }
     return result;
   }
   var SPELLING_GROUPS = buildGroups();
-  function getItemIdsForGroup6(groupIndex) {
-    const types = SPELLING_GROUPS[groupIndex].types;
+  function getItemIdsForGroup6(groupId) {
+    const group = SPELLING_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
     const items = [];
     for (const root2 of CHORD_ROOTS) {
-      for (const type of types) {
+      for (const type of group.types) {
         items.push(root2 + ":" + type.name);
       }
     }
@@ -6155,7 +6281,7 @@ ${text}`).join("\n\n");
       ALL_ITEMS6.push(root2 + ":" + type.name);
     }
   }
-  var ALL_GROUP_INDICES6 = SPELLING_GROUPS.map((_2, i3) => i3);
+  var ALL_GROUP_IDS6 = SPELLING_GROUPS.map((g2) => g2.id);
   var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
     name: r3,
     displayName: r3
@@ -6228,51 +6354,59 @@ ${text}`).join("\n\n");
   var GUITAR_GROUPS = [
     // Naturals by string (E and e combined since same notes)
     {
-      label: () => "E strings",
-      longLabel: "High & low E strings",
+      id: "e-natural",
+      label: () => displayNote("E") + " strings",
+      longLabel: () => "High & low " + displayNote("E") + " strings",
       strings: [5, 0],
       noteFilter: "natural"
     },
     {
-      label: () => "A string",
-      longLabel: "A string",
+      id: "a-natural",
+      label: () => displayNote("A") + " string",
+      longLabel: () => displayNote("A") + " string",
       strings: [4],
       noteFilter: "natural"
     },
     {
-      label: () => "D string",
-      longLabel: "D string",
+      id: "d-natural",
+      label: () => displayNote("D") + " string",
+      longLabel: () => displayNote("D") + " string",
       strings: [3],
       noteFilter: "natural"
     },
     {
-      label: () => "G string",
-      longLabel: "G string",
+      id: "g-natural",
+      label: () => displayNote("G") + " string",
+      longLabel: () => displayNote("G") + " string",
       strings: [2],
       noteFilter: "natural"
     },
     {
-      label: () => "B string",
-      longLabel: "B string",
+      id: "b-natural",
+      label: () => displayNote("B") + " string",
+      longLabel: () => displayNote("B") + " string",
       strings: [1],
       noteFilter: "natural"
     },
     // Accidentals by string pair
     {
-      label: () => "E \u266F/\u266D",
-      longLabel: "E strings \u266F/\u266D",
+      id: "e-sharps",
+      label: () => displayNote("E") + " \u266F/\u266D",
+      longLabel: () => displayNote("E") + " strings \u266F/\u266D",
       strings: [5, 0],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => "A D \u266F/\u266D",
-      longLabel: "A & D strings \u266F/\u266D",
+      id: "ad-sharps",
+      label: () => displayNote("A") + " " + displayNote("D") + " \u266F/\u266D",
+      longLabel: () => displayNote("A") + " & " + displayNote("D") + " strings \u266F/\u266D",
       strings: [4, 3],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => "G B \u266F/\u266D",
-      longLabel: "G & B strings \u266F/\u266D",
+      id: "gb-sharps",
+      label: () => displayNote("G") + " " + displayNote("B") + " \u266F/\u266D",
+      longLabel: () => displayNote("G") + " & " + displayNote("B") + " strings \u266F/\u266D",
       strings: [2, 1],
       noteFilter: "sharps-flats"
     }
@@ -6280,39 +6414,45 @@ ${text}`).join("\n\n");
   var UKULELE_GROUPS = [
     // Naturals by string
     {
-      label: () => "G string",
-      longLabel: "G string",
+      id: "g-natural",
+      label: () => displayNote("G") + " string",
+      longLabel: () => displayNote("G") + " string",
       strings: [3],
       noteFilter: "natural"
     },
     {
-      label: () => "C string",
-      longLabel: "C string",
+      id: "c-natural",
+      label: () => displayNote("C") + " string",
+      longLabel: () => displayNote("C") + " string",
       strings: [2],
       noteFilter: "natural"
     },
     {
-      label: () => "E string",
-      longLabel: "E string",
+      id: "e-natural",
+      label: () => displayNote("E") + " string",
+      longLabel: () => displayNote("E") + " string",
       strings: [1],
       noteFilter: "natural"
     },
     {
-      label: () => "A string",
-      longLabel: "A string",
+      id: "a-natural",
+      label: () => displayNote("A") + " string",
+      longLabel: () => displayNote("A") + " string",
       strings: [0],
       noteFilter: "natural"
     },
     // Accidentals by string pair
     {
-      label: () => "G C \u266F/\u266D",
-      longLabel: "G & C strings \u266F/\u266D",
+      id: "gc-sharps",
+      label: () => displayNote("G") + " " + displayNote("C") + " \u266F/\u266D",
+      longLabel: () => displayNote("G") + " & " + displayNote("C") + " strings \u266F/\u266D",
       strings: [3, 2],
       noteFilter: "sharps-flats"
     },
     {
-      label: () => "E A \u266F/\u266D",
-      longLabel: "E & A strings \u266F/\u266D",
+      id: "ea-sharps",
+      label: () => displayNote("E") + " " + displayNote("A") + " \u266F/\u266D",
+      longLabel: () => displayNote("E") + " & " + displayNote("A") + " strings \u266F/\u266D",
       strings: [1, 0],
       noteFilter: "sharps-flats"
     }
@@ -6339,9 +6479,9 @@ ${text}`).join("\n\n");
     }
     return h3;
   }
-  function getItemIdsForGroup7(instrument, groupIndex) {
+  function getItemIdsForGroup7(instrument, groupId) {
     const groups = getGroups(instrument);
-    const group = groups[groupIndex];
+    const group = groups.find((g2) => g2.id === groupId);
     if (!group) return [];
     const fb = getHelpers(instrument);
     const items = [];
@@ -6372,13 +6512,19 @@ ${text}`).join("\n\n");
   var noteNames = NOTES.map((n2) => n2.name);
   var ALL_ITEMS9 = NOTES.map((n2) => n2.name);
   var ACCIDENTAL_NOTES = NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
+  var NOTE_GROUPS = [
+    { id: "naturals", label: "Naturals", longLabel: "Natural notes" },
+    { id: "sharps-flats", label: "\u266F/\u266D", longLabel: "Sharps & flats" }
+  ];
+  var ALL_GROUP_IDS7 = NOTE_GROUPS.map((g2) => g2.id);
 
   // src/mode-progress-manifest.ts
   function buildGroupEntries(groups, getIds) {
-    return groups.map((g2, i3) => ({
+    return groups.map((g2) => ({
+      id: g2.id,
       label: g2.label,
       longLabel: g2.longLabel,
-      getItemIds: () => getIds(i3)
+      getItemIds: () => getIds(g2.id)
     }));
   }
   var guitarGroups = getGroups(GUITAR);
@@ -6387,33 +6533,35 @@ ${text}`).join("\n\n");
     {
       modeId: "fretboard",
       namespace: "fretboard",
-      groups: guitarGroups.map((g2, i3) => ({
-        label: g2.label(),
+      groups: guitarGroups.map((g2) => ({
+        id: g2.id,
+        label: g2.label,
         longLabel: g2.longLabel,
-        getItemIds: () => getItemIdsForGroup7(GUITAR, i3)
+        getItemIds: () => getItemIdsForGroup7(GUITAR, g2.id)
       })),
       allItemIds: () => getAllItems(GUITAR)
     },
     {
       modeId: "ukulele",
       namespace: "ukulele",
-      groups: ukuleleGroups.map((g2, i3) => ({
-        label: g2.label(),
+      groups: ukuleleGroups.map((g2) => ({
+        id: g2.id,
+        label: g2.label,
         longLabel: g2.longLabel,
-        getItemIds: () => getItemIdsForGroup7(UKULELE, i3)
+        getItemIds: () => getItemIdsForGroup7(UKULELE, g2.id)
       })),
       allItemIds: () => getAllItems(UKULELE)
     },
     {
       modeId: "noteSemitones",
       namespace: "noteSemitones",
-      groups: [{ label: "All", getItemIds: () => ALL_ITEMS7 }],
+      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS7 }],
       allItemIds: () => ALL_ITEMS7
     },
     {
       modeId: "intervalSemitones",
       namespace: "intervalSemitones",
-      groups: [{ label: "All", getItemIds: () => ALL_ITEMS8 }],
+      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS8 }],
       allItemIds: () => ALL_ITEMS8
     },
     {
@@ -6455,7 +6603,7 @@ ${text}`).join("\n\n");
     {
       modeId: "speedTap",
       namespace: "speedTap",
-      groups: [{ label: "All", getItemIds: () => ALL_ITEMS9 }],
+      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS9 }],
       allItemIds: () => ALL_ITEMS9
     }
   ];
@@ -6605,14 +6753,11 @@ ${text}`).join("\n\n");
     ] });
   }
   function SettingsAboutLegal({ appConfig, version }) {
-    return /* @__PURE__ */ u3("div", { children: [
+    return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
         /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "About" }),
         /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
-          appConfig.contactEmail && /* @__PURE__ */ u3("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: [
-            "Contact: ",
-            appConfig.contactEmail
-          ] }),
+          appConfig.contactEmail && /* @__PURE__ */ u3("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: "Contact" }),
           appConfig.supportUrl && /* @__PURE__ */ u3(
             "a",
             {
@@ -6623,8 +6768,8 @@ ${text}`).join("\n\n");
               children: "Support"
             }
           ),
-          /* @__PURE__ */ u3("div", { class: "settings-meta", children: [
-            "Build number: ",
+          /* @__PURE__ */ u3("span", { class: "settings-meta", children: [
+            "Build ",
             version
           ] })
         ] })
@@ -6658,6 +6803,7 @@ ${text}`).join("\n\n");
   }
   function SettingsPanel({ settings, appConfig, version, useSolfege, setUseSolfege, onOpenDev }) {
     return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
+      /* @__PURE__ */ u3("h2", { class: "tab-panel-title", children: "Settings" }),
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
         /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "General" }),
         /* @__PURE__ */ u3(
@@ -6678,7 +6824,10 @@ ${text}`).join("\n\n");
         )
       ] }),
       /* @__PURE__ */ u3(SettingsAboutLegal, { appConfig, version }),
-      onOpenDev && /* @__PURE__ */ u3("section", { class: "settings-section", children: /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) })
+      onOpenDev && /* @__PURE__ */ u3("section", { class: "settings-section", children: [
+        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "Developer" }),
+        /* @__PURE__ */ u3("div", { class: "settings-link-list", children: /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) })
+      ] })
     ] });
   }
 
@@ -6887,11 +7036,17 @@ ${text}`).join("\n\n");
           heading: goodRound.heading,
           count: 18,
           correct: goodRound.correct,
-          progressColors: [
-            "hsl(125, 48%, 33%)",
-            "hsl(80, 35%, 40%)",
-            "hsl(48, 50%, 52%)",
-            "hsl(40, 60%, 58%)"
+          levelBars: [
+            {
+              id: "e",
+              label: "E strings",
+              colors: ["hsl(125, 48%, 33%)", "hsl(80, 35%, 40%)"]
+            },
+            {
+              id: "a",
+              label: "A string",
+              colors: ["hsl(48, 50%, 52%)", "hsl(40, 60%, 58%)"]
+            }
           ]
         }
       ) }) }) }),
@@ -7289,11 +7444,17 @@ ${text}`).join("\n\n");
             heading: goodRound.heading,
             count: 18,
             correct: goodRound.correct,
-            progressColors: [
-              "hsl(125, 48%, 33%)",
-              "hsl(125, 48%, 33%)",
-              "hsl(80, 35%, 40%)",
-              "hsl(60, 40%, 46%)"
+            levelBars: [
+              {
+                id: "e",
+                label: "E strings",
+                colors: ["hsl(125, 48%, 33%)", "hsl(125, 48%, 33%)"]
+              },
+              {
+                id: "a",
+                label: "A string",
+                colors: ["hsl(80, 35%, 40%)", "hsl(60, 40%, 46%)"]
+              }
             ]
           }
         ) }) }),
@@ -7303,10 +7464,17 @@ ${text}`).join("\n\n");
             heading: roughRound.heading,
             count: 9,
             correct: roughRound.correct,
-            progressColors: [
-              "hsl(48, 50%, 52%)",
-              "hsl(40, 60%, 58%)",
-              "hsl(40, 60%, 58%)"
+            levelBars: [
+              {
+                id: "e",
+                label: "E strings",
+                colors: ["hsl(48, 50%, 52%)"]
+              },
+              {
+                id: "a",
+                label: "A string",
+                colors: ["hsl(40, 60%, 58%)", "hsl(40, 60%, 58%)"]
+              }
             ]
           }
         ) }) })
@@ -8501,12 +8669,6 @@ ${text}`).join("\n\n");
   }
 
   // src/ui/practice-config.tsx
-  function ProgressBarLabeled({ label, colors, disabled }) {
-    return /* @__PURE__ */ u3("div", { class: "progress-bar-labeled", children: [
-      label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
-      /* @__PURE__ */ u3(GroupProgressBar, { colors, disabled })
-    ] });
-  }
   function SkillHeader({ modeId, title, totalReps, progressColors, onBack }) {
     return /* @__PURE__ */ u3("div", { class: "skill-header", children: [
       /* @__PURE__ */ u3("div", { class: "skill-header-row", children: [
@@ -8531,21 +8693,24 @@ ${text}`).join("\n\n");
       line.levels.join(", ")
     ] }, i3)) });
   }
-  function LevelToggles({ labels, active, onToggle }) {
+  function LevelToggles({ labels, groupIds, active, onToggle }) {
     return /* @__PURE__ */ u3("div", { class: "level-toggles-section", children: [
       /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "level-toggles-header", children: "Choose levels" }),
-      /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "level-toggle-btn" + (active.has(i3) ? " active" : ""),
-          "aria-pressed": active.has(i3),
-          onClick: () => onToggle(i3),
-          children: label
-        },
-        i3
-      )) })
+      /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => {
+        const id = groupIds[i3];
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "level-toggle-btn" + (active.has(id) ? " active" : ""),
+            "aria-pressed": active.has(id),
+            onClick: () => onToggle(id),
+            children: label
+          },
+          id
+        );
+      }) })
     ] });
   }
   function LevelProgressCard({ label, pill, colors, status, onToggleKnown, onToggleSkip }) {
@@ -8632,6 +8797,7 @@ ${text}`).join("\n\n");
     "D G \u266F\u266D",
     "B e \u266F\u266D"
   ];
+  var MOCK_LEVEL_IDS = MOCK_LEVEL_LABELS.map((_2, i3) => `g${i3}`);
   var MOCK_LEVEL_COLORS = [
     ["hsl(125, 48%, 33%)", "hsl(125, 48%, 33%)", "hsl(80, 35%, 40%)"],
     ["hsl(80, 35%, 40%)", "hsl(60, 40%, 46%)", "hsl(48, 50%, 52%)"],
@@ -8654,7 +8820,10 @@ ${text}`).join("\n\n");
           tabs: [
             {
               id: "practice",
-              label: /* @__PURE__ */ u3(TabIcon, { icon: "practice", text: "Practice" }),
+              label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
+                /* @__PURE__ */ u3(RepeatMark, { size: 24 }),
+                /* @__PURE__ */ u3("span", { class: "sr-only", children: "Practice" })
+              ] }),
               content: /* @__PURE__ */ u3("div", { style: "padding:var(--pad-component)", children: "Practice content" })
             },
             {
@@ -8706,6 +8875,7 @@ ${text}`).join("\n\n");
         LevelToggles,
         {
           labels: MOCK_LEVEL_LABELS,
+          groupIds: MOCK_LEVEL_IDS,
           active: customActive,
           onToggle: toggleCustom
         }
@@ -8722,6 +8892,7 @@ ${text}`).join("\n\n");
               LevelToggles,
               {
                 labels: MOCK_LEVEL_LABELS,
+                groupIds: MOCK_LEVEL_IDS,
                 active: customActive,
                 onToggle: toggleCustom
               }
@@ -8738,6 +8909,7 @@ ${text}`).join("\n\n");
               LevelToggles,
               {
                 labels: MOCK_LEVEL_LABELS,
+                groupIds: MOCK_LEVEL_IDS,
                 active: customActive,
                 onToggle: toggleCustom
               }
@@ -8852,6 +9024,7 @@ ${text}`).join("\n\n");
                   LevelToggles,
                   {
                     labels: MOCK_LEVEL_LABELS,
+                    groupIds: MOCK_LEVEL_IDS,
                     active: customActive,
                     onToggle: toggleCustom
                   }
@@ -8980,7 +9153,10 @@ ${text}`).join("\n\n");
     const tabs = [
       {
         id: "practice",
-        label: /* @__PURE__ */ u3(TabIcon, { icon: "practice", text: "Practice" }),
+        label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
+          /* @__PURE__ */ u3(RepeatMark, { size: 24 }),
+          /* @__PURE__ */ u3("span", { class: "sr-only", children: "Practice" })
+        ] }),
         content: null
       },
       {
@@ -9053,6 +9229,7 @@ ${text}`).join("\n\n");
               LevelToggles,
               {
                 labels: MOCK_LEVEL_LABELS,
+                groupIds: MOCK_LEVEL_IDS,
                 active: customActive,
                 onToggle: toggleCustom
               }
@@ -9157,10 +9334,17 @@ ${text}`).join("\n\n");
             heading: "Round Complete",
             count: 20,
             correct: "18 correct (90%)",
-            progressColors: [
-              "hsl(125, 48%, 33%)",
-              "hsl(80, 35%, 40%)",
-              "hsl(48, 50%, 52%)"
+            levelBars: [
+              {
+                id: "e",
+                label: "E strings",
+                colors: ["hsl(125, 48%, 33%)", "hsl(80, 35%, 40%)"]
+              },
+              {
+                id: "a",
+                label: "A string",
+                colors: ["hsl(48, 50%, 52%)", "hsl(40, 60%, 58%)"]
+              }
             ]
           }
         ) }) }),
@@ -9179,18 +9363,18 @@ ${text}`).join("\n\n");
   function PracticeRedesignTab({ sel: _sel, groupSel: _groupSel, tabId }) {
     const [_practiceMode, setPracticeMode] = d2("suggested");
     const [customActive, setCustomActive] = d2(
-      /* @__PURE__ */ new Set([0, 1])
+      /* @__PURE__ */ new Set(["g0", "g1"])
     );
-    function toggleCustom(i3) {
+    function toggleCustom(id) {
       setCustomActive((prev) => {
         const next = new Set(prev);
-        if (next.has(i3)) next.delete(i3);
-        else next.add(i3);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
         return next;
       });
     }
     const customItemCount = [...customActive].reduce(
-      (sum, i3) => sum + (i3 < 5 ? 16 : 10),
+      (sum, id) => sum + (parseInt(id.slice(1)) < 5 ? 16 : 10),
       0
     );
     return /* @__PURE__ */ u3("div", { children: [
