@@ -730,21 +730,16 @@ function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
       <section class='settings-section'>
         <h2 class='settings-section-title'>What is Music Reps?</h2>
         <Text role='body-secondary' as='p'>
-          Most musicians can figure out the notes in a chord, the key signature
-          for B&flat; major, or the name of a fret &mdash; given a few seconds
-          to think. Music Reps closes the gap between <em>figuring it out</em>
-          {' '}
-          and <em>just knowing</em>.
+          Music Reps trains instant recall of music fundamentals, letting you
+          play with confidence, improvise more freely, learn songs faster, and
+          be a better musician overall.
         </Text>
         <Text role='body-secondary' as='p'>
-          It&rsquo;s for guitarists, ukulele players, and anyone learning music
-          who wants to build real musicianship through consistent daily
-          practice. If you&rsquo;re willing to show up and put in the reps, this
-          app will make the fundamentals automatic so you can focus on playing.
-        </Text>
-        <Text role='body-secondary' as='p'>
-          Use it when you&rsquo;re away from your instrument &mdash; commuting,
-          waiting, or any spare few minutes. Turn dead time into real practice.
+          There are likely many musical skills you know, but only with some
+          hesitation and mental effort: perhaps locating the G on the B string
+          of your guitar, or figuring out what key has 4 flats, or listing the
+          notes in an Em7 chord. Music Reps closes the gap between{' '}
+          <em>give me a second, I know this</em> and <em>already moving on</em>.
         </Text>
       </section>
 
@@ -753,11 +748,11 @@ function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
         <ul class='home-about-list'>
           <li>
             <strong>Fast drills, many reps.</strong>{' '}
-            Each skill asks rapid-fire questions. No fluff, no lectures &mdash;
-            just focused practice.
+            Each skill asks rapid-fire questions to make the knowledge you
+            already have automatic.
           </li>
           <li>
-            <strong>Speed is the measure.</strong>{' '}
+            <strong>Speed is the goal.</strong>{' '}
             When your response time drops from eight seconds to under one,
             you&rsquo;ve stopped counting and started knowing.
           </li>
@@ -765,6 +760,11 @@ function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
             <strong>Spaced repetition.</strong>{' '}
             The app focuses on what you haven&rsquo;t mastered and brings back
             material before you forget it.
+          </li>
+          <li>
+            <strong>No instrument needed.</strong>{' '}
+            Use commuting, waiting, or any other spare minutes to advance your
+            playing.
           </li>
           <li>
             <strong>A few minutes at a time.</strong>{' '}
