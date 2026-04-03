@@ -56,9 +56,10 @@ export function SequentialSlots(
           return <span key={i} class={cls}>{content}</span>;
         })}
         {/* Empty spacer slots for missing entries (user entered too few) */}
-        {Array.from({ length: missingCount }, (_, i) => (
-          <span key={`m${i}`} class='seq-slot'>{'\u00A0'}</span>
-        ))}
+        {Array.from(
+          { length: missingCount },
+          (_, i) => <span key={`m${i}`} class='seq-slot'>&nbsp;</span>,
+        )}
         {!evaluated && <span class='seq-slot seq-placeholder' />}
       </div>
       {showCorrection
@@ -69,14 +70,18 @@ export function SequentialSlots(
               const wasCorrect = evaluated && i < evaluated.length &&
                 evaluated[i].correct;
               return (!tone || wasCorrect)
-                ? <span key={i} class='seq-correct-note'>{'\u00A0'}</span>
+                ? <span key={i} class='seq-correct-note'>&nbsp;</span>
                 : <span key={i} class='seq-correct-note'>{tone}</span>;
             })}
           </div>
         )
         : (
-          <div class='seq-correct-row' aria-hidden='true' style='visibility:hidden'>
-            <span class='seq-correct-note'>{'\u00A0'}</span>
+          <div
+            class='seq-correct-row'
+            aria-hidden='true'
+            style='visibility:hidden'
+          >
+            <span class='seq-correct-note'>&nbsp;</span>
           </div>
         )}
     </div>
