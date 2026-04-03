@@ -3197,7 +3197,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="399157 visual-cleanups"></div>
+  <div class="home-screen" id="home-screen" data-version="d09488 visual-cleanups"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -9443,9 +9443,10 @@ body.native-app {
   function SequentialSlots({ entries, evaluated, correctTones }) {
     const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
     const countMismatch = !!(evaluated && correctTones && entries.length !== correctTones.length);
-    const showCorrection = (anyWrong || countMismatch) && correctTones;
-    const correctionCount = showCorrection ? Math.max(entries.length, correctTones.length) : 0;
-    const missingCount = showCorrection ? Math.max(0, correctTones.length - entries.length) : 0;
+    const showCorrection = (anyWrong || countMismatch) && !!correctTones;
+    const tones = correctTones ?? [];
+    const correctionCount = showCorrection ? Math.max(entries.length, tones.length) : 0;
+    const missingCount = showCorrection ? Math.max(0, tones.length - entries.length) : 0;
     return /* @__PURE__ */ u3("div", { class: "seq-slots-container seq-card", children: [
       /* @__PURE__ */ u3("div", { class: "seq-slots", children: [
         entries.map((entry, i3) => {
@@ -9467,7 +9468,7 @@ body.native-app {
         !evaluated && /* @__PURE__ */ u3("span", { class: "seq-slot seq-placeholder" })
       ] }),
       showCorrection ? /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: Array.from({ length: correctionCount }, (_3, i3) => {
-        const tone = correctTones[i3];
+        const tone = tones[i3];
         const wasCorrect = evaluated && i3 < evaluated.length && evaluated[i3].correct;
         return !tone || wasCorrect ? /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" }, i3) : /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: tone }, i3);
       }) }) : /* @__PURE__ */ u3(
