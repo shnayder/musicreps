@@ -327,6 +327,7 @@ function ResponseButtons(
     useFlats,
     narrowing,
     hideAccidentalsOverride,
+    columnsOverride,
     feedback,
     answered,
   }: {
@@ -335,6 +336,7 @@ function ResponseButtons(
     useFlats?: boolean;
     narrowing?: ReadonlySet<string> | null;
     hideAccidentalsOverride?: boolean;
+    columnsOverride?: number;
     feedback?: ButtonFeedback | null;
     answered?: boolean;
   },
@@ -348,7 +350,7 @@ function ResponseButtons(
           hideAccidentals={hideAccidentalsOverride}
           narrowing={narrowing}
           feedback={feedback}
-          columns={buttonsDef.columns}
+          columns={columnsOverride ?? buttonsDef.columns}
         />
       );
     case 'split-note':
@@ -441,6 +443,10 @@ function SequentialQuizArea<Q>(
           {ctrl.renderPrompt && currentQ
             ? ctrl.renderPrompt(currentQ)
             : <div class='quiz-prompt'>{promptText}</div>}
+        </>
+      }
+      response={
+        <>
           <SequentialSlots
             entries={seq.entries}
             evaluated={seq.evaluated}
@@ -448,10 +454,6 @@ function SequentialQuizArea<Q>(
               ? seq.correctAnswer.split(' ')
               : null}
           />
-        </>
-      }
-      response={
-        <>
           <ResponseButtons
             buttonsDef={activeButtons}
             onAnswer={seq.handleInput}
@@ -559,6 +561,7 @@ function StandardQuizArea<Q>(
             useFlats={useFlats}
             narrowing={ctrl.narrowing}
             hideAccidentalsOverride={ctrl.hideAccidentals}
+            columnsOverride={ctrl.buttonColumns}
             feedback={engine.state.feedbackCorrect !== null &&
                 lastAnswerRef.current
               ? {

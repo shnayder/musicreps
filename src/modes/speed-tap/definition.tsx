@@ -77,8 +77,8 @@ export const SPEED_TAP_DEF: ModeDefinition<Question> = {
 
   allItems: ALL_ITEMS,
   getQuestion: parseItem,
-  getPromptText: (q) => 'Tap all ' + q.displayName,
-  quizInstruction: 'Find all positions',
+  getPromptText: (q) => q.displayName,
+  quizInstruction: 'Tap all note positions',
 
   multiTap: {
     getTargets: (q) => q.positions.map(positionKey),

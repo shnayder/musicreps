@@ -93,7 +93,11 @@ const RAMPS = [
   },
   { name: 'brand', hueVar: '--hue-brand', steps: ['100', '600', '800'] },
   { name: 'success', hueVar: '--hue-success', steps: ['100', '600', '800'] },
-  { name: 'error', hueVar: '--hue-error', steps: ['100', '500', '800'] },
+  {
+    name: 'error',
+    hueVar: '--hue-error',
+    steps: ['100', '200', '300', '500', '600', '800'],
+  },
   {
     name: 'notice',
     hueVar: '--hue-notice',
@@ -150,22 +154,28 @@ function BrandSuccessSection({ tabId }: { tabId: string }) {
     <Section title='Brand / Success' tabId={tabId}>
       <SwatchGrid
         items={[
-          { name: '--color-brand', note: 'CTA, active toggles, progress' },
-          { name: '--color-brand-dark', note: 'Hover CTA, pressed state' },
-          { name: '--color-brand-bg', note: 'Success/brand background' },
-          { name: '--color-brand-border', note: 'Bordered brand elements' },
-          { name: '--color-brand-text', note: 'Text on brand-bg' },
-          { name: '--color-on-brand', note: 'Text on brand fill' },
-          { name: '--color-success', note: 'Correct feedback' },
-          { name: '--color-success-bg', note: 'Correct answer bg' },
+          { name: '--color-brand', note: 'brand-600 · CTA, active toggles' },
+          { name: '--color-brand-dark', note: 'brand-800 · Hover, pressed' },
+          { name: '--color-brand-bg', note: 'brand-200 · Brand background' },
+          { name: '--color-brand-border', note: 'brand-600 · Brand borders' },
+          { name: '--color-brand-text', note: 'brand-800 · Text on brand-bg' },
+          { name: '--color-on-brand', note: 'white · Text on brand fill' },
           {
-            name: '--color-success-border',
-            note: 'Bordered success elements',
+            name: '--color-success',
+            note: 'success-600 · Correct feedback',
           },
-          { name: '--color-success-text', note: 'Text on success-bg' },
-          { name: '--color-on-success', note: 'Text on success fill' },
-          { name: '--color-focus', note: 'Focus ring' },
-          { name: '--color-focus-bg', note: 'Focus background' },
+          { name: '--color-success-bg', note: 'success-100 · Correct bg' },
+          {
+            name: '--color-success-reveal',
+            note: 'success-300 · Missed targets',
+          },
+          {
+            name: '--color-success-text',
+            note: 'success-800 · Text on success-bg',
+          },
+          { name: '--color-on-success', note: 'white · Text on success fill' },
+          { name: '--color-focus', note: 'brand-600 · Focus ring' },
+          { name: '--color-focus-bg', note: 'brand-100 · Focus background' },
         ]}
       />
     </Section>
@@ -177,11 +187,11 @@ function ErrorSection({ tabId }: { tabId: string }) {
     <Section title='Error' tabId={tabId}>
       <SwatchGrid
         items={[
-          { name: '--color-error', note: 'Incorrect answer, expired timer' },
-          { name: '--color-error-bg', note: 'Wrong answer bg' },
-          { name: '--color-error-border', note: 'Bordered error elements' },
-          { name: '--color-error-text', note: 'Text on error-bg' },
-          { name: '--color-on-error', note: 'Text on error fill' },
+          { name: '--color-error', note: 'error-600 · Wrong answer, timer' },
+          { name: '--color-error-bg', note: 'error-100 · Wrong answer bg' },
+          { name: '--color-error-border', note: 'error-300 · Error borders' },
+          { name: '--color-error-text', note: 'error-800 · Text on error-bg' },
+          { name: '--color-on-error', note: 'white · Text on error fill' },
         ]}
       />
     </Section>
@@ -193,13 +203,13 @@ function NoticeSection({ tabId }: { tabId: string }) {
     <Section title='Notice (attention, recommendations)' tabId={tabId}>
       <SwatchGrid
         items={[
-          { name: '--color-notice', note: 'Suggestion card header & border' },
-          { name: '--color-notice-bg', note: 'Suggestion card background' },
-          { name: '--color-notice-border', note: 'Suggestion card border' },
-          { name: '--color-notice-bg-hover', note: 'Hover state' },
-          { name: '--color-notice-bg-pressed', note: 'Pressed state' },
-          { name: '--color-notice-text', note: 'Text on notice surfaces' },
-          { name: '--color-highlight', note: 'Fretboard question highlight' },
+          { name: '--color-notice', note: 'notice-500 · Card header/border' },
+          { name: '--color-notice-bg', note: 'notice-100 · Card background' },
+          { name: '--color-notice-border', note: 'notice-300 · Card border' },
+          { name: '--color-notice-bg-hover', note: 'notice-400 · Hover' },
+          { name: '--color-notice-bg-pressed', note: 'notice-450 · Pressed' },
+          { name: '--color-notice-text', note: 'notice-800 · Text on notice' },
+          { name: '--color-highlight', note: 'notice-600 · Fretboard HL' },
         ]}
       />
     </Section>
@@ -211,10 +221,10 @@ function AccentSection({ tabId }: { tabId: string }) {
     <Section title='Accent & Chrome' tabId={tabId}>
       <SwatchGrid
         items={[
-          { name: '--color-accent', note: 'Active slot underline' },
-          { name: '--color-accent-muted', note: 'Secondary accent states' },
-          { name: '--color-toggle-active', note: 'Active toggle fill' },
-          { name: '--color-chrome', note: 'Segmented control bg' },
+          { name: '--color-accent', note: 'brand-600 · Slot underline' },
+          { name: '--color-accent-muted', note: 'hsl · Secondary accent' },
+          { name: '--color-toggle-active', note: 'brand-600 · Toggle fill' },
+          { name: '--color-chrome', note: 'neutral-75 · Segmented bg' },
         ]}
       />
     </Section>
@@ -226,9 +236,9 @@ function TextSection({ tabId }: { tabId: string }) {
     <Section title='Text' tabId={tabId}>
       <SwatchGrid
         items={[
-          { name: '--color-text', note: 'Primary text, headings' },
-          { name: '--color-text-muted', note: 'Labels, hints, secondary' },
-          { name: '--color-text-light', note: 'Tertiary, close buttons' },
+          { name: '--color-text', note: 'neutral-800 · Primary text' },
+          { name: '--color-text-muted', note: 'neutral-650 · Secondary' },
+          { name: '--color-text-light', note: 'neutral-550 · Tertiary' },
         ]}
       />
     </Section>
@@ -240,14 +250,14 @@ function SurfaceSection({ tabId }: { tabId: string }) {
     <Section title='Surfaces & backgrounds' tabId={tabId}>
       <SwatchGrid
         items={[
-          { name: '--color-canvas', note: 'Page background' },
-          { name: '--color-chrome', note: 'Top bar, tab bar' },
-          { name: '--color-well', note: 'Recessed containers, button card' },
-          { name: '--color-card', note: 'Elevated cards, buttons' },
-          { name: '--color-surface', note: 'Inactive toggles' },
-          { name: '--color-surface-hover', note: 'Button/nav hover' },
-          { name: '--color-surface-raised', note: 'Progress bar bg' },
-          { name: '--color-surface-pressed', note: 'Button :active' },
+          { name: '--color-canvas', note: 'neutral-50 · Page background' },
+          { name: '--color-chrome', note: 'neutral-75 · Top bar, tab bar' },
+          { name: '--color-well', note: 'neutral-100 · Recessed containers' },
+          { name: '--color-card', note: 'neutral-0 · Elevated cards' },
+          { name: '--color-surface', note: 'neutral-75 · Inactive toggles' },
+          { name: '--color-surface-hover', note: 'neutral-150 · Hover' },
+          { name: '--color-surface-raised', note: 'neutral-200 · Progress bg' },
+          { name: '--color-surface-pressed', note: 'neutral-350 · :active' },
         ]}
       />
     </Section>
@@ -259,11 +269,11 @@ function BorderSection({ tabId }: { tabId: string }) {
     <Section title='Borders' tabId={tabId}>
       <SwatchGrid
         items={[
-          { name: '--color-border', note: 'Toggle borders, chord-slots' },
-          { name: '--color-border-light', note: 'Table borders, separator' },
+          { name: '--color-border', note: 'neutral-550 · Toggle borders' },
+          { name: '--color-border-light', note: 'neutral-400 · Tables' },
           {
             name: '--color-border-lighter',
-            note: 'Section dividers',
+            note: 'neutral-300 · Section dividers',
           },
         ]}
       />

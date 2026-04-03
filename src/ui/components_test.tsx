@@ -840,9 +840,8 @@ describe('SequentialSlots', () => {
       />,
     );
     assert.ok(html.includes('seq-slots-container'));
-    // No slots rendered when no entries
-    const slots = html.match(/class="seq-slot[\s"]/g) || [];
-    assert.equal(slots.length, 0);
+    // One placeholder slot when no entries (not evaluated)
+    assert.ok(html.includes('seq-placeholder'));
   });
 
   it('renders filled slots before evaluation', () => {
@@ -905,7 +904,9 @@ describe('SequentialSlots', () => {
         correctTones={['C', 'E']}
       />,
     );
-    assert.ok(!html.includes('seq-correct-row'));
+    // Hidden correction row is always present for layout stability
+    assert.ok(html.includes('seq-correct-row'));
+    assert.ok(html.includes('visibility:hidden'));
   });
 
   it('shows correct-row when count mismatches', () => {
