@@ -1522,7 +1522,10 @@ export function GenericMode<Q>(
     def.motorTaskType,
     def.getExpectedResponseCount,
   );
-  const groupScopeSpec = buildGroupScopeSpec(def, learner.selector);
+  const groupScopeSpec = useMemo(
+    () => buildGroupScopeSpec(def, learner.selector),
+    [def, learner.selector],
+  );
   const groupScopeResult = groupScopeSpec
     ? useGroupScope(groupScopeSpec)
     : null;

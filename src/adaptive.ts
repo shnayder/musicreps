@@ -489,6 +489,8 @@ export function createAdaptiveSelector(
   const scaledCfg = (itemId: string): AdaptiveConfig =>
     scaleConfigForResponseCount(cfg, getResponseCount(itemId));
 
+  let version = 0;
+
   function recordResponse(
     itemId: string,
     timeMs: number,
@@ -500,6 +502,7 @@ export function createAdaptiveSelector(
     if (correct) {
       recordCorrectResponse(storage, cfg, itemCfg, itemId, clamped, now);
     } else recordWrongResponse(storage, cfg, itemCfg, itemId, now);
+    version++;
   }
 
   function selectNext(validItems: string[]): string {
@@ -571,6 +574,9 @@ export function createAdaptiveSelector(
       cfg = { ...cfg, ...newCfg };
     },
     getConfig: () => cfg,
+    get version() {
+      return version;
+    },
   };
 }
 
