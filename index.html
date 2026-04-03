@@ -77,7 +77,7 @@
   --neutral-0: #fff;
   --neutral-50: hsl(var(--hue-neutral), 40%, 97%);
   --neutral-75: hsl(var(--hue-neutral), 40%, 95.5%);
-  --neutral-100: hsl(var(--hue-neutral), 40%, 94%);
+  --neutral-100: hsl(var(--hue-neutral), 28%, 94%);
   --neutral-150: hsl(var(--hue-neutral), 22%, 91%);
   --neutral-200: hsl(var(--hue-neutral), 18%, 89%);
   --neutral-250: hsl(var(--hue-neutral), 15%, 87%);
@@ -107,10 +107,14 @@
   --success-600: #2d4c3b;
   --success-800: hsl(var(--hue-success), 30%, 16%);
 
-  /* Error scale — derived from --hue-error */
-  --error-100: hsl(var(--hue-error), 100%, 96%);
-  --error-500: hsl(var(--hue-error), 90%, 58%);
-  --error-800: hsl(var(--hue-error), 66%, 47%);
+  /* Error scale — derived from --hue-error
+     Desaturated mid-tones so errors inform without screaming. */
+  --error-100: hsl(var(--hue-error), 60%, 95%);
+  --error-200: hsl(var(--hue-error), 55%, 88%);
+  --error-300: hsl(var(--hue-error), 50%, 72%);
+  --error-500: hsl(var(--hue-error), 55%, 58%);
+  --error-600: hsl(var(--hue-error), 50%, 50%);
+  --error-800: hsl(var(--hue-error), 50%, 35%);
 
   /* Notice scale — warm amber, anchored on #D97706 */
   --notice-100: hsl(var(--hue-notice), 60%, 95%);
@@ -138,9 +142,9 @@
   --color-success-reveal: var(--success-300);
   --color-success-text: var(--success-800);
   /* Error */
-  --color-error: var(--error-500);
+  --color-error: var(--error-600);
   --color-error-bg: var(--error-100);
-  --color-error-border: var(--error-500);
+  --color-error-border: var(--error-300);
   --color-error-text: var(--error-800);
   --color-tap-selected: var(--color-accent);
   /* On-fill text (flips in dark mode) */
@@ -576,6 +580,16 @@ body {
   flex-direction: column;
   justify-content: center;
   min-height: 0;
+}
+/* When the prompt contains a fretboard, let it claim remaining space
+   and shrink the response zone to its natural height. */
+.quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-prompt {
+  flex: 1;
+  justify-content: flex-start;
+}
+.quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-response {
+  flex: none;
+  padding-top: var(--gap-group);
 }
 
 /* CenteredContent: vertically centered info/instruction screens */
@@ -2889,6 +2903,19 @@ button {
 .stats-container {
   text-align: center;
 }
+/* Fretboard heatmap in the progress tab: the quiz-stage flex chain
+   isn't present, so reset the height-filling rules and let the SVG
+   scale naturally within a capped container. */
+.stats-container .fretboard-wrapper {
+  flex: unset;
+}
+.stats-container .fretboard-container {
+  height: auto;
+}
+.stats-container .fretboard {
+  max-height: 600px;
+  width: auto;
+}
 .stats-table {
   border-collapse: collapse;
   margin: var(--gap-group) auto;
@@ -2983,6 +3010,21 @@ button {
   gap: var(--gap-group);
   margin: var(--pad-component) 0;
   min-height: 2.5rem;
+}
+/* Card container — wraps slots + correction row in all phases */
+.seq-card {
+  background: var(--color-well);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
+  padding: var(--gap-group) var(--pad-component);
+  min-width: 20rem;
+  max-width: 24rem;
+  margin: 0 auto var(--gap-group);
+}
+/* Dotted placeholder showing where the next note will appear */
+.seq-placeholder {
+  border-bottom-style: dashed !important;
+  border-bottom-color: var(--color-text-light) !important;
 }
 /* --- Component tokens: SequentialSlot --- */
 .seq-slot {
@@ -3155,7 +3197,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1196"></div>
+  <div class="home-screen" id="home-screen" data-version="#1206"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -9401,20 +9443,43 @@ body.native-app {
   function SequentialSlots({ entries, evaluated, correctTones }) {
     const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
     const countMismatch = !!(evaluated && correctTones && entries.length !== correctTones.length);
-    return /* @__PURE__ */ u3("div", { class: "seq-slots-container", children: [
-      /* @__PURE__ */ u3("div", { class: "seq-slots", children: entries.map((entry, i3) => {
-        let cls = "seq-slot";
-        let content;
-        if (evaluated && i3 < evaluated.length) {
-          content = evaluated[i3].display;
-          cls += evaluated[i3].correct ? " correct" : " wrong";
-        } else {
-          content = entry.display;
-          cls += " filled";
+    const showCorrection = (anyWrong || countMismatch) && !!correctTones;
+    const tones = correctTones ?? [];
+    const correctionCount = showCorrection ? Math.max(entries.length, tones.length) : 0;
+    const missingCount = showCorrection ? Math.max(0, tones.length - entries.length) : 0;
+    return /* @__PURE__ */ u3("div", { class: "seq-slots-container seq-card", children: [
+      /* @__PURE__ */ u3("div", { class: "seq-slots", children: [
+        entries.map((entry, i3) => {
+          let cls = "seq-slot";
+          let content;
+          if (evaluated && i3 < evaluated.length) {
+            content = evaluated[i3].display;
+            cls += evaluated[i3].correct ? " correct" : " wrong";
+          } else {
+            content = entry.display;
+            cls += " filled";
+          }
+          return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
+        }),
+        Array.from(
+          { length: missingCount },
+          (_3, i3) => /* @__PURE__ */ u3("span", { class: "seq-slot", children: "\xA0" }, `m${i3}`)
+        ),
+        !evaluated && /* @__PURE__ */ u3("span", { class: "seq-slot seq-placeholder" })
+      ] }),
+      showCorrection ? /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: Array.from({ length: correctionCount }, (_3, i3) => {
+        const tone = tones[i3];
+        const wasCorrect = evaluated && i3 < evaluated.length && evaluated[i3].correct;
+        return !tone || wasCorrect ? /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" }, i3) : /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: tone }, i3);
+      }) }) : /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "seq-correct-row",
+          "aria-hidden": "true",
+          style: "visibility:hidden",
+          children: /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" })
         }
-        return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
-      }) }),
-      (anyWrong || countMismatch) && correctTones && /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: t3 }, i3)) })
+      )
     ] });
   }
 
@@ -9764,9 +9829,21 @@ body.native-app {
     );
     if (circle) circle.style.fill = color;
   }
+  function setCircleRing(root, posKey, color) {
+    const [s3, f4] = posKey.split("-");
+    const circle = root.querySelector(
+      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
+    );
+    if (!circle) return;
+    circle.style.fill = "none";
+    circle.style.stroke = color;
+    circle.style.strokeWidth = "3";
+  }
   function clearAllCircles(root) {
     root.querySelectorAll(".fb-pos").forEach((c3) => {
       c3.style.fill = "";
+      c3.style.stroke = "";
+      c3.style.strokeWidth = "";
     });
   }
   var MUTE_MARKER_CLASS = "fb-mute-marker";
@@ -9842,11 +9919,11 @@ body.native-app {
         const colorMissed = readCSSColor("--color-success-reveal", "#66bb6a");
         const tappedSet = new Set(evaluated.perEntry.map((e3) => e3.positionKey));
         for (const entry of evaluated.perEntry) {
-          setCircleFill(
-            root,
-            entry.positionKey,
-            entry.correct ? colorOk : colorBad
-          );
+          if (entry.correct) {
+            setCircleFill(root, entry.positionKey, colorOk);
+          } else {
+            setCircleRing(root, entry.positionKey, colorBad);
+          }
         }
         for (const missed of evaluated.missed) {
           if (!tappedSet.has(missed)) {
@@ -10486,6 +10563,7 @@ body.native-app {
     useFlats,
     narrowing,
     hideAccidentalsOverride,
+    columnsOverride,
     feedback,
     answered
   }) {
@@ -10499,7 +10577,7 @@ body.native-app {
             hideAccidentals: hideAccidentalsOverride,
             narrowing,
             feedback,
-            columns: buttonsDef.columns
+            columns: columnsOverride ?? buttonsDef.columns
           }
         );
       case "split-note":
@@ -10572,7 +10650,9 @@ body.native-app {
       {
         prompt: /* @__PURE__ */ u3(k, { children: [
           instruction && /* @__PURE__ */ u3("div", { class: "quiz-instruction", children: instruction }),
-          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: promptText }),
+          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: promptText })
+        ] }),
+        response: /* @__PURE__ */ u3(k, { children: [
           /* @__PURE__ */ u3(
             SequentialSlots,
             {
@@ -10580,9 +10660,7 @@ body.native-app {
               evaluated: seq.evaluated,
               correctTones: seq.correctAnswer ? seq.correctAnswer.split(" ") : null
             }
-          )
-        ] }),
-        response: /* @__PURE__ */ u3(k, { children: [
+          ),
           /* @__PURE__ */ u3(
             ResponseButtons,
             {
@@ -10653,6 +10731,7 @@ body.native-app {
               useFlats,
               narrowing: ctrl.narrowing,
               hideAccidentalsOverride: ctrl.hideAccidentals,
+              columnsOverride: ctrl.buttonColumns,
               feedback: engine.state.feedbackCorrect !== null && lastAnswerRef.current ? {
                 correct: engine.state.feedbackCorrect,
                 userInput: toButtonValue(
@@ -11787,7 +11866,8 @@ body.native-app {
       },
       deactivateCleanup: () => noteHandler.reset(),
       narrowing,
-      hideAccidentals: !hasAccidentals
+      hideAccidentals: !hasAccidentals,
+      buttonColumns: hasAccidentals ? void 0 : 4
     };
   }
 
@@ -11870,8 +11950,8 @@ body.native-app {
     itemNoun: "notes",
     allItems: ALL_ITEMS9,
     getQuestion: parseItem2,
-    getPromptText: (q3) => "Tap all " + q3.displayName,
-    quizInstruction: "Find all positions",
+    getPromptText: (q3) => q3.displayName,
+    quizInstruction: "Tap all note positions",
     multiTap: {
       getTargets: (q3) => q3.positions.map(positionKey),
       evaluate: evaluate2
@@ -12095,7 +12175,7 @@ body.native-app {
       itemNoun: "chords",
       allItems: items,
       getQuestion: (itemId2) => parseItem3(instrument, itemId2),
-      getPromptText: (q3) => "Tap the " + q3.displayName + " chord",
+      getPromptText: (q3) => q3.displayName,
       quizInstruction: "Tap all played positions",
       multiTap: {
         getTargets: (q3) => q3.playedPositions,

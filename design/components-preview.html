@@ -71,7 +71,7 @@
   --neutral-0: #fff;
   --neutral-50: hsl(var(--hue-neutral), 40%, 97%);
   --neutral-75: hsl(var(--hue-neutral), 40%, 95.5%);
-  --neutral-100: hsl(var(--hue-neutral), 40%, 94%);
+  --neutral-100: hsl(var(--hue-neutral), 28%, 94%);
   --neutral-150: hsl(var(--hue-neutral), 22%, 91%);
   --neutral-200: hsl(var(--hue-neutral), 18%, 89%);
   --neutral-250: hsl(var(--hue-neutral), 15%, 87%);
@@ -101,10 +101,14 @@
   --success-600: #2d4c3b;
   --success-800: hsl(var(--hue-success), 30%, 16%);
 
-  /* Error scale — derived from --hue-error */
-  --error-100: hsl(var(--hue-error), 100%, 96%);
-  --error-500: hsl(var(--hue-error), 90%, 58%);
-  --error-800: hsl(var(--hue-error), 66%, 47%);
+  /* Error scale — derived from --hue-error
+     Desaturated mid-tones so errors inform without screaming. */
+  --error-100: hsl(var(--hue-error), 60%, 95%);
+  --error-200: hsl(var(--hue-error), 55%, 88%);
+  --error-300: hsl(var(--hue-error), 50%, 72%);
+  --error-500: hsl(var(--hue-error), 55%, 58%);
+  --error-600: hsl(var(--hue-error), 50%, 50%);
+  --error-800: hsl(var(--hue-error), 50%, 35%);
 
   /* Notice scale — warm amber, anchored on #D97706 */
   --notice-100: hsl(var(--hue-notice), 60%, 95%);
@@ -132,9 +136,9 @@
   --color-success-reveal: var(--success-300);
   --color-success-text: var(--success-800);
   /* Error */
-  --color-error: var(--error-500);
+  --color-error: var(--error-600);
   --color-error-bg: var(--error-100);
-  --color-error-border: var(--error-500);
+  --color-error-border: var(--error-300);
   --color-error-text: var(--error-800);
   --color-tap-selected: var(--color-accent);
   /* On-fill text (flips in dark mode) */
@@ -570,6 +574,16 @@ body {
   flex-direction: column;
   justify-content: center;
   min-height: 0;
+}
+/* When the prompt contains a fretboard, let it claim remaining space
+   and shrink the response zone to its natural height. */
+.quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-prompt {
+  flex: 1;
+  justify-content: flex-start;
+}
+.quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-response {
+  flex: none;
+  padding-top: var(--gap-group);
 }
 
 /* CenteredContent: vertically centered info/instruction screens */
@@ -2883,6 +2897,19 @@ button {
 .stats-container {
   text-align: center;
 }
+/* Fretboard heatmap in the progress tab: the quiz-stage flex chain
+   isn't present, so reset the height-filling rules and let the SVG
+   scale naturally within a capped container. */
+.stats-container .fretboard-wrapper {
+  flex: unset;
+}
+.stats-container .fretboard-container {
+  height: auto;
+}
+.stats-container .fretboard {
+  max-height: 600px;
+  width: auto;
+}
 .stats-table {
   border-collapse: collapse;
   margin: var(--gap-group) auto;
@@ -2977,6 +3004,21 @@ button {
   gap: var(--gap-group);
   margin: var(--pad-component) 0;
   min-height: 2.5rem;
+}
+/* Card container — wraps slots + correction row in all phases */
+.seq-card {
+  background: var(--color-well);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
+  padding: var(--gap-group) var(--pad-component);
+  min-width: 20rem;
+  max-width: 24rem;
+  margin: 0 auto var(--gap-group);
+}
+/* Dotted placeholder showing where the next note will appear */
+.seq-placeholder {
+  border-bottom-style: dashed !important;
+  border-bottom-color: var(--color-text-light) !important;
 }
 /* --- Component tokens: SequentialSlot --- */
 .seq-slot {
@@ -8184,64 +8226,94 @@ ${text}`).join("\n\n");
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("h2", { children: "Spacing Scale" }),
       /* @__PURE__ */ u3(PreviewGrid, { children: /* @__PURE__ */ u3(Section, { title: "Spacing tokens", tabId, children: /* @__PURE__ */ u3(
-        "div",
+        "table",
         {
-          style: { display: "flex", flexDirection: "column", gap: "0.4rem" },
-          children: SPACE_TOKENS.map(({ name, desc }) => {
-            const val = cssVar(name);
-            const px = parseFloat(val) * 16;
-            return /* @__PURE__ */ u3(
-              "div",
+          style: {
+            width: "100%",
+            borderCollapse: "collapse",
+            fontSize: "0.75rem"
+          },
+          children: [
+            /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: ["Token", "Value", "Size", "Usage"].map((h3) => /* @__PURE__ */ u3(
+              "th",
               {
                 style: {
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.6rem"
+                  textAlign: "left",
+                  padding: "0.25rem 0.5rem",
+                  borderBottom: "1px solid var(--color-border-light)",
+                  color: "var(--color-text-muted)",
+                  fontWeight: 600,
+                  fontSize: "0.65rem"
                 },
-                children: [
-                  /* @__PURE__ */ u3(
-                    "code",
-                    {
-                      style: {
-                        fontSize: "0.7rem",
-                        minWidth: "6.5rem",
-                        color: "var(--color-text-light)",
-                        flexShrink: 0
-                      },
-                      children: name
-                    }
-                  ),
-                  /* @__PURE__ */ u3(
-                    "span",
-                    {
-                      style: {
-                        fontSize: "0.7rem",
-                        minWidth: "2.5rem",
-                        color: "var(--color-text-muted)",
-                        fontFamily: "monospace",
-                        flexShrink: 0
-                      },
-                      children: val
-                    }
-                  ),
-                  /* @__PURE__ */ u3(
-                    "div",
-                    {
-                      style: {
-                        height: "14px",
-                        width: `${Math.max(px * 3, 4)}px`,
-                        background: "var(--color-brand)",
-                        opacity: 0.65,
-                        borderRadius: "2px"
-                      }
-                    }
-                  ),
-                  /* @__PURE__ */ u3(Text, { role: "supporting", children: desc })
-                ]
+                children: h3
               },
-              name
-            );
-          })
+              h3
+            )) }) }),
+            /* @__PURE__ */ u3("tbody", { children: SPACE_TOKENS.map(({ name, desc }) => {
+              const val = cssVar(name);
+              return /* @__PURE__ */ u3("tr", { children: [
+                /* @__PURE__ */ u3(
+                  "td",
+                  {
+                    style: {
+                      padding: "0.3rem 0.5rem",
+                      borderBottom: "1px solid var(--color-border-lighter)",
+                      fontFamily: "monospace",
+                      color: "var(--color-text-light)",
+                      whiteSpace: "nowrap"
+                    },
+                    children: name
+                  }
+                ),
+                /* @__PURE__ */ u3(
+                  "td",
+                  {
+                    style: {
+                      padding: "0.3rem 0.5rem",
+                      borderBottom: "1px solid var(--color-border-lighter)",
+                      fontFamily: "monospace",
+                      color: "var(--color-text-muted)",
+                      whiteSpace: "nowrap"
+                    },
+                    children: val
+                  }
+                ),
+                /* @__PURE__ */ u3(
+                  "td",
+                  {
+                    style: {
+                      padding: "0.3rem 0.5rem",
+                      borderBottom: "1px solid var(--color-border-lighter)"
+                    },
+                    children: /* @__PURE__ */ u3(
+                      "div",
+                      {
+                        style: {
+                          height: "14px",
+                          width: `var(${name})`,
+                          minWidth: "2px",
+                          background: "var(--color-brand)",
+                          opacity: 0.65,
+                          borderRadius: "2px"
+                        }
+                      }
+                    )
+                  }
+                ),
+                /* @__PURE__ */ u3(
+                  "td",
+                  {
+                    style: {
+                      padding: "0.3rem 0.5rem",
+                      borderBottom: "1px solid var(--color-border-lighter)",
+                      color: "var(--color-text-muted)"
+                    },
+                    children: desc
+                  }
+                )
+              ] }, name);
+            }) })
+          ]
         }
       ) }) })
     ] });
@@ -9542,7 +9614,11 @@ ${text}`).join("\n\n");
     },
     { name: "brand", hueVar: "--hue-brand", steps: ["100", "600", "800"] },
     { name: "success", hueVar: "--hue-success", steps: ["100", "600", "800"] },
-    { name: "error", hueVar: "--hue-error", steps: ["100", "500", "800"] },
+    {
+      name: "error",
+      hueVar: "--hue-error",
+      steps: ["100", "200", "300", "500", "600", "800"]
+    },
     {
       name: "notice",
       hueVar: "--hue-notice",
@@ -9594,22 +9670,28 @@ ${text}`).join("\n\n");
       SwatchGrid,
       {
         items: [
-          { name: "--color-brand", note: "CTA, active toggles, progress" },
-          { name: "--color-brand-dark", note: "Hover CTA, pressed state" },
-          { name: "--color-brand-bg", note: "Success/brand background" },
-          { name: "--color-brand-border", note: "Bordered brand elements" },
-          { name: "--color-brand-text", note: "Text on brand-bg" },
-          { name: "--color-on-brand", note: "Text on brand fill" },
-          { name: "--color-success", note: "Correct feedback" },
-          { name: "--color-success-bg", note: "Correct answer bg" },
+          { name: "--color-brand", note: "brand-600 \xB7 CTA, active toggles" },
+          { name: "--color-brand-dark", note: "brand-800 \xB7 Hover, pressed" },
+          { name: "--color-brand-bg", note: "brand-200 \xB7 Brand background" },
+          { name: "--color-brand-border", note: "brand-600 \xB7 Brand borders" },
+          { name: "--color-brand-text", note: "brand-800 \xB7 Text on brand-bg" },
+          { name: "--color-on-brand", note: "white \xB7 Text on brand fill" },
           {
-            name: "--color-success-border",
-            note: "Bordered success elements"
+            name: "--color-success",
+            note: "success-600 \xB7 Correct feedback"
           },
-          { name: "--color-success-text", note: "Text on success-bg" },
-          { name: "--color-on-success", note: "Text on success fill" },
-          { name: "--color-focus", note: "Focus ring" },
-          { name: "--color-focus-bg", note: "Focus background" }
+          { name: "--color-success-bg", note: "success-100 \xB7 Correct bg" },
+          {
+            name: "--color-success-reveal",
+            note: "success-300 \xB7 Missed targets"
+          },
+          {
+            name: "--color-success-text",
+            note: "success-800 \xB7 Text on success-bg"
+          },
+          { name: "--color-on-success", note: "white \xB7 Text on success fill" },
+          { name: "--color-focus", note: "brand-600 \xB7 Focus ring" },
+          { name: "--color-focus-bg", note: "brand-100 \xB7 Focus background" }
         ]
       }
     ) });
@@ -9619,11 +9701,11 @@ ${text}`).join("\n\n");
       SwatchGrid,
       {
         items: [
-          { name: "--color-error", note: "Incorrect answer, expired timer" },
-          { name: "--color-error-bg", note: "Wrong answer bg" },
-          { name: "--color-error-border", note: "Bordered error elements" },
-          { name: "--color-error-text", note: "Text on error-bg" },
-          { name: "--color-on-error", note: "Text on error fill" }
+          { name: "--color-error", note: "error-600 \xB7 Wrong answer, timer" },
+          { name: "--color-error-bg", note: "error-100 \xB7 Wrong answer bg" },
+          { name: "--color-error-border", note: "error-300 \xB7 Error borders" },
+          { name: "--color-error-text", note: "error-800 \xB7 Text on error-bg" },
+          { name: "--color-on-error", note: "white \xB7 Text on error fill" }
         ]
       }
     ) });
@@ -9633,13 +9715,13 @@ ${text}`).join("\n\n");
       SwatchGrid,
       {
         items: [
-          { name: "--color-notice", note: "Suggestion card header & border" },
-          { name: "--color-notice-bg", note: "Suggestion card background" },
-          { name: "--color-notice-border", note: "Suggestion card border" },
-          { name: "--color-notice-bg-hover", note: "Hover state" },
-          { name: "--color-notice-bg-pressed", note: "Pressed state" },
-          { name: "--color-notice-text", note: "Text on notice surfaces" },
-          { name: "--color-highlight", note: "Fretboard question highlight" }
+          { name: "--color-notice", note: "notice-500 \xB7 Card header/border" },
+          { name: "--color-notice-bg", note: "notice-100 \xB7 Card background" },
+          { name: "--color-notice-border", note: "notice-300 \xB7 Card border" },
+          { name: "--color-notice-bg-hover", note: "notice-400 \xB7 Hover" },
+          { name: "--color-notice-bg-pressed", note: "notice-450 \xB7 Pressed" },
+          { name: "--color-notice-text", note: "notice-800 \xB7 Text on notice" },
+          { name: "--color-highlight", note: "notice-600 \xB7 Fretboard HL" }
         ]
       }
     ) });
@@ -9649,10 +9731,10 @@ ${text}`).join("\n\n");
       SwatchGrid,
       {
         items: [
-          { name: "--color-accent", note: "Active slot underline" },
-          { name: "--color-accent-muted", note: "Secondary accent states" },
-          { name: "--color-toggle-active", note: "Active toggle fill" },
-          { name: "--color-chrome", note: "Segmented control bg" }
+          { name: "--color-accent", note: "brand-600 \xB7 Slot underline" },
+          { name: "--color-accent-muted", note: "hsl \xB7 Secondary accent" },
+          { name: "--color-toggle-active", note: "brand-600 \xB7 Toggle fill" },
+          { name: "--color-chrome", note: "neutral-75 \xB7 Segmented bg" }
         ]
       }
     ) });
@@ -9662,9 +9744,9 @@ ${text}`).join("\n\n");
       SwatchGrid,
       {
         items: [
-          { name: "--color-text", note: "Primary text, headings" },
-          { name: "--color-text-muted", note: "Labels, hints, secondary" },
-          { name: "--color-text-light", note: "Tertiary, close buttons" }
+          { name: "--color-text", note: "neutral-800 \xB7 Primary text" },
+          { name: "--color-text-muted", note: "neutral-650 \xB7 Secondary" },
+          { name: "--color-text-light", note: "neutral-550 \xB7 Tertiary" }
         ]
       }
     ) });
@@ -9674,14 +9756,14 @@ ${text}`).join("\n\n");
       SwatchGrid,
       {
         items: [
-          { name: "--color-canvas", note: "Page background" },
-          { name: "--color-chrome", note: "Top bar, tab bar" },
-          { name: "--color-well", note: "Recessed containers, button card" },
-          { name: "--color-card", note: "Elevated cards, buttons" },
-          { name: "--color-surface", note: "Inactive toggles" },
-          { name: "--color-surface-hover", note: "Button/nav hover" },
-          { name: "--color-surface-raised", note: "Progress bar bg" },
-          { name: "--color-surface-pressed", note: "Button :active" }
+          { name: "--color-canvas", note: "neutral-50 \xB7 Page background" },
+          { name: "--color-chrome", note: "neutral-75 \xB7 Top bar, tab bar" },
+          { name: "--color-well", note: "neutral-100 \xB7 Recessed containers" },
+          { name: "--color-card", note: "neutral-0 \xB7 Elevated cards" },
+          { name: "--color-surface", note: "neutral-75 \xB7 Inactive toggles" },
+          { name: "--color-surface-hover", note: "neutral-150 \xB7 Hover" },
+          { name: "--color-surface-raised", note: "neutral-200 \xB7 Progress bg" },
+          { name: "--color-surface-pressed", note: "neutral-350 \xB7 :active" }
         ]
       }
     ) });
@@ -9691,11 +9773,11 @@ ${text}`).join("\n\n");
       SwatchGrid,
       {
         items: [
-          { name: "--color-border", note: "Toggle borders, chord-slots" },
-          { name: "--color-border-light", note: "Table borders, separator" },
+          { name: "--color-border", note: "neutral-550 \xB7 Toggle borders" },
+          { name: "--color-border-light", note: "neutral-400 \xB7 Tables" },
           {
             name: "--color-border-lighter",
-            note: "Section dividers"
+            note: "neutral-300 \xB7 Section dividers"
           }
         ]
       }
