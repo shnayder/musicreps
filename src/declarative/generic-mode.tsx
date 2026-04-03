@@ -443,6 +443,10 @@ function SequentialQuizArea<Q>(
           {ctrl.renderPrompt && currentQ
             ? ctrl.renderPrompt(currentQ)
             : <div class='quiz-prompt'>{promptText}</div>}
+        </>
+      }
+      response={
+        <>
           <SequentialSlots
             entries={seq.entries}
             evaluated={seq.evaluated}
@@ -450,10 +454,6 @@ function SequentialQuizArea<Q>(
               ? seq.correctAnswer.split(' ')
               : null}
           />
-        </>
-      }
-      response={
-        <>
           <ResponseButtons
             buttonsDef={activeButtons}
             onAnswer={seq.handleInput}

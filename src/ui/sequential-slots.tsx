@@ -27,8 +27,21 @@ export function SequentialSlots(
   const countMismatch = !!(evaluated && correctTones &&
     entries.length !== correctTones.length);
 
+  // Build correction row aligned to the top row: one span per entry slot.
+  // Correct entries get an invisible spacer; wrong/missing get the right note.
+  // Extra entries beyond the correct answer get empty spacers too.
+  const showCorrection = (anyWrong || countMismatch) && correctTones;
+  const correctionCount = showCorrection
+    ? Math.max(entries.length, correctTones!.length)
+    : 0;
+
+  // Pad missing slots so both rows have equal column count after evaluation.
+  const missingCount = showCorrection
+    ? Math.max(0, correctTones!.length - entries.length)
+    : 0;
+
   return (
-    <div class='seq-slots-container'>
+    <div class='seq-slots-container seq-card'>
       <div class='seq-slots'>
         {entries.map((entry, i) => {
           let cls = 'seq-slot';
@@ -42,14 +55,30 @@ export function SequentialSlots(
           }
           return <span key={i} class={cls}>{content}</span>;
         })}
+        {/* Empty spacer slots for missing entries (user entered too few) */}
+        {Array.from({ length: missingCount }, (_, i) => (
+          <span key={`m${i}`} class='seq-slot'>{'\u00A0'}</span>
+        ))}
+        {!evaluated && <span class='seq-slot seq-placeholder' />}
       </div>
-      {(anyWrong || countMismatch) && correctTones && (
-        <div class='seq-correct-row'>
-          {correctTones.map((t, i) => (
-            <span key={i} class='seq-correct-note'>{t}</span>
-          ))}
-        </div>
-      )}
+      {showCorrection
+        ? (
+          <div class='seq-correct-row'>
+            {Array.from({ length: correctionCount }, (_, i) => {
+              const tone = correctTones![i];
+              const wasCorrect = evaluated && i < evaluated.length &&
+                evaluated[i].correct;
+              return (!tone || wasCorrect)
+                ? <span key={i} class='seq-correct-note'>{'\u00A0'}</span>
+                : <span key={i} class='seq-correct-note'>{tone}</span>;
+            })}
+          </div>
+        )
+        : (
+          <div class='seq-correct-row' aria-hidden='true' style='visibility:hidden'>
+            <span class='seq-correct-note'>{'\u00A0'}</span>
+          </div>
+        )}
     </div>
   );
 }
