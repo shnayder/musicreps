@@ -1,7 +1,8 @@
-// SequentialSlots — shows what the user has entered so far for sequential
-// response modes. No empty placeholders — the user doesn't know the expected
-// count. After evaluation, per-entry feedback (correct/wrong) is shown,
-// and if any are wrong the correct answer appears below.
+// SequentialSlots — card-style response area for sequential input modes.
+// Shows a dashed placeholder for the next note and filled slots as notes are
+// entered. After evaluation, per-entry feedback (correct/wrong) is shown,
+// with corrections aligned below wrong entries. An invisible correction row
+// reserves space so the card never jumps on feedback.
 
 import type { SequentialEntryResult } from '../declarative/types.ts';
 
@@ -30,14 +31,15 @@ export function SequentialSlots(
   // Build correction row aligned to the top row: one span per entry slot.
   // Correct entries get an invisible spacer; wrong/missing get the right note.
   // Extra entries beyond the correct answer get empty spacers too.
-  const showCorrection = (anyWrong || countMismatch) && correctTones;
+  const showCorrection = (anyWrong || countMismatch) && !!correctTones;
+  const tones = correctTones ?? [];
   const correctionCount = showCorrection
-    ? Math.max(entries.length, correctTones!.length)
+    ? Math.max(entries.length, tones.length)
     : 0;
 
   // Pad missing slots so both rows have equal column count after evaluation.
   const missingCount = showCorrection
-    ? Math.max(0, correctTones!.length - entries.length)
+    ? Math.max(0, tones.length - entries.length)
     : 0;
 
   return (
@@ -66,7 +68,7 @@ export function SequentialSlots(
         ? (
           <div class='seq-correct-row'>
             {Array.from({ length: correctionCount }, (_, i) => {
-              const tone = correctTones![i];
+              const tone = tones[i];
               const wasCorrect = evaluated && i < evaluated.length &&
                 evaluated[i].correct;
               return (!tone || wasCorrect)
