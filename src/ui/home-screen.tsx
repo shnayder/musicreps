@@ -652,14 +652,10 @@ function AllSkillsList(
 }
 
 // ---------------------------------------------------------------------------
-// HomeScreen — top-level component with bottom nav: Active / All Skills / Settings
+// HomeScreen — top-level component with bottom nav: Active / All Skills / About / Settings
 // ---------------------------------------------------------------------------
 
 export type HomeTab = 'active' | 'all' | 'about' | 'settings';
-
-function initialTab(): HomeTab {
-  return loadStarredSkills().size > 0 ? 'active' : 'all';
-}
 
 // ---------------------------------------------------------------------------
 // HomeHeader — title + tagline that scrolls with content
@@ -905,7 +901,9 @@ export function HomeScreen(
   const [accordion, setAccordion] = useState(loadAccordionState);
   const [showDev, setShowDev] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
-  const [tab, setTab] = useState<HomeTab>(initialTab);
+  const [tab, setTab] = useState<HomeTab>(
+    () => (starred.size > 0 ? 'active' : 'all'),
+  );
   const globalEffort = useMemo(getGlobalEffort, [progress]);
   const prefix = useTabsPrefix();
 

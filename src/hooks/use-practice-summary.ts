@@ -1,5 +1,5 @@
-// usePracticeSummary — absorbs practice tab boilerplate shared by all 10 modes.
-// Owns tab state (practice/progress), summary computation,
+// usePracticeSummary — absorbs practice tab boilerplate shared by all modes.
+// Owns tab state (practice/progress/about), summary computation,
 // and the stats selector adapter. Each mode calls this once and gets everything
 // needed for the PracticeTab component.
 
@@ -32,6 +32,8 @@ export type PracticeSummaryHandle = {
 /**
  * Compute practice summary state + tab controls for a quiz mode.
  *
+ * @param modeId Mode identifier — used for the `{modeId}_visited` storage key
+ *   that tracks first-visit onboarding (about tab on first open).
  * @param allItems All item IDs in the mode (not just enabled).
  * @param selector Adaptive selector (for speed/freshness lookups).
  * @param engine Quiz engine handle (for mastery text and phase).
@@ -59,9 +61,12 @@ export function usePracticeSummary(opts: {
       const { seen } = opts.selector.getLevelSpeed(opts.allItems);
       if (seen === 0) {
         setActiveTab('about');
+        return;
       }
     }
-    // On subsequent visits, leave the tab as-is (preserving user's choice).
+    // On return visits, reset to practice if still on about (user didn't
+    // manually switch away during the first visit).
+    setActiveTab((prev) => (prev === 'about' ? 'practice' : prev));
   }, [opts.modeId, opts.selector, opts.allItems]);
 
   const summary = useMemo(
