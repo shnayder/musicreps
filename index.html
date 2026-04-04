@@ -3218,7 +3218,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1223"></div>
+  <div class="home-screen" id="home-screen" data-version="#1228"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -5055,6 +5055,7 @@ body.native-app {
   function createAdaptiveSelector(storage2, cfg = DEFAULT_CONFIG, randomFn = Math.random, responseCountFn = null) {
     const getResponseCount = (itemId2) => responseCountFn ? responseCountFn(itemId2) : 1;
     const scaledCfg = (itemId2) => scaleConfigForResponseCount(cfg, getResponseCount(itemId2));
+    let version = 0;
     function recordResponse(itemId2, timeMs, correct = true) {
       const itemCfg = scaledCfg(itemId2);
       const clamped = Math.min(timeMs, itemCfg.maxResponseTime);
@@ -5062,6 +5063,7 @@ body.native-app {
       if (correct) {
         recordCorrectResponse(storage2, cfg, itemCfg, itemId2, clamped, now);
       } else recordWrongResponse(storage2, cfg, itemCfg, itemId2, now);
+      version++;
     }
     function selectNext(validItems) {
       if (validItems.length === 0) {
@@ -5119,8 +5121,12 @@ body.native-app {
       ),
       updateConfig: (newCfg) => {
         cfg = { ...cfg, ...newCfg };
+        version++;
       },
-      getConfig: () => cfg
+      getConfig: () => cfg,
+      get version() {
+        return version;
+      }
     };
   }
   function createStorageAdapter(namespace) {
@@ -8478,7 +8484,13 @@ body.native-app {
           sortUnstarted: (a3, b) => (idOrder.get(a3.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0)
         }
       ),
-      [spec.selector, activeGroupIds, spec.getItemIdsForGroup, idOrder]
+      [
+        spec.selector,
+        spec.selector.version,
+        activeGroupIds,
+        spec.getItemIdsForGroup,
+        idOrder
+      ]
     );
     const getLabel = q2(
       (id) => {
@@ -9143,7 +9155,7 @@ body.native-app {
       getStats: (id) => selector.getStats(id),
       getSpeedScore: (id) => selector.getSpeedScore(id),
       getFreshness: (id) => selector.getFreshness(id)
-    }), [selector, enginePhase]);
+    }), [selector, selector.version, enginePhase]);
   }
   function useRoundSummary(engine) {
     const roundCorrect = T2(() => {
@@ -9187,6 +9199,7 @@ body.native-app {
       }),
       [
         opts.selector,
+        opts.selector.version,
         opts.recommendation,
         opts.recommendationText,
         opts.engine.state.masteryText,
@@ -11260,7 +11273,7 @@ body.native-app {
         kind: "items",
         itemIds: def.allItems
       });
-    }, [def, learner.selector, _phase, skippedGroups]);
+    }, [def, learner.selector, learner.selector.version, _phase, skippedGroups]);
   }
   function useLevelBars(def, learner, _phase, groupScopeResult) {
     const enabledGroups = groupScopeResult?.enabledGroups;
@@ -11280,7 +11293,7 @@ body.native-app {
       }
       const colors = progressBarColors(learner.selector, def.allItems);
       return colors.length > 0 ? [{ id: "_all", label: "", colors }] : [];
-    }, [def, learner.selector, _phase, enabledGroups]);
+    }, [def, learner.selector, learner.selector.version, _phase, enabledGroups]);
   }
   function ModeHeader({ def, isIdle, progressColors, totalReps, navigateHome }) {
     if (isIdle) {
@@ -11330,7 +11343,7 @@ body.native-app {
         if (s3) sum += s3.sampleCount;
       }
       return sum;
-    }, [def.allItems, learner.selector, phase]);
+    }, [def.allItems, learner.selector, learner.selector.version, phase]);
     if (isIdle) {
       return /* @__PURE__ */ u3(ScreenLayout, { children: [
         /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
@@ -11398,7 +11411,10 @@ body.native-app {
       def.motorTaskType,
       def.getExpectedResponseCount
     );
-    const groupScopeSpec = buildGroupScopeSpec(def, learner.selector);
+    const groupScopeSpec = T2(
+      () => buildGroupScopeSpec(def, learner.selector),
+      [def, learner.selector]
+    );
     const groupScopeResult = groupScopeSpec ? useGroupScope(groupScopeSpec) : null;
     const enabledGroups = groupScopeResult?.enabledGroups ?? EMPTY_GROUPS;
     const ctrl = def.useController ? def.useController(enabledGroups) : {};
