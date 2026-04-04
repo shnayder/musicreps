@@ -43,8 +43,8 @@ deploy:
 git checkout main && git pull
 
 # 2. Tag the release
-git tag v<N>    # e.g. v42, v43
-git push origin v<N>
+git tag release-v<N>    # e.g. release-v1, release-v2
+git push origin release-v<N>
 ```
 
 The `deploy-release` GitHub Actions workflow:
@@ -71,15 +71,15 @@ bash scripts/deploy-gh-pages.sh release
 Push a new tag pointing at the older commit:
 
 ```bash
-git tag v<N+1> <older-commit-hash>
-git push origin v<N+1>
+git tag release-v<N+1> <older-commit-hash>
+git push origin release-v<N+1>
 ```
 
 Or force-update an existing tag (not recommended but works):
 
 ```bash
-git tag -f v<N> <older-commit-hash>
-git push -f origin v<N>
+git tag -f release-v<N> <older-commit-hash>
+git push -f origin release-v<N>
 ```
 
 Either way, the `release/` directory on gh-pages gets updated with the older
