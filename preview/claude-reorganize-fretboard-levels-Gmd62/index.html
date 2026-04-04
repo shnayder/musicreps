@@ -3218,7 +3218,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="4dd342 reorganize-fretboard-levels-Gmd62"></div>
+  <div class="home-screen" id="home-screen" data-version="fc9256 reorganize-fretboard-levels-Gmd62"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -6008,9 +6008,11 @@ body.native-app {
       return items;
     }
     function getItemIdsForFretRange(startFret, endFret, noteFilter, stringCount) {
+      const lo = Math.max(0, startFret);
+      const hi = Math.min(endFret, fretCount - 1);
       const items = [];
       for (let s3 = 0; s3 < stringCount; s3++) {
-        for (let f4 = startFret; f4 <= endFret; f4++) {
+        for (let f4 = lo; f4 <= hi; f4++) {
           const note = getNoteAtPosition2(s3, f4);
           if (notePassesFilter(note, noteFilter)) {
             items.push(s3 + "-" + f4);
