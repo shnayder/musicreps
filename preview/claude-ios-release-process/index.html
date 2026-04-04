@@ -3218,7 +3218,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="1e2f8c ios-release-process"></div>
+  <div class="home-screen" id="home-screen" data-version="8460bc ios-release-process"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -8109,8 +8109,8 @@ body.native-app {
       }
       const manifest = await resp.json();
       const state = await plugin.getState();
-      const runningVersion = state.status === "healthy" || state.status === "pending" ? state.version : getRunningVersion();
-      if (manifest.version === runningVersion) {
+      const knownVersion = state.version || getRunningVersion();
+      if (manifest.version === knownVersion) {
         console.log("[OTA] up to date:", manifest.version);
         return;
       }
@@ -8118,7 +8118,7 @@ body.native-app {
         "[OTA] new version available:",
         manifest.version,
         "(current:",
-        runningVersion + ")"
+        knownVersion + ")"
       );
       const htmlResp = await fetch(`${getReleaseBase()}/index.html`, {
         cache: "no-store"
@@ -8153,12 +8153,11 @@ body.native-app {
         });
       } catch {
       }
-      const bytes = new TextEncoder().encode(html);
-      const binStr = Array.from(bytes, (b) => String.fromCharCode(b)).join("");
       await fs.writeFile({
         path: `${dir}/index.html`,
-        data: btoa(binStr),
-        directory: "LIBRARY"
+        data: html,
+        directory: "LIBRARY",
+        encoding: "utf8"
       });
       console.log("[OTA] wrote update to filesystem");
       await plugin.setUpdatePath({
