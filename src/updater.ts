@@ -72,14 +72,11 @@ async function checkForUpdate(): Promise<void> {
     }
     const manifest: VersionManifest = await resp.json();
 
-    // 2. Compare to current version
+    // 2. Compare to current version (including already-downloaded-but-not-applied)
     const state = await plugin.getState();
-    const runningVersion =
-      state.status === 'healthy' || state.status === 'pending'
-        ? state.version
-        : getRunningVersion();
+    const knownVersion = state.version || getRunningVersion();
 
-    if (manifest.version === runningVersion) {
+    if (manifest.version === knownVersion) {
       console.log('[OTA] up to date:', manifest.version);
       return;
     }
@@ -87,7 +84,7 @@ async function checkForUpdate(): Promise<void> {
       '[OTA] new version available:',
       manifest.version,
       '(current:',
-      runningVersion + ')',
+      knownVersion + ')',
     );
 
     // 3. Download index.html
@@ -132,13 +129,11 @@ async function checkForUpdate(): Promise<void> {
       // directory may already exist
     }
 
-    // Capacitor Filesystem.writeFile expects base64 for string data
-    const bytes = new TextEncoder().encode(html);
-    const binStr = Array.from(bytes, (b) => String.fromCharCode(b)).join('');
     await fs.writeFile({
       path: `${dir}/index.html`,
-      data: btoa(binStr),
+      data: html,
       directory: 'LIBRARY',
+      encoding: 'utf8',
     });
     console.log('[OTA] wrote update to filesystem');
 

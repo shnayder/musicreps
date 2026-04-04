@@ -15,9 +15,10 @@ restart.
 App launch
   |
   Native plugin (OTAUpdatePlugin) decides what to load:
-  +-- cached update (healthy) --> load from Library/NoCloud/ota/current/
-  +-- cached update (pending) --> previous boot failed, fall back to bundled
-  +-- no update              --> load from bundled public/
+  +-- cached update (healthy)                --> load from Library/ota/current/
+  +-- cached update (pending, attempts < 2)  --> retry from Library/ota/current/
+  +-- cached update (pending, attempts >= 2) --> delete update, fall back to bundled
+  +-- no update                              --> load from bundled public/
   |
   v
 App boots from chosen content
@@ -25,8 +26,8 @@ App boots from chosen content
   JS calls reportHealthy() --> native marks update as healthy
   |
   Background: fetch /release/version.json from GitHub Pages
-  +-- same version: skip
-  +-- new version: download, verify SHA-256, write to filesystem
+  +-- same version (including downloaded-but-not-applied): skip
+  +-- new version: download, verify SHA-256, write to Library/ota/current/
       (applied on next app restart)
 ```
 
