@@ -82,6 +82,7 @@ export function usePracticeSummary(opts: {
       }),
     [
       opts.selector,
+      opts.selector.version,
       opts.recommendation,
       opts.recommendationText,
       opts.engine.state.masteryText,
