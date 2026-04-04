@@ -91,6 +91,7 @@ import {
 } from '../ui/quiz-ui.tsx';
 import { InteractiveFretboard } from '../ui/interactive-fretboard.tsx';
 import { Text } from '../ui/text.tsx';
+import { RepeatMark } from '../ui/repeat-mark.tsx';
 import {
   IMPLEMENTED_TASK_TYPES,
   NOTE_BUTTON_CONFIG,
@@ -1015,6 +1016,10 @@ function AboutTab(
       <Text role='body-secondary' as='p' class='about-description'>
         {description}
       </Text>
+      <Text role='status' as='p' class='status-empty about-tab-tip'>
+        Start practicing on the{' '}
+        <RepeatMark size={16} class='about-tab-tip-icon' /> tab below.
+      </Text>
     </div>
   );
 }
@@ -1200,6 +1205,7 @@ function useGenericDerivedState<Q>(
   usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
   const round = useRoundSummary(engine);
   const ps = usePracticeSummary({
+    modeId: def.id,
     allItems: def.allItems,
     selector: learner.selector,
     engine,
@@ -1207,7 +1213,13 @@ function useGenericDerivedState<Q>(
     recommendation: groupScopeResult?.recommendation ?? null,
     recommendationText: groupScopeResult?.recommendationText ?? '',
   });
-  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+  useModeLifecycle(
+    onMount,
+    engine,
+    learner,
+    deactivateCleanup,
+    ps.resetTabForActivation,
+  );
 
   const handleSubmit = useCallback((input: string): boolean => {
     if (

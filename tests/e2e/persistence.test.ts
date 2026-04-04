@@ -219,9 +219,11 @@ describe('corrupt localStorage recovery (E2E)', () => {
   it('invalid JSON in enabledGroups does not crash the app', async () => {
     const page = await createTestPage(browser, baseUrl);
     try {
-      // Inject corrupt data
+      // Inject corrupt data + visited key so first-visit onboarding
+      // doesn't send us to the About tab instead of Practice.
       await page.evaluate(() => {
         localStorage.setItem('semitoneMath_enabledGroups', 'not valid json{{{');
+        localStorage.setItem('semitoneMath_visited', '1');
       });
 
       // Reload — app should not crash
