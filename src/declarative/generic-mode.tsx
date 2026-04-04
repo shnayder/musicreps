@@ -91,6 +91,7 @@ import {
 } from '../ui/quiz-ui.tsx';
 import { InteractiveFretboard } from '../ui/interactive-fretboard.tsx';
 import { Text } from '../ui/text.tsx';
+import { RepeatMark } from '../ui/repeat-mark.tsx';
 import {
   IMPLEMENTED_TASK_TYPES,
   NOTE_BUTTON_CONFIG,
@@ -327,6 +328,7 @@ function ResponseButtons(
     useFlats,
     narrowing,
     hideAccidentalsOverride,
+    columnsOverride,
     feedback,
     answered,
   }: {
@@ -335,6 +337,7 @@ function ResponseButtons(
     useFlats?: boolean;
     narrowing?: ReadonlySet<string> | null;
     hideAccidentalsOverride?: boolean;
+    columnsOverride?: number;
     feedback?: ButtonFeedback | null;
     answered?: boolean;
   },
@@ -348,7 +351,7 @@ function ResponseButtons(
           hideAccidentals={hideAccidentalsOverride}
           narrowing={narrowing}
           feedback={feedback}
-          columns={buttonsDef.columns}
+          columns={columnsOverride ?? buttonsDef.columns}
         />
       );
     case 'split-note':
@@ -441,6 +444,10 @@ function SequentialQuizArea<Q>(
           {ctrl.renderPrompt && currentQ
             ? ctrl.renderPrompt(currentQ)
             : <div class='quiz-prompt'>{promptText}</div>}
+        </>
+      }
+      response={
+        <>
           <SequentialSlots
             entries={seq.entries}
             evaluated={seq.evaluated}
@@ -448,10 +455,6 @@ function SequentialQuizArea<Q>(
               ? seq.correctAnswer.split(' ')
               : null}
           />
-        </>
-      }
-      response={
-        <>
           <ResponseButtons
             buttonsDef={activeButtons}
             onAnswer={seq.handleInput}
@@ -559,6 +562,7 @@ function StandardQuizArea<Q>(
             useFlats={useFlats}
             narrowing={ctrl.narrowing}
             hideAccidentalsOverride={ctrl.hideAccidentals}
+            columnsOverride={ctrl.buttonColumns}
             feedback={engine.state.feedbackCorrect !== null &&
                 lastAnswerRef.current
               ? {
@@ -1012,6 +1016,10 @@ function AboutTab(
       <Text role='body-secondary' as='p' class='about-description'>
         {description}
       </Text>
+      <Text role='status' as='p' class='status-empty about-tab-tip'>
+        Start practicing on the{' '}
+        <RepeatMark size={16} class='about-tab-tip-icon' /> tab below.
+      </Text>
     </div>
   );
 }
@@ -1197,6 +1205,7 @@ function useGenericDerivedState<Q>(
   usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
   const round = useRoundSummary(engine);
   const ps = usePracticeSummary({
+    modeId: def.id,
     allItems: def.allItems,
     selector: learner.selector,
     engine,
@@ -1204,7 +1213,13 @@ function useGenericDerivedState<Q>(
     recommendation: groupScopeResult?.recommendation ?? null,
     recommendationText: groupScopeResult?.recommendationText ?? '',
   });
-  useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+  useModeLifecycle(
+    onMount,
+    engine,
+    learner,
+    deactivateCleanup,
+    ps.resetTabForActivation,
+  );
 
   const handleSubmit = useCallback((input: string): boolean => {
     if (
@@ -1330,7 +1345,7 @@ function useProgressColors<Q>(
       kind: 'items',
       itemIds: def.allItems,
     });
-  }, [def, learner.selector, _phase, skippedGroups]);
+  }, [def, learner.selector, learner.selector.version, _phase, skippedGroups]);
 }
 
 /** Per-level progress bars for the round-complete screen.
@@ -1362,7 +1377,7 @@ function useLevelBars<Q>(
     }
     const colors = progressBarColors(learner.selector, def.allItems);
     return colors.length > 0 ? [{ id: '_all', label: '', colors }] : [];
-  }, [def, learner.selector, _phase, enabledGroups]);
+  }, [def, learner.selector, learner.selector.version, _phase, enabledGroups]);
 }
 
 /** Render SkillHeader (idle) or minimal ModeTopBar (active/calibration). */
@@ -1426,7 +1441,7 @@ function GenericModeBody<Q>(
       if (s) sum += s.sampleCount;
     }
     return sum;
-  }, [def.allItems, learner.selector, phase]);
+  }, [def.allItems, learner.selector, learner.selector.version, phase]);
 
   if (isIdle) {
     return (
@@ -1507,7 +1522,10 @@ export function GenericMode<Q>(
     def.motorTaskType,
     def.getExpectedResponseCount,
   );
-  const groupScopeSpec = buildGroupScopeSpec(def, learner.selector);
+  const groupScopeSpec = useMemo(
+    () => buildGroupScopeSpec(def, learner.selector),
+    [def, learner.selector],
+  );
   const groupScopeResult = groupScopeSpec
     ? useGroupScope(groupScopeSpec)
     : null;

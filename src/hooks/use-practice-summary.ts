@@ -1,9 +1,9 @@
-// usePracticeSummary — absorbs practice tab boilerplate shared by all 10 modes.
-// Owns tab state (practice/progress), summary computation,
+// usePracticeSummary — absorbs practice tab boilerplate shared by all modes.
+// Owns tab state (practice/progress/about), summary computation,
 // and the stats selector adapter. Each mode calls this once and gets everything
 // needed for the PracticeTab component.
 
-import { useMemo, useState } from 'preact/hooks';
+import { useCallback, useMemo, useState } from 'preact/hooks';
 import type {
   AdaptiveSelector,
   PracticeSummaryState,
@@ -14,6 +14,7 @@ import type { StatsViewSelector } from './use-round-summary.ts';
 import { useStatsSelector } from './use-round-summary.ts';
 import type { QuizEngineHandle } from './use-quiz-engine.ts';
 import type { ModeTab } from '../ui/mode-screen.tsx';
+import { storage } from '../storage.ts';
 
 // ---------------------------------------------------------------------------
 // Hook
@@ -23,12 +24,16 @@ export type PracticeSummaryHandle = {
   summary: PracticeSummaryState;
   activeTab: ModeTab;
   setActiveTab: (tab: ModeTab) => void;
+  /** Reset tab for mode activation: about on first visit, practice after. */
+  resetTabForActivation: () => void;
   statsSel: StatsViewSelector;
 };
 
 /**
  * Compute practice summary state + tab controls for a quiz mode.
  *
+ * @param modeId Mode identifier — used for the `{modeId}_visited` storage key
+ *   that tracks first-visit onboarding (about tab on first open).
  * @param allItems All item IDs in the mode (not just enabled).
  * @param selector Adaptive selector (for speed/freshness lookups).
  * @param engine Quiz engine handle (for mastery text and phase).
@@ -37,6 +42,7 @@ export type PracticeSummaryHandle = {
  * @param recommendationText Precomputed recommendation text.
  */
 export function usePracticeSummary(opts: {
+  modeId: string;
   allItems: string[];
   selector: AdaptiveSelector;
   engine: QuizEngineHandle;
@@ -45,6 +51,23 @@ export function usePracticeSummary(opts: {
   recommendationText: string;
 }): PracticeSummaryHandle {
   const [activeTab, setActiveTab] = useState<ModeTab>('practice');
+
+  const resetTabForActivation = useCallback(() => {
+    const key = `${opts.modeId}_visited`;
+    if (!storage.getItem(key)) {
+      storage.setItem(key, '1');
+      // Returning users won't have the _visited key but will have practice
+      // data — only show About for genuinely new-to-this-skill users.
+      const { seen } = opts.selector.getLevelSpeed(opts.allItems);
+      if (seen === 0) {
+        setActiveTab('about');
+        return;
+      }
+    }
+    // On return visits, reset to practice if still on about (user didn't
+    // manually switch away during the first visit).
+    setActiveTab((prev) => (prev === 'about' ? 'practice' : prev));
+  }, [opts.modeId, opts.selector, opts.allItems]);
 
   const summary = useMemo(
     () =>
@@ -59,6 +82,7 @@ export function usePracticeSummary(opts: {
       }),
     [
       opts.selector,
+      opts.selector.version,
       opts.recommendation,
       opts.recommendationText,
       opts.engine.state.masteryText,
@@ -78,6 +102,7 @@ export function usePracticeSummary(opts: {
     summary,
     activeTab,
     setActiveTab,
+    resetTabForActivation,
     statsSel,
   };
 }

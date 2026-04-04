@@ -207,6 +207,54 @@ describe('getItemIdsForString', () => {
   });
 });
 
+describe('getItemIdsForFretRange', () => {
+  it('frets 0-3, all notes, 6 strings: 24 items', () => {
+    const items = fb.getItemIdsForFretRange(0, 3, 'all', 6);
+    assert.equal(items.length, 24); // 6 strings × 4 frets
+  });
+
+  it('frets 0-3, naturals only: all items within fret range', () => {
+    const items = fb.getItemIdsForFretRange(0, 3, 'natural', 6);
+    assert.ok(items.length > 0);
+    for (const id of items) {
+      const fret = Number(id.split('-')[1]);
+      assert.ok(fret >= 0 && fret <= 3, `fret ${fret} out of range`);
+    }
+  });
+
+  it('frets 4-8, sharps-flats: no naturals included', () => {
+    const items = fb.getItemIdsForFretRange(4, 8, 'sharps-flats', 6);
+    assert.ok(items.length > 0);
+    for (const id of items) {
+      const [s, f] = id.split('-').map(Number);
+      const note = fb.getNoteAtPosition(s, f);
+      assert.ok(!NATURAL_NOTES.includes(note), `${note} is natural`);
+    }
+  });
+
+  it('clamps to fretCount when endFret exceeds it', () => {
+    const small = createFretboardHelpers({
+      notes: NOTES,
+      naturalNotes: NATURAL_NOTES,
+      stringOffsets: [0], // C string
+      fretCount: 5, // frets 0-4
+      noteMatchesInput,
+    });
+    // Ask for frets 3-8 but fretCount is 5 → clamped to 3-4
+    const items = small.getItemIdsForFretRange(3, 8, 'all', 1);
+    assert.equal(items.length, 2); // frets 3 and 4 only
+    assert.equal(items[0], '0-3');
+    assert.equal(items[1], '0-4');
+  });
+
+  it('naturals + accidentals cover all items in range', () => {
+    const naturals = fb.getItemIdsForFretRange(0, 3, 'natural', 6);
+    const accidentals = fb.getItemIdsForFretRange(0, 3, 'sharps-flats', 6);
+    const all = fb.getItemIdsForFretRange(0, 3, 'all', 6);
+    assert.equal(naturals.length + accidentals.length, all.length);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Ukulele helpers
 // ---------------------------------------------------------------------------

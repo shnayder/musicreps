@@ -171,7 +171,13 @@ function useRecommendationData(
             (idOrder.get(a.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0),
         },
       ),
-    [spec.selector, activeGroupIds, spec.getItemIdsForGroup, idOrder],
+    [
+      spec.selector,
+      spec.selector.version,
+      activeGroupIds,
+      spec.getItemIdsForGroup,
+      idOrder,
+    ],
   );
   const getLabel = useCallback(
     (id: string) => {

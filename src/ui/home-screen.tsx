@@ -33,6 +33,7 @@ import {
   LayoutMain,
   ScreenLayout,
 } from './screen-layout.tsx';
+import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
 // storage persistence for starred skills
@@ -40,7 +41,6 @@ import {
 
 const STARRED_KEY = 'starredSkills';
 const ACCORDION_KEY = 'trackAccordionState';
-const TAB_KEY = 'homeTab';
 
 function loadStarredSkills(): Set<string> {
   const allModeIds = new Set(TRACKS.flatMap((t) => t.skills));
@@ -89,13 +89,14 @@ function saveAccordionState(state: Record<string, boolean>): void {
 
 /** Clean up legacy storage keys.  Call after initStorage() + migration. */
 export function cleanupLegacyKeys(): void {
-  try {
-    storage.removeItem('selectedTracks');
-  } catch (_) { /* expected */ }
-  // Also remove from localStorage to prevent re-migration of the key.
-  try {
-    globalThis.localStorage?.removeItem('selectedTracks');
-  } catch (_) { /* expected */ }
+  for (const key of ['selectedTracks', 'homeTab']) {
+    try {
+      storage.removeItem(key);
+    } catch (_) { /* expected */ }
+    try {
+      globalThis.localStorage?.removeItem(key);
+    } catch (_) { /* expected */ }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -620,11 +621,11 @@ function AllSkillsList(
   return (
     <div class='home-modes'>
       <h2 class='tab-panel-title'>All Skills</h2>
-      <p class='all-skills-hint'>
+      <Text role='status' as='p' class='status-empty all-skills-hint'>
         Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
         {' '}
         list.
-      </p>
+      </Text>
       {TRACKS.map((track) => (
         <TrackSection
           key={track.id}
@@ -651,20 +652,10 @@ function AllSkillsList(
 }
 
 // ---------------------------------------------------------------------------
-// HomeScreen — top-level component with bottom nav: Active / All Skills / Settings
+// HomeScreen — top-level component with bottom nav: Active / All Skills / About / Settings
 // ---------------------------------------------------------------------------
 
-export type HomeTab = 'active' | 'all' | 'settings';
-
-function loadInitialTab(): HomeTab {
-  try {
-    const saved = storage.getItem(TAB_KEY);
-    if (saved === 'active' || saved === 'all' || saved === 'settings') {
-      return saved;
-    }
-  } catch (_) { /* expected */ }
-  return loadStarredSkills().size > 0 ? 'active' : 'all';
-}
+export type HomeTab = 'active' | 'all' | 'about' | 'settings';
 
 // ---------------------------------------------------------------------------
 // HomeHeader — title + tagline that scrolls with content
@@ -714,6 +705,93 @@ function HomeHeader(
 }
 
 // ---------------------------------------------------------------------------
+// HomeAboutTab — in-app intro: what this is, how it works, getting started
+// ---------------------------------------------------------------------------
+
+function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
+  return (
+    <div class='settings-page'>
+      {isNativeApp && (
+        <div class='home-about-brand'>
+          <h1 class='home-title'>
+            <RepeatMark size={28} class='home-logo-mark' />
+            Music Reps
+          </h1>
+          <p class='home-tagline'>
+            Make music fundamentals automatic so you can focus on playing.
+          </p>
+        </div>
+      )}
+
+      <section class='settings-section'>
+        <h2 class='settings-section-title'>What is Music Reps?</h2>
+        <Text role='body-secondary' as='p'>
+          Music Reps trains instant recall of music fundamentals, letting you
+          play with confidence, improvise more freely, learn songs faster, and
+          be a better musician overall.
+        </Text>
+        <Text role='body-secondary' as='p'>
+          There are likely many musical skills you know, but only with some
+          hesitation and mental effort: perhaps locating the G on the B string
+          of your guitar, or figuring out what key has 4 flats, or listing the
+          notes in an Em7 chord. Music Reps closes the gap between{' '}
+          <em>give me a second, I know this</em> and <em>already moving on</em>.
+        </Text>
+      </section>
+
+      <section class='settings-section'>
+        <h2 class='settings-section-title'>How it works</h2>
+        <ul class='home-about-list'>
+          <li>
+            <strong>Fast drills, many reps.</strong>{' '}
+            Each skill asks rapid-fire questions to make the knowledge you
+            already have automatic.
+          </li>
+          <li>
+            <strong>Speed is the goal.</strong>{' '}
+            When your response time drops from eight seconds to under one,
+            you&rsquo;ve stopped counting and started knowing.
+          </li>
+          <li>
+            <strong>Spaced repetition.</strong>{' '}
+            The app focuses on what you haven&rsquo;t mastered and brings back
+            material before you forget it.
+          </li>
+          <li>
+            <strong>No instrument needed.</strong>{' '}
+            Use commuting, waiting, or any other spare minutes to advance your
+            playing.
+          </li>
+          <li>
+            <strong>A few minutes at a time.</strong>{' '}
+            Designed for short sessions &mdash; two to five minutes, a few times
+            a day, over months and years.
+          </li>
+        </ul>
+      </section>
+
+      <section class='settings-section'>
+        <h2 class='settings-section-title'>Getting started</h2>
+        <ul class='home-about-list'>
+          <li>
+            Browse <strong>All Skills</strong>{' '}
+            to see what&rsquo;s available. Star the ones you want to work on.
+          </li>
+          <li>
+            Your starred skills appear on the <strong>Active</strong>{' '}
+            tab with recommendations for what to practice next.
+          </li>
+          <li>
+            Track your speed and coverage in each skill&rsquo;s{' '}
+            <strong>Progress</strong> tab.
+          </li>
+        </ul>
+      </section>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // useHomeTabs — build tab definitions for the home screen bottom nav
 // ---------------------------------------------------------------------------
 
@@ -732,6 +810,7 @@ function useHomeTabs(
     onToggleStar,
     onToggleExpand,
     onOpenDev,
+    isNativeApp,
   }: {
     starred: Set<string>;
     accordion: Record<string, boolean>;
@@ -746,6 +825,7 @@ function useHomeTabs(
     onToggleStar: (modeId: string) => void;
     onToggleExpand: (trackId: string) => void;
     onOpenDev?: () => void;
+    isNativeApp?: boolean;
   },
 ): TabDef<HomeTab>[] {
   return [
@@ -779,6 +859,11 @@ function useHomeTabs(
           />
         </>
       ),
+    },
+    {
+      id: 'about',
+      label: <TabIcon icon='about' text='About' />,
+      content: <HomeAboutTab isNativeApp={isNativeApp} />,
     },
     {
       id: 'settings',
@@ -816,7 +901,9 @@ export function HomeScreen(
   const [accordion, setAccordion] = useState(loadAccordionState);
   const [showDev, setShowDev] = useState(false);
   const [useSolfege, setUseSolfege] = useState(() => settings.getUseSolfege());
-  const [tab, setTab] = useState<HomeTab>(loadInitialTab);
+  const [tab, setTab] = useState<HomeTab>(
+    () => (starred.size > 0 ? 'active' : 'all'),
+  );
   const globalEffort = useMemo(getGlobalEffort, [progress]);
   const prefix = useTabsPrefix();
 
@@ -832,9 +919,6 @@ export function HomeScreen(
   const handleChangeTab = useCallback((t: HomeTab) => {
     setTab(t);
     if (t === 'settings') setUseSolfege(settings.getUseSolfege());
-    try {
-      storage.setItem(TAB_KEY, t);
-    } catch (_) { /* expected */ }
   }, [settings]);
 
   const handleToggleExpand = useCallback((trackId: string) => {
@@ -859,6 +943,7 @@ export function HomeScreen(
     onToggleStar: handleToggleStar,
     onToggleExpand: handleToggleExpand,
     onOpenDev: showDevLink ? () => setShowDev(true) : undefined,
+    isNativeApp,
   });
 
   if (showDev) {

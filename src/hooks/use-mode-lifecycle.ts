@@ -24,23 +24,27 @@ import type { LearnerModel } from './use-learner-model.ts';
  *                     clearing pending timeouts). Called after engine stop.
  *                     Should be a stable reference (wrap in useCallback if
  *                     needed).
+ * @param onActivate  Optional callback run after standard activate logic
+ *                     (e.g. tab reset for first-visit onboarding).
  */
 export function useModeLifecycle(
   onMount: (handle: ModeHandle) => void,
   engine: QuizEngineHandle,
   learner: LearnerModel,
   onDeactivate?: () => void,
+  onActivate?: () => void,
 ): void {
   useLayoutEffect(() => {
     onMount({
       activate() {
         learner.syncBaseline();
         engine.updateIdleMessage();
+        onActivate?.();
       },
       deactivate() {
         if (engine.state.phase !== 'idle') engine.stop();
         onDeactivate?.();
       },
     });
-  }, [onMount, engine, learner, onDeactivate]);
+  }, [onMount, engine, learner, onDeactivate, onActivate]);
 }

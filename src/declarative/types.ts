@@ -258,6 +258,8 @@ export type ModeController<Q> = {
   narrowing?: ReadonlySet<string> | null;
   /** Dynamic hideAccidentals override for NoteButtons. */
   hideAccidentals?: boolean;
+  /** Dynamic column count override for NoteButtons. */
+  buttonColumns?: number;
   /** Ref for GenericMode to inject the engine's submitAnswer function.
    *  Required for controllers that submit programmatically (e.g., multi-tap). */
   engineSubmitRef?: { current: (input: string) => void };

@@ -119,7 +119,7 @@ export function createChordShapesDef(
 
     allItems: items,
     getQuestion: (itemId) => parseItem(instrument, itemId),
-    getPromptText: (q) => 'Tap the ' + q.displayName + ' chord',
+    getPromptText: (q) => q.displayName,
     quizInstruction: 'Tap all played positions',
 
     multiTap: {

@@ -562,56 +562,90 @@ function SpacingSection({ tabId }: { tabId: string }) {
       <h2>Spacing Scale</h2>
       <PreviewGrid>
         <Section title='Spacing tokens' tabId={tabId}>
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '0.75rem',
+            }}
           >
-            {SPACE_TOKENS.map(({ name, desc }) => {
-              const val = cssVar(name);
-              const px = parseFloat(val) * 16;
-              return (
-                <div
-                  key={name}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.6rem',
-                  }}
-                >
-                  <code
+            <thead>
+              <tr>
+                {['Token', 'Value', 'Size', 'Usage'].map((h) => (
+                  <th
+                    key={h}
                     style={{
-                      fontSize: '0.7rem',
-                      minWidth: '6.5rem',
-                      color: 'var(--color-text-light)',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {name}
-                  </code>
-                  <span
-                    style={{
-                      fontSize: '0.7rem',
-                      minWidth: '2.5rem',
+                      textAlign: 'left',
+                      padding: '0.25rem 0.5rem',
+                      borderBottom: '1px solid var(--color-border-light)',
                       color: 'var(--color-text-muted)',
-                      fontFamily: 'monospace',
-                      flexShrink: 0,
+                      fontWeight: 600,
+                      fontSize: '0.65rem',
                     }}
                   >
-                    {val}
-                  </span>
-                  <div
-                    style={{
-                      height: '14px',
-                      width: `${Math.max(px * 3, 4)}px`,
-                      background: 'var(--color-brand)',
-                      opacity: 0.65,
-                      borderRadius: '2px',
-                    }}
-                  />
-                  <Text role='supporting'>{desc}</Text>
-                </div>
-              );
-            })}
-          </div>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {SPACE_TOKENS.map(({ name, desc }) => {
+                const val = cssVar(name);
+                return (
+                  <tr key={name}>
+                    <td
+                      style={{
+                        padding: '0.3rem 0.5rem',
+                        borderBottom: '1px solid var(--color-border-lighter)',
+                        fontFamily: 'monospace',
+                        color: 'var(--color-text-light)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {name}
+                    </td>
+                    <td
+                      style={{
+                        padding: '0.3rem 0.5rem',
+                        borderBottom: '1px solid var(--color-border-lighter)',
+                        fontFamily: 'monospace',
+                        color: 'var(--color-text-muted)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {val}
+                    </td>
+                    <td
+                      style={{
+                        padding: '0.3rem 0.5rem',
+                        borderBottom: '1px solid var(--color-border-lighter)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: '14px',
+                          width: `var(${name})`,
+                          minWidth: '2px',
+                          background: 'var(--color-brand)',
+                          opacity: 0.65,
+                          borderRadius: '2px',
+                        }}
+                      />
+                    </td>
+                    <td
+                      style={{
+                        padding: '0.3rem 0.5rem',
+                        borderBottom: '1px solid var(--color-border-lighter)',
+                        color: 'var(--color-text-muted)',
+                      }}
+                    >
+                      {desc}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </Section>
       </PreviewGrid>
     </>
