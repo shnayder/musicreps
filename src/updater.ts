@@ -5,8 +5,14 @@
 
 // deno-lint-ignore-file no-explicit-any
 
-const RELEASE_BASE = 'https://shnayder.github.io/musicreps/release';
+// Override via data-release-base on #home-screen for testing (e.g. "/release-staging")
+const DEFAULT_RELEASE_BASE = 'https://shnayder.github.io/musicreps/release';
 const CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+
+function getReleaseBase(): string {
+  const el = document.getElementById('home-screen');
+  return el?.dataset.releaseBase || DEFAULT_RELEASE_BASE;
+}
 
 let lastCheckTime = 0;
 
@@ -57,7 +63,7 @@ async function checkForUpdate(): Promise<void> {
 
   try {
     // 1. Fetch version manifest
-    const resp = await fetch(`${RELEASE_BASE}/version.json`, {
+    const resp = await fetch(`${getReleaseBase()}/version.json`, {
       cache: 'no-store',
     });
     if (!resp.ok) {
@@ -85,7 +91,7 @@ async function checkForUpdate(): Promise<void> {
     );
 
     // 3. Download index.html
-    const htmlResp = await fetch(`${RELEASE_BASE}/index.html`, {
+    const htmlResp = await fetch(`${getReleaseBase()}/index.html`, {
       cache: 'no-store',
     });
     if (!htmlResp.ok) {
