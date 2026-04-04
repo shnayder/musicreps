@@ -3155,7 +3155,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="8e5e6e ios-release-process"></div>
+  <div class="home-screen" id="home-screen" data-version="staging-test-v1"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -8098,6 +8098,10 @@ body.native-app {
         checkForUpdate();
       }
     });
+    globalThis.__otaForceCheck = () => {
+      lastCheckTime = 0;
+      checkForUpdate();
+    };
   }
 
   // src/hooks/use-learner-model.ts
