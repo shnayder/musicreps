@@ -64,11 +64,15 @@ jobs:
           BUILD_NUMBER: ${{ steps.commit-count.outputs.count }}
 
       - name: Tag build
-        if: steps.commit-count.outputs.count
+        if: ${{ steps.commit-count.outputs.count != '' }}
         run: |
           TAG="build-${{ steps.commit-count.outputs.count }}"
-          git tag "$TAG"
-          git push origin "$TAG"
+          if git ls-remote --tags origin "refs/tags/$TAG" | grep -q .; then
+            echo "Tag $TAG already exists on origin; skipping."
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
 
       - name: Detect merged branch
         id: merged
