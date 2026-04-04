@@ -3218,7 +3218,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1228"></div>
+  <div class="home-screen" id="home-screen" data-version="#1240"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -8071,6 +8071,121 @@ body.native-app {
     privacyUrl: safeUrl("")
   };
 
+  // src/updater.ts
+  var DEFAULT_RELEASE_BASE = "https://shnayder.github.io/musicreps/release";
+  var CHECK_INTERVAL_MS = 60 * 60 * 1e3;
+  function getReleaseBase() {
+    const el = document.getElementById("home-screen");
+    return el?.dataset.releaseBase || DEFAULT_RELEASE_BASE;
+  }
+  var lastCheckTime = 0;
+  function getOTAPlugin() {
+    return globalThis.Capacitor?.Plugins?.OTAUpdate;
+  }
+  function getFilesystemPlugin() {
+    return globalThis.Capacitor?.Plugins?.Filesystem;
+  }
+  async function sha256Hex(text) {
+    const data = new TextEncoder().encode(text);
+    const hash = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function checkForUpdateCore(deps) {
+    const manifest = await deps.fetchManifest();
+    if (!manifest) return "fetch-failed";
+    const state = await deps.getState();
+    const knownVersion = state.version || deps.getRunningVersion();
+    if (manifest.version === knownVersion) return "up-to-date";
+    const html = await deps.fetchHtml();
+    if (!html) return "download-failed";
+    const hash = await sha256Hex(html);
+    if (hash !== manifest.sha256) return "hash-mismatch";
+    const dir = "ota/current";
+    await deps.writeUpdate(html, dir);
+    await deps.registerUpdate(dir, manifest.version);
+    return "update-registered";
+  }
+  function productionDeps() {
+    const plugin = getOTAPlugin();
+    const fs = getFilesystemPlugin();
+    if (!plugin || !fs) return null;
+    const base = getReleaseBase();
+    return {
+      fetchManifest: async () => {
+        const resp = await fetch(`${base}/version.json`, { cache: "no-store" });
+        if (!resp.ok) return null;
+        return resp.json();
+      },
+      fetchHtml: async () => {
+        const resp = await fetch(`${base}/index.html`, { cache: "no-store" });
+        if (!resp.ok) return null;
+        return resp.text();
+      },
+      getState: () => plugin.getState(),
+      getRunningVersion: () => {
+        const el = document.getElementById("home-screen");
+        return el?.dataset.version ?? "";
+      },
+      writeUpdate: async (html, dir) => {
+        try {
+          await fs.mkdir({ path: dir, directory: "LIBRARY", recursive: true });
+        } catch {
+        }
+        await fs.writeFile({
+          path: `${dir}/index.html`,
+          data: html,
+          directory: "LIBRARY",
+          encoding: "utf8"
+        });
+      },
+      registerUpdate: (dir, version) => plugin.setUpdatePath({ path: dir, version })
+    };
+  }
+  async function checkForUpdate() {
+    const now = Date.now();
+    if (now - lastCheckTime < CHECK_INTERVAL_MS) return;
+    lastCheckTime = now;
+    const deps = productionDeps();
+    if (!deps) {
+      console.log("[OTA] plugin not available, skipping");
+      return;
+    }
+    try {
+      const result = await checkForUpdateCore(deps);
+      const messages = {
+        "fetch-failed": "[OTA] version.json fetch failed",
+        "up-to-date": "[OTA] up to date",
+        "download-failed": "[OTA] index.html download failed",
+        "hash-mismatch": "[OTA] hash mismatch, discarding",
+        "update-registered": "[OTA] update registered, will apply on next restart"
+      };
+      console.log(messages[result] || `[OTA] ${result}`);
+    } catch (err) {
+      console.error("[OTA] update check failed:", err);
+    }
+  }
+  async function reportHealthy() {
+    const plugin = getOTAPlugin();
+    if (!plugin) return;
+    try {
+      await plugin.reportHealthy();
+    } catch (err) {
+      console.error("[OTA] reportHealthy failed:", err);
+    }
+  }
+  function scheduleUpdateCheck() {
+    setTimeout(() => checkForUpdate(), 5e3);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        checkForUpdate();
+      }
+    });
+    window.__otaForceCheck = () => {
+      lastCheckTime = 0;
+      return checkForUpdate();
+    };
+  }
+
   // src/hooks/use-learner-model.ts
   function useLearnerModel(namespace, allItemIds, taskType = "note-button", responseCountFn) {
     const storageRef = A2(null);
@@ -12379,6 +12494,10 @@ body.native-app {
     );
     if ("serviceWorker" in navigator && !isNativeApp) {
       navigator.serviceWorker.register("sw.js");
+    }
+    if (isNativeApp) {
+      reportHealthy();
+      scheduleUpdateCheck();
     }
   }
   boot().catch((err) => {
