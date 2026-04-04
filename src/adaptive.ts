@@ -572,6 +572,7 @@ export function createAdaptiveSelector(
       ),
     updateConfig: (newCfg: Partial<AdaptiveConfig>) => {
       cfg = { ...cfg, ...newCfg };
+      version++;
     },
     getConfig: () => cfg,
     get version() {

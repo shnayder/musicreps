@@ -125,8 +125,8 @@ export interface AdaptiveSelector {
   checkNeedsReview(items: string[]): boolean;
   updateConfig(newCfg: Partial<AdaptiveConfig>): void;
   getConfig(): AdaptiveConfig;
-  /** Monotonic counter incremented on each recordResponse — use as a
-   *  React/Preact dependency to invalidate memoized recommendations. */
+  /** Monotonic counter incremented on recordResponse and updateConfig —
+   *  use as a React/Preact dependency to invalidate memoized computations. */
   readonly version: number;
 }
 

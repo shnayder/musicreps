@@ -1206,6 +1206,13 @@ describe('selector.version', () => {
     assert.equal(selector.version, 3);
   });
 
+  it('increments on updateConfig', () => {
+    const selector = createAdaptiveSelector(createMemoryStorage());
+    assert.equal(selector.version, 0);
+    selector.updateConfig({ maxResponseTime: 5000 });
+    assert.equal(selector.version, 1);
+  });
+
   it('does not increment on reads', () => {
     const selector = createAdaptiveSelector(createMemoryStorage());
     selector.recordResponse('a', 1000);

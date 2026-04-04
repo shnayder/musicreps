@@ -17,7 +17,7 @@ export type StatsViewSelector = {
 
 /**
  * Create a memoized stats selector adapter from a learner model.
- * Re-evaluates when the engine phase changes (so stats refresh after answers).
+ * Re-evaluates when the engine phase changes or stats are recorded.
  */
 export function useStatsSelector(
   selector: AdaptiveSelector,
