@@ -131,11 +131,12 @@ App bundle (read-only, ships with app binary):
   App.app/public/              # Bundled web content (the fallback)
 
 Device filesystem (writable):
-  Library/NoCloud/ota/
+  Library/ota/
     current/                   # Active update (index.html + assets)
 ```
 
-`Library/NoCloud/` is used to prevent iCloud backup of update files.
+Stored under `Library/` via the Capacitor Filesystem plugin's `LIBRARY`
+directory constant.
 
 ## gh-pages Branch Structure
 
@@ -183,15 +184,19 @@ Then point the updater at staging. Two options:
   ```js
   document.getElementById('home-screen').dataset.releaseBase =
     'https://shnayder.github.io/musicreps/release-staging';
+  __otaForceCheck();
   ```
-  Then trigger an update check by backgrounding and foregrounding the app.
 
 ### Testing the full cycle
 
 1. Build and run in Xcode — app boots from bundled content
 2. Deploy to `release-staging/` (steps above)
-3. Point updater at staging, wait for background check (5s after boot, or
-   foreground the app)
+3. In Safari Web Inspector, set releaseBase and force a check:
+   ```js
+   document.getElementById('home-screen').dataset.releaseBase =
+     'https://shnayder.github.io/musicreps/release-staging';
+   __otaForceCheck();
+   ```
 4. Check console for `[OTA] update registered, will apply on next restart`
 5. Kill and relaunch the app in Xcode
 6. Check console for `[OTA] switching to update at ...`
