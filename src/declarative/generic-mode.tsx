@@ -1345,7 +1345,7 @@ function useProgressColors<Q>(
       kind: 'items',
       itemIds: def.allItems,
     });
-  }, [def, learner.selector, _phase, skippedGroups]);
+  }, [def, learner.selector, learner.selector.version, _phase, skippedGroups]);
 }
 
 /** Per-level progress bars for the round-complete screen.
@@ -1377,7 +1377,7 @@ function useLevelBars<Q>(
     }
     const colors = progressBarColors(learner.selector, def.allItems);
     return colors.length > 0 ? [{ id: '_all', label: '', colors }] : [];
-  }, [def, learner.selector, _phase, enabledGroups]);
+  }, [def, learner.selector, learner.selector.version, _phase, enabledGroups]);
 }
 
 /** Render SkillHeader (idle) or minimal ModeTopBar (active/calibration). */
@@ -1441,7 +1441,7 @@ function GenericModeBody<Q>(
       if (s) sum += s.sampleCount;
     }
     return sum;
-  }, [def.allItems, learner.selector, phase]);
+  }, [def.allItems, learner.selector, learner.selector.version, phase]);
 
   if (isIdle) {
     return (

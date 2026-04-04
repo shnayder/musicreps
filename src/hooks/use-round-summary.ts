@@ -27,7 +27,7 @@ export function useStatsSelector(
     getStats: (id: string) => selector.getStats(id),
     getSpeedScore: (id: string) => selector.getSpeedScore(id),
     getFreshness: (id: string) => selector.getFreshness(id),
-  }), [selector, enginePhase]);
+  }), [selector, selector.version, enginePhase]);
 }
 
 // ---------------------------------------------------------------------------
