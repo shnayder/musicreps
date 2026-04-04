@@ -116,6 +116,7 @@ const FOUNDATION = new Set([
   'src/recommendations.ts',
   'src/effort.ts',
   'src/storage.ts',
+  'src/updater.ts',
 ]);
 
 const ENGINE = new Set([

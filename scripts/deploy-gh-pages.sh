@@ -5,13 +5,14 @@ MODE="${1:-}"
 BRANCH="${2:-}"
 
 usage() {
-  echo "Usage: $0 production [branch] | preview <branch> | cleanup <branch>" >&2
+  echo "Usage: $0 production [branch] | preview <branch> | cleanup <branch> | release | release-staging" >&2
   exit 1
 }
 
 case "$MODE" in
   production) ;;  # BRANCH is optional (merged claude/* branch to clean up)
   preview|cleanup) [ -z "$BRANCH" ] && usage ;;
+  release|release-staging) ;;
   *) usage ;;
 esac
 
@@ -26,6 +27,13 @@ if [ "$MODE" = "production" ]; then
 elif [ "$MODE" = "preview" ]; then
   mkdir -p /tmp/preview-build
   cp -r docs/* /tmp/preview-build/
+elif [ "$MODE" = "release" ] || [ "$MODE" = "release-staging" ]; then
+  mkdir -p /tmp/release-build
+  cp docs/index.html docs/version.json /tmp/release-build/
+  # Also copy static assets the native app might need
+  for f in docs/sw.js docs/manifest.json docs/*.png; do
+    [ -f "$f" ] && cp "$f" /tmp/release-build/
+  done
 fi
 
 # --- Git setup ---
@@ -59,7 +67,7 @@ else
   fi
 
   if [ "$MODE" = "production" ]; then
-    find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name 'preview' -exec rm -rf {} +
+    find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name 'preview' ! -name 'release' ! -name 'release-staging' -exec rm -rf {} +
     cp -r /tmp/build/* .
     VERSION=$(grep -oP '(?<=data-version=")[^"]+' index.html | head -1 || echo "unknown")
     COMMIT_MSG="Build production: ${VERSION}"
@@ -70,6 +78,13 @@ else
       rm -rf "preview/${SAFE_NAME}"
       CLEANED_PREVIEW=true
     fi
+  elif [ "$MODE" = "release" ] || [ "$MODE" = "release-staging" ]; then
+    RELEASE_DIR="$MODE"  # "release" or "release-staging"
+    rm -rf "$RELEASE_DIR"
+    mkdir -p "$RELEASE_DIR"
+    cp -r /tmp/release-build/* "$RELEASE_DIR/"
+    VERSION=$(grep -oP '(?<=data-version=")[^"]+' "$RELEASE_DIR/index.html" | head -1 || echo "unknown")
+    COMMIT_MSG="Release ${RELEASE_DIR}: ${VERSION}"
   else
     rm -rf "preview/${SAFE_NAME}"
     mkdir -p "preview/${SAFE_NAME}"
@@ -83,9 +98,9 @@ touch .nojekyll
 
 # --- Regenerate preview/index.html ---
 REGEN_INDEX=false
-if [ "$MODE" != "production" ]; then
+if [ "$MODE" = "preview" ] || [ "$MODE" = "cleanup" ]; then
   REGEN_INDEX=true
-elif [ "$CLEANED_PREVIEW" = true ]; then
+elif [ "$MODE" = "production" ] && [ "$CLEANED_PREVIEW" = true ]; then
   REGEN_INDEX=true
 fi
 if [ "$REGEN_INDEX" = true ]; then
@@ -129,11 +144,13 @@ fi # end preview index regeneration
 
 # --- Commit and push ---
 if [ "$MODE" = "production" ]; then
-  git add -A -- . ':!preview'
+  git add -A -- . ':!preview' ':!release' ':!release-staging'
   if [ "$CLEANED_PREVIEW" = true ]; then
     # Also stage the cleaned-up preview directory and regenerated index
     git add -A -- "preview/${SAFE_NAME}" preview/index.html
   fi
+elif [ "$MODE" = "release" ] || [ "$MODE" = "release-staging" ]; then
+  git add -A -- "$RELEASE_DIR" .nojekyll
 else
   # Preview/cleanup: only stage the specific preview directory and index — avoid
   # accidentally committing stray files (node_modules, screenshots, etc.)

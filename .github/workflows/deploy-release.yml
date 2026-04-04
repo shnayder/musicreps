@@ -1,0 +1,41 @@
+name: Deploy Release
+
+on:
+  push:
+    tags:
+      - 'release-v*'
+
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout tagged commit
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Setup Node (for esbuild)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run checks
+        run: deno task ok
+
+      - name: Build
+        run: deno task build
+
+      - name: Deploy to release/
+        run: bash scripts/deploy-gh-pages.sh release
