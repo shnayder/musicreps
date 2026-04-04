@@ -1095,3 +1095,81 @@ describe('computeRecommendations — real fretboard data', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Integration: real selector → recommendations update after practice
+// ---------------------------------------------------------------------------
+
+describe('recommendations refresh after recordResponse (integration)', () => {
+  // Use a real AdaptiveSelector (not a mock) with computeRecommendations
+  // to verify that practicing items changes the recommendation output.
+  // This is the scenario that was broken when memoization hid stale data.
+
+  const groups = ['g1', 'g2', 'g3'];
+  const itemsPerGroup = 4;
+  const getItemIds = (g: string) =>
+    Array.from({ length: itemsPerGroup }, (_, i) => `${g}-${i}`);
+  const allItems = groups.flatMap(getItemIds);
+
+  function makeSelector() {
+    return createAdaptiveSelector(createMemoryStorage());
+  }
+
+  function getRecs(sel: ReturnType<typeof createAdaptiveSelector>) {
+    return computeRecommendations(sel, groups, getItemIds, {});
+  }
+
+  it('fresh selector produces fresh-start recommendation', () => {
+    const sel = makeSelector();
+    const result = getRecs(sel);
+    assert.ok(
+      result.recommended.size > 0,
+      'should recommend at least one group',
+    );
+  });
+
+  it('practicing items changes recommendation output', () => {
+    const sel = makeSelector();
+    const before = getRecs(sel);
+
+    // Before: fresh start, recommends first group only
+    assert.ok(before.recommended.has('g1'));
+    assert.equal(before.recommended.size, 1, 'fresh start → one group');
+
+    // Practice all items in g1 to build speed
+    for (const id of getItemIds('g1')) {
+      for (let i = 0; i < 15; i++) {
+        sel.recordResponse(id, 800);
+      }
+    }
+
+    const after = getRecs(sel);
+
+    // After: g1 is started, recommendations should differ —
+    // either more groups recommended (expansion) or different levelRecs.
+    const changed = after.recommended.size !== before.recommended.size ||
+      after.levelRecs.length !== before.levelRecs.length ||
+      after.expandIndex !== before.expandIndex;
+    assert.ok(changed, 'recommendations should change after practice');
+
+    // Version counter tracks all mutations
+    assert.equal(
+      sel.version,
+      getItemIds('g1').length * 15,
+    );
+  });
+
+  it('version acts as a usable cache key', () => {
+    const sel = makeSelector();
+    const v0 = sel.version;
+    getRecs(sel);
+
+    sel.recordResponse(allItems[0], 1000);
+    const v1 = sel.version;
+    assert.notEqual(v0, v1, 'version should change after recordResponse');
+
+    // A memo keyed on version would recompute here — verify it works
+    const fresh = getRecs(sel);
+    assert.ok(fresh.recommended.size > 0);
+  });
+});

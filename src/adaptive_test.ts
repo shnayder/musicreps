@@ -1185,3 +1185,35 @@ describe('computeMedian', () => {
     assert.deepEqual(arr, [3, 1, 2]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// selector.version
+// ---------------------------------------------------------------------------
+
+describe('selector.version', () => {
+  it('starts at 0', () => {
+    const selector = createAdaptiveSelector(createMemoryStorage());
+    assert.equal(selector.version, 0);
+  });
+
+  it('increments on each recordResponse', () => {
+    const selector = createAdaptiveSelector(createMemoryStorage());
+    selector.recordResponse('a', 1000);
+    assert.equal(selector.version, 1);
+    selector.recordResponse('b', 1000);
+    assert.equal(selector.version, 2);
+    selector.recordResponse('a', 500, false);
+    assert.equal(selector.version, 3);
+  });
+
+  it('does not increment on reads', () => {
+    const selector = createAdaptiveSelector(createMemoryStorage());
+    selector.recordResponse('a', 1000);
+    const v = selector.version;
+    selector.getStats('a');
+    selector.getWeight('a');
+    selector.getSpeedScore('a');
+    selector.getFreshness('a');
+    assert.equal(selector.version, v);
+  });
+});
