@@ -146,35 +146,100 @@ gh-pages:
   release/                # Blessed release for native app
     index.html
     version.json
+  release-staging/        # Staging area for testing (same structure)
   preview/                # PR preview builds
 ```
 
-`release/` is only updated by the release workflow (tag push), not by every push
-to main. Web users always get the latest main build; native app users get the
-version you explicitly released.
+`release/` is only updated by the release workflow (tag push) or manual deploy.
+`release-staging/` is for testing the OTA flow without touching the real release.
+Web users always get the latest main build; native app users get the version you
+explicitly released.
+
+## Testing OTA Updates
+
+### Using release-staging
+
+The safest way to test the full OTA flow end-to-end without affecting the real
+release path:
+
+```bash
+# 1. Build
+deno task build
+
+# 2. Deploy to staging
+bash scripts/deploy-gh-pages.sh release-staging
+```
+
+Then point the updater at staging. Two options:
+
+- **In HTML** (requires rebuild): add `data-release-base` attribute to the
+  `#home-screen` div in `src/build-template.ts`:
+  ```html
+  <div ... data-release-base="https://shnayder.github.io/musicreps/release-staging">
+  ```
+
+- **In Safari Web Inspector** (no rebuild): run in the JS console after the app
+  loads:
+  ```js
+  document.getElementById('home-screen').dataset.releaseBase =
+    'https://shnayder.github.io/musicreps/release-staging';
+  ```
+  Then trigger an update check by backgrounding and foregrounding the app.
+
+### Testing the full cycle
+
+1. Build and run in Xcode — app boots from bundled content
+2. Deploy to `release-staging/` (steps above)
+3. Point updater at staging, wait for background check (5s after boot, or
+   foreground the app)
+4. Check console for `[OTA] update registered, will apply on next restart`
+5. Kill and relaunch the app in Xcode
+6. Check console for `[OTA] switching to update at ...`
+7. Confirm the app loads the updated content (check version string on home
+   screen)
+
+### Testing rollback
+
+1. Complete the cycle above (app running from staging update)
+2. Make a visible change (e.g. bump version), rebuild, redeploy to staging
+3. Wait for background check, restart — confirm new version loads
+4. Now redeploy the original version to staging
+5. Wait for background check, restart — confirm rollback loads
+
+### Testing crash recovery
+
+1. Complete a successful update cycle
+2. Corrupt the cached update on the device filesystem — in Safari Web Inspector:
+   ```js
+   const fs = Capacitor.Plugins.Filesystem;
+   await fs.writeFile({
+     path: 'ota/current/index.html',
+     data: btoa('<html><body>BROKEN</body></html>'),
+     directory: 'LIBRARY',
+   });
+   ```
+3. Restart the app — it loads the broken HTML (attempt 1)
+4. Restart again — attempt 2, still broken
+5. Restart a third time — plugin gives up, falls back to bundled content
+6. Check console for `[OTA] update failed after 2 attempts, reverting to bundled`
+
+### Cleaning up staging
+
+After testing, remove `release-staging/` from gh-pages:
+
+```bash
+# On the gh-pages branch:
+git rm -rf release-staging
+git commit -m "Clean up release-staging"
+git push origin gh-pages
+```
 
 ## Key Paths
 
-| Path                                | Purpose                              |
-| ----------------------------------- | ------------------------------------ |
-| `ios/App/App/OTAUpdatePlugin.swift` | Native plugin (boot routing + state) |
-| `ios/App/App/AppViewController.swift` | Registers the plugin with Capacitor |
-| `src/updater.ts`                    | JS update checker + downloader       |
-| `scripts/deploy-gh-pages.sh`        | Deploy script (production + release) |
-| `.github/workflows/deploy-release.yml` | CI workflow for tag-triggered releases |
-
-## Testing Updates Locally
-
-To test the OTA flow without pushing to GitHub Pages:
-
-1. Build the app: `deno task build && npx cap sync ios`
-2. Run in Xcode, confirm app boots from bundled content
-4. Manually place `version.json` and `index.html` at the release URL
-   (or use a local server and temporarily change `RELEASE_BASE` in `updater.ts`)
-5. Wait 5s for background check, or foreground the app
-6. Restart the app — it should load the downloaded update
-
-To test crash recovery:
-1. Download a valid update (steps above)
-2. Replace the cached `index.html` with broken HTML
-3. Restart twice — app should fall back to bundled content
+| Path                                    | Purpose                              |
+| --------------------------------------- | ------------------------------------ |
+| `ios/App/App/OTAUpdatePlugin.swift`     | Native plugin (boot routing + state) |
+| `ios/App/App/AppViewController.swift`   | Registers the plugin with Capacitor  |
+| `src/updater.ts`                        | JS update checker + downloader       |
+| `scripts/deploy-gh-pages.sh`            | Deploy script (all modes)            |
+| `.github/workflows/deploy-release.yml`  | CI workflow for tag-triggered releases |
