@@ -87,6 +87,25 @@ export function createFretboardHelpers(musicData: {
     return items;
   }
 
+  /** Compute item IDs for a fret range across all strings. */
+  function getItemIdsForFretRange(
+    startFret: number,
+    endFret: number,
+    noteFilter: string,
+    stringCount: number,
+  ): string[] {
+    const items = [];
+    for (let s = 0; s < stringCount; s++) {
+      for (let f = startFret; f <= endFret; f++) {
+        const note = getNoteAtPosition(s, f);
+        if (notePassesFilter(note, noteFilter)) {
+          items.push(s + '-' + f);
+        }
+      }
+    }
+    return items;
+  }
+
   return {
     fretCount,
     getNoteAtPosition,
@@ -94,5 +113,6 @@ export function createFretboardHelpers(musicData: {
     checkFretboardAnswer,
     getFretboardEnabledItems,
     getItemIdsForString,
+    getItemIdsForFretRange,
   };
 }

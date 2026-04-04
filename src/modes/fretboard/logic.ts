@@ -3,12 +3,7 @@
 // Parameterized by Instrument for multi-instrument reuse.
 
 import type { Instrument } from '../../types.ts';
-import {
-  displayNote,
-  NATURAL_NOTES,
-  noteMatchesInput,
-  NOTES,
-} from '../../music-data.ts';
+import { NATURAL_NOTES, noteMatchesInput, NOTES } from '../../music-data.ts';
 import { createFretboardHelpers } from '../../quiz-fretboard-state.ts';
 
 // ---------------------------------------------------------------------------
@@ -19,145 +14,65 @@ export type FretboardGroup = {
   id: string;
   label: () => string;
   longLabel: () => string;
-  strings: number[];
+  frets: [number, number]; // [startFret, endFret] inclusive
   noteFilter: 'natural' | 'sharps-flats';
 };
 
 // ---------------------------------------------------------------------------
-// Guitar groups
+// Fret-based groups (shared across instruments)
 // ---------------------------------------------------------------------------
 
-// String indices: 0=e, 1=B, 2=G, 3=D, 4=A, 5=E (high to low)
+function fretLabel(start: number, end: number): string {
+  return 'Frets ' + start + '\u2013' + end;
+}
 
-const GUITAR_GROUPS: FretboardGroup[] = [
-  // Naturals by string (E and e combined since same notes)
+const FRET_GROUPS: FretboardGroup[] = [
   {
-    id: 'e-natural',
-    label: () => displayNote('E') + ' strings',
-    longLabel: () => 'High & low ' + displayNote('E') + ' strings',
-    strings: [5, 0],
+    id: 'frets-0-3-natural',
+    label: () => fretLabel(0, 3),
+    longLabel: () => fretLabel(0, 3) + ', naturals',
+    frets: [0, 3],
     noteFilter: 'natural',
   },
   {
-    id: 'a-natural',
-    label: () => displayNote('A') + ' string',
-    longLabel: () => displayNote('A') + ' string',
-    strings: [4],
-    noteFilter: 'natural',
-  },
-  {
-    id: 'd-natural',
-    label: () => displayNote('D') + ' string',
-    longLabel: () => displayNote('D') + ' string',
-    strings: [3],
-    noteFilter: 'natural',
-  },
-  {
-    id: 'g-natural',
-    label: () => displayNote('G') + ' string',
-    longLabel: () => displayNote('G') + ' string',
-    strings: [2],
-    noteFilter: 'natural',
-  },
-  {
-    id: 'b-natural',
-    label: () => displayNote('B') + ' string',
-    longLabel: () => displayNote('B') + ' string',
-    strings: [1],
-    noteFilter: 'natural',
-  },
-  // Accidentals by string pair
-  {
-    id: 'e-sharps',
-    label: () => displayNote('E') + ' \u266F/\u266D',
-    longLabel: () => displayNote('E') + ' strings \u266F/\u266D',
-    strings: [5, 0],
+    id: 'frets-0-3-sharps',
+    label: () => fretLabel(0, 3) + ' \u266F/\u266D',
+    longLabel: () => fretLabel(0, 3) + ' \u266F/\u266D',
+    frets: [0, 3],
     noteFilter: 'sharps-flats',
   },
   {
-    id: 'ad-sharps',
-    label: () => displayNote('A') + ' ' + displayNote('D') + ' \u266F/\u266D',
-    longLabel: () =>
-      displayNote('A') + ' & ' + displayNote('D') + ' strings \u266F/\u266D',
-    strings: [4, 3],
+    id: 'frets-4-8-natural',
+    label: () => fretLabel(4, 8),
+    longLabel: () => fretLabel(4, 8) + ', naturals',
+    frets: [4, 8],
+    noteFilter: 'natural',
+  },
+  {
+    id: 'frets-4-8-sharps',
+    label: () => fretLabel(4, 8) + ' \u266F/\u266D',
+    longLabel: () => fretLabel(4, 8) + ' \u266F/\u266D',
+    frets: [4, 8],
     noteFilter: 'sharps-flats',
   },
   {
-    id: 'gb-sharps',
-    label: () => displayNote('G') + ' ' + displayNote('B') + ' \u266F/\u266D',
-    longLabel: () =>
-      displayNote('G') + ' & ' + displayNote('B') + ' strings \u266F/\u266D',
-    strings: [2, 1],
+    id: 'frets-9-12-natural',
+    label: () => fretLabel(9, 12),
+    longLabel: () => fretLabel(9, 12) + ', naturals',
+    frets: [9, 12],
+    noteFilter: 'natural',
+  },
+  {
+    id: 'frets-9-12-sharps',
+    label: () => fretLabel(9, 12) + ' \u266F/\u266D',
+    longLabel: () => fretLabel(9, 12) + ' \u266F/\u266D',
+    frets: [9, 12],
     noteFilter: 'sharps-flats',
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Ukulele groups
-// ---------------------------------------------------------------------------
-
-// String indices: 0=A, 1=E, 2=C, 3=G
-
-const UKULELE_GROUPS: FretboardGroup[] = [
-  // Naturals by string
-  {
-    id: 'g-natural',
-    label: () => displayNote('G') + ' string',
-    longLabel: () => displayNote('G') + ' string',
-    strings: [3],
-    noteFilter: 'natural',
-  },
-  {
-    id: 'c-natural',
-    label: () => displayNote('C') + ' string',
-    longLabel: () => displayNote('C') + ' string',
-    strings: [2],
-    noteFilter: 'natural',
-  },
-  {
-    id: 'e-natural',
-    label: () => displayNote('E') + ' string',
-    longLabel: () => displayNote('E') + ' string',
-    strings: [1],
-    noteFilter: 'natural',
-  },
-  {
-    id: 'a-natural',
-    label: () => displayNote('A') + ' string',
-    longLabel: () => displayNote('A') + ' string',
-    strings: [0],
-    noteFilter: 'natural',
-  },
-  // Accidentals by string pair
-  {
-    id: 'gc-sharps',
-    label: () => displayNote('G') + ' ' + displayNote('C') + ' \u266F/\u266D',
-    longLabel: () =>
-      displayNote('G') + ' & ' + displayNote('C') + ' strings \u266F/\u266D',
-    strings: [3, 2],
-    noteFilter: 'sharps-flats',
-  },
-  {
-    id: 'ea-sharps',
-    label: () => displayNote('E') + ' ' + displayNote('A') + ' \u266F/\u266D',
-    longLabel: () =>
-      displayNote('E') + ' & ' + displayNote('A') + ' strings \u266F/\u266D',
-    strings: [1, 0],
-    noteFilter: 'sharps-flats',
-  },
-];
-
-// ---------------------------------------------------------------------------
-// Instrument → groups mapping
-// ---------------------------------------------------------------------------
-
-const GROUPS_BY_INSTRUMENT: Record<string, FretboardGroup[]> = {
-  fretboard: GUITAR_GROUPS,
-  ukulele: UKULELE_GROUPS,
-};
-
-export function getGroups(instrument: Instrument): FretboardGroup[] {
-  return GROUPS_BY_INSTRUMENT[instrument.id] ?? GUITAR_GROUPS;
+export function getGroups(_instrument: Instrument): FretboardGroup[] {
+  return FRET_GROUPS;
 }
 
 // ---------------------------------------------------------------------------
@@ -195,11 +110,12 @@ export function getItemIdsForGroup(
   const group = groups.find((g) => g.id === groupId);
   if (!group) return [];
   const fb = getHelpers(instrument);
-  const items: string[] = [];
-  for (const s of group.strings) {
-    items.push(...fb.getItemIdsForString(s, group.noteFilter));
-  }
-  return items;
+  return fb.getItemIdsForFretRange(
+    group.frets[0],
+    group.frets[1],
+    group.noteFilter,
+    instrument.stringCount,
+  );
 }
 
 /** All item IDs for an instrument (all strings, all frets). */

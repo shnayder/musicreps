@@ -1,11 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  getUseSolfege,
-  GUITAR,
-  setUseSolfege,
-  UKULELE,
-} from '../../music-data.ts';
+import { GUITAR, UKULELE } from '../../music-data.ts';
 import {
   formatLabel,
   getAllGroupIds,
@@ -16,58 +11,65 @@ import {
 } from './logic.ts';
 
 // ---------------------------------------------------------------------------
-// Guitar groups
+// Group structure (shared across instruments)
 // ---------------------------------------------------------------------------
 
-describe('guitar groups', () => {
+describe('fretboard groups', () => {
   const groups = getGroups(GUITAR);
 
-  it('has 8 groups (5 natural + 3 accidental)', () => {
-    assert.equal(groups.length, 8);
+  it('has 6 groups (3 fret ranges × natural/accidental)', () => {
+    assert.equal(groups.length, 6);
   });
 
-  it('natural groups cover all 6 strings', () => {
-    const naturalStrings = new Set<number>();
-    for (let i = 0; i < 5; i++) {
+  it('alternates natural then accidental for each fret range', () => {
+    for (let i = 0; i < groups.length; i += 2) {
       assert.equal(groups[i].noteFilter, 'natural');
-      for (const s of groups[i].strings) naturalStrings.add(s);
+      assert.equal(groups[i + 1].noteFilter, 'sharps-flats');
+      assert.deepEqual(groups[i].frets, groups[i + 1].frets);
     }
-    assert.equal(naturalStrings.size, 6);
   });
 
-  it('accidental groups cover all 6 strings', () => {
-    const accStrings = new Set<number>();
-    for (let i = 5; i < 8; i++) {
-      assert.equal(groups[i].noteFilter, 'sharps-flats');
-      for (const s of groups[i].strings) accStrings.add(s);
-    }
-    assert.equal(accStrings.size, 6);
+  it('covers frets 0-3, 4-8, 9-12', () => {
+    assert.deepEqual(groups[0].frets, [0, 3]);
+    assert.deepEqual(groups[2].frets, [4, 8]);
+    assert.deepEqual(groups[4].frets, [9, 12]);
   });
 
-  it('E strings group has strings 5 and 0', () => {
-    assert.deepEqual(groups[0].strings, [5, 0]);
-    assert.equal(groups[0].label(), 'E strings');
+  it('same groups for guitar and ukulele', () => {
+    assert.deepEqual(getGroups(GUITAR), getGroups(UKULELE));
   });
 });
 
+// ---------------------------------------------------------------------------
+// Guitar getItemIdsForGroup
+// ---------------------------------------------------------------------------
+
 describe('guitar getItemIdsForGroup', () => {
-  it('E e naturals: 2 strings × 8 naturals = 16 items', () => {
-    const items = getItemIdsForGroup(GUITAR, 'e-natural');
-    assert.equal(items.length, 16);
-    // All items should be on strings 5 or 0
-    assert.ok(items.every((id) => id.startsWith('5-') || id.startsWith('0-')));
+  it('frets 0-3 naturals: all items have frets 0-3', () => {
+    const items = getItemIdsForGroup(GUITAR, 'frets-0-3-natural');
+    assert.ok(items.length > 0);
+    for (const id of items) {
+      const fret = Number(id.split('-')[1]);
+      assert.ok(fret >= 0 && fret <= 3, `fret ${fret} out of range`);
+    }
   });
 
-  it('A naturals: 1 string × 8 naturals = 8 items', () => {
-    const items = getItemIdsForGroup(GUITAR, 'a-natural');
-    assert.equal(items.length, 8);
-    assert.ok(items.every((id) => id.startsWith('4-')));
+  it('frets 4-8 naturals: all items have frets 4-8', () => {
+    const items = getItemIdsForGroup(GUITAR, 'frets-4-8-natural');
+    assert.ok(items.length > 0);
+    for (const id of items) {
+      const fret = Number(id.split('-')[1]);
+      assert.ok(fret >= 4 && fret <= 8, `fret ${fret} out of range`);
+    }
   });
 
-  it('E accidentals: 2 strings × 5 accidentals = 10 items', () => {
-    const items = getItemIdsForGroup(GUITAR, 'e-sharps');
-    assert.equal(items.length, 10);
-    assert.ok(items.every((id) => id.startsWith('5-') || id.startsWith('0-')));
+  it('frets 9-12 naturals: all items have frets 9-12', () => {
+    const items = getItemIdsForGroup(GUITAR, 'frets-9-12-natural');
+    assert.ok(items.length > 0);
+    for (const id of items) {
+      const fret = Number(id.split('-')[1]);
+      assert.ok(fret >= 9 && fret <= 12, `fret ${fret} out of range`);
+    }
   });
 
   it('all groups cover all 78 items', () => {
@@ -88,16 +90,10 @@ describe('guitar getAllItems', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Ukulele groups
+// Ukulele
 // ---------------------------------------------------------------------------
 
-describe('ukulele groups', () => {
-  const groups = getGroups(UKULELE);
-
-  it('has 6 groups (4 natural + 2 accidental)', () => {
-    assert.equal(groups.length, 6);
-  });
-
+describe('ukulele getItemIdsForGroup', () => {
   it('all groups cover all 52 items', () => {
     const allFromGroups = new Set<string>();
     for (const id of getAllGroupIds(UKULELE)) {
@@ -152,8 +148,9 @@ describe('getQuestion expected values', () => {
 // ---------------------------------------------------------------------------
 
 describe('formatLabel', () => {
-  it('single group in letter mode', () => {
-    assert.equal(formatLabel(GUITAR, new Set(['e-natural'])), 'E strings');
+  it('single group', () => {
+    const label = formatLabel(GUITAR, new Set(['frets-0-3-natural']));
+    assert.match(label, /Frets 0/);
   });
 
   it('all groups', () => {
@@ -163,20 +160,12 @@ describe('formatLabel', () => {
     );
   });
 
-  it('multiple groups sorted', () => {
-    const label = formatLabel(GUITAR, new Set(['d-natural', 'e-natural']));
-    assert.equal(label, 'E strings, D string');
-  });
-
-  it('uses solfège names in solfège mode', () => {
-    const original = getUseSolfege();
-    try {
-      setUseSolfege(true);
-      assert.equal(formatLabel(GUITAR, new Set(['e-natural'])), 'Mi strings');
-      assert.equal(formatLabel(GUITAR, new Set(['a-natural'])), 'La string');
-      assert.equal(formatLabel(GUITAR, new Set(['d-natural'])), 'Re string');
-    } finally {
-      setUseSolfege(original);
-    }
+  it('multiple groups in definition order', () => {
+    const label = formatLabel(
+      GUITAR,
+      new Set(['frets-4-8-natural', 'frets-0-3-natural']),
+    );
+    // Should be in definition order: 0-3 first, then 4-8
+    assert.match(label, /0.*4/);
   });
 });
